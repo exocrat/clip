@@ -1,0 +1,432 @@
+# Campus Marketplace — Domain Task List
+
+**Version:** 3.1
+**Date:** 2026-10-14  
+**Canonical repository path:** `docs/tasks/domain-task-list.md`
+**Status:** Planned work; no domain implementation or domain cloud provisioning is represented as completed here.
+
+**Canonical repository path:** `docs/tasks/domain-task-list.md`
+
+**Purpose:** One authoritative task list for Identity, Listings and Images, Search/Wanted/Saved, Conversations, and cross-domain integration. This replaces the earlier plan for four separate domain task-list files plus a combined copy. Domain contracts, checklists, code, evidence, and the other project documents remain separate artifacts where the repository structure assigns them separate paths.
+
+## 1. How to use this list
+
+- Start only after the pre-domain completion gate is satisfied (`docs/tasks/pre-domain-task-list.md`, PRE-00). Read the current repository status and work log before choosing a task.
+- After real PRE-00 and DL-00, use `docs/architecture/stubs-and-integration-gates.md`: independent domain implementation may run in parallel with reviewed test doubles before upstream implementation is ready. Named real prerequisites still gate integration/readiness/final acceptance. Never count stub evidence as completion.
+- A task is a work package, not a demand to create many tiny task IDs. Follow the numbered actions in order, with only the explicit human-verified staged-checkpoint exception in the stub guide. Split a numbered action only when the repository, a failure, or an unresolved decision makes it necessary; do not split actions into extra steps that add no decision, artifact, check, or safe handoff.
+- Before each task, inspect the current repository and verify its prerequisites. Reuse valid existing artifacts and record their paths and checks. If an upstream implementation is absent but the reviewed contract and stub table permit this checkpoint, propose its documented isolated mode and record pending real checks. Missing/uncertain contracts, conflicting requirements and non-substitutable gates still require a question or the actual prerequisite; never silently invent a replacement.
+- Before editing a task, explain the full task and its numbered steps in order, with scope, prerequisites, status, expected outputs/checks, and decision gates; wait for the human to verify it. Execute one numbered step, report its changes/checks/evidence, and wait for the human to verify before continuing. Repeat this gate before starting a new task.
+- Resolve exact commands from the checked-in `README.md`, `Makefile`, and task scripts. This list names required command outcomes, not guessed command spellings. If a required command or expected result is not documented in the repository, stop and ask for the missing foundation work to be completed.
+- Update `docs/status/work-log.md` at start, meaningful progress, block, and completion. A task is complete only when its code/configuration, tests, deployed revision where relevant, evidence, and documentation agree.
+- Every consequential choice affecting behavior, security/privacy, data, a shared contract, dependencies, cost, or cloud resources must reach its listed human decision gate. Stop and ask on any uncertainty that could change the next action, result, exposure, or cleanup. Do not guess.
+- Apply `docs/conventions/shared-conventions-and-cross-domain-contract-rules.md` throughout: UUIDs, UTC-aware time, integer paise, shared error envelope, trusted auth context, pagination, ownership, transaction/retry behavior, and privacy-safe logging. Each task and the agent/human checklists must include an actionable check against that canonical file.
+- Use the repository's pinned Python Black and CI commands for Python changes. Run local checks for every change and record exact results. Do not claim a cloud NFR result from local tests or smoke checks.
+- Each cloud-bound task first inspects whether its behavior can be tested on the approved shared foundation. Reuse shared PostgreSQL, ECS, networking, ingress, object storage, roles, and monitoring where appropriate. Record `no additional Terraform resources` only after inspection. A domain Terraform plan requires human review and approval of the exact account, region, environment, add/change/destroy set, exposure, cost, test window, rollback, and cleanup/retention before apply. A changed plan needs new approval.
+- The ECS-only versus ECS+Lambda design, implementation, runs, resource plan, and conclusions remain in Document 2 (`docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md`). Domain tasks may make integrated read routes available, but they do not implement experiment routing, run the comparison, or claim its result.
+- Optional work needs its named technical prerequisites, explicit human selection, and an approved capacity/cost plan protecting required work, NFRs, Document 2, and the final buffer. Follow `docs/decisions/optional-work-scheduling.md`; optional work does not require blanket completion of INT-01 or elapsed submission buffer.
+
+## 2. Source documents and boundaries
+
+Read these repository copies before starting and revisit the relevant sections when a task depends on them:
+
+| Source | Use |
+|---|---|
+| `docs/source/ICC_Project_PRD_FINAL.pdf` | Full requirement intent and validation statements. |
+| `docs/product/product-reference-and-architecture-decisions.md` | Required/optional scope, FR/NFR summaries, architecture, information ownership, and approved project direction. |
+| `docs/conventions/shared-conventions-and-cross-domain-contract-rules.md` | Shared types, errors, authorization, domain ownership, transactions/retries, contracts, privacy, and logging. |
+| `docs/architecture/repository-structure.md` | Canonical paths and artifact responsibilities. |
+| `docs/tasks/pre-domain-task-list.md` | PRE-00, shared local/cloud foundation, datasets, work log, tooling, checklists, and handoff. |
+| `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | Experiment boundary and its own tasks. |
+| `docs/status/work-log.md`, `docs/decisions/`, and current environment inventory | Actual status, approved decisions, and verified infrastructure facts. |
+| Current domain contracts under `contracts/` and generated API/client outputs | Exact operations, types, errors, commands, and cross-domain interfaces. |
+
+If a source conflicts with another, the PRD supplies requirement intent, the current approved product reference supplies the reviewed implementation baseline, and this task list supplies the sequence and checks. Do not silently resolve a real conflict; stop, state the conflicting wording and affected task, and ask for a decision. Do not use stale drafts or prior chat as execution-time sources.
+
+## Readiness, resuming, and collaboration
+
+Use `CONTRIBUTING.md` and `docs/tasks/project-task-index.md`. ID-READY, LI-CORE, SE-CORE, and CN-CORE are human-verified, peer-reviewed, merged implementation milestones inside existing tasks; they do not mark the entire task or FR/NFR complete. Consumers depend on these named capabilities rather than successors' final tests. DATA-READY records final synthetic data/labels after schemas/configuration exist.
+
+Read-only inspection and an understanding report precede any mutation, including status claims. Record current task/step, within-step checkpoint, execution and human-verification states, actual revision/PR/evidence, pending question, and next action. At a blocked future dependency, propose the next owned unblocked task and wait for its scope verification; never perform other work while awaiting an unanswered question without explicit instruction. A readiness PR may be merged while later task steps remain pending; status remains in progress/blocked, never falsely done.
+
+Contributor assignments: A owns ID-01 and CN-03; B owns LI-01/LI-02; C owns SE-01/SE-02; D owns CN-01/CN-02. A's Identity contact operations and B's authoritative selection state are implemented in their owned tasks and consumed/reviewed in CN-02; they do not all edit one conversation branch concurrently. Reviewers and shared-path coordination are mapped to the actual four humans during bootstrap/PD-03.
+
+Before any NFR run create a human-approved manifest under `docs/evaluation/` with actual commands, data/code/runtime fingerprints, deployed path, workload and success definition, warm-up/timing/sample policy, caps/cost/stop limits, result/evidence and cleanup. Each relevant task creates missing tooling explicitly. Later changes to the measured path, schema/indexes, auth, workload, deployment configuration or resources invalidate affected evidence until rerun or documented equivalence review; optional changes obey the same rule. Offline NFR-04 is measured offline; passing a local smoke test is not cloud NFR evidence.
+
+## 3. Shared task execution protocol
+
+For every task below:
+
+1. Read the task's prerequisites and source files, inspect `git status` and the work-log row, and verify the actual branch/commit and environment before editing.
+2. Confirm the task's owner/reviewer, permitted paths, interfaces, test mode, and expected evidence path. Do not edit another domain's private implementation or shared generated output independently.
+3. Before making changes, explain the entire selected task and its numbered steps in order, including dependencies, outputs, checks, and decision gates. Wait for verification. Execute one step only; then report the diff, checks, results, evidence, and work-log update, and wait for verification before advancing.
+4. If the step contains an explicit human decision or approval gate, stop at that gate. General verification of the task or a prior step does not authorize cloud apply, deployment, destructive cleanup, or another specifically gated action.
+5. Follow numbered actions in order; only the stub guide permits verified isolated checkpoints with recorded pending real subchecks. Revisit those original checkpoints before accepting their real gate. Keep changes within the named scope; coordinate any shared contract change with all affected owners before editing it.
+6. Run the exact repository commands for formatting, type/build, contract staleness, unit/integration tests, and CI-equivalent checks that apply. Record command and result, not just “tests pass.”
+7. For cloud work, use only the documented account/role/region/environment and approved shared resources. Never put credentials or secret values in chat, prompts, source, fixtures, evidence, or logs.
+8. Keep synthetic data deterministic and labeled. Never use real user/contact/message data in testing or evidence. Never log message plaintext, ciphertext, private keys, OTPs, access tokens, full contact data, or UPI IDs.
+9. On a test failure, preserve the failure output, identify whether it is code, environment, or test-tool behavior, and fix only within scope. If the cause or safe recovery is uncertain, stop and ask; never relabel a product failure as a tooling failure.
+10. Before marking complete, verify outputs against the task's completion condition, update status/evidence/work log, and report unresolved gaps as blocked with an owner and next action.
+
+## 4. Task order at a glance
+
+| ID | Task | Real integration gates (early start: stub guide) | Primary requirements |
+|---|---|---|---|
+| DL-00 | Freeze shared contracts and domain boundaries | PRE-00 | Shared contracts and ownership needed by every domain |
+| ID-01 | Identity, eligibility, and temporary accounts | DL-00 | FR-01–03 |
+| LI-01 | Listing lifecycle, seller control, and sensitive-purchase flags | DL-00 | FR-04, FR-05, FR-15, FR-17 |
+| LI-02 | Listing image lifecycle | LI-CORE; ID-READY; DL-00 | FR-14 |
+| SE-01 | Browse, search, filters, sorting, and pagination | ID-READY; LI-CORE; DL-00 | FR-06, FR-07; NFR-01, NFR-02, NFR-04 |
+| SE-02 | Wanted requests, draft matching, and saved listings | ID-READY; LI-CORE; SE-CORE | FR-08, FR-09 |
+| CN-01 | Private conversations, message retrieval, and E2EE | ID-READY; LI-CORE; DL-00 | FR-10, FR-16; NFR-05 when accurately testable |
+| CN-02 | Offers, buyer selection, and deliberate contact sharing | CN-CORE; ID-READY; LI-CORE | FR-11, FR-12, seller-selection workflow |
+| CN-03 | Asynchronous email notifications | CN-CORE; ID-READY; DL-00 | FR-13 |
+| INT-01 | Full integration, remaining NFRs, and release evidence | Required tasks above | NFR-03, NFR-06–08; cross-domain verification |
+| OPT-01 | Optional weekly wanted-request digest | ID-READY; SE-02; CN-03; OPTIONAL-OK | Optional |
+| OPT-02 | Optional wanted-match alerts | ID-READY; LI-CORE; SE-CORE; SE-02; CN-03; OPTIONAL-OK | Optional |
+| OPT-03 | Optional advanced image-aware search | LI-02; SE-CORE; DATA-READY; OPTIONAL-OK | Optional |
+
+All eight required domain tasks may start their specifically listed isolated checkpoints after real PRE-00/DL-00, assigned ownership and human verification, using `docs/architecture/stubs-and-integration-gates.md`. The table's real integration prerequisites remain mandatory for acceptance. Agents record deferred real subchecks and return to their original checkpoints as prerequisites arrive; they do not arbitrarily skip numbered steps. ID-01's complete capability matrix waits for its consumer endpoints; LI-01's final image/discovery validation waits for LI-02 and SE-CORE. CN-01's final NFR-05 waits for CN-03's stable notification producer/send path. INT-01 waits for all required tasks to pass. The index defines every milestone and remaining dependency.
+
+## 5. Shared contract and boundary task
+
+### DL-00 — Freeze shared contracts and domain boundaries
+
+**Owner:** Shared-core/contract owner. **Reviewer:** One representative from each domain.  
+**Start after:** PRE-00.  
+**Outputs:** Four domain contract documents and their combined contract under `contracts/`; approved shared types and generated API/client outputs; recorded decisions; updated traceability table.  
+**No feature implementation or cloud resource provisioning is part of this task.**
+
+1. Read the PRD, product reference, shared conventions, repository structure, current core/frontend code, existing migrations, generated API/client files, and the current work log. Inventory existing public types and operations before drafting anything.
+2. Create a traceability table mapping every FR-01–FR-17 and NFR-01–NFR-08 to its owning task in this document, the contract operation or test artifact it requires, its earliest accurate verification point, and its evidence location. Record exclusions and optional work separately.
+3. Confirm one owner for each record and write path: identity/account/contact data; listings/images/availability/selected buyer; search read model/query behavior; conversations/messages/offers/notification intents. Use public interfaces for cross-domain calls; do not grant private-table access.
+4. Inspect the existing core and settle shared UUID wire format, UTC timestamp representation, integer-paise money fields, standard error envelope/codes, trusted auth-context shape, pagination shape/limits/tie-breaking, and safe-log fields. For any missing consequential choice, present options, tradeoffs, and a recommendation; wait for the human decision and record it in the canonical shared conventions/decision file before freezing dependent contracts.
+5. Write the Identity contract, including regular and temporary account capabilities, expiry/revocation behavior, authorized own-profile/contact collection/update, and the privacy-restricted contact-option/selected-own-contact operations. Specify how only requested contact fields can be returned to the relevant conversation flow.
+6. Write the Listings contract for create/read/edit/availability, listing fields, image references, sensitive-purchase flags, proof-of-purchase declaration, and seller buyer-selection behavior. Make Listings authoritative for availability and selected buyer; verify this ownership against the product reference and ask if the sources leave it unclear.
+7. Write the Search contract for browse, listing detail/read routes, full-text query, filters, sort, pagination, available-only discovery, wanted-request draft matching inputs, and saved-listing operations. Choose the supported listing-data boundary under shared conventions §12; name any projection/backfill/update-sync work and index owner, never assume private-table access. Specify stable ordering and whether unavailable saved items remain visible.
+8. Write the Conversations contract for one buyer/listing conversation, participant authorization, ciphertext message submission/retrieval, authenticated read-watermarks/receipts, offers and revisions/withdrawal, contact reveal, seller selection orchestration, notification producer/recipient/read-state public interfaces, retries/idempotency, and failure behavior. Classify offer-note and contact-share encryption/exposure/retention before storage choices. State which domain owns each transaction and side effect.
+9. For every operation, document purpose/owner; input/output type, required/null/empty semantics and limits; authorization; stable errors; data read/written; transaction/side effect; ordering/pagination; duplicate/retry/concurrency behavior; dependency failure; and tests for success, unauthorized, invalid, duplicate, and relevant partial-failure cases.
+10. Have affected domain owners review shared surfaces and resolve comments. If a contract decision changes behavior, privacy, cost, or infrastructure, obtain the human approval required by the source docs and record the decision before proceeding.
+11. Create/reuse owned deterministic domain dependency adapters and success/denied/expired/missing/duplicate/timeout scenarios for early implementation under the stub guide; name the creating owner and pending real checks. Extend PD-10 core fixtures rather than duplicating them. Add fake-activation rejection checks and register isolated versus real integration commands. Generate public API and frontend types/stubs only from their canonical editable contract source. Run the documented generation and stale-check commands; do not hand-edit generated outputs. Add contract tests proving generated outputs match the source.
+12. Review the combined contract against all four domain contracts for duplicate ownership, incompatible types, circular calls, missing failure semantics, temporary-user gaps, and any FR without a public path. Fix and regenerate before merge.
+13. Run repository formatting, type/build, contract checks, and tests for the shared core; record exact results. Update the work log, traceability table, decision records, and relevant checklist items.
+
+**Stop and ask if:** A required product behavior has no clear owner; shared auth/pagination/error/data choices are unresolved; a source conflict changes user-visible behavior; or a contract would require a private cross-domain dependency.  
+**Complete when:** Four domain contracts and the combined contract agree, generated outputs are current, every FR has a named owner/path, and affected owners have reviewed shared boundaries.
+
+## 6. Identity domain
+
+### ID-01 — Implement identity, eligibility, and temporary accounts
+
+**Owner:** Identity. **Reviewers:** Shared-core and frontend owners.  
+**Start after:** DL-00.  
+**FRs:** FR-01, FR-02, FR-03. Identity also supplies the private-contact contract used by CN-02.  
+**Outputs:** Identity migrations/services/API/UI, approved provider configuration references, tests/fixtures, generated contract outputs, and evidence.  
+**Cloud inspection:** Use the approved shared environment/provider setup. Record whether any identity-provider resource or configuration is additional; require an exact reviewed plan before any cloud change.
+
+1. Inspect the current auth core, frontend routes, contracts, environment template, safe test fakes, secret references, and deployment mode. Confirm the approved IISc domains and Microsoft issuer/audience/client configuration are recorded in canonical non-secret config; if missing or conflicting, stop and ask. Prepare the provider setup plan if required configuration is absent; do not require the human to supply a prebuilt integration.
+2. Create/configure the approved Microsoft app registration and email-OTP provider adapter/setup, including non-secret issuer/audience/client/domain configuration, redirect URLs, service permissions, sandbox/test route, and secret-reference/access instructions. Inspect supported setup methods; present consequential choices and wait for approval before account/permission/paid actions. If an action requires a human account/device, give exact steps and expected result; record the result and safe references in `docs/environment/secret-handling.md`, never ask for secrets in chat.
+3. Define and migrate the Identity-owned account/profile fields from the approved contract: stable user ID, provider subject, trust class, lifecycle status, created/expiry timestamps, and only necessary profile/contact fields. Add constraints/indexes and a rollback-safe migration; store timestamps as UTC-aware instants.
+4. Implement server-side Microsoft token validation for signature, issuer, audience, expiry, required identity claims, and approved IISc-domain membership. Reject invalid/expired/non-IISc tokens with the shared safe error envelope; never trust a frontend domain check. Create or retrieve a regular account idempotently using the verified provider subject. Prevent duplicate profiles under concurrent callback/retry; never log or persist raw bearer tokens as profile data.
+5. Implement email-OTP temporary registration using the approved provider adapter. Verify expiry, attempt/resend limits, replay prevention, and safe provider failures; do not store raw OTPs. If provider behavior, abuse limits, or paid configuration are not approved, present bounded options and ask before enabling a real provider.
+6. Implement temporary account activation only after successful email OTP, a 14-day expiry from the approved event, and no self-renewal. Use controlled time in tests. Expired accounts must lose marketplace permissions even if a stale client session remains.
+7. Implement logout/session expiration and account revocation behavior using the approved auth/session design. Recheck account state on protected operations where the contract requires it; do not let a client-supplied user ID, trust class, or eligibility flag authorize an action.
+8. Implement the reviewed regular/temporary capability policy and isolated tests with trusted caller contexts. Test actual endpoints that exist; final direct-API coverage across all domain endpoints is step 14. A policy helper/fake test does not claim end-to-end FR-03 completion.
+9. Implement authorized own-contact collection/update operations from the approved Identity contract, including validation and minimal retention, then implement its public contact-option and selected-own-contact operations. Return only fields explicitly selected by that user and requested by the approved conversation flow; keep contact values out of general profile responses, logs, errors, and test output.
+10. Add deterministic test fixtures for valid/expired/incorrect-signature/non-IISc Microsoft tokens and temporary-user states, plus an auth fake that production configuration rejects. Use synthetic identities only. Add local authentication/OTP/session/contact integration tests and privacy failures without depending on unimplemented consumer routes.
+11. Implement responsive Microsoft sign-in/callback, temporary registration/OTP verification/resend, own-contact editing, logout/expiry/revocation and session/error states. Keep server authorization authoritative; add integrated UI tests using controlled providers.
+12. Run migrations up/down where supported, unit/integration tests, Black, type/build, generated-contract stale checks, and the full local CI-equivalent gate. Fix regressions only in assigned/shared reviewed paths. Finish pending real Identity schema/API/UI/provider-configuration checks; a controlled fixture is not real provider evidence. Open the ID-READY milestone PR under CONTRIBUTING.md only with its actual required capabilities/checks. After peer approval, merged checks and human verification, record the usable auth/capability/contact interfaces and revision. Keep ID-01 in progress until final checks below.
+13. If cloud verification is required, record the exact account/region/revision/provider test identity and approved spend/time cap first. Use only a sandbox/test identity/provider path approved for the project; verify regular and temporary flows and clean up test accounts/resources through documented means. Before cloud verification, use the approved build/migrate/deploy route, review target/caps/rollback, verify the deployed identity revision and provider configuration, and record actual results.
+14. After LI-01, LI-02, SE-CORE, SE-02, CN-CORE and CN-02 expose the required user paths, execute the complete direct-API regular/temporary/expired/revoked capability matrix, including every permitted operation and sale-listing denial. Check approved private-contact exposure and safe errors across domains; coordinate fixes through owning-domain PRs. Do not mark FR-03 complete until this integrated matrix passes.
+15. Store sanitized evidence (test IDs/results, not token/OTP/contact values), update the contract if implementation exposed a real mismatch, update the work log and checklists, and mark each FR outcome separately.
+
+**Stop and ask if:** Approved domains/provider configuration are absent; a provider choice incurs unapproved spend; account/expiry semantics conflict; contact exposure is broader than requested; or production could enable a fake auth path.  
+**Complete when:** FR-01–03 pass at API and integrated UI levels, temporary restrictions hold server-side, public contact operations match the contract, and local/cloud evidence and status are recorded.
+
+## 7. Listings domain
+
+### LI-01 — Implement listing lifecycle, seller control, and sensitive-purchase flags
+
+**Owner:** Listings. **Reviewers:** Identity and Search.  
+**Start after:** DL-00.  
+**FRs:** FR-04, FR-05, FR-15, FR-17; seller-selection state used by CN-02.  
+**Outputs:** Listings migrations, services/API/UI, safe config, tests/fixtures, contract outputs, and evidence.
+
+1. Inspect the Listings contract, current schema, shared UUID/time/money/error/auth conventions, category source, frontend form, and `docs/decisions/`. Confirm that zero-price listings are valid and asking prices use integer paise.
+2. Before implementation, resolve any still-missing shared values required by the contract, such as allowed categories, sensitive-price threshold and its owner, condition values, pickup-area limits, and availability-period rules. Present options and get approval for behavior-changing choices; write the chosen values once in canonical configuration/docs.
+3. Add the Listings-owned schema and migration for owner, title, description, category, condition, asking price, negotiability, pickup area, availability period/status, sensitive flag inputs, optional seller proof-of-purchase declaration, and selected buyer if approved by DL-00. Add database constraints and indexes for actual contract queries.
+4. Implement create/read/edit operations with boundary validation and owner authorization at the Listings service/API. Reject missing or malformed required fields; preserve missing/null/empty distinctions; do not accept client-provided owner IDs as authority. Preserve the required-image publication invariant; isolated tests may use the approved test-only storage adapter. Live image-backed publication is finally verified after LI-02, not claimed complete here.
+5. Implement seller-controlled availability transitions and selected-buyer behavior exactly as the approved contract specifies. Ensure only the owner changes authoritative state, retries/concurrent updates have defined outcomes, and unavailable listings disappear from discovery without being silently deleted.
+6. Implement the sensitive-purchase rule from FR-17 using the approved threshold/category configuration. Recompute the flag when price/category changes; expose the optional proof declaration as an unverified seller statement, not as verification by the platform.
+7. Implement the responsive create/edit/my-listings/detail surfaces with empty, validation, loading, unavailable, and error states. Label that the platform does not verify payment, item quality, collection, delivery, or handover. Integrate against the declared image contract and distinguish draft/pending from publishable state; real upload behavior belongs to LI-02.
+8. Keep public listing reads limited to fields permitted by the contract. Add authorization checks for owner-only edits, selected-buyer visibility, and any sensitive declarations; do not expose private contact data here.
+9. Add synthetic fixtures and tests for valid/invalid fields, price zero and boundaries, owner/non-owner, concurrent edits, availability transitions, unavailable discovery, sensitive threshold boundaries, mobile/laptop categories, reclassification, and proof declaration omitted/Yes/No.
+10. Run isolated core seller/owner/availability/selection workflow tests using the reviewed test contracts. Test temporary-user denial through the capability interface; final real image/discovery integration is step 13.
+11. Run migrations, unit/API/UI tests, Black, type/build, generated-contract checks, and CI. Inspect SQL query plans for new listing lookups and verify no N+1 query pattern in list/detail surfaces. Require ID-READY and compatible ordered Identity/Listings migrations before accepting real auth/FK integration. Submit/merge the reviewed LI-CORE milestone PR and record human verification, usable listing/owner/read/selection interfaces, and revision. LI-01 remains in progress.
+12. Inspect whether the approved shared database/runtime already supports the required listing behavior. Record `no additional Terraform resources` only after inspection; if a new resource is essential, prepare the scoped plan and obtain exact human approval before apply. Before live checks, follow the approved build/migration/deployment route, verify revision and shared inputs; wait for LI-02 where real images are required.
+13. After LI-02 and SE-CORE, verify the complete image-backed create/edit/unavailable UI/API workflow and discovery exclusion with real authorization. Preserve FR-04 required-image checks; update evidence/contract version/work log and obtain affected review. Coordinate fixes through owner PRs; mark LI-01 done only after FR-04/05/15/17 pass.
+
+**Stop and ask if:** Category/threshold/state behavior is missing; the source documents conflict on seller selection or availability; an implementation would make the platform appear to verify offline transactions; or a cloud resource would duplicate shared infrastructure.  
+**Complete when:** FR-04, FR-05, FR-15, and FR-17 work through authorized API/UI paths with boundary and ownership tests, and Search/Conversations can consume the public contract without private table access.
+
+### LI-02 — Implement listing image upload, reference, and cleanup lifecycle
+
+**Owner:** Listings. **Reviewers:** Security and platform/infrastructure owner.  
+**Early isolated start:** PRE-00/DL-00 under the stub guide. **Real integration/acceptance after:** LI-CORE, ID-READY, and DL-00.  
+**FR:** FR-14.  
+**Outputs:** Image metadata/state, object-storage adapter, upload UI, tests, policy/config references, evidence, and cleanup procedure.
+
+1. Inspect approved shared object storage, bucket policies, encryption, CORS, lifecycle, IAM, upload flow, environment inventory, and exact count/size/type limits from the approved product/contract. If a limit or retention decision is missing, ask before accepting uploads.
+2. Use the shared storage resource if present. If not, prepare a Terraform change that owns only the required bucket/configuration and least-privilege roles; include purpose, owner, state/module, data class, exposure, cost, test window, rollback, and cleanup/retention.
+3. If step 2 identified a resource/configuration change, obtain approval of its exact plan before apply and record actual outputs. Otherwise explicitly record this apply step as not applicable with verified resource/policy evidence; do not invent a plan or repeat shared provisioning.
+4. Implement an upload-intent/confirmation flow that binds object keys to an authorized listing owner and prevents arbitrary overwrites or cross-user reads. Prefer short-lived authorized upload URLs where the selected design supports them.
+5. Validate file count, configured size, allowed content/type, and required image presence on the trusted server path. Do not rely on filename or browser MIME alone. Reject invalid uploads before they become authoritative listing references.
+6. Define and implement pending/confirmed/failed image state and the transaction boundary between listing metadata and object storage. A failed object operation must not leave a listing falsely claiming a usable image.
+7. Implement authorized object delivery/reference behavior without making private buckets public. Apply approved encryption, URL expiry, and lifecycle rules; do not put object URLs, secret parameters, or sensitive metadata in logs.
+8. Add retry-safe handling for upload confirmation, duplicate requests, expired URLs, client disconnects, missing objects, and partial failures. Add a bounded reconciliation/cleanup path for abandoned objects that cannot delete another owner's confirmed image.
+9. Implement responsive image selection/upload progress, retry, rejection, and missing-image states. Support only the count allowed by the approved contract; preserve the listing's required-image invariant when creating or editing a listing.
+10. Add fake-storage tests for valid/rejected content, count/size limits, expiry, unauthorized owner, duplicate confirmation, missing object, storage timeout, partial failure, and cleanup ownership. Verify production config refuses the fake.
+11. Run cloud checks only in the approved environment: authorized upload/download, unauthorized access rejection, URL expiry, object encryption/access policy, failure recovery, and observed storage/cost. Keep files synthetic and delete test objects through the reviewed lifecycle. First prepare/review the run plan, run local checks, build/migrate/deploy the selected revision and verify readiness. Never run cloud checks against the skeleton or an unidentified revision.
+12. Run unit/integration/UI tests, Black, type/build, contract generation/stale check, and CI. Review IAM diff, bucket exposure, logs, and cleanup results with the security reviewer.
+13. Record exact Terraform plan/apply reference if used, object policy/version, test IDs/results, remaining resources, and cleanup owner; update work log and environment inventory.
+
+**Stop and ask if:** Bucket ownership/access, file limits, retention, encryption, public exposure, cleanup, or expected costs are uncertain; or a partial failure might delete a confirmed object.  
+**Complete when:** FR-14 upload/reference behavior passes local and approved cloud checks, invalid/unauthorized uploads are rejected, partial failures are recoverable, and temporary resources are cleaned or explicitly retained with an owner/expiry.
+
+## 8. Search, wanted requests, and saved listings
+
+### SE-01 — Implement browse, search, filters, sorting, and pagination
+
+**Owner:** Search. **Reviewers:** Listings and Identity.  
+**Early isolated start:** PRE-00/DL-00 under the stub guide. **Real integration/acceptance after:** DL-00, ID-READY, LI-CORE and usable schema/configuration. SE-CORE unblocks consumers; final cloud measurement also requires completed LI-01/LI-02 and a final validated reference dataset.  
+**FRs:** FR-06, FR-07. **NFR procedures:** NFR-01, NFR-02, NFR-04 at the steps below, only after the integrated browse/search behavior and its dataset are accurate.  
+**Outputs:** Search queries/index migration, API/UI, deterministic datasets/evaluation labels or verified reuse, workload/evaluation scripts, tests, metrics, and NFR evidence.
+
+1. Inspect the current Listings read contract, available-only behavior, approved pagination/filter/sort shapes, database schema/indexes, generated types, existing synthetic-data generator, and search-evaluation files. Record exact reusable paths and verify seeds/counts/fingerprints before creating duplicates.
+2. In isolated mode create/reuse schema-shaped preview generator adapters/loader against the frozen contract and record final real validation as pending; this verified isolated checkpoint may advance under the stub guide. Complete the final generator adapters/loader after actual ID-READY and LI-CORE schemas/configuration exist. Generate twice and compare logical fingerprints; load a fresh local database; validate >=5,000 users/>=1,000 listings, constraints, referential integrity and current listing fields/availability; validate the new search indexes after step 4 before DATA-READY. Reconcile synthetic image references with LI-02 before cloud measurements. Register exact generate/load/reset commands and preserve fake-data safety; repair the assigned generator tooling explicitly rather than treating absent final data as a failed pre-domain gate.
+3. Implement paginated browse over available listings with stable ordering and a deterministic tie-breaker. Apply authorization and filters before pagination; verify records are neither skipped nor duplicated across pages for the frozen fixture set. Use only the listing-data boundary approved in DL-00; implement any selected projection/backfill/update synchronization and tests explicitly.
+4. Implement title/description search using PostgreSQL native indexed full-text search for MVP. Add/verify migrations and indexes through the repository migration path; PostgreSQL remains authoritative. Do not add a separate search service as an MVP dependency. Index ownership and migrations follow DL-00; never query private Listings tables outside the approved public interface.
+5. Implement filters for category, price range, condition, negotiability, and listing type; implement recency and price sorting with stable tie rules. Validate malformed/range-reversed filters and bound query length, page size, and expensive inputs through the approved shared error/rate-limit conventions.
+6. Preserve required-listing availability and saved-listing visibility semantics: unavailable listings are excluded from discovery; saved-item retrieval is handled by SE-02 and may still show an unavailable item. Do not infer availability from a cache or stale client state.
+7. Build responsive browse/search/filter/sort/pagination UI with loading, no-results, invalid-query, and retry states. Keep image-body transfer outside browse latency measurement as required by the PRD.
+8. Add deterministic test cases that prove relevant/non-relevant ranking, every filter, price boundaries, stable sort ties, pagination continuation, unavailable exclusion, auth restrictions, malformed/large queries, and response correctness. Ensure the API contract-generated client uses the current response shape.
+9. Create or validate the manually labeled evaluation set with at least 20 representative queries and relevant listing IDs. Record who/when labeled it, dataset fingerprint, inclusion rule, and an evaluation script; if labels do not exist, make the labeling action an explicit human-owned prerequisite and block NFR-04 rather than inventing labels. Record DATA-READY only when counts/schema/fingerprint validation and 20+ human-reviewed labels are complete; final image-aware labels are separately created by OPT-03 if selected.
+10. Create or validate a load script using the current API contract and authorized synthetic accounts. It must check both expected HTTP status and response meaning, count actual HTTP requests (not just tool iterations), report generator drops/timeouts/failures, and emit p50/p95/p99 plus offered/successful throughput. Run a small local pilot and test wrong response, unauthorized response, timeout, and generator shortfall handling before cloud use. Create the NFR manifest with actual workload/arrival-rate, warm-up, timeout, successful-response/latency boundaries, repetitions, caps, resource settings and evidence paths; present unresolved choices for human approval. Require actual ID-READY/LI-CORE and verified real listing-data boundary/sync/schema/auth before SE-CORE acceptance; isolated checks alone leave it pending. Run applicable local/CI checks, then peer-review/merge the SE-CORE functional milestone; final cloud NFR evidence is still pending.
+11. **NFR-04 — Search usefulness:** after search ranking, filters, and the fixed labeled set are integrated, run the documented offline evaluator against the frozen dataset/query set. Compute Success@5 as the proportion of labeled queries with at least one relevant result in the first five. Require at least 80%; preserve query-level results and dataset/code fingerprints. If below target, investigate and improve the search configuration within scope, rerun with the same fixed set, and record results without changing labels to force a pass.
+12. Before cloud measurement, declare run duration, request/concurrency/resource caps, maximum spend, stop thresholds, exact environment, and cleanup. Use only the approved shared infrastructure; if any additional search resource is proposed, use a reviewed Terraform plan and human approval before apply. A smoke test or local run is not NFR evidence. Require LI-01/LI-02, ID-READY and validated data; build/migrate/deploy the chosen revision and verify actual auth, image-reference response shape, indexes, telemetry, ready capacity and dataset. Record the final measured path/settings; cloud verification is not inferred from an old skeleton deployment.
+13. **NFR-01 — Browse latency:** after browse is integrated with real authorization and the required dataset, use the approved manifest and load command to warm the deployed path, then measure at 20 requests/s for at least five minutes after warm-up. Exclude image-body transfer. Report p95 latency for successful browse requests and require at least 95% complete within 1 second; also record failures/timeouts, offered/successful throughput, relevant database/runtime metrics, deployed revision, and dataset fingerprint.
+14. **NFR-02 — Search latency:** after indexed search and filters are integrated with the required dataset, run the approved 10 search requests/s workload for at least five minutes after warm-up. Report latency quantiles with the outcome denominator explicitly recorded and require at least 95% of issued eligible indexed search requests to return the expected result within 1 second; failures/timeouts count as violations, not missing samples, alongside query latency/plans, connection/saturation metrics, errors, and revision/data fingerprints.
+15. Run formatting, type/build, migrations, tests, contract stale check, and CI. Save sanitized raw data, evaluator output, workload manifest, run IDs, graphs/tables, and interpretation in the documented evidence path; update task/work log/checklists and map NFR results to the exact revision.
+
+**Stop and ask if:** Dataset or labels are missing/ambiguous; filters or sort semantics conflict; a search-service dependency is proposed; workload caps/cost/environment are not approved; or a result cannot be classified accurately.  
+**Complete when:** FR-06–07 pass with deterministic results and NFR-01, NFR-02, and NFR-04 each pass with accurate, reproducible evidence. An unmet NFR leaves the task blocked; SE-CORE may still unblock its named implementation consumers.
+
+### SE-02 — Implement wanted requests, draft matches, and saved listings
+
+**Owner:** Search. **Reviewers:** Identity, Listings, and Conversations where a match leads to contact.  
+**Early isolated start:** PRE-00/DL-00 under the stub guide. **Real integration/acceptance after:** ID-READY, LI-CORE, and SE-CORE.  
+**FRs:** FR-08, FR-09.  
+**Outputs:** Wanted/saved schema and APIs/UI, match query behavior, fixtures, tests, and evidence.
+
+1. Re-read wanted-request and saved-listing contract sections, temporary-user capability rules, and the Search task's fixed available-listing semantics.
+2. Add wanted-request storage and migrations for title, description, category, optional budget in integer paise, owner, state, and timestamps. Add saved-listing storage with uniqueness per user/listing and foreign-key/deletion behavior from the approved contract.
+3. Implement create/read/edit/close wanted-request actions with owner authorization. Allow temporary users as approved by FR-03. Keep optional budget omission distinct from null/zero as the contract specifies.
+4. Implement draft-title matching against active sale listings before submission. Show possible matches without creating a wanted request or blocking submission. Keep matching explanation bounded and do not claim recommendation guarantees.
+5. Implement save/unsave idempotently; prevent one user from reading another user's saved list. Keep a saved listing visible in saved view if it later becomes unavailable, with actions reflecting current availability.
+6. Add tests for owner/non-owner, regular/temporary access, expiry, omitted/null/zero budget, draft match/non-match, unavailable match exclusion, duplicate save/retry, unsave, cross-user access, listing-unavailable transition, and pagination if the list is paginated.
+7. Implement the responsive wanted-request create/edit/close form with optional budget, live draft-match results before submission, and private saved-list management with save/unsave/unavailable/empty/loading/error/retry states. Add UI/API integration tests for these complete workflows, including account expiry and privacy.
+8. Require actual ID-READY/LI-CORE/SE-CORE and finish pending ordered-migration/expiry/match/saved-visibility/privacy checks. Confirm the shared database/runtime supports these features; record whether extra Terraform resources are unnecessary after inspection. If cloud verification requires any new resource, prepare a reviewed exact plan and approval before apply. Any live check first follows the approved revision build/migrate/deploy and readiness verification route.
+9. Run migrations, tests, Black, type/build, contract stale check, and CI; save evidence with synthetic IDs only and update work log/checklists.
+
+**Stop and ask if:** Wanted-request visibility, match criteria, budget semantics, deletion behavior, or saved-unavailable behavior is unclear or conflicts with source docs.  
+**Complete when:** FR-08 and FR-09 pass end-to-end for allowed account classes with private saved state and reproducible draft-match behavior.
+
+## 9. Conversations domain
+
+### CN-01 — Implement private conversations, message retrieval, and E2EE
+
+**Owner:** Conversations. **Reviewers:** Identity, Listings, and security reviewer.  
+**Early isolated start:** PRE-00/DL-00 under the stub guide. **Real CN-CORE acceptance after:** DL-00, ID-READY, LI-CORE. Final NFR-05 additionally waits for CN-03's final notification producer/send path.  
+**FRs:** FR-10, FR-16. **NFR procedure:** NFR-05 after the integrated two-client path is accurate.  
+**Outputs:** Conversation/message/key metadata schema and migrations, cryptographic client integration, message APIs/UI, safe fixtures, tests, polling settings, and evidence.
+
+1. Inspect the current E2EE requirements, supported-browser/device scope, dependency/toolchain, contract, key-change behavior, and existing cryptographic libraries. Do not design a custom cryptographic primitive.
+2. Prepare a short security design with feasible established-library/protocol options, key registration/authentication, device behavior, key rotation/change handling, metadata exposure, failure/key-loss behavior, and test plan. Ask for human approval before selecting a library/protocol or committing to a data/key format. Record the decision and dependency version.
+3. Create the Conversations-owned conversation and message schema. Enforce at most one conversation per buyer/listing pair with a database uniqueness constraint and safe concurrent-create behavior. Store only ciphertext plus necessary routing/timing metadata; never store message plaintext or decryption keys server-side. Define and implement per-participant read-watermark storage and authenticated acknowledgement/update operations, with monotonic/idempotent behavior and tests; public notification consumers read only the frozen authorized interface.
+4. Create a conversation only for an eligible buyer and the listing owner using the Identity and Listings public contracts. Derive participant/seller identity from server-owned data; never trust caller-supplied owner/participant IDs.
+5. Implement client-side encryption/decryption and authenticated participant key handling per the approved design. Bind ciphertext to the intended conversation/participants so tampering, wrong-key, and unauthorized-client attempts fail safely. Respect one active browser device per user for MVP.
+6. Implement message submission and incremental/paginated retrieval with stable ordering, duplicate/retry behavior, and the documented poll interval. Reject access by nonparticipants at every API route, including direct ID substitution. Implement client read acknowledgement when messages are actually displayed, so fetching/polling alone does not falsely suppress unread reminders.
+7. Add appropriate key-change handling and explicit key-loss behavior. The server must not recover keys or plaintext. Present the user-facing implications for review if the approved design requires a consequential UX choice.
+8. Implement the conversation UI with send, pending/failure/retry, new-message retrieval, and encryption/key-state errors. Do not place plaintext in notifications, logs, analytics, error reports, or support tooling.
+9. Add deterministic cryptographic test fixtures that do not include real keys or users. Test two-client exchange, wrong participant, nonparticipant fetch, ciphertext tampering, duplicate conversation creation, concurrent creates, message ordering, incremental retrieval, retry, key change, and key loss.
+10. Before CN-CORE acceptance require actual ID-READY/LI-CORE, real participant authorization/key binding and ordered migrations; record isolated checks separately and leave acceptance pending otherwise. Test safe observability: request IDs and minimal non-sensitive metadata can be correlated, but neither plaintext nor ciphertext, keys, contact data, or credentials appear in logs, traces, test snapshots, or evidence. Run applicable local/CI gates and merge the peer-reviewed CN-CORE milestone; record human verification and core message/read-state/event interfaces. Final latency still waits for the stable CN-03 producer path.
+11. Before cloud checks, confirm exact account/region/revision, test-user access, resource/time/concurrency cap, privacy review, and cleanup. Reuse the shared environment. Obtain exact plan approval before any additional resource is applied. Require CN-03 to have its final producer/durable-intent integration ready and verified. Create/approve the chat NFR manifest (normal workload, sample policy, timing/clock method, polling interval, resource settings, caps and evidence), validate the measurement tool locally, and build/migrate/deploy both clients/API at the approved revision before measuring.
+12. **NFR-05 — Active-chat latency:** only after two integrated clients can exchange encrypted messages through the deployed normal API/polling path, run the approved normal-workload scenario with both participants keeping that conversation open. Timestamp sender submission and recipient display; use the same synchronized test clock/measurement method for the pair. Freeze the sample-size policy before the run and retain every expected sent-message outcome, including failed/undisplayed messages; require at least 95% visible within 5 seconds. A p95 computed only from displayed survivors cannot establish the target. Record polling interval, workload, revision, message counts, failures, and sanitized timestamps. Do not substitute server-accept time for recipient display.
+13. Run migration, unit/integration/two-client/UI tests, Black, type/build, contract generation/stale check, and CI. Save sanitized evidence and update the work log/checklists; keep any unmet security concern blocked.
+
+**Stop and ask if:** No reviewed cryptographic design exists; a library/protocol or key format is undecided; the expected device/key behavior conflicts with the one-device MVP; private data reaches logs/evidence; or NFR measurement cannot observe recipient display accurately.  
+**Complete when:** FR-10 and FR-16 are proven by two-client and adversarial tests, messages remain ciphertext-only on the server, and NFR-05 passes with accurate evidence. Otherwise keep CN-01 blocked while the verified CN-CORE milestone can unblock its named consumers.
+
+### CN-02 — Implement structured offers, seller selection, and deliberate contact sharing
+
+**Owner:** Conversations. **Reviewers:** Identity and Listings.  
+**Early isolated start:** PRE-00/DL-00 under the stub guide. **Real integration/acceptance after:** CN-CORE, ID-READY contact operations, LI-CORE availability/selection operations.  
+**FR:** FR-11, FR-12; seller-selection user journey.  
+**Outputs:** Offer schema/API/UI, seller overview/selection flow, contact-share events/snapshots, tests, and evidence.
+
+1. Confirm offer lifecycle and seller-selection behavior in the approved contracts. If allowable statuses, edit/withdraw rules, selected-buyer visibility, or whether selection changes availability remain unclear, present options and ask before implementation.
+2. Add offer storage linked to a conversation and buyer. Store amount as integer paise, optional note, UTC timestamp, status, and revision/withdrawal history as specified. Enforce one unambiguous current state and ownership rules in the service/database. Apply the approved offer-note classification/encryption and retention from DL-00; an unresolved private-content storage design is a blocking decision.
+3. Implement create, revise, withdraw, and read operations with duplicate/retry/concurrency handling. An offer does not reserve an item or verify payment; state this in relevant UI copy.
+4. Build the seller conversation overview with current offers, deterministic sort/tie behavior, no-offer conversations, and participant checks. Do not expose another buyer's private conversation content to a different buyer.
+5. Implement buyer selection by calling the Listings public operation. Listings remains authoritative for selected buyer and availability; do not directly update Listings tables. Make retries and concurrent selections return the approved stable result.
+6. Add the separate seller availability prompt/transition only as defined by the approved contract. Keep selection, availability, and offline payment/handover as distinct states; do not imply a reservation or platform verification.
+7. Implement deliberate contact sharing: retrieve the actor's available-contact options through Identity, let the participant select exact fields, confirm the action, and share only selected values to the relevant conversation participants. Never reveal unselected fields or another user's contacts.
+8. Store/share contact information using the approved minimum-retention design. Keep contact values out of general message text, search, analytics, logs, notifications, screenshots, and test output. Provide safe user-visible external-payment/transaction wording from approved product copy. Use A's real implemented own-contact editing/options interface if ID-READY exists; otherwise use a reviewed stub based on the frozen contract. Keep real contact retrieval, selected-field disclosure, and integration checks pending until ID-READY is available; do not mark CN-02 technically complete while that obligation remains.
+9. Add tests for offer create/revise/withdraw, invalid amount/note, duplicate submit, concurrent revisions, buyer/seller ownership, seller overview isolation, selection success/failure/retry, stale/unavailable listing, selected-field only, nonparticipant denial, and log/error redaction.
+10. Test cross-domain failure: if Listings selection fails, do not show it as successful; if contact retrieval/sharing fails, do not reveal partial or unselected fields. Record the retry behavior and avoid duplicate side effects.
+11. Require actual CN-CORE/ID-READY/LI-CORE and complete the pending participant/selection/contact/FK checks before full acceptance. Run migrations, tests, Black, type/build, contract stale check, and CI. Use synthetic contacts only. If cloud checks need a new resource, inspect and record the need, then require exact human-reviewed Terraform plan before apply.
+12. Record evidence, update work log/checklists, and obtain Listings/Identity review for shared contract behavior before merge.
+
+**Stop and ask if:** Offer status or seller-selection semantics are undecided; Identity/ Listings contracts do not expose the required operation; contact data could be shown outside the relevant conversation; or a failed cross-domain action has ambiguous partial effects.  
+**Complete when:** FR-11 and FR-12 and the seller-selection flow work through approved public contracts, with ownership, privacy, retries, and failure paths verified.
+
+### CN-03 — Implement asynchronous email events and unread-message reminders
+
+**Owner:** Conversations/notifications. **Reviewers:** Identity, platform owner, and privacy reviewer.  
+**Early isolated start:** PRE-00/DL-00 under the stub guide. **Real integration/acceptance after:** DL-00, CN-CORE and ID-READY. A implements the notification module; D reviews producer/read-state integration.  
+**FR:** FR-13.  
+**Outputs:** durable notification intent/job path, email adapter, worker/schedule configuration, templates, tests, monitoring, and evidence.
+
+1. Read the approved notification event list, recipient rules, delay/window, unsubscribe/privacy policy, retry/retention expectations, and shared async failure convention. The PRD requires events such as new conversation and an unread-message reminder after a specified period; if the period or recipient rule is not recorded, present options and ask before coding.
+2. Decide through the relevant task's human gate whether the minimal execution path uses the existing ECS worker, a scheduled worker, or another already approved mechanism. Do not add Lambda or a new provider as an unreviewed implementation assumption; Lambda's comparison routing belongs to Document 2.
+3. Define the durable notification intent and idempotency key so repeated message/conversation events do not create uncontrolled duplicate mail. Record the transaction boundary: successful message creation must not depend on email delivery. Coordinate producer/message-transaction changes with D, implement them through a separately reviewed owned patch and public interface, and record the final send path needed before CN-01 NFR-05. Add read-watermark/acknowledgement parity tests.
+4. Implement an email-provider interface and deterministic fake. Select/configure a real provider only through the approved project decision and secret manager; never place API keys or recipient credentials in source/logs. Explicitly perform approved provider account/domain/sender verification and runtime setup, or provide exact human-required account steps and expected outputs. Add safe recipient-resolver, secret references/access/rotation and configuration to canonical records before live delivery.
+5. Implement email templates using minimal approved metadata. Never include encrypted message content, contact/UPI values, OTPs, tokens, or sensitive listing information beyond what the user-facing policy approves.
+6. Implement queued delivery, bounded retry/backoff, duplicate suppression, terminal failure visibility, and finite retention according to the approved design. A provider failure must leave the primary conversation/message action successful and observable.
+7. Implement unread reminder scheduling and a final read-state check immediately before send. If the message/conversation was read before it is due, suppress the email. Handle repeated reads, multiple unread messages, recipient preference, and stale jobs as contract specifies.
+8. Add tests for new-conversation event, eligible recipient, duplicate event, provider timeout/rejection, retry, permanent failure, primary write independence, read-before-due suppression, due unread reminder, and secret/content redaction.
+9. Add local operational controls for bounded batch size, concurrency, retry count, and a safe test mode. Production config must reject fake providers and test recipients unless explicitly authorized by the deployment environment.
+10. Require actual CN-CORE/ID-READY and finish pending producer transaction/read-state/provider checks for real integration. Inspect whether the shared foundation already provides the required worker/scheduler/queue/provider resources. Record no additional resource only after inspection. If Terraform changes are needed, present exact scope/cost/security/cleanup and obtain human approval before apply.
+11. Run local failure-injection tests and, if approved, bounded cloud provider tests with synthetic recipients. Declare run/time/concurrency/cost caps and cleanup before the run; verify dashboards/alerts and no message plaintext in logs. First build/migrate/deploy and verify the approved worker/producer/API revision and configuration; use only approved controlled recipient accounts, never generate plausible live recipients.
+12. Run migrations/tests, Black, type/build, contract checks, CI, and provider/fake parity tests. Record sanitized event IDs, delivery state, latency/error metrics, and cleanup; update work log/checklists.
+
+**Stop and ask if:** Reminder delay/recipient/preferences are missing; a provider or worker choice changes cost/privacy; retry could spam users; message success depends on external delivery; or test mode could email real users.  
+**Complete when:** FR-13 event and reminder behavior is repeatable, read-before-due suppresses mail, provider failure never rolls back the primary action, and security/cost/operational evidence is recorded.
+
+## 10. Cross-domain integration and remaining NFRs
+
+### INT-01 — Verify integrated journeys, remaining NFRs, recovery, and total cost
+
+**Owner:** Integration/release owner. **Reviewers:** All domain owners and human reviewer for cloud plan/evidence.  
+**Start after:** ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, and CN-03 are merged and each task's local checks pass.  
+**Purpose:** Verify behavior only at the earliest point the complete relevant path is accurate; close cross-domain and project-level NFR evidence. This task is not the ECS/Lambda comparison.
+
+1. Read the traceability table, current task statuses, contracts, checklists, work log, current deployed revision, environment inventory, open defects, and exact NFR evidence requirements. Confirm no task is marked done without code/test/evidence alignment.
+2. From a clean checkout, follow the documented setup/migration/seed/start/test/stop path. Confirm all domain migrations apply in order, deterministic synthetic data is loaded, generated API/client outputs are current, Black and CI pass, and no real data/secrets are present.
+3. Run integrated user journeys: regular user signs in and publishes an image-backed listing; another user browses/searches/filters/saves it; a user drafts a wanted request and sees possible matches; a buyer starts a private conversation, exchanges encrypted messages and an offer; a seller reviews/selects a buyer and changes availability; participants deliberately share selected contact fields; required email events are handled asynchronously.
+4. For each journey, verify allowed/denied regular and temporary-user paths, object ownership, unavailable state, cross-domain contract calls, unauthorized IDs, retries/duplicates, concurrency, partial dependency failures, and privacy/logging. Check no domain bypasses another domain's contract or writes its private tables.
+5. Inspect each domain's Terraform need and actual resource inventory. Reuse shared resources and record any domain-specific resource precisely. Review the exact plan with the human before each apply; no unreviewed plan or ad hoc console change. For each cloud run, declare account/region/revision, cost/duration/concurrency cap, stop condition, and cleanup/retention first.
+6. **NFR-03 — Peak API behavior:** only after all required API paths are integrated and the final test workload/authorized synthetic users are valid, explicitly create/validate and approve the integrated route-mix workload/manifest, confirm warm-up and telemetry locally, then run the bounded 50 requests/s workload for five minutes after warm-up. Count only requests completed before client timeout with the expected status and response checks; exclude intentionally rate-limited abusive requests as PRD specifies. Require at least 95% successful-request rate. Record offered/successful throughput, dropped generator work, failures/timeouts, route mix, p50/p95/p99, resource/database metrics, revision, dataset fingerprint, caps, and cleanup. Stop at any approved cap or uncontrolled saturation.
+7. **NFR-06 — Runtime recovery:** after the deployed ECS service has at least two healthy serving instances and health/routing metrics are verified, create/validate the runtime-loss and recovery-observation script/manifest, configure/verify two healthy instances under an exact approved plan if not already present, record baseline capacity and start a bounded synthetic request stream. Under the exact approved plan, force loss of one serving runtime using the documented mechanism. Measure from loss event until configured healthy capacity is restored; require no more than 240 seconds and record request failures during recovery. Stop immediately if the shared environment is at risk; do not call an unplanned manual kill a valid test.
+8. **NFR-07 — Database recovery:** after all required domain migrations are integrated and the approved backup is current, explicitly configure/verify backup availability/retention and implement/validate the restore/integrity/smoke tooling and timed manifest. Review the isolated restore plan, then restore the latest available managed backup into an isolated test database. Start the timer at the documented restore request and stop when integrity and smoke checks pass; require no more than 30 minutes. Verify representative users/listings/wanted/conversations/offers relationships without inspecting plaintext or real data. Preserve the source database; clean up only the isolated restore through the reviewed plan.
+9. **NFR-08 — Budget and experiment caps:** before every cloud test, record a maximum duration and resource/concurrency cap, estimate cost including warm-up/idle/cleanup, and confirm sufficient remaining budget. Review actual spend/cost indicators after each run; stop if the cap or reserve is uncertain. Record spending to date, delayed-billing estimates, remaining headroom and the reserve for Document 2/CLOSE-00 against the USD 200 ceiling. Final total implementation/evaluation reconciliation occurs in CLOSE-00 after experiment runs and cleanup; do not claim final NFR-08 before later spending. Document 2 separately records the ECS/Lambda comparison's own budget and cost-per-successful-work method.
+10. Verify the final repository revision, frontend/backend build identities, migration head, account/region, and runtime configuration for every cloud evidence item. Link each result to exact run IDs and test scripts. Report invalid/incomplete runs; do not convert them to passes.
+11. Review budget alerts, dashboards, safe error/log content, finite retention, backup/restore evidence, deployed service health, and cost/resource inventory. Stop scheduled workers/load generators/controllers and clean up task-owned test resources with the reviewed route. Record any intentionally retained resource, owner, expiry/review date, idle cost, and cleanup command.
+12. Reconcile/update the already supplied `docs/checklists/agent-checklist.md` and `docs/checklists/human-checklist.md` against the current task list and source docs. They were required from BOOT-00; do not first create them here. Include actionable checks for current status/work log, canonical conventions, contracts, task-specific tests, optional labels, NFR timing/evidence, approved cloud plans, Black/CI, privacy/secrets, and cleanup. Verify every path/command resolves; do not copy stale instructions or use a checklist instead of the canonical source.
+13. Run the final traceability audit: each FR-01–FR-17 maps to implementation/test/evidence; each NFR-01–NFR-08 maps to its artifact, earliest accurate procedure, measured result or explicit blocker, and evidence. Check that no NFR is claimed by an unrelated task or by the ECS/Lambda comparison unless its actual procedure belongs there under Document 2's stated exception.
+14. Update all task statuses, work-log rows, evidence indexes, contract/decision records, and environment inventory. Record remaining defects, blocked decisions, owner, and next safe action. Ask the human about unresolved behavior/security/cost decisions; do not claim release-ready while a required gate is unresolved.
+
+**Stop and ask if:** Any cross-domain contract is ambiguous; the integrated path differs from expected behavior; an NFR cannot be measured accurately; the safe failure/recovery action is unclear; the plan changes; budget headroom is uncertain; or cleanup could affect shared resources.  
+**Complete when:** Every required FR and NFR-01–07 passes with traceable accurate evidence; integration, recovery, privacy, and budget-to-date/reserve checks pass (NFR-08 final reconciliation remains in CLOSE-00); checklists and work log match the repository; and all temporary resources are removed or explicitly retained with owner and expiry.
+
+## 11. Optional/stretch tasks
+
+These tasks are out of the required MVP path. Their real integration/acceptance follows the technical prerequisites below. Isolated steps 1–6 may start after PRE-00/DL-00 under the stub guide, with actual selected model/crypto where applicable and OPTIONAL-OK: human selection plus an approved effort/resource/cost plan protecting required work, accurate NFR checks, Document 2 and the final buffer. Apply the recorded scheduling change relative to PRD §8; no blanket INT-01 prerequisite is implied. Each task begins with repository inspection and a human-approved behavior/design/test/cost plan. Optional work never blocks required completion.
+
+### OPT-01 — Optional: Weekly wanted-request email digest
+
+**Owner:** A. **Reviewers:** C and D. **Real integration/acceptance after (isolated route: stub guide):** ID-READY, SE-02, CN-03, OPTIONAL-OK.
+
+1. Confirm the human selected this task and record that required MVP/NFR/experiment work and final buffer are protected.
+2. Inspect current wanted-request, notification, identity preference, email provider, unsubscribe, and scheduler contracts. Do not duplicate notification infrastructure.
+3. Present behavior choices for recipient eligibility, opt-in/opt-out default, weekly window/time zone, empty digest, grouping/privacy, unsubscribe, deduplication, and send failure; get approval and record the decision.
+4. Define the minimal schema/event/scheduling changes and any resource/cost needs. Reuse shared infrastructure; obtain an exact human-reviewed Terraform plan before any new resource is applied.
+5. Implement digest selection and rendering with only approved listing/request metadata; enforce preferences and unsubscribe immediately before sending; never include private conversations/contact data.
+6. Add deterministic tests for preference changes, time-window boundary, empty/non-empty digest, duplicate execution, unsubscribe, invalid recipient, provider timeout/retry, and privacy/log redaction.
+7. Require actual ID-READY/SE-02/CN-03 and resolve the pending integration ledger; run local checks and a bounded approved synthetic-recipient cloud test; record duration/cost caps, evidence, and cleanup. Update work log/checklists.
+
+**Complete when:** Approved digest rules are implemented and tested with privacy, duplicate, unsubscribe, failure, and cost evidence; otherwise mark deferred without affecting MVP.
+
+### OPT-02 — Optional: Wanted-match alerts
+
+**Owner:** C. **Reviewers:** B and A. **Real integration/acceptance after (isolated route: stub guide):** ID-READY, LI-CORE, SE-CORE, SE-02, CN-03, OPTIONAL-OK.
+
+1. Confirm explicit human selection/OPTIONAL-OK and the declared mode; record named real technical prerequisites as passed or pending under the stub guide, without inventing implementation readiness; the final buffer must remain protected.
+2. Inspect current wanted/listing/search/notification contracts and find the earliest reliable trigger without duplicate cross-domain writes.
+3. Present choices for match relevance, multiple alerts per listing/request, user preferences, deduplication, delivery channel/timing, privacy, and failure/retry; obtain approval and record them.
+4. Reuse the Search relevance path and notification delivery path where valid; identify required evaluation data and any resource/cost changes before coding.
+5. Implement a durable, idempotent match event and recipient check. Avoid sending alerts for unavailable listings, closed requests, ineligible/expired accounts, or unsubscribed users.
+6. Add deterministic relevant/non-relevant, duplicate, preference, closure/unavailability, expiry, provider failure, retry, and privacy tests.
+7. Require actual ID-READY/LI-CORE/SE-CORE/SE-02/CN-03 and resolve the pending integration ledger; run local checks and bounded approved cloud tests with synthetic accounts, then update evidence, work log/checklists, and cleanup.
+
+**Complete when:** The approved relevance and delivery behavior is reproducible, deduplicated, private, bounded in cost, and safely optional.
+
+### OPT-03 — Optional: Advanced image-aware search
+
+**Owner:** C. **Reviewers:** B and D. **Real integration/acceptance after (isolated route: stub guide):** LI-02, SE-CORE, DATA-READY, OPTIONAL-OK.
+
+1. Confirm explicit human selection/OPTIONAL-OK and declared mode; LI-02, SE-CORE and DATA-READY must pass for real integration/acceptance or remain recorded pending for the permitted isolated route; baseline search must remain available and required NFR/experiment work and final buffer protected.
+2. Inspect the current image pipeline, listing object access, search contract, PostgreSQL baseline, and labeled evaluation set. Keep text search available throughout.
+3. Present model/library/managed-service options, data flow, image preprocessing, evaluation plan, latency/cost, privacy/security, fallback, and any Terraform resource plan. Obtain human approval before adding a dependency, model, provider, or cloud resource.
+4. Define a fixed labeled image-aware evaluation set and version it; do not claim improvement without an apples-to-apples relevance evaluation against the baseline.
+5. Implement an isolated feature path with bounded compute, safe image access, timeout/fallback to baseline text search, and no user-visible dependency on a model outage.
+6. Add tests for relevant/non-relevant images, missing/invalid images, model timeout, unavailable provider, access control, fallback, data leakage, and deterministic evaluation output where supported.
+7. Require actual LI-02/SE-CORE/DATA-READY and resolve the pending integration ledger; run only within approved cost/time limits; retain workload, dataset/model/config fingerprints, quality/latency/cost evidence, and cleanup results. Update work log/checklists.
+
+**Complete when:** A measured comparison shows the optional path's value and cost with a working baseline fallback, or mark the unselected/deferred optional task as deferred without claiming implementation or evaluation complete.
+
+## 12. FR/NFR traceability index
+
+| Requirement | Owning task / accurate verification point |
+|---|---|
+| FR-01 | ID-01 — Microsoft token validation and IISc eligibility. |
+| FR-02 | ID-01 — verified OTP onboarding, controlled 14-day expiry, no self-renewal. |
+| FR-03 | ID-01 — direct API capability matrix for regular and temporary users. |
+| FR-04 | LI-01 — required listing creation fields and valid/invalid combinations. |
+| FR-05 | LI-01 — owner-only edit/availability and unavailable discovery behavior. |
+| FR-06 | SE-01 — authorized paginated available-listing browse. |
+| FR-07 | SE-01 — indexed title/description search, filters, sorting; NFR-02/04 procedures there. |
+| FR-08 | SE-02 — wanted CRUD and draft-title possible matches before submission. |
+| FR-09 | SE-02 — private save/unsave and unavailable saved-item behavior. |
+| FR-10 | CN-01 — one buyer/listing conversation, ciphertext persistence, ordered retrieval. |
+| FR-11 | CN-02 — structured offers, revisions/withdrawal/status/ownership. |
+| FR-12 | CN-02 with ID-01 public contact operations — deliberate selected-field reveal. |
+| FR-13 | CN-03 — asynchronous event email and read-before-due unread reminder. |
+| FR-14 | LI-02 — object storage, authoritative references, rejection/missing/partial failure. |
+| FR-15 | LI-01 and INT-01 — seller unavailable state and no claim of verified offline transactions. |
+| FR-16 | CN-01 — client-side encryption, participant-only decryption, tampering/key-change handling. |
+| FR-17 | LI-01 — configurable price/category flag and optional unverified seller declaration. |
+| NFR-01 | SE-01 — integrated browse at 20 requests/s; p95/95% within 1 s, no image-body transfer. |
+| NFR-02 | SE-01 — indexed search at 10 requests/s; p95/95% within 1 s. |
+| NFR-03 | INT-01 — integrated API at 50 requests/s for five minutes; at least 95% successful. |
+| NFR-04 | SE-01 — fixed set of at least 20 labeled queries; Success@5 at least 80%. |
+| NFR-05 | CN-01 — two open integrated clients; at least 95% visible within 5 s. |
+| NFR-06 | INT-01 — loss of one runtime; restore configured healthy capacity within 240 s. |
+| NFR-07 | INT-01 — latest managed backup restored and usable within 30 minutes. |
+| NFR-08 | Every cloud task declares caps and tracks spend; INT-01 verifies spend-to-date/reserve; CLOSE-00 reconciles the full total against the USD 200 limit after the experiment. Document 2 separately accounts for its experiment. |
+
+## 13. Final audit and handoff
+
+Before closing the domain phase:
+
+- Verify the task list remains the single authoritative domain task list at `docs/tasks/domain-task-list.md`; do not create duplicated domain task-list files.
+- Confirm all required tasks pass their completion checks and are done. A blocked/deferred required task is an incomplete phase with an owner/reason/next action, never successful completion. Optional tasks may remain unselected/deferred.
+- Confirm every FR/NFR traceability row links to actual code, tests, evidence, revision, and environment records where applicable.
+- Confirm task dependencies and the combined integrated flow have been reviewed by affected domain owners; no generated contract is stale and no domain writes another domain's private data.
+- Confirm shared conventions exist in the repository and actionable agent/human checklist items point to them; confirm both checklists were regenerated from this task list and current scripts.
+- Confirm all Terraform resources have one owner and state; every apply had exact human approval; all temporary resources are removed or have recorded owner, expiry, idle cost, and cleanup route.
+- Confirm no task in this document designed, ran, or concluded the ECS-only versus ECS+Lambda comparison. Point to Document 2 for that work.
+- Update the final work-log entry with branch/commit, changed paths, exact commands/results, FR/NFR evidence links, dataset fingerprints, cloud account/region/revision, cost reconciliation, cleanup status, remaining gaps, and next action.
+
+**Domain phase complete when:** The required product behavior is integrated and traceable, every test is run at an accurate point, checklists and evidence match repository state, and a new agent can continue from the reusable prompt and this one task-list document without consulting chat or asking a person to locate project information. The agent must still stop and ask whenever a decision or next safe action is uncertain.
+
+After the verified INT-01 PR is merged, follow `docs/tasks/project-task-index.md` to EXP-01–EXP-08 in Document 2, then CLOSE-00. Domain completion is not project completion. Every deployment/NFR reuse decision must identify the accepted code/configuration/data revision; affected later changes trigger regression/evidence revalidation.

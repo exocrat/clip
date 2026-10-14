@@ -1,0 +1,491 @@
+# Campus Marketplace — Pre-Domain Repository Population Task List
+
+**Version:** 3.1
+**Date:** 2026-10-14  
+**Canonical repository path:** `docs/tasks/pre-domain-task-list.md`
+**Document 5. Status:** Execution task list for preparing the repository, account access, and shared test environment before domain feature work.
+
+## Scope
+
+Complete and verify the repository foundation and the shared cloud foundation so four domain teams can begin from the same runnable, documented base. This includes repository files, project documentation, shared contracts and primitives, local development, synthetic data, tests, formatting, CI, AWS account and budget readiness, Terraform state setup, and the approved shared cloud test environment.
+
+This task list does **not** implement Identity, Listings, Search, or Conversations features; create domain-specific cloud resources; run NFR or ECS/Lambda measurements; or implement Optional/Stretch features. It may create domain directory placeholders and document shared public interfaces, but must not implement domain business behavior. It does include setting up access and cost guardrails and provisioning the shared test foundation through Terraform after the human reviews and approves the exact account, region, plan, cost, and cleanup/retention plan. If those approvals or inputs are missing, keep the cloud task blocked and ask; report the blocked checkpoint; independent task work requires a new human-verified scope.
+
+The required implementation baseline is React + TypeScript, Python + FastAPI, PostgreSQL, PostgreSQL native indexed full-text search, and S3 for listing images. ECS is the baseline runtime; the future experiment compares ECS-only with ECS+Lambda for selected read routes. The single domain task list must identify any additional resources each feature test needs, use the shared account/state/environment where appropriate, and include Terraform, approval, verification, cost, and cleanup tasks. Do not make separate duplicate copies of shared infrastructure for each domain.
+
+## Entry and interaction gate
+
+Start after BOOT-00. The initial document bundle contains the source documents, prompt, checklists, task index, and status template; BOOT-00 installs them into the verified existing exocrat/clip clone and preserves Git. Preserve these files and extend them through the tasks below.
+
+Before each task, inspect read-only and explain the whole task and its numbered steps in order, including prerequisites, expected outputs/checks, gates, and the first step to execute. Wait for human verification before any write, including work-log edits. Execute one numbered step, report expected versus observed results, checks/evidence and checkpoint, then wait for human verification. A nested procedure such as PD-03A is part of its parent step; identify the precise checkpoint and stop at any internal decision gate. Use `CONTRIBUTING.md` for task branches/PRs and `docs/tasks/project-task-index.md` for assignment, resume, and milestone selection.
+
+Missing outputs explicitly assigned to a task are created there; missing prerequisites or uncertain requirements require a question. If blocked at a future dependency milestone, report it and propose the next owned, unblocked task; switch only after the human verifies that new scope. Do not do other work while waiting for an unanswered question unless explicitly instructed.
+
+## How to use this list
+
+- Work through task IDs in order unless the dependency column permits parallel work.
+- At the start, read `docs/status/work-log.md` if it exists. Reconcile the log with the actual branch, files, tests, and CI; the repository is the evidence for status.
+- For each task, inspect the current repository before editing. Preserve existing work. Do not replace files just because this list describes their desired contents.
+- Use the current repo copies of the PRD, Documents 1–4, and shared conventions as the project sources. If a required source is missing or two sources conflict, stop before dependent work, record the exact conflict, and ask the human. Do not resolve a product or security ambiguity by guessing.
+- Every task must leave its output, commands, check results, decision references, and status in the repository and work log. “Done” means the listed checks passed and evidence exists.
+- If a needed value, target, permission, expected behavior, or safe next action is uncertain, pause that dependent action and ask the human a concise, specific question. Wait; perform independent task work only if the human explicitly instructs it.
+- Record routine, reversible choices in `docs/decisions/` with rationale. Ask the human before a choice changes product behavior, security/privacy, data meaning, public contracts, dependencies with material risk, cost, or cloud resources.
+- Never place credentials, access tokens, OTPs, private keys, real personal data, or message plaintext in source, fixtures, logs, documentation, or generated data.
+
+## Task order and dependencies
+
+| ID | Task | Depends on |
+|---|---|---|
+| PD-00 | Inspect repository and establish the starting state | BOOT-00 |
+| PD-01 | Put authoritative project references in the repository and build traceability | PD-00 |
+| PD-02 | Resolve the repository toolchain and freeze the minimal layout | PD-01 |
+| PD-03 | Create repository entry-point and shared project records | PD-02 |
+| PD-04 | Configure pinned dependencies and Python Black | PD-02 |
+| PD-05 | Create a runnable API skeleton and shared core | PD-02, PD-04 |
+| PD-06 | Define and implement shared API/data conventions | PD-05 |
+| PD-07 | Create a runnable web skeleton | PD-02 |
+| PD-08 | Create the local database lifecycle and migration path | PD-02, PD-04, PD-05 |
+| PD-09 | Create deterministic synthetic reference data | PD-06, PD-08 |
+| PD-10 | Create reusable synthetic test fixtures and safe test-provider controls | PD-04, PD-05, PD-06 |
+| PD-11 | Establish the shared contract source and generation check | PD-05, PD-06, PD-07 |
+| PD-12 | Add test structure and continuous integration | PD-04–PD-11 |
+| PD-13 | Add local setup, lifecycle, and validation commands | PD-04–PD-12 |
+| PD-14 | Establish AWS account access, budget controls, and project guardrails | PD-01–PD-03 |
+| PD-15 | Establish Terraform state, ownership, and module boundaries | PD-14 |
+| PD-16 | Review and provision the shared cloud test foundation | PD-04–PD-15 |
+| PD-17 | Validate and synchronize the supplied single domain task list | PD-14–PD-16 |
+| PD-18 | Reconcile and maintain the supplied checklists | PD-01–PD-17 |
+| PD-19 | Run the full foundation audit and handoff | PD-00–PD-18 |
+
+Tasks may be marked `not started`, `in progress`, `blocked`, or `done`. Use a task ID consistently in branches/PRs, work-log entries, decisions, and evidence paths.
+
+## PD-00 — Inspect repository and establish the starting state
+
+**Purpose:** Know what already exists and avoid overwriting work or repeating completed tasks.
+
+**Steps:**
+
+1. Record the repository root, current branch, current commit, working-tree state, and any open local changes. Do not discard or overwrite changes.
+2. List tracked files and compare them with Document 4, `docs/architecture/repository-structure.md`.
+3. Identify existing setup commands, package managers, CI, tests, docs, generated files, migrations, data, and Terraform. Run only safe local checks that do not provision cloud resources.
+4. If `docs/status/work-log.md` exists, compare each status claim with files and evidence. Correct stale status with a dated entry; do not delete history.
+5. Create a task-by-task starting-state table in the work log (or a temporary audit file if the log is not yet created), with current state, evidence, and blockers.
+6. Record any discrepancy between the actual repository and the proposed layout as a decision item. Preserve valid existing choices unless they conflict with an approved requirement.
+
+**Checks:** Current branch and working-tree state are recorded; existing changes are intact; the initial task table points to actual files or clearly says `missing`.
+
+**Complete when:** A reader can tell what exists, what is incomplete, and what must be preserved before implementation starts.
+
+## PD-01 — Put authoritative project references in the repository and build traceability
+
+**Purpose:** Make the information needed for repository work available locally in one canonical place.
+
+**Required files:**
+
+- `docs/source/ICC_Project_PRD_FINAL.pdf` — submitted PRD, unchanged.
+- `docs/product/product-reference-and-architecture-decisions.md` — Document 1.
+- `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` — Document 2.
+- `docs/conventions/shared-conventions-and-cross-domain-contract-rules.md` — shared conventions.
+- `docs/architecture/repository-structure.md` — Document 4.
+- `docs/tasks/pre-domain-task-list.md` — this document.
+
+**Steps:**
+
+1. Verify that the exact current approved versions of these documents and the submitted PRD are available to the task. If a source file or version is unavailable, stop and ask the human to provide it; do not recreate the PRD or silently use an older version.
+2. Copy each source into its canonical repository path. Preserve the PRD bytes. For Markdown copies, preserve meaning, tables, code blocks, and links; do not use this copy operation to revise content.
+3. Record source filename, source version/date if available, repository destination, and copy date in `docs/source/README.md`. Do not include private Library IDs or transient chat excerpts.
+4. Create `docs/README.md` linking to the above references, task list, work log, decisions, environment record, evaluation evidence, and the supplied prompt/checklist documents and WSL/stub guides. Mark not-yet-created files as planned instead of creating empty duplicate documents.
+5. Build a traceability table mapping each foundation requirement to (a) its authoritative source, (b) the task ID that creates/configures it, (c) its repo path, and (d) its validation/evidence. Include all shared-convention requirements; do not limit this table to code.
+6. At minimum, map: root/project setup, Python/Black, TypeScript checks, local startup/stop, database migrations, seed scripts, synthetic dataset creation, API/shared conventions, fake-provider safety, generated contracts, CI, work log, AWS account/access readiness, budget alerts, Terraform state/locking, shared cloud provisioning, domain-specific infrastructure handoff, checklist regeneration, and final audit.
+7. For FR and NFR requirements, record the owning future domain or evaluation task and state `not implemented in pre-domain foundation`. Do not imply that foundation scaffolding completes a feature or NFR.
+8. Record source conflicts and missing information as explicit questions. Resolve only by following the source-of-truth hierarchy documented in the references; otherwise ask the human.
+
+**Checks:** All required files open from the repository; the PRD is unchanged; internal links resolve or are explicitly marked planned; every foundation requirement has a task and an evidence location.
+
+**Complete when:** A new agent can find all current project references from `docs/README.md` without chat or Library cross-reference.
+
+## PD-02 — Resolve the repository toolchain and freeze the minimal layout
+
+**Purpose:** Select one coherent local toolchain before writing overlapping configuration.
+
+**Steps:**
+
+1. Inspect the repo, Document 4 and `docs/environment/wsl-and-first-session.md`; extend the actual workstation record. Reuse existing WSL. Verify Linux shell/repo/executable paths, installed/runtime versions and the single selected container route; do not assume a Windows-installed tool or the execution machine version is the project toolchain. Diagnose missing tools without reinstalling the distribution.
+2. Select and record supported Python and Node versions, Python dependency manager, Node package manager, and their lockfile names. Keep one Node lockfile and one authoritative Python tool configuration (`pyproject.toml` at repo root for Black and shared Python tooling).
+3. Select whether runtime Python dependencies are declared at the root or in the API package while keeping tool configuration unambiguous. Avoid duplicate dependency manifests unless packaging requires them and the reason is recorded.
+4. Check compatibility of the selected versions with FastAPI, React/TypeScript, PostgreSQL driver/migration tooling, test runner, Terraform, and CI runners. Use official compatibility documentation when a version decision depends on current package support.
+5. For routine reversible choices inside the selected stack, choose the simplest maintained option and record why. If alternatives materially affect security, public contracts, cost, or future cloud resources, present options and ask the human before locking them.
+6. Update Document 4's open-decision record or `docs/decisions/repository-toolchain.md` with selected versions, managers, lockfiles, rationale, and date. Do not leave `TBD`, unpinned versions, or incompatible examples.
+7. Finalize the minimal directories and filenames to create. Do not create an unused directory just because it appears in a broad template.
+
+**Checks:** Only one Node lockfile is present; `pyproject.toml` is the one Black configuration; the package manager can install from a clean checkout; selected runtimes are explicit and CI can use them.
+
+**Complete when:** A contributor can identify the language versions, dependency managers, manifests, lockfiles, and exact repo layout without choosing among competing files.
+
+## PD-03 — Create repository entry-point and shared project records
+
+**Purpose:** Give contributors a short route into the project and create durable locations for current status and decisions.
+
+**Steps:**
+
+1. Create a concise public-facing root `README.md` with project purpose, current implementation status, scope, and links to contributor/setup guidance and canonical project documentation. Put operational setup/start/stop/check instructions in the canonical environment guide and `CONTRIBUTING.md`; link to them from the README. Use exact commands after PD-13 defines them; until then label them as pending rather than inventing them.
+2. Create `CONTRIBUTING.md` with branch/PR expectations, review expectations, generated-file policy, contract-change review, and links to formatting/test commands. Do not add invented merge permissions or contact people.
+3. Create `.gitignore` for selected toolchains, local environment files, caches, build outputs, test artifacts, and generated datasets as decided in PD-02/PD-09. Never ignore source data needed to reproduce an evaluation.
+4. Create `.editorconfig` with consistent text encoding, LF line endings and whitespace. Record repository line-ending policy in .gitattributes if required; verify executable bits for shell scripts and case-sensitive imports. Preserve contributor Git settings outside the repo unless a change is explicitly selected.
+5. Create `.env.example` using variable names and clearly fake values only. Document whether each value is local-only or a later runtime setting. Never add actual secrets.
+6. Create `docs/decisions/README.md` with a decision record template: ID/date, question, options, selected choice, rationale, implications, approver if required, and superseded decision.
+7. Create `docs/environment/README.md` and an empty non-secret inventory template for future cloud use. Label all account, region, resource, and cost facts `not provisioned/not yet known`; do not invent values.
+8. Verify/update the supplied `AGENTS.md` as a short pointer to the current reusable prompt, task index, checklists, work log, and canonical references. Do not write the detailed reusable agent instructions here; those belong in the separate prompt document.
+9. Extend `docs/status/work-log.md` as specified in PD-03A below. Also initialize `docs/environment/commands.md` and `docs/environment/secret-handling.md` with non-secret templates and creator-task references. Configure `CONTRIBUTING.md` and the task index with the four actual humans, domain/task assignments, peer reviewers, shared-path owners, remote/main branch, milestone PR rules, and available merge protections. No extra staff are assumed for security/platform/frontend roles. Ask for genuinely missing assignments and record them once.
+
+**PD-03A — Initialize the shared work log:**
+
+1. Add a current-status table with task ID, task name, status, owner, branch/PR/commit if available, last update in UTC, and next action/blocker.
+2. Add concise dated work entries with task/step, contributor, execution and human-verification state, changed files, exact checks and results, revision/evidence when available, blocker/decision, and next action. Do not repeat background or paste long command output.
+3. Add a task index and links to decisions, environment inventory, project docs, and evidence locations.
+4. State that contributors read status before starting, update their own task row and add a separate concise timestamped entry after meaningful work, and preserve other entries during merges.
+5. Initialize/reconcile rows for BOOT-00, every PD/domain/experiment task, and CLOSE-00 from the task index. Record current step/checkpoint, execution state, human-verification state, questions, readiness milestones, owner, branch/PR/commit/evidence, and next action. Task execution completion is separate from human verification; a performed step awaiting verification is not repeated or advanced. Serialize shared-row changes through the documented claimant/coordinator workflow and preserve all contributors' entries. Use actual status; do not pre-mark tasks done.
+
+**Checks:** No real secret values; README links to correct files; work-log statuses agree with the task table; decision and environment templates contain no fabricated approvals or cloud state.
+
+**Complete when:** Project status and decisions have one shared repo home and a new contributor can find the starting instructions.
+
+## PD-04 — Configure pinned dependencies and Python Black
+
+**Purpose:** Make Python formatting reproducible locally and in CI.
+
+**Steps:**
+
+1. In the root `pyproject.toml`, configure Black once: line length, selected Python target, include/exclude rules, and any narrowly justified generated-file exclusions.
+2. Add Black as a pinned development dependency using the dependency manager selected in PD-02. Commit the correct lockfile and verify a clean install resolves the pinned version.
+3. Add the Black formatter command and a check-only command. The check must not modify files. Expose them via the future common command entry point (e.g. Make targets) and write down the exact command names.
+4. Format the existing tracked Python foundation files with Black. Review the diff to ensure formatting did not change behavior.
+5. Add Python lint/type/test tools only when required by the chosen foundation; pin them and keep their configuration in one canonical file each.
+6. Record exact install, format, and check commands in `CONTRIBUTING.md` and the supplied agent/human checklists as soon as implemented; PD-18 reconciles them again.
+
+**Checks:** Verify the configured Black version, run format then run check-only, and confirm a deliberate temporary formatting error fails check-only (revert the deliberate error afterward). Confirm no duplicate formatter config exists.
+
+**Complete when:** A clean checkout can install the pinned formatter, format Python deterministically, and fail CI-equivalent checks when formatting drifts.
+
+## PD-05 — Create a runnable API skeleton and shared core
+
+**Purpose:** Make the API start locally without implementing marketplace features.
+
+**Steps:**
+
+1. Create the FastAPI application entry point under the selected API path and a small health/readiness endpoint that reports only non-sensitive service state.
+2. Add a configuration module that loads typed settings from environment, supports safe local defaults, and fails clearly when a required runtime setting is missing. Do not load secret values from committed files.
+3. Add only shared core boundaries needed by all domains: common ID/time/error/auth-context types and database/session lifecycle placeholders as selected in PD-06/PD-08.
+4. Add empty domain ownership directories for Identity, Listings, Search, and Conversations with brief README placeholders stating that feature implementation belongs to later domain tasks. Do not add endpoints or domain rules speculatively.
+5. Add an API test that starts the app in test mode, verifies health behavior, and confirms safe configuration failures.
+6. Document the exact local start and test commands after PD-13 is in place.
+
+**Checks:** Run the API locally with no cloud credentials; call the health endpoint; run its test; verify no real data, secrets, or domain behavior were added.
+
+**Complete when:** The API starts reproducibly in the local environment and exposes only the foundation health behavior and explicitly approved shared primitives.
+
+## PD-06 — Define and implement shared API/data conventions
+
+**Purpose:** Set each cross-domain convention once before independent domain work begins.
+
+**Decision checkpoint:** Inspect the references and actual skeleton. For choices not already fixed, present options and tradeoffs and ask the human when the choice changes public behavior, privacy/security, data meaning, or contracts. Record approved choices before dependent implementations.
+
+**Required conventions:**
+
+1. UUID generation/version and JSON/wire representation.
+2. UTC timestamp storage and wire format, with examples and timezone-aware tests.
+3. Prices as integer paise; zero is valid where the PRD permits it. Define conversion and display boundaries; never use binary floating point as authoritative money storage.
+4. One standard public error envelope, stable common codes, validation behavior, and mapping for expected errors.
+5. One pagination mechanism, limits, response shape, ordering stability, and invalid-cursor/page behavior.
+6. Trusted server-side authentication context shape. Never trust client-supplied user ID, account class, eligibility, or ownership as authorization proof.
+7. Domain transaction ownership, retry/idempotency semantics, duplicate behavior, and rules for independent notification failures.
+8. Structured logging and correlation IDs with redaction; no tokens, secrets, OTPs, private keys, message plaintext/ciphertext, UPI IDs, or full contact data in logs.
+9. Local/test provider fakes must be explicit. Production config must fail closed if a fake identity/email provider or unsafe development setting is enabled.
+
+**Steps:**
+
+1. Compare current code and all existing contracts against the required conventions. List each missing or conflicting item.
+2. For each item, record the selected value and examples in the shared conventions document and decision log. Ensure domain task docs can reference this one canonical definition.
+3. Implement only common primitives and validation helpers. Keep domain authorization and business rules in their owning domain tasks.
+4. Add unit tests for format/parse round trips, boundary cases, malformed values, error mapping, pagination limits/order, trusted auth-context construction, redaction, and fail-closed production settings as applicable.
+5. Add a test proving that user-controlled IDs cannot create trusted auth context and that production mode rejects test providers.
+6. Ensure tests use synthetic values and do not print confidential fixture contents.
+
+**Checks:** Tests cover every convention implemented; docs match code; generated code (if any) is not hand-edited; unresolved behavior-changing choices are recorded as blocked and asked about.
+
+**Complete when:** Every shared convention needed by the first domain task has one recorded definition, an implementation location, an example, and tests.
+
+## PD-07 — Create a runnable web skeleton
+
+**Purpose:** Make the React + TypeScript client start locally without implementing product workflows.
+
+**Steps:**
+
+1. Initialize the web app using the package manager and versions selected in PD-02.
+2. Add a minimal responsive shell with app name, a non-functional foundation landing page, and a clear local API connection setting. Do not create marketplace screens or fake product behavior.
+3. Add lint, type-check, test, and production-build scripts, each with pinned dependencies.
+4. Add one small smoke test for rendering the shell and one test for the API base URL/configuration behavior.
+5. Ensure local development does not require AWS credentials or call production endpoints.
+
+**Checks:** Clean install from lockfile; lint, type-check, test, and build pass; inspect network/config defaults to ensure they point only to local development.
+
+**Complete when:** A contributor can start and validate the web shell from a clean checkout without external accounts or cloud resources.
+
+## PD-08 — Create the local database lifecycle and migration path
+
+**Purpose:** Provide a reproducible local PostgreSQL service and versioned schema workflow.
+
+**Steps:**
+
+1. Select a supported PostgreSQL version compatible with the project and record it. Use the same version in local compose and CI unless a documented compatibility reason requires otherwise.
+2. Add a minimal `docker-compose.yml` for PostgreSQL only. Bind to local development interfaces, use a local-only password from environment, avoid public ports where unnecessary, and persist data only in a clearly named local volume.
+3. Select one migration tool and create the first baseline migration containing only foundation tables/metadata strictly required to prove the migration path. Do not implement domain feature schemas here; detailed schema belongs to reviewed domain contracts/tasks.
+4. Add commands for start DB, wait for readiness, migrate up, migrate status, reset local DB, and stop. Reset must clearly warn and target only the local compose volume.
+5. Add a database connectivity and migration smoke test. Ensure tests can use a temporary/test database and never point at a production database by default.
+6. Document backup/restore as future cloud tasks; do not perform cloud database operations here.
+
+**Checks:** Start from no local volume, migrate, query readiness, reset the local volume, re-run migration, and confirm repeatability. Verify commands reject a non-local target unless an explicitly separate approved task authorizes it.
+
+**Complete when:** Local PostgreSQL can be created, migrated, tested, and removed through documented commands without any cloud resource.
+
+## PD-09 — Prepare deterministic synthetic-data tooling
+
+**Purpose:** Make dataset creation explicit without requiring domain schemas before domain implementation.
+**Depends on:** PD-06 and PD-08. **Later consumer:** SE-01 steps 2 and 9, DATA-READY.
+
+**Steps:**
+1. Inspect FR/NFR data requirements and approved shared types. Identify schema/configuration inputs that will only exist after ID-01/LI-01/DL-00; record them as named later prerequisites, never invent final domain fields/categories or database tables.
+2. Create the deterministic generator framework under `data/generators/`: explicit seed/count options, fictitious values, reserved test domains, validation hooks, and stable ID generation. Keep final schema adapters and loader validation assigned to SE-01 after domain migrations.
+3. Define the dataset manifest format: generator/config/schema version, seed, requested and observed counts, UTC run time, and a logical-data fingerprint that excludes variable run-time metadata. Same seed/config/schema must yield identical logical records/fingerprint.
+4. Create `data/README.md` with exact tooling commands, safe targets and reset/overwrite rules, later schema/loader prerequisites, Git retention rules, and DATA-READY conditions. Register actual commands and their readiness in `docs/environment/commands.md`. A load target that cannot run until domain migrations exist must explicitly report that prerequisite; it must not claim foundation data was loaded.
+5. Prepare the labeled-query file format and evaluation-label review procedure. Final listing IDs/query relevance judgments are created and human-reviewed in SE-01 step 9 after the actual reference data exists.
+6. Test repeatability of schema-independent tooling and fake-data safety locally; verify missing required domain input is reported clearly. Run applicable formatting/tests and record output/evidence/work log.
+
+**Checks:** Deterministic framework tests pass; no domain schema/index or feature behavior was created; required later work is explicitly assigned; no real contacts/secrets or cloud calls occur.
+**Complete when:** Reproducible generator/manifest tooling, safe command instructions, and named domain dataset/label tasks exist. Actual >=5,000-user/>=1,000-listing population, integrity/index/availability checks, and 20+ human-labeled queries are DATA-READY after domain migrations, not a pre-domain completion requirement.
+
+## PD-10 — Create reusable synthetic test fixtures and safe provider controls
+
+**Purpose:** Give future tests controlled inputs without weakening production security.
+
+**Steps:**
+
+1. Create reusable fixtures for synthetic users, listings, timestamps, caller contexts, and expected errors using approved shared types. Keep each fixture minimal and clearly fake; create schema-specific user/listing fixtures in the named domain tasks after their contracts/migrations exist.
+2. Create explicit provider fakes/mocks only for local/test mode. Make selection require an explicit environment setting that defaults off outside local/test.
+3. Add startup/config tests showing production mode refuses fake identity, OTP/email, object-storage, or other unsafe providers. Do not add live-provider credentials.
+4. Add fixtures for retries, duplicate requests, concurrency, partial dependency failures, unauthorized callers, and validation boundaries where the shared convention applies. These are shared test primitives, not domain feature tests.
+5. Ensure test output and failure snapshots redact contact fields and never include secrets or message content.
+
+**Checks:** Run fixture tests; prove fake provider is rejected in production-mode tests; inspect logs/test reports for sensitive fixture values.
+
+**Complete when:** Domain tasks can reuse safe, deterministic fixtures and cannot accidentally use development fakes in production mode.
+
+## PD-11 — Establish the shared contract source and generation check
+
+**Purpose:** Stabilize the path for contracts before domain teams work in parallel; this creates interfaces and generation tooling, not domain features.
+
+**Steps:**
+
+1. Identify the authoritative editable API contract source and how FastAPI/OpenAPI and frontend TypeScript types will be derived. Present options and ask if the choice changes public API or cross-domain compatibility.
+2. Create `contracts/README.md` with source path, generated destinations, generator version, exact regenerate command, exact check-only command, and instructions not to hand-edit generated files.
+3. Add a minimal health contract and prove a clean regeneration yields no diff on the second run.
+4. Add a contract test that compares generated API schema with the app and fails when generated artifacts are stale.
+5. Record domain operation placeholders as empty/future only; do not invent endpoint paths, request fields, response meanings, or business behavior.
+6. Carry the required Identity contact-sharing public types/signatures from the pre-domain requirements into the approved Identity contract source as interface declarations only, with privacy/auth rules noted from shared conventions. Do not implement these operations or expose actual contact data in fixtures.
+7. Require cross-domain contract review by affected owners before later changes alter shared operations/types. Record contract version/change workflow.
+
+**Checks:** Regenerate twice; second run produces no diff; stale output is detected; OpenAPI and TypeScript outputs are reproducible; no domain business routes were created.
+
+**Complete when:** Future domain tasks have one documented source-of-truth and generation/check workflow, and no agent must hand-maintain parallel API definitions.
+
+## PD-12 — Add test structure and continuous integration
+
+**Purpose:** Make required repository quality gates automatic and repeatable.
+
+**Steps:**
+
+1. Create `.github/workflows/ci.yml` to run on pull requests and the main development branch according to the repo's existing convention.
+2. Use supported pinned runtimes from PD-02 and install from lockfiles. Do not float to latest tool versions in CI.
+3. Run, at minimum: Black check-only; Python tests; Python lint/type checks if selected; web lint; web type-check; web tests; web production build; migration/schema checks against a disposable local database if supported; generated-contract stale check; and secret scanning or equivalent repository scan selected for the project.
+4. Keep CI local-only. CI must not run Terraform apply, deploy, create billable infrastructure, access production data, or require long-lived cloud credentials.
+5. Add clear job names and preserve actionable failure output without exposing sensitive values.
+6. Add at least one verification that the documented local aggregate check uses the same core commands as CI.
+7. Record CI status and required checks in `CONTRIBUTING.md` and both checklists in PD-18. Configure the selected host's main-branch PR review/check protections when supported. If a hosting-plan limitation prevents enforcement, record the equivalent human review/check evidence and require explicit approval of that documented fallback. CI never merges, deploys, or applies infrastructure by itself.
+
+**Checks:** Run each CI command locally; run CI on a test branch/PR if available; introduce a harmless temporary failure to verify the gate blocks, then revert it; confirm no secrets or cloud credentials are configured.
+
+**Complete when:** A clean PR cannot pass with formatting drift, failing tests/build, stale contracts, or invalid migrations, and all jobs remain free of cloud provisioning.
+
+## PD-13 — Add local setup, lifecycle, and validation commands
+
+**Purpose:** Make the foundation usable through a small, discoverable command set.
+
+**Steps:**
+
+1. Create the root `Makefile` command front door (or an explicitly approved platform-compatible equivalent, with its actual mappings recorded) with documented commands for install/setup, local start, local stop, migration, small seed, reference dataset generation/load, tests, format, format-check, contract regenerate/check, and full local CI-equivalent check.
+2. Add scripts only where they remove repeated fragile steps. Each script validates required arguments, reports the selected local target, returns non-zero on failure, and avoids hidden destructive behavior.
+3. Add Terraform format/validate commands, but do not add apply/deploy commands to the general local check target.
+4. Document prerequisites, supported OS/shell, expected ports, first run, common errors, cleanup, and how to verify success in the canonical environment guide and `CONTRIBUTING.md`; keep the root README public-facing and link to the setup guide.
+5. Test setup from a clean checkout or clean container. Test start/stop twice, migrations on an empty DB, foundation seed, schema-independent generator tests, tests, formatting, and full check. Final domain dataset loading/validation remains explicitly assigned to DATA-READY after domain schemas exist. Ensure no command needs a cloud login.
+6. Capture exact command output/status in evidence and work log. Do not claim a check passed if it was skipped due to environment issues.
+
+**Checks:** A new teammate can follow README links to the canonical setup guide, run the foundation locally, see the API/web shell, run the tests and aggregate check, and stop/clean local services without unlisted manual steps.
+
+**Complete when:** The repo has one documented, reproducible local path and each command's effects are clear.
+
+## PD-14 — Establish AWS account access, budget controls, and project guardrails
+
+**Purpose:** Make the project account safe and usable before Terraform or domain agents need cloud access.
+
+**Human checkpoint:** Account selection and any access or billing change must be explicit. Do not create an AWS account, attach a payment method, accept terms, change billing ownership, or grant permissions without the human's approval. Never ask for passwords, MFA codes, access keys, or secret values in chat or commit them to the repository.
+
+**Steps:**
+
+1. Inspect the project records for an existing AWS account, student credits, billing owner, administrators, approved region, and existing project resources. Do not assume an account or credit balance is available from old notes.
+2. If account ownership, access, remaining credit, or billing visibility is missing or ambiguous, ask the human to identify the intended account and responsible administrator. If a new account must be created, make that a separate human-owned setup action and wait until the human confirms it exists.
+3. Have the human provide or select the approved access method (prefer role/federated access over long-lived keys), the profile/role name, account, and region immediately before the first cloud call. Verify the caller identity with a read-only identity check and compare the returned account with the human-selected target. Stop on any mismatch.
+4. Inspect existing resource inventory and service quotas in the selected account/region. Record the actual non-secret identity, account alias/ID, region, resource owners, and observed available quota in `docs/environment/`. Do not copy credentials or session tokens there.
+5. Establish who can approve infrastructure plans, who can apply them, and who owns billing alerts and cleanup. Use least-privilege access for coding agents; do not grant broad administrator rights just for convenience.
+6. Review the PRD's total cloud-spend ceiling of USD 200. Ask the human to confirm remaining budget and choose alert thresholds and a reserve for pending work. Set up and verify budget alerts through the account's approved billing path. Clearly record that alerts notify; they do not guarantee a hard spending cap.
+7. Set project-wide resource naming and tagging rules, including project, environment, owner, task/domain, and expiry/cleanup date where supported. Add the rules to the environment guide so later domain tasks use them.
+8. Complete `docs/environment/secret-handling.md` for the chosen shared secret manager/access channel: reference names, access methods, owners, permissions, rotation/revocation and unavailable-access recovery; domain tasks add provider references later. Record setup actions, exact verified targets, alert recipients/thresholds, permissions, and unresolved blockers in the work log and environment record. Do not record secret values.
+
+**Checks:** The verified caller identity matches the human-selected account; billing visibility and alerts are confirmed; project spend ceiling/reserve and approvers are recorded; coding access is least-privilege; no secret values are stored.
+
+**Complete when:** The team can identify the approved account/role/region and budget controls, and the human knows who can authorize future plans/applies. If the team cannot establish these facts, mark the task blocked and do not proceed to PD-15/PD-16 cloud actions.
+
+## PD-15 — Establish Terraform state, ownership, and module boundaries
+
+**Purpose:** Make shared and parallel Terraform work safe, reviewable, and non-overlapping.
+
+**Decision checkpoint:** Inspect the current repository and use current official Terraform documentation for state-backend and locking behavior. Present options and a recommendation for the remote state location, encryption, access, locking, versioning/recovery, environment separation, and domain-state boundaries. Obtain the required human approval before creating the backend or moving state.
+
+**Steps:**
+
+1. Inventory all existing Terraform files and state. Do not initialize, overwrite, migrate, or import state until its current owner and contents are understood.
+2. Define which Terraform state owns account/bootstrap resources, shared test-environment resources, and any future domain-specific resources. Set a single owner for each resource. Domain tasks must not duplicate resources owned by the shared environment.
+3. Select a backend and locking approach suitable for four contributors/agents working in parallel. Define state encryption, access roles, version recovery, naming, environment separation, and protection against accidental deletion. Never commit state, plan files, credentials, or sensitive outputs.
+4. If a bootstrap resource is needed to create the backend, prepare a minimal bootstrap configuration and a state-migration/recovery procedure. Review the bootstrap plan and migration path with the human before applying anything.
+5. Create Terraform directories and module boundaries under the canonical `infra/terraform/` path. Keep shared base modules separate from future domain-owned modules. Record exact state keys/workspaces and module ownership in `docs/architecture/terraform-ownership.md`.
+6. Add formatting and static validation commands that do not contact remote state or mutate cloud resources. Add `.gitignore` entries for state, `.terraform/`, plan files, credentials, and generated sensitive output.
+7. Document a per-change workflow: inspect target, format/validate, create a plan against the approved account/environment, review additions/changes/deletions/cost/exposure, obtain human approval, apply only the approved plan, verify outputs, update inventory, and clean up only the task-owned resources after approval.
+8. Define how domain modules receive shared resource identifiers and permissions without exposing secret values or creating cross-domain resource ownership ambiguity.
+
+**Checks:** Static Terraform formatting/validation passes without remote backend access; state is not tracked; ownership boundaries are written down; the human has approved the state design before any backend resource is created or state is migrated.
+
+**Complete when:** Every Terraform resource has one planned owner and state boundary, parallel work cannot silently share or overwrite state, and the approved backend/recovery path is documented. Any actual backend provisioning is a separately identified, reviewed apply within this task and must follow the human approval gate.
+
+## PD-16 — Review and provision the shared cloud test foundation
+
+**Purpose:** Provide one shared, low-cost cloud environment that domain teams can use for integrated feature testing without each team recreating the base stack.
+
+**Hard boundary:** No AWS resource is created, changed, or deleted until the exact plan, target account/region, expected cost, permissions, retention period, rollback, and cleanup plan have been reviewed and explicitly approved by the human. A changed plan requires a new review. Never provision from an unreviewed or stale plan.
+
+**Steps:**
+
+1. Inspect the approved architecture, actual account/region, Terraform state design, project credit/budget headroom, service quotas, and the local API/web skeleton. Identify which shared resources are necessary for an initial cloud test and which can wait for a domain task.
+2. Prepare a resource inventory and architecture plan. Evaluate only resources needed for the shared integration environment, such as private networking and security boundaries, container registry, ECS runtime for the API skeleton, managed PostgreSQL test database, object storage bucket, approved public HTTPS ingress, logs/metrics, and least-privilege runtime/deployment roles. Add other services only when a required test cannot be supported without them.
+3. For every proposed resource, record purpose, owner, Terraform state/module, exposure, data classification, expected monthly and task-duration cost, quota needs, retention, and cleanup action. Keep databases and internal services private; do not enable public exposure without a reviewed need and explicit approval.
+4. Present the human with the complete resource list, architecture diagram/description, Terraform plan, estimated cost and remaining-budget reserve, access roles, security boundaries, expected teardown/retention, and verification steps. Ask for approval of this exact version of the plan. If any field is unknown or the estimate exceeds the approved limit, stop and ask.
+5. After approval, use the exact selected account/role/region. Save the approved plan artifact/checksum and apply only through the documented Terraform workflow. Do not make manual console changes that Terraform cannot record. Record actual outputs and resource identifiers in the environment inventory, excluding secrets.
+6. Require the approved shared foundation plan to include the minimal API skeleton deployment needed for readiness; deploy the web skeleton where its approved hosting is configured, or record its explicit later hosting prerequisite. Verify health, authorized ingress, private database connectivity, object-store access controls if provisioned (otherwise record LI-02 as the approved creator), logs/metrics, and that the deployed revision matches the repository commit. Do not test domain feature behavior here.
+7. Run only bounded smoke checks required to verify the shared foundation. These are environment readiness checks, not NFR results, performance measurements, or the ECS/Lambda experiment.
+8. Confirm budget alerts fire through a safe non-billable test if supported; otherwise verify configuration and notification routing without triggering spend. Review actual early costs and resource utilization.
+9. Agree with the human whether the shared environment remains running for domain work, is stopped between work periods, or is torn down and recreated. Record the owner, expiry/review date, stop/start commands, and cost while idle.
+10. Update the shared inventory, Terraform outputs, setup/verification/cleanup procedures, work log, and evidence links. If provisioning fails partway, stop, preserve state, follow the reviewed recovery plan, and ask before manual repair or cleanup.
+
+**Checks:** Applied resources match the approved plan; public/private boundaries and IAM match the review; the app skeleton is healthy on the recorded revision; database is private; costs and ownership are recorded; cleanup/retention is explicit; no NFR or domain behavior is claimed tested.
+
+**Complete when:** One shared cloud test foundation is actually available under reviewed ownership and cost controls, verified and human accepted. Missing approval/permission/quota/budget leaves the task blocked and incomplete. Do not mark it done based only on valid Terraform syntax or a successful plan.
+
+## PD-17 — Validate and synchronize the supplied single domain task list
+
+**Purpose:** Produce one authoritative domain task-list document that preserves all project requirements and can drive step-by-step execution without chat or human cross-reference.
+
+**Steps:**
+
+1. Read the current repository copies of the submitted PRD, Documents 1–5, shared conventions, repository structure, current task/checklist documents, work log, and canonical decision records installed during bootstrap. Put confirmed requirements in canonical repo references or the task-list traceability index. If a required source decision is absent or unclear, ask the smallest clarification, then record the answer in its canonical repository home before freezing dependent work; execution does not require chat history.
+2. Validate/update the supplied document at `docs/tasks/domain-task-list.md`, with distinct sections for Identity, Listings/Images, Search/Wanted/Saved, Conversations, cross-domain integration, and Optional/Stretch work. It is the sole domain task list; do not create four per-domain lists or a duplicate combined list.
+3. Start the document with its scope, source precedence, execution rules, task order/dependencies, and exact repository references. Include enough context for a new agent to start from the reusable prompt and find its work without a person locating documents.
+4. Map every required FR-01–FR-17 to an owning task and test. Map every NFR-01–NFR-08 to its required data/tooling artifacts, earliest accurate procedure, and evidence location. No requirement or required artifact may remain implied.
+5. Order shared contract/foundation work before domain work. Identify tasks that can run in parallel, owners, shared paths that require coordination, cross-domain interfaces, review/merge gates, and integration order.
+6. Keep the task count low enough to avoid artificial fragmentation. Give each task the minimum number of numbered steps that still lets Luna Medium/High execute without guessing. Steps should be clearly ordered and contain the actual actions, artifacts, checks, and decisions needed; do not split one coherent operation into many micro-steps merely to increase step count.
+7. For each task, state stable ID, owner, prerequisites, exact inputs, output paths, scope boundaries, numbered executable actions, expected results, tests, evidence location, work-log updates, stop/ask conditions, failure/retry guidance, cloud/infrastructure review if applicable, and an observable completion condition. The reusable prompt must require the agent to explain its understanding and wait for human verification before the first step, then execute one numbered step at a time and wait for human verification after each step and before starting another task.
+8. Name all necessary artifacts explicitly, including migrations, deterministic synthetic data, labeled search data, workload scripts, fakes, fixtures, API/client types, generated contract outputs, configuration, documentation, monitoring/evidence, and cleanup. If an artifact exists, provide its exact path and validation; if missing, assign an explicit task or prerequisite.
+9. Put each NFR's detailed procedure immediately after the feature/integration point where it can be accurately tested. If it requires the complete product, schedule it at that integration gate. Do not test a partial feature and call it an NFR result. If a specific NFR has no earlier accurate test point, use the previously directed narrow exception in Document 2, without turning Document 2 into a general NFR manual or attributing unrelated results to the ECS comparison.
+10. Include known optional/stretch work with its feature-specific technical prerequisites, explicit human selection, and approved protection of required MVP/NFR/experiment work, budget, and final submission buffer. Follow `docs/decisions/optional-work-scheduling.md`; the accepted team scheduling change is recorded without altering the submitted PRD. Optional work cannot block required completion or invalidate frozen experiment revisions silently.
+11. Include actionable shared-conventions checks and exact canonical repo paths. Keep canonical rules in the repository and update relevant agent/human checklists to point to them. Require work-log updates and use established Black/CI commands for Python changes.
+12. For each domain, inspect Terraform/resource needs. Record `none` only after inspection. If resources are needed, document purpose, owner, state/module, inputs/outputs, permissions, data class, cost cap, test window, evidence, cleanup/retention, and reuse of shared resources. Require human review of the exact account/region/environment/resource plan, exposure, cost, duration, rollback, and cleanup before apply.
+13. Keep ECS-only versus ECS+Lambda experiment design, routing, runs, resources, and conclusions in Document 2. Domain tasks may supply integrated feature prerequisites but do not run or conclude that comparison.
+14. Include explicit cross-domain checks for public-contract usage, auth paths, retries/duplicates, failure behavior, transaction ownership, and privacy. Name integrated tasks and owners where a user journey crosses domains.
+15. Regenerate applicable agent/human checklists from the final single task list and current repo commands. Ensure each list's task IDs, dependencies, and completion conditions are consistent and each checklist item is verifiable.
+16. Run a final FR/NFR traceability and contradiction audit across PRD, Documents 1–5, the single task list, Document 2, shared conventions, contracts, and checklists. Do not silently reconcile conflicting sources; ask the human to resolve them.
+
+**Checks:** Exactly one domain task-list document exists; all required FRs/NFRs and implicit artifacts map to tasks; task count is not artificially inflated; steps are executable without guessing; NFR procedures are scheduled at accurate points; optional tasks are labeled and gated; conventions appear both in the repository and actionable checklists; cloud plans have cost/approval/verification/cleanup gates; and task list, contracts, and checklists agree.
+
+**Complete when:** A new agent can use the reusable prompt, inspect current status, select its task from `docs/tasks/domain-task-list.md`, execute the ordered steps without chat or a human cross-reference, update shared status/evidence, and stop to ask about any uncertainty that affects the next action.
+
+## PD-18 — Reconcile and maintain the supplied agent and human checklists
+
+**Purpose:** Ensure checklist documents cover the current complete task set, including requirements previously missed.
+
+**Inputs:** Current PRD, Documents 1–5, shared conventions, current repository, and any earlier checklist documents available in the repository. If an earlier checklist is missing but was expected, record it as missing and ask the human whether a source copy is required; do not silently omit its contents if available.
+
+**Steps:**
+
+1. Re-read the current approved repo docs and the explicit decisions recorded in this task list and the traceability table. Do not derive the new checklist only from an old checklist or the most recent document. If a requirement or decision exists only in conversation and is absent from repo sources, stop and ask the human for the necessary clarification, then have the agent record the resolved decision in canonical docs through the verified step; execution must not depend on chat history.
+2. Reconcile/update the already supplied `docs/checklists/agent-checklist.md` and `docs/checklists/human-checklist.md` against actual commands/task/checkpoint rules. They were read from BOOT-00; do not defer their creation/use until this task. Remove stale or contradictory items while preserving valid requirements.
+3. Include explicit checks for: read current status before work; report task understanding and wait for verification; execute one numbered step at a time and wait for human verification after each; update shared work log; read canonical repo docs; verify no unapproved domain work; ensure cloud work uses the approved shared foundation and no unapproved/domain-duplicate resources are provisioned; run Black locally and in CI; create/generate synthetic dataset and label set; create fixtures; regenerate/check contracts; validate local setup; scan for secrets/real data; record evidence; and ask the human about uncertainties.
+4. Put the correct NFR procedures at their eventual accurate test points, not as premature tests in this foundation checklist. The checklist may require that later task lists identify affected NFRs and schedule accurate tests.
+5. Ensure the checklists point to exact canonical repo paths and commands, not chat history, Library, or vague phrases such as “run the usual checks.”
+6. Add checklist regeneration itself as a named task in this task list and traceability table. Add version/date and source-doc references to each checklist.
+7. Review the checklist against every PD task and source requirement; every checklist item must be actionable and verifiable.
+
+**Checks:** All links resolve; the checklists agree with current scripts; each PD task has the relevant checklist item; no prompt-document instruction is copied into the checklist beyond actionable checks.
+
+**Complete when:** Both checklists are current, standalone within the repository, and traceable to the requirements and commands they check.
+
+## PD-19 — Run the full foundation audit and handoff
+
+**Purpose:** Verify the repository is ready for execution from the single domain task list.
+
+**Steps:**
+
+1. Read the current work log and traceability table. Verify every required PD task has passed and been human-verified, with evidence. Record blocked/deferred required work with owner/next action, but do not pass PD-19/PRE-00 while any required item remains unresolved.
+2. From a clean checkout or clean environment, follow the README from start to finish. Install dependencies from lockfiles; start local dependencies; migrate; run the small foundation seed and deterministic framework tests; verify full reference-data loading is explicitly assigned after domain migrations; start API and web; run tests; run Black check; run contract stale check; run full local CI-equivalent check; stop and clean local services.
+3. Run repository status, diff, and secret/data scans. Confirm no credentials, real personal data, message plaintext, generated state, or unintended datasets entered Git.
+4. Verify product and shared conventions docs in repo match the reviewed source versions; confirm checklist and README paths work; confirm `AGENTS.md` points to the installed current reusable prompt and project task index.
+5. Verify shared cloud resources match the approved plan and inventory. Confirm no unapproved or domain-specific resources were created, changed, or deleted; verify the shared environment retention/cleanup status.
+6. Verify no domain business features or NFR performance/recovery tests were implemented prematurely. Shared skeleton/contract tests are allowed only as described above.
+7. Review all decisions for required human approval, and all blocked items for a precise question, owner, and next safe action. Do not mark the foundation ready while any required foundation check or decision remains blocked, even if some domain preparation could proceed.
+8. Update the final work-log entry with branch/commit, changed paths, exact commands and results, generator-tooling evidence (final dataset fingerprint is deferred to DATA-READY), CI link/status if available, decision links, known gaps, and next task.
+9. Create a handoff summary in `docs/status/foundation-handoff.md` listing what is ready, how to run it, what remains intentionally unimplemented, and the correct starting point in `docs/tasks/domain-task-list.md`.
+
+**Complete when:** A clean checkout passes all foundation checks, current decisions/evidence are in the repo, the handoff states the next action, and the explicit scope boundary has been respected.
+
+## PRE-00 — Foundation completion milestone
+
+Do not start parallel domain feature work until:
+
+- the current product and shared conventions documents are in the repository;
+- one dependency/toolchain path is recorded and lockfiles install cleanly;
+- API and web skeletons run locally;
+- shared UUID/time/money/error/pagination/auth-context/logging conventions needed by contracts are decided and tested;
+- local PostgreSQL migrations and deterministic seed work;
+- deterministic generator tooling and label-review formats pass their foundation checks; domain data loading/validation and 20+ human-reviewed query labels are explicitly assigned to SE-01/DATA-READY after approved schemas/configuration;
+- safe test fakes are rejected in production mode;
+- contract generation and stale checks work;
+- Black is pinned/configured and checked locally and in CI;
+- the full CI/local check passes;
+- the shared work log, decision record, environment template, and regenerated checklists are present;
+- account access, budget alerts, Terraform state ownership/locking, and the approved shared cloud test foundation are verified and documented;
+- domain-specific infrastructure requirements are assigned to the single domain task list and reuse shared resources where appropriate;
+- the foundation handoff and work log state actual status and evidence.
+
+If an item is blocked by a missing user decision, ask the human and keep dependent tasks blocked. Do not guess or mark the gate complete.
+
+PRE-00 is satisfied only when PD-19 and every required foundation check have passed, human verification is recorded, the reviewed milestone PR is merged, and `docs/status/foundation-handoff.md` identifies the accepted revision. A blocked/deferred requirement does not count as a passed gate. Sources, prompt, checklists, Git workflow, commands/secret-access references and owner assignments must resolve locally. Continue to DL-00 through the project task index.
+
+## WSL/startup and stub handoff checks
+
+BOOT-00 installs the already supplied prompt and both checklists. PD-01/03 retain their links; PD-18 updates them against actual implemented commands, not first creates them. PD-13 validates the Linux clone setup/start/stop/check path including container/database/frontend connectivity and a clean teammate checkout. PD-10 extends core test fakes; DL-00 freezes domain stub contracts; each domain creates its own adapters/scenarios at the steps named in `docs/architecture/stubs-and-integration-gates.md`. PRE-00 and DL-00 cannot be replaced by stubs. PD-17/18 verify staged execution, pending-integration tracking and real acceptance gates across task list/index/graph/prompt/checklists.

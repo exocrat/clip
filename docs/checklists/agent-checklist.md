@@ -1,0 +1,68 @@
+# Campus Marketplace — Agent Execution Checklist
+
+**Version:** 3.1 · **Date:** 2026-10-14 · **Canonical path:** `docs/checklists/agent-checklist.md`
+
+**Sources:** `docs/README.md`, product reference/unchanged PRD, shared conventions, repository structure, bootstrap/pre-domain/domain/experiment/final task lists, project task index, root `CONTRIBUTING.md`, reusable prompt, current status/decisions/contracts/environment/evidence. This is an execution check; canonical sources retain detailed rules. Prior-source provenance belongs in `docs/source/README.md`, not recurring runtime questions.
+
+## Before any write
+
+- [ ] Inspect the workspace/bundle or repository read-only; preserve changes and reconcile branch/main/remote active PRs/task checkpoints with real evidence.
+- [ ] Read task index and roster; choose only the requested/assigned task and its next unexecuted checkpoint. If the existing exocrat/clip clone/document seed is incomplete select BOOT-00; route through PRE-00, domain milestones, experiment and CLOSE-00 afterward.
+- [ ] Distinguish expected outputs from missing prerequisites. Search the repo/bundle yourself; ask about every unresolved uncertainty/conflict. No log/branch/file mutation yet.
+- [ ] Summarize the entire selected task and its numbered steps in order, including prerequisites, expected outputs/checks, gates, completed versus pending/verified state, owner/reviewer, and the first step to execute. Wait for human verification.
+
+## Each verified numbered step
+
+- [ ] Use the isolated task branch/worktree and scoped claim under CONTRIBUTING.md. Resume partial steps without repeating side effects; executed-but-unverified steps wait for verification.
+- [ ] Execute that step only; stop at internal decisions/separate action approvals. Do not silently reorder/batch or work elsewhere while waiting without explicit instruction. Only the documented human-verified stub checkpoint route permits staged integration obligations.
+- [ ] Use actual registered commands. Create/register commands explicitly assigned to this step; missing required prerequisite commands block dependent work.
+- [ ] Follow shared conventions and public-domain ownership; reserve/review shared file/migration/contract changes and regenerate derived files.
+- [ ] Run applicable step checks with exact command/results. Use pinned Black for Python and relevant local/CI gates at milestone completion. Preserve failures; report skipped/inconclusive checks honestly.
+- [ ] Use synthetic safe fixtures/evaluation data; inspect changes/logs/outputs for secrets/real data/private conversation content. Production rejects unsafe fakes.
+- [ ] Update task/step/sub-checkpoint, execution state, human-verification pending, branch/revision/PR, evidence, questions and next action in the work log. Preserve others' entries.
+- [ ] Report expected versus observed result, changed paths, commands/results, evidence and the precise verification decision. Stop until the human verifies; silence is not approval.
+
+## Task-wide closeout
+
+- [ ] At task or milestone handoff, inspect the whole change against its acceptance conditions: changed files, task-specific tests/checks, generated outputs, documentation, evidence, privacy/secret handling, and current work-log status. Resolve or clearly record each failure/blocker.
+- [ ] Apply relevant checklist items during execution; perform the consolidated checklist review at task/milestone closeout rather than repeating unrelated items at each step. Keep action-specific safety and approval gates at the point of action.
+- [ ] Explain each new function or meaningful code unit in a docstring, comment, or nearby documentation, including purpose and relevant inputs/outputs, side effects, security assumptions, and limits.
+
+## Phase/task coverage
+
+| Phase/tasks | Required checklist evidence |
+|---|---|
+| BOOT-00 | Approved bundle/PRD checksum, canonical documentation/Git seed, remote/roster decisions, no falsely completed implementation tasks. |
+| PD-00–03 | Starting-state audit/preservation, canonical sources/provenance, minimal toolchain/layout, Git/PR reviewer setup, shared status/command/secret-reference homes. |
+| PD-04–08 | Pinned Black local/CI, runnable skeletons/common conventions, safe local migration/database path. |
+| PD-09–11 | Schema-independent generator/label format, safe core fixtures/fakes, contract source/generation/stale check. Final domain data is not required before schemas exist. |
+| PD-12–19 / PRE-00 | PR/CI protections, clean setup/check path, verified account/budget/state/shared cloud, current task/checklist docs, successful foundation audit/handoff and accepted main revision. |
+| DL-00 | Four contracts/combined source agree; supported Search listing-data boundary, auth/contacts, read-watermarks/notification interfaces, private-data classifications and no call cycles. |
+| ID-01/LI-01/SE-01/CN-01 | Explicit readiness PR/milestone distinct from full FR/NFR completion; assigned UI/core/fixtures and final dependent validations. |
+| LI-02/SE-02/CN-02/CN-03 | Full feature UI/API/failure/privacy checks; explicit provider/read-state/image/selection boundaries and actual live deployment when required. |
+| DATA-READY | Final schema/config-aware loader, >=5,000 users/>=1,000 listings, logical fingerprint/integrity and 20+ human-reviewed labeled queries. |
+| INT-01 | All required FR/NFR-01–07 evidence, accurate integrated/recovery tooling/manifests, budget-to-date/reserve, no required blocker counted as pass. |
+| EXP-01–08 | Approved comparison design/tooling, explicit mixed implementation/packaging/routing/Terraform, parity/deploy/pilot/run/analyze/cleanup evidence. |
+| CLOSE-00 | Affected regression/revalidation, full-project cost/NFR-08, exact residual resources, final report/demo/viva/delivery and honest submission status. |
+
+## Cloud, NFR, and optional gates
+
+- [ ] Inspect/reuse shared resources; approve the exact target/plan/cost/caps/rollback/cleanup before any gated operation, renew approval when changed, and verify actual deployed revision/resources. CI/main merge does not authorize deployment/apply.
+- [ ] Create/approve measurement manifests and validate local tools/readiness before accurate NFR runs. Preserve raw/invalid results. Reverify affected evidence after later changes.
+- [ ] Optional tasks need their feature-specific prerequisites, explicit selection and OPTIONAL-OK. Required work/NFR/experiment/budget/final buffer stays protected; follow the accepted scheduling decision, with no blanket INT-01 or elapsed-buffer prerequisite.
+
+## PR and completion
+
+- [ ] Use a coherent task/milestone PR; get designated human peer and affected-owner review, passing CI/local checks and exact merge authorization. Do not approve/merge your own PR autonomously.
+- [ ] Record human step verification and accepted milestone/PR/main revision before unblocking consumers. Required blockers remain incomplete.
+- [ ] Close only the requested scope; continued work is selected through the task index with a new understanding verification. Do not skip the experiment or final closeout.
+
+## Existing WSL, startup and stub checks
+
+- [ ] Both supplied checklists are read before BOOT-00/PD-00 writes; PD-18/INT-01 maintain them rather than defer their initial availability.
+- [ ] Existing WSL is reused; agent commands run in the verified Linux context and real exocrat/clip clone. Source staging versus clone root is explicit; no nested bundle folder, repeated git init, second remote repo or unnecessary WSL reinstall.
+- [ ] Actual workstation/tool/container/credential-route facts are inspected and recorded; project install/start/check commands use the selected Linux toolchain, LF/executable permissions and verified connectivity.
+- [ ] Before isolated work, real PRE-00/DL-00 and frozen contracts exist; the understanding report identifies allowed task/checkpoint, mode, reviewed stub scenarios and pending real obligations under the stub guide. Unknown semantics/security decisions still require a question.
+- [ ] Every staged real subcheck retains its original step ID, owner, dependency/revision, resume trigger and acceptance test in the work log. Human verification authorizes only the reported isolated increment; readiness/FR/NFR/full completion remains pending.
+- [ ] Deployed config rejects test doubles and fake auth; no public bypass or fallback to fake success. Isolated PRs are labeled and independently reviewed without claiming readiness.
+- [ ] When the actual upstream revision arrives, the earliest pending integration checkpoint is resumed, migrations/data/adapters reconcile and the original real checks rerun before acceptance. Final integration/NFR/experiment/closeout never uses stub-only evidence.
