@@ -8,7 +8,7 @@ This index supplies the next-work route and readiness definitions. Detailed numb
 
 | Stage | Task source / route | Gate for advancing |
 |---|---|---|
-| Initial repository | `docs/tasks/bootstrap-task-list.md`: BOOT-00 | Verified documentation/Git seed, source provenance, actual roster/remote status |
+| Initial repository | `docs/tasks/bootstrap-task-list.md`: BOOT-00 | Verified documentation/Git seed committed on local `main`, source provenance, actual roster and local/remote status recorded; pending publication does not block PD-00 in this clone |
 | Foundation | `docs/tasks/pre-domain-task-list.md`: PD-00–PD-19 | PRE-00: every required foundation check passes, human verification, accepted PD-19/main handoff |
 | Contracts and domains | `docs/tasks/domain-task-list.md`: DL-00, readiness checkpoints, required domain tasks, INT-01 | Full required FR and NFR-01–07 verification; budget-to-date/reserve; accepted INT-01 revision |
 | Primary comparison | `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md`: EXP-01–EXP-08 | Reviewed parity/design/implementation, valid results/analysis and cleanup |

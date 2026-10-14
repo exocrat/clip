@@ -16,6 +16,8 @@ The accepted optional-scheduling planning update remains recorded in `docs/decis
 
 On 2026-10-14, the team-approved documentation revision changed the root README to a public-facing project summary, added contributor-start and peer-review prompts, required a full ordered task summary before work, clarified dependency checks and pending stub integrations, adopted concise work-log entries, added task-wide closeout checks, required explanations for new code, and recorded the one-time direct-to-main seed exception with separate push approval and no separate peer-review requirement for that commit. CN-02 step 8 now says to use the real Identity interface when ID-READY exists and otherwise a reviewed stub, while keeping real integration pending. The submitted PRD remains unchanged. The full step 6.5 audit was performed; it found and corrected a task-start wording mismatch in `CONTRIBUTING.md`. Results are recorded in `docs/status/work-log.md`.
 
+Follow-up decision (2026-10-14): BOOT-00 is complete after the audited documentation seed is committed and verified in the local clone, with actual local and remote status recorded. Publishing remains a separate exact-target/revision approval and does not block PD-00 in that clone. Other clones must obtain the canonical documentation revision before using it. The submitted PRD remains unchanged.
+
 The current public-facing root `README.md` SHA-256 after this revision is `7bc42225b2189bbdc3b46705ec1dc7b9064be0498cc5282439f5981b3c26699e`.
 
 | Canonical file | Source/version | SHA-256 baseline |

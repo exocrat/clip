@@ -32,7 +32,7 @@
 
 | Phase/tasks | Required checklist evidence |
 |---|---|
-| BOOT-00 | Approved bundle/PRD checksum, canonical documentation/Git seed, remote/roster decisions, no falsely completed implementation tasks. |
+| BOOT-00 | Approved bundle/PRD checksum, audited documentation/Git seed committed on local `main`, source provenance and roster, actual local/remote status recorded, no falsely completed implementation tasks. Pending publication does not block PD-00 in this clone. |
 | PD-00–03 | Starting-state audit/preservation, canonical sources/provenance, minimal toolchain/layout, Git/PR reviewer setup, shared status/command/secret-reference homes. |
 | PD-04–08 | Pinned Black local/CI, runnable skeletons/common conventions, safe local migration/database path. |
 | PD-09–11 | Schema-independent generator/label format, safe core fixtures/fakes, contract source/generation/stale check. Final domain data is not required before schemas exist. |

@@ -34,7 +34,7 @@ You may inspect evidence, but the agent must summarize what makes it acceptable 
 
 ## Peer review and merging
 
-- [ ] Each contributor uses an isolated branch/clone/worktree and a task/milestone PR. BOOT-00's documentation seed is the one-time direct-to-main exception, approved by the team; a separate peer review is not required for this commit, but the author inspects the exact staged diff and push authorization remains separate.
+- [ ] Each contributor uses an isolated branch/clone/worktree and a task/milestone PR. BOOT-00's documentation seed is the one-time direct-to-main exception, approved by the team; a separate peer review is not required for this commit, but the author inspects the exact staged diff. Publishing is separately approved and does not block PD-00 in the locally completed clone; other clones must obtain the canonical documentation revision first.
 - [ ] A different designated human peer reviews, with AI assistance if useful; affected owners approve shared surfaces. Author verification does not replace peer approval.
 - [ ] Required local/CI checks, dependency milestones and conflict-resolution review pass before authorizing the concrete merge. The author agent cannot approve or autonomously merge its PR.
 - [ ] Consumers use the recorded accepted main revision; cloud environment operations remain separately approved and serialized.

@@ -44,3 +44,7 @@ Verification for this revision checks internal links, continuous task step numbe
 ## BOOT-00 step 6.5 follow-up — audit performed
 
 The step 6.5 workflow edits are recorded in `docs/source/README.md` and `docs/status/work-log.md`. The read-only audit checked cross-document task-start rules, dependencies/stubs (including CN-02 step 8), concise logs, task-wide closeout, code explanations, peer review, direct-to-main/push gates, task checks/acceptance, links/anchors and PRD provenance. It found one task-start wording mismatch in `CONTRIBUTING.md`; that wording was corrected to require the full ordered task sequence. Post-correction checks found 0 broken relative Markdown links or anchors across 28 Markdown files; the PRD checksum still matches the supplied manifest. No application tests or commit/push were performed. Human verification of the correction remains pending.
+
+## BOOT-00 completion and publication separation — 2026-10-14
+
+The documentation workflow now treats the audited local seed commit as BOOT-00 completion after human verification. Publishing that revision remains separately approved and does not block PD-00 in the clone where the seed is present. Remote/local status must be recorded, and other clones must obtain the canonical documentation revision before using it. The unchanged PRD and source manifest baselines remain intact.

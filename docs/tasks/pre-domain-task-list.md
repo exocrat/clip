@@ -15,7 +15,7 @@ The required implementation baseline is React + TypeScript, Python + FastAPI, Po
 
 ## Entry and interaction gate
 
-Start after BOOT-00. The initial document bundle contains the source documents, prompt, checklists, task index, and status template; BOOT-00 installs them into the verified existing exocrat/clip clone and preserves Git. Preserve these files and extend them through the tasks below.
+Start after BOOT-00 is marked complete in the verified local clone. Its audited documentation seed must be committed on local `main`, and the local/remote status must be recorded; a separately approved remote publication may remain pending without blocking PD-00 in this clone. A different clone must first obtain the canonical documentation revision. BOOT-00 installs the supplied source documents, prompt, checklists, task index, and status template into the verified existing exocrat/clip clone and preserves Git. Preserve these files and extend them through the tasks below.
 
 Before each task, inspect read-only and explain the whole task and its numbered steps in order, including prerequisites, expected outputs/checks, gates, and the first step to execute. Wait for human verification before any write, including work-log edits. Execute one numbered step, report expected versus observed results, checks/evidence and checkpoint, then wait for human verification. A nested procedure such as PD-03A is part of its parent step; identify the precise checkpoint and stop at any internal decision gate. Use `CONTRIBUTING.md` for task branches/PRs and `docs/tasks/project-task-index.md` for assignment, resume, and milestone selection.
 
