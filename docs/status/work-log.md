@@ -22,7 +22,7 @@ Task status: not started / in progress / blocked / done; optional may be unselec
 
 | Task | Owner role | Task status | Current step / sub-checkpoint | Execution state | Human verification | Branch/PR/revision/evidence | Last UTC update | Next action/question |
 |---|---|---|---|---|---|---|---|---|
-| BOOT-00 | B / Suraj (initial contributor) | done | Local documentation seed verified; separate publication pending approval | performed | verified | Local `main` contains seed `7fb9bfed79b45614a17de1bf2f9c50dbb3981b3f` and completion-policy update; `origin/main` remains `3e81554ce3d713478d8f0979d76480e286096455`; no push | 2026-10-14 | PD-00 may start in this clone; publish only after separate approval of the exact target/revision |
+| BOOT-00 | B / Suraj (initial contributor) | done | Local documentation seed verified; publication pushed and verified | performed | verified | `origin/main` verified at `aa961ca0c3a67003d15162669c3a1a8cfb5355c0`; includes seed `7fb9bfed79b45614a17de1bf2f9c50dbb3981b3f` and completion-policy update | 2026-10-14 | PD-00 may start; next task is PD-00 |
 | PD-00 | foundation contributor recorded in roster | not started | — | not started | pending | — | — | Inspect assigned prerequisites/scope |
 | PD-01 | foundation contributor recorded in roster | not started | — | not started | pending | — | — | Inspect assigned prerequisites/scope |
 | PD-02 | foundation contributor recorded in roster | not started | — | not started | pending | — | — | Inspect assigned prerequisites/scope |
@@ -116,6 +116,9 @@ Suraj (B); performed, human verification pending. Committed the audited 31-file 
 
 ### BOOT-00 step 6.5 and step 7 verification — 2026-10-14
 Suraj (B) verified both documentation workflow revisions and the step 7 local commit. The BOOT-00 follow-up changes separate local completion from remote publication: the seed is committed on local `main`, and `origin/main` remains at `3e81554ce3d713478d8f0979d76480e286096455`. Publication is pending separate exact-target/revision approval; it does not block PD-00 in this clone. BOOT-00 is complete locally; another clone must obtain the canonical documentation revision before using it.
+
+### BOOT-00 separate publication — 2026-10-14
+Suraj (B); approved target/revision push completed and verified. Pushed `main` to `https://github.com/exocrat/clip`; `git ls-remote origin refs/heads/main` returned `aa961ca0c3a67003d15162669c3a1a8cfb5355c0`, matching local `main`. The remote now has the canonical docs seed and BOOT-00 completion/publishing rules. No further push was made.
 
 ## Pending real integration ledger (initially empty)
 
