@@ -22,7 +22,7 @@ Task status: not started / in progress / blocked / done; optional may be unselec
 
 | Task | Owner role | Task status | Current step / sub-checkpoint | Execution state | Human verification | Branch/PR/revision/evidence | Last UTC update | Next action/question |
 |---|---|---|---|---|---|---|---|---|
-| BOOT-00 | B / Suraj (initial contributor) | in progress | Step 7: documentation commit to main; understanding pending | not started | pending | `task/boot-00-doc-seed` at `3e81554ce3d713478d8f0979d76480e286096455` (`origin/main`); seed unstaged, no PR/commit/push | 2026-10-14 16:57 UTC | Present step 7 plan and wait; after verification, inspect and commit the exact docs-only diff to main; separate peer review is not required, step 8 push remains separately gated |
+| BOOT-00 | B / Suraj (initial contributor) | in progress | Step 7: docs-only seed commit to main | performed | pending | `main` includes seed `7fb9bfed79b45614a17de1bf2f9c50dbb3981b3f` and its work-log checkpoint; two commits ahead of `origin/main`; no push | 2026-10-14 | Report commit and await step verification; step 8 push remains separately gated |
 | PD-00 | foundation contributor recorded in roster | not started | — | not started | pending | — | — | Inspect assigned prerequisites/scope |
 | PD-01 | foundation contributor recorded in roster | not started | — | not started | pending | — | — | Inspect assigned prerequisites/scope |
 | PD-02 | foundation contributor recorded in roster | not started | — | not started | pending | — | — | Inspect assigned prerequisites/scope |
@@ -110,6 +110,9 @@ Follow-up decision: Suraj confirmed that the BOOT-00 step 7 direct-to-main commi
 
 ### BOOT-00 step 6.5 verification — 2026-10-14 16:57 UTC
 Suraj (B) verified the workflow revision, audit, and no-separate-peer-review exception for the BOOT-00 direct commit. Step 7 is not started; its understanding and exact staged diff await verification. No commit or push.
+
+### BOOT-00 step 7 — documentation seed commit — 2026-10-14
+Suraj (B); performed, human verification pending. Committed the audited 31-file documentation seed on `main` as `7fb9bfed79b45614a17de1bf2f9c50dbb3981b3f` (`docs: seed Campus Marketplace workflow`). Staged scope contained only README/agent/contribution/docs/source files; PRD SHA-256 matched the manifest. `git diff --cached --check` reported Markdown trailing spaces used for intentional hard line breaks; preserved them. No application tests or push. Step 8 remains separately gated.
 
 ## Pending real integration ledger (initially empty)
 
