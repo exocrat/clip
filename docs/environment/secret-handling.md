@@ -1,6 +1,6 @@
 # Secret Reference and Access Procedure
 
-**Version:** 3.0 · **Date:** 2026-10-14 · **Canonical path:** `docs/environment/secret-handling.md`
+**Canonical path:** `docs/environment/secret-handling.md`
 
 This template contains NO secret values. PD-03 initializes it, PD-14 records the approved shared secret manager/access method, and ID-01/CN-03/other owners add their configured references when actually needed. The agent must not ask the human to paste passwords/MFA/OTP/private keys/access keys/tokens in chat or commit them. Local environment files remain untracked. Real secrets belong in the selected manager/access-controlled channel, never fixtures/logs/evidence.
 

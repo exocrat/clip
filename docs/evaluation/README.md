@@ -1,6 +1,6 @@
 # Evaluation Evidence and Manifest Index
 
-**Version:** 3.1 · **Date:** 2026-10-16 · **Canonical path:** `docs/evaluation/README.md`
+**Canonical path:** `docs/evaluation/README.md`
 
 This supplied index is documentation only; no measurements have been run. Actual evidence is created by its owning task and indexed in the work log and the [foundation requirement traceability map](../architecture/foundation-traceability.md), created by PD-01.
 

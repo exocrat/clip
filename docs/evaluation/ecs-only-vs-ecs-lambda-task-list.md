@@ -1,7 +1,5 @@
 # Campus Marketplace — ECS-only vs ECS+Lambda Experiment Task List
 
-**Version:** 3.0  
-**Date:** 2026-10-14  
 **Canonical repository path:** `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md`
 **Document 2. Status:** Working task list for the PRD's primary cloud experiment. It does not report experiment results; none have been run while preparing this document.
 
@@ -194,7 +192,7 @@ The PRD asks whether the mixed configuration improves peak responsiveness or cos
 
 ## Execution and closeout routing
 
-EXP-01–EXP-08 run in dependency order. Task owners/reviewers are listed in the project task index; every step reports expected and observed results, evidence, work-log checkpoint and verification state. Shared environment configuration changes/runs are serialized by the named operator; no parallel deployment may contaminate a measured pair. Preserve invalid runs and do not call an incomplete check a pass. Changed configurations require updated approvals and both sides of affected paired measurements rerun.
+EXP-01–EXP-08 run in dependency order. Task owners/reviewers are listed in the project task index; every step reports expected and observed results, evidence, and verification state, and updates the work-log status row. Dated history entries capture meaningful outcomes and evidence; related steps may share an entry, and routine proceed acknowledgements do not need separate entries. Shared environment configuration changes/runs are serialized by the named operator; no parallel deployment may contaminate a measured pair. Preserve invalid runs and do not call an incomplete check a pass. Changed configurations require updated approvals and both sides of affected paired measurements rerun.
 
 EXP-08 records experiment cost/cleanup and routes to CLOSE-00 in `docs/tasks/final-closeout-task-list.md`. CLOSE-00 performs full-project cost reconciliation including this experiment and final regression/submission evidence. Optional work follows its separate technical/priority gates, never silently alters a frozen experiment revision.
 

@@ -11,4 +11,9 @@ The planned product includes identity checks, listings and images, search, saved
 - [Product scope and requirements](docs/product/product-reference-and-architecture-decisions.md)
 - [Project phases, tasks, owners, and dependencies](docs/tasks/project-task-index.md)
 - [All canonical documents](docs/README.md)
+
+## Contributing and setup
+
 - [Contribution and review workflow](CONTRIBUTING.md)
+- [WSL first-session setup for Windows contributors](docs/environment/wsl-and-first-session.md)
+- [Project command registry](docs/environment/commands.md) — application setup, start, stop, and check commands are being added by their assigned tasks.

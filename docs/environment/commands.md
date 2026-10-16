@@ -1,6 +1,6 @@
 # Runtime Command Registry
 
-**Version:** 3.0 · **Date:** 2026-10-14 · **Canonical path:** `docs/environment/commands.md`
+**Canonical path:** `docs/environment/commands.md`
 
 This is a supplied planning template, not executable tooling or proof of implementation. PD-03 initializes it, and each command-creating task populates exact spellings/arguments/script paths and verifies safe behavior. The normal front door is root Makefile, unless PD-02 explicitly approves an equivalent and records actual mappings. Root README/CONTRIBUTING/CI must match this registry after PRE-00.
 

@@ -1,7 +1,5 @@
 # Campus Marketplace — Domain Task List
 
-**Version:** 3.1
-**Date:** 2026-10-14  
 **Canonical repository path:** `docs/tasks/domain-task-list.md`
 **Status:** Planned work; no domain implementation or domain cloud provisioning is represented as completed here.
 
@@ -46,7 +44,7 @@ If a source conflicts with another, the PRD supplies requirement intent, the cur
 
 Use `CONTRIBUTING.md` and `docs/tasks/project-task-index.md`. ID-READY, LI-CORE, SE-CORE, and CN-CORE are human-verified, peer-reviewed, merged implementation milestones inside existing tasks; they do not mark the entire task or FR/NFR complete. Consumers depend on these named capabilities rather than successors' final tests. DATA-READY records final synthetic data/labels after schemas/configuration exist.
 
-Read-only inspection and an understanding report precede any mutation, including status claims. Record current task/step, within-step checkpoint, execution and human-verification states, actual revision/PR/evidence, pending question, and next action. At a blocked future dependency, propose the next owned unblocked task and wait for its scope verification; never perform other work while awaiting an unanswered question without explicit instruction. A readiness PR may be merged while later task steps remain pending; status remains in progress/blocked, never falsely done.
+Read-only inspection and an understanding report precede any mutation, including status claims. Keep the work-log status row current after each step and verification: task/step, within-step checkpoint, execution and human-verification states, actual revision/PR/evidence, pending question, and next action. Add concise dated history for meaningful outcomes, decisions, checks, blockers, consequential human direction, and closeout; related steps may share an entry, while routine “verified; proceed” updates do not need separate entries. At a blocked future dependency, propose the next owned unblocked task and wait for its scope verification; never perform other work while awaiting an unanswered question without explicit instruction. A readiness PR may be merged while later task steps remain pending; status remains in progress/blocked, never falsely done.
 
 Contributor assignments: A owns ID-01 and CN-03; B owns LI-01/LI-02; C owns SE-01/SE-02; D owns CN-01/CN-02. A's Identity contact operations and B's authoritative selection state are implemented in their owned tasks and consumed/reviewed in CN-02; they do not all edit one conversation branch concurrently. Reviewers and shared-path coordination are mapped to the actual four humans during bootstrap/PD-03.
 

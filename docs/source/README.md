@@ -1,6 +1,6 @@
 # Source and Revision Record
 
-**Version:** 3.2 · **Date:** 2026-10-16 · **Canonical path:** `docs/source/README.md`
+**Canonical path:** `docs/source/README.md`
 
 This revision uses the full v2 planning set and the subsequent conversation decisions: existing exocrat/clip repository, existing WSL, agent/repo access and folder/startup instructions, immediate supplied checklists, documented early stub-based implementation with pending real integration obligations. Earlier product/Git/task/NFR/optional-scheduling decisions remain incorporated. The submitted PRD bytes are unchanged. Optional scheduling follows the accepted decision record; no product requirement is silently relaxed by a stub.
 

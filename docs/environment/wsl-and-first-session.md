@@ -1,6 +1,6 @@
 # Campus Marketplace — Windows WSL, Codex and First Session
 
-**Version:** 3.1 · **Date:** 2026-10-14 · **Canonical path:** `docs/environment/wsl-and-first-session.md`
+**Canonical path:** `docs/environment/wsl-and-first-session.md`
 
 ## What this setup does
 

@@ -1,7 +1,5 @@
 # Campus Marketplace — Shared Conventions and Cross-Domain Contract Rules
 
-**Version:** 3.0  
-**Date:** 2026-10-14  
 **Canonical repository path:** `docs/conventions/shared-conventions-and-cross-domain-contract-rules.md`
 **Document 3. Status:** Shared baseline for repository and contract work. It records rules already present in the submitted PRD and project plan, and identifies shared design choices that must be resolved once before domain implementation. It does not define the four domain APIs; those belong in the domain contract documents and the combined contract.
 

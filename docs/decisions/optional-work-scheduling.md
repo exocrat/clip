@@ -1,6 +1,6 @@
 # Decision — Optional Work Scheduling
 
-**Version:** 3.0 · **Date:** 2026-10-14 · **Status:** Team planning direction accepted in this conversation; record actual task selection/priority approvals at execution.
+**Status:** Team planning direction accepted in this conversation; record actual task selection/priority approvals at execution.
 
 **Canonical path:** `docs/decisions/optional-work-scheduling.md`
 

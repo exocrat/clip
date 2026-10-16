@@ -1,0 +1,26 @@
+# Local environment files; keep the safe example tracked.
+.env
+.env.*
+!.env.example
+
+# Python and uv.
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Node and npm.
+node_modules/
+npm-debug.log*
+
+# Build and test outputs.
+build/
+dist/
+coverage/
+
+# macOS Finder metadata.
+.DS_Store

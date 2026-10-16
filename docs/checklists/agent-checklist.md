@@ -1,6 +1,6 @@
 # Campus Marketplace — Agent Execution Checklist
 
-**Version:** 3.2 · **Date:** 2026-10-16 · **Canonical path:** `docs/checklists/agent-checklist.md`
+**Canonical path:** `docs/checklists/agent-checklist.md`
 
 **Sources:** `docs/README.md`, product reference/unchanged PRD, shared conventions, repository structure, bootstrap/pre-domain/domain/experiment/final task lists, project task index, root `CONTRIBUTING.md`, reusable prompt, current status/decisions/contracts/environment/evidence. This is an execution check; canonical sources retain detailed rules. Prior-source provenance belongs in `docs/source/README.md`, not recurring runtime questions.
 
@@ -14,13 +14,14 @@
 
 ## Each verified numbered step
 
+- [ ] Before executing each numbered step, explain its purpose, intended changes/outputs, applicable checks, and any internal decision or separate-approval gate. Wait for the human's explicit okay; task-level verification alone does not authorize the next step.
 - [ ] Use the isolated task branch/worktree and scoped claim under CONTRIBUTING.md. Resume partial steps without repeating side effects; executed-but-unverified steps wait for verification.
 - [ ] Execute that step only; stop at internal decisions/separate action approvals. Do not silently reorder/batch or work elsewhere while waiting without explicit instruction. Only the documented human-verified stub checkpoint route permits staged integration obligations.
 - [ ] Use actual registered commands. Create/register commands explicitly assigned to this step; missing required prerequisite commands block dependent work.
 - [ ] Follow shared conventions and public-domain ownership; reserve/review shared file/migration/contract changes and regenerate derived files.
 - [ ] Run applicable step checks with exact command/results. Use pinned Black for Python and relevant local/CI gates at milestone completion. Preserve failures; report skipped/inconclusive checks honestly.
 - [ ] Use synthetic safe fixtures/evaluation data; inspect changes/logs/outputs for secrets/real data/private conversation content. Production rejects unsafe fakes.
-- [ ] Update task/step/sub-checkpoint, execution state, human-verification pending, branch/revision/PR, evidence, questions and next action in the work log. Preserve others' entries.
+- [ ] Update the work-log status row after each step and verification, including current checkpoint (with the immediate next action for active work), execution/verification state, branch/revision/PR, evidence, questions, and blockers. Add dated history only for meaningful outcomes, decisions, checks, blockers, consequential human direction, or closeout; related steps may share an entry, and routine “verified; proceed” updates need no separate entry. Use exact UTC times for new entries and preserve existing timestamp precision. Preserve others' useful history.
 - [ ] Report expected versus observed result, changed paths, commands/results, evidence and the precise verification decision. Stop until the human verifies; silence is not approval.
 
 ## Task-wide closeout
@@ -53,7 +54,7 @@
 
 ## PR and completion
 
-- [ ] Use a coherent task/milestone PR; get designated human peer and affected-owner review, passing CI/local checks and exact merge authorization. Do not approve/merge your own PR autonomously.
+- [ ] Integrate the combined PD-00–PD-03 handoff directly into `main` after a full audit confirms all four tasks' outputs and checks with no gaps. Use a coherent task/milestone PR for later changes; follow BOOT-00's separate documentation-seed rule. Do not approve or merge your own PR autonomously.
 - [ ] Record human step verification and accepted milestone/PR/main revision before unblocking consumers. Required blockers remain incomplete.
 - [ ] Close only the requested scope; continued work is selected through the task index with a new understanding verification. Do not skip the experiment or final closeout.
 
@@ -61,8 +62,8 @@
 
 - [ ] Both supplied checklists are read before BOOT-00/PD-00 writes; PD-18/INT-01 maintain them rather than defer their initial availability.
 - [ ] For pre-domain streams, start from the merged PD-00–PD-03 handoff, remove only the `.gitkeep` markers in the assigned roots as the first action, preserve other streams' markers/paths, and coordinate a bounded cross-stream change before editing another owner's root.
-- [ ] Existing WSL is reused; agent commands run in the verified Linux context and real exocrat/clip clone. Source staging versus clone root is explicit; no nested bundle folder, repeated git init, second remote repo or unnecessary WSL reinstall.
-- [ ] Actual workstation/tool/container/credential-route facts are inspected and recorded; project install/start/check commands use the selected Linux toolchain, LF/executable permissions and verified connectivity.
+- [ ] When the contributor uses WSL, reuse the existing WSL setup and run commands in that verified context and real exocrat/clip clone; otherwise use the contributor's verified environment. Keep source staging distinct from the clone; do not create nested bundle folders, repeat git init, add a second remote, or reinstall WSL unnecessarily.
+- [ ] Inspect and record actual workstation/tool/container/credential-route facts. Run project install/start/check commands with the selected toolchain for that contributor's environment, and verify LF/executable permissions and connectivity where applicable.
 - [ ] Before isolated work, real PRE-00/DL-00 and frozen contracts exist; the understanding report identifies allowed task/checkpoint, mode, reviewed stub scenarios and pending real obligations under the stub guide. Unknown semantics/security decisions still require a question.
 - [ ] Every staged real subcheck retains its original step ID, owner, dependency/revision, resume trigger and acceptance test in the work log. Human verification authorizes only the reported isolated increment; readiness/FR/NFR/full completion remains pending.
 - [ ] Deployed config rejects test doubles and fake auth; no public bypass or fallback to fake success. Isolated PRs are labeled and independently reviewed without claiming readiness.

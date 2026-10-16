@@ -1,6 +1,6 @@
 # Campus Marketplace — Final Project Closeout
 
-**Version:** 3.0 · **Date:** 2026-10-14 · **Canonical path:** `docs/tasks/final-closeout-task-list.md`
+**Canonical path:** `docs/tasks/final-closeout-task-list.md`
 
 ## CLOSE-00 — Final regression, cost/resource closeout, and delivery package
 

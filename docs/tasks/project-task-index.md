@@ -1,6 +1,6 @@
 # Campus Marketplace — Project Task and Milestone Index
 
-**Version:** 3.1 · **Date:** 2026-10-16 · **Canonical path:** `docs/tasks/project-task-index.md`
+**Canonical path:** `docs/tasks/project-task-index.md`
 
 ## Execution source and phase routing
 

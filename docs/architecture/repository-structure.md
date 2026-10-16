@@ -1,7 +1,5 @@
 # Campus Marketplace — Minimal Repository Structure
 
-**Version:** 3.2
-**Date:** 2026-10-16
 **Canonical repository path:** `docs/architecture/repository-structure.md`
 **Document 4. Status:** Proposed repository layout and file responsibilities. Use it with the product reference, shared conventions, submitted PRD, and the pre-domain task list. This document defines where project information and code live; it does not make unresolved implementation or infrastructure choices on the team's behalf.
 
@@ -134,7 +132,7 @@ Place the reviewed source documents in these canonical locations and link to the
 | `docs/checklists/human-checklist.md` | Regenerated human review/approval checklist. |
 | `docs/prompts/reusable-task-prompt.md` | Reusable prompt that tells the agent to inspect current repo status and canonical docs, report its understanding and wait for human verification, execute one task-list step at a time, report evidence and wait for verification after each step, update the work log, and stop to ask about uncertainties or approval gates. |
 
-The repository copies are the execution-time references. Use the reviewed repository copies and `docs/source/README.md` as the runtime provenance record. Changes follow the documented review workflow, including the one-time BOOT-00 direct-to-main documentation-seed exception, which does not require separate peer review; runtime execution never requires an external copy. When a shared rule is required during execution, the relevant checklist must state the check and point to the canonical repo file; do not make an agent search a conversation or infer a missing requirement.
+The repository copies are the execution-time references. Use the reviewed repository copies and `docs/source/README.md` as the runtime provenance record. Changes follow the documented review workflow, including BOOT-00's direct-to-main documentation-seed rule and the combined PD-00–PD-03 direct integration after its full audit; runtime execution never requires an external copy. When a shared rule is required during execution, the relevant checklist must state the check and point to the canonical repo file; do not make an agent search a conversation or infer a missing requirement.
 
 ## 5. Shared work log and status
 
@@ -142,12 +140,12 @@ Create `docs/status/work-log.md` during the pre-domain foundation. This is a req
 
 Keep the log concise enough to scan and resume work. It must contain:
 
-1. A compact current-status table with task ID/name, status (`not started`, `in progress`, `blocked`, `done`), owner, branch/PR or commit reference when available, last update in UTC, and next action/blocker.
-2. An append-only dated work-entry section. Each short entry records task/step, contributor, execution and human-verification state, changed files, exact checks and results, revision/evidence when available, blocker/decision and next action. Do not repeat background or paste long command output; link existing evidence where useful.
+1. A compact current-status table with task ID, status (`not started`, `in progress`, `blocked`, `done`), owner, branch/PR or commit reference when available, last update in UTC, and current checkpoint. Put the immediate next action in the checkpoint for active work; put unmet dependencies for not-started work in Blockers. Link the task index once above the table rather than repeating task names or links in rows.
+2. An append-only dated history section for meaningful outcomes, not a transcript of each interaction. Related steps may share an entry. Include the task and covered step(s), contributor, date/time, and relevant outcome, execution/verification state, changed files, checks/results, revision/evidence, blocker/decision, or next action. Do not add a separate entry for a routine “verified; proceed” update. New entries use exact UTC date and time; preserve existing historical timestamp precision and never infer a missing time. Do not repeat background or paste long command output; link existing evidence where useful.
 3. A link to the decision record, environment inventory, task list, and evidence directory where applicable.
-4. Clear instructions to read the status table before starting and update it after meaningful progress, before stopping, and after a task is completed or blocked. A task/milestone closeout checks the full acceptance set and relevant checklist items.
+4. Clear instructions to read the status table before starting and update it after every step and human verification, before stopping, and after a task is completed or blocked. The status table is the live step checkpoint; dated history is added only for meaningful outcomes. A task/milestone closeout checks the full acceptance set and relevant checklist items.
 
-For parallel work, each agent updates only its assigned task row and adds a distinct timestamped entry. Rebase/merge and resolve log conflicts without deleting another task's entry. A status claim must match the repository and CI evidence. Do not mark a task done merely because code was written.
+For parallel work, each agent updates only its assigned task row and adds a distinct timestamped history entry when recording meaningful work. History is append-only during routine work; rebase/merge and resolve log conflicts without deleting another task's entry. A status claim must match the repository and CI evidence. Do not mark a task done merely because code was written.
 
 ## 6. Python Black and shared quality gates
 
@@ -246,7 +244,7 @@ Additional required document homes:
 | `docs/tasks/bootstrap-task-list.md` | BOOT-00 initial documentation/Git bootstrap. Supplied in the document bundle. |
 | `docs/tasks/project-task-index.md` | Phase selection, all task IDs, readiness milestones, owner/reviewer assignment, expected artifact and command creation responsibilities. Installed in BOOT-00, maintained by each relevant task. |
 | `docs/tasks/final-closeout-task-list.md` | CLOSE-00 regression, complete-project cost/resource review, report/demo/viva/submission package. Installed in BOOT-00. |
-| `docs/status/work-log.md` | Task state plus current step, within-step checkpoint, pending human verification/decision, actual branch/revision/evidence, next action; initialized from the supplied template in BOOT-00 and extended in PD-03. |
+| `docs/status/work-log.md` | Task state plus current step/checkpoint, pending human verification/decision, actual branch/revision/evidence, and blockers; initialized from the supplied template in BOOT-00 and extended in PD-03. |
 | `docs/environment/commands.md` | Actual command spellings/arguments, creator task, effects, target, success/failure behavior, and prerequisite milestone. Initialized in PD-03; populated by command-creating tasks. |
 | `docs/environment/secret-handling.md` | Non-secret reference/access/owner/rotation instructions; PD-03 template, PD-14 shared access, domain provider updates. |
 | `docs/evaluation/README.md` | Evidence locations and manifest requirements; supplied documentation, populated with real artifacts by each evaluation task. |

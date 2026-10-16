@@ -1,6 +1,6 @@
 # Campus Marketplace — Stubs and Real Integration Gates
 
-**Version:** 3.1 · **Date:** 2026-10-14 · **Canonical path:** `docs/architecture/stubs-and-integration-gates.md`
+**Canonical path:** `docs/architecture/stubs-and-integration-gates.md`
 
 ## Rule and meaning
 

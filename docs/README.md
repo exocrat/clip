@@ -1,6 +1,5 @@
 # Campus Marketplace — Document Index
 
-**Version:** 3.2 · **Date:** 2026-10-16
 
 The root [README](../README.md) describes the project. Agents start from [AGENTS.md](../AGENTS.md) and follow the canonical task and review instructions below. Use the project task index to select/resume work; this index locates canonical sources. Detailed Git/review workflow is [CONTRIBUTING.md](../CONTRIBUTING.md).
 

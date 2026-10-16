@@ -1,6 +1,6 @@
 # Campus Marketplace — Human Verification Checklist
 
-**Version:** 3.2 · **Date:** 2026-10-16 · **Canonical path:** `docs/checklists/human-checklist.md`
+**Canonical path:** `docs/checklists/human-checklist.md`
 
 Use the reusable prompt and current canonical files indexed by `docs/README.md`. The agent finds/reads project information, runs routine commands and prepares evidence. You verify understandable results, answer genuine unresolved questions and approve specific actions. Peer-review roles follow `CONTRIBUTING.md`.
 
@@ -10,13 +10,14 @@ Use the reusable prompt and current canonical files indexed by `docs/README.md`.
 - [ ] Verify the agent's read-only summary of the entire task and its numbered steps in order, plus actual checkpoint, executed versus human-verified state, dependencies, owner/reviewer, boundaries, expected outputs/checks, gates, and proposed first/resumed action.
 - [ ] Verify the agent audited the task steps against the task purpose, prerequisites, outputs, acceptance checks, and canonical requirements; review any reported gap before authorizing implementation.
 - [ ] Correct misunderstandings; the agent must not write even status/branch changes before this verification. If a result was already executed but not verified, review its existing evidence rather than allowing it to be repeated blindly.
+- [ ] Before each numbered step, review the agent's short explanation of its purpose, intended changes/outputs, checks, and gates. Say okay before the agent executes that step; verify the result afterward.
 - [ ] Ask the agent to locate recorded project information itself. Supply only genuinely missing decisions/access inputs; never paste secret values/MFA/OTP/passwords in chat.
 
 ## After every numbered step
 
 - [ ] Does the report identify the correct step and concrete changed paths/resources?
 - [ ] Does it show expected versus observed outcome, exact checks/results, pass/fail/blocked explanation, evidence/revision and remaining questions?
-- [ ] Does status record the execution checkpoint and pending human verification accurately?
+- [ ] Does the status table accurately record each execution checkpoint and human-verification state? The dated history need not contain a separate entry for every step or routine “verified; proceed” message; it should preserve meaningful outcomes, decisions, checks, blockers, consequential human direction, and closeout evidence.
 - [ ] Were task boundaries, internal decision gates, privacy and ownership respected? Failed/skipped checks must be explicit.
 - [ ] Say verify/continue, correct, or pause. The agent waits after every step; silence gives no permission. It records verification before advancing. If correction method/scope is uncertain it asks first.
 
@@ -35,9 +36,9 @@ You may inspect evidence, but the agent must summarize what makes it acceptable 
 
 ## Peer review and merging
 
-- [ ] Each contributor uses an isolated branch/clone/worktree and a task/milestone PR. BOOT-00's documentation seed is the one-time direct-to-main exception, approved by the team; a separate peer review is not required for this commit, but the author inspects the exact staged diff. Publishing is separately approved and does not block PD-00 in the locally completed clone; other clones must obtain the canonical documentation revision first.
+- [ ] Each contributor uses an isolated branch/clone/worktree. After the full PD-00–PD-03 audit confirms all four tasks' outputs and checks with no gaps, integrate that handoff directly into `main` without a PR. BOOT-00's documentation seed keeps its separate direct-to-main rule. Later changes use task/milestone PRs.
 - [ ] For pre-domain work, verify the kickoff/stream/integration ownership slot and reserved path scope from the task list. Confirm the PD-00–PD-03 handoff is merged before streams clone, and that each owner removes only their own `.gitkeep` markers; cross-stream changes are coordinated before editing.
-- [ ] A different designated human peer reviews, with AI assistance if useful; affected owners approve shared surfaces. Author verification does not replace peer approval.
+- [ ] For PRs, a different designated human peer reviews, with AI assistance if useful; affected owners approve shared surfaces. Author verification does not replace peer approval.
 - [ ] Required local/CI checks, dependency milestones and conflict-resolution review pass before authorizing the concrete merge. The author agent cannot approve or autonomously merge its PR.
 - [ ] Consumers use the recorded accepted main revision; cloud environment operations remain separately approved and serialized.
 
@@ -50,14 +51,13 @@ You may inspect evidence, but the agent must summarize what makes it acceptable 
 - [ ] Optional work has its own technical prerequisites, your explicit selection and OPTIONAL-OK schedule/cost protection. The recorded planning change explains its earlier scheduling relative to PRD §8; the final buffer remains protected.
 - [ ] Task/phase/project closure includes actual checks, human verification, reviewed revisions/evidence, approved cleanup/retention and required delivery state. Do not accept a blocker/deferred required requirement as successful completion.
 
-**Loop:** agent inspects and explains → you verify → agent executes one step and reports expected/observed evidence → you verify → repeat. A new task needs a new understanding verification.
+**Loop:** agent explains the whole task → you verify → before each numbered step, agent explains that step → you say okay → agent executes only that step and reports evidence → you verify → repeat. A new task needs a new understanding verification.
 
-## Existing WSL, startup and stub checks
+## Environment, startup and stub evidence
 
-- [ ] Both supplied checklists are read before BOOT-00/PD-00 writes; PD-18/INT-01 maintain them rather than defer their initial availability.
-- [ ] Existing WSL is reused; agent commands run in the verified Linux context and real exocrat/clip clone. Source staging versus clone root is explicit; no nested bundle folder, repeated git init, second remote repo or unnecessary WSL reinstall.
-- [ ] Actual workstation/tool/container/credential-route facts are inspected and recorded; project install/start/check commands use the selected Linux toolchain, LF/executable permissions and verified connectivity.
-- [ ] Before isolated work, real PRE-00/DL-00 and frozen contracts exist; the understanding report identifies allowed task/checkpoint, mode, reviewed stub scenarios and pending real obligations under the stub guide. Unknown semantics/security decisions still require a question.
+- [ ] For a contributor using WSL, the agent reuses the existing setup and works in the verified WSL clone; otherwise it uses that contributor's verified environment. Confirm source staging is distinct from the clone and no redundant setup was done.
+- [ ] The agent reports actual workstation/tool/container/credential-route facts and shows that commands use the selected toolchain for that environment, with relevant connectivity evidence.
+- [ ] Before isolated work, verify that real PRE-00/DL-00 and frozen contracts exist, or that the exact isolated step is permitted by the stub guide. The agent must identify reviewed stub scenarios and pending real obligations; unknown semantics/security decisions still require a question.
 - [ ] Every staged real subcheck retains its original step ID, owner, dependency/revision, resume trigger and acceptance test in the work log. Human verification authorizes only the reported isolated increment; readiness/FR/NFR/full completion remains pending.
-- [ ] Deployed config rejects test doubles and fake auth; no public bypass or fallback to fake success. Isolated PRs are labeled and independently reviewed without claiming readiness.
-- [ ] When the actual upstream revision arrives, the earliest pending integration checkpoint is resumed, migrations/data/adapters reconcile and the original real checks rerun before acceptance. Final integration/NFR/experiment/closeout never uses stub-only evidence.
+- [ ] Review evidence that deployed config rejects test doubles and fake auth, with no public bypass or fallback to fake success. Isolated PRs are labeled and reviewed without claiming readiness.
+- [ ] Verify that the earliest pending integration checkpoint resumes when its upstream revision arrives and that original real checks pass before acceptance. Final integration/NFR/experiment/closeout cannot rely on stub-only evidence.

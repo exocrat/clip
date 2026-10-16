@@ -1,6 +1,6 @@
 # Campus Marketplace — Pre-Domain Contributor Prompt
 
-**Version:** 1.0 · **Date:** 2026-10-16 · **Canonical path:** `docs/prompts/pre-domain-contributor-prompt.md`
+**Canonical path:** `docs/prompts/pre-domain-contributor-prompt.md`
 
 Use this prompt with the [reusable task prompt](reusable-task-prompt.md) when working on BOOT-00, PD-00–PD-19, or PRE-00. The reusable prompt governs the human-verification loop; this prompt selects the pre-domain phase and its stream boundaries.
 
@@ -11,7 +11,7 @@ Follow AGENTS.md and docs/prompts/reusable-task-prompt.md, plus the workflow in 
 
 At the start of each selected task, audit the task's ordered steps against its purpose, prerequisites, expected outputs, acceptance checks, and relevant canonical requirements. Report whether the steps are complete and coherent. If you find a material omission, contradiction, or ordering problem, explain it and wait for a task-definition decision before implementation; do not silently work around it.
 
-The kickoff owner completes PD-00–PD-03 in order, adds the tracked `.gitkeep` files to the exclusive directory roots listed in the task list, and hands off that work through the normal review/merge process. Stream owners clone or branch from the merged PD-00–PD-03 revision so the directories are present. Before any other task action, each stream owner removes only the `.gitkeep` files in their assigned roots; include those expected deletions in the stream branch/PR. Four stream owners may then proceed in parallel as their task dependencies permit:
+The kickoff owner completes PD-00–PD-03 in order, adds the tracked `.gitkeep` files to the exclusive directory roots listed in the task list, and audits all PD-00–PD-03 outputs and checks. Once the full audit finds no gaps, integrate the handoff directly into `main`, without a PR. Stream owners clone or branch from that `main` revision so the directories are present. Before any other task action, each stream owner removes only the `.gitkeep` files in their assigned roots; include those expected deletions in the stream branch/PR. Four stream owners may then proceed in parallel as their task dependencies permit:
 - Stream 1: PD-04–PD-06 and PD-10; API and shared core.
 - Stream 2: PD-07; web.
 - Stream 3: PD-08–PD-09; database and data.
@@ -21,7 +21,7 @@ After PD-04–PD-10 and PD-14–PD-15 have handed off their stream outputs, the 
 
 Work only in the directory roots and task-assigned files for the verified scope. The exact `.gitkeep` paths and owners are in docs/tasks/pre-domain-task-list.md. Do not remove another stream's markers or edit another stream's directory. For a required cross-stream integration change, coordinate a bounded change with that stream owner and record the shared-path writer/reviewer before editing.
 
-Follow the required read-only understanding report, human verification, one-numbered-step-at-a-time execution, work-log update, and verification after each step. Preserve existing changes. Do not start another task while waiting for verification unless the human explicitly selects and verifies that task.
+Follow the required read-only understanding report, human verification, and one-numbered-step-at-a-time execution. Keep the work-log status row current after each step and verification. Add concise dated history entries for meaningful outcomes, decisions, checks, blockers, consequential human direction, and closeout; group related steps where useful and omit routine “verified; proceed” updates. Use exact UTC times for new entries and follow the reusable prompt's rules. Preserve existing changes. Do not start another task while waiting for verification unless the human explicitly selects and verifies that task.
 ```
 
 Stream labels describe path ownership, not individual identity or a claim that every task can start at once. Check each dependency and active branch before work. The [task list](../tasks/pre-domain-task-list.md) is authoritative for steps and acceptance.

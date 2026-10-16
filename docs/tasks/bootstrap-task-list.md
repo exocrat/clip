@@ -1,6 +1,6 @@
 # Campus Marketplace — Initial Repository Bootstrap
 
-**Version:** 3.1 · **Date:** 2026-10-14 · **Canonical path:** `docs/tasks/bootstrap-task-list.md`
+**Canonical path:** `docs/tasks/bootstrap-task-list.md`
 
 ## BOOT-00 — Clone/preserve exocrat/clip and install its documentation
 
@@ -17,7 +17,7 @@ Before step 1, inspect the supplied bundle/workspace read-only, explain the full
 5. Create `docs/environment/development-workstation.md` with observed WSL/distribution, Linux root, agent/version/executable paths, credential-route name without secrets, container-route status and gaps from the setup guide. Initialize the actual roster and `docs/status/work-log.md`: all unexecuted tasks remain not started; milestones remain unaccepted. Record this BOOT step/checkpoint, pending verification and actual branch/evidence. Pre-domain/world-cloud account facts remain not configured until inspected by their tasks. Do not premark PD-00–PD-19 done because these documents exist.
 6. Validate all supplied document links/source hashes, task/milestone definitions, stage routing and absence of secrets/real data. Show expected versus observed results and any gap; this is a documentation/Git bootstrap check, not app/CI/NFR success.
 7. For this one-time documentation seed, commit directly to `main` after the documentation audit passes. Verify the target branch, approved repository-local author identity, staged paths and exact docs-only diff; preserve unrelated work. A separate peer review is not required for this BOOT-00 exception. Record that the team-approved direct-to-main exception was used. Do not change hosting protections.
-**Complete when:** The documentation/Git starting repository is verified and committed on local `main`, source references/roster/checkpoints resolve, actual local and remote status is recorded, and the human has verified BOOT-00. A pending remote publication does not block PD-00 in this clone. Other clones must first obtain the canonical documentation revision before using it. The next normal task is PD-00. BOOT-00's documentation seed is the only direct-to-main exception; separate peer review is not required for this exception.
+**Complete when:** The documentation/Git starting repository is verified and committed on local `main`, source references/roster/checkpoints resolve, actual local and remote status is recorded, and the human has verified BOOT-00. A pending remote publication does not block PD-00 in this clone. Other clones must first obtain the canonical documentation revision before using it. The next normal task is PD-00. BOOT-00's documentation seed follows its own direct-to-main rule; the combined PD-00–PD-03 handoff follows the full-audit path in `CONTRIBUTING.md`.
 
 ## Separate publication action
 

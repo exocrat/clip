@@ -1,7 +1,5 @@
 # Campus Marketplace — Product Reference and Architecture Decisions
 
-**Version:** 3.1
-**Date:** 2026-10-14  
 **Canonical repository path:** `docs/product/product-reference-and-architecture-decisions.md`
 **Status:** Revised planning baseline. Implementation choices still follow their human decision gates; task completion requires actual repository evidence.
 
@@ -190,7 +188,7 @@ The project starts with BOOT-00 in `docs/tasks/bootstrap-task-list.md`, followed
 
 The mandatory loop is read-only inspection → explain understanding → human verifies → execute one numbered task step → report expected/observed results and evidence → human verifies → advance. Stop within a step at any unresolved question or separate action approval. Persist step/checkpoint and verification state in `docs/status/work-log.md` so a new session resumes without repeating completed side effects.
 
-Git collaboration follows root `CONTRIBUTING.md`: separate clones/worktrees and task branches, peer-reviewed PRs to main, affected-owner review for shared changes, and local/CI gates. BOOT-00 has a one-time, docs-only direct-to-main commit exception for the existing repository; it does not require separate peer review. Publishing the local seed requires separate approval of the exact target and revision, but does not block PD-00 in that clone. Merge does not authorize deployment or Terraform apply.
+Git collaboration follows root `CONTRIBUTING.md`: separate clones/worktrees and task branches, peer-reviewed PRs to main for later work, affected-owner review for shared changes, and local/CI gates. BOOT-00 has a one-time, docs-only direct-to-main commit rule for the existing repository; it does not require separate peer review. Publishing the local seed requires separate approval of the exact target and revision, but does not block PD-00 in that clone. The combined PD-00–PD-03 handoff goes directly to `main` after its full audit passes. Merge does not authorize deployment or Terraform apply.
 
 **Accepted team scheduling change, 2026-10-14:** The submitted PRD §8 schedules stretch work after required functionality, evaluation, and submission material. The team's later instruction permits selected optional features to begin after their own technical prerequisites, provided the human approves their scope and confirms that required MVP work, accurate NFR verification, the primary experiment, budget, and final submission buffer will not be put at risk. This is a planning change; preserve the submitted PRD unchanged. Record it at `docs/decisions/optional-work-scheduling.md` during bootstrap. It does not turn optional work into required MVP or permit it to block required milestones. Optional changes require affected regression checks and protection of frozen experiment revisions.
 

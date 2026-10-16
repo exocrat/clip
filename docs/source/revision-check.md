@@ -1,6 +1,5 @@
 # Revised Document Set — Consistency Check
 
-**Version:** 3.1 · **Date:** 2026-10-14
 
 This report covers document logic and the supplied bundle. It is not proof of application correctness, real CI execution, cloud setup, actual human PR approval or measured NFR compliance. Those are future verified task outputs.
 

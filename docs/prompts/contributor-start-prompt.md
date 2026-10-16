@@ -21,10 +21,14 @@ contract. Keep the task incomplete until its required real integration checks
 pass. Wait for my verification before changing anything.
 
 After I verify the plan, do one numbered step at a time. Report the result,
-changed paths, checks and evidence, update the concise work log, and wait for
-my verification before continuing. Apply the relevant checklist items as you
-work and do the task-wide review before declaring the task complete. Keep
-cloud, hosting, push, and merge actions behind their separate approvals.
+changed paths, checks and evidence, update the work-log status row for each
+step and verification, and wait for my verification before continuing. Add a
+dated history entry for meaningful outcomes; related steps may share one entry.
+Do not add separate entries for routine “verified; proceed” updates. Use exact
+UTC times for new entries and follow the reusable prompt's entry rules. Apply
+the relevant checklist items as you work and do the task-wide review before
+declaring the task complete. Keep cloud, hosting, push, and merge actions
+behind their separate approvals.
 ```
 
 The reusable prompt is authoritative if this starter is shorter or a detail changes. Never paste credentials or secret values into the conversation.
