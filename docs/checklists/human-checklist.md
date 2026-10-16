@@ -1,6 +1,6 @@
 # Campus Marketplace — Human Verification Checklist
 
-**Version:** 3.1 · **Date:** 2026-10-14 · **Canonical path:** `docs/checklists/human-checklist.md`
+**Version:** 3.2 · **Date:** 2026-10-16 · **Canonical path:** `docs/checklists/human-checklist.md`
 
 Use the reusable prompt and current canonical files indexed by `docs/README.md`. The agent finds/reads project information, runs routine commands and prepares evidence. You verify understandable results, answer genuine unresolved questions and approve specific actions. Peer-review roles follow `CONTRIBUTING.md`.
 
@@ -8,6 +8,7 @@ Use the reusable prompt and current canonical files indexed by `docs/README.md`.
 
 - [ ] Give the reusable prompt, optionally task/member/scope. For first setup, supply the document bundle and ask for BOOT-00; pre-domain tasks follow its verified documentation/Git bootstrap.
 - [ ] Verify the agent's read-only summary of the entire task and its numbered steps in order, plus actual checkpoint, executed versus human-verified state, dependencies, owner/reviewer, boundaries, expected outputs/checks, gates, and proposed first/resumed action.
+- [ ] Verify the agent audited the task steps against the task purpose, prerequisites, outputs, acceptance checks, and canonical requirements; review any reported gap before authorizing implementation.
 - [ ] Correct misunderstandings; the agent must not write even status/branch changes before this verification. If a result was already executed but not verified, review its existing evidence rather than allowing it to be repeated blindly.
 - [ ] Ask the agent to locate recorded project information itself. Supply only genuinely missing decisions/access inputs; never paste secret values/MFA/OTP/passwords in chat.
 
@@ -35,6 +36,7 @@ You may inspect evidence, but the agent must summarize what makes it acceptable 
 ## Peer review and merging
 
 - [ ] Each contributor uses an isolated branch/clone/worktree and a task/milestone PR. BOOT-00's documentation seed is the one-time direct-to-main exception, approved by the team; a separate peer review is not required for this commit, but the author inspects the exact staged diff. Publishing is separately approved and does not block PD-00 in the locally completed clone; other clones must obtain the canonical documentation revision first.
+- [ ] For pre-domain work, verify the kickoff/stream/integration ownership slot and reserved path scope from the task list. Confirm the PD-00–PD-03 handoff is merged before streams clone, and that each owner removes only their own `.gitkeep` markers; cross-stream changes are coordinated before editing.
 - [ ] A different designated human peer reviews, with AI assistance if useful; affected owners approve shared surfaces. Author verification does not replace peer approval.
 - [ ] Required local/CI checks, dependency milestones and conflict-resolution review pass before authorizing the concrete merge. The author agent cannot approve or autonomously merge its PR.
 - [ ] Consumers use the recorded accepted main revision; cloud environment operations remain separately approved and serialized.

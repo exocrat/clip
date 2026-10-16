@@ -1,6 +1,6 @@
 # Campus Marketplace — Project Task and Milestone Index
 
-**Version:** 3.0 · **Date:** 2026-10-14 · **Canonical path:** `docs/tasks/project-task-index.md`
+**Version:** 3.1 · **Date:** 2026-10-16 · **Canonical path:** `docs/tasks/project-task-index.md`
 
 ## Execution source and phase routing
 
@@ -14,6 +14,8 @@ This index supplies the next-work route and readiness definitions. Detailed numb
 | Primary comparison | `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md`: EXP-01–EXP-08 | Reviewed parity/design/implementation, valid results/analysis and cleanup |
 | Final closeout | `docs/tasks/final-closeout-task-list.md`: CLOSE-00 | Current regression/evidence, final NFR-08/cost/resources, report/demo/package and honest submission status |
 | Selected optional work | Domain task list OPT-01–03 | Own prerequisites plus OPTIONAL-OK; does not replace required stages |
+
+Pre-domain execution uses one PD-00–PD-03 kickoff owner, four dependency-aware streams, then one integration owner. See the stream/path map in `docs/tasks/pre-domain-task-list.md` and the companion `docs/prompts/pre-domain-contributor-prompt.md`; those documents do not assign people by name.
 
 ## Readiness milestone definitions
 
@@ -95,7 +97,7 @@ The graph is derived from the following acceptance dependencies. For multi-stage
 | PD-05 | PD-02, PD-04 |
 | PD-06 | PD-05 |
 | PD-07 | PD-02 |
-| PD-08 | PD-02, PD-04, PD-05 |
+| PD-08 | PD-02, PD-04, PD-05, PD-06 |
 | PD-09 | PD-06, PD-08 |
 | PD-10 | PD-04, PD-05, PD-06 |
 | PD-11 | PD-05, PD-06, PD-07 |

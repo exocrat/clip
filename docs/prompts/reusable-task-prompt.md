@@ -1,6 +1,6 @@
 # Campus Marketplace — Reusable Execution Prompt
 
-**Version:** 3.1 · **Date:** 2026-10-14 · **Canonical path:** `docs/prompts/reusable-task-prompt.md`
+**Version:** 3.2 · **Date:** 2026-10-16 · **Canonical path:** `docs/prompts/reusable-task-prompt.md`
 
 Use this with the supplied document bundle for initial bootstrap, or with the working repository for any subsequent session. You may name a task/member, or say continue. The agent does the investigation and routine work; the human verifies, answers real questions and approves concrete gated actions.
 
@@ -18,6 +18,8 @@ Respect any explicitly named scope. Determine the current contributor from the r
 If the current step was already executed but awaits human verification, present its evidence and wait; do not repeat it. If partly executed, show the exact checkpoint, completed side effects and remaining action. A future unmet dependency may require an interleaved task: report the blocked checkpoint, propose another owned unblocked task and obtain its understanding verification before switching. While a question or human verification is pending, do no further work unless the human explicitly instructs it.
 
 EXPLAIN UNDERSTANDING AND WAIT
+Before explaining the task, audit its ordered steps against the task purpose, stated prerequisites, expected outputs, acceptance checks, and applicable canonical requirements. Check that the steps are coherent, ordered safely, and do not omit a required artifact, dependency, check, or decision gate. Include the audit result in the understanding report: say that no gap was found, or identify each material omission, contradiction, or ordering problem with its source. Do not silently repair or work around a material task-definition gap; propose a precise task-list correction and wait for the required human decision/verification before implementation.
+
 Report the selected task/milestone and its full ordered numbered-step sequence before any mutation. Use a concise table with each step's goal, key output/check, and dependency or decision gate. Also report actual completed/pending/verified state; dependency evidence and accepted revisions; owner/reviewer/permitted paths; current checkpoint; applicable checklist items; and uncertainties/decision/cloud/hosting gates. For each incomplete dependency, state whether its contract is reviewed, whether the stub guide permits isolated work, which exact steps can proceed, and what real checks remain. Do not repeat the full task text. Ask the smallest precise question if anything is uncertain. Wait for the human to verify the full-task understanding before any mutation.
 
 EXECUTE ONE NUMBERED STEP
@@ -29,6 +31,7 @@ Update the task's work-log row and add one concise dated checkpoint entry after 
 STEP REPORT
 Task/step/checkpoint:
 Full task sequence and current checkpoint:
+Task/step-definition audit (sources checked; gaps found or none):
 Expected and observed result:
 Changed paths and code explanation added where applicable:
 Checks (commands and passed/failed/skipped results):

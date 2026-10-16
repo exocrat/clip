@@ -1,6 +1,6 @@
 # Campus Marketplace — Git, PR, and Execution Workflow
 
-**Version:** 3.1 · **Date:** 2026-10-14 · **Canonical path:** `CONTRIBUTING.md`
+**Version:** 3.2 · **Date:** 2026-10-16 · **Canonical path:** `CONTRIBUTING.md`
 
 ## Human and agent responsibilities
 
@@ -15,10 +15,6 @@ The designated peer reviewer may use their own AI review session to inspect the 
 Each person uses a separate clone on separate computers, or a separate Git worktree and task branch on a shared computer. Never run multiple coding agents in one working directory or switch a worktree out from under an active agent. The roster is fixed in the project task index before parallel work; select only assigned tasks unless the human explicitly reassigns ownership and the registry is updated.
 
 Branch naming: `task/<task-id-lowercase>-<short-purpose>`, e.g. `task/id-01-identity`. A task with a merged readiness PR can continue on a subsequent branch, e.g. `task/id-01-final-verification`. Name the exact milestone and originating task in that PR. Do not create a PR for every numbered step; commits are useful checkpoints, not a requirement for every read-only action. Before a task or milestone handoff, inspect the complete diff, staged files, task acceptance checks, tests, generated files, documentation, and secret/data scan results. Commit only reviewed in-scope files. Preserve user changes and never commit sensitive state/plan artifacts.
-
-## Code explanations
-
-Explain every new function and meaningful code unit in a docstring, comment, or nearby documentation. State its purpose and, where relevant, its inputs and outputs, side effects, security assumptions, and important limits. Comments should explain behavior or reasoning that is not clear from the code; do not narrate obvious syntax. Keep explanations current when behavior changes.
 
 ## Starting and claiming work
 

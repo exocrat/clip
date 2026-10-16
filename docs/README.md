@@ -14,6 +14,7 @@ The root [README](../README.md) describes the project. Agents start from [AGENTS
 - [Project phase/milestone/owner index](tasks/project-task-index.md)
 - [Final regression/cost/delivery tasks](tasks/final-closeout-task-list.md)
 - [Reusable execution prompt](prompts/reusable-task-prompt.md)
+- [Pre-domain contributor prompt and stream workflow](prompts/pre-domain-contributor-prompt.md)
 - [Contributor start prompt](prompts/contributor-start-prompt.md)
 - [Peer review prompt](prompts/peer-review-prompt.md)
 - [Agent execution checklist](checklists/agent-checklist.md)

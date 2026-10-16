@@ -9,7 +9,7 @@
 
 Create the smallest repository that lets a new contributor or AI agent understand project status, run the foundation locally, validate changes, and proceed through the pre-domain tasks without relying on chat history or a human to locate missing instructions.
 
-This layout covers the pre-domain foundation and leaves domain feature implementation to the later single domain task list. Domain directories may be created as empty ownership placeholders, but must not contain speculative feature code or invented APIs. Optional/stretch features remain out of the foundation.
+This layout covers the pre-domain foundation and leaves domain feature implementation to the later single domain task list. The pre-domain task list records stream path ownership and the exact directory roots. PD-03 places a tracked `.gitkeep` file in each exclusive root so the directories are present in stream owners' clones. After the PD-00–PD-03 handoff is merged, each owner removes only their own marker files as the first action in their worktree, then populates those paths. Markers do not authorize edits outside the owner's assigned roots or task files. Domain directories may be created as empty ownership placeholders, but must not contain speculative feature code or invented APIs. Optional/stretch features remain out of the foundation.
 
 The repository is the execution source of truth. Keep the submitted PRD as the source of requirement intent. Store the current product/architecture reference, shared conventions, task lists, checklists, task prompt, work log, decisions, and actual environment records in the repository so an agent can read them from the supplied reusable prompt.
 

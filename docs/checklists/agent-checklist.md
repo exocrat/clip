@@ -1,6 +1,6 @@
 # Campus Marketplace — Agent Execution Checklist
 
-**Version:** 3.1 · **Date:** 2026-10-14 · **Canonical path:** `docs/checklists/agent-checklist.md`
+**Version:** 3.2 · **Date:** 2026-10-16 · **Canonical path:** `docs/checklists/agent-checklist.md`
 
 **Sources:** `docs/README.md`, product reference/unchanged PRD, shared conventions, repository structure, bootstrap/pre-domain/domain/experiment/final task lists, project task index, root `CONTRIBUTING.md`, reusable prompt, current status/decisions/contracts/environment/evidence. This is an execution check; canonical sources retain detailed rules. Prior-source provenance belongs in `docs/source/README.md`, not recurring runtime questions.
 
@@ -9,7 +9,8 @@
 - [ ] Inspect the workspace/bundle or repository read-only; preserve changes and reconcile branch/main/remote active PRs/task checkpoints with real evidence.
 - [ ] Read task index and roster; choose only the requested/assigned task and its next unexecuted checkpoint. If the existing exocrat/clip clone/document seed is incomplete select BOOT-00; route through PRE-00, domain milestones, experiment and CLOSE-00 afterward.
 - [ ] Distinguish expected outputs from missing prerequisites. Search the repo/bundle yourself; ask about every unresolved uncertainty/conflict. No log/branch/file mutation yet.
-- [ ] Summarize the entire selected task and its numbered steps in order, including prerequisites, expected outputs/checks, gates, completed versus pending/verified state, owner/reviewer, and the first step to execute. Wait for human verification.
+- [ ] Audit the selected task's ordered steps against its purpose, prerequisites, outputs, acceptance checks, and canonical requirements. Report gaps or confirm none; do not silently work around a material omission or contradiction.
+- [ ] Summarize the entire selected task and its numbered steps in order, including the audit result, prerequisites, expected outputs/checks, gates, completed versus pending/verified state, owner/reviewer, and the first step to execute. Wait for human verification.
 
 ## Each verified numbered step
 
@@ -33,10 +34,9 @@
 | Phase/tasks | Required checklist evidence |
 |---|---|
 | BOOT-00 | Approved bundle/PRD checksum, audited documentation/Git seed committed on local `main`, source provenance and roster, actual local/remote status recorded, no falsely completed implementation tasks. Pending publication does not block PD-00 in this clone. |
-| PD-00–03 | Starting-state audit/preservation, canonical sources/provenance, minimal toolchain/layout, Git/PR reviewer setup, shared status/command/secret-reference homes. |
-| PD-04–08 | Pinned Black local/CI, runnable skeletons/common conventions, safe local migration/database path. |
-| PD-09–11 | Schema-independent generator/label format, safe core fixtures/fakes, contract source/generation/stale check. Final domain data is not required before schemas exist. |
-| PD-12–19 / PRE-00 | PR/CI protections, clean setup/check path, verified account/budget/state/shared cloud, current task/checklist docs, successful foundation audit/handoff and accepted main revision. |
+| PD-00–03 | Starting-state audit/preservation, canonical sources/provenance, minimal toolchain/layout, Git/PR reviewer setup, shared status/command/secret-reference homes, and the tracked path-ownership map for four streams. |
+| PD-04–10 | API/core, web, database/data, and cloud-preparation streams stay within their reserved roots; their task dependencies still control start order. |
+| PD-11–19 / PRE-00 | Integration owner reconciles contracts, CI, commands, shared cloud, task/checklist docs, and the full foundation audit/handoff. |
 | DL-00 | Four contracts/combined source agree; supported Search listing-data boundary, auth/contacts, read-watermarks/notification interfaces, private-data classifications and no call cycles. |
 | ID-01/LI-01/SE-01/CN-01 | Explicit readiness PR/milestone distinct from full FR/NFR completion; assigned UI/core/fixtures and final dependent validations. |
 | LI-02/SE-02/CN-02/CN-03 | Full feature UI/API/failure/privacy checks; explicit provider/read-state/image/selection boundaries and actual live deployment when required. |
@@ -60,6 +60,7 @@
 ## Existing WSL, startup and stub checks
 
 - [ ] Both supplied checklists are read before BOOT-00/PD-00 writes; PD-18/INT-01 maintain them rather than defer their initial availability.
+- [ ] For pre-domain streams, start from the merged PD-00–PD-03 handoff, remove only the `.gitkeep` markers in the assigned roots as the first action, preserve other streams' markers/paths, and coordinate a bounded cross-stream change before editing another owner's root.
 - [ ] Existing WSL is reused; agent commands run in the verified Linux context and real exocrat/clip clone. Source staging versus clone root is explicit; no nested bundle folder, repeated git init, second remote repo or unnecessary WSL reinstall.
 - [ ] Actual workstation/tool/container/credential-route facts are inspected and recorded; project install/start/check commands use the selected Linux toolchain, LF/executable permissions and verified connectivity.
 - [ ] Before isolated work, real PRE-00/DL-00 and frozen contracts exist; the understanding report identifies allowed task/checkpoint, mode, reviewed stub scenarios and pending real obligations under the stub guide. Unknown semantics/security decisions still require a question.

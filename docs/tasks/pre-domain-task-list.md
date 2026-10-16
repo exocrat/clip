@@ -1,7 +1,7 @@
 # Campus Marketplace — Pre-Domain Repository Population Task List
 
-**Version:** 3.1
-**Date:** 2026-10-14  
+**Version:** 3.2
+**Date:** 2026-10-16
 **Canonical repository path:** `docs/tasks/pre-domain-task-list.md`
 **Document 5. Status:** Execution task list for preparing the repository, account access, and shared test environment before domain feature work.
 
@@ -17,13 +17,13 @@ The required implementation baseline is React + TypeScript, Python + FastAPI, Po
 
 Start after BOOT-00 is marked complete in the verified local clone. Its audited documentation seed must be committed on local `main`, and the local/remote status must be recorded; a separately approved remote publication may remain pending without blocking PD-00 in this clone. A different clone must first obtain the canonical documentation revision. BOOT-00 installs the supplied source documents, prompt, checklists, task index, and status template into the verified existing exocrat/clip clone and preserves Git. Preserve these files and extend them through the tasks below.
 
-Before each task, inspect read-only and explain the whole task and its numbered steps in order, including prerequisites, expected outputs/checks, gates, and the first step to execute. Wait for human verification before any write, including work-log edits. Execute one numbered step, report expected versus observed results, checks/evidence and checkpoint, then wait for human verification. A nested procedure such as PD-03A is part of its parent step; identify the precise checkpoint and stop at any internal decision gate. Use `CONTRIBUTING.md` for task branches/PRs and `docs/tasks/project-task-index.md` for assignment, resume, and milestone selection.
+Before each task, inspect read-only and audit its ordered steps against the task purpose, prerequisites, outputs, acceptance checks, and canonical requirements. Report any material omission, contradiction, or ordering problem with the full task understanding; do not silently work around a task-definition gap. Explain the whole task and its numbered steps in order, including the audit result, prerequisites, expected outputs/checks, gates, and the first step to execute. Wait for human verification before any write, including work-log edits. Execute one numbered step, report expected versus observed results, checks/evidence and checkpoint, then wait for human verification. A nested procedure such as PD-03A is part of its parent step; identify the precise checkpoint and stop at any internal decision gate. Use `CONTRIBUTING.md` for task branches/PRs and `docs/tasks/project-task-index.md` for assignment, resume, and milestone selection.
 
 Missing outputs explicitly assigned to a task are created there; missing prerequisites or uncertain requirements require a question. If blocked at a future dependency milestone, report it and propose the next owned, unblocked task; switch only after the human verifies that new scope. Do not do other work while waiting for an unanswered question unless explicitly instructed.
 
 ## How to use this list
 
-- Work through task IDs in order unless the dependency column permits parallel work.
+- Follow the kickoff → four streams → integration phases defined above. Within each stream, follow the task dependencies and numbered-step order; tasks may start concurrently only when the dependency registry permits it.
 - At the start, read `docs/status/work-log.md` if it exists. Reconcile the log with the actual branch, files, tests, and CI; the repository is the evidence for status.
 - For each task, inspect the current repository before editing. Preserve existing work. Do not replace files just because this list describes their desired contents.
 - Use the current repo copies of the PRD, Documents 1–4, and shared conventions as the project sources. If a required source is missing or two sources conflict, stop before dependent work, record the exact conflict, and ask the human. Do not resolve a product or security ambiguity by guessing.
@@ -44,7 +44,7 @@ Missing outputs explicitly assigned to a task are created there; missing prerequ
 | PD-05 | Create a runnable API skeleton and shared core | PD-02, PD-04 |
 | PD-06 | Define and implement shared API/data conventions | PD-05 |
 | PD-07 | Create a runnable web skeleton | PD-02 |
-| PD-08 | Create the local database lifecycle and migration path | PD-02, PD-04, PD-05 |
+| PD-08 | Create the local database lifecycle and migration path | PD-02, PD-04, PD-05, PD-06 |
 | PD-09 | Create deterministic synthetic reference data | PD-06, PD-08 |
 | PD-10 | Create reusable synthetic test fixtures and safe test-provider controls | PD-04, PD-05, PD-06 |
 | PD-11 | Establish the shared contract source and generation check | PD-05, PD-06, PD-07 |
@@ -56,8 +56,28 @@ Missing outputs explicitly assigned to a task are created there; missing prerequ
 | PD-17 | Validate and synchronize the supplied single domain task list | PD-14–PD-16 |
 | PD-18 | Reconcile and maintain the supplied checklists | PD-01–PD-17 |
 | PD-19 | Run the full foundation audit and handoff | PD-00–PD-18 |
+| PRE-00 | Complete foundation gate before domain feature work | PD-07, PD-08, PD-11, PD-19 |
 
 Tasks may be marked `not started`, `in progress`, `blocked`, or `done`. Use a task ID consistently in branches/PRs, work-log entries, decisions, and evidence paths.
+
+## Pre-domain ownership streams and execution order
+
+This workflow uses one owner for the kickoff, one owner for each of four implementation streams, and one owner for the integration phase. These are ownership slots, not assignments to named people; the human team decides who fills them. A person may hold more than one slot if the team chooses. Do not infer these slots from the A/B/C/D domain roster. The streams are path/concurrency boundaries, not equal work estimates: PD-07 is narrower than the API/core and database streams, while integration groups many later tasks and is intentionally treated as a separate phase.
+
+| Phase / stream | Tasks | Main directory roots | Start and handoff rule |
+|---|---|---|---|
+| Kickoff owner | PD-00–PD-03 | Repository entry points and shared project records | Complete in order before stream work starts. PD-02 freezes the layout; PD-03 records ownership and adds tracked `.gitkeep` files to the exclusive directory roots below. Merge the PD-00–PD-03 handoff to the shared base before stream owners clone or branch. |
+| Stream 1 — API and shared core | PD-04–PD-06, PD-10 | `apps/api/`, `tests/fixtures/core/`, `pyproject.toml` and the selected Python lockfile | Remove only this stream's `.gitkeep` files as the first action after cloning; then follow dependencies: PD-04 after PD-02; PD-05 after PD-04; PD-06 after PD-05; PD-10 after PD-04–PD-06. |
+| Stream 2 — Web | PD-07 | `apps/web/`, root `package.json` and its single selected Node lockfile | Remove only this stream's `.gitkeep` file as the first action after cloning. Starts in the stream phase after PD-03; PD-07 has no further implementation prerequisite beyond PD-02. |
+| Stream 3 — Database and data | PD-08–PD-09 | `database/`, `data/`, root `docker-compose.yml`, and `docs/architecture/mvp-database-schema.md` | Remove only this stream's `.gitkeep` files as the first action after cloning; then follow dependencies: PD-08 after PD-02, PD-04–PD-06; PD-09 after PD-06 and PD-08. |
+| Stream 4 — Cloud preparation | PD-14–PD-15 | `infra/terraform/` and cloud-specific environment records | Remove only this stream's `.gitkeep` file as the first action after cloning. PD-14 follows PD-01–PD-03 and can run alongside implementation; PD-15 follows PD-14. |
+| Integration owner | PD-11–PD-13, PD-16–PD-19, PRE-00 | `contracts/`, `.github/workflows/`, `scripts/`, `tests/integration/`, and shared integration records | Remove only integration-owned `.gitkeep` files when starting this phase. Begins after PD-04–PD-10 and PD-14–PD-15 have handed off their stream outputs. Then follow each task's listed prerequisites: PD-11 waits for PD-05–PD-07; PD-12/13 wait for their listed foundation tasks; PD-16 waits for PD-04–PD-15; PD-17–PD-19 follow their listed dependencies. PRE-00 remains the final gate. |
+
+The exclusive directory roots that PD-03 prepares with a tracked `.gitkeep` are `apps/api/`, `tests/fixtures/core/`, `apps/web/`, `database/`, `data/`, `infra/terraform/`, `contracts/`, `.github/workflows/`, `scripts/`, and `tests/integration/`. The kickoff owner commits these markers as part of the PD-00–PD-03 handoff; stream owners clone or branch from the merged handoff, delete only the marker files within their own assigned roots as their first action, and then populate those directories. The marker deletions are expected in their branch/PR. The ownership map in this table remains the shared, version-controlled boundary. Root-level files and shared documentation records are assigned by task in the table and are not made exclusive by a marker. Stream owners work only in their listed roots and task-assigned files; a needed change in another stream's root is proposed to that owner or handled by the integration owner. Shared status-log updates remain routine task bookkeeping.
+
+Root files are reserved to the stream/task named above even though they are not inside a stream directory. The integration owner owns shared generated contracts, CI, the common command front door, and integration tests. PD-16 may need a bounded change within `infra/terraform/`; coordinate that change with the cloud-preparation owner, who reviews the infrastructure scope. PD-04/07/08 own their respective language/dependency and local database root files. Do not edit another stream's directories to change a shared root file.
+
+The integration owner handles cross-stream artifacts and final acceptance; the streams do not independently edit one another's directories. In particular, PD-11 owns the shared contract source and generated outputs; PD-12 owns CI integration; PD-13 owns the common command front door; PD-16 owns shared cloud deployment/verification; PD-17–PD-19 own final task-list, checklist, and handoff integration. Task-specific files outside the listed roots remain with the task that explicitly creates them.
 
 ## PD-00 — Inspect repository and establish the starting state
 
@@ -137,6 +157,7 @@ Tasks may be marked `not started`, `in progress`, `blocked`, or `done`. Use a ta
 7. Create `docs/environment/README.md` and an empty non-secret inventory template for future cloud use. Label all account, region, resource, and cost facts `not provisioned/not yet known`; do not invent values.
 8. Verify/update the supplied `AGENTS.md` as a short pointer to the current reusable prompt, task index, checklists, work log, and canonical references. Do not write the detailed reusable agent instructions here; those belong in the separate prompt document.
 9. Extend `docs/status/work-log.md` as specified in PD-03A below. Also initialize `docs/environment/commands.md` and `docs/environment/secret-handling.md` with non-secret templates and creator-task references. Configure `CONTRIBUTING.md` and the task index with the four actual humans, domain/task assignments, peer reviewers, shared-path owners, remote/main branch, milestone PR rules, and available merge protections. No extra staff are assumed for security/platform/frontend roles. Ask for genuinely missing assignments and record them once.
+10. Create each exclusive directory root listed in “Pre-domain ownership streams and execution order” in the working clone and place a tracked, empty `.gitkeep` file in it so Git carries the directory into stream owners' clones. Do not add app scaffolds or speculative feature code. Record the exact marker paths and path-to-stream/task map in the canonical task documentation. The PD-00–PD-03 handoff must be merged to the shared base before stream owners clone or branch. Each owner removes only their stream's `.gitkeep` files as the first action in their own clone/worktree; those removals are expected in that stream's branch/PR.
 
 **PD-03A — Initialize the shared work log:**
 
@@ -215,38 +236,43 @@ Tasks may be marked `not started`, `in progress`, `blocked`, or `done`. Use a ta
 
 **Complete when:** Every shared convention needed by the first domain task has one recorded definition, an implementation location, an example, and tests.
 
-## PD-07 — Create a runnable web skeleton
+## PD-07 — Create a runnable web skeleton and approved page stubs
 
-**Purpose:** Make the React + TypeScript client start locally without implementing product workflows.
+**Purpose:** Make the React + TypeScript client start locally and establish the human-approved page/route inventory before domain feature implementation, without implementing product workflows.
+
+**Contributor assignment:** A owns the shared shell/navigation and Identity plus notifications; B owns Listings; C owns Search; D owns Conversations.
 
 **Steps:**
 
 1. Initialize the web app using the package manager and versions selected in PD-02.
-2. Add a minimal responsive shell with app name, a non-functional foundation landing page, and a clear local API connection setting. Do not create marketplace screens or fake product behavior.
-3. Add lint, type-check, test, and production-build scripts, each with pinned dependencies.
-4. Add one small smoke test for rendering the shell and one test for the API base URL/configuration behavior.
-5. Ensure local development does not require AWS credentials or call production endpoints.
+2. Derive the proposed page and route inventory only from the PRD and approved project decisions. Identify source references for each entry. Do not invent pages or routes; if those sources leave an entry or behavior unclear, ask the human and wait for a decision.
+3. Present the proposed inventory and contributor assignments to the human for verification. Do not create route/page stubs until the inventory is verified. Record the accepted inventory in the repository's canonical project documentation.
+4. Create minimal route/page stubs only for the verified inventory. Keep the shared shell/navigation minimal, with no domain workflows or fabricated product behavior. Domain implementation tasks must extend these approved pages; adding a page or route requires human approval.
+5. Add lint, type-check, test, and production-build scripts, each with pinned dependencies. Add smoke checks showing approved routes/pages render and the API base URL/configuration is local; verify no unapproved page or route was added.
+6. Ensure local development does not require AWS credentials or call production endpoints.
 
-**Checks:** Clean install from lockfile; lint, type-check, test, and build pass; inspect network/config defaults to ensure they point only to local development.
+**Checks:** Clean install from lockfile; lint, type-check, tests, and build pass; every route/page matches the human-verified inventory; no page/route was inferred from an unclear source; inspect network/config defaults to ensure they point only to local development.
 
-**Complete when:** A contributor can start and validate the web shell from a clean checkout without external accounts or cloud resources.
+**Complete when:** A contributor can start and validate the web shell and the minimal human-approved page/route stubs from a clean checkout without external accounts or cloud resources, and later domain work has an explicit approval rule for adding pages.
 
-## PD-08 — Create the local database lifecycle and migration path
+## PD-08 — Design the complete MVP schema and create the coordinated database foundation
 
-**Purpose:** Provide a reproducible local PostgreSQL service and versioned schema workflow.
+**Purpose:** Design and review the complete MVP schema before parallel domain feature implementation, then provide a reproducible local PostgreSQL service and coordinated initial migrations.
+**Depends on:** PD-02, PD-04, PD-05, and PD-06.
 
 **Steps:**
 
-1. Select a supported PostgreSQL version compatible with the project and record it. Use the same version in local compose and CI unless a documented compatibility reason requires otherwise.
-2. Add a minimal `docker-compose.yml` for PostgreSQL only. Bind to local development interfaces, use a local-only password from environment, avoid public ports where unnecessary, and persist data only in a clearly named local volume.
-3. Select one migration tool and create the first baseline migration containing only foundation tables/metadata strictly required to prove the migration path. Do not implement domain feature schemas here; detailed schema belongs to reviewed domain contracts/tasks.
-4. Add commands for start DB, wait for readiness, migrate up, migrate status, reset local DB, and stop. Reset must clearly warn and target only the local compose volume.
-5. Add a database connectivity and migration smoke test. Ensure tests can use a temporary/test database and never point at a production database by default.
-6. Document backup/restore as future cloud tasks; do not perform cloud database operations here.
+1. Inspect the PRD, approved project decisions, PD-06 shared data conventions, current repository, and selected PostgreSQL/toolchain versions. Derive the complete MVP schema from those sources; do not guess unresolved product or data choices. Ask the human about unresolved choices and wait before relying on them.
+2. Write `docs/architecture/mvp-database-schema.md` describing the reviewed MVP entities, fields, relationships, ownership, constraints, and indexes needed by the approved MVP behavior. Present the proposed schema for human and affected-owner review; resolve source conflicts or unclear ownership before creating dependent migrations.
+3. Select one migration tool and create the coordinated initial MVP migrations under `database/migrations/` from the reviewed schema. Keep table ownership and migration ordering clear. Later domain tasks may add reviewed migrations that implement or refine their owned behavior against this baseline; they must not silently contradict the approved schema.
+4. Select and record a supported PostgreSQL version. Use the same version in local compose and CI unless a documented compatibility reason requires otherwise. Add a minimal local PostgreSQL compose service bound to local development interfaces, using a local-only password from environment and a clearly named local volume; avoid unnecessary public ports and do not provision a cloud database.
+5. Add documented commands for starting the database, waiting for readiness, applying migrations, checking migration status, resetting the local database, and stopping it. Reset must warn clearly and target only the local compose volume.
+6. Verify the coordinated initial migrations apply from a clean database to the expected migration head and produce a schema consistent with the reviewed schema document. Exercise the migration smoke/connectivity checks against a temporary or local test database, never production; confirm repeatability.
+7. Document backup/restore as future cloud tasks; do not perform cloud database operations here.
 
-**Checks:** Start from no local volume, migrate, query readiness, reset the local volume, re-run migration, and confirm repeatability. Verify commands reject a non-local target unless an explicitly separate approved task authorizes it.
+**Checks:** The schema document and initial migration set have human/affected-owner review; all coordinated migrations apply from a clean local database to the expected head; schema checks agree with the reviewed document; connectivity/readiness and repeatability checks pass; reset and other commands reject non-local targets unless an explicitly separate approved task authorizes them.
 
-**Complete when:** Local PostgreSQL can be created, migrated, tested, and removed through documented commands without any cloud resource.
+**Complete when:** `docs/architecture/mvp-database-schema.md` records the human-reviewed complete MVP schema, the coordinated initial migrations under `database/migrations/` apply and pass checks from a clean database, and contributors can create, migrate, test, and remove local PostgreSQL through documented commands without cloud resources.
 
 ## PD-09 — Prepare deterministic synthetic-data tooling
 
@@ -280,23 +306,25 @@ Tasks may be marked `not started`, `in progress`, `blocked`, or `done`. Use a ta
 
 **Complete when:** Domain tasks can reuse safe, deterministic fixtures and cannot accidentally use development fakes in production mode.
 
-## PD-11 — Establish the shared contract source and generation check
+## PD-11 — Establish shared contracts, the domain code boundary, and generation checks
 
-**Purpose:** Stabilize the path for contracts before domain teams work in parallel; this creates interfaces and generation tooling, not domain features.
+**Purpose:** Stabilize the contract source and code-level domain boundary before domain teams work in parallel; this creates interface conventions and generation/check tooling, not domain features or domain-specific contracts.
 
 **Steps:**
 
 1. Identify the authoritative editable API contract source and how FastAPI/OpenAPI and frontend TypeScript types will be derived. Present options and ask if the choice changes public API or cross-domain compatibility.
-2. Create `contracts/README.md` with source path, generated destinations, generator version, exact regenerate command, exact check-only command, and instructions not to hand-edit generated files.
-3. Add a minimal health contract and prove a clean regeneration yields no diff on the second run.
-4. Add a contract test that compares generated API schema with the app and fails when generated artifacts are stale.
-5. Record domain operation placeholders as empty/future only; do not invent endpoint paths, request fields, response meanings, or business behavior.
-6. Carry the required Identity contact-sharing public types/signatures from the pre-domain requirements into the approved Identity contract source as interface declarations only, with privacy/auth rules noted from shared conventions. Do not implement these operations or expose actual contact data in fixtures.
-7. Require cross-domain contract review by affected owners before later changes alter shared operations/types. Record contract version/change workflow.
+2. Define and record the code-level boundary convention using the inspected repository structure: each domain exposes a declared public interface for other domains; cross-domain calls use that interface; other domains must not import its internal implementation or directly read or write its private tables. Keep `core/` for genuinely shared technical primitives, not domain business logic. Do not require separate deployable services. If the sources or repository leave the interface convention or ownership unclear, ask the human before freezing it. Do not define the specific domain contracts or operation signatures here.
+3. Add an appropriate repeatable architecture/boundary check that detects violations of the declared interface and ownership rules, including prohibited internal cross-domain imports and direct access to another domain's private tables. Verify that the check detects representative violations, document its exact command, and make it available for PD-12 CI integration.
+4. Create `contracts/README.md` with source path, generated destinations, generator version, exact regenerate command, exact check-only command, and instructions not to hand-edit generated files.
+5. Add a minimal health contract and prove a clean regeneration yields no diff on the second run.
+6. Add a contract test that compares generated API schema with the app and fails when generated artifacts are stale.
+7. Record domain operation placeholders as empty/future only; do not invent endpoint paths, request fields, response meanings, or business behavior.
+8. Carry the required Identity contact-sharing public types/signatures from the pre-domain requirements into the approved Identity contract source as interface declarations only, with privacy/auth rules noted from shared conventions. Do not implement these operations or expose actual contact data in fixtures.
+9. Require cross-domain contract review by affected owners before later changes alter shared operations/types. Record contract version/change workflow.
 
-**Checks:** Regenerate twice; second run produces no diff; stale output is detected; OpenAPI and TypeScript outputs are reproducible; no domain business routes were created.
+**Checks:** Regenerate twice; second run produces no diff; stale output is detected; OpenAPI and TypeScript outputs are reproducible; the boundary check detects prohibited cross-domain imports and private-table access; no domain business routes or specific domain contracts were created.
 
-**Complete when:** Future domain tasks have one documented source-of-truth and generation/check workflow, and no agent must hand-maintain parallel API definitions.
+**Complete when:** Future domain tasks have one documented contract source/generation workflow and a recorded, checked code-level boundary requiring public-interface calls and protecting domain internals/private tables, and no agent must hand-maintain parallel API definitions.
 
 ## PD-12 — Add test structure and continuous integration
 
@@ -469,7 +497,9 @@ Do not start parallel domain feature work until:
 
 - the current product and shared conventions documents are in the repository;
 - one dependency/toolchain path is recorded and lockfiles install cleanly;
-- API and web skeletons run locally;
+- API and web skeletons run locally; PD-07's page/route inventory is derived from the PRD and approved decisions, human-verified, and represented by minimal stubs only; later domain work extends approved pages and does not add pages/routes without human approval;
+- PD-08's complete MVP schema is documented at `docs/architecture/mvp-database-schema.md`, reviewed by the human and affected owners, and represented by coordinated initial migrations under `database/migrations/` that apply from a clean database;
+- PD-11's code-level domain boundary is recorded and its automated check verifies that cross-domain calls use declared public interfaces, domain internals/private tables are not accessed directly, and `core/` contains only shared technical primitives;
 - shared UUID/time/money/error/pagination/auth-context/logging conventions needed by contracts are decided and tested;
 - local PostgreSQL migrations and deterministic seed work;
 - deterministic generator tooling and label-review formats pass their foundation checks; domain data loading/validation and 20+ human-reviewed query labels are explicitly assigned to SE-01/DATA-READY after approved schemas/configuration;
@@ -484,7 +514,7 @@ Do not start parallel domain feature work until:
 
 If an item is blocked by a missing user decision, ask the human and keep dependent tasks blocked. Do not guess or mark the gate complete.
 
-PRE-00 is satisfied only when PD-19 and every required foundation check have passed, human verification is recorded, the reviewed milestone PR is merged, and `docs/status/foundation-handoff.md` identifies the accepted revision. A blocked/deferred requirement does not count as a passed gate. Sources, prompt, checklists, Git workflow, commands/secret-access references and owner assignments must resolve locally. Continue to DL-00 through the project task index.
+PRE-00 is satisfied only when PD-07, PD-08, PD-11, PD-19, and every other required foundation check have passed; the three foundations above have their stated review and verification evidence; human verification is recorded; the reviewed milestone PR is merged; and `docs/status/foundation-handoff.md` identifies the accepted revision. No domain feature implementation may begin before this gate. A blocked/deferred requirement does not count as a passed gate. Sources, prompt, checklists, Git workflow, commands/secret-access references and owner assignments must resolve locally. Continue to DL-00 through the project task index.
 
 ## WSL/startup and stub handoff checks
 

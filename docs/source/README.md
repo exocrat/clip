@@ -1,6 +1,6 @@
 # Source and Revision Record
 
-**Version:** 3.1 · **Date:** 2026-10-14 · **Canonical path:** `docs/source/README.md`
+**Version:** 3.2 · **Date:** 2026-10-16 · **Canonical path:** `docs/source/README.md`
 
 This revision uses the full v2 planning set and the subsequent conversation decisions: existing exocrat/clip repository, existing WSL, agent/repo access and folder/startup instructions, immediate supplied checklists, documented early stub-based implementation with pending real integration obligations. Earlier product/Git/task/NFR/optional-scheduling decisions remain incorporated. The submitted PRD bytes are unchanged. Optional scheduling follows the accepted decision record; no product requirement is silently relaxed by a stub.
 
@@ -17,6 +17,14 @@ The accepted optional-scheduling planning update remains recorded in `docs/decis
 On 2026-10-14, the team-approved documentation revision changed the root README to a public-facing project summary, added contributor-start and peer-review prompts, required a full ordered task summary before work, clarified dependency checks and pending stub integrations, adopted concise work-log entries, added task-wide closeout checks, required explanations for new code, and recorded the one-time direct-to-main seed exception with separate push approval and no separate peer-review requirement for that commit. CN-02 step 8 now says to use the real Identity interface when ID-READY exists and otherwise a reviewed stub, while keeping real integration pending. The submitted PRD remains unchanged. The full step 6.5 audit was performed; it found and corrected a task-start wording mismatch in `CONTRIBUTING.md`. Results are recorded in `docs/status/work-log.md`.
 
 Follow-up decision (2026-10-14): BOOT-00 is complete after the audited documentation seed is committed and verified in the local clone, with actual local and remote status recorded. Publishing remains a separate exact-target/revision approval and does not block PD-00 in that clone. Other clones must obtain the canonical documentation revision before using it. The submitted PRD remains unchanged.
+
+## Follow-up documentation revision — 2026-10-16
+
+The pre-domain workflow now defines a PD-00–PD-03 kickoff, four dependency-aware implementation streams with reserved path roots, and a final integration phase without assigning people by name. PD-03 is instructed to create the stream directories in its working clone without marker files; each owner recreates missing assigned paths in their worktree because Git does not retain empty directories. The companion pre-domain contributor prompt explains those boundaries. The reusable task prompt and checklists now require an audit of task steps for completeness and coherence before implementation. Code-explanation guidance remains in the reusable task prompt and was removed from `CONTRIBUTING.md`. PD-08's dependency on PD-06 was added consistently to the task list, index, and dependency graph. No application implementation or stream directories were created in this revision; the submitted PRD remains unchanged. Detailed execution state is recorded in `docs/status/work-log.md`.
+
+## Follow-up pre-domain directory handoff — 2026-10-16
+
+The pre-domain path workflow was clarified: PD-03 will add tracked `.gitkeep` files to the exclusive stream/integration directory roots, and its reviewed handoff must be merged before stream owners clone or branch. Each owner removes only the markers in their assigned roots as their first action; marker deletions are expected in their PR. Root-level files and shared records remain assigned by task. This supersedes the earlier no-marker/recreate-in-worktree instructions above. This documentation edit does not create the future PD-03 markers. The submitted PRD remains unchanged.
 
 The current public-facing root `README.md` SHA-256 after this revision is `7bc42225b2189bbdc3b46705ec1dc7b9064be0498cc5282439f5981b3c26699e`.
 

@@ -67,6 +67,7 @@ digraph CampusMarketplace {
   "PD-02" -> "PD-08";
   "PD-04" -> "PD-08";
   "PD-05" -> "PD-08";
+  "PD-06" -> "PD-08";
   "PD-06" -> "PD-09";
   "PD-08" -> "PD-09";
   "PD-04" -> "PD-10";
