@@ -1,7 +1,7 @@
 # Campus Marketplace — Minimal Repository Structure
 
-**Version:** 3.1
-**Date:** 2026-10-14  
+**Version:** 3.2
+**Date:** 2026-10-16
 **Canonical repository path:** `docs/architecture/repository-structure.md`
 **Document 4. Status:** Proposed repository layout and file responsibilities. Use it with the product reference, shared conventions, submitted PRD, and the pre-domain task list. This document defines where project information and code live; it does not make unresolved implementation or infrastructure choices on the team's behalf.
 
@@ -24,8 +24,9 @@ campus-marketplace/
 ├── .editorconfig
 ├── .env.example
 ├── pyproject.toml
+├── uv.lock
 ├── package.json
-├── package-lock.json                 # or the one chosen Node lockfile; never multiple
+├── package-lock.json                 # the single selected Node lockfile
 ├── docker-compose.yml
 ├── Makefile                          # one discoverable front door for common commands
 ├── .github/
@@ -67,6 +68,7 @@ campus-marketplace/
 ├── tests/
 │   ├── integration/
 │   └── fixtures/
+│       └── core/
 ├── data/
 │   ├── generators/
 │   ├── evaluation/
@@ -89,7 +91,7 @@ The tree is a target, not a request to create empty files for every possible fut
 
 ### Layout adjustment before implementation
 
-The root `pyproject.toml` is the canonical Python tool configuration, including Black. The exact Python dependency/package manager and Node package manager are not yet locked here. The pre-domain task must inspect the chosen build/deployment approach, choose one clear dependency/package boundary and one Node lockfile, document the choices in `docs/decisions/`, and keep the tree consistent. Do not create duplicate tool configurations or lockfiles.
+The root `pyproject.toml` is the canonical Python tool configuration, including Black. PD-02 has frozen the repository toolchain boundary; see Section 10. PD-04 and PD-07 create the selected manifests and lockfiles. Do not create duplicate tool configurations, dependency manifests, or lockfiles.
 
 ## 3. Canonical files and what they must contain
 
@@ -99,8 +101,8 @@ The root `pyproject.toml` is the canonical Python tool configuration, including 
 | `AGENTS.md` | Repo-wide agent operating rules and required reading order. It points to the current reusable prompt, task index, checklists, work log, and uncertainty rule. It is not a substitute for those documents. |
 | `CONTRIBUTING.md` | Branch/PR and review expectations, code ownership, local validation before review, and how shared contracts or conventions change. |
 | `.env.example` | Non-secret variable names and safe dummy values only. Never place real credentials or secret values in the repo. |
-| `pyproject.toml` | Canonical Python tool configuration, including Black line length/target and the selected pinned Black dev dependency in the appropriate dependency manifest. Avoid a second conflicting Black configuration. |
-| `package.json` plus one lockfile | Web scripts and exact Node dependency resolution. Select npm or another package manager once; commit only its matching lockfile. |
+| `pyproject.toml` and `uv.lock` | The root `pyproject.toml` is the single Python project/dependency manifest and canonical tool configuration, including Black. `uv.lock` is its single exact dependency lockfile. PD-04 creates and resolves both; do not add a second API manifest or Python lockfile. |
+| `package.json` and `package-lock.json` | The root `package.json` holds web project metadata, scripts, and dependencies; `package-lock.json` is the single exact Node dependency lockfile selected for npm. PD-07 creates and resolves both; do not add another Node lockfile. |
 | `docker-compose.yml` | Minimal local dependencies needed for foundation work, such as PostgreSQL. It must not silently provision cloud resources. |
 | `Makefile` | Short, stable front door for documented setup, start/stop, migrations, synthetic seed, tests, formatting, and checks. Each target calls a maintained script or package command rather than duplicating logic. |
 | `.github/workflows/ci.yml` | Reproducible local-equivalent CI gates: Python formatting check, Python tests, web lint/type/test/build checks, contract generation consistency where configured, and relevant integration checks. CI must not apply Terraform or create billable cloud infrastructure. |
@@ -111,7 +113,7 @@ The root `pyproject.toml` is the canonical Python tool configuration, including 
 | `scripts/` | Portable, discoverable wrappers for setup, local lifecycle, migration, seed, test/check, and cloud deploy/verify/teardown. Scripts must validate required inputs and never guess an AWS account, profile, region, or target. |
 | `data/generators/` | Named, deterministic synthetic-data generation source, with seed/count options and a dataset fingerprint. Never store real user or contact data. |
 | `data/evaluation/` | Fixed labeled search-query/listing data and workload definitions needed by NFR and ECS comparison tasks. Store generator/source data and safe metadata; avoid committing large generated datasets unless the task establishes that as necessary. |
-| `tests/fixtures/` | Reusable, clearly synthetic fixtures, including controlled identity-provider fakes for local/test mode. Production configuration must reject unsafe fake providers. |
+| `tests/fixtures/core/` | Reusable, clearly synthetic shared-core fixtures. PD-10 adds common test inputs and controlled provider fakes for local/test mode; domain-specific fixtures belong to their named domain tasks. Production configuration must reject unsafe fake providers. |
 | `docs/status/work-log.md` | Shared project work log and current status, described in Section 5. |
 | `docs/decisions/` | Durable record of approved shared implementation decisions, with date, scope, rationale, affected paths, and superseded decisions. Do not use it for secrets or transient chat. |
 | `docs/environment/` | Current non-secret account/access, budget-alert, environment/resource inventory, and operation records based on verified facts and actual cloud outputs. Secret values stay in the approved secret manager. |
@@ -203,13 +205,29 @@ When this structure is accepted and the pre-domain list is prepared:
 - Add a final traceability pass from every user requirement and PRD foundation item to a repository path and a named task/check.
 - If a required reference, command, decision, secret-access instruction, or target is missing or ambiguous at execution time, stop and ask the user before taking the dependent action. Do not silently guess or require a human to cross-reference chat.
 
-## 10. Open decisions this document deliberately leaves to tasks
+## 10. PD-02 toolchain decision and remaining open decisions
+
+### Repository toolchain decision — 2026-10-16
+
+PD-02 selects the following supported release lines and repository paths. PD-04 and PD-07 create the manifests and exact dependency lockfiles; this record does not create them.
+
+| Area | Decision | Rationale and boundary |
+|---|---|---|
+| Python | Python 3.14; uv manages Python project dependencies; runtime dependencies are declared in the repository-root `pyproject.toml`; one root `uv.lock`. | Keeps the single root Python configuration authoritative for Black and shared tooling while providing one dependency and lock path for the single API application. Dependency versions are resolved and locked by PD-04. |
+| Web | Node.js 24 LTS; npm; root `package.json` and one root `package-lock.json`. | Uses npm bundled with Node and one standard lockfile. Web dependencies and exact lock resolution are created by PD-07. |
+| Local services | Docker Compose v2 through `docker compose`. | The Linux Compose CLI plugin works with Docker Engine and Compose is included in Docker Desktop on macOS. This is for local service lifecycle only; it does not select or configure AWS deployment. |
+| Observed contributor workstation | WSL2 Ubuntu 26.04, x86_64; the current installed-tool inventory is in `docs/environment/development-workstation.md`. | This is one contributor's observed setup, not a team platform requirement. |
+| Intended contributor platforms | macOS x86_64/ARM64 and Linux x86_64/ARM64, using the selected Python/Node lines and managers above. | Official tool/package compatibility evidence is recorded in the PD-02 work-log entry. uv supports Linux ARM64 as Tier 2. |
+| Local test server | Raspberry Pi reported as Linux ARM64; `apt-get` commands reportedly work; Raspberry Pi OS is probable, not confirmed. Docker Compose is the selected route and may be installed with Docker Engine/CLI as needed. | Linux ARM64 is an intended target. The unverified distro/release and on-device Compose installation prevent claiming Pi-specific verified support; they do not block selecting the shared toolchain. Distro details affect install instructions. |
+| AWS runtime | ECS Linux may use x86_64 or ARM64; the deployment task selects the architecture and builds/publishes a matching or multi-architecture application image. | Local Compose is not the AWS deployment configuration. ECS supports both Linux architectures; this toolchain decision does not choose the AWS CPU architecture, region, or cloud resources. |
+| CI | The selected Python and Node lines are available through GitHub Actions setup actions; Ubuntu 24.04 x64 provides a compatible runner option. PD-12 selects and configures the actual CI runner. | Keeps CI runner selection with the task that creates the CI workflow; it does not change the selected language lines or local tools. |
+
+Compatibility references: [Python version status](https://devguide.python.org/versions/), [Node.js release schedule](https://nodejs.org/en/about/previous-releases), [uv platform support](https://docs.astral.sh/uv/reference/platforms/), [Docker Compose installation](https://docs.docker.com/compose/install/), [Docker Compose Linux plugin](https://docs.docker.com/compose/install/linux/), and [ECS ARM64 support](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-arm64.html). The more detailed package, Terraform, and CI compatibility evidence remains in the PD-02 work-log entry.
+
+### Remaining open decisions
 
 The relevant foundation task must inspect the repository and resolve each item before dependent work begins:
 
-- Python dependency/package manager and where runtime dependencies are declared; the root `pyproject.toml` remains the single Black/tool configuration;
-- Node package manager and its single lockfile;
-- exact Python and Node versions and pinned tool/dependency set;
 - public contract source format and generation commands;
 - exact local service, migration, seed, and test commands;
 - Terraform module/resource ownership, state, review/apply gates, and environment naming;

@@ -21,3 +21,22 @@ This records the existing Linux WSL environment used for the documentation boots
 - The Codex PATH-alias warning is recorded above. Its executable remains available at the observed path.
 
 These are workstation observations from BOOT-00, not a pinned team-wide toolchain or proof that project commands have been tested.
+
+## Current contributor check — PD-02 Step 1
+
+**Observed:** 2026-10-16 · **Recorded by:** kickoff owner (B) · **Repository revision:** `fb10d3d` on `task/pre-domain-foundation`
+
+This is a fresh check of the current contributor's WSL workstation. It does not define the supported team-wide platforms or select project runtime versions.
+
+| Area | Observed fact |
+|---|---|
+| Host and shell | Ubuntu 26.04 LTS in WSL2; kernel `6.18.33.2-microsoft-standard-WSL2`; architecture `x86_64`; WSL distribution `Ubuntu`; shell `/bin/bash`, version 5.3.9. |
+| Repository | `/home/suraj/src/clip`; Git root matches the working directory. Existing documentation changes were present and preserved. |
+| Git and HTTP client | `/usr/bin/git`, version 2.53.0; `/usr/bin/curl`, version 8.18.0. |
+| Agent | `/home/suraj/.local/bin/codex`, version 0.162.1. Startup reported it could not create PATH aliases because the filesystem is read-only; the executable runs. |
+| Python | `/usr/bin/python3`, version 3.14.4. This is the installed workstation version, not a project selection. |
+| Node | `node` and `npm` are not installed/on PATH. |
+| Python package managers | `uv` and `poetry` are not installed/on PATH. |
+| Container route | `/usr/bin/docker`, client and Linux/amd64 Engine version 29.1.3, context `default`; engine responded. Neither the `docker compose` plugin nor standalone `docker-compose` is available. `podman` is not installed/on PATH. No container or project service was started. |
+
+No tools were installed or changed. These observations are for this contributor only; PD-02 must select and document team toolchain/platform support separately.
