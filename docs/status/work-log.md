@@ -24,7 +24,7 @@ Task status: not started / in progress / blocked / done; optional may be unselec
 |---|---|---|---|---|---|---|---|---|---|
 | BOOT-00 | B / Suraj (initial contributor) | done | Local documentation seed verified; publication pushed and verified | performed | verified | Current `origin/main` verified at `cfbf9352c03302990e6ffda09521f0a5450572d7`; includes seed `7fb9bfed79b45614a17de1bf2f9c50dbb3981b3f` and publication record | None | 2026-10-15 07:18 UTC | PD-00 in progress |
 | PD-00 | Kickoff owner — Suraj (B) | done | Steps 1–6 complete; task-wide closeout reviewed | performed | verified | `task/pre-domain-foundation` at base `cfbf9352c03302990e6ffda09521f0a5450572d7`; work-log task table, initial inventory, Document 4 comparison, and `git diff --check` | None | 2026-10-16 07:02 UTC | PD-01 understanding report and human verification before any write |
-| PD-01 | Kickoff owner — Suraj (B) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-00 | — | Start after PD-00 is complete |
+| PD-01 | Kickoff owner — Suraj (B) | done | Steps 1–8 and task-wide acceptance review complete | performed | verified | `task/pre-domain-foundation`; `docs/architecture/foundation-traceability.md`; index/checksum/coverage evidence recorded below | Normal PD-00–PD-03 review/merge handoff remains pending | 2026-10-16 10:06 UTC | Continue to PD-02 after its separate task-understanding verification |
 | PD-02 | Kickoff owner — Suraj (B) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-01 | — | Start after PD-01 |
 | PD-03 | Kickoff owner — Suraj (B) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-02 | — | Start after PD-02 |
 | PD-04 | Stream 1 owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-02 | — | Start when dependency is met and owner assigned |
@@ -147,6 +147,78 @@ Suraj (B), kickoff owner; performed and human-verified at 2026-10-16 07:02 UTC. 
 
 ### PD-00 task-wide closeout — 2026-10-16 07:02 UTC
 Suraj (B), kickoff owner; complete and human-verified. Reviewed PD-00's six steps and completion condition against the Agent and Human checklist closeout items. Repository root/branch/base, current tracked and untracked paths, preserved intended documentation changes, missing task-assigned implementation outputs, task states/evidence/blockers, and the no-discrepancy result are recorded above. `git diff --check` passed. No application tests were required for this read-only inventory; no secrets, cloud resources, commits, or pushes were handled. PD-01 is the next task and requires its own full understanding report and human verification before mutation.
+
+### PD-01 task-definition correction — 2026-10-16 09:16 UTC
+Kickoff owner; task-definition correction performed and human-verified. Named `docs/architecture/foundation-traceability.md` as the PD-01 table output and linked it from `docs/README.md`; updated PD-18/PD-19 references and the evaluation evidence index. The traceability table itself has not been created; PD-01 Step 5 remains pending. `git diff --check` passed.
+
+### PD-01 Step 1 — verify approved source availability — 2026-10-16 09:18 UTC
+Kickoff owner; performed, human verification pending. All six required source paths (submitted PRD plus five canonical references) are tracked in the current repository. The PRD SHA-256 `8ac241d1e72472a5dc77edad18579ec5d2ca3ff2ac8fd454cbc6e9627abf4ad1` matches both the source record and supplied bundle manifest; current Markdown source versions and the revision-consistency record are present. No missing source or unavailable version was found in this clone. No files were altered by the source audit; `git diff --check` passed for the existing documentation correction. Step 2 remains pending.
+
+### PD-01 Step 1 human verification — 2026-10-16 09:19 UTC
+Suraj verified the Step 1 result. Source availability/provenance check is accepted; Step 2 may proceed.
+
+### PD-01 Step 2 — reconcile canonical copies — 2026-10-16 09:19 UTC
+Kickoff owner; performed, human verification pending. All six required sources remain readable and tracked at their canonical repository paths from BOOT-00. The PRD checksum still matches its source records. No source was recopied or overwritten because the canonical copies are already present; the approved task-definition correction remains intact. `git diff --check` passed. Step 3 remains pending.
+
+### PD-01 Step 2 human verification — 2026-10-16 09:20 UTC
+Suraj verified Step 2. Existing canonical source copies are accepted; Step 3 may proceed after its understanding is verified.
+
+### PD-01 Step 3 — record source provenance — 2026-10-16 09:22 UTC
+Kickoff owner; performed, human verification pending. Inspected the BOOT-00 installation record and source/version/hash table in `docs/source/README.md`; together they identify each supplied source path, source version/date, matching canonical destination, copy date, and baseline hash. The submitted PRD checksum matches the record. The pre-existing record satisfies Step 3, so no provenance content needed adding. `git diff --check` passed. Step 4 remains pending.
+
+### PD-01 Step 3 scope correction — 2026-10-16 09:23 UTC
+After the user asked why Step 3 was needed, confirmed that the existing BOOT-00 provenance already met its acceptance fields. Removed the redundant temporary six-row table added during Step 3; the source record is back to its prior content/version. Step 3 remains a verified-existing-output checkpoint, with human verification pending. No other task step was started.
+
+### PD-01 Step 3 human verification — 2026-10-16 09:24 UTC
+Suraj verified that the existing BOOT-00 source record satisfies Step 3; no duplicate provenance table is needed. Step 4 may proceed after its understanding is verified.
+
+### PD-01 Step 4 — maintain document index — 2026-10-16 09:27 UTC
+Kickoff owner; performed, human verification pending. Audited the existing `docs/README.md`; added the existing development-workstation record link and marked the not-yet-created foundation traceability map as planned for PD-01 Step 5. Kept the existing index; created no duplicate index or placeholder document. A path check found all 31 internal links resolve or are marked planned; `git diff --check` passed. Step 5 remains pending.
+
+### PD-01 Step 4 human verification — 2026-10-16 09:28 UTC
+Suraj verified Step 4. The existing document index is accepted with the workstation link and planned traceability-map entry; Step 5 may proceed after its understanding is verified.
+
+### PD-01 Step 5 — foundation traceability table — 2026-10-16 09:30 UTC
+Kickoff owner; performed, human verification pending. Created `docs/architecture/foundation-traceability.md` with foundation requirement mappings (source, task, path, validation/evidence) and a requirement-by-requirement map of shared conventions §§2–12. Distinguished planned outputs and future real evidence from completed work; FR/NFR ownership is intentionally left for Step 7. `git diff --check` passed; required table headers/rows and local path references were checked. No application tests or cloud actions. Step 6 remains pending.
+
+### PD-01 Step 5 human verification — 2026-10-16 09:30 UTC
+Suraj verified the foundation and shared-convention traceability table. PD-19 reads and checks the map against task evidence; no live status update to the map is required. Step 6 may proceed after its understanding is verified.
+
+### PD-01 Step 6 — minimum foundation coverage audit — 2026-10-16 09:34 UTC
+Kickoff owner; performed, human verification pending. Audited the 19 minimum categories in PD-01 Step 6 against `docs/architecture/foundation-traceability.md`; all 19 have mapped rows with source/task/path/evidence fields. No coverage omission found, so no table correction was needed. The focused coverage assertion passed 19/19; `git diff --check` passed. No application tests or cloud actions. Step 7 remains pending.
+
+### PD-01 Step 6 human verification — 2026-10-16 09:34 UTC
+Suraj verified the 19/19 minimum coverage audit. Step 7 may proceed after its understanding is verified.
+
+### PD-01 Step 7 — FR/NFR ownership and foundation boundary — 2026-10-16 09:37 UTC
+Kickoff owner; performed, human verification pending. Added mappings for FR-01–FR-17 and NFR-01–NFR-08 from the domain/evaluation task lists, including current coordinating task owner, planned implementation/evidence paths, accurate verification point, and the exact status `not implemented in pre-domain foundation`. Clarified that task ownership is current/reassignable through the documented roster/task update process; no person was inferred from a stream label. Focused validation found all 25 IDs exactly once, with status and table columns present; `git diff --check` passed. No application tests or cloud actions. Step 8 remains pending.
+
+### PD-01 Step 7 human verification — 2026-10-16 09:41 UTC
+Suraj verified the FR/NFR mapping and ownership interpretation. Keep the explicit `not implemented in pre-domain foundation` status on each FR/NFR row for clarity; ownership remains reassignment-capable through the documented process. Step 8 may proceed after its understanding is verified.
+
+### PD-01 Step 8 — source-conflict and missing-information audit — 2026-10-16 09:42 UTC
+Kickoff owner; performed, human verification pending. Compared the PRD, Documents 1/3/4, source provenance, pre-domain/domain/evaluation task lists and the traceability map under the documented source hierarchy. Found no unresolved source conflict or missing foundation requirement. Added an explicit question register for documented open values and their assigned future checkpoints; recorded the Terraform planning update and superseded marker-workflow history as resolved, not conflicts. The question-table structure check passed (11 entries/0 malformed rows); `git diff --check` passed. No application tests or cloud actions. Step 8 awaits verification; PD-01 task-wide closeout remains.
+
+### PD-01 Step 8 record refinement — 2026-10-16 09:47 UTC
+After discussion, removed the 11-row duplicate of decisions already assigned to later task gates. The traceability map now records that no unresolved source conflict/missing foundation requirement was found, explains the resolved Terraform planning update and points to PD-06/07/08/14/15/16 and EXP-01 for intentionally deferred decisions. The underlying audit result is unchanged. `git diff --check` passed; Step 8 remains performed and awaits human verification.
+
+### PD-01 Step 8 human verification — 2026-10-16 09:48 UTC
+Suraj verified the source-conflict/missing-information audit and the streamlined record. PD-01 Steps 1–8 are individually verified; task-wide acceptance review is next and requires its own understanding verification.
+
+### PD-01 task-wide acceptance review — 2026-10-16 10:02 UTC
+Kickoff owner; review performed, acceptance not yet passed, human verification pending for the correction. All seven required files are readable/nonempty; PRD SHA-256 matches the bundle manifest (`8ac241d1e72472a5dc77edad18579ec5d2ca3ff2ac8fd454cbc6e9627abf4ad1`); all 31 `docs/README.md` internal links resolve; FR/NFR coverage remains 25/25. Found one stale index annotation: the foundation traceability map now exists, but `docs/README.md` still labels it planned. No other task-wide issue identified so far. Proposed next action: remove only the stale planned parenthetical and rerun the acceptance review. No application tests or cloud actions.
+
+### PD-01 task-wide review correction — 2026-10-16 10:04 UTC
+After human verification, removed only the stale `(planned; created by PD-01 Step 5)` annotation from the existing traceability link in `docs/README.md`. The link now names the available map directly; `git diff --check` passed. Human verification of this correction is pending; rerun the task-wide review after it is verified. No application tests or cloud actions.
+
+### PD-01 correction human verification — 2026-10-16 10:04 UTC
+Suraj verified the docs index correction. The PD-01 task-wide acceptance review is being rerun against the current files.
+
+### PD-01 task-wide acceptance review — 2026-10-16 10:05 UTC
+Kickoff owner; review performed, human verification pending. All seven required sources/outputs are readable and nonempty; submitted PRD SHA-256 matches bundle manifest (`8ac241d1e72472a5dc77edad18579ec5d2ca3ff2ac8fd454cbc6e9627abf4ad1`). All 31 `docs/README.md` internal links resolve and none are marked planned; the traceability map is linked. Map tables have 25 foundation-output rows and 36 shared-convention rows; convention sections 2–12 are represented; all 17 FR and 8 NFR rows appear exactly once with the required pre-domain status. Read both checklists and confirmed their applicable source, task-phase, step-verification and task-wide closeout checks. `git diff --check` passed. No application tests or cloud actions. PD-01 is not marked done pending human verification and normal handoff review.
+
+### PD-01 task-wide acceptance human verification — 2026-10-16 10:06 UTC
+Suraj verified the task-wide acceptance review. PD-01's listed checks and completion condition pass locally; status is done for this task checkpoint. The combined PD-00–PD-03 review/merge handoff remains pending, and no next task step proceeds before its own understanding verification.
 
 ## Pending real integration ledger (initially empty)
 

@@ -1,6 +1,6 @@
 # Campus Marketplace — Document Index
 
-**Version:** 3.1 · **Date:** 2026-10-14
+**Version:** 3.2 · **Date:** 2026-10-16
 
 The root [README](../README.md) describes the project. Agents start from [AGENTS.md](../AGENTS.md) and follow the canonical task and review instructions below. Use the project task index to select/resume work; this index locates canonical sources. Detailed Git/review workflow is [CONTRIBUTING.md](../CONTRIBUTING.md).
 
@@ -8,6 +8,7 @@ The root [README](../README.md) describes the project. Agents start from [AGENTS
 - [Document 2 — Primary experiment task list](evaluation/ecs-only-vs-ecs-lambda-task-list.md)
 - [Document 3 — Shared conventions](conventions/shared-conventions-and-cross-domain-contract-rules.md)
 - [Document 4 — Repository structure](architecture/repository-structure.md)
+- [Foundation requirement traceability](architecture/foundation-traceability.md)
 - [Document 5 — Pre-domain task list](tasks/pre-domain-task-list.md)
 - [Single domain task list](tasks/domain-task-list.md)
 - [Initial repository bootstrap](tasks/bootstrap-task-list.md)
@@ -22,6 +23,7 @@ The root [README](../README.md) describes the project. Agents start from [AGENTS
 - [Status/checkpoint template](status/work-log.md)
 - [Command registry](environment/commands.md)
 - [Secret-reference/access template](environment/secret-handling.md)
+- [Development workstation record](environment/development-workstation.md)
 - [Evidence/measurement manifest index](evaluation/README.md)
 - [Accepted optional-scheduling change](decisions/optional-work-scheduling.md)
 - [Derived Graphviz dependencies](architecture/task-dependencies.dot)

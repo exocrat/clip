@@ -108,6 +108,7 @@ The integration owner handles cross-stream artifacts and final acceptance; the s
 - `docs/conventions/shared-conventions-and-cross-domain-contract-rules.md` — shared conventions.
 - `docs/architecture/repository-structure.md` — Document 4.
 - `docs/tasks/pre-domain-task-list.md` — this document.
+- `docs/architecture/foundation-traceability.md` — foundation requirement-to-task/output/evidence map, created by this task.
 
 **Steps:**
 
@@ -115,7 +116,7 @@ The integration owner handles cross-stream artifacts and final acceptance; the s
 2. Copy each source into its canonical repository path. Preserve the PRD bytes. For Markdown copies, preserve meaning, tables, code blocks, and links; do not use this copy operation to revise content.
 3. Record source filename, source version/date if available, repository destination, and copy date in `docs/source/README.md`. Do not include private Library IDs or transient chat excerpts.
 4. Create `docs/README.md` linking to the above references, task list, work log, decisions, environment record, evaluation evidence, and the supplied prompt/checklist documents and WSL/stub guides. Mark not-yet-created files as planned instead of creating empty duplicate documents.
-5. Build a traceability table mapping each foundation requirement to (a) its authoritative source, (b) the task ID that creates/configures it, (c) its repo path, and (d) its validation/evidence. Include all shared-convention requirements; do not limit this table to code.
+5. Build the traceability table in `docs/architecture/foundation-traceability.md`, mapping each foundation requirement to (a) its authoritative source, (b) the task ID that creates/configures it, (c) its repo path, and (d) its validation/evidence. Include all shared-convention requirements; do not limit this table to code.
 6. At minimum, map: root/project setup, Python/Black, TypeScript checks, local startup/stop, database migrations, seed scripts, synthetic dataset creation, API/shared conventions, fake-provider safety, generated contracts, CI, work log, AWS account/access readiness, budget alerts, Terraform state/locking, shared cloud provisioning, domain-specific infrastructure handoff, checklist regeneration, and final audit.
 7. For FR and NFR requirements, record the owning future domain or evaluation task and state `not implemented in pre-domain foundation`. Do not imply that foundation scaffolding completes a feature or NFR.
 8. Record source conflicts and missing information as explicit questions. Resolve only by following the source-of-truth hierarchy documented in the references; otherwise ask the human.
@@ -461,12 +462,12 @@ The integration owner handles cross-stream artifacts and final acceptance; the s
 
 **Steps:**
 
-1. Re-read the current approved repo docs and the explicit decisions recorded in this task list and the traceability table. Do not derive the new checklist only from an old checklist or the most recent document. If a requirement or decision exists only in conversation and is absent from repo sources, stop and ask the human for the necessary clarification, then have the agent record the resolved decision in canonical docs through the verified step; execution must not depend on chat history.
+1. Re-read the current approved repo docs, the explicit decisions recorded in this task list, and `docs/architecture/foundation-traceability.md`. Do not derive the new checklist only from an old checklist or the most recent document. If a requirement or decision exists only in conversation and is absent from repo sources, stop and ask the human for the necessary clarification, then have the agent record the resolved decision in canonical docs through the verified step; execution must not depend on chat history.
 2. Reconcile/update the already supplied `docs/checklists/agent-checklist.md` and `docs/checklists/human-checklist.md` against actual commands/task/checkpoint rules. They were read from BOOT-00; do not defer their creation/use until this task. Remove stale or contradictory items while preserving valid requirements.
 3. Include explicit checks for: read current status before work; report task understanding and wait for verification; execute one numbered step at a time and wait for human verification after each; update shared work log; read canonical repo docs; verify no unapproved domain work; ensure cloud work uses the approved shared foundation and no unapproved/domain-duplicate resources are provisioned; run Black locally and in CI; create/generate synthetic dataset and label set; create fixtures; regenerate/check contracts; validate local setup; scan for secrets/real data; record evidence; and ask the human about uncertainties.
 4. Put the correct NFR procedures at their eventual accurate test points, not as premature tests in this foundation checklist. The checklist may require that later task lists identify affected NFRs and schedule accurate tests.
 5. Ensure the checklists point to exact canonical repo paths and commands, not chat history, Library, or vague phrases such as “run the usual checks.”
-6. Add checklist regeneration itself as a named task in this task list and traceability table. Add version/date and source-doc references to each checklist.
+6. Add checklist regeneration itself as a named task in this task list and `docs/architecture/foundation-traceability.md`. Add version/date and source-doc references to each checklist.
 7. Review the checklist against every PD task and source requirement; every checklist item must be actionable and verifiable.
 
 **Checks:** All links resolve; the checklists agree with current scripts; each PD task has the relevant checklist item; no prompt-document instruction is copied into the checklist beyond actionable checks.
@@ -479,7 +480,7 @@ The integration owner handles cross-stream artifacts and final acceptance; the s
 
 **Steps:**
 
-1. Read the current work log and traceability table. Verify every required PD task has passed and been human-verified, with evidence. Record blocked/deferred required work with owner/next action, but do not pass PD-19/PRE-00 while any required item remains unresolved.
+1. Read the current work log and `docs/architecture/foundation-traceability.md`. Verify every required PD task has passed and been human-verified, with evidence. Record blocked/deferred required work with owner/next action, but do not pass PD-19/PRE-00 while any required item remains unresolved.
 2. From a clean checkout or clean environment, follow the README from start to finish. Install dependencies from lockfiles; start local dependencies; migrate; run the small foundation seed and deterministic framework tests; verify full reference-data loading is explicitly assigned after domain migrations; start API and web; run tests; run Black check; run contract stale check; run full local CI-equivalent check; stop and clean local services.
 3. Run repository status, diff, and secret/data scans. Confirm no credentials, real personal data, message plaintext, generated state, or unintended datasets entered Git.
 4. Verify product and shared conventions docs in repo match the reviewed source versions; confirm checklist and README paths work; confirm `AGENTS.md` points to the installed current reusable prompt and project task index.
