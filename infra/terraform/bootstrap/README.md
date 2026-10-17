@@ -18,7 +18,7 @@ The `resource_owner` and `cleanup_review_date` inputs are required and must be s
 2. Select an exact candidate bucket name matching the required prefix and check that it is available. Before planning, verify the intended account `335523638354` and Region `ap-south-1`. No apply or provisioning is authorized by this preparation step.
 3. With the bootstrap directory still using Terraform's default local backend, initialize and create a saved plan only after the static validation workflow exists. Review the exact target, plan, and checksum with the human, including access policy, expected cost, retention, rollback, and cleanup. Apply only that reviewed plan after separate explicit approval. Never apply an unreviewed or stale plan.
 4. After a separately approved apply, verify the exact bucket name and account/Region, versioning, SSE-S3, public-access block, ownership controls, TLS-only bucket policy, tags, and `prevent_destroy` configuration. Do not place Terraform state or plan contents in logs, chat, or evidence.
-5. Securely back up the local bootstrap state outside the repository with owner-only access. Add the S3 backend configuration for the exact generated bucket, key `bootstrap/terraform.tfstate`, Region `ap-south-1`, `use_lockfile = true`, and `allowed_account_ids = ["335523638354"]`. Confirm the required state-object and lockfile access has been approved.
+5. Securely back up the local bootstrap state outside the repository with owner-only access. Add the S3 backend configuration for the exact approved bucket, key `bootstrap/terraform.tfstate`, Region `ap-south-1`, `use_lockfile = true`, and `allowed_account_ids = ["335523638354"]`. Confirm the required state-object and lockfile access has been approved.
 6. Only after the migration plan and recovery steps have been reviewed and explicitly approved, run Terraform backend initialization with state migration. Preserve the protected local backup until remote state and locking have been independently verified. Do not use `-reconfigure` as a substitute for migrating an existing local state.
 
 ## Failure and recovery
@@ -36,7 +36,7 @@ The placeholder below is not runnable until replaced with the exact selected buc
 ```hcl
 terraform {
   backend "s3" {
-    bucket              = "<approved-generated-bucket-name>"
+    bucket              = "<approved-bucket-name>"
     key                 = "bootstrap/terraform.tfstate"
     region              = "ap-south-1"
     use_lockfile        = true

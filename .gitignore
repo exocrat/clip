@@ -34,6 +34,9 @@ plan.out
 *.tfvars
 *.tfvars.json
 !*.tfvars.example
+.aws/
+credentials
+credentials.*
 *.pem
 *.key
 *.credentials

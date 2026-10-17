@@ -3,8 +3,8 @@ variable "bucket_name" {
   type        = string
 
   validation {
-    condition     = can(regex("^clip-tfstate-335523638354-ap-south-1-[a-z0-9-]{3,30}$", var.bucket_name))
-    error_message = "bucket_name must start with clip-tfstate-335523638354-ap-south-1- and use only lowercase letters, digits, and hyphens."
+    condition     = can(regex("^clip-tfstate-335523638354-ap-south-1-[a-z0-9][a-z0-9-]{1,24}[a-z0-9]$", var.bucket_name))
+    error_message = "bucket_name must use the required prefix and a 3–26 character lowercase alphanumeric/hyphen suffix that starts and ends with a letter or digit (maximum total length 63)."
   }
 }
 
