@@ -17,7 +17,8 @@ This template contains NO secret values. PD-03 initializes it, PD-14 records the
 | Parameter path/reference names | None created or selected. Define a project/environment path and exact non-secret reference identifiers before adding values. |
 | Secret references | None configured; provider and database references remain not configured. Do not invent reference names or store values here. |
 | Manager owner | Unassigned. Aditya is the user-reported AWS account owner and billing-alert owner, but has not been assigned ownership of a shared secret manager. |
-| Access role and permissions | Not established for Parameter Store. Define least-privilege parameter path and KMS permissions; coding-agent access remains least-privilege and no AWS permission changes or agent grants were made. |
+| Intended human access group | Rahul directed that all four current team members—Aditya, Suraj, Mohit, and Rahul—have access to the store. Read-only versus read/write/manage scope is not specified, and no AWS policy has been configured or verified. |
+| Access role and permissions | Not established for Parameter Store. Define parameter-path and KMS permissions for the intended group; coding-agent access remains least-privilege and no AWS permission changes or agent grants were made. |
 | Rotation/revocation | Standard tier does not provide automatic credential rotation. A manual rotation/revocation procedure and cadence remain to be agreed with the manager owner before adding real references. |
 | Unavailable-access recovery | No verified recovery runbook exists. Establish the owner/contact and recovery procedure before adding real references. |
 
