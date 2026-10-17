@@ -296,7 +296,7 @@ The integration owner handles cross-stream artifacts and final acceptance; the s
 **Steps:**
 
 1. Create reusable fixtures for synthetic users, listings, timestamps, caller contexts, and expected errors using approved shared types. Keep each fixture minimal and clearly fake; create schema-specific user/listing fixtures in the named domain tasks after their contracts/migrations exist.
-2. Create explicit provider fakes/mocks only for local/test mode. Make selection require an explicit environment setting that defaults off outside local/test.
+2. Define and review shared test-adapter interfaces before implementing provider fakes/mocks; wait for human verification of that boundary. Keep domain-specific provider behavior with its owning contract/task. Then create explicit provider fakes/mocks only for local/test mode, requiring an explicit environment setting that defaults off outside local/test.
 3. Add startup/config tests showing production mode refuses fake identity, OTP/email, object-storage, or other unsafe providers. Do not add live-provider credentials.
 4. Add fixtures for retries, duplicate requests, concurrency, partial dependency failures, unauthorized callers, and validation boundaries where the shared convention applies. These are shared test primitives, not domain feature tests.
 5. Ensure test output and failure snapshots redact contact fields and never include secrets or message content.

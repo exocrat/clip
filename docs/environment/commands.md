@@ -65,6 +65,10 @@ Step 4 adds `uv run --locked pytest apps/api/tests/core -q -W error` for focused
 
 Run `uv run --locked pytest apps/api/tests/core/test_security_boundaries.py -q -W error` from the repository root with the same locked test prerequisites. This focused subset is included in existing shared-core/full pytest commands. It uses temporary in-memory HTTP routes and bounded credential-free Python children importing the actual API entry point; it opens no listener and contacts no provider/database/cloud service. The children accept safe configuration or fail startup on unsafe production selections; no provider success is simulated. Exit 0 means collected checks passed; failures require investigation and exit 5 is not a pass. See [coverage and limits](../../apps/api/README.md#security-boundary-tests-pd-06-step-5).
 
+## PD-10 shared fixture checks (step 1)
+
+Run `uv run --locked pytest tests/fixtures/core apps/api/tests/core/test_shared_fixtures.py -q -W error` from the repository root. Root pytest configuration exposes the test-only fixture package; the full pytest command collects these checks too. Requires the existing locked Python/test tools. The checks use deterministic references/clocks and in-memory contexts/errors, may write local test caches, and contact no database/provider/cloud service. Exit 0 means collected checks passed; failures need investigation and exit 5 is not a pass. See [fixture usage and limits](../../tests/fixtures/core/README.md).
+
 ## Workstation and stub command registration
 
 The setup guide contains one-time agent-access/clone commands, not implemented application targets. BOOT-00 records actual Linux paths/agent availability; PD-02/13 freeze the verified development toolchain and application commands. PD-10/DL-00/domain owners register explicit test-double scenarios and real integration commands with distinct names/modes. No deployed command may default to fake auth/storage/notification/domain providers; startup validation rejects them. Stub tests never share a label or result classification with cloud/NFR runs.

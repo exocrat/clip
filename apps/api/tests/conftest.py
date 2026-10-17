@@ -4,6 +4,16 @@ import os
 
 import pytest
 
+# Importing decorated functions makes the shared fixtures available to API tests.
+# Their module defines no autouse behavior and never establishes HTTP identity.
+from clip_test_fixtures.pytest_fixtures import (
+    expected_errors,
+    regular_caller,
+    synthetic_clock,
+    synthetic_ids,
+    temporary_caller,
+)
+
 
 @pytest.fixture(autouse=True)
 def isolate_api_environment(monkeypatch):

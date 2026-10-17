@@ -31,11 +31,11 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PD-03 | Kickoff owner — Suraj (B) | done | Steps and task-wide review complete; combined handoff integrated into local `main` | performed | verified | Local `main` at handoff commit `d29c02b`; combined audit and work-log guidance cleanup | Remote publication of the combined handoff is pending approval | 2026-10-16 14:16 UTC |
 | PD-04 | Stream 1 — Aditya (A) | in progress | All six steps/local review verified and committed | performed | verified (steps 1–6 and local review) | `48a8fbd`; included in current branch | Peer review/main acceptance pending | 2026-10-17 05:02:28 UTC |
 | PD-05 | Stream 1 — Aditya (A) | in progress | All six steps and local acceptance review verified; steps 5–6 approved for commit | performed | verified (steps 1–6/local closeout) | `stream/1-api-shared-core`; steps 3–4 commit `55c17fc`; 13 tests and local acceptance checks passed | Peer review/main acceptance pending; concrete conventions/database lifecycle remain PD-06/08 outputs | 2026-10-17 05:48:44 UTC |
-| PD-06 | Stream 1 — Aditya (A) | in progress | All six steps/local closeout verified; prepare peer/affected-owner review and main handoff | performed (steps 1–6/local audit) | verified (steps 1–6/local closeout) | `stream/1-api-shared-core`; implementation/tests through `394d6ca`, step 6 docs/log in this closeout commit; 199 tests and task-wide checks passed | Peer/affected-owner review/main acceptance pending; remote refresh blocked by SSH configuration; PD-05 main acceptance pending | 2026-10-17 07:21:50 UTC |
+| PD-06 | Stream 1 — Aditya (A) | in progress | All six steps/local closeout verified; prepare peer/affected-owner review and main handoff | performed (steps 1–6/local audit) | verified (steps 1–6/local closeout) | `origin/stream/1-api-shared-core` published/verified at `5871f1f`; 199 tests and task-wide checks passed | Peer/affected-owner review/main acceptance pending; open PR status unavailable (HTTP API 404); PD-05 main acceptance pending | 2026-10-17 07:23:38 UTC |
 | PD-07 | Stream 2 owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-02 | — |
 | PD-08 | Stream 3 owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-02, PD-04, PD-05, PD-06 | — |
 | PD-09 | Stream 3 owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-06, PD-08 | — |
-| PD-10 | Stream 1 — Aditya (A) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-04, PD-05, PD-06 | 2026-10-17 03:49 UTC |
+| PD-10 | Stream 1 — Aditya (A) | in progress | Step 1 verified/approved for commit; step 2 adapter interface proposal authorized | performed (step 1) | Step 1 verified; step 2 interface review pending | `stream/1-api-shared-core` at `5871f1f`; fixtures/tests/task gate uncommitted; 5 focused / 204 total tests passed | Adapter interfaces require step 2 review; PD-04–PD-06 peer/main acceptance pending | 2026-10-17 07:31:40 UTC |
 | PD-11 | Integration owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-05, PD-06, PD-07 | — |
 | PD-12 | Integration owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-04–PD-11 | — |
 | PD-13 | Integration owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-04–PD-12 | — |
@@ -276,6 +276,17 @@ Captured full suite: 199 passed, no checked fixture sentinels in stdout/stderr (
 
 ### PD-06 — local closeout verified / commit approved — 2026-10-17 07:21:50 UTC
 Contributor verified step 6 and local task-wide closeout, and explicitly approved this documentation/log commit. All six steps are locally verified; peer/affected-owner review and main acceptance remain pending. Next Stream 1 task is PD-10 (depends on PD-04–PD-06); no PD-10 work started.
+
+### PD-06 — branch publication — 2026-10-17 07:23:38 UTC
+At the contributor's request, pushed five commits (`a3c054c..5871f1f`) to `origin/stream/1-api-shared-core`; fetch/remote-head verification confirms `5871f1f`. Main remains `4754e97`. Peer/main acceptance is pending; PR inspection returned HTTP 404. No PD-10 implementation started.
+
+### PD-10 — step 1 shared synthetic fixtures — 2026-10-17 07:30:16 UTC
+Contributor approved same-branch continuation and adding the step 2 interface-review gate. Audit gap resolved. Added deterministic schema-neutral UUID references, UTC clock, caller contexts and read-only error fixtures under `tests/fixtures/core/`, with test-only imports and usage docs. No provider fake implemented.
+
+Five focused / 204 total tests passed; Black (29 files), links/docstrings, scoped credential scan and `git diff --check` passed. Step 1 awaits verification; all changes remain uncommitted. Next: review adapter interfaces before step 2 implementation.
+
+### PD-10 — step 1 verified / commit approved — 2026-10-17 07:31:40 UTC
+Contributor verified step 1, approved its commit, and authorized step 2. The interface-review gate precedes fake implementation.
 
 ## Pending real integration ledger (initially empty)
 
