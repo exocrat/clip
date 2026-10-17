@@ -35,7 +35,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PD-07 | Stream 2 owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-02 | — |
 | PD-08 | Stream 3 owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-02, PD-04, PD-05, PD-06 | — |
 | PD-09 | Stream 3 owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-06, PD-08 | — |
-| PD-10 | Stream 1 — Aditya (A) | in progress | Step 3 verified/approved for commit; step 4 reusable scenario fixtures authorized | performed (step 3) | Steps 1–3 verified; step 4 authorized | Step 2 committed as `cee53e7`; step 3 uncommitted; 51 focused / 256 total tests passed | Steps 4–5 and peer/main acceptance pending; PD-04–PD-06 peer/main acceptance pending | 2026-10-17 08:51:14 UTC |
+| PD-10 | Stream 1 — Aditya (A) | in progress | Step 4 verified/approved for commit; step 5 output/snapshot and task-wide review authorized | performed (step 4) | Steps 1–4 verified; step 5 authorized | Step 3 committed as `d6b75c1`; step 4 uncommitted; 27 focused / 283 total tests passed | Step 5 and peer/main acceptance pending; PD-04–PD-06 peer/main acceptance pending | 2026-10-17 08:56:24 UTC |
 | PD-11 | Integration owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-05, PD-06, PD-07 | — |
 | PD-12 | Integration owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-04–PD-11 | — |
 | PD-13 | Integration owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-04–PD-12 | — |
@@ -306,6 +306,14 @@ Focused tests: 51 passed; full suite: 256 passed with warnings as errors. Black 
 
 ### PD-10 — step 3 verified / commit approved — 2026-10-17 08:51:14 UTC
 Contributor verified step 3, approved its commit, and authorized step 4 reusable scenario fixtures.
+
+### PD-10 — step 4 reusable scenario fixtures — 2026-10-17 08:54:45 UTC
+Committed verified step 3 as `d6b75c1`. Added immutable retry/duplicate/concurrent/partial-failure scripts, one-use asyncio gate, invalid caller cases and shared validation boundaries. Fixtures supply inputs; domain retry, authorization and transaction behavior stays with owning tasks.
+
+Focused tests: 27 passed; full suite: 283 passed with warnings as errors. Black (34 files), links/docstrings, scoped credential scan and `git diff --check` passed. Changes are uncommitted; step 4 verification precedes step 5 output/snapshot and task-wide review.
+
+### PD-10 — step 4 verified / commit approved — 2026-10-17 08:56:24 UTC
+Contributor verified step 4, approved its commit, and authorized step 5 output/snapshot and task-wide review.
 
 ## Pending real integration ledger (initially empty)
 

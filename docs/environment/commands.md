@@ -77,6 +77,10 @@ Run `uv run --locked pytest tests/fixtures/core -q -W error` for shared factorie
 
 Run `uv run --locked pytest apps/api/tests/core/test_provider_settings.py apps/api/tests/core/test_security_boundaries.py -q -W error` from the repository root. Existing full pytest commands include these tests. This checks isolated settings and the actual entry point in credential-free subprocesses with ten-second timeouts, with no listener, credentials or provider calls. Every fake identity/email/storage selector combination must prevent production startup; empty/unsupported selections fail and safe configurations provide positive controls. OTP-specific verification remains an Identity contract concern; no separate OTP provider is implemented here. Existing locked test prerequisites and pytest exit/failure rules apply.
 
+## PD-10 scenario fixture checks (step 4)
+
+Run `uv run --locked pytest apps/api/tests/core/test_shared_scenarios.py -q -W error` from the repository root with existing locked tools. The full pytest command includes it. This checks scripts for retry/duplicate/partial failures, bounded asyncio concurrency, unauthenticated contexts and common validation cases; it does not implement or validate domain transaction/deduplication policies. Settings/logger changes are restored and no listener/provider/database/cloud service is used. Success is exit 0 with collected tests passing; failures require investigation and exit 5 is not a pass. See [scenario usage](../../tests/fixtures/core/README.md#scenario-fixtures-pd-10-step-4).
+
 ## Workstation and stub command registration
 
 The setup guide contains one-time agent-access/clone commands, not implemented application targets. BOOT-00 records actual Linux paths/agent availability; PD-02/13 freeze the verified development toolchain and application commands. PD-10/DL-00/domain owners register explicit test-double scenarios and real integration commands with distinct names/modes. No deployed command may default to fake auth/storage/notification/domain providers; startup validation rejects them. Stub tests never share a label or result classification with cloud/NFR runs.

@@ -15,7 +15,22 @@ from clip_test_fixtures.samples import (
     make_synthetic_ids,
 )
 
+from clip_test_fixtures.scenarios import (
+    AsyncBarrier,
+    ProviderScenarios,
+    ValidationCase,
+    make_provider_scenarios,
+    make_unauthenticated_callers,
+    make_validation_cases,
+)
+
 __all__ = [
+    "AsyncBarrier",
+    "ProviderScenarios",
+    "ValidationCase",
+    "make_provider_scenarios",
+    "make_unauthenticated_callers",
+    "make_validation_cases",
     "Fail",
     "Return",
     "ScriptExhausted",

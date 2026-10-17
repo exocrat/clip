@@ -7,11 +7,15 @@ import pytest
 # Importing decorated functions makes the shared fixtures available to API tests.
 # Their module defines no autouse behavior and never establishes HTTP identity.
 from clip_test_fixtures.pytest_fixtures import (
+    concurrency_barrier,
     expected_errors,
+    provider_scenarios,
     regular_caller,
     synthetic_clock,
     synthetic_ids,
     temporary_caller,
+    unauthenticated_callers,
+    validation_cases,
 )
 
 

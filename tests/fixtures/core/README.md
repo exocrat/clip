@@ -12,4 +12,15 @@ The [approved PD-10 step 2 adapter interfaces](adapter-interfaces.md) are implem
 
 For an email test, explicitly set `CLIP_ENVIRONMENT=test` and `CLIP_EMAIL_PROVIDER=fake`, load Settings, then call `make_test_provider(settings, "email", [Return(None), Fail("unavailable")])`. Await each `call()`; a failure raises `TestProviderFailure`, and an extra call raises `ScriptExhausted`. No recipient, content or credential is accepted. Each test gets its own provider; scripts have no automatic retries and promise concurrency only within one asyncio loop. Use the matching identity/storage selector for those kinds. OTP-specific operation semantics remain with Identity.
 
-Run `uv run --locked pytest tests/fixtures/core -q -W error` for factory and scripted-provider checks. Step 3 covers production entry-point rejection for every identity/email/storage fake-selector combination and safe startup controls; reusable scenario presets and output/snapshot review remain steps 4–5.
+Run `uv run --locked pytest tests/fixtures/core -q -W error` for factory and scripted-provider checks. Step 3 covers production entry-point rejection for every identity/email/storage fake-selector combination and safe startup controls; step 4 supplies reusable scenario presets below, and step 5 reviews output/snapshots.
+
+## Scenario fixtures (PD-10 step 4)
+
+API tests also receive `provider_scenarios`, `concurrency_barrier`, `unauthenticated_callers` and `validation_cases`. Other test owners can import their decorated functions from the same pytest fixture module. Factories/classes are exported from `clip_test_fixtures` for non-pytest consumers.
+
+- `provider_scenarios` contains retry (failure then success), duplicate (same value twice), concurrent (two distinct values), and separate primary-success/downstream-failure scripts. Construct a fresh explicitly selected provider for each script. The fixtures neither retry nor deduplicate requests and prove no real transaction/notification behavior.
+- `concurrency_barrier` is a fresh one-use two-task gate. Await `wait()` in each task; bound the surrounding gather with `asyncio.wait_for`. Use `AsyncBarrier(n)` for another task count. Cancellation does not reset the gate, and extra participants fail explicitly.
+- `unauthenticated_callers` contains missing, untyped and expired contexts. Check expiry against `synthetic_clock.now`. Resource ownership and authenticated-but-forbidden cases remain domain-specific; a different valid caller is not globally denied.
+- `validation_cases` covers approved UUID/time/money/page boundaries with safe case names and values excluded from repr. Domain-specific ranges and request fields remain with their contracts.
+
+Run `uv run --locked pytest apps/api/tests/core/test_shared_scenarios.py -q -W error` for scenario-consumer checks. Tests use explicit fake selection, local in-memory scripts/gates and no real provider, listener or database.
