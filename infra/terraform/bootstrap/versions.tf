@@ -20,11 +20,11 @@ provider "aws" {
 
   default_tags {
     tags = {
-      Project           = "CLIP"
-      Environment       = "bootstrap"
-      Owner             = var.resource_owner
-      Task              = "PD-15"
-      CleanupReviewDate = var.cleanup_review_date
+      Project     = "CLIP"
+      Environment = "bootstrap"
+      Owner       = var.resource_owner
+      Task        = "PD-15"
+      ExpiresOn   = var.cleanup_review_date
     }
   }
 }

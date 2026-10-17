@@ -16,8 +16,8 @@ For EACH command record: creator task, exact invocation and required inputs, sup
 | Python format and non-mutating pinned Black check | PD-04 | Not implemented |
 | Test/lint/type/build/aggregate CI-equivalent | PD-07/12/13 | Not implemented |
 | Contract regenerate/stale-check | PD-11/DL-00 | Not implemented |
-| Terraform static format/validate (no remote state mutation) | PD-15 | Not implemented |
-| Plan/apply/build-release/deploy/verify/rollback/teardown | PD-15/16; domain/EXP additions | Not implemented; gated actions separate from local/CI check |
+| Terraform static format/validate (no remote state mutation) | PD-15 | Implemented: run `bash scripts/terraform-static-check.sh` from the repository root with Terraform `1.15.9`. Checks recursive Terraform formatting, then runs `terraform init -backend=false` and `terraform validate` for each root. Exit 0 means all checks pass; a format, provider-download, or validation failure exits nonzero and must be resolved before planning. It does not contact AWS or read remote state; first initialization needs Terraform Registry access and may download the pinned provider into ignored `.terraform/`. |
+| Plan/apply/build-release/deploy/verify/rollback/teardown | PD-15/16; domain/EXP additions | PD-15 documents the reviewed plan/apply/verify/cleanup workflow and command templates in `infra/terraform/README.md`; actual targets, state keys, protected plan path, and commands must be selected per approved plan. Cloud operations remain separately gated and are not part of local/CI checks. |
 | Search evaluator/load workload/NFR manifests | SE-01 | Not implemented |
 | Two-client chat/read-state/latency measurement | CN-01/CN-03 | Not implemented |
 | Integrated peak/runtime-loss/DB-restore checks | INT-01 | Not implemented |
