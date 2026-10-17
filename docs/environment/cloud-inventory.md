@@ -1,6 +1,6 @@
 # Cloud environment inventory
 
-Non-secret status template. Update only from approved plans and verified outputs. Never record secret values here.
+Non-secret status record. Update only from approved plans and verified outputs. Never record credentials, tokens, or secret values here. This is an observed snapshot, not an authorization to use existing resources or create/change/delete cloud infrastructure.
 
 | Fact | Current status |
 |---|---|
