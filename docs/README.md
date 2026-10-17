@@ -8,6 +8,7 @@ The root [README](../README.md) describes the project. Agents start from [AGENTS
 - [Document 3 — Shared conventions](conventions/shared-conventions-and-cross-domain-contract-rules.md)
 - [Document 4 — Repository structure](architecture/repository-structure.md)
 - [Terraform ownership and state boundaries](architecture/terraform-ownership.md)
+- [Terraform change workflow](../infra/terraform/README.md)
 - [Foundation requirement traceability](architecture/foundation-traceability.md)
 - [Document 5 — Pre-domain task list](tasks/pre-domain-task-list.md)
 - [Single domain task list](tasks/domain-task-list.md)
