@@ -52,7 +52,20 @@ ECS API throughput quota values were also queried, but are omitted because they 
 
 The live account budget is USD 200 with actual-cost notifications at USD 50, 80, 100, 120, and 130 sent to all four team members. The budget end date is 2027-10-17. These notifications are not a hard spending cap and do not stop resources. The user-selected USD 120 amount is a planning preference, not an enforced limit or reserve. Credits are not separately monitored as consumed; the current cost budget excludes credit line items. The team accepted cost alerts without a separate credit-consumption monitor.
 
-Aditya owns billing alerts (human-confirmed). Anyone may approve and apply infrastructure plans. Everyone shares cleanup responsibility; the person who started resources has first responsibility. These are team procedures, not AWS-enforced controls. Refer to the work log for the dated verification record.
+### Infrastructure authority and cleanup
+
+- Anyone on the four-person team may approve and apply infrastructure plans (Rahul-confirmed).
+- Aditya owns billing alerts (Rahul-confirmed).
+- Everyone shares cleanup responsibility; the person who started resources has first responsibility (Rahul-confirmed).
+- These are team procedures, not AWS-enforced controls. Each cloud action still requires its own exact-plan approval and safety review.
+
+### Coding-access exception
+
+- Aditya reported that all four team members retain `PowerUserAccess` and that `IAMFullAccess` was removed. This is human-reported; Rahul could not independently inspect the policy attachments for all four.
+- Rahul intentionally chose to retain `PowerUserAccess` and defer least-privilege checks. Record this as an accepted broad-access exception, not as a passed least-privilege check. No IAM policy was changed by this PD-14 work.
+- The team should request additional service-specific access only for a reviewed task need. This record does not claim effective SSM, S3, or other service permissions were tested.
+
+Refer to the work log for the dated verification record.
 
 ## Snapshot provenance
 
