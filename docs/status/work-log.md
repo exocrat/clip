@@ -40,7 +40,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PD-12 | Integration owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-04–PD-11 | — |
 | PD-13 | Integration owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-04–PD-12 | — |
 | PD-14 | Stream 4 owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-01–PD-03 | — |
-| PD-15 | Stream 4 owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-14 | — |
+| PD-15 | Stream 4 — Rahul | blocked | Step 1 inventory performed; awaiting Rahul's verification; PD-14 remains partial before later task steps | performed | pending | `task/pd-15-terraform-state` at base `4754e97`; only `infra/terraform/.gitkeep` is tracked; no Terraform config/state/plan/lockfile or ignored Terraform artifacts found | PD-14 permission update remains unapplied; no backend/state operations performed | 2026-10-17 13:19:02 UTC |
 | PD-16 | Integration owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-04–PD-15 | — |
 | PD-17 | Integration owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-14–PD-16 | — |
 | PD-18 | Integration owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-01–PD-17 | — |
@@ -150,6 +150,9 @@ Suraj (B); audit passed after the PD-03 follow-up corrections. Reviewed PD-00–
 
 ### PD-03 — local handoff integration — 2026-10-16 14:16 UTC
 The audited task branch committed as `d29c02bbe3e8929148b125ae5e7cbb6af357840d` and fast-forwarded local `main` from `cfbf9352c03302990e6ffda09521f0a5450572d7`. The worktree is clean; `origin/main` remains at `cfbf9352c03302990e6ffda09521f0a5450572d7`. The combined handoff is integrated locally; remote publication awaits approval for the exact revision.
+
+### PD-15 — Step 1 Terraform and state inventory — 2026-10-17 13:19:02 UTC
+Rahul (Stream 4); Step 1 performed on `task/pd-15-terraform-state`, branched from `main` at `4754e97`, after Rahul explicitly directed continuation while PD-14 remained partial. `git ls-files` found only the expected `infra/terraform/.gitkeep`; searches found no `.tf`, `.tfvars`, state, lockfile, or plan files. `git status --ignored infra/terraform` found no ignored Terraform artifacts. No Terraform initialization, state inspection/migration/import, or cloud action occurred. `git diff --check` passed. Awaiting Rahul's verification; PD-14's least-privilege status remains unresolved.
 
 ## Pending real integration ledger (initially empty)
 
