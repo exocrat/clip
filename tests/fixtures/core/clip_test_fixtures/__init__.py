@@ -1,5 +1,6 @@
 """Schema-neutral synthetic references and clocks for project tests only."""
 
+from clip_test_fixtures.privacy import redact_snapshot
 from clip_test_fixtures.providers import (
     Fail,
     Return,
@@ -25,6 +26,7 @@ from clip_test_fixtures.scenarios import (
 )
 
 __all__ = [
+    "redact_snapshot",
     "AsyncBarrier",
     "ProviderScenarios",
     "ValidationCase",

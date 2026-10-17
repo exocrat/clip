@@ -35,7 +35,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PD-07 | Stream 2 owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-02 | — |
 | PD-08 | Stream 3 owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-02, PD-04, PD-05, PD-06 | — |
 | PD-09 | Stream 3 owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-06, PD-08 | — |
-| PD-10 | Stream 1 — Aditya (A) | in progress | Step 4 verified/approved for commit; step 5 output/snapshot and task-wide review authorized | performed (step 4) | Steps 1–4 verified; step 5 authorized | Step 3 committed as `d6b75c1`; step 4 uncommitted; 27 focused / 283 total tests passed | Step 5 and peer/main acceptance pending; PD-04–PD-06 peer/main acceptance pending | 2026-10-17 08:56:24 UTC |
+| PD-10 | Stream 1 — Aditya (A) | in progress | Peer/affected-owner review and main handoff | performed (steps 1–5/local audit) | Steps 1–5 and local closeout verified | Steps 1–4 committed through `040a706`; privacy/docs/log in this closeout commit; 298 tests and task-wide checks passed | Peer/affected-owner review and main acceptance pending; PD-04–PD-06 main acceptance pending | 2026-10-17 09:03:35 UTC |
 | PD-11 | Integration owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-05, PD-06, PD-07 | — |
 | PD-12 | Integration owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-04–PD-11 | — |
 | PD-13 | Integration owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-04–PD-12 | — |
@@ -314,6 +314,14 @@ Focused tests: 27 passed; full suite: 283 passed with warnings as errors. Black 
 
 ### PD-10 — step 4 verified / commit approved — 2026-10-17 08:56:24 UTC
 Contributor verified step 4, approved its commit, and authorized step 5 output/snapshot and task-wide review.
+
+### PD-10 — step 5 privacy and local task-wide review — 2026-10-17 09:00:42 UTC
+Committed verified step 4 as `040a706`. Added bounded allowlisted snapshots and an intentional child-failure report check; contacts/secrets/message sentinels are masked. Initial privacy run: 14 passed, one expected-key mismatch corrected; final focused run: 15 passed.
+
+Full suite with capture disabled: 298 passed; no checked sentinels in stdout/stderr (`/tmp/clip-pd10-review-ovc983rv/pytest-output.txt`). Black (36 files), lock/dependencies, checklist/scope/docs/privacy review and `git diff --check` passed. No local PD-10 gap found. Step 5 changes remain uncommitted; local closeout verification and peer/main acceptance are pending. CI remains PD-12; real provider/domain behavior remains with owning tasks.
+
+### PD-10 — local closeout verified — 2026-10-17 09:03:35 UTC
+Contributor verified step 5/local review and approved its commit. Stream 1 implementation (PD-04–PD-06, PD-10) is locally verified; peer/affected-owner review and main acceptance remain pending. Next is the Stream 1 handoff; integration tasks require their assigned owner and prerequisites.
 
 ## Pending real integration ledger (initially empty)
 
