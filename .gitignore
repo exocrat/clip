@@ -22,5 +22,26 @@ build/
 dist/
 coverage/
 
+# Terraform working data, state, plans, variable inputs, and sensitive outputs.
+.terraform/
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.plan
+tfplan
+plan.out
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+*.pem
+*.key
+*.credentials
+.terraformrc
+terraform.rc
+terraform-output*.json
+*.sensitive
+*.sensitive.*
+
 # macOS Finder metadata.
 .DS_Store

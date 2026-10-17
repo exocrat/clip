@@ -1,6 +1,10 @@
 # Terraform state bucket bootstrap and recovery
 
-This directory contains the local-backend bootstrap configuration for the CLIP Terraform state bucket. It is a preparation artifact only. No `terraform init`, plan, apply, state migration, or AWS operation is authorized by PD-15 Step 4. The current repository `.gitignore` does not yet exclude Terraform state or plans; do not initialize or apply this configuration until PD-15 Step 6 adds and verifies those protections.
+This directory contains the local-backend bootstrap configuration for the CLIP Terraform state bucket. It is a preparation artifact only. No plan, apply, state migration, or AWS operation is authorized by PD-15 Step 4.
+
+## Local static checks
+
+The repository selects Terraform `1.15.9` (also recorded in the root `.terraform-version`). Run `bash scripts/terraform-static-check.sh` from the repository root to check formatting and validate each root configuration. The script uses `terraform init -backend=false`, so it does not read or write remote Terraform state or configure an AWS backend; initialization may download the pinned provider and write a tracked `.terraform.lock.hcl`. It does not plan or apply infrastructure. Terraform state, plans, variable files, credentials, `.terraform/`, and generated sensitive outputs are ignored by Git; the provider lock file is intentionally not ignored.
 
 ## Resources prepared
 
@@ -10,7 +14,7 @@ The `resource_owner` and `cleanup_review_date` inputs are required and must be s
 
 ## Bootstrap and state migration procedure
 
-1. Wait until PD-15 Step 6 has added and tested ignore rules for `.terraform/`, state files, backups, and plan files. Use an isolated task checkout and confirm that no state or plan file will be staged or committed.
+1. Use an isolated task checkout and confirm that no state or plan file will be staged or committed.
 2. Select an exact candidate bucket name matching the required prefix and check that it is available. Before planning, verify the intended account `335523638354` and Region `ap-south-1`. No apply or provisioning is authorized by this preparation step.
 3. With the bootstrap directory still using Terraform's default local backend, initialize and create a saved plan only after the static validation workflow exists. Review the exact target, plan, and checksum with the human, including access policy, expected cost, retention, rollback, and cleanup. Apply only that reviewed plan after separate explicit approval. Never apply an unreviewed or stale plan.
 4. After a separately approved apply, verify the exact bucket name and account/Region, versioning, SSE-S3, public-access block, ownership controls, TLS-only bucket policy, tags, and `prevent_destroy` configuration. Do not place Terraform state or plan contents in logs, chat, or evidence.
