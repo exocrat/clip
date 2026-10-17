@@ -3,8 +3,10 @@
 import re
 from datetime import UTC, datetime
 
+# Constrain clock fields explicitly: Python may accept ISO 8601 24:00, which
+# is outside the approved RFC 3339 hour range and must not silently roll a date.
 _WIRE = re.compile(
-    r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]{1,6})?(?:Z|[+-][0-9]{2}:[0-9]{2})",
+    r"[0-9]{4}-[0-9]{2}-[0-9]{2}T(?:[01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](?:\.[0-9]{1,6})?(?:Z|[+-][0-9]{2}:[0-9]{2})",
     re.ASCII,
 )
 

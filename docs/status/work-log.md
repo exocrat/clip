@@ -31,7 +31,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PD-03 | Kickoff owner — Suraj (B) | done | Steps and task-wide review complete; combined handoff integrated into local `main` | performed | verified | Local `main` at handoff commit `d29c02b`; combined audit and work-log guidance cleanup | Remote publication of the combined handoff is pending approval | 2026-10-16 14:16 UTC |
 | PD-04 | Stream 1 — Aditya (A) | in progress | All six steps/local review verified and committed | performed | verified (steps 1–6 and local review) | `48a8fbd`; included in current branch | Peer review/main acceptance pending | 2026-10-17 05:02:28 UTC |
 | PD-05 | Stream 1 — Aditya (A) | in progress | All six steps and local acceptance review verified; steps 5–6 approved for commit | performed | verified (steps 1–6/local closeout) | `stream/1-api-shared-core`; steps 3–4 commit `55c17fc`; 13 tests and local acceptance checks passed | Peer review/main acceptance pending; concrete conventions/database lifecycle remain PD-06/08 outputs | 2026-10-17 05:48:44 UTC |
-| PD-06 | Stream 1 — Aditya (A) | in progress | Step 3 verified and approved for commit; step 4 persistent convention tests authorized | performed (step 3) | Steps 1–3 verified; step 4 authorized | Step 2 committed as `518879e`; step 3 uncommitted on `stream/1-api-shared-core`; 13 baseline tests and bounded smoke passed | Steps 4–6 and peer/affected-owner review/main acceptance pending; PD-05 main acceptance pending | 2026-10-17 07:03:14 UTC |
+| PD-06 | Stream 1 — Aditya (A) | in progress | Step 4 verified and approved for commit; step 5 adversarial identity/startup checks authorized | performed (step 4) | Steps 1–4 verified; step 5 authorized | Step 3 committed as `a0fd0c8`; step 4 uncommitted; 175 API tests passed (162 new core cases) | Steps 5–6 and peer/affected-owner review/main acceptance pending; PD-05 main acceptance pending | 2026-10-17 07:11:53 UTC |
 | PD-07 | Stream 2 owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-02 | — |
 | PD-08 | Stream 3 owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-02, PD-04, PD-05, PD-06 | — |
 | PD-09 | Stream 3 owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-06, PD-08 | — |
@@ -254,6 +254,14 @@ Checks passed: pinned Black (14 files), existing pytest suite (13), bounded help
 
 ### PD-06 — step 3 verified / commit approved — 2026-10-17 07:03:14 UTC
 Contributor verified step 3, explicitly approved its commit, and authorized step 4 persistent helper/boundary tests.
+
+### PD-06 — step 4 persistent shared-core tests — 2026-10-17 07:08:14 UTC
+Committed verified step 3 as `a0fd0c8`. Added `apps/api/tests/core/` (162 cases) for conversions/bounds, errors, pages/order, caller validity, redaction/concurrent correlation, and settings guards; documented the focused test command. Initial run: 160 passed, two failed. Fixed RFC 3339 rejection of `24:00:00` and the test's stderr capture; affected rerun: 42 passed.
+
+Full `uv run --locked pytest apps/api/tests -q -W error`: 175 passed. Black (23 files), links/docstrings, scoped credential scan and `git diff --check` passed. Step 4 changes are uncommitted and await verification; explicit HTTP spoofing/production-startup checks and final review remain steps 5–6.
+
+### PD-06 — step 4 verified / commit approved — 2026-10-17 07:11:53 UTC
+Contributor verified step 4, explicitly approved its commit, and authorized step 5 adversarial identity/production-startup tests.
 
 ## Pending real integration ledger (initially empty)
 

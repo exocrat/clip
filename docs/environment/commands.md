@@ -57,7 +57,7 @@ Tests run in-process ASGI requests and bounded local subprocesses, use only synt
 
 The existing API start/stop, test and formatting commands above are unchanged. PD-06 adds common error responses, `X-Request-ID`, and safe application/Uvicorn JSON logs; see the [core guide](../../apps/api/app/core/README.md). Provider selections `CLIP_IDENTITY_PROVIDER`/`CLIP_EMAIL_PROVIDER` default to `disabled`; reserved `fake` selections and `CLIP_DEVELOPMENT_AUTH=true` are rejected in production. Unsupported provider names fail startup; no adapter or credential is supplied by this step. Exact setting behavior is in the [API README](../../apps/api/README.md#startup-settings).
 
-Step 3 regression/smoke evidence is in the work log. Persistent PD-06 tests remain steps 4–5; the unchanged PD-05 suite is not full shared-core coverage.
+Step 3 regression/smoke evidence is in the work log. Step 4 adds `uv run --locked pytest apps/api/tests/core -q -W error` for focused convention tests; the existing full API/root pytest commands collect it too. Run from the repository root with the same locked Python/pytest/TestClient prerequisites. Warnings fail the run; success is exit 0 with collected tests passing, exit 5 is not a pass. Failure requires inspecting the failing behavior rather than changing expected output to hide a defect. Tests use in-memory ASGI apps, synthetic fixtures, local temporary files/caches and restored environment/logger settings, with no cloud, provider, listener or database effects. Explicit client-ID spoofing and real production-entry-point rejection checks remain step 5. See [API test guidance](../../apps/api/README.md#shared-core-tests-pd-06-step-4).
 
 ## Workstation and stub command registration
 

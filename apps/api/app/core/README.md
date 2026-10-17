@@ -21,6 +21,6 @@ This package contains shared technical primitives. [Canonical conventions](../..
 
 ## Pending integration and checks
 
-PD-06 step 3 implements these interfaces; persistent unit/adversarial tests and task-wide review remain steps 4–6. The existing PD-05 suite covers the earlier health/configuration surface only. No domain, sign-in, provider, database, or deployment completion is implied.
+PD-06 step 3 implements these interfaces. Step 4 adds the focused shared-core suite under `apps/api/tests/core/`, including format/parse boundaries, error mapping, page-window ordering, caller construction/expiry, redaction/correlation and settings guards. Explicit HTTP identity-spoofing/production-startup checks and final review remain steps 5–6. No domain, sign-in, provider, database, or deployment completion is implied.
 
 Identity must validate actual credentials, eligibility and revocation before supplying caller context; each domain enforces resource access. PD-10 implements controlled reusable provider fakes. ID-01/CN-03 implement real providers; reserved settings do not simulate authentication/delivery. PD-08 implements database/session lifecycle. Domain contracts specify transactions, idempotency, duplicate behavior and notification durability; core performs no automatic write retries. Importing core must not contact a database or provider.
