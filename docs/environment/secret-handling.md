@@ -10,14 +10,18 @@ This template contains NO secret values. PD-03 initializes it, PD-14 records the
 
 | Field | Status |
 |---|---|
-| Shared manager/access-controlled channel | **Not selected or configured.** This is an unresolved PD-14 Step 8 dependency before application/provider/database secrets are stored. No cloud secret service was created or changed. |
+| Shared manager/access-controlled channel | **Selected by Rahul on 2026-10-17:** AWS Systems Manager Parameter Store, `SecureString`, Standard tier, for static project secrets. It is not configured yet; no parameter was created and no cloud service/resource was changed. |
+| Planned account/region | Account `335523638354`, region `ap-south-1`; these are the verified project target, not evidence that Parameter Store currently contains project values. |
+| Cost/limits | AWS lists Standard parameters as having no additional Parameter Store charge, with a 4 KB value limit and up to 10,000 standard parameters per account/Region. KMS/key choices or other associated services may have separate costs; check before setup. See [Parameter Store pricing](https://aws.amazon.com/systems-manager/pricing/) and [tier limits](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html). |
+| Encryption/access warning | `SecureString` uses AWS KMS. The KMS key strategy is not selected. AWS cautions that the AWS-managed `aws/ssm` key can make SecureString values retrievable by principals with Parameter Store read permissions; do not assume it provides per-secret separation in this account. Review [Parameter Store security guidance](https://docs.aws.amazon.com/systems-manager/latest/userguide/security-best-practices.html) and cost/policy effects before approving a key. |
+| Parameter path/reference names | None created or selected. Define a project/environment path and exact non-secret reference identifiers before adding values. |
 | Secret references | None configured; provider and database references remain not configured. Do not invent reference names or store values here. |
 | Manager owner | Unassigned. Aditya is the user-reported AWS account owner and billing-alert owner, but has not been assigned ownership of a shared secret manager. |
-| Access role and permissions | Not established for a shared manager. Coding-agent access remains least-privilege and no AWS permission changes or agent grants were made. |
-| Rotation/revocation | No shared-manager procedure exists yet. Define it with the selected manager and owner before adding any real reference. |
-| Unavailable-access recovery | No verified recovery runbook exists for shared application secrets. Establish the owner/contact and recovery procedure when the manager is selected. |
+| Access role and permissions | Not established for Parameter Store. Define least-privilege parameter path and KMS permissions; coding-agent access remains least-privilege and no AWS permission changes or agent grants were made. |
+| Rotation/revocation | Standard tier does not provide automatic credential rotation. A manual rotation/revocation procedure and cadence remain to be agreed with the manager owner before adding real references. |
+| Unavailable-access recovery | No verified recovery runbook exists. Establish the owner/contact and recovery procedure before adding real references. |
 
-If a task needs an application/provider/database secret before this is resolved, stop that dependent setup and ask for an approved manager, owner, access scope, rotation/revocation, and recovery procedure. Never substitute chat, email, repository files, fixtures, or logs as a secret store.
+If a task needs an application/provider/database secret before the Parameter Store owner, access/key policy, rotation/revocation, and recovery controls are defined and verified, stop that dependent setup. Never substitute chat, email, repository files, fixtures, or logs as a secret store.
 
 ### Per-contributor AWS CLI sign-in (not a shared secret store)
 
