@@ -47,6 +47,8 @@ Apply these exact tag keys and meanings wherever the resource type supports tags
 
 Tag keys are case-sensitive; preserve the spelling shown above. If a resource cannot be named/tagged, record its exact resource identifier, unsupported field(s), reason, owner, and cleanup or review date here. Keep such exceptions narrow and do not treat existing untagged account resources as project resources. Apply tags consistently to child resources and cost-bearing dependencies where supported.
 
+Rahul verified these Step 7 conventions on 2026-10-17.
+
 ### Observed quota values
 
 Values below are applied limits unless marked as AWS defaults. These are limit values, not remaining capacity; the CLI returned unit `None` for these entries.
