@@ -198,7 +198,7 @@ The integration owner handles cross-stream artifacts and final acceptance; the s
 3. Add only shared core boundaries needed by all domains: common ID/time/error/auth-context types and database/session lifecycle placeholders as selected in PD-06/PD-08.
 4. Add empty domain ownership directories for Identity, Listings, Search, and Conversations with brief README placeholders stating that feature implementation belongs to later domain tasks. Do not add endpoints or domain rules speculatively.
 5. Add an API test that starts the app in test mode, verifies health behavior, and confirms safe configuration failures.
-6. Document the exact local start and test commands after PD-13 is in place.
+6. Consolidate the exact verified local start and test commands documented as they are created in steps 1 and 5. PD-13 later reconciles these commands with the common Makefile front door; PD-05 does not wait for PD-13.
 
 **Checks:** Run the API locally with no cloud credentials; call the health endpoint; run its test; verify no real data, secrets, or domain behavior were added.
 

@@ -5,7 +5,12 @@ name = "clip"
 version = "0.1.0"
 description = "Campus Listing and Item Platform"
 requires-python = ">=3.14,<3.15"
-dependencies = []
+dependencies = [
+    "fastapi==0.143.3",
+    "pydantic==2.14.1",
+    "pydantic-settings==2.16.0",
+    "uvicorn==0.54.0",
+]
 
 [dependency-groups]
 dev = ["black==26.10.1", "pytest==9.1.1"]
