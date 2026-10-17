@@ -1,4 +1,4 @@
-"""Typed process-environment configuration for the API foundation."""
+"""Shared typed process-environment configuration for the API foundation."""
 
 from typing import Literal, Self
 

@@ -2,7 +2,7 @@
 
 from fastapi import FastAPI
 
-from app.config import load_settings
+from app.core.config import load_settings
 
 # Validate before serving requests; invalid settings must fail startup.
 settings = load_settings()

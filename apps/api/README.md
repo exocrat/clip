@@ -1,6 +1,6 @@
 # API foundation
 
-PD-05 steps 1–2 supply a FastAPI application, process-health endpoint and typed startup settings. Shared core boundaries and persistent API tests are subsequent PD-05 outputs; marketplace features remain later domain tasks.
+PD-05 steps 1–4 supply a FastAPI application, process-health endpoint, typed startup settings, the [shared-core boundary](app/core/README.md), and README-only domain ownership placeholders under `app/domains/`. Persistent API tests are a subsequent PD-05 output; marketplace features remain later domain tasks.
 
 From the repository root, install the locked dependencies and start the local API:
 

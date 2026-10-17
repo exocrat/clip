@@ -30,7 +30,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PD-02 | Kickoff owner — Suraj (B) | done | Steps 1–7 and task-wide acceptance review complete | performed | verified | `task/pre-domain-foundation`; repository-structure §§2–3/10; combined handoff integrated into local `main` at `d29c02b`; `git diff --check` | Remote publication of the combined handoff is pending approval | 2026-10-16 14:16 UTC |
 | PD-03 | Kickoff owner — Suraj (B) | done | Steps and task-wide review complete; combined handoff integrated into local `main` | performed | verified | Local `main` at handoff commit `d29c02b`; combined audit and work-log guidance cleanup | Remote publication of the combined handoff is pending approval | 2026-10-16 14:16 UTC |
 | PD-04 | Stream 1 — Aditya (A) | in progress | All six steps/local review verified and committed | performed | verified (steps 1–6 and local review) | `48a8fbd`; included in current branch | Peer review/main acceptance pending | 2026-10-17 05:02:28 UTC |
-| PD-05 | Stream 1 — Aditya (A) | in progress | Steps 1–2 verified; local commit authorized; next step 3 is shared core boundaries | performed | verified (steps 1–2/full plan) | `stream/1-api-shared-core`; typed settings, API wiring, safe examples, dependency lock and docs; isolated configuration/live health checks passed | No local step blocker | 2026-10-17 05:02:28 UTC |
+| PD-05 | Stream 1 — Aditya (A) | in progress | Steps 1–4 verified; steps 3–4 commit approved; next step 5 adds persistent API/configuration tests | performed | verified (steps 1–4/full plan) | `stream/1-api-shared-core`; steps 1–2 commit `cbec9f1`; core/ownership placeholders checked and approved for commit | Concrete conventions remain PD-06 outputs; database lifecycle remains PD-08 output | 2026-10-17 05:15:10 UTC |
 | PD-06 | Stream 1 — Aditya (A) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-05 | 2026-10-17 03:49 UTC |
 | PD-07 | Stream 2 owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-02 | — |
 | PD-08 | Stream 3 owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-02, PD-04, PD-05, PD-06 | — |
@@ -209,6 +209,19 @@ Isolated fresh-process checks passed for default local, explicit test/production
 
 ### PD-05 — steps 1–2 verified — 2026-10-17 05:02:28 UTC
 Aditya verified step 2 and explicitly authorized committing steps 1–2. Configuration/live health, formatting, lock/dependency checks and startup-command documentation are recorded above. Current branch: `stream/1-api-shared-core`; next is step 3 understanding/verification. No later numbered step executed.
+
+### PD-05 — step 3 shared-core boundary — 2026-10-17 05:09:22 UTC
+Added `apps/api/app/core/` and its boundary README; moved the existing settings module to `app.core.config` and updated the API import. As scoped in the verified plan, reserved ID/time/public-error/trusted-context and database lifecycle boundaries without inventing unresolved types or successful no-op services. The traceability map assigns concrete convention decisions/implementations to PD-06 and database/session implementation to PD-08. Existing configuration errors remain startup-only, not a public HTTP error contract.
+
+`make format-python`/`make check-python-format` passed (4 files unchanged). Isolated credential-free import checks passed for the core package, default settings, exact health payload and health-only route inventory; production debug still fails startup with the expected redacted diagnostic. New documentation targets resolve; `git diff --check` passed. No runtime behavior, dependency or schema change; step 3 result awaits verification. Nothing committed; no step 4 executed.
+
+### PD-05 — step 4 domain ownership placeholders — 2026-10-17 05:12:29 UTC
+Aditya verified step 3 and authorized step 4. Added README-only Identity/Listings/Search/Conversations directories under `apps/api/app/domains/`, mapping the recorded A/B/C/D owners to required later domain tasks and preserving A's notifications subtree within D's Conversations area. Each README marks implementation/contracts as future work and links to the canonical domain task list. Updated the API overview; no Python modules, endpoints, schemas or domain rules added.
+
+Verified all four directories contain only their README, all task links resolve, owners/tasks match CONTRIBUTING and the task index, and `git diff --check` passes. No runtime tests repeated for this documentation-only increment. Step 4 awaits human verification; steps 3–4 remain uncommitted, and step 5 has not started.
+
+### PD-05 — steps 3–4 verified — 2026-10-17 05:15:10 UTC
+Aditya verified step 4, explicitly approved committing verified steps 3–4, and authorized step 5. Approved scope is the shared-core/config move, domain ownership README placeholders, API overview and work-log checkpoint. Next: persistent health/configuration tests; their changes require separate commit approval.
 
 ## Pending real integration ledger (initially empty)
 
