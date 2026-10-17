@@ -24,6 +24,16 @@ Do not initialize these configurations against a remote backend until its exact 
 - Root configurations compose modules only within their resource ownership boundary. A domain root must not declare or import shared resources into its state; it consumes explicitly reviewed shared identifiers and interfaces instead.
 - Do not add speculative modules or cloud resources merely to populate these directories. Add a module only when an approved task identifies its capability, inputs/outputs, owner, and tests.
 
+## Shared identifiers, secrets, and permissions
+
+- The shared root is the source of ownership for shared resource identifiers. Publish only the explicitly needed, non-secret IDs, ARNs, and endpoints as reviewed outputs or non-secret AWS Systems Manager Parameter Store `String` parameters under the agreed `/clip/` namespace. Exact parameter names are selected when the corresponding shared resources exist; consumers must not invent competing names.
+- A domain root receives only the identifiers it needs through explicit, typed module inputs or the approved non-secret parameter interface. Do not use another root's state as a general-purpose interface: Terraform remote-state access exposes the source state's outputs/state data and can create broad read access and ownership ambiguity. A consumer may reference shared resources but must not recreate, import, mutate, or delete them.
+- Never pass secret values through Terraform module inputs/outputs, state, plans, resource tags, user data, or ordinary logs. Pass a secret reference (approved parameter name/ARN) only. The application/runtime retrieves the value from the approved secret store using its runtime role; prefer `SecureString` for secret values. The Terraform authoring identity should not read secret values merely to configure a resource.
+- The shared root owns shared runtime roles and shared-resource policies. Each domain root owns only its domain-specific runtime roles and policies. A domain requests access to a shared capability through an explicit, reviewed interface; it must not attach permissions to or rewrite a role/policy owned by another root. Do not grant a domain direct access to another domain's private resources; cross-domain application behavior uses that domain's public contract.
+- The team has selected SSM Parameter Store and simple paths under `/clip/` as the intended parameter convention. The current [secret-handling record](../environment/secret-handling.md) still says the shared access method and references are not configured. The team expectation that all four members can read, write, and manage parameters is not evidence that effective permissions have been tested. PD-14 least-privilege verification remains deferred; no IAM policy is created or approved by this design note.
+
+These are interface and ownership rules, not a claim that parameter paths, secret references, runtime roles, or effective permissions have been provisioned. Record actual non-secret references and approved access procedures in the canonical secret-handling record when they are established.
+
 ## Change and safety rules
 
 1. Keep each resource in exactly one root state and assign one accountable task owner before adding it.
