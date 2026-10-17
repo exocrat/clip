@@ -1,19 +1,26 @@
 # Shared API core
 
-This package is the single home for technical primitives needed across domains. Domain authorization and marketplace business rules remain in their owning domains. PD-05 step 3 establishes this boundary; it does not freeze the unresolved PD-06 conventions or implement the PD-08 database lifecycle.
+This package contains shared technical primitives. [Canonical conventions](../../../../docs/conventions/shared-conventions-and-cross-domain-contract-rules.md) define the approved behavior and link to the PD-06 step 2 decisions. Domain authorization and business rules remain in their owning domains.
 
-## Available implementation
+## Available interfaces
 
-`config.py` provides typed process-environment settings and safe startup validation. Import `Settings`, `ConfigurationError`, or `load_settings` from `app.core.config`. The settings behavior is documented in the [API README](../../README.md#startup-settings). A configuration error is a startup failure, not the shared public HTTP error envelope.
+| Module | Purpose and important behavior |
+|---|---|
+| `identifiers.py` | `new_id`, `parse_id`, `format_id`: generate/validate UUIDv4 and emit canonical strings; IDs grant no authorization. |
+| `timestamps.py` | `as_utc`, `parse_timestamp`, `format_timestamp`: require aware instants, normalize offsets, and emit six fractional digits plus Z without silent precision loss. |
+| `money.py` | `validate_paise`, `rupees_to_paise`, `format_rupees`: exact integer paise restricted to whole rupees; reject floats/booleans/fractional rupees. Signed values are representable; domains enforce their permitted ranges and zero rules. |
+| `pagination.py` | Immutable `PageRequest`/`Page`, `page_parameters`, `page_from_window`: page 1/size 20 defaults, sizes 20/50/100, offset and size+1 lookahead. Queries must first authorize/filter and sort with an ID tie-breaker. The helper preserves query order; it cannot enforce SQL ordering or snapshot consistency. |
+| `errors.py` | `ErrorSpec`, `FieldError`, `PublicError`, `install_error_handlers`: reviewed public codes/messages and safe response mappings. Raw exception messages and validation inputs are excluded; generic schema failures identify only body/query/path/header/cookie to avoid leaking nested input keys. Domain details use reviewed field/code pairs. |
+| `auth.py` | Immutable `CallerContext` and `require_caller`: user UUID, regular/temporary class, UTC validity deadline. Only trusted server wiring may set ASGI scope `clip.caller`; headers/body/query IDs are ignored. Without Identity wiring the dependency denies access. Context construction alone proves no identity. |
+| `logging.py` | `SafeJsonFormatter`, `RequestLoggingMiddleware`, `configure_logging`: server request IDs in request-local context, response `X-Request-ID`, and errors; bounded metadata-only JSON. Application/Uvicorn messages, exception text and unknown extras are discarded. Integrations must review other library logs separately. |
+| `config.py` | Typed process settings and safe startup failures, disabled provider defaults, explicit reserved local/test fake selections, and production rejection of fake providers/development auth/debug. Real provider selection remains unavailable until its implementation task adds validated configuration. |
 
-## Boundaries awaiting their creating tasks
+`main.py` installs common error handlers and request correlation; `/health` remains the only application route. HTTP requests that fail before response headers receive the safe 500 envelope. A response failing after headers (streaming or background work) cannot be replaced; the middleware reports a generic transport failure without exposing the original exception. `configure_logging` replaces application/Uvicorn handlers and disables propagation on those named loggers; it never enables request-body logging. Unknown routes use a fixed route marker, never their raw path/query.
 
-| Concern | Existing rule | Required follow-up |
-|---|---|---|
-| IDs | UUID-based opaque string identifiers at public boundaries | PD-06 selects generation/version, representation helpers and tests before domain consumers rely on types. |
-| Time | UTC-aware instants; no silent interpretation of naive timestamps | PD-06 selects one wire form, validation and round-trip tests. |
-| Public errors | Stable safe error envelope without private state | PD-06 selects field names/common codes and implements mapping tests. Do not expose raw configuration exceptions to HTTP clients. |
-| Trusted caller context | Only the server authentication boundary may establish trusted identity | PD-06 defines construction/validation; Identity later validates real credentials. No client-ID shortcut or pretend authenticated context exists here. |
-| Database/session lifecycle | Database/session resources must have an explicit lifecycle and owning transaction | PD-08 selects and implements the actual database connection/session boundaries. This row is the lifecycle placeholder; no successful no-op connection, transaction or dependency check is supplied. |
+`ErrorSpec` messages and `FieldError` values must be code-owned, reviewed public metadata. Do not construct them from user/provider text. The logging allowlist is an additional safeguard, not permission to put private content into an allowed field.
 
-These are pending task outputs, not callable interfaces, reviewed contracts or stub evidence. Concrete shared types are added only after their relevant decisions are reviewed. Database/provider access must not happen on importing `app.core`. Reuse the [canonical shared conventions](../../../../docs/conventions/shared-conventions-and-cross-domain-contract-rules.md) rather than defining alternative rules in domain modules.
+## Pending integration and checks
+
+PD-06 step 3 implements these interfaces; persistent unit/adversarial tests and task-wide review remain steps 4–6. The existing PD-05 suite covers the earlier health/configuration surface only. No domain, sign-in, provider, database, or deployment completion is implied.
+
+Identity must validate actual credentials, eligibility and revocation before supplying caller context; each domain enforces resource access. PD-10 implements controlled reusable provider fakes. ID-01/CN-03 implement real providers; reserved settings do not simulate authentication/delivery. PD-08 implements database/session lifecycle. Domain contracts specify transactions, idempotency, duplicate behavior and notification durability; core performs no automatic write retries. Importing core must not contact a database or provider.

@@ -53,6 +53,12 @@ Run `uv sync --locked`, then `uv run --locked pytest apps/api/tests -q` from the
 
 Tests run in-process ASGI requests and bounded local subprocesses, use only synthetic values, and restore inherited environment changes. They may update pytest/Python caches and create temporary synthetic dotenv files; they need no listener, cloud credentials, database or external services. Success is exit 0 with collected tests passed; failures must remain failures, and exit 5 is no collection, not a pass. PD-05 step 5 verified 13 tests, including startup rejection/redaction, with warnings treated as errors (`uv run --locked pytest -q -W error`). PD-12/13 still own CI and the shared command front door.
 
+## PD-06 shared-core wiring (step 3)
+
+The existing API start/stop, test and formatting commands above are unchanged. PD-06 adds common error responses, `X-Request-ID`, and safe application/Uvicorn JSON logs; see the [core guide](../../apps/api/app/core/README.md). Provider selections `CLIP_IDENTITY_PROVIDER`/`CLIP_EMAIL_PROVIDER` default to `disabled`; reserved `fake` selections and `CLIP_DEVELOPMENT_AUTH=true` are rejected in production. Unsupported provider names fail startup; no adapter or credential is supplied by this step. Exact setting behavior is in the [API README](../../apps/api/README.md#startup-settings).
+
+Step 3 regression/smoke evidence is in the work log. Persistent PD-06 tests remain steps 4–5; the unchanged PD-05 suite is not full shared-core coverage.
+
 ## Workstation and stub command registration
 
 The setup guide contains one-time agent-access/clone commands, not implemented application targets. BOOT-00 records actual Linux paths/agent availability; PD-02/13 freeze the verified development toolchain and application commands. PD-10/DL-00/domain owners register explicit test-double scenarios and real integration commands with distinct names/modes. No deployed command may default to fake auth/storage/notification/domain providers; startup validation rejects them. Stub tests never share a label or result classification with cloud/NFR runs.

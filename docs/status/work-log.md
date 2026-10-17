@@ -31,7 +31,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PD-03 | Kickoff owner — Suraj (B) | done | Steps and task-wide review complete; combined handoff integrated into local `main` | performed | verified | Local `main` at handoff commit `d29c02b`; combined audit and work-log guidance cleanup | Remote publication of the combined handoff is pending approval | 2026-10-16 14:16 UTC |
 | PD-04 | Stream 1 — Aditya (A) | in progress | All six steps/local review verified and committed | performed | verified (steps 1–6 and local review) | `48a8fbd`; included in current branch | Peer review/main acceptance pending | 2026-10-17 05:02:28 UTC |
 | PD-05 | Stream 1 — Aditya (A) | in progress | All six steps and local acceptance review verified; steps 5–6 approved for commit | performed | verified (steps 1–6/local closeout) | `stream/1-api-shared-core`; steps 3–4 commit `55c17fc`; 13 tests and local acceptance checks passed | Peer review/main acceptance pending; concrete conventions/database lifecycle remain PD-06/08 outputs | 2026-10-17 05:48:44 UTC |
-| PD-06 | Stream 1 — Aditya (A) | in progress | Step 2 verified and approved for commit; step 3 shared primitives/API/config wiring authorized | performed (step 2) | Steps 1–2 verified; step 3 authorized | `stream/1-api-shared-core` at `a3c054c`; shared conventions and nine linked topic-named decision records (uncommitted) | PD-05 peer review/main acceptance pending; PD-06 implementation/tests and affected-owner review remain pending | 2026-10-17 06:47:49 UTC |
+| PD-06 | Stream 1 — Aditya (A) | in progress | Step 3 verified and approved for commit; step 4 persistent convention tests authorized | performed (step 3) | Steps 1–3 verified; step 4 authorized | Step 2 committed as `518879e`; step 3 uncommitted on `stream/1-api-shared-core`; 13 baseline tests and bounded smoke passed | Steps 4–6 and peer/affected-owner review/main acceptance pending; PD-05 main acceptance pending | 2026-10-17 07:03:14 UTC |
 | PD-07 | Stream 2 owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-02 | — |
 | PD-08 | Stream 3 owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-02, PD-04, PD-05, PD-06 | — |
 | PD-09 | Stream 3 owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-06, PD-08 | — |
@@ -246,6 +246,14 @@ Stream 1 contributor verified step 1 and approved the nine conventions. Updated 
 
 ### PD-06 — step 2 verified / commit approved — 2026-10-17 06:47:49 UTC
 Contributor verified the revised records, explicitly approved committing step 2, and authorized step 3 shared primitives and API/config wiring. Steps 4–6 tests/review remain pending.
+
+### PD-06 — step 3 shared-core implementation — 2026-10-17 06:52:48 UTC
+Committed verified step 2 as `518879e`. Stream 1 implemented seven core modules (IDs/time/money/pages/errors/caller context/logging), API error/correlation wiring, and production test-provider safeguards; updated API/core docs, examples, and command registry. No dependency or domain-feature change.
+
+Checks passed: pinned Black (14 files), existing pytest suite (13), bounded helper/HTTP/redaction smoke, live loopback Uvicorn/clean shutdown, Python 3.14 syntax/docstrings, links, credential-signature scan, and `git diff --check`. Initial restricted smoke stalled/interrupted; bounded unrestricted rerun passed. A syntax inspection using system Python 3.13 rejected valid 3.14 syntax; selected 3.14 passed. Step 3 awaits verification and commit approval; persistent PD-06 tests/review remain steps 4–6.
+
+### PD-06 — step 3 verified / commit approved — 2026-10-17 07:03:14 UTC
+Contributor verified step 3, explicitly approved its commit, and authorized step 4 persistent helper/boundary tests.
 
 ## Pending real integration ledger (initially empty)
 

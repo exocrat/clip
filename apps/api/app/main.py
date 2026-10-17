@@ -3,9 +3,12 @@
 from fastapi import FastAPI
 
 from app.core.config import load_settings
+from app.core.errors import install_error_handlers
+from app.core.logging import RequestLoggingMiddleware, configure_logging
 
 # Validate before serving requests; invalid settings must fail startup.
 settings = load_settings()
+configure_logging()
 
 # Keep the initial HTTP surface limited to process health. Contract/schema
 # publishing is later foundation work, not an implemented marketplace API.
@@ -16,6 +19,9 @@ app = FastAPI(
     redoc_url=None,
     openapi_url=None,
 )
+
+install_error_handlers(app)
+app.add_middleware(RequestLoggingMiddleware)
 
 
 @app.get("/health")

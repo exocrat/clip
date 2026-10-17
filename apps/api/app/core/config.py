@@ -2,7 +2,7 @@
 
 from typing import Literal, Self
 
-from pydantic import ValidationError, model_validator
+from pydantic import ValidationError, ValidationInfo, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -27,6 +27,26 @@ class Settings(BaseSettings):
 
     environment: Literal["local", "test", "production"] = "local"
     debug: bool = False
+    # These select future test adapters only; no provider is implemented here.
+    identity_provider: Literal["disabled", "fake"] = "disabled"
+    email_provider: Literal["disabled", "fake"] = "disabled"
+    development_auth: bool = False
+
+    @field_validator("identity_provider", "email_provider", "development_auth")
+    @classmethod
+    def reject_production_test_controls(
+        cls, value: str | bool, info: ValidationInfo
+    ) -> str | bool:
+        """Refuse explicit testing controls in production; never select a fallback.
+
+        Real provider options/configuration belong to ID-01/CN-03. Unknown provider
+        names already fail Literal validation rather than pretending to exist.
+        """
+        if info.data.get("environment") == "production" and value in ("fake", True):
+            raise ValueError(
+                "Test providers and development authentication are forbidden in production"
+            )
+        return value
 
     @model_validator(mode="after")
     def reject_production_debug(self) -> Self:
