@@ -161,9 +161,6 @@ Aditya verified step 1 and authorized step 2. Added minimal source-tree project 
 
 `uv lock`, `uv sync --locked`, `.venv/bin/python -m black --version`, and Black's own configuration parsing passed on Python 3.14.3. A fresh environment at `/tmp/clip-pd04-install.jj6oG4/venv` installed from the same lock using `UV_PROJECT_ENVIRONMENT=… uv sync --locked --offline`; verified Python/Black versions and unchanged lockfile SHA-256. `uv lock --check --offline`, `uv pip check --python .venv/bin/python`, and `git diff --check` passed. uv safely fell back from hardlinks to copies for the temporary filesystem. Reviewed steps 1–2 changes and lockfile for the scoped local checkpoint commit; no secrets or real data added. Step 2 result verification pending; task-wide checks, formatter commands/negative test, and later steps remain pending. No push or cloud action.
 
-### PD-04 — unapproved commit undone and commit approval rule — 2026-10-17 03:54:29 UTC
-The agent created local checkpoint commit `5ddb609` without Aditya's explicit commit approval. At Aditya's direction, undid it with `git reset --mixed 4754e97`, preserving all file contents as uncommitted, unstaged changes. The generated `pyproject.toml` and `uv.lock` remain present and the local testing environment is unchanged. Recorded in CONTRIBUTING that every future Stream 1 commit requires explicit human approval; task/step approval does not authorize a commit. The lockfile commit obligation remains pending that approval; step 2 result verification and step 3 remain pending. No push occurred.
-
 ### PD-04 — step 2 verified and commit authorized — 2026-10-17 03:58:38 UTC
 Aditya verified step 2, explicitly approved its local commit, and authorized starting step 3. The approved commit contains the preserved steps 1–2 changes, generated lockfile, ownership/Makefile clarification, commit-approval rule, and work-log evidence. No remote push authorized. Step 3 will create and verify only the Python format/check targets and their command registration; its changes require a separate explicit approval before committing.
 
@@ -171,9 +168,6 @@ Aditya verified step 2, explicitly approved its local commit, and authorized sta
 Created approved local step 2 commit `7bd9c0f`. Step 3 performed under Aditya's authorization: root Makefile defines only `format-python` (`uv run --locked black .`) and `check-python-format` (`uv run --locked black --check --diff .`), with check-only as the default. Registered exact mappings, prerequisites, local environment/cache effects, exit behavior and recovery in `docs/environment/commands.md`. CI remains PD-12; the combined command front door remains PD-13.
 
 On temporary synthetic `apps/api/pd04_format_probe.py`, `make check-python-format` rejected drift (Black exit 1; Make exit 2), and SHA-256 confirmed source preservation. `make format-python` corrected it; check-only passed; a second format preserved the file hash; plain `make` ran check-only successfully. Lockfile hash remained unchanged. Removed the probe afterward; the final repository check passed with an explicit no-Python-files message. `make -n` and `git diff --check` passed. Step 3 changes remain uncommitted and await human verification plus separate commit approval. No step 4 implementation, push, cloud action, or task-wide closeout.
-
-### PD-04 — step 3 dummy-file demonstration — 2026-10-17 04:02:21 UTC
-At Aditya's request, repeated the formatter demonstration with temporary `apps/api/pd04_dummy.py`: a documented integer-price sum and synthetic dictionary with deliberate spacing errors. `make check-python-format` failed as expected (Black 1, Make 2); SHA-256 confirmed the file was unchanged. `make format-python` corrected it; the subsequent check passed and executing the dummy's calculation assertion passed. Removed the temporary file afterward. Step 3 still awaits human verification; no commit or later step executed.
 
 ### PD-04 — step 4 existing-source formatting review — 2026-10-17 04:03:02 UTC
 Aditya verified step 3 and authorized step 4; no further commit approval given. `git ls-files '*.py' '*.pyi'` returned no tracked Python sources; a workspace search excluding `.git`/`.venv` also found none (rg exit 1 means no matches). `make format-python` and `make check-python-format` both passed with an explicit no-Python-files result. `git diff --exit-code -- '*.py' '*.pyi'` confirmed no Python diff and `git diff --check` passed. No formatting or behavior changes were needed; dummy-file validation remains recorded under step 3. Step 4 performed, human verification pending; steps 5–6 and task-wide closeout remain pending. Only status documentation changed in this step; no commit or push.
@@ -187,8 +181,6 @@ Aditya verified step 4 and authorized step 5. PD-05 API/configuration tests and 
 Aditya verified step 5 and authorized step 6. Added exact `uv sync --locked`, `make format-python`, `make check-python-format`, direct Black equivalents, version checks, and `uv run --locked pytest` to CONTRIBUTING and both checklists; documented local-only environment/cache effects, lock enforcement, source mutation vs check-only, expected no-tests result, and future CI boundaries. Reconciled the command registry's implemented Python setup/verified formatter status and the verified pytest decision. Changes remain uncommitted; no new commit approval received.
 
 Task-wide local review covered all six ordered outputs/checks, the approved ownership exception, the full scoped diff including untracked Makefile/decision, explanations, canonical single configuration, ignored `.venv`, generated lockfile, documentation targets/anchor and secret/data handling. No local implementation gap found. `uv sync --locked`, version commands (Black 26.10.1/pytest 9.1.1, Python 3.14.3), formatter/check targets, `uv lock --check --offline`, `uv pip check --python .venv/bin/python`, `make -n`, and `git diff --check` passed. Current pytest run collected 0 tests with exit 5 (expected absence of application tests, not a suite pass). Reused unchanged step 3 dummy/negative/idempotence evidence and step 5 fresh-lock-install/runner smoke evidence (4 passed and intentional failure); probes remain removed. Scoped credential-signature scan found no matches; no real data or cloud resources added.
-
-Local outputs/checklist review is complete; step 6 and task-wide acceptance await Aditya's verification. Explicit commit approval, designated peer review and accepted PR/main revision remain pending; PD-04 stays in progress and does not yet unblock dependent implementation. CI/aggregate check infrastructure is unimplemented by design until PD-12/13, not a claimed pass. No push, PR, merge, cloud action or PD-05 work performed.
 
 ### PD-04 — local review verified and completion commit authorized — 2026-10-17 04:31:59 UTC
 Aditya verified step 6 and the local task-wide review, and explicitly approved committing the remaining PD-04 changes. Approved scope: Makefile format/check targets, pinned pytest/configuration and generated lock update, test-tooling decision, contributor/checklist/command documentation, and this work log. The local six-step implementation is human-verified; peer review and accepted main merge remain pending, so task status stays in progress. No push, PR, merge, or next-task implementation authorized by this commit approval.
@@ -207,9 +199,6 @@ Added documented `app/config.py` settings loaded from process environment with l
 
 Isolated fresh-process checks passed for default local, explicit test/production, typed debug override, invalid/empty enum/boolean rejection and redacted failures; the production-debug diagnostic explains the required false setting. A separate owned loopback server with explicit test settings returned the exact health response and stopped cleanly; Aditya's existing server was untouched. `uv lock`, `uv sync --locked`, `make format-python`, `make check-python-format` (3 Python files), `uv lock --check --offline`, `uv pip check`, and `git diff --check` passed. No persistent API suite pass claimed (step 5 pending). Step 2 awaits human verification; no step 3, commit, push or cloud action.
 
-### PD-05 — steps 1–2 verified — 2026-10-17 05:02:28 UTC
-Aditya verified step 2 and explicitly authorized committing steps 1–2. Configuration/live health, formatting, lock/dependency checks and startup-command documentation are recorded above. Current branch: `stream/1-api-shared-core`; next is step 3 understanding/verification. No later numbered step executed.
-
 ### PD-05 — step 3 shared-core boundary — 2026-10-17 05:09:22 UTC
 Added `apps/api/app/core/` and its boundary README; moved the existing settings module to `app.core.config` and updated the API import. As scoped in the verified plan, reserved ID/time/public-error/trusted-context and database lifecycle boundaries without inventing unresolved types or successful no-op services. The traceability map assigns concrete convention decisions/implementations to PD-06 and database/session implementation to PD-08. Existing configuration errors remain startup-only, not a public HTTP error contract.
 
@@ -219,9 +208,6 @@ Added `apps/api/app/core/` and its boundary README; moved the existing settings 
 Aditya verified step 3 and authorized step 4. Added README-only Identity/Listings/Search/Conversations directories under `apps/api/app/domains/`, mapping the recorded A/B/C/D owners to required later domain tasks and preserving A's notifications subtree within D's Conversations area. Each README marks implementation/contracts as future work and links to the canonical domain task list. Updated the API overview; no Python modules, endpoints, schemas or domain rules added.
 
 Verified all four directories contain only their README, all task links resolve, owners/tasks match CONTRIBUTING and the task index, and `git diff --check` passes. No runtime tests repeated for this documentation-only increment. Step 4 awaits human verification; steps 3–4 remain uncommitted, and step 5 has not started.
-
-### PD-05 — steps 3–4 verified — 2026-10-17 05:15:10 UTC
-Aditya verified step 4, explicitly approved committing verified steps 3–4, and authorized step 5. Approved scope is the shared-core/config move, domain ownership README placeholders, API overview and work-log checkpoint. Next: persistent health/configuration tests; their changes require separate commit approval.
 
 ### PD-05 — step 5 persistent API/configuration tests — 2026-10-17 05:18:08 UTC
 Committed approved steps 3–4 as `55c17fc`. Added API test isolation, a real ASGI TestClient health test in explicit test mode, and configuration tests for safe defaults, typed overrides, invalid/empty values, production-debug rejection, redacted errors, fresh reads and ignored dotenv/example files. Bounded credential-free subprocess tests verify invalid settings prevent the actual entry point from importing. All inputs are synthetic; inherited API/AWS environment changes are restored. Root pytest configuration now supplies the API import path.
@@ -233,8 +219,6 @@ Aditya verified step 5 and authorized step 6. Reconciled exact setup/start/healt
 
 Reviewed all six scoped task outputs, meaningful-code explanations, boundary/domain placeholders, settings/examples, root-only tooling configuration, generated lockfile, tests, documentation and privacy/secret handling. `uv sync --locked`, `uv run --locked pytest apps/api/tests -q -W error` (13 passed), `make check-python-format` (7 files), `uv lock --check --offline`, `uv pip check`, relative Markdown file-target checks and `git diff --check` passed; scoped credential-signature scan found no matches and `.venv` remains ignored. Reused unchanged step 5 fresh locked environment results and prior real loopback startup/health/clean-shutdown evidence, including Aditya's curl verification. No local implementation gap found within the verified skeleton/boundary scope; concrete conventions and database lifecycle are explicitly PD-06/08 work. CI/aggregate lifecycle tooling remains PD-12/13, not a claimed pass.
 
-Step 6/local task-wide review await human verification. Steps 5–6 remain uncommitted; no PD-06 work, commit, push or cloud action performed.
-
 ### PD-05 — steps 5–6 and local closeout verified — 2026-10-17 05:48:44 UTC
 Aditya verified step 6 and the local task-wide review, and explicitly approved committing steps 5–6. Approved outputs are the persistent API/configuration tests, locked TestClient dependency/root test configuration, consolidated contributor/setup/checklist documentation, accurate project overview and work log. All six steps are locally human-verified; peer review/main acceptance remains pending. No PD-06 work performed.
 
@@ -244,30 +228,18 @@ Aditya authorized step 1. Compared the nine PD-06 requirements against `docs/con
 ### PD-06 — step 2 approved shared definitions — 2026-10-17 06:40:16 UTC
 Stream 1 contributor verified step 1 and approved the nine conventions. Updated [shared conventions](../conventions/shared-conventions-and-cross-domain-contract-rules.md) and nine linked decision records. Documentation checks passed (18 relative links, record structure, code fences, `git diff --check`); no runtime tests needed. Changes are uncommitted; step 2 output verification is pending before step 3 implementation.
 
-### PD-06 — step 2 verified / commit approved — 2026-10-17 06:47:49 UTC
-Contributor verified the revised records, explicitly approved committing step 2, and authorized step 3 shared primitives and API/config wiring. Steps 4–6 tests/review remain pending.
-
 ### PD-06 — step 3 shared-core implementation — 2026-10-17 06:52:48 UTC
 Committed verified step 2 as `518879e`. Stream 1 implemented seven core modules (IDs/time/money/pages/errors/caller context/logging), API error/correlation wiring, and production test-provider safeguards; updated API/core docs, examples, and command registry. No dependency or domain-feature change.
 
 Checks passed: pinned Black (14 files), existing pytest suite (13), bounded helper/HTTP/redaction smoke, live loopback Uvicorn/clean shutdown, Python 3.14 syntax/docstrings, links, credential-signature scan, and `git diff --check`. Initial restricted smoke stalled/interrupted; bounded unrestricted rerun passed. A syntax inspection using system Python 3.13 rejected valid 3.14 syntax; selected 3.14 passed. Step 3 awaits verification and commit approval; persistent PD-06 tests/review remain steps 4–6.
-
-### PD-06 — step 3 verified / commit approved — 2026-10-17 07:03:14 UTC
-Contributor verified step 3, explicitly approved its commit, and authorized step 4 persistent helper/boundary tests.
 
 ### PD-06 — step 4 persistent shared-core tests — 2026-10-17 07:08:14 UTC
 Committed verified step 3 as `a0fd0c8`. Added `apps/api/tests/core/` (162 cases) for conversions/bounds, errors, pages/order, caller validity, redaction/concurrent correlation, and settings guards; documented the focused test command. Initial run: 160 passed, two failed. Fixed RFC 3339 rejection of `24:00:00` and the test's stderr capture; affected rerun: 42 passed.
 
 Full `uv run --locked pytest apps/api/tests -q -W error`: 175 passed. Black (23 files), links/docstrings, scoped credential scan and `git diff --check` passed. Step 4 changes are uncommitted and await verification; explicit HTTP spoofing/production-startup checks and final review remain steps 5–6.
 
-### PD-06 — step 4 verified / commit approved — 2026-10-17 07:11:53 UTC
-Contributor verified step 4, explicitly approved its commit, and authorized step 5 adversarial identity/production-startup tests.
-
 ### PD-06 — step 5 adversarial boundary checks — 2026-10-17 07:13:44 UTC
 Committed verified step 4 as `a238aa6`. Added `test_security_boundaries.py`: forged HTTP identity/account claims, server-context/expiry controls, and credential-free production-startup rejection with positive controls. Updated coverage/command docs. Focused run: 24 passed; full `uv run --locked pytest -q -W error`: 199 passed. Black (24 files), links/docstrings, scoped credential scan and `git diff --check` passed. Step 5 changes remain uncommitted and await verification; step 6 review is pending. Real auth/providers remain their owning tasks.
-
-### PD-06 — step 5 verified / commit approved — 2026-10-17 07:16:06 UTC
-Contributor verified step 5, explicitly approved its commit, and authorized step 6 fixture/output and task-wide review.
 
 ### PD-06 — step 6 fixture/output and task-wide review — 2026-10-17 07:18:22 UTC
 Committed verified step 5 as `394d6ca`. Reviewed all nine conventions against decisions, helpers, tests and checklists; no local foundation gap found. Fixtures are synthetic, subprocess environments exclude credentials, and temporary test routes do not enter production. Reconciled stale planned-implementation wording.
@@ -285,9 +257,6 @@ Contributor approved same-branch continuation and adding the step 2 interface-re
 
 Five focused / 204 total tests passed; Black (29 files), links/docstrings, scoped credential scan and `git diff --check` passed. Step 1 awaits verification; all changes remain uncommitted. Next: review adapter interfaces before step 2 implementation.
 
-### PD-10 — step 1 verified / commit approved — 2026-10-17 07:31:40 UTC
-Contributor verified step 1, approved its commit, and authorized step 2. The interface-review gate precedes fake implementation.
-
 ### PD-10 — step 2 interface proposal — 2026-10-17 07:33:05 UTC
 Committed verified step 1 as `f63b11b`. Proposed a test-only scripted provider boundary with typed outcomes, explicit mode/selector checks, and a disabled-by-default storage selector. Provider-specific behavior remains with owning contracts. Proposal/link checks and `git diff --check` passed; no runtime tests needed for this documentation increment. Human boundary verification is pending; no fake implemented.
 
@@ -296,24 +265,17 @@ Contributor approved the adapter boundary before implementation. Added explicit 
 
 Fixture tests: 42 passed; full suite: 243 passed with warnings as errors. Black (32 files), links/docstrings, scoped credential scan and `git diff --check` passed. Changes are uncommitted and await step 2 verification. Next: step 3 production startup/config matrix.
 
-### PD-10 — step 2 verified / commit approved — 2026-10-17 08:47:34 UTC
-Contributor verified step 2, approved its commit, and authorized step 3 production startup/config tests.
 
 ### PD-10 — step 3 production startup/config matrix — 2026-10-17 08:49:28 UTC
 Committed verified step 2 as `cee53e7`. Extended config/startup tests to storage, every fake-provider subset, combined unsafe controls, empty/unsupported selectors and safe startup controls. All children use credential-free environments; no provider called. OTP-specific behavior remains with Identity.
 
 Focused tests: 51 passed; full suite: 256 passed with warnings as errors. Black (32 files), links/docstrings, scoped credential scan and `git diff --check` passed. Step 3 changes remain uncommitted and await verification; next is step 4 scenario fixtures.
 
-### PD-10 — step 3 verified / commit approved — 2026-10-17 08:51:14 UTC
-Contributor verified step 3, approved its commit, and authorized step 4 reusable scenario fixtures.
 
 ### PD-10 — step 4 reusable scenario fixtures — 2026-10-17 08:54:45 UTC
 Committed verified step 3 as `d6b75c1`. Added immutable retry/duplicate/concurrent/partial-failure scripts, one-use asyncio gate, invalid caller cases and shared validation boundaries. Fixtures supply inputs; domain retry, authorization and transaction behavior stays with owning tasks.
 
 Focused tests: 27 passed; full suite: 283 passed with warnings as errors. Black (34 files), links/docstrings, scoped credential scan and `git diff --check` passed. Changes are uncommitted; step 4 verification precedes step 5 output/snapshot and task-wide review.
-
-### PD-10 — step 4 verified / commit approved — 2026-10-17 08:56:24 UTC
-Contributor verified step 4, approved its commit, and authorized step 5 output/snapshot and task-wide review.
 
 ### PD-10 — step 5 privacy and local task-wide review — 2026-10-17 09:00:42 UTC
 Committed verified step 4 as `040a706`. Added bounded allowlisted snapshots and an intentional child-failure report check; contacts/secrets/message sentinels are masked. Initial privacy run: 14 passed, one expected-key mismatch corrected; final focused run: 15 passed.

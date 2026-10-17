@@ -18,7 +18,7 @@ Each person uses a separate clone on separate computers, or a separate Git workt
 
 Branch naming: `task/<task-id-lowercase>-<short-purpose>`, e.g. `task/id-01-identity`. A task with a merged readiness PR can continue on a subsequent branch, e.g. `task/id-01-final-verification`. Name the exact milestone and originating task in that PR. Do not create a PR for every numbered step; commits are useful checkpoints, not a requirement for every read-only action. Before a task or milestone handoff, inspect the complete diff, staged files, task acceptance checks, tests, generated files, documentation, and secret/data scan results. Commit only reviewed in-scope files. Preserve user changes and never commit sensitive state/plan artifacts.
 
-For Aditya's Stream 1 work, obtain explicit human approval before every commit. Approval to execute a task step, including a step that mentions committing, is not commit approval. Prepare and verify the changes, then leave them uncommitted until approval is given.
+Obtain explicit human approval before every commit. Approval to execute a task step, including a step that mentions committing, is not commit approval. Prepare and verify the changes, then leave them uncommitted until approval is given.
 
 ## Starting and claiming work
 
