@@ -27,27 +27,27 @@ Checked the selected architecture services and networking dependencies in `ap-so
 
 The account-alias query was denied with `AccessDenied` for `iam:ListAccountAliases`; therefore no alias value is inferred. The Service Quotas utilization report completed but returned no utilization records for the queried project services, so remaining headroom/current usage is not established by these checks.
 
-**Resource-use direction (Rahul, 2026-10-17):** Do not adopt or use the existing resources listed above for CLIP. Leave them untouched and create dedicated project resources only through the reviewed infrastructure workflow. Apply the project naming/tagging policy to every resource type that supports it; document exceptions because [AWS tagging support varies by resource type](https://docs.aws.amazon.com/whitepapers/latest/tagging-best-practices/what-are-tags.html). The exact project tag keys/values remain for PD-14 Step 7. This direction does not approve provisioning or any other cloud change.
+**Resource-use direction (Rahul, 2026-10-17):** Do not adopt or use the existing resources listed above for CLIP. Leave them untouched and create dedicated project resources only through the reviewed infrastructure workflow. Apply the project naming/tagging policy to every resource type that supports it; document exceptions because [AWS tagging support varies by resource type](https://docs.aws.amazon.com/whitepapers/latest/tagging-best-practices/what-are-tags.html). This direction does not approve provisioning or any other cloud change.
 
-## Step 7 project resource naming and tagging — 2026-10-17
+## Step 7 project resource naming and tagging — latest verified convention
 
 Use this convention for future CLIP-owned resources; it does not authorize creation or modification. AWS resource naming and tag capabilities vary, so adapt only to service-specific character/length rules and record any exception in this inventory.
 
-**Name format:** `clip-{environment}-{scope}-{resource-kind}-{purpose}` using lowercase ASCII letters, digits, and hyphens. Use `shared` or one of the canonical domain slugs `identity`, `listings`, `search`, or `conversations` for `{scope}`. Use `dev`, `test`, `staging`, or `prod` for `{environment}`. Add a short non-sensitive suffix only when needed to satisfy uniqueness. Set the AWS `Name` tag to this value wherever supported. Do not include account IDs, personal email addresses, secrets, or user/listing data in names or tags.
+**Name format:** `clip-<environment>-<resource>-ap-south-1-<unique-suffix>` where the service permits it. Keep every component non-sensitive and comply with service-specific character and length rules. Do not include account IDs, personal email addresses, secrets, or user/listing data in names or tags. This convention does not authorize creating resources.
 
 Apply these exact tag keys and meanings wherever the resource type supports tags:
 
 | Tag key | Required value |
 |---|---|
-| `Project` | `clip` |
-| `Environment` | One of `dev`, `test`, `staging`, `prod` |
-| `Owner` | Responsible team handle: `aditya`, `suraj`, `mohit`, or `rahul` |
-| `Task` | Owning task ID (for example, `PD-15`, `LI-01`, or `EXP-06`); use the most specific active task that owns the resource |
-| `CleanupBy` | ISO `YYYY-MM-DD` cleanup deadline for temporary resources. For an explicitly retained persistent resource, use `none` only with its retention reason, responsible owner, and next review date recorded in this inventory. |
+| `Project` | `CLIP` |
+| `Environment` | Approved environment name, such as `dev`, `test`, `staging`, or `prod` |
+| `Owner` | Named accountable person |
+| `Task` | Owning task ID or domain |
+| `ExpiresOn` | ISO `YYYY-MM-DD` expiry/cleanup date |
 
-Tag keys are case-sensitive; preserve the spelling shown above. If a resource cannot be named/tagged, record its exact resource identifier, unsupported field(s), reason, owner, and cleanup or review date here. Keep such exceptions narrow and do not treat existing untagged account resources as project resources. Apply tags consistently to child resources and cost-bearing dependencies where supported.
+Tag keys are case-sensitive; preserve the spelling shown above. If a resource cannot be named/tagged or an expiry tag is not supported/applicable, record its exact resource identifier, unsupported field(s), reason, accountable owner, and expiry/cleanup handling here. Keep exceptions narrow and do not treat existing untagged account resources as project resources. Apply tags consistently to child resources and cost-bearing dependencies where supported.
 
-Rahul verified these Step 7 conventions on 2026-10-17.
+Rahul verified this updated convention on 2026-10-17. It supersedes the earlier Step 7 convention recorded in this file; see [DEC-03](../decisions/DEC-03-cloud-resource-naming-and-tags.md).
 
 ### Observed quota values
 
@@ -80,9 +80,9 @@ These role assignments were directed by Rahul. They define responsibility, not b
 | Apply an approved plan | Any team member may apply | Name one human operator for each shared cloud-change window to serialize changes, per [CONTRIBUTING.md](../../CONTRIBUTING.md). |
 | Billing alerts | Aditya | Rahul reports Aditya has billing visibility; this was not independently checked. |
 | Cleanup | Shared across the team; the person who created/started the resources is first responsible | Cleanup scope must be tied to the approved project resources and exact cleanup plan. |
-| Coding-agent AWS access | Least privilege; do not grant broad administrator rights merely for convenience | Read-only IAM inspection on 2026-10-17 found Rahul's user has `IAMFullAccess` attached and inherits `PowerUserAccess` from `DS252-Project-Developers`. Suraj and Mohit are also in that group and each has `IAMUserChangePassword` attached directly. Policy simulation allowed the checked `/clip/dev/` SSM management and `aws/ssm` KMS operations for these three IAM users. These are broad account/service permissions, not a least-privilege project-only grant; no permissions were changed. Aditya is reported to use the root identity; it was not exercised. |
+| AWS permissions | All four members intentionally retain `PowerUserAccess`; no least-privilege check is required for the current project phase | Aditya reported that `PowerUserAccess` remains for all users and `IAMFullAccess` was removed. This update is human-reported and not independently verified for all four identities. Rahul explicitly deferred least-privilege checks. Older read-only IAM observations and simulator results below remain historical evidence, not proof of current attachments/effective access. Aditya's root identity has not been exercised. |
 
-Actual apply credentials/permission scopes and the selected per-window operator remain to be established before any apply. No standing access or cloud change is authorized by these role assignments.
+Actual apply credentials/permission scopes and the selected per-window operator remain to be established before any apply. No standing access or cloud change is authorized by these role assignments. The user accepts the broad PowerUserAccess grants as intentional for now; additional service-specific access can be revisited when an approved plan identifies a need.
 
 ## Step 6 account-wide budget alerts — 2026-10-17
 
@@ -95,10 +95,10 @@ AWS Budgets API verification confirmed the following budget in account `33552363
 | Reference amount | USD 200; notification reference only, not a hard spending cap |
 | Cost basis | Actual incurred cost; `IncludeCredit=false` |
 | Alerts | Email when actual cost is greater than USD 50, 80, 100, 120, or 130 (absolute thresholds) |
-| Recipients at every threshold | `adityalaxmi1@iisc.ac.in`, `surajs2@iisc.ac.in`, `mohitmahapa1@iisc.ac.in`, `rahulkoyye@iisc.ac.in` |
+| Recipients at every threshold | All four team members (verified in the AWS subscriber query; addresses retained in the historical verification entry below) |
 | Status at verification | Budget healthy; actual spend USD 0.00, forecast USD 1.223 |
 
-Configuration and all five sets of subscribers were verified with read-only AWS Budgets API calls and human-verified by Rahul. The API endpoint is `us-east-1`, which is the billing-service endpoint used here; project resources remain in `ap-south-1`. This budget is account-wide but applies only to account `335523638354`; costs in another account are not aggregated. The user-reported USD 140 credit balance was not independently verified. These alerts notify the recipients and do not prevent spending.
+Configuration and all five sets of subscribers were verified with read-only AWS Budgets API calls and human-verified by Rahul. The API endpoint is `us-east-1`, which is the billing-service endpoint used here; project resources remain in `ap-south-1`. This budget is account-wide but applies only to account `335523638354`; costs in another account are not aggregated. Rahul reports USD 140 in credits available; this balance is not independently verified. The selected alert basis is actual incurred spend, not remaining credit balance. No reserve or hard limit is set; if credits are exhausted, the team expects to switch accounts. The alerts notify recipients and do not prevent spending. Cross-account project-spend reconciliation is deferred.
 
 ## PD-14 task-wide closeout review — 2026-10-17 UTC
 
@@ -106,8 +106,8 @@ Read-only recheck on 2026-10-17 confirmed STS identity `arn:aws:iam::33552363835
 
 Read-only `iam:GetUser`, `iam:ListAttachedUserPolicies`, and `iam:ListGroupsForUser` calls were denied. Therefore IAM attachments, effective least privilege, and all-four SSM/KMS access are not verified; this is not proof that the reported administrator access is absent, but the report cannot be independently confirmed from this profile. A Parameter Store name-only query returned no `/clip/` parameters, and the `alias/aws/ssm` KMS alias is present in `ap-south-1`; no values were retrieved and no parameters, keys, policies, or other AWS resources were changed. Repository review found no credential-signature matches in the environment/work-log records, and `git diff --check 4754e97..HEAD` passed.
 
-**Closeout state: partial.** Account identity, approved region, account-level budget alerts, project conventions, and team approval/cleanup responsibilities are recorded. Project-wide cross-account spend reconciliation and effective coding-access/SSM permission scope remain unverified; the chosen Parameter Store is not configured, by design. Do not treat the record as proof of least-privilege access or project-wide cost enforcement.
+**Closeout state: documentation decisions complete; cloud configuration remains intentionally unimplemented.** Account identity, approved region, account-level budget alerts, project conventions, and team approval/cleanup responsibilities are recorded. Cross-account spend reconciliation is deferred. Current all-four `PowerUserAccess` and removal of Rahul's former `IAMFullAccess` are reported by Aditya but have not been independently rechecked; least-privilege checks are intentionally skipped. Parameter Store remains a selected future access method, not a configured service. Alerts are not a cap or credit-balance monitor.
 
 ### Current IAM/SSM permission recheck — 2026-10-17
 
-After the earlier denials, read-only IAM inspection succeeded for Rahul's identity. The account has IAM users `rahulkoyye`, `surajs2`, and `mohitmahapa1` in `DS252-Project-Developers`, whose attached policy is AWS-managed `PowerUserAccess`. Rahul additionally has AWS-managed `IAMFullAccess`; Suraj and Mohit each have AWS-managed `IAMUserChangePassword`. None of these three users has an inline user policy or permissions boundary. AWS's current managed-policy definitions describe `PowerUserAccess` as full access across services except IAM, Organizations, and account-management actions, and `IAMFullAccess` adds full IAM administration. Policy simulation allowed the checked project-path SSM read/write/delete/history/tag actions and selected-key KMS encrypt/decrypt actions for these three identities. No `/clip/` parameter exists, so no live parameter value operation was tested. These existing grants are broader than the project-only intent and fail a least-privilege check; they were not changed. Aditya's root use remains a user report and no root sign-in was attempted.
+Historical read-only IAM inspection on 2026-10-17 succeeded for Rahul's identity. At that time the account had IAM users `rahulkoyye`, `surajs2`, and `mohitmahapa1` in `DS252-Project-Developers`, whose attached policy was AWS-managed `PowerUserAccess`. Rahul additionally had AWS-managed `IAMFullAccess`; Suraj and Mohit each had AWS-managed `IAMUserChangePassword`. None of those three users had an inline user policy or permissions boundary. Policy simulation allowed the checked project-path SSM read/write/delete/history/tag actions and selected-key KMS encrypt/decrypt actions for these three identities. No `/clip/` parameter existed, so no live parameter value operation was tested. Aditya later reported that all four retain `PowerUserAccess` and `IAMFullAccess` was removed. The newer attachment state has not been independently checked; Rahul accepted the grants as intentional and waived least-privilege checks. Aditya's root use remains user-reported and no root sign-in was attempted.

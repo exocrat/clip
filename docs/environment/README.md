@@ -8,6 +8,7 @@ This directory holds non-secret records for contributor workstations, commands, 
 - [Command registry](commands.md): project commands and their owners, targets, and readiness.
 - [Secret handling](secret-handling.md): approved references and access procedures, without secret values.
 - [Cloud inventory](cloud-inventory.md): shared account, region, resource, and cost status. Update it from approved plans and actual outputs; do not infer or invent cloud facts.
+- [DEC-03 resource naming and tags](../decisions/DEC-03-cloud-resource-naming-and-tags.md): verified CLIP resource-name and tag convention; this is a convention, not provisioning approval.
 
 Cloud creation, changes, and deletion require the separate approvals and checks defined by the project workflow.
 
