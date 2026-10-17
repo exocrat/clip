@@ -18,6 +18,8 @@ Each person uses a separate clone on separate computers, or a separate Git workt
 
 Branch naming: `task/<task-id-lowercase>-<short-purpose>`, e.g. `task/id-01-identity`. A task with a merged readiness PR can continue on a subsequent branch, e.g. `task/id-01-final-verification`. Name the exact milestone and originating task in that PR. Do not create a PR for every numbered step; commits are useful checkpoints, not a requirement for every read-only action. Before a task or milestone handoff, inspect the complete diff, staged files, task acceptance checks, tests, generated files, documentation, and secret/data scan results. Commit only reviewed in-scope files. Preserve user changes and never commit sensitive state/plan artifacts.
 
+Obtain explicit human approval before every commit. Approval to execute a task step, including a step that mentions committing, is not commit approval. Prepare and verify the changes, then leave them uncommitted until approval is given.
+
 ## Starting and claiming work
 
 1. Inspect the current workspace read-only; fetch the approved remote main/task branches and inspect relevant draft PRs when access is available. Read the main roster and current task/step evidence. The main work log contains merged status; reconcile active work against the assigned remote task branch's checkpoint log and draft PR before treating an item as available.
@@ -31,9 +33,9 @@ Branch naming: `task/<task-id-lowercase>-<short-purpose>`, e.g. `task/id-01-iden
 1. Implement verified steps on the branch; stop at internal uncertainty/approval gates. Keep the work-log status table current for each step and verification; add concise dated history only for meaningful outcomes, decisions, checks, blockers, consequential human direction, and task/merge closeout. Related steps may share an entry; routine “verified; proceed” updates do not need separate entries. Check dependencies at task start; use a stub only for a task step explicitly allowed by the stub guide, and keep real integration pending until its checks pass.
 2. At an isolated implementation handoff, task or named readiness milestone, inspect diff/staged files and run applicable exact local formatting/type/build/migration/contract/tests plus the aggregate CI-equivalent check. Show failed/skipped checks honestly. A required failure blocks merge/milestone acceptance unless the existing bootstrap stage explicitly has no corresponding implementation check yet.
 3. Open/update the PR with task/milestone ID, problem/resulting behavior, scope, prerequisite revisions, expected/observed checks, evidence, work-log state, decisions, reviewer requests and remaining steps. Readiness PRs state which capabilities are ready and which FR/NFR checks remain pending.
-4. Request the designated peer reviewer and affected owners. The reviewer checks correctness, ownership/contract compatibility, privacy/security, data/migrations, generated artifacts, test coverage/failure paths and evidence. Shared core/contracts/conventions require affected-domain approval; reviewers are among the four people, with roles mapped in the roster.
+4. Request the designated peer reviewer and affected owners. Use the task-agnostic checklist in [`docs/prompts/peer-review-prompt.md`](docs/prompts/peer-review-prompt.md) against the exact PR base/head; the reviewer adapts its checks to the actual changed scope. The reviewer checks correctness, ownership/contract compatibility, privacy/security, data/migrations, generated artifacts, test coverage/failure paths and evidence. Shared core/contracts/conventions require affected-domain approval; reviewers are among the four people, with roles mapped in the roster. An AI-assisted review supplies findings, not human approval.
 5. Resolve comments within the assigned scope. Bring updated main into the branch using the recorded merge strategy (default: merge main into the task branch). Inspect conflict resolutions, rerun affected checks and the required merge gates, and obtain renewed review where the reviewed diff changed materially. Do not force-push/rewrite shared history without explicit authorization.
-6. Before merge, verify peer human approval, affected-owner approval, CI results, prerequisite milestone acceptance appropriate to the declared isolated or integrated scope, correct branch/target, and no unresolved review. The agent may perform the merge only after the designated human authorizes that concrete PR/revision. It must not approve or merge its own PR autonomously.
+6. Before merge, verify peer human approval, affected-owner approval, CI results, prerequisite milestone acceptance appropriate to the declared isolated or integrated scope, correct branch/target, and no unresolved review. The designated human confirms the latest reviewed head and explicitly authorizes that concrete PR/revision for merge. The agent may perform the merge only after that authorization; it must not approve or merge its own PR autonomously.
 7. After merge, record the actual accepted main revision/PR/checks and readiness/task status. Refresh dependent workspaces. If a post-merge check fails, stop propagation, report it and coordinate a reviewed fix/revert; do not mark consumers unblocked from a failed revision.
 
 ## Review allocation
@@ -50,7 +52,7 @@ Map A/B/C/D to actual people during BOOT-00/PD-03. Security, platform, frontend 
 
 ## Shared files, migrations and generated outputs
 
-Identify one current writer before changing combined contracts, core types, common web utilities, migration integration, generated outputs, shared CI, Terraform or the task registry. Other owners submit bounded changes/review rather than concurrent uncoordinated edits. Generated artifacts are regenerated from their editable source through the frozen command; never hand-edit them. Allocate non-colliding migration identifiers/heads using the selected migration tool; resolve multiple heads under the named migration integrator and test a clean database. A shared-file reservation is recorded with owner/branch/scope in the repository checkpoint; inspect current remote work before taking it.
+Identify one current writer before changing combined contracts, core types, common web utilities, shared page compositions, migration integration, generated outputs, shared CI, Terraform or the task registry. For web work, consult `docs/architecture/frontend-collaboration.md` for the human-verified page composition, and after Step 3 for its maintainer, feature entry points and import boundaries. Other owners submit bounded changes/review rather than concurrent uncoordinated edits. Generated artifacts are regenerated from their editable source through the frozen command; never hand-edit them. Allocate non-colliding migration identifiers/heads using the selected migration tool; resolve multiple heads under the named migration integrator and test a clean database. A shared-file reservation is recorded with owner/branch/scope in the repository checkpoint; inspect current remote work before taking it.
 
 Dependencies use merged readiness milestones from main. Do not silently base production work on another person's unreviewed branch. Any exceptional stacked/dependent PR arrangement needs an explicit recorded plan and cannot bypass review or final main-based checks.
 
@@ -61,6 +63,34 @@ BOOT-00 verifies the supplied exocrat/clip remote/account/branch policy and reco
 CI runs local/disposable tests and build/format/contract/secret gates. A merge does not automatically deploy, send messages, invoke paid providers, create billable infrastructure, or apply Terraform. Those operations retain exact target/plan/cost/caps/rollback/cleanup approval in their assigned task. One named operator serializes changes to the shared cloud test environment and records its deployed revision; state locking alone does not make simultaneous deployments or load tests safe.
 
 The command registry is `docs/environment/commands.md`; actual commands are populated by their named creator tasks. Missing commands that are outputs of the selected step are implemented and registered there. Missing prerequisites or uncertainty block dependent work and require a question.
+
+## Local Python tooling (PD-04)
+
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/) and GNU Make for your development environment, then run these commands from the repository root:
+
+```bash
+uv sync --locked
+make format-python
+make check-python-format
+```
+
+`uv sync --locked` creates or updates the ignored local `.venv` from `uv.lock`, including development tools; uv can obtain Python 3.14 when needed. Run it after cloning or receiving dependency changes. Each developer uses their own environment; do not share `.venv` or install project tools globally. `uv run` selects the project environment without shell activation. `--locked` refuses manifest/lockfile drift instead of silently rewriting the lock.
+
+`make format-python` runs pinned Black 26.10.1 and rewrites Python source to the root `pyproject.toml` rules. Review its diff, then run `make check-python-format`; check-only reports formatting drift and returns nonzero without rewriting source. Plain `make` runs check-only too. Both targets may synchronize the local environment/cache. No cloud credentials or services are needed. Run the check before requesting review; PD-12 will wire automated CI, and PD-13 will extend the shared command front door.
+
+The equivalent direct commands are `uv run --locked black .` and `uv run --locked black --check --diff .`. To inspect installed versions, run `uv run --locked black --version` and `uv run --locked pytest --version`.
+
+The pinned test runner is pytest 9.1.1; run `uv run --locked pytest` to execute all configured tests, or `uv run --locked pytest apps/api/tests -q` for the API/configuration suite supplied by PD-05. Root `pyproject.toml` is its sole configuration. Exit 5 means no tests collected and must not be reported as a passing suite. Additional shared-core/fixture tests remain PD-06/10 outputs. Python lint/static type tools are deferred; see the [tooling decision](docs/decisions/python-test-tooling.md). Full command effects, prerequisites, failure recovery and current readiness are in the [command registry](docs/environment/commands.md).
+
+## Local API foundation (PD-05)
+
+After `uv sync --locked`, start the API from the repository root:
+
+```bash
+uv run --locked uvicorn app.main:app --app-dir apps/api --host 127.0.0.1 --port 8000
+```
+
+In another terminal, `curl --fail http://127.0.0.1:8000/health` should return `{"status":"ok"}`; stop your foreground server with Ctrl+C. This is loopback-only process liveness, requiring no database/provider/cloud access. Environment settings come from the process, not `.env.example`. The [API setup/settings/test instructions](apps/api/README.md) document defaults, safe startup failures and occupied-port recovery. Run `uv run --locked pytest apps/api/tests -q` for persistent health/configuration checks and `make check-python-format` before handing off changes. Shared lifecycle/test Make targets and CI remain PD-13/12 outputs.
 
 ## Assigned implementation paths
 

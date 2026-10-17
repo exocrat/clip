@@ -16,7 +16,7 @@ This records the existing Linux WSL environment used for the documentation boots
 
 ## Current gaps
 
-- No application startup, stop, migration, seed, or check commands are registered yet; PD-13 owns their implementation and verification.
+- PD-07 Step 1 now supplies the web install/start/stop/typed-build path below. Database/migration/seed and combined setup remain with their creator tasks; PD-13 verifies the combined lifecycle.
 - Cloud account, role, region, and shared cloud resource facts have not been inspected. PD-14–PD-16 own those checks; this record does not imply cloud access or approval.
 - The Codex PATH-alias warning is recorded above. Its executable remains available at the observed path.
 
@@ -40,3 +40,40 @@ This is a fresh check of the current contributor's WSL workstation. It does not 
 | Container route | `/usr/bin/docker`, client and Linux/amd64 Engine version 29.1.3, context `default`; engine responded. Neither the `docker compose` plugin nor standalone `docker-compose` is available. `podman` is not installed/on PATH. No container or project service was started. |
 
 No tools were installed or changed. These observations are for this contributor only; PD-02 must select and document team toolchain/platform support separately.
+
+## Current contributor setup — PD-07 Step 1
+
+**Observed:** 2026-10-17 06:36:53 UTC · **Contributor:** Suraj (B), Stream 2 ·
+**Branch:** `task/pd-07-web-foundation`
+
+The workstation remains Linux x86_64 under WSL2 kernel
+`6.18.33.2-microsoft-standard-WSL2`. Node/npm were absent from the session PATH
+before this step. Installed the official Node 24.22.0 Linux x64 distribution at
+`/home/suraj/src/.clip-tools/node-v24.22.0-linux-x64`, outside the repository,
+without sudo or shell-startup changes. `node --version` reports `v24.22.0` and
+the bundled `npm --version` reports `11.19.1`.
+
+The archive matched the Node release's published SHA-256 value
+`cc2f601cee82d9a5a233302fe307abc600727035fd7d2c3a3571755989e95008`
+before extraction. This is the current contributor's setup, not an instruction
+for other contributors to use a Linux x64 binary on another platform.
+
+For a new shell in this workstation, activate that existing installation:
+
+```bash
+export PATH=/home/suraj/src/.clip-tools/node-v24.22.0-linux-x64/bin:$PATH
+```
+
+The agent used `NPM_CONFIG_CACHE=/tmp/clip-npm-cache` because its sandbox cannot
+write the default user npm cache. This cache override is optional for an ordinary
+writable contributor environment. The runtime install persists; the temporary
+cache may be recreated. No global npm package or different Node/npm release
+was installed.
+
+Verified the root lockfile install and typed Vite production build, rendered the
+real bootstrap component through React's server renderer, and checked dev/preview
+HTML and JavaScript over loopback. Both listeners bound only to `127.0.0.1`;
+the duplicate development-port check failed as intended, and Ctrl+C stopped both
+owned servers. The build output and dependency/cache directories are ignored.
+This proves the technical mount point, not browser UI workflows or domain
+integration; later PD-07 checks and PD-13 clean-teammate setup remain pending.

@@ -6,6 +6,7 @@ This directory holds non-secret records for contributor workstations, commands, 
 
 - [Development workstation](development-workstation.md): verified facts for the contributor's local machine.
 - [Command registry](commands.md): project commands and their owners, targets, and readiness.
+- [Local API foundation setup and tests](../../apps/api/README.md): verified Python API commands and settings; database/web/combined setup remain later task outputs.
 - [Secret handling](secret-handling.md): approved references and access procedures, without secret values.
 - [Cloud inventory](cloud-inventory.md): shared account, region, resource, and cost status. Update it from approved plans and actual outputs; do not infer or invent cloud facts.
 - [DEC-03 resource naming and tags](../decisions/DEC-03-cloud-resource-naming-and-tags.md): verified CLIP resource-name and tag convention; this is a convention, not provisioning approval.

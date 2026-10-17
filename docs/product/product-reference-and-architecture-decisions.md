@@ -72,6 +72,34 @@ These are not additions to the required FR-01–FR-17 set unless the team explic
 - **Optional weekly wanted-request digest:** define recipient eligibility, weekly window/time zone, opt-in or opt-out default, unsubscribe, empty digest behavior, and delivery failure behavior. Test subscription changes, boundary times, empty/non-empty digest, duplicate prevention, and send failure.
 - **Optional image-aware search:** keep baseline text search available. Define a labeled evaluation set and compare relevance, latency, and cost before claiming improvement. Do not add a model/runtime/cloud resource without explicit task scope and cost review.
 
+### Accepted project clarification: public wanted-request discovery and response
+
+This records the team's verified direction; it does not change the submitted PRD
+or add an FR identifier. See
+[`docs/decisions/wanted-request-discovery-and-response.md`](../decisions/wanted-request-discovery-and-response.md)
+for the decision record.
+
+- Open Wanted Requests are discoverable in the public `/` discovery surface
+  through a Sale Listings / Wanted Requests toggle. Each open request has a
+  public detail view.
+- A potential seller can contact the request author from that view through a
+  private conversation associated with the request. The responder need not
+  already have a sale listing. The public page does not reveal private contact
+  information; conversation reads remain limited to participants.
+- Temporary accounts may browse requests but cannot start wanted-request
+  response conversations. This clarification does not remove their other
+  approved temporary-account capabilities.
+- Authors manage only their own requests from `/my/listings` and may mark a
+  request unavailable when it is no longer wanted. Sale Listings and Wanted
+  Requests remain separate backend objects; their schemas and post-type taxonomy
+  belong to their schema owner.
+- The weekly wanted-request email digest remains optional and may link to public
+  request details. It must not contain private conversation or contact data.
+  Optional new-sale-to-wanted-request match alerts are a separate feature.
+
+The domain tasks define authorization, request-to-conversation association,
+duplicate/retry rules, filters, and closure behavior before implementation.
+
 ## 4. Non-functional requirements and required evidence
 
 The submitted PRD specifies a synthetic reference dataset of at least 1,000 listings and 5,000 users, a load generator such as k6, performance runs lasting at least five minutes after warm-up, and separate reporting of warm and cold-start behavior where applicable. The later evaluation procedure must define exactly how these conditions are constructed and measured.

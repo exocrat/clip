@@ -20,8 +20,21 @@ Use the reusable prompt and current canonical files indexed by `docs/README.md`.
 - [ ] Does the status table accurately record each execution checkpoint and human-verification state? The dated history need not contain a separate entry for every step or routine “verified; proceed” message; it should preserve meaningful outcomes, decisions, checks, blockers, consequential human direction, and closeout evidence.
 - [ ] Were task boundaries, internal decision gates, privacy and ownership respected? Failed/skipped checks must be explicit.
 - [ ] Say verify/continue, correct, or pause. The agent waits after every step; silence gives no permission. It records verification before advancing. If correction method/scope is uncertain it asks first.
+- [ ] For frontend changes, verify the contributor followed the approved page/ownership map, used public feature boundaries, coordinated shared-page edits with the current writer, and kept Wanted Request conversations private. Confirm temporary accounts can browse but cannot initiate a response.
 
 You may inspect evidence, but the agent must summarize what makes it acceptable and what you are deciding. You should not need to find files, reconstruct test criteria or perform routine implementation/Git commands.
+
+## PD-04 Python tooling verification
+
+- [ ] Verify the agent's evidence that `uv sync --locked` installs the pinned tools into an ignored local environment, and that `make format-python` followed by `make check-python-format` works. Check-only must detect formatting drift without rewriting source; plain `make` is check-only.
+- [ ] Confirm `uv run --locked black --version` reports 26.10.1 and `uv run --locked pytest --version` reports 9.1.1. The test command is `uv run --locked pytest`; no collected tests (exit 5) does not prove application behavior. Python lint/type tools are deferred.
+- [ ] Confirm [CONTRIBUTING](../../CONTRIBUTING.md#local-python-tooling-pd-04) and the [command registry](../environment/commands.md) agree with the Makefile/root configuration. CI automation remains pending PD-12. Review the agent's summarized evidence; you do not need to run routine commands yourself.
+
+## PD-05 API foundation verification
+
+- [ ] Verify the agent's evidence for the [documented local API command](../../apps/api/README.md), health-only response and clean shutdown without database/cloud credentials. `{"status":"ok"}` is process liveness, not domain or dependency readiness.
+- [ ] Review `uv run --locked pytest apps/api/tests -q` results and formatting checks. Confirm tests cover health in test mode and safe configuration failures, use synthetic data, and avoid exposing supplied values. The agent runs routine checks; you verify the summarized evidence.
+- [ ] Confirm shared-core/domain placeholders make their pending PD-06/08 responsibilities explicit, and setup/start/test instructions agree across CONTRIBUTING and the command registry. CI/shared Make lifecycle targets remain later tasks.
 
 ## Task-wide closeout
 
@@ -39,6 +52,7 @@ You may inspect evidence, but the agent must summarize what makes it acceptable 
 - [ ] Each contributor uses an isolated branch/clone/worktree. After the full PD-00–PD-03 audit confirms all four tasks' outputs and checks with no gaps, integrate that handoff directly into `main` without a PR. BOOT-00's documentation seed keeps its separate direct-to-main rule. Later changes use task/milestone PRs.
 - [ ] For pre-domain work, verify the kickoff/stream/integration ownership slot and reserved path scope from the task list. Confirm the PD-00–PD-03 handoff is merged before streams clone, and that each owner removes only their own `.gitkeep` markers; cross-stream changes are coordinated before editing.
 - [ ] For PRs, a different designated human peer reviews, with AI assistance if useful; affected owners approve shared surfaces. Author verification does not replace peer approval.
+- [ ] Use `docs/prompts/peer-review-prompt.md` as a thorough, scope-adapted review aid. Review findings yourself, verify the latest head/target, required checks and affected-owner approvals, and explicitly authorize the exact PR/revision before merge. AI review is not approval and the prompt grants no merge or deployment authority.
 - [ ] Required local/CI checks, dependency milestones and conflict-resolution review pass before authorizing the concrete merge. The author agent cannot approve or autonomously merge its PR.
 - [ ] Consumers use the recorded accepted main revision; cloud environment operations remain separately approved and serialized.
 
