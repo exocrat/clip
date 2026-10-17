@@ -64,6 +64,24 @@ CI runs local/disposable tests and build/format/contract/secret gates. A merge d
 
 The command registry is `docs/environment/commands.md`; actual commands are populated by their named creator tasks. Missing commands that are outputs of the selected step are implemented and registered there. Missing prerequisites or uncertainty block dependent work and require a question.
 
+## Local Python tooling (PD-04)
+
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/) and GNU Make for your development environment, then run these commands from the repository root:
+
+```bash
+uv sync --locked
+make format-python
+make check-python-format
+```
+
+`uv sync --locked` creates or updates the ignored local `.venv` from `uv.lock`, including development tools; uv can obtain Python 3.14 when needed. Run it after cloning or receiving dependency changes. Each developer uses their own environment; do not share `.venv` or install project tools globally. `uv run` selects the project environment without shell activation. `--locked` refuses manifest/lockfile drift instead of silently rewriting the lock.
+
+`make format-python` runs pinned Black 26.10.1 and rewrites Python source to the root `pyproject.toml` rules. Review its diff, then run `make check-python-format`; check-only reports formatting drift and returns nonzero without rewriting source. Plain `make` runs check-only too. Both targets may synchronize the local environment/cache. No cloud credentials or services are needed. Run the check before requesting review; PD-12 will wire automated CI, and PD-13 will extend the shared command front door.
+
+The equivalent direct commands are `uv run --locked black .` and `uv run --locked black --check --diff .`. To inspect installed versions, run `uv run --locked black --version` and `uv run --locked pytest --version`.
+
+The pinned test runner is pytest 9.1.1; run `uv run --locked pytest` once tests exist. Root `pyproject.toml` is its sole configuration. No product tests exist at PD-04: exit 5 means no tests collected and must not be reported as a passing suite. API/core tests are PD-05/06/10 outputs. Python lint/static type tools are deferred; see the [tooling decision](docs/decisions/python-test-tooling.md). Full command effects, prerequisites, failure recovery and current readiness are in the [command registry](docs/environment/commands.md).
+
 ## Assigned implementation paths
 
 PD-02 freezes these roots against the actual repository layout before consumers edit them; valid existing equivalents may be retained through a recorded layout decision. Domain task outputs create the corresponding files only when needed.

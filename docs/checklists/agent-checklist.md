@@ -52,6 +52,13 @@
 - [ ] Create/approve measurement manifests and validate local tools/readiness before accurate NFR runs. Preserve raw/invalid results. Reverify affected evidence after later changes.
 - [ ] Optional tasks need their feature-specific prerequisites, explicit selection and OPTIONAL-OK. Required work/NFR/experiment/budget/final buffer stays protected; follow the accepted scheduling decision, with no blanket INT-01 or elapsed-buffer prerequisite.
 
+## PD-04 Python tool checks
+
+- [ ] From the repository root, run `uv sync --locked`; confirm root `pyproject.toml`/`uv.lock` supply Python 3.14 and the pinned development tools, with local `.venv` ignored.
+- [ ] Run `make format-python`, inspect the source diff, then run `make check-python-format`. The check must fail on deliberate temporary formatting drift without changing source; remove temporary probes afterward. Plain `make` must select check-only. Record an empty-source result as such.
+- [ ] Confirm versions with `uv run --locked black --version` (26.10.1) and `uv run --locked pytest --version` (9.1.1). Use `uv run --locked pytest` for real tests once implemented; exit 5 is no collection, not a passing suite. Keep Black/pytest configuration solely in root `pyproject.toml`.
+- [ ] Follow the [contributor commands](../../CONTRIBUTING.md#local-python-tooling-pd-04) and [command registry](../environment/commands.md). Reuse recorded clean-install/negative-test evidence where unchanged. CI remains PD-12 and aggregate lifecycle commands remain PD-13; deferred Python lint/type tools are documented in the [tooling decision](../decisions/python-test-tooling.md).
+
 ## PR and completion
 
 - [ ] Integrate the combined PD-00–PD-03 handoff directly into `main` after a full audit confirms all four tasks' outputs and checks with no gaps. Use a coherent task/milestone PR for later changes; follow BOOT-00's separate documentation-seed rule. Do not approve or merge your own PR autonomously.

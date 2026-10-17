@@ -23,6 +23,12 @@ Use the reusable prompt and current canonical files indexed by `docs/README.md`.
 
 You may inspect evidence, but the agent must summarize what makes it acceptable and what you are deciding. You should not need to find files, reconstruct test criteria or perform routine implementation/Git commands.
 
+## PD-04 Python tooling verification
+
+- [ ] Verify the agent's evidence that `uv sync --locked` installs the pinned tools into an ignored local environment, and that `make format-python` followed by `make check-python-format` works. Check-only must detect formatting drift without rewriting source; plain `make` is check-only.
+- [ ] Confirm `uv run --locked black --version` reports 26.10.1 and `uv run --locked pytest --version` reports 9.1.1. The future test command is `uv run --locked pytest`; no collected tests (exit 5) does not prove application behavior. Python lint/type tools are deferred.
+- [ ] Confirm [CONTRIBUTING](../../CONTRIBUTING.md#local-python-tooling-pd-04) and the [command registry](../environment/commands.md) agree with the Makefile/root configuration. CI automation remains pending PD-12. Review the agent's summarized evidence; you do not need to run routine commands yourself.
+
 ## Task-wide closeout
 
 - [ ] At task/milestone handoff, check the complete change against the task's acceptance conditions, relevant checklist items, tests/checks, documentation/evidence, privacy/secret handling, and work-log status. The agent should present failures and blockers plainly; you need not reconstruct acceptance from separate files.
