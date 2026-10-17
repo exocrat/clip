@@ -54,6 +54,19 @@
 - [ ] Create/approve measurement manifests and validate local tools/readiness before accurate NFR runs. Preserve raw/invalid results. Reverify affected evidence after later changes.
 - [ ] Optional tasks need their feature-specific prerequisites, explicit selection and OPTIONAL-OK. Required work/NFR/experiment/budget/final buffer stays protected; follow the accepted scheduling decision, with no blanket INT-01 or elapsed-buffer prerequisite.
 
+## PD-04 Python tool checks
+
+- [ ] From the repository root, run `uv sync --locked`; confirm root `pyproject.toml`/`uv.lock` supply Python 3.14 and the pinned development tools, with local `.venv` ignored.
+- [ ] Run `make format-python`, inspect the source diff, then run `make check-python-format`. The check must fail on deliberate temporary formatting drift without changing source; remove temporary probes afterward. Plain `make` must select check-only. Record an empty-source result as such.
+- [ ] Confirm versions with `uv run --locked black --version` (26.10.1) and `uv run --locked pytest --version` (9.1.1). Use `uv run --locked pytest` for implemented tests; exit 5 is no collection, not a passing suite. Keep Black/pytest configuration solely in root `pyproject.toml`.
+- [ ] Follow the [contributor commands](../../CONTRIBUTING.md#local-python-tooling-pd-04) and [command registry](../environment/commands.md). Reuse recorded clean-install/negative-test evidence where unchanged. CI remains PD-12 and aggregate lifecycle commands remain PD-13; deferred Python lint/type tools are documented in the [tooling decision](../decisions/python-test-tooling.md).
+
+## PD-05 API foundation checks
+
+- [ ] Follow the [API instructions](../../apps/api/README.md): `uv sync --locked`, then `uv run --locked uvicorn app.main:app --app-dir apps/api --host 127.0.0.1 --port 8000`; verify `curl --fail http://127.0.0.1:8000/health` returns only `{"status":"ok"}` and stop the owned process with Ctrl+C. Do not interfere with another running developer process or claim dependency readiness from liveness.
+- [ ] Run `uv run --locked pytest apps/api/tests -q` and `make check-python-format`. Check health in explicit test mode, safe local defaults, rejected configuration, no input-value leaks and ignored dotenv/example files. Reuse the recorded fresh locked environment evidence if dependencies/configuration are unchanged.
+- [ ] Review README-only domain placeholders and shared-core boundaries: pending PD-06 conventions and PD-08 database lifecycle must not be represented as working services. Keep configuration examples non-secret and preserve the distinction between local checks and future CI/cloud evidence.
+
 ## PR and completion
 
 - [ ] Integrate the combined PD-00–PD-03 handoff directly into `main` after a full audit confirms all four tasks' outputs and checks with no gaps. Use a coherent task/milestone PR for later changes; follow BOOT-00's separate documentation-seed rule. Do not approve or merge your own PR autonomously.
