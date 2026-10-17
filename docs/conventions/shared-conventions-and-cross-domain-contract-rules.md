@@ -1,7 +1,7 @@
 # Campus Marketplace — Shared Conventions and Cross-Domain Contract Rules
 
 **Canonical repository path:** `docs/conventions/shared-conventions-and-cross-domain-contract-rules.md`
-**Document 3. Status:** Shared baseline for repository and contract work. It records rules already present in the submitted PRD and project plan, and identifies shared design choices that must be resolved once before domain implementation. It does not define the four domain APIs; those belong in the domain contract documents and the combined contract.
+**Document 3. Status:** Shared baseline for repository and contract work. It records rules already present in the submitted PRD and project plan, plus the PD-06 shared choices approved on 2026-10-17. These definitions precede their implementation; PD-06 steps 3–6 remain required. It does not define the four domain APIs; those belong in the domain contract documents and the combined contract.
 
 ## 1. Purpose and precedence
 
@@ -22,11 +22,19 @@ These conventions apply to data crossing domain or API boundaries. A domain cont
 | Text and enums | Keep a field's meaning and allowed values stable across backend, generated API types, and clients. Do not make clients depend on database enum names or private model classes. | Length/format limits, normalization, allowed values, and behavior for an unknown value. |
 | Collections | Preserve a documented ordering and stable tie-break rule wherever order is observable. | Sort key/direction, equal-key behavior, and whether order is guaranteed. |
 
-The foundational contract task must check for existing core implementations before selecting UUID version/creation strategy or the exact wire timestamp representation. If either is missing or inconsistent, the agent must present feasible options and a recommended plan once for human review, then record the selected value here or in the canonical shared conventions file. Domain owners must use that single choice.
+### Approved identifiers, timestamps, and money
+
+PD-06 inspected the existing skeleton before selecting these definitions. Implementation locations below are planned step 3 outputs, not existing callable helpers.
+
+- **Identifiers:** generate UUIDv4 on the server. Wire output is a lowercase, hyphenated UUID string, e.g. `123e4567-e89b-42d3-a456-426614174000`. Callers treat it as opaque; knowing an ID grants no permission. Entity contracts determine whether an incoming ID references an existing entity or may be supplied at creation. Planned implementation: `app.core.identifiers`. [Decision](../decisions/identifiers.md).
+- **Timestamps:** use timezone-aware instants internally and UTC for storage boundaries. Emit exactly six fractional digits followed by `Z`, e.g. `2026-10-17T06:30:00.000000Z`. Accept RFC 3339 timestamps with explicit timezone offsets and normalize to UTC; `2026-10-17T12:00:00+05:30` becomes that same example. Reject timezone-free inputs and avoid silent precision loss. Calendar dates and durations remain distinct types. Planned implementation: `app.core.timestamps`. [Decision](../decisions/timestamps.md).
+- **Money:** API/storage units remain integer INR paise; reject booleans and binary floats as money values. Listing prices, offers, and price filters support whole rupees only: paise amounts must be multiples of 100. Convert exact whole-rupee text to paise at the display/input boundary; `125` rupees becomes `12500` paise and displays as `₹125`. Reject `₹125.50` rather than rounding. Zero remains valid for asking prices; each owning domain sets other ranges and offer rules. Planned implementation: `app.core.money`. [Decision](../decisions/money.md).
+
+Tests in PD-06 steps 4–5 cover parse/format round trips, malformed values, timezone conversion and naive-time rejection, exact money conversion, and whole-rupee boundaries.
 
 ## 3. API errors and validation
 
-All public API errors use the repository's standard error envelope. The foundation contract task must inspect the existing core and settle the concrete serialized shape before the first endpoint is implemented. The required envelope contains:
+All public API errors use the repository's standard error envelope, selected in PD-06 before domain endpoints are implemented. The envelope contains:
 
 - A stable machine-readable error code.
 - A safe human-readable message.
@@ -43,7 +51,36 @@ Rules:
 4. Do not return a success response when the operation failed. If a related asynchronous notification or image operation can fail independently, its contract must state whether the primary action succeeds and how that separate failure is recorded/retried.
 5. List expected errors in each public contract, including authorization, invalid input, duplicate/conflict, missing resource, and dependency failure where applicable.
 
-The exact JSON key names and validation detail shape are a shared implementation choice. Select and document them in the foundation contract task before domain code relies on them.
+### Approved error shape and mapping
+
+Use FastAPI validation and HTTP exceptions with shared exception handlers that produce this envelope:
+
+```json
+{
+  "error": {
+    "code": "validation_error",
+    "message": "Request validation failed",
+    "details": [{"field": "price_paise", "code": "whole_rupees_required"}]
+  },
+  "request_id": "123e4567-e89b-42d3-a456-426614174000"
+}
+```
+
+`error.code` is a stable machine code; `message` is safe display text, not a machine contract. Omit `details` when there are no safe field/operation details. Detail entries use contract-defined field names and safe codes; they never contain rejected values, arbitrary exception text, or request bodies. HTTP middleware supplies `request_id`; a helper used outside an HTTP request may omit it.
+
+| HTTP status | Common code | Meaning |
+|---|---|---|
+| 400 | `bad_request` | Malformed request outside field validation |
+| 422 | `validation_error` | Invalid request fields, including pagination inputs |
+| 401 | `unauthenticated` | Missing, invalid, or expired credentials |
+| 403 | `forbidden` | Authenticated caller lacks permission |
+| 404 | `not_found` | Resource or route unavailable to the caller |
+| 409 | `conflict` | State/uniqueness conflict |
+| 429 | `rate_limited` | Request rate limit reached |
+| 500 | `internal_error` | Unexpected failure, with a generic safe message |
+| 503 | `dependency_unavailable` | Required dependency unavailable |
+
+Domain contracts may declare additional stable codes with their HTTP mapping. FastAPI request-validation failures, including malformed JSON reported through its validation machinery, retain HTTP 422; do not expose its raw validation input. Preserve applicable protocol headers such as `WWW-Authenticate`, `Retry-After`, and `Allow`. Planned implementation: `app.core.errors` plus API handler wiring. [Decision](../decisions/errors.md). Tests cover mappings, equivalent envelope shapes, safe details, and unexpected-error redaction.
 
 ## 4. Authentication and authorization context
 
@@ -56,7 +93,13 @@ The exact JSON key names and validation detail shape are a shared implementation
 7. Treat absent/expired/invalid credentials consistently. Contracts must distinguish unauthenticated from authenticated-but-forbidden behavior.
 8. Development authentication and unsafe fake providers must fail closed in deployed/production mode; they must not be enabled by an accidental default or a frontend setting.
 
-The exact trusted auth-context type and fields are a shared-core contract. Define it once in the foundation task after inspecting the repository. Never let domain agents invent incompatible actor/context types independently.
+### Approved trusted caller context
+
+Use one immutable internal `CallerContext` with `user_id` (validated internal UUID), `account_class` (`regular` or `temporary`), and `valid_until` (aware UTC instant). For example, a synthetic regular caller may have user ID `123e4567-e89b-42d3-a456-426614174000` and validity ending at `2026-10-17T07:00:00.000000Z`.
+
+Identity validates credentials and current eligibility/revocation, then supplies the context through server dependency wiring. `valid_until` is no later than the applicable credential/account validity deadline; it does not replace revocation or eligibility checks. A domain rejects an expired context and checks permissions for its own resource/action. No client request model, user-ID header, account-class flag, ownership flag, or public constructor endpoint establishes trusted context. A Python type/constructor cannot by itself prove authentication; the authentication boundary establishes provenance. PD-06 supplies the type and validation boundary, not real sign-in or a successful authentication stub. Tests use explicit test-only dependency overrides.
+
+Planned implementation: `app.core.auth`; Identity supplies the real credential/account validation later. [Decision](../decisions/caller-context.md). PD-06 tests cover immutability/validity and show that user-controlled IDs cannot become a trusted caller through HTTP input.
 
 ## 5. Pagination, filtering, and sorting
 
@@ -69,7 +112,15 @@ Every list operation exposed across a domain/API boundary must specify:
 - How filters interact with pagination and authorization.
 - What happens when the requested continuation value is invalid, stale, or belongs to different filters.
 
-Use one shared pagination response convention and implementation in core/client helpers. The initial architecture has not selected cursor versus offset pagination or exact field names. The foundation contract task must inspect the API shape and expected data sizes, present options/tradeoffs and a recommended choice, and obtain human approval before finalizing the shared shape. Record it before domain contracts are frozen; do not let domains choose independently.
+### Approved page pagination
+
+Use numbered pages backed by offsets: `page` defaults to 1 and must be a positive integer; `page_size` defaults to 20 and must be one of 20, 50, or 100. Example: `?page=2&page_size=20` has offset 20. Reject malformed values, page zero/negative values, and unsupported sizes through HTTP 422 / `validation_error`.
+
+The shared response is `{"items": [], "page": 2, "page_size": 20, "has_next": false}`. `has_next` reflects whether another authorized, filtered result exists; a total count is not required. A page past the current end returns an empty collection and `has_next: false`. Page numbers are explicit, not opaque cursors; stale/filter-bound cursor rules do not apply. Reset to page 1 when filters, sort, or page size change; every request reapplies authorization and filters before pagination.
+
+Every operation declares sort direction and a unique ID tie-breaker. This guarantees deterministic order for unchanged data, not a snapshot across requests: concurrent inserts/removals or changes to sort keys can move results between pages. That limitation is accepted. The web flow uses page navigation with Previous/Next controls; infinite scroll is not required. Existing incremental message/read-watermark contracts remain separate operation semantics, not a second shared page envelope.
+
+Planned implementation: `app.core.pagination`; web/client implementation remains with its owner. [Decision](../decisions/pagination.md). Tests cover sizes, offsets, invalid pages, final/empty pages, stable ties, and filtered/authorized pagination at the owning domain's accurate test point.
 
 ## 6. Domain ownership and cross-domain calls
 
@@ -107,6 +158,12 @@ Use these shared rules:
 5. Do not invent event ordering across domains. If order affects user-visible behavior, define it in the relevant contract and test it.
 6. Integration tests must exercise duplicate submissions, retries, concurrent requests, and partial dependency failures where they apply.
 
+### Approved common retry boundary
+
+Do not automatically retry arbitrary writes. For example, after an ambiguous create timeout, a caller must not blindly repeat a create operation unless its contract defines a safe idempotency/duplicate path. Each operation declares retry eligibility, duplicate result, concurrency behavior, and any idempotency-key scope and lifetime before implementation. A confirmed read may be retried according to its operation contract; no universal retry count/backoff or idempotency store is introduced by PD-06. A successful primary action stays successful when an independent notification fails; its owning domain must make the failure observable and safely retryable under the reviewed delivery design. No exactly-once promise is made.
+
+This is a documented boundary; it needs no pretend transaction implementation in core. The real DB lifecycle belongs to PD-08, operation transactions to domain tasks, and notification durability/delivery to CN-03 with its producer owner. [Decision](../decisions/retries.md).
+
 The exact mechanism for cross-domain events, outbox/retry storage, or provider delivery is not selected here. The relevant foundation/domain task must inspect the architecture, present implementation choices and a step-by-step plan, and obtain human review for choices that change data, delivery behavior, cost, or infrastructure.
 
 ## 8. Privacy, logging, and secret handling
@@ -120,6 +177,18 @@ The exact mechanism for cross-domain events, outbox/retry storage, or provider d
 - Store actual shared secrets only in the approved secret manager or access-controlled channel. Repository docs may contain secret names/references and access instructions, never values.
 
 The required `docs/environment/secret-handling.md`, initialized in PD-03 and completed for shared access in PD-14, records owners, approved access paths, references, and rotation/revocation steps. ID-01 and CN-03 add provider references when selected. The task prompt requests access just in time only when a task needs it; it never asks the human to paste a secret into chat.
+
+### Approved logging and correlation
+
+Emit structured JSON containing approved diagnostic metadata only: event code, severity, timestamp, server request ID, and where applicable HTTP method, route template, status, and duration. Route templates exclude raw query strings and path values. Use centrally controlled event names/fields, bounded text, and central redaction; do not serialize arbitrary objects, exception messages/tracebacks, request bodies, headers, or provider responses into logs. Redaction is defense in depth; call sites must omit sensitive values in the first place.
+
+Generate a fresh server UUIDv4 request ID for each HTTP request, propagate it through request-local context and the public error envelope, and return it in `X-Request-ID`. Client-supplied request IDs do not replace it. A synthetic event may report `{"event": "request_completed", "status": 200, "request_id": "123e4567-e89b-42d3-a456-426614174000"}`. Planned implementation: `app.core.logging` plus API middleware. [Decision](../decisions/logging.md). Tests cover correlation isolation/propagation, bounded structured output, and sensitive-value omission/redaction.
+
+### Approved provider selection and production safety
+
+Identity and email provider selections default to `disabled` until explicitly configured. Disabled means unavailable capability, never successful fake authentication/delivery. Local/test fakes require explicit selection in `local` or `test` mode and use synthetic values only. Production rejects fake identity/email providers and development authentication at startup, alongside the existing debug rejection. Real-provider setup must validate its required configuration; invalid or unavailable real providers fail closed and never fall back to fakes. A runtime dependency failure uses the shared error behavior when applicable; independent email failure still follows the primary-action rule in section 7.
+
+For example, selecting fake identity in `test` is an explicit fixture choice; the same selection in `production` prevents startup. A disabled email provider sends nothing and must not claim delivery. PD-06 adds configuration validation in `app.core.config`; PD-10 supplies reusable controlled fakes, and ID-01/CN-03 implement actual providers. No live provider is created or contacted by this decision. [Decision](../decisions/provider-safety.md). Tests must demonstrate production rejection and no fallback to fake success.
 
 ## 9. Contract-document requirements
 
