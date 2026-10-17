@@ -35,7 +35,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PD-07 | Stream 2 owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-02 | — |
 | PD-08 | Stream 3 owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-02, PD-04, PD-05, PD-06 | — |
 | PD-09 | Stream 3 owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-06, PD-08 | — |
-| PD-10 | Stream 1 — Aditya (A) | in progress | Step 1 verified/approved for commit; step 2 adapter interface proposal authorized | performed (step 1) | Step 1 verified; step 2 interface review pending | `stream/1-api-shared-core` at `5871f1f`; fixtures/tests/task gate uncommitted; 5 focused / 204 total tests passed | Adapter interfaces require step 2 review; PD-04–PD-06 peer/main acceptance pending | 2026-10-17 07:31:40 UTC |
+| PD-10 | Stream 1 — Aditya (A) | in progress | Step 2 verified/approved for commit; step 3 production startup/config tests authorized | performed (step 2) | Steps 1–2/boundary verified; step 3 authorized | `f63b11b` step 1; step 2 uncommitted; 42 fixture / 243 total tests passed | Step 3–5 checks/review pending; PD-04–PD-06 peer/main acceptance pending | 2026-10-17 08:47:34 UTC |
 | PD-11 | Integration owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-05, PD-06, PD-07 | — |
 | PD-12 | Integration owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-04–PD-11 | — |
 | PD-13 | Integration owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-04–PD-12 | — |
@@ -287,6 +287,17 @@ Five focused / 204 total tests passed; Black (29 files), links/docstrings, scope
 
 ### PD-10 — step 1 verified / commit approved — 2026-10-17 07:31:40 UTC
 Contributor verified step 1, approved its commit, and authorized step 2. The interface-review gate precedes fake implementation.
+
+### PD-10 — step 2 interface proposal — 2026-10-17 07:33:05 UTC
+Committed verified step 1 as `f63b11b`. Proposed a test-only scripted provider boundary with typed outcomes, explicit mode/selector checks, and a disabled-by-default storage selector. Provider-specific behavior remains with owning contracts. Proposal/link checks and `git diff --check` passed; no runtime tests needed for this documentation increment. Human boundary verification is pending; no fake implemented.
+
+### PD-10 — step 2 approved scripted test providers — 2026-10-17 08:44:57 UTC
+Contributor approved the adapter boundary before implementation. Added explicit test-only scripted outcomes/failures, call counts, exhaustion and safe reprs; extended production selection guards to storage. Updated the existing provider-safety decision, canonical rules and usage/config docs. No real provider or HTTP auth override added.
+
+Fixture tests: 42 passed; full suite: 243 passed with warnings as errors. Black (32 files), links/docstrings, scoped credential scan and `git diff --check` passed. Changes are uncommitted and await step 2 verification. Next: step 3 production startup/config matrix.
+
+### PD-10 — step 2 verified / commit approved — 2026-10-17 08:47:34 UTC
+Contributor verified step 2, approved its commit, and authorized step 3 production startup/config tests.
 
 ## Pending real integration ledger (initially empty)
 

@@ -27,19 +27,22 @@ class Settings(BaseSettings):
 
     environment: Literal["local", "test", "production"] = "local"
     debug: bool = False
-    # These select future test adapters only; no provider is implemented here.
+    # Fake selectors authorize test-package helpers only; no real adapter is configured.
     identity_provider: Literal["disabled", "fake"] = "disabled"
     email_provider: Literal["disabled", "fake"] = "disabled"
+    storage_provider: Literal["disabled", "fake"] = "disabled"
     development_auth: bool = False
 
-    @field_validator("identity_provider", "email_provider", "development_auth")
+    @field_validator(
+        "identity_provider", "email_provider", "storage_provider", "development_auth"
+    )
     @classmethod
     def reject_production_test_controls(
         cls, value: str | bool, info: ValidationInfo
     ) -> str | bool:
         """Refuse explicit testing controls in production; never select a fallback.
 
-        Real provider options/configuration belong to ID-01/CN-03. Unknown provider
+        Real provider options/configuration belong to ID-01/LI-02/CN-03. Unknown provider
         names already fail Literal validation rather than pretending to exist.
         """
         if info.data.get("environment") == "production" and value in ("fake", True):

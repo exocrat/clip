@@ -69,6 +69,10 @@ Run `uv run --locked pytest apps/api/tests/core/test_security_boundaries.py -q -
 
 Run `uv run --locked pytest tests/fixtures/core apps/api/tests/core/test_shared_fixtures.py -q -W error` from the repository root. Root pytest configuration exposes the test-only fixture package; the full pytest command collects these checks too. Requires the existing locked Python/test tools. The checks use deterministic references/clocks and in-memory contexts/errors, may write local test caches, and contact no database/provider/cloud service. Exit 0 means collected checks passed; failures need investigation and exit 5 is not a pass. See [fixture usage and limits](../../tests/fixtures/core/README.md).
 
+## PD-10 scripted test-provider checks (step 2)
+
+Run `uv run --locked pytest tests/fixtures/core -q -W error` for shared factories and scripted-provider tests. The existing full pytest command includes them. These tests load explicit isolated settings and perform no provider/network/file delivery operations; pytest may update local caches. Requires existing locked test tools. Success is exit 0 with collected tests passing; failures require investigation and exit 5 is not a pass. See [approved interfaces](../../tests/fixtures/core/adapter-interfaces.md). `CLIP_STORAGE_PROVIDER` now follows the existing disabled/fake selection guard; startup-matrix additions remain step 3.
+
 ## Workstation and stub command registration
 
 The setup guide contains one-time agent-access/clone commands, not implemented application targets. BOOT-00 records actual Linux paths/agent availability; PD-02/13 freeze the verified development toolchain and application commands. PD-10/DL-00/domain owners register explicit test-double scenarios and real integration commands with distinct names/modes. No deployed command may default to fake auth/storage/notification/domain providers; startup validation rejects them. Stub tests never share a label or result classification with cloud/NFR runs.

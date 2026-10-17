@@ -4,6 +4,8 @@
 
 **Origin:** Decision taken in PD-06 step 2.
 
+**Updated:** 2026-10-17, PD-10 step 2: approved generic test-adapter boundary and storage selector.
+
 ## Question
 
 Which shared explicit test providers and production rejection convention should domain consumers use?
@@ -16,6 +18,8 @@ Which shared explicit test providers and production rejection convention should 
 ## Selected choice
 
 Default providers to disabled; explicitly select fakes only locally/in tests; reject fakes/development auth in production and never fall back from real-provider failure.
+
+PD-10 extends explicit selectors to storage and approves a generic scripted test helper with safe outcomes/counts/exhaustion. This supports controlled tests before domain-specific provider operation contracts exist; those contracts remain with their owners. The current Stream 1 contributor approved this extension.
 
 The authoritative details and examples are in [shared conventions section 8](../conventions/shared-conventions-and-cross-domain-contract-rules.md).
 

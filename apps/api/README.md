@@ -21,13 +21,14 @@ The API reads these non-secret values from the process environment at startup:
 |---|---|---|
 | `CLIP_ENVIRONMENT` | `local`, `test`, or `production`; default `local` | Rejects unsupported or empty values. This labels configuration mode, not deployment readiness. |
 | `CLIP_DEBUG` | Boolean; default `false` | Controls FastAPI debug responses; production rejects `true`. Invalid or empty boolean values fail startup. |
-| `CLIP_IDENTITY_PROVIDER` | `disabled` or `fake`; default `disabled` | Reserved explicit local/test adapter selection; production rejects `fake`. No real/fake authentication is implemented here. |
-| `CLIP_EMAIL_PROVIDER` | `disabled` or `fake`; default `disabled` | Reserved explicit local/test adapter selection; production rejects `fake`. No email is sent or claimed delivered. |
+| `CLIP_IDENTITY_PROVIDER` | `disabled` or `fake`; default `disabled` | Explicit local/test helper selection; production rejects `fake`. No real/fake authentication is implemented here. |
+| `CLIP_EMAIL_PROVIDER` | `disabled` or `fake`; default `disabled` | Explicit local/test helper selection; production rejects `fake`. No email is sent or claimed delivered. |
+| `CLIP_STORAGE_PROVIDER` | `disabled` or `fake`; default `disabled` | Authorizes only explicit test-helper construction; production rejects `fake`. No real storage is configured. |
 | `CLIP_DEVELOPMENT_AUTH` | Boolean; default `false` | Reserved testing control; production rejects `true`. This setting creates no public authentication bypass. |
 
 For example, `CLIP_ENVIRONMENT=test CLIP_DEBUG=false uv run --locked uvicorn app.main:app --app-dir apps/api --host 127.0.0.1 --port 8000` uses explicit test settings. No file is automatically loaded: `.env.example` is documentation, not a source of runtime settings. Restart your server after changing environment values. Configuration failures name the affected settings but do not echo supplied values; startup stops instead of falling back to a successful response.
 
-No database/provider setting is required by this liveness-only skeleton. Their required names and missing-value checks must be added with the tasks that implement those dependencies; no placeholder credential or fake service is required to start locally. PD-06 implements selection safeguards; PD-10 supplies controlled fake adapters. Unknown provider names fail startup, and the skeleton never falls back to fake success. Do not treat production configuration mode alone as evidence of a working or safe cloud deployment.
+No database/provider setting is required by this liveness-only skeleton. Their required names and missing-value checks must be added with the tasks that implement those dependencies; no placeholder credential or fake service is required to start locally. PD-06 implements selection safeguards; PD-10 supplies [controlled test helpers](../../tests/fixtures/core/README.md) that normal API startup never installs. Unknown provider names fail startup, and the skeleton never falls back to fake success. Do not treat production configuration mode alone as evidence of a working or safe cloud deployment.
 
 ## Tests
 
