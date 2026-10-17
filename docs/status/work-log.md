@@ -35,7 +35,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PD-07 | Stream 2 owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-02 | — |
 | PD-08 | Stream 3 owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-02, PD-04, PD-05, PD-06 | — |
 | PD-09 | Stream 3 owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-06, PD-08 | — |
-| PD-10 | Stream 1 — Aditya (A) | in progress | Step 2 verified/approved for commit; step 3 production startup/config tests authorized | performed (step 2) | Steps 1–2/boundary verified; step 3 authorized | `f63b11b` step 1; step 2 uncommitted; 42 fixture / 243 total tests passed | Step 3–5 checks/review pending; PD-04–PD-06 peer/main acceptance pending | 2026-10-17 08:47:34 UTC |
+| PD-10 | Stream 1 — Aditya (A) | in progress | Step 3 verified/approved for commit; step 4 reusable scenario fixtures authorized | performed (step 3) | Steps 1–3 verified; step 4 authorized | Step 2 committed as `cee53e7`; step 3 uncommitted; 51 focused / 256 total tests passed | Steps 4–5 and peer/main acceptance pending; PD-04–PD-06 peer/main acceptance pending | 2026-10-17 08:51:14 UTC |
 | PD-11 | Integration owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-05, PD-06, PD-07 | — |
 | PD-12 | Integration owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-04–PD-11 | — |
 | PD-13 | Integration owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-04–PD-12 | — |
@@ -298,6 +298,14 @@ Fixture tests: 42 passed; full suite: 243 passed with warnings as errors. Black 
 
 ### PD-10 — step 2 verified / commit approved — 2026-10-17 08:47:34 UTC
 Contributor verified step 2, approved its commit, and authorized step 3 production startup/config tests.
+
+### PD-10 — step 3 production startup/config matrix — 2026-10-17 08:49:28 UTC
+Committed verified step 2 as `cee53e7`. Extended config/startup tests to storage, every fake-provider subset, combined unsafe controls, empty/unsupported selectors and safe startup controls. All children use credential-free environments; no provider called. OTP-specific behavior remains with Identity.
+
+Focused tests: 51 passed; full suite: 256 passed with warnings as errors. Black (32 files), links/docstrings, scoped credential scan and `git diff --check` passed. Step 3 changes remain uncommitted and await verification; next is step 4 scenario fixtures.
+
+### PD-10 — step 3 verified / commit approved — 2026-10-17 08:51:14 UTC
+Contributor verified step 3, approved its commit, and authorized step 4 reusable scenario fixtures.
 
 ## Pending real integration ledger (initially empty)
 

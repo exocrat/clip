@@ -50,7 +50,7 @@ The provider records only its kind, counts and unconsumed script; it accepts no 
 
 Construction requires local/test mode and the matching selector set explicitly to `fake`. Reuse `CLIP_IDENTITY_PROVIDER`/`CLIP_EMAIL_PROVIDER`; add `CLIP_STORAGE_PROVIDER` with the same `disabled`/`fake` values and disabled default. Tests may set process variables and load the existing validated Settings. The factory rechecks mode/selection and raises a safe configuration error when disabled or production; it never changes settings, falls back, or constructs a real provider.
 
-Production startup rejects all three fake selectors and existing development-auth/debug controls. The test package stays on pytest's import path only. Step 3 adds the storage startup-rejection matrix; step 4 adds reusable scenario presets; step 5 reviews output/snapshots.
+Production startup rejects all three fake selectors and existing development-auth/debug controls. The test package stays on pytest's import path only. Step 3 verifies the identity/email/storage startup-rejection matrix; step 4 adds reusable scenario presets; step 5 reviews output/snapshots.
 
 ## Review decision
 

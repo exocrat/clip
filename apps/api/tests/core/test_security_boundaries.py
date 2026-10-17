@@ -5,6 +5,7 @@ controls; no credential verifier, provider, domain route, or public bypass exist
 """
 
 from datetime import UTC, datetime
+from itertools import combinations
 import os
 from pathlib import Path
 import subprocess
@@ -191,46 +192,77 @@ def run_startup(overrides):
     )
 
 
-@pytest.mark.parametrize(
-    ("overrides", "expected_setting"),
-    [
-        ({"CLIP_IDENTITY_PROVIDER": "fake"}, "CLIP_IDENTITY_PROVIDER"),
-        ({"CLIP_EMAIL_PROVIDER": "fake"}, "CLIP_EMAIL_PROVIDER"),
-        ({"CLIP_DEVELOPMENT_AUTH": "true"}, "CLIP_DEVELOPMENT_AUTH"),
-        ({"CLIP_DEBUG": "true"}, "CLIP_DEBUG"),
-        (
-            {
-                "CLIP_IDENTITY_PROVIDER": "fake",
-                "CLIP_EMAIL_PROVIDER": "fake",
-                "CLIP_DEVELOPMENT_AUTH": "true",
-            },
-            "CLIP_IDENTITY_PROVIDER",
-        ),
-        (
-            {"CLIP_IDENTITY_PROVIDER": "synthetic-unsupported-provider"},
-            "CLIP_IDENTITY_PROVIDER",
-        ),
-    ],
-    ids=[
-        "fake-identity",
-        "fake-email",
-        "development-auth",
-        "debug",
-        "combined",
-        "unsupported-provider",
-    ],
+PROVIDER_SETTINGS = (
+    "CLIP_IDENTITY_PROVIDER",
+    "CLIP_EMAIL_PROVIDER",
+    "CLIP_STORAGE_PROVIDER",
 )
+
+# Exercise every nonempty subset, so one guard cannot hide another missing guard.
+PRODUCTION_REJECTION_CASES = (
+    [
+        pytest.param(
+            {name: "fake" for name in selected},
+            selected,
+            id="fake-"
+            + "-".join(
+                name.removeprefix("CLIP_").removesuffix("_PROVIDER").lower()
+                for name in selected
+            ),
+        )
+        for size in range(1, len(PROVIDER_SETTINGS) + 1)
+        for selected in combinations(PROVIDER_SETTINGS, size)
+    ]
+    + [
+        pytest.param(
+            {"CLIP_DEVELOPMENT_AUTH": "true"},
+            ("CLIP_DEVELOPMENT_AUTH",),
+            id="development-auth",
+        ),
+        pytest.param({"CLIP_DEBUG": "true"}, ("CLIP_DEBUG",), id="debug"),
+        pytest.param(
+            {
+                **{name: "fake" for name in PROVIDER_SETTINGS},
+                "CLIP_DEVELOPMENT_AUTH": "true",
+                "CLIP_DEBUG": "true",
+            },
+            (*PROVIDER_SETTINGS, "CLIP_DEVELOPMENT_AUTH"),
+            id="all-unsafe-controls",
+        ),
+    ]
+    + [
+        pytest.param(
+            {name: "synthetic-unsupported-provider"},
+            (name,),
+            id="unsupported-" + name.lower(),
+        )
+        for name in PROVIDER_SETTINGS
+    ]
+)
+
+
+@pytest.mark.parametrize(("overrides", "expected_settings"), PRODUCTION_REJECTION_CASES)
 def test_real_production_startup_rejects_unsafe_provider_controls(
-    overrides, expected_setting
+    overrides, expected_settings
 ):
-    """Unsafe production configuration aborts import instead of selecting a fake."""
+    """Each fake-selector combination aborts actual import with safe diagnostics."""
     result = run_startup({"CLIP_ENVIRONMENT": "production", **overrides})
     assert result.returncode != 0
     assert "startup-ready" not in result.stdout
     assert "ConfigurationError: Invalid API configuration" in result.stderr
-    assert expected_setting in result.stderr
+    assert all(name in result.stderr for name in expected_settings)
     assert "synthetic-unsupported-provider" not in result.stderr
     assert "input_value" not in result.stderr
+
+
+@pytest.mark.parametrize("variable", PROVIDER_SETTINGS)
+def test_real_production_startup_rejects_empty_provider_selection(variable):
+    """An empty selector cannot turn an unsafe/missing configuration into a default."""
+    result = run_startup({"CLIP_ENVIRONMENT": "production", variable: ""})
+    assert result.returncode != 0
+    assert "startup-ready" not in result.stdout
+    assert "ConfigurationError: Invalid API configuration" in result.stderr
+    assert variable in result.stderr
 
 
 @pytest.mark.parametrize(
@@ -241,6 +273,7 @@ def test_real_production_startup_rejects_unsafe_provider_controls(
             "CLIP_ENVIRONMENT": "production",
             "CLIP_IDENTITY_PROVIDER": "disabled",
             "CLIP_EMAIL_PROVIDER": "disabled",
+            "CLIP_STORAGE_PROVIDER": "disabled",
             "CLIP_DEVELOPMENT_AUTH": "false",
             "CLIP_DEBUG": "false",
         },
@@ -248,12 +281,14 @@ def test_real_production_startup_rejects_unsafe_provider_controls(
             "CLIP_ENVIRONMENT": "local",
             "CLIP_IDENTITY_PROVIDER": "fake",
             "CLIP_EMAIL_PROVIDER": "fake",
+            "CLIP_STORAGE_PROVIDER": "fake",
             "CLIP_DEVELOPMENT_AUTH": "true",
         },
         {
             "CLIP_ENVIRONMENT": "test",
             "CLIP_IDENTITY_PROVIDER": "fake",
             "CLIP_EMAIL_PROVIDER": "fake",
+            "CLIP_STORAGE_PROVIDER": "fake",
             "CLIP_DEVELOPMENT_AUTH": "true",
         },
     ],
@@ -268,7 +303,7 @@ def test_real_startup_accepts_safe_configuration_positive_controls(overrides):
     """Allowed imports prove rejection tests are not merely failing dependencies.
 
     Local/test acceptance proves only configuration selection, never a working
-    identity/email adapter. Production defaults provide liveness only.
+    identity/email/storage adapter. Production defaults provide liveness only.
     """
     result = run_startup(overrides)
     assert result.returncode == 0

@@ -71,7 +71,11 @@ Run `uv run --locked pytest tests/fixtures/core apps/api/tests/core/test_shared_
 
 ## PD-10 scripted test-provider checks (step 2)
 
-Run `uv run --locked pytest tests/fixtures/core -q -W error` for shared factories and scripted-provider tests. The existing full pytest command includes them. These tests load explicit isolated settings and perform no provider/network/file delivery operations; pytest may update local caches. Requires existing locked test tools. Success is exit 0 with collected tests passing; failures require investigation and exit 5 is not a pass. See [approved interfaces](../../tests/fixtures/core/adapter-interfaces.md). `CLIP_STORAGE_PROVIDER` now follows the existing disabled/fake selection guard; startup-matrix additions remain step 3.
+Run `uv run --locked pytest tests/fixtures/core -q -W error` for shared factories and scripted-provider tests. The existing full pytest command includes them. These tests load explicit isolated settings and perform no provider/network/file delivery operations; pytest may update local caches. Requires existing locked test tools. Success is exit 0 with collected tests passing; failures require investigation and exit 5 is not a pass. See [approved interfaces](../../tests/fixtures/core/adapter-interfaces.md). `CLIP_STORAGE_PROVIDER` now follows the existing disabled/fake selection guard; step 3 verifies the production startup/configuration matrix below.
+
+## PD-10 production provider matrix (step 3)
+
+Run `uv run --locked pytest apps/api/tests/core/test_provider_settings.py apps/api/tests/core/test_security_boundaries.py -q -W error` from the repository root. Existing full pytest commands include these tests. This checks isolated settings and the actual entry point in credential-free subprocesses with ten-second timeouts, with no listener, credentials or provider calls. Every fake identity/email/storage selector combination must prevent production startup; empty/unsupported selections fail and safe configurations provide positive controls. OTP-specific verification remains an Identity contract concern; no separate OTP provider is implemented here. Existing locked test prerequisites and pytest exit/failure rules apply.
 
 ## Workstation and stub command registration
 
