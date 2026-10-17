@@ -35,11 +35,11 @@ digraph CampusMarketplace {
   "LI-02" [label="LI-02\nImage lifecycle", fillcolor="#dcfce7"];
   "LI-01" [label="LI-01\nListing full verification", fillcolor="#dcfce7"];
   "SE-01" [label="SE-01\nSearch + NFR-01/02/04", fillcolor="#fef3c7"];
-  "SE-02" [label="SE-02\nWanted/saved", fillcolor="#fef3c7"];
+  "SE-02" [label="SE-02\nWanted/public discovery/saved", fillcolor="#fef3c7"];
   "CN-CORE" [label="CN-CORE\nChat/read-state usable (CN-01 step 10)", fillcolor="#fce7f3"];
-  "CN-02" [label="CN-02\nOffers/selection/contact", fillcolor="#fce7f3"];
+  "CN-02" [label="CN-02\nOffers/selection/contact/inbox", fillcolor="#fce7f3"];
   "CN-03" [label="CN-03\nNotifications", fillcolor="#dbeafe"];
-  "CN-01" [label="CN-01\nE2EE/chat + NFR-05", fillcolor="#fce7f3"];
+  "CN-01" [label="CN-01\nE2EE/listing + request chat/NFR-05", fillcolor="#fce7f3"];
   "ID-01" [label="ID-01\nIdentity final verification", fillcolor="#dbeafe"];
   "INT-01" [label="INT-01\nIntegrated verification + NFR-03/06/07", fillcolor="#eeeeee"];
   "OPTIONAL-OK" [label="OPTIONAL-OK\nPer-task human selection + priority/cost protection", fillcolor="#f3e8ff"];
@@ -174,10 +174,13 @@ digraph CampusMarketplace {
   "CN-CORE" -> "CN-02";
   "ID-READY" -> "CN-02";
   "LI-CORE" -> "CN-02";
+  "SE-02" -> "CN-02";
+  "CN-01" -> "CN-02";
   "CN-CORE" -> "CN-03";
   "ID-READY" -> "CN-03";
   "CN-CORE" -> "CN-01";
   "CN-03" -> "CN-01";
+  "SE-02" -> "CN-01";
   "ID-READY" -> "ID-01";
   "LI-01" -> "ID-01";
   "LI-02" -> "ID-01";

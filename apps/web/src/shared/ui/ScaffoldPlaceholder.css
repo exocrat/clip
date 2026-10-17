@@ -1,0 +1,23 @@
+.scaffold-placeholder {
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-control);
+  padding: var(--space-4);
+  background: var(--color-surface);
+}
+
+.scaffold-placeholder h2 {
+  margin-block-end: var(--space-2);
+  font-size: var(--font-size-title);
+}
+
+.scaffold-placeholder__notice {
+  margin-block-end: 0;
+  color: var(--color-muted);
+  font-size: var(--font-size-small);
+}
+
+.scaffold-placeholder__connections {
+  display: grid;
+  gap: var(--space-3);
+  margin-block-start: var(--space-4);
+}

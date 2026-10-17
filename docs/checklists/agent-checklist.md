@@ -32,6 +32,8 @@
 
 ## Phase/task coverage
 
+- [ ] For frontend work, follow the approved page/ownership map and public feature entry points; reserve shared page/composition edits with one named current writer; do not import another feature's private implementation. Keep request-based conversations private and enforce temporary-account response limits through server authorization.
+
 | Phase/tasks | Required checklist evidence |
 |---|---|
 | BOOT-00 | Approved bundle/PRD checksum, audited documentation/Git seed committed on local `main`, source provenance and roster, actual local/remote status recorded, no falsely completed implementation tasks. Pending publication does not block PD-00 in this clone. |
@@ -55,6 +57,7 @@
 ## PR and completion
 
 - [ ] Integrate the combined PD-00–PD-03 handoff directly into `main` after a full audit confirms all four tasks' outputs and checks with no gaps. Use a coherent task/milestone PR for later changes; follow BOOT-00's separate documentation-seed rule. Do not approve or merge your own PR autonomously.
+- [ ] When preparing a PR, point the human to `docs/prompts/peer-review-prompt.md` and remind them to arrange an independent peer review. Treat AI findings as review assistance only; wait for human peer/affected-owner approval and explicit authorization of the exact PR revision before merge.
 - [ ] Record human step verification and accepted milestone/PR/main revision before unblocking consumers. Required blockers remain incomplete.
 - [ ] Close only the requested scope; continued work is selected through the task index with a new understanding verification. Do not skip the experiment or final closeout.
 

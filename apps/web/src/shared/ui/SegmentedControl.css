@@ -1,0 +1,16 @@
+.segmented-control {
+  display: inline-flex;
+  gap: var(--space-1);
+  min-inline-size: 0;
+  margin: 0;
+  border: 0;
+  border-radius: var(--radius-control);
+  padding: var(--space-1);
+  background: var(--color-surface-muted);
+}
+
+.segmented-control__option[aria-pressed='true'] {
+  border-color: var(--color-primary);
+  color: var(--color-primary-contrast);
+  background: var(--color-primary);
+}
