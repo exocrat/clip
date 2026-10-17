@@ -18,6 +18,8 @@ Each person uses a separate clone on separate computers, or a separate Git workt
 
 Branch naming: `task/<task-id-lowercase>-<short-purpose>`, e.g. `task/id-01-identity`. A task with a merged readiness PR can continue on a subsequent branch, e.g. `task/id-01-final-verification`. Name the exact milestone and originating task in that PR. Do not create a PR for every numbered step; commits are useful checkpoints, not a requirement for every read-only action. Before a task or milestone handoff, inspect the complete diff, staged files, task acceptance checks, tests, generated files, documentation, and secret/data scan results. Commit only reviewed in-scope files. Preserve user changes and never commit sensitive state/plan artifacts.
 
+Obtain explicit human approval before every commit. Approval to execute a task step, including a step that mentions committing, is not commit approval. Prepare and verify the changes, then leave them uncommitted until approval is given.
+
 ## Starting and claiming work
 
 1. Inspect the current workspace read-only; fetch the approved remote main/task branches and inspect relevant draft PRs when access is available. Read the main roster and current task/step evidence. The main work log contains merged status; reconcile active work against the assigned remote task branch's checkpoint log and draft PR before treating an item as available.
@@ -61,6 +63,34 @@ BOOT-00 verifies the supplied exocrat/clip remote/account/branch policy and reco
 CI runs local/disposable tests and build/format/contract/secret gates. A merge does not automatically deploy, send messages, invoke paid providers, create billable infrastructure, or apply Terraform. Those operations retain exact target/plan/cost/caps/rollback/cleanup approval in their assigned task. One named operator serializes changes to the shared cloud test environment and records its deployed revision; state locking alone does not make simultaneous deployments or load tests safe.
 
 The command registry is `docs/environment/commands.md`; actual commands are populated by their named creator tasks. Missing commands that are outputs of the selected step are implemented and registered there. Missing prerequisites or uncertainty block dependent work and require a question.
+
+## Local Python tooling (PD-04)
+
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/) and GNU Make for your development environment, then run these commands from the repository root:
+
+```bash
+uv sync --locked
+make format-python
+make check-python-format
+```
+
+`uv sync --locked` creates or updates the ignored local `.venv` from `uv.lock`, including development tools; uv can obtain Python 3.14 when needed. Run it after cloning or receiving dependency changes. Each developer uses their own environment; do not share `.venv` or install project tools globally. `uv run` selects the project environment without shell activation. `--locked` refuses manifest/lockfile drift instead of silently rewriting the lock.
+
+`make format-python` runs pinned Black 26.10.1 and rewrites Python source to the root `pyproject.toml` rules. Review its diff, then run `make check-python-format`; check-only reports formatting drift and returns nonzero without rewriting source. Plain `make` runs check-only too. Both targets may synchronize the local environment/cache. No cloud credentials or services are needed. Run the check before requesting review; PD-12 will wire automated CI, and PD-13 will extend the shared command front door.
+
+The equivalent direct commands are `uv run --locked black .` and `uv run --locked black --check --diff .`. To inspect installed versions, run `uv run --locked black --version` and `uv run --locked pytest --version`.
+
+The pinned test runner is pytest 9.1.1; run `uv run --locked pytest` to execute all configured tests, or `uv run --locked pytest apps/api/tests -q` for the API/configuration suite supplied by PD-05. Root `pyproject.toml` is its sole configuration. Exit 5 means no tests collected and must not be reported as a passing suite. Additional shared-core/fixture tests remain PD-06/10 outputs. Python lint/static type tools are deferred; see the [tooling decision](docs/decisions/python-test-tooling.md). Full command effects, prerequisites, failure recovery and current readiness are in the [command registry](docs/environment/commands.md).
+
+## Local API foundation (PD-05)
+
+After `uv sync --locked`, start the API from the repository root:
+
+```bash
+uv run --locked uvicorn app.main:app --app-dir apps/api --host 127.0.0.1 --port 8000
+```
+
+In another terminal, `curl --fail http://127.0.0.1:8000/health` should return `{"status":"ok"}`; stop your foreground server with Ctrl+C. This is loopback-only process liveness, requiring no database/provider/cloud access. Environment settings come from the process, not `.env.example`. The [API setup/settings/test instructions](apps/api/README.md) document defaults, safe startup failures and occupied-port recovery. Run `uv run --locked pytest apps/api/tests -q` for persistent health/configuration checks and `make check-python-format` before handing off changes. Shared lifecycle/test Make targets and CI remain PD-13/12 outputs.
 
 ## Assigned implementation paths
 

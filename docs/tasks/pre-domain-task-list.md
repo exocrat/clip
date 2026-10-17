@@ -73,7 +73,7 @@ This workflow uses one owner for the kickoff, one owner for each of four impleme
 
 The exclusive directory roots that PD-03 prepares with a tracked `.gitkeep` are `apps/api/`, `tests/fixtures/core/`, `apps/web/`, `database/`, `data/`, `infra/terraform/`, `contracts/`, `.github/workflows/`, `scripts/`, and `tests/integration/`. The kickoff owner commits these markers as part of the PD-00–PD-03 handoff; stream owners clone or branch from the merged handoff, delete only the marker files within their own assigned roots as their first action, and then populate those directories. The marker deletions are expected in their branch/PR. The ownership map in this table remains the shared, version-controlled boundary. Root-level files and shared documentation records are assigned by task in the table and are not made exclusive by a marker. Stream owners work only in their listed roots and task-assigned files; a needed change in another stream's root is proposed to that owner or handled by the integration owner. Shared status-log updates remain routine task bookkeeping.
 
-Root files are reserved to the stream/task named above even though they are not inside a stream directory. The integration owner owns shared generated contracts, CI, the common command front door, and integration tests. PD-16 may need a bounded change within `infra/terraform/`; coordinate that change with the cloud-preparation owner, who reviews the infrastructure scope. PD-04/07/08 own their respective language/dependency and local database root files. Do not edit another stream's directories to change a shared root file.
+Root files are reserved to the stream/task named above even though they are not inside a stream directory. The integration owner owns shared generated contracts, CI, the common command front door, and integration tests. Exception approved by Aditya for PD-04: Stream 1 may create only the Python format/check targets in the root Makefile; PD-13 extends the common command front door later. PD-16 may need a bounded change within `infra/terraform/`; coordinate that change with the cloud-preparation owner, who reviews the infrastructure scope. PD-04/07/08 own their respective language/dependency and local database root files. Do not edit another stream's directories to change a shared root file.
 
 The integration owner handles cross-stream artifacts and final acceptance; the streams do not independently edit one another's directories. In particular, PD-11 owns the shared contract source and generated outputs; PD-12 owns CI integration; PD-13 owns the common command front door; PD-16 owns shared cloud deployment/verification; PD-17–PD-19 own final task-list, checklist, and handoff integration. Task-specific files outside the listed roots remain with the task that explicitly creates them.
 
@@ -178,7 +178,7 @@ The integration owner handles cross-stream artifacts and final acceptance; the s
 
 1. In the root `pyproject.toml`, configure Black once: line length, selected Python target, include/exclude rules, and any narrowly justified generated-file exclusions.
 2. Add Black as a pinned development dependency using the dependency manager selected in PD-02. Commit the correct lockfile and verify a clean install resolves the pinned version.
-3. Add the Black formatter command and a check-only command. The check must not modify files. Expose them via the future common command entry point (e.g. Make targets) and write down the exact command names.
+3. Add the Black formatter command and a check-only command. The check must not modify files. Stream 1 may create only these Python format/check targets in the root Makefile under the approved ownership exception above; PD-13 extends the common command entry point later. Write down the exact command names.
 4. Format the existing tracked Python foundation files with Black. Review the diff to ensure formatting did not change behavior.
 5. Add Python lint/type/test tools only when required by the chosen foundation; pin them and keep their configuration in one canonical file each.
 6. Record exact install, format, and check commands in `CONTRIBUTING.md` and the supplied agent/human checklists as soon as implemented; PD-18 reconciles them again.
@@ -198,7 +198,7 @@ The integration owner handles cross-stream artifacts and final acceptance; the s
 3. Add only shared core boundaries needed by all domains: common ID/time/error/auth-context types and database/session lifecycle placeholders as selected in PD-06/PD-08.
 4. Add empty domain ownership directories for Identity, Listings, Search, and Conversations with brief README placeholders stating that feature implementation belongs to later domain tasks. Do not add endpoints or domain rules speculatively.
 5. Add an API test that starts the app in test mode, verifies health behavior, and confirms safe configuration failures.
-6. Document the exact local start and test commands after PD-13 is in place.
+6. Consolidate the exact verified local start and test commands documented as they are created in steps 1 and 5. PD-13 later reconciles these commands with the common Makefile front door; PD-05 does not wait for PD-13.
 
 **Checks:** Run the API locally with no cloud credentials; call the health endpoint; run its test; verify no real data, secrets, or domain behavior were added.
 
@@ -296,7 +296,7 @@ The integration owner handles cross-stream artifacts and final acceptance; the s
 **Steps:**
 
 1. Create reusable fixtures for synthetic users, listings, timestamps, caller contexts, and expected errors using approved shared types. Keep each fixture minimal and clearly fake; create schema-specific user/listing fixtures in the named domain tasks after their contracts/migrations exist.
-2. Create explicit provider fakes/mocks only for local/test mode. Make selection require an explicit environment setting that defaults off outside local/test.
+2. Define and review shared test-adapter interfaces before implementing provider fakes/mocks; wait for human verification of that boundary. Keep domain-specific provider behavior with its owning contract/task. Then create explicit provider fakes/mocks only for local/test mode, requiring an explicit environment setting that defaults off outside local/test.
 3. Add startup/config tests showing production mode refuses fake identity, OTP/email, object-storage, or other unsafe providers. Do not add live-provider credentials.
 4. Add fixtures for retries, duplicate requests, concurrency, partial dependency failures, unauthorized callers, and validation boundaries where the shared convention applies. These are shared test primitives, not domain feature tests.
 5. Ensure test output and failure snapshots redact contact fields and never include secrets or message content.
