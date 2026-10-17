@@ -1,4 +1,4 @@
-"""Unit settings guards; real entry-point rejection remains step 5."""
+"""Unit settings guards; entry-point rejection is covered in security-boundary tests."""
 
 import pytest
 
