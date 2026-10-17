@@ -31,7 +31,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PD-03 | Kickoff owner — Suraj (B) | done | Steps and task-wide review complete; combined handoff integrated into local `main` | performed | verified | Local `main` at handoff commit `d29c02b`; combined audit and work-log guidance cleanup | Remote publication of the combined handoff is pending approval | 2026-10-16 14:16 UTC |
 | PD-04 | Stream 1 — Aditya (A) | in progress | All six steps/local review verified and committed | performed | verified (steps 1–6 and local review) | `48a8fbd`; included in current branch | Peer review/main acceptance pending | 2026-10-17 05:02:28 UTC |
 | PD-05 | Stream 1 — Aditya (A) | in progress | All six steps and local acceptance review verified; steps 5–6 approved for commit | performed | verified (steps 1–6/local closeout) | `stream/1-api-shared-core`; steps 3–4 commit `55c17fc`; 13 tests and local acceptance checks passed | Peer review/main acceptance pending; concrete conventions/database lifecycle remain PD-06/08 outputs | 2026-10-17 05:48:44 UTC |
-| PD-06 | Stream 1 — Aditya (A) | in progress | Step 5 verified and approved for commit; step 6 fixture/output and task-wide review authorized | performed (step 5) | Steps 1–5 verified; step 6 authorized | Step 4 committed as `a238aa6`; step 5 uncommitted; 24 security checks / 199 total tests passed | Step 6 and peer/affected-owner review/main acceptance pending; PD-05 main acceptance pending | 2026-10-17 07:16:06 UTC |
+| PD-06 | Stream 1 — Aditya (A) | in progress | All six steps/local closeout verified; prepare peer/affected-owner review and main handoff | performed (steps 1–6/local audit) | verified (steps 1–6/local closeout) | `stream/1-api-shared-core`; implementation/tests through `394d6ca`, step 6 docs/log in this closeout commit; 199 tests and task-wide checks passed | Peer/affected-owner review/main acceptance pending; remote refresh blocked by SSH configuration; PD-05 main acceptance pending | 2026-10-17 07:21:50 UTC |
 | PD-07 | Stream 2 owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-02 | — |
 | PD-08 | Stream 3 owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-02, PD-04, PD-05, PD-06 | — |
 | PD-09 | Stream 3 owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-06, PD-08 | — |
@@ -268,6 +268,14 @@ Committed verified step 4 as `a238aa6`. Added `test_security_boundaries.py`: for
 
 ### PD-06 — step 5 verified / commit approved — 2026-10-17 07:16:06 UTC
 Contributor verified step 5, explicitly approved its commit, and authorized step 6 fixture/output and task-wide review.
+
+### PD-06 — step 6 fixture/output and task-wide review — 2026-10-17 07:18:22 UTC
+Committed verified step 5 as `394d6ca`. Reviewed all nine conventions against decisions, helpers, tests and checklists; no local foundation gap found. Fixtures are synthetic, subprocess environments exclude credentials, and temporary test routes do not enter production. Reconciled stale planned-implementation wording.
+
+Captured full suite: 199 passed, no checked fixture sentinels in stdout/stderr (`/tmp/clip-pd06-step6-9zm2ks9k/pytest-output.txt`). Black, offline lock/dependency checks, 35-file scope/link/docstring/privacy review, PRD checksum and `git diff --check` passed. Local closeout awaits human verification; step 6 docs/log remain uncommitted. Peer/affected-owner review/main acceptance remain pending; remote refresh failed on SSH configuration permissions. CI/aggregate tooling remains PD-12/13.
+
+### PD-06 — local closeout verified / commit approved — 2026-10-17 07:21:50 UTC
+Contributor verified step 6 and local task-wide closeout, and explicitly approved this documentation/log commit. All six steps are locally verified; peer/affected-owner review and main acceptance remain pending. Next Stream 1 task is PD-10 (depends on PD-04–PD-06); no PD-10 work started.
 
 ## Pending real integration ledger (initially empty)
 

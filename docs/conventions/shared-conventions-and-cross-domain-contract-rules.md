@@ -1,7 +1,7 @@
 # Campus Marketplace — Shared Conventions and Cross-Domain Contract Rules
 
 **Canonical repository path:** `docs/conventions/shared-conventions-and-cross-domain-contract-rules.md`
-**Document 3. Status:** Shared baseline for repository and contract work. It records rules already present in the submitted PRD and project plan, plus the PD-06 shared choices approved on 2026-10-17. These definitions precede their implementation; PD-06 steps 3–6 remain required. It does not define the four domain APIs; those belong in the domain contract documents and the combined contract.
+**Document 3. Status:** Shared baseline for repository and contract work. It records rules already present in the submitted PRD and project plan, plus the PD-06 shared choices approved on 2026-10-17. PD-06 supplies the shared helpers and boundary tests; execution, human verification and reviewed main acceptance are tracked in the [work log](../status/work-log.md). It does not define the four domain APIs; those belong in the domain contract documents and the combined contract.
 
 ## 1. Purpose and precedence
 
@@ -24,11 +24,11 @@ These conventions apply to data crossing domain or API boundaries. A domain cont
 
 ### Approved identifiers, timestamps, and money
 
-PD-06 inspected the existing skeleton before selecting these definitions. Implementation locations below are planned step 3 outputs, not existing callable helpers.
+PD-06 inspected the existing skeleton before selecting these definitions. The implementation locations below now contain shared helpers; persistent coverage is under `apps/api/tests/core/`. Real authentication, persistence, provider adapters and domain rules remain their owning tasks.
 
-- **Identifiers:** generate UUIDv4 on the server. Wire output is a lowercase, hyphenated UUID string, e.g. `123e4567-e89b-42d3-a456-426614174000`. Callers treat it as opaque; knowing an ID grants no permission. Entity contracts determine whether an incoming ID references an existing entity or may be supplied at creation. Planned implementation: `app.core.identifiers`. [Decision](../decisions/identifiers.md).
-- **Timestamps:** use timezone-aware instants internally and UTC for storage boundaries. Emit exactly six fractional digits followed by `Z`, e.g. `2026-10-17T06:30:00.000000Z`. Accept RFC 3339 timestamps with explicit timezone offsets and normalize to UTC; `2026-10-17T12:00:00+05:30` becomes that same example. Reject timezone-free inputs and avoid silent precision loss. Calendar dates and durations remain distinct types. Planned implementation: `app.core.timestamps`. [Decision](../decisions/timestamps.md).
-- **Money:** API/storage units remain integer INR paise; reject booleans and binary floats as money values. Listing prices, offers, and price filters support whole rupees only: paise amounts must be multiples of 100. Convert exact whole-rupee text to paise at the display/input boundary; `125` rupees becomes `12500` paise and displays as `₹125`. Reject `₹125.50` rather than rounding. Zero remains valid for asking prices; each owning domain sets other ranges and offer rules. Planned implementation: `app.core.money`. [Decision](../decisions/money.md).
+- **Identifiers:** generate UUIDv4 on the server. Wire output is a lowercase, hyphenated UUID string, e.g. `123e4567-e89b-42d3-a456-426614174000`. Callers treat it as opaque; knowing an ID grants no permission. Entity contracts determine whether an incoming ID references an existing entity or may be supplied at creation. Implementation: `app.core.identifiers`. [Decision](../decisions/identifiers.md).
+- **Timestamps:** use timezone-aware instants internally and UTC for storage boundaries. Emit exactly six fractional digits followed by `Z`, e.g. `2026-10-17T06:30:00.000000Z`. Accept RFC 3339 timestamps with explicit timezone offsets and normalize to UTC; `2026-10-17T12:00:00+05:30` becomes that same example. Reject timezone-free inputs and avoid silent precision loss. Calendar dates and durations remain distinct types. Implementation: `app.core.timestamps`. [Decision](../decisions/timestamps.md).
+- **Money:** API/storage units remain integer INR paise; reject booleans and binary floats as money values. Listing prices, offers, and price filters support whole rupees only: paise amounts must be multiples of 100. Convert exact whole-rupee text to paise at the display/input boundary; `125` rupees becomes `12500` paise and displays as `₹125`. Reject `₹125.50` rather than rounding. Zero remains valid for asking prices; each owning domain sets other ranges and offer rules. Implementation: `app.core.money`. [Decision](../decisions/money.md).
 
 Tests in PD-06 steps 4–5 cover parse/format round trips, malformed values, timezone conversion and naive-time rejection, exact money conversion, and whole-rupee boundaries.
 
@@ -80,7 +80,7 @@ Use FastAPI validation and HTTP exceptions with shared exception handlers that p
 | 500 | `internal_error` | Unexpected failure, with a generic safe message |
 | 503 | `dependency_unavailable` | Required dependency unavailable |
 
-Domain contracts may declare additional stable codes with their HTTP mapping. FastAPI request-validation failures, including malformed JSON reported through its validation machinery, retain HTTP 422; do not expose its raw validation input. Preserve applicable protocol headers such as `WWW-Authenticate`, `Retry-After`, and `Allow`. Planned implementation: `app.core.errors` plus API handler wiring. [Decision](../decisions/errors.md). Tests cover mappings, equivalent envelope shapes, safe details, and unexpected-error redaction.
+Domain contracts may declare additional stable codes with their HTTP mapping. FastAPI request-validation failures, including malformed JSON reported through its validation machinery, retain HTTP 422; do not expose its raw validation input. Preserve applicable protocol headers such as `WWW-Authenticate`, `Retry-After`, and `Allow`. Implementation: `app.core.errors` plus API handler wiring. [Decision](../decisions/errors.md). Tests cover mappings, equivalent envelope shapes, safe details, and unexpected-error redaction.
 
 ## 4. Authentication and authorization context
 
@@ -99,7 +99,7 @@ Use one immutable internal `CallerContext` with `user_id` (validated internal UU
 
 Identity validates credentials and current eligibility/revocation, then supplies the context through server dependency wiring. `valid_until` is no later than the applicable credential/account validity deadline; it does not replace revocation or eligibility checks. A domain rejects an expired context and checks permissions for its own resource/action. No client request model, user-ID header, account-class flag, ownership flag, or public constructor endpoint establishes trusted context. A Python type/constructor cannot by itself prove authentication; the authentication boundary establishes provenance. PD-06 supplies the type and validation boundary, not real sign-in or a successful authentication stub. Tests use explicit test-only dependency overrides.
 
-Planned implementation: `app.core.auth`; Identity supplies the real credential/account validation later. [Decision](../decisions/caller-context.md). PD-06 tests cover immutability/validity and show that user-controlled IDs cannot become a trusted caller through HTTP input.
+Implementation: `app.core.auth`; Identity supplies the real credential/account validation later. [Decision](../decisions/caller-context.md). PD-06 tests cover immutability/validity and show that user-controlled IDs cannot become a trusted caller through HTTP input.
 
 ## 5. Pagination, filtering, and sorting
 
@@ -120,7 +120,7 @@ The shared response is `{"items": [], "page": 2, "page_size": 20, "has_next": fa
 
 Every operation declares sort direction and a unique ID tie-breaker. This guarantees deterministic order for unchanged data, not a snapshot across requests: concurrent inserts/removals or changes to sort keys can move results between pages. That limitation is accepted. The web flow uses page navigation with Previous/Next controls; infinite scroll is not required. Existing incremental message/read-watermark contracts remain separate operation semantics, not a second shared page envelope.
 
-Planned implementation: `app.core.pagination`; web/client implementation remains with its owner. [Decision](../decisions/pagination.md). Tests cover sizes, offsets, invalid pages, final/empty pages, stable ties, and filtered/authorized pagination at the owning domain's accurate test point.
+Implementation: `app.core.pagination`; web/client implementation remains with its owner. [Decision](../decisions/pagination.md). Tests cover sizes, offsets, invalid pages, final/empty pages, stable ties, and filtered/authorized pagination at the owning domain's accurate test point.
 
 ## 6. Domain ownership and cross-domain calls
 
@@ -182,7 +182,7 @@ The required `docs/environment/secret-handling.md`, initialized in PD-03 and com
 
 Emit structured JSON containing approved diagnostic metadata only: event code, severity, timestamp, server request ID, and where applicable HTTP method, route template, status, and duration. Route templates exclude raw query strings and path values. Use centrally controlled event names/fields, bounded text, and central redaction; do not serialize arbitrary objects, exception messages/tracebacks, request bodies, headers, or provider responses into logs. Redaction is defense in depth; call sites must omit sensitive values in the first place.
 
-Generate a fresh server UUIDv4 request ID for each HTTP request, propagate it through request-local context and the public error envelope, and return it in `X-Request-ID`. Client-supplied request IDs do not replace it. A synthetic event may report `{"event": "request_completed", "status": 200, "request_id": "123e4567-e89b-42d3-a456-426614174000"}`. Planned implementation: `app.core.logging` plus API middleware. [Decision](../decisions/logging.md). Tests cover correlation isolation/propagation, bounded structured output, and sensitive-value omission/redaction.
+Generate a fresh server UUIDv4 request ID for each HTTP request, propagate it through request-local context and the public error envelope, and return it in `X-Request-ID`. Client-supplied request IDs do not replace it. A synthetic event may report `{"event": "request_completed", "status": 200, "request_id": "123e4567-e89b-42d3-a456-426614174000"}`. Implementation: `app.core.logging` plus API middleware. [Decision](../decisions/logging.md). Tests cover correlation isolation/propagation, bounded structured output, and sensitive-value omission/redaction.
 
 ### Approved provider selection and production safety
 
