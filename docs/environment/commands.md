@@ -9,12 +9,12 @@ For EACH command record: creator task, exact invocation and required inputs, sup
 | Required command outcome | Creator | Current state |
 |---|---|---|
 | Install/setup | PD-02/04/07/13 | Python tools: `uv sync --locked` implemented/verified in PD-04; web and combined setup remain pending PD-07/13 |
-| Local start/stop/readiness | PD-05/07/08/13 | API process start/stop and health human-verified at PD-05 step 1; typed settings implemented at step 2 (verification pending); web/database/combined lifecycle remain future outputs |
+| Local start/stop/readiness | PD-05/07/08/13 | API process start/stop/health and typed settings human-verified at PD-05 steps 1–2; web/database/combined lifecycle remain future outputs |
 | Local migration/status/reset and small seed | PD-08/13 | Not implemented; reset local-only and explicit |
 | Generator framework/tests | PD-09 | Not implemented |
 | Final reference generate/load/validate/fingerprint | SE-01/DATA-READY | Not implemented; requires domain schemas/configuration |
 | Python format and non-mutating pinned Black check | PD-04 | Implemented and human-verified at step 3; exact commands and verification below |
-| Test/lint/type/build/aggregate CI-equivalent | PD-07/12/13 | Not implemented |
+| Test/lint/type/build/aggregate CI-equivalent | PD-05/07/12/13 | API/configuration suite implemented and human-verified at PD-05 step 5; web/CI/aggregate commands remain future outputs |
 | Contract regenerate/stale-check | PD-11/DL-00 | Not implemented |
 | Terraform static format/validate (no remote state mutation) | PD-15 | Not implemented |
 | Plan/apply/build-release/deploy/verify/rollback/teardown | PD-15/16; domain/EXP additions | Not implemented; gated actions separate from local/CI check |
@@ -39,13 +39,19 @@ Both commands select pinned Black 26.10.1 and refuse an out-of-date lockfile rat
 
 ## PD-04 Python test runner
 
-PD-04 step 5 pins pytest 9.1.1 in the root development group for PD-05/06/10. Run `uv sync --locked` after receiving the updated lockfile, then `uv run --locked pytest` from the repository root. This runs tests in the local uv environment using root `pyproject.toml`; it may update local caches/environment and requires no cloud resources. Exit 0 means collected tests passed; exit 1 means a test failed; exit 5 means no tests were collected, which is not a passing suite. Investigate reported failures before retrying. The runner was verified with temporary synthetic fixture/parameterized cases and an intentional failure, then those probes were removed. Real foundation tests remain future outputs. See [the tooling decision](../decisions/python-test-tooling.md). No test Make target or CI workflow is implemented by this step.
+PD-04 step 5 pins pytest 9.1.1 in the root development group for PD-05/06/10. Run `uv sync --locked` after receiving the updated lockfile, then `uv run --locked pytest` from the repository root. This runs tests in the local uv environment using root `pyproject.toml`; it may update local caches/environment and requires no cloud resources. Exit 0 means collected tests passed; exit 1 means a test failed; exit 5 means no tests were collected, which is not a passing suite. Investigate reported failures before retrying. PD-04 verified the runner with temporary smoke probes; PD-05 now supplies the persistent health/configuration suite below. See [the tooling decision](../decisions/python-test-tooling.md). No test Make target or CI workflow is implemented yet.
 
 ## PD-05 API process startup and health
 
 From the repository root, run `uv sync --locked`, then `uv run --locked uvicorn app.main:app --app-dir apps/api --host 127.0.0.1 --port 8000`. Requires the Python 3.14/uv environment and locked FastAPI/Uvicorn runtime dependencies; no database or cloud credentials. The foreground process binds only to loopback and may synchronize the local uv environment/cache. Stop it with Ctrl+C. PD-13 supplies the shared start/stop front door later; no API Make target is added here.
 
 `curl --fail http://127.0.0.1:8000/health` should exit 0 with HTTP 200 and `{"status":"ok"}`. This proves only process liveness, not database/provider/deployment readiness. Connection failure, non-2xx health response, dependency/import error or occupied port is a failure to investigate; do not silently switch targets or replace failure with a fake response. If necessary, explicitly select another local port and use it in both commands. No provider/cloud operation is performed. Live loopback verification used an ephemeral port and an environment containing no cloud credentials, checked the exact JSON response and disabled docs/unknown routes, then stopped its owned process. See [API instructions](../../apps/api/README.md) and the PD-05 step 1 work-log evidence. Typed process-environment settings are implemented in step 2: optional `CLIP_ENVIRONMENT` defaults to local, optional `CLIP_DEBUG` defaults false, invalid/empty values fail startup and production rejects debug. No dotenv/example file is loaded; examples are in `.env.example`. Persistent API tests remain step 5.
+
+## PD-05 API/configuration tests
+
+Run `uv sync --locked`, then `uv run --locked pytest apps/api/tests -q` from the repository root; `uv run --locked pytest` includes this suite through the root configuration. Prerequisites are the PD-05 skeleton/settings, pinned pytest and development-only httpx2 2.13.1. This is the [supported Starlette TestClient transport](https://starlette.dev/testclient/); plain httpx produced a deprecation warning and was replaced rather than suppressed. Root `pyproject.toml` supplies the API import path and is the sole test configuration.
+
+Tests run in-process ASGI requests and bounded local subprocesses, use only synthetic values, and restore inherited environment changes. They may update pytest/Python caches and create temporary synthetic dotenv files; they need no listener, cloud credentials, database or external services. Success is exit 0 with collected tests passed; failures must remain failures, and exit 5 is no collection, not a pass. PD-05 step 5 verified 13 tests, including startup rejection/redaction, with warnings treated as errors (`uv run --locked pytest -q -W error`). PD-12/13 still own CI and the shared command front door.
 
 ## Workstation and stub command registration
 

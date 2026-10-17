@@ -1,6 +1,6 @@
 # API foundation
 
-PD-05 steps 1–4 supply a FastAPI application, process-health endpoint, typed startup settings, the [shared-core boundary](app/core/README.md), and README-only domain ownership placeholders under `app/domains/`. Persistent API tests are a subsequent PD-05 output; marketplace features remain later domain tasks.
+PD-05 steps 1–5 supply a FastAPI application, process-health endpoint, typed startup settings, the [shared-core boundary](app/core/README.md), README-only domain ownership placeholders under `app/domains/`, and persistent API/configuration tests. Marketplace features remain later domain tasks.
 
 From the repository root, install the locked dependencies and start the local API:
 
@@ -26,4 +26,17 @@ For example, `CLIP_ENVIRONMENT=test CLIP_DEBUG=false uv run --locked uvicorn app
 
 No database/provider setting is required by this liveness-only skeleton. Their required names and missing-value checks must be added with the tasks that implement those dependencies; no placeholder credential or fake service is required to start locally. Fake-provider controls remain PD-06/10 work. Do not treat production configuration mode alone as evidence of a working or safe cloud deployment.
 
-See the [command registry](../../docs/environment/commands.md) for effects and readiness. PD-13 later adds the shared lifecycle commands. Persistent API/configuration tests remain PD-05 step 5 outputs; the current settings checks are isolated smoke verification.
+## Tests
+
+From the repository root, run:
+
+```bash
+uv sync --locked
+uv run --locked pytest apps/api/tests -q
+```
+
+`uv run --locked pytest` runs all currently configured test roots. API tests start the real ASGI app in explicit test mode using FastAPI's TestClient; no HTTP listener, database, provider or cloud access is needed. The tests discard inherited `CLIP_`/`AWS_` settings for isolation and restore the developer's environment afterward. Synthetic cases cover local defaults, typed overrides, malformed/empty values, production-debug rejection, redacted errors, fresh reads and ignored dotenv/example files. Fresh credential-free subprocesses verify invalid configuration prevents the actual entry point from importing. Temporary fixture files stay under pytest's temporary directory.
+
+Exit 0 means the collected suite passed; a failure must be investigated, and exit 5 (no tests collected) is not a pass. The development-only `httpx2` pin supports the installed Starlette TestClient. No fake identity or storage implementation is used, and this suite does not prove domain integration, deployed readiness or performance.
+
+See the [command registry](../../docs/environment/commands.md) for effects and readiness. PD-13 later adds the shared lifecycle/test Make targets.

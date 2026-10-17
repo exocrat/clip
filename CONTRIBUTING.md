@@ -80,7 +80,17 @@ make check-python-format
 
 The equivalent direct commands are `uv run --locked black .` and `uv run --locked black --check --diff .`. To inspect installed versions, run `uv run --locked black --version` and `uv run --locked pytest --version`.
 
-The pinned test runner is pytest 9.1.1; run `uv run --locked pytest` once tests exist. Root `pyproject.toml` is its sole configuration. No product tests exist at PD-04: exit 5 means no tests collected and must not be reported as a passing suite. API/core tests are PD-05/06/10 outputs. Python lint/static type tools are deferred; see the [tooling decision](docs/decisions/python-test-tooling.md). Full command effects, prerequisites, failure recovery and current readiness are in the [command registry](docs/environment/commands.md).
+The pinned test runner is pytest 9.1.1; run `uv run --locked pytest` to execute all configured tests, or `uv run --locked pytest apps/api/tests -q` for the API/configuration suite supplied by PD-05. Root `pyproject.toml` is its sole configuration. Exit 5 means no tests collected and must not be reported as a passing suite. Additional shared-core/fixture tests remain PD-06/10 outputs. Python lint/static type tools are deferred; see the [tooling decision](docs/decisions/python-test-tooling.md). Full command effects, prerequisites, failure recovery and current readiness are in the [command registry](docs/environment/commands.md).
+
+## Local API foundation (PD-05)
+
+After `uv sync --locked`, start the API from the repository root:
+
+```bash
+uv run --locked uvicorn app.main:app --app-dir apps/api --host 127.0.0.1 --port 8000
+```
+
+In another terminal, `curl --fail http://127.0.0.1:8000/health` should return `{"status":"ok"}`; stop your foreground server with Ctrl+C. This is loopback-only process liveness, requiring no database/provider/cloud access. Environment settings come from the process, not `.env.example`. The [API setup/settings/test instructions](apps/api/README.md) document defaults, safe startup failures and occupied-port recovery. Run `uv run --locked pytest apps/api/tests -q` for persistent health/configuration checks and `make check-python-format` before handing off changes. Shared lifecycle/test Make targets and CI remain PD-13/12 outputs.
 
 ## Assigned implementation paths
 

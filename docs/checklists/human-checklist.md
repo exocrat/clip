@@ -26,8 +26,14 @@ You may inspect evidence, but the agent must summarize what makes it acceptable 
 ## PD-04 Python tooling verification
 
 - [ ] Verify the agent's evidence that `uv sync --locked` installs the pinned tools into an ignored local environment, and that `make format-python` followed by `make check-python-format` works. Check-only must detect formatting drift without rewriting source; plain `make` is check-only.
-- [ ] Confirm `uv run --locked black --version` reports 26.10.1 and `uv run --locked pytest --version` reports 9.1.1. The future test command is `uv run --locked pytest`; no collected tests (exit 5) does not prove application behavior. Python lint/type tools are deferred.
+- [ ] Confirm `uv run --locked black --version` reports 26.10.1 and `uv run --locked pytest --version` reports 9.1.1. The test command is `uv run --locked pytest`; no collected tests (exit 5) does not prove application behavior. Python lint/type tools are deferred.
 - [ ] Confirm [CONTRIBUTING](../../CONTRIBUTING.md#local-python-tooling-pd-04) and the [command registry](../environment/commands.md) agree with the Makefile/root configuration. CI automation remains pending PD-12. Review the agent's summarized evidence; you do not need to run routine commands yourself.
+
+## PD-05 API foundation verification
+
+- [ ] Verify the agent's evidence for the [documented local API command](../../apps/api/README.md), health-only response and clean shutdown without database/cloud credentials. `{"status":"ok"}` is process liveness, not domain or dependency readiness.
+- [ ] Review `uv run --locked pytest apps/api/tests -q` results and formatting checks. Confirm tests cover health in test mode and safe configuration failures, use synthetic data, and avoid exposing supplied values. The agent runs routine checks; you verify the summarized evidence.
+- [ ] Confirm shared-core/domain placeholders make their pending PD-06/08 responsibilities explicit, and setup/start/test instructions agree across CONTRIBUTING and the command registry. CI/shared Make lifecycle targets remain later tasks.
 
 ## Task-wide closeout
 
