@@ -31,7 +31,7 @@ Rahul's local profile `clip-project` uses interactive `aws login --profile clip-
 | Access-control field | Current evidence/status |
 |---|---|
 | AWS account owner/admin | Rahul reports Aditya owns the account and all team members have administrator access; this was not independently audited. |
-| Effective permissions | Not fully verified. The alias lookup was denied for missing `iam:ListAccountAliases`; no IAM policy changes were made. Do not infer least privilege or grant an agent broad access. |
+| Effective permissions | Not fully verified. On 2026-10-17, read-only `iam:GetUser`, `iam:ListAttachedUserPolicies`, and `iam:ListGroupsForUser` calls were denied for Rahul's identity (the earlier `iam:ListAccountAliases` call was also denied). IAM attachments and effective permissions are unknown; this does not establish the reported administrator access or prove least privilege. No IAM permission changes were made. Do not infer least privilege or grant an agent broad access. |
 | Plan/apply responsibility | Any team member may approve/apply an exact approved infrastructure plan; Aditya owns billing alerts; cleanup is shared with the resource creator first responsible. These are workflow roles, not proof of IAM permissions. |
 | Local session sign-out | `aws logout --profile clip-project` removes the local profile session when appropriate. This is not a verified central revocation procedure. |
 | Central revocation/recovery | Not documented or verified. Confirm the proper identity/grant revocation and access-restoration procedure with the account administrator before relying on it. After sign-in, verify the returned account/identity; stop on mismatch. |

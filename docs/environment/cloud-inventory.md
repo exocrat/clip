@@ -9,7 +9,7 @@ Non-secret status template. Update only from approved plans and verified outputs
 | Contributor CLI sign-in | Rahul's local `clip-project` profile; `aws login --profile clip-project`, then verify with `aws sts get-caller-identity --profile clip-project`; see [AWS CLI sign-in](README.md#aws-cli-sign-in) |
 | Resources | Step 4 read-only inventory on 2026-10-17: see scoped findings below; resource ownership/project use is unverified for untagged resources |
 | Service quotas | Selected applied/default limits recorded below; utilization/headroom unavailable from the quota-utilization report |
-| Cost | Budget alerts configured for account `335523638354`; current observed actual spend was USD 0.00 at the 2026-10-17 verification (not a project-wide or cross-account total) |
+| Cost | Budget alerts configured for account `335523638354`; a read-only Cost Explorer query on 2026-10-17 returned estimated October unblended cost `-0.000000003 USD` through 2026-10-18. This near-zero estimate is not final or a project-wide/cross-account total. |
 
 ## Step 4 read-only inventory — 2026-10-17 UTC
 
@@ -80,7 +80,7 @@ These role assignments were directed by Rahul. They define responsibility, not b
 | Apply an approved plan | Any team member may apply | Name one human operator for each shared cloud-change window to serialize changes, per [CONTRIBUTING.md](../../CONTRIBUTING.md). |
 | Billing alerts | Aditya | Rahul reports Aditya has billing visibility; this was not independently checked. |
 | Cleanup | Shared across the team; the person who created/started the resources is first responsible | Cleanup scope must be tied to the approved project resources and exact cleanup plan. |
-| Coding-agent AWS access | Least privilege; do not grant broad administrator rights merely for convenience | Effective IAM permissions have not been fully audited. The `iam:ListAccountAliases` call was denied; no IAM permission changes were made or authorized. |
+| Coding-agent AWS access | Least privilege; do not grant broad administrator rights merely for convenience | Effective IAM permissions have not been fully audited. Read-only `iam:ListAccountAliases`, `iam:GetUser`, `iam:ListAttachedUserPolicies`, and `iam:ListGroupsForUser` calls were denied for Rahul's identity; policy/group attachments and effective permissions remain unknown. No IAM permission changes were made or authorized. |
 
 Actual apply credentials/permission scopes and the selected per-window operator remain to be established before any apply. No standing access or cloud change is authorized by these role assignments.
 
@@ -99,3 +99,11 @@ AWS Budgets API verification confirmed the following budget in account `33552363
 | Status at verification | Budget healthy; actual spend USD 0.00, forecast USD 1.223 |
 
 Configuration and all five sets of subscribers were verified with read-only AWS Budgets API calls and human-verified by Rahul. The API endpoint is `us-east-1`, which is the billing-service endpoint used here; project resources remain in `ap-south-1`. This budget is account-wide but applies only to account `335523638354`; costs in another account are not aggregated. The user-reported USD 140 credit balance was not independently verified. These alerts notify the recipients and do not prevent spending.
+
+## PD-14 task-wide closeout review — 2026-10-17 UTC
+
+Read-only recheck on 2026-10-17 confirmed STS identity `arn:aws:iam::335523638354:user/rahulkoyye` in account `335523638354`. `describe-budget` confirmed the configured one-year USD 200 reference budget, actual-cost basis with credits excluded, and the documented period. The five actual-spend thresholds (USD 50/80/100/120/130) and all four email subscribers at every threshold were re-confirmed. Cost Explorer was queryable from Rahul's profile; October 1–18 unblended cost was `-0.000000003 USD`, marked estimated. This does not verify Aditya's separate billing visibility or aggregate total project spend across accounts.
+
+Read-only `iam:GetUser`, `iam:ListAttachedUserPolicies`, and `iam:ListGroupsForUser` calls were denied. Therefore IAM attachments, effective least privilege, and all-four SSM/KMS access are not verified; this is not proof that the reported administrator access is absent, but the report cannot be independently confirmed from this profile. A Parameter Store name-only query returned no `/clip/` parameters, and the `alias/aws/ssm` KMS alias is present in `ap-south-1`; no values were retrieved and no parameters, keys, policies, or other AWS resources were changed. Repository review found no credential-signature matches in the environment/work-log records, and `git diff --check 4754e97..HEAD` passed.
+
+**Closeout state: partial.** Account identity, approved region, account-level budget alerts, project conventions, and team approval/cleanup responsibilities are recorded. Project-wide cross-account spend reconciliation and effective coding-access/SSM permission scope remain unverified; the chosen Parameter Store is not configured, by design. Do not treat the record as proof of least-privilege access or project-wide cost enforcement.
