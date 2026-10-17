@@ -15,7 +15,13 @@ This index supplies the next-work route and readiness definitions. Detailed numb
 | Final closeout | `docs/tasks/final-closeout-task-list.md`: CLOSE-00 | Current regression/evidence, final NFR-08/cost/resources, report/demo/package and honest submission status |
 | Selected optional work | Domain task list OPT-01–03 | Own prerequisites plus OPTIONAL-OK; does not replace required stages |
 
-Pre-domain execution uses one PD-00–PD-03 kickoff owner, four dependency-aware streams, then one integration owner. See the stream/path map in `docs/tasks/pre-domain-task-list.md` and the companion `docs/prompts/pre-domain-contributor-prompt.md`; those documents do not assign people by name.
+Pre-domain execution uses one PD-00–PD-03 kickoff owner, four dependency-aware
+streams, then one integration owner. See the stream/path map in
+`docs/tasks/pre-domain-task-list.md` and the companion
+`docs/prompts/pre-domain-contributor-prompt.md`; those documents do not assign
+people by name. Frontend contributors also follow the human-verified page
+ownership, composition, and public feature-entry map in
+`docs/architecture/frontend-collaboration.md`.
 
 ## Readiness milestone definitions
 
@@ -39,6 +45,7 @@ After real PRE-00/DL-00, all eight required domains may begin their documented i
 - LI-01 step 13 needs LI-02 and SE-CORE for full image-backed publication and unavailable discovery. LI-CORE has separate acceptance before these checks.
 - SE-01 cloud-preparation step 12 needs LI-01/LI-02, ID-READY and final validated data. DATA-READY is required for the complete measurement/evaluation evidence.
 - CN-01 cloud-preparation step 11 needs CN-03's final producer/notification/read-state path. CN-CORE unblocks CN-02/CN-03 before final NFR-05.
+- Full CN-01 request-response integration also needs SE-02's real public Wanted Request read/state interfaces; CN-02's request-response inbox work needs both SE-02 and CN-01. CN-CORE remains an earlier listing-origin conversation milestone and does not imply request-origin integration is complete.
 - INT-01 needs all eight required domain tasks fully passing; EXP-01 follows its verified merge. NFR-08 final reconciliation occurs in CLOSE-00 after EXP-08, not before later experiment spend.
 
 Preserve numbered step order except the explicit staged-checkpoint route in the stub guide: human-verified isolated portions may advance while real subchecks remain pending under their original step IDs. As real prerequisites arrive, resume the earliest pending integration checkpoint before new isolated work. If the next checkpoint is non-substitutable, record the blocker and propose another owned unblocked task. The human verifies that new task understanding before switching. Do not restart an executed step or skip its human-verification gate.
@@ -120,9 +127,9 @@ The graph is derived from the following acceptance dependencies. For multi-stage
 | SE-01 | SE-CORE, LI-01, LI-02, DATA-READY |
 | SE-02 | SE-CORE, ID-READY, LI-CORE |
 | CN-CORE | ID-READY, LI-CORE |
-| CN-02 | CN-CORE, ID-READY, LI-CORE |
+| CN-02 | CN-CORE, ID-READY, LI-CORE, SE-02, CN-01 |
 | CN-03 | CN-CORE, ID-READY |
-| CN-01 | CN-CORE, CN-03 |
+| CN-01 | CN-CORE, CN-03, SE-02 |
 | ID-01 | ID-READY, LI-01, LI-02, SE-CORE, SE-02, CN-CORE, CN-02 |
 | INT-01 | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 |
 | OPTIONAL-OK | Explicit per-task human priority/capacity decision |

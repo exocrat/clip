@@ -1,0 +1,37 @@
+.app-shell__header {
+  padding: 1rem max(1rem, calc((100vw - 70rem) / 2));
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.app-shell__brand {
+  color: var(--color-text);
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.app-shell__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.9rem;
+  margin-top: 0.8rem;
+}
+
+.app-shell__link {
+  color: var(--color-muted);
+  text-decoration: none;
+}
+
+.app-shell__link--active {
+  color: var(--color-text);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.app-shell__note {
+  margin: 0.8rem 0 0;
+  color: var(--color-muted);
+  font-size: 0.85rem;
+}
