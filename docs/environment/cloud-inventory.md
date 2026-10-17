@@ -50,7 +50,9 @@ ECS API throughput quota values were also queried, but are omitted because they 
 
 ## Cost and approval notes
 
-The live account budget is USD 200 with actual-cost notifications at USD 50, 80, 100, 120, and 130 sent to all four team members. The budget end date is 2027-10-17. These notifications are not a hard spending cap and do not stop resources. The user-selected USD 120 amount is a planning preference, not an enforced limit or reserve. Credits are not separately monitored as consumed; the current cost budget excludes credit line items. The team accepted cost alerts without a separate credit-consumption monitor.
+The live account has a USD 200 `COST` budget for actual costs, starting 2026-10-17 and ending 2027-10-17. Actual-cost notifications use `GREATER_THAN` thresholds of USD 50, 80, 100, 120, and 130. All four team members (Aditya, Mohit, Suraj, and Rahul) are subscribed at each threshold; their email addresses are omitted from this repository record. These notifications are not a hard spending cap and do not stop resources.
+
+The user discussed USD 120 as a planning marker but said it may be irrelevant; it is not a hard cap. No reserve is selected, and the team intends to change accounts if the available credits are exhausted. Reconciliation of project spend across accounts is deferred. USD 140 in available AWS credits is human-reported, not independently verified here. Credits are not separately monitored as consumed; the current budget has `IncludeCredit=false`. The team accepted cost alerts without a separate credit-consumption monitor.
 
 ### Infrastructure authority and cleanup
 
