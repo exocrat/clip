@@ -38,6 +38,7 @@ You may inspect evidence, but the agent must summarize what makes it acceptable 
 
 ## PD-12 CI and merge-gate verification
 
+- [ ] Verify pinned Black hook installation/configuration and format/block/review/restage behavior; generated contracts remain excluded and CI formatting is independent. See [hook setup](../../CONTRIBUTING.md#black-pre-commit-hook-pd-12).
 - [ ] Review `make check` and current hosted **CI / Foundation quality gates** evidence, including run URL and PR head/base revisions. Missing/skipped/cancelled/failed required checks do not pass.
 - [ ] Follow [the approved manual fallback](../../CONTRIBUTING.md#approved-manual-fallback). It preserves PR-only merging, independent human/affected-owner approval and separate exact-revision merge authorization, but cannot technically prevent bypass.
 - [ ] Recheck the exact current revision before authorizing merge; require renewed checks/review after relevant changes. Do not treat local checks or AI findings as hosted success or independent human approval.

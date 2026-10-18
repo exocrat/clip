@@ -1,0 +1,14 @@
+# Use the project's locked Black/configuration; no separate formatter environment.
+minimum_pre_commit_version: '4.5.1'
+repos:
+  - repo: local
+    hooks:
+      - id: black
+        name: Black (project lock)
+        entry: uv run --locked black
+        language: system
+        files: '\.pyi?$'
+        types: [file]
+        # Generated artifacts must be regenerated from their editable sources.
+        exclude: '^(contracts/generated/|apps/api/app/contracts/health\.py$)'
+        stages: [pre-commit]

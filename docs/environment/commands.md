@@ -400,3 +400,15 @@ to run all. The first check, `ci-parity`, compares the workflow's ordered comman
 with the registry and verifies the Make mapping, including `npm run check`.
 It deliberately accepts only the existing single-line workflow run fields;
 new YAML command forms require review. It is not a general YAML/security checker.
+
+### Black pre-commit hook — PD-12 Step 8
+
+| Command | Effect |
+|---|---|
+| `uv run --locked pre-commit install` | After `uv sync --locked`, install the local Git hook once per clone; requires uv on the commit process PATH. |
+| `uv run --locked pre-commit validate-config` | Validate the tracked hook configuration without formatting files. |
+| `uv run --locked pre-commit run --all-files` | Run pinned Black on tracked Python files; may rewrite source. Generated contracts excluded. Review/stage fixes before retrying a commit. |
+| `uv run --locked pre-commit uninstall` | Remove the installed local hook; leaves tracked configuration/dependencies intact. |
+
+The local hook uses root locked Black/configuration, not a separate environment;
+it never stages fixes. CI's independent check-only gate remains required.

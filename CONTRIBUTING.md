@@ -124,11 +124,26 @@ make check-python-format
 
 `uv sync --locked` creates or updates the ignored local `.venv` from `uv.lock`, including development tools; uv can obtain Python 3.14 when needed. Run it after cloning or receiving dependency changes. Each developer uses their own environment; do not share `.venv` or install project tools globally. `uv run` selects the project environment without shell activation. `--locked` refuses manifest/lockfile drift instead of silently rewriting the lock.
 
-`make format-python` runs pinned Black 26.10.1 and rewrites Python source to the root `pyproject.toml` rules. Review its diff, then run `make check-python-format`; check-only reports formatting drift and returns nonzero without rewriting source. Plain `make` runs check-only too. Both targets may synchronize the local environment/cache. No cloud credentials or services are needed. Run the check before requesting review; PD-12 will wire automated CI, and PD-13 will extend the shared command front door.
+`make format-python` runs pinned Black 26.10.1 and rewrites Python source to the root `pyproject.toml` rules. Review its diff, then run `make check-python-format`; check-only reports formatting drift and returns nonzero without rewriting source. Plain `make` runs check-only too. Both targets may synchronize the local environment/cache. No cloud credentials or services are needed. Run the check before requesting review; PD-12 supplies CI and `make check`; hosted evidence remains pending, and PD-13 extends lifecycle commands.
 
 The equivalent direct commands are `uv run --locked black .` and `uv run --locked black --check --diff .`. To inspect installed versions, run `uv run --locked black --version` and `uv run --locked pytest --version`.
 
 The pinned test runner is pytest 9.1.1; run `uv run --locked pytest` to execute all configured tests, or `uv run --locked pytest apps/api/tests -q` for the API/configuration suite supplied by PD-05. Root `pyproject.toml` is its sole configuration. Root pytest includes PD-11 generation/TypeScript consumer tests and requires `npm ci` with the pinned Node toolchain; the API-only suite needs no Node. Exit 5 means no tests collected and must not be reported as a passing suite. Additional shared-core/fixture tests remain PD-06/10 outputs. Python lint/static type tools are deferred; see the [tooling decision](docs/decisions/python-test-tooling.md). Full command effects, prerequisites, failure recovery and current readiness are in the [command registry](docs/environment/commands.md).
+
+## Black pre-commit hook (PD-12)
+
+After cloning or updating dependencies, run `uv sync --locked` and then
+`uv run --locked pre-commit install` once per clone. This installs only the local
+Git hook; it is not installed automatically by dependency setup. Keep uv on PATH
+when committing, including from an editor.
+
+The pinned pre-commit 4.5.1 hook calls locked Black 26.10.1 with the existing root
+configuration on staged Python files. Generated contract outputs are excluded;
+regenerate those from source. If Black changes files, the commit stops: review
+the changes, stage them again and retry. The hook never stages fixes for you.
+Run `uv run --locked pre-commit run --all-files` manually after setup; it may
+format files. CI independently runs Black check-only and does not trust hooks.
+Use `uv run --locked pre-commit uninstall` to remove the installed local hook.
 
 ## Local API foundation (PD-05)
 
