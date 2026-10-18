@@ -1,0 +1,2 @@
+Checking database-safety in /home/mainberry/IISc/clip
+PASS: 35 local wrapper safety/wiring cases (simulated Docker only).

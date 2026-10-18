@@ -1,0 +1,6 @@
+{
+  "command": "uv run --locked python scripts/check.py database-safety",
+  "exit": 0,
+  "revision": "3a652bd",
+  "result": "35 local wrapper safety/wiring cases passed; simulated Docker only"
+}

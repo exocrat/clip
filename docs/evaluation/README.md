@@ -7,6 +7,8 @@ This supplied index is documentation only; no measurements have been run. Actual
 | Evidence home | Creator / contents |
 |---|---|
 | `docs/evaluation/foundation/` | PD tasks: clean-checkout/local/CI/cloud-readiness/approval results |
+
+PD-13 local setup run: [commands, statuses, and outputs](foundation/pd-13/README.md).
 | `docs/evaluation/domain/<task-id>/` | Domain FR/local/cloud tests and privacy-safe results |
 | `docs/evaluation/nfr/<nfr-id>/<run-id>/` | SE-01/CN-01/INT-01: manifests, safe raw outputs, calculations, settings/revisions, validity and cleanup |
 | `docs/evaluation/experiment/<run-id>/` | EXP tasks: approved manifest/config A/B, data/workload/route versions, warm/measured intervals, raw metrics, validity/cost/analysis and cleanup |

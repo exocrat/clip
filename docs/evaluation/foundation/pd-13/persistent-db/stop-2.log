@@ -1,0 +1,3 @@
+bash database/local-db.sh stop
+0a359ecc3e15
+Local database stopped; named volume retained.

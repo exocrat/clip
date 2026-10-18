@@ -1,0 +1,205 @@
+[
+  {
+    "label": "clone",
+    "command": [
+      "git",
+      "clone",
+      "--quiet",
+      "--no-hardlinks",
+      "/home/mainberry/IISc/clip",
+      "/tmp/clip-pd13-clean-bdtnxtr5/repo"
+    ],
+    "exit": 0
+  },
+  {
+    "label": "pristine",
+    "command": [
+      "git",
+      "status",
+      "--porcelain"
+    ],
+    "exit": 0
+  },
+  {
+    "label": "revision",
+    "command": [
+      "git",
+      "rev-parse",
+      "HEAD"
+    ],
+    "exit": 0
+  },
+  {
+    "label": "setup",
+    "command": [
+      "make",
+      "setup"
+    ],
+    "exit": 0
+  },
+  {
+    "label": "install-hooks",
+    "command": [
+      "make",
+      "install-hooks"
+    ],
+    "exit": 0
+  },
+  {
+    "label": "hook-config",
+    "command": [
+      "uv",
+      "run",
+      "--locked",
+      "pre-commit",
+      "validate-config"
+    ],
+    "exit": 0
+  },
+  {
+    "label": "hooks",
+    "command": [
+      "uv",
+      "run",
+      "--locked",
+      "pre-commit",
+      "run",
+      "--all-files"
+    ],
+    "exit": 0
+  },
+  {
+    "label": "api-1",
+    "command": [
+      "make",
+      "start-api"
+    ],
+    "http": 200,
+    "shutdown": "port released"
+  },
+  {
+    "label": "web-1",
+    "command": [
+      "make",
+      "start-web"
+    ],
+    "http": 200,
+    "shutdown": "port released"
+  },
+  {
+    "label": "api-2",
+    "command": [
+      "make",
+      "start-api"
+    ],
+    "http": 200,
+    "shutdown": "port released"
+  },
+  {
+    "label": "web-2",
+    "command": [
+      "make",
+      "start-web"
+    ],
+    "http": 200,
+    "shutdown": "port released"
+  },
+  {
+    "label": "proof-a",
+    "command": [
+      "make",
+      "data-generate",
+      "RUN_NAME=proof-a",
+      "SEED=42",
+      "USERS=3",
+      "LISTINGS=2"
+    ],
+    "exit": 0
+  },
+  {
+    "label": "proof-a-validate",
+    "command": [
+      "make",
+      "data-validate",
+      "RUN_NAME=proof-a"
+    ],
+    "exit": 0
+  },
+  {
+    "label": "proof-b",
+    "command": [
+      "make",
+      "data-generate",
+      "RUN_NAME=proof-b",
+      "SEED=42",
+      "USERS=3",
+      "LISTINGS=2"
+    ],
+    "exit": 0
+  },
+  {
+    "label": "proof-b-validate",
+    "command": [
+      "make",
+      "data-validate",
+      "RUN_NAME=proof-b"
+    ],
+    "exit": 0
+  },
+  {
+    "label": "load-unavailable",
+    "command": [
+      "make",
+      "data-load"
+    ],
+    "exit": 2
+  },
+  {
+    "label": "format",
+    "command": [
+      "make",
+      "format"
+    ],
+    "exit": 0
+  },
+  {
+    "label": "format-check",
+    "command": [
+      "make",
+      "format-check"
+    ],
+    "exit": 0
+  },
+  {
+    "label": "contracts-first",
+    "command": [
+      "make",
+      "contracts-generate"
+    ],
+    "exit": 0
+  },
+  {
+    "label": "contracts-second",
+    "command": [
+      "make",
+      "contracts-generate"
+    ],
+    "exit": 0
+  },
+  {
+    "label": "contracts-check",
+    "command": [
+      "make",
+      "contracts-check"
+    ],
+    "exit": 0
+  },
+  {
+    "label": "full-check",
+    "command": [
+      "make",
+      "check"
+    ],
+    "exit": 2
+  }
+]
