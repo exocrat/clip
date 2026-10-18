@@ -27,7 +27,8 @@ package = false
 # or undeclared markers instead of silently accepting test-suite mistakes.
 [tool.pytest.ini_options]
 testpaths = ["apps/api/tests", "tests"]
-pythonpath = ["apps/api", "tests/fixtures/core"]
+# Include root data tooling without relying on a developer PYTHONPATH.
+pythonpath = [".", "apps/api", "tests/fixtures/core"]
 addopts = ["--strict-config", "--strict-markers"]
 
 [tool.black]
