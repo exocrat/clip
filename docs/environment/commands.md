@@ -8,8 +8,8 @@ For EACH command record: creator task, exact invocation and required inputs, sup
 
 | Required command outcome | Creator | Current state |
 |---|---|---|
-| Install/setup | PD-02/04/07/13 | Python: `uv sync --locked` implemented/verified in PD-04; web: root `npm ci` implemented/verified in PD-07. Combined setup remains pending PD-13. |
-| Local start/stop/readiness | PD-05/07/08/13 | API foreground start/stop/health and typed settings verified in PD-05; web loopback start/stop verified in PD-07. PD-08 Step 5 database wrapper implemented with simulated-Docker safety checks; real runtime remains Step 6. Combined lifecycle remains PD-13. |
+| Install/setup | PD-02/04/07/13 | Python: `uv sync --locked` implemented/verified in PD-04; web: root `npm ci` implemented/verified in PD-07. `make setup` maps both in PD-13 Step 1; clean-environment verification remains Step 5. |
+| Local start/stop/readiness | PD-05/07/08/13 | API foreground start/stop/health and typed settings verified in PD-05; web loopback start/stop verified in PD-07. PD-08 Step 5 database wrapper implemented with simulated-Docker safety checks; real runtime remains Step 6. PD-13 maps foreground API/web and database start/stop; clean lifecycle checks remain Step 5. |
 | Local migration/status/reset and small seed | PD-08/13 | Provisional dbmate SQL, PostgreSQL 18.6 local Compose configuration and Step 5 lifecycle wrapper exist. Real checks remain Step 6/PD-13. Reset is local-only with an explicit deletion flag; no final domain data loader exists. |
 | Generator framework/tests | PD-09 | All six local steps/audit human-verified; 63 data tests/361 combined Python tests and pinned Black passed. Peer/upstream/main acceptance pending. No domain loader/evaluator. |
 | Final reference generate/load/validate/fingerprint | SE-01/DATA-READY | Not implemented; requires domain schemas/configuration |
@@ -415,3 +415,37 @@ new YAML command forms require review. It is not a general YAML/security checker
 
 The local hook uses root locked Black/configuration, not a separate environment;
 it never stages fixes. CI's independent check-only gate remains required.
+
+## Common Make front door — PD-13 Step 1
+
+Run `make help` at the clone root. Targets reuse existing tools; no second npm
+manifest, environment loader or daemon is introduced. GNU Make is required
+(including macOS's supplied GNU Make). Existing `make` remains Black check-only.
+
+| Target | Mapping / effects |
+|---|---|
+| `make setup` | `uv sync --locked`, then root `npm ci`; downloads locked dependencies, no service startup or automatic hook install. |
+| `make install-hooks` | Explicit one-time local pre-commit installation. |
+| `make start-db` / `make stop-db` | Existing validated local database wrapper; password environment required. Stop retains data; no reset target is added. |
+| `make start-api` / `make start-web` | Foreground API on 127.0.0.1:8000 / web on 127.0.0.1:5173. Use separate terminals; Ctrl+C stops each owned server. Database start/migration are explicit preceding actions. |
+| `make preview-web` | Existing `npm run preview`, loopback 4173; build first (`npm run build` or `make test-web`). |
+| `make migrate` / `make migration-status` | Local dbmate apply/status; status can report pending revisions without failing. |
+| `make seed` | Apply pending migrations, including the existing eight-category/four-condition catalogue. No sample accounts/listings or separate seed replay. |
+| `make data-generate RUN_NAME=preview-42 SEED=42 USERS=3 LISTINGS=2` | Existing safe PD-09 preview file generator; all inputs mandatory, no overwrite. This is not final domain data. |
+| `make data-validate RUN_NAME=preview-42` / `make data-load` | Existing preview validation / explicit unavailable-loader failure (nonzero, no database write). |
+| `make test` | Shared runner's Python, explicit data and web gates; `test-python`, `test-data`, `test-web` select each. Web includes lint/types/build as registered. |
+| `make format` / `make format-check` | Existing rewriting Black / check-only targets; old names retained. |
+| `make contracts-generate` / `make contracts-check` | Registered generation / nonmutating freshness check. |
+| `make check` | Existing full CI-equivalent aggregate, including disposable database and scanner. |
+
+Normal Make failure is nonzero (usually 2), including `data-load`'s deliberate
+refusal. Dataset inputs are exported as target-specific environment values and
+quoted by the shell; the generator validates them. Steps 2–4 cover helper needs,
+Terraform portability/mappings and the consolidated setup guide; Step 5 verifies
+the full lifecycle from a clean environment. Runtime/platform acceptance is not
+implied by command mapping or dry runs.
+
+**PD-13 Step 2 helper audit:** no additional wrapper is needed. Make directly
+reuses the validated database lifecycle, data CLI, contract generator and shared
+check runner. API/web stay in owned foreground terminals; no PID files, background
+supervisor or process-killing script is introduced. Terraform portability is Step 3.
