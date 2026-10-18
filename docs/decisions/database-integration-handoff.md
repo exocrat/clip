@@ -69,3 +69,16 @@ remain pending.
 ## Supersedes
 Replaces the earlier scheduling assumption that Mohit would resume all deferred
 PD-08 checks in Stream 3. Does not supersede technical requirements or tests.
+
+## Integration test scope clarification — 2026-10-18
+
+The integration contributor approved testing existing database integrity
+constraints and query-plan/index diagnostics without inventing missing service
+locking contracts. PD-08's storage checks cover image limits, conversation-pair
+uniqueness, sequence allocation and offer consistency. Application races for
+closure/create, offer cleanup and notification read/lease/replay require reviewed
+DL-00/domain contracts and their owning implementation tasks. Keep these
+obligations visible; storage-only passes do not accept application workflows.
+Representative workload/query performance remains with domain verification;
+forced index eligibility is diagnostic only. Other platform matrix rows and
+PD-08 affected-owner/CI acceptance remain unchanged.

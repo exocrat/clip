@@ -276,3 +276,13 @@ CI same-version checks. Native results do not close PD-08/PRE-00. See the
 [database verification notes](../../database/README.md#native-macos-checkpoint--2026-10-18).
 
 One-time clone/agent setup belongs in the [workstation guide](wsl-and-first-session.md). Future command owners must register explicit targets and effects above. PD-10/DL-00/domain owners register explicit test-double scenarios and real integration commands with distinct names/modes. No deployed command may default to fake auth/storage/notification/domain providers; startup validation rejects them. Stub tests never share a label or result classification with cloud/NFR runs. No cloud operation belongs in the generic local/CI aggregate target.
+
+## PD-08 database concurrency and index diagnostics
+
+`uv run --locked python database/tests/concurrency-checks.py` requires the existing
+local Docker/Compose service definition and exported synthetic
+`CLIP_LOCAL_POSTGRES_PASSWORD`. It starts the validated local service, downloads
+pinned images if needed, creates/retains a fresh synthetic test database, checks
+seven overlapping transaction cases and five index diagnostics, then stops the
+service. Exit 0 means pass; nonzero requires inspecting the printed evidence
+path. No reset/deletion/cloud/provider calls. See [scope and limits](../../database/README.md#storage-concurrency-and-index-diagnostics).
