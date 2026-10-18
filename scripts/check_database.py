@@ -38,7 +38,13 @@ def main():
         )
         if result.returncode:
             output = (result.stdout + result.stderr).replace(password, "[REDACTED]")
-            raise RuntimeError(output[-4000:] or "Database command failed")
+            # Identify the failed tool without echoing its arguments/environment.
+            tool = (
+                "psql"
+                if "psql" in args
+                else "dbmate" if DBMATE_IMAGE in args else "Docker"
+            )
+            raise RuntimeError(f"{tool} exited {result.returncode}: {output[-4000:]}")
         return result.stdout.strip()
 
     # Pin a local Unix-socket context, never an ambient remote Docker endpoint.

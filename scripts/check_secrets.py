@@ -107,13 +107,22 @@ def main():
             check=False,
         )
         if result.returncode == 1:
-            for finding in json.loads(result.stdout):
-                print(
-                    f"Secret finding: {finding['File']}:{finding['StartLine']} ({finding['RuleID']})"
+            try:
+                findings = json.loads(result.stdout)
+            except ValueError:
+                findings = None
+            if isinstance(findings, list) and findings:
+                for finding in findings:
+                    print(
+                        f"Secret finding: {finding['File']}:{finding['StartLine']} ({finding['RuleID']})"
+                    )
+                raise RuntimeError(
+                    "Secret findings detected; review the reported file/line/rule locations"
                 )
         if result.returncode:
+            # Raw tool stderr can contain source/configuration; expose only status.
             raise RuntimeError(
-                "Secret scan failed; resolve redacted findings or tool failure"
+                f"Gitleaks exited {result.returncode}; verify Docker/image availability and .gitleaks.toml"
             )
         print("PASS: Gitleaks 8.30.1 source snapshot (not Git history)")
 
@@ -121,10 +130,24 @@ def main():
 if __name__ == "__main__":
     try:
         main()
-    except RuntimeError, OSError, subprocess.SubprocessError, ValueError:
+    except RuntimeError as error:
+        import sys
+
+        print(f"Secret scan failed: {error}", file=sys.stderr)
+        raise SystemExit(1)
+    except subprocess.CalledProcessError as error:
         import sys
 
         print(
-            "Secret scan failed; inspect redacted scanner diagnostics.", file=sys.stderr
+            f"Secret scan setup exited {error.returncode}; verify Git and local Docker access.",
+            file=sys.stderr,
+        )
+        raise SystemExit(1)
+    except OSError, subprocess.SubprocessError, ValueError, KeyError, TypeError:
+        import sys
+
+        print(
+            "Secret scan could not complete; verify Git/Docker, source access and scanner report format.",
+            file=sys.stderr,
         )
         raise SystemExit(1)

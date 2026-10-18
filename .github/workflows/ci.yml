@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   foundation:
-    name: Foundation checks
+    name: Foundation quality gates
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -40,21 +40,24 @@ jobs:
         run: uv sync --locked --python 3.14.3
       - name: Install locked JavaScript dependencies
         run: npm ci
+      # Local make check and these named steps use the same command registry.
+      - name: Check local and CI command parity
+        run: uv run --locked python scripts/check.py ci-parity
       - name: Check Python formatting
-        run: uv run --locked black --check --diff .
+        run: uv run --locked python scripts/check.py python-format
       - name: Run Python tests
-        run: uv run --locked pytest -q -W error
+        run: uv run --locked python scripts/check.py python-tests
       - name: Run data tooling tests
-        run: uv run --locked pytest data/tests -q -W error
+        run: uv run --locked python scripts/check.py data-tests
       - name: Check domain boundaries
-        run: uv run --locked python scripts/check_boundaries.py
+        run: uv run --locked python scripts/check.py boundaries
       - name: Check generated contracts
-        run: uv run --locked python scripts/generate_contracts.py check
+        run: uv run --locked python scripts/check.py contracts
       - name: Check web lint, tests, types and build
-        run: npm run check
+        run: uv run --locked python scripts/check.py web
       - name: Check database wrapper safety
-        run: bash database/tests/local-db-safety.sh
+        run: uv run --locked python scripts/check.py database-safety
       - name: Check clean migrations and schema
-        run: uv run --locked python scripts/check_database.py
+        run: uv run --locked python scripts/check.py database
       - name: Scan source for secrets
-        run: uv run --locked python scripts/check_secrets.py
+        run: uv run --locked python scripts/check.py secrets

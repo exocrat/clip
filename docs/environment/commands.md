@@ -14,7 +14,7 @@ For EACH command record: creator task, exact invocation and required inputs, sup
 | Generator framework/tests | PD-09 | All six local steps/audit human-verified; 63 data tests/361 combined Python tests and pinned Black passed. Peer/upstream/main acceptance pending. No domain loader/evaluator. |
 | Final reference generate/load/validate/fingerprint | SE-01/DATA-READY | Not implemented; requires domain schemas/configuration |
 | Python format and non-mutating pinned Black check | PD-04 | Implemented and human-verified at step 3; exact commands and verification below |
-| Test/lint/type/build/aggregate CI-equivalent | PD-05/07/12/13 | API/configuration/core/fixture tests implemented in Stream 1; web lint, typecheck, tests, build, and `npm run check` implemented/verified in PD-07. Exact commands below; CI and combined command-front-door integration remain pending PD-12/13. |
+| Test/lint/type/build/aggregate CI-equivalent | PD-05/07/12/13 | `make check` runs the shared Python/web/database/contracts/secret gates used by CI. Local evidence below; hosted execution remains pending PD-12, lifecycle front door PD-13. |
 | Contract regenerate/stale-check | PD-11/DL-00 | Health generation/check and actual API schema/consumer regression checks implemented in PD-11; full domain declarations remain DL-00. Exact commands below. |
 | Terraform static format/validate (no remote state mutation) | PD-15 | Implemented: run `bash scripts/terraform-static-check.sh` from the repository root with Terraform `1.15.9`. Checks recursive Terraform formatting, then runs `terraform init -backend=false` and `terraform validate` for each root. Exit 0 means all checks pass; a format, provider-download, or validation failure exits nonzero and must be resolved before planning. It does not contact AWS or read remote state; first initialization needs Terraform Registry access and may download the pinned provider into ignored `.terraform/`. |
 | Plan/apply/build-release/deploy/verify/rollback/teardown | PD-15/16; domain/EXP additions | PD-15 documents the reviewed plan/apply/verify/cleanup workflow and command templates in `infra/terraform/README.md`; actual targets, state keys, protected plan path, and commands must be selected per approved plan. Cloud operations remain separately gated and are not part of local/CI checks. |
@@ -354,7 +354,7 @@ tools remain deferred under the existing tooling decision.
 
 Images may be downloaded from public registries. No cloud/provider configuration
 is forwarded. These commands accept no target arguments; `--help` describes them.
-Local/CI aggregate parity is Step 6; full lifecycle commands remain PD-13.
+Local/CI aggregate parity is implemented below; full lifecycle commands remain PD-13.
 
 ### CI execution boundary — PD-12 Step 4
 
@@ -374,3 +374,29 @@ repository environments. This is not an organization-secret inventory or hosted
 execution result; CI does not reference organization secrets either. Changes to
 workflow commands, dependencies or permissions require renewed review. Hosting
 protections and actual hosted CI verification remain pending.
+
+### CI failure output — PD-12 Step 5
+
+`Foundation quality gates` identifies the required job; each setup/check has a
+unique step label and failures are not suppressed. Python/web tools retain their
+normal local diagnostics. Database command failures identify Docker/psql/dbmate
+and exit status with bounded, password-redacted output. Secret findings expose
+only file/line/rule; scanner configuration/exit failures and Git/Docker setup
+failures have separate recovery guidance, without raw scanner stderr or values.
+Hosted failure presentation remains to be verified on the PR.
+
+### Shared aggregate — PD-12 Step 6
+
+After `uv sync --locked` and root `npm ci`, run `make check` from the clone root
+with Python 3.14, Node 24, npm 11, uv, Make and local Docker. It runs all checks
+through `scripts/check.py`, stops on first failure and preserves the failing exit
+status. Each check has a 600-second bound. Side effects are the previously listed
+caches/build output, temporary snapshots and disposable containers; no cloud
+login or retained database reset is needed. Plain `make` still checks Black only.
+
+CI calls individual selectors from the same registry, preserving named steps.
+`uv run --locked python scripts/check.py --help` lists selectors; omit the selector
+to run all. The first check, `ci-parity`, compares the workflow's ordered commands
+with the registry and verifies the Make mapping, including `npm run check`.
+It deliberately accepts only the existing single-line workflow run fields;
+new YAML command forms require review. It is not a general YAML/security checker.
