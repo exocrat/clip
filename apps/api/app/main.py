@@ -2,7 +2,7 @@
 
 from fastapi import FastAPI
 
-from app.contracts.health import HEALTH_ROUTE, HealthResponse
+from app.contracts.health import CONTRACT_VERSION, HEALTH_ROUTE, HealthResponse
 from app.core.config import load_settings
 from app.core.errors import install_error_handlers
 from app.core.logging import RequestLoggingMiddleware, configure_logging
@@ -15,6 +15,7 @@ configure_logging()
 # export remains offline; no marketplace operation is implemented here.
 app = FastAPI(
     title="CLIP API",
+    version=CONTRACT_VERSION,
     debug=settings.debug,
     docs_url=None,
     redoc_url=None,

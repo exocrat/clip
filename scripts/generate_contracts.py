@@ -42,7 +42,7 @@ def declared_schema(declaration):
     """Build schema from explicit HTTP metadata on an unserved contract-only app."""
     app = FastAPI(
         title="CLIP API",
-        version="0.1.0",
+        version=declaration.CONTRACT_VERSION,
         docs_url=None,
         redoc_url=None,
         openapi_url=None,

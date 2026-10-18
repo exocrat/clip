@@ -4,7 +4,7 @@
 
 **Origin:** PD-11 step 1.
 
-**Updated:** 2026-10-18, PD-11 step 4 layout/tool selection.
+**Updated:** 2026-10-18, PD-11 steps 4–9 layout, compatibility and version/review workflow.
 
 ## Question
 
@@ -94,4 +94,15 @@ This replaces the step 4 openapi-typescript 7.13.0 selection: it rejected the
 old compiler peer range, and Hey API's broader peer metadata did not establish
 actual TypeScript 7 compiler-API compatibility. Successful generation and full
 frontend checks now verify the shared 5.9.3 setup. Regeneration is deterministic;
-formal stale-output/runtime-parity regression coverage remains step 6.
+stale-output/runtime-parity regression coverage is implemented in step 6.
+
+## Version/review workflow — PD-11 step 9
+
+The current HTTP version remains 0.1.0, declared once in canonical health source
+and consumed by generated runtime metadata/OpenAPI. Generator format 1 and source
+Git revision are recorded separately. The [contract guide](../../contracts/README.md#version-and-change-review)
+requires compatibility classification, affected-owner decisions before shared
+semantic changes, regenerated outputs, real consumer checks, independent human
+peer approval and authorization of the exact merge. This records existing
+CONTRIBUTING/shared-contract gates without granting self-approval or accepting
+unimplemented domain behavior. Future source revisions update this same decision.

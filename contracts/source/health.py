@@ -4,6 +4,10 @@ from typing import Literal, TypedDict
 
 from pydantic import BaseModel
 
+# Version of the currently registered HTTP contract; Git SHA identifies exact
+# source revisions, including internal declarations not yet implemented.
+CONTRACT_VERSION = "0.1.0"
+
 
 class HealthResponse(BaseModel):
     """Only process liveness is promised; no dependency readiness is implied."""

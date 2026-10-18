@@ -288,3 +288,22 @@ def test_types_helper_rejects_external_references(tmp_path, reference):
     assert "Only local schema references are permitted" in result.stderr
     assert reference not in result.stdout + result.stderr
     assert not (work / "types").exists()
+
+
+def test_version_has_one_editable_source():
+    """Source, generated runtime and actual HTTP schema share unchanged version 0.1.0."""
+    from app.contracts.health import CONTRACT_VERSION
+    from app.main import app
+
+    spec = importlib.util.spec_from_file_location(
+        "clip_version_source", ROOT / "contracts/source/health.py"
+    )
+    source = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(source)
+    declared = json.loads((ROOT / "contracts/generated/openapi.json").read_text())
+    assert (
+        source.CONTRACT_VERSION
+        == CONTRACT_VERSION
+        == app.version
+        == declared["info"]["version"]
+    )

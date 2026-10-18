@@ -113,3 +113,43 @@ implements them. An arbitrary user ID is not authorization, and these operations
 are not notification-recipient lookup. CN-02's encrypted-sharing protocol remains
 its reviewed domain work. No HTTP metadata is assigned, so these types/functions
 remain absent from generated OpenAPI/TypeScript; generated `public.py` is DL-00.
+
+## Version and change review
+
+The current HTTP contract version is **0.1.0**. Edit `CONTRACT_VERSION` only in
+`contracts/source/health.py`; generation copies it into the runtime declaration,
+which supplies FastAPI's version, and emits it as OpenAPI `info.version`.
+Generator format **1** is a separate artifact-format version. Record the source
+Git revision and exact PR base/head for every handoff; no SHA or timestamp is
+injected into generated output. Internal declarations remain unimplemented until
+DL-00's reviewed public-interface handoff and retain their exact source revision.
+
+For every shared contract change:
+
+1. Identify the owning operation/types and affected producers, consumers and
+   domain owners. Describe changed fields, required/null semantics, call paths,
+   errors, authorization/privacy, transactions, retry/order and failure behavior.
+2. Classify compatibility for Python callers and HTTP/TypeScript clients.
+   Additions are not automatically compatible: a required field, narrower enum,
+   changed error/permission or altered transaction may break a consumer. Propose
+   the version change with its justification for owner review. Editorial changes
+   with identical public semantics can retain the contract version.
+3. Obtain affected-owner review before changing shared semantics. For an
+   incompatible change, obtain the required human decision and record consumer
+   migration, ordering and real verification obligations before implementation.
+   Pre-1.0 numbering does not waive any review or compatibility gate.
+4. Edit the canonical source and relevant human-readable requirements/decisions.
+   Regenerate all registered outputs; never repair generated files directly.
+   Domain implementations stay behind their reviewed public interfaces.
+5. Run freshness, actual API schema/consumer tests, boundaries and affected
+   application checks. Update matching test doubles through their consumer
+   owners, preserving denied/failure cases and pending real integration checks.
+6. Prepare one coherent PR with source/generated diffs, base/head, versions,
+   compatibility/migration notes, exact checks, affected owners and unresolved
+   gates. Arrange independent review using the
+   [peer-review prompt](../docs/prompts/peer-review-prompt.md). AI findings do not
+   constitute the designated human's approval; authors cannot approve themselves.
+7. Follow [CONTRIBUTING](../CONTRIBUTING.md): resolve findings, obtain affected
+   owners' and independent human approval and explicit authorization for the
+   exact merge revision. Record accepted main SHA and refresh consumers afterward.
+   Changed reviewed semantics require renewed review; merge never deploys cloud.
