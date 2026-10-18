@@ -118,6 +118,21 @@ CI runs local/disposable tests and build/format/contract/secret gates. A merge d
 
 The command registry is `docs/environment/commands.md`; actual commands are populated by their named creator tasks. Missing commands that are outputs of the selected step are implemented and registered there. Missing prerequisites or uncertainty block dependent work and require a question.
 
+## Local foundation workflow (PD-13)
+
+Follow the [canonical setup guide](docs/environment/README.md#local-foundation-setup)
+for prerequisites, local password handling, startup, ports, shutdown and recovery.
+Start with `make setup`, install the local hook with `make install-hooks`,
+then use the existing database wrapper through `make start-db`/`make seed`.
+API/web run in separate foreground terminals (`make start-api`, `make start-web`);
+stop them with Ctrl+C, then `make stop-db` to retain database data.
+
+Run `make check` before review. Preview generation requires explicit inputs and
+cannot load final domain data. Terraform checks are explicit and backend-free;
+no local setup command requires a cloud login. Step 5 local clean-environment evidence is recorded in the work log;
+other-platform and final review gates remain. [The command registry](docs/environment/commands.md) describes
+all mappings and side effects; plain `make` remains format-check only.
+
 ## Local Python tooling (PD-04)
 
 Install [uv](https://docs.astral.sh/uv/getting-started/installation/) and GNU Make for your development environment, then run these commands from the repository root:

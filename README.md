@@ -15,6 +15,7 @@ The planned product includes identity checks, listings and images, search, saved
 ## Contributing and setup
 
 - [Contribution and review workflow](CONTRIBUTING.md)
-- [Local API setup, settings, and tests](apps/api/README.md)
+- [Local foundation setup and troubleshooting](docs/environment/README.md#local-foundation-setup)
+- [API-specific settings and tests](apps/api/README.md)
 - [WSL first-session setup for Windows contributors](docs/environment/wsl-and-first-session.md)
-- [Project command registry](docs/environment/commands.md) — application setup, start, stop, and check commands are being added by their assigned tasks.
+- [Project command registry](docs/environment/commands.md) — exact commands, effects, and verification status.

@@ -88,6 +88,10 @@ def main():
             + [
                 "run",
                 "--rm",
+                # Match the source owner so private (umask 077) clones work
+                # without granting DAC override capabilities to the tool.
+                "--user",
+                f"{os.getuid()}:{os.getgid()}",
                 "--read-only",
                 "--cap-drop",
                 "ALL",

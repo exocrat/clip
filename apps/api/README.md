@@ -43,7 +43,7 @@ uv run --locked pytest apps/api/tests -q
 
 Exit 0 means the collected suite passed; a failure must be investigated, and exit 5 (no tests collected) is not a pass. The development-only `httpx2` pin supports the installed Starlette TestClient. No fake identity or storage implementation is used, and this suite does not prove domain integration, deployed readiness or performance.
 
-See the [command registry](../../docs/environment/commands.md) for effects and readiness. PD-13 later adds the shared lifecycle/test Make targets.
+See the [command registry](../../docs/environment/commands.md) for effects and readiness. The [common setup guide](../../docs/environment/README.md#local-foundation-setup) documents shared Make targets; full clean-environment verification remains PD-13 Step 5.
 
 ## Shared conventions (PD-06 step 3)
 

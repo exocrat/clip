@@ -73,6 +73,9 @@ case ${1:-} in
     echo 1
     ;;
   run)
+    # Private-clone regression: migration reads must use the contributor identity
+    # while keeping the tool filesystem read-only and all capabilities dropped.
+    [[ "$*" == *"--user $(id -u):$(id -g)"* && "$*" == *'--read-only'* && "$*" == *'--cap-drop ALL'* ]] || exit 97
     [[ ${DATABASE_URL:-} == "postgres://clip_local:${expected_password}@127.0.0.1:5432/clip_local?sslmode=disable&connect_timeout=5" ]] || exit 96
     [[ "$*" == *'--network container:123abc'* && "$*" == *'--env DATABASE_URL'* && "$*" == *'ghcr.io/amacneil/dbmate:2.36.0'* && "$*" == *'--env-file /dev/null'* ]] || exit 97
     [[ "$*" == *'--no-dump-schema migrate --strict' || "$*" == *'--no-dump-schema status' ]] || exit 97

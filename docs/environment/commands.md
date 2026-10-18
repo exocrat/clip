@@ -469,3 +469,14 @@ TF_CLI_ARGS, debug and user CLI configuration. No plan/apply/destroy target is
 added, and Terraform stays outside `make check`. The provider lock is generated
 for Linux/macOS AMD64/ARM64; package availability/hashes do not prove runtime
 checks on all four platforms. Native macOS/Bash 3.2 execution remains pending.
+
+**PD-13 Step 5 local evidence:** fresh private clone/home/cache setup, hooks,
+API/web/preview two start-stop cycles, deterministic preview files, repeatable
+contracts and full aggregate passed on Linux ARM64. A restrictive umask exposed
+dbmate read-permission failure; both migration callers now run the tool as the
+contributor UID/GID, retaining read-only mounts and dropped capabilities. Wrapper
+controls enforce that flag. The persistent database ran two seed/status/start-stop
+cycles through its original owner clone, with catalogue/head and volume retained;
+clean migration checks used disposable containers. Other-machine checks remain
+pending. Exact logs/source overlay are linked from the work log; Step 6 consolidates
+the evidence and task review.

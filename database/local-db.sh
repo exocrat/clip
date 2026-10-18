@@ -165,7 +165,8 @@ run_dbmate() {
   [[ "$version" == '2.36.0' ]] || die 'Unexpected dbmate version; review tool changes before running.'
   wait_ready
   export DATABASE_URL="postgres://clip_local:${password}@127.0.0.1:5432/clip_local?sslmode=disable&connect_timeout=5"
-  docker_local run --rm --read-only --cap-drop ALL --security-opt no-new-privileges \
+  # Use the contributor UID/GID to read private clones without DAC overrides.
+  docker_local run --rm --user "$(id -u):$(id -g)" --read-only --cap-drop ALL --security-opt no-new-privileges \
     --network "container:$container_id" --env DATABASE_URL \
     --mount "type=bind,src=$root/database/migrations,dst=/db/migrations,readonly" \
     "ghcr.io/amacneil/dbmate:$version" --env-file /dev/null \
