@@ -2,6 +2,7 @@
 
 from fastapi import FastAPI
 
+from app.contracts.health import HEALTH_ROUTE, HealthResponse
 from app.core.config import load_settings
 from app.core.errors import install_error_handlers
 from app.core.logging import RequestLoggingMiddleware, configure_logging
@@ -11,7 +12,7 @@ settings = load_settings()
 configure_logging()
 
 # Keep the initial HTTP surface limited to process health. Contract/schema
-# publishing is later foundation work, not an implemented marketplace API.
+# export remains offline; no marketplace operation is implemented here.
 app = FastAPI(
     title="CLIP API",
     debug=settings.debug,
@@ -24,11 +25,11 @@ install_error_handlers(app)
 app.add_middleware(RequestLoggingMiddleware)
 
 
-@app.get("/health")
-async def health() -> dict[str, str]:
+@app.get(**HEALTH_ROUTE)
+async def health() -> HealthResponse:
     """Report that this API process responds, without inspecting dependencies.
 
     This is a liveness signal only: it does not claim database, provider, or
     deployment readiness. It exposes no configuration or private state.
     """
-    return {"status": "ok"}
+    return HealthResponse(status="ok")

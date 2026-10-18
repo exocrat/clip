@@ -310,3 +310,18 @@ and explicit ORM schema declarations. No router exception is currently granted.
 Computed SQL, unqualified table resolution, arbitrary reflection and semantic
 business call cycles are not proven safe by this scan; review and domain tests
 remain required. Migrations/database verification are outside the runtime scan.
+
+## PD-11 contract generation
+
+Requires `uv sync --locked` and root `npm ci`: Node 24, TypeScript 5.9.3,
+Hey API 0.99.0 (TypeScript-only plugin), and existing locked FastAPI/Pydantic.
+
+| Invocation | Effect |
+|---|---|
+| `uv run --locked python scripts/generate_contracts.py generate` | Rebuild three registered Python/OpenAPI/TypeScript outputs from reviewed health declarations. |
+| `uv run --locked python scripts/generate_contracts.py check` | Render in temporary storage; exit 0 if current, nonzero for missing/stale outputs or tool/source failure; outputs unchanged. |
+
+Run from the root. Generated files must not be hand-edited. On drift, correct
+source, regenerate, review the diff and rerun check. On tool mismatch, inspect
+pins/lock and use `npm ci`; no unpinned network fallback. No listener, database,
+provider or cloud calls. [Outputs and limits](../../contracts/README.md).

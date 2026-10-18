@@ -2,6 +2,10 @@
 
 **Date:** 2026-10-17
 
+**Origin:** PD-07 step 1.
+
+**Updated:** 2026-10-18, approved PD-11 step 5 compiler compatibility revision.
+
 ## Question
 Which build setup implements PD-07 Step 1 within the selected React/TypeScript,
 Node 24 LTS, npm, and single-root-manifest boundary?
@@ -13,7 +17,7 @@ Node 24 LTS, npm, and single-root-manifest boundary?
   introduces application/runtime decisions the current foundation does not need.
 
 ## Selected choice
-Use Vite 8.3.4, its React plugin 6.1.2, React/React DOM 19.3.1, TypeScript 7.0.2,
+Use Vite 8.3.4, its React plugin 6.1.2, React/React DOM 19.3.1, TypeScript 5.9.3,
 and React type declarations 19.3.0. Exact direct versions are in root
 `package.json`; all resolved dependencies are recorded in the single root
 `package-lock.json`. Node 24.22.0 and bundled npm 11.19.1 are the first verified
@@ -42,3 +46,12 @@ their later human-verification gate.
 
 ## Supersedes
 None. Extends PD-02's selected toolchain without replacing it.
+
+## PD-11 compatibility revision
+
+The integration contributor explicitly selected one compatible TypeScript setup
+for frontend and contract generation. Version 5.9.3 replaces 7.0.2, whose
+installed package lacks the compiler API required by the selected generator.
+No separate workspace/compiler was introduced. Clean `npm ci`, web lint, both
+typecheck projects, 16 tests and production build passed. Other build-tool
+versions and application behavior are unchanged; peer review remains required.

@@ -4,6 +4,8 @@
 
 **Origin:** PD-11 step 1.
 
+**Updated:** 2026-10-18, PD-11 step 4 layout/tool selection.
+
 ## Question
 
 Which editable source can describe HTTP contracts and internal Python interfaces
@@ -30,7 +32,8 @@ rather than creating competing definitions.
 Generate declaration-only domain `public.py` modules from this source when
 DL-00 supplies the reviewed domain contracts. Generate the HTTP OpenAPI schema
 from explicit HTTP declarations using FastAPI's schema machinery, then generate
-frontend TypeScript declarations with a pinned `openapi-typescript` tool.
+frontend TypeScript declarations with pinned `@hey-api/openapi-ts@0.99.0`
+using its TypeScript-only plugin (approved during step 5).
 Internal calls do not become HTTP routes unless explicitly declared as such.
 Only approved HTTP-exposed types belong in the HTTP schema/frontend output;
 private internal contact operations do not become frontend APIs automatically.
@@ -52,8 +55,13 @@ to the same reviewed types without using implementation code as the only source.
 - PD-11 documents and tests generation using the existing health surface.
   Required Identity contact declarations are the explicit step 8 exception;
   other domain operations remain empty until DL-00 review.
-- Steps 4–6 select exact generated paths, pin tool versions and establish
-  regeneration, reproducibility, stale-output and runtime-parity checks.
+- Step 4 records paths/commands in [the contracts guide](../../contracts/README.md):
+  `contracts/generated/openapi.json` and `contracts/generated/types.gen.ts`, driven
+  by `scripts/generate_contracts.py` (project format version 1). The selected
+  TypeScript generator pin is `@hey-api/openapi-ts@0.99.0` with only the
+  TypeScript plugin; one root TypeScript `5.9.3` serves the generator and web.
+  A generated runtime health module lives in `apps/api/app/contracts/health.py`.
+  Step 6 adds stale/parity regression tests.
 - DL-00 produces the four reviewed domain public declarations and representative
   consumer type-check evidence; owning domain tasks implement the providers.
 - Generated files are rebuilt, never hand-edited. Human-readable contracts
@@ -72,3 +80,18 @@ required under CONTRIBUTING.md.
 
 None. Establishes the previously unselected generation approach. Future changes
 update this decision file and affected canonical requirements.
+
+## Step 5 compatibility revision — approved
+
+The contributor selected one compatible compiler setup, replacing root
+TypeScript 7.0.2 with **5.9.3** for both frontend and generation. Keep the approved
+Hey API **0.99.0** generator and existing Node 24/npm 11 toolchain, root manifest
+and single root lockfile. No tooling workspace or separate compiler is used.
+The transitive YAML parser is pinned to patched **4.3.2** through the root
+override; npm audit reports zero vulnerabilities at this checkpoint.
+
+This replaces the step 4 openapi-typescript 7.13.0 selection: it rejected the
+old compiler peer range, and Hey API's broader peer metadata did not establish
+actual TypeScript 7 compiler-API compatibility. Successful generation and full
+frontend checks now verify the shared 5.9.3 setup. Regeneration is deterministic;
+formal stale-output/runtime-parity regression coverage remains step 6.

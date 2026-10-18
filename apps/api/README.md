@@ -9,7 +9,7 @@ uv sync --locked
 uv run --locked uvicorn app.main:app --app-dir apps/api --host 127.0.0.1 --port 8000
 ```
 
-In another terminal, `curl --fail http://127.0.0.1:8000/health` should return HTTP 200 with `{"status":"ok"}`. This confirms only that the API process responds; it does not check a database, provider or cloud environment. The initial app exposes only `/health`; generated schema/docs routes are disabled until later contract work.
+In another terminal, `curl --fail http://127.0.0.1:8000/health` should return HTTP 200 with `{"status":"ok"}`. This confirms only that the API process responds; it does not check a database, provider or cloud environment. The initial app exposes only `/health`; schema/docs routes remain disabled; PD-11 generates contracts offline.
 
 Stop the foreground server with Ctrl+C. The server binds only to loopback, requires no cloud credentials or local database, and creates no external resources. If the port is occupied, stop only your own earlier process or explicitly choose another local port and use that same port in the health request. An import/dependency error should be investigated after `uv sync --locked`; do not replace it with a fake success response. Runtime dependencies are declared only in root `pyproject.toml` and locked by uv.
 
@@ -62,3 +62,12 @@ Temporary FastAPI routes live only in test fixtures; they add no production endp
 Run `uv run --locked pytest apps/api/tests/core/test_security_boundaries.py -q -W error` for focused security checks; the existing shared-core/full commands include them. Tests reject client identity/account/eligibility/ownership claims in headers, query parameters, JSON and cookies. Test-only server wiring supplies positive controls: valid internal contexts work, client claims cannot replace them, and claimed future deadlines cannot revive expired contexts.
 
 Fresh credential-free child processes import `app.main` with a ten-second timeout. Production rejects every nonempty combination of fake identity/email/storage selection, development authentication, debug, combined unsafe controls and empty/unsupported provider selections; safe production defaults and explicit local/test selections provide positive controls. No listener or actual provider is started. These checks establish shared-boundary/configuration safety; actual credential verification, revocation, domain authorization and provider delivery remain with their owning implementation tasks.
+
+## Health contract generation
+
+`app.main` binds `/health` using the generated types/metadata in
+`app/contracts/health.py`. Edit `contracts/source/health.py`, then use the
+[contract guide](../../contracts/README.md) to regenerate/check; do not edit the
+generated runtime module. The handler still returns only `{"status":"ok"}`.
+Generation and public schema publication are separate; no schema endpoint or
+marketplace feature is enabled.
