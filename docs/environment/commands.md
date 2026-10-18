@@ -16,7 +16,7 @@ For EACH command record: creator task, exact invocation and required inputs, sup
 | Python format and non-mutating pinned Black check | PD-04 | Implemented and human-verified at step 3; exact commands and verification below |
 | Test/lint/type/build/aggregate CI-equivalent | PD-05/07/12/13 | `make check` runs the shared Python/web/database/contracts/secret gates used by CI. Local evidence below; hosted execution remains pending PD-12, lifecycle front door PD-13. |
 | Contract regenerate/stale-check | PD-11/DL-00 | Health generation/check and actual API schema/consumer regression checks implemented in PD-11; full domain declarations remain DL-00. Exact commands below. |
-| Terraform static format/validate (no remote state mutation) | PD-15 | Implemented: run `bash scripts/terraform-static-check.sh` from the repository root with Terraform `1.15.9`. Checks recursive Terraform formatting, then runs `terraform init -backend=false` and `terraform validate` for each root. Exit 0 means all checks pass; a format, provider-download, or validation failure exits nonzero and must be resolved before planning. It does not contact AWS or read remote state; first initialization needs Terraform Registry access and may download the pinned provider into ignored `.terraform/`. |
+| Terraform static format/validate (no remote state mutation) | PD-15/13 | `make terraform-check` with Terraform 1.15.9: format check and backend-free validation, readonly provider lock; individual targets documented below. Public provider downloads may be needed; no cloud login or apply. |
 | Plan/apply/build-release/deploy/verify/rollback/teardown | PD-15/16; domain/EXP additions | PD-15 documents the reviewed plan/apply/verify/cleanup workflow and command templates in `infra/terraform/README.md`; actual targets, state keys, protected plan path, and commands must be selected per approved plan. Cloud operations remain separately gated and are not part of local/CI checks. |
 | Search evaluator/load workload/NFR manifests | SE-01 | Not implemented |
 | Two-client chat/read-state/latency measurement | CN-01/CN-03 | Not implemented |
@@ -449,3 +449,23 @@ implied by command mapping or dry runs.
 reuses the validated database lifecycle, data CLI, contract generator and shared
 check runner. API/web stay in owned foreground terminals; no PID files, background
 supervisor or process-killing script is introduced. Terraform portability is Step 3.
+
+## Terraform front door — PD-13 Step 3
+
+Requires Terraform **1.15.9** from `.terraform-version` and Bash 3.2+; the wrapper
+rejects another version. Set `TERRAFORM_BIN` to an explicit compatible executable
+if the default PATH selects another version. All actions target `infra/terraform`.
+
+| Command | Effect |
+|---|---|
+| `make terraform-format` | Rewrite Terraform formatting; review the diff. |
+| `make terraform-format-check` | Check formatting without rewriting. |
+| `make terraform-validate` | Discover configuration roots, initialize provider schemas with `-backend=false -lockfile=readonly`, then validate; may download locked providers into ignored `.terraform/`. |
+| `make terraform-check` | Formatting check followed by backend-free validation; also the default when invoking the script without arguments. |
+
+The existing `scripts/terraform-static-check.sh` accepts only these explicit
+modes. It reports action/target, preserves failures and discards ambient cloud,
+TF_CLI_ARGS, debug and user CLI configuration. No plan/apply/destroy target is
+added, and Terraform stays outside `make check`. The provider lock is generated
+for Linux/macOS AMD64/ARM64; package availability/hashes do not prove runtime
+checks on all four platforms. Native macOS/Bash 3.2 execution remains pending.

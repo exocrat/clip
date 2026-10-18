@@ -4,7 +4,8 @@
 .PHONY: help setup install-hooks start-api start-web preview-web start-db stop-db \
 	migrate migration-status seed data-generate data-validate data-load \
 	test test-python test-data test-web format format-python format-check \
-	check-python-format contracts-generate contracts-check check
+	check-python-format contracts-generate contracts-check check \
+	terraform-format terraform-format-check terraform-validate terraform-check
 
 help:
 	@printf '%s\n' \
@@ -15,7 +16,8 @@ help:
 	  'data-generate: RUN_NAME=... SEED=... USERS=... LISTINGS=... (all required)' \
 	  'data-validate: RUN_NAME=...; data-load: unavailable until domain readiness' \
 	  'test / test-python / test-data / test-web: registered test/check commands' \
-	  'format / format-check / contracts-generate / contracts-check / check'
+	  'format / format-check / contracts-generate / contracts-check / check' \
+	  'terraform-format / terraform-format-check / terraform-validate / terraform-check'
 
 # Setup does not start services or install a Git hook as a hidden side effect.
 setup:
@@ -97,3 +99,16 @@ contracts-check:
 # This exact mapping is checked by the shared CI parity guard.
 check:
 	uv run --locked python scripts/check.py
+
+# Explicit local Terraform actions; deliberately excluded from the general check.
+terraform-format:
+	bash scripts/terraform-static-check.sh format
+
+terraform-format-check:
+	bash scripts/terraform-static-check.sh check-format
+
+terraform-validate:
+	bash scripts/terraform-static-check.sh validate
+
+terraform-check:
+	bash scripts/terraform-static-check.sh check
