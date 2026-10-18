@@ -24,7 +24,7 @@ ownership, composition, and public feature-entry map in
 `docs/architecture/frontend-collaboration.md`.
 
 Mohit moved unfinished PD-08 checks/reviews to pre-domain integration on
-2026-10-18; [the handoff decision](../decisions/pd08-integration-handoff.md)
+2026-10-18; [the handoff decision](../decisions/database-integration-handoff.md)
 preserves original checkpoint IDs, owners, dependencies and real acceptance
 checks. Integration must sequence the continuation and consumer prerequisites;
 phase transfer is not task completion or permission to bypass a gate.

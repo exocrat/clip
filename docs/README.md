@@ -13,7 +13,7 @@ The root [README](../README.md) describes the project. Agents start from [AGENTS
 - [MVP database schema proposal and review gates](architecture/mvp-database-schema.md)
 - [Database migration files, ownership and verification state](../database/README.md)
 - [Future database backup/restore handoff and approval gates](../database/backup-and-restore.md)
-- [PD-08 unfinished-work transfer to pre-domain integration](decisions/pd08-integration-handoff.md)
+- [PD-08 unfinished-work transfer to pre-domain integration](decisions/database-integration-handoff.md)
 - [Synthetic-data preview tooling and final dataset prerequisites](../data/README.md)
 - [Document 5 — Pre-domain task list](tasks/pre-domain-task-list.md)
 - [Single domain task list](tasks/domain-task-list.md)

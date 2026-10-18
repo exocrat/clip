@@ -12,6 +12,7 @@ mkdir "$scratch/bin" "$scratch/runtime"
 cat > "$scratch/bin/docker" <<'MOCK'
 #!/usr/bin/env bash
 set -euo pipefail
+expected_password=${MOCK_PASSWORD:-FAKE_LOCAL_ONLY_safety_test}
 printf '%s\n' "$*" >> "$MOCK_LOG"
 if [[ ${1:-} == context ]]; then
   case ${2:-} in
@@ -48,6 +49,9 @@ case ${1:-} in
     if [[ "$SCENARIO" == multiple ]]; then echo 456def; fi
     ;;
   inspect)
+    if [[ "$SCENARIO" == metadata-warning ]]; then
+      printf 'Simulated nonfatal diagnostic: %s\n' "$expected_password" >&2
+    fi
     case "$*" in
       *HostConfig*)
         if [[ "$SCENARIO" == public-port ]]; then echo 0.0.0.0:5432
@@ -64,18 +68,27 @@ case ${1:-} in
     esac
     ;;
   exec)
-    [[ ${PGPASSWORD:-} == FAKE_LOCAL_ONLY_safety_test ]] || exit 94
+    [[ ${PGPASSWORD:-} == "$expected_password" ]] || exit 94
     [[ "$*" == *'--host=127.0.0.1'* && "$*" == *'--dbname=clip_local'* ]] || exit 95
     echo 1
     ;;
   run)
-    [[ ${DATABASE_URL:-} == 'postgres://clip_local:FAKE_LOCAL_ONLY_safety_test@127.0.0.1:5432/clip_local?sslmode=disable&connect_timeout=5' ]] || exit 96
+    [[ ${DATABASE_URL:-} == "postgres://clip_local:${expected_password}@127.0.0.1:5432/clip_local?sslmode=disable&connect_timeout=5" ]] || exit 96
     [[ "$*" == *'--network container:123abc'* && "$*" == *'--env DATABASE_URL'* && "$*" == *'ghcr.io/amacneil/dbmate:2.36.0'* && "$*" == *'--env-file /dev/null'* ]] || exit 97
     [[ "$*" == *'--no-dump-schema migrate --strict' || "$*" == *'--no-dump-schema status' ]] || exit 97
-    [[ "$*" != *FAKE_LOCAL_ONLY_safety_test* ]] || exit 98
+    # The complete credential-bearing URL must stay in the environment. A
+    # password can also occur legitimately inside resource/argument names.
+    [[ "$*" != *'postgres://clip_local:'* ]] || exit 98
     if [[ "$SCENARIO" == diagnostic ]]; then
       echo "Simulated failure: ${DATABASE_URL}" >&2
       exit 7
+    fi
+    if [[ "$SCENARIO" == diagnostic-stdout ]]; then
+      echo "Simulated failure: ${DATABASE_URL}"
+      exit 7
+    fi
+    if [[ "$SCENARIO" == diagnostic-success ]]; then
+      echo "Simulated success: ${DATABASE_URL}"
     fi
     ;;
   stop) [[ ${2:-} == --time && ${3:-} == 10 && ${4:-} == 123abc && $# == 4 ]] || exit 99 ;;
@@ -88,16 +101,17 @@ chmod +x "$scratch/bin/docker"
 # Each case starts with a clean environment and captures exact child status.
 # Failed guards must not reach any lifecycle/DDL/destructive Docker operation.
 cases=0
+test_password=FAKE_LOCAL_ONLY_safety_test
 run_case() {
   local scenario=$1 expected=$2 code=0
   shift 2
   : > "$scratch/calls"
   env -i PATH="$scratch/bin:/usr/bin:/bin" HOME="$scratch" TMPDIR="$scratch/runtime" \
     LC_ALL=C MOCK_ROOT="$root" MOCK_LOG="$scratch/calls" SCENARIO="$scenario" \
-    CLIP_LOCAL_POSTGRES_PASSWORD=FAKE_LOCAL_ONLY_safety_test "$@" \
+    CLIP_LOCAL_POSTGRES_PASSWORD="$test_password" MOCK_PASSWORD="$test_password" "$@" \
     > "$scratch/output" 2>&1 || code=$?
   [[ $code == "$expected" ]] || { cat "$scratch/output"; echo "FAIL $scenario: status $code"; exit 1; }
-  if [[ "$scenario" != diagnostic ]]; then
+  if [[ "$test_password" == FAKE_LOCAL_ONLY_safety_test ]]; then
     ! /usr/bin/grep -q FAKE_LOCAL_ONLY_safety_test "$scratch/output" || { echo 'FAIL: password exposed'; exit 1; }
   fi
   cases=$((cases + 1))
@@ -133,6 +147,24 @@ run_case unsafe-password 1 env CLIP_LOCAL_POSTGRES_PASSWORD='FAKE@invalid/url' /
 [[ ! -s "$scratch/calls" ]]
 run_case diagnostic 7 /bin/bash "$root/database/local-db.sh" migrate
 ! /usr/bin/grep -q FAKE_LOCAL_ONLY_safety_test "$scratch/output" || { echo 'FAIL: diagnostic exposed password'; exit 1; }
+/usr/bin/grep -q '\[REDACTED\]' "$scratch/output"
+
+# Common valid passwords overlap volume names, IDs, bindings, image tags or
+# punctuation. Metadata must remain raw internally through readiness/migration.
+for test_password in local 123abc 127.0.0.1 18.6 -; do
+  for action in status migrate; do
+    run_case local 0 /bin/bash "$root/database/local-db.sh" "$action"
+  done
+done
+test_password=FAKE_LOCAL_ONLY_safety_test
+
+# Keep successful-query stderr out of parsed metadata, and sanitize diagnostic
+# stdout on both failure and success without hiding the real command status.
+run_case metadata-warning 0 /bin/bash "$root/database/local-db.sh" status
+/usr/bin/grep -q '\[REDACTED\]' "$scratch/output"
+run_case diagnostic-stdout 7 /bin/bash "$root/database/local-db.sh" migrate
+/usr/bin/grep -q '\[REDACTED\]' "$scratch/output"
+run_case diagnostic-success 0 /bin/bash "$root/database/local-db.sh" migrate
 /usr/bin/grep -q '\[REDACTED\]' "$scratch/output"
 
 # A stale/busy lock must survive unchanged, with no lifecycle operation.

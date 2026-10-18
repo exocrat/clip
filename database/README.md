@@ -6,7 +6,7 @@ before affected-owner review; review and full runtime acceptance remain pending.
 Native PostgreSQL checks have passed as described below; Compose is unverified.
 
 **Phase handoff, 2026-10-18:** Mohit shifted all unfinished PD-08 checks/reviews
-to pre-domain integration. The [handoff decision](../docs/decisions/pd08-integration-handoff.md)
+to pre-domain integration. The [handoff decision](../docs/decisions/database-integration-handoff.md)
 maps the original obligations and roles. The integration owner coordinates
 remaining real container/SQL/CI/affected-owner/final checks; Mohit supplies this
 verified source/native checkpoint. PD-08 and PD-19/PRE-00 remain unaccepted
@@ -33,8 +33,9 @@ was changed. [Tool rationale](../docs/decisions/database-migration-tool.md).
 | `20261018094330_mvp_tables.sql` | Four owned namespaces, 23 application tables, FK/scalar/live-versus-retired constraints, query indexes and the deferred current-offer FK. |
 | `20261018094331_mvp_integrity.sql` | Cross-row guards, deferred publication/member/entry/offer consistency, immutable origin/key/operation identities, sequence allocation, unread-episode and source-derived notification invariants. |
 | `20261018094332_initial_catalogue.sql` | The approved eight categories/four conditions only; no users, fake credentials, private data or final evaluation dataset. |
+| `20261018152702_reject_retired_origin_entries.sql` | Forward correction: reject new entries on permanently retired origins under the existing origin lock, before allocating sequence/activity state. Down restores the original guard. |
 
-Expected final migration version: **20261018094332**. One integrator allocates
+Expected current migration version: **20261018152702**. One integrator allocates
 later timestamp identifiers; no parallel heads or uncoordinated edits to initial
 DDL. Published/applied migrations are corrected forward, not rewritten.
 
@@ -119,7 +120,7 @@ password and are visible to administrators of the local Docker engine.
 | `bash database/local-db.sh start` | Validate local context/configuration/resource ownership, create/start only PostgreSQL, then wait for authenticated TCP `SELECT 1`. Exit 0 means connectivity, not migrations. |
 | `bash database/local-db.sh wait` | Up to 30 authenticated connection attempts with a 2-second connection timeout and 2-second pauses; nonzero on timeout/absent container. Final sanitized connection diagnostic is retained. |
 | `bash database/local-db.sh migrate` | Wait for connectivity, then run pinned dbmate 2.36.0 `migrate` with strict ordering and no schema dump. Applies pending migrations only to `clip_local`. Nonzero aborts; inspect sanitized output before recovery. |
-| `bash database/local-db.sh status` | Wait for connectivity and show dbmate migration status. A successful listing can still contain pending migrations; compare to expected head `20261018094332`, not merely process exit status. |
+| `bash database/local-db.sh status` | Wait for connectivity and show dbmate migration status. A successful listing can still contain pending migrations; compare to expected head `20261018152702`, not merely process exit status. |
 | `bash database/local-db.sh stop` | Stop only the validated service container, retaining its container and named data volume. An absent container is a successful no-op. |
 | `bash database/local-db.sh reset --confirm-delete-local-data` | **Permanently delete all local database data.** Warn, validate labels/clone/image/port/mount, stop/remove only the service container, then remove only `clip-local_clip_local_postgres_data`, without force. Leaves the database stopped. Explicitly review/approve this destructive invocation before using it; then run `start` and `migrate` to recreate. |
 | `bash database/local-db.sh --help` | Show fixed usage without password/Docker setup. |
@@ -150,6 +151,8 @@ actions serially using a consistent TMPDIR. An existing lock fails closed; never
 delete it until the previous operator/process has stopped and the directory is
 confirmed stale. The wrapper removes only its own acquired empty lock on exit.
 Do not bypass it with direct dbmate/Compose invocations during another run.
+
+Internal `docker_query`/`docker_value` calls preserve raw machine-readable stdout for resource checks. Stderr is streamed separately through `redacted_stderr`, without writing raw diagnostic files; failed stdout is redacted as diagnostic output too. `docker_local` sanitizes human-facing successful stdout. Thus passwords overlapping a volume name, container ID, port or image tag cannot change the validated resource identity. `release_lock` removes only its acquired empty lock. Readiness captures sanitized diagnostics until the final failure report.
 
 Failures retain nonzero status and sanitized diagnostics. Missing Docker/Compose
 or an inactive engine needs environment setup, not a different database target.
@@ -187,7 +190,9 @@ integration and must preserve the same target/refusal behavior.
 - `conversations.guard_thread`, `guard_member`, `guard_entry`, `register_unread`
   and `check_thread` bind two participants, allocate monotonically ordered entry
   sequences, preserve operation keys, coalesce unread episodes and reject
-  nonexistent/decreasing read watermarks. API authentication and actual displayed
+  nonexistent/decreasing read watermarks. Forward migration `20261018152702`
+  checks the locked origin's retirement state before sequence/activity changes;
+  ordinary unavailability or request closure still permits discussion. API authentication and actual displayed
   acknowledgements remain CN-01 work. Whole-transaction/savepoint rollback is
   required on duplicate inserts; blindly using `ON CONFLICT DO NOTHING` after
   sequence allocation is not the duplicate-return contract.
@@ -236,6 +241,30 @@ isolated empty test database and runtime schema inventory repeatability. It must
 still add/run multi-connection concurrency cases for final-image deletion/count,
 origin closure/creation, sequence allocation, offer revision/retention and
 read/reminder/cleanup races. No concurrency or full acceptance is claimed yet.
+
+### PR #5 corrective verification
+
+`tests/retired-origin-smoke.sql` is a second rollback-only administrator test
+restricted to an isolated `clip_test_` database. It proves ordinary listing
+unavailability/request closure still allow messages and contact shares, then
+checks both origin types reject those same entries after permanent retirement
+without advancing thread sequence/activity. To model a historical closure, it
+briefly uses session-local replica mode only while backdating that fixture's
+closure instant; origin mode is restored before the actual retirement and entry
+guards are tested. The test is not an application bypass or a production script.
+`native-checks.sh` now expects four migrations and runs both smoke suites before
+and after rollback/reapply. The original native results below describe the
+initial three-migration checkpoint, not a run of the revised harness.
+
+The lifecycle safety suite now has **35 simulated cases**, including passwords
+that overlap metadata, nonfatal diagnostic stderr, and secret-bearing stdout
+on success/failure. These additions fail against the original wrapper. The SQL
+regression likewise fails against the original entry guard and passes with the
+forward correction. The full four-migration SQL round-trip and runtime inventory
+comparison are checked separately on an isolated PostgreSQL 18.6 ARM64 image;
+exact current results are recorded in the work log. Real Compose persistence,
+authenticated lifecycle/reset, broader concurrency/query plans and revised native
+macOS/dbmate/CI checks remain integration obligations under the existing handoff.
 
 ### Native macOS checkpoint — 2026-10-18
 

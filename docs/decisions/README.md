@@ -2,7 +2,7 @@
 
 Record a shared, non-secret decision here when other tasks or contributors will rely on it. Create one Markdown record per decision from the template below. Keep detailed requirements in their canonical project documents and link to those documents from the record.
 
-Use descriptive filenames such as `pagination.md`; a task-ID prefix is not required. Record the originating task and step inside the file.
+Use lowercase descriptive kebab-case filenames such as `pagination.md` or `cloud-resource-naming-and-tags.md`, without decision-ID or task-ID prefixes. `README.md` is the index exception. Keep stable decision IDs and the originating task and step inside the file.
 
 When a decision changes, update the same file and the affected canonical requirements through the normal review/approval workflow. Preserve its origin, record the new revision date, rationale, and approver, and use Git history for earlier versions. A replacement file is not required for a revision of the same decision.
 

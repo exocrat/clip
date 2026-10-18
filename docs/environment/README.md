@@ -9,7 +9,7 @@ This directory holds non-secret records for contributor workstations, commands, 
 - [Local API foundation setup and tests](../../apps/api/README.md): verified Python API commands and settings; database/web/combined setup remain later task outputs.
 - [Secret handling](secret-handling.md): approved references and access procedures, without secret values.
 - [Cloud inventory](cloud-inventory.md): shared account, region, resource, and cost status. Update it from approved plans and actual outputs; do not infer or invent cloud facts.
-- [DEC-03 resource naming and tags](../decisions/DEC-03-cloud-resource-naming-and-tags.md): verified CLIP resource-name and tag convention; this is a convention, not provisioning approval.
+- [DEC-03 resource naming and tags](../decisions/cloud-resource-naming-and-tags.md): verified CLIP resource-name and tag convention; this is a convention, not provisioning approval.
 
 Cloud creation, changes, and deletion require the separate approvals and checks defined by the project workflow.
 
@@ -42,4 +42,4 @@ Apply these tags wherever the resource type supports tags:
 | `Task` | The owning task ID (for example, `PD-16`) or approved domain slug |
 | `ExpiresOn` | The agreed cleanup/expiry review date in `YYYY-MM-DD` format |
 
-Do not put credentials, secret values, personal email addresses, or other sensitive data in names or tags. Include exact names, tag values, expiry/review dates, and any unsupported tagging limitations in the approved plan and resource inventory. These conventions do not authorize creation, modification, adoption, or cleanup of any AWS resource. The selected pattern and required tags are recorded in [DEC-03](../decisions/DEC-03-cloud-resource-naming-and-tags.md).
+Do not put credentials, secret values, personal email addresses, or other sensitive data in names or tags. Include exact names, tag values, expiry/review dates, and any unsupported tagging limitations in the approved plan and resource inventory. These conventions do not authorize creation, modification, adoption, or cleanup of any AWS resource. The selected pattern and required tags are recorded in [DEC-03](../decisions/cloud-resource-naming-and-tags.md).

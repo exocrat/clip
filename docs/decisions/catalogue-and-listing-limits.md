@@ -19,6 +19,8 @@ Mohit approved the catalogue and limits detailed in the [schema document](../arc
 - Publishable listings: 1–8 usable images, each positive-sized and at most 10 MiB (10,485,760 bytes); JPEG, PNG and WebP only. Actual-object validation and race-safe count enforcement are required.
 - Listings owns catalogue writes/public read-validation; Search reuses the categories through the reviewed boundary. Deactivation prevents new assignment while retaining historical references; deletion remains restricted pending retention review.
 
+The PR #5 reviewer clarified that **item category** is the maintained name for this existing catalogue: it describes what the item is, independently of the Sale Listings/Wanted Requests view. This does not add another category field or filter.
+
 ## Rationale
 Provides a small shared initial vocabulary, explicit mobile/laptop classification, and bounded text/image inputs without embedding catalogue labels in PostgreSQL enum types.
 

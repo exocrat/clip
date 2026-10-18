@@ -107,6 +107,6 @@ pytest discovery currently targets only `apps/api/tests` and `tests`.
 Mohit verified all six local steps and the local closeout audit. This does not
 accept PD-08, final domain adapters/population/labels, DATA-READY or any NFR.
 Unfinished PD-08 work now belongs to pre-domain integration under the
-[handoff decision](../docs/decisions/pd08-integration-handoff.md). PD-09 still
+[handoff decision](../docs/decisions/database-integration-handoff.md). PD-09 still
 requires independent peer review and the accepted upstream/main handoff under the recorded preparation
 exception. No task commit/push/merge is authorized by running these checks.

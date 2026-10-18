@@ -39,17 +39,46 @@ for variable in DATABASE_URL PGHOST PGPORT PGDATABASE PGUSER PGSERVICE PGSERVICE
   [[ -z ${!variable:-} ]] || die 'External database/Docker target overrides are unsupported; unset them before using the local wrapper.'
 done
 command -v docker >/dev/null 2>&1 || die 'Docker CLI is unavailable; install/enable the contributor-local container toolchain before runtime checks.'
-context=$(docker context show) || die 'Cannot identify the current Docker context.'
-endpoint=$(docker context inspect "$context" --format '{{.Endpoints.docker.Host}}') || die 'Cannot inspect the Docker context.'
-case "$endpoint" in unix:///*) ;; *) die 'Only a local Unix-socket Docker context is permitted; remote Docker targets are rejected.' ;; esac
-
-# Capture diagnostics to redact the local password before displaying failures.
-# The context is pinned after inspection; caller-supplied Docker target flags fail.
-docker_local() {
-  local output code=0
-  output=$(docker --context "$context" "$@" 2>&1) || code=$?
+# Redact only messages intended for people; parsed Docker metadata stays exact.
+# In particular, a password such as "local" must not change a volume name.
+redacted_output() {
+  local output=$1
   output=${output//"$password"/[REDACTED]}
   [[ -z "$output" ]] || printf '%s\n' "$output"
+  return 0
+}
+
+# Stream diagnostic lines through redaction before they reach stderr; no raw
+# diagnostic file is written. Bash 3.2 supports the process substitution below.
+redacted_stderr() {
+  local line
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    redacted_output "$line" >&2
+  done
+}
+
+# Capture machine-readable stdout without rewriting it and isolate stderr from
+# parsed results. On failure stdout is diagnostic too: sanitize it, send it to
+# stderr and preserve the code. Successful raw output stays internal.
+docker_query() {
+  local output code=0
+  output=$(docker "$@" 2> >(redacted_stderr)) || code=$?
+  if [[ $code != 0 ]]; then
+    redacted_output "$output" >&2
+    return "$code"
+  fi
+  [[ -z "$output" ]] || printf '%s\n' "$output"
+  return 0
+}
+
+# Internal resource queries use the context pinned after its local endpoint check.
+docker_value() { docker_query --context "$context" "$@"; }
+
+# Human-facing Docker output is sanitized even when the command succeeds.
+docker_local() {
+  local output code=0
+  output=$(docker_value "$@") || code=$?
+  redacted_output "$output"
   return "$code"
 }
 
@@ -63,9 +92,14 @@ compose() {
 # Never auto-remove an existing lock; a human must inspect a stale lock first.
 lock_dir=${TMPDIR:-/tmp}/clip-local-database-$(id -u).lock
 (umask 077; mkdir "$lock_dir") 2>/dev/null || die 'Another local lifecycle command holds the lock, or a stale lock needs inspection.'
-trap 'rmdir "$lock_dir"' EXIT
+# Release only the empty lock acquired by this invocation.
+release_lock() { rmdir "$lock_dir"; }
+trap release_lock EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
+context=$(docker_query context show) || die 'Cannot identify the current Docker context.'
+endpoint=$(docker_query context inspect "$context" --format '{{.Endpoints.docker.Host}}') || die 'Cannot inspect the Docker context.'
+case "$endpoint" in unix:///*) ;; *) die 'Only a local Unix-socket Docker context is permitted; remote Docker targets are rejected.' ;; esac
 docker_local info --format '{{.OSType}}' >/dev/null
 compose version --short >/dev/null
 # Quiet validation never prints interpolated credentials.
@@ -76,10 +110,10 @@ volume=clip-local_clip_local_postgres_data
 # Refuse removal or reuse of a volume not labeled for this exact Compose key.
 validate_volume() {
   local matches labels
-  matches=$(docker_local volume ls --quiet --filter "name=^${volume}$")
+  matches=$(docker_value volume ls --quiet --filter "name=^${volume}$")
   [[ -z "$matches" || "$matches" == "$volume" ]] || die 'Unexpected local volume selection.'
   if [[ -n "$matches" ]]; then
-    labels=$(docker_local volume inspect "$volume" --format '{{index .Labels "com.docker.compose.project"}}|{{index .Labels "com.docker.compose.volume"}}')
+    labels=$(docker_value volume inspect "$volume" --format '{{index .Labels "com.docker.compose.project"}}|{{index .Labels "com.docker.compose.volume"}}')
     [[ "$labels" == 'clip-local|clip_local_postgres_data' ]] || die 'Volume ownership labels do not match; no action taken.'
   fi
 }
@@ -89,14 +123,14 @@ validate_volume() {
 container_id=
 find_container() {
   local identity bindings mounts
-  container_id=$(docker_local ps --all --quiet --filter label=com.docker.compose.project=clip-local --filter label=com.docker.compose.service=postgres)
+  container_id=$(docker_value ps --all --quiet --filter label=com.docker.compose.project=clip-local --filter label=com.docker.compose.service=postgres)
   [[ "$container_id" != *$'\n'* ]] || die 'Multiple database containers match; inspect them before continuing.'
   [[ -n "$container_id" ]] || return 0
-  identity=$(docker_local inspect "$container_id" --format '{{index .Config.Labels "com.docker.compose.project"}}|{{index .Config.Labels "com.docker.compose.service"}}|{{index .Config.Labels "com.docker.compose.project.working_dir"}}|{{.Config.Image}}')
+  identity=$(docker_value inspect "$container_id" --format '{{index .Config.Labels "com.docker.compose.project"}}|{{index .Config.Labels "com.docker.compose.service"}}|{{index .Config.Labels "com.docker.compose.project.working_dir"}}|{{.Config.Image}}')
   [[ "$identity" == "clip-local|postgres|$root|postgres:18.6-bookworm" ]] || die 'Container ownership, clone or image does not match; no action taken.'
-  bindings=$(docker_local inspect "$container_id" --format '{{range index .HostConfig.PortBindings "5432/tcp"}}{{.HostIp}}:{{.HostPort}}{{end}}')
+  bindings=$(docker_value inspect "$container_id" --format '{{range index .HostConfig.PortBindings "5432/tcp"}}{{.HostIp}}:{{.HostPort}}{{end}}')
   [[ "$bindings" == '127.0.0.1:5432' ]] || die 'Database port is not the expected loopback binding.'
-  mounts=$(docker_local inspect "$container_id" --format '{{range .Mounts}}{{.Type}}|{{.Name}}|{{.Destination}}{{println}}{{end}}')
+  mounts=$(docker_value inspect "$container_id" --format '{{range .Mounts}}{{.Type}}|{{.Name}}|{{.Destination}}{{println}}{{end}}')
   [[ "$mounts" == "volume|$volume|/var/lib/postgresql" ]] || die 'Database mounts do not match the sole local volume.'
 }
 
@@ -110,7 +144,7 @@ wait_ready() {
     if last_output=$(docker_local exec --env PGPASSWORD --env PGCONNECT_TIMEOUT=2 "$container_id" \
       psql --no-psqlrc --host=127.0.0.1 --port=5432 --username=clip_local \
       --dbname=clip_local --set=ON_ERROR_STOP=1 --tuples-only --no-align \
-      --command 'SELECT 1'); then
+      --command 'SELECT 1' 2>&1); then
       printf '%s\n' 'Local PostgreSQL authenticated connectivity is ready.'
       return 0
     fi
@@ -158,7 +192,7 @@ case "$action" in
       docker_local container rm "$container_id"
     fi
     validate_volume
-    if [[ -n $(docker_local volume ls --quiet --filter "name=^${volume}$") ]]; then
+    if [[ -n $(docker_value volume ls --quiet --filter "name=^${volume}$") ]]; then
       # No --force and no broad compose down --volumes/prune operation.
       docker_local volume rm "$volume"
     fi

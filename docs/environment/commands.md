@@ -180,15 +180,16 @@ final-schema loading, real labels, DATA-READY, cloud NFRs or successful CI.
 
 **PD-08 phase transfer (Mohit, 2026-10-18):** All unfinished PD-08 checks/reviews
 are assigned to pre-domain integration, as mapped in the
-[handoff decision](../decisions/pd08-integration-handoff.md). Command source and
+[handoff decision](../decisions/database-integration-handoff.md). Command source and
 native successes below remain valid for their recorded scope; real Compose,
 remaining SQL/CI/command integration and affected-owner/final acceptance are
 still pending. Integration intake must sequence prerequisites and keep original
 checkpoint IDs; no cloud/reset/merge authority or passed check is implied.
 
 PD-08 Step 3 reserves `database/migrations/20261018094330_mvp_tables.sql`,
-`20261018094331_mvp_integrity.sql` and `20261018094332_initial_catalogue.sql`;
-expected head is `20261018094332`. `database/dbmate.version` pins 2.36.0 and
+`20261018094331_mvp_integrity.sql`, `20261018094332_initial_catalogue.sql`, and
+forward correction `20261018152702_reject_retired_origin_entries.sql`; current
+expected head is `20261018152702`. `database/dbmate.version` pins 2.36.0 and
 `database/tests/schema-smoke.sql` prepares rollback-only synthetic integrity
 checks for a validated local `clip_test_` database. Step 5 now implements the
 local lifecycle commands below; their real Docker/PostgreSQL execution remains
@@ -222,11 +223,11 @@ registry access; no cloud resource/provider is invoked.
 | `bash database/local-db.sh start` | Create/start only the local service, then authenticated readiness. Nonzero on unavailable tools, ownership/configuration/port conflict or readiness failure; inspect sanitized output. |
 | `bash database/local-db.sh wait` | Authenticated TCP `SELECT 1`, up to 30 attempts (2-second connect timeout and pauses). Exit 0 means connectivity only; absent container/timeout fails. |
 | `bash database/local-db.sh migrate` | Pinned dbmate 2.36.0, fixed local URL, strict transactional migrations, no schema dump/implicit dotenv. Exit 0 means the tool finished; Step 6 separately verifies expected head/schema. Inspect failures before retry; never automatically reset. |
-| `bash database/local-db.sh status` | Display migration state. Pending migrations can appear with exit 0; compare expected head `20261018094332`. |
+| `bash database/local-db.sh status` | Display migration state. Pending migrations can appear with exit 0; compare expected head `20261018152702`. |
 | `bash database/local-db.sh stop` | Stop validated local container; retain all volume data. Absent container succeeds. |
 | `bash database/local-db.sh reset --confirm-delete-local-data` | Warn and permanently delete only the validated service container and `clip-local_clip_local_postgres_data`. Requires deliberate approval of that destructive action. No force/prune/broad volume deletion; leaves DB stopped. Missing confirmation fails before Docker. |
 | `bash database/local-db.sh --help` | Fixed usage; no tools/password required. |
-| `bash database/tests/local-db-safety.sh` | 22 simulated-Docker wiring/refusal/redaction cases; exit 0 on success, no registry/engine/database/cloud calls. |
+| `bash database/tests/local-db-safety.sh` | 35 simulated-Docker wiring/refusal/redaction cases; exit 0 on success, no registry/engine/database/cloud calls. |
 
 The wrapper preserves failing command status, redacts the local password and
 serializes actions through a per-user temporary lock. Ownership/target/lock
@@ -247,7 +248,7 @@ tools were built in `/tmp` without changing global/Homebrew installations.
 
 | Exact invocation / inputs | Target, effects and expected result |
 |---|---|
-| `bash database/tests/native-checks.sh /tmp/clip-pd08-native.pKC5jz/pgsql /tmp/clip-pd08-native.pKC5jz/bin/dbmate` | Requires macOS/Bash 3.2+, native PostgreSQL 18.6 and dbmate 2.36.0 at these explicit tool locations. Creates only its own private `/tmp/clip-pd08-native-check.*` cluster/database `clip_test_native`; disables TCP, uses an owner-only socket, applies/repeats migrations, runs smoke twice, rolls back all three migrations, reapplies, compares ordered schema inventory and stops its cluster. Logs/data retained under printed evidence path. Nonzero on any failure or stop failure; inspect retained logs, never substitute an existing cluster. |
+| `bash database/tests/native-checks.sh /tmp/clip-pd08-native.pKC5jz/pgsql /tmp/clip-pd08-native.pKC5jz/bin/dbmate` | Requires macOS/Bash 3.2+, native PostgreSQL 18.6 and dbmate 2.36.0 at these explicit tool locations. Creates only its own private `/tmp/clip-pd08-native-check.*` cluster/database `clip_test_native`; disables TCP, uses an owner-only socket, applies/repeats migrations, runs smoke twice, runs both storage and retired-origin smoke suites, rolls back all four migrations, reapplies, compares ordered schema inventory and stops its cluster. Logs/data retained under printed evidence path. Nonzero on any failure or stop failure; inspect retained logs, never substitute an existing cluster. |
 
 Fresh child environments and fixed new targets prevent ambient database/provider
 configuration from redirecting checks. Local socket trust is confined to the
@@ -265,6 +266,8 @@ flag order to `migrate --strict`; `status`/`rollback` omit that command-only fla
 The corrected Compose wrapper's 22 simulated cases also passed. The initial
 sandbox shared-memory denial and corrected harness/CLI failures remain recorded
 in the work log; no failure is counted as a pass.
+
+The native pass just described is historical evidence for the initial three migrations. The updated harness expects head `20261018152702` and four migrations; that revised macOS/dbmate route must be rerun. PR #5 correction checks include the current SQL round-trip and both smoke suites on an isolated Linux ARM64 PostgreSQL image, plus 35 simulated lifecycle cases. Internal metadata is preserved before separately redacting human diagnostics; these tests do not establish the real Compose lifecycle.
 
 Deferred: container image/Compose runtime, loopback TCP/SCRAM readiness,
 stop/start volume persistence, approved reset/recreate, platform/locale parity,
