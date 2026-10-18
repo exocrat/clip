@@ -22,6 +22,9 @@ build/
 dist/
 coverage/
 
+# Regenerable PD-09 preview payloads only. Keep manifests, source and labels.
+/data/runs/*/dataset.json
+
 # Terraform working data, state, plans, variable inputs, and sensitive outputs.
 .terraform/
 **/.terraform/*

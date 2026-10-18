@@ -11,7 +11,7 @@ For EACH command record: creator task, exact invocation and required inputs, sup
 | Install/setup | PD-02/04/07/13 | Python: `uv sync --locked` implemented/verified in PD-04; web: root `npm ci` implemented/verified in PD-07. Combined setup remains pending PD-13. |
 | Local start/stop/readiness | PD-05/07/08/13 | API foreground start/stop/health and typed settings verified in PD-05; web loopback start/stop verified in PD-07. PD-08 Step 5 database wrapper implemented with simulated-Docker safety checks; real runtime remains Step 6. Combined lifecycle remains PD-13. |
 | Local migration/status/reset and small seed | PD-08/13 | Provisional dbmate SQL, PostgreSQL 18.6 local Compose configuration and Step 5 lifecycle wrapper exist. Real checks remain Step 6/PD-13. Reset is local-only with an explicit deletion flag; no final domain data loader exists. |
-| Generator framework/tests | PD-09 | Not implemented |
+| Generator framework/tests | PD-09 | All six local steps/audit human-verified; 63 data tests/361 combined Python tests and pinned Black passed. Peer/upstream/main acceptance pending. No domain loader/evaluator. |
 | Final reference generate/load/validate/fingerprint | SE-01/DATA-READY | Not implemented; requires domain schemas/configuration |
 | Python format and non-mutating pinned Black check | PD-04 | Implemented and human-verified at step 3; exact commands and verification below |
 | Test/lint/type/build/aggregate CI-equivalent | PD-05/07/12/13 | API/configuration/core/fixture tests implemented in Stream 1; web lint, typecheck, tests, build, and `npm run check` implemented/verified in PD-07. Exact commands below; CI and combined command-front-door integration remain pending PD-12/13. |
@@ -111,7 +111,80 @@ Security checks include request-ID spoofing and credential-free entry-point chil
 
 The privacy check launches a credential-free pytest child (15-second timeout) that intentionally fails; the parent passes only when the failure report is correctly redacted. See [fixture usage and snapshot limits](../../tests/fixtures/core/README.md). Fixtures do not establish real provider/domain integration or cloud/NFR acceptance.
 
+## PD-09 Step 2 — schema-independent preview generator
+
+From the repository root, run
+`uv run --locked python -m data.generators --seed 42 --users 3 --listings 2`.
+Requires the locked Python 3.14 project environment. All three inputs are
+mandatory: signed 64-bit seed, user/listing counts each 0–100,000. Exit 0 streams
+five deterministic JSON Lines in this example; invalid configuration exits 2
+without output. Predictable test-only UUIDv4 IDs, controlled synthetic labels and
+`example.invalid` addresses are preview scaffolding, not domain records.
+
+The generator writes stdout only and accepts no output path/database/provider
+target; no file, database or cloud mutation occurs. uv may synchronize the local
+ignored environment/cache. Fix invalid inputs before retrying; no reset is
+needed. See [generator contract](../../data/generators/README.md). Steps 3–4
+supply the [manifest format](../../data/formats/manifest.md), build/validation
+API and safe file commands below. Query-label preparation remains Step 5 and
+persistent tests/full closeout Step 6. Actual final adapters/loading remain
+SE-01/DATA-READY. Initial determinism, UUID/RNG/count/hook and fake-input safety
+checks passed; pinned Black check passed across the repository.
+
+### PD-09 Step 4 — local preview run files
+
+Same repository-root/Python 3.14/locked-environment prerequisites as above. All
+targets are fixed below `data/runs/<name>`; a name is 1–64 lowercase ASCII
+letters/digits/underscore/hyphen starting with a letter/digit. No custom path,
+database URL, overwrite, reset or provider input is accepted.
+
+| Exact command | Effects / success / failure |
+|---|---|
+| `uv run --locked python -m data.generators.files generate --name preview-42 --seed 42 --users 3 --listings 2` | Create a new owner-private run directory with exclusively created `dataset.json` and retained `manifest.json`. Print logical fingerprint and exit 0. Existing/unsafe targets or invalid inputs exit 2. Never overwrite; choose a fresh name. |
+| `uv run --locked python -m data.generators.files validate --name preview-42` | Read only that run's bounded regular UTF-8 JSON files, reject duplicate keys/unsafe paths, validate the closed bundle and matching manifest, print fingerprint/exit 0. Incomplete/tampered/invalid runs exit 2; inspect before separately deciding cleanup. |
+| `uv run --locked python -m data.generators.files load` | Always exits 2 naming DL-00, accepted ID-READY/LI-CORE and SE-01 adapter/loader validation prerequisites. No database connection, write or fake success. |
+
+`.gitignore` excludes regenerable `data/runs/*/dataset.json` only; source, formats,
+inputs and manifests stay eligible for Git. Retain meaningful reviewed manifests
+with the code revision; regenerate under a fresh name and compare fingerprints.
+IO interruption can leave partial files; validation must pass before use. No
+reset/removal command is supplied and no cloud resource is touched. See
+[data usage/safety/retention](../../data/README.md). Successful command wiring,
+repeat fingerprints, overwrite/path/symlink/input/duplicate-key/manifest mismatch
+refusals and the unavailable-loader diagnostic passed initial checks in isolated
+temporary run directories. Ignore-rule and pinned Black checks passed; full
+persistent tests remain Step 6. No final domain data was loaded.
+
+PD-09 Step 5 supplies the [query-label format/review procedure](../../data/formats/query-labels.md)
+and [empty draft template](../../data/evaluation/query-labels.template.json).
+These are retained source artifacts, not executable evaluator/label-loader
+commands. SE-01 Step 9 supplies actual dataset-bound human labels and evaluator;
+no labeled-set generation, DATA-READY or NFR-04 result is claimed here.
+
+### PD-09 Step 6 — persistent tests and Python checks
+
+| Exact command | Inputs/effects and expected result |
+|---|---|
+| `uv run --locked python -m pytest data/tests -q -W error` | Python 3.14, locked pytest 9.1.1; synthetic values and private temporary filesystem only, plus read-only Git ignore queries. Exit 0: 63 tests passed at this checkpoint. No database/cloud/provider access. |
+| `uv run --locked python -m pytest apps/api/tests tests data/tests -q -W error` | Run existing Python/API/core tests plus PD-09 data tests explicitly. Exit 0: 361 passed at this checkpoint. Retain failures; repair only owned code or coordinate shared findings. |
+| `make check-python-format` | Existing pinned Black 26.10.1 read-only gate. Exit 0: 42 Python files unchanged at this checkpoint. |
+
+Root pytest defaults do not yet discover `data/tests`; `python -m pytest` and
+explicit test paths keep the data import/collection unambiguous without editing
+another owner's shared configuration. PD-12/13 must wire the explicit command
+into CI/common lifecycle. Fixture/snapshot privacy checks in the existing Python
+suite remain active. These local results do not prove upstream acceptance,
+final-schema loading, real labels, DATA-READY, cloud NFRs or successful CI.
+
 ## Workstation and stub command registration
+
+**PD-08 phase transfer (Mohit, 2026-10-18):** All unfinished PD-08 checks/reviews
+are assigned to pre-domain integration, as mapped in the
+[handoff decision](../decisions/pd08-integration-handoff.md). Command source and
+native successes below remain valid for their recorded scope; real Compose,
+remaining SQL/CI/command integration and affected-owner/final acceptance are
+still pending. Integration intake must sequence prerequisites and keep original
+checkpoint IDs; no cloud/reset/merge authority or passed check is implied.
 
 PD-08 Step 3 reserves `database/migrations/20261018094330_mvp_tables.sql`,
 `20261018094331_mvp_integrity.sql` and `20261018094332_initial_catalogue.sql`;

@@ -4,6 +4,14 @@ PD-08 Step 3 supplies **provisional** SQL migrations from the
 [schema](../docs/architecture/mvp-database-schema.md). Mohit authorized proceeding
 before affected-owner review; review and full runtime acceptance remain pending.
 Native PostgreSQL checks have passed as described below; Compose is unverified.
+
+**Phase handoff, 2026-10-18:** Mohit shifted all unfinished PD-08 checks/reviews
+to pre-domain integration. The [handoff decision](../docs/decisions/pd08-integration-handoff.md)
+maps the original obligations and roles. The integration owner coordinates
+remaining real container/SQL/CI/affected-owner/final checks; Mohit supplies this
+verified source/native checkpoint. PD-08 and PD-19/PRE-00 remain unaccepted
+until required checks/reviews pass; no installation, cleanup or cloud action is
+authorized by the transfer.
 No API, domain service, provider, deployment or crypto implementation is supplied.
 
 ## Tool and migration head

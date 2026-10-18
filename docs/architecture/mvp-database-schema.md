@@ -12,6 +12,13 @@ This document proposes the complete MVP data inventory and its relational bounda
 
 ## Sources and approved boundaries
 
+**Continuation phase:** Mohit transferred unfinished PD-08 checks/reviews to
+pre-domain integration on 2026-10-18. The
+[handoff decision](../decisions/pd08-integration-handoff.md) preserves original
+checkpoint IDs and outstanding real checks/affected-owner acceptance. Native
+results remain verified; the phase change does not accept this schema or waive
+PD-19/PRE-00 gates. Integration coordinates the continuation with Mohit's handoff.
+
 - [Submitted PRD](../source/ICC_Project_PRD_FINAL.pdf), especially FR-01–17 and §§5–6; [product reference](../product/product-reference-and-architecture-decisions.md).
 - [Shared conventions](../conventions/shared-conventions-and-cross-domain-contract-rules.md), [domain tasks](../tasks/domain-task-list.md), and [PD-08 procedure](../tasks/pre-domain-task-list.md).
 - Mohit's approved directions: [Listings-owned search](../decisions/search-listing-data-boundary.md), [wanted conversation lifecycle](../decisions/wanted-conversation-lifecycle.md), [private payloads](../decisions/private-offer-and-contact-payloads.md), [notification durability](../decisions/notification-intent-durability.md), and [encryption storage](../decisions/encryption-storage-boundary.md).
