@@ -30,6 +30,7 @@ The root [README](../README.md) describes the project. Agents start from [AGENTS
 - [Status/checkpoint template](status/work-log.md)
 - [Command registry](environment/commands.md)
 - [Secret-reference/access template](environment/secret-handling.md)
+- [PD-16 shared test foundation proposal](environment/shared-test-foundation-proposal.md)
 - [Development workstation record](environment/development-workstation.md)
 - [Evidence/measurement manifest index](evaluation/README.md)
 - [Accepted optional-scheduling change](decisions/optional-work-scheduling.md)
