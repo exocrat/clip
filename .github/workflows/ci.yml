@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# No write token, secrets, checkout or external action is needed at this stage.
+permissions: {}
+
+jobs:
+  foundation:
+    name: Foundation checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      # Steps 2–3 replace this guard with pinned setup and real quality gates.
+      # An incomplete workflow must not present a successful required check.
+      - name: Reject incomplete CI configuration
+        shell: bash
+        run: |
+          echo '::error::PD-12 setup is incomplete; required quality gates are not wired yet.'
+          exit 1
