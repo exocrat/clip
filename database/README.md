@@ -3,7 +3,7 @@
 PD-08 Step 3 supplies **provisional** SQL migrations from the
 [schema](../docs/architecture/mvp-database-schema.md). Mohit authorized proceeding
 before affected-owner review; review and full runtime acceptance remain pending.
-Native PostgreSQL checks have passed as described below; Compose is unverified.
+Native PostgreSQL and the bounded Compose checkpoint below have passed; final acceptance remains pending.
 
 **Phase handoff, 2026-10-18:** Mohit shifted all unfinished PD-08 checks/reviews
 to pre-domain integration. The [handoff decision](../docs/decisions/database-integration-handoff.md)
@@ -317,3 +317,40 @@ Both were corrected: collation comes from `pg_database`, and dbmate 2.36.0 uses
 `migrate --strict` while `status`/`rollback` omit it. The Compose wrapper and its
 22 simulated safety cases were corrected/retested; real Compose execution is
 still pending. These failed-run logs remain in the work-log evidence paths.
+
+### Integration Compose checkpoint — 2026-10-18
+
+Real Linux/ARM64 Docker execution verified PostgreSQL **18.6** and dbmate
+**2.36.0**, UTF-8/C.UTF-8, UTC, five SCRAM host rules and no host-trust rules.
+The existing local wrapper passed startup/authenticated TCP readiness, all four
+migrations to `20261018152702`, status (Applied 4/Pending 0), repeat migrate,
+stop/start and final stop. Both rollback-only SQL smoke suites passed in the
+separate synthetic `clip_test_integration` database. Its four migration records
+and 23 domain tables remained after restart. This supersedes historical
+Compose-not-run statements for this Linux/ARM64 checkpoint only; macOS/AMD64
+compatibility and CI parity are not proved.
+
+Evidence: `/tmp/clip-pd08-compose-3ej1goas` (temporary local files; the synthetic
+password file is private and must not be published). The owned service is
+stopped; its container, network and named volume remain. No reset, volume
+removal, down migration or cloud operation was performed. Reset/recreate,
+concurrency/query plans, affected-owner acceptance and CI/common-command
+integration remain pending under the original handoff.
+
+### Required platform verification matrix
+
+Each row must run the same lifecycle, authenticated connectivity, migration,
+smoke, persistence, reset/recreate and wrapper-refusal checks. An image manifest
+or emulated run does not establish native host compatibility. Record runtime,
+architecture and evidence for each actual run; PD-12 owns CI wiring.
+
+| Host | Container platform | State / evidence |
+|---|---|---|
+| Linux ARM64 | `linux/arm64` | Partial: Compose checkpoint above passed; reset/recreate and remaining SQL checks pending. |
+| Linux AMD64 | `linux/amd64` | Pending actual host run; schedule automated verification in PD-12. |
+| macOS Apple Silicon | `linux/arm64` | Pending Compose run with a supported local engine and Bash; earlier native macOS evidence is separate. |
+| macOS Intel | `linux/amd64` | Pending actual Mac run with a supported local engine and Bash. |
+
+The non-ARM64-Linux rows remain pending acceptance obligations. A reusable
+verification harness is planned work, not an implemented command. No platform
+parity or full PD-08 acceptance is claimed from the current checkpoint.
