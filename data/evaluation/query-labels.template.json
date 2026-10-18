@@ -1,0 +1,17 @@
+{
+  "format_version": "1",
+  "status": "draft",
+  "dataset": {
+    "logical_data_fingerprint": null,
+    "manifest_path": null,
+    "schema_version": null,
+    "source_revision": null
+  },
+  "search_contract_revision": null,
+  "review": {
+    "reviewer": null,
+    "reviewed_at": null,
+    "inclusion_policy": null
+  },
+  "queries": []
+}

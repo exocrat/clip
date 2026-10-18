@@ -47,7 +47,7 @@ Apply these exact tag keys and meanings wherever the resource type supports tags
 
 Tag keys are case-sensitive; preserve the spelling shown above. If a resource cannot be named/tagged or an expiry tag is not supported/applicable, record its exact resource identifier, unsupported field(s), reason, accountable owner, and expiry/cleanup handling here. Keep exceptions narrow and do not treat existing untagged account resources as project resources. Apply tags consistently to child resources and cost-bearing dependencies where supported.
 
-Rahul verified this updated convention on 2026-10-17. It supersedes the earlier Step 7 convention recorded in this file; see [DEC-03](../decisions/DEC-03-cloud-resource-naming-and-tags.md).
+Rahul verified this updated convention on 2026-10-17. It supersedes the earlier Step 7 convention recorded in this file; see [DEC-03](../decisions/cloud-resource-naming-and-tags.md).
 
 ### Observed quota values
 

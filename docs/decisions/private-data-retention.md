@@ -1,0 +1,40 @@
+# Private-data retention windows and minimal integrity records
+
+**Date:** 2026-10-18
+**Origin:** PD-08 Step 2 privacy/lifecycle review.
+
+## Question
+How long should private/authentication data persist, and which minimal records must survive cleanup?
+
+## Options considered
+- Finite content/authentication retention with narrowly scoped integrity/no-self-renewal records.
+- Retain every payload indefinitely or delete all identity/origin records with content; these respectively accumulate private data or break uniqueness/non-renewal guarantees.
+
+## Selected choice
+Mohit approved these windows, measured from the stated trigger:
+
+| Data | Retention/cleanup |
+|---|---|
+| Used/expired OTP challenges | Delete 24 hours after consumption or expiry, whichever first makes the challenge unusable. |
+| Expired/revoked sessions | Delete 7 days after the earlier terminal event. |
+| Permanently expired/revoked temporary password hashes | Delete within 24 hours. |
+| Identity source contacts/profile | Remove on user field deletion; otherwise retain while active and at most 30 days after expiry/permanent revocation. Field deletion takes effect immediately in future contact retrieval. |
+| Encrypted contact shares and selected-field labels | Delete after 30 days from each share, retaining only a content-free ordering marker. |
+| Conversation messages, encrypted offer notes and structured offer revision history | Purge together after 90 days without a participant write. Reads/polling/workers do not renew the timer. |
+| Sent/suppressed/terminally failed notification records | Delete after 30 days from terminal completion, preserving a separately reviewed bounded replay/deduplication guard when needed. |
+
+Access expires/revokes immediately; these windows never extend access. Preserve minimal origin/participant/thread records while the parent origin exists to maintain one-conversation-per-pair. Preserve a keyed normalized-login enrollment identifier and original activation/expiry for the service's operating lifetime to prevent temporary-account self-renewal; remove password/contact content under its own window. This identifier is sensitive/linkable, not anonymous data. Create the guard only after verified activation.
+
+## Rationale
+Bounds retained content while avoiding replay, duplicate conversation creation or account-lifetime reset as a side effect of cleanup.
+
+## Implications
+The [schema](../architecture/mvp-database-schema.md) adds last participant activity, content-deletion markers and a minimal enrollment guard. Affected owners must review safe FK/current-offer/notification-target cleanup, concurrent writes, key rotation and bounded notification deduplication. Origin/listing/image/account retirement and exceptional explicit-deletion handling remain unresolved; no blanket cascade or public deletion endpoint is approved. Referenced public-key metadata remains subject to the final cryptographic/reference-retirement design.
+
+Deletion jobs belong to owning domain implementations; PD-08 creates no deployed cleanup worker. Backups need a separately approved finite retention policy and restore-time deletion/expiry reconciliation. Live database deletion does not establish backup/provider deletion or erase participant-held copies. These choices authorize policy recording, not execution of destructive cleanup or cloud changes.
+
+## Approver
+Mohit (C), explicit approval of the retention durations and minimal-record exceptions. Privacy/affected-owner schema review remains pending.
+
+## Supersedes
+None.

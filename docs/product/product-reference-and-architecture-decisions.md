@@ -52,7 +52,7 @@ The requirement IDs and intent below were checked against the submitted `docs/so
 | FR-04 | Eligible regular users can create sale listings with title, description, category, condition, asking price including zero, negotiability, pickup area, availability period, and at least one image. | Valid and invalid field combination tests. |
 | FR-05 | Only the listing owner can edit a listing or change its authoritative availability; unavailable listings are hidden from discovery. | Ownership and state-transition tests. |
 | FR-06 | Authenticated eligible users can browse available listings with pagination. | Seeded multi-page functional test. |
-| FR-07 | Search listing titles/descriptions; filter by category, price range, condition, negotiability, and listing type; sort by recency or price. | Deterministic queries over labeled data. Baseline: PostgreSQL indexed full-text search. |
+| FR-07 | Search listing titles/descriptions; filter by item category, price range, condition, and negotiability; sort by recency or price. | Deterministic queries over labeled data. Baseline: PostgreSQL indexed full-text search. |
 | FR-08 | Eligible users can create/manage wanted requests with title, description, category, optional budget. Before submission, use the draft title to show possible active sale matches. | UI/API test with matching and non-matching seeded listings. |
 | FR-09 | Users can save/unsave listings. A saved listing can remain in the saved-items view after becoming unavailable. | State-transition integration test. |
 | FR-10 | A buyer can create at most one private conversation per buyer–listing pair and exchange text messages with the listing owner. Store message content as ciphertext in the relational database; retrieve new messages through the normal API. | Uniqueness, authorization, ordering, and incremental-retrieval tests. |
@@ -99,6 +99,16 @@ for the decision record.
 
 The domain tasks define authorization, request-to-conversation association,
 duplicate/retry rules, filters, and closure behavior before implementation.
+
+### Accepted project clarification: listing discovery and availability
+
+Mohit approved the [listing discovery semantics](../decisions/listing-discovery-semantics.md) during PD-08 Step 2 on 2026-10-18. The PR #5 reviewer subsequently confirmed Suraj's distinction: **item category** means the kind of item (phone, bicycle, furniture, etc.), reusing the existing category catalogue. It is separate from the **Sale Listings / Wanted Requests** view toggle. This supersedes the earlier contrary interpretation recorded in that decision; a free item remains a Sale Listing priced at zero. A Sale Listing has a required availability start and optional end. Discovery excludes it before the start or at/after the end, independently of the seller's available/unavailable state and selected buyer. Saved references remain when a listing becomes unavailable or its availability window ends. Account/visibility and later approved retention rules still apply. This clarification does not modify the submitted PRD or establish affected-owner implementation/schema acceptance.
+
+The submitted PRD retains its original wording, including “listing type.” In maintained requirements, that term is renamed **item category** and denotes the same field as category; FR-07 therefore specifies one item category filter, not two overlapping filters. This explicit clarification leaves the source PDF unchanged.
+
+### PD-08 reviewed product/storage choices
+
+Mohit approved the detailed [MVP schema directions](../architecture/mvp-database-schema.md) and linked decision records on 2026-10-18: application-owned temporary password/OTP/session state; required seller price/separate negotiability and optional buyer budget; catalogue/field/image limits; offer revision/withdrawal/selection rules; encrypted-content/key metadata; bounded notification episodes/retries; finite private-data retention; upload staging and inactive-origin retirement. The schema's source/decision links contain exact values and exceptions. These approvals are design choices, not implemented features, affected-owner approval, runtime/provider/security evidence or authorization to provision/deploy/delete cloud resources. Original FR/NFR acceptance remains with the named tasks.
 
 ## 4. Non-functional requirements and required evidence
 
