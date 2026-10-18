@@ -339,7 +339,10 @@ without Node. [Coverage](../../contracts/README.md#contract-regression-tests).
 verifies bundled npm 11.19.1, then runs `uv sync --locked --python 3.14.3` and
 `npm ci` at the repository root. Setup actions are pinned to immutable revisions;
 checkout credentials are not persisted. Installs may download tools/packages and
-write ignored environments/caches; lockfile mismatch fails. Quality gates are wired below; hosted execution and final acceptance remain pending.
+write ignored environments/caches; lockfile mismatch fails. Hosted checks passed
+at `05e4cb8`; current changes still require their own hosted result. CI is PR-only
+and cancels superseded runs for the same workflow/PR. No post-merge main run occurs;
+incorporate latest main and pass CI before merging, repeating if main advances.
 
 ### CI quality gates — PD-12 Step 3
 
@@ -358,7 +361,7 @@ Local/CI aggregate parity is implemented below; full lifecycle commands remain P
 
 ### CI execution boundary — PD-12 Step 4
 
-The PR/main workflow uses read-only repository access, no persisted checkout
+The PR-only workflow uses read-only repository access, no persisted checkout
 credentials, no secret expressions, no deployment environment and no cloud login,
 apply/deploy or production-data command. Setup downloads public tools/packages
 and images; local-only describes the checks, not a network-free installation.

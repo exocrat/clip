@@ -2,8 +2,11 @@ name: CI
 
 on:
   pull_request:
-  push:
-    branches: [main]
+
+# Cancel older runs only within this workflow and PR; other PRs stay independent.
+concurrency:
+  group: ${{ github.workflow }}-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 # Checkout needs read access only; never retain its token in the checkout.
 permissions:

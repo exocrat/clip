@@ -25,15 +25,19 @@ Obtain explicit human approval before every commit. Approval to execute a task s
 Run `uv sync --locked`, root `npm ci`, then `make check` before review. The
 [command registry](docs/environment/commands.md#shared-aggregate--pd-12-step-6)
 describes prerequisites and effects. Workflow **CI**, job **Foundation quality
-gates**, runs the same ordered checks on PRs and pushes to `main`: parity,
+gates**, runs the same ordered checks on PRs only: parity,
 Black, Python/data tests, domain boundaries, contract freshness, web
 lint/tests/types/build, database-wrapper safety, clean PostgreSQL migrations/schema
 and secret scanning. This job is the intended required GitHub Actions check;
-confirm its exact displayed context/source on the first hosted PR run.
+the displayed job name is confirmed by the hosted PR run below.
 
-**Current status:** local aggregate passed; workflow publication, hosted success
-and hosted intentional-failure/recovery evidence remain pending. Local results
-alone do not satisfy the hosted gate. CI never merges, deploys or applies.
+**Current status:** local aggregate and [hosted run 39164957563](https://github.com/exocrat/clip/actions/runs/39164957563)
+passed for `05e4cb8`. The contributor accepted local intentional failure controls
+plus actual hosted failure/recovery as sufficient; no extra probe commits are
+needed ([decision](docs/decisions/ci-integration-sequencing.md#failure-evidence-acceptance--2026-10-19)).
+Every later PR revision still needs current checks/review. New runs cancel older
+in-progress/pending runs for the same workflow and PR; other PRs remain independent.
+No post-merge main run occurs. CI never merges, deploys or applies.
 
 ### Approved manual fallback
 
@@ -48,8 +52,10 @@ human-enforced gate while hosting cannot enforce it. See the
 [decision record](docs/decisions/manual-main-merge-gate.md).
 
 1. Use a PR into `main`; no direct main push, force push or deletion.
-2. Refresh main into the branch as required by the existing merge workflow;
-   rerun affected checks. Record the exact current PR head and base SHAs.
+2. Before merging, bring the latest `main` into the PR branch and require a fresh
+   successful CI run for that integration. Record the exact PR head and tested
+   base SHA. If main advances again before merge, update and rerun CI again;
+   do not reuse success against the old base.
 3. Require a successful **Foundation quality gates** run for the current PR
    revision and local `make check` evidence. Missing, skipped, cancelled or failed
    required checks do not pass. Record the hosted run URL and tested revision.

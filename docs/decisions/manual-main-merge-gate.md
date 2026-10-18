@@ -24,7 +24,11 @@ current access lacks admin rights. Protection lookup HTTP 404 was inconclusive.
 The manual fallback preserves review requirements but cannot prevent bypass.
 
 ## Implications
-Hosted CI success/failure-control evidence remains pending, not waived.
+Hosted success and combined failure/recovery evidence have been accepted as
+recorded in [CI sequencing](ci-integration-sequencing.md). Each new revision still
+requires current successful CI. The approved PR-only policy requires latest main
+incorporated and successful CI before merge, repeating if main advances; no
+post-merge main run is expected. Superseded/cancelled runs do not satisfy the gate.
 Approval does not authorize publication, any merge, a plan upgrade or visibility
 change. Revisit supported protections through a separately approved change.
 PD-18 maintains both checklists; upstream/foundation acceptance gates remain.

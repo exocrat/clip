@@ -38,3 +38,21 @@ None.
 ## Scope addition — 2026-10-19
 The contributor added Black pre-commit hooks as PD-12 Step 8, after the existing
 seven steps. Hooks supplement the independent CI formatting gate.
+
+## Failure evidence acceptance — 2026-10-19
+The contributor explicitly accepted the existing intentional local failure
+controls plus actual hosted failure (run 39164677937) and successful recovery
+(run 39164957563, head `05e4cb8`). No additional hosted probe commits are needed.
+Independent human/affected-owner review, exact merge authorization and original
+upstream/foundation gates remain required. This accepts the combined evidence;
+it does not claim an intentional hosted failure was performed.
+
+## PR-only CI and superseded runs — 2026-10-19
+The contributor explicitly selected PR-only CI and cancellation of superseded
+runs to conserve Actions minutes. Remove the main push trigger; use a workflow/PR
+concurrency key with `cancel-in-progress: true`. Different PRs remain independent.
+Before each merge, incorporate latest main and require successful CI for that
+integration; if main advances again, refresh/rerun before merging. Record tested
+head/base SHAs. This revises PD-12 Step 1 and the manual merge gate; it does not
+waive review or permit direct main pushes. A cancelled run never counts as success.
+No hosted cancellation behavior is claimed until published/observed.

@@ -353,7 +353,7 @@ Step 1 approved directions: [Listings-owned search](../decisions/search-listing-
 
 **Steps:**
 
-1. Create `.github/workflows/ci.yml` to run on pull requests and the main development branch according to the repo's existing convention.
+1. Create `.github/workflows/ci.yml` to run on pull requests only, cancelling superseded runs within the same workflow/PR. Before merging, require successful CI with the latest main incorporated; repeat if main advances. This approved policy replaces post-merge main runs to reduce Actions usage; see [CI integration sequencing](../decisions/ci-integration-sequencing.md).
 2. Use supported pinned runtimes from PD-02 and install from lockfiles. Do not float to latest tool versions in CI.
 3. Run, at minimum: Black check-only; Python tests; Python lint/type checks if selected; the registered web checks (`npm run lint`, `npm run typecheck`, `npm test`, and `npm run build`, or the equivalent documented aggregate); migration/schema checks against disposable local PostgreSQL (apply migrations from a clean database to the expected head and fail on migration or schema-check errors); generated-contract stale check; and secret scanning or equivalent repository scan selected for the project. Preserve PD-07's route and frontend import-boundary coverage; do not replace it with placeholder-text or `.gitkeep` assertions.
 4. Keep CI local-only. CI must not run Terraform apply, deploy, create billable infrastructure, access production data, or require long-lived cloud credentials.
