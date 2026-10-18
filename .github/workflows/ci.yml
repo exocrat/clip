@@ -5,19 +5,56 @@ on:
   push:
     branches: [main]
 
-# No write token, secrets, checkout or external action is needed at this stage.
-permissions: {}
+# Checkout needs read access only; never retain its token in the checkout.
+permissions:
+  contents: read
 
 jobs:
   foundation:
     name: Foundation checks
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
-      # Steps 2–3 replace this guard with pinned setup and real quality gates.
-      # An incomplete workflow must not present a successful required check.
-      - name: Reject incomplete CI configuration
-        shell: bash
-        run: |
-          echo '::error::PD-12 setup is incomplete; required quality gates are not wired yet.'
-          exit 1
+      - name: Checkout source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.14.3'
+      - name: Set up uv
+        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
+        with:
+          version: '0.10.7'
+          enable-cache: false
+      - name: Set up Node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24.22.0'
+          package-manager-cache: false
+      # Fail rather than silently use a different bundled package manager.
+      - name: Verify npm version
+        run: test "$(npm --version)" = '11.19.1'
+      - name: Install locked Python dependencies
+        run: uv sync --locked --python 3.14.3
+      - name: Install locked JavaScript dependencies
+        run: npm ci
+      - name: Check Python formatting
+        run: uv run --locked black --check --diff .
+      - name: Run Python tests
+        run: uv run --locked pytest -q -W error
+      - name: Run data tooling tests
+        run: uv run --locked pytest data/tests -q -W error
+      - name: Check domain boundaries
+        run: uv run --locked python scripts/check_boundaries.py
+      - name: Check generated contracts
+        run: uv run --locked python scripts/generate_contracts.py check
+      - name: Check web lint, tests, types and build
+        run: npm run check
+      - name: Check database wrapper safety
+        run: bash database/tests/local-db-safety.sh
+      - name: Check clean migrations and schema
+        run: uv run --locked python scripts/check_database.py
+      - name: Scan source for secrets
+        run: uv run --locked python scripts/check_secrets.py

@@ -332,3 +332,26 @@ Requires locked Python tools plus root `npm ci` (Node 24/TypeScript 5.9.3/Hey AP
 local tools and in-process ASGI, never modify tracked artifacts or fetch tools.
 Exit 0 means pass; nonzero requires investigation. API-only pytest remains usable
 without Node. [Coverage](../../contracts/README.md#contract-regression-tests).
+
+## CI setup — PD-12
+
+`.github/workflows/ci.yml` installs Python 3.14.3, uv 0.10.7 and Node 24.22.0,
+verifies bundled npm 11.19.1, then runs `uv sync --locked --python 3.14.3` and
+`npm ci` at the repository root. Setup actions are pinned to immutable revisions;
+checkout credentials are not persisted. Installs may download tools/packages and
+write ignored environments/caches; lockfile mismatch fails. Quality gates are wired below; hosted execution and final acceptance remain pending.
+
+### CI quality gates — PD-12 Step 3
+
+CI runs the registered Black, root/data pytest, boundary, contract freshness,
+`npm run check` and simulated database-wrapper safety commands. Python lint/type
+tools remain deferred under the existing tooling decision.
+
+| Command | Effect / failure |
+|---|---|
+| `uv run --locked python scripts/check_database.py` | Requires local Unix-socket Docker. Creates a fresh PostgreSQL 18.6 container with temporary memory-backed data, no host port/volume; dbmate 2.36.0 checks clean apply, exact head `20261018152702`, repeat migration and both SQL smoke suites. Removes only its own container; nonzero on SQL/setup/cleanup failure. Never targets retained Compose data. |
+| `uv run --locked python scripts/check_secrets.py` | Requires local Unix-socket Docker. Gitleaks 8.30.1 scans tracked and nonignored new source in a temporary snapshot, offline/read-only. Uses `.gitleaks.toml`; findings print file/line/rule only and fail. This scans current source, not Git history; ignored files are excluded and symlinks rejected. |
+
+Images may be downloaded from public registries. No cloud/provider configuration
+is forwarded. These commands accept no target arguments; `--help` describes them.
+Local/CI aggregate parity is Step 6; full lifecycle commands remain PD-13.

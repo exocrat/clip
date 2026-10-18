@@ -409,3 +409,13 @@ passed; evidence `/tmp/clip-pd08-races-j6takuzv`, retained database
 `clip_test_races_36a74120a8aa`. The first run expected the wrong offer-revision
 SQLSTATE; PostgreSQL correctly returned unique violation `23505`. The assertion
 was corrected and final state/aborted-sequence rollback checked on the rerun.
+
+## Disposable CI migration gate — PD-12
+
+`uv run --locked python scripts/check_database.py` uses the same PostgreSQL
+18.6 image and dbmate 2.36.0 as local development, with a new `clip_test_ci`
+database, no published port and temporary memory-backed storage. It checks clean
+apply/exact head, repeated application, both existing SQL smoke suites and the
+23-table inventory, then removes only its own container. Local Linux ARM64
+execution passed; actual hosted CI, other platform rows and affected-owner
+acceptance remain pending. See the [command registry](../docs/environment/commands.md).
