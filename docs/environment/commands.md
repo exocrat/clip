@@ -355,3 +355,22 @@ tools remain deferred under the existing tooling decision.
 Images may be downloaded from public registries. No cloud/provider configuration
 is forwarded. These commands accept no target arguments; `--help` describes them.
 Local/CI aggregate parity is Step 6; full lifecycle commands remain PD-13.
+
+### CI execution boundary — PD-12 Step 4
+
+The PR/main workflow uses read-only repository access, no persisted checkout
+credentials, no secret expressions, no deployment environment and no cloud login,
+apply/deploy or production-data command. Setup downloads public tools/packages
+and images; local-only describes the checks, not a network-free installation.
+Database/scanner runners require local Unix-socket Docker, forward only required
+inputs and isolate execution from provider settings; neither mounts cloud files.
+The database uses ephemeral generated credentials and memory-backed storage;
+the scanner runs without network access. Existing tests use synthetic fixtures,
+in-memory HTTP and temporary files. Contract generation rejects external refs.
+No root package install/check/build lifecycle hooks add a separate action.
+
+Read-only host inspection on 2026-10-18 found no repository Actions secrets or
+repository environments. This is not an organization-secret inventory or hosted
+execution result; CI does not reference organization secrets either. Changes to
+workflow commands, dependencies or permissions require renewed review. Hosting
+protections and actual hosted CI verification remain pending.
