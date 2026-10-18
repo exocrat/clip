@@ -58,8 +58,8 @@ fallback. Child tooling receives a clean environment and local JSON references
 only. No database/provider/cloud calls or schema endpoint publication occurs.
 
 Step 5 verified two identical generations, check-only preservation, generated
-TypeScript compilation and existing API/web checks. Step 6 still adds formal
-missing/stale-output and actual-API-schema regression tests. Provenance key
+TypeScript compilation and existing API/web checks. Step 6 tests missing/stale-output detection, source/tool failures, check-only
+preservation, TypeScript consumers and actual API schema parity. Provenance key
 `x-clip-generator-format` is build metadata, not runtime behavior. Runtime parity
 must compare the actual app's independently generated schema, not replace it
 with this output. Generated declarations never establish implemented behavior,
@@ -67,3 +67,24 @@ authorization or domain acceptance.
 
 Boundary checks remain in force. PD-12 wires stale checks into CI; PD-13 maps
 them into the common command front door; step 9 records contract version/review.
+
+## Contract regression tests
+
+After `uv sync --locked` and root `npm ci`, run:
+
+```bash
+uv run --locked pytest tests/contracts -q -W error
+```
+
+Root pytest includes these tests and now requires the locked Node dependencies.
+The API-only suite still needs only its Python dependencies. Negative generation
+checks copy minimal inputs to temporary trees and share installed tools without
+writing them; no tracked source/output is altered. Real generation, missing and
+stale files, changed source, tool mismatches and sanitized source failures are
+checked. The actual app's schema is compared against the declared schema after
+removing only generator provenance; extra/missing operations and changed response
+shapes remain differences. A valid TypeScript consumer must compile and an
+invalid status literal must fail. HTTP tests use in-process ASGI only. External
+schema references are rejected; no network/provider/database services are used.
+The only tracked generator behavior correction here sanitizes source syntax
+errors rather than allowing a traceback to echo source text.

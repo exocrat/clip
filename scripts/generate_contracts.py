@@ -156,8 +156,10 @@ def main():
                 for relative in stale:
                     print(f"Stale or missing: {relative}")
                 return 1
-    except OSError, ValueError, KeyError, RuntimeError, subprocess.SubprocessError:
-        # No schema, source values or inherited configuration in diagnostics.
+    except Exception:
+        # This CLI boundary intentionally sanitizes all source/tool exceptions,
+        # including SyntaxError, whose traceback would echo source values.
+        # Failure remains nonzero; never substitute generated success.
         print(
             "Contract generation failed: check reviewed source, Node 24 and pinned tools; run npm ci after lockfile updates.",
             file=sys.stderr,

@@ -325,3 +325,10 @@ Run from the root. Generated files must not be hand-edited. On drift, correct
 source, regenerate, review the diff and rerun check. On tool mismatch, inspect
 pins/lock and use `npm ci`; no unpinned network fallback. No listener, database,
 provider or cloud calls. [Outputs and limits](../../contracts/README.md).
+
+Contract regression command: `uv run --locked pytest tests/contracts -q -W error`.
+Requires locked Python tools plus root `npm ci` (Node 24/TypeScript 5.9.3/Hey API
+0.99.0). Root pytest includes it. Synthetic negative cases use temporary trees,
+local tools and in-process ASGI, never modify tracked artifacts or fetch tools.
+Exit 0 means pass; nonzero requires investigation. API-only pytest remains usable
+without Node. [Coverage](../../contracts/README.md#contract-regression-tests).
