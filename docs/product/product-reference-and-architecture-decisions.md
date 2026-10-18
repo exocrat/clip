@@ -100,6 +100,14 @@ for the decision record.
 The domain tasks define authorization, request-to-conversation association,
 duplicate/retry rules, filters, and closure behavior before implementation.
 
+### Accepted project clarification: listing discovery and availability
+
+Mohit approved the [listing discovery semantics](../decisions/listing-discovery-semantics.md) during PD-08 Step 2 on 2026-10-18. “Listing type” means Sale Listing versus Wanted Request; a free item remains a Sale Listing priced at zero. A Sale Listing has a required availability start and optional end. Discovery excludes it before the start or at/after the end, independently of the seller's available/unavailable state and selected buyer. Saved references remain when a listing becomes unavailable or its availability window ends. Account/visibility and later approved retention rules still apply. This clarification does not modify the submitted PRD or establish affected-owner implementation/schema acceptance.
+
+### PD-08 reviewed product/storage choices
+
+Mohit approved the detailed [MVP schema directions](../architecture/mvp-database-schema.md) and linked decision records on 2026-10-18: application-owned temporary password/OTP/session state; required seller price/separate negotiability and optional buyer budget; catalogue/field/image limits; offer revision/withdrawal/selection rules; encrypted-content/key metadata; bounded notification episodes/retries; finite private-data retention; upload staging and inactive-origin retirement. The schema's source/decision links contain exact values and exceptions. These approvals are design choices, not implemented features, affected-owner approval, runtime/provider/security evidence or authorization to provision/deploy/delete cloud resources. Original FR/NFR acceptance remains with the named tasks.
+
 ## 4. Non-functional requirements and required evidence
 
 The submitted PRD specifies a synthetic reference dataset of at least 1,000 listings and 5,000 users, a load generator such as k6, performance runs lasting at least five minutes after warm-up, and separate reporting of warm and cold-start behavior where applicable. The later evaluation procedure must define exactly how these conditions are constructed and measured.

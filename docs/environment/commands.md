@@ -9,8 +9,8 @@ For EACH command record: creator task, exact invocation and required inputs, sup
 | Required command outcome | Creator | Current state |
 |---|---|---|
 | Install/setup | PD-02/04/07/13 | Python: `uv sync --locked` implemented/verified in PD-04; web: root `npm ci` implemented/verified in PD-07. Combined setup remains pending PD-13. |
-| Local start/stop/readiness | PD-05/07/08/13 | API foreground start/stop/health and typed settings verified in PD-05; web loopback dev/preview start and foreground stop verified in PD-07. Database and combined lifecycle remain pending PD-08/13. |
-| Local migration/status/reset and small seed | PD-08/13 | Not implemented; reset local-only and explicit |
+| Local start/stop/readiness | PD-05/07/08/13 | API foreground start/stop/health and typed settings verified in PD-05; web loopback start/stop verified in PD-07. PD-08 Step 5 database wrapper implemented with simulated-Docker safety checks; real runtime remains Step 6. Combined lifecycle remains PD-13. |
+| Local migration/status/reset and small seed | PD-08/13 | Provisional dbmate SQL, PostgreSQL 18.6 local Compose configuration and Step 5 lifecycle wrapper exist. Real checks remain Step 6/PD-13. Reset is local-only with an explicit deletion flag; no final domain data loader exists. |
 | Generator framework/tests | PD-09 | Not implemented |
 | Final reference generate/load/validate/fingerprint | SE-01/DATA-READY | Not implemented; requires domain schemas/configuration |
 | Python format and non-mutating pinned Black check | PD-04 | Implemented and human-verified at step 3; exact commands and verification below |
@@ -112,5 +112,91 @@ Security checks include request-ID spoofing and credential-free entry-point chil
 The privacy check launches a credential-free pytest child (15-second timeout) that intentionally fails; the parent passes only when the failure report is correctly redacted. See [fixture usage and snapshot limits](../../tests/fixtures/core/README.md). Fixtures do not establish real provider/domain integration or cloud/NFR acceptance.
 
 ## Workstation and stub command registration
+
+PD-08 Step 3 reserves `database/migrations/20261018094330_mvp_tables.sql`,
+`20261018094331_mvp_integrity.sql` and `20261018094332_initial_catalogue.sql`;
+expected head is `20261018094332`. `database/dbmate.version` pins 2.36.0 and
+`database/tests/schema-smoke.sql` prepares rollback-only synthetic integrity
+checks for a validated local `clip_test_` database. Step 5 now implements the
+local lifecycle commands below; their real Docker/PostgreSQL execution remains
+Step 6. Use one migration operator; the pinned version has no
+CLI-wide migration lock. See [database instructions](../../database/README.md)
+for per-transaction advisory locks and current verification limits.
+
+PD-08 Step 4 adds root `docker-compose.yml`: image `postgres:18.6-bookworm`,
+project `clip-local`, service `postgres`, local database/user `clip_local`,
+required local-only `CLIP_LOCAL_POSTGRES_PASSWORD`, TCP `127.0.0.1:5432`, and
+project-scoped volume `clip_local_postgres_data`. Root `.env.example` contains
+only a clearly fake example for that setting. Configuration source passed YAML
+parsing and the official Compose JSON schema; Docker/Compose runtime validation
+and startup have not run on Mohit's Mac. Do not print interpolated configuration
+with supplied credentials. Step 5 registers exact lifecycle invocations below;
+source/simulated checks do not establish real runtime success. CI must
+match PostgreSQL 18.6 through PD-12/integration; no CI file is changed here.
+
+### PD-08 Step 5 — local database commands
+
+Run from the repository root using Bash 3.2+, local Docker Engine and Compose v2.
+All lifecycle actions require process environment `CLIP_LOCAL_POSTGRES_PASSWORD`
+(ASCII URL-unreserved characters only); no dotenv is read. Target is fixed to
+the Unix-socket Docker context, Compose project `clip-local`, PostgreSQL 18.6,
+database/user `clip_local`, loopback 5432 and its named local volume. URL/PG
+target and Docker endpoint overrides fail closed. Initial image downloads need
+registry access; no cloud resource/provider is invoked.
+
+| Exact invocation | Effect / success / failure |
+|---|---|
+| `bash database/local-db.sh start` | Create/start only the local service, then authenticated readiness. Nonzero on unavailable tools, ownership/configuration/port conflict or readiness failure; inspect sanitized output. |
+| `bash database/local-db.sh wait` | Authenticated TCP `SELECT 1`, up to 30 attempts (2-second connect timeout and pauses). Exit 0 means connectivity only; absent container/timeout fails. |
+| `bash database/local-db.sh migrate` | Pinned dbmate 2.36.0, fixed local URL, strict transactional migrations, no schema dump/implicit dotenv. Exit 0 means the tool finished; Step 6 separately verifies expected head/schema. Inspect failures before retry; never automatically reset. |
+| `bash database/local-db.sh status` | Display migration state. Pending migrations can appear with exit 0; compare expected head `20261018094332`. |
+| `bash database/local-db.sh stop` | Stop validated local container; retain all volume data. Absent container succeeds. |
+| `bash database/local-db.sh reset --confirm-delete-local-data` | Warn and permanently delete only the validated service container and `clip-local_clip_local_postgres_data`. Requires deliberate approval of that destructive action. No force/prune/broad volume deletion; leaves DB stopped. Missing confirmation fails before Docker. |
+| `bash database/local-db.sh --help` | Fixed usage; no tools/password required. |
+| `bash database/tests/local-db-safety.sh` | 22 simulated-Docker wiring/refusal/redaction cases; exit 0 on success, no registry/engine/database/cloud calls. |
+
+The wrapper preserves failing command status, redacts the local password and
+serializes actions through a per-user temporary lock. Ownership/target/lock
+failure requires inspection, not bypassing/relabeling. Inspect a stale lock only
+after confirming its previous operator has stopped. Never print interpolated
+configuration, enable credential tracing or put real secrets in evidence.
+See [database instructions](../../database/README.md#local-lifecycle-commands-pd-08-step-5)
+for function purposes, exact input limits, reset/recreate and safe recovery.
+Step 5 passed shell syntax and simulated safety checks on system Bash 3.2;
+Docker/Compose/container execution, image inspection, persistence and actual
+reset/recreate remain Step 6; native SQL/tool checks now pass below. PD-13 owns root
+Makefile integration; no root Makefile/CI/other stream implementation was edited.
+
+### PD-08 Step 6 — native macOS verification checkpoint
+
+Mohit selected native testing now and explicitly deferred other checks. Native
+tools were built in `/tmp` without changing global/Homebrew installations.
+
+| Exact invocation / inputs | Target, effects and expected result |
+|---|---|
+| `bash database/tests/native-checks.sh /tmp/clip-pd08-native.pKC5jz/pgsql /tmp/clip-pd08-native.pKC5jz/bin/dbmate` | Requires macOS/Bash 3.2+, native PostgreSQL 18.6 and dbmate 2.36.0 at these explicit tool locations. Creates only its own private `/tmp/clip-pd08-native-check.*` cluster/database `clip_test_native`; disables TCP, uses an owner-only socket, applies/repeats migrations, runs smoke twice, rolls back all three migrations, reapplies, compares ordered schema inventory and stops its cluster. Logs/data retained under printed evidence path. Nonzero on any failure or stop failure; inspect retained logs, never substitute an existing cluster. |
+
+Fresh child environments and fixed new targets prevent ambient database/provider
+configuration from redirecting checks. Local socket trust is confined to the
+private temporary directory; it does not verify SCRAM/TCP or production auth.
+Native tools used the checksum-verified official PostgreSQL source with build
+flags `--without-icu --without-readline --without-zlib`, UTF-8/C locale, and
+dbmate's pinned Go module. Tool paths under `/tmp` may disappear; verify/rebuild
+exact versions before rerunning if absent. No Homebrew service or VM is created.
+
+Passed: native version checks, head `20261018094332`, Applied 3/Pending 0,
+23 tables/20 functions/32 triggers, catalogue counts, repeated migrate, smoke
+twice, three down migrations, reapply and identical runtime inventories. Evidence
+is `/tmp/clip-pd08-native-check.0buobO`. Runtime tests corrected the wrapper's
+flag order to `migrate --strict`; `status`/`rollback` omit that command-only flag.
+The corrected Compose wrapper's 22 simulated cases also passed. The initial
+sandbox shared-memory denial and corrected harness/CLI failures remain recorded
+in the work log; no failure is counted as a pass.
+
+Deferred: container image/Compose runtime, loopback TCP/SCRAM readiness,
+stop/start volume persistence, approved reset/recreate, platform/locale parity,
+multi-connection concurrency, query-plan checks, affected-owner acceptance and
+CI same-version checks. Native results do not close PD-08/PRE-00. See the
+[database verification notes](../../database/README.md#native-macos-checkpoint--2026-10-18).
 
 One-time clone/agent setup belongs in the [workstation guide](wsl-and-first-session.md). Future command owners must register explicit targets and effects above. PD-10/DL-00/domain owners register explicit test-double scenarios and real integration commands with distinct names/modes. No deployed command may default to fake auth/storage/notification/domain providers; startup validation rejects them. Stub tests never share a label or result classification with cloud/NFR runs. No cloud operation belongs in the generic local/CI aggregate target.
