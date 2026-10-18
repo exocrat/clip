@@ -3,7 +3,7 @@
 PD-08 Step 3 supplies **provisional** SQL migrations from the
 [schema](../docs/architecture/mvp-database-schema.md). Mohit authorized proceeding
 before affected-owner review; review and full runtime acceptance remain pending.
-Native PostgreSQL checks have passed as described below; Compose is unverified.
+Native PostgreSQL and the bounded Compose checkpoint below have passed; final acceptance remains pending.
 
 **Phase handoff, 2026-10-18:** Mohit shifted all unfinished PD-08 checks/reviews
 to pre-domain integration. The [handoff decision](../docs/decisions/database-integration-handoff.md)
@@ -317,3 +317,105 @@ Both were corrected: collation comes from `pg_database`, and dbmate 2.36.0 uses
 `migrate --strict` while `status`/`rollback` omit it. The Compose wrapper and its
 22 simulated safety cases were corrected/retested; real Compose execution is
 still pending. These failed-run logs remain in the work-log evidence paths.
+
+### Integration Compose checkpoint — 2026-10-18
+
+Real Linux/ARM64 Docker execution verified PostgreSQL **18.6** and dbmate
+**2.36.0**, UTF-8/C.UTF-8, UTC, five SCRAM host rules and no host-trust rules.
+The existing local wrapper passed startup/authenticated TCP readiness, all four
+migrations to `20261018152702`, status (Applied 4/Pending 0), repeat migrate,
+stop/start and final stop. Both rollback-only SQL smoke suites passed in the
+separate synthetic `clip_test_integration` database. Its four migration records
+and 23 domain tables remained after restart. This supersedes historical
+Compose-not-run statements for this Linux/ARM64 checkpoint only; macOS/AMD64
+compatibility and CI parity are not proved.
+
+Evidence: `/tmp/clip-pd08-compose-3ej1goas` (temporary local files; the synthetic
+password file is private and must not be published). The owned service is
+stopped; its container, network and named volume remain. No reset, volume
+removal, down migration or cloud operation was performed. Reset/recreate,
+concurrency/query plans, affected-owner acceptance and CI/common-command
+integration remain pending under the original handoff.
+
+### Required platform verification matrix
+
+Each row must run the same lifecycle, authenticated connectivity, migration,
+smoke, persistence, reset/recreate and wrapper-refusal checks. An image manifest
+or emulated run does not establish native host compatibility. Record runtime,
+architecture and evidence for each actual run; PD-12 owns CI wiring.
+
+| Host | Container platform | State / evidence |
+|---|---|---|
+| Linux ARM64 | `linux/arm64` | Local storage checkpoint passed: lifecycle/reset, seven concurrency cases and five index diagnostics. Cross-platform/CI acceptance remains pending. |
+| Linux AMD64 | `linux/amd64` | Pending actual host run; schedule automated verification in PD-12. |
+| macOS Apple Silicon | `linux/arm64` | Pending Compose run with a supported local engine and Bash; earlier native macOS evidence is separate. |
+| macOS Intel | `linux/amd64` | Pending actual Mac run with a supported local engine and Bash. |
+
+The non-ARM64-Linux rows remain pending acceptance obligations. A reusable
+verification harness is planned work, not an implemented command. No platform
+parity or full PD-08 acceptance is claimed from the current checkpoint.
+
+### Approved reset/recreate checkpoint — 2026-10-18
+
+With explicit contributor approval, the local wrapper deleted only
+`clip-local_clip_local_postgres_data` and its validated service container.
+The volume was confirmed absent before recreation; the old synthetic test
+database was absent afterward. Fresh startup/authentication, four migrations
+(Applied 4/Pending 0), repeat migrate and both SQL smoke suites in
+`clip_test_reset` passed. Inventory: four migration records, 23 domain tables.
+The service was stopped; the recreated synthetic volume remains. Evidence:
+`/tmp/clip-pd08-compose-3ej1goas/reset-*.log`.
+
+This closes reset/recreate for the Linux ARM64 row only. Concurrency/query
+plans, other platform rows, affected-owner acceptance and CI/common-command
+integration remain pending. No cloud or unrelated resource was changed.
+
+### Storage concurrency and index diagnostics
+
+With the local synthetic password exported, run from the repository root:
+
+```bash
+uv run --locked python database/tests/concurrency-checks.py
+```
+
+The standard-library harness validates/starts the existing local Compose target,
+creates a fresh `clip_test_races_*` database, applies pinned migrations, and uses
+independent psql sessions. It observes actual lock contention before releasing
+the first transaction. Statement/lock/idle-transaction timeouts bound server
+work. It checks final-image protection under READ COMMITTED and REPEATABLE READ,
+the eight-image ceiling, unique Sale Listing and Wanted Request conversation
+pairs, sequence allocation, and competing offer revisions with aborted-sequence
+rollback. Expected SQLSTATEs and final stored state must both match.
+
+Natural JSON plans are retained for owner feeds, images, entry pagination,
+full-text search and due notifications. A separate diagnostic disables sequential
+scans to verify index eligibility on tiny fixtures; it is not production plan,
+scale, latency or NFR evidence. Representative domain workload/plans remain with
+owning domain tasks.
+
+Exit 0 means these checks passed; any other exit needs investigation. Evidence
+and the new synthetic database name are printed. Evidence is temporary; test
+databases are retained. The validated local service is stopped on exit; no
+volume reset/drop or cloud action occurs. Existing local data is not removed.
+Run only with no other operator using the local lifecycle; CI wiring is PD-12.
+
+Approved scope: database integrity only. Application transaction/locking
+contracts for closure/create, offer retention and read/reminder/lease/replay or
+cleanup races remain DL-00/domain-owner review and real integration obligations;
+these tests do not establish those workflows or cryptographic correctness.
+
+Latest Linux ARM64 run: seven concurrency cases and five index diagnostics
+passed; evidence `/tmp/clip-pd08-races-j6takuzv`, retained database
+`clip_test_races_36a74120a8aa`. The first run expected the wrong offer-revision
+SQLSTATE; PostgreSQL correctly returned unique violation `23505`. The assertion
+was corrected and final state/aborted-sequence rollback checked on the rerun.
+
+## Disposable CI migration gate — PD-12
+
+`uv run --locked python scripts/check_database.py` uses the same PostgreSQL
+18.6 image and dbmate 2.36.0 as local development, with a new `clip_test_ci`
+database, no published port and temporary memory-backed storage. It checks clean
+apply/exact head, repeated application, both existing SQL smoke suites and the
+23-table inventory, then removes only its own container. Local Linux ARM64
+execution passed; actual hosted CI, other platform rows and affected-owner
+acceptance remain pending. See the [command registry](../docs/environment/commands.md).

@@ -349,6 +349,8 @@ Step 1 approved directions: [Listings-owned search](../decisions/search-listing-
 
 **Purpose:** Make required repository quality gates automatic and repeatable.
 
+**Approved sequencing:** PD-12 may implement and verify CI against the merged PD-08/09 source and locally verified PD-11 on the integration branch. Pending platform checks, affected-owner/peer review and main acceptance remain required; this does not complete those tasks or unblock PD-19/PRE-00. See [CI integration sequencing](../decisions/ci-integration-sequencing.md).
+
 **Steps:**
 
 1. Create `.github/workflows/ci.yml` to run on pull requests and the main development branch according to the repo's existing convention.
@@ -356,8 +358,10 @@ Step 1 approved directions: [Listings-owned search](../decisions/search-listing-
 3. Run, at minimum: Black check-only; Python tests; Python lint/type checks if selected; the registered web checks (`npm run lint`, `npm run typecheck`, `npm test`, and `npm run build`, or the equivalent documented aggregate); migration/schema checks against disposable local PostgreSQL (apply migrations from a clean database to the expected head and fail on migration or schema-check errors); generated-contract stale check; and secret scanning or equivalent repository scan selected for the project. Preserve PD-07's route and frontend import-boundary coverage; do not replace it with placeholder-text or `.gitkeep` assertions.
 4. Keep CI local-only. CI must not run Terraform apply, deploy, create billable infrastructure, access production data, or require long-lived cloud credentials.
 5. Add clear job names and preserve actionable failure output without exposing sensitive values.
-6. Add at least one verification that the documented local aggregate check uses the same core commands as CI, including the registered web aggregate `npm run check` or an explicitly recorded equivalent.
+6. Create the minimal shared local check runner/command list used by CI and add at least one verification of local/CI command parity, including the registered web aggregate `npm run check` or an explicitly recorded equivalent. PD-13 reuses this output when extending the full lifecycle command front door.
 7. Record CI status and required checks in `CONTRIBUTING.md` and both checklists in PD-18. Configure the selected host's main-branch PR review/check protections when supported. If a hosting-plan limitation prevents enforcement, record the equivalent human review/check evidence and require explicit approval of that documented fallback. CI never merges, deploys, or applies infrastructure by itself.
+
+8. Add a pinned Python Black pre-commit hook and document one-time developer installation and review/restaging behavior. Reuse the project Black configuration; CI formatting checks remain independent of hook installation.
 
 **Checks:** Run each CI command locally; run CI on a test branch/PR if available; introduce a harmless temporary failure to verify the gate blocks, then revert it; confirm no secrets or cloud credentials are configured.
 
@@ -369,7 +373,7 @@ Step 1 approved directions: [Listings-owned search](../decisions/search-listing-
 
 **Steps:**
 
-1. Create the root `Makefile` command front door (or an explicitly approved platform-compatible equivalent, with its actual mappings recorded) with documented commands for install/setup, local start, local stop, migration, small seed, reference dataset generation/load, tests, format, format-check, contract regenerate/check, and full local CI-equivalent check. Reuse PD-07's root npm manifest, lockfile, and registered web commands (`npm ci`, `npm run dev`, `npm run check`, and `npm run preview`); the common front door must call or clearly map to them rather than defining a second web setup/check path.
+1. Extend the minimal shared check runner/command list from PD-12 into the root `Makefile` command front door (or an explicitly approved platform-compatible equivalent, with its actual mappings recorded) with documented commands for install/setup, local start, local stop, migration, small seed, reference dataset generation/load, tests, format, format-check, contract regenerate/check, and full local CI-equivalent check. Reuse PD-07's root npm manifest, lockfile, and registered web commands (`npm ci`, `npm run dev`, `npm run check`, and `npm run preview`); the common front door must call or clearly map to them rather than defining a second web setup/check path.
 2. Add scripts only where they remove repeated fragile steps. Each script validates required arguments, reports the selected local target, returns non-zero on failure, and avoids hidden destructive behavior.
 3. Add Terraform format/validate commands, but do not add apply/deploy commands to the general local check target.
 4. Document prerequisites, supported OS/shell, expected ports, first run, common errors, cleanup, and how to verify success in the canonical environment guide and `CONTRIBUTING.md`; keep the root README public-facing and link to the setup guide.

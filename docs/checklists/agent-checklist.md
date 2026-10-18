@@ -67,6 +67,14 @@
 - [ ] Run `uv run --locked pytest apps/api/tests -q` and `make check-python-format`. Check health in explicit test mode, safe local defaults, rejected configuration, no input-value leaks and ignored dotenv/example files. Reuse the recorded fresh locked environment evidence if dependencies/configuration are unchanged.
 - [ ] Review README-only domain placeholders and shared-core boundaries: pending PD-06 conventions and PD-08 database lifecycle must not be represented as working services. Keep configuration examples non-secret and preserve the distinction between local checks and future CI/cloud evidence.
 
+## PD-12 CI and merge-gate checks
+
+- [ ] Verify pinned Black hook installation/configuration and format/block/review/restage behavior; generated contracts remain excluded and CI formatting is independent. See [hook setup](../../CONTRIBUTING.md#black-pre-commit-hook-pd-12).
+- [ ] Run `make check` with locked setup/local Docker; verify CI still calls the shared registry and retain applicable failure-control evidence.
+- [ ] Verify hosted **CI / Foundation quality gates** success for the current PR revision, with run URL/head/base evidence; local-only evidence is insufficient. Confirm the exact status context/source on the first hosted run.
+- [ ] Follow [the merge gates](../../CONTRIBUTING.md#ci-and-required-merge-checks-pd-12): independently approved peer/affected-owner review, resolved findings and separate exact-revision merge authorization. The manual fallback is approved; do not claim technical host enforcement from inaccessible settings.
+- [ ] Obtain separate approval before hosting changes; retain unresolved dependency/platform gates. PD-18 consolidates these checks without accepting unrun hosted checks.
+
 ## PR and completion
 
 - [ ] Integrate the combined PD-00–PD-03 handoff directly into `main` after a full audit confirms all four tasks' outputs and checks with no gaps. Use a coherent task/milestone PR for later changes; follow BOOT-00's separate documentation-seed rule. Do not approve or merge your own PR autonomously.

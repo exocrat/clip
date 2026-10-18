@@ -13,7 +13,12 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = ["black==26.10.1", "httpx2==2.13.1", "pytest==9.1.1"]
+dev = [
+    "black==26.10.1",
+    "httpx2==2.13.1",
+    "pre-commit==4.5.1",
+    "pytest==9.1.1",
+]
 
 [tool.uv]
 package = false
@@ -22,7 +27,8 @@ package = false
 # or undeclared markers instead of silently accepting test-suite mistakes.
 [tool.pytest.ini_options]
 testpaths = ["apps/api/tests", "tests"]
-pythonpath = ["apps/api", "tests/fixtures/core"]
+# Include root data tooling without relying on a developer PYTHONPATH.
+pythonpath = [".", "apps/api", "tests/fixtures/core"]
 addopts = ["--strict-config", "--strict-markers"]
 
 [tool.black]

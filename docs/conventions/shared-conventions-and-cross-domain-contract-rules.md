@@ -138,6 +138,59 @@ Shared rules:
 
 The domain-specific contract documents will assign exact records and operations. If the PRD does not make an ownership boundary clear, the contract task must present alternatives and ask the human; this document does not guess those assignments.
 
+### Python boundary convention (PD-11 step 2)
+
+The declared domain entry points are
+`app.domains.{identity,listings,search,conversations}.public`, backed by the
+reviewed declarations generated into each domain's `public.py` by DL-00.
+Other modules in a domain are private unless a separately reviewed composition
+entry point is explicitly recorded. This convention creates no callable or route.
+
+| Consumer | Permitted project dependencies |
+|---|---|
+| Domain implementation | Its own internal modules, shared technical core, shared contract types and another domain's declared public interface. |
+| Generated domain public declaration | Shared technical/contract types and reviewed public declaration dependencies; never private implementation, ORM/session objects or HTTP request objects. |
+| `app.core` | Shared technical dependencies; no domain imports, business orchestration or domain table access. |
+| Contract source/generator | Reviewed contract declarations, shared technical types and schema tooling; no domain implementation imports or service/database/provider calls to discover types. |
+| Application composition | Declared public interfaces and explicitly reviewed router entry points needed to assemble the app; no arbitrary private-service access. |
+| Domain unit tests | The tested owner's internals; other domains remain behind their public declarations or consumer-owned reviewed test doubles. |
+
+Cross-domain Python imports must name the complete public module, for example
+`from app.domains.identity.public import ReviewedType`. Importing a domain's
+package root, using a private submodule, or re-exporting private objects through
+`public.py` does not bypass the rule. Relative, aliased, type-only and dynamic
+imports must preserve the same boundary. Public declaration dependencies must
+remain acyclic; unresolved orchestration/call cycles require a design decision.
+Composition exceptions must identify the exact module, importing file and
+reason before use; none is implicitly granted by this table.
+
+A runtime consumer must not read, join, update or delete another domain's private
+tables through SQL, ORM mappings, shared sessions, views or helpers. Request the
+owning public operation. The approved Listings-owned search query boundary
+remains in force; sharing PostgreSQL does not grant Search private-table access.
+Reviewed coordinated migrations/FKs/integrity triggers and explicitly isolated
+schema-verification tests remain database-foundation work, not runtime service
+access or blanket exceptions for application code. Keep checks scoped to that
+distinction; a migration is not rejected merely for enforcing a reviewed FK.
+
+Ownership is unchanged: notification implementation under Conversations remains
+with its recorded owner; sharing a domain does not permit changing another
+contributor's reserved files. Architecture checks in step 3 must demonstrate
+positive and negative cases and document their static-analysis limits. A clean
+scan alone cannot prove absence of arbitrary dynamic SQL/imports or runtime
+business call cycles; review and domain integration tests remain required.
+
+Implemented step 3 check: `uv run --locked python scripts/check_boundaries.py`.
+It parses application and editable contract-source Python without executing it,
+checks representative imports/qualified SQL/ORM schema targets and domain import
+cycles, and fails with location/rule diagnostics. Regression tests prove allowed
+and forbidden examples plus CLI failure/recovery. Existing frontend checks stay
+under `npm test`. Computed SQL, unqualified table resolution, arbitrary reflection
+and semantic call graphs still require review; no composition exception is
+currently granted. [Commands and limits](../environment/commands.md#pd-11-boundary-checks).
+
+[Decision and origin](../decisions/domain-public-boundaries.md).
+
 ## 7. Transactions, retries, idempotency, and ordering
 
 Each public operation must document:
@@ -222,7 +275,13 @@ async def get_shareable_contact_options(user_id: UserId) -> ShareableContactOpti
 async def get_selected_own_contacts(user_id: UserId, fields: set[str]) -> SelectedOwnContacts: ...
 ```
 
+PD-11 step 8 carries these declarations in [the Identity source](../../contracts/source/identity.py). `UserId` is a shared alias of core's existing UUID representation, with validation still supplied by the approved UUIDv4 helpers. Source functions fail if invoked; they have no provider, route or data access. Selected-contact fields suppress repr values, while serialization remains private. Final trusted-caller binding remains the explicit DL-00 gate below.
+
 The Identity contract must specify authorization and exposure rules for these operations. Selected values are private contact data: return only requested fields through the approved conversation/contact-sharing flow, and never place them in logs or test output.
+
+The [PD-11 step 1 source decision](../decisions/contract-source-and-generation.md) selects reviewed typed Python declarations in `contracts/source/`, separate from implementation handlers, as the canonical editable machine-readable source. Generate domain public declarations from it; generate HTTP OpenAPI only for explicitly mapped HTTP operations, then derive frontend TypeScript declarations. Internal calls and private types do not automatically become HTTP/frontend surfaces. Generation uses FastAPI schema machinery and pinned `@hey-api/openapi-ts@0.99.0` (TypeScript-only plugin) with shared TypeScript `5.9.3`; implemented paths and commands are in `contracts/README.md`. Compare the implemented API against the generated HTTP contract; a generated declaration is not an implemented operation or proof of authorization/transaction behavior.
+
+[Contract version/change review](../../contracts/README.md#version-and-change-review) records the current HTTP version in canonical source, exact Git revisions, compatibility/migration review, affected-owner approval, regenerated outputs, independent human peer approval and exact-revision merge authorization. Public semantics must not change through generated-file edits or a version bump alone; existing privacy/authorization and real-integration gates remain required.
 
 Use stable contract types across `public.py`, generated OpenAPI, frontend API types, and generated agent stubs. The source contract is edited; generated outputs are rebuilt with the documented generator, never hand-edited. Cross-domain changes require review from affected owners because contracts are shared surfaces.
 

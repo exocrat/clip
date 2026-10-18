@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Checkout needs read access only; never retain its token in the checkout.
+permissions:
+  contents: read
+
+jobs:
+  foundation:
+    name: Foundation quality gates
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.14.3'
+      - name: Set up uv
+        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
+        with:
+          version: '0.10.7'
+          enable-cache: false
+      - name: Set up Node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24.22.0'
+          package-manager-cache: false
+      # Fail rather than silently use a different bundled package manager.
+      - name: Verify npm version
+        run: test "$(npm --version)" = '11.19.1'
+      - name: Install locked Python dependencies
+        run: uv sync --locked --python 3.14.3
+      - name: Install locked JavaScript dependencies
+        run: npm ci
+      # Local make check and these named steps use the same command registry.
+      - name: Check local and CI command parity
+        run: uv run --locked python scripts/check.py ci-parity
+      - name: Check Python formatting
+        run: uv run --locked python scripts/check.py python-format
+      - name: Run Python tests
+        run: uv run --locked python scripts/check.py python-tests
+      - name: Run data tooling tests
+        run: uv run --locked python scripts/check.py data-tests
+      - name: Check domain boundaries
+        run: uv run --locked python scripts/check.py boundaries
+      - name: Check generated contracts
+        run: uv run --locked python scripts/check.py contracts
+      - name: Check web lint, tests, types and build
+        run: uv run --locked python scripts/check.py web
+      - name: Check database wrapper safety
+        run: uv run --locked python scripts/check.py database-safety
+      - name: Check clean migrations and schema
+        run: uv run --locked python scripts/check.py database
+      - name: Scan source for secrets
+        run: uv run --locked python scripts/check.py secrets

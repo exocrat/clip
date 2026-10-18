@@ -14,8 +14,8 @@ For EACH command record: creator task, exact invocation and required inputs, sup
 | Generator framework/tests | PD-09 | All six local steps/audit human-verified; 63 data tests/361 combined Python tests and pinned Black passed. Peer/upstream/main acceptance pending. No domain loader/evaluator. |
 | Final reference generate/load/validate/fingerprint | SE-01/DATA-READY | Not implemented; requires domain schemas/configuration |
 | Python format and non-mutating pinned Black check | PD-04 | Implemented and human-verified at step 3; exact commands and verification below |
-| Test/lint/type/build/aggregate CI-equivalent | PD-05/07/12/13 | API/configuration/core/fixture tests implemented in Stream 1; web lint, typecheck, tests, build, and `npm run check` implemented/verified in PD-07. Exact commands below; CI and combined command-front-door integration remain pending PD-12/13. |
-| Contract regenerate/stale-check | PD-11/DL-00 | Not implemented |
+| Test/lint/type/build/aggregate CI-equivalent | PD-05/07/12/13 | `make check` runs the shared Python/web/database/contracts/secret gates used by CI. Local evidence below; hosted execution remains pending PD-12, lifecycle front door PD-13. |
+| Contract regenerate/stale-check | PD-11/DL-00 | Health generation/check and actual API schema/consumer regression checks implemented in PD-11; full domain declarations remain DL-00. Exact commands below. |
 | Terraform static format/validate (no remote state mutation) | PD-15 | Implemented: run `bash scripts/terraform-static-check.sh` from the repository root with Terraform `1.15.9`. Checks recursive Terraform formatting, then runs `terraform init -backend=false` and `terraform validate` for each root. Exit 0 means all checks pass; a format, provider-download, or validation failure exits nonzero and must be resolved before planning. It does not contact AWS or read remote state; first initialization needs Terraform Registry access and may download the pinned provider into ignored `.terraform/`. |
 | Plan/apply/build-release/deploy/verify/rollback/teardown | PD-15/16; domain/EXP additions | PD-15 documents the reviewed plan/apply/verify/cleanup workflow and command templates in `infra/terraform/README.md`; actual targets, state keys, protected plan path, and commands must be selected per approved plan. Cloud operations remain separately gated and are not part of local/CI checks. |
 | Search evaluator/load workload/NFR manifests | SE-01 | Not implemented |
@@ -276,3 +276,139 @@ CI same-version checks. Native results do not close PD-08/PRE-00. See the
 [database verification notes](../../database/README.md#native-macos-checkpoint--2026-10-18).
 
 One-time clone/agent setup belongs in the [workstation guide](wsl-and-first-session.md). Future command owners must register explicit targets and effects above. PD-10/DL-00/domain owners register explicit test-double scenarios and real integration commands with distinct names/modes. No deployed command may default to fake auth/storage/notification/domain providers; startup validation rejects them. Stub tests never share a label or result classification with cloud/NFR runs. No cloud operation belongs in the generic local/CI aggregate target.
+
+## PD-08 database concurrency and index diagnostics
+
+`uv run --locked python database/tests/concurrency-checks.py` requires the existing
+local Docker/Compose service definition and exported synthetic
+`CLIP_LOCAL_POSTGRES_PASSWORD`. It starts the validated local service, downloads
+pinned images if needed, creates/retains a fresh synthetic test database, checks
+seven overlapping transaction cases and five index diagnostics, then stops the
+service. Exit 0 means pass; nonzero requires inspecting the printed evidence
+path. No reset/deletion/cloud/provider calls. See [scope and limits](../../database/README.md#storage-concurrency-and-index-diagnostics).
+
+## PD-11 boundary checks
+
+| Check | Exact command |
+|---|---|
+| Python application/contract-source boundary scan | `uv run --locked python scripts/check_boundaries.py` |
+| Checker positive/negative and CLI regression tests | `uv run --locked pytest tests/architecture/test_boundaries.py -q -W error` |
+| Existing frontend route/import boundaries | `npm test` |
+
+Run from the repository root with locked Python tools and the existing pinned
+Node/npm dependencies (`npm ci` for installation). The Python scan reads
+`apps/api/app/` and `contracts/source/` without importing code; no database,
+provider, listener or cloud is used. It exits 0 on no findings, nonzero on
+violations/scan failure; diagnostics contain path/line/rule, not source values.
+Do not suppress a finding: correct the dependency or obtain review of an exact
+composition exception. Root pytest includes the checker tests. Frontend tests
+remain unchanged and are also included in `npm run check`.
+
+Coverage: static/relative/type-only imports, recognized dynamic import calls,
+known aliases, domain import cycles, qualified literal SQL/search-path targets
+and explicit ORM schema declarations. No router exception is currently granted.
+Computed SQL, unqualified table resolution, arbitrary reflection and semantic
+business call cycles are not proven safe by this scan; review and domain tests
+remain required. Migrations/database verification are outside the runtime scan.
+
+## PD-11 contract generation
+
+Requires `uv sync --locked` and root `npm ci`: Node 24, TypeScript 5.9.3,
+Hey API 0.99.0 (TypeScript-only plugin), and existing locked FastAPI/Pydantic.
+
+| Invocation | Effect |
+|---|---|
+| `uv run --locked python scripts/generate_contracts.py generate` | Rebuild three registered Python/OpenAPI/TypeScript outputs from reviewed health declarations. |
+| `uv run --locked python scripts/generate_contracts.py check` | Render in temporary storage; exit 0 if current, nonzero for missing/stale outputs or tool/source failure; outputs unchanged. |
+
+Run from the root. Generated files must not be hand-edited. On drift, correct
+source, regenerate, review the diff and rerun check. On tool mismatch, inspect
+pins/lock and use `npm ci`; no unpinned network fallback. No listener, database,
+provider or cloud calls. [Outputs and limits](../../contracts/README.md).
+
+Contract regression command: `uv run --locked pytest tests/contracts -q -W error`.
+Requires locked Python tools plus root `npm ci` (Node 24/TypeScript 5.9.3/Hey API
+0.99.0). Root pytest includes it. Synthetic negative cases use temporary trees,
+local tools and in-process ASGI, never modify tracked artifacts or fetch tools.
+Exit 0 means pass; nonzero requires investigation. API-only pytest remains usable
+without Node. [Coverage](../../contracts/README.md#contract-regression-tests).
+
+## CI setup — PD-12
+
+`.github/workflows/ci.yml` installs Python 3.14.3, uv 0.10.7 and Node 24.22.0,
+verifies bundled npm 11.19.1, then runs `uv sync --locked --python 3.14.3` and
+`npm ci` at the repository root. Setup actions are pinned to immutable revisions;
+checkout credentials are not persisted. Installs may download tools/packages and
+write ignored environments/caches; lockfile mismatch fails. Quality gates are wired below; hosted execution and final acceptance remain pending.
+
+### CI quality gates — PD-12 Step 3
+
+CI runs the registered Black, root/data pytest, boundary, contract freshness,
+`npm run check` and simulated database-wrapper safety commands. Python lint/type
+tools remain deferred under the existing tooling decision.
+
+| Command | Effect / failure |
+|---|---|
+| `uv run --locked python scripts/check_database.py` | Requires local Unix-socket Docker. Creates a fresh PostgreSQL 18.6 container with temporary memory-backed data, no host port/volume; dbmate 2.36.0 checks clean apply, exact head `20261018152702`, repeat migration and both SQL smoke suites. Removes only its own container; nonzero on SQL/setup/cleanup failure. Never targets retained Compose data. |
+| `uv run --locked python scripts/check_secrets.py` | Requires local Unix-socket Docker. Gitleaks 8.30.1 scans tracked and nonignored new source in a temporary snapshot, offline/read-only. Uses `.gitleaks.toml`; findings print file/line/rule only and fail. This scans current source, not Git history; ignored files are excluded and symlinks rejected. |
+
+Images may be downloaded from public registries. No cloud/provider configuration
+is forwarded. These commands accept no target arguments; `--help` describes them.
+Local/CI aggregate parity is implemented below; full lifecycle commands remain PD-13.
+
+### CI execution boundary — PD-12 Step 4
+
+The PR/main workflow uses read-only repository access, no persisted checkout
+credentials, no secret expressions, no deployment environment and no cloud login,
+apply/deploy or production-data command. Setup downloads public tools/packages
+and images; local-only describes the checks, not a network-free installation.
+Database/scanner runners require local Unix-socket Docker, forward only required
+inputs and isolate execution from provider settings; neither mounts cloud files.
+The database uses ephemeral generated credentials and memory-backed storage;
+the scanner runs without network access. Existing tests use synthetic fixtures,
+in-memory HTTP and temporary files. Contract generation rejects external refs.
+No root package install/check/build lifecycle hooks add a separate action.
+
+Read-only host inspection on 2026-10-18 found no repository Actions secrets or
+repository environments. This is not an organization-secret inventory or hosted
+execution result; CI does not reference organization secrets either. Changes to
+workflow commands, dependencies or permissions require renewed review. Hosting
+protections and actual hosted CI verification remain pending.
+
+### CI failure output — PD-12 Step 5
+
+`Foundation quality gates` identifies the required job; each setup/check has a
+unique step label and failures are not suppressed. Python/web tools retain their
+normal local diagnostics. Database command failures identify Docker/psql/dbmate
+and exit status with bounded, password-redacted output. Secret findings expose
+only file/line/rule; scanner configuration/exit failures and Git/Docker setup
+failures have separate recovery guidance, without raw scanner stderr or values.
+Hosted failure presentation remains to be verified on the PR.
+
+### Shared aggregate — PD-12 Step 6
+
+After `uv sync --locked` and root `npm ci`, run `make check` from the clone root
+with Python 3.14, Node 24, npm 11, uv, Make and local Docker. It runs all checks
+through `scripts/check.py`, stops on first failure and preserves the failing exit
+status. Each check has a 600-second bound. Side effects are the previously listed
+caches/build output, temporary snapshots and disposable containers; no cloud
+login or retained database reset is needed. Plain `make` still checks Black only.
+
+CI calls individual selectors from the same registry, preserving named steps.
+`uv run --locked python scripts/check.py --help` lists selectors; omit the selector
+to run all. The first check, `ci-parity`, compares the workflow's ordered commands
+with the registry and verifies the Make mapping, including `npm run check`.
+It deliberately accepts only the existing single-line workflow run fields;
+new YAML command forms require review. It is not a general YAML/security checker.
+
+### Black pre-commit hook — PD-12 Step 8
+
+| Command | Effect |
+|---|---|
+| `uv run --locked pre-commit install` | After `uv sync --locked`, install the local Git hook once per clone; requires uv on the commit process PATH. |
+| `uv run --locked pre-commit validate-config` | Validate the tracked hook configuration without formatting files. |
+| `uv run --locked pre-commit run --all-files` | Run pinned Black on tracked Python files; may rewrite source. Generated contracts excluded. Review/stage fixes before retrying a commit. |
+| `uv run --locked pre-commit uninstall` | Remove the installed local hook; leaves tracked configuration/dependencies intact. |
+
+The local hook uses root locked Black/configuration, not a separate environment;
+it never stages fixes. CI's independent check-only gate remains required.

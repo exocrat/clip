@@ -9,7 +9,7 @@ uv sync --locked
 uv run --locked uvicorn app.main:app --app-dir apps/api --host 127.0.0.1 --port 8000
 ```
 
-In another terminal, `curl --fail http://127.0.0.1:8000/health` should return HTTP 200 with `{"status":"ok"}`. This confirms only that the API process responds; it does not check a database, provider or cloud environment. The initial app exposes only `/health`; generated schema/docs routes are disabled until later contract work.
+In another terminal, `curl --fail http://127.0.0.1:8000/health` should return HTTP 200 with `{"status":"ok"}`. This confirms only that the API process responds; it does not check a database, provider or cloud environment. The initial app exposes only `/health`; schema/docs routes remain disabled; PD-11 generates contracts offline.
 
 Stop the foreground server with Ctrl+C. The server binds only to loopback, requires no cloud credentials or local database, and creates no external resources. If the port is occupied, stop only your own earlier process or explicitly choose another local port and use that same port in the health request. An import/dependency error should be investigated after `uv sync --locked`; do not replace it with a fake success response. Runtime dependencies are declared only in root `pyproject.toml` and locked by uv.
 
@@ -39,7 +39,7 @@ uv sync --locked
 uv run --locked pytest apps/api/tests -q
 ```
 
-`uv run --locked pytest` runs all currently configured test roots. API tests start the real ASGI app in explicit test mode using FastAPI's TestClient; no HTTP listener, database, provider or cloud access is needed. The tests discard inherited `CLIP_`/`AWS_` settings for isolation and restore the developer's environment afterward. Synthetic cases cover local defaults, typed overrides, malformed/empty values, production-debug rejection, redacted errors, fresh reads and ignored dotenv/example files. Fresh credential-free subprocesses verify invalid configuration prevents the actual entry point from importing. Temporary fixture files stay under pytest's temporary directory.
+`uv run --locked pytest` runs all currently configured test roots; PD-11 contract generation tests also require root `npm ci` and the pinned Node toolchain. The API-only command above needs no Node installation. API tests start the real ASGI app in explicit test mode using FastAPI's TestClient; no HTTP listener, database, provider or cloud access is needed. The tests discard inherited `CLIP_`/`AWS_` settings for isolation and restore the developer's environment afterward. Synthetic cases cover local defaults, typed overrides, malformed/empty values, production-debug rejection, redacted errors, fresh reads and ignored dotenv/example files. Fresh credential-free subprocesses verify invalid configuration prevents the actual entry point from importing. Temporary fixture files stay under pytest's temporary directory.
 
 Exit 0 means the collected suite passed; a failure must be investigated, and exit 5 (no tests collected) is not a pass. The development-only `httpx2` pin supports the installed Starlette TestClient. No fake identity or storage implementation is used, and this suite does not prove domain integration, deployed readiness or performance.
 
@@ -62,3 +62,12 @@ Temporary FastAPI routes live only in test fixtures; they add no production endp
 Run `uv run --locked pytest apps/api/tests/core/test_security_boundaries.py -q -W error` for focused security checks; the existing shared-core/full commands include them. Tests reject client identity/account/eligibility/ownership claims in headers, query parameters, JSON and cookies. Test-only server wiring supplies positive controls: valid internal contexts work, client claims cannot replace them, and claimed future deadlines cannot revive expired contexts.
 
 Fresh credential-free child processes import `app.main` with a ten-second timeout. Production rejects every nonempty combination of fake identity/email/storage selection, development authentication, debug, combined unsafe controls and empty/unsupported provider selections; safe production defaults and explicit local/test selections provide positive controls. No listener or actual provider is started. These checks establish shared-boundary/configuration safety; actual credential verification, revocation, domain authorization and provider delivery remain with their owning implementation tasks.
+
+## Health contract generation
+
+`app.main` binds `/health` using the generated types/metadata in
+`app/contracts/health.py`. Edit `contracts/source/health.py`, then use the
+[contract guide](../../contracts/README.md) to regenerate/check; do not edit the
+generated runtime module. The handler still returns only `{"status":"ok"}`.
+Generation and public schema publication are separate; no schema endpoint or
+marketplace feature is enabled.

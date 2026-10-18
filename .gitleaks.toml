@@ -1,0 +1,12 @@
+# Preserve upstream rules; exempt only one historical source-bundle checksum.
+[extend]
+useDefault = true
+
+[[rules]]
+id = "generic-api-key"
+[[rules.allowlists]]
+description = "Historical SHA-256 for secret-handling.md, not a credential"
+condition = "AND"
+regexTarget = "secret"
+paths = ['''(^|/)docs/source/bundle-manifest\.json$''']
+regexes = ['''^1dbf459ba65c4f26b077d6b017bb39a1bb105274a9ec0ba83b408f75a6a0ba9e$''']

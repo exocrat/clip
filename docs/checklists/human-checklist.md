@@ -36,6 +36,14 @@ You may inspect evidence, but the agent must summarize what makes it acceptable 
 - [ ] Review `uv run --locked pytest apps/api/tests -q` results and formatting checks. Confirm tests cover health in test mode and safe configuration failures, use synthetic data, and avoid exposing supplied values. The agent runs routine checks; you verify the summarized evidence.
 - [ ] Confirm shared-core/domain placeholders make their pending PD-06/08 responsibilities explicit, and setup/start/test instructions agree across CONTRIBUTING and the command registry. CI/shared Make lifecycle targets remain later tasks.
 
+## PD-12 CI and merge-gate verification
+
+- [ ] Verify pinned Black hook installation/configuration and format/block/review/restage behavior; generated contracts remain excluded and CI formatting is independent. See [hook setup](../../CONTRIBUTING.md#black-pre-commit-hook-pd-12).
+- [ ] Review `make check` and current hosted **CI / Foundation quality gates** evidence, including run URL and PR head/base revisions. Missing/skipped/cancelled/failed required checks do not pass.
+- [ ] Follow [the approved manual fallback](../../CONTRIBUTING.md#approved-manual-fallback). It preserves PR-only merging, independent human/affected-owner approval and separate exact-revision merge authorization, but cannot technically prevent bypass.
+- [ ] Recheck the exact current revision before authorizing merge; require renewed checks/review after relevant changes. Do not treat local checks or AI findings as hosted success or independent human approval.
+- [ ] Hosting changes retain separate approval. PD-18 consolidates these requirements; original upstream/platform and PD-19/PRE-00 gates remain pending where recorded.
+
 ## Task-wide closeout
 
 - [ ] At task/milestone handoff, check the complete change against the task's acceptance conditions, relevant checklist items, tests/checks, documentation/evidence, privacy/secret handling, and work-log status. The agent should present failures and blockers plainly; you need not reconstruct acceptance from separate files.

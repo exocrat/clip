@@ -6,7 +6,7 @@ This package contains shared technical primitives. [Canonical conventions](../..
 
 | Module | Purpose and important behavior |
 |---|---|
-| `identifiers.py` | `new_id`, `parse_id`, `format_id`: generate/validate UUIDv4 and emit canonical strings; IDs grant no authorization. |
+| `identifiers.py` | `new_id`, `parse_id`, `format_id`: generate/validate UUIDv4 and emit canonical strings. `UserId` aliases the same UUID representation for contracts; it adds no validation or authorization. |
 | `timestamps.py` | `as_utc`, `parse_timestamp`, `format_timestamp`: require aware instants, normalize offsets, and emit six fractional digits plus Z without silent precision loss. |
 | `money.py` | `validate_paise`, `rupees_to_paise`, `format_rupees`: exact integer paise restricted to whole rupees; reject floats/booleans/fractional rupees. Signed values are representable; domains enforce their permitted ranges and zero rules. |
 | `pagination.py` | Immutable `PageRequest`/`Page`, `page_parameters`, `page_from_window`: page 1/size 20 defaults, sizes 20/50/100, offset and size+1 lookahead. Queries must first authorize/filter and sort with an ID tie-breaker. The helper preserves query order; it cannot enforce SQL ordering or snapshot consistency. |
