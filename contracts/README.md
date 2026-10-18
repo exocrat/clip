@@ -23,11 +23,19 @@ published. Source models and shared core primitives have one authoritative
 owner. Domain contracts must also record authorization, errors, transaction,
 retry/duplicate and privacy semantics that schema types cannot prove.
 
-Planned domain source slots under `contracts/source/` are Identity, Listings,
-Search and Conversations. Step 7 documents empty placeholders; step 8 declares
-only the required Identity contact interfaces. DL-00 supplies reviewed domain
-contracts and generates each domain's `public.py` before provider implementation.
-This health increment does not create those four domain interfaces.
+Identity now carries the explicitly required step 8 internal contact declarations;
+the other three sources remain docstring-only. No domain HTTP operations or
+generated public modules are registered:
+
+| Editable domain source | Later contract / implementation |
+|---|---|
+| [Identity](source/identity.py) | Required internal contact declarations present; full contract DL-00, implementation ID-01. |
+| [Listings](source/listings.py) | Contract DL-00; implementation LI-01/LI-02. |
+| [Search](source/search.py) | Contract DL-00; implementation SE-01/SE-02. |
+| [Conversations](source/conversations.py) | Contract DL-00; implementation CN-01/CN-02, notification delivery CN-03. |
+
+DL-00 supplies reviewed domain contracts and generates each domain's `public.py`
+before provider implementation. This health increment registers only `/health`.
 
 ## Tools and exact commands
 
@@ -88,3 +96,20 @@ invalid status literal must fail. HTTP tests use in-process ASGI only. External
 schema references are rejected; no network/provider/database services are used.
 The only tracked generator behavior correction here sanitizes source syntax
 errors rather than allowing a traceback to echo source text.
+
+## Internal Identity contact declarations
+
+`contracts/source/identity.py` carries only `ShareableContactOptions`,
+`SelectedOwnContacts`, `get_shareable_contact_options(user_id)` and
+`get_selected_own_contacts(user_id, fields)`, as required by shared conventions.
+`UserId` reuses core's existing UUID representation. Selected-contact fields are
+required/nullable and hidden from repr; serialization remains private data.
+No contact values are used in declaration tests.
+
+Both async declarations raise `NotImplementedError`; neither reads data nor
+returns fake success. DL-00 must bind the trusted caller/own-contact permissions,
+field validation/errors and authorized conversation-sharing flow before ID-01
+implements them. An arbitrary user ID is not authorization, and these operations
+are not notification-recipient lookup. CN-02's encrypted-sharing protocol remains
+its reviewed domain work. No HTTP metadata is assigned, so these types/functions
+remain absent from generated OpenAPI/TypeScript; generated `public.py` is DL-00.

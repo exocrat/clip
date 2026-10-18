@@ -275,6 +275,8 @@ async def get_shareable_contact_options(user_id: UserId) -> ShareableContactOpti
 async def get_selected_own_contacts(user_id: UserId, fields: set[str]) -> SelectedOwnContacts: ...
 ```
 
+PD-11 step 8 carries these declarations in [the Identity source](../../contracts/source/identity.py). `UserId` is a shared alias of core's existing UUID representation, with validation still supplied by the approved UUIDv4 helpers. Source functions fail if invoked; they have no provider, route or data access. Selected-contact fields suppress repr values, while serialization remains private. Final trusted-caller binding remains the explicit DL-00 gate below.
+
 The Identity contract must specify authorization and exposure rules for these operations. Selected values are private contact data: return only requested fields through the approved conversation/contact-sharing flow, and never place them in logs or test output.
 
 The [PD-11 step 1 source decision](../decisions/contract-source-and-generation.md) selects reviewed typed Python declarations in `contracts/source/`, separate from implementation handlers, as the canonical editable machine-readable source. Generate domain public declarations from it; generate HTTP OpenAPI only for explicitly mapped HTTP operations, then derive frontend TypeScript declarations. Internal calls and private types do not automatically become HTTP/frontend surfaces. Generation uses FastAPI schema machinery and pinned `@hey-api/openapi-ts@0.99.0` (TypeScript-only plugin) with shared TypeScript `5.9.3`; implemented paths and commands are in `contracts/README.md`. Compare the implemented API against the generated HTTP contract; a generated declaration is not an implemented operation or proof of authorization/transaction behavior.

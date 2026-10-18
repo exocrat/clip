@@ -2,6 +2,11 @@
 
 from uuid import UUID, uuid4
 
+# Semantic contract spelling for the existing UUID representation. This alias
+# adds no identifier class or validator; trusted bindings still use the shared
+# UUIDv4 parse/format helpers before invoking a future domain implementation.
+UserId = UUID
+
 
 def new_id() -> UUID:
     """Generate an entity/request identifier without embedding creation time."""
