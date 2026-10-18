@@ -34,7 +34,8 @@ No business contract, composition exception or human ownership is invented here.
 ## Approver
 
 Existing canonical ownership rules; integration contributor authorized step 2.
-Recorded output verification and affected-owner/independent review remain pending.
+The contributor verified the recorded convention before step 3.
+Affected-owner/independent review remains pending.
 
 ## Supersedes
 

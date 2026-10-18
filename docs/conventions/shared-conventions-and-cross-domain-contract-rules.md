@@ -180,6 +180,15 @@ positive and negative cases and document their static-analysis limits. A clean
 scan alone cannot prove absence of arbitrary dynamic SQL/imports or runtime
 business call cycles; review and domain integration tests remain required.
 
+Implemented step 3 check: `uv run --locked python scripts/check_boundaries.py`.
+It parses application and editable contract-source Python without executing it,
+checks representative imports/qualified SQL/ORM schema targets and domain import
+cycles, and fails with location/rule diagnostics. Regression tests prove allowed
+and forbidden examples plus CLI failure/recovery. Existing frontend checks stay
+under `npm test`. Computed SQL, unqualified table resolution, arbitrary reflection
+and semantic call graphs still require review; no composition exception is
+currently granted. [Commands and limits](../environment/commands.md#pd-11-boundary-checks).
+
 [Decision and origin](../decisions/domain-public-boundaries.md).
 
 ## 7. Transactions, retries, idempotency, and ordering

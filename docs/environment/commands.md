@@ -286,3 +286,27 @@ pinned images if needed, creates/retains a fresh synthetic test database, checks
 seven overlapping transaction cases and five index diagnostics, then stops the
 service. Exit 0 means pass; nonzero requires inspecting the printed evidence
 path. No reset/deletion/cloud/provider calls. See [scope and limits](../../database/README.md#storage-concurrency-and-index-diagnostics).
+
+## PD-11 boundary checks
+
+| Check | Exact command |
+|---|---|
+| Python application/contract-source boundary scan | `uv run --locked python scripts/check_boundaries.py` |
+| Checker positive/negative and CLI regression tests | `uv run --locked pytest tests/architecture/test_boundaries.py -q -W error` |
+| Existing frontend route/import boundaries | `npm test` |
+
+Run from the repository root with locked Python tools and the existing pinned
+Node/npm dependencies (`npm ci` for installation). The Python scan reads
+`apps/api/app/` and `contracts/source/` without importing code; no database,
+provider, listener or cloud is used. It exits 0 on no findings, nonzero on
+violations/scan failure; diagnostics contain path/line/rule, not source values.
+Do not suppress a finding: correct the dependency or obtain review of an exact
+composition exception. Root pytest includes the checker tests. Frontend tests
+remain unchanged and are also included in `npm run check`.
+
+Coverage: static/relative/type-only imports, recognized dynamic import calls,
+known aliases, domain import cycles, qualified literal SQL/search-path targets
+and explicit ORM schema declarations. No router exception is currently granted.
+Computed SQL, unqualified table resolution, arbitrary reflection and semantic
+business call cycles are not proven safe by this scan; review and domain tests
+remain required. Migrations/database verification are outside the runtime scan.
