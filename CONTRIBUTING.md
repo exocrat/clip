@@ -20,6 +20,54 @@ Branch naming: `task/<task-id-lowercase>-<short-purpose>`, e.g. `task/id-01-iden
 
 Obtain explicit human approval before every commit. Approval to execute a task step, including a step that mentions committing, is not commit approval. Prepare and verify the changes, then leave them uncommitted until approval is given.
 
+## CI and required merge checks (PD-12)
+
+Run `uv sync --locked`, root `npm ci`, then `make check` before review. The
+[command registry](docs/environment/commands.md#shared-aggregate--pd-12-step-6)
+describes prerequisites and effects. Workflow **CI**, job **Foundation quality
+gates**, runs the same ordered checks on PRs and pushes to `main`: parity,
+Black, Python/data tests, domain boundaries, contract freshness, web
+lint/tests/types/build, database-wrapper safety, clean PostgreSQL migrations/schema
+and secret scanning. This job is the intended required GitHub Actions check;
+confirm its exact displayed context/source on the first hosted PR run.
+
+**Current status:** local aggregate passed; workflow publication, hosted success
+and hosted intentional-failure/recovery evidence remain pending. Local results
+alone do not satisfy the hosted gate. CI never merges, deploys or applies.
+
+### Approved manual fallback
+
+Read-only inspection on 2026-10-18 found a private repository and no admin access
+for the current account. Rulesets returned HTTP 403 with an upgrade requirement;
+branch-protection inspection returned HTTP 404, which does not prove protections
+are absent. GitHub documents [private-repository protection plan requirements](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches).
+No host setting, plan or visibility was changed.
+
+Approved by the current integration contributor on 2026-10-19; use this
+human-enforced gate while hosting cannot enforce it. See the
+[decision record](docs/decisions/manual-main-merge-gate.md).
+
+1. Use a PR into `main`; no direct main push, force push or deletion.
+2. Refresh main into the branch as required by the existing merge workflow;
+   rerun affected checks. Record the exact current PR head and base SHAs.
+3. Require a successful **Foundation quality gates** run for the current PR
+   revision and local `make check` evidence. Missing, skipped, cancelled or failed
+   required checks do not pass. Record the hosted run URL and tested revision.
+4. Require one independent designated human peer approval, all affected-owner
+   approvals and resolved findings for that revision. New reviewable changes
+   require renewed review. Use [the peer-review prompt](docs/prompts/peer-review-prompt.md).
+5. The human checks that the revision/evidence is still current and separately
+   authorizes the exact PR/head/target merge. Record approvals, run evidence and
+   accepted main SHA in the work log. CI never performs the merge.
+
+This fallback cannot technically stop someone bypassing the policy. Approval
+accepts the manual process; it does not authorize any particular merge. If supported hosting
+becomes available, prepare a separately approved main-protection change requiring
+PR review, the confirmed Actions check, up-to-date branches and resolved
+conversations, with force pushes/deletions disabled. Reverify after configuration.
+PD-18 consolidates these checklist requirements; pending foundation dependencies
+and PD-19/PRE-00 gates remain unchanged.
+
 ## Starting and claiming work
 
 1. Inspect the current workspace read-only; fetch the approved remote main/task branches and inspect relevant draft PRs when access is available. Read the main roster and current task/step evidence. The main work log contains merged status; reconcile active work against the assigned remote task branch's checkpoint log and draft PR before treating an item as available.
@@ -90,7 +138,7 @@ After `uv sync --locked`, start the API from the repository root:
 uv run --locked uvicorn app.main:app --app-dir apps/api --host 127.0.0.1 --port 8000
 ```
 
-In another terminal, `curl --fail http://127.0.0.1:8000/health` should return `{"status":"ok"}`; stop your foreground server with Ctrl+C. This is loopback-only process liveness, requiring no database/provider/cloud access. Environment settings come from the process, not `.env.example`. The [API setup/settings/test instructions](apps/api/README.md) document defaults, safe startup failures and occupied-port recovery. Run `uv run --locked pytest apps/api/tests -q` for persistent health/configuration checks and `make check-python-format` before handing off changes. Shared lifecycle/test Make targets and CI remain PD-13/12 outputs.
+In another terminal, `curl --fail http://127.0.0.1:8000/health` should return `{"status":"ok"}`; stop your foreground server with Ctrl+C. This is loopback-only process liveness, requiring no database/provider/cloud access. Environment settings come from the process, not `.env.example`. The [API setup/settings/test instructions](apps/api/README.md) document defaults, safe startup failures and occupied-port recovery. Run `uv run --locked pytest apps/api/tests -q` for persistent health/configuration checks and `make check-python-format` before handing off changes. `make check` supplies the shared quality aggregate; full lifecycle targets remain PD-13, and hosted CI verification remains PD-12.
 
 ## Assigned implementation paths
 
