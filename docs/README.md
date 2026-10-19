@@ -32,6 +32,8 @@ The root [README](../README.md) describes the project. Agents start from [AGENTS
 - [Secret-reference/access template](environment/secret-handling.md)
 - [PD-16 shared test foundation proposal](environment/shared-test-foundation-proposal.md)
 - [PD-16 evidence and native AMD64 handoff](evaluation/foundation/pd-16/README.md)
+- [PD-16 operational closeout and carried integration gates](evaluation/foundation/pd-16/closeout-review.md)
+- [PD-16 approximate recent-run cost acceptance](decisions/foundation-cost-review-precision.md)
 - [PD-16 RDS stop/resume operation plan](environment/shared-test-rds-operations.md)
 - [PD-16 image handoff/publication preparation](environment/pd16-image-publication.md)
 - [PD-16 service-plan preparation](environment/pd16-service-plan-preparation.md)

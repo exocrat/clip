@@ -1,6 +1,6 @@
 # PD-16 Step 12 — budget, routing and early utilization review
 
-**Status:** Read-only checks performed; evidence independently cross-checked by the agent at the user’s direction before commit/continuation. Post-run charges are not yet available in the budget snapshot. Compute remains off.
+**Status:** Read-only checks performed; evidence independently cross-checked by the agent at the user’s direction before commit/continuation. User accepted approximate recent-run costs under [DEC-12](../../../decisions/foundation-cost-review-precision.md); exact run-charge reconciliation is not a closeout blocker. The old budget snapshot still predates the run. Compute remains off.
 
 ## Budget and routing
 
@@ -28,4 +28,4 @@ Observed lifecycle envelopes: host about **0.967 hours**, RDS start-to-confirmed
 
 ## Follow-up and remaining gates
 
-Recheck actual account/service charges once billing updates past the run, and reconcile retained NAT/storage/other costs against estimates before final PD-16 cost acceptance. Use the current approved non-root budget path or human console; any paid detailed query needs its own authorization. Last verified eligible estimated credits USD 179.49 (Step 8) are historical, not refreshed here. USD 50 pause/review threshold and USD 25 reserve remain in force. No restart, budget change or resource change occurred. Step 13's remaining retention/lifecycle/owner-contact closeout and Step 14/upstream/peer acceptance remain open.
+The user accepted approximate costs and negligible recent-run impact for this closeout ([DEC-12](../../../decisions/foundation-cost-review-precision.md)); do not wait for delayed cent-level run-charge reconciliation. The USD 0.1044 estimate remains a compute/host-volume component, not a measured total or zero-cost claim. Retained NAT/storage and other resource costs remain part of ongoing planning. Last verified eligible estimated credits USD 179.49 (Step 8) remain historical. USD 50 pause/review threshold, USD 25 reserve and project-wide budget remain in force. No paid detailed billing query is needed for this accepted review. Upstream/platform/owner/peer/merge acceptance remains separate.

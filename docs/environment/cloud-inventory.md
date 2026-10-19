@@ -157,3 +157,11 @@ User authorized RDS start and fixed setup/probe sequence. Original RDS now avail
 ### Step 12 read-only budget/utilization review — 2026-10-19
 
 Five USD 50/80/100/120/130 alerts and all four historical subscriber routes reverified; no email sent. Budget actual USD 0.04/forecast USD 1.232 was last updated at 13:42:11 UTC, before the run; run-charge reconciliation awaits refreshed billing. [Review and utilization limits](../evaluation/foundation/pd-16/step12-cost-review.md). No Cost Explorer request/root fallback or resource change; compute remains off. Corrected period timezone description: actual API boundaries are midnight UTC, 05:30 IST.
+
+### Accepted operator and idle deadline — 2026-10-19 UTC
+
+User named **Aditya** as current operator and accepted a 96-hour idle clock from verified full shutdown **2026-10-19 18:23:35 UTC** to **2026-10-23 18:23:35 UTC** (23:53:35 IST). This supersedes earlier unaccepted exact-deadline proposals and unnamed-operator notes. `Owner=shared-team`/date-only expiry tag remain approved. No automatic deletion is installed/authorized; Aditya initiates separately reviewed cleanup if still idle. New approved runs update the clock.
+
+### Cost precision accepted — 2026-10-19 UTC
+
+User accepted approximate recent bounded PD-16 run costs and negligible run impact for closeout; exact delayed-charge reconciliation is no longer a blocker ([DEC-12](../decisions/foundation-cost-review-precision.md)). Earlier dated billing-follow-up notes are superseded on that point. Estimates remain estimates, not a measured zero or bill. Retained NAT/storage/other costs, USD 50 pause/review point, USD 25 reserve and project-wide budget still apply. No billing/resource action occurred.

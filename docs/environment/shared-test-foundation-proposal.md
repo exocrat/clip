@@ -1,5 +1,7 @@
 # PD-16 Shared Test Foundation Proposal
 
+**Current handoff — 2026-10-19 UTC:** ECR image published, private API/SSM and restricted SQL checks passed; API/tasks/hosts are now zero and RDS stopped. Aditya is the operator; accepted idle-review deadline **2026-10-23 18:23:35 UTC**. [Current evidence and remaining acceptance gates](../evaluation/foundation/pd-16/README.md). Historical proposals below are not current deployment status or new action approval.
+
 **Status as recorded at `cc04a23` (2026-10-19):** Base infrastructure deployed; Step 7 blocked on an actual Linux AMD64 image. No API service, image publication or authenticated SQL check is complete. PD-15 peer/main acceptance and PD-16 service/lifecycle checks remain pending. This document records approved choices and historical proposals; it does not authorize any new operation. See the [current inventory](cloud-inventory.md#pd-1516-recorded-deployment--2026-10-19).
 
 **Audit decisions (2026-10-19):** The current contributor volunteered as operator and selected an RDS stop with the [documented restart path](shared-test-rds-operations.md); the exact stop was subsequently authorized and AWS confirmed stopped on 2026-10-19 12:52:26 UTC. Restart has not run; exact holding deadline remains pending. Bounded dependency staging, explicit phase selection, corrected SSM/shutdown ordering and narrow existing-resource name exceptions were approved. No cloud operation is authorized by this paragraph.

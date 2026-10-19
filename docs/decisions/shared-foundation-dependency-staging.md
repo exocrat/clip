@@ -5,7 +5,7 @@
 **Origin:** PD-16 audit R02; approval of decision bundle B.
 
 ## Question
-Can the named health-only foundation increments proceed while upstream acceptance remains pending?
+Can named foundation increments and later documentation preparation proceed while upstream acceptance remains pending?
 
 ## Options considered
 
@@ -16,6 +16,12 @@ Can the named health-only foundation increments proceed while upstream acceptanc
 The user approved the bounded second option. PD-16 may prepare foundation artifacts and, only after separate exact action approval, provision the reviewed base and perform API process-liveness/private SQL checks against locally verified interfaces/configuration: PD-05 health skeleton, PD-06 core conventions, PD-08 PostgreSQL 18.6/local lifecycle, PD-12/13 local shared checks, and PD-15 exact backend/locking handoff. SQL setup is limited to the dedicated probe role and test-database grants; it does not validate domain schemas/migrations/contracts.
 
 The already recorded base apply is historical evidence, not retrospectively authorized by this decision. No domain implementation, NFR result, upstream task completion, PRE-00 or blanket dependency waiver is granted. The hard task acceptance dependencies remain unchanged.
+
+## PD-16 operational closeout and PD-17 documentation continuation — 2026-10-19
+
+The user explicitly accepted the current work as sufficient, directed closing PD-16 **for now**, committing it, and moving to PD-17. Accept the verified operational scope: image publication, private health/SQL checks, shutdown, operator/deadline and approximate cost review. Carry the remaining original platform/affected-owner/upstream/independent/hosted/merge obligations into pre-domain integration closeout under their original task IDs; they have not passed or disappeared.
+
+This explicitly permits **PD-17 documentation work only** against the recorded PD-14/15/16 artifacts despite deferred final acceptance. PD-17 may inspect/update the single domain task list, traceability and checklists. No domain implementation, new deployment, PRE-00/DL-00 acceptance or automatic approval of a PR/merge is granted. PD-18/19 retain their own selection/verification gates; PD-19/PRE-00 cannot pass until all carried required obligations close. Normal independent review and exact merge authorization still apply before publishing acceptance on main.
 
 ## Rationale
 These increments use the existing health skeleton and managed database primitives; native teammate platform runs and domain-owner acceptance do not become successful merely because those primitives are deployed.
@@ -35,4 +41,4 @@ Each deployment, upload, state action and cleanup still requires its own exact a
 User in the current session; personal name not recorded.
 
 ## Supersedes
-Only the requirement to await full upstream acceptance before these specifically named PD-16 increments; no upstream requirement or acceptance check is removed. Complements [the PD-08 integration handoff](database-integration-handoff.md).
+The requirement to await full upstream acceptance before the named PD-16 operational increments and explicitly authorized PD-17 documentation work; no required upstream check or final PD-19/PRE-00 acceptance gate is removed. Complements [the PD-08 integration handoff](database-integration-handoff.md).

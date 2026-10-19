@@ -4,7 +4,9 @@ PD-16 owns the shared test-environment root and state key `shared/test/terraform
 
 ## RDS stop and easy resume
 
-The [target-specific RDS operation plan](../../../../docs/environment/shared-test-rds-operations.md) has identity/capacity preflight, stop/wait/status and start/wait/status commands. Current user is the operator; the authorized stop was confirmed on 2026-10-19 12:52:26 UTC with the expected resource ID. Restart has not been executed. Starting reuses the database and credentials and does not enable ECS or require infrastructure recreation. Each mutation still needs its exact action approval.
+The [target-specific RDS operation plan](../../../../docs/environment/shared-test-rds-operations.md) has identity/capacity preflight, stop/wait/status and start/wait/status commands. Aditya is the current operator. RDS was stopped, restarted for successful fixed setup/probe checks, then verified stopped again on 2026-10-19 18:23:35 UTC with the same resource ID; the ECS host terminated and capacity is zero. The accepted idle-review deadline is 2026-10-23 18:23:35 UTC; cleanup still requires separate exact approvals. Starting reuses the database and credentials and does not enable ECS or require infrastructure recreation. Each mutation still needs its exact action approval.
+
+Current approved stopped inputs are [pd16-stop-plan-inputs.json](../../../../docs/environment/pd16-stop-plan-inputs.json). The historical run-input file enables the API; do not use it for a no-change/stopped-state plan. Neither file contains credentials; DEC-11 requires unchanged values ephemerally for active write-only resources. [Current outputs/evidence](../../../../docs/evaluation/foundation/pd-16/README.md).
 
 ## ECS capacity lifecycle
 

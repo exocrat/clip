@@ -4,15 +4,23 @@
 
 PR #7 local review corrections: [deadline tests, real lock failure check and manual ECR cleanup resolution](review-corrections.md). This evidence covers the tested correction worktree; Suraj verified the result and approved its commit. Publication and current hosted/independent review remain pending.
 
-## Step 12 budget/utilization review — verification pending
+## PD-16 operational closeout — accepted for now
 
-[Budget/routes, observed utilization and cost limits](step12-cost-review.md). Configuration checks passed; run charges await billing refresh before final cost acceptance. No notification test or paid Cost Explorer query; compute remains off.
+[Closeout audit and exact remaining gates](closeout-review.md), [fresh safe outputs/stopped status](step14-handoff-result.json). Aditya is current operator; accepted idle deadline **2026-10-23 18:23:35 UTC**. User explicitly closed PD-16 for now and selected PD-17 documentation. Remaining original checks carry to integration/PD-19/PRE-00 under DEC-07; no full foundation/domain acceptance is implied.
+
+## Step 13 lifecycle closeout — inputs accepted
+
+[Reviewed lifecycle/retention and proposed idle deadline](lifecycle-closeout.md). No repeat startup needed for the observed evidence. User named Aditya as current operator; idle deadline is now accepted and recorded in the closeout.
+
+## Step 12 budget/utilization review — evidence checked and committed
+
+[Budget/routes, observed utilization and cost limits](step12-cost-review.md). Configuration/utilization checks passed; user accepted approximate recent-run costs under [DEC-12](../../../decisions/foundation-cost-review-precision.md), so exact-charge reconciliation is not a blocker. No notification test or paid Cost Explorer query; compute remains off.
 
 ## Step 13 compute shutdown — human-verified
 
-[Shutdown evidence](compute-stop-result.json): zero tasks/ASG hosts, original EC2 host terminated at 18:17:10 UTC; original RDS stopped at 18:23:35 UTC. Storage/images/network/backend retained; NAT/storage remain billable. [Approved plan](stop-plan-review.md). Step 12 cost review, Step 11 human result verification and remaining acceptance gates stay pending.
+[Shutdown evidence](compute-stop-result.json): zero tasks/ASG hosts, original EC2 host terminated at 18:17:10 UTC; original RDS stopped at 18:23:35 UTC. Storage/images/network/backend retained; NAT/storage remain billable. [Approved plan](stop-plan-review.md). Approximate recent-run costs accepted; upstream/platform/peer/merge acceptance remains pending.
 
-## Step 11 readiness smoke — passed, human verification pending
+## Step 11 readiness smoke — human-verified
 
 [Bounded smoke result](step11-smoke-result.json): fresh live status/health/digest, completed SQL-task statuses, SSM and private RDS readiness passed. Reuses verified Step 10 HTTP/SQL evidence; no new session/task/load or performance claim. Step 10 committed as `2a60333`; cost/lifecycle and task acceptance remain pending.
 

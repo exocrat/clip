@@ -144,8 +144,8 @@
     "LastUpdatedTime": "2026-10-19T19:12:11.190000+05:30"
   },
   "notification_configuration_verified": true,
-  "run_billing_reconciliation_pending": true,
-  "step_status": "Read-only configuration/routing, reported early cost and utilization review performed; run-charge reconciliation pending later billing refresh.",
+  "run_billing_reconciliation_pending": false,
+  "step_status": "Approximate recent-run cost review accepted by user; exact charge reconciliation not required for PD-16 closeout.",
   "resource_lifecycle_envelopes": {
     "host_launch_utc": "2026-10-19T17:19:10+00:00",
     "host_terminated_verified_utc": "2026-10-19T18:17:10.857939+00:00",
@@ -173,12 +173,16 @@
     "approved_two_hour_full_active_reference_usd": 0.34846,
     "not_an_actual_bill_or_refreshed_price_quote": true
   },
-  "human_verification_pending": true,
+  "human_verification_pending": false,
   "notification_test_scope": "Configuration/routing only; no synthetic email, SNS publish or actual spend induced.",
   "agent_evidence_verification": {
     "passed": true,
     "checked_at_utc": "2026-10-19T18:29:32.751505+00:00",
     "scope": "thresholds/routes, reported-cost timing, reference arithmetic, metric coverage; no paid query or runtime test",
     "direction": "User requested verification, commit and continuation; independent peer/task acceptance not inferred."
-  }
+  },
+  "human_verified_at_utc": "2026-10-19 18:45:03 UTC",
+  "verification_scope": "Operational handoff reviewed by user; billing reconciliation, independent peer and upstream task acceptance remain separate.",
+  "cost_precision_decision": "DEC-12",
+  "recent_run_cost_treatment": "User accepts recent bounded run impact as negligible; recorded estimates are not measured invoice totals or zero-cost claims."
 }
