@@ -61,6 +61,10 @@ No secret values, keys, tokens, passwords, MFA codes, or local credential files 
 - Each parameter's task/domain owner is responsible for its reference and lifecycle. The person who starts associated resources has first cleanup responsibility; shared approval and cleanup roles are in `docs/environment/cloud-inventory.md`.
 - Runtime services retrieve secret values through their approved runtime role using a secret reference. Terraform configuration, modules, plans, state, outputs, tags, and ordinary logs must contain references only, never secret values.
 
+## PD-16 human-operator exception — 2026-10-19
+
+The user approved [DEC-10](../decisions/broad-human-operator-access.md), retaining broad non-root human operator access for PD-16 without adding a dedicated human runtime role. Actual operator metadata shows IAMFullAccess and group PowerUserAccess/CLIPParameterStoreTeamAccess. Human permission breadth is accepted, not verified as least privilege. Runtime setup/probe secret injection, empty application-role policies, scoped execution-role access and the prohibition on logging/committing secret values remain mandatory. No IAM permission or secret value changed through this decision.
+
 ## Rotation and unavailable access
 
 - Rotation is manual. A rotation cadence has not been selected; no schedule is implied by this record.

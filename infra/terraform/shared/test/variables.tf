@@ -147,7 +147,7 @@ variable "db_master_username" {
 }
 
 variable "db_master_password" {
-  description = "Sensitive write-only password supplied for the base create or intentional rotation; omit for the service phase. Never commit or log it."
+  description = "Sensitive existing/new master password required whenever the RDS/master parameter resources are configured, including service plans and applies. Supply ephemerally; keep its write-only version unchanged unless rotation is explicitly approved. Never commit or log it."
   type        = string
   sensitive   = true
   ephemeral   = true

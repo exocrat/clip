@@ -1,0 +1,263 @@
+{
+  "caller_arn": "arn:aws:iam::335523638354:user/adityalaxmi1",
+  "account": "335523638354",
+  "region": "ap-south-1",
+  "backend_bucket": "clip-tfstate-335523638354-ap-south-1-20261019-0e51ca0",
+  "backend_key": "shared/test/terraform.tfstate",
+  "terraform_version": "1.15.9",
+  "directory": "/tmp/clip-pd16-service-plan-t35ha1uc",
+  "plan_path": "/tmp/clip-pd16-service-plan-t35ha1uc/service.tfplan",
+  "plan_sha256": "f02303878b94e7baa96d6f617ee7a8162c5fc25e1bda9890bee1ba787f29986a",
+  "inputs_sha256": "8faaa1d0722a0d2cd0077946686033785296520ef7698f4fd356b7c21c661ee2",
+  "exit_code": 2,
+  "changes": [
+    {
+      "address": "aws_ecs_service.api[0]",
+      "actions": [
+        "create"
+      ]
+    },
+    {
+      "address": "aws_ecs_task_definition.api[0]",
+      "actions": [
+        "create"
+      ]
+    },
+    {
+      "address": "aws_ecs_task_definition.db_probe[0]",
+      "actions": [
+        "create"
+      ]
+    },
+    {
+      "address": "aws_ecs_task_definition.db_role_setup[0]",
+      "actions": [
+        "create"
+      ]
+    },
+    {
+      "address": "aws_iam_role_policy.db_probe_secret[0]",
+      "actions": [
+        "create"
+      ]
+    },
+    {
+      "address": "aws_iam_role_policy.db_role_setup_secrets[0]",
+      "actions": [
+        "create"
+      ]
+    },
+    {
+      "address": "aws_ssm_parameter.db_probe_password[0]",
+      "actions": [
+        "create"
+      ]
+    }
+  ],
+  "expected_scope_only": true,
+  "probe_absent_from_saved_and_rendered_plan": true,
+  "master_absent_from_saved_and_rendered_plan": true,
+  "master_ssm_parameter_version": 1,
+  "master_write_only_version": 1,
+  "probe_write_only_version": 1,
+  "state_serial_before": 4,
+  "elapsed_seconds": 18.74,
+  "applied": false,
+  "reviewed_resources": [
+    {
+      "address": "aws_ecs_service.api[0]",
+      "actions": [
+        "create"
+      ],
+      "name": "clip-test-api-ap-south-1-pd16",
+      "desired_count": 1,
+      "tags": {
+        "Name": "clip-test-api-ap-south-1-pd16"
+      },
+      "tags_all": {
+        "Environment": "test",
+        "ExpiresOn": "2026-10-23",
+        "Name": "clip-test-api-ap-south-1-pd16",
+        "Owner": "shared-team",
+        "Project": "CLIP",
+        "Task": "PD-16"
+      }
+    },
+    {
+      "address": "aws_ecs_task_definition.api[0]",
+      "actions": [
+        "create"
+      ],
+      "family": "clip-test-api-ap-south-1-pd16",
+      "network_mode": "bridge",
+      "cpu": "256",
+      "memory": "512",
+      "execution_role_arn": "arn:aws:iam::335523638354:role/clip-shared-test-api-execution",
+      "task_role_arn": "arn:aws:iam::335523638354:role/clip-shared-test-api-task",
+      "runtime_platform": [
+        {
+          "cpu_architecture": "X86_64",
+          "operating_system_family": "LINUX"
+        }
+      ],
+      "tags": null,
+      "tags_all": {
+        "Environment": "test",
+        "ExpiresOn": "2026-10-23",
+        "Owner": "shared-team",
+        "Project": "CLIP",
+        "Task": "PD-16"
+      },
+      "containers": [
+        {
+          "name": "api",
+          "image": "335523638354.dkr.ecr.ap-south-1.amazonaws.com/clip-shared-test-api@sha256:8f07c52fdfd5a15c29eedae5b7189e6923e5ab0c622459568f70f6d7581a2bed",
+          "portMappings": [
+            {
+              "containerPort": 8000,
+              "hostPort": 18000,
+              "protocol": "tcp"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "address": "aws_ecs_task_definition.db_probe[0]",
+      "actions": [
+        "create"
+      ],
+      "family": "clip-test-db-probe-ap-south-1-pd16",
+      "network_mode": "bridge",
+      "cpu": "256",
+      "memory": "512",
+      "execution_role_arn": "arn:aws:iam::335523638354:role/clip-shared-test-db-probe-execution",
+      "task_role_arn": "arn:aws:iam::335523638354:role/clip-shared-test-db-probe-task",
+      "runtime_platform": [
+        {
+          "cpu_architecture": "X86_64",
+          "operating_system_family": "LINUX"
+        }
+      ],
+      "tags": {
+        "Environment": "test",
+        "ExpiresOn": "2026-10-23",
+        "Name": "clip-test-db-probe-ap-south-1-pd16",
+        "Owner": "shared-team",
+        "Project": "CLIP",
+        "Task": "PD-16"
+      },
+      "tags_all": {
+        "Environment": "test",
+        "ExpiresOn": "2026-10-23",
+        "Name": "clip-test-db-probe-ap-south-1-pd16",
+        "Owner": "shared-team",
+        "Project": "CLIP",
+        "Task": "PD-16"
+      }
+    },
+    {
+      "address": "aws_ecs_task_definition.db_role_setup[0]",
+      "actions": [
+        "create"
+      ],
+      "family": "clip-test-db-role-setup-ap-south-1-pd16",
+      "network_mode": "bridge",
+      "cpu": "256",
+      "memory": "512",
+      "execution_role_arn": "arn:aws:iam::335523638354:role/clip-shared-test-db-setup-execution",
+      "task_role_arn": "arn:aws:iam::335523638354:role/clip-shared-test-db-setup-task",
+      "runtime_platform": [
+        {
+          "cpu_architecture": "X86_64",
+          "operating_system_family": "LINUX"
+        }
+      ],
+      "tags": {
+        "Environment": "test",
+        "ExpiresOn": "2026-10-23",
+        "Name": "clip-test-db-role-setup-ap-south-1-pd16",
+        "Owner": "shared-team",
+        "Project": "CLIP",
+        "Task": "PD-16"
+      },
+      "tags_all": {
+        "Environment": "test",
+        "ExpiresOn": "2026-10-23",
+        "Name": "clip-test-db-role-setup-ap-south-1-pd16",
+        "Owner": "shared-team",
+        "Project": "CLIP",
+        "Task": "PD-16"
+      }
+    },
+    {
+      "address": "aws_iam_role_policy.db_probe_secret[0]",
+      "actions": [
+        "create"
+      ],
+      "name": "clip-test-db-probe-secret-ap-south-1-pd16"
+    },
+    {
+      "address": "aws_iam_role_policy.db_role_setup_secrets[0]",
+      "actions": [
+        "create"
+      ],
+      "name": "clip-test-db-setup-secrets-ap-south-1-pd16"
+    },
+    {
+      "address": "aws_ssm_parameter.db_probe_password[0]",
+      "actions": [
+        "create"
+      ],
+      "name": "/clip/test/database-probe-password",
+      "type": "SecureString",
+      "tier": "Standard",
+      "value_wo_version": 1,
+      "tags": {
+        "Environment": "test",
+        "ExpiresOn": "2026-10-23",
+        "Owner": "shared-team",
+        "Project": "CLIP",
+        "Task": "PD-16"
+      },
+      "tags_all": {
+        "Environment": "test",
+        "ExpiresOn": "2026-10-23",
+        "Owner": "shared-team",
+        "Project": "CLIP",
+        "Task": "PD-16"
+      }
+    }
+  ],
+  "artifact_modes": {
+    "review-summary.json": "0o600",
+    "plan.json": "0o600",
+    "plan.stderr": "0o600",
+    "plan.stdout": "0o600",
+    "service.tfplan": "0o600",
+    "service.tfvars.json": "0o600",
+    "probe-password.secret": "0o600",
+    "state-before.json": "0o600"
+  },
+  "lock_absent_verified": true,
+  "errored": false,
+  "human_apply_approval_pending": true,
+  "source_fingerprints": {
+    ".terraform-version": "1fa24391fa6d464fe0dc5aaf9b8bba3c0c3871e1123a15cc61d3e6ead6afa835",
+    "docs/environment/pd16-service-plan-inputs.json": "8faaa1d0722a0d2cd0077946686033785296520ef7698f4fd356b7c21c661ee2",
+    "infra/terraform/shared/test/.terraform.lock.hcl": "8e943f65218efc74b64233304fcea1a642c1c394452dcc1a4c0e138a20d78b5d",
+    "infra/terraform/shared/test/base.tf": "fb70162dacfc900e9bcf1d9bc54fc2baba26bae17720f7287989de8f661d75bf",
+    "infra/terraform/shared/test/locals.tf": "cc8f9d37c6cc7ea324c1096e3fa3010d5e6b09b6c28dc40083a6de0e60c1d977",
+    "infra/terraform/shared/test/network.tf": "cc22c15bb83d0ef3cff78db5059f52e26c42a3fc4fa1ff01351b4f885dc9b008",
+    "infra/terraform/shared/test/outputs.tf": "b252fcac10aae837f8525b9ba11db2ba188ec1ff5db4bf2e31c1d23ff9faf4ce",
+    "infra/terraform/shared/test/scripts/probe-db.sh": "93792cd721574a2ede36efd67ef7dbd9f6c38f43e9186dbc60644967532120c4",
+    "infra/terraform/shared/test/scripts/setup-db-role.sh": "0d205b55c395a2dff1551508039020a47cfbf045af5beebb7bd7b4617dcc222c",
+    "infra/terraform/shared/test/service.tf": "fdaf611d0909bb8c8ff115b5034dc978c407c15f99964b94e7d9cf17c5039536",
+    "infra/terraform/shared/test/variables.tf": "f382a6a45f28aeda6afcfa093d781abceccb54dc75f5728a91aa1886e3593dcc",
+    "infra/terraform/shared/test/versions.tf": "85378f9c60b449e27a7d8fe68661c2d359fd088f620d34c541177abe76ddb332"
+  },
+  "review_limits": [
+    "New probe parameter ARN is computed at apply; dependent policies/task container definitions are reviewed through their fixed source references and pinned input digest.",
+    "Native client binary presence was inspected locally; actual SSM, SQL, role and cloud runtime checks remain Step 10."
+  ]
+}

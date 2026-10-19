@@ -1,0 +1,46 @@
+{
+  "clip-shared-test-api-task": {
+    "inline": {
+      "PolicyNames": []
+    },
+    "attached": {
+      "AttachedPolicies": []
+    }
+  },
+  "clip-shared-test-db-setup-task": {
+    "inline": {
+      "PolicyNames": []
+    },
+    "attached": {
+      "AttachedPolicies": []
+    }
+  },
+  "clip-shared-test-db-probe-task": {
+    "inline": {
+      "PolicyNames": []
+    },
+    "attached": {
+      "AttachedPolicies": []
+    }
+  },
+  "operator_attached": {
+    "AttachedPolicies": [
+      {
+        "PolicyName": "IAMFullAccess",
+        "PolicyArn": "arn:aws:iam::aws:policy/IAMFullAccess"
+      }
+    ]
+  },
+  "operator_inline": {
+    "PolicyNames": []
+  },
+  "operator_groups": {
+    "Groups": [
+      "DS252-Project-Developers"
+    ]
+  },
+  "operator_group_attached": [
+    "arn:aws:iam::aws:policy/PowerUserAccess",
+    "arn:aws:iam::335523638354:policy/CLIPParameterStoreTeamAccess"
+  ]
+}

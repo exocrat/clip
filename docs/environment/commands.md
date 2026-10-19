@@ -117,6 +117,10 @@ The fixed ECS task definitions embed `infra/terraform/shared/test/scripts/setup-
 
 Local regression command: `uv run --locked pytest tests/architecture/test_db_task_timeouts.py -q -W error`. Controlled client stand-ins exercise success, private-error suppression, a stuck process that ignores TERM, caller timeout overrides and a missing timeout tool. A real GNU timeout uses shortened test deadlines. No database/cloud access occurs; the check also runs in the root test suite. See the [runbook](../../infra/terraform/shared/test/README.md#database-task-deadlines) and [approved decision](../decisions/database-task-deadlines-and-manual-image-cleanup.md).
 
+## PD-16 Step 7 publication evidence
+
+The authorized one-off [ECR publication](../evaluation/foundation/pd-16/ecr-publication.md) used `sudo docker` login with temporary auth and the AWS CLI layer/manifest APIs to preserve the verified OCI bytes. Its evidence records the exact immutable source tag, remote digest, verification, limits and API sequence; no reusable upload wrapper was introduced. Repeat uploads need their own exact artifact/target approval.
+
 ## Local API container image — PD-16 Step 4
 
 Run from the repository root with Docker Engine. Record `git rev-parse HEAD`,

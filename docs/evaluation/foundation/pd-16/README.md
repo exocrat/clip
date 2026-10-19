@@ -1,10 +1,24 @@
 # PD-16 evidence and AMD64 handoff
 
+**Publication reconciliation — 2026-10-19:** PR #7 merged at main `68d9da9`; final head `61dd7674` passed [hosted CI run 39280676449](https://github.com/exocrat/clip/actions/runs/39280676449). The local/push-pending statements below describe evidence-capture time. Independent approval is not inferred from the merge (GitHub formal reviews were empty). Current checkpoint: [Step 7 image handoff/publication preparation](../../../environment/pd16-image-publication.md).
+
 PR #7 local review corrections: [deadline tests, real lock failure check and manual ECR cleanup resolution](review-corrections.md). This evidence covers the tested correction worktree; Suraj verified the result and approved its commit. Publication and current hosted/independent review remain pending.
+
+## Step 8 corrected plan — human review pending
+
+Fresh authorized plan passed: seven creates, zero changes/deletions; both credentials absent from saved/rendered artifacts, versions unchanged. [Exact plan/checksum and deployment scope](service-plan-review.md). No apply or RDS restart ran.
+
+## Step 8 service-plan validation failure
+
+The first authorized non-applying service plan failed: existing master write-only value/version pairs cannot omit the value. Saved plan is `errored=true`; no apply ran. [Safe failure evidence and pending correction](service-plan-failure.md).
+
+## ECR publication — 2026-10-19
+
+Step 7 upload and remote manifest verification passed and were human-verified. [Step 8 input audit](../../../environment/pd16-service-plan-preparation.md) is active; no service plan has run. The approved source-commit tag resolves to OCI digest `sha256:8f07c52fdfd5a15c29eedae5b7189e6923e5ab0c622459568f70f6d7581a2bed`; [exact URI, identity, cost limits and evidence](ecr-publication.md). Service deployment and real integration remain pending.
 
 ## Current native AMD64 validation — 2026-10-19
 
-Built and validated the API image from clean local commit `68d6179db03dcf983278b290d22a939af625bba1` on a native Linux AMD64 engine. Image `clip-api:pd16-amd64-68d6179db03d` reports `linux/amd64`; HTTP `/health` returned 200 with `{"status":"ok"}` and Docker health became healthy. The local image is retained; test container/context were removed. [Exact build/check provenance, commands, local image ID and logs](native-amd64-image-validation.md). This resolves the target-image build/health blocker only. ECR upload, live service/SSM/SQL/lifecycle verification, current hosted/peer acceptance and full PD-16/PRE-00 acceptance remain pending. Git commits stay local until the user-selected publication point.
+Built and validated the API image from clean local commit `68d6179db03dcf983278b290d22a939af625bba1` on a native Linux AMD64 engine. Image `clip-api:pd16-amd64-68d6179db03d` reports `linux/amd64`; HTTP `/health` returned 200 with `{"status":"ok"}` and Docker health became healthy. The local image is retained; test container/context were removed. [Exact build/check provenance, commands, local image ID and logs](native-amd64-image-validation.md). This resolves the target-image build/health blocker only. ECR upload subsequently passed as recorded above; live service/SSM/SQL/lifecycle verification, current branch hosted/peer acceptance and full PD-16/PRE-00 acceptance remain pending.
 
 ## Recorded outcomes through `cc04a23`
 
