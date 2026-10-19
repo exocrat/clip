@@ -77,23 +77,23 @@ variable "secondary_availability_zone" {
 }
 
 variable "ecs_instance_type" {
-  description = "The one approved x86_64 ECS host type; c7i-flex.large is the current provisional selection."
+  description = "The selected x86_64 ECS host type for the shared test environment."
   type        = string
   default     = "c7i-flex.large"
 }
 
 variable "db_instance_class" {
-  description = "PostgreSQL RDS instance class; set after the exact size and cost review."
+  description = "Selected PostgreSQL RDS instance class for the shared test environment."
   type        = string
 }
 
 variable "db_engine_version" {
-  description = "Exact supported PostgreSQL engine version for the approved plan."
+  description = "Selected supported PostgreSQL engine version for the shared test environment."
   type        = string
 }
 
 variable "db_allocated_storage_gib" {
-  description = "RDS gp3 allocation in GiB, set after the storage and cost review."
+  description = "Selected RDS gp3 allocation in GiB for the shared test environment."
   type        = number
 
   validation {
@@ -103,7 +103,7 @@ variable "db_allocated_storage_gib" {
 }
 
 variable "db_backup_retention_days" {
-  description = "RDS automated-backup retention in days; choose explicitly before planning."
+  description = "Selected RDS automated-backup retention in days."
   type        = number
 
   validation {
@@ -172,7 +172,7 @@ variable "db_probe_password_version" {
 }
 
 variable "log_retention_days" {
-  description = "Explicit CloudWatch log retention period; select before planning."
+  description = "Selected CloudWatch log retention period."
   type        = number
 
   validation {

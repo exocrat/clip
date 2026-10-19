@@ -182,6 +182,7 @@ resource "aws_db_instance" "shared" {
   identifier                 = "${local.prefix}-postgres"
   engine                     = "postgres"
   engine_version             = var.db_engine_version
+  availability_zone          = var.active_availability_zone
   instance_class             = var.db_instance_class
   allocated_storage          = var.db_allocated_storage_gib
   storage_type               = "gp3"
