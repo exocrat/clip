@@ -1,29 +1,27 @@
-# DEC-06 — Temporary Terraform planning identity exception
+# DEC-06 — Terraform identity for PD-16
 
 **Date:** 2026-10-19
 
 **Origin:** PD-16 Step 5.
 
 ## Question
-Can the PD-16 base plan proceed with the currently configured AWS root identity while a separate planning identity is unavailable?
+Which AWS identity should PD-16 use for planning and non-root cloud operations?
 
 ## Options considered
 - Pause until a scoped non-root planning identity is available.
 - Use the root identity temporarily, with a narrow task and action boundary.
 
 ## Selected choice
-For PD-16 Step 5 only, the user approved the configured `default` profile, which STS identifies as the account root principal, for preparing and reviewing the non-applying base-infrastructure plan.
-
-This exception does not authorize applying the plan, provisioning or changing resources, bootstrapping or migrating Terraform state, publishing an image, or preparing later service-phase cloud changes. Those actions retain their separate approval gates; a non-root identity is required before apply/provisioning.
+The user authorized the configured `default` profile for PD-16 Step 5 plan preparation only; STS identifies it as the account root principal. The user later directed that the verified `adityalaxmi1` IAM user be used for non-root operations. STS confirms it belongs to account `335523638354`. Use this profile for PD-16 apply/provisioning and other non-root AWS operations, with each cloud action still subject to its exact-plan or operation approval gate.
 
 ## Rationale
-The user chose to continue with the available identity because there is not time to configure another identity now. This removes the planning-identity blocker for the narrowly scoped non-applying plan while recording that root has broader account access and raises the impact of an operational mistake.
+The root exception enabled plan preparation while no separate identity was available. The user then supplied and authorized a non-root profile, reducing the need for root credentials in subsequent operations.
 
 ## Implications
-The exact plan remains gated on PD-15 backend creation and state migration, complete per-run cost/lifecycle and reserve inputs, and explicit authorization to create the non-applying plan. The plan must target account `335523638354`, Region `ap-south-1`, and the reviewed shared/test state. Before any apply or provisioning, configure and verify an approved non-root identity and obtain the separate exact-plan authorization.
+The target remains account `335523638354`, Region `ap-south-1`, and the reviewed shared/test state. Verify the caller identity before each operation. Changed saved plans require exact checksum review and approval before apply; other cloud operations retain their separate approval gates.
 
 ## Approver
 User in the current session; name not recorded.
 
 ## Supersedes
-None. This is a temporary, task-scoped exception to the non-root planning-identity requirement recorded in the PD-16 proposal.
+The root-only planning restriction is superseded for non-root operations by the user's authorization of `adityalaxmi1`; the exact-plan and operation approval gates remain.
