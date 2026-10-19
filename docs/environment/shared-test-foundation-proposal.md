@@ -48,6 +48,8 @@ Pricing was checked on 2026-10-19 through the AWS Price List API in ap-south-1, 
 
 At 720 hours, the corrected known baseline is USD 125.45: NAT plus public IPv4 (USD 43.92), RDS instance (USD 15.12), 20 GB RDS storage (USD 2.62), one c7i-flex.large host (USD 61.05), and its 30 GiB root volume (USD 2.74). It excludes data processing/transfer, logs, backup overage or retained snapshots, probe runtime, and PD-15 backend costs. It is above the USD 50 pause-and-review alert; the user accepted the budget context, and the alert is not a spending cap. The former Fargate-based USD 71.00/month and USD 51.97/160-hour totals are superseded. For each run, calculate USD 0.061 × NAT hours + USD 0.021 × RDS hours + USD 0.08479 × EC2 host hours + USD 0.0912 × 30 GiB × retained root-volume hours / 720, then add RDS storage and other metered usage.
 
+For a duration reference, if all costed resources exist only during a run and both storage volumes are deleted at its end, the known baseline is about USD 0.17423 per hour, or USD 1.39 for 8 hours, USD 4.18 for 24 hours, and USD 12.54 for 72 hours. These examples assume equal hours for NAT, RDS compute/storage, EC2, and its root volume; they exclude processed traffic, CloudWatch, ECR storage, backups beyond the free allowance, probe runtime, and backend costs. They are not selected run windows. If any resource or backup is retained while idle, cost its actual retained hours separately. The initial exact run duration, expiry, and idle-resource schedule remain unset.
+
 The 2026-10-19 read-only budget view showed the USD 200 account budget at USD 0.02 actual and USD 1.286 forecast; its actual-spend alerts include the USD 50 pause-and-review threshold. The Budget API view was last updated at 2026-10-18 22:27 UTC. Cost Explorer's estimated Oct 1–18 view showed about USD 0.0313 usage offset by about USD 0.0313 in credits; those are credits applied during the period, not remaining credit balance. The views differed, so remaining headroom and eligible credit balance are unknown. The USD 200 budget is not a spending cap.
 
 Cost Explorer uses its documented us-east-1 API endpoint for account-wide billing queries; this is not the deployment Region. Price List queries used ap-south-1 and a Mumbai location filter.
@@ -63,12 +65,18 @@ Read-only Service Quotas and resource-count queries on 2026-10-19 covered ap-sou
 | NAT gateways / Elastic IPs | 5 per AZ / 5 per Region | 0 currently; proposal needs one of each in the active AZ. |
 | RDS DB instances / subnet groups | 20 / 20 | 0 / 0 currently; plan needs one Single-AZ instance and one subnet group spanning two AZs. |
 | RDS allocated storage | 100,000 GB | 0 GB currently; proposal assumes 20 GB. |
-| EC2 On-Demand Standard vCPU | 8 vCPU | One c7i-flex.large needs 2 vCPU; refresh account use/headroom before planning. |
+| EC2 On-Demand Standard vCPU | 8 vCPU | Read-only refresh on 2026-10-19: zero running EC2 instances; one c7i-flex.large needs 2 vCPU. |
 | Standard Parameter Store parameters | 10,000 per Region | 0 currently; proposal needs one Standard SecureString. |
 | CloudWatch Logs groups | 1,000,000 per Region | 7 currently; proposal needs one bounded log group. |
 | ECR repositories | Not a blocker per user direction | One private repository is expected; no additional quota investigation is planned. |
 
-Fargate is excluded by user direction; its usage and quota are not part of this foundation. One `c7i-flex.large` ECS host is provisionally selected. It uses 2 vCPU against the observed Standard On-Demand quota of 8; refresh actual account headroom before planning.
+Fargate is excluded by user direction; its usage and quota are not part of this foundation. One `c7i-flex.large` ECS host is provisionally selected. It uses 2 vCPU against the observed Standard On-Demand quota of 8; a read-only refresh showed zero running EC2 instances. Recheck usage/quota before planning.
+
+### Step 5 read-only input audit — 2026-10-19
+
+The target is account `335523638354`, Region `ap-south-1`. The only configured AWS CLI profile is `default`, and a fresh STS check resolves it to the root principal; no approved non-root planning profile is configured. Read-only counts show zero running EC2 instances, RDS DB instances, and NAT gateways. The EC2 Standard On-Demand quota is 8 vCPU, with two needed for the selected host. No S3 bucket matching the PD-15 state-bucket prefix exists. PD-15's bootstrap configuration and planned state keys are recorded, but its bucket creation and bootstrap/shared-state migrations have not been performed. The user-reported manual IAM check remains recorded; it does not select an approved Terraform identity. No plan was generated.
+
+The cost model now includes an illustrative duration table, but no first-run hours, expiry, or idle-resource schedule has been chosen. The known 720-hour baseline is USD 125.45 before listed variable/retained costs and exceeds the USD 50 pause-and-review alert. The user's acceptance of the general budget context is recorded, but there is no numeric project reserve or refreshed remaining eligible-credit balance. These inputs, the PD-15 backend/migration gates, an approved non-root identity, and explicit authorization to create the non-applying base plan remain prerequisites. No Terraform plan, secret, or resource action occurred.
 
 The user reports manually checking the IAM permissions. That is recorded as human verification; it is not an agent-side policy evaluation. Because the configured default profile resolves to the account root principal, select an approved non-root planning identity before any Terraform plan or provisioning.
 
