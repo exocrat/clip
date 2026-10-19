@@ -18,7 +18,7 @@
 - [ ] Use the isolated task branch/worktree and scoped claim under CONTRIBUTING.md. Resume partial steps without repeating side effects; executed-but-unverified steps wait for verification.
 - [ ] Execute that step only; stop at internal decisions/separate action approvals. Do not silently reorder/batch or work elsewhere while waiting without explicit instruction. Only the documented human-verified stub checkpoint route permits staged integration obligations.
 - [ ] Use actual registered commands. Create/register commands explicitly assigned to this step; missing required prerequisite commands block dependent work.
-- [ ] Follow shared conventions and public-domain ownership; reserve/review shared file/migration/contract changes and regenerate derived files.
+- [ ] Check each task's concrete data/API behavior against [`shared conventions`](../conventions/shared-conventions-and-cross-domain-contract-rules.md): UUID wire format, UTC-aware instants, integer-paise money, shared error envelope, server-built trusted caller context, bounded/stable pagination, owning-domain authorization/transactions, retry/idempotency behavior, and privacy-safe logs. Record the relevant tests/evidence; preserve public-domain ownership, review shared changes, and regenerate derived files.
 - [ ] Run applicable step checks with exact command/results. Use pinned Black for Python and relevant local/CI gates at milestone completion. Preserve failures; report skipped/inconclusive checks honestly.
 - [ ] Use synthetic safe fixtures/evaluation data; inspect changes/logs/outputs for secrets/real data/private conversation content. Production rejects unsafe fakes.
 - [ ] Update the work-log status row after each step and verification, including current checkpoint (with the immediate next action for active work), execution/verification state, branch/revision/PR, evidence, questions, and blockers. Add dated history only for meaningful outcomes, decisions, checks, blockers, consequential human direction, or closeout; related steps may share an entry, and routine “verified; proceed” updates need no separate entry. Use exact UTC times for new entries and preserve existing timestamp precision. Preserve others' useful history.
@@ -44,13 +44,14 @@
 | ID-01/LI-01/SE-01/CN-01 | Explicit readiness PR/milestone distinct from full FR/NFR completion; assigned UI/core/fixtures and final dependent validations. |
 | LI-02/SE-02/CN-02/CN-03 | Full feature UI/API/failure/privacy checks; explicit provider/read-state/image/selection boundaries and actual live deployment when required. |
 | DATA-READY | Final schema/config-aware loader, >=5,000 users/>=1,000 listings, logical fingerprint/integrity and 20+ human-reviewed labeled queries. |
-| INT-01 | All required FR/NFR-01–07 evidence, accurate integrated/recovery tooling/manifests, budget-to-date/reserve, no required blocker counted as pass. |
+| INT-01 | All required FR/NFR-01–07 evidence; public-contract use, auth/denial, retry/concurrency/failure, transaction ownership and privacy checks across journeys; accurate integrated/recovery tooling/manifests; budget-to-date/reserve; no required blocker counted as pass. |
+| OPT-01/02/03 | Only explicitly selected work proceeds, after that task's named technical prerequisites and OPTIONAL-OK; required MVP/NFR/experiment/budget/final buffer remains protected. |
 | EXP-01–08 | Approved comparison design/tooling, explicit mixed implementation/packaging/routing/Terraform, parity/deploy/pilot/run/analyze/cleanup evidence. |
 | CLOSE-00 | Affected regression/revalidation, full-project cost/NFR-08, exact residual resources, final report/demo/viva/delivery and honest submission status. |
 
 ## Cloud, NFR, and optional gates
 
-- [ ] Inspect/reuse shared resources; approve the exact target/plan/cost/caps/rollback/cleanup before any gated operation, renew approval when changed, and verify actual deployed revision/resources. CI/main merge does not authorize deployment/apply.
+- [ ] Inspect/reuse shared resources and record evidence before claiming no additional Terraform resources. For a proposed resource, document purpose/owner/state/module/inputs/outputs/permissions/data class/cost cap/test window/evidence/reuse/rollback/cleanup; approve the exact target and plan before a gated operation, renew approval if changed, and verify deployed revision/resources. CI/main merge does not authorize deployment/apply.
 - [ ] Create/approve measurement manifests and validate local tools/readiness before accurate NFR runs. Preserve raw/invalid results. Reverify affected evidence after later changes.
 - [ ] Optional tasks need their feature-specific prerequisites, explicit selection and OPTIONAL-OK. Required work/NFR/experiment/budget/final buffer stays protected; follow the accepted scheduling decision, with no blanket INT-01 or elapsed-buffer prerequisite.
 

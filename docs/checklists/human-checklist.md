@@ -52,7 +52,7 @@ You may inspect evidence, but the agent must summarize what makes it acceptable 
 ## Decisions and separate approvals
 
 - [ ] A question shows the exact uncertainty, affected action, relevant repo facts, useful options/recommendation and smallest decision needed. Durable answers are recorded canonically before consumers depend on them.
-- [ ] For hosting/account/permission actions and cloud create/change/delete, deployment, paid provider/load test, external communication or destructive cleanup, review the concrete target/action before approval. Cloud plans include identity/account/region/environment, resource changes/exposure/permissions, cost/headroom/caps/stop limits, rollback and cleanup/retention.
+- [ ] For hosting/account/permission actions and cloud create/change/delete, deployment, paid provider/load test, external communication or destructive cleanup, review the concrete target/action before approval. A resource proposal records purpose, owner, Terraform state/module, inputs/outputs, permissions, data class, shared-resource reuse, cost/headroom/caps/stop limits, test window, evidence, rollback and cleanup/retention, as well as identity/account/region/environment and exact resource changes/exposure.
 - [ ] Approve that exact plan/version only. Changed plans return for review. General understanding/step verification or a main merge is not separate action authorization.
 - [ ] Human-only account/device steps have specific instructions and expected safe results; the agent verifies afterward through the approved access path.
 
@@ -68,10 +68,12 @@ You may inspect evidence, but the agent must summarize what makes it acceptable 
 ## Feature, NFR, and final gates
 
 - [ ] Readiness milestones permit their named consumers but do not claim entire FR/NFR/task completion. A required blocker means incomplete work.
+- [ ] For each domain task, confirm the agent checked changed contracts/code/tests against [`shared conventions`](../conventions/shared-conventions-and-cross-domain-contract-rules.md): UUID wire form, UTC-aware timestamps, integer-paise money, standard error envelope, trusted server caller context, stable bounded pagination, domain-owned authorization/transactions, retries/idempotency, and privacy-safe logging. The report should identify the concrete checks/evidence, not just say “conventions followed.”
+- [ ] At INT-01, verify cross-domain calls use reviewed public contracts and test authorized/denied callers, retry/duplicate/concurrency and partial-failure behavior, transaction/side-effect ownership, and privacy/logging along the named user journeys.
 - [ ] Dataset/labels/fixtures/contracts/Black/local setup/CI/work-log/secret-reference/cloud-inventory outputs are evidenced in their assigned task. Final data validation follows domain schemas.
 - [ ] Detailed NFR tests happen at their earliest accurate full relevant path, with manifests/tooling/deployment/caps approved beforehand. Later material changes trigger affected revalidation. Offline NFR-04 is valid offline; local smoke checks cannot prove cloud latency/recovery.
 - [ ] Document 2 owns the primary ECS/Lambda implementation/comparison; CLOSE-00 owns final whole-project budget reconciliation and report/demo/submission package.
-- [ ] Optional work has its own technical prerequisites, your explicit selection and OPTIONAL-OK schedule/cost protection. The recorded planning change explains its earlier scheduling relative to PRD §8; the final buffer remains protected.
+- [ ] OPT-01 requires ID-READY/SE-02/CN-03; OPT-02 requires ID-READY/LI-CORE/SE-CORE/SE-02/CN-03; OPT-03 requires LI-02/SE-CORE/DATA-READY. Each also needs your explicit selection and OPTIONAL-OK schedule/cost protection. The recorded planning change explains its earlier scheduling relative to PRD §8; the final buffer remains protected.
 - [ ] Task/phase/project closure includes actual checks, human verification, reviewed revisions/evidence, approved cleanup/retention and required delivery state. Do not accept a blocker/deferred required requirement as successful completion.
 
 **Loop:** agent explains the whole task → you verify → before each numbered step, agent explains that step → you say okay → agent executes only that step and reports evidence → you verify → repeat. A new task needs a new understanding verification.
