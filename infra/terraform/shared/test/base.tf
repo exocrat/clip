@@ -317,9 +317,9 @@ resource "aws_autoscaling_group" "ecs_host" {
   count = local.base_enabled ? 1 : 0
 
   name                = "${local.prefix}-ecs-host"
-  min_size            = 1
+  min_size            = 0
   max_size            = 1
-  desired_capacity    = 1
+  desired_capacity    = 0
   vpc_zone_identifier = [aws_subnet.workload_private[0].id]
 
   launch_template {
@@ -339,6 +339,10 @@ resource "aws_autoscaling_group" "ecs_host" {
     propagate_at_launch = true
   }
 
+  # ECS capacity-provider scaling owns desired capacity after initial creation.
+  lifecycle {
+    ignore_changes = [desired_capacity]
+  }
 }
 
 resource "aws_ecs_capacity_provider" "shared" {
@@ -349,6 +353,14 @@ resource "aws_ecs_capacity_provider" "shared" {
   auto_scaling_group_provider {
     auto_scaling_group_arn         = aws_autoscaling_group.ecs_host[0].arn
     managed_termination_protection = "DISABLED"
+    managed_draining               = "ENABLED"
+
+    managed_scaling {
+      maximum_scaling_step_size = 1
+      minimum_scaling_step_size = 1
+      status                    = "ENABLED"
+      target_capacity           = 100
+    }
   }
 
   tags = { Name = "${local.prefix}-capacity" }

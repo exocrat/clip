@@ -10,6 +10,12 @@ variable "deployment_phase" {
   }
 }
 
+variable "api_service_enabled" {
+  description = "Run the API service during an approved test window. False keeps the service at zero tasks so ECS can scale the EC2 capacity provider to zero. One-shot tasks can still request capacity through the cluster default strategy."
+  type        = bool
+  default     = false
+}
+
 variable "cleanup_review_date" {
   description = "Required ExpiresOn tag and cleanup review date for the approved environment."
   type        = string

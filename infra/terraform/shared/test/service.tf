@@ -119,7 +119,7 @@ resource "aws_ecs_service" "api" {
   name            = "${local.prefix}-api"
   cluster         = aws_ecs_cluster.shared[0].id
   task_definition = aws_ecs_task_definition.api[0].arn
-  desired_count   = 1
+  desired_count   = var.api_service_enabled ? 1 : 0
 
   capacity_provider_strategy {
     capacity_provider = aws_ecs_capacity_provider.shared[0].name

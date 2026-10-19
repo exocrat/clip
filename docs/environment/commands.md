@@ -17,7 +17,7 @@ For EACH command record: creator task, exact invocation and required inputs, sup
 | Test/lint/type/build/aggregate CI-equivalent | PD-05/07/12/13 | `make check` runs the shared Python/web/database/contracts/secret gates used by CI. Local evidence below; hosted execution remains pending PD-12, lifecycle front door PD-13. |
 | Contract regenerate/stale-check | PD-11/DL-00 | Health generation/check and actual API schema/consumer regression checks implemented in PD-11; full domain declarations remain DL-00. Exact commands below. |
 | Terraform static format/validate (no remote state mutation) | PD-15/13 | `make terraform-check` with Terraform 1.15.9: format check and backend-free validation, readonly provider lock; individual targets documented below. Public provider downloads may be needed; no cloud login or apply. |
-| Plan/apply/build-release/deploy/verify/rollback/teardown | PD-15/16; domain/EXP additions | PD-15 documents the reviewed plan/apply/verify/cleanup workflow and command templates in `infra/terraform/README.md`; actual targets, state keys, protected plan path, and commands must be selected per approved plan. Cloud operations remain separately gated and are not part of local/CI checks. |
+| Plan/apply/build-release/deploy/verify/rollback/teardown | PD-15/16; domain/EXP additions | PD-15 documents reviewed plan/apply/verify/cleanup. PD-16 per-run ECS capacity plans and RDS stop/start templates are in `infra/terraform/shared/test/README.md`; select exact targets and review/approve each cloud operation. These are not local/CI checks. |
 | Search evaluator/load workload/NFR manifests | SE-01 | Not implemented |
 | Two-client chat/read-state/latency measurement | CN-01/CN-03 | Not implemented |
 | Integrated peak/runtime-loss/DB-restore checks | INT-01 | Not implemented |
@@ -152,6 +152,11 @@ The native ARM64 check is sufficient for Step 4. Linux AMD64/macOS compatibility
 checks are deferred and can be revisited if an issue appears. Step 7 must still
 build and verify a `linux/amd64` image from the exact reviewed commit for the
 x86_64 ECS host. The approved local procedure uses `sudo docker` on this host.
+
+PD-16's ECS scale-to-zero and RDS stop/start procedures are documented in the
+[shared test Terraform runbook](../../infra/terraform/shared/test/README.md#ecs-capacity-lifecycle).
+They require separate reviewed cloud operations and are not part of this local
+image build or `make check`.
 
 ## PD-09 Step 2 — schema-independent preview generator
 
