@@ -1,0 +1,7 @@
+**
+!pyproject.toml
+!uv.lock
+!apps/
+!apps/api/
+!apps/api/app/
+!apps/api/app/**

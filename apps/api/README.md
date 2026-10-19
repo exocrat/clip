@@ -45,6 +45,10 @@ Exit 0 means the collected suite passed; a failure must be investigated, and exi
 
 See the [command registry](../../docs/environment/commands.md) for effects and readiness. The [common setup guide](../../docs/environment/README.md#local-foundation-setup) documents shared Make targets; full clean-environment verification remains PD-13 Step 5.
 
+## Local container image (PD-16 Step 4)
+
+The [PD-16 image commands](../../docs/environment/commands.md#local-api-container-image--pd-16-step-4) build the API for `linux/amd64` from the repository root, start it on loopback for a health check, and stop/remove the local container. The Dockerfile uses the locked runtime dependencies, runs as a non-root user with production-safe settings, and includes only the API application source. Record the current worktree revision and dirty state with the local check; the later ECR image must be rebuilt from the exact reviewed commit. This check requires a Docker engine that can build and run `linux/amd64`; the current ARM64 host cannot provide that evidence, so the check remains pending a compatible x86_64 machine.
+
 ## Shared conventions (PD-06 step 3)
 
 See the [core interface guide](app/core/README.md) for IDs, timestamps, whole-rupee integer-paise money, pages, caller context, and safe errors/logging. Common HTTP failures use `error.code`, `error.message`, optional safe `error.details`, and a server `request_id`; clients receive the same identifier in `X-Request-ID`, including on successful health responses. Incoming request IDs do not replace the server identifier. Health response JSON is unchanged.

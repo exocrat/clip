@@ -41,7 +41,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PD-13 | Integration contributor (current session) | in progress | Steps 1–6 locally verified; branch pushed; reconcile prerequisites before PD-16 | Steps 1–6 performed | Steps 1–6 verified | `task/pre-domain-integration-continued` at `27e983c`; [PD-13 run evidence](../evaluation/foundation/pd-13/README.md) | Native Linux AMD64/macOS runs deferred by user; final domain loading remains DATA-READY; no PR/hosted CI for this branch yet; original owner handoffs remain pending | 2026-10-18 21:43:27 UTC |
 | PD-14 | Stream 4 — Rahul (D) | done | Stream handoff merged and accepted; integration consumes recorded outputs | performed | Local verification recorded; contributor confirms merged closeout | PR #4, main commit `aa671b5`; included in `e4d7551`; prior check evidence below | No stream handoff blocker. Carry recorded credit/quota/budget/secret/recovery decisions into PD-16 plan approval; no cloud provisioning implied. | 2026-10-18 15:54:16 UTC |
 | PD-15 | Stream 4 — Rahul | done | Stream handoff merged and accepted; integration consumes recorded outputs | performed | Local verification recorded; contributor confirms merged closeout | PR #4, main commit `aa671b5`; included in `e4d7551`; prior check evidence below | None for preparation handoff; backend provisioning/state migration remain separately gated. | 2026-10-18 15:54:16 UTC |
-| PD-16 | Integration owner (current branch) | in progress | Steps 1–2 recorded; Step 3 cost/lifecycle inventory is partial; Step 4 gated on human decisions and prerequisites | Steps 1–2 performed; Step 3 partial | Self-checked for overnight review; human review pending | `docs/environment/shared-test-foundation-proposal.md`; `docs/README.md` | Only unapproved `default` AWS profile is configured; current spend/quota headroom and Mumbai rates are unresolved. Remote state backend is not provisioned. Private egress/test access, capacity, owner, duration, and reserve remain open. PD-08/09 stay open per user direction. | 2026-10-18 22:17:36 UTC |
+| PD-16 | Integration owner (current branch) | in progress | Complete Step 4 local artifacts/checks; review cost and planning inputs before Step 5 | Steps 1–3 performed; Step 4 local API image definition/docs added | Revised proposal, Dockerfile and command guide; Mumbai gp3 price-list result; Docker 26.1.5 ARM64 daemon | Current worktree based on `6a9ab0af`; dirty state recorded below. Terraform root/lock and backend-free validation remain pending. | Terraform is pinned to 1.15.9; checked binary is `/tmp/clip-pd13-tools-ns7loycc/terraform`. Target image build/health check is pending a compatible x86_64 host. The PD-16 integration owner is reserved as the shared/test Terraform writer on this branch; remote branches had no competing root configuration. API health access is selected: SSM port forwarding to host port 18000, with no inbound security-group rule. PD-15 backend/migration, approved non-root planning identity, run-specific cost/retention and PD-08/09/12/13 acceptance remain open. | 2026-10-19 05:40:06 UTC |
 | PD-17 | Integration owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-14–PD-16 | — |
 | PD-18 | Integration owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-01–PD-17 | — |
 | PD-19 | Integration owner (unassigned) | not started | — | not started | pending | No implementation outputs in initial inventory (PD-00 Steps 2–3); task definition in `docs/tasks/pre-domain-task-list.md` | PD-00–PD-18 | — |
@@ -960,6 +960,65 @@ Added a draft architecture proposal and indexed it in `docs/README.md`. It scope
 ### PD-16 — Step 3 resource and cost inventory — 2026-10-18 22:17:36 UTC
 
 Expanded the draft with per-resource ownership/state, exposure/data, cost formula, quota, retention, and cleanup fields. Added the omitted private Fargate egress choices (NAT versus service endpoints) and left private health-test access open. Official AWS pricing dimensions were reviewed, but exact Mumbai rates, resource sizing/retention, owner, duration, quota headroom, and budget reserve are unresolved; Step 3 remains partial and Step 4 cannot start. `git diff --check` passed. No AWS calls, Terraform plan, secret, or resource change.
+
+### Overnight branch review and integration — 2026-10-19 02:29:38 UTC
+Reviewed four documentation-only commits `4e005ad`–`6a9ab0a`: no blocking finding for draft incorporation; Step 3 remains partial, PD-17–19 unstarted, and cloud/acceptance gates retained. Whitespace, fences and 58 local links passed; no runtime tests needed for this diff. Per contributor authorization, fast-forwarded into `task/pre-domain-integration-continued` at `6a9ab0a`; no conflicts or push. Continue PD-16 Step 3 after profile/cost/lifecycle decisions; only local AWS profile is unapproved `default`, so no AWS API was called. Merge incorporates the draft, not approval of its architecture or provisioning.
+
+### PD-16 — Step 3 pricing and lifecycle refinement — 2026-10-19 02:41:32 UTC
+Refreshed AWS pricing references. Recorded known VPC/endpoint/IP charges, 720h and illustrative 160h runtime scenarios, RDS stop/storage/backup behavior and its two-AZ subnet requirement. Recommended an in-VPC one-shot probe for review. Exact Mumbai SKU rates, full total/reserve, live spend/quotas, owner, duration and cleanup decisions remain open; the only configured AWS profile is unapproved `default`. No AWS API, Terraform, secret, or resource operation. Step 3 remains partial; Step 4 is gated.
+
+### PD-16 — Step 3 Mumbai pricing evidence — 2026-10-19 02:56:29 UTC
+Read-only Price List API lookups via `ap-south-1` recorded Mumbai Fargate, RDS, endpoint, NAT/IPv4, ECR, and CloudWatch rates plus illustrative subtotals in the proposal. `default` resolves to account root; no billing/quota or inventory query, Terraform, secret, or resource change. `git diff --check` passed. Architecture, duration, owner, headroom, and reserve remain unresolved; Step 3 is partial.
+
+### PD-16 — Step 3 budget and quota refresh — 2026-10-19 03:03:31 UTC
+Read-only billing showed `$0.02` budget actual, `$1.286` forecast, and the `$50` pause threshold; Cost Explorer data is estimated and remaining credits are unknown. Refreshed regional counts/limits: one unadopted VPC, zero endpoints/NAT/EIPs/RDS/ALB/SSM/ECR/ECS clusters, and seven log groups. The 720-hour scenarios and 160-hour NAT scenarios exceed the `$50` threshold; final choices, owner, duration, and reserve remain open. Optional ALB rates are included; no AWS resources changed.
+
+### PD-16 — Step 3 cost baseline — 2026-10-19 03:27:59 UTC
+
+Recorded the user's single-AZ deployment with a second private subnet for RDS, NAT egress, local-only developer access, periodic backups, and manual IAM verification. Recalculated the known subtotal at USD 71.00 for 720 hours and USD 51.97 for the illustrative 160-hour workload with network/storage held for a month. Image, log, traffic, backup overage, owner, duration, and reserve remain open; no plan or resource change.
+
+### PD-16 — Step 4/5 planning gate clarified — 2026-10-19 03:32:37 UTC
+
+Reordered the gate so prerequisites and separate authorization for a non-applying plan precede protected plan/checksum review, exact approval, and apply. PD-15 backend/migration and remaining cost, budget, access, and ownership inputs still block planning. No Terraform plan or AWS resource change.
+
+### PD-16 — Step 4 readiness audit — 2026-10-19 03:43:29 UTC
+
+Read-only STS confirmed account `335523638354` but the configured identity is root; S3 listing found no bucket with the documented PD-15 prefix. The shared Terraform root is still a README placeholder, and the API has no Dockerfile. Budgets returned USD 0.02 actual and USD 1.286 forecast against a USD 200 notification budget; no spend cap/reserve is set. Identified a missing pre-plan configuration/image-build step and unresolved PD-15 bootstrap planning authorization. No Terraform plan or AWS resource change.
+
+### PD-16 — Updated architecture and cost decisions — 2026-10-19 04:01:34 UTC
+
+User accepted the budget context, set shared resource ownership with creator-led cleanup, allowed variable per-test durations, excluded Fargate, and dismissed ECR quota as a blocker. PD-15 bootstrap `.tf` files exist; no live bucket is present, and the PD-16 shared/test root remains README-only. Fargate-based architecture and totals are superseded; Steps 2–3 need revision after selecting ECS capacity. No plan or resource change.
+### PD-16 — Step 4 task-definition audit — 2026-10-19 04:05:46 UTC
+
+PD-15 bootstrap configuration exists; live backend creation/migration remains separately gated. The PD-16 task omits a shared/test Terraform-configuration step and an API-image build/publish sequence before its saved-plan/deployment gates; wait for a task-definition decision. No plan, secret, or resource change.
+
+### PD-16 — Step 3 capacity and staged deployment definition — 2026-10-19 04:15:01 UTC
+
+Recorded one provisional c7i-flex.large host (Linux On-Demand USD 0.08479/hour) and updated the 720-hour baseline to USD 122.71. Amended PD-16 with a local Terraform/image step, separately approved base plan/apply, authorized digest-specific ECR upload, and a second ECS service plan/apply. `git diff --check` passed; no Terraform plan, image build/push, or resource change. Revised Step 3 and task sequence await human verification.
+
+### PD-16 — Step sequence and readiness audit — 2026-10-19 04:17:39 UTC
+
+Reconciled stale step references and added command-registry and API-guide updates to Step 4 outputs. The staged deployment order is explicit; the private database probe's method and evidence level remain undefined and must be decided before implementation. AWS documentation confirms c7i-flex.large is 2 vCPU/4 GiB and offered in Mumbai. `git diff --check` passed; no plan, image build/push, or resource change.
+
+### PD-16 — Probe, toolchain, and root-volume correction — 2026-10-19 04:37:37 UTC
+
+The user selected an authenticated `SELECT 1` from a one-shot private PostgreSQL task launched through the local AWS CLI; Step 8/10 now record this and its SSM SecureString boundary. Added the AL2023 AMI's default 30 GiB gp3 root volume at USD 0.0912/GB-month (USD 2.74/720h), raising the known 720-hour estimate to USD 125.45. Repo controls pin Terraform 1.15.9; use that exact version for this task despite installed/latest 1.16.5. `sudo docker version` reached Docker 26.1.5 on ARM64; the standard CLI lacked Buildx, and a temporary builder still exposed only ARM platforms. The target image check is blocked. GitHub PR status could not be refreshed. No Terraform or AWS resource operation.
+
+### PD-16 — Local linux/amd64 builder capability — 2026-10-19 04:41:28 UTC
+
+The normal Docker CLI lacked Buildx. Verified an official temporary Buildx v0.37.2 binary by its release checksum and created a disposable container builder; it still advertised only ARM platforms, so no linux/amd64 build or health check was attempted. Removed the temporary builder and plugin. Step 4's target-platform check remains pending an x86_64 runner or an explicitly approved local emulation setup.
+
+### PD-16 — Terraform version confirmation — 2026-10-19 04:42:00 UTC
+
+The repository pin remains 1.15.9; confirmed the previously checksum-verified binary still exists and reports v1.15.9 on Linux ARM64. PATH selects 1.16.5, the current latest stable release, but the static checker correctly rejects it under the existing exact pin. No repository version constraints changed.
+
+### PD-16 — Step 4 local API image scaffold — 2026-10-19 05:28:55 UTC
+
+Per user direction, the local image check uses the current worktree and records base SHA `6a9ab0af` plus dirty status; Step 7 rebuilds from the exact reviewed commit. Added a Python 3.14.8/uv 0.10.7 non-root API image, restricted Docker context, and documented `sudo docker` build/run/cleanup commands. The ARM64 builder cannot run the AMD64 target, so that check is deferred and Step 4 remains incomplete. The shared/test Terraform root is reserved to the PD-16 integration owner on this branch; remote branches had no competing root configuration. `git diff --check` passed; no image build, Terraform validation, AWS plan, or resource change.
+
+### PD-16 — API health access path decision — 2026-10-19 05:40:06 UTC
+
+The user selected SSM port forwarding for local `/health`: ECS bridge mapping from container 8000 to host 18000, forwarded to local port 18000, with no inbound security-group rule. Added the method, SSM agent and permission checks to PD-16 Steps 4, 8 and 10 and the proposal. No Terraform files or AWS resources changed.
 
 ## Pending real integration ledger
 

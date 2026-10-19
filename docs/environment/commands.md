@@ -111,6 +111,27 @@ Security checks include request-ID spoofing and credential-free entry-point chil
 
 The privacy check launches a credential-free pytest child (15-second timeout) that intentionally fails; the parent passes only when the failure report is correctly redacted. See [fixture usage and snapshot limits](../../tests/fixtures/core/README.md). Fixtures do not establish real provider/domain integration or cloud/NFR acceptance.
 
+## Local API container image — PD-16 Step 4
+
+Run from the repository root with Docker Engine and BuildKit. The build context
+uses `apps/api/Dockerfile.dockerignore`, which keeps the lockfiles and API app
+source while excluding credentials, environment files, virtual environments,
+Git metadata, generated data, tests and unrelated repository files. Record
+`git rev-parse HEAD` and `git status --short` with the local check: it builds
+the current worktree, including uncommitted API changes. The later registry
+image must be rebuilt from the exact reviewed commit.
+
+| Exact command | Inputs and effects | Success / cleanup |
+|---|---|---|
+| `sudo docker build --platform linux/amd64 --file apps/api/Dockerfile --tag clip-api:pd16-local .` | Requires `linux/amd64` build support and registry access for the pinned Python and uv base-image tags. Creates/replaces local image `clip-api:pd16-local`; it does not push an image or contact AWS. | Exit 0 creates the target-platform image. |
+| `sudo docker run --rm --detach --name clip-api-pd16-check --platform linux/amd64 --publish 127.0.0.1:8000:8000 clip-api:pd16-local` | Starts a disposable container, exposes port 8000 only on host loopback, and uses the Dockerfile health check. | Returns a container ID. Check `curl --fail http://127.0.0.1:8000/health` for HTTP 200 and `{"status":"ok"}`; then run `sudo docker stop clip-api-pd16-check`. `--rm` removes the stopped container. |
+| `sudo docker image rm clip-api:pd16-local` | Removes only the named local image after the check. | Exit 0 removes the local image; omit this if retaining it for review. |
+
+The current Docker host is ARM64 and its builder has no AMD64 execution support.
+Do not claim the build or health check passed there; run both commands on a
+compatible x86_64 Docker host and record the image revision and result before
+Step 4 can pass. The approved local procedure uses `sudo docker` on this host.
+
 ## PD-09 Step 2 — schema-independent preview generator
 
 From the repository root, run
