@@ -1,12 +1,12 @@
 # PD-16 evidence and AMD64 handoff
 
-**Publication reconciliation — 2026-10-19:** PR #7 merged at main `68d9da9`; final head `61dd7674` passed [hosted CI run 39280676449](https://github.com/exocrat/clip/actions/runs/39280676449). The local/push-pending statements below describe evidence-capture time. Independent approval is not inferred from the merge (GitHub formal reviews were empty). Current checkpoint: [Step 7 image handoff/publication preparation](../../../environment/pd16-image-publication.md).
+**Publication reconciliation — 2026-10-19:** PR #7 merged at main `68d9da9`; final head `61dd7674` passed [hosted CI run 39280676449](https://github.com/exocrat/clip/actions/runs/39280676449). The local/push-pending statements below describe evidence-capture time. Independent approval is not inferred from the merge (GitHub formal reviews were empty). PD-16 operational scope is now closed; PD-17–19 are being prepared for the combined review/main merge required before PRE-00. Current task checkpoint is in the [work log](../../../status/work-log.md).
 
-PR #7 local review corrections: [deadline tests, real lock failure check and manual ECR cleanup resolution](review-corrections.md). This evidence covers the tested correction worktree; Suraj verified the result and approved its commit. Publication and current hosted/independent review remain pending.
+PR #7 local review corrections: [deadline tests, real lock failure check and manual ECR cleanup resolution](review-corrections.md). This evidence covers the tested correction worktree; Suraj verified the result and approved its commit. Publication and hosted acceptance later completed; the user confirmed the previously pending PD-08/09/12/13/15 gates on 2026-10-19. No PR status was examined during PD-19.
 
 ## PD-16 operational closeout — accepted for now
 
-[Closeout audit and exact remaining gates](closeout-review.md), [fresh safe outputs/stopped status](step14-handoff-result.json). Aditya is current operator; accepted idle deadline **2026-10-23 18:23:35 UTC**. User explicitly closed PD-16 for now and selected PD-17 documentation. Remaining original checks carry to integration/PD-19/PRE-00 under DEC-07; no full foundation/domain acceptance is implied.
+[Closeout audit and stopped-resource status](closeout-review.md), [fresh safe outputs](step14-handoff-result.json). Aditya is current operator; accepted idle deadline **2026-10-23 18:23:35 UTC**. User explicitly closed PD-16 operational scope and selected PD-17 documentation. At that closeout, original checks carried to integration/PD-19/PRE-00 under DEC-07; the later user confirmation above resolves those PD-task gates. PRE-00 still requires PD-19 and the combined reviewed/main-merged PD-17–19 handoff; no domain acceptance is implied.
 
 ## Step 13 lifecycle closeout — inputs accepted
 

@@ -6,15 +6,17 @@ This registry contains implemented commands and planned outputs, distinguished i
 
 For EACH command record: creator task, exact invocation and required inputs, supported shell/runtime, target/environment, effects and destructive/billable behavior, prerequisite milestone, expected output/exit status, failure/recovery, tests/evidence. Commands must reject unspecified or wrong targets rather than guessing an AWS account/region/database.
 
+**Status reconciliation (2026-10-19):** The user confirmed all previously pending PD-08/09/12/13/15 acceptance gates. Step-specific notes below retain checkpoint-time status; see the work log for current acceptance. PD-19 Step 2 reran the clean local command path. Final schema-aware data loading remains SE-01/DATA-READY.
+
 | Required command outcome | Creator | Current state |
 |---|---|---|
-| Install/setup | PD-02/04/07/13 | Python: `uv sync --locked` implemented/verified in PD-04; web: root `npm ci` implemented/verified in PD-07. `make setup` maps both in PD-13 Step 1; clean-environment verification remains Step 5. |
-| Local start/stop/readiness | PD-05/07/08/13 | API foreground start/stop/health and typed settings verified in PD-05; web loopback start/stop verified in PD-07. PD-08 Step 5 database wrapper implemented with simulated-Docker safety checks; real runtime remains Step 6. PD-13 maps foreground API/web and database start/stop; clean lifecycle checks remain Step 5. |
-| Local migration/status/reset and small seed | PD-08/13 | Provisional dbmate SQL, PostgreSQL 18.6 local Compose configuration and Step 5 lifecycle wrapper exist. Real checks remain Step 6/PD-13. Reset is local-only with an explicit deletion flag; no final domain data loader exists. |
-| Generator framework/tests | PD-09 | All six local steps/audit human-verified; 63 data tests/361 combined Python tests and pinned Black passed. Peer/upstream/main acceptance pending. No domain loader/evaluator. |
+| Install/setup | PD-02/04/07/13 | Python: `uv sync --locked` implemented/verified in PD-04; web: root `npm ci` implemented/verified in PD-07. `make setup` and clean-checkout verification passed in PD-13/PD-19 Step 2. |
+| Local start/stop/readiness | PD-05/07/08/13 | API and web loopback checks plus the PD-08/13 lifecycle gates are complete; user confirmed the previously pending acceptance on 2026-10-19. PD-19 Step 2 repeated API/web/DB start and stop locally. |
+| Local migration/status/reset and small seed | PD-08/13 | PostgreSQL 18.6/dbmate 2.36.0 wrapper, migrations and small catalogue seed are verified; user confirmed the previously pending PD-08/13 acceptance on 2026-10-19. Reset remains local-only with an explicit deletion flag; no final domain data loader exists. |
+| Generator framework/tests | PD-09 | All six local steps/audit and final acceptance were user-confirmed on 2026-10-19; 63 data tests and pinned Black passed. No domain loader/evaluator. |
 | Final reference generate/load/validate/fingerprint | SE-01/DATA-READY | Not implemented; requires domain schemas/configuration |
 | Python format and non-mutating pinned Black check | PD-04 | Implemented and human-verified at step 3; exact commands and verification below |
-| Test/lint/type/build/aggregate CI-equivalent | PD-05/07/12/13 | `make check` runs the shared Python/web/database/contracts/secret gates used by CI. Local evidence below; hosted execution remains pending PD-12, lifecycle front door PD-13. |
+| Test/lint/type/build/aggregate CI-equivalent | PD-05/07/12/13 | `make check` runs the shared Python/web/database/contracts/secret gates used by CI; it passed in PD-19 Step 2. PD-12/13 hosted acceptance and lifecycle front door were user-confirmed complete on 2026-10-19. |
 | Contract regenerate/stale-check | PD-11/DL-00 | Health generation/check and actual API schema/consumer regression checks implemented in PD-11; full domain declarations remain DL-00. Exact commands below. |
 | Terraform static format/validate (no remote state mutation) | PD-15/13 | `make terraform-check` with Terraform 1.15.9: format check and backend-free validation, readonly provider lock; individual targets documented below. Public provider downloads may be needed; no cloud login or apply. |
 | Plan/apply/build-release/deploy/verify/rollback/teardown | PD-15/16; domain/EXP additions | PD-15 documents reviewed plan/apply/verify/cleanup. PD-16 per-run ECS capacity plans and RDS stop/start templates are in `infra/terraform/shared/test/README.md`; select exact targets and review/approve each cloud operation. These are not local/CI checks. |
@@ -91,7 +93,7 @@ For setup/start failures, inspect the dependency, import, configuration or occup
 
 Tests use synthetic data, in-memory ASGI requests, temporary files and bounded local subprocesses; they may write local caches and restore changed environment/logger settings. They need no external services or credentials. Pytest exit 0 means collected tests passed; exit 1 means failure; exit 5 (no tests) is not a pass. Investigate failures. Root pytest configuration supplies import paths; TestClient uses pinned development-only httpx2.
 
-Settings, request IDs, JSON logging and production provider guards are documented in the [API guide](../../apps/api/README.md) and [core guide](../../apps/api/app/core/README.md). No dotenv file is loaded automatically. Python lint/type tooling, CI wiring and combined lifecycle/test Make targets remain future PD-12/13 outputs. Tool choices: [test tooling decision](../decisions/python-test-tooling.md); verification evidence: [work log](../status/work-log.md).
+Settings, request IDs, JSON logging and production provider guards are documented in the [API guide](../../apps/api/README.md) and [core guide](../../apps/api/app/core/README.md). No dotenv file is loaded automatically. PD-12/13 provide CI wiring and combined lifecycle/test Make targets; Python lint/type tooling remains deferred. Tool choices: [test tooling decision](../decisions/python-test-tooling.md); verification evidence: [work log](../status/work-log.md).
 
 ## Focused core/fixture checks (PD-06/PD-10)
 
@@ -181,10 +183,7 @@ done
 )
 ```
 
-The native ARM64 check is sufficient for Step 4. Native Linux AMD64/macOS setup and database compatibility
-checks remain pending under PD-08/PD-13 and are required before PRE-00 acceptance. Step 7 must still
-build and verify a `linux/amd64` image from the exact reviewed commit for the
-x86_64 ECS host. The approved local procedure uses `sudo docker` on this host.
+The native ARM64 check is sufficient for Step 4. The user later confirmed the previously pending PD-08/PD-13 native-platform and database compatibility gates (2026-10-19); see the work log. PD-16 Step 7 subsequently built, uploaded and verified the `linux/amd64` image from its reviewed commit; see [PD-16 publication evidence](../evaluation/foundation/pd-16/README.md). The approved local procedure uses `sudo docker` on this host.
 
 PD-16's ECS scale-to-zero and RDS stop/start procedures are documented in the
 [shared test Terraform runbook](../../infra/terraform/shared/test/README.md#ecs-capacity-lifecycle).
@@ -554,7 +553,10 @@ modes. It reports action/target, preserves failures and discards ambient cloud,
 TF_CLI_ARGS, debug and user CLI configuration. No plan/apply/destroy target is
 added, and Terraform stays outside `make check`. The provider lock is generated
 for Linux/macOS AMD64/ARM64; package availability/hashes do not prove runtime
-checks on all four platforms. Native macOS/Bash 3.2 execution remains pending.
+checks. On 2026-10-20 (Asia/Kolkata), the user confirmed that the previously
+deferred Linux AMD64 and native macOS checks passed on other machine(s). Exact
+machine architecture, commands, and raw outputs are not retained here; see the
+[current platform record](../../database/README.md).
 
 **PD-13 Step 5 local evidence:** fresh private clone/home/cache setup, hooks,
 API/web/preview two start-stop cycles, deterministic preview files, repeatable

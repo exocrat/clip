@@ -22,7 +22,7 @@ The conversation stores private shared content as ciphertext while retaining the
 PD-08 Step 2 specifies payload metadata and relationships for affected-owner review before dependent migrations; the approved [retention policy](private-data-retention.md) separately bounds content lifetime. DL-00/CN-01/CN-02 finalize protocol, exposure and authorization. Contact labels/values, notes and ciphertext remain excluded from logs/evidence. Moving labels into the payload does not conceal the server's minimum conversation-entry kind/routing metadata.
 
 ## Approver
-Mohit (C), explicit approval in the execution session. Affected-owner/privacy review remains pending.
+Mohit (C), explicit approval in the execution session. The user later confirmed the PD-08 affected-owner/privacy gate complete on 2026-10-19; see the [work-log reconciliation](../status/work-log.md#resolved-integration-evidence). Domain tasks still own the concrete encryption and access-control checks.
 
 ## Supersedes
 None; resolves the encryption direction, not the remaining retention design.

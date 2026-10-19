@@ -53,7 +53,7 @@ This checklist is an execution aid; canonical sources retain detailed requiremen
 | PD-05 | Verify local API health/configuration and tests without claiming dependency readiness or domain behavior. |
 | PD-06 | Verify approved shared conventions, decision records, core helpers, and applicable boundary/error/pagination/auth-context/logging tests. |
 | PD-07 | Verify only approved routes/pages, all four feature markers, public component entry points, local install/start/checks, ownership, and downstream handoff. |
-| PD-08 | Verify reviewed schema/migrations and exact local database lifecycle evidence; keep native Linux AMD64/macOS, affected-owner, and current hosted gates pending until their own evidence exists. |
+| PD-08 | Verify reviewed schema/migrations and retained local lifecycle evidence; record the user's confirmation of other-machine Linux AMD64/macOS checks and state that raw commands/results are unavailable here, not independently reproduced. |
 | PD-09 | Verify deterministic synthetic generator/manifest, safe retention and label-review format; final schema-aware data and reviewed labels remain SE-01/DATA-READY. |
 | PD-10 | Verify reusable minimal synthetic fixtures, explicit test-only fakes and production rejection, retries/failures/auth cases, and redacted output. |
 | PD-11 | Verify editable contract source, OpenAPI/type consistency, and backend/frontend domain-boundary checks; use `uv run --locked python scripts/generate_contracts.py generate` and `uv run --locked python scripts/generate_contracts.py check` for regeneration/freshness. |

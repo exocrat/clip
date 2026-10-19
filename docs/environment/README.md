@@ -23,9 +23,13 @@ examples in Bash from the clone root. Windows contributors use their existing
 - Optional, for Terraform targets only: Terraform **1.15.9**. Set `TERRAFORM_BIN`
   to its executable if PATH selects another version. No Terraform apply is needed.
 
-Current runtime evidence covers Linux ARM64; the database's
-[platform matrix](../../database/README.md) retains unverified Linux AMD64/macOS
-rows. Provider checksums for four platforms do not establish native execution.
+Current local runtime evidence covers Linux ARM64. On 2026-10-20 (Asia/Kolkata),
+the user confirmed that the previously deferred Linux AMD64 and macOS checks
+passed on other machine(s); the exact machine architecture, commands, and raw
+outputs are not retained in this checkout. See the
+[database platform record](../../database/README.md) for this reported status
+and its evidence limits. Provider checksums for four platforms do not establish
+native execution.
 Dependency/image/provider downloads need internet access; subsequent commands
 use local tools, caches and synthetic inputs.
 

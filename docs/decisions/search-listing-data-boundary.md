@@ -24,7 +24,7 @@ PD-08 Step 2 specifies the indexes for affected-owner review. DL-00 defines the 
 Technical basis: PostgreSQL's [full-text introduction](https://www.postgresql.org/docs/18/textsearch-intro.html) and [table/index guidance](https://www.postgresql.org/docs/18/textsearch-tables.html) describe word normalization and explicit configuration for matching indexes/queries. SE-01 still must establish relevance and NFR outcomes with final data and labels.
 
 ## Approver
-Mohit (C), explicit approval in the execution session. Affected-owner schema review remains pending.
+Mohit (C), explicit approval in the execution session. The user later confirmed the PD-08 affected-owner schema gate complete on 2026-10-19; see the [work-log reconciliation](../status/work-log.md#resolved-integration-evidence). DL-00 and the domain tasks still own generated interfaces and real data-boundary checks.
 
 ## Supersedes
 None; resolves the initial boundary alternative in shared conventions §12.

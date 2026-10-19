@@ -22,10 +22,12 @@ PD-08 needs actual PD-12 CI/version evidence, and PD-12 needs a local aggregate
 before PD-13. Explicit preparation scope resolves these ordering gaps.
 
 ## Implications
-No test doubles or domain contracts are introduced. Original PD-08 platform,
-affected-owner and CI checks, PD-09 upstream/command gates, PD-11 peer/affected-owner
-review and main acceptance remain pending. Final acceptance dependencies remain
-unchanged. PD-19/PRE-00 cannot pass until required gates are satisfied.
+No test doubles or domain contracts are introduced. At the time of this decision,
+the original PD-08 platform/affected-owner/CI checks, PD-09 upstream/command gates,
+and PD-11 peer/affected-owner review and main acceptance were pending. Later task
+status is recorded in the [work log](../status/work-log.md#current-task-state).
+Final acceptance dependencies remain unchanged. PD-19/PRE-00 cannot pass until
+required gates are satisfied.
 Hosting changes, publication and exact-revision merge retain separate approvals.
 
 ## Approver
@@ -56,3 +58,11 @@ integration; if main advances again, refresh/rerun before merging. Record tested
 head/base SHAs. This revises PD-12 Step 1 and the manual merge gate; it does not
 waive review or permit direct main pushes. A cancelled run never counts as success.
 No hosted cancellation behavior is claimed until published/observed.
+
+## Acceptance status reconciliation — 2026-10-19
+
+The user confirmed the previously pending PD-08/09/12/13/15 platform, owner,
+upstream, hosted and independent-acceptance gates complete; see the [work-log
+reconciliation](../status/work-log.md#resolved-integration-evidence). PD-17–19
+still require their combined independent review and exact-revision main merge
+before PRE-00.

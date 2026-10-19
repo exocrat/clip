@@ -48,14 +48,16 @@ test creates a private disposable Unix-socket cluster with TCP disabled and
 stops it afterward. This does not authorize a VM or global installation.
 Native UTF-8/C locale and a minimal build without ICU/readline/zlib differ from
 the Debian/C.UTF-8 image. Native apply/head/smoke/down-up/inventory repeatability
-evidence is valid only for that route; Compose startup/auth/persistence/reset,
-image/platform/locale compatibility, concurrency/query-plan and CI checks remain
-pending under their original Step 6/integration obligations. See
+evidence is valid only for that route. The user later confirmed the previously
+pending PD-08 platform, owner and CI acceptance gates complete on 2026-10-19;
+see the [work-log reconciliation](../status/work-log.md#resolved-integration-evidence).
+The retained Linux/ARM64 evidence remains route-specific. See
 [database verification](../../database/README.md#native-macos-checkpoint--2026-10-18).
 
 ## Approver
-Implementation selection within Mohit's verified PD-08 Step 4 scope; result
-verification pending. Affected-owner review and CI agreement remain pending.
+Implementation selection within Mohit's verified PD-08 Step 4 scope. The user
+later confirmed the previously pending result, affected-owner and CI acceptance
+gates complete on 2026-10-19; see the [work-log reconciliation](../status/work-log.md#resolved-integration-evidence).
 
 ## Supersedes
 None.

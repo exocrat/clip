@@ -20,7 +20,7 @@ Keeps the required-image publication invariant while supporting upload confirmat
 PD-08 proposes an upload-intent FK from each usable image and conditional timestamp/state checks. LI-02 must implement actual content/size/ownership validation and locking so cleanup cannot delete a concurrently attached image. Metadata state alone does not prove object existence or successful cloud deletion. Runtime signed-URL expiry/decoder/provider details retain their own review gates, and exact cloud operations require their existing approvals.
 
 ## Approver
-Mohit (C), explicit approval of the consolidated remaining package. Listings/platform affected-owner review remains pending.
+Mohit (C), explicit approval of the consolidated remaining package. The user later confirmed the PD-08 affected-owner/platform gates complete on 2026-10-19; see the [work-log reconciliation](../status/work-log.md#resolved-integration-evidence). LI-02 still owns implementation and cleanup-race checks.
 
 ## Supersedes
 None.

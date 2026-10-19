@@ -22,7 +22,7 @@ The database can associate ciphertext with reviewed public-key versions without 
 The approved database representation still requires Conversations/Identity/security review for compatibility with the established protocol before dependent migration acceptance. CN-01 retains authenticated key distribution, protocol/library selection, serialization/nonce/authentication/wrapping details, key-change/tampering behavior and security tests. Encoded-byte ceilings do not select algorithm key sizes. No primitive, algorithm, recoverability or rotation policy is invented by this storage decision.
 
 ## Approver
-Mohit (C), explicit Step 1 boundary approval followed by Step 2 representation/size-limit approval. Affected-owner/security review remains pending.
+Mohit (C), explicit Step 1 boundary approval followed by Step 2 representation/size-limit approval. The user later confirmed the PD-08 affected-owner/security gate complete on 2026-10-19; see the [work-log reconciliation](../status/work-log.md#resolved-integration-evidence). Implementation-specific security checks remain with the domain tasks.
 
 ## Supersedes
 None; refines the existing PRD E2EE storage boundary.

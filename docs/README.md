@@ -28,6 +28,7 @@ The root [README](../README.md) describes the project. Agents start from [AGENTS
 - [Agent execution checklist](checklists/agent-checklist.md)
 - [Human verification checklist](checklists/human-checklist.md)
 - [Status/checkpoint template](status/work-log.md)
+- [Pre-domain foundation handoff (PD-19)](status/foundation-handoff.md)
 - [Command registry](environment/commands.md)
 - [Secret-reference/access template](environment/secret-handling.md)
 - [PD-16 shared test foundation proposal](environment/shared-test-foundation-proposal.md)

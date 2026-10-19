@@ -28,6 +28,15 @@ The pre-domain path workflow was clarified: PD-03 will add tracked `.gitkeep` fi
 
 The current public-facing root `README.md` SHA-256 after this revision is `7bc42225b2189bbdc3b46705ec1dc7b9064be0498cc5282439f5981b3c26699e`.
 
+## Reviewed product/convention updates — 2026-10-19
+
+The v3.0 table below preserves the supplied-document baselines. Later accepted task changes are part of the maintained canonical copies, not source drift:
+
+- Document 1 includes the reviewed PD-08 product/storage choices and linked decisions; latest committed revision `5046b43`, current SHA-256 `962992be33342a1b7262d2b7297c64603cd13a83aa1fb94b6cf1bad0b995c512`.
+- Document 3 retains the nine PD-06 shared choices and adds the PD-11 Python public-boundary/contract-source rules; latest committed revision `1171b4a`, current SHA-256 `e0d5f0ddea353c56cd7711d78ee5d4151524d1a61de127bd0383d46b5960e392`.
+
+Both current copies match local `HEAD` `0747be6`; their hashes intentionally differ from the supplied v3.0 baselines below. The related decisions and verification are recorded in the [work log](../status/work-log.md). The submitted PRD remains unchanged.
+
 | Canonical file | Source/version | SHA-256 baseline |
 |---|---|---|
 | `AGENTS.md` | Planning/documentation v3.0, 2026-10-14 | `009d71c774566755a5c6382dacb889f19c6d27a7b95a56fa83e378e48558dfca` |

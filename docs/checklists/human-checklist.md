@@ -41,7 +41,7 @@ You may inspect evidence, but the agent must summarize what makes it acceptable 
 
 - [ ] Verify the agent's evidence for the [documented local API command](../../apps/api/README.md), health-only response and clean shutdown without database/cloud credentials. `{"status":"ok"}` is process liveness, not domain or dependency readiness.
 - [ ] Review `uv run --locked pytest apps/api/tests -q -W error` results and formatting checks. Confirm tests cover health in test mode and safe configuration failures, use synthetic data, and avoid exposing supplied values. The agent runs routine checks; you verify the summarized evidence.
-- [ ] Confirm shared-core/domain placeholders reflect the approved PD-06 conventions and distinguish the implemented local PD-08 lifecycle from its unresolved runtime/platform/owner/hosted acceptance. Setup/start/test instructions must match CONTRIBUTING and the command registry; local checks do not prove hosted acceptance.
+- [ ] Confirm shared-core/domain placeholders reflect the approved PD-06 conventions. Distinguish local checks from the user-confirmed PD-08 runtime/platform/owner gates and retain the recorded limits on unavailable other-machine artifacts. Setup/start/test instructions must match CONTRIBUTING and the command registry; local checks do not prove hosted acceptance.
 
 ## PD-12 CI and merge-gate verification
 
@@ -50,7 +50,7 @@ You may inspect evidence, but the agent must summarize what makes it acceptable 
 - [ ] Review `make check` and current hosted **CI / Foundation quality gates** evidence, including run URL and PR head/base revisions. Missing/skipped/cancelled/failed required checks do not pass.
 - [ ] Follow [the approved manual fallback](../../CONTRIBUTING.md#approved-manual-fallback). It preserves PR-only merging, independent human/affected-owner approval and separate exact-revision merge authorization, but cannot technically prevent bypass.
 - [ ] Recheck the exact current revision before authorizing merge; require renewed checks/review after relevant changes. Do not treat local checks or AI findings as hosted success or independent human approval.
-- [ ] Hosting changes retain separate approval. Checklist coverage does not accept unrun checks; original upstream/platform and PD-19/PRE-00 gates remain pending under their original task/step IDs where recorded.
+- [ ] Hosting changes retain separate approval. Checklist coverage does not accept unrun checks; record open checks under their original task/step IDs. The user confirmed the previously pending PD-08/09/12/13/15 gates complete on 2026-10-19; PD-19 and PRE-00 remain open as recorded in the work log.
 
 ## Task-wide closeout
 
@@ -71,7 +71,7 @@ Use the task-specific acceptance checks in `docs/tasks/pre-domain-task-list.md`;
 | PD-05 | Local API health/configuration and tests; no claim of dependency readiness or domain behavior. |
 | PD-06 | Canonical shared decisions/helpers and applicable tests for boundary, errors, pagination, trusted context, retries and privacy-safe logs. |
 | PD-07 | Human-approved routes/pages, all four feature markers, public component entry points, local install/start/checks, ownership and handoff. |
-| PD-08 | Reviewed schema/migrations and exact database lifecycle evidence; verify native Linux AMD64 and macOS runs, affected-owner review and hosted checks from their own evidence before closing those gates. |
+| PD-08 | Review schema/migrations and retained lifecycle evidence; record the user's confirmation of Linux AMD64/macOS checks on other machines, noting their raw commands/results are unavailable here and not independently reproduced. |
 | PD-09 | Deterministic synthetic generator/manifest, safe retention and label-review format; final schema-aware data and reviewed labels remain SE-01/DATA-READY. |
 | PD-10 | Reusable synthetic fixtures, explicit test-only fakes, production rejection, failure/retry/auth cases and redacted output. |
 | PD-11 | Editable contract source, OpenAPI/type consistency and backend/frontend boundary checks; verify `uv run --locked python scripts/generate_contracts.py generate` and `uv run --locked python scripts/generate_contracts.py check` evidence. |

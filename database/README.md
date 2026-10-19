@@ -1,17 +1,19 @@
 # Coordinated database migrations
 
-PD-08 Step 3 supplies **provisional** SQL migrations from the
-[schema](../docs/architecture/mvp-database-schema.md). Mohit authorized proceeding
-before affected-owner review; review and full runtime acceptance remain pending.
-Native PostgreSQL and the bounded Compose checkpoint below have passed; final acceptance remains pending.
+PD-08 Step 3 created SQL migrations from the
+[schema](../docs/architecture/mvp-database-schema.md) under the approved
+sequencing exception. The carried PD-08 gates are user-confirmed complete; the
+exact other-machine platform runs are described in the handoff and matrix below.
 
-**Phase handoff, 2026-10-18:** Mohit shifted all unfinished PD-08 checks/reviews
-to pre-domain integration. The [handoff decision](../docs/decisions/database-integration-handoff.md)
-maps the original obligations and roles. The integration owner coordinates
-remaining real container/SQL/CI/affected-owner/final checks; Mohit supplies this
-verified source/native checkpoint. PD-08 and PD-19/PRE-00 remain unaccepted
-until required checks/reviews pass; no installation, cleanup or cloud action is
-authorized by the transfer.
+**Phase handoff, 2026-10-18:** Mohit shifted unfinished PD-08 checks/reviews to
+pre-domain integration. The [handoff decision](../docs/decisions/database-integration-handoff.md)
+maps the original obligations and roles. The user later confirmed the carried
+PD-08 acceptance gates complete. On 2026-10-20, the user specifically confirmed
+that the previously deferred Linux AMD64 and macOS checks passed on other
+machine(s). The exact architecture, commands, and raw outputs are not retained
+in this repository; this is a user-confirmed status, not a locally reproducible
+run record. PD-19/PRE-00 retain their separate review and merge gates. No
+installation, cleanup, or cloud action is authorized by this status update.
 No API, domain service, provider, deployment or crypto implementation is supplied.
 
 ## Tool and migration head
@@ -163,11 +165,11 @@ force acceptance. On migration failure inspect status and the original cause;
 do not rewrite applied migrations or automatically reset data. Reset requires
 separate deliberate approval and cannot recover data after volume deletion.
 
-Source/refusal tests pass, including system Bash 3.2. Real Docker/Compose/container
-execution, image inspection, stop/start persistence and reset/recreate remain
-**pending Step 6**. Native apply/head/smoke checks passed below; multi-connection
-concurrency remains pending. These
-scripts create no accepted readiness milestone. PD-13 owns later root Makefile
+At the Step 5 implementation checkpoint, real Docker/Compose/container
+execution, image inspection, stop/start persistence and reset/recreate were
+pending Step 6. The user later confirmed the carried PD-08 acceptance gates
+complete; exact cross-platform execution details are not retained here. These
+scripts create no marketplace readiness milestone. PD-13 owns the root Makefile
 integration and must preserve the same target/refusal behavior.
 
 ## Important SQL behavior
@@ -262,10 +264,12 @@ that overlap metadata, nonfatal diagnostic stderr, and secret-bearing stdout
 on success/failure. These additions fail against the original wrapper. The SQL
 regression likewise fails against the original entry guard and passes with the
 forward correction. The full four-migration SQL round-trip and runtime inventory
-comparison are checked separately on an isolated PostgreSQL 18.6 ARM64 image;
-exact current results are recorded in the work log. Real Compose persistence,
-authenticated lifecycle/reset, broader concurrency/query plans and revised native
-macOS/dbmate/CI checks remain integration obligations under the existing handoff.
+comparison were checked separately on an isolated PostgreSQL 18.6 ARM64 image;
+exact results are recorded in the work log. At this 2026-10-18 checkpoint, real
+Compose persistence, authenticated lifecycle/reset, broader concurrency/query
+plans and revised native macOS/dbmate/CI checks remained integration obligations.
+The later user-confirmed status is recorded in the platform matrix below; missing
+other-machine logs are not reconstructed.
 
 ### Native macOS checkpoint — 2026-10-18
 
@@ -328,15 +332,17 @@ migrations to `20261018152702`, status (Applied 4/Pending 0), repeat migrate,
 stop/start and final stop. Both rollback-only SQL smoke suites passed in the
 separate synthetic `clip_test_integration` database. Its four migration records
 and 23 domain tables remained after restart. This supersedes historical
-Compose-not-run statements for this Linux/ARM64 checkpoint only; macOS/AMD64
-compatibility and CI parity are not proved.
+Compose-not-run statements for this Linux/ARM64 checkpoint only. At that
+checkpoint macOS/AMD64 compatibility and CI parity were not proved; later
+user-confirmed status is described below.
 
 Evidence: `/tmp/clip-pd08-compose-3ej1goas` (temporary local files; the synthetic
 password file is private and must not be published). The owned service is
 stopped; its container, network and named volume remain. No reset, volume
-removal, down migration or cloud operation was performed. Reset/recreate,
-concurrency/query plans, affected-owner acceptance and CI/common-command
-integration remain pending under the original handoff.
+removal, down migration or cloud operation was performed in this checkpoint.
+At that time, reset/recreate, concurrency/query plans, affected-owner
+acceptance and CI/common-command integration remained pending; the user later
+confirmed the carried PD-08 gates complete.
 
 ### Required platform verification matrix
 
@@ -347,14 +353,15 @@ architecture and evidence for each actual run; PD-12 owns CI wiring.
 
 | Host | Container platform | State / evidence |
 |---|---|---|
-| Linux ARM64 | `linux/arm64` | Local storage checkpoint passed: lifecycle/reset, seven concurrency cases and five index diagnostics. Cross-platform/CI acceptance remains pending. |
-| Linux AMD64 | `linux/amd64` | Pending actual host run; schedule automated verification in PD-12. |
-| macOS Apple Silicon | `linux/arm64` | Pending Compose run with a supported local engine and Bash; earlier native macOS evidence is separate. |
-| macOS Intel | `linux/amd64` | Pending actual Mac run with a supported local engine and Bash. |
+| Linux ARM64 | `linux/arm64` | Local storage checkpoint passed: lifecycle/reset, seven concurrency cases and five index diagnostics; exact evidence is recorded below. |
+| Linux AMD64 | `linux/amd64` | User-confirmed pass on another machine (2026-10-20 Asia/Kolkata); exact host, commands, and outputs are not retained here. |
+| macOS (architecture not specified) | `linux/arm64` or `linux/amd64` | User-confirmed macOS check passed on another machine (2026-10-20 Asia/Kolkata); the report does not identify Apple Silicon versus Intel or retain commands/outputs. |
 
-The non-ARM64-Linux rows remain pending acceptance obligations. A reusable
-verification harness is planned work, not an implemented command. No platform
-parity or full PD-08 acceptance is claimed from the current checkpoint.
+This table combines recorded local evidence with the user's confirmation; only
+the Linux ARM64 result has its detailed run evidence in this repository. A
+reusable verification harness is planned work, not an implemented command.
+Do not cite the unavailable run details as independently inspected platform
+evidence.
 
 ### Approved reset/recreate checkpoint — 2026-10-18
 

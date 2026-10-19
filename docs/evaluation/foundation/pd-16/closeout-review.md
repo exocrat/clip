@@ -1,6 +1,8 @@
 # PD-16 Step 14 — operational handoff and acceptance audit
 
-**Status:** User accepted PD-16 operational closeout **for now** and directed moving to PD-17 documentation. Original unresolved acceptance obligations are transferred to pre-domain integration/PD-19/PRE-00 under [DEC-07](../../../decisions/shared-foundation-dependency-staging.md); none is represented as passed. PRE-00/domain work remains gated.
+**Status at PD-16 closeout:** User accepted PD-16 operational closeout **for now** and directed moving to PD-17 documentation. Original unresolved acceptance obligations were transferred to pre-domain integration/PD-19/PRE-00 under [DEC-07](../../../decisions/shared-foundation-dependency-staging.md); none was represented as passed at that time. PRE-00/domain work remained gated.
+
+**Later reconciliation — 2026-10-19:** The user confirmed the previously pending PD-08/09/12/13/15 acceptance gates. This record preserves the earlier closeout state; current task status is in the [work log](../../../status/work-log.md). PD-17–19 still require the combined reviewed/main-merged handoff before PRE-00. No PR status was examined during PD-19.
 
 ## Definition audit and reconciled outputs
 
@@ -20,12 +22,12 @@ Step 14 is coherent with the task purpose, DEC-07 staging exception and Steps 1�
 
 No cloud mutation, password rotation, automatic cleanup, restart, load or new test suite in Step 14. Initial output-reader assumed an explicit `sensitive=false`; local parser corrected to handle Terraform's omitted false flag, without changing cloud/output schema.
 
-## Current handoff and remaining gates
+## Handoff and remaining gates at PD-16 closeout
 
 - Compute off, storage/images/network/backend retained. NAT/storage/log/backup/ECR/backend charges continue; RDS can auto-restart after seven stopped days. No automatic shutdown/destroy installed.
 - Aditya initiates cleanup review by **2026-10-23 18:23:35 UTC (23:53:35 IST)** if still idle; later approved runs update clock. Protection-disable, manual ECR-image removal and fresh full destroy remain separate exact approvals; preserve PD-15 backend/version history. No new deletion is authorized here.
 - Next runtime use needs approved RDS start, fresh reviewed service-enable plan, exact window and budget/credit recheck. A setup rerun would attempt CREATE ROLE again: do not run it routinely now that the role exists; the restricted probe is the routine connectivity check.
-- Required pending acceptance: PD-08 native platform/affected-owner acceptance, PD-09 upstream acceptance, PD-12/13 current platform/owner/hosted/peer checks and PD-15 independent acceptance per DEC-07. AMD64 API-image success does not complete the database/setup platform matrix.
+- Pending at that closeout: PD-08 native platform/affected-owner acceptance, PD-09 upstream acceptance, PD-12/13 current platform/owner/hosted/peer checks and PD-15 independent acceptance per DEC-07. AMD64 API-image success did not itself complete the database/setup platform matrix.
 - Remote check in this increment: `main` remains `68d9da9`; no open PRs or published continuation branch. New commits remain local. No current-head hosted CI/independent peer acceptance is inferred from PR #7's older successful run. Publication, independent review and exact merge approval remain separate. Use [peer-review prompt](../../../prompts/peer-review-prompt.md) when preparing review.
 
 User direction now closes PD-16 operational scope and authorizes PD-17 documentation. Record carried checks under their original tasks and resolve them before PD-19/PRE-00; this is not full foundation or domain acceptance.

@@ -35,7 +35,7 @@ No business contract, composition exception or human ownership is invented here.
 
 Existing canonical ownership rules; integration contributor authorized step 2.
 The contributor verified the recorded convention before step 3.
-Affected-owner/independent review remains pending.
+PD-11 was later confirmed complete by the user and its source revision is recorded as merged to `main` in the [work log](../status/work-log.md#current-task-state). This supersedes the initial pending-review note; DL-00 still owns the generated public declarations.
 
 ## Supersedes
 

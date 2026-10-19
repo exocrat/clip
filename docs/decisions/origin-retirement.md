@@ -24,7 +24,7 @@ PD-08 specifies retirement/profile-removal timestamps, a continuous-eligibility 
 The [private-data retention policy](private-data-retention.md) still governs shorter windows and backup/restore reconciliation. Actual cleanup implementations, destructive runs, cloud resources and exact object-store operations retain their normal gates.
 
 ## Approver
-Mohit (C), explicit approval of the consolidated remaining package. Affected-owner/privacy review remains pending.
+Mohit (C), explicit approval of the consolidated remaining package. The user later confirmed the PD-08 affected-owner/privacy gate complete on 2026-10-19; see the [work-log reconciliation](../status/work-log.md#resolved-integration-evidence). Domain implementation must still follow the stated cleanup and ordering safeguards.
 
 ## Supersedes
 None; refines the previously open origin/metadata retirement policy.
