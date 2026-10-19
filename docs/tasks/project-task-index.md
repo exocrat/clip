@@ -29,6 +29,7 @@ preserves original checkpoint IDs, owners, dependencies and real acceptance
 checks. Integration must sequence the continuation and consumer prerequisites;
 phase transfer is not task completion or permission to bypass a gate.
 PD-19/PRE-00 cannot pass with these obligations unresolved.
+For PD-16 only, the [bounded foundation staging decision](../decisions/shared-foundation-dependency-staging.md) permits its named health-only increments against locally verified inputs; the hard acceptance dependency table below remains unchanged.
 
 ## Readiness milestone definitions
 

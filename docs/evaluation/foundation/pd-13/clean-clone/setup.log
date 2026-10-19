@@ -1,0 +1,63 @@
+uv sync --locked
+npm ci
+
+added 101 packages, and audited 102 packages in 4s
+
+36 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+Using CPython 3.14.3 interpreter at: /home/mainberry/IISc/clip/.venv/bin/python
+Creating virtual environment at: .venv
+Resolved 41 packages in 0.67ms
+Downloading virtualenv (5.2MiB)
+Downloading pydantic-core (2.0MiB)
+Downloading pygments (1.2MiB)
+ Downloaded pygments
+ Downloaded pydantic-core
+ Downloaded virtualenv
+Prepared 38 packages in 1.26s
+Installed 38 packages in 8ms
+ + annotated-doc==0.0.5
+ + annotated-types==0.8.0
+ + anyio==4.15.1
+ + black==26.10.1
+ + cfgv==3.5.0
+ + click==8.5.0
+ + distlib==0.4.4
+ + fastapi==0.143.3
+ + filelock==4.2.2
+ + h11==0.16.0
+ + httpcore2==2.13.1
+ + httpx2==2.13.1
+ + identify==2.6.20
+ + idna==3.20
+ + iniconfig==2.3.1
+ + mypy-extensions==1.1.0
+ + nodeenv==1.11.0
+ + opentelemetry-api==1.45.1
+ + packaging==26.3
+ + pathspec==1.1.1
+ + platformdirs==4.13.3
+ + pluggy==1.7.0
+ + pre-commit==4.5.1
+ + pydantic==2.14.1
+ + pydantic-core==2.50.1
+ + pydantic-settings==2.16.0
+ + pygments==2.21.0
+ + pytest==9.1.1
+ + python-discovery==1.6.3
+ + python-dotenv==1.2.4
+ + pytokens==0.4.1
+ + pyyaml==6.0.3
+ + starlette==1.8.0
+ + truststore==0.10.5
+ + typing-extensions==4.16.0
+ + typing-inspection==0.4.4
+ + uvicorn==0.54.0
+ + virtualenv==21.14.11
+npm notice
+npm notice New major version of npm available! 11.19.1 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

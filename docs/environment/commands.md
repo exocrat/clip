@@ -8,16 +8,16 @@ For EACH command record: creator task, exact invocation and required inputs, sup
 
 | Required command outcome | Creator | Current state |
 |---|---|---|
-| Install/setup | PD-02/04/07/13 | Python: `uv sync --locked` implemented/verified in PD-04; web: root `npm ci` implemented/verified in PD-07. Combined setup remains pending PD-13. |
-| Local start/stop/readiness | PD-05/07/08/13 | API foreground start/stop/health and typed settings verified in PD-05; web loopback start/stop verified in PD-07. PD-08 Step 5 database wrapper implemented with simulated-Docker safety checks; real runtime remains Step 6. Combined lifecycle remains PD-13. |
+| Install/setup | PD-02/04/07/13 | Python: `uv sync --locked` implemented/verified in PD-04; web: root `npm ci` implemented/verified in PD-07. `make setup` maps both in PD-13 Step 1; clean-environment verification remains Step 5. |
+| Local start/stop/readiness | PD-05/07/08/13 | API foreground start/stop/health and typed settings verified in PD-05; web loopback start/stop verified in PD-07. PD-08 Step 5 database wrapper implemented with simulated-Docker safety checks; real runtime remains Step 6. PD-13 maps foreground API/web and database start/stop; clean lifecycle checks remain Step 5. |
 | Local migration/status/reset and small seed | PD-08/13 | Provisional dbmate SQL, PostgreSQL 18.6 local Compose configuration and Step 5 lifecycle wrapper exist. Real checks remain Step 6/PD-13. Reset is local-only with an explicit deletion flag; no final domain data loader exists. |
 | Generator framework/tests | PD-09 | All six local steps/audit human-verified; 63 data tests/361 combined Python tests and pinned Black passed. Peer/upstream/main acceptance pending. No domain loader/evaluator. |
 | Final reference generate/load/validate/fingerprint | SE-01/DATA-READY | Not implemented; requires domain schemas/configuration |
 | Python format and non-mutating pinned Black check | PD-04 | Implemented and human-verified at step 3; exact commands and verification below |
 | Test/lint/type/build/aggregate CI-equivalent | PD-05/07/12/13 | `make check` runs the shared Python/web/database/contracts/secret gates used by CI. Local evidence below; hosted execution remains pending PD-12, lifecycle front door PD-13. |
 | Contract regenerate/stale-check | PD-11/DL-00 | Health generation/check and actual API schema/consumer regression checks implemented in PD-11; full domain declarations remain DL-00. Exact commands below. |
-| Terraform static format/validate (no remote state mutation) | PD-15 | Implemented: run `bash scripts/terraform-static-check.sh` from the repository root with Terraform `1.15.9`. Checks recursive Terraform formatting, then runs `terraform init -backend=false` and `terraform validate` for each root. Exit 0 means all checks pass; a format, provider-download, or validation failure exits nonzero and must be resolved before planning. It does not contact AWS or read remote state; first initialization needs Terraform Registry access and may download the pinned provider into ignored `.terraform/`. |
-| Plan/apply/build-release/deploy/verify/rollback/teardown | PD-15/16; domain/EXP additions | PD-15 documents the reviewed plan/apply/verify/cleanup workflow and command templates in `infra/terraform/README.md`; actual targets, state keys, protected plan path, and commands must be selected per approved plan. Cloud operations remain separately gated and are not part of local/CI checks. |
+| Terraform static format/validate (no remote state mutation) | PD-15/13 | `make terraform-check` with Terraform 1.15.9: format check and backend-free validation, readonly provider lock; individual targets documented below. Public provider downloads may be needed; no cloud login or apply. |
+| Plan/apply/build-release/deploy/verify/rollback/teardown | PD-15/16; domain/EXP additions | PD-15 documents reviewed plan/apply/verify/cleanup. PD-16 per-run ECS capacity plans and RDS stop/start templates are in `infra/terraform/shared/test/README.md`; select exact targets and review/approve each cloud operation. These are not local/CI checks. |
 | Search evaluator/load workload/NFR manifests | SE-01 | Not implemented |
 | Two-client chat/read-state/latency measurement | CN-01/CN-03 | Not implemented |
 | Integrated peak/runtime-loss/DB-restore checks | INT-01 | Not implemented |
@@ -110,6 +110,84 @@ These subsets use the same prerequisites, effects and exit rules above; the full
 Security checks include request-ID spoofing and credential-free entry-point children (10-second timeout). Production rejects fake identity/email/storage selections and development auth; empty/unsupported provider selections fail. Safe configurations supply positive controls. Test-only scripts follow the [reviewed adapter interfaces](../../tests/fixtures/core/adapter-interfaces.md); domain retry/deduplication/transaction and OTP behavior remain with their owning contracts.
 
 The privacy check launches a credential-free pytest child (15-second timeout) that intentionally fails; the parent passes only when the failure report is correctly redacted. See [fixture usage and snapshot limits](../../tests/fixtures/core/README.md). Fixtures do not establish real provider/domain integration or cloud/NFR acceptance.
+
+## PD-16 database-task deadlines
+
+The fixed ECS task definitions embed `infra/terraform/shared/test/scripts/setup-db-role.sh` and `probe-db.sh`. Their pinned Linux PostgreSQL client image must contain GNU `timeout`. Each script sets `PGCONNECT_TIMEOUT=10` and `PGOPTIONS='-c statement_timeout=30000 -c lock_timeout=30000'`, then runs its single psql process with `timeout --signal=TERM --kill-after=5s 60s`. Total client execution stops within 60 seconds plus up to 5 seconds for forced termination; this excludes ECS scheduling. Missing tools, failed SQL and timeouts exit nonzero with safe messages. No raw client diagnostics or credentials are emitted. Inspect before retrying; a timeout does not establish whether earlier work committed.
+
+Local regression command: `uv run --locked pytest tests/architecture/test_db_task_timeouts.py -q -W error`. Controlled client stand-ins exercise success, private-error suppression, a stuck process that ignores TERM, caller timeout overrides and a missing timeout tool. A real GNU timeout uses shortened test deadlines. No database/cloud access occurs; the check also runs in the root test suite. See the [runbook](../../infra/terraform/shared/test/README.md#database-task-deadlines) and [approved decision](../decisions/database-task-deadlines-and-manual-image-cleanup.md).
+
+## Local API container image — PD-16 Step 4
+
+Run from the repository root with Docker Engine. Record `git rev-parse HEAD`,
+`git status --short`, and the engine architecture with the local check: it
+builds the current worktree, including uncommitted API changes. The later
+registry image must be rebuilt from the exact reviewed commit.
+
+The current engine has only the legacy builder, which ignores the
+Dockerfile-specific ignore file and would send the repository's 1.7 GB context.
+The Dockerfile avoids BuildKit-only instructions, and this procedure stages an
+allowlisted context under `/tmp` containing only the two locked dependency
+files, API source, Dockerfile and its ignore file. The Docker build uses the
+host's native architecture and never contacts AWS:
+
+```sh
+(
+set -eu
+build_context=$(mktemp -d /tmp/clip-api-pd16.XXXXXX)
+image_tag="clip-api:pd16-local-${build_context##*.}"
+container_id=
+image_id=
+# Only clean artifacts created by this invocation; preserve its exit status.
+cleanup() {
+  result=$?
+  trap - EXIT
+  if [ -n "$container_id" ]; then
+    sudo docker rm --force "$container_id" >/dev/null 2>&1 || true
+  fi
+  if [ -n "$image_id" ]; then
+    sudo docker image rm "$image_tag" >/dev/null 2>&1 || true
+  fi
+  rm -rf "$build_context"
+  exit "$result"
+}
+trap cleanup EXIT
+mkdir -p "$build_context/apps/api"
+cp pyproject.toml uv.lock "$build_context/"
+cp -R apps/api/app "$build_context/apps/api/"
+cp apps/api/Dockerfile apps/api/Dockerfile.dockerignore "$build_context/"
+sudo docker build --file "$build_context/Dockerfile" --tag "$image_tag" "$build_context"
+image_id=$(sudo docker image inspect --format '{{.Id}}' "$image_tag")
+container_id=$(sudo docker create --publish 127.0.0.1:8000:8000 "$image_tag")
+sudo docker start "$container_id" >/dev/null
+# A port conflict fails this run; never stop another process to free the port.
+curl --retry 20 --retry-all-errors --retry-delay 1 --max-time 2 --fail http://127.0.0.1:8000/health
+attempt=0
+health=starting
+while [ "$attempt" -lt 40 ] && [ "$health" = starting ]; do
+  health=$(sudo docker inspect --format '{{.State.Health.Status}}' "$container_id")
+  [ "$health" = healthy ] || [ "$health" = unhealthy ] || sleep 1
+  attempt=$((attempt + 1))
+done
+[ "$health" = healthy ]
+)
+```
+
+The native ARM64 check is sufficient for Step 4. Native Linux AMD64/macOS setup and database compatibility
+checks remain pending under PD-08/PD-13 and are required before PRE-00 acceptance. Step 7 must still
+build and verify a `linux/amd64` image from the exact reviewed commit for the
+x86_64 ECS host. The approved local procedure uses `sudo docker` on this host.
+
+PD-16's ECS scale-to-zero and RDS stop/start procedures are documented in the
+[shared test Terraform runbook](../../infra/terraform/shared/test/README.md#ecs-capacity-lifecycle).
+The [target-specific RDS stop/resume plan](shared-test-rds-operations.md) supplies explicit profile, instance, waiter and status templates. These require separate reviewed cloud operations and are not part of this local
+image build or `make check`.
+
+## Native AMD64 API-image validation — PD-16 Step 7 local check
+
+The [native validation evidence](../evaluation/foundation/pd-16/native-amd64-image-validation.md) records the exact clean source SHA, allowlisted `git archive` inputs, `DOCKER_BUILDKIT=0 docker build --platform linux/amd64` command, platform/non-root/runtime check and loopback HTTP/Docker-health checks. That run used Docker directly because the contributor already had local socket access; it did not require sudo or emulation. The archive excludes ignored/untracked files as well as all credentials, Git metadata and dependency caches.
+
+Unlike the temporary Step 4 smoke image above, this successfully validated image is deliberately retained under its commit-derived local tag for later handoff. Remove only the owned smoke container and temporary context after recording the outcome; do not overwrite an existing tag or prune unrelated images. Public image/package downloads can occur. Building and retaining a local image does not authorize Git publication, ECR upload, deployment or a cloud action; the local image ID is not proof of a remote registry manifest digest. Follow the separate exact-upload approval before publishing.
 
 ## PD-09 Step 2 — schema-independent preview generator
 
@@ -339,7 +417,10 @@ without Node. [Coverage](../../contracts/README.md#contract-regression-tests).
 verifies bundled npm 11.19.1, then runs `uv sync --locked --python 3.14.3` and
 `npm ci` at the repository root. Setup actions are pinned to immutable revisions;
 checkout credentials are not persisted. Installs may download tools/packages and
-write ignored environments/caches; lockfile mismatch fails. Quality gates are wired below; hosted execution and final acceptance remain pending.
+write ignored environments/caches; lockfile mismatch fails. Hosted checks passed
+at `05e4cb8`; current changes still require their own hosted result. CI is PR-only
+and cancels superseded runs for the same workflow/PR. No post-merge main run occurs;
+incorporate latest main and pass CI before merging, repeating if main advances.
 
 ### CI quality gates — PD-12 Step 3
 
@@ -358,7 +439,7 @@ Local/CI aggregate parity is implemented below; full lifecycle commands remain P
 
 ### CI execution boundary — PD-12 Step 4
 
-The PR/main workflow uses read-only repository access, no persisted checkout
+The PR-only workflow uses read-only repository access, no persisted checkout
 credentials, no secret expressions, no deployment environment and no cloud login,
 apply/deploy or production-data command. Setup downloads public tools/packages
 and images; local-only describes the checks, not a network-free installation.
@@ -412,3 +493,68 @@ new YAML command forms require review. It is not a general YAML/security checker
 
 The local hook uses root locked Black/configuration, not a separate environment;
 it never stages fixes. CI's independent check-only gate remains required.
+
+## Common Make front door — PD-13 Step 1
+
+Run `make help` at the clone root. Targets reuse existing tools; no second npm
+manifest, environment loader or daemon is introduced. GNU Make is required
+(including macOS's supplied GNU Make). Existing `make` remains Black check-only.
+
+| Target | Mapping / effects |
+|---|---|
+| `make setup` | `uv sync --locked`, then root `npm ci`; downloads locked dependencies, no service startup or automatic hook install. |
+| `make install-hooks` | Explicit one-time local pre-commit installation. |
+| `make start-db` / `make stop-db` | Existing validated local database wrapper; password environment required. Stop retains data; no reset target is added. |
+| `make start-api` / `make start-web` | Foreground API on 127.0.0.1:8000 / web on 127.0.0.1:5173. Use separate terminals; Ctrl+C stops each owned server. Database start/migration are explicit preceding actions. |
+| `make preview-web` | Existing `npm run preview`, loopback 4173; build first (`npm run build` or `make test-web`). |
+| `make migrate` / `make migration-status` | Local dbmate apply/status; status can report pending revisions without failing. |
+| `make seed` | Apply pending migrations, including the existing eight-category/four-condition catalogue. No sample accounts/listings or separate seed replay. |
+| `make data-generate RUN_NAME=preview-42 SEED=42 USERS=3 LISTINGS=2` | Existing safe PD-09 preview file generator; all inputs mandatory, no overwrite. This is not final domain data. |
+| `make data-validate RUN_NAME=preview-42` / `make data-load` | Existing preview validation / explicit unavailable-loader failure (nonzero, no database write). |
+| `make test` | Shared runner's Python, explicit data and web gates; `test-python`, `test-data`, `test-web` select each. Web includes lint/types/build as registered. |
+| `make format` / `make format-check` | Existing rewriting Black / check-only targets; old names retained. |
+| `make contracts-generate` / `make contracts-check` | Registered generation / nonmutating freshness check. |
+| `make check` | Existing full CI-equivalent aggregate, including disposable database and scanner. |
+
+Normal Make failure is nonzero (usually 2), including `data-load`'s deliberate
+refusal. Dataset inputs are exported as target-specific environment values and
+quoted by the shell; the generator validates them. Steps 2–4 cover helper needs,
+Terraform portability/mappings and the consolidated setup guide; Step 5 verifies
+the full lifecycle from a clean environment. Runtime/platform acceptance is not
+implied by command mapping or dry runs.
+
+**PD-13 Step 2 helper audit:** no additional wrapper is needed. Make directly
+reuses the validated database lifecycle, data CLI, contract generator and shared
+check runner. API/web stay in owned foreground terminals; no PID files, background
+supervisor or process-killing script is introduced. Terraform portability is Step 3.
+
+## Terraform front door — PD-13 Step 3
+
+Requires Terraform **1.15.9** from `.terraform-version` and Bash 3.2+; the wrapper
+rejects another version. Set `TERRAFORM_BIN` to an explicit compatible executable
+if the default PATH selects another version. All actions target `infra/terraform`.
+
+| Command | Effect |
+|---|---|
+| `make terraform-format` | Rewrite Terraform formatting; review the diff. |
+| `make terraform-format-check` | Check formatting without rewriting. |
+| `make terraform-validate` | Discover configuration roots, initialize provider schemas with `-backend=false -lockfile=readonly`, then validate; may download locked providers into ignored `.terraform/`. |
+| `make terraform-check` | Formatting check followed by backend-free validation; also the default when invoking the script without arguments. |
+
+The existing `scripts/terraform-static-check.sh` accepts only these explicit
+modes. It reports action/target, preserves failures and discards ambient cloud,
+TF_CLI_ARGS, debug and user CLI configuration. No plan/apply/destroy target is
+added, and Terraform stays outside `make check`. The provider lock is generated
+for Linux/macOS AMD64/ARM64; package availability/hashes do not prove runtime
+checks on all four platforms. Native macOS/Bash 3.2 execution remains pending.
+
+**PD-13 Step 5 local evidence:** fresh private clone/home/cache setup, hooks,
+API/web/preview two start-stop cycles, deterministic preview files, repeatable
+contracts and full aggregate passed on Linux ARM64. A restrictive umask exposed
+dbmate read-permission failure; both migration callers now run the tool as the
+contributor UID/GID, retaining read-only mounts and dropped capabilities. Wrapper
+controls enforce that flag. The persistent database ran two seed/status/start-stop
+cycles through its original owner clone, with catalogue/head and volume retained;
+clean migration checks used disposable containers. Other-machine checks remain
+pending. Exact logs/source overlay are linked from the work log; Step 6 consolidates
+the evidence and task review.

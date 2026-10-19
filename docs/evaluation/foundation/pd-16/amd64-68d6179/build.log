@@ -1,0 +1,106 @@
+DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+            BuildKit is currently disabled; enable it by removing the DOCKER_BUILDKIT=0
+            environment-variable.
+
+Sending build context to Docker daemon  110.1kB
+Step 1/15 : FROM python:3.14.8-slim-trixie AS build
+3.14.8-slim-trixie: Pulling from library/python
+ecc510c1e359: Pulling fs layer
+6aaf5b0aae75: Pulling fs layer
+a5883d972f3b: Pulling fs layer
+bb8166eb34e6: Pulling fs layer
+bb8166eb34e6: Download complete
+ea9c20bbb188: Download complete
+e716c09c2dc7: Download complete
+a5883d972f3b: Download complete
+6aaf5b0aae75: Download complete
+ecc510c1e359: Download complete
+ecc510c1e359: Pull complete
+a5883d972f3b: Pull complete
+bb8166eb34e6: Pull complete
+6aaf5b0aae75: Pull complete
+Digest: sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170
+Status: Downloaded newer image for python:3.14.8-slim-trixie
+ ---> a2b82f3c4855
+Step 2/15 : COPY --from=ghcr.io/astral-sh/uv:0.10.7 /uv /uvx /bin/
+0.10.7: Pulling from astral-sh/uv
+47b534abe2c0: Pulling fs layer
+f46d7a2ccbfb: Pulling fs layer
+47b534abe2c0: Download complete
+befa53101ef5: Download complete
+f46d7a2ccbfb: Download complete
+47b534abe2c0: Pull complete
+f46d7a2ccbfb: Pull complete
+Digest: sha256:edd1fd89f3e5b005814cc8f777610445d7b7e3ed05361f9ddfae67bebfe8456a
+Status: Downloaded newer image for ghcr.io/astral-sh/uv:0.10.7
+ ---> 0df7ffcf9e8e
+Step 3/15 : ENV UV_COMPILE_BYTECODE=1     UV_LINK_MODE=copy     UV_PROJECT_ENVIRONMENT=/opt/venv
+ ---> Running in b7b7daeba6ad
+ ---> Removed intermediate container b7b7daeba6ad
+ ---> 1d27ec1df417
+Step 4/15 : WORKDIR /app
+ ---> Running in f8ecde8ad2d8
+ ---> Removed intermediate container f8ecde8ad2d8
+ ---> 6a5b53f5f9ae
+Step 5/15 : COPY pyproject.toml uv.lock ./
+ ---> e725eefcd587
+Step 6/15 : RUN uv sync --locked --no-dev --no-install-project
+ ---> Running in 79336a06c70f
+[91mUsing CPython 3.14.8 interpreter at: /usr/local/bin/python3
+Creating virtual environment at: /opt/venv
+[0m[91mResolved 41 packages in 0.98ms
+[0m[91mDownloading pydantic-core (2.1MiB)
+[0m[91m Downloaded pydantic-core
+[0m[91mPrepared 16 packages in 618ms
+[0m[91mInstalled 16 packages in 49ms
+[0m[91mBytecode compiled 393 files in 681ms
+ + annotated-doc==0.0.5
+ + annotated-types==0.8.0[0m[91m
+ + anyio==4.15.1
+ + click==8.5.0
+ + fastapi==0.143.3
+ + h11==0.16.0
+ + idna==3.20
+ + opentelemetry-api==1.45.1
+ + pydantic==2.14.1
+ [0m[91m+ pydantic-core==2.50.1
+ + pydantic-settings==2.16.0
+ + python-dotenv==1.2.4
+ + starlette==1.8.0[0m[91m
+ + typing-extensions==4.16.0
+ + typing-inspection==0.4.4
+ + uvicorn[0m[91m==0.54.0
+[0m ---> Removed intermediate container 79336a06c70f
+ ---> f6683f2e1a77
+Step 7/15 : FROM python:3.14.8-slim-trixie AS runtime
+ ---> a2b82f3c4855
+Step 8/15 : ENV PYTHONDONTWRITEBYTECODE=1     PYTHONUNBUFFERED=1     PATH=/opt/venv/bin:$PATH     CLIP_ENVIRONMENT=production     CLIP_DEBUG=false
+ ---> Running in e45bc4adbddd
+ ---> Removed intermediate container e45bc4adbddd
+ ---> 2d27497efbac
+Step 9/15 : WORKDIR /app
+ ---> Running in befc9336f3db
+ ---> Removed intermediate container befc9336f3db
+ ---> 6bc823bc4286
+Step 10/15 : COPY --from=build --chown=10001:10001 /opt/venv /opt/venv
+ ---> f0e8936ec0ed
+Step 11/15 : COPY --chown=10001:10001 apps/api/app /app/apps/api/app
+ ---> 7cc1c91e1e5b
+Step 12/15 : USER 10001:10001
+ ---> Running in 2740a5998c12
+ ---> Removed intermediate container 2740a5998c12
+ ---> 072985a91866
+Step 13/15 : EXPOSE 8000
+ ---> Running in 9e29c94bf92b
+ ---> Removed intermediate container 9e29c94bf92b
+ ---> 7b6115806cb8
+Step 14/15 : HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3     CMD ["python", "-c", "import json, urllib.request; assert json.load(urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)) == {'status': 'ok'}"]
+ ---> Running in a096ec8cb847
+ ---> Removed intermediate container a096ec8cb847
+ ---> b6d80c792d32
+Step 15/15 : CMD ["uvicorn", "app.main:app", "--app-dir", "apps/api", "--host", "0.0.0.0", "--port", "8000"]
+ ---> Running in 54244a8f8bcf
+ ---> Removed intermediate container 54244a8f8bcf
+ ---> 8f07c52fdfd5
+Successfully built 8f07c52fdfd5
+Successfully tagged clip-api:pd16-amd64-68d6179db03d

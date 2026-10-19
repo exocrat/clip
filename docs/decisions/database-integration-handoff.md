@@ -70,6 +70,10 @@ remain pending.
 Replaces the earlier scheduling assumption that Mohit would resume all deferred
 PD-08 checks in Stream 3. Does not supersede technical requirements or tests.
 
+## PD-16 bounded staging clarification — 2026-10-19
+
+The user approved a [specific PD-16 foundation staging exception](shared-foundation-dependency-staging.md). It permits only the named health/private-SQL foundation increments, not domain integration, accepted database contracts, upstream completion or PRE-00. All original affected-owner/platform/hosted acceptance obligations above remain. This is a new bounded scheduling decision, not retrospective approval of earlier cloud actions.
+
 ## Integration test scope clarification — 2026-10-18
 
 The integration contributor approved testing existing database integrity

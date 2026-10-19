@@ -1,0 +1,6 @@
+uv run --locked python -m data.generators.files load
+usage: python3 -m data.generators.files [-h] [--name NAME] [--seed SEED]
+                                        [--users USERS] [--listings LISTINGS]
+                                        action
+python3 -m data.generators.files: error: Database loading unavailable: requires DL-00 contracts, accepted ID-READY/LI-CORE schemas and SE-01 adapters/loader validation
+make: *** [Makefile:72: data-load] Error 2

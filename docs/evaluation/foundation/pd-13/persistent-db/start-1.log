@@ -1,0 +1,4 @@
+bash database/local-db.sh start
+Local PostgreSQL authenticated connectivity is ready.
+ Container clip-local-postgres-1 Starting 
+ Container clip-local-postgres-1 Started 

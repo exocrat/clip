@@ -69,6 +69,7 @@
 
 ## PD-12 CI and merge-gate checks
 
+- [ ] For PR-only CI, verify latest main is incorporated and the successful run covers the recorded head/base. If main advances before merge, update and rerun; superseded/cancelled runs do not pass.
 - [ ] Verify pinned Black hook installation/configuration and format/block/review/restage behavior; generated contracts remain excluded and CI formatting is independent. See [hook setup](../../CONTRIBUTING.md#black-pre-commit-hook-pd-12).
 - [ ] Run `make check` with locked setup/local Docker; verify CI still calls the shared registry and retain applicable failure-control evidence.
 - [ ] Verify hosted **CI / Foundation quality gates** success for the current PR revision, with run URL/head/base evidence; local-only evidence is insufficient. Confirm the exact status context/source on the first hosted run.

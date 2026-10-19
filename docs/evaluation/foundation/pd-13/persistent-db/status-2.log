@@ -1,0 +1,9 @@
+bash database/local-db.sh status
+Local PostgreSQL authenticated connectivity is ready.
+[X] 20261018094330_mvp_tables.sql
+[X] 20261018094331_mvp_integrity.sql
+[X] 20261018094332_initial_catalogue.sql
+[X] 20261018152702_reject_retired_origin_entries.sql
+
+Applied: 4
+Pending: 0

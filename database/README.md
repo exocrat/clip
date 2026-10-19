@@ -140,7 +140,8 @@ volume labels; `find_container` checks one service container, clone working
 directory, PostgreSQL image, loopback binding and sole named volume mount. The
 dbmate child shares that validated container's network namespace and connects
 to `127.0.0.1:5432/clip_local`; only the migrations directory is bind-mounted,
-read-only. `docker_local` pins the inspected context, preserves exit codes and
+read-only. The dbmate container uses the contributor UID/GID so private checkouts
+remain readable with all capabilities dropped; it never needs broader file permissions. `docker_local` pins the inspected context, preserves exit codes and
 redacts the local password from displayed diagnostics. `wait_ready` separately
 checks password authentication; `run_dbmate` constructs the fixed local URL.
 No caller URL or host-network connection is accepted.

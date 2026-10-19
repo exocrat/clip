@@ -1,0 +1,165 @@
+[
+  {
+    "label": "initial-state",
+    "command": [
+      "docker",
+      "inspect",
+      "clip-local-postgres-1",
+      "--format",
+      "{{.State.Status}}"
+    ],
+    "exit": 0
+  },
+  {
+    "label": "start-1",
+    "command": [
+      "make",
+      "start-db"
+    ],
+    "exit": 0
+  },
+  {
+    "label": "seed-1",
+    "command": [
+      "make",
+      "seed"
+    ],
+    "exit": 0
+  },
+  {
+    "label": "status-1",
+    "command": [
+      "make",
+      "migration-status"
+    ],
+    "exit": 0
+  },
+  {
+    "label": "catalogue-1",
+    "command": [
+      "docker",
+      "exec",
+      "--env",
+      "PGPASSWORD",
+      "[REDACTED]",
+      "psql",
+      "-XqAt",
+      "-h",
+      "127.0.0.1",
+      "-U",
+      "clip_local",
+      "-d",
+      "clip_local",
+      "-v",
+      "ON_ERROR_STOP=1",
+      "-c",
+      "SELECT max(version),count(*) FROM public.schema_migrations; SELECT count(*) FROM listings.categories; SELECT count(*) FROM listings.conditions;"
+    ],
+    "exit": 0
+  },
+  {
+    "label": "stop-1",
+    "command": [
+      "make",
+      "stop-db"
+    ],
+    "exit": 0
+  },
+  {
+    "label": "stopped-1",
+    "command": [
+      "docker",
+      "inspect",
+      "clip-local-postgres-1",
+      "--format",
+      "{{.State.Status}}"
+    ],
+    "exit": 0
+  },
+  {
+    "label": "start-2",
+    "command": [
+      "make",
+      "start-db"
+    ],
+    "exit": 0
+  },
+  {
+    "label": "seed-2",
+    "command": [
+      "make",
+      "seed"
+    ],
+    "exit": 0
+  },
+  {
+    "label": "status-2",
+    "command": [
+      "make",
+      "migration-status"
+    ],
+    "exit": 0
+  },
+  {
+    "label": "catalogue-2",
+    "command": [
+      "docker",
+      "exec",
+      "--env",
+      "PGPASSWORD",
+      "[REDACTED]",
+      "psql",
+      "-XqAt",
+      "-h",
+      "127.0.0.1",
+      "-U",
+      "clip_local",
+      "-d",
+      "clip_local",
+      "-v",
+      "ON_ERROR_STOP=1",
+      "-c",
+      "SELECT max(version),count(*) FROM public.schema_migrations; SELECT count(*) FROM listings.categories; SELECT count(*) FROM listings.conditions;"
+    ],
+    "exit": 0
+  },
+  {
+    "label": "stop-2",
+    "command": [
+      "make",
+      "stop-db"
+    ],
+    "exit": 0
+  },
+  {
+    "label": "stopped-2",
+    "command": [
+      "docker",
+      "inspect",
+      "clip-local-postgres-1",
+      "--format",
+      "{{.State.Status}}"
+    ],
+    "exit": 0
+  },
+  {
+    "label": "volume-retained",
+    "command": [
+      "docker",
+      "volume",
+      "inspect",
+      "clip-local_clip_local_postgres_data",
+      "--format",
+      "{{.Name}}"
+    ],
+    "exit": 0
+  },
+  {
+    "label": "final-stop",
+    "command": [
+      "make",
+      "stop-db"
+    ],
+    "exit": 0
+  }
+]

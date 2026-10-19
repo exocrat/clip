@@ -55,8 +55,8 @@ data "aws_iam_policy_document" "require_tls" {
     actions = ["s3:*"]
 
     resources = [
-      aws_s3_bucket.terraform_state.arn,
-      "${aws_s3_bucket.terraform_state.arn}/*"
+      "arn:aws:s3:::${var.bucket_name}",
+      "arn:aws:s3:::${var.bucket_name}/*"
     ]
 
     condition {

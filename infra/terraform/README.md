@@ -14,11 +14,11 @@ This workflow applies to every Terraform change in `infra/terraform/`. It is a r
 From the repository root, run:
 
 ```sh
-bash scripts/terraform-static-check.sh
+make terraform-check
 git status --short
 ```
 
-The static-check script checks Terraform formatting and validates initialized provider schemas with backend initialization disabled. It does not create a plan or contact AWS. Review the Git status and ensure no state, state backup, saved plan, variable/credential file, or sensitive generated output is staged. Keep `.terraform.lock.hcl` tracked so provider selection/checksums remain reproducible.
+The Bash 3.2-compatible static-check script requires pinned Terraform 1.15.9 and checks formatting before validating initialized provider schemas with backend initialization disabled and the dependency lock read-only. `make terraform-format`, `make terraform-format-check` and `make terraform-validate` select individual actions; the existing no-argument script invocation still runs both checks. Set `TERRAFORM_BIN` when a different default binary is installed. Ambient cloud/CLI/debug settings are discarded. It does not create a plan or contact AWS. Review the Git status and ensure no state, state backup, saved plan, variable/credential file, or sensitive generated output is staged. Keep `.terraform.lock.hcl` tracked so provider selection/checksums remain reproducible.
 
 ## 3. Prepare and review an exact plan
 
