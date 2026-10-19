@@ -4,7 +4,11 @@
 
 PR #7 local review corrections: [deadline tests, real lock failure check and manual ECR cleanup resolution](review-corrections.md). This evidence covers the tested correction worktree; Suraj verified the result and approved its commit. Publication and current hosted/independent review remain pending.
 
-## Step 13 compute shutdown — confirmed, verification pending
+## Step 12 budget/utilization review — verification pending
+
+[Budget/routes, observed utilization and cost limits](step12-cost-review.md). Configuration checks passed; run charges await billing refresh before final cost acceptance. No notification test or paid Cost Explorer query; compute remains off.
+
+## Step 13 compute shutdown — human-verified
 
 [Shutdown evidence](compute-stop-result.json): zero tasks/ASG hosts, original EC2 host terminated at 18:17:10 UTC; original RDS stopped at 18:23:35 UTC. Storage/images/network/backend retained; NAT/storage remain billable. [Approved plan](stop-plan-review.md). Step 12 cost review, Step 11 human result verification and remaining acceptance gates stay pending.
 

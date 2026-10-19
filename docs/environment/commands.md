@@ -117,6 +117,10 @@ The fixed ECS task definitions embed `infra/terraform/shared/test/scripts/setup-
 
 Local regression command: `uv run --locked pytest tests/architecture/test_db_task_timeouts.py -q -W error`. Controlled client stand-ins exercise success, private-error suppression, a stuck process that ignores TERM, caller timeout overrides and a missing timeout tool. A real GNU timeout uses shortened test deadlines. No database/cloud access occurs; the check also runs in the root test suite. See the [runbook](../../infra/terraform/shared/test/README.md#database-task-deadlines) and [approved decision](../decisions/database-task-deadlines-and-manual-image-cleanup.md).
 
+## PD-16 Step 12 read-only review
+
+Use the approved non-root profile/account. `aws budgets describe-budget`, `describe-notifications-for-budget` and `describe-subscribers-for-notification` target budget `CLIP-Account-Actual-Spend-From-2026-10-17` in account `335523638354`, endpoint `us-east-1`; capture subscriber output privately and report only counts/matches. Project resources remain Mumbai. No notification-send/update command is part of this review. `aws cloudwatch get-metric-statistics` reads standard ECS/EC2/RDS metrics for a bounded run window in `ap-south-1` (300-second periods, Average/Maximum/Minimum); no custom metric or load is created. [Recorded inputs/results, billing lag and query-cost boundary](../evaluation/foundation/pd-16/step12-cost-review.md).
+
 ## PD-16 Step 7 publication evidence
 
 The authorized one-off [ECR publication](../evaluation/foundation/pd-16/ecr-publication.md) used `sudo docker` login with temporary auth and the AWS CLI layer/manifest APIs to preserve the verified OCI bytes. Its evidence records the exact immutable source tag, remote digest, verification, limits and API sequence; no reusable upload wrapper was introduced. Repeat uploads need their own exact artifact/target approval.

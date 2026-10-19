@@ -115,7 +115,7 @@ AWS Budgets API verification confirmed the following budget in account `33552363
 | Setting | Verified value |
 |---|---|
 | Name | `CLIP-Account-Actual-Spend-From-2026-10-17` |
-| Period | Custom, 2026-10-17 through 2027-10-17 (one year; API timestamps correspond to midnight Asia/Kolkata) |
+| Period | Custom, 2026-10-17 through 2027-10-17 (one year; API timestamps correspond to midnight UTC / 05:30 Asia/Kolkata) |
 | Reference amount | USD 200; notification reference only, not a hard spending cap |
 | Cost basis | Actual incurred cost; `IncludeCredit=false` |
 | Alerts | Email when actual cost is greater than USD 50, 80, 100, 120, or 130 (absolute thresholds) |
@@ -153,3 +153,7 @@ User authorized RDS start and fixed setup/probe sequence. Original RDS now avail
 ### Current compute status — 2026-10-19 18:24:12 UTC
 
 **Compute off:** API desired/running/pending 0, cluster tasks 0, ASG desired/hosts 0; original host terminated 18:17:10 UTC. Original RDS resource `db-PYRRZJPVKPGHIXDAHUWATXGH7A` verified stopped **18:23:35 UTC**. [Shutdown evidence](../evaluation/foundation/pd-16/compute-stop-result.json). Supersedes preceding running snapshots. DB storage, ECR images, task definitions, network and state retained; NAT/storage/backups/logs remain billable. Resume needs separate RDS-start and fresh service-enable-plan approvals. Cleanup review date 2026-10-23 and unresolved exact idle-deadline/contact gates remain unchanged; RDS may auto-restart after seven stopped days.
+
+### Step 12 read-only budget/utilization review — 2026-10-19
+
+Five USD 50/80/100/120/130 alerts and all four historical subscriber routes reverified; no email sent. Budget actual USD 0.04/forecast USD 1.232 was last updated at 13:42:11 UTC, before the run; run-charge reconciliation awaits refreshed billing. [Review and utilization limits](../evaluation/foundation/pd-16/step12-cost-review.md). No Cost Explorer request/root fallback or resource change; compute remains off. Corrected period timezone description: actual API boundaries are midnight UTC, 05:30 IST.
