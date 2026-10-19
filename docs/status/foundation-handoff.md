@@ -1,9 +1,9 @@
 # Foundation handoff — PD-19
 
-**Status:** The local foundation audit and handoff are prepared. PD-19 Steps
-1–7 are user-verified. Steps 8–9 are prepared for the requested commit and
-PD-17–19 pull request. PRE-00 is not yet accepted: PD-17–19 still need combined
-independent review and the separately authorized merge to `main`.
+**Status:** The local foundation audit and handoff are committed as `5993851`
+on `task/pd17-19-foundation-handoff`. PD-19 Steps 1–7 are user-verified;
+Steps 8–9 are recorded for combined review. PRE-00 is not yet accepted: the
+independent review and separately authorized merge to `main` remain required.
 
 This handoff describes the shared foundation and its limits. It does not claim
 marketplace features, domain contracts, final data readiness, or NFR results.
