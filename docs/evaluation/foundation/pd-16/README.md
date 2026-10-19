@@ -4,9 +4,41 @@
 
 PR #7 local review corrections: [deadline tests, real lock failure check and manual ECR cleanup resolution](review-corrections.md). This evidence covers the tested correction worktree; Suraj verified the result and approved its commit. Publication and current hosted/independent review remain pending.
 
-## Step 8 corrected plan — human review pending
+## Step 10 live verification — passed, human verification pending
 
-Fresh authorized plan passed: seven creates, zero changes/deletions; both credentials absent from saved/rendered artifacts, versions unchanged. [Exact plan/checksum and deployment scope](service-plan-review.md). No apply or RDS restart ran.
+[Revision-3 setup and revision-1 probe](database-retry-result.json) both exited 0 with expected safe logs. Role/ACL assertions, SELECT 1 and privilege checks passed. [SSM/API health](step10-health-result.json), [private network/log-stream checks](step10-network-result.json) and approved running digest/definition checks complete Step 10 execution. Web hosting deferred until target/access and approval. No domain/NFR acceptance; Step 11 and remaining PD-16 gates pending. RDS/one API host running; expiry 19:17:08 UTC unchanged.
+
+## Step 10 transaction-local correction — applied
+
+[Apply result](local-logging-apply-result.json): setup revision 3 active and source-matched, state serial 7, lock released; no SQL rerun. Await verification and [exact revision-3 execution approval](database-action-review.md#proposed-continuation-after-local-logging-correction--approval-pending).
+
+### Approved correction plan
+
+[New plan and checksum](local-logging-plan-review.md): setup-definition replacement only. Correction local; no apply/SQL rerun. RDS/one host running, original expiry unchanged.
+
+## Step 10 database setup — safely blocked
+
+[Database execution result](database-action-result.json): RDS started; setup revision 2 exited 1 because effective logging failed its guard. RDS error log confirms rejection before ACL/role/password changes. No probe or retry. [Private-network/log-stream checks](step10-network-result.json) passed. RDS and one host remain running; window ends 19:17:08 UTC. Await a reviewed logging decision before repair.
+
+## Step 10 guard replacement — applied
+
+[Apply result](logging-guard-apply-result.json): setup revision 2 registered, script matches source; one create/one deregistration, state serial 6, lock released. RDS stopped and no SQL task invoked. Await result verification and separate database-action approval.
+
+### Approved plan
+
+[Runtime guard plan/checksum and review](logging-guard-plan-review.md): only setup task-definition replacement; guard local and unexecuted, no apply/restart/task invocation.
+
+## Step 10 SSM health passed — database precheck pending
+
+[Health/session and registered-definition checks](step10-health-result.json): HTTP 200, expected body, session terminated. RDS stopped. Effective database logging is not proven by unset parameter metadata; await decision on runtime guard/diagnostic path before setup.
+
+## Step 9 applied — human-verified
+
+User approved the exact plan and commit first (`2978461`). Apply exited 0: seven creates, no changes/deletions; state serial 5, lock released, credential checks passed. RDS remains stopped. [Apply result and two-hour window ending 19:17:08 UTC](service-apply-result.json). Runtime/SSM/SQL checks remain Step 10.
+
+## Step 8 corrected plan — approved and applied
+
+Fresh authorized plan passed: seven creates, zero changes/deletions; both credentials absent from saved/rendered artifacts, versions unchanged. [Exact plan/checksum and deployment scope](service-plan-review.md). Applied in Step 9 as recorded above; RDS restart remains separately gated.
 
 ## Step 8 service-plan validation failure
 

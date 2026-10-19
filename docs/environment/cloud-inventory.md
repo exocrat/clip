@@ -137,3 +137,15 @@ Read-only `iam:GetUser`, `iam:ListAttachedUserPolicies`, and `iam:ListGroupsForU
 ### Current IAM/SSM permission recheck — 2026-10-17
 
 Historical read-only IAM inspection on 2026-10-17 succeeded for Rahul's identity. At that time the account had IAM users `rahulkoyye`, `surajs2`, and `mohitmahapa1` in `DS252-Project-Developers`, whose attached policy was AWS-managed `PowerUserAccess`. Rahul additionally had AWS-managed `IAMFullAccess`; Suraj and Mohit each had AWS-managed `IAMUserChangePassword`. None of those three users had an inline user policy or permissions boundary. Policy simulation allowed the checked project-path SSM read/write/delete/history/tag actions and selected-key KMS encrypt/decrypt actions for these three identities. No `/clip/` parameter existed, so no live parameter value operation was tested. Aditya later reported that all four retain `PowerUserAccess` and `IAMFullAccess` was removed. The newer attachment state has not been independently checked; Rahul accepted the grants as intentional and waived least-privilege checks. Aditya's root use remains user-reported and no root sign-in was attempted.
+
+### Step 9 service apply — 2026-10-19 17:18:01 UTC
+
+Approved checksum applied after commit `2978461`: seven resources created (API service, three task definitions, probe SecureString and two execution-role policies), no changes/deletions. [Result](../evaluation/foundation/pd-16/service-apply-result.json). RDS still stopped; immediate API snapshot desired 1/pending 1/running 0, ASG desired/hosts 0 while managed scaling starts. This supersedes the base-only capacity/credential inventory above. Window ends **2026-10-19 19:17:08 UTC**; no automatic shutdown. Actual runtime readiness and SSM/SQL remain pending.
+
+### Step 10 live database check — 2026-10-19 17:36:32 UTC
+
+User authorized RDS start and fixed setup/probe sequence. Original RDS now available (start 17:30:03 UTC, available 17:34:25); one host/API still running. Setup revision 2 failed its logging guard before mutation; probe skipped. [Execution](../evaluation/foundation/pd-16/database-action-result.json). This supersedes prior stopped status. Compute/NAT/storage remain billable; original window expires 19:17:08 UTC, no automatic shutdown. No logging changes or automatic repair; await decision.
+
+### Step 10 successful database verification — 2026-10-19 17:51:23 UTC
+
+[Setup revision 3 and probe revision 1 passed](../evaluation/foundation/pd-16/database-retry-result.json); restricted `clip_test_probe` login and test DB ACL hardening now exist. Transaction-local logging checks/suppression succeeded without global parameter changes. Both one-shot tasks stopped; API/one host and RDS remain running. Initial revision-2 failure is historical. Web hosting needs a separately approved target/access; no domain/NFR acceptance. Window expires 19:17:08 UTC; no automatic shutdown.
