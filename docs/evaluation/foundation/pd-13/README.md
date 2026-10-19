@@ -19,6 +19,6 @@ Raw `.log` and `.patch` files preserve their original trailing whitespace; Git w
 - The retained database stayed at migration head `20261018152702` (4 migrations), with 8 categories and 4 conditions after both seed cycles. The named volume remains present and the container was stopped.
 - The separately captured committed-tree safety check returned 0 with 35 simulated wrapper-safety cases. The mock does not contact Docker Engine, a database, registry, or provider.
 
-## Remaining checks
+## Current handoff status
 
-Native Linux AMD64 and macOS runs remain deferred by the user. Final domain dataset loading/validation remains assigned to DATA-READY. These are recorded as pending; this evidence does not claim those checks passed or that PD-13's broader dependent handoffs are accepted.
+**Platform status update — 2026-10-20 (Asia/Kolkata):** The user confirmed that the previously deferred Linux AMD64 and macOS checks passed on other machine(s). The exact machine architecture, commands, and raw outputs are not retained in this repository, so this is user-confirmed status rather than an independently reproducible run record. Final domain dataset loading/validation remains assigned to DATA-READY; this does not imply domain readiness or NFR acceptance.

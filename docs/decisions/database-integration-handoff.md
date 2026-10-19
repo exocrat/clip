@@ -20,6 +20,12 @@ PD-08 is fully accepted. Published PD-08 source is `b6bade4` on
 `predomain-database`; native PostgreSQL 18.6/dbmate 2.36.0 apply/head/repeat/
 smoke/down-up/inventory checks and Step 7 documentation are human-verified.
 
+The table below records the original transfer plan. The user later confirmed
+the transferred PD-08 platform, runtime, SQL, affected-owner, CI and final
+acceptance gates complete on 2026-10-19; see the [work-log reconciliation](../status/work-log.md#resolved-integration-evidence).
+Domain workloads, application races, NFRs and DATA-READY remain with their
+owning domain tasks.
+
 | Original obligation | Integration-phase action / responsibility |
 |---|---|
 | PD-08 Step 2 affected-owner review | Integration owner coordinates Aditya (A), Suraj (B) and Rahul (D) on schema/constraints, public transaction/crypto/storage/cleanup compatibility. Resolve findings through reviewed changes; do not claim these owners have already approved. Mohit supports the database handoff. |
@@ -63,8 +69,10 @@ publication, peer approval or merge is authorized merely by this phase transfer.
 
 ## Approver
 Mohit (C), explicit instruction to move unfinished PD-08 tasks to pre-domain
-integration. Integration execution, affected-owner approval and final acceptance
-remain pending.
+integration. The user later confirmed the transferred PD-08/09 platform, runtime,
+owner, upstream and acceptance gates complete on 2026-10-19; see the [work-log
+reconciliation](../status/work-log.md#resolved-integration-evidence). Future
+domain-specific workloads, NFRs and DATA-READY remain with their task owners.
 
 ## Supersedes
 Replaces the earlier scheduling assumption that Mohit would resume all deferred
@@ -72,7 +80,7 @@ PD-08 checks in Stream 3. Does not supersede technical requirements or tests.
 
 ## PD-16 bounded staging clarification — 2026-10-19
 
-The user approved a [specific PD-16 foundation staging exception](shared-foundation-dependency-staging.md). It permits only the named health/private-SQL foundation increments, not domain integration, accepted database contracts, upstream completion or PRE-00. All original affected-owner/platform/hosted acceptance obligations above remain. This is a new bounded scheduling decision, not retrospective approval of earlier cloud actions.
+The user approved a [specific PD-16 foundation staging exception](shared-foundation-dependency-staging.md). It permits only the named health/private-SQL foundation increments, not domain integration, accepted database contracts, upstream completion or PRE-00. The carried affected-owner/platform/hosted acceptance obligations were later confirmed complete as recorded in the work log. This is a bounded scheduling decision, not retrospective approval of earlier cloud actions.
 
 ## Integration test scope clarification — 2026-10-18
 
@@ -84,5 +92,6 @@ closure/create, offer cleanup and notification read/lease/replay require reviewe
 DL-00/domain contracts and their owning implementation tasks. Keep these
 obligations visible; storage-only passes do not accept application workflows.
 Representative workload/query performance remains with domain verification;
-forced index eligibility is diagnostic only. Other platform matrix rows and
-PD-08 affected-owner/CI acceptance remain unchanged.
+forced index eligibility is diagnostic only. The user later confirmed the
+remaining PD-08 platform matrix and affected-owner/CI acceptance gates complete
+on 2026-10-19; this does not accept domain workload or NFR results.

@@ -4,32 +4,33 @@ Non-secret status record. Update only from approved plans and verified outputs. 
 
 | Fact | Current status |
 |---|---|
-| Account or project | `335523638354` — verified by read-only STS caller identity as IAM user `rahulkoyye`; account alias not determined because this profile lacks `iam:ListAccountAliases` |
+| Account or project | `335523638354` — last checked 2026-10-19 20:27:40 UTC as IAM user `adityalaxmi1` with the approved non-root profile; account alias not determined |
 | Region | `ap-south-1` (Asia Pacific — Mumbai), selected for the project and used by identity and inventory checks |
-| Contributor CLI sign-in | Rahul's local `clip-project` profile; `aws login --profile clip-project`, then verify with `aws sts get-caller-identity --profile clip-project`; see [AWS CLI sign-in](README.md#aws-cli-sign-in) |
-| Resources | PD-15/16 base deployment recorded on 2026-10-19; see the deployment inventory below. October 17 observations remain historical; unrelated untagged resources are not adopted. |
+| Contributor CLI sign-in | Current operator Aditya used `adityalaxmi1`; verify the caller with STS before each approved action. The older `clip-project` profile observation below is historical; see [AWS CLI sign-in](README.md#aws-cli-sign-in). |
+| Resources | PD-15/16 project resources were freshly checked read-only through 2026-10-19 20:37:27 UTC; see the live reconciliation below. October 17 observations remain historical; unrelated untagged resources are not adopted. |
 | Service quotas | Selected applied/default limits recorded below; utilization/headroom unavailable from the quota-utilization report |
 | Cost | Budget alerts configured for account `335523638354`; a read-only Cost Explorer query on 2026-10-17 returned estimated October unblended cost `-0.000000003 USD` through 2026-10-18. This near-zero estimate is not final or a project-wide/cross-account total. |
 
-## PD-15/16 recorded deployment — 2026-10-19
+## PD-15/16 live resource reconciliation — 2026-10-19
 
-Updated 2026-10-19 12:52:26 UTC: authorized RDS stop verified against the expected resource ID; preceding preflight verified zero ECS running/pending tasks and ASG desired/instance count zero. Other historical deployment records below retain their stated evidence limits.
+Read-only resource checks were completed through **2026-10-19 20:37:27 UTC**. STS identity at 20:27:40 UTC confirmed profile `adityalaxmi1` in account `335523638354`. Project-tagged resources and the documented RDS, ECS, ASG, ECR, log, Parameter Store, network, IAM-role, and state-bucket records were checked against the approved PD-15/16 scope. All returned `Project=CLIP` resources were owned by PD-15 or PD-16; no domain-specific resource appeared. CloudTrail returned no non-read-only management events from the last confirmed shutdown at 18:23:35 UTC through 20:27:40 UTC. No Terraform plan/apply or cloud mutation ran. This is a scoped live check, not a scan of unrelated untagged account resources or a refresh-only Terraform plan.
 
-This supersedes the October 17 resource summary for project resources only. Source: [work-log apply/migration records](../status/work-log.md), [bootstrap migration result](../../infra/terraform/bootstrap/state-migration-plan.md), and [PD-16 proposal](shared-test-foundation-proposal.md), through `cc04a23`. These are recorded approved outputs, not a fresh cloud inspection. Existing unrelated account resources remain excluded.
-
-| Component | Recorded deployment / ownership boundary |
+| Component | Current observed status |
 |---|---|
-| State backend | Bucket `clip-tfstate-335523638354-ap-south-1-20261019-0e51ca0`, Mumbai; versioned, SSE-S3, public-blocked, TLS-only. PD-15/bootstrap owns it; preserve it and its state versions during PD-16 cleanup. Bootstrap state migration and lock verification recorded successful. |
-| State keys | `bootstrap/terraform.tfstate` and `shared/test/terraform.tfstate`, default workspace, native S3 lockfiles. Shared/test records the base after approved RDS recovery; not empty. |
-| Private network / NAT | Dedicated VPC `10.64.0.0/20`; NAT/public subnet `10.64.0.0/24`; active private subnet `10.64.1.0/24` in `ap-south-1a`; RDS-subnet-only `10.64.2.0/24` in `ap-south-1b`. NAT `nat-0d7fefbad586f4bce` recorded available after the first apply. Other IDs are not reproduced in the reviewed Markdown. No adoption of the default VPC. |
-| ECR / ECS capacity | Repository `335523638354.dkr.ecr.ap-south-1.amazonaws.com/clip-shared-test-api`; cluster `clip-shared-test`; capacity provider `clip-shared-test-capacity`. Base verification records ASG min/desired 0, max 1, no hosts, services, task definitions or tasks. No image publication recorded. |
-| RDS | `clip-shared-test-postgres`; resource ID `db-PYRRZJPVKPGHIXDAHUWATXGH7A`; stopped (verified 2026-10-19 12:52:26 UTC); private/encrypted/Single-AZ in `ap-south-1a`, PostgreSQL 18.6, `db.t4g.micro`, 20 GiB gp3, one-day automated backups accepted, deletion protection on. No final snapshot selected for the approved disposable test teardown. Stop verified; restart and authenticated connectivity remain unverified. |
-| Credentials / IAM / logs | Base includes master SecureString `/clip/test/database-master-password`, task roles/policies and seven-day log retention. Probe parameter and task execution remain service-phase work. See [secret references](secret-handling.md). Effective access and secret absence from all state/log artifacts have not been independently established by this reconciliation. |
-| Cost / holding period | Recorded known base reference: USD 61.66/720 hours with RDS running, before variable charges; pre-apply budget actual USD 0.02 is not a current bill. Review date 2026-10-23 is selected. Current contributor explicitly volunteered as operator and selected an RDS stop with easy resume. Stop execution was authorized and confirmed; base-only holding deadline and 96-hour idle-clock origin remain pending; see [stop/resume plan](shared-test-rds-operations.md). Stop completed; no restart/teardown ran. NAT and storage remain billable while DB compute is stopped. |
-| Accountability / convention conflict | Source configuration uses `Owner=shared-team`, `Project=CLIP`, `Environment=test`, `Task=PD-16`, and selected `ExpiresOn=2026-10-23`; actual per-resource tags have not been read back in this audit. User approved narrow existing-name exceptions under revised DEC-03; retain existing resources without renaming/replacing them. `Owner=shared-team` remains a tag deviation pending a separately reviewed tag-only plan or explicit tag exception. Operator is the current contributor by explicit instruction; record their name/contact before teammate handoff, without inferring it from IAM/stream labels. |
-| Identity / acceptance | PD-16 non-root profile `adityalaxmi1` was STS-verified and separately authorized for apply. Each operator must select their approved profile and recheck caller/target. PD-15 peer/main acceptance, PD-16 service checks and PRE-00 remain pending. |
+| State backend | Bucket `clip-tfstate-335523638354-ap-south-1-20261019-0e51ca0`, Mumbai; versioning enabled, SSE-S3 (`AES256`), all S3 public-access blocks enabled, policy non-public and denies insecure transport. Both expected objects exist: `bootstrap/terraform.tfstate` and `shared/test/terraform.tfstate`. PD-15 owns the backend; preserve it and its versions during PD-16 cleanup. |
+| Private network / NAT | Dedicated VPC `10.64.0.0/20` with the approved public/NAT subnet `10.64.0.0/24`, workload subnet `10.64.1.0/24` in `ap-south-1a`, and RDS-only subnet `10.64.2.0/24` in `ap-south-1b`. NAT `nat-0d7fefbad586f4bce` and the attached internet gateway are available. No default VPC adoption. |
+| ECR / ECS capacity | Immutable, scan-on-push repository `335523638354.dkr.ecr.ap-south-1.amazonaws.com/clip-shared-test-api` contains the approved image tag `68d6179db03dcf983278b290d22a939af625bba1`, digest `sha256:8f07c52fdfd5a15c29eedae5b7189e6923e5ab0c622459568f70f6d7581a2bed`, 49,476,193 bytes. Cluster `clip-shared-test` is active with zero running/pending tasks. Its one approved API service is active but desired/running/pending counts are all zero. Capacity provider `clip-shared-test-capacity`; ASG min/desired 0, max 1, no instances. API revision 1, setup revision 3, and probe revision 1 task definitions are active; older setup revisions 1–2 are inactive. Tag lookup still returns the previously terminated host; it is not current capacity. |
+| RDS / retention | `clip-shared-test-postgres`, resource ID `db-PYRRZJPVKPGHIXDAHUWATXGH7A`, is stopped, private, encrypted, protected from deletion, PostgreSQL 18.6, `db.t4g.micro`, 20 GiB gp3, one-day automated-backup retention. The only returned snapshot is an available **automated** backup (`rds:clip-shared-test-postgres-2026-10-19-10-30`), not a manual final snapshot. No restart or teardown ran. |
+| Credentials / IAM / logs | Master and probe parameters exist as SecureStrings, version 1; values were not read. The seven Terraform-owned `clip-shared-test-*` IAM roles exist. `/ecs/clip-shared-test` retains seven-day log retention and reports zero stored bytes. This check does not validate effective permissions or inspect state/log contents for secret leakage; see [secret references](secret-handling.md). |
+| Tags / ownership | Read-back confirms PD-16 resources use `Project=CLIP`, `Environment=test`, `Task=PD-16`, `Owner=shared-team`, `ExpiresOn=2026-10-23`, as approved. The PD-15 state bucket has its named owner tag and `ExpiresOn=2026-10-26`. Existing naming exceptions remain as approved; no rename/retag was needed. Aditya is the current operator by explicit user direction. |
+| Cost / holding period | Approximate base reference remains USD 61.66/720 hours with RDS running, before variable charges; this is not a current bill. RDS is stopped and ECS capacity is zero, but NAT, database storage/automated backups, ECR, logs, parameters, and backend remain retained and may incur charges. The accepted idle anchor/deadline is **2026-10-19 18:23:35 UTC → 2026-10-23 18:23:35 UTC**; cleanup still requires separate exact approvals. See [stop/resume plan](shared-test-rds-operations.md). |
+| Acceptance | User confirmed the previously pending PD-08/09/12/13/15 upstream/platform/owner/peer gates on 2026-10-19. PD-16 operational closeout was accepted for now; the combined PD-17–19 review/merge and PRE-00 remain pending. |
 
-The table above is the latest recorded project deployment; the following October 17 inventory and PD-14 closeout are historical snapshots. This update authorizes no cloud operations and does not claim the environment remains unchanged now.
+The following October 17 inventory and PD-14 closeout are historical snapshots. This read-only update authorizes no cloud operation and does not replace an exact reviewed Terraform plan.
+
+### Step 8 prerequisite refresh — 2026-10-19 16:49:57 UTC
+
+User selected a two-hour test window and volunteered previously as operator. Official ARM64 Session Manager plugin 1.2.896.0 is installed locally. Approved root read-only billing returned five enabled eligible credits: USD 179.54 remaining / USD 179.49 estimated, expiry 2027-08-14; see [summary](../evaluation/foundation/pd-16/step8-credit-summary.json). Root was not used for provisioning or IAM review. Current operator IAM metadata, read with `adityalaxmi1`, shows direct IAMFullAccess and developer-group PowerUserAccess/CLIPParameterStoreTeamAccess; no inline/attached policies exist on the three application task roles. This updates historical reported-policy facts for this operator only. The user resolved the Step 8 mismatch by approving [DEC-10 broad-human-operator access](../decisions/broad-human-operator-access.md); no additional human role or policy change is proposed; [preparation record](pd16-service-plan-preparation.md). No service plan, IAM change, RDS restart or live SSM session ran.
 
 ## Step 4 read-only inventory — 2026-10-17 UTC
 
@@ -111,7 +112,7 @@ AWS Budgets API verification confirmed the following budget in account `33552363
 | Setting | Verified value |
 |---|---|
 | Name | `CLIP-Account-Actual-Spend-From-2026-10-17` |
-| Period | Custom, 2026-10-17 through 2027-10-17 (one year; API timestamps correspond to midnight Asia/Kolkata) |
+| Period | Custom, 2026-10-17 through 2027-10-17 (one year; API timestamps correspond to midnight UTC / 05:30 Asia/Kolkata) |
 | Reference amount | USD 200; notification reference only, not a hard spending cap |
 | Cost basis | Actual incurred cost; `IncludeCredit=false` |
 | Alerts | Email when actual cost is greater than USD 50, 80, 100, 120, or 130 (absolute thresholds) |
@@ -133,3 +134,31 @@ Read-only `iam:GetUser`, `iam:ListAttachedUserPolicies`, and `iam:ListGroupsForU
 ### Current IAM/SSM permission recheck — 2026-10-17
 
 Historical read-only IAM inspection on 2026-10-17 succeeded for Rahul's identity. At that time the account had IAM users `rahulkoyye`, `surajs2`, and `mohitmahapa1` in `DS252-Project-Developers`, whose attached policy was AWS-managed `PowerUserAccess`. Rahul additionally had AWS-managed `IAMFullAccess`; Suraj and Mohit each had AWS-managed `IAMUserChangePassword`. None of those three users had an inline user policy or permissions boundary. Policy simulation allowed the checked project-path SSM read/write/delete/history/tag actions and selected-key KMS encrypt/decrypt actions for these three identities. No `/clip/` parameter existed, so no live parameter value operation was tested. Aditya later reported that all four retain `PowerUserAccess` and `IAMFullAccess` was removed. The newer attachment state has not been independently checked; Rahul accepted the grants as intentional and waived least-privilege checks. Aditya's root use remains user-reported and no root sign-in was attempted.
+
+### Step 9 service apply — 2026-10-19 17:18:01 UTC
+
+Approved checksum applied after commit `2978461`: seven resources created (API service, three task definitions, probe SecureString and two execution-role policies), no changes/deletions. [Result](../evaluation/foundation/pd-16/service-apply-result.json). RDS still stopped; immediate API snapshot desired 1/pending 1/running 0, ASG desired/hosts 0 while managed scaling starts. This supersedes the base-only capacity/credential inventory above. Window ends **2026-10-19 19:17:08 UTC**; no automatic shutdown. Actual runtime readiness and SSM/SQL remain pending.
+
+### Step 10 live database check — 2026-10-19 17:36:32 UTC
+
+User authorized RDS start and fixed setup/probe sequence. Original RDS now available (start 17:30:03 UTC, available 17:34:25); one host/API still running. Setup revision 2 failed its logging guard before mutation; probe skipped. [Execution](../evaluation/foundation/pd-16/database-action-result.json). This supersedes prior stopped status. Compute/NAT/storage remain billable; original window expires 19:17:08 UTC, no automatic shutdown. No logging changes or automatic repair; await decision.
+
+### Step 10 successful database verification — 2026-10-19 17:51:23 UTC
+
+[Setup revision 3 and probe revision 1 passed](../evaluation/foundation/pd-16/database-retry-result.json); restricted `clip_test_probe` login and test DB ACL hardening now exist. Transaction-local logging checks/suppression succeeded without global parameter changes. Both one-shot tasks stopped; API/one host and RDS remain running. Initial revision-2 failure is historical. Web hosting needs a separately approved target/access; no domain/NFR acceptance. Window expires 19:17:08 UTC; no automatic shutdown.
+
+### Current compute status — 2026-10-19 18:24:12 UTC
+
+**Compute off:** API desired/running/pending 0, cluster tasks 0, ASG desired/hosts 0; original host terminated 18:17:10 UTC. Original RDS resource `db-PYRRZJPVKPGHIXDAHUWATXGH7A` verified stopped **18:23:35 UTC**. [Shutdown evidence](../evaluation/foundation/pd-16/compute-stop-result.json). Supersedes preceding running snapshots. DB storage, ECR images, task definitions, network and state retained; NAT/storage/backups/logs remain billable. Resume needs separate RDS-start and fresh service-enable-plan approvals. Cleanup review date 2026-10-23 and unresolved exact idle-deadline/contact gates remain unchanged; RDS may auto-restart after seven stopped days.
+
+### Step 12 read-only budget/utilization review — 2026-10-19
+
+Five USD 50/80/100/120/130 alerts and all four historical subscriber routes reverified; no email sent. Budget actual USD 0.04/forecast USD 1.232 was last updated at 13:42:11 UTC, before the run; run-charge reconciliation awaits refreshed billing. [Review and utilization limits](../evaluation/foundation/pd-16/step12-cost-review.md). No Cost Explorer request/root fallback or resource change; compute remains off. Corrected period timezone description: actual API boundaries are midnight UTC, 05:30 IST.
+
+### Accepted operator and idle deadline — 2026-10-19 UTC
+
+User named **Aditya** as current operator and accepted a 96-hour idle clock from verified full shutdown **2026-10-19 18:23:35 UTC** to **2026-10-23 18:23:35 UTC** (23:53:35 IST). This supersedes earlier unaccepted exact-deadline proposals and unnamed-operator notes. `Owner=shared-team`/date-only expiry tag remain approved. No automatic deletion is installed/authorized; Aditya initiates separately reviewed cleanup if still idle. New approved runs update the clock.
+
+### Cost precision accepted — 2026-10-19 UTC
+
+User accepted approximate recent bounded PD-16 run costs and negligible run impact for closeout; exact delayed-charge reconciliation is no longer a blocker ([DEC-12](../decisions/foundation-cost-review-precision.md)). Earlier dated billing-follow-up notes are superseded on that point. Estimates remain estimates, not a measured zero or bill. Retained NAT/storage/other costs, USD 50 pause/review point, USD 25 reserve and project-wide budget still apply. No billing/resource action occurred.

@@ -36,18 +36,18 @@ From the repository root, run:
 
 ```bash
 uv sync --locked
-uv run --locked pytest apps/api/tests -q
+uv run --locked pytest apps/api/tests -q -W error
 ```
 
 `uv run --locked pytest` runs all currently configured test roots; PD-11 contract generation tests also require root `npm ci` and the pinned Node toolchain. The API-only command above needs no Node installation. API tests start the real ASGI app in explicit test mode using FastAPI's TestClient; no HTTP listener, database, provider or cloud access is needed. The tests discard inherited `CLIP_`/`AWS_` settings for isolation and restore the developer's environment afterward. Synthetic cases cover local defaults, typed overrides, malformed/empty values, production-debug rejection, redacted errors, fresh reads and ignored dotenv/example files. Fresh credential-free subprocesses verify invalid configuration prevents the actual entry point from importing. Temporary fixture files stay under pytest's temporary directory.
 
 Exit 0 means the collected suite passed; a failure must be investigated, and exit 5 (no tests collected) is not a pass. The development-only `httpx2` pin supports the installed Starlette TestClient. No fake identity or storage implementation is used, and this suite does not prove domain integration, deployed readiness or performance.
 
-See the [command registry](../../docs/environment/commands.md) for effects and readiness. The [common setup guide](../../docs/environment/README.md#local-foundation-setup) documents shared Make targets; full clean-environment verification remains PD-13 Step 5.
+See the [command registry](../../docs/environment/commands.md) for effects and readiness. The [common setup guide](../../docs/environment/README.md#local-foundation-setup) documents shared Make targets. The user later confirmed the previously pending PD-13 clean-environment gates on 2026-10-19; PD-19 Step 2 reran setup on Linux ARM64.
 
 ## Local container image (PD-16 Step 4)
 
-The [PD-16 image commands](../../docs/environment/commands.md#local-api-container-image--pd-16-step-4) build the API for the local Docker host's native architecture from the repository root, start it on loopback for a health check, and stop/remove the local container. The Dockerfile uses the locked runtime dependencies, runs as a non-root user with production-safe settings, and includes only the API application source. Record the host architecture, current worktree revision, and dirty state with the local check; Native Linux AMD64/macOS setup and database compatibility checks remain pending under PD-08/PD-13 before PRE-00 acceptance; this local container check does not waive them. The later ECR image must be rebuilt for `linux/amd64` from the exact reviewed commit because the ECS host is x86_64.
+The [PD-16 image commands](../../docs/environment/commands.md#local-api-container-image--pd-16-step-4) build the API for the local Docker host's native architecture from the repository root, start it on loopback for a health check, and stop/remove the local container. The Dockerfile uses the locked runtime dependencies, runs as a non-root user with production-safe settings, and includes only the API application source. Record the host architecture, current worktree revision, and dirty state with the local check. The user later confirmed the previously pending PD-08/PD-13 platform and database compatibility gates on 2026-10-19; this local image check does not replace their recorded evidence. The later ECR image must be rebuilt for `linux/amd64` from the exact reviewed commit because the ECS host is x86_64.
 
 ## Shared conventions (PD-06 step 3)
 

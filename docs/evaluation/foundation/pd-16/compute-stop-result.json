@@ -1,0 +1,49 @@
+{
+  "started_utc": "2026-10-19T18:00:46.811747+00:00",
+  "status": "host terminated and RDS stopped",
+  "host_id": "i-0369f840346916062",
+  "rds_id": "clip-shared-test-postgres",
+  "rds_resource_id": "db-PYRRZJPVKPGHIXDAHUWATXGH7A",
+  "manual_asg_or_ec2_change": false,
+  "rds_stop_requested": true,
+  "observations": [
+    {
+      "utc": "2026-10-19T18:00:51.364305+00:00",
+      "cluster_running": 0,
+      "cluster_pending": 0,
+      "service_desired": 0,
+      "service_running": 0,
+      "asg_desired": 1,
+      "asg_hosts": 1,
+      "original_host_state": "running"
+    },
+    {
+      "utc": "2026-10-19T18:16:26.044032+00:00",
+      "cluster_running": 0,
+      "cluster_pending": 0,
+      "service_desired": 0,
+      "service_running": 0,
+      "asg_desired": 0,
+      "asg_hosts": 1,
+      "original_host_state": "shutting-down"
+    },
+    {
+      "utc": "2026-10-19T18:17:10.857585+00:00",
+      "cluster_running": 0,
+      "cluster_pending": 0,
+      "service_desired": 0,
+      "service_running": 0,
+      "asg_desired": 0,
+      "asg_hosts": 0,
+      "original_host_state": "terminated"
+    }
+  ],
+  "zero_compute_verified_utc": "2026-10-19T18:17:10.857939+00:00",
+  "rds_stop_requested_utc": "2026-10-19T18:17:12.940241+00:00",
+  "rds_status": "stopped",
+  "last_checked_utc": "2026-10-19T18:23:35.906715+00:00",
+  "completed_utc": "2026-10-19T18:23:35.907049+00:00",
+  "human_verification_pending": false,
+  "observation_count": 23,
+  "raw_observations_retained_privately": true
+}

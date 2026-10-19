@@ -27,7 +27,7 @@ The [schema](../architecture/mvp-database-schema.md) records episode/target/read
 Lease/claim fencing, exact provider setup/idempotency, operational clock handling and immutable-source enforcement remain A/D review gates. No immediate per-message/offer/contact-share email, optional digest/match alert, paid service, scheduler, cloud resource or live delivery is selected or authorized here.
 
 ## Approver
-Mohit (C), explicit approval of the presented notification policy. Producer/notification/Identity affected-owner review remains pending.
+Mohit (C), explicit approval of the presented notification policy. The user later confirmed the PD-08 producer/notification/Identity affected-owner gate complete on 2026-10-19; see the [work-log reconciliation](../status/work-log.md#resolved-integration-evidence). CN-01/CN-03 still own implementation, provider, and race checks.
 
 ## Supersedes
 None; refines the existing durable-intent decision.

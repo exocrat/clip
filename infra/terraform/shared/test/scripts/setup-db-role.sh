@@ -24,6 +24,55 @@ fi
 if {
   cat <<'SQL'
 BEGIN;
+-- Apply only the approved transaction-local logging changes. set_config's
+-- true flag restores prior values on COMMIT/ROLLBACK; no parameter group,
+-- role default or other connection is changed. Permission errors abort before
+-- any ACL/role/password work, with no privilege grants or fallback.
+DO $local_logging$
+BEGIN
+  -- A transaction may already have been selected for logging at BEGIN.
+  -- Do not assume changing its sample rate now can undo that selection.
+  IF current_setting('log_transaction_sample_rate')::double precision <> 0 THEN
+    RAISE EXCEPTION 'database setup requires transaction sampling disabled before BEGIN';
+  END IF;
+  IF current_setting('log_min_error_statement') <> 'panic' THEN
+    PERFORM set_config('log_min_error_statement', 'panic', true);
+  END IF;
+  IF current_setting('log_statement') <> 'none' THEN
+    PERFORM set_config('log_statement', 'none', true);
+  END IF;
+  IF current_setting('log_min_duration_statement')::integer <> -1 THEN
+    PERFORM set_config('log_min_duration_statement', '-1', true);
+  END IF;
+  IF current_setting('log_min_duration_sample')::integer <> -1 THEN
+    PERFORM set_config('log_min_duration_sample', '-1', true);
+  END IF;
+END
+$local_logging$;
+-- Inspect effective settings in this same bounded session before any ACL,
+-- role or password change. Metadata with unset defaults is not evidence.
+-- Reject successful-statement logging, duration/transaction sampling, and
+-- failed-statement logging (which could retain the password verifier).
+-- Optional audit/explain logging still fails closed when enabled. Verify the
+-- local changes rather than assuming they succeeded; never retry to bypass.
+DO $logging_guard$
+BEGIN
+  IF current_setting('log_statement') <> 'none'
+    OR current_setting('log_min_duration_statement')::integer <> -1
+    OR (
+      current_setting('log_min_duration_sample')::integer <> -1
+      AND current_setting('log_statement_sample_rate')::double precision <> 0
+    )
+    OR current_setting('log_transaction_sample_rate')::double precision <> 0
+    OR current_setting('log_min_error_statement') <> 'panic'
+    OR lower(coalesce(current_setting('pgaudit.log', true), 'none'))
+      NOT IN ('none', '')
+    OR coalesce(current_setting('auto_explain.log_min_duration', true), '-1') <> '-1'
+  THEN
+    RAISE EXCEPTION 'database setup requires reviewed safe statement logging';
+  END IF;
+END
+$logging_guard$;
 REVOKE CONNECT, TEMPORARY ON DATABASE :"dbname" FROM PUBLIC;
 REVOKE CREATE ON SCHEMA public FROM PUBLIC;
 CREATE ROLE clip_test_probe WITH LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOREPLICATION NOBYPASSRLS CONNECTION LIMIT 2;

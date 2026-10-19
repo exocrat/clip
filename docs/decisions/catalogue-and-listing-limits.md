@@ -28,7 +28,7 @@ Provides a small shared initial vocabulary, explicit mobile/laptop classificatio
 PD-08 Step 3 may implement these after the required schema/affected-owner review. LI-01/LI-02/SE-01/SE-02 and DL-00 must preserve consistent validation/filter semantics. No ciphertext limit, image decoding/dimension policy, monetary cap, sensitive-price threshold, provider choice or deployment is approved by this decision.
 
 ## Approver
-Mohit (C), explicit approval of the presented catalogue and field-limit proposal. B/C affected-owner schema review remains pending; no independent approval by Suraj is inferred.
+Mohit (C), explicit approval of the presented catalogue and field-limit proposal. The user later confirmed the PD-08 affected-owner schema gate complete on 2026-10-19; see the [work-log reconciliation](../status/work-log.md#resolved-integration-evidence). This records the gate status without inferring a reviewer identity.
 
 ## Supersedes
 None.

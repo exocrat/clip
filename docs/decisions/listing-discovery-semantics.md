@@ -26,7 +26,7 @@ The reviewer confirmed Suraj's original distinction and renamed its ambiguous te
 PD-08 represents item category through `listings.categories` and the existing `category_id` columns on Sale Listings/Wanted Requests. No column, migration or second filter is added for this terminology correction. The submitted PRD stays unchanged; its earlier wording is interpreted through the maintained product reference. LI-01/SE-01/SE-02 must apply the same request-time predicate and preserve saved references; Listings owns sale queries/indexes. DL-00 defines public filter spellings, authorization and boundary-time tests. Retirement must never weaken the mandatory price/image/field rules for live listings.
 
 ## Approver
-The independent human reviewer explicitly confirmed Suraj's item-category interpretation and requested this correction in the PR #5 review session on 2026-10-18. Mohit's earlier availability/window/saved-record choices remain in effect. Listings/affected-owner schema review remains pending.
+The independent human reviewer explicitly confirmed Suraj's item-category interpretation and requested this correction in the PR #5 review session on 2026-10-18. Mohit's earlier availability/window/saved-record choices remain in effect. The user later confirmed the PD-08 Listings/Search affected-owner schema gate complete on 2026-10-19; see the [work-log reconciliation](../status/work-log.md#resolved-integration-evidence).
 
 ## Supersedes
 Supersedes this record's earlier interpretation that the item classification filter meant Sale Listing versus Wanted Request. Git history and dated work-log entries preserve that earlier decision. No availability, saved-reference or submitted-PRD change.

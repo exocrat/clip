@@ -22,7 +22,7 @@ A stable pair supports retry/concurrency uniqueness without discarding an existi
 PD-08 proposes the uniqueness constraint and origin relationships. DL-00/CN-01/SE-02 define and verify atomic creation-versus-closure behavior and duplicate results. Closure does not override later approved retention or account restrictions.
 
 ## Approver
-Mohit (C), explicit approval in the execution session. Affected-owner schema review remains pending.
+Mohit (C), explicit approval in the execution session. The user later confirmed the PD-08 affected-owner schema gate complete on 2026-10-19; see the [work-log reconciliation](../status/work-log.md#resolved-integration-evidence). Domain implementation and integration checks remain with their task owners.
 
 ## Supersedes
 None; refines the accepted wanted-request discovery/response decision.

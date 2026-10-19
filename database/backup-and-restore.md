@@ -5,7 +5,10 @@
 This document specifies later work. No cloud backup, snapshot, export, restore,
 cleanup or managed database operation was performed by PD-08. Native migration
 down/up checks and temporary schema dumps are not managed-backup recovery
-evidence. PD-08's deferred checks and affected-owner review remain open.
+evidence. The user confirmed PD-08's carried checks and owner acceptance
+complete on 2026-10-19; Linux AMD64/macOS results were confirmed on 2026-10-20
+(Asia/Kolkata), but their exact machine details and raw outputs are not retained
+here. NFR-07 and PRE-00 remain separate gates.
 
 ## Ownership and acceptance
 
@@ -124,4 +127,6 @@ contents, real contact values, credentials, private keys or encrypted payloads.
 
 There is no implemented cloud backup/restore command in PD-08. The command
 registry is updated only by the task that implements and validates it. NFR-07
-and full PD-08/PRE-00 acceptance remain pending their named real gates.
+restore evidence remains assigned to INT-01. PD-08 is user-confirmed complete;
+PRE-00 remains pending PD-19 acceptance and the combined reviewed/main-merged
+PD-17–19 handoff.

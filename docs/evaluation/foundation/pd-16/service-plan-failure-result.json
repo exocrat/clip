@@ -1,0 +1,13 @@
+{
+  "plan_exit": 1,
+  "saved_artifact_exists": true,
+  "plan_sha256": "0559c344a9262f747a033a6609eefdb052dfd799e65346066b277b1b08a006cd",
+  "probe_absent_from_saved_zip_entries": true,
+  "usable_plan": false,
+  "json_render_exit": 0,
+  "failure": "Existing master write-only inputs omitted; provider requires paired values and versions",
+  "lock_absent_verified": true,
+  "resource_apply_performed": false,
+  "errored": true,
+  "probe_absent_from_rendered_plan": true
+}

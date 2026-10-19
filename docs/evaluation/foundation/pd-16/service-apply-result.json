@@ -1,0 +1,32 @@
+{
+  "plan_sha256": "f02303878b94e7baa96d6f617ee7a8162c5fc25e1bda9890bee1ba787f29986a",
+  "source_commit": "2978461",
+  "started_utc": "2026-10-19T17:17:08+00:00",
+  "expires_utc": "2026-10-19T19:17:08+00:00",
+  "automatic_shutdown_installed": false,
+  "rds_restart_authorized": false,
+  "status": "applied",
+  "exit_code": 0,
+  "finished_utc": "2026-10-19T17:17:14.660363+00:00",
+  "private_artifacts": "/tmp/clip-pd16-service-apply-68vfn1bm",
+  "state_serial_after": 5,
+  "credentials_absent_from_state_and_output": true,
+  "rds_status": "stopped",
+  "rds_resource_id": "db-PYRRZJPVKPGHIXDAHUWATXGH7A",
+  "service": {
+    "status": "ACTIVE",
+    "desired": 1,
+    "running": 0,
+    "pending": 1
+  },
+  "asg": {
+    "desired": 0,
+    "instances": 0
+  },
+  "lock_absent_verified": true,
+  "resources_added": 7,
+  "resources_changed": 0,
+  "resources_destroyed": 0,
+  "human_result_verification_pending": false,
+  "verification_note": "Initial local filter incorrectly included the public AMI data source; corrected managed-resource filter passed without any cloud repair. Resolved runtime definitions, SSM and SQL checks remain Step 10."
+}

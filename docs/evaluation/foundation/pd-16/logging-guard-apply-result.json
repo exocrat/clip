@@ -1,0 +1,36 @@
+{
+  "plan_sha256": "3ed95de0d608185564c012d1f118973750d051b1f153501dbe0c9d1006773d50",
+  "source_commit": "2978461",
+  "started_utc": "2026-10-19T17:17:08+00:00",
+  "expires_utc": "2026-10-19T19:17:08+00:00",
+  "automatic_shutdown_installed": false,
+  "rds_restart_authorized": false,
+  "status": "applied",
+  "apply_started_utc": "2026-10-19T17:28:08.341471+00:00",
+  "source_worktree": "reviewed source fingerprints; guard uncommitted",
+  "exit_code": 0,
+  "finished_utc": "2026-10-19T17:28:12.922979+00:00",
+  "private_artifacts": "/tmp/clip-pd16-logging-guard-apply-e6dtyw24",
+  "state_serial_after": 6,
+  "credentials_absent_from_state_and_output": true,
+  "rds_status": "stopped",
+  "rds_resource_id": "db-PYRRZJPVKPGHIXDAHUWATXGH7A",
+  "service": {
+    "status": "ACTIVE",
+    "desired": 1,
+    "running": 1,
+    "pending": 0
+  },
+  "asg": {
+    "desired": 1,
+    "instances": 1
+  },
+  "lock_absent_verified": true,
+  "resources_added": 1,
+  "resources_changed": 0,
+  "resources_destroyed": 1,
+  "new_task_definition": "arn:aws:ecs:ap-south-1:335523638354:task-definition/clip-test-db-role-setup-ap-south-1-pd16:2",
+  "registered_script_matches_source": true,
+  "runtime_guard_executed": false,
+  "human_result_verification_pending": false
+}

@@ -17,7 +17,7 @@ Use dbmate 2.36.0 and SQL migration files under `database/migrations/`. The inte
 Keeps DDL readable and independent of an ORM while respecting Mohit's instruction not to change others' directories or shared dependency manifests. Repository local/CI lifecycle is integrated in the later named steps.
 
 ## Implications
-One ordered migration head, with tables before cross-row integrity and initial catalogue data. Once published/applied, correct migrations forward rather than rewriting history. Down sections are explicit local-test rollback definitions; they are not approval to delete data and avoid broad CASCADE drops. Tool/SQL syntax inspection is not evidence of real apply/rollback, which remains PD-08 Step 6. Affected-owner review remains pending under Mohit's explicit provisional sequencing exception.
+One ordered migration head, with tables before cross-row integrity and initial catalogue data. Once published/applied, correct migrations forward rather than rewriting history. Down sections are explicit local-test rollback definitions; they are not approval to delete data and avoid broad CASCADE drops. Tool/SQL syntax inspection alone is not evidence of real apply/rollback; PD-08 Step 6 later passed its required checks, as recorded in the [work-log reconciliation](../status/work-log.md#resolved-integration-evidence). The user later confirmed the affected-owner gate complete on 2026-10-19. The provisional sequencing exception did not waive the required real apply/rollback checks.
 
 Primary references: [dbmate release 2.36.0](https://github.com/amacneil/dbmate/releases/tag/v2.36.0) and [official documentation](https://github.com/amacneil/dbmate). PostgreSQL/server selection remains Step 4.
 
@@ -33,7 +33,7 @@ wrappers and reran the 22 simulated safety cases; native clean apply/repeat/
 rollback/reapply and smoke now pass. Container execution remains deferred.
 
 ## Approver
-Tool selection is a Step 3 implementation choice within Mohit's authorized scope. Mohit separately authorized proceeding before affected-owner review; no independent review, commit, push or merge approval is inferred.
+Tool selection was a Step 3 implementation choice within Mohit's authorized scope. At that point he separately authorized proceeding before affected-owner review; the user later confirmed that gate complete on 2026-10-19. This does not grant commit, push or merge approval.
 
 ## Supersedes
 None.

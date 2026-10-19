@@ -1,0 +1,118 @@
+{
+  "profile_scope": "default root, read-only billing only, user-approved",
+  "credits": [
+    {
+      "status": "ENABLED",
+      "remaining": {
+        "currencyCode": "USD",
+        "currencyAmount": "99.540000"
+      },
+      "estimated": {
+        "currencyCode": "USD",
+        "currencyAmount": "99.490000"
+      },
+      "expiry": "2027-08-14T15:24:44+05:30",
+      "applicable_foundation_products": [
+        "Amazon Relational Database Service",
+        "AmazonCloudWatch",
+        "Amazon Elastic Container Service",
+        "Amazon EC2 Container Registry (ECR)",
+        "Amazon Elastic Container Registry Public",
+        "AWS Systems Manager",
+        "Amazon Elastic Compute Cloud",
+        "Amazon Virtual Private Cloud"
+      ]
+    },
+    {
+      "status": "ENABLED",
+      "remaining": {
+        "currencyCode": "USD",
+        "currencyAmount": "20.000000"
+      },
+      "estimated": {
+        "currencyCode": "USD",
+        "currencyAmount": "20.000000"
+      },
+      "expiry": "2027-08-14T15:24:58+05:30",
+      "applicable_foundation_products": [
+        "Amazon Relational Database Service",
+        "AmazonCloudWatch",
+        "Amazon Elastic Container Service",
+        "Amazon EC2 Container Registry (ECR)",
+        "Amazon Elastic Container Registry Public",
+        "AWS Systems Manager",
+        "Amazon Elastic Compute Cloud",
+        "Amazon Virtual Private Cloud"
+      ]
+    },
+    {
+      "status": "ENABLED",
+      "remaining": {
+        "currencyCode": "USD",
+        "currencyAmount": "20.000000"
+      },
+      "estimated": {
+        "currencyCode": "USD",
+        "currencyAmount": "20.000000"
+      },
+      "expiry": "2027-08-14T15:24:58+05:30",
+      "applicable_foundation_products": [
+        "Amazon Relational Database Service",
+        "AmazonCloudWatch",
+        "Amazon Elastic Container Service",
+        "Amazon EC2 Container Registry (ECR)",
+        "Amazon Elastic Container Registry Public",
+        "AWS Systems Manager",
+        "Amazon Elastic Compute Cloud",
+        "Amazon Virtual Private Cloud"
+      ]
+    },
+    {
+      "status": "ENABLED",
+      "remaining": {
+        "currencyCode": "USD",
+        "currencyAmount": "20.000000"
+      },
+      "estimated": {
+        "currencyCode": "USD",
+        "currencyAmount": "20.000000"
+      },
+      "expiry": "2027-08-14T15:24:58+05:30",
+      "applicable_foundation_products": [
+        "Amazon Relational Database Service",
+        "AmazonCloudWatch",
+        "Amazon Elastic Container Service",
+        "Amazon EC2 Container Registry (ECR)",
+        "Amazon Elastic Container Registry Public",
+        "AWS Systems Manager",
+        "Amazon Elastic Compute Cloud",
+        "Amazon Virtual Private Cloud"
+      ]
+    },
+    {
+      "status": "ENABLED",
+      "remaining": {
+        "currencyCode": "USD",
+        "currencyAmount": "20.000000"
+      },
+      "estimated": {
+        "currencyCode": "USD",
+        "currencyAmount": "20.000000"
+      },
+      "expiry": "2027-08-14T15:24:58+05:30",
+      "applicable_foundation_products": [
+        "Amazon Relational Database Service",
+        "AmazonCloudWatch",
+        "Amazon Elastic Container Service",
+        "Amazon EC2 Container Registry (ECR)",
+        "Amazon Elastic Container Registry Public",
+        "AWS Systems Manager",
+        "Amazon Elastic Compute Cloud",
+        "Amazon Virtual Private Cloud"
+      ]
+    }
+  ],
+  "enabled_count": 5,
+  "remaining_usd": "179.540000",
+  "estimated_usd": "179.490000"
+}

@@ -72,8 +72,12 @@ availability and index checks, reproducible logical fingerprints, and >=20
 human-reviewed representative queries/relevant listing IDs. NFR-04's final
 Success@5 evaluation remains SE-01 work. PD-09 Step 5 supplies the
 [query-label format and human-review procedure](formats/query-labels.md) and
-[empty draft template](evaluation/query-labels.template.json). These contain no
-final judgments or listing IDs.
+[empty draft template](evaluation/query-labels.template.json). SE-01 stores the
+reviewed final label set at `data/evaluation/query-labels.json`, derived from
+that template; the template itself contains no final judgments or listing IDs.
+Versioned NFR workload profiles belong under `data/evaluation/workloads/`.
+Evaluator/load/recovery/restore source tools belong under
+`scripts/evaluation/`, with exact commands registered by their owning tasks.
 
 ## Verification and review handoff
 

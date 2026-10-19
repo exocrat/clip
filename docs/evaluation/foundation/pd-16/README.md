@@ -1,10 +1,76 @@
 # PD-16 evidence and AMD64 handoff
 
-PR #7 local review corrections: [deadline tests, real lock failure check and manual ECR cleanup resolution](review-corrections.md). This evidence covers the tested correction worktree; Suraj verified the result and approved its commit. Publication and current hosted/independent review remain pending.
+**Publication reconciliation — 2026-10-19:** PR #7 merged at main `68d9da9`; final head `61dd7674` passed [hosted CI run 39280676449](https://github.com/exocrat/clip/actions/runs/39280676449). The local/push-pending statements below describe evidence-capture time. Independent approval is not inferred from the merge (GitHub formal reviews were empty). PD-16 operational scope is now closed; PD-17–19 are being prepared for the combined review/main merge required before PRE-00. Current task checkpoint is in the [work log](../../../status/work-log.md).
+
+PR #7 local review corrections: [deadline tests, real lock failure check and manual ECR cleanup resolution](review-corrections.md). This evidence covers the tested correction worktree; Suraj verified the result and approved its commit. Publication and hosted acceptance later completed; the user confirmed the previously pending PD-08/09/12/13/15 gates on 2026-10-19. No PR status was examined during PD-19.
+
+## PD-16 operational closeout — accepted for now
+
+[Closeout audit and stopped-resource status](closeout-review.md), [fresh safe outputs](step14-handoff-result.json). Aditya is current operator; accepted idle deadline **2026-10-23 18:23:35 UTC**. User explicitly closed PD-16 operational scope and selected PD-17 documentation. At that closeout, original checks carried to integration/PD-19/PRE-00 under DEC-07; the later user confirmation above resolves those PD-task gates. PRE-00 still requires PD-19 and the combined reviewed/main-merged PD-17–19 handoff; no domain acceptance is implied.
+
+## Step 13 lifecycle closeout — inputs accepted
+
+[Reviewed lifecycle/retention and proposed idle deadline](lifecycle-closeout.md). No repeat startup needed for the observed evidence. User named Aditya as current operator; idle deadline is now accepted and recorded in the closeout.
+
+## Step 12 budget/utilization review — evidence checked and committed
+
+[Budget/routes, observed utilization and cost limits](step12-cost-review.md). Configuration/utilization checks passed; user accepted approximate recent-run costs under [DEC-12](../../../decisions/foundation-cost-review-precision.md), so exact-charge reconciliation is not a blocker. No notification test or paid Cost Explorer query; compute remains off.
+
+## Step 13 compute shutdown — human-verified
+
+[Shutdown evidence](compute-stop-result.json): zero tasks/ASG hosts, original EC2 host terminated at 18:17:10 UTC; original RDS stopped at 18:23:35 UTC. Storage/images/network/backend retained; NAT/storage remain billable. [Approved plan](stop-plan-review.md). Approximate recent-run costs accepted; upstream/platform/peer/merge acceptance remains pending.
+
+## Step 11 readiness smoke — human-verified
+
+[Bounded smoke result](step11-smoke-result.json): fresh live status/health/digest, completed SQL-task statuses, SSM and private RDS readiness passed. Reuses verified Step 10 HTTP/SQL evidence; no new session/task/load or performance claim. Step 10 committed as `2a60333`; cost/lifecycle and task acceptance remain pending.
+
+## Step 10 live verification — human-verified
+
+[Revision-3 setup and revision-1 probe](database-retry-result.json) both exited 0 with expected safe logs. Role/ACL assertions, SELECT 1 and privilege checks passed. [SSM/API health](step10-health-result.json), [private network/log-stream checks](step10-network-result.json) and approved running digest/definition checks complete Step 10 execution. Web hosting deferred until target/access and approval. No domain/NFR acceptance; Step 11 and remaining PD-16 gates pending. RDS/one API host running; expiry 19:17:08 UTC unchanged.
+
+## Step 10 transaction-local correction — applied
+
+[Apply result](local-logging-apply-result.json): setup revision 3 active and source-matched, state serial 7, lock released; no SQL rerun. Await verification and [exact revision-3 execution approval](database-action-review.md#proposed-continuation-after-local-logging-correction--approval-pending).
+
+### Approved correction plan
+
+[New plan and checksum](local-logging-plan-review.md): setup-definition replacement only. Correction local; no apply/SQL rerun. RDS/one host running, original expiry unchanged.
+
+## Step 10 database setup — safely blocked
+
+[Database execution result](database-action-result.json): RDS started; setup revision 2 exited 1 because effective logging failed its guard. RDS error log confirms rejection before ACL/role/password changes. No probe or retry. [Private-network/log-stream checks](step10-network-result.json) passed. RDS and one host remain running; window ends 19:17:08 UTC. Await a reviewed logging decision before repair.
+
+## Step 10 guard replacement — applied
+
+[Apply result](logging-guard-apply-result.json): setup revision 2 registered, script matches source; one create/one deregistration, state serial 6, lock released. RDS stopped and no SQL task invoked. Await result verification and separate database-action approval.
+
+### Approved plan
+
+[Runtime guard plan/checksum and review](logging-guard-plan-review.md): only setup task-definition replacement; guard local and unexecuted, no apply/restart/task invocation.
+
+## Step 10 SSM health passed — database precheck pending
+
+[Health/session and registered-definition checks](step10-health-result.json): HTTP 200, expected body, session terminated. RDS stopped. Effective database logging is not proven by unset parameter metadata; await decision on runtime guard/diagnostic path before setup.
+
+## Step 9 applied — human-verified
+
+User approved the exact plan and commit first (`2978461`). Apply exited 0: seven creates, no changes/deletions; state serial 5, lock released, credential checks passed. RDS remains stopped. [Apply result and two-hour window ending 19:17:08 UTC](service-apply-result.json). Runtime/SSM/SQL checks remain Step 10.
+
+## Step 8 corrected plan — approved and applied
+
+Fresh authorized plan passed: seven creates, zero changes/deletions; both credentials absent from saved/rendered artifacts, versions unchanged. [Exact plan/checksum and deployment scope](service-plan-review.md). Applied in Step 9 as recorded above; RDS restart remains separately gated.
+
+## Step 8 service-plan validation failure
+
+The first authorized non-applying service plan failed: existing master write-only value/version pairs cannot omit the value. Saved plan is `errored=true`; no apply ran. [Safe failure evidence and pending correction](service-plan-failure.md).
+
+## ECR publication — 2026-10-19
+
+Step 7 upload and remote manifest verification passed and were human-verified. [Step 8 input audit](../../../environment/pd16-service-plan-preparation.md) is active; no service plan has run. The approved source-commit tag resolves to OCI digest `sha256:8f07c52fdfd5a15c29eedae5b7189e6923e5ab0c622459568f70f6d7581a2bed`; [exact URI, identity, cost limits and evidence](ecr-publication.md). Service deployment and real integration remain pending.
 
 ## Current native AMD64 validation — 2026-10-19
 
-Built and validated the API image from clean local commit `68d6179db03dcf983278b290d22a939af625bba1` on a native Linux AMD64 engine. Image `clip-api:pd16-amd64-68d6179db03d` reports `linux/amd64`; HTTP `/health` returned 200 with `{"status":"ok"}` and Docker health became healthy. The local image is retained; test container/context were removed. [Exact build/check provenance, commands, local image ID and logs](native-amd64-image-validation.md). This resolves the target-image build/health blocker only. ECR upload, live service/SSM/SQL/lifecycle verification, current hosted/peer acceptance and full PD-16/PRE-00 acceptance remain pending. Git commits stay local until the user-selected publication point.
+Built and validated the API image from clean local commit `68d6179db03dcf983278b290d22a939af625bba1` on a native Linux AMD64 engine. Image `clip-api:pd16-amd64-68d6179db03d` reports `linux/amd64`; HTTP `/health` returned 200 with `{"status":"ok"}` and Docker health became healthy. The local image is retained; test container/context were removed. [Exact build/check provenance, commands, local image ID and logs](native-amd64-image-validation.md). This resolves the target-image build/health blocker only. ECR upload subsequently passed as recorded above; live service/SSM/SQL/lifecycle verification, current branch hosted/peer acceptance and full PD-16/PRE-00 acceptance remain pending.
 
 ## Recorded outcomes through `cc04a23`
 

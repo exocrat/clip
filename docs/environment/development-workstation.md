@@ -77,3 +77,8 @@ the duplicate development-port check failed as intended, and Ctrl+C stopped both
 owned servers. The build output and dependency/cache directories are ignored.
 This proves the technical mount point, not browser UI workflows or domain
 integration; later PD-07 checks and PD-13 clean-teammate setup remain pending.
+
+
+## PD-16 operator prerequisite — 2026-10-19
+
+Current continuation machine `/home/mainberry/IISc/clip`: Debian 13 ARM64, distinct from the historical WSL workstation above. User approved installation of the official AWS ARM64 Session Manager plugin. HTTPS package metadata was `session-manager-plugin` 1.2.896.0-1, architecture arm64; SHA-256 `914eeca87b18b55356c58be197080f73742b3ca60d3823f0a45670dc9056aa9c`. `sudo dpkg -i` succeeded and `session-manager-plugin --version` returned 1.2.896.0. [Official installation procedure](https://docs.aws.amazon.com/systems-manager/latest/userguide/install-plugin-debian-and-ubuntu.html). No SSM cloud session was opened. PATH Terraform is 1.16.5; use the existing pinned 1.15.9 binary for project planning, not PATH.

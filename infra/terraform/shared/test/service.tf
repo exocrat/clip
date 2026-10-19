@@ -1,6 +1,8 @@
 # This phase adds the API service and two separately invoked database tasks
 # after the base infrastructure exists. All use private EC2 bridge networking;
-# no public listener or inbound security-group rule is created.
+# no public listener or inbound security-group rule is created. New service
+# names follow DEC-03; existing base names remain untouched. Owner=shared-team
+# is the explicit PD-16 exception, with the human operator accountable.
 resource "aws_ssm_parameter" "db_probe_password" {
   count = local.service_enabled ? 1 : 0
 
@@ -20,7 +22,7 @@ resource "aws_ssm_parameter" "db_probe_password" {
 resource "aws_iam_role_policy" "db_role_setup_secrets" {
   count = local.service_enabled ? 1 : 0
 
-  name = "${local.prefix}-db-setup-secrets"
+  name = "clip-test-db-setup-secrets-${local.region}-pd16"
   role = aws_iam_role.db_role_setup_execution[0].id
   policy = jsonencode({
     Version = "2012-10-17"
@@ -39,7 +41,7 @@ resource "aws_iam_role_policy" "db_role_setup_secrets" {
 resource "aws_iam_role_policy" "db_probe_secret" {
   count = local.service_enabled ? 1 : 0
 
-  name = "${local.prefix}-db-probe-secret"
+  name = "clip-test-db-probe-secret-${local.region}-pd16"
   role = aws_iam_role.db_probe_execution[0].id
   policy = jsonencode({
     Version = "2012-10-17"
@@ -54,7 +56,7 @@ resource "aws_iam_role_policy" "db_probe_secret" {
 resource "aws_ecs_task_definition" "api" {
   count = local.service_enabled ? 1 : 0
 
-  family                   = "${local.prefix}-api"
+  family                   = "clip-test-api-${local.region}-pd16"
   requires_compatibilities = ["EC2"]
   network_mode             = "bridge"
   cpu                      = "256"
@@ -116,7 +118,7 @@ resource "aws_ecs_task_definition" "api" {
 resource "aws_ecs_service" "api" {
   count = local.service_enabled ? 1 : 0
 
-  name            = "${local.prefix}-api"
+  name            = "clip-test-api-${local.region}-pd16"
   cluster         = aws_ecs_cluster.shared[0].id
   task_definition = aws_ecs_task_definition.api[0].arn
   desired_count   = var.api_service_enabled ? 1 : 0
@@ -139,7 +141,7 @@ resource "aws_ecs_service" "api" {
   }
 
   depends_on = [aws_ecs_cluster_capacity_providers.shared]
-  tags       = { Name = "${local.prefix}-api" }
+  tags       = { Name = "clip-test-api-${local.region}-pd16" }
 }
 
 # This one-shot task creates the dedicated database login. Its psql script
@@ -147,7 +149,7 @@ resource "aws_ecs_service" "api" {
 resource "aws_ecs_task_definition" "db_role_setup" {
   count = local.service_enabled ? 1 : 0
 
-  family                   = "${local.prefix}-db-role-setup"
+  family                   = "clip-test-db-role-setup-${local.region}-pd16"
   requires_compatibilities = ["EC2"]
   network_mode             = "bridge"
   cpu                      = "256"
@@ -198,7 +200,7 @@ resource "aws_ecs_task_definition" "db_role_setup" {
     aws_iam_role_policy.db_role_setup_execution_logs,
     aws_iam_role_policy.db_role_setup_secrets,
   ]
-  tags = merge(local.common_tags, { Name = "${local.prefix}-db-role-setup" })
+  tags = merge(local.common_tags, { Name = "clip-test-db-role-setup-${local.region}-pd16" })
 }
 
 # This separate one-shot task sees only the probe credential and checks both
@@ -206,7 +208,7 @@ resource "aws_ecs_task_definition" "db_role_setup" {
 resource "aws_ecs_task_definition" "db_probe" {
   count = local.service_enabled ? 1 : 0
 
-  family                   = "${local.prefix}-db-probe"
+  family                   = "clip-test-db-probe-${local.region}-pd16"
   requires_compatibilities = ["EC2"]
   network_mode             = "bridge"
   cpu                      = "256"
@@ -256,5 +258,5 @@ resource "aws_ecs_task_definition" "db_probe" {
     aws_iam_role_policy.db_probe_execution_logs,
     aws_iam_role_policy.db_probe_secret,
   ]
-  tags = merge(local.common_tags, { Name = "${local.prefix}-db-probe" })
+  tags = merge(local.common_tags, { Name = "clip-test-db-probe-${local.region}-pd16" })
 }
