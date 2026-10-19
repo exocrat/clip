@@ -1,6 +1,6 @@
 # PD-15 Step 6 — Local-to-S3 state migration plan
 
-**Status:** Human-approved for one execution on 2026-10-19 08:40:21 UTC. Migration is pending; any changed target, retry, or recovery action requires renewed review and approval.
+**Status:** Human-approved for one execution on 2026-10-19 08:40:21 UTC, executed, and human-verified on 2026-10-19 08:45:41 UTC. Any changed target, retry, or recovery action requires renewed review and approval.
 
 ## Exact source and destination
 
@@ -53,7 +53,15 @@ Keep the protected local backup until every check below passes:
 2. A non-applying `/tmp/clip-pd13-tools-ns7loycc/terraform plan -refresh=false -lock-timeout=0s -detailed-exitcode -var-file=/tmp/clip-pd15-state-backup.bpPBCw/bootstrap-verify.tfvars` completes with exit code `0` (no changes). Its default state locking must acquire and release the S3 lock successfully; if the lock is busy or any changes are proposed, stop and investigate without applying.
 3. `aws s3api head-object --bucket clip-tfstate-335523638354-ap-south-1-20261019-0e51ca0 --key bootstrap/terraform.tfstate --region ap-south-1` confirms an object exists, has a version ID, and reports `AES256`; do not download or print its contents.
 4. `head-object` for `bootstrap/terraform.tfstate.tflock` reports not found after Terraform exits. Historical lock versions or delete markers can remain because bucket versioning is enabled; do not delete them. If a lock appears active, stop and verify no operation is running. Never delete a lock object manually.
-5. Confirm the local backup remains unchanged and mode `0600`; retain it through task closeout and until the remote state and lock checks are accepted.
+5. Confirm the protected backup remains available and mode `0600`; retain it through task closeout and until the remote state and lock checks are accepted. Terraform also created an ignored `terraform.tfstate.backup` in the bootstrap directory. It matched the protected copy; its initial mode was `0664`, so it was changed to `0600`. The zero-byte ignored `terraform.tfstate` placeholder remains mode `0600`.
+
+## Execution result — human-verified
+
+- Terraform `1.15.9` completed `init -migrate-state` to the approved S3 backend after the expected local-to-S3 confirmation prompt.
+- Remote `terraform state list` exactly matched the seven-address local baseline. The non-applying plan returned exit code `0` with `No changes`; it exercised S3 state locking. No current `.tflock` object remained afterward.
+- S3 `HeadObject` returned a 12,725-byte state object with a version ID and `AES256` encryption. Bucket versioning remained enabled.
+- The protected backup remains mode `0600`; Terraform's local `.tfstate.backup` matched it and is Git-ignored. No infrastructure apply or resource change occurred.
+- The human verified these results and the PD-15 task-wide local acceptance audit on 2026-10-19 08:45:41 UTC. Peer review and merge remain pending under the task PR lifecycle.
 
 ## Stop and recovery conditions
 
