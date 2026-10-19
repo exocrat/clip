@@ -6,8 +6,10 @@ on `task/pd17-19-foundation-handoff`. PR #8 merged source head `18c966e` into
 `18c966e` against base `68d9da9` ([run 39323851584](https://github.com/exocrat/clip/actions/runs/39323851584)).
 The user confirms all work before PRE-00 is complete. GitHub records no submitted
 review on PR #8; that closeout confirmation is user-reported, with no separate
-review artifact linked. The PRE-00 foundation gate audit is complete and awaits
-human verification; DL-00 remains gated until acceptance.
+review artifact linked. The user accepted the PRE-00 foundation gate audit on
+2026-10-19 UTC (2026-10-20 IST); DL-00 is now unblocked. The acceptance
+evidence and review caveat are recorded in the
+[work log](work-log.md#current-task-state).
 
 This handoff describes the shared foundation and its limits. It does not claim
 marketplace features, domain contracts, final data readiness, or NFR results.
@@ -97,7 +99,7 @@ those decisions.
 ## Next task
 
 PD-17–19 are merged to `main`; the user confirms the preceding work is complete.
-Complete and human-accept the PRE-00 gate audit now. Then start **DL-00,
-Steps 1–13**, defined in the [single domain task list](../tasks/domain-task-list.md).
+PRE-00 is accepted. Start **DL-00, Steps 1–13**, defined in the
+[single domain task list](../tasks/domain-task-list.md).
 Do not start domain feature implementation before PRE-00 and DL-00 pass their
 gates.

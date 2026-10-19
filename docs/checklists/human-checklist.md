@@ -50,7 +50,7 @@ You may inspect evidence, but the agent must summarize what makes it acceptable 
 - [ ] Review `make check` and current hosted **CI / Foundation quality gates** evidence, including run URL and PR head/base revisions. Missing/skipped/cancelled/failed required checks do not pass.
 - [ ] Follow [the approved manual fallback](../../CONTRIBUTING.md#approved-manual-fallback). It preserves PR-only merging, independent human/affected-owner approval and separate exact-revision merge authorization, but cannot technically prevent bypass.
 - [ ] Recheck the exact current revision before authorizing merge; require renewed checks/review after relevant changes. Do not treat local checks or AI findings as hosted success or independent human approval.
-- [ ] Hosting changes retain separate approval. Checklist coverage does not accept unrun checks; record open checks under their original task/step IDs. The user confirmed the previously pending PD-08/09/12/13/15 gates complete on 2026-10-19. PD-19 is complete; the PRE-00 audit awaits human verification as recorded in the work log.
+- [ ] Hosting changes retain separate approval. Checklist coverage does not accept unrun checks; record open checks under their original task/step IDs. The user confirmed the previously pending PD-08/09/12/13/15 gates complete on 2026-10-19. PD-19 and PRE-00 are complete; PRE-00 acceptance and its evidence are recorded in the work log.
 
 ## Task-wide closeout
 
