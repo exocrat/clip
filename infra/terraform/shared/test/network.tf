@@ -198,7 +198,7 @@ resource "aws_db_instance" "shared" {
   auto_minor_version_upgrade = true
   multi_az                   = false
   publicly_accessible        = false
-  deletion_protection        = true
+  deletion_protection        = var.db_deletion_protection
   skip_final_snapshot        = var.db_skip_final_snapshot_on_delete
   final_snapshot_identifier  = var.db_skip_final_snapshot_on_delete ? null : var.db_final_snapshot_identifier
   apply_immediately          = false

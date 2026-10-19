@@ -112,6 +112,12 @@ variable "db_backup_retention_days" {
   }
 }
 
+variable "db_deletion_protection" {
+  description = "Keep RDS deletion protection enabled except in the separately approved teardown step."
+  type        = bool
+  default     = true
+}
+
 variable "db_skip_final_snapshot_on_delete" {
   description = "Whether approved teardown may delete RDS without a final snapshot; choose explicitly."
   type        = bool
