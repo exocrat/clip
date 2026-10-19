@@ -113,24 +113,45 @@ The privacy check launches a credential-free pytest child (15-second timeout) th
 
 ## Local API container image — PD-16 Step 4
 
-Run from the repository root with Docker Engine and BuildKit. The build context
-uses `apps/api/Dockerfile.dockerignore`, which keeps the lockfiles and API app
-source while excluding credentials, environment files, virtual environments,
-Git metadata, generated data, tests and unrelated repository files. Record
-`git rev-parse HEAD` and `git status --short` with the local check: it builds
-the current worktree, including uncommitted API changes. The later registry
-image must be rebuilt from the exact reviewed commit.
+Run from the repository root with Docker Engine. Record `git rev-parse HEAD`,
+`git status --short`, and the engine architecture with the local check: it
+builds the current worktree, including uncommitted API changes. The later
+registry image must be rebuilt from the exact reviewed commit.
 
-| Exact command | Inputs and effects | Success / cleanup |
-|---|---|---|
-| `sudo docker build --platform linux/amd64 --file apps/api/Dockerfile --tag clip-api:pd16-local .` | Requires `linux/amd64` build support and registry access for the pinned Python and uv base-image tags. Creates/replaces local image `clip-api:pd16-local`; it does not push an image or contact AWS. | Exit 0 creates the target-platform image. |
-| `sudo docker run --rm --detach --name clip-api-pd16-check --platform linux/amd64 --publish 127.0.0.1:8000:8000 clip-api:pd16-local` | Starts a disposable container, exposes port 8000 only on host loopback, and uses the Dockerfile health check. | Returns a container ID. Check `curl --fail http://127.0.0.1:8000/health` for HTTP 200 and `{"status":"ok"}`; then run `sudo docker stop clip-api-pd16-check`. `--rm` removes the stopped container. |
-| `sudo docker image rm clip-api:pd16-local` | Removes only the named local image after the check. | Exit 0 removes the local image; omit this if retaining it for review. |
+The current engine has only the legacy builder, which ignores the
+Dockerfile-specific ignore file and would send the repository's 1.7 GB context.
+The Dockerfile avoids BuildKit-only instructions, and this procedure stages an
+allowlisted context under `/tmp` containing only the two locked dependency
+files, API source, Dockerfile and its ignore file. The Docker build uses the
+host's native architecture and never contacts AWS:
 
-The current Docker host is ARM64 and its builder has no AMD64 execution support.
-Do not claim the build or health check passed there; run both commands on a
-compatible x86_64 Docker host and record the image revision and result before
-Step 4 can pass. The approved local procedure uses `sudo docker` on this host.
+```sh
+set -eu
+build_context=$(mktemp -d /tmp/clip-api-pd16.XXXXXX)
+trap 'sudo docker stop clip-api-pd16-check >/dev/null 2>&1 || true; rm -rf "$build_context"' EXIT
+mkdir -p "$build_context/apps/api"
+cp pyproject.toml uv.lock "$build_context/"
+cp -R apps/api/app "$build_context/apps/api/"
+cp apps/api/Dockerfile apps/api/Dockerfile.dockerignore "$build_context/"
+sudo docker build --file "$build_context/Dockerfile" --tag clip-api:pd16-local "$build_context"
+sudo docker run --rm --detach --name clip-api-pd16-check --publish 127.0.0.1:8000:8000 clip-api:pd16-local
+curl --retry 20 --retry-all-errors --retry-delay 1 --max-time 2 --fail http://127.0.0.1:8000/health
+attempt=0
+health=starting
+while [ "$attempt" -lt 40 ] && [ "$health" = starting ]; do
+  health=$(sudo docker inspect --format '{{.State.Health.Status}}' clip-api-pd16-check)
+  [ "$health" = healthy ] || [ "$health" = unhealthy ] || sleep 1
+  attempt=$((attempt + 1))
+done
+[ "$health" = healthy ]
+sudo docker stop clip-api-pd16-check
+sudo docker image rm clip-api:pd16-local
+```
+
+The native ARM64 check is sufficient for Step 4. Linux AMD64/macOS compatibility
+checks are deferred and can be revisited if an issue appears. Step 7 must still
+build and verify a `linux/amd64` image from the exact reviewed commit for the
+x86_64 ECS host. The approved local procedure uses `sudo docker` on this host.
 
 ## PD-09 Step 2 — schema-independent preview generator
 

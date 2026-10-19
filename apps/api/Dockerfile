@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1.7
-
 FROM python:3.14.8-slim-trixie AS build
 
 COPY --from=ghcr.io/astral-sh/uv:0.10.7 /uv /uvx /bin/
@@ -11,8 +9,7 @@ ENV UV_COMPILE_BYTECODE=1 \
 WORKDIR /app
 
 COPY pyproject.toml uv.lock ./
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --locked --no-dev --no-install-project
+RUN uv sync --locked --no-dev --no-install-project
 
 FROM python:3.14.8-slim-trixie AS runtime
 
