@@ -4,7 +4,7 @@
 
 **Origin:** PD-11 step 1.
 
-**Updated:** 2026-10-18, PD-11 steps 4–9 layout, compatibility and version/review workflow.
+**Updated:** 2026-10-19, PD-11 steps 4–9 layout, compatibility and version/review workflow; DL-00 Step 1 generator-boundary resolution.
 
 ## Question
 
@@ -106,3 +106,17 @@ semantic changes, regenerated outputs, real consumer checks, independent human
 peer approval and authorization of the exact merge. This records existing
 CONTRIBUTING/shared-contract gates without granting self-approval or accepting
 unimplemented domain behavior. Future source revisions update this same decision.
+
+## DL-00 Step 1 generator-boundary resolution — 2026-10-19
+
+The Step 1 inventory confirmed that typed Python source can express both explicit
+HTTP metadata and typed internal callables: the health route is the former and
+Identity's contact declarations are the latter. The current PD-11 generator is
+health-only and does not yet discover generic callables or emit domain public
+modules. Preserve the single typed Python source of truth and extend generation
+in DL-00 Step 11 to emit declaration-only domain `public.py` modules from the
+reviewed internal signatures. Only explicitly mapped HTTP operations enter
+OpenAPI and generated frontend types; internal calls never become routes by
+inference. No domain signatures are authorized by this resolution. This is the
+recommended implementation path selected under the user's instruction to
+resolve routine DL-00 choices autonomously; affected-owner review remains due.

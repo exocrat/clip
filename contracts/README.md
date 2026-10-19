@@ -23,6 +23,19 @@ published. Source models and shared core primitives have one authoritative
 owner. Domain contracts must also record authorization, errors, transaction,
 retry/duplicate and privacy semantics that schema types cannot prove.
 
+## DL-00 Step 1 inventory
+
+The [DL-00 inventory](dl00-inventory.md) records the existing core and contract
+types, HTTP operations, domain source state, generated outputs, database
+ownership schemas and frontend presentation surfaces before domain signatures
+are drafted. The current generator handles only the explicit health route; the
+typed Python source format can declare internal callables, but generation of
+domain `public.py` modules is not implemented yet. The [source/generation
+decision](../docs/decisions/contract-source-and-generation.md) records the
+resolution: preserve one typed Python source and extend generation in DL-00
+Step 11, while only explicitly mapped HTTP operations enter OpenAPI and web
+types.
+
 Identity now carries the explicitly required step 8 internal contact declarations;
 the other three sources remain docstring-only. No domain HTTP operations or
 generated public modules are registered:
