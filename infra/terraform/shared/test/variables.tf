@@ -1,6 +1,6 @@
 # Cloud-changing phases stay disabled unless a reviewed operation selects one.
 variable "deployment_phase" {
-  description = "Set to base for shared infrastructure or service for the later ECS service/probe plan; disabled creates no AWS resources."
+  description = "Set to base for shared infrastructure or service for the later ECS API/login-setup/probe tasks; disabled creates no AWS resources."
   type        = string
   default     = "disabled"
 
@@ -136,14 +136,31 @@ variable "db_master_username" {
 }
 
 variable "db_master_password" {
-  description = "Sensitive write-only password supplied only through a protected Terraform input for the approved base plan/apply; never commit or log it."
+  description = "Sensitive write-only password supplied for the base create or intentional rotation; omit for the service phase. Never commit or log it."
   type        = string
   sensitive   = true
   ephemeral   = true
+  default     = null
+  nullable    = true
 }
 
 variable "db_master_password_version" {
   description = "Increment only when the write-only database password is intentionally rotated."
+  type        = number
+  default     = 1
+}
+
+variable "db_probe_password" {
+  description = "Sensitive single-line write-only password for the dedicated PostgreSQL probe login; supply only for the service phase and never commit or log it."
+  type        = string
+  sensitive   = true
+  ephemeral   = true
+  default     = null
+  nullable    = true
+}
+
+variable "db_probe_password_version" {
+  description = "Increment only when the write-only probe password is intentionally rotated."
   type        = number
   default     = 1
 }
@@ -167,5 +184,17 @@ variable "api_image_uri" {
   validation {
     condition     = var.api_image_uri == null || can(regex("@sha256:[0-9a-f]{64}$", var.api_image_uri))
     error_message = "api_image_uri must use an immutable sha256 digest when supplied."
+  }
+}
+
+variable "postgres_probe_image_uri" {
+  description = "Reviewed immutable PostgreSQL client image URI including a sha256 digest; required for the service phase."
+  type        = string
+  default     = null
+  nullable    = true
+
+  validation {
+    condition     = var.postgres_probe_image_uri == null || can(regex("@sha256:[0-9a-f]{64}$", var.postgres_probe_image_uri))
+    error_message = "postgres_probe_image_uri must use an immutable sha256 digest when supplied."
   }
 }

@@ -32,6 +32,22 @@ resource "aws_cloudwatch_log_group" "api" {
   tags = { Name = "${local.prefix}-logs" }
 }
 
+# The RDS master credential is write-only in Terraform and stored as a
+# SecureString only so the later, narrowly scoped setup task can create the
+# separate probe login. Omission of key_id selects the AWS-managed SSM key.
+resource "aws_ssm_parameter" "db_master_password" {
+  count = local.base_enabled ? 1 : 0
+
+  name             = local.db_master_password_parameter_name
+  description      = "PD-16 RDS master credential for one-time probe-login setup."
+  type             = "SecureString"
+  tier             = "Standard"
+  value_wo         = var.db_master_password
+  value_wo_version = var.db_master_password_version
+
+  tags = local.common_tags
+}
+
 resource "aws_ecs_cluster" "shared" {
   count = local.base_enabled ? 1 : 0
 
@@ -145,6 +161,102 @@ resource "aws_iam_role" "api_task" {
   })
 
   tags = { Name = "${local.prefix}-api-task" }
+}
+
+# Database task execution roles receive only log access in the base plan.
+# The service phase later adds exact-parameter access to the appropriate role.
+resource "aws_iam_role" "db_role_setup_execution" {
+  count = local.base_enabled ? 1 : 0
+
+  name = "${local.prefix}-db-setup-execution"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect    = "Allow"
+      Action    = "sts:AssumeRole"
+      Principal = { Service = "ecs-tasks.amazonaws.com" }
+    }]
+  })
+
+  tags = { Name = "${local.prefix}-db-setup-execution" }
+}
+
+resource "aws_iam_role_policy" "db_role_setup_execution_logs" {
+  count = local.base_enabled ? 1 : 0
+
+  name = "${local.prefix}-db-setup-logs"
+  role = aws_iam_role.db_role_setup_execution[0].id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["logs:CreateLogStream", "logs:PutLogEvents"]
+      Resource = "${aws_cloudwatch_log_group.api[0].arn}:*"
+    }]
+  })
+}
+
+resource "aws_iam_role" "db_role_setup_task" {
+  count = local.base_enabled ? 1 : 0
+
+  name = "${local.prefix}-db-setup-task"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect    = "Allow"
+      Action    = "sts:AssumeRole"
+      Principal = { Service = "ecs-tasks.amazonaws.com" }
+    }]
+  })
+
+  tags = { Name = "${local.prefix}-db-setup-task" }
+}
+
+resource "aws_iam_role" "db_probe_execution" {
+  count = local.base_enabled ? 1 : 0
+
+  name = "${local.prefix}-db-probe-execution"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect    = "Allow"
+      Action    = "sts:AssumeRole"
+      Principal = { Service = "ecs-tasks.amazonaws.com" }
+    }]
+  })
+
+  tags = { Name = "${local.prefix}-db-probe-execution" }
+}
+
+resource "aws_iam_role_policy" "db_probe_execution_logs" {
+  count = local.base_enabled ? 1 : 0
+
+  name = "${local.prefix}-db-probe-logs"
+  role = aws_iam_role.db_probe_execution[0].id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["logs:CreateLogStream", "logs:PutLogEvents"]
+      Resource = "${aws_cloudwatch_log_group.api[0].arn}:*"
+    }]
+  })
+}
+
+resource "aws_iam_role" "db_probe_task" {
+  count = local.base_enabled ? 1 : 0
+
+  name = "${local.prefix}-db-probe-task"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect    = "Allow"
+      Action    = "sts:AssumeRole"
+      Principal = { Service = "ecs-tasks.amazonaws.com" }
+    }]
+  })
+
+  tags = { Name = "${local.prefix}-db-probe-task" }
 }
 
 # One fixed EC2 host registers into ECS, runs in the active private subnet,
