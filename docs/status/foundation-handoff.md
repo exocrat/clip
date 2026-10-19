@@ -1,9 +1,13 @@
 # Foundation handoff — PD-19
 
 **Status:** The local foundation audit and handoff are committed as `5993851`
-on `task/pd17-19-foundation-handoff`. PD-19 Steps 1–7 are user-verified;
-Steps 8–9 are recorded for combined review. PRE-00 is not yet accepted: the
-independent review and separately authorized merge to `main` remain required.
+on `task/pd17-19-foundation-handoff`. PR #8 merged source head `18c966e` into
+`main` at `2cd83e7`; its hosted Foundation quality gates passed for head
+`18c966e` against base `68d9da9` ([run 39323851584](https://github.com/exocrat/clip/actions/runs/39323851584)).
+The user confirms all work before PRE-00 is complete. GitHub records no submitted
+review on PR #8; that closeout confirmation is user-reported, with no separate
+review artifact linked. The PRE-00 foundation gate audit is complete and awaits
+human verification; DL-00 remains gated until acceptance.
 
 This handoff describes the shared foundation and its limits. It does not claim
 marketplace features, domain contracts, final data readiness, or NFR results.
@@ -17,7 +21,7 @@ marketplace features, domain contracts, final data readiness, or NFR results.
 | Database | PostgreSQL 18.6, dbmate 2.36.0, four migrations through `20261018152702`, and a small catalogue seed. Local schema/lifecycle checks passed; domain services and contracts are absent. |
 | Contracts and boundaries | Health API contract generation/stale checks and API/web/domain-boundary checks are available. Domain operation contracts and the four domain `public.py` declarations belong to DL-00. |
 | Test/data tooling | Deterministic synthetic preview generators, versioned manifests/fingerprints, and human-review label format are available. The final schema-aware dataset and final fingerprint are DATA-READY work. |
-| CI and commands | PR-only local CI gates, pinned Black/pre-commit, and the root Make front door are documented. No hosted CI result for this handoff revision is claimed. |
+| CI and commands | PR-only CI gates, pinned Black/pre-commit, and the root Make front door are documented. Hosted Foundation quality gates passed for PR #8's handoff revision. |
 | Shared cloud foundation | Last read-only inventory (2026-10-19) showed RDS stopped, ECS desired/running/pending at zero, and no domain-specific resources. Existing resources are not authorization for a new operation. |
 
 ## Run the local foundation
@@ -65,9 +69,10 @@ loader exist.
   architecture, commands, and raw outputs are not present in this checkout;
   this handoff records the user's confirmation and does not claim an
   independently reproducible run here.
-- Hosted CI run [39280676449](https://github.com/exocrat/clip/actions/runs/39280676449)
-  passed for the earlier accepted PD-12 head `61dd7674`. It does not cover this
-  PD-17–19 handoff revision. No current PR CI status is claimed.
+- Hosted CI run [39323851584](https://github.com/exocrat/clip/actions/runs/39323851584)
+  passed for the PD-17–19 PR head `18c966e` against base `68d9da9`. The earlier
+  PD-12 run [39280676449](https://github.com/exocrat/clip/actions/runs/39280676449)
+  passed at head `61dd7674`; it is superseded for this handoff.
 - The last shared-cloud inventory is a read-only snapshot from 2026-10-19;
   refresh it before a later cloud operation. Follow the exact approvals and
   cleanup limits in the [PD-16 closeout](../evaluation/foundation/pd-16/closeout-review.md).
@@ -91,8 +96,8 @@ those decisions.
 
 ## Next task
 
-After PD-17–19 receive independent review and are merged to `main`, complete and
-human-accept PRE-00. Then start **DL-00, Steps 1–13**, defined in the
-[single domain task list](../tasks/domain-task-list.md).
+PD-17–19 are merged to `main`; the user confirms the preceding work is complete.
+Complete and human-accept the PRE-00 gate audit now. Then start **DL-00,
+Steps 1–13**, defined in the [single domain task list](../tasks/domain-task-list.md).
 Do not start domain feature implementation before PRE-00 and DL-00 pass their
 gates.
