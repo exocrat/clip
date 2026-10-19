@@ -1,8 +1,7 @@
-# Cloud-changing phases stay disabled unless a reviewed operation selects one.
+# A phase must be explicitly selected; omission must not select resource deletion.
 variable "deployment_phase" {
-  description = "Set to base for shared infrastructure or service for the later ECS API/login-setup/probe tasks; disabled creates no AWS resources."
+  description = "Required reviewed phase: base for shared infrastructure, service for ECS API/setup/probe tasks. Disabled requests absence of all phase-managed resources and can delete existing resources; it is not a safe default."
   type        = string
-  default     = "disabled"
 
   validation {
     condition     = contains(["disabled", "base", "service"], var.deployment_phase)

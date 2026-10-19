@@ -126,36 +126,55 @@ files, API source, Dockerfile and its ignore file. The Docker build uses the
 host's native architecture and never contacts AWS:
 
 ```sh
+(
 set -eu
 build_context=$(mktemp -d /tmp/clip-api-pd16.XXXXXX)
-trap 'sudo docker stop clip-api-pd16-check >/dev/null 2>&1 || true; rm -rf "$build_context"' EXIT
+image_tag="clip-api:pd16-local-${build_context##*.}"
+container_id=
+image_id=
+# Only clean artifacts created by this invocation; preserve its exit status.
+cleanup() {
+  result=$?
+  trap - EXIT
+  if [ -n "$container_id" ]; then
+    sudo docker rm --force "$container_id" >/dev/null 2>&1 || true
+  fi
+  if [ -n "$image_id" ]; then
+    sudo docker image rm "$image_tag" >/dev/null 2>&1 || true
+  fi
+  rm -rf "$build_context"
+  exit "$result"
+}
+trap cleanup EXIT
 mkdir -p "$build_context/apps/api"
 cp pyproject.toml uv.lock "$build_context/"
 cp -R apps/api/app "$build_context/apps/api/"
 cp apps/api/Dockerfile apps/api/Dockerfile.dockerignore "$build_context/"
-sudo docker build --file "$build_context/Dockerfile" --tag clip-api:pd16-local "$build_context"
-sudo docker run --rm --detach --name clip-api-pd16-check --publish 127.0.0.1:8000:8000 clip-api:pd16-local
+sudo docker build --file "$build_context/Dockerfile" --tag "$image_tag" "$build_context"
+image_id=$(sudo docker image inspect --format '{{.Id}}' "$image_tag")
+container_id=$(sudo docker create --publish 127.0.0.1:8000:8000 "$image_tag")
+sudo docker start "$container_id" >/dev/null
+# A port conflict fails this run; never stop another process to free the port.
 curl --retry 20 --retry-all-errors --retry-delay 1 --max-time 2 --fail http://127.0.0.1:8000/health
 attempt=0
 health=starting
 while [ "$attempt" -lt 40 ] && [ "$health" = starting ]; do
-  health=$(sudo docker inspect --format '{{.State.Health.Status}}' clip-api-pd16-check)
+  health=$(sudo docker inspect --format '{{.State.Health.Status}}' "$container_id")
   [ "$health" = healthy ] || [ "$health" = unhealthy ] || sleep 1
   attempt=$((attempt + 1))
 done
 [ "$health" = healthy ]
-sudo docker stop clip-api-pd16-check
-sudo docker image rm clip-api:pd16-local
+)
 ```
 
-The native ARM64 check is sufficient for Step 4. Linux AMD64/macOS compatibility
-checks are deferred and can be revisited if an issue appears. Step 7 must still
+The native ARM64 check is sufficient for Step 4. Native Linux AMD64/macOS setup and database compatibility
+checks remain pending under PD-08/PD-13 and are required before PRE-00 acceptance. Step 7 must still
 build and verify a `linux/amd64` image from the exact reviewed commit for the
 x86_64 ECS host. The approved local procedure uses `sudo docker` on this host.
 
 PD-16's ECS scale-to-zero and RDS stop/start procedures are documented in the
 [shared test Terraform runbook](../../infra/terraform/shared/test/README.md#ecs-capacity-lifecycle).
-They require separate reviewed cloud operations and are not part of this local
+The [target-specific RDS stop/resume plan](shared-test-rds-operations.md) supplies explicit profile, instance, waiter and status templates. These require separate reviewed cloud operations and are not part of this local
 image build or `make check`.
 
 ## PD-09 Step 2 — schema-independent preview generator

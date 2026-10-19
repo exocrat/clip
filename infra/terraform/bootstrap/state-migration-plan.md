@@ -5,7 +5,7 @@
 ## Exact source and destination
 
 - Source configuration: `infra/terraform/bootstrap/`, default workspace, local state `terraform.tfstate`.
-- Protected backup: `/tmp/clip-pd15-state-backup.bpPBCw/bootstrap.tfstate` (directory mode `0700`, file mode `0600`). The current local state matches this backup byte-for-byte.
+- Protected backup: `/tmp/clip-pd15-state-backup.bpPBCw/bootstrap.tfstate` (directory mode `0700`, file mode `0600`). Before migration, local state matched this backup byte-for-byte. After migration the matching local file is `terraform.tfstate.backup`; `terraform.tfstate` is a zero-byte placeholder (see execution result).
 - Destination: S3 bucket `clip-tfstate-335523638354-ap-south-1-20261019-0e51ca0`, key `bootstrap/terraform.tfstate`, Region `ap-south-1`, native lockfile `bootstrap/terraform.tfstate.tflock`.
 - Backend account guard: `335523638354`; workspace: `default`.
 

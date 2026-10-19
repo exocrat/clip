@@ -47,7 +47,7 @@ See the [command registry](../../docs/environment/commands.md) for effects and r
 
 ## Local container image (PD-16 Step 4)
 
-The [PD-16 image commands](../../docs/environment/commands.md#local-api-container-image--pd-16-step-4) build the API for the local Docker host's native architecture from the repository root, start it on loopback for a health check, and stop/remove the local container. The Dockerfile uses the locked runtime dependencies, runs as a non-root user with production-safe settings, and includes only the API application source. Record the host architecture, current worktree revision, and dirty state with the local check; Linux AMD64/macOS compatibility checks are deferred and can be revisited if an issue appears. The later ECR image must be rebuilt for `linux/amd64` from the exact reviewed commit because the ECS host is x86_64.
+The [PD-16 image commands](../../docs/environment/commands.md#local-api-container-image--pd-16-step-4) build the API for the local Docker host's native architecture from the repository root, start it on loopback for a health check, and stop/remove the local container. The Dockerfile uses the locked runtime dependencies, runs as a non-root user with production-safe settings, and includes only the API application source. Record the host architecture, current worktree revision, and dirty state with the local check; Native Linux AMD64/macOS setup and database compatibility checks remain pending under PD-08/PD-13 before PRE-00 acceptance; this local container check does not waive them. The later ECR image must be rebuilt for `linux/amd64` from the exact reviewed commit because the ECS host is x86_64.
 
 ## Shared conventions (PD-06 step 3)
 
