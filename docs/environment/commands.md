@@ -183,6 +183,12 @@ PD-16's ECS scale-to-zero and RDS stop/start procedures are documented in the
 The [target-specific RDS stop/resume plan](shared-test-rds-operations.md) supplies explicit profile, instance, waiter and status templates. These require separate reviewed cloud operations and are not part of this local
 image build or `make check`.
 
+## Native AMD64 API-image validation — PD-16 Step 7 local check
+
+The [native validation evidence](../evaluation/foundation/pd-16/native-amd64-image-validation.md) records the exact clean source SHA, allowlisted `git archive` inputs, `DOCKER_BUILDKIT=0 docker build --platform linux/amd64` command, platform/non-root/runtime check and loopback HTTP/Docker-health checks. That run used Docker directly because the contributor already had local socket access; it did not require sudo or emulation. The archive excludes ignored/untracked files as well as all credentials, Git metadata and dependency caches.
+
+Unlike the temporary Step 4 smoke image above, this successfully validated image is deliberately retained under its commit-derived local tag for later handoff. Remove only the owned smoke container and temporary context after recording the outcome; do not overwrite an existing tag or prune unrelated images. Public image/package downloads can occur. Building and retaining a local image does not authorize Git publication, ECR upload, deployment or a cloud action; the local image ID is not proof of a remote registry manifest digest. Follow the separate exact-upload approval before publishing.
+
 ## PD-09 Step 2 — schema-independent preview generator
 
 From the repository root, run

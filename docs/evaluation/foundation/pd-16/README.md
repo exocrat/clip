@@ -2,6 +2,10 @@
 
 PR #7 local review corrections: [deadline tests, real lock failure check and manual ECR cleanup resolution](review-corrections.md). This evidence covers the tested correction worktree; Suraj verified the result and approved its commit. Publication and current hosted/independent review remain pending.
 
+## Current native AMD64 validation — 2026-10-19
+
+Built and validated the API image from clean local commit `68d6179db03dcf983278b290d22a939af625bba1` on a native Linux AMD64 engine. Image `clip-api:pd16-amd64-68d6179db03d` reports `linux/amd64`; HTTP `/health` returned 200 with `{"status":"ok"}` and Docker health became healthy. The local image is retained; test container/context were removed. [Exact build/check provenance, commands, local image ID and logs](native-amd64-image-validation.md). This resolves the target-image build/health blocker only. ECR upload, live service/SSM/SQL/lifecycle verification, current hosted/peer acceptance and full PD-16/PRE-00 acceptance remain pending. Git commits stay local until the user-selected publication point.
+
 ## Recorded outcomes through `cc04a23`
 
 This index preserves non-secret summaries from the [work log](../../../status/work-log.md) and [proposal](../../../environment/shared-test-foundation-proposal.md). It does not independently rerun those checks. Raw plans/state/credential files must not be committed.
@@ -16,7 +20,7 @@ This index preserves non-secret summaries from the [work log](../../../status/wo
 | AMD64 legacy attempt | Clean source `37f1d3d5c380e26eac5bb86499e888bdf4adbfd6`, credential-free staged context. ARM64 legacy builder first failed at `uv sync` with `exec format error`; temporary QEMU attempt segfaulted while downloading `pydantic-core`. |
 | AMD64 BuildKit attempt | Same clean source; temporary Buildx 0.37.2 / BuildKit 0.33.1 reached `uv sync` and reported an empty PEP 508 entry in the dev group. Staged manifest hash matched source and TOML parsing passed. Root cause is unresolved; neither package incompatibility nor emulation-only failure is proved. |
 
-No AMD64 image/upload, service deployment, SQL probe or lifecycle verification is recorded. Original logs/contexts were retained under `/tmp/pd16-api-amd64-37f1d3d*`; their continuing availability is not assumed. Exact raw command invocations/exit statuses not retained in canonical Markdown cannot be reconstructed as verified evidence. Temporary builders, binfmt handler, helper images and plugin were recorded removed. See [bootstrap migration evidence](../../../../infra/terraform/bootstrap/state-migration-plan.md) separately.
+At that historical checkpoint, no AMD64 image/upload, service deployment, SQL probe or lifecycle verification had been recorded. Original logs/contexts were retained under `/tmp/pd16-api-amd64-37f1d3d*`; their continuing availability is not assumed. Exact raw command invocations/exit statuses not retained in canonical Markdown cannot be reconstructed as verified evidence. Temporary builders, binfmt handler, helper images and plugin were recorded removed. See [bootstrap migration evidence](../../../../infra/terraform/bootstrap/state-migration-plan.md) separately.
 
 ## Native AMD64 developer handoff
 

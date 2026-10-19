@@ -3,3 +3,4 @@
 docs/evaluation/foundation/pd-13/**/*.log -whitespace
 docs/evaluation/foundation/pd-13/*.log -whitespace
 docs/evaluation/foundation/pd-13/**/*.patch -whitespace
+docs/evaluation/foundation/pd-16/amd64-68d6179/build.log -whitespace
