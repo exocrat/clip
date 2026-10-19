@@ -1,0 +1,20 @@
+{
+  "checked_at_utc": "2026-10-19T17:52:56.903923+00:00",
+  "source_commit": "2a60333",
+  "checks": {
+    "one_service_steady_one_running_zero_pending": true,
+    "api_running_healthy_approved_digest": true,
+    "setup_probe_both_stopped_exit_zero": true,
+    "real_sql_and_privilege_results_previously_human_verified": true,
+    "real_http_success_and_session_close_evidence_present": true,
+    "host_ssm_online": true,
+    "original_rds_available_private_encrypted_protected": true
+  },
+  "passed": true,
+  "elapsed_seconds": 7.39,
+  "method": "Fresh read-only control-plane readiness checks plus existing human-verified real HTTP/SQL smoke evidence; no new HTTP/SQL execution.",
+  "new_tasks_sessions_load_or_configuration_changes": false,
+  "window_expires_utc": "2026-10-19T19:17:08+00:00",
+  "nfr_domain_or_performance_acceptance": false,
+  "human_verification_pending": true
+}

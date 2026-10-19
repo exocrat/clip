@@ -1,6 +1,8 @@
 # PD-16 test RDS stop and resume plan
 
-**Status:** User authorized the exact stop; AWS confirmed `stopped` with matching resource ID on 2026-10-19 12:52:26 UTC. The current contributor volunteered as operator and selected stopping RDS while retaining an easy restart. Preflight verified non-root caller/account, private/encrypted/protected DB with one-day retention, zero running/pending ECS tasks and zero ASG hosts. The installed CLI rejected the nonexistent stopped waiter; bounded read-only status polling confirmed completion without repeating stop. Resume has not run and needs its separate action approval. Personal name/contact and exact holding deadline are not yet recorded; do not infer them from an IAM profile. Existing cleanup review date: 2026-10-23.
+**Current status — 2026-10-19 18:23:35 UTC:** RDS is stopped after the authorized live setup/probe run. ECS tasks and ASG desired/hosts are zero; original EC2 host terminated through managed scaling. [Current shutdown evidence](../evaluation/foundation/pd-16/compute-stop-result.json). DB data, credentials and images retained. No automatic scheduled shutdown was installed; separate restart/enable-plan approval still required.
+
+**Historical initial-stop status:** User authorized the exact stop; AWS confirmed `stopped` with matching resource ID on 2026-10-19 12:52:26 UTC. The current contributor volunteered as operator and selected stopping RDS while retaining an easy restart. Preflight verified non-root caller/account, private/encrypted/protected DB with one-day retention, zero running/pending ECS tasks and zero ASG hosts. The installed CLI rejected the nonexistent stopped waiter; bounded read-only status polling confirmed completion without repeating stop. Resume has not run and needs its separate action approval. Personal name/contact and exact holding deadline are not yet recorded; do not infer them from an IAM profile. Existing cleanup review date: 2026-10-23.
 
 ## Target and boundary
 

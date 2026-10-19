@@ -4,7 +4,15 @@
 
 PR #7 local review corrections: [deadline tests, real lock failure check and manual ECR cleanup resolution](review-corrections.md). This evidence covers the tested correction worktree; Suraj verified the result and approved its commit. Publication and current hosted/independent review remain pending.
 
-## Step 10 live verification — passed, human verification pending
+## Step 13 compute shutdown — confirmed, verification pending
+
+[Shutdown evidence](compute-stop-result.json): zero tasks/ASG hosts, original EC2 host terminated at 18:17:10 UTC; original RDS stopped at 18:23:35 UTC. Storage/images/network/backend retained; NAT/storage remain billable. [Approved plan](stop-plan-review.md). Step 12 cost review, Step 11 human result verification and remaining acceptance gates stay pending.
+
+## Step 11 readiness smoke — passed, human verification pending
+
+[Bounded smoke result](step11-smoke-result.json): fresh live status/health/digest, completed SQL-task statuses, SSM and private RDS readiness passed. Reuses verified Step 10 HTTP/SQL evidence; no new session/task/load or performance claim. Step 10 committed as `2a60333`; cost/lifecycle and task acceptance remain pending.
+
+## Step 10 live verification — human-verified
 
 [Revision-3 setup and revision-1 probe](database-retry-result.json) both exited 0 with expected safe logs. Role/ACL assertions, SELECT 1 and privilege checks passed. [SSM/API health](step10-health-result.json), [private network/log-stream checks](step10-network-result.json) and approved running digest/definition checks complete Step 10 execution. Web hosting deferred until target/access and approval. No domain/NFR acceptance; Step 11 and remaining PD-16 gates pending. RDS/one API host running; expiry 19:17:08 UTC unchanged.
 

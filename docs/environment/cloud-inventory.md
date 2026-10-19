@@ -149,3 +149,7 @@ User authorized RDS start and fixed setup/probe sequence. Original RDS now avail
 ### Step 10 successful database verification — 2026-10-19 17:51:23 UTC
 
 [Setup revision 3 and probe revision 1 passed](../evaluation/foundation/pd-16/database-retry-result.json); restricted `clip_test_probe` login and test DB ACL hardening now exist. Transaction-local logging checks/suppression succeeded without global parameter changes. Both one-shot tasks stopped; API/one host and RDS remain running. Initial revision-2 failure is historical. Web hosting needs a separately approved target/access; no domain/NFR acceptance. Window expires 19:17:08 UTC; no automatic shutdown.
+
+### Current compute status — 2026-10-19 18:24:12 UTC
+
+**Compute off:** API desired/running/pending 0, cluster tasks 0, ASG desired/hosts 0; original host terminated 18:17:10 UTC. Original RDS resource `db-PYRRZJPVKPGHIXDAHUWATXGH7A` verified stopped **18:23:35 UTC**. [Shutdown evidence](../evaluation/foundation/pd-16/compute-stop-result.json). Supersedes preceding running snapshots. DB storage, ECR images, task definitions, network and state retained; NAT/storage/backups/logs remain billable. Resume needs separate RDS-start and fresh service-enable-plan approvals. Cleanup review date 2026-10-23 and unresolved exact idle-deadline/contact gates remain unchanged; RDS may auto-restart after seven stopped days.

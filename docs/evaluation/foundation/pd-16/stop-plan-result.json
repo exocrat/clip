@@ -1,0 +1,55 @@
+{
+  "caller_arn": "arn:aws:iam::335523638354:user/adityalaxmi1",
+  "account": "335523638354",
+  "region": "ap-south-1",
+  "backend_bucket": "clip-tfstate-335523638354-ap-south-1-20261019-0e51ca0",
+  "backend_key": "shared/test/terraform.tfstate",
+  "terraform_version": "1.15.9",
+  "directory": "/tmp/clip-pd16-stop-plan-ch56ou4b",
+  "plan_path": "/tmp/clip-pd16-stop-plan-ch56ou4b/service.tfplan",
+  "plan_sha256": "07fb248e2f0fe130782e0d1c60dfc151b2f6578c9ebfbc15239fea1c82277df5",
+  "inputs_sha256": "593d210c0c9957d615324fdbcf85ed980f00ecb5563c2ad5415d8e93533d8663",
+  "exit_code": 2,
+  "changes": [
+    {
+      "address": "aws_ecs_service.api[0]",
+      "actions": [
+        "update"
+      ]
+    }
+  ],
+  "expected_scope_only": true,
+  "probe_absent_from_saved_and_rendered_plan": true,
+  "master_absent_from_saved_and_rendered_plan": true,
+  "master_ssm_parameter_version": 1,
+  "master_write_only_version": 1,
+  "probe_write_only_version": 1,
+  "state_serial_before": 7,
+  "elapsed_seconds": 19.85,
+  "applied": false,
+  "source_fingerprints": {
+    ".terraform-version": "1fa24391fa6d464fe0dc5aaf9b8bba3c0c3871e1123a15cc61d3e6ead6afa835",
+    "docs/environment/pd16-stop-plan-inputs.json": "593d210c0c9957d615324fdbcf85ed980f00ecb5563c2ad5415d8e93533d8663",
+    "infra/terraform/shared/test/base.tf": "fb70162dacfc900e9bcf1d9bc54fc2baba26bae17720f7287989de8f661d75bf",
+    "infra/terraform/shared/test/locals.tf": "cc8f9d37c6cc7ea324c1096e3fa3010d5e6b09b6c28dc40083a6de0e60c1d977",
+    "infra/terraform/shared/test/network.tf": "cc22c15bb83d0ef3cff78db5059f52e26c42a3fc4fa1ff01351b4f885dc9b008",
+    "infra/terraform/shared/test/outputs.tf": "b252fcac10aae837f8525b9ba11db2ba188ec1ff5db4bf2e31c1d23ff9faf4ce",
+    "infra/terraform/shared/test/service.tf": "fdaf611d0909bb8c8ff115b5034dc978c407c15f99964b94e7d9cf17c5039536",
+    "infra/terraform/shared/test/variables.tf": "f382a6a45f28aeda6afcfa093d781abceccb54dc75f5728a91aa1886e3593dcc",
+    "infra/terraform/shared/test/versions.tf": "85378f9c60b449e27a7d8fe68661c2d359fd088f620d34c541177abe76ddb332",
+    "infra/terraform/shared/test/.terraform.lock.hcl": "8e943f65218efc74b64233304fcea1a642c1c394452dcc1a4c0e138a20d78b5d",
+    "infra/terraform/shared/test/scripts/probe-db.sh": "93792cd721574a2ede36efd67ef7dbd9f6c38f43e9186dbc60644967532120c4",
+    "infra/terraform/shared/test/scripts/setup-db-role.sh": "e6e020f709042e8fa754e6634f7a96803269a06f4fab89de8e57a8fad7489aaa"
+  },
+  "checked_at_utc": "2026-10-19T17:56:30.405765+00:00",
+  "human_apply_approval_pending": true,
+  "lock_absent_verified": true,
+  "errored": false,
+  "reviewed_attribute_changes": {
+    "desired_count": [
+      1,
+      0
+    ]
+  },
+  "credentials_retrieved_into_memory_only": true
+}
