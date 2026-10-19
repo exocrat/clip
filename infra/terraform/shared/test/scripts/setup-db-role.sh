@@ -5,6 +5,17 @@
 # SQL text; diagnostics are suppressed so logs contain only safe status lines.
 set +x
 
+# Fail within the approved smoke-check window, including lock waits. GNU
+# timeout bounds the complete psql session (60 seconds plus 5 to force exit);
+# connection and SQL limits fail sooner. Never inherit unlimited caller values.
+export PGCONNECT_TIMEOUT=10
+export PGOPTIONS='-c statement_timeout=30000 -c lock_timeout=30000'
+
+if ! command -v timeout >/dev/null 2>&1; then
+  printf '%s\n' 'database probe login setup failed; required timeout tool unavailable'
+  exit 1
+fi
+
 if [ -z "${PGPASSWORD:-}" ] || [ -z "${PROBE_PASSWORD:-}" ]; then
   printf '%s\n' 'database probe login setup failed; inspect task status without exposing credentials'
   exit 1
@@ -91,9 +102,9 @@ END
 $verify$;
 COMMIT;
 SQL
-} | psql --no-psqlrc --quiet --set=ON_ERROR_STOP=1 --set=dbname="$PGDATABASE" --host="$PGHOST" --port="$PGPORT" --username="$PGUSER" --dbname="$PGDATABASE" -f - >/dev/null 2>&1; then
+} | timeout --signal=TERM --kill-after=5s 60s psql --no-psqlrc --quiet --set=ON_ERROR_STOP=1 --set=dbname="$PGDATABASE" --host="$PGHOST" --port="$PGPORT" --username="$PGUSER" --dbname="$PGDATABASE" -f - >/dev/null 2>&1; then
   printf '%s\n' 'database probe login setup passed'
 else
-  printf '%s\n' 'database probe login setup failed; inspect task status without exposing credentials'
+  printf '%s\n' 'database probe login setup failed or timed out; inspect task status without exposing credentials'
   exit 1
 fi

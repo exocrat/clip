@@ -1,5 +1,7 @@
 # PD-16 evidence and AMD64 handoff
 
+PR #7 local review corrections: [deadline tests, real lock failure check and manual ECR cleanup resolution](review-corrections.md). This evidence covers the tested correction worktree; Suraj verified the result and approved its commit. Publication and current hosted/independent review remain pending.
+
 ## Recorded outcomes through `cc04a23`
 
 This index preserves non-secret summaries from the [work log](../../../status/work-log.md) and [proposal](../../../environment/shared-test-foundation-proposal.md). It does not independently rerun those checks. Raw plans/state/credential files must not be committed.

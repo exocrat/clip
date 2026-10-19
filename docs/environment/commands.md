@@ -111,6 +111,12 @@ Security checks include request-ID spoofing and credential-free entry-point chil
 
 The privacy check launches a credential-free pytest child (15-second timeout) that intentionally fails; the parent passes only when the failure report is correctly redacted. See [fixture usage and snapshot limits](../../tests/fixtures/core/README.md). Fixtures do not establish real provider/domain integration or cloud/NFR acceptance.
 
+## PD-16 database-task deadlines
+
+The fixed ECS task definitions embed `infra/terraform/shared/test/scripts/setup-db-role.sh` and `probe-db.sh`. Their pinned Linux PostgreSQL client image must contain GNU `timeout`. Each script sets `PGCONNECT_TIMEOUT=10` and `PGOPTIONS='-c statement_timeout=30000 -c lock_timeout=30000'`, then runs its single psql process with `timeout --signal=TERM --kill-after=5s 60s`. Total client execution stops within 60 seconds plus up to 5 seconds for forced termination; this excludes ECS scheduling. Missing tools, failed SQL and timeouts exit nonzero with safe messages. No raw client diagnostics or credentials are emitted. Inspect before retrying; a timeout does not establish whether earlier work committed.
+
+Local regression command: `uv run --locked pytest tests/architecture/test_db_task_timeouts.py -q -W error`. Controlled client stand-ins exercise success, private-error suppression, a stuck process that ignores TERM, caller timeout overrides and a missing timeout tool. A real GNU timeout uses shortened test deadlines. No database/cloud access occurs; the check also runs in the root test suite. See the [runbook](../../infra/terraform/shared/test/README.md#database-task-deadlines) and [approved decision](../decisions/database-task-deadlines-and-manual-image-cleanup.md).
+
 ## Local API container image — PD-16 Step 4
 
 Run from the repository root with Docker Engine. Record `git rev-parse HEAD`,

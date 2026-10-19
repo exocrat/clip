@@ -4,13 +4,23 @@
 # the task log should expose status, never connection details or credentials.
 set +x
 
+# Bound connection, database work and total psql runtime even when a caller
+# supplies unlimited libpq settings. The final 5 seconds allow forced shutdown.
+export PGCONNECT_TIMEOUT=10
+export PGOPTIONS='-c statement_timeout=30000 -c lock_timeout=30000'
+
+if ! command -v timeout >/dev/null 2>&1; then
+  printf '%s\n' 'PostgreSQL probe failed; required timeout tool unavailable'
+  exit 1
+fi
+
 if [ -z "${PGPASSWORD:-}" ]; then
   printf '%s\n' 'PostgreSQL probe failed; inspect task status without exposing credentials'
   exit 1
 fi
 
-result="$(psql --no-psqlrc --quiet --tuples-only --no-align --set=ON_ERROR_STOP=1 --host="$PGHOST" --port="$PGPORT" --username="$PGUSER" --dbname="$PGDATABASE" --command="SELECT 1 WHERE current_user = 'clip_test_probe' AND has_database_privilege(current_user, current_database(), 'CONNECT') AND NOT has_database_privilege(current_user, current_database(), 'CREATE') AND NOT has_database_privilege(current_user, current_database(), 'TEMPORARY') AND NOT has_schema_privilege(current_user, 'public', 'CREATE')" 2>/dev/null)" || {
-  printf '%s\n' 'PostgreSQL probe failed; inspect task status without exposing credentials'
+result="$(timeout --signal=TERM --kill-after=5s 60s psql --no-psqlrc --quiet --tuples-only --no-align --set=ON_ERROR_STOP=1 --host="$PGHOST" --port="$PGPORT" --username="$PGUSER" --dbname="$PGDATABASE" --command="SELECT 1 WHERE current_user = 'clip_test_probe' AND has_database_privilege(current_user, current_database(), 'CONNECT') AND NOT has_database_privilege(current_user, current_database(), 'CREATE') AND NOT has_database_privilege(current_user, current_database(), 'TEMPORARY') AND NOT has_schema_privilege(current_user, 'public', 'CREATE')" 2>/dev/null)" || {
+  printf '%s\n' 'PostgreSQL probe failed or timed out; inspect task status without exposing credentials'
   exit 1
 }
 

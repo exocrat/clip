@@ -34,6 +34,7 @@ The root [README](../README.md) describes the project. Agents start from [AGENTS
 - [PD-16 evidence and native AMD64 handoff](evaluation/foundation/pd-16/README.md)
 - [PD-16 RDS stop/resume operation plan](environment/shared-test-rds-operations.md)
 - [PD-16 private PostgreSQL probe-login decision](decisions/private-postgresql-probe-login.md)
+- [Database-task deadlines and manual image cleanup](decisions/database-task-deadlines-and-manual-image-cleanup.md)
 - [Development workstation record](environment/development-workstation.md)
 - [Evidence/measurement manifest index](evaluation/README.md)
 - [Accepted optional-scheduling change](decisions/optional-work-scheduling.md)
