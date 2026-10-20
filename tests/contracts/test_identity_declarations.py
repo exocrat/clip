@@ -1,93 +1,102 @@
-"""Check internal Identity declarations without contact values or a provider."""
+"""Verify Identity's reviewed private contact declarations and safe outputs."""
 
 import ast
-import asyncio
-import importlib.util
 import inspect
 import json
 from pathlib import Path
-from uuid import UUID
 
 import pytest
 
-from app.core.identifiers import UserId, new_id
+from app.core.auth import CallerContext
+from app.core.identifiers import UserId
+from contracts.source import identity
+from contracts.source.types import (
+    NotificationRecipient,
+    SelectedOwnContacts,
+    ShareableContactOptions,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
-SPEC = importlib.util.spec_from_file_location(
-    "clip_identity_contract_source", ROOT / "contracts/source/identity.py"
-)
-identity = importlib.util.module_from_spec(SPEC)
-SPEC.loader.exec_module(identity)
 
 
 def test_required_contact_type_shapes():
-    """Preserve required names/nullable semantics using only field metadata."""
-    assert identity.UserId is UserId is UUID
-    assert set(identity.ShareableContactOptions.model_fields) == {
+    """Retain owner IDs/availability only and hide private values in repr."""
+    assert identity.UserId is UserId
+    assert set(ShareableContactOptions.model_fields) == {
         "user_id",
         "has_email",
         "has_phone",
         "has_upi_id",
     }
-    for name, field in identity.ShareableContactOptions.model_fields.items():
-        assert field.annotation is (UUID if name == "user_id" else bool)
-        assert field.is_required()
-    fields = identity.SelectedOwnContacts.model_fields
-    assert set(fields) == {"email", "phone", "upi_id"}
-    for field in fields.values():
-        assert field.annotation == str | None
-        assert field.is_required()
-        assert field.repr is False
+    assert all(
+        field.is_required() for field in ShareableContactOptions.model_fields.values()
+    )
+    for model in (SelectedOwnContacts,):
+        fields = model.model_fields
+        assert set(fields) == {"email", "phone", "upi_id"}
+        for field in fields.values():
+            assert field.annotation == str | None
+            assert field.is_required()
+            assert field.repr is False
+    assert NotificationRecipient.model_fields["email"].repr is False
 
 
-def test_required_signatures_remain_internal():
-    """Keep the two specified async call signatures without guessing actor inputs."""
+def test_identity_internal_signatures_use_trusted_actor_context():
+    """Bind the two contact operations and recipient resolution to server context."""
     options = inspect.signature(identity.get_shareable_contact_options)
     selected = inspect.signature(identity.get_selected_own_contacts)
-    assert list(options.parameters) == ["user_id"]
-    assert list(selected.parameters) == ["user_id", "fields"]
-    assert options.parameters["user_id"].annotation is UserId
-    assert selected.parameters["user_id"].annotation is UserId
-    assert selected.parameters["fields"].annotation == set[str]
-    assert options.return_annotation is identity.ShareableContactOptions
-    assert selected.return_annotation is identity.SelectedOwnContacts
-
-
-@pytest.mark.parametrize("selected", [False, True])
-def test_declaration_calls_never_return_fake_success(selected):
-    """Accidental calls fail before any data access, with synthetic IDs only."""
-    coroutine = (
-        identity.get_selected_own_contacts(new_id(), set())
-        if selected
-        else identity.get_shareable_contact_options(new_id())
+    recipient = inspect.signature(identity.resolve_notification_recipient)
+    assert list(options.parameters) == ["caller", "conversation_id"]
+    assert options.parameters["caller"].annotation is CallerContext
+    assert selected.parameters["caller"].annotation is CallerContext
+    assert list(selected.parameters) == ["caller", "conversation_id", "fields"]
+    assert selected.parameters["fields"].annotation == frozenset[identity.ContactField]
+    assert (
+        recipient.parameters["context"].annotation is identity.NotificationWorkerContext
     )
-    with pytest.raises(NotImplementedError, match="declaration-only"):
-        asyncio.run(coroutine)
+    assert list(recipient.parameters) == ["context", "recipient_id"]
+    assert options.return_annotation is ShareableContactOptions
+    assert selected.return_annotation is SelectedOwnContacts
+    assert recipient.return_annotation == NotificationRecipient | None
 
 
-def test_source_contains_only_required_declarations():
-    """Functions contain no executable provider/DB behavior beyond explicit refusal."""
+def test_every_identity_function_is_declaration_only():
+    """No Identity declaration reaches a provider, database or fake success."""
     tree = ast.parse((ROOT / "contracts/source/identity.py").read_text())
     functions = [node for node in tree.body if isinstance(node, ast.AsyncFunctionDef)]
-    assert len(functions) == 2
+    assert len(functions) == 4
     for node in functions:
         assert not node.decorator_list
         assert len(node.body) == 2
         assert isinstance(node.body[0], ast.Expr) and ast.get_docstring(node)
         assert isinstance(node.body[1], ast.Raise)
-    assert not (ROOT / "apps/api/app/domains/identity/public.py").exists()
+        assert isinstance(node.body[1].exc, ast.Call)
+        assert isinstance(node.body[1].exc.func, ast.Name)
+        assert node.body[1].exc.func.id == "NotImplementedError"
 
 
-def test_private_contacts_are_absent_from_http_artifacts():
-    """Internal declaration names do not enter health OpenAPI/TypeScript outputs."""
+def test_internal_identity_contact_types_are_not_published_implicitly():
+    """Only the explicitly mapped preparation response enters the web contract."""
     schema = json.loads((ROOT / "contracts/generated/openapi.json").read_text())
-    assert set(schema["paths"]) == {"/health"}
-    assert set(schema["components"]["schemas"]) == {"HealthResponse"}
-    types = (ROOT / "contracts/generated/types.gen.ts").read_text()
-    for name in (
-        "SelectedOwnContacts",
-        "ShareableContactOptions",
-        "get_selected_own_contacts",
-        "get_shareable_contact_options",
-    ):
-        assert name not in types
+    schemas = schema["components"]["schemas"]
+    assert "ShareableContactOptions" not in schemas
+    assert "NotificationRecipient" not in schemas
+    assert "SelectedOwnContacts" in schemas
+    assert "identity_get_selected_own_contacts" not in str(schema)
+    operations = [
+        operation
+        for path in schema["paths"].values()
+        for operation in path.values()
+        if isinstance(operation, dict) and "operationId" in operation
+    ]
+    assert "identity_create_microsoft_session" in {
+        operation["operationId"] for operation in operations
+    }
+
+
+@pytest.mark.parametrize("domain", ["identity", "listings", "search", "conversations"])
+def test_generated_public_module_is_present(domain):
+    """Generation materializes importable declaration modules for each owner."""
+    path = ROOT / f"apps/api/app/domains/{domain}/public.py"
+    assert path.is_file()
+    assert "Generated declaration-only" in path.read_text().splitlines()[0]

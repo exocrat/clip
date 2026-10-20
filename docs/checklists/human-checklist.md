@@ -50,7 +50,7 @@ You may inspect evidence, but the agent must summarize what makes it acceptable 
 - [ ] Review `make check` and current hosted **CI / Foundation quality gates** evidence, including run URL and PR head/base revisions. Missing/skipped/cancelled/failed required checks do not pass.
 - [ ] Follow [the approved manual fallback](../../CONTRIBUTING.md#approved-manual-fallback). It preserves PR-only merging, independent human/affected-owner approval and separate exact-revision merge authorization, but cannot technically prevent bypass.
 - [ ] Recheck the exact current revision before authorizing merge; require renewed checks/review after relevant changes. Do not treat local checks or AI findings as hosted success or independent human approval.
-- [ ] Hosting changes retain separate approval. Checklist coverage does not accept unrun checks; record open checks under their original task/step IDs. The user confirmed the previously pending PD-08/09/12/13/15 gates complete on 2026-10-19; PD-19 and PRE-00 remain open as recorded in the work log.
+- [ ] Hosting changes retain separate approval. Checklist coverage does not accept unrun checks; record open checks under their original task/step IDs. The user confirmed the previously pending PD-08/09/12/13/15 gates complete on 2026-10-19. PD-19 and PRE-00 are complete; PRE-00 acceptance and its evidence are recorded in the work log.
 
 ## Task-wide closeout
 
@@ -84,6 +84,7 @@ Use the task-specific acceptance checks in `docs/tasks/pre-domain-task-list.md`;
 | PD-18 | Both current checklists map to every task and actionable evidence, with valid links, exact commands, checkpoint rules, and source/version metadata. |
 | PD-19 | Full task/check audit, current revision, accurate evidence/blockers and usable foundation handoff; no required unresolved gate counted as passed. |
 | PRE-00 | All required checks/reviews, human acceptance, accepted merged revision and handoff before any domain feature work starts. |
+| DL-00 | Affected domain owners reviewed the shared contracts; generated declarations match the editable source and contain no behavior; consumer-double type-check and registered checks pass; independent review and exact-revision merge remain separate gates; real integrations and cleanup implementation approval stay pending where recorded. |
 
 ## Decisions and separate approvals
 

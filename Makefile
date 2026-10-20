@@ -4,7 +4,7 @@
 .PHONY: help setup install-hooks start-api start-web preview-web start-db stop-db \
 	migrate migration-status seed data-generate data-validate data-load \
 	test test-python test-data test-web format format-python format-check \
-	check-python-format contracts-generate contracts-check check \
+	check-python-format contracts-generate contracts-check contracts-double-check check \
 	terraform-format terraform-format-check terraform-validate terraform-check
 
 help:
@@ -16,7 +16,7 @@ help:
 	  'data-generate: RUN_NAME=... SEED=... USERS=... LISTINGS=... (all required)' \
 	  'data-validate: RUN_NAME=...; data-load: unavailable until domain readiness' \
 	  'test / test-python / test-data / test-web: registered test/check commands' \
-	  'format / format-check / contracts-generate / contracts-check / check' \
+	  'format / format-check / contracts-generate / contracts-check / contracts-double-check / check' \
 	  'terraform-format / terraform-format-check / terraform-validate / terraform-check'
 
 # Setup does not start services or install a Git hook as a hidden side effect.
@@ -95,6 +95,9 @@ contracts-generate:
 
 contracts-check:
 	uv run --locked python scripts/generate_contracts.py check
+
+contracts-double-check:
+	uv run --locked mypy --no-incremental apps/api/tests/domains/search/doubles/listings.py
 
 # This exact mapping is checked by the shared CI parity guard.
 check:

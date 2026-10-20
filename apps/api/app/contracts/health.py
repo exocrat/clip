@@ -1,4 +1,4 @@
-# Generated from contracts/source/health.py; format 1. Do not edit.
+# Generated from contracts/source/health.py; format 2. Do not edit.
 """Canonical process-health contract; declarations only, no handler or service."""
 
 from typing import Literal, TypedDict

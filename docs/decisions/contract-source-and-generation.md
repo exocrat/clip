@@ -4,7 +4,7 @@
 
 **Origin:** PD-11 step 1.
 
-**Updated:** 2026-10-18, PD-11 steps 4–9 layout, compatibility and version/review workflow.
+**Updated:** 2026-10-19, PD-11 steps 4–9 layout, compatibility and version/review workflow; DL-00 Step 1 generator-boundary resolution.
 
 ## Question
 
@@ -52,12 +52,14 @@ to the same reviewed types without using implementation code as the only source.
 
 ## Implications
 
-- PD-11 documents and tests generation using the existing health surface.
-  Required Identity contact declarations are the explicit step 8 exception;
-  other domain operations remain empty until DL-00 review.
+- PD-11 initially documented and tested generation using the existing health
+  surface, with the required Identity contact declarations as its step 8
+  exception. DL-00 Step 11 now adds the owner-reviewed HTTP mappings and internal
+  callables for all four domains.
 - Step 4 records paths/commands in [the contracts guide](../../contracts/README.md):
   `contracts/generated/openapi.json` and `contracts/generated/types.gen.ts`, driven
-  by `scripts/generate_contracts.py` (project format version 1). The selected
+  by `scripts/generate_contracts.py` (initial project format version 1, extended
+  to format 2 in DL-00 Step 11). The selected
   TypeScript generator pin is `@hey-api/openapi-ts@0.99.0` with only the
   TypeScript plugin; one root TypeScript `5.9.3` serves the generator and web.
   A generated runtime health module lives in `apps/api/app/contracts/health.py`.
@@ -73,7 +75,8 @@ to the same reviewed types without using implementation code as the only source.
 ## Approver
 
 Current integration contributor, explicit approval of the PD-11 step 1 proposal.
-Affected-owner/independent review and exact-revision merge approval remain
+Affected domain owners' documentation review is user-reported complete
+(2026-10-20); independent review and exact-revision merge approval remain
 required under CONTRIBUTING.md.
 
 ## Supersedes
@@ -96,13 +99,56 @@ actual TypeScript 7 compiler-API compatibility. Successful generation and full
 frontend checks now verify the shared 5.9.3 setup. Regeneration is deterministic;
 stale-output/runtime-parity regression coverage is implemented in step 6.
 
-## Version/review workflow — PD-11 step 9
+## Version/review workflow — PD-11 step 9 and DL-00 Step 11
 
 The current HTTP version remains 0.1.0, declared once in canonical health source
-and consumed by generated runtime metadata/OpenAPI. Generator format 1 and source
+and consumed by generated runtime metadata/OpenAPI. Generator format 2 and source
 Git revision are recorded separately. The [contract guide](../../contracts/README.md#version-and-change-review)
 requires compatibility classification, affected-owner decisions before shared
 semantic changes, regenerated outputs, real consumer checks, independent human
 peer approval and authorization of the exact merge. This records existing
 CONTRIBUTING/shared-contract gates without granting self-approval or accepting
 unimplemented domain behavior. Future source revisions update this same decision.
+
+## DL-00 Step 1 generator-boundary resolution — 2026-10-19
+
+The Step 1 inventory confirmed that typed Python source can express both explicit
+HTTP metadata and typed internal callables: the health route is the former and
+Identity's contact declarations are the latter. At the time of that inventory,
+the PD-11 generator was health-only and did not discover generic callables or
+emit domain public modules. Preserve the single typed Python source of truth
+and extend generation in DL-00 Step 11 to emit declaration-only domain
+`public.py` modules from the reviewed internal signatures. Only explicitly
+mapped HTTP operations enter OpenAPI and generated frontend types; internal
+calls never become routes by inference. No domain signatures were authorized
+by this Step 1 resolution. The affected owners later reviewed the contract
+documents, as the user reported on 2026-10-20.
+
+## DL-00 Step 11 typed-interface implementation
+
+The canonical source now consists of `contracts/source/types.py` plus explicit
+HTTP mappings and internal callables in each domain source module. Generation
+emits shared runtime models and four declaration-only `public.py` modules. It
+uses FastAPI only in an offline contract app to build OpenAPI, then the existing
+Hey API TypeScript-only plugin. Generated HTTP declarations are not installed
+into the live app; only the implemented health route is served. Each domain
+callable raises `NotImplementedError` until its owner implements it.
+
+The Search-owned Listings test adapter implements the generated
+`ListingsPublic` protocol and uses PD-10 synthetic IDs/clocks/scenarios. Its
+type check uses pinned Mypy 2.0.0 because Step 11 requires a Python 3.14-aware
+checker; the selected check is limited to the consumer double. Runtime/provider,
+database and cleanup behavior remain with domain implementation tasks.
+
+## DL-00 Steps 12–13 audit — 2026-10-20
+
+The cross-domain audit reconciled the Search/Conversations call descriptions
+and preserved the approved acyclic graph. Shared contract timestamps now use
+the PD-06 parser/formatter, reject naive and over-precise inputs, and serialize
+as UTC with six fractional digits. Every paise field is constrained to
+nonnegative integer multiples of 100, matching the approved whole-rupee price
+rule. Regeneration updates the generated Python models and OpenAPI constraints;
+regression tests cover these rules. The final local aggregate and exact results
+are recorded in the [DL-00 work log](../status/work-log.md).
+These checks establish contract and repository quality only; no domain provider
+or FR/NFR behavior is claimed as implemented.

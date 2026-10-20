@@ -1,65 +1,184 @@
-"""Generate/check registered declaration artifacts without importing the real API.
+"""Generate/check typed public interfaces and explicit HTTP contract artifacts.
 
-Only the reviewed health HTTP mapping is registered in PD-11 step 5. Domain
-public declarations are a later DL-00 output. Local Node tooling is required;
-there is no network-install fallback or provider/database configuration read.
+The contract-only FastAPI app is used only to render OpenAPI. Its generated
+endpoints refuse invocation and are never installed in the running API.
 """
 
 import argparse
-import importlib.util
+import importlib
+import inspect
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import sys
 import tempfile
 
-from fastapi import FastAPI
+from fastapi import Body, FastAPI, Path as ApiPath, Query
+from pydantic import BaseModel
+from starlette.responses import Response
 
 ROOT = Path(__file__).resolve().parents[1]
-FORMAT_VERSION = 1
+FORMAT_VERSION = 2
 TS_VERSION = "0.99.0"
 COMPILER_VERSION = "5.9.3"
 TS_PACKAGE = "@hey-api/openapi-ts"
+DOMAINS = ("identity", "listings", "search", "conversations")
+PUBLIC_OUTPUTS = tuple(f"apps/api/app/domains/{domain}/public.py" for domain in DOMAINS)
 OUTPUTS = (
     "apps/api/app/contracts/health.py",
+    "apps/api/app/contracts/domain_types.py",
+    *PUBLIC_OUTPUTS,
     "contracts/generated/openapi.json",
     "contracts/generated/types.gen.ts",
 )
+ERROR_STATUSES = (400, 401, 403, 404, 409, 422, 429, 500, 503)
 
 
-def health_source():
-    """Load reviewed declarations only, never app.main or domain implementations."""
-    source = ROOT / "contracts/source/health.py"
-    spec = importlib.util.spec_from_file_location("clip_health_source", source)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+def load_sources():
+    """Import only editable declaration modules, with the app core on the path."""
+    for path in (str(ROOT), str(ROOT / "apps/api")):
+        if path not in sys.path:
+            sys.path.insert(0, path)
+    health = importlib.import_module("contracts.source.health")
+    domains = {
+        name: importlib.import_module(f"contracts.source.{name}") for name in DOMAINS
+    }
+    return health, domains
 
 
-def declared_schema(declaration):
-    """Build schema from explicit HTTP metadata on an unserved contract-only app."""
+def _path_names(path):
+    """Return the declared dynamic path fields in their URL order."""
+    return re.findall(r"{([a-zA-Z_][a-zA-Z0-9_]*)}", path)
+
+
+def _endpoint(operation):
+    """Build a refusing synthetic callable with the declared FastAPI signature."""
+    parameters = []
+    for name, annotation in operation.get("path_parameters", {}).items():
+        parameters.append(
+            inspect.Parameter(
+                name,
+                inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                default=ApiPath(...),
+                annotation=annotation,
+            )
+        )
+    query = operation.get("query")
+    if query is not None:
+        parameters.append(
+            inspect.Parameter(
+                "query",
+                inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                default=Query(),
+                annotation=query,
+            )
+        )
+    body = operation.get("body")
+    if body is not None:
+        parameters.append(
+            inspect.Parameter(
+                "payload",
+                inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                default=Body(...),
+                annotation=body,
+            )
+        )
+
+    async def declaration_only(**kwargs):
+        """Reject accidental use; declarations never return fake success."""
+        del kwargs
+        raise NotImplementedError("Contract declaration has no implementation")
+
+    declaration_only.__name__ = operation["operation_id"]
+    declaration_only.__qualname__ = declaration_only.__name__
+    declaration_only.__signature__ = inspect.Signature(parameters)
+    return declaration_only
+
+
+def _validate_operation(domain, operation, seen):
+    """Reject ambiguous or implicit HTTP mappings before emitting a schema."""
+    method = operation.get("method")
+    path = operation.get("path")
+    operation_id = operation.get("operation_id")
+    if (
+        method not in {"GET", "POST", "PUT", "PATCH", "DELETE"}
+        or not isinstance(path, str)
+        or not isinstance(operation_id, str)
+        or not re.fullmatch(r"[a-z][a-z0-9_]+", operation_id)
+    ):
+        raise ValueError("Invalid explicit HTTP operation metadata")
+    key = (method, path)
+    if key in seen or operation_id in seen.values():
+        raise ValueError("Duplicate HTTP operation mapping")
+    seen[key] = operation_id
+    path_fields = set(_path_names(path))
+    declared_path_fields = set(operation.get("path_parameters", {}))
+    if path_fields != declared_path_fields:
+        raise ValueError("Path fields and typed path parameters disagree")
+    if operation.get("status_code", 200) == 204 and operation.get("response"):
+        raise ValueError("HTTP 204 operation cannot declare a response body")
+    for name in ("body", "query", "response"):
+        value = operation.get(name)
+        if value is not None and name in ("body", "query"):
+            if not isinstance(value, type) or not issubclass(value, BaseModel):
+                raise ValueError("HTTP input must use an explicit Pydantic model")
+    if not domain:
+        raise ValueError("Domain tag is required")
+
+
+def declared_schema(health, domains):
+    """Build contract-only OpenAPI using FastAPI's own route/schema machinery."""
     app = FastAPI(
         title="CLIP API",
-        version=declaration.CONTRACT_VERSION,
+        version=health.CONTRACT_VERSION,
         docs_url=None,
         redoc_url=None,
         openapi_url=None,
     )
 
-    async def declaration_only():
-        """Reject accidental invocation: this is a schema declaration, not health."""
-        raise RuntimeError("Contract declaration has no implementation")
+    async def health_declaration():
+        """Refuse invocation: the real health handler is a separate API route."""
+        raise NotImplementedError("Contract declaration has no implementation")
 
-    app.get(**declaration.HEALTH_ROUTE)(declaration_only)
+    app.get(**health.HEALTH_ROUTE)(health_declaration)
+    shared_types = importlib.import_module("contracts.source.types")
+    seen = {("GET", health.HEALTH_ROUTE["path"]): health.HEALTH_ROUTE["operation_id"]}
+    for domain, module in domains.items():
+        for operation in module.HTTP_OPERATIONS:
+            _validate_operation(domain, operation, seen)
+            responses = {
+                status: {"model": shared_types.ErrorEnvelope}
+                for status in ERROR_STATUSES
+            }
+            for status, response in operation.get("responses", {}).items():
+                responses[status] = {"model": response} if response is not None else {}
+            status_code = operation.get("status_code", 200)
+            route_options = {}
+            if status_code == 204:
+                route_options["response_class"] = Response
+            app.add_api_route(
+                operation["path"],
+                _endpoint(operation),
+                methods=[operation["method"]],
+                name=operation["operation_id"],
+                operation_id=operation["operation_id"],
+                tags=[domain],
+                summary=operation.get("summary", operation["operation_id"]),
+                response_model=operation.get("response"),
+                status_code=status_code,
+                responses=responses,
+                **route_options,
+            )
     schema = app.openapi()
     schema["x-clip-generator-format"] = FORMAT_VERSION
     return schema
 
 
 def local_tool():
-    """Require the selected Node line and exact declared, locked, installed tool."""
+    """Require exact locally installed Node generator/compiler pins."""
     node = shutil.which("node")
     if not node:
         raise RuntimeError("Node 24 is required; follow the recorded toolchain setup")
@@ -89,16 +208,25 @@ def local_tool():
     return node, ROOT / "scripts/generate_types.mjs"
 
 
+def _generated_python(source, imports):
+    """Copy one canonical source while rewriting its type-only package imports."""
+    body = source.read_text()
+    for old, new in imports.items():
+        body = body.replace(old, new)
+    if "contracts.source.types" in body:
+        raise ValueError("Generated Python may not import editable source")
+    return body
+
+
 def render(work):
-    """Render all registered artifacts in temporary storage before writing any."""
-    declaration = health_source()
-    schema = declared_schema(declaration)
+    """Render every output in temporary space before the caller writes any file."""
+    health, domains = load_sources()
+    schema = declared_schema(health, domains)
     node, cli = local_tool()
     schema_path = work / "openapi.json"
     schema_path.write_text(json.dumps(schema, indent=2, sort_keys=True) + "\n")
     output_directory = work / "types"
     output_path = output_directory / "types.gen.ts"
-    # Clean child configuration prevents provider credentials/config inheritance.
     env = {
         "PATH": os.environ.get("PATH", ""),
         "HOME": str(work),
@@ -117,23 +245,39 @@ def render(work):
         raise RuntimeError(
             "Pinned TypeScript generation failed; inspect source/tool compatibility"
         )
-    header = f"# Generated from contracts/source/health.py; format {FORMAT_VERSION}. Do not edit.\n"
-    python = header + (ROOT / "contracts/source/health.py").read_text()
-    types = (
+    generated = {
+        "apps/api/app/contracts/health.py": (
+            f"# Generated from contracts/source/health.py; format {FORMAT_VERSION}. Do not edit.\n"
+            + (ROOT / "contracts/source/health.py").read_text()
+        ).encode(),
+        "apps/api/app/contracts/domain_types.py": (
+            f"# Generated from contracts/source/types.py; format {FORMAT_VERSION}. Do not edit.\n"
+            + _generated_python(
+                ROOT / "contracts/source/types.py",
+                {"contracts.source.types": "app.contracts.domain_types"},
+            )
+        ).encode(),
+    }
+    for domain in DOMAINS:
+        generated[PUBLIC_OUTPUTS[DOMAINS.index(domain)]] = (
+            f"# Generated declaration-only {domain} interface; format {FORMAT_VERSION}. Do not edit.\n"
+            + _generated_python(
+                ROOT / f"contracts/source/{domain}.py",
+                {"contracts.source.types": "app.contracts.domain_types"},
+            )
+        ).encode()
+    generated["contracts/generated/openapi.json"] = schema_path.read_bytes()
+    generated["contracts/generated/types.gen.ts"] = (
         f"// CLIP generator format {FORMAT_VERSION}; source: contracts/source/.\n"
         + output_path.read_text()
-    )
-    return dict(
-        zip(
-            OUTPUTS,
-            (python.encode(), schema_path.read_bytes(), types.encode()),
-            strict=True,
-        )
-    )
+    ).encode()
+    if set(generated) != set(OUTPUTS):
+        raise RuntimeError("Generated output registry mismatch")
+    return generated
 
 
 def main():
-    """Generate exact registered files, or compare without changing tracked output."""
+    """Generate exact registered files or compare without changing tracked output."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("mode", choices=("generate", "check"))
     mode = parser.parse_args().mode
@@ -157,9 +301,6 @@ def main():
                     print(f"Stale or missing: {relative}")
                 return 1
     except Exception:
-        # This CLI boundary intentionally sanitizes all source/tool exceptions,
-        # including SyntaxError, whose traceback would echo source values.
-        # Failure remains nonzero; never substitute generated success.
         print(
             "Contract generation failed: check reviewed source, Node 24 and pinned tools; run npm ci after lockfile updates.",
             file=sys.stderr,
