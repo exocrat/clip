@@ -24,7 +24,7 @@ How are structured offers revised/withdrawn, and how do they relate to selection
 Keeps the current offer unambiguous while preserving negotiations and avoiding an implied platform-verified transaction.
 
 ## Implications
-PD-08 adds cardinality/status/revision constraints after full schema review. DL-00/CN-02 must define exact API/concurrent-state/duplicate behavior consistent with these approved availability and selection rules. Withdrawal does not authorize Conversations to write Listings state. Retention/retirement follows the approved lifecycle decisions; crypto compatibility and real participant/selection integration remain explicit gates.
+PD-08 adds cardinality/status/revision constraints after full schema review. DL-00/CN-02 must define exact API/concurrent-state/duplicate behavior consistent with these approved availability and selection rules. Listings owns the availability-gated offer command and calls Conversations to persist offer records; Conversations never calls Listings. Withdrawal does not authorize Conversations to write Listings state. Retention/retirement follows the approved lifecycle decisions; crypto compatibility and real participant/selection integration remain explicit gates.
 
 ## Approver
 Mohit (C), explicit approval of the five-part offer-lifecycle proposal. The user later confirmed the PD-08 Conversations/Listings affected-owner gate complete on 2026-10-19; see the [work-log reconciliation](../status/work-log.md#resolved-integration-evidence). CN-02/LI-02 retain their implementation and concurrency checks.

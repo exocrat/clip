@@ -31,6 +31,23 @@ PD-11 step 3 checks representative import/table violations and reports analysis
 limits. DL-00 generates actual public declarations; domain tasks implement them.
 No business contract, composition exception or human ownership is invented here.
 
+### DL-00 application
+
+The user confirmed DL-00 must preserve the no-call-cycles rule. The selected
+contract direction is Search → Listings/Conversations, Listings →
+Conversations, and Conversations → Identity, with Listings/Search also using
+Identity's declared eligibility operations where needed. Conversations does
+not call back into either origin owner; origin owners validate their own state
+and invoke Conversations. Listings owns seller-selection writes. The detailed
+record owners, frontend mapping, and pending owner-review items are in the
+[DL-00 boundary record](../../contracts/domain-boundaries.md).
+
+Notification intents are owned and written by Conversations so their write is
+atomic with the originating conversation/message transaction. CN-03 delivery
+work remains assigned as recorded in the task list; recipient resolution uses
+Identity's separate public interface. This avoids assigning notification
+records to one owner and producer transactions to another.
+
 ## Approver
 
 Existing canonical ownership rules; integration contributor authorized step 2.

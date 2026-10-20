@@ -37,10 +37,10 @@ The [bounded foundation staging decision](../decisions/shared-foundation-depende
 |---|---|
 | PRE-00 | PD-19 plus every required foundation gate; reviewed merged handoff and human acceptance. Defined in pre-domain list. |
 | ID-READY | ID-01 step 12 reviewed/merged usable auth/capability/contact interfaces, schema/config/provider safety and local/API/UI checks. Later full consumer matrix is pending. |
-| LI-CORE | LI-01 step 11 reviewed/merged listing/owner/read/availability/selection interfaces and local tests. ID-READY is required before real auth/FK/migration integration is accepted; real images/discovery end-to-end completion is pending. |
+| LI-CORE | LI-01 step 11 reviewed/merged listing/owner/read/availability/selection and listing-offer-command interfaces with local tests against a reviewed Conversations double. ID-READY is required before real auth/FK/migration integration is accepted; real Conversations offer writes, images and discovery end-to-end completion remain pending their owning tasks. |
 | SE-CORE | SE-01 step 10 reviewed/merged functional search/browse/filter/sort/pagination, supported listing-data boundary and validated local workload tooling. Final cloud NFR results are pending. |
 | DATA-READY | SE-01 steps 2/4/9: final schema/config-aware generated/loaded data, >=5,000 users/>=1,000 listings, constraints/availability/search indexes and repeatable logical fingerprint, 20+ human-reviewed query labels. Image references validated before cloud runs; image-aware labels remain OPT-03's output. |
-| CN-CORE | CN-01 step 10 reviewed/merged private-message/E2EE/read-watermark/event interfaces and local/adversarial tests. Final notification write-path integration and cloud NFR-05 remain pending. |
+| CN-CORE | CN-01 step 10 reviewed/merged private-message/E2EE/read-watermark/event interfaces and local/adversarial tests. Final Conversations-owned notification producer integration and cloud NFR-05 remain pending. |
 | OPTIONAL-OK | For EACH selected optional task: human selection and approval of its bounded effort/cost/resources/test scope protecting required MVP, NFR checks, primary experiment, budget and final submission buffer. A previous optional selection does not select all options. |
 
 Milestone acceptance requires actual capabilities/checks, step verification, peer review and merged main revision/evidence. Task status stays in progress/blocked until remaining required steps pass. A missing/failed check or a required blocker cannot be counted as accepted readiness/full completion.

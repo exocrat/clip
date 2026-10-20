@@ -36,6 +36,11 @@ resolution: preserve one typed Python source and extend generation in DL-00
 Step 11, while only explicitly mapped HTTP operations enter OpenAPI and web
 types.
 
+The [domain ownership and call boundaries](domain-boundaries.md) record DL-00
+Step 3's authoritative record owners, frontend connections, and acyclic
+cross-domain call direction. Operation names, callable signatures and the
+reviewed retirement protocol are completed in later DL-00 steps.
+
 Identity now carries the explicitly required step 8 internal contact declarations;
 the other three sources remain docstring-only. No domain HTTP operations or
 generated public modules are registered:
