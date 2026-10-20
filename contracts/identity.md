@@ -1,9 +1,9 @@
 # Identity contract
 
-**Status:** DL-00 Step 5 draft. The affected-owner review and exact operation
-signatures remain Steps 9–10; generated declarations remain Step 11. This
-contract defines Identity's behavior and privacy boundary, not provider setup or
-implemented authentication.
+**Status:** DL-00 Step 9 operation details are in the [combined registry](combined.md).
+Affected-owner review remains Step 10 and generated declarations remain Step 11.
+This contract defines Identity's behavior and privacy boundary, not provider
+setup or implemented authentication.
 
 ## Scope and ownership
 

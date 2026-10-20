@@ -1,7 +1,7 @@
 # Listings contract
 
-**Status:** DL-00 Step 6 draft. Affected-owner review and exact per-operation
-types/signatures remain Steps 9–10; canonical typed source and generated
+**Status:** DL-00 Step 9 operation details are in the [combined registry](combined.md).
+Affected-owner review remains Step 10; canonical typed source and generated
 declarations remain Step 11. This is a contract, not an implementation or
 database migration.
 

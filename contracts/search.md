@@ -1,9 +1,9 @@
 # Search contract
 
-**Status:** DL-00 Step 7 draft. Per-operation Python/OpenAPI signatures and
-complete retry, failure, and test matrices are finalized in Step 9; affected
-owner review remains Step 10; typed source and generated declarations remain
-Step 11. No Search implementation or database migration is authorized here.
+**Status:** DL-00 Step 9 operation details are in the [combined registry](combined.md).
+Affected-owner review remains Step 10; typed source and generated declarations
+remain Step 11. No Search implementation or database migration is authorized
+here.
 
 ## Ownership and dependency boundary
 
@@ -178,11 +178,12 @@ automatic write retry is implied.
 
 - Step 10 affected-owner review must confirm the proposed public Wanted Request
   field set and the authenticated-only meaning of public marketplace reads.
-- Step 8/9 must freeze the exact request-origin conversation operation and
-  close/create concurrency result without adding a call cycle.
-- Step 9 must freeze callable import paths, HTTP-to-callable mappings, exact
-  request/response model names, operation-specific error/retry behavior, and
-  focused test cases.
+- Step 9 records the exact request-origin conversation operation and
+  close/create concurrency result in the [combined registry](combined.md);
+  affected owners review it in Step 10 without adding a call cycle.
+- Step 9 records callable import paths, HTTP-to-callable mappings, model names,
+  operation-specific error/retry behavior, and focused tests in the
+  [combined registry](combined.md); affected-owner review remains Step 10.
 - Step 10 must approve a concrete destructive retirement mechanism/order
   before any implementation can perform cleanup. This contract does not
   authorize such cleanup.

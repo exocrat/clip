@@ -1,11 +1,9 @@
 # Conversations contract
 
-**Status:** DL-00 Step 8 draft. Exact public/internal callable signatures,
-HTTP mappings, per-operation errors, retry and concurrency matrices, and
-focused test cases are completed in Step 9. Affected-owner review remains
-Step 10; typed source and generated declarations remain Step 11. This contract
-does not select an E2EE library/protocol, configure a provider, implement a
-worker, or authorize destructive cleanup.
+**Status:** DL-00 Step 9 operation details are in the [combined registry](combined.md).
+Affected-owner review remains Step 10; typed source and generated declarations
+remain Step 11. This contract does not select an E2EE library/protocol, configure
+a provider, implement a worker, or authorize destructive cleanup.
 
 ## Ownership and acyclic calls
 
@@ -144,9 +142,10 @@ Every participant write carries a client-generated UUID operation ID scoped
 to `(conversation_id, sender_id)` for retry deduplication. An identical retry
 returns the original entry/sequence; reuse with different intent returns a
 stable conflict. After retained content is purged, an operation ID remains
-reserved and retry cannot recreate the expired payload. Exact byte-equivalence
-and marker result details are frozen in Step 9 with owner review. Reads,
-polling, key lookup, acknowledgements and workers do not advance
+reserved and retry cannot recreate the expired payload. Step 9 records exact
+opaque-byte retry equality and a proposed 409 conflict after content purge in
+the [combined registry](combined.md); affected-owner review remains Step 10.
+Reads, polling, key lookup, acknowledgements and workers do not advance
 `last_activity_at`.
 
 ## Read acknowledgements and receipts
@@ -378,6 +377,7 @@ retention. Isolated stubs cannot establish real cross-domain acceptance.
   before cleanup implementation. No cleanup or cascade is authorized here.
 - CN-03 must settle lease duration, worker authentication/configuration,
   provider setup/idempotency limits and live-send approval in its own gates.
-- Step 9 freezes exact route/callable names, typed signatures, error/result
-  shapes, retry equivalence and operation-specific tests. NFR-05 requires the
-  real two-client path and CN-03 producer/delivery integration.
+- The [combined Step 9 registry](combined.md) records route/callable names,
+  typed signatures, result/error shapes, retry behavior, focused tests and
+  frontend connections. Step 10 owners review the proposals. NFR-05 requires
+  the real two-client path and CN-03 producer/delivery integration.

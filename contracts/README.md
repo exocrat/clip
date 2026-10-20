@@ -38,32 +38,36 @@ types.
 
 The [domain ownership and call boundaries](domain-boundaries.md) record DL-00
 Step 3's authoritative record owners, frontend connections, and acyclic
-cross-domain call direction. Operation names, callable signatures and the
-reviewed retirement protocol are completed in later DL-00 steps.
+cross-domain call direction. The
+[combined Step 9 operation registry](combined.md) maps HTTP operations,
+internal callables, and approved frontend surfaces;
+affected-owner review and unresolved proposals remain Step 10 gates.
 
 The [Identity contract](identity.md) is the Step 5 behavior/privacy draft. It
 binds the existing contact declarations to trusted actor and conversation
-authorization; Step 9 completes per-operation semantics and Step 11 updates the
-canonical typed source before generation.
+authorization; Step 9 records per-operation semantics in the combined registry,
+and Step 11 updates the canonical typed source before generation.
 
 The [Listings contract](listings.md) is the Step 6 data and operation-boundary
 draft. Listings owns availability/selection and gates listing-based offer
 mutations while Conversations owns offer records; Step 7 consumes its listing
-query boundary and Step 9 completes operation semantics.
+query boundary and Step 9 records operation semantics in the combined registry.
 
 The [Search contract](search.md) is the Step 7 discovery, Wanted Request,
-draft-match, and saved-list boundary. Listings remains the only owner of sale
+draft-match, and saved-list boundary; the combined registry records Step 9
+operation details. Listings remains the only owner of sale
 query/index data; the proposed public Wanted Request fields and authenticated
 marketplace visibility remain explicit Step 10 review items.
 
 The [Conversations contract](conversations.md) is the Step 8 thread, encrypted
 entry, read-state, offer, contact-share, notification-intent, and activity
-boundary. It preserves the acyclic origin-owner call direction; the crypto
-protocol and destructive cleanup order remain separate approval gates.
+boundary; the combined registry records Step 9 operations and page connections.
+It preserves the acyclic origin-owner call direction; the crypto protocol and
+destructive cleanup order remain separate approval gates.
 
-Identity now carries the explicitly required step 8 internal contact declarations;
-the other three sources remain docstring-only. No domain HTTP operations or
-generated public modules are registered:
+Identity now carries the explicitly required Step 8 internal contact
+declarations; the other three sources remain docstring-only. No domain HTTP
+operations or generated public modules are registered in canonical source yet:
 
 | Editable domain source | Later contract / implementation |
 |---|---|
