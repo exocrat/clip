@@ -3232,6 +3232,10 @@ export type ListingsQueryAvailableData = {
          */
         condition_code?: string | null;
         /**
+         * Negotiable
+         */
+        negotiable?: boolean | null;
+        /**
          * Min Price Paise
          */
         min_price_paise?: number | null;
@@ -3242,7 +3246,7 @@ export type ListingsQueryAvailableData = {
         /**
          * Sort
          */
-        sort?: 'newest' | 'price_asc' | 'price_desc';
+        sort?: 'created_desc' | 'price_asc' | 'price_desc';
         /**
          * Q
          */
@@ -3601,7 +3605,7 @@ export type ListingsStartConversationResponses = {
     /**
      * OK
      */
-    200: unknown;
+    200: ConversationStartResult;
     /**
      * Successful Response
      */

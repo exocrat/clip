@@ -18,6 +18,8 @@ The root [README](../README.md) describes the project. Agents start from [AGENTS
 - [Document 5 — Pre-domain task list](tasks/pre-domain-task-list.md)
 - [Single domain task list](tasks/domain-task-list.md)
 - [Frontend page inventory and collaboration map](architecture/frontend-collaboration.md)
+- [Human browser, mobile layout and camera verification](environment/browser-verification.md)
+- [Responsive UI and camera verification decision](decisions/responsive-ui-and-camera-verification.md)
 - [Initial repository bootstrap](tasks/bootstrap-task-list.md)
 - [Project phase/milestone/owner index](tasks/project-task-index.md)
 - [Final regression/cost/delivery tasks](tasks/final-closeout-task-list.md)

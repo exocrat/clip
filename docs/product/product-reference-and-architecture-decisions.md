@@ -129,7 +129,7 @@ The targets and measurement intents above were checked against the submitted PRD
 
 ## 5. Architecture baseline
 
-- **Frontend:** responsive React + TypeScript web client.
+- **Frontend:** responsive React + TypeScript web client across all domain surfaces. The [browser verification decision](../decisions/responsive-ui-and-camera-verification.md) makes desktop/phone human checks explicit and adds supported-phone camera/gallery selection to LI-02, retaining desktop file selection and existing image limits. This is a team clarification; the submitted PRD remains unchanged.
 - **API:** Python + FastAPI REST service.
 - **Authoritative state:** managed PostgreSQL for users, listings, wanted requests, conversations, offers, and related state.
 - **Search:** PostgreSQL native indexed full-text search for MVP.

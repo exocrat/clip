@@ -32,10 +32,11 @@ the complete resulting live state. Invalid pagination/filter/body inputs use
 ambiguous: follow only that operation's declared idempotency-key or stable-pair
 lookup path; never assume rollback or issue an unguarded retry.
 
-The HTTP operations below map to the same-named function in
-app.domains.<owner>.public; those functions are declarations only until
-Step 11. Internal callables are listed separately and never become HTTP or
-OpenAPI operations by inference. Every operation below has success,
+The HTTP operation IDs below are registered in each owner's `HTTP_OPERATIONS`
+declaration and generated into OpenAPI. They are not Python functions in the
+public module; route handlers are implementation work for the named domain
+task. Internal callables are separately declared Python functions and never
+become HTTP or OpenAPI operations by inference. Every operation below has success,
 unauthorized/forbidden, invalid, duplicate/retry and relevant partial-failure
 checks assigned to the named implementation task; isolated doubles do not
 count as real integration.
@@ -287,11 +288,12 @@ alone is not proof of authorization.
 
 ## HTTP, internal, and frontend connection map
 
-An HTTP operation ID maps to its same-named owner function under
-`app.domains.<owner>.public`; internal function names above are separate
-capabilities. Where HTTP enters an origin owner's boundary, that function then
-calls the downstream public interface as shown below. No browser operation
-calls another domain's private code, and the graph has no cycle:
+An HTTP operation ID identifies the route declared in its owner's
+`HTTP_OPERATIONS` registry. The eventual route handler belongs to that domain;
+internal function names above are separate callable capabilities. Where HTTP
+enters an origin owner's boundary, the handler calls the downstream public
+interface as shown below. No browser operation calls another domain's private
+code, and the graph has no cycle:
 
 ```text
 Search → Listings → Conversations → Identity

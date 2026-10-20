@@ -34,6 +34,8 @@ This checklist is an execution aid; canonical sources retain detailed requiremen
 
 ## Task-wide closeout
 
+- [ ] At each named UI checkpoint in the [domain task list](../tasks/domain-task-list.md#human-browser-checks-for-every-frontend-task), follow the [browser procedure](../environment/browser-verification.md): start services, give URL/actions/expected states, and wait for the human's desktop/phone observations and explicit verification. Repeat after meaningful visible increments; record browser/viewport/device, isolated versus real mode, and pending checks. LI-02 requires actual-phone camera/gallery and desktop file-selection checks; emulation alone cannot pass device behavior.
+
 - [ ] At task or milestone handoff, inspect the whole change against its acceptance conditions: changed files, task-specific tests/checks, generated outputs, documentation, evidence, privacy/secret handling, and current work-log status. Resolve or clearly record each failure/blocker.
 - [ ] Apply relevant checklist items during execution; perform the consolidated checklist review at task/milestone closeout rather than repeating unrelated items at each step. Keep action-specific safety and approval gates at the point of action.
 - [ ] Explain each new function or meaningful code unit in a docstring, comment, or nearby documentation, including purpose and relevant inputs/outputs, side effects, security assumptions, and limits.

@@ -5940,6 +5940,22 @@
           },
           {
             "in": "query",
+            "name": "negotiable",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Negotiable"
+            }
+          },
+          {
+            "in": "query",
             "name": "min_price_paise",
             "required": false,
             "schema": {
@@ -5979,9 +5995,9 @@
             "name": "sort",
             "required": false,
             "schema": {
-              "default": "newest",
+              "default": "created_desc",
               "enum": [
-                "newest",
+                "created_desc",
                 "price_asc",
                 "price_desc"
               ],
@@ -6653,6 +6669,13 @@
         },
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationStartResult"
+                }
+              }
+            },
             "description": "OK"
           },
           "201": {

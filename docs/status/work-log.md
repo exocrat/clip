@@ -2,7 +2,7 @@
 
 **Canonical path:** `docs/status/work-log.md`
 
-Read this status before work and reconcile it with the repository and active branch evidence. Keep each task's status row current after every step and human verification so the current checkpoint and execution/verification state are unambiguous. Use dated history entries for meaningful outcomes, decisions, check results, blockers, consequential human direction, and task/merge closeout. Related steps may share an entry when their outcomes belong together; routine “verified; proceed” acknowledgements and repeated navigation updates do not need separate entries. Record enough to resume and verify the work without repeating background or copying long command output. Keep check results and decisions concise, and link existing evidence where useful. New entries use exact UTC date and time; preserve the precision of historical timestamps and never infer missing times. Do not create a separate report just to duplicate the work log. Preserve useful prior facts and other contributors' entries. No implementation, cloud provisioning, PR approval, or test pass is complete until actual evidence supports it.
+Read this status before work and reconcile it with the repository and active branch evidence. Keep each task's status row current after every step and human verification so the current checkpoint and execution/verification state are unambiguous. Use dated history entries for meaningful outcomes, decisions, check results, blockers, consequential human direction, and task/merge closeout. Related steps may share an entry when their outcomes belong together; routine “verified; proceed” acknowledgements and repeated navigation updates do not need separate entries. Do not add history entries solely to record a commit, push, or the act of updating this work log; Git history is the evidence for publication. Record the substantive task outcome and its checks once, and record merge or acceptance only when it changes task status. Record enough to resume and verify the work without repeating background or copying long command output. Keep check results and decisions concise, and link existing evidence where useful. New entries use exact UTC date and time; preserve the precision of historical timestamps and never infer missing times. Do not create a separate report just to duplicate the work log. Preserve useful prior facts and other contributors' entries. No implementation, cloud provisioning, PR approval, or test pass is complete until actual evidence supports it.
 
 ## Human/role roster (populate during BOOT-00/PD-03)
 
@@ -79,6 +79,24 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | DATA-READY | not accepted | SE-01 steps 2/4/9 | — | pending |
 | CN-CORE | not accepted | CN-01 step 10 | — | pending |
 | OPTIONAL-OK | not approved | Each optional task's selection/priority plan | — | pending |
+
+## Listings preparation checkpoint
+
+Suraj (B) selected `domain/listings` for Listings work and related task-document
+updates. Suraj requested these preparation and contract corrections be
+published directly to main without a PR, with a separate branch for LI-01/LI-02.
+The current draft is prepared in a clean local main worktree. Affected-owner
+review remains pending for the frontend guidance and shared contract changes.
+LI-01/LI-02 implementation remains not started; no readiness milestone is
+accepted by this preparation.
+
+Current checkpoint: camera/gallery, responsive UI and explicit human browser
+guidance drafted; Suraj confirmed completing the Firefox Responsive Design
+Mode layout inspection. Actual-phone camera/gallery checks remain pending for
+LI-02. The public-interface contract audit found declaration mismatches and
+prepared corrections; affected-owner review and publication remain pending.
+The local foundation is available for further inspection. The Listings
+walkthrough remains in progress.
 
 ## Dated history entries
 
@@ -1340,6 +1358,54 @@ Reconciled Search and combined call documentation with the acyclic graph and enf
 
 ### DL-00 — Step 13 task-wide audit — 2026-10-20 05:17:32 UTC
 All declarations match source; the Listings double type-checks; the live API remains health-only. Updated traceability, decisions and checklists. `make check` passed: 421 Python, 63 data and 16 web tests; Black (71 files); boundaries (0 violations); 8 current artifacts; Mypy; web lint/type/build; 35 database-safety cases; PostgreSQL 18.6 checks; source-snapshot Gitleaks (not Git history). Sandbox blocked Black IPC once; rerun passed in the permitted context. Owner review is user-reported; independent review/exact merge and separate cleanup approval remain. No PR created or inspected.
+
+### Listings preparation — local foundation and frontend guidance — 2026-10-20 07:15:23 UTC
+
+Suraj (B) directed use of one `domain/listings` branch and requested explicit
+phone-camera/gallery support, responsive verification and frequent human browser
+checkpoints before LI-01. Created that branch from accepted source `f5576ef`;
+the aborted separate documentation-branch command made no branch change.
+Recorded the bounded shared-document writer above. Updated the domain task list
+without renumbering steps, both checklists, product clarification and docs index;
+added the linked browser procedure and decision. Documentation result
+verification and affected-owner review remain pending; no feature code or cloud
+change.
+
+Earlier local setup in this session reused Node 24.22.0/npm 11.19.1 and uv
+0.10.7, created the ignored Python 3.14.4 environment, and registered checksum-
+verified Compose 2.40.3. `make setup` passed. `make start-db`, `make seed` and
+`make migration-status` passed with four applied migrations and zero pending;
+read-only catalogue checks returned eight categories/four conditions.
+`make check` passed all 11 gates: 421 Python, 63 data and 16 web cases,
+Black 71 files, boundaries, eight current contract artifacts, scoped Mypy,
+web lint/types/build, 35 wrapper-safety cases, real PostgreSQL 18.6 migration/
+smoke checks and source-snapshot Gitleaks. These checks ran before this
+documentation-only edit. Preview generation/validation passed for
+`data/runs/suraj-local-preview-20261020-0700/` (3 users, 2 listing placeholders;
+no database load). API health and the web shell responded on loopback; actual
+human browser/device acceptance is pending. Existing source/feature behavior
+was not changed. No camera implementation or phone compatibility is claimed.
+
+Documentation checks passed: `git diff --check`, ten new/changed local Markdown
+links/anchors, and preservation of all 13 existing domain task numbered-step
+sequences. No application tests were rerun for this documentation-only change.
+
+### Listings preparation and contract alignment — 2026-10-20 08:43:14 UTC
+
+Suraj asked to include the preparation guidance with the Listings contract
+corrections and requested direct-to-main publication without a PR, followed by
+a separate LI implementation branch. Copied the previously drafted browser,
+camera/gallery, checklist and task-list guidance into a clean local main
+worktree; recorded Suraj's Firefox Responsive Design Mode inspection
+confirmation. Audited `public.py` against the Listings/Search/combined
+contracts. Updated `ListingQuery` to include the Search-owned `negotiable`
+filter and canonical `created_desc` sort, declared the `ConversationStartResult`
+body for both 201 and 200 conversation-start responses, and corrected the
+combined contract's description of HTTP operation IDs versus internal Python
+callables. Regenerated the eight registered contract artifacts; generated
+OpenAPI now includes the filter, sort values, and 200 response body. `git diff
+--check` passed. No application tests were run. Affected-owner review remains
+pending.
 
 ## Pending integration ledger
 

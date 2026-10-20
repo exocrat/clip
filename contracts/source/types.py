@@ -310,9 +310,10 @@ class ListingQuery(ContractModel):
     page_size: Literal[20, 50, 100] = 20
     category_code: str | None = None
     condition_code: str | None = None
+    negotiable: bool | None = None
     min_price_paise: int | None = Field(default=None, ge=0, multiple_of=100)
     max_price_paise: int | None = Field(default=None, ge=0, multiple_of=100)
-    sort: Literal["newest", "price_asc", "price_desc"] = "newest"
+    sort: Literal["created_desc", "price_asc", "price_desc"] = "created_desc"
     q: str | None = Field(default=None, max_length=120)
 
 
