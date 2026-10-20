@@ -84,6 +84,7 @@ Use the task-specific acceptance checks in `docs/tasks/pre-domain-task-list.md`;
 | PD-18 | Both current checklists map to every task and actionable evidence, with valid links, exact commands, checkpoint rules, and source/version metadata. |
 | PD-19 | Full task/check audit, current revision, accurate evidence/blockers and usable foundation handoff; no required unresolved gate counted as passed. |
 | PRE-00 | All required checks/reviews, human acceptance, accepted merged revision and handoff before any domain feature work starts. |
+| DL-00 | Affected domain owners reviewed the shared contracts; generated declarations match the editable source and contain no behavior; consumer-double type-check and registered checks pass; independent review and exact-revision merge remain separate gates; real integrations and cleanup implementation approval stay pending where recorded. |
 
 ## Decisions and separate approvals
 

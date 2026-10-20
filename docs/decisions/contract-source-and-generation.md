@@ -75,7 +75,8 @@ to the same reviewed types without using implementation code as the only source.
 ## Approver
 
 Current integration contributor, explicit approval of the PD-11 step 1 proposal.
-Affected-owner/independent review and exact-revision merge approval remain
+Affected domain owners' documentation review is user-reported complete
+(2026-10-20); independent review and exact-revision merge approval remain
 required under CONTRIBUTING.md.
 
 ## Supersedes
@@ -138,3 +139,16 @@ The Search-owned Listings test adapter implements the generated
 type check uses pinned Mypy 2.0.0 because Step 11 requires a Python 3.14-aware
 checker; the selected check is limited to the consumer double. Runtime/provider,
 database and cleanup behavior remain with domain implementation tasks.
+
+## DL-00 Steps 12–13 audit — 2026-10-20
+
+The cross-domain audit reconciled the Search/Conversations call descriptions
+and preserved the approved acyclic graph. Shared contract timestamps now use
+the PD-06 parser/formatter, reject naive and over-precise inputs, and serialize
+as UTC with six fractional digits. Every paise field is constrained to
+nonnegative integer multiples of 100, matching the approved whole-rupee price
+rule. Regeneration updates the generated Python models and OpenAPI constraints;
+regression tests cover these rules. The final local aggregate and exact results
+are recorded in the [DL-00 work log](../status/work-log.md).
+These checks establish contract and repository quality only; no domain provider
+or FR/NFR behavior is claimed as implemented.

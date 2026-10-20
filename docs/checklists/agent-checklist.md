@@ -66,7 +66,7 @@ This checklist is an execution aid; canonical sources retain detailed requiremen
 | PD-18 | Verify both checklists against every PD task, current command/task/checkpoint rules, exact paths, source/version metadata, and actionable evidence. |
 | PD-19 | Verify the full foundation audit and handoff against every required task/check, current revision, evidence, blocker and next action; do not pass required unresolved gates. |
 | PRE-00 | Verify every required foundation gate, human/affected-owner review, accepted merged revision and handoff before domain feature work starts. |
-| DL-00 | Four contracts/combined source agree; supported Search listing-data boundary, auth/contacts, read-watermarks/notification interfaces, private-data classifications and no call cycles. |
+| DL-00 | Four reviewed contracts and combined source agree; call graph is acyclic; all generated declarations are behavior-free/current; a consumer-owned Listings double type-checks; FR/NFR traceability and pending real integrations are explicit. |
 | ID-01/LI-01/SE-01/CN-01 | Explicit readiness PR/milestone distinct from full FR/NFR completion; assigned UI/core/fixtures and final dependent validations. |
 | LI-02/SE-02/CN-02/CN-03 | Full feature UI/API/failure/privacy checks; explicit provider/read-state/image/selection boundaries and actual live deployment when required. |
 | DATA-READY | Final schema/config-aware loader, >=5,000 users/>=1,000 listings, logical fingerprint/integrity and 20+ human-reviewed labeled queries. |
