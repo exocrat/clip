@@ -41,6 +41,11 @@ Step 3's authoritative record owners, frontend connections, and acyclic
 cross-domain call direction. Operation names, callable signatures and the
 reviewed retirement protocol are completed in later DL-00 steps.
 
+The [Identity contract](identity.md) is the Step 5 behavior/privacy draft. It
+binds the existing contact declarations to trusted actor and conversation
+authorization; Step 9 completes per-operation semantics and Step 11 updates the
+canonical typed source before generation.
+
 Identity now carries the explicitly required step 8 internal contact declarations;
 the other three sources remain docstring-only. No domain HTTP operations or
 generated public modules are registered:
