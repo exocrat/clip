@@ -75,6 +75,16 @@ envelope, and provide deterministic query order with a unique ID tie-breaker.
 The availability predicate is evaluated against the request-time clock, not a
 stale client flag or cache.
 
+Search's private save operation first uses a Listings-owned save-target check
+to confirm that the caller can currently discover the requested listing, then
+stores only its own `(user_id, listing_id)` reference. Search also uses an
+internal Listings-owned saved-summary resolver for IDs it has already read
+from that caller's own saved rows. The resolver returns the current approved
+summary for a non-retired listing even after seller unavailability or window
+expiry, and a content-free retired state after origin retirement. These are
+server-to-server capabilities, not public routes; Search never reads Listings
+tables and never supplies IDs outside the caller's saved page.
+
 ## Listing operations and authorization
 
 Logical operation names below identify capabilities. Step 9 records exact

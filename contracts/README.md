@@ -51,6 +51,11 @@ draft. Listings owns availability/selection and gates listing-based offer
 mutations while Conversations owns offer records; Step 7 consumes its listing
 query boundary and Step 9 completes operation semantics.
 
+The [Search contract](search.md) is the Step 7 discovery, Wanted Request,
+draft-match, and saved-list boundary. Listings remains the only owner of sale
+query/index data; the proposed public Wanted Request fields and authenticated
+marketplace visibility remain explicit Step 10 review items.
+
 Identity now carries the explicitly required step 8 internal contact declarations;
 the other three sources remain docstring-only. No domain HTTP operations or
 generated public modules are registered:
