@@ -1,9 +1,9 @@
 # Listings contract
 
-**Status:** DL-00 Step 9 operation details are in the [combined registry](combined.md).
-Affected-owner review remains Step 10; canonical typed source and generated
-declarations remain Step 11. This is a contract, not an implementation or
-database migration.
+**Status:** Step 10 domain-owner documentation review is reported approved by
+the user. Step 11 typed declarations are generated from this contract and the
+[combined registry](combined.md). Listings implementation and migrations remain
+with LI-01/LI-02.
 
 ## Scope and authoritative data
 
@@ -61,10 +61,9 @@ follow the same privacy rule. The detail response includes the computed
 `is_sensitive_purchase` flag and, when supplied, the seller's optional proof
 declaration with clear unverified wording. A summary may include the same
 computed flag for its badge. Owner-only management reads may also include the
-owner's own availability and selection state. Proposed selected-buyer
-visibility is limited to the listing owner and relevant conversation
-participants; affected-owner confirmation of this exact scope remains Step 10
-review and it is never public discovery data.
+owner's own availability and selection state. Selected-buyer visibility is
+limited to the listing owner and relevant conversation participants, as
+owner-reviewed in Step 10. It is never public discovery data.
 
 Listings owns an available-sale query over its own authoritative state
 and indexed fields. Search uses that interface for browse, text search and

@@ -56,6 +56,8 @@ jobs:
         run: uv run --locked python scripts/check.py boundaries
       - name: Check generated contracts
         run: uv run --locked python scripts/check.py contracts
+      - name: Type-check consumer contract doubles
+        run: uv run --locked python scripts/check.py contract-types
       - name: Check web lint, tests, types and build
         run: uv run --locked python scripts/check.py web
       - name: Check database wrapper safety

@@ -1,9 +1,9 @@
 # Identity contract
 
-**Status:** DL-00 Step 9 operation details are in the [combined registry](combined.md).
-Affected-owner review remains Step 10 and generated declarations remain Step 11.
-This contract defines Identity's behavior and privacy boundary, not provider
-setup or implemented authentication.
+**Status:** Step 10 domain-owner documentation review is reported approved by
+the user. Step 11 typed declarations are generated from this contract and the
+[combined registry](combined.md). Identity behavior/provider implementation
+remains with ID-01.
 
 ## Scope and ownership
 
@@ -72,11 +72,11 @@ field deletion takes effect immediately in future reads. Otherwise, retain
 source contacts only while the account is active and remove them no later than
 30 days after expiry or permanent revocation.
 
-The existing internal declarations
+The internal declarations
 [`get_shareable_contact_options`](source/identity.py) and
-[`get_selected_own_contacts`](source/identity.py) are requirements, not yet
-authorized operations. Their final binding must require the trusted actor to
-match the requested `user_id`; knowing another user's ID is never sufficient.
+[`get_selected_own_contacts`](source/identity.py) require the trusted actor to
+bind to a conversation participant; callers cannot choose a target `user_id`.
+Knowing another user's ID is never sufficient.
 The options operation returns availability flags only. The selected-contact
 operation accepts only the supported field names and returns only values the
 actor explicitly selected and that remain available. It is callable only in
@@ -86,9 +86,9 @@ client encrypts the resulting selected values before Conversations stores a
 share. Do not return unselected values, use this interface for notifications,
 or include values in errors, logs, analytics, fixtures or evidence.
 
-The typed declarations currently lack an explicit `CallerContext` argument.
-Step 11 must update their generated signatures so trusted actor binding is
-visible in the canonical source and provider declaration before implementation.
+The typed declarations take an explicit `CallerContext` and conversation scope,
+so trusted actor binding is visible in the canonical source and provider
+declaration before implementation.
 The internal contact functions are not HTTP routes or OpenAPI/TypeScript
 operations unless a later reviewed contract explicitly maps a user-facing
 capability.
@@ -115,7 +115,10 @@ destination needed by the worker; for an ineligible/removed recipient, it
 returns no destination. The destination is ephemeral to dispatch and is never
 copied into a notification-intent record. Exact typed request/result,
 eligibility recheck, safe outcome codes and dependency behavior are finalized
-in Step 9 and reviewed in Step 10. Identity does not call Conversations.
+in Step 9 and owner-reviewed in Step 10. Its typed request includes the
+server-injected `NotificationWorkerContext`; the value is not a credential and
+must be supplied only by trusted worker wiring. Identity does not call
+Conversations.
 
 ## Retention and errors
 
@@ -139,8 +142,8 @@ pretend an OTP was delivered.
 
 Step 9 assigns stable operation names and records full input/output/nullability,
 limits, authorization, errors, reads/writes, transaction boundaries,
-idempotency, concurrency, dependency failures and test cases. Provider and
-abuse-control settings that the ID-01 task requires the human to approve remain
-gates before enabling a real provider. Step 10 obtains affected-owner review;
-Step 11 updates the typed source and generates declarations. No live provider,
-account, credential, database, or cloud action is authorized here.
+idempotency, concurrency, dependency failures and test cases. Domain-owner
+documentation review is reported approved; provider and abuse-control settings
+that ID-01 requires the human to approve remain gates before enabling a real
+provider. No live provider, account, credential, database, or cloud action is
+authorized here.

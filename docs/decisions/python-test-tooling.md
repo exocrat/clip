@@ -31,3 +31,13 @@ Not required for this routine tool choice within the approved PD-04 step 5 scope
 ## Supersedes
 
 None.
+
+## DL-00 Step 11 scoped typing check
+
+Step 11 requires a consumer-owned Python test double to type-check against a
+generated provider declaration. This is a concrete requirement beyond the
+earlier pytest-only scope. Add pinned `mypy==2.0.0` to the development group and
+limit its configured check to the Search-owned Listings double. This version
+supports Python 3.14 syntax; do not extend it into an application-wide typing
+policy without a separate task decision. Mypy runs locally and in the existing
+PR CI aggregate. See the [Mypy Python 3.14 release notes](https://mypy.readthedocs.io/en/stable/changelog.html#python-3-14-support).

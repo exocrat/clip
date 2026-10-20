@@ -1,9 +1,10 @@
 # Conversations contract
 
-**Status:** DL-00 Step 9 operation details are in the [combined registry](combined.md).
-Affected-owner review remains Step 10; typed source and generated declarations
-remain Step 11. This contract does not select an E2EE library/protocol, configure
-a provider, implement a worker, or authorize destructive cleanup.
+**Status:** Step 10 domain-owner documentation review is reported approved by
+the user. Step 11 typed declarations are generated from this contract and the
+[combined registry](combined.md). This contract does not select an E2EE
+library/protocol, configure a provider, implement a worker, or authorize
+destructive cleanup.
 
 ## Ownership and acyclic calls
 
@@ -61,14 +62,12 @@ An unavailable/closed origin blocks new threads but does not revoke the
 existing participants' thread access. Existing listing/request threads remain
 participant-authorized subject to current account eligibility and independent
 content-retention rules. A retired origin cannot start a new thread, reopen,
-or accept a listing offer. Whether participant message/contact-share writes
-continue on a thread after its origin retires is a conservative Step 10 review
-item; until resolved, the proposed behavior is to allow authorized reads of
-still-retained content and reject new participant writes after retirement.
+or accept a listing offer. Owner review accepted authorized reads of retained
+thread content and rejection of new participant writes after retirement.
 Enforcing that boundary without Conversations calling back to an origin owner
 requires Listings/Search to publish retirement through a Conversations-owned
 operation before clearing origin content. The exact lock/recheck/order and
-failure recovery are a Step 10 human gate, not settled by this proposal.
+failure recovery remain a separate human approval gate before implementation.
 
 Every public thread, entry, offer, key and read-state route checks both current
 caller eligibility and membership at the owning operation. Direct ID
@@ -143,8 +142,8 @@ to `(conversation_id, sender_id)` for retry deduplication. An identical retry
 returns the original entry/sequence; reuse with different intent returns a
 stable conflict. After retained content is purged, an operation ID remains
 reserved and retry cannot recreate the expired payload. Step 9 records exact
-opaque-byte retry equality and a proposed 409 conflict after content purge in
-the [combined registry](combined.md); affected-owner review remains Step 10.
+opaque-byte retry equality and an owner-reviewed 409 conflict after content
+purge in the [combined registry](combined.md).
 Reads, polling, key lookup, acknowledgements and workers do not advance
 `last_activity_at`.
 
@@ -334,12 +333,12 @@ offer uniqueness guards for their approved lifetimes. Reads, polling, workers,
 account expiry and cleanup do not restart the 90-day timer. Retention timing
 does not authorize a cleanup method: foreign-key/current-offer/notification
 target order and the destructive mechanism require the concrete Step 10 human
-approval before implementation. If Step 10 accepts write-locking a retired
-thread, Listings/Search must call an idempotent Conversations-owned
+approval before implementation. Owner review accepted write-locking a retired
+thread, so Listings/Search must call an idempotent Conversations-owned
 retirement-marker operation before clearing their origin record; origin-side
 cleanup fails closed unless that operation proves every related thread is
-inactive. The cross-owner lock and recovery sequence remains open until that
-review.
+inactive. The cross-owner lock and recovery sequence remains behind the exact
+human approval gate.
 
 ## Shared errors and safe operations
 
@@ -369,15 +368,16 @@ retention. Isolated stubs cannot establish real cross-domain acceptance.
 - CN-01 Step 2 must approve the actual established E2EE library/protocol,
   serialization, browser key handling, key-change and key-loss behavior before
   message implementation; this contract deliberately does not choose them.
-- Step 10 affected owners must review origin create/close locks, activity
-  completeness, read-receipt visibility, the proposed no-write behavior after
-  origin retirement and its required retirement-marker operation, notification
+- The user reports that affected owners reviewed origin create/close locks,
+  activity completeness, read-receipt visibility, no-write behavior after
+  origin retirement and the retirement-marker operation, notification
   ownership/FK ordering and failure semantics.
-- Step 10 must approve the concrete destructive retention mechanism/order
-  before cleanup implementation. No cleanup or cascade is authorized here.
+- Explicit human approval of the concrete destructive retention mechanism/order
+  is still required before cleanup implementation. No cleanup or cascade is
+  authorized here.
 - CN-03 must settle lease duration, worker authentication/configuration,
   provider setup/idempotency limits and live-send approval in its own gates.
 - The [combined Step 9 registry](combined.md) records route/callable names,
   typed signatures, result/error shapes, retry behavior, focused tests and
-  frontend connections. Step 10 owners review the proposals. NFR-05 requires
+  frontend connections. Step 10 owner review is reported approved. NFR-05 requires
   the real two-client path and CN-03 producer/delivery integration.

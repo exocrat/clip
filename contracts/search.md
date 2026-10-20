@@ -1,9 +1,9 @@
 # Search contract
 
-**Status:** DL-00 Step 9 operation details are in the [combined registry](combined.md).
-Affected-owner review remains Step 10; typed source and generated declarations
-remain Step 11. No Search implementation or database migration is authorized
-here.
+**Status:** Step 10 domain-owner documentation review is reported approved by
+the user. Step 11 typed declarations are generated from this contract and the
+[combined registry](combined.md). Search implementation and migrations remain
+with SE-01/SE-02.
 
 ## Ownership and dependency boundary
 
@@ -86,8 +86,8 @@ with the shared page envelope and sizes, and does not accept sale-listing price,
 condition, or negotiability filters. A request's category is a displayed item
 category, not a view discriminator.
 
-The recommended public response proposal, pending affected-owner review in
-Step 10, contains only `request_id`, `title`, `description`, category code and
+The owner-reviewed public response contains only `request_id`, `title`,
+`description`, category code and
 label, nullable `budget_paise`, `created_at`, and `updated_at`. It contains no
 author ID, author display name, phone, email, UPI, or other contact value. The
 title, description, category and optional budget are the author's intentionally
@@ -174,19 +174,14 @@ retry, concurrency/lock, ambiguous downstream commit, and partial-failure
 semantics plus deterministic test cases are completed in Step 9. No generic
 automatic write retry is implied.
 
-## Explicit review items
+## Follow-up gates
 
-- Step 10 affected-owner review must confirm the proposed public Wanted Request
-  field set and the authenticated-only meaning of public marketplace reads.
-- Step 9 records the exact request-origin conversation operation and
-  close/create concurrency result in the [combined registry](combined.md);
-  affected owners review it in Step 10 without adding a call cycle.
-- Step 9 records callable import paths, HTTP-to-callable mappings, model names,
-  operation-specific error/retry behavior, and focused tests in the
-  [combined registry](combined.md); affected-owner review remains Step 10.
-- Step 10 must approve a concrete destructive retirement mechanism/order
-  before any implementation can perform cleanup. This contract does not
-  authorize such cleanup.
+- The user reports that domain owners approved the public Wanted Request field
+  set, authenticated-only marketplace visibility, and request-origin operation
+  boundaries in Step 10. The acyclic call rule remains mandatory.
+- Human approval of the concrete destructive retirement mechanism/order is
+  still required before cleanup implementation. This contract does not
+  authorize cleanup.
 - Listing search configuration/index ownership is accepted in the existing
   PD-08 decision; real query plans, data, relevance, load and NFR evidence
   remain SE-01 work.

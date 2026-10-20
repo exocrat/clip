@@ -1,10 +1,11 @@
-"""PD-11 generation drift, actual API schema and TypeScript consumer checks.
+"""DL-00 generation drift, live/API boundary and TypeScript consumer checks.
 
 Negative generation probes run only in temporary synthetic repository trees.
 The source repository/generated artifacts are never changed by these tests.
 Local locked Node dependencies are required; tests never download tools.
 """
 
+import asyncio
 from copy import deepcopy
 import importlib.util
 import json
@@ -15,13 +16,27 @@ import subprocess
 import sys
 
 import pytest
-from fastapi.testclient import TestClient
 
 ROOT = Path(__file__).resolve().parents[2]
 OUTPUTS = (
     "apps/api/app/contracts/health.py",
+    "apps/api/app/contracts/domain_types.py",
+    "apps/api/app/domains/identity/public.py",
+    "apps/api/app/domains/listings/public.py",
+    "apps/api/app/domains/search/public.py",
+    "apps/api/app/domains/conversations/public.py",
     "contracts/generated/openapi.json",
     "contracts/generated/types.gen.ts",
+)
+SOURCE_FILES = (
+    "contracts/__init__.py",
+    "contracts/source/__init__.py",
+    "contracts/source/health.py",
+    "contracts/source/types.py",
+    "contracts/source/identity.py",
+    "contracts/source/listings.py",
+    "contracts/source/search.py",
+    "contracts/source/conversations.py",
 )
 
 
@@ -36,14 +51,19 @@ def isolated_contract_environment(monkeypatch):
 
 @pytest.fixture
 def tree(tmp_path):
-    """Copy minimal generation inputs/outputs; share installed tools read-only."""
+    """Copy every canonical source/core input and output into an isolated project."""
     root = tmp_path / "project"
     for relative in (
         "package.json",
         "package-lock.json",
-        "contracts/source/health.py",
         "scripts/generate_contracts.py",
         "scripts/generate_types.mjs",
+        "apps/api/app/__init__.py",
+        *(
+            f"apps/api/app/core/{path.name}"
+            for path in (ROOT / "apps/api/app/core").glob("*.py")
+        ),
+        *SOURCE_FILES,
         *OUTPUTS,
     ):
         destination = root / relative
@@ -166,38 +186,94 @@ def without_provenance(schema):
     return schema
 
 
+async def asgi_get(app, path):
+    """Issue one in-process GET without opening sockets or starting threads."""
+    messages = []
+    request_received = False
+
+    async def receive():
+        nonlocal request_received
+        if request_received:
+            return {"type": "http.disconnect"}
+        request_received = True
+        return {"type": "http.request", "body": b"", "more_body": False}
+
+    async def send(message):
+        messages.append(message)
+
+    raw_path = path.encode("ascii")
+    scope = {
+        "type": "http",
+        "asgi": {"version": "3.0", "spec_version": "2.3"},
+        "http_version": "1.1",
+        "method": "GET",
+        "scheme": "http",
+        "path": path,
+        "raw_path": raw_path,
+        "query_string": b"",
+        "root_path": "",
+        "headers": [(b"host", b"testserver")],
+        "client": ("127.0.0.1", 12345),
+        "server": ("testserver", 80),
+    }
+    await app(scope, receive, send)
+    response_start = next(
+        message for message in messages if message["type"] == "http.response.start"
+    )
+    response_body = b"".join(
+        message.get("body", b"")
+        for message in messages
+        if message["type"] == "http.response.body"
+    )
+    return response_start["status"], json.loads(response_body)
+
+
 def test_actual_api_schema_matches_generated_contract():
-    """Compare the actual app's routes/schema; never install the generated schema."""
+    """The live app exposes only implemented health; domain routes remain declarations."""
     from app.main import app
 
     actual = app.openapi()
     declared = json.loads((ROOT / "contracts/generated/openapi.json").read_text())
-    assert declared["x-clip-generator-format"] == 1
-    assert without_provenance(actual) == without_provenance(declared)
+    assert declared["x-clip-generator-format"] == 2
+    assert actual["info"] == declared["info"]
     assert set(actual["paths"]) == {"/health"}
-    with TestClient(app) as client:
-        assert client.get("/health").json() == {"status": "ok"}
-        for path in ("/openapi.json", "/docs", "/redoc"):
-            assert client.get(path).status_code == 404
+    assert actual["paths"]["/health"] == declared["paths"]["/health"]
+    assert (
+        actual["components"]["schemas"]["HealthResponse"]
+        == declared["components"]["schemas"]["HealthResponse"]
+    )
+    contract_operation_ids = {
+        operation["operationId"]
+        for path in declared["paths"].values()
+        for operation in path.values()
+        if isinstance(operation, dict) and "operationId" in operation
+    }
+    assert len(contract_operation_ids) == 51
+    assert len(app.routes) == 1
+    assert asyncio.run(asgi_get(app, "/health")) == (200, {"status": "ok"})
+    for path in ("/openapi.json", "/docs", "/redoc"):
+        status, _ = asyncio.run(asgi_get(app, path))
+        assert status == 404
 
 
 @pytest.mark.parametrize("mutation", ["extra", "missing", "response", "operation"])
 def test_schema_comparison_detects_contract_changes(mutation):
-    """Prove parity comparison detects added/missing routes and changed wire shapes."""
-    from app.main import app
+    """Prove contract comparisons detect route and wire-shape drift."""
+    from scripts.generate_contracts import declared_schema, load_sources
 
-    actual = deepcopy(app.openapi())
+    health, domains = load_sources()
+    actual = declared_schema(health, domains)
     expected = json.loads((ROOT / "contracts/generated/openapi.json").read_text())
     if mutation == "extra":
         actual["paths"]["/synthetic-extra"] = deepcopy(actual["paths"]["/health"])
     elif mutation == "missing":
-        actual["paths"].pop("/health")
+        actual["paths"].pop("/listings")
     elif mutation == "response":
-        actual["components"]["schemas"]["HealthResponse"]["properties"]["status"][
-            "const"
-        ] = "changed"
+        actual["components"]["schemas"]["ListingSummary"]["properties"][
+            "asking_price_paise"
+        ]["minimum"] = 1
     else:
-        actual["paths"]["/health"]["get"]["operationId"] = "syntheticChanged"
+        actual["paths"]["/listings"]["get"]["operationId"] = "syntheticChanged"
     assert without_provenance(actual) != without_provenance(expected)
 
 
@@ -210,8 +286,9 @@ def test_schema_build_does_not_import_real_application(monkeypatch):
     spec.loader.exec_module(generator)
     # Importing the real app would attempt to use this sentinel module.
     monkeypatch.setitem(sys.modules, "app.main", None)
-    schema = generator.declared_schema(generator.health_source())
-    assert set(schema["paths"]) == {"/health"}
+    health, domains = generator.load_sources()
+    schema = generator.declared_schema(health, domains)
+    assert len(schema["paths"]) == 44
 
 
 def test_generated_types_accept_valid_consumer_reject_wrong_status(tmp_path):
@@ -291,7 +368,7 @@ def test_types_helper_rejects_external_references(tmp_path, reference):
 
 
 def test_version_has_one_editable_source():
-    """Source, generated runtime and actual HTTP schema share unchanged version 0.1.0."""
+    """Source, generated runtime and contract schema share HTTP version 0.1.0."""
     from app.contracts.health import CONTRACT_VERSION
     from app.main import app
 

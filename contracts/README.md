@@ -1,7 +1,8 @@
 # Shared contracts
 
-PD-11 step 5 implements offline health-contract generation. Full domain
-contracts/public declarations remain DL-00 outputs.
+DL-00 Step 11 extends PD-11's offline health generator to the reviewed domain
+contracts. The source describes explicitly mapped HTTP operations and internal
+calls; generated declarations remain behavior-free.
 
 ## Source and generated files
 
@@ -10,54 +11,55 @@ edit reviewed typed Python declarations separately from implementation handlers.
 
 | Path | Role |
 |---|---|
-| `contracts/source/health.py` | Editable health response and explicit HTTP metadata. |
-| `scripts/generate_contracts.py` | Python orchestrator; format version 1; fixed output registry. |
+| `contracts/source/health.py`, `types.py`, and `{identity,listings,search,conversations}.py` | Editable shared models, domain HTTP mappings, and internal callables. |
+| `scripts/generate_contracts.py` | Python orchestrator; format version 2; fixed output registry. |
 | `scripts/generate_types.mjs` | Local Hey API TypeScript-only helper; rejects external references. |
-| `apps/api/app/contracts/health.py` | Generated runtime declaration; imported by the real health handler. |
+| `apps/api/app/contracts/health.py`, `domain_types.py` | Generated runtime health and shared wire models. |
+| `apps/api/app/domains/{identity,listings,search,conversations}/public.py` | Generated typed internal interfaces; each callable refuses use until implemented. |
 | `contracts/generated/openapi.json` | Generated HTTP-only OpenAPI 3.1 document. |
 | `contracts/generated/types.gen.ts` | Generated TypeScript types; no runtime SDK/client. |
 
 Do not edit generated files. Only explicit HTTP mappings enter OpenAPI and
-frontend types; internal calls/private contact types are not automatically
-published. Source models and shared core primitives have one authoritative
-owner. Domain contracts must also record authorization, errors, transaction,
-retry/duplicate and privacy semantics that schema types cannot prove.
+frontend types; internal calls never become routes by inference. Private
+internal types stay out unless an explicitly reviewed HTTP operation uses them,
+as contact preparation does for a caller's selected own fields. Shared technical
+primitives remain owned by `app.core`; domain types live in canonical contract
+source. Human-readable contracts still define behavior the schemas cannot prove.
 
 ## DL-00 Step 1 inventory
 
 The [DL-00 inventory](dl00-inventory.md) records the existing core and contract
 types, HTTP operations, domain source state, generated outputs, database
 ownership schemas and frontend presentation surfaces before domain signatures
-are drafted. The current generator handles only the explicit health route; the
-typed Python source format can declare internal callables, but generation of
-domain `public.py` modules is not implemented yet. The [source/generation
-decision](../docs/decisions/contract-source-and-generation.md) records the
-resolution: preserve one typed Python source and extend generation in DL-00
-Step 11, while only explicitly mapped HTTP operations enter OpenAPI and web
-types.
+are drafted. PD-11 initially handled only the explicit health route. DL-00
+Step 11 extends the same typed Python source to domain HTTP mappings and
+internal callables. The [source/generation decision](../docs/decisions/contract-source-and-generation.md)
+records the resolution; only explicitly mapped HTTP operations enter OpenAPI
+and web types.
 
 The [domain ownership and call boundaries](domain-boundaries.md) record DL-00
 Step 3's authoritative record owners, frontend connections, and acyclic
 cross-domain call direction. The
 [combined Step 9 operation registry](combined.md) maps HTTP operations,
-internal callables, and approved frontend surfaces;
-affected-owner review and unresolved proposals remain Step 10 gates.
+internal callables, and approved frontend surfaces. The user reports that
+affected domain owners reviewed and approved the documents on 2026-10-20; exact
+destructive cleanup ordering remains a separate human gate.
 
-The [Identity contract](identity.md) is the Step 5 behavior/privacy draft. It
+The [Identity contract](identity.md) is the Step 5 behavior/privacy contract. It
 binds the existing contact declarations to trusted actor and conversation
 authorization; Step 9 records per-operation semantics in the combined registry,
 and Step 11 updates the canonical typed source before generation.
 
 The [Listings contract](listings.md) is the Step 6 data and operation-boundary
-draft. Listings owns availability/selection and gates listing-based offer
+contract. Listings owns availability/selection and gates listing-based offer
 mutations while Conversations owns offer records; Step 7 consumes its listing
 query boundary and Step 9 records operation semantics in the combined registry.
 
 The [Search contract](search.md) is the Step 7 discovery, Wanted Request,
 draft-match, and saved-list boundary; the combined registry records Step 9
-operation details. Listings remains the only owner of sale
-query/index data; the proposed public Wanted Request fields and authenticated
-marketplace visibility remain explicit Step 10 review items.
+operation details. Listings remains the only owner of sale query/index data;
+the owner-reviewed public Wanted Request fields and signed-in marketplace
+visibility are recorded in the combined contract.
 
 The [Conversations contract](conversations.md) is the Step 8 thread, encrypted
 entry, read-state, offer, contact-share, notification-intent, and activity
@@ -65,19 +67,20 @@ boundary; the combined registry records Step 9 operations and page connections.
 It preserves the acyclic origin-owner call direction; the crypto protocol and
 destructive cleanup order remain separate approval gates.
 
-Identity now carries the explicitly required Step 8 internal contact
-declarations; the other three sources remain docstring-only. No domain HTTP
-operations or generated public modules are registered in canonical source yet:
+The owner-reviewed sources register each domain's HTTP operations and internal
+callables. Generation creates the four public modules and shared model module;
+provider behavior remains with domain implementation tasks:
 
 | Editable domain source | Later contract / implementation |
 |---|---|
-| [Identity](source/identity.py) | Required internal contact declarations present; full contract DL-00, implementation ID-01. |
-| [Listings](source/listings.py) | Contract DL-00; implementation LI-01/LI-02. |
-| [Search](source/search.py) | Contract DL-00; implementation SE-01/SE-02. |
-| [Conversations](source/conversations.py) | Contract DL-00; implementation CN-01/CN-02, notification delivery CN-03. |
+| [Identity](source/identity.py) | HTTP mappings and four internal callables; implementation ID-01. |
+| [Listings](source/listings.py) | HTTP mappings, five internal callables and consumer protocol; implementation LI-01/LI-02. |
+| [Search](source/search.py) | HTTP mappings; consumes Listings, Conversations and Identity interfaces; implementation SE-01/SE-02. |
+| [Conversations](source/conversations.py) | HTTP mappings and ten internal callables; implementation CN-01/CN-02, notification delivery CN-03. |
 
-DL-00 supplies reviewed domain contracts and generates each domain's `public.py`
-before provider implementation. This health increment registers only `/health`.
+The generated contract-only OpenAPI contains 50 domain HTTP mappings plus
+health. The running API still serves only implemented `/health`; generated
+domain routes are never installed or used to return fake success.
 
 ## Tools and exact commands
 
@@ -85,19 +88,22 @@ Use Python 3.14/uv, Node 24/npm 11 and the existing single root manifest/lockfil
 FastAPI **0.143.3**, Pydantic **2.14.1**, Hey API **0.99.0** and TypeScript
 **5.9.3** are pinned. One TypeScript compiler serves web and generation; no
 workspace or second compiler is needed. The root override pins the transitive
-YAML parser to patched **4.3.2**. Install with `uv sync --locked` and `npm ci`.
+YAML parser to patched **4.3.2**. Mypy **2.0.0** is scoped to the Search-owned
+consumer-double type check. Install with `uv sync --locked` and `npm ci`.
 
 From the repository root:
 
 ```bash
 uv run --locked python scripts/generate_contracts.py generate
 uv run --locked python scripts/generate_contracts.py check
+make contracts-double-check
 ```
 
-`generate` builds the contract-only app's schema without importing/starting the
-real API, renders all artifacts in temporary storage, then writes registered
-outputs. Metadata is shared with the actual health route. Generated JSON keys
-and text are deterministic; generator format 1 is recorded in each artifact.
+`generate` builds the contract-only schema without importing/starting the real
+API, renders all artifacts in temporary storage, then writes registered outputs.
+The real app independently serves health only; generated domain endpoints are
+never installed. Health metadata is shared with the actual route. Generated
+JSON keys and text are deterministic; format 2 is recorded in each artifact.
 
 `check` renders in temporary storage and compares registered files, including
 missing outputs. Exit 0 means current; nonzero means drift or source/tool failure.
@@ -107,13 +113,13 @@ require checking the pins/lock and installed tools; there is no network-install
 fallback. Child tooling receives a clean environment and local JSON references
 only. No database/provider/cloud calls or schema endpoint publication occurs.
 
-Step 5 verified two identical generations, check-only preservation, generated
-TypeScript compilation and existing API/web checks. Step 6 tests missing/stale-output detection, source/tool failures, check-only
-preservation, TypeScript consumers and actual API schema parity. Provenance key
-`x-clip-generator-format` is build metadata, not runtime behavior. Runtime parity
-must compare the actual app's independently generated schema, not replace it
-with this output. Generated declarations never establish implemented behavior,
-authorization or domain acceptance.
+PD-11 established health generation and runtime health parity. DL-00 Step 11 adds
+the 50 explicit domain HTTP mappings, typed internal callables, Python `public.py`
+modules, OpenAPI and TypeScript shapes. Contract tests compare the real API's
+health route/schema to its declared health subset and assert domain declarations
+are not installed. Provenance key `x-clip-generator-format` is build metadata,
+not runtime behavior. Generated declarations never establish implemented
+behavior, authorization or domain acceptance.
 
 Boundary checks remain in force. PD-12 wires stale checks into CI; PD-13 maps
 them into the common command front door; step 9 records contract version/review.
@@ -124,47 +130,40 @@ After `uv sync --locked` and root `npm ci`, run:
 
 ```bash
 uv run --locked pytest tests/contracts -q -W error
+make contracts-double-check
 ```
 
 Root pytest includes these tests and now requires the locked Node dependencies.
 The API-only suite still needs only its Python dependencies. Negative generation
-checks copy minimal inputs to temporary trees and share installed tools without
-writing them; no tracked source/output is altered. Real generation, missing and
-stale files, changed source, tool mismatches and sanitized source failures are
-checked. The actual app's schema is compared against the declared schema after
-removing only generator provenance; extra/missing operations and changed response
-shapes remain differences. A valid TypeScript consumer must compile and an
-invalid status literal must fail. HTTP tests use in-process ASGI only. External
-schema references are rejected; no network/provider/database services are used.
-The only tracked generator behavior correction here sanitizes source syntax
-errors rather than allowing a traceback to echo source text.
+checks copy all canonical source/core inputs into temporary trees and share
+installed tools without writing tracked outputs. Tests cover deterministic
+generation, missing/stale outputs, changed source, tool mismatches, sanitization,
+all 50 operation IDs, live health-only parity, noninstallation of domain routes,
+private type exposure, and TypeScript consumers. The Listings test double is
+type-checked against the generated `ListingsPublic` protocol with Mypy. HTTP
+tests use in-process ASGI only; no provider, database or cloud is used.
 
 ## Internal Identity contact declarations
 
-`contracts/source/identity.py` carries only `ShareableContactOptions`,
-`SelectedOwnContacts`, `get_shareable_contact_options(user_id)` and
-`get_selected_own_contacts(user_id, fields)`, as required by shared conventions.
-`UserId` reuses core's existing UUID representation. Selected-contact fields are
-required/nullable and hidden from repr; serialization remains private data.
-No contact values are used in declaration tests.
-
-Both async declarations raise `NotImplementedError`; neither reads data nor
-returns fake success. DL-00 must bind the trusted caller/own-contact permissions,
-field validation/errors and authorized conversation-sharing flow before ID-01
-implements them. An arbitrary user ID is not authorization, and these operations
-are not notification-recipient lookup. CN-02's encrypted-sharing protocol remains
-its reviewed domain work. No HTTP metadata is assigned, so these types/functions
-remain absent from generated OpenAPI/TypeScript; generated `public.py` is DL-00.
+Identity source declares the four internal callables in the reviewed registry.
+The contact methods take trusted `CallerContext` plus conversation scope; they
+never accept a target user ID as authorization. Notification recipient
+resolution takes server-injected `NotificationWorkerContext` and returns only
+an ephemeral destination. Contact values and recipient addresses have repr
+redaction. Every generated callable raises `NotImplementedError` until the
+Identity owner implements it. Only selected own contacts explicitly returned
+by the Conversations contact-preparation HTTP operation enter the HTTP/TypeScript
+schema; availability flags and notification-recipient values remain internal.
 
 ## Version and change review
 
 The current HTTP contract version is **0.1.0**. Edit `CONTRACT_VERSION` only in
 `contracts/source/health.py`; generation copies it into the runtime declaration,
 which supplies FastAPI's version, and emits it as OpenAPI `info.version`.
-Generator format **1** is a separate artifact-format version. Record the source
+Generator format **2** is a separate artifact-format version. Record the source
 Git revision and exact PR base/head for every handoff; no SHA or timestamp is
-injected into generated output. Internal declarations remain unimplemented until
-DL-00's reviewed public-interface handoff and retain their exact source revision.
+injected into generated output. The declarations define reviewed interfaces;
+each provider remains unimplemented until its domain task supplies behavior.
 
 For every shared contract change:
 

@@ -1,8 +1,8 @@
 # Domain ownership and call boundaries
 
-**Status:** DL-00 Step 3 design; affected-domain review remains Step 10. This
-records contract ownership and allowed call direction. It does not implement
-domain behavior or settle the still-pending cleanup protocol.
+**Status:** DL-00 Step 3 design; domain-owner documentation review reported
+approved on 2026-10-20. This records contract ownership and allowed call
+direction. It does not implement domain behavior or authorize cleanup code.
 
 ## Boundary rule
 
@@ -49,8 +49,8 @@ The CN-03 task owner remains responsible for its assigned delivery work. That
 does not transfer notification-intent records or their state transitions out
 of Conversations. Delivery uses the Conversations-owned intent boundary and
 Identity's separate recipient-resolution function; it does not create an
-Identity → Conversations call. The exact worker implementation and affected
-owner review remain in CN-03/DL-00 Step 10.
+Identity → Conversations call. The exact worker implementation remains in
+CN-03; the user reports the Step 10 domain-owner documentation review approved.
 
 ## Origin orchestration and race handling
 
@@ -86,7 +86,7 @@ Recommended serialization for the later operation contracts is:
   as specified by the offer decision; a retired listing rejects offer changes.
   Conversations owns offer revisions and never calls Listings to check state.
 
-These are contract proposals for owner review, not tested concurrency behavior.
+These are owner-reviewed contract rules, not tested concurrency behavior.
 Operation timeouts, exact error mapping, idempotency keys, and owner-specific
 locking/tests are frozen in Steps 8–10. No cross-domain transaction or
 distributed rollback is assumed.
@@ -101,10 +101,10 @@ Reads, polling, delivery workers, and other non-participant actions do not
 count as participant writes. Conversations owns conversation/message/offer/
 disclosure cleanup and preserves the approved content-free identifiers.
 
-The precise multi-owner lock, recheck, and cleanup order remains open for the
-activity/retirement contract in Step 8 and affected-owner review in Step 10.
-No cleanup sequence, cascade, or destructive implementation is authorized by
-this Step 3 boundary record.
+The activity/retirement contract is owner-reviewed, but the precise multi-owner
+lock, recheck, and cleanup order still needs explicit human approval before
+implementation. No cleanup sequence, cascade, or destructive implementation
+is authorized by this Step 3 boundary record.
 
 ## Frontend connections and authoritative state
 

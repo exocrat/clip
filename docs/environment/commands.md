@@ -396,15 +396,18 @@ Computed SQL, unqualified table resolution, arbitrary reflection and semantic
 business call cycles are not proven safe by this scan; review and domain tests
 remain required. Migrations/database verification are outside the runtime scan.
 
-## PD-11 contract generation
+## PD-11 / DL-00 contract generation
 
 Requires `uv sync --locked` and root `npm ci`: Node 24, TypeScript 5.9.3,
 Hey API 0.99.0 (TypeScript-only plugin), and existing locked FastAPI/Pydantic.
 
 | Invocation | Effect |
 |---|---|
-| `uv run --locked python scripts/generate_contracts.py generate` | Rebuild three registered Python/OpenAPI/TypeScript outputs from reviewed health declarations. |
+| `uv run --locked python scripts/generate_contracts.py generate` | Rebuild eight registered Python/OpenAPI/TypeScript outputs from reviewed health/domain source, including four declaration-only `public.py` modules. |
 | `uv run --locked python scripts/generate_contracts.py check` | Render in temporary storage; exit 0 if current, nonzero for missing/stale outputs or tool/source failure; outputs unchanged. |
+| `make contracts-double-check` | Run pinned Mypy against Search's consumer-owned Listings adapter and generated provider protocol. |
+| `uv run --locked pytest apps/api/tests/domains/search -q -W error` | Isolated Search-to-Listings contract-double suite; synthetic success/failure cases only, not real integration evidence. |
+| `uv run --locked pytest tests/integration -q -W error` | Future real cross-domain integration suite. It currently has no tests (pytest exit 5) and is pending, not a pass or readiness evidence. |
 
 Run from the root. Generated files must not be hand-edited. On drift, correct
 source, regenerate, review the diff and rerun check. On tool mismatch, inspect
@@ -412,11 +415,13 @@ pins/lock and use `npm ci`; no unpinned network fallback. No listener, database,
 provider or cloud calls. [Outputs and limits](../../contracts/README.md).
 
 Contract regression command: `uv run --locked pytest tests/contracts -q -W error`.
-Requires locked Python tools plus root `npm ci` (Node 24/TypeScript 5.9.3/Hey API
-0.99.0). Root pytest includes it. Synthetic negative cases use temporary trees,
-local tools and in-process ASGI, never modify tracked artifacts or fetch tools.
-Exit 0 means pass; nonzero requires investigation. API-only pytest remains usable
-without Node. [Coverage](../../contracts/README.md#contract-regression-tests).
+It checks canonical-source parity, all 50 declared domain HTTP operations, the
+live API's health-only route set, sensitive-field publication boundaries, and
+generated TypeScript consumers. Requires locked Python tools plus root `npm ci`
+(Node 24/TypeScript 5.9.3/Hey API 0.99.0). Synthetic negative cases use temporary
+trees and local tools; generated domain routes are never installed. Exit 0 means
+pass; nonzero requires investigation. API-only pytest remains usable without
+Node. [Coverage](../../contracts/README.md#contract-regression-tests).
 
 ## CI setup — PD-12
 
@@ -521,6 +526,7 @@ manifest, environment loader or daemon is introduced. GNU Make is required
 | `make test` | Shared runner's Python, explicit data and web gates; `test-python`, `test-data`, `test-web` select each. Web includes lint/types/build as registered. |
 | `make format` / `make format-check` | Existing rewriting Black / check-only targets; old names retained. |
 | `make contracts-generate` / `make contracts-check` | Registered generation / nonmutating freshness check. |
+| `make contracts-double-check` | Static type check for the representative consumer-owned interface double. |
 | `make check` | Existing full CI-equivalent aggregate, including disposable database and scanner. |
 
 Normal Make failure is nonzero (usually 2), including `data-load`'s deliberate

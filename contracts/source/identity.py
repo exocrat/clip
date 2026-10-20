@@ -1,60 +1,161 @@
-"""Required internal Identity contact declarations — PD-11 step 8.
+"""Reviewed Identity HTTP operations and internal declaration-only callables."""
 
-These are reviewed interface requirements, not implemented operations or HTTP
-mappings. DL-00 must bind the trusted caller, own-contact authorization and
-conversation/contact-sharing permissions before a provider is enabled. A user
-ID supplied by a consumer is never sufficient authority to disclose contacts.
-"""
-
-from pydantic import BaseModel, Field
-
+from app.core.auth import CallerContext
 from app.core.identifiers import UserId
 
+from contracts.source.types import (
+    AccountClass,
+    AccountEligibility,
+    ActivateTemporaryRequest,
+    ChallengeAccepted,
+    ConversationId,
+    ContactField,
+    ContactValueRequest,
+    MicrosoftSessionRequest,
+    NotificationRecipient,
+    NotificationWorkerContext,
+    OwnContacts,
+    PasswordResetChallengeRequest,
+    ProfilePatch,
+    ProfileView,
+    RegistrationChallengeRequest,
+    ResetTemporaryPasswordRequest,
+    SelectedOwnContacts,
+    SessionView,
+    ShareableContactOptions,
+    TemporarySessionRequest,
+)
 
-class ShareableContactOptions(BaseModel):
-    """Availability flags only; no email, phone or UPI values are disclosed.
+HTTP_OPERATIONS = (
+    {
+        "method": "POST",
+        "path": "/auth/microsoft/sessions",
+        "operation_id": "identity_create_microsoft_session",
+        "body": MicrosoftSessionRequest,
+        "response": SessionView,
+    },
+    {
+        "method": "POST",
+        "path": "/auth/temporary/registration-challenges",
+        "operation_id": "identity_start_temporary_registration",
+        "body": RegistrationChallengeRequest,
+        "response": ChallengeAccepted,
+        "status_code": 202,
+    },
+    {
+        "method": "POST",
+        "path": "/auth/temporary/accounts",
+        "operation_id": "identity_activate_temporary_account",
+        "body": ActivateTemporaryRequest,
+        "response": SessionView,
+        "status_code": 201,
+    },
+    {
+        "method": "POST",
+        "path": "/auth/temporary/sessions",
+        "operation_id": "identity_create_temporary_session",
+        "body": TemporarySessionRequest,
+        "response": SessionView,
+    },
+    {
+        "method": "POST",
+        "path": "/auth/temporary/password-reset-challenges",
+        "operation_id": "identity_start_password_reset",
+        "body": PasswordResetChallengeRequest,
+        "response": ChallengeAccepted,
+        "status_code": 202,
+    },
+    {
+        "method": "POST",
+        "path": "/auth/temporary/password-resets",
+        "operation_id": "identity_reset_temporary_password",
+        "body": ResetTemporaryPasswordRequest,
+        "status_code": 204,
+    },
+    {
+        "method": "DELETE",
+        "path": "/auth/session",
+        "operation_id": "identity_logout",
+        "status_code": 204,
+    },
+    {
+        "method": "GET",
+        "path": "/me",
+        "operation_id": "identity_read_me",
+        "response": SessionView,
+    },
+    {
+        "method": "PATCH",
+        "path": "/me/profile",
+        "operation_id": "identity_update_own_profile",
+        "body": ProfilePatch,
+        "response": ProfileView,
+    },
+    {
+        "method": "GET",
+        "path": "/me/contacts",
+        "operation_id": "identity_read_own_contacts",
+        "response": OwnContacts,
+    },
+    {
+        "method": "PUT",
+        "path": "/me/contacts/{contact_kind}",
+        "operation_id": "identity_set_own_contact",
+        "path_parameters": {"contact_kind": ContactField},
+        "body": ContactValueRequest,
+        "status_code": 204,
+    },
+    {
+        "method": "DELETE",
+        "path": "/me/contacts/{contact_kind}",
+        "operation_id": "identity_delete_own_contact",
+        "path_parameters": {"contact_kind": ContactField},
+        "status_code": 204,
+    },
+)
 
-    Return only within the authorized contact-sharing flow. Exact trusted-caller
-    binding/error semantics require DL-00/Identity review before implementation.
+
+async def check_account_eligibility(
+    user_id: UserId, required_class: AccountClass | None = None
+) -> AccountEligibility:
+    """Declare the minimal current account-capability lookup.
+
+    This declaration returns no profile, contact, login, or denial-reason data.
+    The owning Identity service supplies the eventual implementation.
     """
-
-    user_id: UserId
-    has_email: bool
-    has_phone: bool
-    has_upi_id: bool
+    raise NotImplementedError("declaration-only")
 
 
-class SelectedOwnContacts(BaseModel):
-    """Only explicitly selected own-contact values may be returned privately.
+async def get_shareable_contact_options(
+    caller: CallerContext, conversation_id: ConversationId
+) -> ShareableContactOptions:
+    """Declare actor-bound contact availability for a conversation flow.
 
-    All fields are required and nullable; unselected/absent values remain None.
-    Repr hides values, but dumps/serialization are still private data and must
-    never enter logs, errors or test output. CN-02 handles the separately reviewed
-    encrypted sharing flow; this declaration does not select a crypto protocol.
+    The caller must be the actor authorized by Conversations. Only availability
+    flags are returned; this declaration reads no persistence or contact value.
     """
-
-    email: str | None = Field(repr=False)
-    phone: str | None = Field(repr=False)
-    upi_id: str | None = Field(repr=False)
-
-
-async def get_shareable_contact_options(user_id: UserId) -> ShareableContactOptions:
-    """Declare authorized availability lookup; provide no implementation.
-
-    No persistence, provider or user data is read. DL-00 must specify the trusted
-    actor binding and allowed target before ID-01 implements this operation.
-    """
-    raise NotImplementedError("Identity contact interface is declaration-only")
+    raise NotImplementedError("declaration-only")
 
 
 async def get_selected_own_contacts(
-    user_id: UserId, fields: set[str]
+    caller: CallerContext,
+    conversation_id: ConversationId,
+    fields: frozenset[ContactField],
 ) -> SelectedOwnContacts:
-    """Declare selected own-contact retrieval through the authorized share flow.
+    """Declare explicit, actor-bound own-contact retrieval for encryption.
 
-    The implementation must enforce explicit field selection and consent and
-    return no unselected values. DL-00 defines caller binding, field validation
-    and errors; no arbitrary-ID disclosure or notification-recipient lookup is
-    authorized by this signature. This declaration always fails if invoked.
+    Only requested, currently present fields may be returned. Values are private
+    and ephemeral; this declaration performs no read and always refuses calls.
     """
-    raise NotImplementedError("Identity contact interface is declaration-only")
+    raise NotImplementedError("declaration-only")
+
+
+async def resolve_notification_recipient(
+    context: NotificationWorkerContext, recipient_id: UserId
+) -> NotificationRecipient | None:
+    """Declare worker-authorized resolution of one eligible email recipient.
+
+    The result is ephemeral and contains no profile fields. The context is
+    injected by trusted worker wiring; the Python type itself is not a credential.
+    """
+    raise NotImplementedError("declaration-only")
