@@ -142,11 +142,12 @@ calls from Search or Conversations.
 ## Search HTTP operations
 
 Search owns Wanted Request rows and saved references. Public Wanted Request
-fields are the proposed non-identifying set: request ID, title, description,
-category code, optional budget, created/updated instants. No author ID/name or
-contact value is returned. “Public” means any eligible signed-in marketplace
-member; anonymous reads are not selected. The field set and authentication
-interpretation remain Step 10 review proposals.
+fields are the non-identifying set: request ID, title, description, category
+code and label, optional budget, and created/updated instants. No author
+ID/name or contact value is returned. “Public” means any eligible signed-in
+marketplace member, including temporary accounts; anonymous reads are not
+selected. This matches the approved Wanted Request clarification and
+`contracts/search.md`.
 
 | Method and route / operation ID | Input → output | Authorization, state, errors, retries and required cases |
 |---|---|---|
@@ -190,14 +191,12 @@ responses.
 
 ## Conversations HTTP operations
 
-Conversation payloads use opaque protocol-tagged encrypted envelopes. The
-recommended JSON transport is standard padded Base64 for envelope and
-public-key bundle bytes; the 1–16 KiB key-bundle and 1–64 KiB envelope limits
-apply to the opaque encoded bytes after transport decoding. Step 10 must review
-the transport detail. This does not choose an E2EE protocol, algorithm, nonce
-format, or client key-storage method; CN-01 Step 2 must approve those before
-implementation. Plaintext message, offer-note, or contact values are never
-accepted by these operations.
+Conversation payloads use opaque protocol-tagged encrypted envelopes. JSON
+transports envelope and public-key bundle bytes as standard padded Base64; the
+1–16 KiB key-bundle and 1–64 KiB envelope limits apply after decoding. This
+does not choose an E2EE protocol, algorithm, nonce format, or client key-storage
+method; CN-01 Step 2 must approve those before implementation. Plaintext
+message, offer-note, or contact values are never accepted by these operations.
 
 The actor and both members are derived from trusted server context and the
 stored thread. `origin_kind` is `sale_listing` or `wanted_request`; only the
@@ -245,7 +244,7 @@ shared error envelope. Safe field codes never echo submitted values.
 | GET /conversations/{conversation_id} — conversations_read_summary | UUID path → `ConversationSummary` | Eligible member only. Reads thread/member summary and current authorized offer summary; never loads origin records. Same safe 404 for missing/nonmember. Read-only and no activity renewal. Tests participant, nonparticipant, expired/revoked account, and redacted response. |
 | GET /conversations/{conversation_id}/entries — conversations_read_entries | UUID path; `after_sequence` nonnegative default 0; `page_size` 20 default, allowed 20/50/100 → `EntryPage{items,last_sequence,has_more}` | Eligible member only. Returns committed entries with sequence greater than cursor in ascending sequence; entries contain sender, kind, timestamp, and encrypted envelope or content-deleted marker. Empty page leaves cursor unchanged. No acknowledgement or activity write. Tests ordering, empty/end pages, limits, purge markers, retry cursor and nonmember denial. |
 | POST /conversations/{conversation_id}/messages — conversations_submit_message | `MessageRequest{envelope: CipherEnvelope,operation_id}` → `ConversationEntry` (201; identical retry 200) | Eligible member only; text envelope only, 1–64 KiB opaque encoded bytes after transport decoding, supported protocol metadata and key versions must match this thread's members. Actor/sender and recipient are server-derived. Atomically stores the next sequence, advances participant activity, and writes/updates one reminder intent per unread episode: due 15 minutes after the first unread text, with later messages updating its target but not postponing due time. `(conversation_id,sender_id,operation_id)` identical retry before purge returns original sequence; conflicting reuse 409. After purge, a content-free marker returns HTTP 409 `conflict` with safe detail `{field: operation_id, code: write_expired}`; it never recreates payload or intent. 422 malformed/unsupported envelope, 503 database failure; no false success on partial transaction. Tests two-client exchange, bad/tampered/wrong-recipient metadata, limits, duplicate/concurrent send, notification atomicity, rollback and dependency timeout. |
-| GET /conversations/{conversation_id}/read-state — conversations_read_state | UUID path → `ReadState{own_last_read_sequence,peer_last_read_sequence?}` | Eligible member only. Reads own watermark and optionally the other member's highest acknowledged sequence; no `read_at`, online/presence, or unrelated activity. Peer receipt visibility is a Step 10 affected-owner proposal; until approved, omit `peer_last_read_sequence`. Read-only/no timer renewal. Tests membership, watermark isolation and configured receipt visibility. |
+| GET /conversations/{conversation_id}/read-state — conversations_read_state | UUID path → `ReadState{own_last_read_sequence}` | Eligible member only. Returns only the caller's watermark. Peer receipt, `read_at`, online/presence and unrelated activity are not exposed in the MVP; the server still reads the recipient watermark for notification suppression. Read-only/no timer renewal. Tests membership and watermark isolation. |
 | PUT /conversations/{conversation_id}/read-state — conversations_acknowledge_read | `ReadAcknowledgement{last_read_sequence}` nonnegative → `ReadState` (200) | Eligible member only and only through the greatest committed sequence. Monotonic atomic max; older/equal repeats succeed without decreasing state. Does not count as participant activity and does not create a notification. Invalid/future sequence 422; unknown thread/nonmember safe 404. Tests repeated/out-of-order ack, future cursor, parallel ack and notification suppression read. |
 | GET /conversations/{conversation_id}/offer — conversations_read_offer | UUID path → `Optional[OfferView]` | Eligible member only. Current offer/revision metadata and optional encrypted note envelope for Sale Listing origin; null for no offer or Wanted Request origin. Reads do not renew activity. Offers are never inferred as payment/reservation. Tests buyer/seller, no offer, wanted origin, note redaction boundaries, purge marker and nonmember denial. |
 | GET /conversations/{conversation_id}/keys — conversations_read_member_keys | UUID path → `MemberKeyBundles{members:[{user_id,active_bundle,referenced_history_bundles}]}` | Eligible member only. Returns only current thread members' public bundles required by retained entries, with version/protocol metadata; never private keys. Read-only. Unknown/incompatible key reference fails safely instead of returning a misleading partial history. Tests member scope, historical references, replaced keys and missing bundle. |
@@ -323,7 +322,7 @@ notification-recipient operations.
 | P07 `/my/listings` | Listings `GET /me/listings`; Search own Wanted Request list/create/update/availability and draft-title matching; Conversations list link scoped by origin ID | Each origin domain owns its posts; Conversations owns thread/inbox | After each successful mutation, refetch only affected own list, discovery and match queries. Draft matching is read-only and never blocks create. Loading/empty/denied/error are feature states. |
 | P08 `/saved` | Search `GET/DELETE /me/saved-listings`; Listings provides authorized summaries through its public resolver | Search owns saved rows; Listings owns current summary/availability | Refetch saved page after save/remove and on focus; unavailable item keeps current allowed summary, retired item is content-free. Listings dependency outage is visible error, not stale-success. |
 | P09 `/my/conversations` | Conversations `GET /conversations`; query filters/sorts include origin, participant and current offer fields; fetch listing/request context separately from origin owner | Conversations owns thread, membership, offer summaries; Listings/Search own origin context | Refetch inbox after a thread/message/offer/share mutation and on active-page polling/focus. No-offer threads stay in amount-sorted results at the end. Loading/empty/denied/error; filter and stable numbered pagination. |
-| P10 `/my/conversations/:conversationId` | Conversations summary, entries, own key registration/member-key lookup, read-state, message and contact-share operations; offer/selection mutations go through Listings | Conversations owns entries/read state/keys/offers/shares; Listings owns availability/selection; Identity owns source contacts | Read entries incrementally by committed sequence; acknowledge only after display. Use immediate fetch on focus, poll at a recommended 2-second interval while visible/active, suspend while hidden, and back off on failures; affected-owner Step 10 review must confirm. Refresh entries/inbox after committed writes. No optimistic success on ambiguous commit; retry with same operation ID. Show expired-key, denied, conflict, validation and dependency states without sensitive payloads. |
+| P10 `/my/conversations/:conversationId` | Conversations summary, entries, own key registration/member-key lookup, read-state, message and contact-share operations; offer/selection mutations go through Listings | Conversations owns entries/read state/keys/offers/shares; Listings owns availability/selection; Identity owns source contacts | Read entries incrementally by committed sequence; acknowledge only after display. Fetch immediately on focus and after writes; poll every 2 seconds while visible/active, suspend while hidden, and back off on failures. The short interval leaves delivery/render time within NFR-05's 5-second target; acceptance still requires measurement. Refresh entries/inbox after committed writes. No optimistic success on ambiguous commit; retry with the same operation ID. Show expired-key, denied, conflict, validation and dependency states without sensitive payloads. |
 | P11 `/account/contacts` | Identity read/set/delete own contacts | Identity owns contact values; Conversations owns only explicit encrypted shares | Refetch own contacts after update/delete. Return to conversation preparation only after explicit selection/confirmation; never populate general profile/session responses with contact values. |
 | P12 `/wanted/:requestId` | Search read public request; eligible regular caller invokes Search response-conversation operation | Search owns request visibility/availability; Conversations owns resulting thread; Identity owns eligibility | Safe not-found for hidden/closed; submission shows pending/result/error. Existing pair is reopened on retry/after close; new response after closure is denied. Success navigates to conversation ID. |
 
@@ -343,17 +342,65 @@ messages appear within five seconds while both clients have the thread open.
 The focused NFR test must measure sender-submit through recipient-display; the
 interval alone is not evidence of NFR success.
 
-## Step 9 completion and Step 10 review boundary
+## Step 10 cross-contract review and cleanup-order proposal
 
-This registry records the operation names, owners, input/output semantics,
-authorization, owned reads/writes and transaction boundaries, ordering,
-retry/concurrency outcomes, dependency behavior, and required focused tests.
-Step 10 must reconcile proposals with each affected domain owner, especially
-the public Wanted Request field/auth interpretation, OTP challenge retry and
-resend behavior, profile/contact validation, counterparty display and offer
-history visibility, selection/read-receipt visibility, image URL lifetime,
-Base64 transport and protocol/key behavior, origin-owner/worker context
-provenance, notification batch/lease details, and exact retirement and
-notification cleanup FK/order. The two-second active polling recommendation
-also needs owner review. No provider setup, cleanup implementation, cloud
-change, or domain feature code is authorized by this Step 9 contract.
+This coordinator audit reconciles the combined registry with the four domain
+contracts, approved decisions, schema, and frontend map. The domain-owner
+acceptance column below remains pending until those reviewers provide evidence;
+this audit does not impersonate them.
+
+| Surface | Audited contract / recommendation | Affected review |
+|---|---|---|
+| Call graph | Preserve Search → Listings → Conversations → Identity, with Search → Conversations/Identity, Listings → Conversations/Identity, and Conversations → Identity. Identity calls no domain; Conversations never calls Listings/Search. No cycles or private-table/session sharing. | B, C, D; pending |
+| Wanted Request visibility | Signed-in eligible regular and temporary members; anonymous access excluded. Return only request ID, title, description, category code/label, budget and timestamps; no author identity/contact. | C, D; pending |
+| Retries | Keep operation-specific behavior. No arbitrary automatic write retries or universal idempotency store; same operation key + same intent returns the prior result, conflicting reuse is 409; ambiguous cross-domain writes use only the declared key or stable-pair lookup. | All affected domains; pending |
+| Identity/contact | Keep proposed trimmed display name (1–80 code points), email ≤254 chars, E.164 phone, and bounded ASCII UPI VPA validation. Same-key OTP retry does not send again; deliberate resend needs a new operation ID. Do not automatically resend after an ambiguous provider outcome. | A; pending |
+| Participant identity | Keep counterparty UUID for scoped conversation filtering only. Do not add global profile/name lookup; render role and origin context. Historical offer revisions remain participant-only; only current offer summary is exposed by the summary operation. | A, D; pending |
+| Selection / receipts | Selection state is visible only to the listing owner and the participants in the selected conversation, never public discovery or other buyers. Expose only the caller's read watermark; do not expose peer read sequence, timestamps, or presence. | B, D; pending |
+| Images / transport | Recommend five-minute image delivery URLs, with actual signing/storage behavior left to LI-02. Use standard padded Base64 for opaque encrypted envelope and public-key bundle bytes; crypto protocol/library remains CN-01 Step 2. | B, D; pending |
+| Polling | Keep immediate fetch on focus and after writes, 2-second active polling, pause while hidden, and back off after failure. A 5-second interval would consume the full NFR-05 delivery budget before network/render time; 2 seconds is the better starting point, subject to measurement. | D; pending |
+| Internal contexts / notifications | Construct origin-owner and worker contexts only in server composition/worker wiring, never bind them from HTTP. Check origin kind against caller capability. Keep notification claim default 20/max 50; lease duration, worker identity and dispatch recovery stay CN-03 implementation gates. | A, D; pending |
+
+### Proposed origin-retirement sequence
+
+This is a reviewable design only; it does not authorize cleanup code or a
+destructive run.
+
+1. Listings or Search starts a short transaction on its own origin row. After
+   rechecking the approved continuous-retirement predicate, it sets a proposed
+   nullable `retirement_pending_operation_id` to the operation UUID. A
+   non-null marker blocks new origin threads/edits/reopen and hides the origin
+   from discovery; the transaction commits before any Conversations call. The
+   marker clears with `retired_at` after successful content cleanup. No
+   cross-domain transaction or shared database session is used.
+2. The origin owner calls `get_origin_activity`. Unknown/incomplete results or
+   dependency failures fail closed and leave content intact.
+3. The origin owner calls `mark_origin_retired` with the stable operation ID.
+   Conversations locks every associated thread in UUID order, rechecks all
+   participant-write times against the cutoff, and atomically marks all
+   eligible threads no-write. If any thread is too recent, none are marked.
+   A repeat with the same operation ID returns the recorded outcome. The
+   all-or-none lock is the simplest safe MVP design; owners should reassess it
+   if measured thread counts make the transaction too large.
+4. If activity is too recent, the origin owner clears the pending operation ID
+   without deleting content. If the result is ambiguous, keep the origin
+   pending/hidden and retry or look up the same operation; never unhide or
+   delete on an unknown outcome. This avoids cross-domain rollback.
+5. Only after a confirmed Conversations marker does the owning domain clear
+   its own origin content in its own transaction. Image objects are handled
+   separately; cleanup metadata remains until deletion/absence is confirmed.
+6. Conversations purges history under its own thread lock and final inactivity
+   recheck. Suppress all nonterminal intents that cannot remain deliverable and
+   clear entry targets before payload cleanup; remove contact-share links
+   before their entries' payloads; set `offers.current_revision = NULL` and
+   `history_deleted_at` before deleting revisions; then remove encrypted
+   payloads and mark entries content-deleted.
+   Preserve entry sequence/operation markers, unread-episode/replay guards,
+   offer ID/pair/revision counter, thread, members, and origin uniqueness.
+   Terminal notification rows expire only after 30 days, with replay protection
+   retained as required. Use restrictive FKs and no broad cascade.
+
+Individual domain-owner review and human approval of this exact destructive
+cleanup mechanism/order remain required before implementation. No provider
+setup, cloud change, destructive execution, or domain feature code is
+authorized here.

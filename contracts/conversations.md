@@ -159,11 +159,11 @@ the same/older acknowledgement succeeds idempotently. It does not count as a
 participant write and does not reset thread-retention timing.
 
 The notification boundary can read the target member's authorized watermark
-to decide unread suppression. The recommended participant-facing receipt is
-the other member's highest read sequence, without a `read_at` timestamp or
-online/presence status; affected-owner review confirms whether that receipt is
-exposed in the UI at Step 10. A recipient can never update the other member's
-watermark.
+to decide unread suppression. For the MVP, expose only the caller's own read
+watermark; do not expose the peer's sequence, a `read_at` timestamp, or
+online/presence status. No product requirement needs a participant-facing read
+receipt, so the smaller interface avoids disclosing reading activity. A
+recipient can never update the other member's watermark.
 
 ## Listing and Wanted Request thread operations
 
