@@ -9,10 +9,19 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Generic, Literal, TypeVar
+from typing import Annotated, Generic, Literal, TypeVar
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, SecretStr
+from app.core.timestamps import as_utc, format_timestamp, parse_timestamp
+from pydantic import (
+    BaseModel,
+    BeforeValidator,
+    ConfigDict,
+    Field,
+    PlainSerializer,
+    SecretStr,
+    WithJsonSchema,
+)
 
 UserId = UUID
 ListingId = UUID
@@ -25,6 +34,21 @@ OperationId = UUID
 AccountClass = Literal["regular", "temporary"]
 ContactField = Literal["email", "phone", "upi_id"]
 OriginKind = Literal["sale_listing", "wanted_request"]
+
+
+def _parse_contract_instant(value: datetime | str) -> datetime:
+    """Reject naive/over-precise inputs and normalize accepted instants to UTC."""
+    if isinstance(value, datetime):
+        return as_utc(value)
+    return parse_timestamp(value)
+
+
+UtcInstant = Annotated[
+    datetime,
+    BeforeValidator(_parse_contract_instant),
+    PlainSerializer(format_timestamp, return_type=str, when_used="json"),
+    WithJsonSchema({"type": "string", "format": "date-time"}, mode="serialization"),
+]
 
 
 class ContractModel(BaseModel):
@@ -79,7 +103,7 @@ class SessionView(ContractModel):
 
     user_id: UserId
     account_class: AccountClass
-    valid_until: datetime
+    valid_until: UtcInstant
     display_name: str | None = None
 
 
@@ -107,7 +131,7 @@ class ChallengeAccepted(ContractModel):
     """Non-enumerating challenge acknowledgement without delivery claims."""
 
     challenge_id: UUID
-    expires_at: datetime
+    expires_at: UtcInstant
 
 
 class ActivateTemporaryRequest(ContractModel):
@@ -241,11 +265,11 @@ class ListingSummary(ContractModel):
     category_label: str
     condition_code: str
     condition_label: str
-    asking_price_paise: int = Field(ge=0)
+    asking_price_paise: int = Field(ge=0, multiple_of=100)
     negotiable: bool
     pickup_area: str
-    available_from: datetime
-    available_until: datetime | None
+    available_from: UtcInstant
+    available_until: UtcInstant | None
     availability: Literal["available", "unavailable"]
     sensitive_purchase: bool
     image_ids: list[ImageId]
@@ -272,8 +296,8 @@ class ListingManagementView(ListingDetail):
     revision: int = Field(ge=1)
     selected_buyer_id: UserId | None = None
     selected_conversation_id: ConversationId | None = None
-    created_at: datetime
-    updated_at: datetime
+    created_at: UtcInstant
+    updated_at: UtcInstant
 
 
 class ListingOwnerView(ListingManagementView):
@@ -287,8 +311,8 @@ class ListingQuery(ContractModel):
     page_size: Literal[20, 50, 100] = 20
     category_code: str | None = None
     condition_code: str | None = None
-    min_price_paise: int | None = Field(default=None, ge=0)
-    max_price_paise: int | None = Field(default=None, ge=0)
+    min_price_paise: int | None = Field(default=None, ge=0, multiple_of=100)
+    max_price_paise: int | None = Field(default=None, ge=0, multiple_of=100)
     sort: Literal["newest", "price_asc", "price_desc"] = "newest"
     q: str | None = Field(default=None, max_length=120)
 
@@ -318,7 +342,7 @@ class UploadInstruction(ContractModel):
     upload_id: ImageId
     upload_url: str = Field(repr=False)
     required_headers: dict[str, str]
-    url_expires_at: datetime
+    url_expires_at: UtcInstant
 
 
 class ConfirmedImage(ContractModel):
@@ -333,7 +357,7 @@ class ImageDelivery(ContractModel):
     """Time-limited authorized image URL; never an object-store key."""
 
     url: str = Field(repr=False)
-    url_expires_at: datetime
+    url_expires_at: UtcInstant
 
 
 class CreateListingRequest(ContractModel):
@@ -343,11 +367,11 @@ class CreateListingRequest(ContractModel):
     description: str = Field(min_length=1, max_length=5000)
     category_code: str
     condition_code: str
-    asking_price_paise: int = Field(ge=0)
+    asking_price_paise: int = Field(ge=0, multiple_of=100)
     negotiable: bool
     pickup_area: str = Field(min_length=1, max_length=120)
-    available_from: datetime | None = None
-    available_until: datetime | None = None
+    available_from: UtcInstant | None = None
+    available_until: UtcInstant | None = None
     proof_available: bool | None = None
     image_upload_ids: list[ImageId] = Field(min_length=1, max_length=8)
     operation_id: OperationId
@@ -361,11 +385,11 @@ class ListingReplacement(ContractModel):
     description: str = Field(min_length=1, max_length=5000)
     category_code: str
     condition_code: str
-    asking_price_paise: int = Field(ge=0)
+    asking_price_paise: int = Field(ge=0, multiple_of=100)
     negotiable: bool
     pickup_area: str = Field(min_length=1, max_length=120)
-    available_from: datetime
-    available_until: datetime | None
+    available_from: UtcInstant
+    available_until: UtcInstant | None
     proof_available: bool | None
     image_upload_ids: list[ImageId] = Field(min_length=1, max_length=8)
     operation_id: OperationId
@@ -376,8 +400,8 @@ class AvailabilityChange(ContractModel):
 
     expected_revision: int = Field(ge=1)
     availability: Literal["available", "unavailable"]
-    available_from: datetime | None = None
-    available_until: datetime | None = None
+    available_from: UtcInstant | None = None
+    available_until: UtcInstant | None = None
     operation_id: OperationId
 
 
@@ -408,9 +432,9 @@ class CurrentOfferSummary(ContractModel):
 
     offer_id: OfferId
     revision: int = Field(ge=1)
-    amount_paise: int = Field(ge=0)
+    amount_paise: int = Field(ge=0, multiple_of=100)
     status: Literal["submitted", "withdrawn"]
-    updated_at: datetime
+    updated_at: UtcInstant
 
 
 class OfferView(CurrentOfferSummary):
@@ -422,7 +446,7 @@ class OfferView(CurrentOfferSummary):
 class OfferRevisionRequest(ContractModel):
     """Submit/revise an offer without plaintext notes or payment behavior."""
 
-    amount_paise: int = Field(ge=0)
+    amount_paise: int = Field(ge=0, multiple_of=100)
     note_envelope: CipherEnvelope | None = None
     expected_revision: int | None = Field(default=None, ge=1)
     operation_id: OperationId
@@ -444,9 +468,9 @@ class WantedRequestPublic(ContractModel):
     description: str
     category_code: str
     category_label: str
-    budget_paise: int | None = Field(default=None, ge=0)
-    created_at: datetime
-    updated_at: datetime
+    budget_paise: int | None = Field(default=None, ge=0, multiple_of=100)
+    created_at: UtcInstant
+    updated_at: UtcInstant
 
 
 class WantedRequestOwnerView(WantedRequestPublic):
@@ -462,7 +486,7 @@ class CreateWantedRequest(ContractModel):
     title: str = Field(min_length=1, max_length=120)
     description: str = Field(min_length=1, max_length=5000)
     category_code: str
-    budget_paise: int | None = Field(default=None, ge=0)
+    budget_paise: int | None = Field(default=None, ge=0, multiple_of=100)
     operation_id: OperationId
 
 
@@ -473,7 +497,7 @@ class WantedRequestPatch(ContractModel):
     title: str | None = Field(default=None, min_length=1, max_length=120)
     description: str | None = Field(default=None, min_length=1, max_length=5000)
     category_code: str | None = None
-    budget_paise: int | None = Field(default=None, ge=0)
+    budget_paise: int | None = Field(default=None, ge=0, multiple_of=100)
     operation_id: OperationId
 
 
@@ -514,14 +538,14 @@ class SavedListingAck(ContractModel):
     """Acknowledgement of the caller's saved pair without listing details."""
 
     listing_id: ListingId
-    saved_at: datetime
+    saved_at: UtcInstant
 
 
 class SavedListingView(ContractModel):
     """Caller-owned saved reference with current safe detail or retired marker."""
 
     listing_id: ListingId
-    saved_at: datetime
+    saved_at: UtcInstant
     listing: ListingSummary | None
     retired: bool
 
@@ -535,7 +559,7 @@ class ConversationSummary(ContractModel):
     initiator_user_id: UserId
     caller_role: Literal["initiator", "origin_owner"]
     counterparty_user_id: UserId
-    last_activity_at: datetime
+    last_activity_at: UtcInstant
     own_last_read_sequence: int = Field(ge=0)
     unread_count: int = Field(ge=0)
     current_offer: CurrentOfferSummary | None = None
@@ -548,7 +572,7 @@ class ConversationEntry(ContractModel):
     sequence: int = Field(ge=1)
     kind: Literal["message", "contact_share"]
     sender_user_id: UserId
-    created_at: datetime
+    created_at: UtcInstant
     envelope: CipherEnvelope | None = None
     content_deleted: bool = False
 
@@ -642,8 +666,8 @@ class ConversationQuery(ContractModel):
     origin_id: UUID | None = None
     counterparty_user_id: UserId | None = None
     offer_status: Literal["submitted", "withdrawn"] | None = None
-    offer_min_paise: int | None = Field(default=None, ge=0)
-    offer_max_paise: int | None = Field(default=None, ge=0)
+    offer_min_paise: int | None = Field(default=None, ge=0, multiple_of=100)
+    offer_max_paise: int | None = Field(default=None, ge=0, multiple_of=100)
     sort: Literal["last_activity_desc", "offer_amount_asc", "offer_amount_desc"] = (
         "last_activity_desc"
     )
@@ -706,7 +730,7 @@ class ListingOfferCommand(ContractModel):
     listing_id: ListingId
     conversation_id: ConversationId
     offer_id: OfferId | None = None
-    amount_paise: int | None = Field(default=None, ge=0)
+    amount_paise: int | None = Field(default=None, ge=0, multiple_of=100)
     note_envelope: CipherEnvelope | None = None
     expected_revision: int | None = Field(default=None, ge=1)
     operation_id: OperationId
@@ -723,7 +747,7 @@ class OriginActivityResult(ContractModel):
     """Minimal retained thread count and latest participant write time."""
 
     thread_count: int = Field(ge=0)
-    latest_participant_write_at: datetime | None
+    latest_participant_write_at: UtcInstant | None
 
 
 class OriginRetirementCommand(ContractModel):
@@ -731,7 +755,7 @@ class OriginRetirementCommand(ContractModel):
 
     origin_kind: OriginKind
     origin_id: UUID
-    cutoff_utc: datetime
+    cutoff_utc: UtcInstant
     operation_id: OperationId
 
 
@@ -745,7 +769,7 @@ class RetirementMarkerResult(ContractModel):
 class NotificationClaimRequest(ContractModel):
     """Bounded due-intent claim request using controlled UTC time."""
 
-    now_utc: datetime
+    now_utc: UtcInstant
     max_items: int = Field(default=20, ge=1, le=50)
 
 
@@ -756,10 +780,10 @@ class NotificationClaim(ContractModel):
     conversation_id: ConversationId
     recipient_id: UserId
     event_kind: Literal["unread_message"]
-    due_at: datetime
+    due_at: UtcInstant
     target_sequence: int | None = Field(default=None, ge=1)
     fencing_token: UUID
-    lease_expires_at: datetime
+    lease_expires_at: UtcInstant
 
 
 class NotificationClaimResult(ContractModel):
@@ -773,7 +797,7 @@ class NotificationDispatchCheck(ContractModel):
 
     intent_id: UUID
     fencing_token: UUID
-    now_utc: datetime
+    now_utc: UtcInstant
 
 
 class NotificationDispatchContext(ContractModel):
@@ -790,7 +814,7 @@ class NotificationAttemptResult(ContractModel):
     intent_id: UUID
     fencing_token: UUID
     outcome: Literal["delivered", "transient_failure", "terminal_failure", "ambiguous"]
-    attempted_at: datetime
+    attempted_at: UtcInstant
 
 
 class NotificationIntentState(ContractModel):

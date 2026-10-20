@@ -169,8 +169,10 @@ joins Listings tables. Category assignment validates active code through
 Listings; public request display resolves the retained code/label through the
 Listings display-only boundary even if a catalogue value later becomes
 inactive. Open browse is separate from owner management. Search invokes
-Conversations only for the contact-requester operation above; it never calls
-back from Conversations.
+Conversations to create or look up Wanted Request response threads and read
+minimal request-origin activity. The retirement-marker operation is gated on
+separate human approval of the exact cleanup order. Conversations never calls
+back into Search.
 
 Search owns the HTTP operations above. It exposes no separate internal
 business callable to another domain in this contract; for cross-domain work it

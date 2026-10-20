@@ -4,7 +4,12 @@ import ast
 import importlib
 import inspect
 import re
+from datetime import UTC, datetime
 from pathlib import Path
+from uuid import uuid4
+
+import pytest
+from pydantic import BaseModel, ValidationError
 
 from scripts.generate_contracts import DOMAINS, load_sources
 
@@ -141,3 +146,61 @@ def test_declarations_do_not_install_unimplemented_http_routes():
 
     assert {route.path for route in app.routes} == {"/health"}
     assert not any(route.path.startswith("/auth/") for route in app.routes)
+
+
+def test_contract_timestamps_are_aware_and_serialize_as_canonical_utc():
+    """Domain contract instants reject ambiguity and serialize at fixed precision."""
+    from contracts.source.types import SessionView
+
+    session = SessionView(
+        user_id=uuid4(),
+        account_class="regular",
+        valid_until="2030-01-02T03:04:05.12+05:30",
+    )
+    assert session.valid_until == datetime(2030, 1, 1, 21, 34, 5, 120000, tzinfo=UTC)
+    assert session.model_dump(mode="json")["valid_until"] == (
+        "2030-01-01T21:34:05.120000Z"
+    )
+
+    for invalid in (
+        "2030-01-02T03:04:05",
+        "2030-01-02T03:04:05.1234567Z",
+        datetime(2030, 1, 2, 3, 4, 5),
+    ):
+        with pytest.raises(ValidationError):
+            SessionView(user_id=uuid4(), account_class="regular", valid_until=invalid)
+
+
+def test_contract_paise_values_are_whole_rupee_multiples():
+    """Every paise-denominated contract field enforces the approved price unit."""
+    from contracts.source import types as shared_types
+    from contracts.source.types import CreateListingRequest
+
+    request = {
+        "title": "Desk lamp",
+        "description": "Working lamp",
+        "category_code": "home",
+        "condition_code": "good",
+        "negotiable": False,
+        "pickup_area": "Campus",
+        "image_upload_ids": [uuid4()],
+        "operation_id": uuid4(),
+    }
+    with pytest.raises(ValidationError):
+        CreateListingRequest(**request, asking_price_paise=1050)
+    assert CreateListingRequest(**request, asking_price_paise=1100)
+
+    paise_fields = [
+        (model.__name__, name, field)
+        for model in vars(shared_types).values()
+        if inspect.isclass(model) and issubclass(model, BaseModel)
+        for name, field in model.model_fields.items()
+        if name.endswith("_paise")
+    ]
+    assert paise_fields
+    assert all(
+        any(
+            getattr(metadata, "multiple_of", None) == 100 for metadata in field.metadata
+        )
+        for _, _, field in paise_fields
+    )

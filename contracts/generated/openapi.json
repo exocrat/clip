@@ -483,6 +483,7 @@
         "properties": {
           "asking_price_paise": {
             "minimum": 0.0,
+            "multipleOf": 100.0,
             "title": "Asking Price Paise",
             "type": "integer"
           },
@@ -589,6 +590,7 @@
             "anyOf": [
               {
                 "minimum": 0.0,
+                "multipleOf": 100.0,
                 "type": "integer"
               },
               {
@@ -634,6 +636,7 @@
         "properties": {
           "amount_paise": {
             "minimum": 0.0,
+            "multipleOf": 100.0,
             "title": "Amount Paise",
             "type": "integer"
           },
@@ -932,6 +935,7 @@
         "properties": {
           "asking_price_paise": {
             "minimum": 0.0,
+            "multipleOf": 100.0,
             "title": "Asking Price Paise",
             "type": "integer"
           },
@@ -1048,6 +1052,7 @@
         "properties": {
           "asking_price_paise": {
             "minimum": 0.0,
+            "multipleOf": 100.0,
             "title": "Asking Price Paise",
             "type": "integer"
           },
@@ -1212,6 +1217,7 @@
         "properties": {
           "asking_price_paise": {
             "minimum": 0.0,
+            "multipleOf": 100.0,
             "title": "Asking Price Paise",
             "type": "integer"
           },
@@ -1376,6 +1382,7 @@
         "properties": {
           "asking_price_paise": {
             "minimum": 0.0,
+            "multipleOf": 100.0,
             "title": "Asking Price Paise",
             "type": "integer"
           },
@@ -1482,6 +1489,7 @@
         "properties": {
           "asking_price_paise": {
             "minimum": 0.0,
+            "multipleOf": 100.0,
             "title": "Asking Price Paise",
             "type": "integer"
           },
@@ -1641,6 +1649,7 @@
         "properties": {
           "amount_paise": {
             "minimum": 0.0,
+            "multipleOf": 100.0,
             "title": "Amount Paise",
             "type": "integer"
           },
@@ -1685,6 +1694,7 @@
         "properties": {
           "amount_paise": {
             "minimum": 0.0,
+            "multipleOf": 100.0,
             "title": "Amount Paise",
             "type": "integer"
           },
@@ -2565,6 +2575,7 @@
             "anyOf": [
               {
                 "minimum": 0.0,
+                "multipleOf": 100.0,
                 "type": "integer"
               },
               {
@@ -2640,6 +2651,7 @@
             "anyOf": [
               {
                 "minimum": 0.0,
+                "multipleOf": 100.0,
                 "type": "integer"
               },
               {
@@ -2711,6 +2723,7 @@
             "anyOf": [
               {
                 "minimum": 0.0,
+                "multipleOf": 100.0,
                 "type": "integer"
               },
               {
@@ -3846,6 +3859,7 @@
               "anyOf": [
                 {
                   "minimum": 0,
+                  "multipleOf": 100,
                   "type": "integer"
                 },
                 {
@@ -3863,6 +3877,7 @@
               "anyOf": [
                 {
                   "minimum": 0,
+                  "multipleOf": 100,
                   "type": "integer"
                 },
                 {
@@ -5931,6 +5946,7 @@
               "anyOf": [
                 {
                   "minimum": 0,
+                  "multipleOf": 100,
                   "type": "integer"
                 },
                 {
@@ -5948,6 +5964,7 @@
               "anyOf": [
                 {
                   "minimum": 0,
+                  "multipleOf": 100,
                   "type": "integer"
                 },
                 {

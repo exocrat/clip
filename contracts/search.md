@@ -13,9 +13,11 @@ summaries, and the authoritative title/description search index. Search does
 not read Listings tables or maintain a listing projection. Search clients use
 the Listings-owned browse/detail HTTP operations directly; Search's draft-match
 and saved-list operations call only Listings' reviewed public query/summary
-operations. Search calls Conversations only to start a response to an open
-Wanted Request. Conversations never calls Search or Listings. This preserves
-the reviewed acyclic graph.
+operations. Search calls Conversations to start or look up a Wanted Request
+response thread and to read the minimal origin-activity result. After separate
+human approval of the exact cleanup order, its retirement path may also invoke
+the Conversations-owned retirement marker. Conversations never calls Search or
+Listings. This preserves the reviewed acyclic graph.
 
 The chosen listing boundary is the Listings-owned query backed by PostgreSQL
 native full-text search, using `pg_catalog.english` for both the stored vector
