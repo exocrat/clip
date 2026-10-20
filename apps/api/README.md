@@ -1,6 +1,16 @@
-# API foundation
+# API foundation and Listings routes
 
-PD-05 steps 1–5 supply a FastAPI application, process-health endpoint, typed startup settings, the [shared-core boundary](app/core/README.md), README-only domain ownership placeholders under `app/domains/`, and persistent API/configuration tests. Marketplace features remain later domain tasks.
+The API serves process health and the current LI-01 Listings create, detail,
+owner-list, replacement, availability, buyer-selection, and offer-command
+routes. The Listings handlers are implemented in `app/domains/listings/`; they
+require trusted Identity caller wiring, an explicit Listings storage adapter,
+and (for selection and offers) the Conversations public-call adapter. An
+explicit database URL opens the PostgreSQL-backed Listings store at startup;
+without it, feature routes fail closed. Identity authentication and capability
+implementation, and Conversations' declaration-only calls, still fail closed
+until their owners wire them. The [shared-core boundary](app/core/README.md)
+and typed startup settings remain the foundation for the remaining domain
+tasks.
 
 From the repository root, install the locked dependencies and start the local API:
 
@@ -9,13 +19,13 @@ uv sync --locked
 uv run --locked uvicorn app.main:app --app-dir apps/api --host 127.0.0.1 --port 8000
 ```
 
-In another terminal, `curl --fail http://127.0.0.1:8000/health` should return HTTP 200 with `{"status":"ok"}`. This confirms only that the API process responds; it does not check a database, provider or cloud environment. The initial app exposes only `/health`; schema/docs routes remain disabled; PD-11 generates contracts offline.
+In another terminal, `curl --fail http://127.0.0.1:8000/health` should return HTTP 200 with `{"status":"ok"}`. This confirms only that the API process responds; it does not check a database, provider or cloud environment. Schema/docs routes remain disabled; generated contracts are separate from runtime implementations.
 
 Stop the foreground server with Ctrl+C. The server binds only to loopback, requires no cloud credentials or local database, and creates no external resources. If the port is occupied, stop only your own earlier process or explicitly choose another local port and use that same port in the health request. An import/dependency error should be investigated after `uv sync --locked`; do not replace it with a fake success response. Runtime dependencies are declared only in root `pyproject.toml` and locked by uv.
 
 ## Startup settings
 
-The API reads these non-secret values from the process environment at startup:
+The API reads these values from the process environment at startup:
 
 | Variable | Type and local default | Behavior |
 |---|---|---|
@@ -25,10 +35,21 @@ The API reads these non-secret values from the process environment at startup:
 | `CLIP_EMAIL_PROVIDER` | `disabled` or `fake`; default `disabled` | Explicit local/test helper selection; production rejects `fake`. No email is sent or claimed delivered. |
 | `CLIP_STORAGE_PROVIDER` | `disabled` or `fake`; default `disabled` | Authorizes only explicit test-helper construction; production rejects `fake`. No real storage is configured. |
 | `CLIP_DEVELOPMENT_AUTH` | Boolean; default `false` | Reserved testing control; production rejects `true`. This setting creates no public authentication bypass. |
+| `CLIP_DATABASE_URL` | Optional PostgreSQL URL; default unset | Stored as a redacted secret. When set, startup opens a bounded async connection pool; do not paste the URL into logs or chat. Without it, health starts and Listings routes return the safe unavailable response. |
 
 For example, `CLIP_ENVIRONMENT=test CLIP_DEBUG=false uv run --locked uvicorn app.main:app --app-dir apps/api --host 127.0.0.1 --port 8000` uses explicit test settings. No file is automatically loaded: `.env.example` is documentation, not a source of runtime settings. Restart your server after changing environment values. Configuration failures name the affected settings but do not echo supplied values; startup stops instead of falling back to a successful response.
 
-No database/provider setting is required by this liveness-only skeleton. Their required names and missing-value checks must be added with the tasks that implement those dependencies; no placeholder credential or fake service is required to start locally. PD-06 implements selection safeguards; PD-10 supplies [controlled test helpers](../../tests/fixtures/core/README.md) that normal API startup never installs. Unknown provider names fail startup, and the skeleton never falls back to fake success. Do not treat production configuration mode alone as evidence of a working or safe cloud deployment.
+No database/provider setting is required to start the health endpoint locally.
+The database adapter is real PostgreSQL code and is enabled only by an explicit
+`CLIP_DATABASE_URL`; it does not create or reset a database. Identity's public
+eligibility declaration is not implemented yet, and the Conversations calls
+remain declaration-only, so requests needing those dependencies return the
+shared safe error. No placeholder credential or fake service is required to
+start locally. PD-06 implements selection safeguards; PD-10 supplies
+[controlled test helpers](../../tests/fixtures/core/README.md) that normal API
+startup never installs. Unknown provider names fail startup, and the API never
+falls back to fake success. Do not treat production configuration mode alone
+as evidence of a working or safe cloud deployment.
 
 ## Tests
 
@@ -39,7 +60,16 @@ uv sync --locked
 uv run --locked pytest apps/api/tests -q -W error
 ```
 
-`uv run --locked pytest` runs all currently configured test roots; PD-11 contract generation tests also require root `npm ci` and the pinned Node toolchain. The API-only command above needs no Node installation. API tests start the real ASGI app in explicit test mode using FastAPI's TestClient; no HTTP listener, database, provider or cloud access is needed. The tests discard inherited `CLIP_`/`AWS_` settings for isolation and restore the developer's environment afterward. Synthetic cases cover local defaults, typed overrides, malformed/empty values, production-debug rejection, redacted errors, fresh reads and ignored dotenv/example files. Fresh credential-free subprocesses verify invalid configuration prevents the actual entry point from importing. Temporary fixture files stay under pytest's temporary directory.
+`uv run --locked pytest` runs all currently configured test roots; PD-11 contract generation tests also require root `npm ci` and the pinned Node toolchain. The API-only command above needs no Node installation. API tests start the real ASGI app in explicit test mode using FastAPI's TestClient; no HTTP listener, database, provider or cloud access is needed unless a test explicitly configures one. The tests discard inherited `CLIP_`/`AWS_` settings for isolation and restore the developer's environment afterward. Synthetic cases cover local defaults, typed overrides, malformed/empty values, production-debug rejection, redacted database URLs/errors, fresh reads and ignored dotenv/example files. Fresh credential-free subprocesses verify invalid configuration prevents the actual entry point from importing. Temporary fixture files stay under pytest's temporary directory.
+
+The PostgreSQL adapter test is separate because the regular API suite does not
+start a database. Run `uv run --locked python scripts/check_database.py
+--listings-store` to apply migrations to a fresh disposable PostgreSQL container
+and exercise listing creation, edit, selection, availability, and retry writes.
+It uses a temporary Unix socket and synthetic Identity/Conversations test
+doubles, then prints a sample row selected from PostgreSQL before cleanup. Its
+image metadata is fixture data, not an S3 upload. The shared Compose database
+is not used.
 
 Exit 0 means the collected suite passed; a failure must be investigated, and exit 5 (no tests collected) is not a pass. The development-only `httpx2` pin supports the installed Starlette TestClient. No fake identity or storage implementation is used, and this suite does not prove domain integration, deployed readiness or performance.
 
@@ -59,7 +89,7 @@ Application and Uvicorn logs use controlled JSON metadata without raw paths, que
 
 Run `uv run --locked pytest apps/api/tests/core -q -W error` from the repository root for the focused shared-core suite. The existing full API command includes it automatically. The suite checks UUID and UTC round trips, exact whole-rupee conversions, pagination bounds/order preservation, error/status mappings and safe validation details, immutable caller validity, log redaction/concurrent correlation, and provider-setting guards. Warnings are treated as errors.
 
-Temporary FastAPI routes live only in test fixtures; they add no production endpoints. Synthetic static rows test page-window ordering, not future SQL ordering, authorization, or concurrent snapshots. Tests restore environment/logger changes and need no network listener, database, credentials, real provider, or extra dependency. Step 5 supplies the explicit HTTP identity-spoofing and production-entry-point rejection checks below; step 6 performs the final fixture/output review.
+Test-only routes live in test fixtures. The production app also mounts the reviewed Listings subset, which remains unavailable without its configured dependencies. Synthetic static rows test page-window ordering, not future SQL ordering, authorization, or concurrent snapshots. Tests restore environment/logger changes and need no network listener, database, credentials, real provider, or extra dependency. Step 5 supplies the explicit HTTP identity-spoofing and production-entry-point rejection checks below; step 6 performs the final fixture/output review.
 
 ## Security boundary tests (PD-06 step 5)
 

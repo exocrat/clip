@@ -48,7 +48,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PRE-00 | Integration owner | done | Foundation gate audit accepted; DL-00 is unblocked | performed | verified/accepted by user | Reviewed handoff PR #8 merged to `main` at `2cd83e7`; hosted Foundation quality gates passed for head `18c966e` against base `68d9da9` (run `39323851584`); clean-checkout evidence at `0747be6`; see [PD-19 handoff](foundation-handoff.md) | None. PR #8 has no GitHub review event; independent-review completion remains user-reported without a separate artifact. | 2026-10-19 21:20:55 UTC |
 | DL-00 | Shared-core/contract coordinator; all domains review | in progress | Steps 1–13 local work complete; independent review and exact merge gate next | Steps 1–13 performed | User reports affected domain owners reviewed and approved the contract documents; four declarations derive from those reviewed signatures | `task/pre-00-dl-00-foundation`; 50 HTTP operations, 19 internal callables, eight generated artifacts; `make check` passed (421 Python, 63 data, 16 web tests; Black 71 files; boundary/contract/mypy/web/database/safety/secrets checks) | Independent peer review and exact-revision merge remain; cleanup implementation still needs its separate approval; real providers/integrations and crypto/worker implementation remain downstream | 2026-10-20 05:17:32 UTC |
 | ID-01 | A | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | ID-READY, LI-01, LI-02, SE-CORE, SE-02, CN-CORE, CN-02 | — |
-| LI-01 | B | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | LI-CORE, LI-02, SE-CORE | — |
+| LI-01 | B | Step 5 partial; seller offer gates and Listings retirement coordination/cleanup are implemented and isolated checks pass; later task gates remain | Steps 1–4 performed; Step 5 availability/selection behavior and storage exist; buyer offer gates have focused service tests; Listings retirement stores the pending ID/cutoff, calls Conversations' public activity/marker operations, scrubs local content after confirmation, and queues retired image objects for retryable cleanup | Steps 1–4 and seller-command storage verified; user verified offer checks, retirement coordinator, and Listings cleanup order; user verified the isolated cleanup implementation; shared migration checks pass; C/D review and real providers remain pending | `domain/listings`; `.venv/bin/pytest apps/api/tests/domains/listings/test_retirement_service.py apps/api/tests/domains/listings/test_offer_boundary.py -q -W error` passed 18 tests; `.venv/bin/python scripts/check_database.py --listings-store` passed PostgreSQL 18.6 clean apply/repeat, both smokes, Listings adapter workflow, eight-migration rollback and clean reapply. Checks cover pending visibility/retries, local content and receipt scrubbing, retired-image queue persistence, and deleting image/upload rows only after confirmation. Black, Python compile and `git diff --check` passed. Targeted mypy still reports three errors in existing page-size/pool typing code; no application-wide mypy claim. Native macOS schema inventory and real Conversations/Identity/image integrations remain pending. | Review paired pending cutoff fields with Search C and Conversations D; finish remaining Step 9–10 offer/concurrency/rollback/retirement cases; wire the real storage adapter and scheduled cleanup worker under LI-02; decide final retired My Listings behavior; run native macOS schema check if required; finish real Identity, Conversations, LI-02 and later LI-CORE/SE-CORE integrations and task-wide review | 2026-10-20 15:18:17 UTC |
 | LI-02 | B | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | LI-CORE, ID-READY | — |
 | SE-01 | C | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | SE-CORE, LI-01, LI-02, DATA-READY | — |
 | SE-02 | C | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | SE-CORE, ID-READY, LI-CORE | — |
@@ -82,21 +82,19 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 
 ## Listings preparation checkpoint
 
-Suraj (B) selected `domain/listings` for Listings work and related task-document
-updates. Suraj requested these preparation and contract corrections be
-published directly to main without a PR, with a separate branch for LI-01/LI-02.
-The current draft is prepared in a clean local main worktree. Affected-owner
-review remains pending for the frontend guidance and shared contract changes.
-LI-01/LI-02 implementation remains not started; no readiness milestone is
-accepted by this preparation.
+Suraj (B) selected one `domain/listings` branch to hold the accepted contract
+corrections and LI-01 work together. The contract corrections are from
+`44cd8ff`, now this branch's base. Suraj directed that the recorded
+DL-00/contract review status is sufficient to begin LI-01; this records the
+decision to proceed and does not add reviewer evidence. LI-01 is active on
+`domain/listings`; LI-02 remains not started and no readiness milestone is
+accepted.
 
-Current checkpoint: camera/gallery, responsive UI and explicit human browser
-guidance drafted; Suraj confirmed completing the Firefox Responsive Design
-Mode layout inspection. Actual-phone camera/gallery checks remain pending for
-LI-02. The public-interface contract audit found declaration mismatches and
-prepared corrections; affected-owner review and publication remain pending.
-The local foundation is available for further inspection. The Listings
-walkthrough remains in progress.
+Current checkpoint: `domain/listings` contains the accepted contract changes,
+verified LI-01 Steps 1–4, and the partial Step 5 implementation and evidence.
+Suraj confirmed completing the Firefox Responsive Design Mode layout
+inspection. Actual-phone camera/gallery checks remain pending for LI-02. The
+Listings walkthrough remains in progress.
 
 ## Dated history entries
 
@@ -105,6 +103,338 @@ Update the task status row after each step and human verification. The row is th
 Add a history entry when it records a meaningful outcome, decision, changed output, check result, blocker, consequential human direction, or task/merge closeout. Group related steps when that keeps their results understandable. Do not add a separate history entry just to say that a routine step was verified and the next one may begin.
 
 Include the task and covered step(s), contributor, date/time, and the details needed to understand or verify the outcome: relevant execution/verification state, changed paths, exact checks/results, decision/evidence reference, blocker/owner, or next action as applicable. Keep entries brief, omit repeated background, and link existing artifacts rather than duplicating them. Use exact UTC date and time for new entries. Keep historical timestamp precision as recorded; never guess or backfill an unknown time. Preserve distinct decisions, evidence, and other contributors' useful history.
+
+### LI-01 task start — 2026-10-20 08:57:01 UTC
+
+Suraj (B) verified the LI-01 task sequence and directed proceeding with the
+recorded DL-00/contract review status. Created isolated worktree
+`/home/suraj/src/clip-li-01` on `task/li-01-listing-lifecycle` from `main` at
+`44cd8ff`; preserved the existing dirty `domain/listings` checkout. No LI-01
+implementation changed. Step 1 reuses the earlier contract/preparation audit
+and awaits human verification before execution.
+
+### LI-01 Step 1 — current contract/schema/frontend inspection — 2026-10-20 09:07:01 UTC
+
+Suraj (B); performed and subsequently verified by Suraj before Step 2. Reused the prior `public.py`
+and browser-preparation audit, then inspected `contracts/listings.md`, editable
+contract sources, shared conventions, existing Listings migrations/catalogue,
+Listings frontend routes/placeholders and linked decisions. Confirmed zero is
+valid and asking prices are integer paise in whole-rupee increments. The
+catalogue (8 categories/4 conditions), text/image limits, and availability
+rules are already recorded; the configured sensitive-price threshold and its
+owner remain a Step 2 decision. Step 2's examples also call already-settled
+category, condition, pickup and availability rules "still-missing"; proposed
+clarifying that they are reused, not reopened. The shared MVP migration already
+creates the Listings/catalogue/image tables, constraints and indexes. This
+conflicts with Step 3's wording to "add" the schema and migration; proposed
+clarifying that it must audit/reuse the existing schema and add only a
+necessary follow-up migration, never duplicate tables. No product/code/schema
+files changed.
+`git diff --check` passed.
+
+### LI-01 Step 2 — provisional sensitive-price threshold — 2026-10-20 09:13:35 UTC
+
+Suraj (B) selected ₹5,000 (500,000 paise) as a changeable provisional
+threshold, with Listings owning the setting. The flag uses strict `price >
+threshold`; mobile phones and laptops are always flagged by category. Recorded
+the decision and linked it from the Listings contract; updated the task list to
+reuse already-settled catalogue/field rules and to inspect/reuse existing
+schema, adding a migration only for a proven gap. Updated the schema proposal
+to point to the provisional decision. No runtime setting or migration was
+implemented. `git diff --check` passed. Suraj verified Step 2 at 2026-10-20
+09:16 UTC.
+
+### LI-01 Step 3 — existing schema and migration audit — 2026-10-20 09:17:11 UTC
+
+Suraj (B); performed, awaiting verification. Compared the Listings contract
+with existing shared migrations, catalogue seed, integrity triggers, and
+schema-smoke examples. Existing DDL already has the listing fields, owner and
+catalogue references, availability/retirement fields, whole-rupee price checks,
+image upload/reference tables, 1–8-image publication check, integrity guards,
+and listing/catalogue/owner/price/search/retirement indexes. The ₹5,000
+threshold belongs in application configuration, not the database. No concrete
+schema gap was found in this file-level audit; no migration is proposed. Query
+plan performance remains a Step 11 check. No schema files changed and no live
+database or migration tests were run. `git diff --check` passed.
+
+### LI-01 Step 4 — create/read/replace implementation — 2026-10-20 09:33:37 UTC
+
+Added Listings service validation and owner checks plus HTTP handlers for
+create, detail read, owner-list read, and full replacement. Owner identity comes
+only from trusted `CallerContext`; create/replacement check current eligibility,
+active catalogue values, text/availability boundaries, and owner-bound
+confirmed images. The service expects an injected store to persist listing/image
+changes atomically and enforce revision conflicts. Mounted the routes in the
+API; startup has no store or Identity wiring yet, so requests fail closed until
+those adapters are provided. No schema migration or fake/default store was
+added. Updated the existing contract-schema checks to expect only the
+implemented Listings route subset. A text edge remains: generated Pydantic
+models check raw maximum length before the service trims outer whitespace. The
+canonical source can fix this with a pre-validation rule, but generated outputs
+must be rebuilt; `uv` is unavailable and system Python lacks FastAPI, so no
+generated file was hand-edited. `git diff --check` and Python syntax parsing
+passed; application tests and contract generation were not run. Step 4 awaits
+human verification.
+
+### LI-01 Step 5 visibility follow-up — 2026-10-20 09:52:05 UTC
+
+Suraj confirmed unavailable listings must remain visible in the seller's
+management view while retained and asked that post-retirement visibility be
+studied. Recorded this follow-up in the origin-retirement decision and Step 5;
+the approved retirement timing and cleanup rules are unchanged. Step 5 has not
+started and still awaits its explanation approval.
+
+### LI-01 Step 5 — availability, selection and offer command boundary — 2026-10-20 10:01:01 UTC
+
+Suraj approved Step 5. Added service rules and HTTP routes for owner-only
+availability/window changes, seller selection or clearing, buyer offer
+submission/revision, and offer withdrawal. Selection calls the declared
+Conversations participant-check interface; offer writes call its declared
+offer interface while a Listings-owned state guard is held. The guard must
+serialize with availability and retirement writers. Store methods own atomic
+revision checks and operation replay; the user-facing API still fails closed
+because no storage, Identity, or Conversations adapters are configured.
+Updated only existing route/schema expectations to recognize this implemented
+route subset; no behavior tests were added or run. Python AST parsing and
+`git diff --check` passed.
+
+Retirement eligibility scanning, marker calls and content/image cleanup were
+not implemented. The exact destructive cleanup mechanism/order still needs its
+separate approval. The current schema inventory also has no durable operation
+result shape for availability/selection retries, so resolve that storage need
+before wiring the real adapter; no migration had yet been added at this
+checkpoint. Step 5 remains partial and awaits human verification of this
+increment.
+
+### LI-01 Step 5 — additive owner-command result storage — 2026-10-20 10:28:19 UTC
+
+Suraj approved a separate Listings table for availability and selection retry
+results and approved deleting those records when their listing retires. Added
+forward migration `20261020102224_listing_owner_command_results.sql`; its key
+is listing + command kind + operation ID, and it saves the validated request
+and original response. An after-retirement trigger deletes the saved copies in
+the same database transaction. Updated the Listings/combined contract and schema
+inventory to define replay while retained, 409 on conflicting key reuse, and a
+retired-state conflict after saved-result deletion. Added rollback-only SQL smoke
+coverage for duplicate keys and retirement cleanup; updated current migration
+head/object counts.
+
+Static checks passed: `git diff --check`, `bash -n database/tests/native-checks.sh`,
+and Python AST parsing. The native PostgreSQL/dbmate check did not run because
+the documented tool paths are absent in this environment; the first invocation
+stopped at its usage check and changed no database. The existing shared Compose
+database was left untouched. No production store adapter is configured, so
+this migration supplies the persistent shape but does not by itself activate
+live retry behavior. Suraj verified this owner-command result-storage increment
+at 10:31 UTC. This verifies the storage design and documented change, not a
+native database run or live adapter behavior; LI-01 Step 5 remains partial.
+
+### LI-01 Step 5 — owner-command result storage verified — 2026-10-20 10:31:43 UTC
+
+Suraj verified the additive Listings-owned result-storage increment and the
+decision to delete those saved results when a listing retires. Step 5 remains
+partial: the migration has not been applied to a real test database, the
+rollback-only SQL smoke has not run, and no concrete store/Identity/Conversations
+adapters provide live retry or selection behavior. The pending integration
+ledger records the work and checks still required. No tests or database changes
+were run for this verification.
+
+### LI-01 Step 5 — disposable database checker aligned — 2026-10-20 10:35:24 UTC
+
+Updated `scripts/check_database.py` to require migration head
+`20261020102224` and 24 domain tables, and updated the current database README
+description to match. Historical results for earlier schema heads remain as
+recorded. At this documentation checkpoint, the disposable check had not yet
+run; it passed in the following entry.
+
+### LI-01 Step 5 — disposable PostgreSQL migration check passed — 2026-10-20 10:37:45 UTC
+
+Ran `python3 scripts/check_database.py`; `uv` is unavailable here, and this
+standalone checker uses Python's standard library with its pinned PostgreSQL
+18.6/dbmate 2.36.0 images. It passed clean migration application through head
+`20261020102224`, repeat application, the current domain-table inventory, and
+both SQL smoke suites. The owner-command SQL smoke therefore passed its duplicate
+key and retirement result-deletion checks. The checker removed only its own
+temporary container; the shared Compose database was untouched. This verifies
+the database schema/smoke path, not live API retries or runtime adapters. The
+macOS-only native rollback/reapply/inventory check and service/API behavior
+checks remain pending.
+
+### LI-01 Step 5 — create-retry receipt migration and smoke passed — 2026-10-20 11:25:06 UTC
+
+Following the user's verification of the additive create-retry storage approach,
+added the forward-only migration `20261020111741_listing_create_command_results.sql`.
+It stores the create request and original response under `(owner_id,
+operation_id)` while listing content is retained. Retirement clears both
+content-bearing payloads in the listing transaction but preserves the
+owner/operation/listing key; a database guard prevents restoring payloads after
+retirement. The combined contract describes the proposed safe 409 response for
+a later retry; affected-owner review and contract-version classification remain
+pending. Updated the schema inventory, database/command documentation,
+migration checker, native harness, SQL smoke, LI-01 test expectations, and work
+log. No runtime store/route behavior is wired yet.
+
+`python3 scripts/check_database.py` passed against disposable PostgreSQL 18.6 at
+11:22:17 UTC:
+clean apply at head `20261020111741`, repeat apply, both SQL smoke suites, and
+the 25-table inventory. The smoke verified create receipt retention, payload
+scrubbing on retirement, rejection of payload restoration, and rejection of a
+second listing using the retired operation key; existing seller-command result
+deletion also passed. The checker removed only its own temporary container; the
+shared Compose database was untouched. `git diff --check` and
+`bash -n database/tests/native-checks.sh` passed. macOS native
+rollback/reapply/inventory and runtime API retry checks remain pending.
+
+### LI-01 Step 5 — bounded storage-adapter writer reservation — 2026-10-20 11:35:31 UTC
+
+Suraj (B), `domain/listings`, is the bounded current writer for additive API
+dependency/lock entries, database URL configuration and lifespan wiring, and
+the owned PostgreSQL adapter plus focused checks/docs. Shared dependency and
+configuration sections will only receive the entries required for this work.
+While mapping the existing owner view to the schema, found that the reviewed
+Listing management type exposes `selected_conversation_id` but
+`listings.sale_listings` stores only `selected_buyer_id`; the SQL adapter cannot
+persist or reload the contracted buyer/conversation pair as-is. The bounded
+schema addition is a nullable conversation reference and pair-integrity check;
+the existing migration history remains untouched. Conversations-owner review
+is pending. No code or migration for this reservation had yet been changed at
+the time of this entry.
+
+### LI-01 Step 5 — PostgreSQL adapter and API startup wiring — 2026-10-20 11:53:19 UTC
+
+Added pinned Psycopg async/pool dependencies to root `pyproject.toml` and
+regenerated only their entries plus transitive lock data in `uv.lock`. Added an
+optional redacted `CLIP_DATABASE_URL` setting and an API lifespan that opens a
+bounded PostgreSQL pool only when configured and closes it on shutdown. No DSN
+keeps health-only startup available and Listings fails closed. The new
+`PostgresListingsStore` implements retained-listing reads, owner lists,
+create/edit, availability/selection writes, owner-command replay, atomic
+create receipts and a row lock held across listing-offer calls. A separate
+Listings identity adapter calls Identity's public eligibility declaration and
+fails with 503 while Identity remains unimplemented; Conversations receives
+only its public declarations and likewise remains unavailable. The service no
+longer asks a Listings SQL store to read Identity eligibility.
+
+Adapter mapping found two specific schema needs. Added
+`20261020113531_listing_selection_and_confirmed_image_metadata.sql` without
+rewriting an earlier migration: it stores the selected conversation paired
+with the buyer, enforces the pair, backfills existing selected threads, and
+adds nullable fields for LI-02 to record actual media type/size after object
+inspection. `schema-smoke.sql` checks both pair integrity and metadata shape.
+The writer refuses to attach an upload whose verified metadata is missing; the
+LI-02 verifier still needs to populate it. Conversations-owner review of the
+cross-domain conversation reference remains pending. Post-retirement create
+retry behavior still awaits affected-owner review/version classification;
+retirement and destructive cleanup remain outside this increment. The
+provisional sensitive-price threshold is currently passed through the adapter
+constructor; moving it to environment configuration and adding its rule tests
+remains Step 6.
+
+`uv sync --locked` and `uv lock --check` passed. `uv run --locked pytest
+apps/api/tests -q -W error` passed (250 tests) after correcting the existing
+`AsyncContextManager` import in the newly imported service. Pinned Black check
+passed for nine changed Python files. `python3 scripts/check_database.py`
+passed clean apply at head `20261020113531`, repeat apply, both SQL smoke
+suites, 25 domain tables, rollback of all seven migrations and clean reapply.
+The shared Compose database was not used. `bash -n
+database/tests/native-checks.sh` and `git diff --check` passed. These checks do
+not yet exercise the Python store methods against PostgreSQL; that belongs in
+the isolated Step 9–10 behavior checks. The macOS native schema-inventory run,
+affected-owner review and real Identity/Conversations/LI-02 integration remain
+pending. This increment awaits Suraj's verification.
+
+### LI-01 Step 5 — local PostgreSQL workflow exercised — 2026-10-20 12:19:03 UTC
+
+Fixed the buyer-selection service call to pass the Identity capability adapter
+to the eligibility check. Added a focused PostgreSQL workflow test covering
+create, same-key replay and changed-intent conflict, image replacement, buyer
+selection, availability change, command replay, clearing a buyer while
+unavailable, owner-list visibility, and non-owner denial. The test uses
+synthetic Identity and Conversations doubles; its image metadata is fixture
+data and does not represent an S3 upload.
+
+Extended `scripts/check_database.py --listings-store` additively. It uses a fresh
+memory-backed PostgreSQL 18.6 container, a private temporary Unix socket, no
+host port, and no shared Compose database. It applies and rolls back all seven
+migrations, runs both SQL smoke suites, then runs the adapter workflow after
+reapply and prints a SQL-selected sample row before removing its container.
+The row showed the revised synthetic listing as unavailable at revision 5,
+with one live image, one create receipt, three owner-command receipts, and no
+selected buyer/conversation after the seller cleared selection. The command
+passed; its focused PostgreSQL test passed (1 test).
+
+`uv run --locked pytest apps/api/tests -q -W error` passed 250 tests and skipped
+the one database-backed test because the regular API-only run has no database.
+The focused database command ran that test successfully. Black, Python compile,
+and `git diff --check` passed. The disposable container and socket were removed;
+the shared Compose database was untouched. Step 5 remains partial: retirement
+logic/cleanup, offer and concurrency cases, affected-owner reviews, and real
+Identity/Conversations/LI-02 integrations remain pending. Human verification of
+this increment is pending.
+
+### LI-01 Step 5 — retirement boundary review — 2026-10-20 12:31:35 UTC
+
+Suraj verified the preceding disposable-PostgreSQL workflow checkpoint. Read
+the origin-retirement decision and only the Listings/Conversations public
+interfaces and Listings retirement paths. The Conversations declaration offers
+`get_origin_activity` (thread count plus latest participant-write time) and
+`mark_origin_retired` (an all-or-none no-write marker, with no content cleanup).
+Those calls are declarations only. Listings has no retirement scan, marker
+integration, or content/image cleanup implementation.
+
+The database already records continuous eligibility, checks retirement timing,
+requires no participant writes within 90 days, and scrubs create retry payloads
+and deletes seller-command receipts when a listing is marked retired. However,
+`listings.guard_origin` currently queries `conversations.threads` directly both
+to validate selected-buyer membership and to lock/read `last_activity_at`.
+LI-01 says to use Conversations public calls and not read its private tables,
+so the existing trigger path needs affected-owner/database review before
+Listings retirement is built around it. The owner view after retirement remains undecided; unavailable
+listings must remain visible while their content is retained. Object cleanup
+and its retry-safe order remain behind their separate approval. No application
+code or migrations changed and no tests were run in this review.
+
+### LI-01 Step 5 — shared retirement-interface checkpoint recorded — 2026-10-20 14:04:37 UTC
+
+Suraj approved the API-only retirement sequence and asked to implement the
+coordinated handoff changes on `domain/listings`. Added an unnumbered shared
+checkpoint inside LI-01 Step 5, preserving all existing step numbers. It
+records the 180/90-day rules, pending-operation and retry behavior, lock/write
+ordering, domain owner split, expected contract/document/migration/check
+outputs, and remaining review/integration gates. Physical content/object
+deletion and final retired-listing visibility in My Listings remain separate
+open decisions. This checkpoint updated only the task list and work log; no
+contract, application code, or migration changed, and no tests were run.
+
+### LI-01 Step 2 — retirement contracts and schema proposal updated — 2026-10-20 14:15:07 UTC
+
+Updated the Conversations result type from a boolean retirement flag to the
+three approved outcomes (`marked`, `blocked_recent_activity`,
+`already_marked`) plus `marked_count`. Clarified the public retirement call's
+all-thread lock order, race behavior, unique operation/replay rules, and that
+the marker does not delete content. Updated Listings/Search and shared-boundary
+contracts to require public API calls and owner-side pending state; the exact
+Listings buyer/listing/conversation participant-check API already existed, so
+no new callable was needed. Updated the retirement decision and database
+schema proposal, marking not-yet-migrated fields/table as planned and noting
+the unpublished SQL backfill that Step 3 must remove. Generated the contract
+artifacts with the recorded local uv/Node installations; all eight artifacts
+are current and the generator freshness check passed. `git diff --check`
+passed. No application behavior, migration, or database changed; no tests were
+run. C/D review and real Conversations implementation remain pending.
+
+### LI-01 Step 3 — unpublished migration backfill removed — 2026-10-20 14:19:55 UTC
+
+Removed the `UPDATE ... FROM conversations.threads` that populated Listings'
+selected-conversation ID by reading Conversations' private table in
+`20261020113531_listing_selection_and_confirmed_image_metadata.sql`. Kept the
+Listings-owned image metadata backfill, selected-buyer/conversation pair check,
+and structural FK. If existing selected-buyer rows lack a stored conversation
+ID, the migration now fails closed instead of guessing; any such populated-DB
+upgrade needs an API-backed data-reconciliation plan. `git diff --check` passed,
+and inspection confirms the migration no longer queries `conversations` (the
+structural FK remains). The migration was not applied to any database. Step 3
+awaits human verification.
 
 ### BOOT-00 — seed installation and source validation — 2026-10-14
 Suraj (B); completed and human-verified. Cloned the existing exocrat/clip repository, preserved `.git` and `LICENSE`, and installed 28 supplied bundle files at the clone root from `origin/main` revision `3e81554ce3d713478d8f0979d76480e286096455`. All paths were present with no nested bundle directory. The submitted PRD checksum matched the source and bundle manifest: `8ac241d1e72472a5dc77edad18579ec5d2ca3ff2ac8fd454cbc6e9627abf4ad1`. Added README navigation, source provenance, workstation facts, and the A/B/C/D roster; Aditya (A) is the default release/status coordinator and the shared cloud operator remains unselected.
@@ -1407,11 +1737,110 @@ OpenAPI now includes the filter, sort values, and 200 response body. `git diff
 --check` passed. No application tests were run. Affected-owner review remains
 pending.
 
+### Cross-domain retirement handoff — Step 4 migration drafted — 2026-10-20 14:24:26 UTC
+
+Reused the already verified handoff work: the contract outcome and retry rules,
+the Conversations participant-check callable, the Step 5 checkpoint, and the
+selected-conversation migration correction were already complete. Added the
+next forward migration, `20261020142319_api_owned_retirement_and_trigger_boundaries.sql`.
+It adds the Listings/Search pending-operation IDs, the Conversations thread
+participant-write marker, and the content-free operation-result ledger. It
+replaces the four named triggers so their up-path checks no longer read or
+write another domain's tables: origin guards retain local lifecycle and
+180-day checks, thread guards retain local identity/order protections, entry
+inserts lock their own thread and use server time, and offer revisions retain
+local consistency checks. Structural FKs remain. The down section restores the
+previous trigger behavior for disposable rollback. The migration was not
+applied; no tests or database checks ran. Focused SQL validation,
+migration apply/rollback/reapply, and affected-owner review remain pending in
+the next verified step.
+
+### Cross-domain retirement handoff — Step 5 disposable verification — 2026-10-20 14:30:10 UTC
+
+Updated the database/schema/retirement decision docs and the disposable/native
+check definitions for migration head `20261020142319` (26 domain tables, eight
+migrations). Updated the rollback-only smoke fixtures: they now verify a blocked
+retirement result cannot report marked threads, and that the Conversations
+thread no-write marker rejects new messages/contact shares for both origin
+types without advancing sequence or activity. The fixture does not claim to
+test service API activity checks or concurrent ordering. `python3
+scripts/check_database.py` passed against its newly created PostgreSQL 18.6
+container: clean apply, exact head, repeat apply, both SQL smokes, rollback of
+all eight migrations, complete namespace removal, clean reapply, and both
+smokes again. The checker removed its own container; the shared Compose database
+was not used. `bash -n database/tests/native-checks.sh` and `git diff --check`
+passed. The native schema-inventory run was updated but not run here; C/D review
+and real retirement service behavior remain pending.
+
+### Cross-domain retirement handoff — Step 6 guard and rollback corrections — 2026-10-20 14:36:58 UTC
+
+The handoff audit found two requirements not yet covered by the Step 5 smoke:
+offer-revision and contact-share subtype writes needed their own local marker
+check under the Conversations thread lock, and rollback must not silently drop
+stored retirement outcomes or active markers. Updated the unpublished forward
+migration: `guard_offer_revision` now locks/checks the thread; the existing
+contact-share identity trigger checks the marker on inserts while retaining its
+update-rejection behavior; and down migration refuses to proceed while the
+operation ledger or pending/no-write markers contain state. Expanded the
+rollback-only smoke to attempt a marked offer revision and contact-share write
+and confirm rejection without activity/sequence changes. Extended the
+disposable checker to seed a result, require down migration to fail for the
+specific data-preservation reason, confirm the result/head remain, then clear
+that synthetic row and complete the normal eight-migration rollback/reapply.
+`python3 scripts/check_database.py` passed PostgreSQL 18.6 clean apply, exact
+head, repeat apply, both smokes, expected data-preserving rollback refusal,
+complete empty rollback, clean reapply and repeated smokes. The checker removed
+its disposable container; the shared database was untouched. Native schema
+inventory and affected-owner review remain pending.
+
+
+### LI-01 Step 5 — offer gates and Listings retirement coordinator — 2026-10-20 15:02:18 UTC
+
+Added focused Listings offer-boundary tests. They verify that an eligible buyer
+can submit only when the listing is within its availability window, ordinary
+unavailability still permits withdrawal, retired listings block both actions,
+owner/ineligible callers cannot submit, and availability changes wait while an
+offer call holds the Listings row lock. These use a test-only Conversations
+implementation and do not prove real offer persistence.
+
+Implemented the Listings retirement coordinator in `service.py` and its local
+transaction support in `postgres_store.py`. It checks local 180-day eligibility,
+commits a pending operation ID and a server-derived 90-day activity cutoff
+before calling Conversations, validates the activity preflight, and sends the
+same stored request to the locked marker operation. A confirmed blocked result
+clears both pending fields; API errors and unknown outcomes keep both fields for
+an exact retry. A confirmed marker leaves the listing pending until its
+separately approved local content/image cleanup is implemented. Normal listing
+reads and offer guards hide pending rows, while the owner's retained-listing
+query keeps them visible in My Listings.
+
+The unpublished migration `20261020142319` now adds the cutoff column and
+paired-null constraint for both Listings and Search. This is necessary because
+the operation ID alone cannot reproduce the same request after a restart. No
+committed/shared-applied migration was edited. Listings/Search/combined
+contracts and the schema, database, task and retirement-decision docs now say
+the exact pending ID/cutoff pair must be retained.
+
+`.venv/bin/pytest apps/api/tests/domains/listings/test_retirement_service.py apps/api/tests/domains/listings/test_offer_boundary.py -q -W error` passed (16 tests). `.venv/bin/python scripts/check_database.py --listings-store` passed PostgreSQL 18.6 clean apply/repeat, both SQL smokes, the Listings PostgreSQL workflow, the eight-migration rollback and clean reapply; its disposable container was removed. Black, Python compilation and `git diff --check` passed. Targeted mypy reported three errors in existing page-size/pool typing code; they are deferred to the task-wide type/build gate. No real Conversations provider, shared database, object cleanup or content deletion was used. Step 5 remains partial pending the cleanup decision/order, remaining offer/concurrency tests, owner reviews, and real integration.
+### LI-01 Step 5 — approved Listings cleanup implemented — 2026-10-20 15:14:39 UTC
+
+Suraj approved the Listings-local retirement cleanup order. After Conversations returns `marked` or `already_marked`, the Listings store now verifies the same pending operation ID/cutoff and, in one transaction, marks the listing retired/unavailable, clears user-entered details and selected-buyer fields, marks its attached images retired, and clears the pending pair. Existing triggers scrub create receipt payloads and remove seller-command receipts. The Conversations tables and Search saved references are not changed.
+
+Added a Listings cleanup-worker service method. It selects retired image rows only when their parent listing is retired, passes each stored object key to the image-storage boundary, and removes the image/upload rows only after the adapter confirms the object was deleted or already absent. Errors/unknown outcomes leave the object key available for another idempotent attempt. No S3 adapter or scheduled worker is wired yet; that real integration remains LI-02 work. The current My Listings behavior continues to omit retired listings; the possible content-free marker is still a follow-up decision.
+
+Updated the Listings contract, origin-retirement decision, task list and integration ledger to record the approved cleanup method and its remaining real-provider gates. No migration or shared database change was needed; the existing image `retired_at` field serves as durable cleanup work.
+
+`.venv/bin/pytest apps/api/tests/domains/listings/test_retirement_service.py apps/api/tests/domains/listings/test_offer_boundary.py -q -W error` passed (18 tests). `.venv/bin/python scripts/check_database.py --listings-store` passed PostgreSQL 18.6 clean apply/repeat, both smokes, the Listings adapter workflow, full eight-migration rollback and clean reapply. The database workflow verified the 180-day guard, content/receipt scrubbing, image cleanup queue, and deletion of image/upload metadata after confirmation. Black, Python compilation and `git diff --check` passed. Real Conversations and object-storage integration remain pending. Cleanup implementation awaits user verification; no commit or push.
+
 ## Pending integration ledger
 
 | Task/step | Mode, source/version, double and scenarios | Required real dependency | Owner roles | Trigger | Real checks and expected result | Current evidence/state |
 |---|---|---|---|---|---|---|
 | DL-00 Step 11; Search → Listings | Isolated; HTTP 0.1.0 / generator format 2; `apps/api/tests/domains/search/doubles/listings.py`; success/repeat, denied 403, expired caller 401, missing ID 404, timeout/unavailable 503 | Accepted LI-CORE implementation and the consuming SE-01 integration checkpoint | Listings B; Search C | LI-CORE is accepted and SE-01 reaches its real Listings integration checks | Run SE-01 Steps 3–8 against real Listings: verify availability/filter/order/page ties, category labels, saved/current summaries and retired-content privacy; denied/expired/missing/failure outcomes preserve safe errors; confirm Search uses only the public interface. | Isolated tests pass in the 55-test contract/double run; real provider checks remain pending. |
+| LI-01 Step 5 / Step 11 — migration and database smoke | Disposable database only; PostgreSQL 18.6 and dbmate 2.36.0; synthetic rollback-only SQL smokes; never target the shared Compose database | The disposable checker expects head `20261020142319` and 26 domain tables. The native harness uses its own temporary cluster. | Listings B; database/migration maintainer if required by the shared migration process | Before LI-01 Step 11 database acceptance; focused disposable check passed for the API-owned retirement migration; run native check if its platform gate is required | Disposable check: clean apply, exact eight-migration head `20261020142319`, repeat apply, both SQL smokes, prove rollback refuses recorded retirement state, remove only the synthetic test result, roll back all eight migrations, clean reapply. Native check: 26 tables, 23 functions, 35 triggers, smokes before/after rollback, clean reapply and identical schema inventory. The smokes cover owner-command/create receipts, buyer/conversation and confirmed-image constraints, blocked retirement result counts, and no-write enforcement for messages, offer revisions and contact-share inserts on listing and Wanted Request threads. | `python3 scripts/check_database.py` passed: exact PostgreSQL 18.6 head, 26 tables, repeat apply, both smokes, expected data-preserving rollback refusal, empty-state rollback of eight migrations and clean reapply. Disposable container removed; shared Compose database untouched. The updated native schema-inventory run remains pending. |
+| LI-01 Steps 9–10 — isolated owner-command and lifecycle behavior | Local API/service/database tests; reviewed Conversations test double for participant checks and offer writes; controlled clock and synthetic listings/conversations | Concrete transactional Listings store and test fixtures; reviewed Identity capability interface and Conversations public contract/double | Listings B; Identity A and Conversations D for interface review | After the store adapter and test fixtures exist, before Step 11 acceptance | Cover create/edit/owner and non-owner outcomes; availability transitions and windows; select/clear/replace buyer with eligibility and conversation membership checks; offer submit/revise/withdraw boundary through the double; operation replay (same key/same request returns original result before stale-revision rejection; same key/changed request is 409); rollback on partial failure; concurrent same-key retries and competing revisions. For create, verify owner/operation-scoped same-intent replay, changed-intent conflict, and that retirement scrubs content while a later retry conflicts without recreating or revealing the listing. Cover retirement at 180-day and availability-end rules plus 90 days without participant writes in every associated conversation, reset after eligibility-restoring reopen/window edit, unavailable discovery exclusion but owner-view visibility, no reopen/new conversation/offer after retirement, and preservation of content-free origin/thread/account uniqueness references. Cover ₹5,000 threshold boundaries, price/category reclassification and proof declaration omitted/Yes/No. | The focused disposable-PostgreSQL workflow passes create, edit/image replacement, selection/clear, availability, owner visibility and retry checks with synthetic Identity/Conversations doubles. Real Identity/Conversations and LI-02 image confirmation remain unavailable; offer commands, concurrency/partial-failure, controlled-time retirement and remaining Step 9–10 scenarios are pending. |
+| LI-01 Step 5 — retirement integration and cleanup decision | Isolated Listings service/store with reviewed Conversations API test double; no private-table reads | DL-00 activity/marker signatures; stable pending operation ID and cutoff persisted on the Listings row | Real Conversations provider; real storage adapter/worker wiring under LI-02; post-retirement owner-view decision remains open | Listings B; Conversations D; affected content/image owners | Run isolated cleanup checks; require real Conversations and storage/worker integration before claiming real retirement | Verify local 180-day eligibility, exact stored 90-day cutoff, preflight completeness, all-or-none marker result handling, blocked clears both pending fields, unknown retains both for same-request retry, no reopen/edit/selection/offer/read/discovery while pending, and owner management visibility while content remains. Verify receipt scrubbing, retired-image work retention and post-confirmation object deletion; test failure/unknown retry behavior. | The Listings retirement coordinator is implemented against the typed public interface. Eight focused retirement/cleanup tests cover eligibility, marker results, incomplete activity, retry identity, durable object-key retention on errors, and successful metadata cleanup. A disposable PostgreSQL workflow verifies the ID/cutoff pair, pending-row visibility/command blocking, and cutoff stability across a later retry. Isolated local cleanup is implemented after user approval; real Conversations/storage integration and worker scheduling remain pending; retired My Listings behavior remains open. |
+| LI-01 Steps 11–13 — real integrations and human browser verification | Real ordered database migrations, authorized API/UI and actual image/search dependencies; desktop browser and supported phone browser | ID-READY and compatible Identity/Listings migrations for real auth/FKs; LI-CORE for consumers; CN-02 for real Conversations offer writes; LI-02 and SE-CORE for image-backed publication and discovery | Listings B; Identity A; Conversations D; Search C; Security/platform reviewers as required | Step 11 after isolated checks; Step 13 only after LI-02 and SE-CORE | Run the task's unit/API/UI tests, Black, type/build, generated-contract checks and CI; inspect query plans and list/detail paths for N+1 queries. Verify real owner auth and selected-buyer visibility, and ensure Search/Conversations use only public Listings interfaces. After LI-02/SE-CORE, create/edit an image-backed listing, check unavailable state and discovery exclusion, and manually inspect the journey in desktop and supported phone browsers; confirm camera/gallery/file behavior in LI-02's phone checks. Record exact revisions, commands/results and remaining integration gates. | Not reached. Real Identity/Conversations/storage adapters, LI-02 and SE-CORE are pending. Human desktop/phone verification is still required at Step 13. |
 
 ## Resolved integration evidence
 

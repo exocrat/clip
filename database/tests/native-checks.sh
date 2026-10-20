@@ -67,15 +67,15 @@ migrate() {
 
 # Check clean apply, repeat application and schema inventory at both clean heads.
 check_head() {
-  [[ $(sql --command 'SELECT max(version) FROM public.schema_migrations') == 20261018152702 ]]
-  [[ $(sql --command 'SELECT count(*) FROM public.schema_migrations') == 4 ]]
-  [[ $(sql --command "SELECT count(*) FROM pg_tables WHERE schemaname IN ('identity','listings','search','conversations')") == 23 ]]
+  [[ $(sql --command 'SELECT max(version) FROM public.schema_migrations') == 20261020142319 ]]
+  [[ $(sql --command 'SELECT count(*) FROM public.schema_migrations') == 8 ]]
+  [[ $(sql --command "SELECT count(*) FROM pg_tables WHERE schemaname IN ('identity','listings','search','conversations')") == 26 ]]
   [[ $(sql --command 'SELECT count(*) FROM listings.categories') == 8 ]]
   [[ $(sql --command 'SELECT count(*) FROM listings.conditions') == 4 ]]
   [[ $(sql --command 'SHOW server_version_num') == 180006 ]]
   [[ $(sql --command 'SHOW listen_addresses') == '' ]]
-  [[ $(sql --command "SELECT count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname IN ('identity','listings','search','conversations')") == 20 ]]
-  [[ $(sql --command "SELECT count(*) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace WHERE NOT t.tgisinternal AND n.nspname IN ('identity','listings','search','conversations')") == 32 ]]
+  [[ $(sql --command "SELECT count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname IN ('identity','listings','search','conversations')") == 23 ]]
+  [[ $(sql --command "SELECT count(*) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace WHERE NOT t.tgisinternal AND n.nspname IN ('identity','listings','search','conversations')") == 35 ]]
 }
 
 # Snapshot ordered runtime definitions rather than OIDs, fixture UUIDs or dump
@@ -123,7 +123,7 @@ sql --file "$root/database/tests/retired-origin-smoke.sql" > "$evidence/retireme
 
 # No fixture commits remain after the smoke rollback; down/up is confined to
 # this disposable database and is not the persistent Compose-volume reset.
-for revision in 1 2 3 4; do migrate rollback > "$evidence/rollback-$revision.log" 2>&1; done
+for revision in 1 2 3 4 5 6 7 8; do migrate rollback > "$evidence/rollback-$revision.log" 2>&1; done
 [[ $(sql --command 'SELECT count(*) FROM public.schema_migrations') == 0 ]]
 [[ $(sql --command "SELECT count(*) FROM pg_namespace WHERE nspname IN ('identity','listings','search','conversations')") == 0 ]]
 migrate migrate > "$evidence/apply-second.log" 2>&1
@@ -134,4 +134,4 @@ inventory > "$evidence/inventory-second.txt"
 cmp "$evidence/inventory-first.txt" "$evidence/inventory-second.txt"
 clean_env "$pgbin/pg_dump" --host="$socket" --port=55438 --username=clip_native_test \
   --dbname=clip_test_native --schema-only --no-owner --no-privileges > "$evidence/schema.sql"
-printf '%s\n' 'PASS: native clean apply/head, repeat migrate, both smoke suites twice, four down migrations, clean reapply and identical runtime schema inventory.'
+printf '%s\n' 'PASS: native clean apply/head, repeat migrate, both smoke suites twice, eight down migrations, clean reapply and identical runtime schema inventory.'

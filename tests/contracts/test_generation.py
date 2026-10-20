@@ -229,15 +229,38 @@ async def asgi_get(app, path):
 
 
 def test_actual_api_schema_matches_generated_contract():
-    """The live app exposes only implemented health; domain routes remain declarations."""
+    """The real API schema matches health and the implemented Listings subset."""
     from app.main import app
 
     actual = app.openapi()
     declared = json.loads((ROOT / "contracts/generated/openapi.json").read_text())
     assert declared["x-clip-generator-format"] == 2
     assert actual["info"] == declared["info"]
-    assert set(actual["paths"]) == {"/health"}
-    assert actual["paths"]["/health"] == declared["paths"]["/health"]
+    implemented_paths = {
+        "/health",
+        "/listings",
+        "/listings/{listing_id}",
+        "/me/listings",
+        "/listings/{listing_id}/availability",
+        "/listings/{listing_id}/selection",
+        "/listings/{listing_id}/conversations/{conversation_id}/offer",
+        "/listings/{listing_id}/conversations/{conversation_id}/offer-withdrawals",
+    }
+    assert set(actual["paths"]) == implemented_paths
+    for path in implemented_paths:
+        # A contract URL can declare operations that are not implemented yet
+        # (for example, GET /listings). Verify every live operation against its
+        # declaration without requiring those future operations to be mounted.
+        for method, operation in actual["paths"][path].items():
+            if method in {"get", "put", "post", "delete", "patch", "options", "head"}:
+                declared_operation = deepcopy(declared["paths"][path][method])
+                actual_operation = deepcopy(operation)
+                # Descriptions and tags are presentation metadata; the route
+                # identifier and HTTP input/output schemas are the wire contract.
+                for metadata in (declared_operation, actual_operation):
+                    metadata.pop("description", None)
+                    metadata.pop("tags", None)
+                assert declared_operation == actual_operation
     assert (
         actual["components"]["schemas"]["HealthResponse"]
         == declared["components"]["schemas"]["HealthResponse"]
@@ -249,7 +272,6 @@ def test_actual_api_schema_matches_generated_contract():
         if isinstance(operation, dict) and "operationId" in operation
     }
     assert len(contract_operation_ids) == 51
-    assert len(app.routes) == 1
     assert asyncio.run(asgi_get(app, "/health")) == (200, {"status": "ok"})
     for path in ("/openapi.json", "/docs", "/redoc"):
         status, _ = asyncio.run(asgi_get(app, path))

@@ -16,8 +16,8 @@ Arrows below mean caller → callee:
 | Caller | Callee | Purpose |
 |---|---|---|
 | Search | Listings | Available-listing query and listing details under the approved listing-data boundary. |
-| Listings | Conversations | Create/reopen listing-origin threads; confirm a buyer's thread participation for seller selection; validate and persist listing-based offer mutations; read the minimal conversation-activity result for retirement. |
-| Search | Conversations | Create/reopen Wanted Request response threads; read the minimal conversation-activity result for retirement. |
+| Listings | Conversations | Create/reopen listing-origin threads; confirm a buyer's thread participation for seller selection; validate and persist listing-based offer mutations; read minimal activity and set the no-write marker for retirement. |
+| Search | Conversations | Create/reopen Wanted Request response threads; read minimal activity and set the no-write marker for retirement. |
 | Conversations | Identity | Check account eligibility; retrieve only the actor's selected own-contact fields; resolve an authorized notification recipient. |
 | Listings | Identity | Check caller/account eligibility where an operation requires it. |
 | Search | Identity | Check caller/account eligibility where an operation requires it. |
@@ -95,16 +95,26 @@ distributed rollback is assumed.
 
 Each record-owning domain performs retention/retirement cleanup for its own
 content. Listings/Search decide whether their origin records meet the approved
-retirement criteria. Conversations supplies a minimal activity result for all
-threads associated with an origin; the result does not expose private content.
-Reads, polling, delivery workers, and other non-participant actions do not
-count as participant writes. Conversations owns conversation/message/offer/
-disclosure cleanup and preserves the approved content-free identifiers.
+retirement criteria and store a pending operation on their own origin record.
+They commit that pending state before calling Conversations; they never query
+Conversations business tables from a trigger or one-time SQL backfill.
+Conversations supplies a minimal activity result for all associated threads,
+then performs the authoritative no-write marker under stable, all-thread
+locks. A participant write and marker contend on the same thread lock. A write
+that wins first advances server time after locking and causes retirement to
+block if it is too recent; a marker that wins first causes the waiting write
+to be rejected. Reads, polling, delivery workers, and other non-participant
+actions do not count as participant writes. Conversations owns
+conversation/message/offer/disclosure cleanup and preserves approved
+content-free identifiers.
 
-The activity/retirement contract is owner-reviewed, but the precise multi-owner
-lock, recheck, and cleanup order still needs explicit human approval before
-implementation. No cleanup sequence, cascade, or destructive implementation
-is authorized by this Step 3 boundary record.
+The API-only activity/marker sequence and race behavior are approved. An
+unknown marker result keeps the origin pending and retries with the same
+operation ID; a confirmed recent-activity block clears pending state and a
+later attempt uses a new ID. Each record-owning domain still needs approval of
+its local destructive content/object cleanup method and order before deletion
+is implemented. No cross-domain trigger, shared database session or cascade
+performs this work.
 
 ## Frontend connections and authoritative state
 

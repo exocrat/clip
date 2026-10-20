@@ -20,8 +20,8 @@ The allowed calls are:
 
 | Caller | Conversations capability | Constraint |
 |---|---|---|
-| Listings | Create/reopen listing-origin thread; check that a buyer participates in a specified listing thread; persist a Listings-authorized offer mutation; read minimal listing-origin activity. | Listings resolves listing/owner state and serializes its own availability/selection changes. It supplies server-derived origin/participant context. |
-| Search | Create/reopen Wanted Request-origin thread; read minimal request-origin activity. | Search resolves author/request state and serializes response creation against closure. It supplies server-derived origin/participant context. |
+| Listings | Create/reopen listing-origin thread; check that a buyer participates in a specified listing thread; persist a Listings-authorized offer mutation; read listing-origin activity; atomically set the no-participant-write marker for retirement. | Listings resolves listing/owner state and serializes its own availability/selection changes. It supplies server-derived origin/participant context. |
+| Search | Create/reopen Wanted Request-origin thread; read request-origin activity; atomically set the no-participant-write marker for retirement. | Search resolves author/request state and serializes response creation against closure. It supplies server-derived origin/participant context. |
 | Identity | None. | Identity never calls Conversations. Conversations calls Identity for the actor/participant eligibility checks and the authorized contact/notification-recipient capabilities. |
 | CN-03 worker | Claim/complete delivery work and read the authorized recipient/read-state facts required for a due event. | Conversations keeps ownership of intent records and state transitions. Worker/provider failure never reverses the primary thread/message write. |
 
@@ -321,9 +321,34 @@ has participant activity. For one or more threads, the origin owner compares
 the returned maximum with the approved cutoff; this proves every associated
 thread is old enough only if the query is complete. If completeness/state is
 unknown or Conversations is unavailable, return a safe dependency failure and
-the origin owner must defer retirement. Never treat an error or missing result
-as zero activity. The public call exposes no content and grants no private
-table access.
+the origin owner must defer retirement. This is a preflight only;
+`mark_origin_retired` performs the final authoritative activity check while
+holding the write locks. Never treat an error or missing result as zero
+activity. The public call exposes no content and grants no private table
+access.
+
+`mark_origin_retired` accepts the origin kind/ID, cutoff and globally unique
+operation ID. It locks every retained thread for that origin in ascending
+conversation UUID order, checks every latest participant-write time against
+the cutoff, and sets a no-new-participant-writes marker on all of them in one
+Conversations transaction. A zero-thread origin returns `marked` with
+`marked_count: 0`. If any thread is newer than the cutoff, it changes none and
+returns `blocked_recent_activity` with `marked_count: 0`. If the origin's
+threads are already marked, it returns `already_marked` and the number already
+marked. A repeated operation ID with the same origin and cutoff returns the
+stored original result; reusing that ID with a different origin or cutoff is a
+conflict. An unknown call result is retried with the same ID. The result says
+only what happened to thread write markers; it does not mean listing/request
+content or image objects have been deleted.
+
+Participant message, offer, and contact-share writes use the same per-thread
+lock. They set `last_activity_at` using server time only after obtaining that
+lock, then check the no-write marker before committing. Therefore, if a write
+gets the lock first, retirement sees its new activity and blocks the whole
+attempt; if retirement gets the lock first, the waiting write sees the marker
+and is rejected. For multi-thread marking, a participant write waits until the
+all-or-none marker transaction finishes. Reads and non-participant operations
+do not advance activity.
 
 After 90 days without participant writes, purge message content, encrypted
 offer notes and structured offer revisions together under the approved
@@ -331,14 +356,12 @@ retention policy. Contact-share payloads/labels are removed after 30 days.
 Keep only content-free ordered markers and minimal origin/thread/member and
 offer uniqueness guards for their approved lifetimes. Reads, polling, workers,
 account expiry and cleanup do not restart the 90-day timer. Retention timing
-does not authorize a cleanup method: foreign-key/current-offer/notification
-target order and the destructive mechanism require the concrete Step 10 human
-approval before implementation. Owner review accepted write-locking a retired
-thread, so Listings/Search must call an idempotent Conversations-owned
-retirement-marker operation before clearing their origin record; origin-side
-cleanup fails closed unless that operation proves every related thread is
-inactive. The cross-owner lock and recovery sequence remains behind the exact
-human approval gate.
+does not itself authorize destructive content or object cleanup. The
+Conversations-owned no-write marker is the approved coordination boundary:
+Listings/Search must use it before beginning their own local retirement
+transition. Each domain still needs its separately approved local content/image
+cleanup mechanism and order before implementing deletion. No cross-domain
+trigger or shared database transaction may perform those operations.
 
 ## Shared errors and safe operations
 

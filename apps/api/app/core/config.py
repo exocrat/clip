@@ -1,8 +1,14 @@
-"""Shared typed process-environment configuration for the API foundation."""
+"""Shared typed, redacted process-environment configuration for the API."""
 
 from typing import Literal, Self
 
-from pydantic import ValidationError, ValidationInfo, field_validator, model_validator
+from pydantic import (
+    SecretStr,
+    ValidationError,
+    ValidationInfo,
+    field_validator,
+    model_validator,
+)
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -11,11 +17,11 @@ class ConfigurationError(RuntimeError):
 
 
 class Settings(BaseSettings):
-    """Load the skeleton's non-secret settings from CLIP_ environment names.
+    """Load API settings from CLIP_ environment names without reading dotenv files.
 
-    Defaults allow credential-free local startup. No dotenv or secret files are
-    loaded. Database/provider requirements belong to their implementing tasks;
-    this model does not imply those dependencies exist or are configured.
+    Defaults allow credential-free local startup. Database-backed Listings is
+    enabled only when its PostgreSQL URL is explicitly configured; no fake
+    database or provider fallback is selected.
     """
 
     model_config = SettingsConfigDict(
@@ -32,6 +38,19 @@ class Settings(BaseSettings):
     email_provider: Literal["disabled", "fake"] = "disabled"
     storage_provider: Literal["disabled", "fake"] = "disabled"
     development_auth: bool = False
+    # SecretStr prevents accidental repr/log output of embedded credentials.
+    database_url: SecretStr | None = None
+
+    @field_validator("database_url")
+    @classmethod
+    def validate_database_url(cls, value: SecretStr | None) -> SecretStr | None:
+        """Accept only PostgreSQL connection URLs and keep credentials redacted."""
+        if value is None:
+            return None
+        raw = value.get_secret_value()
+        if not raw.startswith(("postgres://", "postgresql://")):
+            raise ValueError("must be a PostgreSQL URL")
+        return value
 
     @field_validator(
         "identity_provider", "email_provider", "storage_provider", "development_auth"

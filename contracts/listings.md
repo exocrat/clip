@@ -1,9 +1,10 @@
 # Listings contract
 
-**Status:** Step 10 domain-owner documentation review is reported approved by
-the user. Step 11 typed declarations are generated from this contract and the
-[combined registry](combined.md). Listings implementation and migrations remain
-with LI-01/LI-02.
+**Status:** The original Step 10 contract review is reported approved by the
+user. The LI-01 create-retry behavior after retirement is a proposed amendment
+and awaits affected-owner review. Step 11 typed declarations are generated from
+the canonical source and the [combined registry](combined.md). Listings
+implementation and migrations remain with LI-01/LI-02.
 
 ## Scope and authoritative data
 
@@ -35,13 +36,32 @@ conversation content.
 | Pickup area | Required trimmed text of 1–120 Unicode code points. It is a pickup-area description, not an exact address or contact channel. |
 | Availability window | `available_from` defaults to the server creation instant when omitted. `available_until` is nullable and, when present, must be later than the start. Both use shared UTC instants. |
 | Seller availability | `available` or `unavailable`, changed only by the owner. It is separate from the time window and selected buyer; the end instant does not rewrite seller status. |
-| Sensitive flag | Computed, never client-authoritative: sensitive category OR asking price strictly greater than the approved configured threshold. `mobile_phone` and `laptop` are sensitive categories. The threshold value and owner are still an LI-01 Step 2 configuration gate; this contract does not invent a number. |
+| Sensitive flag | Computed, never client-authoritative: sensitive category OR asking price strictly greater than the configured threshold. `mobile_phone` and `laptop` are sensitive categories at every price. The provisional configurable default is ₹5,000 (500,000 paise), owned by Listings; see the [threshold decision](../docs/decisions/sensitive-purchase-threshold.md). It may be changed through a reviewed configuration update. |
 | Proof declaration | Optional nullable seller statement. It is displayed as unverified and never implies platform authentication or inspection. |
 | Images | A live/publishable listing has 1–8 confirmed usable images. Accept JPEG, PNG or WebP, positive size and at most 10 MiB each. Only controlled image references are exposed; object keys, upload credentials and provider details are not. LI-02 owns upload, actual-object validation and delivery; this contract does not invent a URL, CDN or storage credential shape. |
 
 The schema may clear content fields only after approved retirement. For every
 non-retired row, the required live fields and image minimum still apply. Do not
 use retirement nullability to permit incomplete create/edit operations.
+
+Listings owns its retirement decision and pending-operation state. It must not
+read Conversations tables from a trigger, including to check participant
+activity or validate the buyer/conversation relationship. For a seller's
+selection, call Conversations'
+`check_listing_thread_participant` with the listing ID, conversation ID, and
+candidate buyer ID; this exact-pair check is read-only and never creates a
+thread. For retirement, commit a unique pending operation ID and its
+server-derived cutoff on the listing before making a Conversations call. Keep
+that exact pair so an unknown result can be retried after a process restart
+with the identical request. Call `get_origin_activity` as a preflight, then
+`mark_origin_retired` for the authoritative locked check. If the result is
+`blocked_recent_activity`, clear both pending fields and stop; a later attempt
+uses a new ID and cutoff. A different request using the same ID conflicts.
+Only a confirmed marker permits the later local-retirement stage; deletion of
+listing content or image objects still requires its separate approved cleanup
+method and order. Keep the pending listing out of public read/discovery,
+edit/reopen, selection and offer paths while its outcome is unresolved; keep a
+content-retained pending listing visible in the owner's management list.
 
 ## Availability, discovery and read models
 
@@ -98,6 +118,24 @@ transactions, retry behavior and tests.
 | Change availability/window | Owner only. `available`/`unavailable` and the time window are separate. An update never assigns or clears a buyer implicitly. A successful reopen clears the continuous-retirement eligibility anchor; exact transitions follow the approved retirement decision. |
 | Read catalogue | Return active category/condition values with stable codes and labels. Listings owns updates; Search reuses category codes through this public boundary. |
 
+Create commands save the validated request and original response atomically
+with listing and image publication. The retry key is `(owner_id, operation_id)`;
+while listing content is retained, the same key and request replay the original
+`ListingDetail`, and changed input returns 409. When the listing retires,
+Listings clears the saved request and response but keeps only owner, operation,
+and listing IDs. Any later use of that key returns 409 without exposing old
+content or creating another listing. This post-retirement behavior is a proposed
+amendment awaiting affected-owner review.
+
+Availability and selection commands save the validated request and original
+response in the same Listings transaction as the state change. The retry key is
+scoped by listing, command type, and operation_id. An identical retry returns
+the saved response; reusing the key for different input returns 409. When a
+listing is retired, Listings deletes its saved command requests and responses
+along with the listing content. A later retry receives the normal retired-state
+conflict and never replays the old content. Offer retry records remain owned by
+Conversations, which persists offer results in its own transaction.
+
 ## Selection and listing-based offer commands
 
 Listings is authoritative for `selected_buyer_id` and selection changes. An
@@ -139,14 +177,28 @@ eligibility reset the continuous-inactivity anchor. Listings obtains the
 minimal public activity result from Conversations; it never reads private
 conversation tables.
 
-Listings owns clearing its content, image references and selection details.
-Preserve only the approved minimal content-free origin/thread/account IDs and
-uniqueness guards for their required lifetime. Saved references may remain but
+Listings owns clearing its content, image references and selection details. After
+Conversations confirms its no-write marker, Listings uses one database
+transaction to mark the listing retired, clear its user-entered content,
+availability end and buyer selection, scrub saved create request/result
+payloads, delete seller-command receipts, and mark attached images retired.
+Keep the listing, owner, saved-reference, and content-free create-operation IDs
+needed for their approved uniqueness lifetimes. Saved references may remain but
 must expose no retired content. Do not cascade into Conversations or Search,
 offer a public delete endpoint, or remove object-store cleanup metadata before
-object deletion/absence is confirmed. The exact multi-owner locking and
-cleanup order remains a human-reviewed Step 10 gate; this contract does not
-authorize destructive implementation.
+object deletion/absence is confirmed.
+
+The retired image rows and their upload rows hold the object keys as durable
+cleanup work. A Listings-owned worker calls the storage adapter for each exact
+key. A confirmed deletion or confirmed absence lets the worker delete the image
+row and upload row in one database transaction. A failure or unknown result
+keeps both rows so a retry can safely call deletion again. The cleanup query is
+limited to images whose parent listing is retired. The Listings worker does not
+purge Conversations content; Conversations owns that separate retention work.
+The seller's My Listings view continues to show unavailable listings while
+their content is retained. Retired listings remain omitted from that view under
+the current contract; the possible content-free retired marker remains a
+recorded follow-up question.
 
 ## Shared errors, privacy and operational limits
 

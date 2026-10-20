@@ -761,10 +761,10 @@ class OriginRetirementCommand(ContractModel):
 
 
 class RetirementMarkerResult(ContractModel):
-    """All-or-none retirement marker outcome; no cleanup is implied."""
+    """All-or-none no-write marker outcome; no content cleanup is implied."""
 
+    outcome: Literal["marked", "blocked_recent_activity", "already_marked"]
     marked_count: int = Field(ge=0)
-    already_retired: bool
 
 
 class NotificationClaimRequest(ContractModel):

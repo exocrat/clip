@@ -442,11 +442,13 @@ tools remain deferred under the existing tooling decision.
 
 | Command | Effect / failure |
 |---|---|
-| `uv run --locked python scripts/check_database.py` | Requires local Unix-socket Docker. Creates a fresh PostgreSQL 18.6 container with temporary memory-backed data, no host port/volume; dbmate 2.36.0 checks clean apply, exact head `20261018152702`, repeat migration and both SQL smoke suites. Removes only its own container; nonzero on SQL/setup/cleanup failure. Never targets retained Compose data. |
+| `uv run --locked python scripts/check_database.py` | Requires local Unix-socket Docker. Creates a fresh PostgreSQL 18.6 container with temporary memory-backed data and no host port or persistent data volume; dbmate 2.36.0 checks clean apply, repeat migration, both SQL smoke suites, rollback of every migration and clean reapply against the migration files in the current checkout. On `domain/listings` at this checkpoint, the required head is `20261020113531` with 25 domain tables. Removes only its own container; nonzero on SQL/setup/cleanup failure. Never targets retained Compose data. |
+| `uv run --locked python scripts/check_database.py --listings-store` | Runs those same isolated migration checks, then mounts only a private temporary Unix-socket directory and runs `apps/api/tests/domains/listings/test_postgres_store.py` against that container. Verifies real PostgreSQL create/edit/selection/availability writes and retry behavior using synthetic Identity/Conversations test doubles; prints a sample row selected from PostgreSQL before cleanup. No shared database, host port, real object storage or cloud resource is used. Removes the temporary container and socket directory. |
 | `uv run --locked python scripts/check_secrets.py` | Requires local Unix-socket Docker. Gitleaks 8.30.1 scans tracked and nonignored new source in a temporary snapshot, offline/read-only. Uses `.gitleaks.toml`; findings print file/line/rule only and fail. This scans current source, not Git history; ignored files are excluded and symlinks rejected. |
 
 Images may be downloaded from public registries. No cloud/provider configuration
-is forwarded. These commands accept no target arguments; `--help` describes them.
+is forwarded. The database checker never accepts a caller-selected database
+target; `--help` lists its optional check mode.
 Local/CI aggregate parity is implemented below; full lifecycle commands remain PD-13.
 
 ### CI execution boundary — PD-12 Step 4

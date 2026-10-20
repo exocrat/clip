@@ -1,0 +1,942 @@
+"""PostgreSQL implementation of the Listings-owned transactional store."""
+
+from __future__ import annotations
+
+from collections.abc import AsyncIterator, Sequence
+from contextlib import asynccontextmanager
+from datetime import datetime, timedelta
+from typing import Any, Literal
+from uuid import UUID, uuid4
+
+from psycopg import AsyncConnection, OperationalError
+from psycopg.types.json import Jsonb
+from psycopg_pool import AsyncConnectionPool, PoolTimeout
+
+from app.core.errors import ERRORS, FieldError, PublicError
+from app.core.pagination import Page
+from app.contracts.domain_types import (
+    AvailabilityChange,
+    CategoryCode,
+    CreateListingRequest,
+    ImageId,
+    ListingDetail,
+    ListingId,
+    ListingManagementView,
+    ListingReplacement,
+    PageQuery,
+    SelectionChange,
+    UserId,
+)
+from app.domains.listings.service import PendingListingRetirement, RetiredListingImage
+
+_DEFAULT_SENSITIVE_PRICE_THRESHOLD_PAISE = 500_000
+
+# This projection keeps list/detail reads to one SQL query per request. The
+# threshold comes from the approved provisional value; Step 6 moves it to the
+# typed settings surface and boundary tests.
+_RETAINED_VIEW_QUERY = """
+SELECT
+    listing.id AS listing_id,
+    listing.owner_id,
+    listing.title,
+    listing.description,
+    category.code AS category_code,
+    category.label AS category_label,
+    listing_condition.code AS condition_code,
+    listing_condition.label AS condition_label,
+    listing.asking_price_paise,
+    listing.negotiable,
+    listing.pickup_area,
+    listing.available_from,
+    listing.available_until,
+    listing.availability,
+    (category.sensitive_category OR listing.asking_price_paise > %s)
+        AS sensitive_purchase,
+    COALESCE(
+        (SELECT array_agg(image.id ORDER BY image.position, image.id)
+         FROM listings.images AS image
+         WHERE image.listing_id = listing.id AND image.retired_at IS NULL),
+        ARRAY[]::uuid[]
+    ) AS image_ids,
+    listing.proof_available,
+    listing.revision,
+    listing.selected_buyer_id,
+    listing.selected_conversation_id,
+    listing.created_at,
+    listing.updated_at
+FROM listings.sale_listings AS listing
+JOIN listings.categories AS category ON category.id = listing.category_id
+JOIN listings.conditions AS listing_condition
+    ON listing_condition.code = listing.condition_code
+WHERE listing.retired_at IS NULL
+"""
+
+# Public reads and command guards hide an origin once a retirement request is
+# pending. The owner's management list uses the retained-only query above so a
+# still-retained listing does not disappear from My Listings during recovery.
+_VIEW_QUERY = (
+    _RETAINED_VIEW_QUERY + " AND listing.retirement_pending_operation_id IS NULL"
+)
+
+_PRIVATE_DETAIL_FIELDS = (
+    "owner_id",
+    "revision",
+    "selected_buyer_id",
+    "selected_conversation_id",
+    "created_at",
+    "updated_at",
+)
+
+
+def _field_error(field: str, code: str) -> PublicError:
+    """Build safe validation metadata without echoing a database value."""
+    return PublicError(ERRORS[422], (FieldError(field, code),))
+
+
+def _conflict() -> PublicError:
+    """Return the contract's fixed revision/idempotency conflict."""
+    return PublicError(ERRORS[409])
+
+
+def _management_view(row: dict[str, Any]) -> ListingManagementView:
+    """Validate a SQL projection against the generated owner-view contract."""
+    return ListingManagementView.model_validate(row)
+
+
+def _public_detail(view: ListingManagementView) -> ListingDetail:
+    """Remove selection, owner and revision fields from create receipts."""
+    values = view.model_dump()
+    for field in _PRIVATE_DETAIL_FIELDS:
+        values.pop(field)
+    return ListingDetail.model_validate(values)
+
+
+class PostgresListingsStore:
+    """Run Listings reads and writes through one injected async PostgreSQL pool."""
+
+    def __init__(
+        self,
+        pool: AsyncConnectionPool[dict[str, Any]],
+        sensitive_price_threshold_paise: int = _DEFAULT_SENSITIVE_PRICE_THRESHOLD_PAISE,
+    ) -> None:
+        """Bind a shared API pool and the currently approved price threshold."""
+        if (
+            type(sensitive_price_threshold_paise) is not int
+            or sensitive_price_threshold_paise < 0
+            or sensitive_price_threshold_paise % 100 != 0
+        ):
+            raise ValueError("The sensitive-purchase threshold must be whole rupees")
+        self._pool = pool
+        self._threshold = sensitive_price_threshold_paise
+
+    async def confirmed_images_belong_to(
+        self, owner_id: UserId, image_ids: tuple[ImageId, ...]
+    ) -> bool:
+        """Check owned, unexpired, confirmed, metadata-complete unattached uploads."""
+        if not image_ids or len(set(image_ids)) != len(image_ids):
+            return False
+        async with self._connection() as connection:
+            cursor = await connection.execute(
+                """
+                SELECT count(*) AS matching
+                FROM listings.image_uploads AS upload
+                WHERE upload.id = ANY(%s)
+                    AND upload.owner_id = %s
+                    AND upload.state = 'confirmed'
+                    AND upload.confirmed_at IS NOT NULL
+                    AND upload.expires_at > statement_timestamp()
+                    AND upload.confirmed_media_type IS NOT NULL
+                    AND upload.confirmed_size_bytes IS NOT NULL
+                    AND NOT EXISTS (
+                        SELECT 1 FROM listings.images AS image
+                        WHERE image.upload_id = upload.id
+                    )
+                """,
+                (list(image_ids), owner_id),
+            )
+            row = await cursor.fetchone()
+        return row is not None and row["matching"] == len(image_ids)
+
+    async def category_and_condition_are_active(
+        self, category_code: CategoryCode, condition_code: str
+    ) -> bool:
+        """Check both catalogue values without reading another domain's tables."""
+        async with self._connection() as connection:
+            cursor = await connection.execute(
+                """
+                SELECT EXISTS (
+                    SELECT 1 FROM listings.categories AS category
+                    CROSS JOIN listings.conditions AS listing_condition
+                    WHERE category.code = %s AND category.active
+                        AND listing_condition.code = %s AND listing_condition.active
+                ) AS active
+                """,
+                (category_code, condition_code),
+            )
+            row = await cursor.fetchone()
+        return row is not None and bool(row["active"])
+
+    async def previous_create_command_result(
+        self, owner_id: UserId, request: CreateListingRequest
+    ) -> ListingDetail | None:
+        """Replay a matching live create result or conflict on reuse/retirement."""
+        async with self._connection() as connection:
+            return await self._create_result_on_connection(
+                connection, owner_id, request
+            )
+
+    async def create_listing(
+        self,
+        owner_id: UserId,
+        request: CreateListingRequest,
+        normalized_title: str,
+        normalized_description: str,
+        normalized_pickup_area: str,
+        now: datetime,
+    ) -> ListingDetail:
+        """Create listing, attach verified uploads and save its retry receipt atomically."""
+        async with self._connection() as connection:
+            async with connection.transaction():
+                # This transaction lock serializes concurrent retries even when
+                # neither request found an earlier receipt in the service check.
+                await connection.execute(
+                    "SELECT pg_advisory_xact_lock(hashtext(%s), hashtext(%s))",
+                    (str(owner_id), str(request.operation_id)),
+                )
+                previous = await self._create_result_on_connection(
+                    connection, owner_id, request
+                )
+                if previous is not None:
+                    return previous
+
+                category_id = await self._active_category_id(
+                    connection, request.category_code
+                )
+                if category_id is None:
+                    raise _field_error(
+                        "category_code", "active_category_and_condition_required"
+                    )
+                if not await self._condition_is_active(
+                    connection, request.condition_code
+                ):
+                    raise _field_error(
+                        "condition_code", "active_category_and_condition_required"
+                    )
+                uploads = await self._lock_confirmed_uploads(
+                    connection, owner_id, tuple(request.image_upload_ids), now
+                )
+
+                listing_id = uuid4()
+                available_from = request.available_from or now
+                await connection.execute(
+                    """
+                    INSERT INTO listings.sale_listings (
+                        id, owner_id, title, description, category_id,
+                        condition_code, asking_price_paise, negotiable,
+                        pickup_area, available_from, available_until,
+                        availability, proof_available, created_at, updated_at
+                    ) VALUES (
+                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                        'available', %s, %s, %s
+                    )
+                    """,
+                    (
+                        listing_id,
+                        owner_id,
+                        normalized_title,
+                        normalized_description,
+                        category_id,
+                        request.condition_code,
+                        request.asking_price_paise,
+                        request.negotiable,
+                        normalized_pickup_area,
+                        available_from,
+                        request.available_until,
+                        request.proof_available,
+                        now,
+                        now,
+                    ),
+                )
+                await self._attach_uploads(connection, listing_id, uploads)
+                view = await self._get_view(connection, listing_id)
+                if view is None:
+                    raise PublicError(ERRORS[503])
+                detail = _public_detail(view)
+                await connection.execute(
+                    """
+                    INSERT INTO listings.create_command_results (
+                        owner_id, operation_id, listing_id,
+                        request_payload, result_payload
+                    ) VALUES (%s, %s, %s, %s, %s)
+                    """,
+                    (
+                        owner_id,
+                        request.operation_id,
+                        listing_id,
+                        Jsonb(self._create_request_payload(request)),
+                        Jsonb(detail.model_dump(mode="json")),
+                    ),
+                )
+                return detail
+
+    async def read_listing(self, listing_id: ListingId) -> ListingManagementView | None:
+        """Read one retained listing and its ordered, non-retired image references."""
+        async with self._connection() as connection:
+            return await self._get_view(connection, listing_id)
+
+    async def list_owned_listings(
+        self, owner_id: UserId, query: PageQuery
+    ) -> Page[ListingManagementView]:
+        """List all retained owner listings, including ordinary unavailable rows."""
+        async with self._connection() as connection:
+            cursor = await connection.execute(
+                _RETAINED_VIEW_QUERY
+                + " AND listing.owner_id = %s"
+                + " ORDER BY listing.created_at DESC, listing.id DESC"
+                + " LIMIT %s OFFSET %s",
+                (
+                    self._threshold,
+                    owner_id,
+                    query.page_size + 1,
+                    (query.page - 1) * query.page_size,
+                ),
+            )
+            rows = await cursor.fetchall()
+        views = tuple(_management_view(row) for row in rows[: query.page_size])
+        return Page(
+            items=views,
+            page=query.page,
+            page_size=query.page_size,
+            has_next=len(rows) > query.page_size,
+        )
+
+    async def replace_listing(
+        self,
+        owner_id: UserId,
+        listing_id: ListingId,
+        request: ListingReplacement,
+        normalized_title: str,
+        normalized_description: str,
+        normalized_pickup_area: str,
+        now: datetime,
+    ) -> ListingManagementView:
+        """Replace the full listing and image references under one revision lock."""
+        async with self._connection() as connection:
+            async with connection.transaction():
+                current = await self._get_view(connection, listing_id, for_update=True)
+                self._require_owner(current, owner_id)
+                assert current is not None
+                if current.revision != request.expected_revision:
+                    raise _conflict()
+                category_id = await self._active_category_id(
+                    connection, request.category_code
+                )
+                if category_id is None:
+                    raise _field_error(
+                        "category_code", "active_category_and_condition_required"
+                    )
+                if not await self._condition_is_active(
+                    connection, request.condition_code
+                ):
+                    raise _field_error(
+                        "condition_code", "active_category_and_condition_required"
+                    )
+                uploads = await self._lock_confirmed_uploads(
+                    connection, owner_id, tuple(request.image_upload_ids), now
+                )
+                await connection.execute(
+                    """
+                    UPDATE listings.images
+                    SET retired_at = %s
+                    WHERE listing_id = %s AND retired_at IS NULL
+                    """,
+                    (now, listing_id),
+                )
+                cursor = await connection.execute(
+                    """
+                    UPDATE listings.sale_listings
+                    SET title = %s, description = %s, category_id = %s,
+                        condition_code = %s, asking_price_paise = %s,
+                        negotiable = %s, pickup_area = %s,
+                        available_from = %s, available_until = %s,
+                        proof_available = %s, updated_at = %s,
+                        revision = revision + 1
+                    WHERE id = %s AND owner_id = %s AND revision = %s
+                    """,
+                    (
+                        normalized_title,
+                        normalized_description,
+                        category_id,
+                        request.condition_code,
+                        request.asking_price_paise,
+                        request.negotiable,
+                        normalized_pickup_area,
+                        request.available_from,
+                        request.available_until,
+                        request.proof_available,
+                        now,
+                        listing_id,
+                        owner_id,
+                        request.expected_revision,
+                    ),
+                )
+                if cursor.rowcount != 1:
+                    raise _conflict()
+                await self._attach_uploads(connection, listing_id, uploads)
+                result = await self._get_view(connection, listing_id)
+                if result is None:
+                    raise PublicError(ERRORS[503])
+                return result
+
+    async def previous_owner_command_result(
+        self,
+        owner_id: UserId,
+        listing_id: ListingId,
+        command_kind: Literal["availability", "selection"],
+        request: AvailabilityChange | SelectionChange,
+    ) -> ListingManagementView | None:
+        """Replay the saved owner response before a stale-revision check."""
+        async with self._connection() as connection:
+            return await self._owner_result_on_connection(
+                connection, owner_id, listing_id, command_kind, request
+            )
+
+    async def change_availability(
+        self,
+        owner_id: UserId,
+        listing_id: ListingId,
+        request: AvailabilityChange,
+        now: datetime,
+    ) -> ListingManagementView:
+        """Change availability/window and save its exact retry result atomically."""
+        async with self._connection() as connection:
+            async with connection.transaction():
+                current = await self._get_view(connection, listing_id, for_update=True)
+                self._require_owner(current, owner_id)
+                assert current is not None
+                prior = await self._owner_result_on_connection(
+                    connection, owner_id, listing_id, "availability", request
+                )
+                if prior is not None:
+                    return prior
+                if current.revision != request.expected_revision:
+                    raise _conflict()
+                available_from = request.available_from or current.available_from
+                if (
+                    request.available_until is not None
+                    and request.available_until <= available_from
+                ):
+                    raise _field_error(
+                        "available_until", "must_be_after_available_from"
+                    )
+                cursor = await connection.execute(
+                    """
+                    UPDATE listings.sale_listings
+                    SET availability = %s, available_from = %s,
+                        available_until = %s, updated_at = %s,
+                        revision = revision + 1
+                    WHERE id = %s AND owner_id = %s AND revision = %s
+                    """,
+                    (
+                        request.availability,
+                        available_from,
+                        request.available_until,
+                        now,
+                        listing_id,
+                        owner_id,
+                        request.expected_revision,
+                    ),
+                )
+                if cursor.rowcount != 1:
+                    raise _conflict()
+                result = await self._get_view(connection, listing_id)
+                if result is None:
+                    raise PublicError(ERRORS[503])
+                await self._save_owner_result(
+                    connection,
+                    listing_id,
+                    "availability",
+                    request,
+                    result,
+                )
+                return result
+
+    async def set_selected_buyer(
+        self,
+        owner_id: UserId,
+        listing_id: ListingId,
+        request: SelectionChange,
+        now: datetime,
+    ) -> ListingManagementView:
+        """Set/clear the buyer and conversation as one revision-guarded command."""
+        async with self._connection() as connection:
+            async with connection.transaction():
+                current = await self._get_view(connection, listing_id, for_update=True)
+                self._require_owner(current, owner_id)
+                assert current is not None
+                prior = await self._owner_result_on_connection(
+                    connection, owner_id, listing_id, "selection", request
+                )
+                if prior is not None:
+                    return prior
+                if current.revision != request.expected_revision:
+                    raise _conflict()
+                if (request.buyer_id is None) != (request.conversation_id is None):
+                    raise _field_error(
+                        "buyer_id", "buyer_and_conversation_must_both_be_set_or_cleared"
+                    )
+                if request.buyer_id is not None and (
+                    current.availability != "available"
+                    or current.available_from > now
+                    or (
+                        current.available_until is not None
+                        and current.available_until <= now
+                    )
+                ):
+                    raise _conflict()
+                cursor = await connection.execute(
+                    """
+                    UPDATE listings.sale_listings
+                    SET selected_buyer_id = %s, selected_conversation_id = %s,
+                        updated_at = %s, revision = revision + 1
+                    WHERE id = %s AND owner_id = %s AND revision = %s
+                    """,
+                    (
+                        request.buyer_id,
+                        request.conversation_id,
+                        now,
+                        listing_id,
+                        owner_id,
+                        request.expected_revision,
+                    ),
+                )
+                if cursor.rowcount != 1:
+                    raise _conflict()
+                result = await self._get_view(connection, listing_id)
+                if result is None:
+                    raise PublicError(ERRORS[503])
+                await self._save_owner_result(
+                    connection, listing_id, "selection", request, result
+                )
+                return result
+
+    @asynccontextmanager
+    async def listing_offer_guard(
+        self, listing_id: ListingId
+    ) -> AsyncIterator[ListingManagementView | None]:
+        """Hold the listing row lock while Conversations uses its own database."""
+        async with self._connection() as connection:
+            async with connection.transaction():
+                current = await self._get_view(connection, listing_id, for_update=True)
+                yield current
+
+    async def clear_listing_retirement_pending(
+        self, listing_id: ListingId, operation_id: UUID
+    ) -> None:
+        """Clear the paired request only after Conversations confirms it was blocked."""
+        async with self._connection() as connection:
+            async with connection.transaction():
+                cursor = await connection.execute(
+                    """
+                    UPDATE listings.sale_listings
+                    SET retirement_pending_operation_id = NULL,
+                        retirement_pending_cutoff_utc = NULL
+                    WHERE id = %s AND retirement_pending_operation_id = %s
+                    """,
+                    (listing_id, operation_id),
+                )
+                if cursor.rowcount != 1:
+                    raise PublicError(ERRORS[503])
+
+    async def begin_listing_retirement(
+        self, listing_id: ListingId, operation_id: UUID, now: datetime
+    ) -> PendingListingRetirement | None:
+        """Commit one stable operation/cutoff after checking local eligibility."""
+        async with self._connection() as connection:
+            async with connection.transaction():
+                cursor = await connection.execute(
+                    """
+                    SELECT availability, available_until, created_at,
+                        retirement_eligible_since, retired_at,
+                        retirement_pending_operation_id,
+                        retirement_pending_cutoff_utc
+                    FROM listings.sale_listings
+                    WHERE id = %s
+                    FOR UPDATE
+                    """,
+                    (listing_id,),
+                )
+                current = await cursor.fetchone()
+                if current is None or current["retired_at"] is not None:
+                    return None
+
+                pending_id = current["retirement_pending_operation_id"]
+                pending_cutoff = current["retirement_pending_cutoff_utc"]
+                if pending_id is not None:
+                    if pending_id != operation_id or pending_cutoff is None:
+                        raise _conflict()
+                    return PendingListingRetirement(pending_id, pending_cutoff)
+
+                available_until = current["available_until"]
+                expired_window = available_until is not None and available_until <= now
+                unavailable = current["availability"] == "unavailable" or expired_window
+                eligible_since = current["retirement_eligible_since"]
+                if eligible_since is None and expired_window:
+                    eligible_since = max(available_until, current["created_at"])
+                if (
+                    not unavailable
+                    or eligible_since is None
+                    or eligible_since > now - timedelta(hours=4320)
+                ):
+                    return None
+
+                cutoff_utc = now - timedelta(hours=2160)
+                cursor = await connection.execute(
+                    """
+                    UPDATE listings.sale_listings
+                    SET retirement_pending_operation_id = %s,
+                        retirement_pending_cutoff_utc = %s
+                    WHERE id = %s AND retirement_pending_operation_id IS NULL
+                    """,
+                    (operation_id, cutoff_utc, listing_id),
+                )
+                if cursor.rowcount != 1:
+                    raise _conflict()
+                return PendingListingRetirement(operation_id, cutoff_utc)
+
+    async def finalize_listing_retirement(
+        self, listing_id: ListingId, pending: PendingListingRetirement, now: datetime
+    ) -> None:
+        """Scrub a marked listing and queue image objects atomically."""
+        async with self._connection() as connection:
+            async with connection.transaction():
+                cursor = await connection.execute(
+                    """
+                    SELECT retired_at, retirement_pending_operation_id,
+                        retirement_pending_cutoff_utc
+                    FROM listings.sale_listings
+                    WHERE id = %s
+                    FOR UPDATE
+                    """,
+                    (listing_id,),
+                )
+                current = await cursor.fetchone()
+                if current is None:
+                    raise PublicError(ERRORS[404])
+                if current["retired_at"] is not None:
+                    return
+                if (
+                    current["retirement_pending_operation_id"] != pending.operation_id
+                    or current["retirement_pending_cutoff_utc"] != pending.cutoff_utc
+                ):
+                    raise _conflict()
+
+                await connection.execute(
+                    """
+                    UPDATE listings.images
+                    SET retired_at = %s
+                    WHERE listing_id = %s AND retired_at IS NULL
+                    """,
+                    (now, listing_id),
+                )
+                await connection.execute(
+                    """
+                    UPDATE listings.sale_listings
+                    SET title = NULL, description = NULL, category_id = NULL,
+                        condition_code = NULL, asking_price_paise = NULL,
+                        negotiable = NULL, pickup_area = NULL,
+                        available_until = NULL, availability = 'unavailable',
+                        proof_available = NULL, selected_buyer_id = NULL,
+                        selected_conversation_id = NULL,
+                        retirement_eligible_since = NULL, retired_at = %s,
+                        retirement_pending_operation_id = NULL,
+                        retirement_pending_cutoff_utc = NULL,
+                        updated_at = %s
+                    WHERE id = %s AND retired_at IS NULL
+                    """,
+                    (now, now, listing_id),
+                )
+
+    async def list_retired_images_for_cleanup(
+        self, limit: int
+    ) -> tuple[RetiredListingImage, ...]:
+        """Read a bounded batch while retaining keys for safe retries."""
+        async with self._connection() as connection:
+            cursor = await connection.execute(
+                """
+                SELECT image.id, image.object_key, upload.object_key AS upload_object_key
+                FROM listings.images AS image
+                JOIN listings.image_uploads AS upload ON upload.id = image.upload_id
+                JOIN listings.sale_listings AS listing ON listing.id = image.listing_id
+                WHERE image.retired_at IS NOT NULL AND listing.retired_at IS NOT NULL
+                ORDER BY image.retired_at, image.id
+                LIMIT %s
+                """,
+                (limit,),
+            )
+            rows = await cursor.fetchall()
+        if any(row["object_key"] != row["upload_object_key"] for row in rows):
+            raise PublicError(ERRORS[503])
+        return tuple(
+            RetiredListingImage(image_id=row["id"], object_key=row["object_key"])
+            for row in rows
+        )
+
+    async def finish_retired_image_cleanup(
+        self, image_id: ImageId, object_key: str
+    ) -> None:
+        """Delete image/upload rows only after storage confirms the key is absent."""
+        async with self._connection() as connection:
+            async with connection.transaction():
+                cursor = await connection.execute(
+                    """
+                    SELECT image.upload_id, image.object_key,
+                        upload.object_key AS upload_object_key
+                    FROM listings.images AS image
+                    JOIN listings.image_uploads AS upload ON upload.id = image.upload_id
+                    WHERE image.id = %s AND image.retired_at IS NOT NULL
+                    FOR UPDATE OF image, upload
+                    """,
+                    (image_id,),
+                )
+                row = await cursor.fetchone()
+                if row is None:
+                    return
+                if (
+                    row["object_key"] != object_key
+                    or row["upload_object_key"] != object_key
+                ):
+                    raise PublicError(ERRORS[503])
+                await connection.execute(
+                    "DELETE FROM listings.images WHERE id = %s", (image_id,)
+                )
+                cursor = await connection.execute(
+                    """
+                    DELETE FROM listings.image_uploads
+                    WHERE id = %s AND object_key = %s
+                    """,
+                    (row["upload_id"], object_key),
+                )
+                if cursor.rowcount != 1:
+                    raise PublicError(ERRORS[503])
+
+    async def _get_view(
+        self,
+        connection: AsyncConnection[dict[str, Any]],
+        listing_id: ListingId,
+        *,
+        for_update: bool = False,
+    ) -> ListingManagementView | None:
+        """Fetch one retained listing, optionally locking its row for a write."""
+        query = _VIEW_QUERY + " AND listing.id = %s"
+        if for_update:
+            query += " FOR UPDATE OF listing"
+        cursor = await connection.execute(query, (self._threshold, listing_id))
+        row = await cursor.fetchone()
+        return _management_view(row) if row is not None else None
+
+    @asynccontextmanager
+    async def _connection(self) -> AsyncIterator[AsyncConnection[dict[str, Any]]]:
+        """Map pool/connectivity failures to a safe dependency-unavailable error."""
+        try:
+            async with self._pool.connection() as connection:
+                yield connection
+        except OperationalError, PoolTimeout, TimeoutError:
+            raise PublicError(ERRORS[503]) from None
+
+    async def _create_result_on_connection(
+        self,
+        connection: AsyncConnection[dict[str, Any]],
+        owner_id: UserId,
+        request: CreateListingRequest,
+    ) -> ListingDetail | None:
+        """Read a create receipt; return 409 for changed intent or a tombstone."""
+        cursor = await connection.execute(
+            """
+            SELECT saved.request_payload, saved.result_payload, listing.retired_at,
+                listing.retirement_pending_operation_id
+            FROM listings.create_command_results AS saved
+            JOIN listings.sale_listings AS listing ON listing.id = saved.listing_id
+            WHERE saved.owner_id = %s AND saved.operation_id = %s
+            FOR SHARE OF listing
+            """,
+            (owner_id, request.operation_id),
+        )
+        row = await cursor.fetchone()
+        if row is None:
+            return None
+        if (
+            row["retired_at"] is not None
+            or row["retirement_pending_operation_id"] is not None
+            or row["request_payload"] is None
+            or row["result_payload"] is None
+            or row["request_payload"] != self._create_request_payload(request)
+        ):
+            raise _conflict()
+        return ListingDetail.model_validate(row["result_payload"])
+
+    async def _owner_result_on_connection(
+        self,
+        connection: AsyncConnection[dict[str, Any]],
+        owner_id: UserId,
+        listing_id: ListingId,
+        command_kind: Literal["availability", "selection"],
+        request: AvailabilityChange | SelectionChange,
+    ) -> ListingManagementView | None:
+        """Find and compare a saved owner command without exposing another owner's result."""
+        cursor = await connection.execute(
+            """
+            SELECT saved.request_payload, saved.result_payload
+            FROM listings.owner_command_results AS saved
+            JOIN listings.sale_listings AS listing ON listing.id = saved.listing_id
+            WHERE listing.owner_id = %s AND saved.listing_id = %s
+                AND saved.command_kind = %s AND saved.operation_id = %s
+                AND listing.retirement_pending_operation_id IS NULL
+            FOR SHARE OF listing
+            """,
+            (owner_id, listing_id, command_kind, request.operation_id),
+        )
+        row = await cursor.fetchone()
+        if row is None:
+            return None
+        payload = request.model_dump(mode="json", exclude={"operation_id"})
+        if row["request_payload"] != payload:
+            raise _conflict()
+        return _management_view(row["result_payload"])
+
+    async def _active_category_id(
+        self, connection: AsyncConnection[dict[str, Any]], code: CategoryCode
+    ) -> UUID | None:
+        """Lock and return an active Listings category within the write transaction."""
+        cursor = await connection.execute(
+            "SELECT id FROM listings.categories WHERE code = %s AND active FOR SHARE",
+            (code,),
+        )
+        row = await cursor.fetchone()
+        return row["id"] if row is not None else None
+
+    async def _condition_is_active(
+        self, connection: AsyncConnection[dict[str, Any]], code: str
+    ) -> bool:
+        """Lock an active Listings condition while the new listing is written."""
+        cursor = await connection.execute(
+            "SELECT code FROM listings.conditions WHERE code = %s AND active FOR SHARE",
+            (code,),
+        )
+        return await cursor.fetchone() is not None
+
+    async def _lock_confirmed_uploads(
+        self,
+        connection: AsyncConnection[dict[str, Any]],
+        owner_id: UserId,
+        image_ids: tuple[ImageId, ...],
+        now: datetime,
+    ) -> list[dict[str, Any]]:
+        """Lock confirmed uploads and require verifier-recorded actual object metadata."""
+        if not image_ids or len(set(image_ids)) != len(image_ids):
+            raise _field_error("image_upload_ids", "confirmed_owned_images_required")
+        cursor = await connection.execute(
+            """
+            SELECT upload.id, upload.object_key, upload.state, upload.confirmed_at,
+                upload.expires_at, upload.confirmed_media_type,
+                upload.confirmed_size_bytes
+            FROM listings.image_uploads AS upload
+            WHERE upload.id = ANY(%s) AND upload.owner_id = %s
+            ORDER BY upload.id
+            FOR UPDATE OF upload
+            """,
+            (list(image_ids), owner_id),
+        )
+        rows = await cursor.fetchall()
+        if len(rows) != len(image_ids):
+            raise _field_error("image_upload_ids", "confirmed_owned_images_required")
+        for upload in rows:
+            if (
+                upload["state"] != "confirmed"
+                or upload["confirmed_at"] is None
+                or upload["expires_at"] <= now
+            ):
+                raise _field_error(
+                    "image_upload_ids", "confirmed_owned_images_required"
+                )
+            if (
+                upload["confirmed_media_type"] is None
+                or upload["confirmed_size_bytes"] is None
+            ):
+                # Upload confirmation is not yet implemented by LI-02. Do not
+                # trust client metadata or publish an image with unknown facts.
+                raise PublicError(ERRORS[503])
+            attached_cursor = await connection.execute(
+                "SELECT EXISTS (SELECT 1 FROM listings.images WHERE upload_id = %s) AS attached",
+                (upload["id"],),
+            )
+            attached = await attached_cursor.fetchone()
+            if attached is not None and attached["attached"]:
+                raise _field_error(
+                    "image_upload_ids", "confirmed_owned_images_required"
+                )
+        indexed = {upload["id"]: upload for upload in rows}
+        return [indexed[image_id] for image_id in image_ids]
+
+    async def _attach_uploads(
+        self,
+        connection: AsyncConnection[dict[str, Any]],
+        listing_id: ListingId,
+        uploads: Sequence[dict[str, Any]],
+    ) -> None:
+        """Create controlled image references from verified upload metadata."""
+        for position, upload in enumerate(uploads):
+            await connection.execute(
+                """
+                INSERT INTO listings.images (
+                    id, listing_id, upload_id, object_key, position,
+                    media_type, size_bytes
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    uuid4(),
+                    listing_id,
+                    upload["id"],
+                    upload["object_key"],
+                    position,
+                    upload["confirmed_media_type"],
+                    upload["confirmed_size_bytes"],
+                ),
+            )
+
+    async def _save_owner_result(
+        self,
+        connection: AsyncConnection[dict[str, Any]],
+        listing_id: ListingId,
+        command_kind: Literal["availability", "selection"],
+        request: AvailabilityChange | SelectionChange,
+        result: ListingManagementView,
+    ) -> None:
+        """Persist command intent and response in the listing-update transaction."""
+        await connection.execute(
+            """
+            INSERT INTO listings.owner_command_results (
+                listing_id, command_kind, operation_id, request_payload, result_payload
+            ) VALUES (%s, %s, %s, %s, %s)
+            """,
+            (
+                listing_id,
+                command_kind,
+                request.operation_id,
+                Jsonb(request.model_dump(mode="json", exclude={"operation_id"})),
+                Jsonb(result.model_dump(mode="json")),
+            ),
+        )
+
+    @staticmethod
+    def _create_request_payload(request: CreateListingRequest) -> dict[str, Any]:
+        """Encode normalized create intent without its idempotency key."""
+        return request.model_dump(mode="json", exclude={"operation_id"})
+
+    @staticmethod
+    def _require_owner(current: ListingManagementView | None, owner_id: UserId) -> None:
+        """Reject missing rows and non-owners before changing a listing."""
+        if current is None:
+            raise PublicError(ERRORS[404])
+        if current.owner_id != owner_id:
+            raise PublicError(ERRORS[403])

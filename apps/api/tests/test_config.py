@@ -15,6 +15,7 @@ def test_local_startup_needs_no_external_settings():
     settings = load_settings()
     assert settings.environment == "local"
     assert settings.debug is False
+    assert settings.database_url is None
 
 
 @pytest.mark.parametrize(
@@ -65,6 +66,29 @@ def test_settings_are_read_fresh(monkeypatch):
     after = load_settings()
     assert before.environment == "local"
     assert after.environment == "test"
+
+
+def test_database_url_is_optional_and_redacted(monkeypatch):
+    """A configured database URL enables storage without exposing its password."""
+    monkeypatch.setenv(
+        "CLIP_DATABASE_URL",
+        "postgresql://clip_test:synthetic-secret@127.0.0.1:5432/clip_test",
+    )
+    settings = load_settings()
+    assert settings.database_url is not None
+    assert "synthetic-secret" not in repr(settings)
+    assert "synthetic-secret" not in str(settings.database_url)
+
+
+def test_invalid_database_url_fails_with_a_redacted_setting_name(monkeypatch):
+    """Reject a wrong URL scheme without echoing connection input."""
+    monkeypatch.setenv(
+        "CLIP_DATABASE_URL", "https://user:synthetic-secret@example.invalid"
+    )
+    with pytest.raises(ConfigurationError) as captured:
+        load_settings()
+    assert "CLIP_DATABASE_URL" in str(captured.value)
+    assert "synthetic-secret" not in str(captured.value)
 
 
 def test_dotenv_and_examples_are_not_loaded(monkeypatch, tmp_path):
