@@ -46,6 +46,11 @@ binds the existing contact declarations to trusted actor and conversation
 authorization; Step 9 completes per-operation semantics and Step 11 updates the
 canonical typed source before generation.
 
+The [Listings contract](listings.md) is the Step 6 data and operation-boundary
+draft. Listings owns availability/selection and gates listing-based offer
+mutations while Conversations owns offer records; Step 7 consumes its listing
+query boundary and Step 9 completes operation semantics.
+
 Identity now carries the explicitly required step 8 internal contact declarations;
 the other three sources remain docstring-only. No domain HTTP operations or
 generated public modules are registered:
