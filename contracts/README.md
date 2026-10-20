@@ -56,6 +56,11 @@ draft-match, and saved-list boundary. Listings remains the only owner of sale
 query/index data; the proposed public Wanted Request fields and authenticated
 marketplace visibility remain explicit Step 10 review items.
 
+The [Conversations contract](conversations.md) is the Step 8 thread, encrypted
+entry, read-state, offer, contact-share, notification-intent, and activity
+boundary. It preserves the acyclic origin-owner call direction; the crypto
+protocol and destructive cleanup order remain separate approval gates.
+
 Identity now carries the explicitly required step 8 internal contact declarations;
 the other three sources remain docstring-only. No domain HTTP operations or
 generated public modules are registered:

@@ -93,16 +93,29 @@ The internal contact functions are not HTTP routes or OpenAPI/TypeScript
 operations unless a later reviewed contract explicitly maps a user-facing
 capability.
 
-## Notification recipient boundary
+## Internal eligibility and notification-recipient boundaries
 
-Notification recipient resolution is a separate, narrowly authorized internal
-Identity operation for the Conversations-owned CN-03 worker. It is not
-`get_shareable_contact_options`, `get_selected_own_contacts`, or a broad profile
-read. It returns only the destination needed for an eligible notification and
-does not copy that destination into a notification-intent record. Its exact
-request/result type, allowed caller, current-eligibility check and failure
-behavior are finalized with Conversations in Steps 8–9 and reviewed in Step
-10. Identity does not call Conversations.
+Listings, Search and Conversations may call Identity's narrow
+`check_account_eligibility` operation when a cross-domain operation requires a
+current account check. The target ID must come from the caller's trusted
+context or the calling domain's own authoritative relationship; browser input
+alone is never sufficient. The result is only whether the account is currently
+eligible for the requested regular/temporary capability. It returns no
+profile, contact, login, expiry or revocation detail. The authenticated actor's
+`CallerContext` remains established by Identity's normal request-auth boundary.
+The exact typed request/result and operation-specific safe errors are finalized
+in Step 9.
+
+`resolve_notification_recipient` is a separate, narrowly authorized internal
+Identity operation callable only from the Conversations-owned CN-03 delivery
+path. It is not `get_shareable_contact_options`,
+`get_selected_own_contacts`, or a broad profile read. For an eligible regular
+or temporary account, it returns only the current verified delivery
+destination needed by the worker; for an ineligible/removed recipient, it
+returns no destination. The destination is ephemeral to dispatch and is never
+copied into a notification-intent record. Exact typed request/result,
+eligibility recheck, safe outcome codes and dependency behavior are finalized
+in Step 9 and reviewed in Step 10. Identity does not call Conversations.
 
 ## Retention and errors
 
