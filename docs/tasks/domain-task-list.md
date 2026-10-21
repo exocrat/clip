@@ -146,6 +146,63 @@ DL-00 is the shared serial contract gate. After it, ID-01 and LI-01 can proceed 
 **Stop and ask if:** A required product behavior has no clear owner; shared auth/pagination/error/data choices are unresolved; a source conflict changes user-visible behavior; or a contract would require a private cross-domain dependency.  
 **Complete when:** Four domain contracts and the combined contract agree; all four generated `public.py` declaration modules and other generated outputs are current; a consumer can type-check a local test double against a provider interface before that provider implements it; every FR has a named owner/path; and affected owners have reviewed shared boundaries. Domain implementation remains in each domain owner's directory and starts only after this shared contract/interface handoff is merged.
 
+### Shared checkpoint — Origin-retirement trigger boundary
+
+**Status:** Approved for implementation by Listings owner B (Suraj) on
+2026-10-20. This is a shared implementation checkpoint, not a new product
+decision or task number. The exact behavior is in
+[`origin-retirement.md`](../decisions/origin-retirement.md), the approved
+handoff, and the updated Conversations contract. Listings B and Search C still
+need to align and review their own contract sections before the combined
+contract is accepted as fully aligned. This checkpoint gates the shared
+trigger replacement, no-write marker, and cross-domain retirement acceptance;
+it does not block unrelated isolated domain work permitted by the stub guide.
+
+**Ownership and outputs:**
+
+- Listings B (Suraj), `LI-01` Step 5: Listings pending state, owner-side
+  validation/serialization and API calls, and Listings-only reconciliation
+  writes. B is the single writer of the shared forward migration in
+  `domain/listings`.
+- Search C (Mohit), `SE-02`: Wanted Request pending state and response-thread
+  gating; review the migration's Search-owned behavior.
+- Conversations D (Rahul), `CN-01`/`CN-02`: activity/retirement contracts,
+  Conversations-owned no-write marker and operation-result storage, plus
+  marker checks for messages, offer revisions/withdrawals, and contact shares;
+  participant eligibility calls use Identity's public API; review the
+  migration's Conversations-owned behavior.
+- A (Aditya) coordinates this shared checkpoint and verifies the integrated
+  behavior at `INT-01`. B drafts the sole shared migration; do not have
+  multiple writers edit it concurrently.
+- Outputs include aligned canonical/combined contracts, decision and schema
+  records, a forward migration replacing the affected trigger definitions and
+  cross-domain business access while adding pending/no-write/operation-result
+  state, and tests preserving both Sale Listing and Wanted Request behavior plus
+  local ordering/identity protections. Cover owner/participant eligibility,
+  selection with the matching and mismatching buyer conversation, offer writes
+  around availability changes, create/close races for both origin kinds, and
+  retirement races against messages, offer revisions/withdrawals and contact
+  shares. Verify all-or-none marking, zero-thread success versus recent-write
+  blocking, same-operation retry, conflicting operation-ID reuse, unknown
+  outcomes, rejection of caller-supplied activity times, and preserved message
+  ordering/thread identity/offer rules/references. Keep approved cross-domain
+  foreign keys. Never rewrite committed/shared-applied migration history.
+
+**Required gates:** Before applying to a persistent database, inspect the
+exact target. Resolve selected `(listing_id,buyer_id)` pairs through a
+read-only Conversations API and let Listings write the returned IDs; reconcile
+retired origins/threads through their owner APIs. Do not assume empty data or
+use a cross-domain SQL backfill. Remove the unpublished direct
+Listings-to-Conversations backfill from migration
+`20261020113531_listing_selection_and_confirmed_image_metadata.sql` before it
+is published; if already published/applied, use a separately reviewed
+forward-only correction. Stop on failed/incomplete reconciliation or mixed
+marker state. Owner reviews, independent review, an exact-target run plan, and
+normal merge/apply authorization remain required. Real integration stays
+pending while only interface doubles are used. The checkpoint does not approve
+physical content/object deletion; that needs its separate cleanup procedure
+and review.
+
 ## 6. Identity domain
 
 ### ID-01 — Implement identity, eligibility, and temporary accounts

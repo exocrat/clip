@@ -5,9 +5,13 @@ domain contracts. The user reported that domain owners reviewed and approved
 the documents on 2026-10-20. The human-readable domain behavior remains in
 [identity.md](identity.md), [listings.md](listings.md),
 [search.md](search.md), and [conversations.md](conversations.md). Step 11
-generates declarations from these accepted contracts. The exact origin-cleanup
-order still needs separate human approval before implementation or a destructive
-run. No feature implementation, provider or cloud change is authorized here.
+generates declarations from these accepted contracts. Listings owner B (Suraj)
+approved the origin-retirement pending/preflight/marker order for implementation
+on 2026-10-20. The physical content/object cleanup mechanism and any destructive
+run remain separately gated. No provider, shared-database apply, or cloud change
+is authorized here. The Listings and Search contracts still need their owners'
+corresponding updates and review before this shared contract is considered
+fully aligned.
 
 ## Shared wire models and operation rules
 
@@ -280,7 +284,7 @@ alone is not proof of authorization.
 | `app.domains.conversations.public.check_listing_thread_participant(caller: CallerContext, request: ListingThreadParticipantCheck) -> ParticipantCheck` | Listings only for its seller-selection command. Check that caller is a member in the owner role and candidate is the other member of this exact Listing-origin thread. Return boolean only; no messages/offers. Wrong origin/member returns false or safe denial. Read-only/no activity renewal. |
 | `app.domains.conversations.public.persist_listing_offer(caller: CallerContext, request: ListingOfferCommand) -> OfferView` | Listings only after its own serialized availability/window/eligibility check. Caller is the buyer; request carries server-resolved listing/thread/offer identity and command revision. Conversations rechecks thread membership and both account eligibilities, atomically appends revision/current pointer, advances participant activity and records the operation-specific idempotency outcome. Offer revisions create no email intent. No cross-domain transaction or Listings-state read. Identical retry returns original; stale revision 409; timeout is ambiguous and safe to retry by operation ID. |
 | `app.domains.conversations.public.get_origin_activity(context: OriginOwnerContext, request: OriginActivityRequest) -> OriginActivityResult` | Listings/Search cleanup path only for its own origin kind. Request is `{origin_kind,origin_id}`; result is `{thread_count,latest_participant_write_at}`. Read every retained associated thread reference; latest time is null for zero threads. No thread/member IDs or content. Unknown/incomplete state or unavailable storage is a dependency failure, never zero activity. The server must inject a context for the owning origin; the Python type is not authentication. Call direction remains origin owner → Conversations. |
-| `app.domains.conversations.public.mark_origin_retired(context: OriginOwnerContext, request: OriginRetirementCommand) -> RetirementMarkerResult` | Listings/Search only, after the concrete Step 10 lock/recheck/order approval. Request is `{origin_kind,origin_id,cutoff_utc,operation_id}`; result is `{marked_count,already_retired}`. Atomically checks every associated thread is at or before cutoff and marks it no-write while preserving participant access to retained history and content-free uniqueness. Idempotent by operation ID. Partial/unknown results fail closed. No implementation or destructive cleanup is authorized by this declaration. |
+| `app.domains.conversations.public.mark_origin_retired(context: OriginOwnerContext, request: OriginRetirementCommand) -> RetirementMarkerResult` | Listings/Search only for their own origin kind, after owner-side pending state and `get_origin_activity` preflight. Request is `{origin_kind,origin_id,cutoff_utc,operation_id}`; result is `{outcome,marked_count}`, with outcome `marked`, `blocked_recent_activity`, or `already_marked`. Conversations locks every associated thread in ascending UUID order, rechecks server-recorded participant-write times against the server-derived cutoff, and marks all eligible threads no-write atomically; if any is recent, none are marked. `marked,0` means no associated threads. A globally unique operation-ID record returns the original result for the same request; reuse with a different origin/cutoff is a stable conflict without changes. Mixed marker state is an error requiring Conversations-API reconciliation. Unknown results fail closed; no origin content is cleared before a confirmed marker. This callable never deletes content. |
 | `app.domains.conversations.public.claim_due_notification_intents(context: NotificationWorkerContext, request: NotificationClaimRequest) -> NotificationClaimResult` | CN-03 worker only. Request is `{now_utc,max_items}`; owner-reviewed max_items default 20, range 1–50. Result contains claims with intent/conversation/recipient IDs, event kind, due time, optional target sequence, fencing token and lease expiry. Atomically lease due intents; no address/message/contact/ciphertext. Lease duration/auth details remain CN-03 gates. Expired/unknown leases cannot authorize dispatch. |
 | `app.domains.conversations.public.read_notification_dispatch_context(context: NotificationWorkerContext, request: NotificationDispatchCheck) -> NotificationDispatchContext` | CN-03 worker only, immediately before dispatch. Request is `{intent_id,lease_token,now_utc}`; result is `{decision,recipient_id?,target_sequence?}` where decision is send, suppress, or defer. Validate current fencing token/deadline, recheck authorized read watermark and due target, and return recipient UUID only when sending is authorized. Worker resolves destination through Identity; no address is copied into intent. Read/suppression does not advance activity. Unknown read state suppresses safely; Identity outage means no send and a retryable outcome. |
 | `app.domains.conversations.public.record_notification_attempt(context: NotificationWorkerContext, request: NotificationAttemptResult) -> NotificationIntentState` | CN-03 worker only. Request is `{intent_id,lease_token,outcome,attempted_at}`; outcome is delivered, transient_failure, terminal_failure, or ambiguous. Fencing token guards state change; apply 5-attempt/backoff/24-hour policy and terminal 30-day retention. Do not persist provider body or address. Stale lease cannot overwrite a newer attempt; duplicate result is idempotent. Provider delivery is not exactly once and never rolls back the originating write. |
@@ -309,10 +313,11 @@ Listings ───────────────────────�
 closure). Listing offer/withdrawal HTTP commands map to Listings and then
 `persist_listing_offer`; seller selection maps from Listings to
 `check_listing_thread_participant`. Listing and request retirement services
-call `get_origin_activity`, then the separately gated `mark_origin_retired`.
-Conversations never calls Listings/Search to revalidate origin state. Its
-Identity calls are only eligibility, selected-own-contact, and
-notification-recipient operations.
+set owner-side pending state in a short transaction, call `get_origin_activity`
+as a fail-closed preflight, then call the approved `mark_origin_retired` with a
+stable operation ID and server-derived cutoff. Conversations never calls
+Listings/Search to revalidate origin state. Its Identity calls are only
+eligibility, selected-own-contact, and notification-recipient operations.
 
 | Page | Frontend data/action interface | Server-authoritative state owner | Refresh and visible states |
 |---|---|---|---|
@@ -365,35 +370,53 @@ destructive cleanup mechanism remains required before implementation.
 | Polling | Keep immediate fetch on focus and after writes, 2-second active polling, pause while hidden, and back off after failure. A 5-second interval would consume the full NFR-05 delivery budget before network/render time; 2 seconds is the better starting point, subject to measurement. | D; approved (user-reported) |
 | Internal contexts / notifications | Construct origin-owner and worker contexts only in server composition/worker wiring, never bind them from HTTP. Check origin kind against caller capability. Keep notification claim default 20/max 50; lease duration, worker identity and dispatch recovery stay CN-03 implementation gates. | A, D; approved (user-reported) |
 
-### Proposed origin-retirement sequence
+### Approved origin-retirement marker sequence
 
-This is a reviewable design only; it does not authorize cleanup code or a
-destructive run.
+Listings owner B (Suraj) approved this sequence for implementation on
+2026-10-20. Owner code review, the shared-migration writer/reviewer split,
+exact-target data preflight, and normal merge/apply gates still apply. This does
+not select or authorize physical content/object cleanup or a destructive run.
 
 1. Listings or Search starts a short transaction on its own origin row. After
-   rechecking the approved continuous-retirement predicate, it sets a proposed
-   nullable `retirement_pending_operation_id` to the operation UUID. A
-   non-null marker blocks new origin threads/edits/reopen and hides the origin
-   from discovery; the transaction commits before any Conversations call. The
-   marker clears with `retired_at` after successful content cleanup. No
-   cross-domain transaction or shared database session is used.
-2. The origin owner calls `get_origin_activity`. Unknown/incomplete results or
-   dependency failures fail closed and leave content intact.
-3. The origin owner calls `mark_origin_retired` with the stable operation ID.
-   Conversations locks every associated thread in UUID order, rechecks all
-   participant-write times against the cutoff, and atomically marks all
-   eligible threads no-write. If any thread is too recent, none are marked.
-   A repeat with the same operation ID returns the recorded outcome. The
-   all-or-none lock is the simplest safe MVP design; owners should reassess it
-   if measured thread counts make the transaction too large.
-4. If activity is too recent, the origin owner clears the pending operation ID
-   without deleting content. If the result is ambiguous, keep the origin
-   pending/hidden and retry or look up the same operation; never unhide or
-   delete on an unknown outcome. This avoids cross-domain rollback.
-5. Only after a confirmed Conversations marker does the owning domain clear
-   its own origin content in its own transaction. Image objects are handled
-   separately; cleanup metadata remains until deletion/absence is confirmed.
-6. Conversations purges history under its own thread lock and final inactivity
+   rechecking its 180-day continuous-eligibility rule, it sets
+   `retirement_pending_operation_id` to a stable operation UUID. Pending state
+   blocks origin edits/reopen, selection or offer changes that could invalidate
+   retirement, new origin conversations, and discovery; it does not block
+   participant writes in existing threads before Conversations marks them.
+   Commit before any Conversations call; never hold an origin lock across it.
+2. The origin owner calls `get_origin_activity` as a preflight. The separate
+   90-day rule requires every associated thread's latest participant write to
+   be at or before `server_now - 2160 hours`. Unknown/incomplete results or
+   dependency failures defer retirement and leave content intact.
+3. The origin owner calls `mark_origin_retired` with the stable operation ID
+   and the activity cutoff `server_now - 2160 hours`, computed from the
+   origin owner's server clock after its authoritative eligibility check,
+   never from a browser. Conversations locks every associated thread in
+   ascending UUID order, rechecks server-recorded participant-write times
+   against the cutoff, and
+   atomically marks all eligible threads no-write. If any thread is too recent,
+   none are marked. The 180-day origin rule is separate from this 90-day thread
+   rule. Participant writes take the same thread lock and get server time only
+   after locking, so lock order determines whether a racing write commits or
+   is rejected.
+4. Store the result beside a globally unique `operation_id`, origin kind/ID,
+   and cutoff. Same ID plus same request returns the original result; reuse
+   with a different origin or cutoff conflicts without changes. `marked` with
+   zero threads is success; `blocked_recent_activity` marks none;
+   `already_marked` means all associated threads were marked before this
+   operation. Mixed marker state is an error: stop and reconcile through
+   Conversations APIs.
+5. After `blocked_recent_activity`, the origin owner clears pending state and
+   retains content; a later attempt uses a new ID. On timeout/unknown outcome,
+   keep the origin pending and retry or look up the same ID. Never clear content
+   or unhide based on an unknown result.
+6. Only after a confirmed Conversations marker may the origin owner clear its
+   own content in its own transaction. Physical content/object cleanup and its
+   retry procedure remain separate reviewed work; this marker decision alone
+   authorizes no destructive run. If owner cleanup fails, keep the origin
+   pending and retry it. After successful cleanup, set `retired_at` and clear
+   the pending operation ID atomically in the origin owner's transaction.
+7. Conversations purges history under its own thread lock and final inactivity
    recheck. Suppress all nonterminal intents that cannot remain deliverable and
    clear entry targets before payload cleanup; remove contact-share links
    before their entries' payloads; set `offers.current_revision = NULL` and

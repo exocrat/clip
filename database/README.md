@@ -185,20 +185,37 @@ integration and must preserve the same target/refusal behavior.
   retirement is atomic while a committed live listing always has 1–8 images.
   `guard_upload` protects owner/key/deadline and attached-confirmation state.
   These cannot prove a cloud object exists or that its bytes were validated.
-- `listings.guard_origin` preserves owner/retired identity, anchors continuous
-  inactivity, and checks retirement age/conversation activity. It performs
-  integrity-only FK reads, not a public cross-domain service. Application
-  transactions must follow the reviewed origin-before-thread locking contract;
-  runtime consumers cannot use another domain's private tables directly.
-- `conversations.guard_thread`, `guard_member`, `guard_entry`, `register_unread`
-  and `check_thread` bind two participants, allocate monotonically ordered entry
-  sequences, preserve operation keys, coalesce unread episodes and reject
-  nonexistent/decreasing read watermarks. Forward migration `20261018152702`
-  checks the locked origin's retirement state before sequence/activity changes;
-  ordinary unavailability or request closure still permits discussion. API authentication and actual displayed
-  acknowledgements remain CN-01 work. Whole-transaction/savepoint rollback is
-  required on duplicate inserts; blindly using `ON CONFLICT DO NOTHING` after
-  sequence allocation is not the duplicate-return contract.
+- The currently installed `listings.guard_origin` preserves origin-local
+  identity and continuous-inactivity anchors, but its historical body also
+  reads Identity and Conversations business tables for owner eligibility,
+  selected-buyer membership, and retirement activity. Those are cross-domain
+  business queries, not integrity-only FK reads. The approved forward
+  replacement keeps origin-local protections and moves those checks to the
+  owning public interfaces; PostgreSQL triggers cannot call Python.
+- The currently installed `conversations.guard_thread`, `guard_entry`, and
+  `guard_offer_revision` bodies also read/update Listings, Search, or Identity
+  business tables. The approved forward replacement keeps Conversations-local
+  thread identity, participant uniqueness, entry ordering, operation-key,
+  offer-revision, and read-watermark protections. Listings/Search validate and
+  serialize their own origins through their services; Conversations uses
+  Identity's eligibility API and its own per-thread no-write marker for
+  participant writes. The existing migration `20261018152702` is historical
+  and is not rewritten. Ordinary unavailability or request closure continues
+  to permit existing discussion unless the owner has started retirement.
+  API authentication and actual displayed acknowledgements remain CN-01 work.
+  Whole-transaction/savepoint rollback is required on duplicate inserts;
+  blindly using `ON CONFLICT DO NOTHING` after sequence allocation is not the
+  duplicate-return contract.
+- The approved retirement path uses owner-side pending state, a content-free
+  `get_origin_activity` preflight, then Conversations' all-thread
+  `mark_origin_retired` operation. It locks threads in ascending ID order,
+  rechecks the separate 90-day activity cutoff against the 180-day
+  origin-eligibility rule, and marks all threads no-write or none. Messages,
+  offer revisions/withdrawals and contact shares check the local marker under
+  the thread lock. Durable result storage uses a globally unique operation ID;
+  owner cleanup waits for a confirmed marker. The shared forward migration
+  requires exact-target data preflight and affected-owner review; it is not
+  authorized for shared-database apply by this documentation.
 - `guard_key` and `guard_payload` preserve historical public versions and check
   envelope byte limits/protocol/participant ownership. Opaque bytes are **not**
   validated cryptography; a reviewed established protocol is still required.

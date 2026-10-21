@@ -87,7 +87,7 @@ Mohit selected password-based normal sign-in for temporary users; email OTP is l
 |---|---|---|
 | `listings.categories` / `id uuid` | `code text`, `label text`, `sensitive_category boolean`, `active boolean`, `created_at instant` | Unique immutable `code`; Mohit-approved catalogue below includes mobile-phone/laptop classification; affected-owner review pending. |
 | `listings.conditions` / `code text` | `label text`, `active boolean` | Mohit-approved shared listing-condition vocabulary below; affected-owner review pending. |
-| `listings.sale_listings` / `id uuid` | `owner_id uuid`, `title text?`, `description text?`, `category_id uuid?`, `condition_code text?`, `asking_price_paise money?`, `negotiable boolean?`, `pickup_area text?`, `available_from instant`, `available_until instant?`, `availability text`, `proof_available boolean?`, `selected_buyer_id uuid?`, `created_at instant`, `updated_at instant`, `retirement_eligible_since instant?`, `retired_at instant?`, `search_vector tsvector`, `revision bigint` | Content fields are physically nullable solely for retirement; a named live-row check requires every mandatory field when `retired_at IS NULL`, including price and negotiability. Retired rows clear content/category/price/condition/selection/proof and are unavailable. FKs owner/selected buyer/category/condition; selected buyer differs from owner. Availability available/unavailable; end follows start. Stored generated English vector; indexes below. |
+| `listings.sale_listings` / `id uuid` | `owner_id uuid`, `title text?`, `description text?`, `category_id uuid?`, `condition_code text?`, `asking_price_paise money?`, `negotiable boolean?`, `pickup_area text?`, `available_from instant`, `available_until instant?`, `availability text`, `proof_available boolean?`, `selected_buyer_id uuid?`, `created_at instant`, `updated_at instant`, `retirement_eligible_since instant?`, `retirement_pending_operation_id uuid?`, `retired_at instant?`, `search_vector tsvector`, `revision bigint` | Content fields are physically nullable solely for retirement; a named live-row check requires every mandatory field when `retired_at IS NULL`, including price and negotiability. Retired rows clear content/category/price/condition/selection/proof and are unavailable. A non-null pending operation blocks reopening, edits, selection, new listing conversations and listing-offer commands, and hides the row from discovery. FKs owner/selected buyer/category/condition; selected buyer differs from owner. Availability available/unavailable; end follows start. Stored generated English vector; indexes below. |
 | `listings.image_uploads` / `id uuid` | `owner_id uuid`, `object_key text`, `state text`, `created_at instant`, `expires_at instant`, `confirmed_at instant?`, `failure_code text?` | FK owner, unique controlled object key; pending/confirmed/failed/expired states. Original unattached deadline is creation +24 hours; state/timestamp checks. Safe failure code only, no provider text. Index owner/state and state/expiry for owned lookup/cleanup. |
 | `listings.images` / `id uuid` | `listing_id uuid`, `upload_id uuid`, `object_key text`, `position integer`, `media_type text`, `size_bytes bigint`, `created_at instant`, `retired_at instant?` | FKs listing and confirmed upload; upload ID and object key unique; nonnegative position, size 1–10 MiB and approved media types. Unique live `(listing_id, position)`; 1–8 usable images for a live listing. Upload/listing owner and object-key agreement require reviewed cross-row checks. Retired image rows are cleanup metadata until actual object deletion/absence is confirmed, then removed with their intent. |
 
@@ -155,7 +155,7 @@ Reviewer-approved **item category** means the kind of item, represented by the e
 
 | Table / primary key | Columns | Constraints and access indexes |
 |---|---|---|
-| `search.wanted_requests` / `id uuid` | `author_id uuid`, `title text?`, `description text?`, `category_id uuid?`, `budget_paise money?`, `status text`, `created_at instant`, `updated_at instant`, `closed_at instant?`, `retired_at instant?`, `revision bigint` | FKs user/catalogue; open/unavailable status. Named live-row check requires title/description/category while non-retired; budget stays optional. Closing sets `closed_at`; reopening same ID clears it, preserves thread uniqueness and starts any later closure clock afresh. Retired rows are unavailable and clear content/budget/category; cannot reopen. Index status/creation/ID, author/creation/ID, category FK and closure time. |
+| `search.wanted_requests` / `id uuid` | `author_id uuid`, `title text?`, `description text?`, `category_id uuid?`, `budget_paise money?`, `status text`, `created_at instant`, `updated_at instant`, `closed_at instant?`, `retirement_pending_operation_id uuid?`, `retired_at instant?`, `revision bigint` | FKs user/catalogue; open/unavailable status. Named live-row check requires title/description/category while non-retired; budget stays optional. Closing sets `closed_at`; reopening same ID clears it, preserves thread uniqueness and starts any later closure clock afresh. A non-null pending operation blocks reopening, edits, and new response conversations, and hides the row from discovery. Retired rows are unavailable and clear content/budget/category; cannot reopen. Index status/creation/ID, author/creation/ID, category FK and closure time. |
 | `search.saved_listings` / `(user_id uuid, listing_id uuid)` | `created_at instant` | FKs user/listing; pair PK makes duplicate saves idempotent. Index `(user_id, created_at DESC, listing_id DESC)` for stable own saves; reverse listing FK index for maintenance. Availability changes do not delete saves. |
 
 Mohit confirmed that buyer budget is optional. A blank/omitted create-time budget is SQL NULL and means no amount was stated; do not coerce it to zero. An explicit zero budget means seeking a free item. Zero offers are also allowed. Update-time omitted/null semantics must be specified by DL-00/SE-02; these rules do not imply that wanted budgets automatically filter or rank draft matches.
@@ -166,7 +166,8 @@ Draft-title matching is a read against the Listings public query boundary; it cr
 
 | Table / primary key | Columns | Constraints and access indexes |
 |---|---|---|
-| `conversations.threads` / `id uuid` | `listing_id uuid?`, `wanted_request_id uuid?`, `initiator_id uuid`, `counterparty_id uuid`, `created_at instant`, `last_activity_at instant`, `next_sequence bigint` | Exactly one origin FK is non-null; user FKs, distinct participants; positive next sequence. Partial unique `(listing_id, initiator_id)` for listing origins; partial unique `(wanted_request_id, initiator_id)` for request origins. Index counterparty, each origin FK and `last_activity_at` for bounded retention selection. Initialize activity at creation, advance on participant writes only. |
+| `conversations.threads` / `id uuid` | `listing_id uuid?`, `wanted_request_id uuid?`, `initiator_id uuid`, `counterparty_id uuid`, `created_at instant`, `last_activity_at instant`, `next_sequence bigint`, `participant_writes_blocked_at instant?` | Exactly one origin FK is non-null; user FKs, distinct participants; positive next sequence. Partial unique `(listing_id, initiator_id)` for listing origins; partial unique `(wanted_request_id, initiator_id)` for request origins. Index counterparty, each origin FK and `last_activity_at` for bounded retention selection. Initialize activity at creation, advance on participant writes only. The Conversations-owned no-write marker rejects messages, offer revisions/withdrawals and contact shares while holding the same thread lock used for activity/order updates. |
+| `conversations.origin_retirement_operations` / `operation_id uuid` | `origin_kind`, `origin_id uuid`, `cutoff_utc instant`, `outcome`, `marked_count integer`, `created_at instant` | `operation_id` is globally unique across origin kinds/IDs. Store the exact result with its request identity: same-ID/same-request retry returns it; same ID with another origin or cutoff conflicts without changes. Outcomes: `marked`, `blocked_recent_activity`, `already_marked`; zero marked threads is successful only with `marked`. This durable record is required for safe retries and does not imply content cleanup. |
 | `conversations.members` / `(conversation_id uuid, user_id uuid)` | `last_read_sequence bigint`, `read_at instant?`, `joined_at instant`, `reminder_episode_start_sequence bigint?`, `reminder_sent_at instant?` | FKs thread/user; nonnegative watermark, positive episode start when present; sent-at requires an episode. Preserve episode state beyond terminal-job cleanup until read catch-up. Index `(user_id, conversation_id)` for private inbox lookup. Only the two thread participants may have member rows; exact member/episode/read consistency requires A/D-reviewed deferred constraints/transaction checks. |
 | `conversations.public_key_versions` / `id uuid` | `user_id uuid`, `version bigint`, `public_key_material bytea`, `protocol_id text`, `created_at instant`, `retired_at instant?` | FK user; unique `(user_id, version)`, positive version; partial unique active bundle per user. Mohit-approved encoded public bundle length 1–16 KiB. Authentication, exact serialization and device/key replacement rules require A/D/security review. No private keys. |
 | `conversations.entries` / `id uuid` | `conversation_id uuid`, `sequence bigint`, `sender_id uuid`, `client_operation_id uuid`, `kind text`, `created_at instant`, `content_deleted_at instant?` | Unique `(conversation_id, sequence)`; FK `(conversation_id, sender_id)` to members. Unique `(conversation_id, sender_id, client_operation_id)` for proposed send deduplication. Content-free marker after retention purge; no restoration of deleted payload on retries. Proposed kinds message/offer/contact-share; final event taxonomy/marker lifecycle reviewed with D. |
@@ -179,8 +180,56 @@ Concurrency requirements for the reviewed implementation:
 - Serialize entry sequence allocation on the thread row; entries then have a committed per-conversation ordering. Incremental reads use `sequence > watermark ORDER BY sequence`, separate from shared numbered-page APIs. Do not substitute a UUID or wall clock for committed conversation order.
 - A duplicate operation key with different content is a conflict; retry with identical intent returns the original result. Server-side deduplication must not require decrypting the content. Exact payload equivalence representation and retention are reviewed before implementation.
 - Read acknowledgement is sent after client display. Atomically advance, never decrease, a member's watermark; reject values beyond existing authorized entries. Fetching/polling alone does not mark read. A watermark comparison is bounded by the thread and actual entries.
-- Listing/request owner and eligibility validation occurs through public interfaces. A closure/create race requires an agreed owner-mediated lock/operation protocol or equivalent concurrency contract; a preflight read is insufficient. Preserve this as a DL-00 real integration requirement, not permission for private cross-domain SQL.
+- Listing/request owner and eligibility validation occurs through public
+  interfaces. Listings/Search serialize their own ordinary origin state against
+  thread creation; retirement uses the pending/preflight/marker protocol below,
+  not an origin lock held across the Conversations call. A preflight read alone
+  is insufficient. Verify these paths against real owner APIs at integration;
+  this is not permission for private cross-domain SQL.
 - Client encryption must bind the intended conversation, sender, recipient/key version and payload kind according to the reviewed authenticated protocol. The proposed generic envelope is not a cryptographic design or evidence of safe key distribution.
+
+### Origin-retirement coordination — approved implementation direction
+
+Listings owner B (Suraj) approved this sequence on 2026-10-20. The origin owner
+keeps its 180-day continuous eligibility anchor and separately requires every
+associated thread's latest participant-write time to be at or before
+`server_now - 2160 hours`. It sets `retirement_pending_operation_id` and
+commits before calling Conversations; pending Listings/Search origins reject
+owner edits/reopen, invalidating selection/offer changes and new origin
+conversations, and are hidden from discovery. They do not block participant
+writes in existing threads before the Conversations marker.
+`get_origin_activity` is a fail-closed preflight only.
+`mark_origin_retired` locks all associated threads in ascending ID order,
+rechecks activity and marks them all no-write or none. Every Conversations
+participant write takes that thread lock, checks
+`participant_writes_blocked_at`, and obtains its activity timestamp from the
+server after locking. Reads, polling and workers do not advance activity.
+
+The cutoff is computed from the origin owner's server clock after its
+authoritative eligibility check, never browser input.
+`conversations.origin_retirement_operations` provides durable idempotency by a
+globally unique operation ID and records origin kind/ID, cutoff, outcome and
+marked count. Identical retries return the stored result; different request
+reuse conflicts. A blocked result clears owner pending state without clearing
+content; an unknown result leaves it pending and is retried/looked up with the
+same ID. Only a confirmed marker allows the owning domain to clear its own
+content. Cleanup failure leaves the origin pending for retry; on success the
+owner sets `retired_at` and clears the pending operation ID in one transaction.
+These pending/no-write/operation-result columns and table describe required
+forward-migration additions; they are not present in the historical migrations
+or deployed by this documentation. The physical content/object cleanup
+mechanism remains separately reviewed; this coordination is not authorization
+for a destructive run.
+
+No trigger, SQL function or migration may query another domain's business
+tables, including a one-time backfill. Application services use the owning
+domain's public API; PostgreSQL triggers cannot call Python. Keep local
+protections such as message ordering and immutable thread identity, and keep
+the approved cross-domain foreign keys. The shared forward migration writer is
+Listings B in `domain/listings`; Search C and Conversations D review their
+affected portions, while A coordinates real integrated verification at INT-01.
+Exact-target data preflight and normal migration apply/review gates remain
+mandatory.
 
 The key/envelope review must decide how sender/recipient key-version references and authentication/nonce data are encoded and constrained, how historical entries reference retired public versions, and how key changes behave with one active browser device. Generic `bytea` alone does not close this gate. Do not add invented fixed key lengths or server key recovery. Public-key material and ciphertext are excluded from diagnostics/evidence even though public keys are not decryption secrets.
 
