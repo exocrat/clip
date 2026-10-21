@@ -313,32 +313,58 @@ conversation count and latest `last_activity_at`; it does not return thread
 IDs, member IDs, messages, offers, receipts or notification state. The
 timestamp is initialized when a thread is created and advances only for
 participant message, offer-revision/withdrawal or contact-share writes.
+Each participant-write timestamp comes from the server after the write holds
+the Conversations thread lock. Callers cannot supply an activity timestamp.
 Reads, polling, key lookup, notifications and cleanup never advance it.
 
-For zero associated threads, count is zero and latest activity is null; the
-90-day conversation-activity gate is satisfied because no associated thread
-has participant activity. For one or more threads, the origin owner compares
-the returned maximum with the approved cutoff; this proves every associated
-thread is old enough only if the query is complete. If completeness/state is
+For zero associated threads, count is zero and latest activity is null. For
+one or more threads, the origin owner compares the returned maximum with its
+server-derived cutoff. This is only a preflight: if completeness/state is
 unknown or Conversations is unavailable, return a safe dependency failure and
 the origin owner must defer retirement. Never treat an error or missing result
 as zero activity. The public call exposes no content and grants no private
 table access.
+
+After that preflight, Listings or Search calls `mark_origin_retired` with the
+same stable operation ID and cutoff. Conversations locks every associated
+thread in ascending thread-ID order, rechecks each server-recorded latest
+participant-write time against the cutoff, and marks all threads no-write in
+one transaction. A write after the cutoff blocks retirement; if any thread is
+too recent, none are marked. A message and the marker contend on the same
+thread lock: whichever acquires it first determines the result. Messages,
+offer revisions/withdrawals, and contact shares all check the local marker
+under that thread lock before writing or advancing activity. The marker does
+not prevent authorized reads of retained history and does not delete content.
+
+The result is `{outcome,marked_count}`, where `outcome` is `marked`,
+`blocked_recent_activity`, or `already_marked`. `marked` with count zero means
+the origin has no associated threads; `blocked_recent_activity` marks none;
+`already_marked` means all associated threads were already marked before this
+operation. A mixture of marked and unmarked threads is an inconsistent state:
+stop and reconcile through the Conversations API rather than partially
+proceeding. Operation IDs are globally unique. Repeating the same ID with the
+same origin and cutoff returns its stored result; reusing it for a different
+origin or cutoff returns a stable conflict without changes. Unknown outcomes
+keep the origin pending; retry the same operation ID and never clear content
+on an unknown result. After a blocked result, the origin owner may clear its
+pending state without clearing content; a later attempt uses a new ID.
+
+The origin owner sets pending state in its own transaction before calling
+Conversations, blocking new origin work while the call is in progress. It may
+clear its own content only after a confirmed marker, in its own transaction.
+Listings and Search do not hold an origin lock across a Conversations call.
+Conversations never queries or updates Listings or Search business tables;
+origin owners validate their own state and use these public operations.
 
 After 90 days without participant writes, purge message content, encrypted
 offer notes and structured offer revisions together under the approved
 retention policy. Contact-share payloads/labels are removed after 30 days.
 Keep only content-free ordered markers and minimal origin/thread/member and
 offer uniqueness guards for their approved lifetimes. Reads, polling, workers,
-account expiry and cleanup do not restart the 90-day timer. Retention timing
-does not authorize a cleanup method: foreign-key/current-offer/notification
-target order and the destructive mechanism require the concrete Step 10 human
-approval before implementation. Owner review accepted write-locking a retired
-thread, so Listings/Search must call an idempotent Conversations-owned
-retirement-marker operation before clearing their origin record; origin-side
-cleanup fails closed unless that operation proves every related thread is
-inactive. The cross-owner lock and recovery sequence remains behind the exact
-human approval gate.
+account expiry and cleanup do not restart the 90-day timer. The origin marker
+order above is approved for implementation. Physical content/object cleanup
+and the post-retirement My Listings display remain separate decisions; do not
+infer a deletion mechanism from the marker operation.
 
 ## Shared errors and safe operations
 

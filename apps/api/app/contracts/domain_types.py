@@ -751,7 +751,7 @@ class OriginActivityResult(ContractModel):
 
 
 class OriginRetirementCommand(ContractModel):
-    """Stable retirement attempt checked atomically against every thread."""
+    """Stable owner-authorized retirement attempt checked against every thread."""
 
     origin_kind: OriginKind
     origin_id: UUID
@@ -760,10 +760,10 @@ class OriginRetirementCommand(ContractModel):
 
 
 class RetirementMarkerResult(ContractModel):
-    """All-or-none retirement marker outcome; no cleanup is implied."""
+    """All-or-none marker outcome; this records no content cleanup."""
 
+    outcome: Literal["marked", "blocked_recent_activity", "already_marked"]
     marked_count: int = Field(ge=0)
-    already_retired: bool
 
 
 class NotificationClaimRequest(ContractModel):

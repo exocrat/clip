@@ -178,14 +178,14 @@ async def persist_listing_offer(
 async def get_origin_activity(
     context: OriginOwnerContext, request: OriginActivityRequest
 ) -> OriginActivityResult:
-    """Declare a content-free activity result for the caller's own origin."""
+    """Declare an owner-scoped preflight; unknown state fails closed, not as zero."""
     raise NotImplementedError("declaration-only")
 
 
 async def mark_origin_retired(
     context: OriginOwnerContext, request: OriginRetirementCommand
 ) -> RetirementMarkerResult:
-    """Declare an all-or-none no-write marker; this does not delete content."""
+    """Declare an idempotent all-thread marker operation; it never deletes content."""
     raise NotImplementedError("declaration-only")
 
 
