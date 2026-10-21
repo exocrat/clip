@@ -30,6 +30,7 @@ DECLARE
     offer_entry uuid := gen_random_uuid();
     reminder uuid := gen_random_uuid();
     message_time timestamptz;
+    activity_head timestamptz;
     category uuid;
     rejected boolean;
     sequence_head bigint;
@@ -98,6 +99,43 @@ BEGIN
     INSERT INTO conversations.members (conversation_id, user_id) VALUES (thread, buyer), (thread, seller);
     SET CONSTRAINTS ALL IMMEDIATE;
     SET CONSTRAINTS ALL DEFERRED;
+
+    -- A forward trigger replacement must preserve thread identity immutability.
+    rejected := false;
+    BEGIN
+        UPDATE conversations.threads SET id = gen_random_uuid() WHERE id = thread;
+    EXCEPTION WHEN check_violation THEN rejected := true;
+    END;
+    IF NOT rejected THEN RAISE EXCEPTION 'Conversation ID rewrite was accepted'; END IF;
+    rejected := false;
+    BEGIN
+        UPDATE conversations.threads SET listing_id = gen_random_uuid() WHERE id = thread;
+    EXCEPTION WHEN check_violation THEN rejected := true;
+    END;
+    IF NOT rejected THEN RAISE EXCEPTION 'Conversation origin rewrite was accepted'; END IF;
+    rejected := false;
+    BEGIN
+        UPDATE conversations.threads SET initiator_id = gen_random_uuid() WHERE id = thread;
+    EXCEPTION WHEN check_violation THEN rejected := true;
+    END;
+    IF NOT rejected THEN RAISE EXCEPTION 'Conversation initiator rewrite was accepted'; END IF;
+    rejected := false;
+    BEGIN
+        UPDATE conversations.threads SET counterparty_id = gen_random_uuid() WHERE id = thread;
+    EXCEPTION WHEN check_violation THEN rejected := true;
+    END;
+    IF NOT rejected THEN RAISE EXCEPTION 'Conversation counterparty rewrite was accepted'; END IF;
+    rejected := false;
+    BEGIN
+        UPDATE conversations.threads SET created_at = created_at - INTERVAL '1 second'
+            WHERE id = thread;
+    EXCEPTION WHEN check_violation THEN rejected := true;
+    END;
+    IF NOT rejected THEN RAISE EXCEPTION 'Conversation creation-time rewrite was accepted'; END IF;
+    IF NOT EXISTS (SELECT 1 FROM conversations.threads WHERE id = thread
+        AND listing_id = item AND initiator_id = buyer AND counterparty_id = seller) THEN
+        RAISE EXCEPTION 'Rejected identity rewrite changed the thread';
+    END IF;
     rejected := false;
     BEGIN
         INSERT INTO conversations.threads (id, listing_id, initiator_id, counterparty_id)
@@ -137,7 +175,27 @@ BEGIN
         AND reminder_episode_start_sequence = 1) THEN
         RAISE EXCEPTION 'Incoming message did not initialize an unread episode';
     END IF;
-    SELECT next_sequence INTO sequence_head FROM conversations.threads WHERE id = thread;
+    SELECT next_sequence, last_activity_at INTO sequence_head, activity_head
+        FROM conversations.threads WHERE id = thread;
+    rejected := false;
+    BEGIN
+        UPDATE conversations.threads SET next_sequence = next_sequence - 1 WHERE id = thread;
+    EXCEPTION WHEN check_violation THEN rejected := true;
+    END;
+    IF NOT rejected OR (SELECT next_sequence FROM conversations.threads WHERE id = thread) <> sequence_head THEN
+        RAISE EXCEPTION 'Conversation sequence head was allowed to decrease';
+    END IF;
+    rejected := false;
+    BEGIN
+        UPDATE conversations.threads SET last_activity_at = last_activity_at - INTERVAL '1 second'
+            WHERE id = thread;
+    EXCEPTION WHEN check_violation THEN rejected := true;
+    END;
+    IF NOT rejected OR (SELECT last_activity_at FROM conversations.threads WHERE id = thread)
+        <> activity_head THEN
+        RAISE EXCEPTION 'Conversation activity timestamp was allowed to decrease';
+    END IF;
+
     rejected := false;
     BEGIN
         INSERT INTO conversations.entries (id, conversation_id, sender_id, client_operation_id, kind)
