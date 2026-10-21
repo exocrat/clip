@@ -67,7 +67,10 @@ thread content and rejection of new participant writes after retirement.
 Enforcing that boundary without Conversations calling back to an origin owner
 requires Listings/Search to publish retirement through a Conversations-owned
 operation before clearing origin content. The exact lock/recheck/order and
-failure recovery remain a separate human approval gate before implementation.
+failure recovery are approved for implementation as specified in the
+Conversation activity and content retention section below. This approval does
+not select or authorize the separate destructive content/object cleanup
+mechanism.
 
 Every public thread, entry, offer, key and read-state route checks both current
 caller eligibility and membership at the owning operation. Direct ID
