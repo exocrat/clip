@@ -2,7 +2,8 @@
 
 **Status:** The original Step 10 contract review is reported approved by the
 user. The LI-01 create-retry behavior after retirement is a proposed amendment
-and awaits affected-owner review. Step 11 typed declarations are generated from
+and awaits affected-owner review. The optional pickup-area correction directed
+by Suraj on 2026-10-21 also awaits affected-consumer/schema review. Step 11 typed declarations are generated from
 the canonical source and the [combined registry](combined.md). Listings
 implementation and migrations remain with LI-01/LI-02.
 
@@ -33,12 +34,22 @@ conversation content.
 | Condition | Required active seller-declared code: `new`, `like_new`, `good`, or `fair`. It is not a platform quality/functionality guarantee. |
 | Asking price | Required nonnegative integer paise, a multiple of 100. Zero is valid; floats and fractional-rupee amounts are rejected. No upper monetary cap is selected here. |
 | Negotiable | Required boolean, independent of price. Missing and `null` are invalid for a live listing. |
-| Pickup area | Required trimmed text of 1–120 Unicode code points. It is a pickup-area description, not an exact address or contact channel. |
+| Pickup area | Optional trimmed text of 1–120 Unicode code points when supplied. Create omission/null means not provided; a full replacement requires the nullable field and uses null to clear it. Empty/whitespace-only API strings are invalid. Absence is stored/exposed as null; the UI shows Not specified. It is a general collection area, not an exact address or contact channel. See the [corrected field decision](../docs/decisions/catalogue-and-listing-limits.md). |
 | Availability window | `available_from` defaults to the server creation instant when omitted. `available_until` is nullable and, when present, must be later than the start. Both use shared UTC instants. |
 | Seller availability | `available` or `unavailable`, changed only by the owner. It is separate from the time window and selected buyer; the end instant does not rewrite seller status. |
 | Sensitive flag | Computed, never client-authoritative: sensitive category OR asking price strictly greater than the configured threshold. `mobile_phone` and `laptop` are sensitive categories at every price. The provisional configurable default is ₹5,000 (500,000 paise), owned by Listings; see the [threshold decision](../docs/decisions/sensitive-purchase-threshold.md). It may be changed through a reviewed configuration update. |
 | Proof declaration | Optional nullable seller statement. It is displayed as unverified and never implies platform authentication or inspection. |
 | Images | A live/publishable listing has 1–8 confirmed usable images. Accept JPEG, PNG or WebP, positive size and at most 10 MiB each. Only controlled image references are exposed; object keys, upload credentials and provider details are not. LI-02 owns upload, actual-object validation and delivery; this contract does not invent a URL, CDN or storage credential shape. |
+
+The full replacement request's ordered `images` list describes the complete
+result. Each entry is either an `existing` image ID already attached to this
+listing or an `upload` ID for a newly confirmed, owner-bound upload. The order
+in the list becomes the displayed order. Omitting a current image removes it
+from the listing and queues its retired image record for the cleanup worker;
+keeping an image preserves its reference and file. The request must contain
+1–8 distinct references. A request cannot keep another listing's image or
+attach an upload owned by another account. Actual browser file selection,
+upload and photo delivery remain LI-02 work.
 
 The schema may clear content fields only after approved retirement. For every
 non-retired row, the required live fields and image minimum still apply. Do not
@@ -81,9 +92,11 @@ follow the same privacy rule. The detail response includes the computed
 `is_sensitive_purchase` flag and, when supplied, the seller's optional proof
 declaration with clear unverified wording. A summary may include the same
 computed flag for its badge. Owner-only management reads may also include the
-owner's own availability and selection state. Selected-buyer visibility is
-limited to the listing owner and relevant conversation participants, as
-owner-reviewed in Step 10. It is never public discovery data.
+owner's own availability and selection state. The selected buyer and selected
+conversation are visible only to the seller through owner-only management and
+command responses. They are never returned in public detail, discovery, or to
+conversation participants through Listings. Any buyer-facing notice is a
+separate Conversations behavior and does not make the selection immutable.
 
 Listings owns an available-sale query over its own authoritative state
 and indexed fields. Search uses that interface for browse, text search and
@@ -146,8 +159,10 @@ check rather than trusting a client-supplied buyer/conversation relationship.
 The seller may clear or replace the selection through Listings. Selection is
 not offer acceptance, a reservation, a payment state or a handover guarantee;
 it does not change availability. Withdrawing an offer does not clear selection.
-The selection's visibility is restricted to the owner and relevant
-conversation participants; it is never part of public listing discovery.
+The current selected-buyer state is visible only to the owner through
+owner-authorized Listings responses. It is not returned to conversation
+participants or in public listing discovery. Any buyer-facing notice is a
+separate Conversations behavior.
 
 Listing-origin offer create/revise/resubmit and withdrawal enter through a
 Listings-owned command. Listings resolves the listing from the verified

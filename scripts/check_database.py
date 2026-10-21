@@ -141,9 +141,13 @@ def main():
         if expect_failure:
             expected_message = "Cannot roll back retirement migration while operation results or markers exist"
             if not isinstance(result, tuple):
-                raise RuntimeError("Expected rollback to refuse recorded retirement state")
+                raise RuntimeError(
+                    "Expected rollback to refuse recorded retirement state"
+                )
             if expected_message not in result[1]:
-                raise RuntimeError("Rollback failed for a reason other than retained retirement state")
+                raise RuntimeError(
+                    "Rollback failed for a reason other than retained retirement state"
+                )
         return result
 
     try:
@@ -229,7 +233,7 @@ def main():
         actual = sql(
             "SELECT version FROM public.schema_migrations ORDER BY version"
         ).splitlines()
-        if not expected or actual != expected or actual[-1] != "20261020142319":
+        if not expected or actual != expected or actual[-1] != "20261021105546":
             raise RuntimeError("Migration history differs from the expected head")
         migrate()
         for filename in ("schema-smoke.sql", "retired-origin-smoke.sql"):
@@ -248,14 +252,23 @@ def main():
             VALUES ('00000000-0000-4000-8000-000000000001', 'listing',
                 '00000000-0000-4000-8000-000000000002', clock_timestamp(), 'marked', 0)
         """)
+        # Return past the additive optional-pickup migration before exercising
+        # the existing retirement migration's separate data-preserving guard.
+        migrate("rollback")
         migrate("rollback", expect_failure=True)
         if (
-            sql("SELECT count(*) FROM conversations.origin_retirement_operations") != "1"
-            or sql("SELECT max(version) FROM public.schema_migrations") != "20261020142319"
+            sql("SELECT count(*) FROM conversations.origin_retirement_operations")
+            != "1"
+            or sql("SELECT max(version) FROM public.schema_migrations")
+            != "20261020142319"
         ):
-            raise RuntimeError("Rollback changed recorded retirement state or migration head")
-        sql("DELETE FROM conversations.origin_retirement_operations WHERE operation_id = '00000000-0000-4000-8000-000000000001'")
-        for _ in expected:
+            raise RuntimeError(
+                "Rollback changed recorded retirement state or migration head"
+            )
+        sql(
+            "DELETE FROM conversations.origin_retirement_operations WHERE operation_id = '00000000-0000-4000-8000-000000000001'"
+        )
+        for _ in expected[:-1]:
             migrate("rollback")
         if sql("SELECT count(*) FROM public.schema_migrations") != "0":
             raise RuntimeError("Expected rollback to remove every applied migration")
@@ -320,7 +333,10 @@ def main():
                     )
                 )::text
                 FROM listings.sale_listings AS listing
-                WHERE listing.title = 'Revised synthetic textbook'
+                WHERE listing.title IN (
+                    'Concurrent synthetic edit A',
+                    'Concurrent synthetic edit B'
+                )
                 """)
             if not sample:
                 raise RuntimeError(

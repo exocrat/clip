@@ -51,6 +51,7 @@ After real PRE-00/DL-00, all eight required domains may begin their documented i
 
 - ID-01 step 14 needs implemented consumer paths from LI-01/LI-02, SE-CORE/SE-02 and CN-CORE/CN-02; policy helper tests alone are not the final FR-03 matrix.
 - LI-01 step 13 needs LI-02 and SE-CORE for full image-backed publication and unavailable discovery. LI-CORE has separate acceptance before these checks.
+- LI-02 step 11 may perform its private RDS/S3 cloud rehearsal before LI-CORE/ID-READY using the isolated test profile and synthetic Identity fixture defined in the task. This does not accept either readiness milestone; LI-02 step 13 and final acceptance still require real LI-CORE/ID-READY and shared-integration checks.
 - SE-01 cloud-preparation step 12 needs LI-01/LI-02, ID-READY and final validated data. DATA-READY is required for the complete measurement/evaluation evidence.
 - CN-01 cloud-preparation step 11 needs CN-03's final producer/notification/read-state path. CN-CORE unblocks CN-02/CN-03 before final NFR-05.
 - Full CN-01 request-response integration also needs SE-02's real public Wanted Request read/state interfaces; CN-02's request-response inbox work needs both SE-02 and CN-01. CN-CORE remains an earlier listing-origin conversation milestone and does not imply request-origin integration is complete.

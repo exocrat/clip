@@ -9,6 +9,13 @@ and offer withdrawal. Each path matches the reviewed Listings HTTP contract.
 image ownership/publication validation, availability and buyer-selection
 rules, the serialized offer gate, and safe response shapes.
 
+Full replacement accepts an ordered list of existing image references to keep
+and newly confirmed upload IDs to add. The PostgreSQL adapter checks that kept
+references belong to the listing, consumes confirmed uploads under the same
+transaction, retires omitted images for cleanup, and stores the selected order.
+The live schema prohibits unretiring a removed image, so a later re-add must be
+a new confirmed upload. Photo bytes and delivery remain LI-02 integrations.
+
 The service depends on a `ListingsStore` adapter. The adapter must use the
 Listings schema, call Identity through its public eligibility interface, check
 confirmed owner-bound image records, and make listing plus image attachment a

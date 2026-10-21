@@ -10,11 +10,14 @@ from __future__ import annotations
 import asyncio
 from datetime import UTC, datetime, timedelta
 import os
+from pathlib import Path
 from typing import Any
 from uuid import UUID, uuid4
 
 import pytest
+from psycopg.errors import CheckViolation
 from psycopg.rows import dict_row
+from psycopg.types.json import Jsonb
 from psycopg_pool import AsyncConnectionPool
 
 from app.contracts.domain_types import (
@@ -101,7 +104,11 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
         await pool.wait(timeout=5)
         now = datetime.now(UTC)
         owner_id, buyer_id, outsider_id = uuid4(), uuid4(), uuid4()
-        first_upload_id, replacement_upload_id = uuid4(), uuid4()
+        first_upload_id, replacement_upload_id, optional_area_upload_id = (
+            uuid4(),
+            uuid4(),
+            uuid4(),
+        )
         conversation_id = uuid4()
         owner = CallerContext(owner_id, "regular", now + timedelta(days=1))
         outsider = CallerContext(outsider_id, "regular", now + timedelta(days=1))
@@ -124,7 +131,11 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
                     (owner_id, buyer_id, outsider_id),
                 )
                 created_at = now - timedelta(minutes=1)
-                for upload_id in (first_upload_id, replacement_upload_id):
+                for upload_id in (
+                    first_upload_id,
+                    replacement_upload_id,
+                    optional_area_upload_id,
+                ):
                     await connection.execute(
                         """
                         INSERT INTO listings.image_uploads (
@@ -144,7 +155,7 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
 
         identity = _EligibleIdentity({owner_id, buyer_id, outsider_id})
         conversations = _ConversationsDouble(buyer_id, conversation_id)
-        store = PostgresListingsStore(pool)
+        store = PostgresListingsStore(pool, sensitive_price_threshold_paise=500_000)
         service = ListingsService(
             store,
             identity,
@@ -164,13 +175,65 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
             image_upload_ids=[first_upload_id],
             operation_id=uuid4(),
         )
+        for invalid_catalog_request in (
+            create_request.model_copy(
+                update={"category_code": "missing_synthetic_category"}
+            ),
+            create_request.model_copy(
+                update={"condition_code": "missing_synthetic_condition"}
+            ),
+        ):
+            with pytest.raises(PublicError) as invalid_catalog:
+                await service.create(owner, invalid_catalog_request)
+            assert invalid_catalog.value.spec.status == 422
+
         created = await service.create(owner, create_request)
         stored = await store.read_listing(created.listing_id)
         assert stored is not None
         assert stored.owner_id == owner_id
         assert stored.title == "Synthetic textbook"
+        assert stored.pickup_area == "Synthetic pickup area"
         assert stored.asking_price_paise == 0
         assert len(stored.image_ids) == 1
+        assert stored.sensitive_purchase is False
+
+        async def set_price_and_category(price_paise: int, category_code: str) -> None:
+            """Change synthetic listing inputs to check the derived flag on reads."""
+            async with pool.connection() as connection:
+                await connection.execute(
+                    """
+                    UPDATE listings.sale_listings
+                    SET asking_price_paise = %s,
+                        category_id = (SELECT id FROM listings.categories WHERE code = %s)
+                    WHERE id = %s
+                    """,
+                    (price_paise, category_code, created.listing_id),
+                )
+
+        await set_price_and_category(500_000, "books")
+        at_threshold = await store.read_listing(created.listing_id)
+        assert at_threshold is not None
+        assert at_threshold.sensitive_purchase is False
+
+        await set_price_and_category(500_100, "books")
+        over_threshold = await store.read_listing(created.listing_id)
+        assert over_threshold is not None
+        assert over_threshold.sensitive_purchase is True
+
+        await set_price_and_category(0, "mobile_phone")
+        mobile_phone = await store.read_listing(created.listing_id)
+        assert mobile_phone is not None
+        assert mobile_phone.sensitive_purchase is True
+
+        await set_price_and_category(0, "laptop")
+        laptop = await store.read_listing(created.listing_id)
+        assert laptop is not None
+        assert laptop.sensitive_purchase is True
+
+        await set_price_and_category(0, "books")
+        reclassified_book = await store.read_listing(created.listing_id)
+        assert reclassified_book is not None
+        assert reclassified_book.sensitive_purchase is False
 
         # The same create key returns its original response, even after later edits.
         replacement = ListingReplacement(
@@ -181,15 +244,45 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
             condition_code="good",
             asking_price_paise=1_000,
             negotiable=True,
-            pickup_area="Updated synthetic pickup area",
+            pickup_area=None,
             available_from=now,
             available_until=None,
             proof_available=True,
-            image_upload_ids=[replacement_upload_id],
+            images=[
+                {"source": "upload", "upload_id": replacement_upload_id},
+                {"source": "existing", "image_id": stored.image_ids[0]},
+            ],
             operation_id=uuid4(),
         )
         edited = await service.replace(owner, created.listing_id, replacement)
         assert edited.title == "Revised synthetic textbook"
+        assert edited.pickup_area is None
+        assert edited.sensitive_purchase is False
+        assert edited.proof_available is True
+        assert len(edited.image_ids) == 2
+        assert edited.image_ids[1] == stored.image_ids[0]
+        removed_image = RetiredListingImage(
+            image_id=edited.image_ids[0],
+            object_key=f"test/listings/{replacement_upload_id}",
+        )
+        reordered_without_new = await service.replace(
+            owner,
+            created.listing_id,
+            ListingReplacement.model_validate(
+                replacement.model_dump(mode="python")
+                | {
+                    "expected_revision": 2,
+                    "images": [{"source": "existing", "image_id": stored.image_ids[0]}],
+                    "operation_id": uuid4(),
+                }
+            ),
+        )
+        assert reordered_without_new.image_ids == [stored.image_ids[0]]
+        assert await store.list_retired_images_for_cleanup(10) == (removed_image,)
+        await store.finish_retired_image_cleanup(
+            removed_image.image_id, removed_image.object_key
+        )
+        assert await store.list_retired_images_for_cleanup(10) == ()
         assert (
             await service.create(owner, create_request)
         ).model_dump() == created.model_dump()
@@ -211,7 +304,7 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
                 (created.listing_id,),
             )
             image_counts = await images.fetchone()
-            assert image_counts == {"total": 2, "live": 1}
+            assert image_counts == {"total": 1, "live": 1}
 
             async with connection.transaction():
                 await connection.execute(
@@ -243,7 +336,7 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
         selection = SelectionChange(
             buyer_id=buyer_id,
             conversation_id=conversation_id,
-            expected_revision=2,
+            expected_revision=3,
             operation_id=uuid4(),
         )
         selected = await service.set_selected_buyer(
@@ -254,7 +347,7 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
         assert conversations.calls == 1
 
         unavailable_request = AvailabilityChange(
-            expected_revision=3,
+            expected_revision=4,
             availability="unavailable",
             operation_id=uuid4(),
         )
@@ -285,7 +378,7 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
         clear_selection = SelectionChange(
             buyer_id=None,
             conversation_id=None,
-            expected_revision=4,
+            expected_revision=5,
             operation_id=uuid4(),
         )
         cleared = await service.set_selected_buyer(
@@ -304,7 +397,7 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
                 outsider,
                 created.listing_id,
                 AvailabilityChange(
-                    expected_revision=5,
+                    expected_revision=6,
                     availability="available",
                     operation_id=uuid4(),
                 ),
@@ -335,13 +428,126 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
         assert final_row == {
             "title": "Revised synthetic textbook",
             "availability": "unavailable",
-            "revision": 5,
+            "revision": 6,
             "selected_buyer_id": None,
             "selected_conversation_id": None,
             "live_images": 1,
             "create_receipts": 1,
             "owner_receipts": 3,
         }
+
+        # Two edits submitted at the same revision cannot both win. The store's
+        # row lock and revision check leave exactly one committed result.
+        async def competing_edit(title: str):
+            return await service.replace(
+                owner,
+                created.listing_id,
+                ListingReplacement(
+                    expected_revision=6,
+                    title=title,
+                    description="Competing synthetic edit",
+                    category_code="books",
+                    condition_code="good",
+                    asking_price_paise=2_000,
+                    negotiable=True,
+                    pickup_area=None,
+                    available_from=now,
+                    available_until=None,
+                    proof_available=False,
+                    images=[{"source": "existing", "image_id": stored.image_ids[0]}],
+                    operation_id=uuid4(),
+                ),
+            )
+
+        competing_results = await asyncio.gather(
+            competing_edit("Concurrent synthetic edit A"),
+            competing_edit("Concurrent synthetic edit B"),
+            return_exceptions=True,
+        )
+        winners = [
+            result for result in competing_results if not isinstance(result, Exception)
+        ]
+        conflicts = [
+            result
+            for result in competing_results
+            if isinstance(result, PublicError) and result.spec.status == 409
+        ]
+        assert len(winners) == 1
+        assert len(conflicts) == 1
+        concurrent_view = await store.read_listing(created.listing_id)
+        assert concurrent_view is not None
+        assert concurrent_view.title in {
+            "Concurrent synthetic edit A",
+            "Concurrent synthetic edit B",
+        }
+        assert concurrent_view.revision == 7
+        assert concurrent_view.proof_available is False
+
+        # Reopening and extending the window clears the inactivity clock. A new
+        # unavailable period starts its own clock; 179 days is early and exactly
+        # 180 days is eligible.
+        reopened = await service.change_availability(
+            owner,
+            created.listing_id,
+            AvailabilityChange(
+                expected_revision=7,
+                availability="available",
+                available_from=now,
+                available_until=now + timedelta(days=1),
+                operation_id=uuid4(),
+            ),
+        )
+        assert reopened.availability == "available"
+        buyer_can_rediscover_after_reopen = await service.read_detail(
+            outsider, created.listing_id
+        )
+        assert buyer_can_rediscover_after_reopen.listing_id == created.listing_id
+        async with pool.connection() as connection:
+            cursor = await connection.execute(
+                "SELECT retirement_eligible_since FROM listings.sale_listings WHERE id = %s",
+                (created.listing_id,),
+            )
+            assert (await cursor.fetchone())["retirement_eligible_since"] is None
+
+        unavailable_again = await service.change_availability(
+            owner,
+            created.listing_id,
+            AvailabilityChange(
+                expected_revision=8,
+                availability="unavailable",
+                available_until=None,
+                operation_id=uuid4(),
+            ),
+        )
+        assert unavailable_again.availability == "unavailable"
+        with pytest.raises(PublicError) as hidden_again:
+            await service.read_detail(outsider, created.listing_id)
+        assert hidden_again.value.spec.status == 404
+        async with pool.connection() as connection:
+            cursor = await connection.execute(
+                "SELECT retirement_eligible_since FROM listings.sale_listings WHERE id = %s",
+                (created.listing_id,),
+            )
+            eligibility_anchor = (await cursor.fetchone())["retirement_eligible_since"]
+        assert eligibility_anchor is not None
+        assert (
+            await store.begin_listing_retirement(
+                created.listing_id,
+                uuid4(),
+                eligibility_anchor + timedelta(days=179),
+            )
+        ) is None
+        boundary_operation_id = uuid4()
+        at_boundary = await store.begin_listing_retirement(
+            created.listing_id,
+            boundary_operation_id,
+            eligibility_anchor + timedelta(days=180),
+        )
+        assert at_boundary is not None
+        assert at_boundary.operation_id == boundary_operation_id
+        await store.clear_listing_retirement_pending(
+            created.listing_id, boundary_operation_id
+        )
 
         pending_operation_id = uuid4()
         saved_cutoff = now - timedelta(days=90)
@@ -403,10 +609,22 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
         # 180-day local eligibility period during finalization.
         old_listing_id, old_upload_id, old_image_id = uuid4(), uuid4(), uuid4()
         old_operation_id = uuid4()
+        old_conversation_id = uuid4()
         old_created = now - timedelta(days=200)
         old_available_from = now - timedelta(days=201)
-        old_available_until = now - timedelta(days=190)
+        old_available_until = now - timedelta(days=180)
         old_object_key = f"test/listings/{old_upload_id}"
+        late_create_request = create_request.model_copy(
+            update={
+                "operation_id": old_operation_id,
+                "title": "Old synthetic listing",
+                "description": "For retirement test",
+                "available_from": old_available_from,
+                "available_until": old_available_until,
+                "image_upload_ids": [old_upload_id],
+            }
+        )
+        late_request_payload = store._create_request_payload(late_create_request)
         async with pool.connection() as connection:
             async with connection.transaction():
                 await connection.execute(
@@ -467,9 +685,15 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
                     """
                     INSERT INTO listings.create_command_results (
                         owner_id, operation_id, listing_id, request_payload, result_payload
-                    ) VALUES (%s, %s, %s, '{"title":"private"}', '{"title":"private"}')
+                    ) VALUES (%s, %s, %s, %s, %s)
                     """,
-                    (owner_id, old_operation_id, old_listing_id),
+                    (
+                        owner_id,
+                        old_operation_id,
+                        old_listing_id,
+                        Jsonb(late_request_payload),
+                        Jsonb({"title": "private"}),
+                    ),
                 )
                 await connection.execute(
                     """
@@ -478,6 +702,29 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
                     ) VALUES (%s, 'availability', %s, '{}', '{}')
                     """,
                     (old_listing_id, uuid4()),
+                )
+                await connection.execute(
+                    """
+                    INSERT INTO conversations.threads (
+                        id, listing_id, initiator_id, counterparty_id,
+                        created_at, last_activity_at
+                    ) VALUES (%s, %s, %s, %s, %s, %s)
+                    """,
+                    (
+                        old_conversation_id,
+                        old_listing_id,
+                        buyer_id,
+                        owner_id,
+                        now - timedelta(days=100),
+                        now - timedelta(days=91),
+                    ),
+                )
+                await connection.execute(
+                    """
+                    INSERT INTO conversations.members (conversation_id, user_id)
+                    VALUES (%s, %s), (%s, %s)
+                    """,
+                    (old_conversation_id, buyer_id, old_conversation_id, owner_id),
                 )
 
         old_pending = await store.begin_listing_retirement(
@@ -506,7 +753,7 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
             retired_row = await retired.fetchone()
             receipts = await connection.execute(
                 """
-                SELECT request_payload, result_payload
+                SELECT owner_id, operation_id, listing_id, request_payload, result_payload
                 FROM listings.create_command_results WHERE listing_id = %s
                 """,
                 (old_listing_id,),
@@ -527,8 +774,51 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
         assert retired_row["retired_at"] is not None
         assert retired_row["retirement_pending_operation_id"] is None
         assert retired_row["retirement_pending_cutoff_utc"] is None
-        assert receipt_row == {"request_payload": None, "result_payload": None}
+        assert receipt_row == {
+            "owner_id": owner_id,
+            "operation_id": old_operation_id,
+            "listing_id": old_listing_id,
+            "request_payload": None,
+            "result_payload": None,
+        }
         assert owner_receipt_count == {"count": 0}
+
+        async with pool.connection() as connection:
+            references = await connection.execute(
+                """
+                SELECT thread.listing_id, thread.initiator_id, thread.counterparty_id,
+                    count(member.user_id) AS member_count
+                FROM conversations.threads AS thread
+                LEFT JOIN conversations.members AS member
+                    ON member.conversation_id = thread.id
+                WHERE thread.id = %s
+                GROUP BY thread.id
+                """,
+                (old_conversation_id,),
+            )
+            assert await references.fetchone() == {
+                "listing_id": old_listing_id,
+                "initiator_id": buyer_id,
+                "counterparty_id": owner_id,
+                "member_count": 2,
+            }
+
+        # Even an exact retry of the retained operation key cannot recreate or
+        # reveal content after retirement has scrubbed its saved payloads.
+        with pytest.raises(PublicError) as late_retry:
+            await service.create(owner, late_create_request)
+        assert late_retry.value.spec.status == 409
+        with pytest.raises(PublicError) as retired_reopen:
+            await service.change_availability(
+                owner,
+                old_listing_id,
+                AvailabilityChange(
+                    expected_revision=1,
+                    availability="available",
+                    operation_id=uuid4(),
+                ),
+            )
+        assert retired_reopen.value.spec.status == 404
 
         for queued_image in retired_images:
             await store.finish_retired_image_cleanup(
@@ -546,5 +836,38 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
             )
             cleanup_counts = await rows.fetchone()
         assert cleanup_counts == {"images": 0, "uploads": 0}
+
+        # Omission creates a real SQL NULL, and reverting the schema must not
+        # invent an area or discard an existing listing to restore the old rule.
+        without_area = CreateListingRequest(
+            **(
+                create_request.model_dump(exclude={"pickup_area"})
+                | {
+                    "image_upload_ids": [optional_area_upload_id],
+                    "operation_id": uuid4(),
+                }
+            )
+        )
+        optional_listing = await service.create(owner, without_area)
+        assert optional_listing.pickup_area is None
+        reread = await service.read_detail(owner, optional_listing.listing_id)
+        assert reread.pickup_area is None
+        down = (
+            (
+                Path(__file__).resolve().parents[5]
+                / "database/migrations/20261021105546_optional_listing_pickup_area.sql"
+            )
+            .read_text()
+            .split("-- migrate:down", 1)[1]
+        )
+        async with pool.connection() as connection:
+            with pytest.raises(CheckViolation, match="Cannot require pickup area"):
+                async with connection.transaction():
+                    await connection.execute(down)
+            result = await connection.execute(
+                "SELECT pickup_area FROM listings.sale_listings WHERE id = %s",
+                (optional_listing.listing_id,),
+            )
+            assert await result.fetchone() == {"pickup_area": None}
     finally:
         await pool.close()

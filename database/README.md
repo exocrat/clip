@@ -40,8 +40,13 @@ was changed. [Tool rationale](../docs/decisions/database-migration-tool.md).
 | `20261020111741_listing_create_command_results.sql` | Save the original create request/result for retry; on retirement clear both payloads but preserve the owner/operation/listing key so a later retry cannot create another listing. |
 | `20261020113531_listing_selection_and_confirmed_image_metadata.sql` | Add the missing nullable selected-conversation reference and buyer/conversation pair constraint, plus nullable fields for image metadata verified during LI-02 upload confirmation. |
 | `20261020142319_api_owned_retirement_and_trigger_boundaries.sql` | Add paired owner-side pending-operation/cutoff fields and thread write-disable markers; replace cross-domain trigger checks with API-owned checks while retaining local thread, sequence, offer and origin protections. The marker is checked under the thread lock for entries, offer revisions and contact-share inserts; rollback refuses while retirement records or markers exist. |
+| `20261021105546_optional_listing_pickup_area.sql` | Allow a null pickup area on live listings while preserving other live/retired requirements. Down refuses while live rows without an area exist; never invents data. |
 
-Expected current migration version: **20261020142319**. One integrator allocates
+The optional-pickup forward migration is under Listings writer scope; affected
+consumer/schema review and exact shared-database apply remain pending. Local
+isolated checks do not authorize shared/Compose/cloud migration.
+
+Expected current migration version: **20261021105546**. One integrator allocates
 later timestamp identifiers; no parallel heads or uncoordinated edits to initial
 DDL. Published/applied migrations are corrected forward, not rewritten.
 
@@ -126,7 +131,7 @@ password and are visible to administrators of the local Docker engine.
 | `bash database/local-db.sh start` | Validate local context/configuration/resource ownership, create/start only PostgreSQL, then wait for authenticated TCP `SELECT 1`. Exit 0 means connectivity, not migrations. |
 | `bash database/local-db.sh wait` | Up to 30 authenticated connection attempts with a 2-second connection timeout and 2-second pauses; nonzero on timeout/absent container. Final sanitized connection diagnostic is retained. |
 | `bash database/local-db.sh migrate` | Wait for connectivity, then run pinned dbmate 2.36.0 `migrate` with strict ordering and no schema dump. Applies pending migrations only to `clip_local`. Nonzero aborts; inspect sanitized output before recovery. |
-| `bash database/local-db.sh status` | Wait for connectivity and show dbmate migration status. A successful listing can still contain pending migrations; compare to expected branch head `20261020142319`, not merely process exit status. |
+| `bash database/local-db.sh status` | Wait for connectivity and show dbmate migration status. A successful listing can still contain pending migrations; compare to expected branch head `20261021105546`, not merely process exit status. |
 | `bash database/local-db.sh stop` | Stop only the validated service container, retaining its container and named data volume. An absent container is a successful no-op. |
 | `bash database/local-db.sh reset --confirm-delete-local-data` | **Permanently delete all local database data.** Warn, validate labels/clone/image/port/mount, stop/remove only the service container, then remove only `clip-local_clip_local_postgres_data`, without force. Leaves the database stopped. Explicitly review/approve this destructive invocation before using it; then run `start` and `migrate` to recreate. |
 | `bash database/local-db.sh --help` | Show fixed usage without password/Docker setup. |
@@ -273,7 +278,7 @@ backdating that fixture's closure instant; origin mode is restored before
 retirement and the marker guard are tested. The test does not exercise the
 public API's activity check or concurrent ordering; those remain service
 integration checks. It is not an application bypass or a production script.
-`native-checks.sh` now expects eight migrations and runs both smoke suites before
+`native-checks.sh` now expects nine migrations and runs both smoke suites before
 and after rollback/reapply. The original native results below describe the
 initial three-migration checkpoint, not a run of the revised harness.
 
@@ -441,9 +446,9 @@ was corrected and final state/aborted-sequence rollback checked on the rerun.
 `uv run --locked python scripts/check_database.py` uses the same PostgreSQL
 18.6 image and dbmate 2.36.0 as local development, with a new `clip_test_ci`
 database, no published port and temporary memory-backed storage. The current
-checker requires clean apply/exact branch head (`20261020142319`), repeated
+checker requires clean apply/exact branch head (`20261021105546`), repeated
 application, both SQL smoke suites, the 26-table inventory, rollback of all
-eight migrations and a clean reapply, then removes only its own container. The
+nine migrations and a clean reapply, then removes only its own container. The
 `--listings-store` option additionally mounts one private temporary Unix-socket
 directory and runs the focused Listings adapter workflow against that same
 disposable database. It uses synthetic test rows and Identity/Conversations test

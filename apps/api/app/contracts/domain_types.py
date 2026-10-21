@@ -267,7 +267,7 @@ class ListingSummary(ContractModel):
     condition_label: str
     asking_price_paise: int = Field(ge=0, multiple_of=100)
     negotiable: bool
-    pickup_area: str
+    pickup_area: str | None
     available_from: UtcInstant
     available_until: UtcInstant | None
     availability: Literal["available", "unavailable"]
@@ -370,7 +370,7 @@ class CreateListingRequest(ContractModel):
     condition_code: str
     asking_price_paise: int = Field(ge=0, multiple_of=100)
     negotiable: bool
-    pickup_area: str = Field(min_length=1, max_length=120)
+    pickup_area: str | None = Field(default=None, min_length=1, max_length=120)
     available_from: UtcInstant | None = None
     available_until: UtcInstant | None = None
     proof_available: bool | None = None
@@ -378,8 +378,28 @@ class CreateListingRequest(ContractModel):
     operation_id: OperationId
 
 
+class ExistingListingImage(ContractModel):
+    """Keep one of the listing's currently attached images in place/order."""
+
+    source: Literal["existing"]
+    image_id: ImageId
+
+
+class NewListingImage(ContractModel):
+    """Attach one newly confirmed, owner-bound image upload."""
+
+    source: Literal["upload"]
+    upload_id: ImageId
+
+
+ListingImageSelection = Annotated[
+    ExistingListingImage | NewListingImage,
+    Field(discriminator="source"),
+]
+
+
 class ListingReplacement(ContractModel):
-    """Full listing replacement with revision guard and explicit nullable fields."""
+    """Replace listing details and its ordered keep/add image selection."""
 
     expected_revision: int = Field(ge=1)
     title: str = Field(min_length=1, max_length=120)
@@ -388,11 +408,11 @@ class ListingReplacement(ContractModel):
     condition_code: str
     asking_price_paise: int = Field(ge=0, multiple_of=100)
     negotiable: bool
-    pickup_area: str = Field(min_length=1, max_length=120)
+    pickup_area: str | None = Field(min_length=1, max_length=120)
     available_from: UtcInstant
     available_until: UtcInstant | None
     proof_available: bool | None
-    image_upload_ids: list[ImageId] = Field(min_length=1, max_length=8)
+    images: list[ListingImageSelection] = Field(min_length=1, max_length=8)
     operation_id: OperationId
 
 

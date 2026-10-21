@@ -49,7 +49,9 @@ async def lifespan(application: FastAPI) -> AsyncIterator[None]:
             "Configured Listings database is unavailable; connection details are redacted."
         ) from None
 
-    application.state.listings_store = PostgresListingsStore(pool)
+    application.state.listings_store = PostgresListingsStore(
+        pool, settings.sensitive_purchase_threshold_paise
+    )
     application.state.listings_identity = PublicListingsIdentity()
     # These are reviewed declaration-only calls today. ListingsService maps
     # their NotImplementedError to a safe 503 until Conversations is wired.

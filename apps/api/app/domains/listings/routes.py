@@ -8,6 +8,7 @@ from app.core.auth import CallerContext, require_caller
 from app.core.errors import ERRORS, PublicError
 from app.contracts.domain_types import (
     CreateListingRequest,
+    CatalogueView,
     AvailabilityChange,
     ConversationId,
     ErrorEnvelope,
@@ -48,6 +49,21 @@ def _service(request: Request) -> ListingsService:
         raise PublicError(ERRORS[503])
     conversations = getattr(request.app.state, "listings_conversations", None)
     return ListingsService(store, identity, conversations=conversations)
+
+
+@router.get(
+    "/catalogue",
+    response_model=CatalogueView,
+    summary="listings_read_catalogue",
+    operation_id="listings_read_catalogue",
+    responses=_ERROR_RESPONSES,
+)
+async def read_catalogue(
+    caller: Annotated[CallerContext, Depends(require_caller)],
+    service: Annotated[ListingsService, Depends(_service)],
+) -> CatalogueView:
+    """Supply the reviewed catalogue endpoint without duplicating labels in the UI."""
+    return await service.read_catalogue(caller)
 
 
 @router.post(

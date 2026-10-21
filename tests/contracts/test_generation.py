@@ -238,6 +238,7 @@ def test_actual_api_schema_matches_generated_contract():
     assert actual["info"] == declared["info"]
     implemented_paths = {
         "/health",
+        "/catalogue",
         "/listings",
         "/listings/{listing_id}",
         "/me/listings",

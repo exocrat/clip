@@ -17,23 +17,25 @@ from app.core.pagination import Page
 from app.contracts.domain_types import (
     AvailabilityChange,
     CategoryCode,
+    Category,
+    CatalogueView,
     CreateListingRequest,
+    ExistingListingImage,
     ImageId,
     ListingDetail,
     ListingId,
     ListingManagementView,
     ListingReplacement,
+    NewListingImage,
     PageQuery,
     SelectionChange,
     UserId,
 )
 from app.domains.listings.service import PendingListingRetirement, RetiredListingImage
 
-_DEFAULT_SENSITIVE_PRICE_THRESHOLD_PAISE = 500_000
-
 # This projection keeps list/detail reads to one SQL query per request. The
-# threshold comes from the approved provisional value; Step 6 moves it to the
-# typed settings surface and boundary tests.
+# threshold is injected from typed API settings so every read uses the same
+# approved, configurable Listings value.
 _RETAINED_VIEW_QUERY = """
 SELECT
     listing.id AS listing_id,
@@ -117,9 +119,9 @@ class PostgresListingsStore:
     def __init__(
         self,
         pool: AsyncConnectionPool[dict[str, Any]],
-        sensitive_price_threshold_paise: int = _DEFAULT_SENSITIVE_PRICE_THRESHOLD_PAISE,
+        sensitive_price_threshold_paise: int,
     ) -> None:
-        """Bind a shared API pool and the currently approved price threshold."""
+        """Bind the database pool and validated Listings price threshold."""
         if (
             type(sensitive_price_threshold_paise) is not int
             or sensitive_price_threshold_paise < 0
@@ -128,6 +130,31 @@ class PostgresListingsStore:
             raise ValueError("The sensitive-purchase threshold must be whole rupees")
         self._pool = pool
         self._threshold = sensitive_price_threshold_paise
+
+    async def read_catalogue(self) -> CatalogueView:
+        """Read active form choices from Listings tables in one ordered query."""
+        async with self._connection() as connection:
+            cursor = await connection.execute("""
+                SELECT 'category' AS kind, code, label
+                FROM listings.categories WHERE active
+                UNION ALL
+                SELECT 'condition' AS kind, code, label
+                FROM listings.conditions WHERE active
+                ORDER BY kind, code
+                """)
+            rows = await cursor.fetchall()
+        return CatalogueView(
+            categories=[
+                Category(code=r["code"], label=r["label"])
+                for r in rows
+                if r["kind"] == "category"
+            ],
+            conditions=[
+                Category(code=r["code"], label=r["label"])
+                for r in rows
+                if r["kind"] == "condition"
+            ],
+        )
 
     async def confirmed_images_belong_to(
         self, owner_id: UserId, image_ids: tuple[ImageId, ...]
@@ -191,7 +218,7 @@ class PostgresListingsStore:
         request: CreateListingRequest,
         normalized_title: str,
         normalized_description: str,
-        normalized_pickup_area: str,
+        normalized_pickup_area: str | None,
         now: datetime,
     ) -> ListingDetail:
         """Create listing, attach verified uploads and save its retry receipt atomically."""
@@ -317,7 +344,7 @@ class PostgresListingsStore:
         request: ListingReplacement,
         normalized_title: str,
         normalized_description: str,
-        normalized_pickup_area: str,
+        normalized_pickup_area: str | None,
         now: datetime,
     ) -> ListingManagementView:
         """Replace the full listing and image references under one revision lock."""
@@ -341,17 +368,58 @@ class PostgresListingsStore:
                     raise _field_error(
                         "condition_code", "active_category_and_condition_required"
                     )
-                uploads = await self._lock_confirmed_uploads(
-                    connection, owner_id, tuple(request.image_upload_ids), now
+                current_image_ids = set(current.image_ids)
+                requested_existing_ids = {
+                    selection.image_id
+                    for selection in request.images
+                    if isinstance(selection, ExistingListingImage)
+                }
+                if not requested_existing_ids.issubset(current_image_ids):
+                    raise _field_error(
+                        "images", "existing_images_must_belong_to_listing"
+                    )
+                upload_ids = tuple(
+                    selection.upload_id
+                    for selection in request.images
+                    if isinstance(selection, NewListingImage)
                 )
-                await connection.execute(
-                    """
-                    UPDATE listings.images
-                    SET retired_at = %s
-                    WHERE listing_id = %s AND retired_at IS NULL
-                    """,
-                    (now, listing_id),
+                uploads = (
+                    await self._lock_confirmed_uploads(
+                        connection, owner_id, upload_ids, now, error_field="images"
+                    )
+                    if upload_ids
+                    else []
                 )
+                uploads_by_id = {upload["id"]: upload for upload in uploads}
+                retained_ids = {
+                    selection.image_id
+                    for selection in request.images
+                    if isinstance(selection, ExistingListingImage)
+                }
+                for image_id in current.image_ids:
+                    if image_id not in retained_ids:
+                        await connection.execute(
+                            """
+                            UPDATE listings.images SET retired_at = %s
+                            WHERE id = %s AND listing_id = %s AND retired_at IS NULL
+                            """,
+                            (now, image_id, listing_id),
+                        )
+                retained_order = [
+                    selection.image_id
+                    for selection in request.images
+                    if isinstance(selection, ExistingListingImage)
+                ]
+                for temporary_position, image_id in enumerate(
+                    retained_order, start=100
+                ):
+                    await connection.execute(
+                        """
+                        UPDATE listings.images SET position = %s
+                        WHERE id = %s AND listing_id = %s AND retired_at IS NULL
+                        """,
+                        (temporary_position, image_id, listing_id),
+                    )
                 cursor = await connection.execute(
                     """
                     UPDATE listings.sale_listings
@@ -382,7 +450,26 @@ class PostgresListingsStore:
                 )
                 if cursor.rowcount != 1:
                     raise _conflict()
-                await self._attach_uploads(connection, listing_id, uploads)
+                for position, selection in enumerate(request.images):
+                    if isinstance(selection, ExistingListingImage):
+                        image_cursor = await connection.execute(
+                            """
+                            UPDATE listings.images SET position = %s
+                            WHERE id = %s AND listing_id = %s AND retired_at IS NULL
+                            """,
+                            (position, selection.image_id, listing_id),
+                        )
+                        if image_cursor.rowcount != 1:
+                            raise _field_error(
+                                "images", "existing_images_must_belong_to_listing"
+                            )
+                    else:
+                        await self._attach_uploads(
+                            connection,
+                            listing_id,
+                            [uploads_by_id[selection.upload_id]],
+                            position_offset=position,
+                        )
                 result = await self._get_view(connection, listing_id)
                 if result is None:
                     raise PublicError(ERRORS[503])
@@ -667,8 +754,7 @@ class PostgresListingsStore:
                 SELECT image.id, image.object_key, upload.object_key AS upload_object_key
                 FROM listings.images AS image
                 JOIN listings.image_uploads AS upload ON upload.id = image.upload_id
-                JOIN listings.sale_listings AS listing ON listing.id = image.listing_id
-                WHERE image.retired_at IS NOT NULL AND listing.retired_at IS NOT NULL
+                WHERE image.retired_at IS NOT NULL
                 ORDER BY image.retired_at, image.id
                 LIMIT %s
                 """,
@@ -831,10 +917,11 @@ class PostgresListingsStore:
         owner_id: UserId,
         image_ids: tuple[ImageId, ...],
         now: datetime,
+        error_field: str = "image_upload_ids",
     ) -> list[dict[str, Any]]:
         """Lock confirmed uploads and require verifier-recorded actual object metadata."""
         if not image_ids or len(set(image_ids)) != len(image_ids):
-            raise _field_error("image_upload_ids", "confirmed_owned_images_required")
+            raise _field_error(error_field, "confirmed_owned_images_required")
         cursor = await connection.execute(
             """
             SELECT upload.id, upload.object_key, upload.state, upload.confirmed_at,
@@ -856,9 +943,7 @@ class PostgresListingsStore:
                 or upload["confirmed_at"] is None
                 or upload["expires_at"] <= now
             ):
-                raise _field_error(
-                    "image_upload_ids", "confirmed_owned_images_required"
-                )
+                raise _field_error(error_field, "confirmed_owned_images_required")
             if (
                 upload["confirmed_media_type"] is None
                 or upload["confirmed_size_bytes"] is None
@@ -872,9 +957,7 @@ class PostgresListingsStore:
             )
             attached = await attached_cursor.fetchone()
             if attached is not None and attached["attached"]:
-                raise _field_error(
-                    "image_upload_ids", "confirmed_owned_images_required"
-                )
+                raise _field_error(error_field, "confirmed_owned_images_required")
         indexed = {upload["id"]: upload for upload in rows}
         return [indexed[image_id] for image_id in image_ids]
 
@@ -883,9 +966,11 @@ class PostgresListingsStore:
         connection: AsyncConnection[dict[str, Any]],
         listing_id: ListingId,
         uploads: Sequence[dict[str, Any]],
+        position_offset: int = 0,
     ) -> None:
         """Create controlled image references from verified upload metadata."""
-        for position, upload in enumerate(uploads):
+        for offset, upload in enumerate(uploads):
+            position = position_offset + offset
             await connection.execute(
                 """
                 INSERT INTO listings.images (

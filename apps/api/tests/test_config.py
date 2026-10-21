@@ -16,6 +16,13 @@ def test_local_startup_needs_no_external_settings():
     assert settings.environment == "local"
     assert settings.debug is False
     assert settings.database_url is None
+    assert settings.sensitive_purchase_threshold_paise == 500_000
+
+
+def test_sensitive_purchase_threshold_can_be_configured(monkeypatch):
+    """Listings can change its price boundary through a whole-rupee setting."""
+    monkeypatch.setenv("CLIP_SENSITIVE_PURCHASE_THRESHOLD_PAISE", "750000")
+    assert load_settings().sensitive_purchase_threshold_paise == 750_000
 
 
 @pytest.mark.parametrize(
@@ -38,6 +45,9 @@ def test_environment_values_are_typed(monkeypatch, environment, debug, expected_
         ("CLIP_ENVIRONMENT", ""),
         ("CLIP_DEBUG", "synthetic-invalid-value"),
         ("CLIP_DEBUG", ""),
+        ("CLIP_SENSITIVE_PURCHASE_THRESHOLD_PAISE", "-100"),
+        ("CLIP_SENSITIVE_PURCHASE_THRESHOLD_PAISE", "500001"),
+        ("CLIP_SENSITIVE_PURCHASE_THRESHOLD_PAISE", "synthetic-invalid-value"),
     ],
 )
 def test_invalid_settings_fail_without_echoing_values(monkeypatch, variable, value):

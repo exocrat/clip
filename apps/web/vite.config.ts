@@ -9,6 +9,13 @@ export default defineConfig({
     host: '127.0.0.1',
     port: 5173,
     strictPort: true,
+    // Development only: keep browser calls same-origin and target the local API.
+    proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:8000',
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+    },
   },
   preview: {
     host: '127.0.0.1',

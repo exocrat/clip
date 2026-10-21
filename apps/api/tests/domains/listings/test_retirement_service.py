@@ -202,6 +202,50 @@ def test_recent_activity_result_clears_pending_request() -> None:
     assert store.clear_calls == [(LISTING_ID, operation_id)]
 
 
+def test_recent_write_in_any_associated_thread_blocks_and_clears_retirement():
+    operation_id = uuid4()
+    conversations = _ConversationsDouble(
+        activity=OriginActivityResult(
+            thread_count=4,
+            latest_participant_write_at=NOW - timedelta(days=90) + timedelta(seconds=1),
+        ),
+        marker_results=[
+            RetirementMarkerResult(outcome="blocked_recent_activity", marked_count=0)
+        ],
+    )
+    store = _RetirementStore()
+
+    result = asyncio.run(
+        _service(store, conversations).retire_eligible_listing(LISTING_ID, operation_id)
+    )
+
+    assert result is not None and result.outcome == "blocked_recent_activity"
+    assert conversations.activity_calls[0][1].origin_id == LISTING_ID
+    assert conversations.marker_calls[0][1].cutoff_utc == NOW - timedelta(days=90)
+    assert store.clear_calls == [(LISTING_ID, operation_id)]
+    assert store.finalize_calls == []
+    assert not store.retired
+
+
+def test_participant_write_exactly_at_quiet_cutoff_can_be_marked_retired():
+    conversations = _ConversationsDouble(
+        activity=OriginActivityResult(
+            thread_count=2,
+            latest_participant_write_at=NOW - timedelta(days=90),
+        ),
+        marker_results=[RetirementMarkerResult(outcome="marked", marked_count=2)],
+    )
+    store = _RetirementStore()
+
+    result = asyncio.run(
+        _service(store, conversations).retire_eligible_listing(LISTING_ID, uuid4())
+    )
+
+    assert result == RetirementMarkerResult(outcome="marked", marked_count=2)
+    assert conversations.marker_calls[0][1].cutoff_utc == NOW - timedelta(days=90)
+    assert store.retired
+
+
 def test_incomplete_activity_response_fails_closed_and_keeps_pending() -> None:
     store = _RetirementStore()
     conversations = _ConversationsDouble(

@@ -3,6 +3,7 @@
 from typing import Literal, Self
 
 from pydantic import (
+    Field,
     SecretStr,
     ValidationError,
     ValidationInfo,
@@ -40,6 +41,10 @@ class Settings(BaseSettings):
     development_auth: bool = False
     # SecretStr prevents accidental repr/log output of embedded credentials.
     database_url: SecretStr | None = None
+    # Listings compares prices against this configurable whole-rupee threshold.
+    sensitive_purchase_threshold_paise: int = Field(
+        default=500_000, ge=0, multiple_of=100
+    )
 
     @field_validator("database_url")
     @classmethod

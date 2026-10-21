@@ -1,0 +1,423 @@
+"""Loopback-only Listings browser harness with real PostgreSQL and synthetic inputs.
+
+This test-package entry point is deliberately separate from app.main. It never
+uses an ambient database URL, real Identity or object storage. Container data is
+retained on shutdown; --resume reopens only the recorded, labelled container.
+"""
+
+from __future__ import annotations
+
+import argparse
+from contextlib import asynccontextmanager
+from datetime import UTC, datetime, timedelta
+import json
+import os
+from pathlib import Path
+import secrets
+import signal
+import socket
+import subprocess
+import sys
+import tempfile
+import time
+from typing import Any
+from uuid import UUID, uuid4
+
+ROOT = Path(__file__).resolve().parents[5]
+sys.path.insert(0, str(ROOT / "apps/api"))
+
+from fastapi import Depends, FastAPI, Request  # noqa: E402
+from psycopg.rows import dict_row  # noqa: E402
+from psycopg_pool import AsyncConnectionPool  # noqa: E402
+import uvicorn  # noqa: E402
+
+from app.contracts.domain_types import ConfirmedImage  # noqa: E402
+from app.core.auth import CallerContext, require_caller  # noqa: E402
+from app.core.config import Settings, load_settings  # noqa: E402
+from app.core.errors import ERRORS, error_response, install_error_handlers  # noqa: E402
+from app.domains.listings.postgres_store import PostgresListingsStore  # noqa: E402
+from app.domains.listings.routes import router  # noqa: E402
+
+OWNER_ID = UUID("10000000-0000-4000-8000-000000000001")
+POSTGRES_IMAGE = "postgres:18.6-bookworm"
+DBMATE_IMAGE = "ghcr.io/amacneil/dbmate:2.36.0"
+DATABASE = "clip_listings_browser"
+DB_USER = "clip_browser"
+LABEL = "clip.listings-browser"
+
+
+class SyntheticIdentity:
+    """Approve only this harness's fixed synthetic seller, never arbitrary IDs."""
+
+    async def account_is_eligible(self, user_id: UUID) -> bool:
+        return user_id == OWNER_ID
+
+
+def require_demo_settings(settings: Settings) -> None:
+    """Reject production/local/default startup and caller-selected databases."""
+    if (
+        settings.environment != "test"
+        or not settings.development_auth
+        or settings.database_url is not None
+    ):
+        raise RuntimeError(
+            "Use explicit test/development-auth settings and no CLIP_DATABASE_URL."
+        )
+
+
+def create_demo_app(conninfo: str, settings: Settings) -> FastAPI:
+    """Bind the real store only to the launcher-owned database and fake caller.
+
+    The launcher, not HTTP input, chooses this connection. The ordinary API app
+    never imports this module or installs its dependency overrides/routes.
+    """
+    require_demo_settings(settings)
+
+    @asynccontextmanager
+    async def lifespan(application: FastAPI):
+        pool: AsyncConnectionPool[dict[str, Any]] = AsyncConnectionPool(
+            conninfo, kwargs={"row_factory": dict_row}, open=False
+        )
+        await pool.open()
+        try:
+            await pool.wait(timeout=10)
+            async with pool.connection() as connection:
+                result = await connection.execute(
+                    "SELECT current_database() AS name, inet_server_addr() IS NULL AS socket"
+                )
+                if await result.fetchone() != {"name": DATABASE, "socket": True}:
+                    raise RuntimeError(
+                        "Expected the isolated Unix-socket browser database"
+                    )
+                await connection.execute(
+                    """
+                    INSERT INTO identity.users (id, account_class, status, display_name)
+                    VALUES (%s, 'regular', 'active', 'Synthetic Listings browser seller')
+                    ON CONFLICT (id) DO NOTHING
+                    """,
+                    (OWNER_ID,),
+                )
+            application.state.demo_pool = pool
+            application.state.listings_store = PostgresListingsStore(
+                pool, settings.sensitive_purchase_threshold_paise
+            )
+            application.state.listings_identity = SyntheticIdentity()
+            application.state.listings_conversations = None
+            yield
+        finally:
+            await pool.close()
+
+    application = FastAPI(
+        lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None
+    )
+    install_error_handlers(application)
+    application.include_router(router)
+
+    @application.middleware("http")
+    async def local_requests_only(request: Request, call_next):
+        """Deny remote peers/hosts and cross-origin browser writes in this test app."""
+        origin = request.headers.get("origin")
+        allowed_origins = {"http://127.0.0.1:5173", "http://localhost:5173"}
+        if (
+            request.client is None
+            or request.client.host not in {"127.0.0.1", "::1"}
+            or request.url.hostname not in {"127.0.0.1", "localhost"}
+            or (origin is not None and origin not in allowed_origins)
+            or (request.method not in {"GET", "HEAD"} and origin not in allowed_origins)
+        ):
+            return error_response(request, ERRORS[403])
+        return await call_next(request)
+
+    async def synthetic_caller() -> CallerContext:
+        """Install trusted fixed test identity without reading a header/body ID."""
+        return CallerContext(
+            OWNER_ID, "regular", datetime.now(UTC) + timedelta(hours=1)
+        )
+
+    application.dependency_overrides[require_caller] = synthetic_caller
+
+    @application.post("/__listings_demo/image", response_model=ConfirmedImage)
+    async def prepare_image(
+        request: Request, caller: CallerContext = Depends(require_caller)
+    ) -> ConfirmedImage:
+        """Insert synthetic confirmation metadata; no object/photo is uploaded."""
+        upload_id = uuid4()
+        now = datetime.now(UTC)
+        async with request.app.state.demo_pool.connection() as connection:
+            await connection.execute(
+                """
+                INSERT INTO listings.image_uploads (
+                    id, owner_id, object_key, state, created_at, expires_at,
+                    confirmed_at, confirmed_media_type, confirmed_size_bytes
+                ) VALUES (%s, %s, %s, 'confirmed', %s, %s, %s, 'image/jpeg', 2048)
+                """,
+                (
+                    upload_id,
+                    caller.user_id,
+                    f"synthetic/browser/{upload_id}",
+                    now,
+                    now + timedelta(hours=24),
+                    now,
+                ),
+            )
+        return ConfirmedImage(
+            upload_id=upload_id, media_type="image/jpeg", size_bytes=2048
+        )
+
+    return application
+
+
+def run_tool(arguments: list[str], *, extra: dict[str, str] | None = None) -> str:
+    """Bound tool execution; do not echo commands, credentials or raw diagnostics."""
+    env = {key: os.environ[key] for key in ("HOME", "PATH") if key in os.environ}
+    result = subprocess.run(
+        arguments,
+        cwd=ROOT,
+        env=env | (extra or {}),
+        capture_output=True,
+        text=True,
+        timeout=180,
+    )
+    if result.returncode:
+        raise RuntimeError(
+            "The isolated database tool failed; no shared database was targeted."
+        )
+    return result.stdout.strip()
+
+
+def owned_container(session: Path, docker: list[str]) -> str:
+    """Validate retained session ownership and Docker label before reuse/inspection."""
+    resolved = session.resolve()
+    if (
+        session.is_symlink()
+        or resolved.parent != Path("/tmp")
+        or not resolved.name.startswith("clip-listings-browser-")
+        or resolved.stat().st_uid != os.getuid()
+        or resolved.stat().st_mode & 0o077
+    ):
+        raise RuntimeError(
+            "Expected an owner-private Listings browser session under /tmp"
+        )
+    state_file = resolved / "session.json"
+    if state_file.is_symlink():
+        raise RuntimeError("Session metadata must not be a symlink")
+    container = json.loads(state_file.read_text())["container"]
+    if (
+        not isinstance(container, str)
+        or len(container) != 64
+        or any(c not in "0123456789abcdef" for c in container)
+    ):
+        raise RuntimeError("Invalid recorded container ID")
+    label = run_tool(
+        docker
+        + [
+            "inspect",
+            "--format",
+            '{{index .Config.Labels "clip.listings-browser"}}',
+            container,
+        ]
+    )
+    if label != str(resolved):
+        raise RuntimeError("The container does not belong to this browser session")
+    return container
+
+
+def main() -> None:
+    """Create/resume an isolated retained container, migrate it, and serve loopback."""
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--isolated-listings-browser", action="store_true", required=True
+    )
+    action = parser.add_mutually_exclusive_group()
+    action.add_argument("--resume", type=Path)
+    action.add_argument("--inspect", type=Path)
+    args = parser.parse_args()
+    settings = load_settings()
+    require_demo_settings(settings)
+
+    def stop_requested(signum, frame):
+        """Turn terminal/termination signals into cleanup, including Uvicorn replay."""
+        raise KeyboardInterrupt
+
+    signal.signal(signal.SIGINT, stop_requested)
+    signal.signal(signal.SIGTERM, stop_requested)
+    context = run_tool(["docker", "context", "show"])
+    endpoint = json.loads(run_tool(["docker", "context", "inspect", context]))[0][
+        "Endpoints"
+    ]["docker"]["Host"]
+    if not endpoint.startswith("unix://"):
+        raise RuntimeError("A local Unix-socket Docker context is required")
+    docker = ["docker", "--context", context]
+    if args.inspect:
+        container = owned_container(args.inspect, docker)
+        print(
+            run_tool(
+                docker
+                + [
+                    "exec",
+                    "--env",
+                    "PGOPTIONS=-c default_transaction_read_only=on",
+                    container,
+                    "psql",
+                    "-X",
+                    "-U",
+                    DB_USER,
+                    "-d",
+                    DATABASE,
+                    "-c",
+                    "SELECT id, title, asking_price_paise, availability, proof_available FROM listings.sale_listings ORDER BY created_at, id",
+                ]
+            )
+        )
+        return
+    with socket.socket() as listener:
+        # Match Uvicorn's restart behavior when prior connections are in TIME_WAIT.
+        listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        listener.bind(("127.0.0.1", 8000))
+    session = (
+        args.resume.resolve()
+        if args.resume
+        else Path(tempfile.mkdtemp(prefix="clip-listings-browser-", dir="/tmp"))
+    )
+    socket_directory = session / "pgsocket"
+    container = None
+    try:
+        if args.resume:
+            container = owned_container(args.resume, docker)
+            run_tool(docker + ["start", container])
+        else:
+            socket_directory.mkdir(mode=0o777)
+            socket_directory.chmod(0o777)
+            container = run_tool(
+                docker
+                + [
+                    "run",
+                    "--detach",
+                    "--network",
+                    "none",
+                    "--stop-timeout",
+                    "5",
+                    "--label",
+                    f"{LABEL}={session}",
+                    "--mount",
+                    f"type=bind,src={socket_directory},dst=/tmp/clip-pg-socket",
+                    "--env",
+                    "POSTGRES_PASSWORD",
+                    "--env",
+                    f"POSTGRES_USER={DB_USER}",
+                    "--env",
+                    f"POSTGRES_DB={DATABASE}",
+                    POSTGRES_IMAGE,
+                    "postgres",
+                    "-c",
+                    "timezone=UTC",
+                    "-c",
+                    "unix_socket_directories=/var/run/postgresql,/tmp/clip-pg-socket",
+                ],
+                extra={"POSTGRES_PASSWORD": secrets.token_hex(24)},
+            )
+            (session / "session.json").write_text(json.dumps({"container": container}))
+        for attempt in range(60):
+            ready = subprocess.run(
+                docker
+                # Bootstrap uses sockets only and restarts once. TCP readiness
+                # identifies the final server rather than that transient phase.
+                + [
+                    "exec",
+                    container,
+                    "pg_isready",
+                    "-h",
+                    "127.0.0.1",
+                    "-U",
+                    DB_USER,
+                    "-d",
+                    DATABASE,
+                ],
+                capture_output=True,
+                timeout=10,
+            )
+            if ready.returncode == 0:
+                break
+            if attempt == 59:
+                raise RuntimeError("Isolated PostgreSQL startup timed out")
+            time.sleep(1)
+        version = run_tool(
+            docker
+            + [
+                "exec",
+                container,
+                "psql",
+                "-XAt",
+                "-U",
+                DB_USER,
+                "-d",
+                DATABASE,
+                "-c",
+                "SHOW server_version_num",
+            ]
+        )
+        if version != "180006":
+            raise RuntimeError("Expected PostgreSQL 18.6")
+        run_tool(
+            docker
+            + [
+                "run",
+                "--rm",
+                "--network",
+                "none",
+                "--user",
+                f"{os.getuid()}:{os.getgid()}",
+                "--read-only",
+                "--cap-drop",
+                "ALL",
+                "--security-opt",
+                "no-new-privileges",
+                "--mount",
+                f"type=bind,src={socket_directory},dst=/tmp/clip-pg-socket",
+                "--mount",
+                f"type=bind,src={ROOT}/database/migrations,dst=/db/migrations,readonly",
+                "--env",
+                "DATABASE_URL",
+                DBMATE_IMAGE,
+                "--env-file",
+                "/dev/null",
+                "--migrations-dir",
+                "/db/migrations",
+                "--no-dump-schema",
+                "migrate",
+                "--strict",
+            ],
+            extra={
+                "DATABASE_URL": f"postgres://{DB_USER}@/{DATABASE}?host=%2Ftmp%2Fclip-pg-socket&sslmode=disable"
+            },
+        )
+        print(
+            f"ISOLATED LISTINGS BROWSER: real PostgreSQL, synthetic Identity/image metadata. Session: {session}",
+            flush=True,
+        )
+        print(
+            "API: http://127.0.0.1:8000; Ctrl+C stops it and its database, retaining rows for --resume.",
+            flush=True,
+        )
+        conninfo = f"postgresql://{DB_USER}@/{DATABASE}?host={socket_directory}&sslmode=disable"
+        uvicorn.run(
+            create_demo_app(conninfo, settings),
+            host="127.0.0.1",
+            port=8000,
+            access_log=False,
+            log_level="warning",
+        )
+    finally:
+        if container is not None:
+            # Finish the bounded stop even when a second terminal signal arrives.
+            signal.signal(signal.SIGINT, signal.SIG_IGN)
+            signal.signal(signal.SIGTERM, signal.SIG_IGN)
+            run_tool(docker + ["stop", "--time", "5", container])
+            print(f"Browser database stopped; retained session: {session}", flush=True)
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        pass

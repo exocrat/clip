@@ -150,6 +150,7 @@ def test_only_implemented_listings_http_routes_are_installed():
     paths = set(app.openapi()["paths"])
     assert paths == {
         "/health",
+        "/catalogue",
         "/listings",
         "/listings/{listing_id}",
         "/me/listings",

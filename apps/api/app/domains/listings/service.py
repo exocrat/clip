@@ -19,8 +19,10 @@ from app.core.pagination import Page
 from app.contracts.domain_types import (
     AvailabilityChange,
     CategoryCode,
+    CatalogueView,
     ConversationId,
     CreateListingRequest,
+    ExistingListingImage,
     ImageId,
     ListingDetail,
     ListingId,
@@ -80,6 +82,10 @@ class ListingsIdentity(Protocol):
 class ListingsStore(Protocol):
     """Storage boundary for Listings; adapters must enforce one transaction."""
 
+    async def read_catalogue(self) -> CatalogueView:
+        """Return active owned categories and conditions for form selection."""
+        ...
+
     async def confirmed_images_belong_to(
         self, owner_id: UserId, image_ids: tuple[ImageId, ...]
     ) -> bool:
@@ -98,7 +104,7 @@ class ListingsStore(Protocol):
         request: CreateListingRequest,
         normalized_title: str,
         normalized_description: str,
-        normalized_pickup_area: str,
+        normalized_pickup_area: str | None,
         now: datetime,
     ) -> ListingDetail:
         """Create listing, attach confirmed uploads and save the original result atomically."""
@@ -127,7 +133,7 @@ class ListingsStore(Protocol):
         request: ListingReplacement,
         normalized_title: str,
         normalized_description: str,
-        normalized_pickup_area: str,
+        normalized_pickup_area: str | None,
         now: datetime,
     ) -> ListingManagementView:
         """Recheck uploads and replace atomically at the expected revision."""
@@ -328,6 +334,11 @@ class ListingsService:
         self._clock = clock
         self._image_storage = image_storage
 
+    async def read_catalogue(self, caller: CallerContext) -> CatalogueView:
+        """Read current catalogue labels for an eligible authenticated account."""
+        await _require_eligible(caller, self._identity)
+        return await self._store.read_catalogue()
+
     async def create(
         self, caller: CallerContext, request: CreateListingRequest
     ) -> ListingDetail:
@@ -335,7 +346,9 @@ class ListingsService:
         await _require_regular_eligible(caller, self._identity)
         title = request.title.strip()
         description = request.description.strip()
-        pickup_area = request.pickup_area.strip()
+        pickup_area = (
+            request.pickup_area.strip() if request.pickup_area is not None else None
+        )
         normalized_request = request.model_copy(
             update={
                 "title": title,
@@ -351,7 +364,8 @@ class ListingsService:
 
         title = _clean_text("title", title, 120)
         description = _clean_text("description", description, 5000)
-        pickup_area = _clean_text("pickup_area", pickup_area, 120)
+        if pickup_area is not None:
+            pickup_area = _clean_text("pickup_area", pickup_area, 120)
         image_ids = tuple(request.image_upload_ids)
         if len(set(image_ids)) != len(image_ids):
             raise _field_error("image_upload_ids", "duplicates_not_allowed")
@@ -410,18 +424,28 @@ class ListingsService:
         await _require_regular_eligible(caller, self._identity)
         title = _clean_text("title", request.title, 120)
         description = _clean_text("description", request.description, 5000)
-        pickup_area = _clean_text("pickup_area", request.pickup_area, 120)
+        # Explicit null clears the optional area in this full-replacement command.
+        pickup_area = (
+            _clean_text("pickup_area", request.pickup_area, 120)
+            if request.pickup_area is not None
+            else None
+        )
         if not await self._store.category_and_condition_are_active(
             request.category_code, request.condition_code
         ):
             raise _field_error(
                 "category_code", "active_category_and_condition_required"
             )
-        image_ids = tuple(request.image_upload_ids)
-        if len(set(image_ids)) != len(image_ids):
-            raise _field_error("image_upload_ids", "duplicates_not_allowed")
-        if not await self._store.confirmed_images_belong_to(caller.user_id, image_ids):
-            raise _field_error("image_upload_ids", "confirmed_owned_images_required")
+        image_keys = tuple(
+            (
+                ("existing", selection.image_id)
+                if isinstance(selection, ExistingListingImage)
+                else ("upload", selection.upload_id)
+            )
+            for selection in request.images
+        )
+        if len(set(image_keys)) != len(image_keys):
+            raise _field_error("images", "duplicate_images_not_allowed")
         current = await self._store.read_listing(listing_id)
         if current is None:
             raise PublicError(ERRORS[404])

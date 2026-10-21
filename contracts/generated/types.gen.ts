@@ -345,7 +345,7 @@ export type CreateListingRequest = {
     /**
      * Pickup Area
      */
-    pickup_area: string;
+    pickup_area?: string | null;
     /**
      * Proof Available
      */
@@ -510,6 +510,22 @@ export type ErrorEnvelope = {
 };
 
 /**
+ * ExistingListingImage
+ *
+ * Keep one of the listing's currently attached images in place/order.
+ */
+export type ExistingListingImage = {
+    /**
+     * Image Id
+     */
+    image_id: string;
+    /**
+     * Source
+     */
+    source: 'existing';
+};
+
+/**
  * HealthResponse
  *
  * Only process liveness is promised; no dependency readiness is implied.
@@ -642,7 +658,7 @@ export type ListingDetail = {
     /**
      * Pickup Area
      */
-    pickup_area: string;
+    pickup_area: string | null;
     /**
      * Proof Available
      */
@@ -722,7 +738,7 @@ export type ListingManagementView = {
     /**
      * Pickup Area
      */
-    pickup_area: string;
+    pickup_area: string | null;
     /**
      * Proof Available
      */
@@ -818,7 +834,7 @@ export type ListingOwnerView = {
     /**
      * Pickup Area
      */
-    pickup_area: string;
+    pickup_area: string | null;
     /**
      * Proof Available
      */
@@ -852,7 +868,7 @@ export type ListingOwnerView = {
 /**
  * ListingReplacement
  *
- * Full listing replacement with revision guard and explicit nullable fields.
+ * Replace listing details and its ordered keep/add image selection.
  */
 export type ListingReplacement = {
     /**
@@ -884,9 +900,9 @@ export type ListingReplacement = {
      */
     expected_revision: number;
     /**
-     * Image Upload Ids
+     * Images
      */
-    image_upload_ids: Array<string>;
+    images: Array<ExistingListingImage | NewListingImage>;
     /**
      * Negotiable
      */
@@ -898,7 +914,7 @@ export type ListingReplacement = {
     /**
      * Pickup Area
      */
-    pickup_area: string;
+    pickup_area: string | null;
     /**
      * Proof Available
      */
@@ -966,7 +982,7 @@ export type ListingSummary = {
     /**
      * Pickup Area
      */
-    pickup_area: string;
+    pickup_area: string | null;
     /**
      * Sensitive Purchase
      */
@@ -1012,6 +1028,22 @@ export type MicrosoftSessionRequest = {
      * Id Token
      */
     id_token: string;
+};
+
+/**
+ * NewListingImage
+ *
+ * Attach one newly confirmed, owner-bound image upload.
+ */
+export type NewListingImage = {
+    /**
+     * Source
+     */
+    source: 'upload';
+    /**
+     * Upload Id
+     */
+    upload_id: string;
 };
 
 /**

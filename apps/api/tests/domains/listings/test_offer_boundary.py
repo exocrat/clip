@@ -23,6 +23,9 @@ from app.contracts.domain_types import (
 )
 from app.core.auth import CallerContext
 from app.core.errors import PublicError
+from app.contracts.domain_types import AccountEligibility
+from app.domains.identity import public as identity_public
+from app.domains.listings.integrations import PublicListingsIdentity
 from app.domains.listings.service import ListingsService
 
 
@@ -147,12 +150,22 @@ def _service(
 
 
 def _caller(user_id: UUID = BUYER_ID) -> CallerContext:
-    return CallerContext(user_id, "regular", NOW + timedelta(days=1))
+    # CallerContext checks wall-clock expiry independently of the frozen service clock.
+    return CallerContext(user_id, "regular", NOW + timedelta(days=30))
 
 
-def test_submit_offer_forwards_only_after_listing_is_discoverable() -> None:
+@pytest.mark.parametrize(
+    "expected_revision", [None, 2], ids=["first-submit", "revision"]
+)
+def test_submit_or_revise_offer_forwards_only_after_listing_is_discoverable(
+    expected_revision: int | None,
+) -> None:
     service, _, conversations = _service(_listing())
-    request = OfferRevisionRequest(amount_paise=9_000, operation_id=uuid4())
+    request = OfferRevisionRequest(
+        amount_paise=9_000,
+        expected_revision=expected_revision,
+        operation_id=uuid4(),
+    )
 
     result = asyncio.run(
         service.submit_offer(_caller(), LISTING_ID, CONVERSATION_ID, request)
@@ -165,7 +178,7 @@ def test_submit_offer_forwards_only_after_listing_is_discoverable() -> None:
             listing_id=LISTING_ID,
             conversation_id=CONVERSATION_ID,
             amount_paise=9_000,
-            expected_revision=None,
+            expected_revision=expected_revision,
             operation_id=request.operation_id,
         )
     ]
@@ -276,4 +289,46 @@ def test_seller_cannot_submit_an_offer_to_own_listing() -> None:
         )
 
     assert captured.value.spec.status == 403
+    assert conversations.commands == []
+
+
+def test_temporary_buyer_is_denied_by_regular_identity_capability(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    temporary_user_id = uuid4()
+    capability_calls: list[tuple[UUID, str | None]] = []
+
+    async def check_account_eligibility(
+        user_id: UUID, required_class: str | None = None
+    ) -> AccountEligibility:
+        capability_calls.append((user_id, required_class))
+        return AccountEligibility(eligible=False)
+
+    monkeypatch.setattr(
+        identity_public, "check_account_eligibility", check_account_eligibility
+    )
+    store = _OfferStore(_listing())
+    conversations = _ConversationsDouble()
+    service = ListingsService(
+        store,
+        PublicListingsIdentity(),
+        clock=lambda: NOW,
+        conversations=conversations,
+    )
+    temporary_caller = CallerContext(
+        temporary_user_id, "temporary", NOW + timedelta(days=30)
+    )
+
+    with pytest.raises(PublicError) as captured:
+        asyncio.run(
+            service.submit_offer(
+                temporary_caller,
+                LISTING_ID,
+                CONVERSATION_ID,
+                OfferRevisionRequest(amount_paise=9_000, operation_id=uuid4()),
+            )
+        )
+
+    assert captured.value.spec.status == 403
+    assert capability_calls == [(temporary_user_id, "regular")]
     assert conversations.commands == []

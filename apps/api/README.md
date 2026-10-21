@@ -36,6 +36,7 @@ The API reads these values from the process environment at startup:
 | `CLIP_STORAGE_PROVIDER` | `disabled` or `fake`; default `disabled` | Authorizes only explicit test-helper construction; production rejects `fake`. No real storage is configured. |
 | `CLIP_DEVELOPMENT_AUTH` | Boolean; default `false` | Reserved testing control; production rejects `true`. This setting creates no public authentication bypass. |
 | `CLIP_DATABASE_URL` | Optional PostgreSQL URL; default unset | Stored as a redacted secret. When set, startup opens a bounded async connection pool; do not paste the URL into logs or chat. Without it, health starts and Listings routes return the safe unavailable response. |
+| `CLIP_SENSITIVE_PURCHASE_THRESHOLD_PAISE` | Nonnegative whole-rupee paise; default `500000` | Listings flags non-sensitive categories only when asking price is greater than this value. Mobile phones and laptops are flagged at every price. |
 
 For example, `CLIP_ENVIRONMENT=test CLIP_DEBUG=false uv run --locked uvicorn app.main:app --app-dir apps/api --host 127.0.0.1 --port 8000` uses explicit test settings. No file is automatically loaded: `.env.example` is documentation, not a source of runtime settings. Restart your server after changing environment values. Configuration failures name the affected settings but do not echo supplied values; startup stops instead of falling back to a successful response.
 
