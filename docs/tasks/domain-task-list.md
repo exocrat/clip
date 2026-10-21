@@ -162,8 +162,9 @@ it does not block unrelated isolated domain work permitted by the stub guide.
 
 - Listings B (Suraj), `LI-01` Step 5: Listings pending state, owner-side
   validation/serialization and API calls, and Listings-only reconciliation
-  writes. B is the single writer of the shared forward migration in
-  `domain/listings`.
+  writes. B and Conversations D (Rahul) may both author the shared forward
+  migration. Coordinate so only one person edits that migration at a time;
+  B reviews Listings-owned behavior and D reviews Conversations-owned behavior.
 - Search C (Mohit), `SE-02`: Wanted Request pending state and response-thread
   gating; review the migration's Search-owned behavior.
 - Conversations D (Rahul), `CN-01`/`CN-02`: activity/retirement contracts,
@@ -172,8 +173,8 @@ it does not block unrelated isolated domain work permitted by the stub guide.
   participant eligibility calls use Identity's public API; review the
   migration's Conversations-owned behavior.
 - A (Aditya) coordinates this shared checkpoint and verifies the integrated
-  behavior at `INT-01`. B drafts the sole shared migration; do not have
-  multiple writers edit it concurrently.
+  behavior at `INT-01`. B or D may prepare the shared migration; agree on the
+  current editor before changing it and do not make concurrent edits.
 - Outputs include aligned canonical/combined contracts, decision and schema
   records, a forward migration replacing the affected trigger definitions and
   cross-domain business access while adding pending/no-write/operation-result
