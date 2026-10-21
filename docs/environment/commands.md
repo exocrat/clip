@@ -408,7 +408,7 @@ Hey API 0.99.0 (TypeScript-only plugin), and existing locked FastAPI/Pydantic.
 |---|---|
 | `uv run --locked python scripts/generate_contracts.py generate` | Rebuild eight registered Python/OpenAPI/TypeScript outputs from reviewed health/domain source, including four declaration-only `public.py` modules. |
 | `uv run --locked python scripts/generate_contracts.py check` | Render in temporary storage; exit 0 if current, nonzero for missing/stale outputs or tool/source failure; outputs unchanged. |
-| `make contracts-double-check` | Run pinned Mypy against Search's consumer-owned Listings adapter and generated provider protocol. |
+| `make contracts-double-check` | Run pinned Mypy against Search's consumer-owned Listings adapter and a typed Conversations retirement consumer using the generated provider protocol. |
 | `uv run --locked pytest apps/api/tests/domains/search -q -W error` | Isolated Search-to-Listings contract-double suite; synthetic success/failure cases only, not real integration evidence. |
 | `uv run --locked pytest tests/integration -q -W error` | Future real cross-domain integration suite. It currently has no tests (pytest exit 5) and is pending, not a pass or readiness evidence. |
 
@@ -529,7 +529,7 @@ manifest, environment loader or daemon is introduced. GNU Make is required
 | `make test` | Shared runner's Python, explicit data and web gates; `test-python`, `test-data`, `test-web` select each. Web includes lint/types/build as registered. |
 | `make format` / `make format-check` | Existing rewriting Black / check-only targets; old names retained. |
 | `make contracts-generate` / `make contracts-check` | Registered generation / nonmutating freshness check. |
-| `make contracts-double-check` | Static type check for the representative consumer-owned interface double. |
+| `make contracts-double-check` | Static type checks for the representative Listings interface double and Conversations retirement consumer probe. |
 | `make check` | Existing full CI-equivalent aggregate, including disposable database and scanner. |
 
 Normal Make failure is nonzero (usually 2), including `data-load`'s deliberate

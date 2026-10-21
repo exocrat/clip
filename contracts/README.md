@@ -76,7 +76,7 @@ provider behavior remains with domain implementation tasks:
 | [Identity](source/identity.py) | HTTP mappings and four internal callables; implementation ID-01. |
 | [Listings](source/listings.py) | HTTP mappings, five internal callables and consumer protocol; implementation LI-01/LI-02. |
 | [Search](source/search.py) | HTTP mappings; consumes Listings, Conversations and Identity interfaces; implementation SE-01/SE-02. |
-| [Conversations](source/conversations.py) | HTTP mappings and ten internal callables; implementation CN-01/CN-02, notification delivery CN-03. |
+| [Conversations](source/conversations.py) | HTTP mappings, ten internal callables, and the injectable `ConversationsPublic` protocol; implementation CN-01/CN-02, notification delivery CN-03. |
 
 The generated contract-only OpenAPI contains 50 domain HTTP mappings plus
 health. The running API still serves only implemented `/health`; generated
@@ -140,8 +140,11 @@ installed tools without writing tracked outputs. Tests cover deterministic
 generation, missing/stale outputs, changed source, tool mismatches, sanitization,
 all 50 operation IDs, live health-only parity, noninstallation of domain routes,
 private type exposure, and TypeScript consumers. The Listings test double is
-type-checked against the generated `ListingsPublic` protocol with Mypy. HTTP
-tests use in-process ASGI only; no provider, database or cloud is used.
+type-checked against the generated `ListingsPublic` protocol with Mypy, and a
+consumer probe type-checks retirement calls against `ConversationsPublic`.
+Conversations' module-level declarations remain fail-closed stubs; runtime
+consumers depend on an injected provider implementing the generated protocol.
+HTTP tests use in-process ASGI only; no provider, database or cloud is used.
 
 ## Internal Identity contact declarations
 

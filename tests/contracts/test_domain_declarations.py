@@ -71,6 +71,27 @@ def test_public_callable_names_match_reviewed_registry():
     assert documented == EXPECTED_CALLABLES
 
 
+def test_conversations_protocol_matches_internal_callable_signatures():
+    """The injectable Conversations protocol stays aligned with declarations."""
+    public = importlib.import_module("app.domains.conversations.public")
+    protocol = public.ConversationsPublic
+    declaration_names = EXPECTED_CALLABLES["conversations"]
+    protocol_names = {
+        name
+        for name, value in vars(protocol).items()
+        if inspect.iscoroutinefunction(value)
+    }
+
+    assert protocol_names == declaration_names
+    for name in declaration_names:
+        declared = inspect.signature(getattr(public, name))
+        method = inspect.signature(getattr(protocol, name))
+        assert tuple(method.parameters.values())[1:] == tuple(
+            declared.parameters.values()
+        )
+        assert method.return_annotation == declared.return_annotation
+
+
 def test_http_registry_matches_combined_contract_and_openapi():
     """All documented HTTP operations map explicitly to generated OpenAPI routes."""
     _, sources = load_sources()

@@ -1,6 +1,8 @@
 # Generated declaration-only conversations interface; format 2. Do not edit.
 """Reviewed Conversations HTTP operations and internal public callables."""
 
+from typing import Protocol
+
 from app.core.auth import CallerContext
 from app.contracts.domain_types import (
     ContactOptionsView,
@@ -138,6 +140,50 @@ HTTP_OPERATIONS = (
         "responses": {200: ConversationEntry},
     },
 )
+
+
+class ConversationsPublic(Protocol):
+    """Injectable typed interface for calls owned by Conversations."""
+
+    async def open_or_create_listing_conversation(
+        self, caller: CallerContext, request: ListingConversationContext
+    ) -> ConversationStartResult: ...
+
+    async def open_or_create_wanted_conversation(
+        self, caller: CallerContext, request: WantedConversationContext
+    ) -> ConversationStartResult: ...
+
+    async def find_existing_wanted_conversation(
+        self, caller: CallerContext, request: ExistingWantedConversationLookup
+    ) -> ConversationStartResult | None: ...
+
+    async def check_listing_thread_participant(
+        self, caller: CallerContext, request: ListingThreadParticipantCheck
+    ) -> ParticipantCheck: ...
+
+    async def persist_listing_offer(
+        self, caller: CallerContext, request: ListingOfferCommand
+    ) -> OfferView: ...
+
+    async def get_origin_activity(
+        self, context: OriginOwnerContext, request: OriginActivityRequest
+    ) -> OriginActivityResult: ...
+
+    async def mark_origin_retired(
+        self, context: OriginOwnerContext, request: OriginRetirementCommand
+    ) -> RetirementMarkerResult: ...
+
+    async def claim_due_notification_intents(
+        self, context: NotificationWorkerContext, request: NotificationClaimRequest
+    ) -> NotificationClaimResult: ...
+
+    async def read_notification_dispatch_context(
+        self, context: NotificationWorkerContext, request: NotificationDispatchCheck
+    ) -> NotificationDispatchContext: ...
+
+    async def record_notification_attempt(
+        self, context: NotificationWorkerContext, request: NotificationAttemptResult
+    ) -> NotificationIntentState: ...
 
 
 async def open_or_create_listing_conversation(

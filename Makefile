@@ -97,7 +97,7 @@ contracts-check:
 	uv run --locked python scripts/generate_contracts.py check
 
 contracts-double-check:
-	uv run --locked mypy --no-incremental apps/api/tests/domains/search/doubles/listings.py
+	uv run --locked mypy --no-incremental apps/api/tests/domains/search/doubles/listings.py tests/contracts/conversations_consumer_types.py
 
 # This exact mapping is checked by the shared CI parity guard.
 check:

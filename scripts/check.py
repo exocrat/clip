@@ -41,6 +41,7 @@ CHECKS = {
         "mypy",
         "--no-incremental",
         "apps/api/tests/domains/search/doubles/listings.py",
+        "tests/contracts/conversations_consumer_types.py",
     ),
     "web": ("npm", "run", "check"),
     "database-safety": ("bash", "database/tests/local-db-safety.sh"),

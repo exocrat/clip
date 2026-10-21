@@ -44,8 +44,9 @@ for shared resource startup and shutdown.
 - Each domain's implementation owns its SQL, transaction, and connection
   acquisition. Cross-domain calls pass only typed contract arguments/results;
   a live connection, cursor, or transaction is never passed between domains.
-- Conversations' generated declaration-only callables still need an approved
-  runtime binding/injection pattern. Do not hand-edit generated `public.py`.
+- The generated `ConversationsPublic` protocol defines the typed injection
+  surface; the provider implementation and application composition wiring remain
+  future CN-01 work. Do not hand-edit generated `public.py`.
 - No driver package, database setting, credential, pool, readiness endpoint,
   or database operation is added by this decision record.
 - Before runtime implementation, choose and lock an exact stable package

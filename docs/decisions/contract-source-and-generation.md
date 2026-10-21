@@ -44,6 +44,14 @@ missing, extra or incompatible operations. Generated schema is not itself proof
 that an operation exists or works. Generated declarations must not implement
 business behavior or return fake success.
 
+Internal Python callables remain declaration-only module functions and fail
+closed if invoked directly. When a consumer needs a runtime dependency, the
+canonical domain source also declares a typed `Protocol` for the consumer to
+receive an owner-provided implementation instance. The protocol is generated
+alongside the declarations; consumers must call the injected instance, not the
+module-level refusal stub. No database session or transaction crosses the
+domain boundary.
+
 ## Rationale
 
 Domain consumers need reviewed interfaces before providers are implemented.
