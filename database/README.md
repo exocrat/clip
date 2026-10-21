@@ -32,14 +32,16 @@ was changed. [Tool rationale](../docs/decisions/database-migration-tool.md).
 
 | Ordered migration | Purpose |
 |---|---|
-| `20261018094330_mvp_tables.sql` | Four owned namespaces, 23 application tables, FK/scalar/live-versus-retired constraints, query indexes and the deferred current-offer FK. |
+| `20261018094330_mvp_tables.sql` | Four owned namespaces, 23 initial application tables, FK/scalar/live-versus-retired constraints, query indexes and the deferred current-offer FK. |
 | `20261018094331_mvp_integrity.sql` | Cross-row guards, deferred publication/member/entry/offer consistency, immutable origin/key/operation identities, sequence allocation, unread-episode and source-derived notification invariants. |
 | `20261018094332_initial_catalogue.sql` | The approved eight categories/four conditions only; no users, fake credentials, private data or final evaluation dataset. |
 | `20261018152702_reject_retired_origin_entries.sql` | Forward correction: reject new entries on permanently retired origins under the existing origin lock, before allocating sequence/activity state. Down restores the original guard. |
+| `20261021101000_api_owned_retirement_and_trigger_boundaries.sql` | Add owner-pending retirement state, Conversations no-write markers and operation results; replace cross-domain trigger queries with owner/API boundaries while preserving Conversations-local protections. |
 
-Expected current migration version: **20261018152702**. One integrator allocates
-later timestamp identifiers; no parallel heads or uncoordinated edits to initial
-DDL. Published/applied migrations are corrected forward, not rewritten.
+Expected current migration version on the CN-01 branch: **20261021101000**. One
+integrator allocates later timestamp identifiers; no parallel heads or
+uncoordinated edits to initial DDL. Published/applied migrations are corrected
+forward, not rewritten.
 
 The up/down sections use dbmate transactions. Future invocation must explicitly
 select migrations directory, `--strict`, `--no-dump-schema`
@@ -122,7 +124,7 @@ password and are visible to administrators of the local Docker engine.
 | `bash database/local-db.sh start` | Validate local context/configuration/resource ownership, create/start only PostgreSQL, then wait for authenticated TCP `SELECT 1`. Exit 0 means connectivity, not migrations. |
 | `bash database/local-db.sh wait` | Up to 30 authenticated connection attempts with a 2-second connection timeout and 2-second pauses; nonzero on timeout/absent container. Final sanitized connection diagnostic is retained. |
 | `bash database/local-db.sh migrate` | Wait for connectivity, then run pinned dbmate 2.36.0 `migrate` with strict ordering and no schema dump. Applies pending migrations only to `clip_local`. Nonzero aborts; inspect sanitized output before recovery. |
-| `bash database/local-db.sh status` | Wait for connectivity and show dbmate migration status. A successful listing can still contain pending migrations; compare to expected head `20261018152702`, not merely process exit status. |
+| `bash database/local-db.sh status` | Wait for connectivity and show dbmate migration status. A successful listing can still contain pending migrations; compare to the current branch head `20261021101000`, not merely process exit status. |
 | `bash database/local-db.sh stop` | Stop only the validated service container, retaining its container and named data volume. An absent container is a successful no-op. |
 | `bash database/local-db.sh reset --confirm-delete-local-data` | **Permanently delete all local database data.** Warn, validate labels/clone/image/port/mount, stop/remove only the service container, then remove only `clip-local_clip_local_postgres_data`, without force. Leaves the database stopped. Explicitly review/approve this destructive invocation before using it; then run `start` and `migrate` to recreate. |
 | `bash database/local-db.sh --help` | Show fixed usage without password/Docker setup. |
@@ -272,7 +274,7 @@ without advancing thread sequence/activity. To model a historical closure, it
 briefly uses session-local replica mode only while backdating that fixture's
 closure instant; origin mode is restored before the actual retirement and entry
 guards are tested. The test is not an application bypass or a production script.
-`native-checks.sh` now expects four migrations and runs both smoke suites before
+`native-checks.sh` now expects five migrations and runs both smoke suites before
 and after rollback/reapply. The original native results below describe the
 initial three-migration checkpoint, not a run of the revised harness.
 

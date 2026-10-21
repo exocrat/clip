@@ -28,12 +28,14 @@ DECLARE
     outsider_key uuid := gen_random_uuid();
     offer uuid := gen_random_uuid();
     offer_entry uuid := gen_random_uuid();
+    contact_entry uuid := gen_random_uuid();
     reminder uuid := gen_random_uuid();
     message_time timestamptz;
     activity_head timestamptz;
     category uuid;
     rejected boolean;
     sequence_head bigint;
+    blocked_sequence bigint;
 BEGIN
     IF (SELECT count(*) FROM listings.categories) <> 8
         OR (SELECT count(*) FROM listings.conditions) <> 4 THEN
@@ -246,10 +248,63 @@ BEGIN
         VALUES (offer_entry, thread, buyer, gen_random_uuid(), 'offer');
     INSERT INTO conversations.offers (id, conversation_id, buyer_id, current_revision, next_revision)
         VALUES (offer, thread, buyer, 1, 2);
+    SELECT last_activity_at INTO activity_head FROM conversations.threads WHERE id = thread;
+    PERFORM pg_sleep(0.002);
     INSERT INTO conversations.offer_revisions (offer_id, revision, entry_id, amount_paise, status)
         VALUES (offer, 1, offer_entry, 0, 'submitted');
+    IF (SELECT last_activity_at FROM conversations.threads WHERE id = thread) <= activity_head THEN
+        RAISE EXCEPTION 'Offer revision did not advance server-recorded activity';
+    END IF;
+
+    INSERT INTO conversations.entries (id, conversation_id, sender_id, client_operation_id, kind)
+        VALUES (contact_entry, thread, buyer, gen_random_uuid(), 'contact_share');
+    INSERT INTO conversations.encrypted_payloads
+        (entry_id, protocol_id, envelope_version, sender_key_version_id, recipient_key_version_id, envelope)
+        VALUES (contact_entry, 'synthetic-storage-test', 1, buyer_key, seller_key, decode('00', 'hex'));
+    SELECT last_activity_at INTO activity_head FROM conversations.threads WHERE id = thread;
+    PERFORM pg_sleep(0.002);
+    INSERT INTO conversations.contact_shares (entry_id) VALUES (contact_entry);
+    IF (SELECT last_activity_at FROM conversations.threads WHERE id = thread) <= activity_head THEN
+        RAISE EXCEPTION 'Contact share did not advance server-recorded activity';
+    END IF;
     SET CONSTRAINTS ALL IMMEDIATE;
     SET CONSTRAINTS ALL DEFERRED;
+
+    -- A retirement marker is immutable and blocks every participant-write path.
+    UPDATE conversations.threads SET participant_writes_blocked_at = clock_timestamp()
+        WHERE id = thread;
+    SELECT next_sequence, last_activity_at INTO blocked_sequence, activity_head
+        FROM conversations.threads WHERE id = thread;
+    rejected := false;
+    BEGIN
+        INSERT INTO conversations.entries (id, conversation_id, sender_id, client_operation_id, kind)
+            VALUES (gen_random_uuid(), thread, buyer, gen_random_uuid(), 'message');
+    EXCEPTION WHEN check_violation THEN rejected := true;
+    END;
+    IF NOT rejected THEN RAISE EXCEPTION 'No-write marker allowed a new message'; END IF;
+    rejected := false;
+    BEGIN
+        INSERT INTO conversations.offer_revisions (offer_id, revision, entry_id, amount_paise, status)
+            VALUES (offer, 1, offer_entry, 0, 'submitted');
+    EXCEPTION WHEN check_violation THEN rejected := true;
+    END;
+    IF NOT rejected THEN RAISE EXCEPTION 'No-write marker allowed an offer revision'; END IF;
+    rejected := false;
+    BEGIN
+        INSERT INTO conversations.contact_shares (entry_id) VALUES (contact_entry);
+    EXCEPTION WHEN check_violation THEN rejected := true;
+    END;
+    IF NOT rejected THEN RAISE EXCEPTION 'No-write marker allowed a contact-share write'; END IF;
+    rejected := false;
+    BEGIN
+        UPDATE conversations.threads SET participant_writes_blocked_at = NULL WHERE id = thread;
+    EXCEPTION WHEN check_violation THEN rejected := true;
+    END;
+    IF NOT rejected THEN RAISE EXCEPTION 'No-write marker was cleared'; END IF;
+    IF EXISTS (SELECT 1 FROM conversations.threads WHERE id = thread
+        AND (next_sequence <> blocked_sequence OR last_activity_at <> activity_head)) THEN
+        RAISE EXCEPTION 'Rejected participant write changed sequence or activity';
+    END IF;
     UPDATE listings.sale_listings SET availability = 'unavailable' WHERE id = item;
     IF NOT EXISTS (SELECT 1 FROM search.saved_listings WHERE user_id = buyer AND listing_id = item) THEN
         RAISE EXCEPTION 'Availability change removed a saved reference';

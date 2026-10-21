@@ -81,8 +81,18 @@ def main():
             extra={"PGPASSWORD": password},
         )
 
-    def migrate():
-        """Apply strictly ordered locked-tool migrations without implicit .env input."""
+    def migrate(operation="migrate"):
+        """Run a locked-tool migration operation without implicit .env input."""
+        command = [
+            "--env-file",
+            "/dev/null",
+            "--migrations-dir",
+            "/db/migrations",
+            "--no-dump-schema",
+            operation,
+        ]
+        if operation == "migrate":
+            command.append("--strict")
         run(
             docker
             + [
@@ -104,14 +114,8 @@ def main():
                 "--mount",
                 f"type=bind,src={ROOT}/database/migrations,dst=/db/migrations,readonly",
                 DBMATE_IMAGE,
-                "--env-file",
-                "/dev/null",
-                "--migrations-dir",
-                "/db/migrations",
-                "--no-dump-schema",
-                "migrate",
-                "--strict",
-            ],
+            ]
+            + command,
             extra={
                 "DATABASE_URL": f"postgres://clip_ci:{password}@127.0.0.1:5432/clip_test_ci?sslmode=disable"
             },
@@ -174,7 +178,7 @@ def main():
         actual = sql(
             "SELECT version FROM public.schema_migrations ORDER BY version"
         ).splitlines()
-        if not expected or actual != expected or actual[-1] != "20261018152702":
+        if not expected or actual != expected or actual[-1] != "20261021101000":
             raise RuntimeError("Migration history differs from the expected head")
         migrate()
         for filename in ("schema-smoke.sql", "retired-origin-smoke.sql"):
@@ -183,11 +187,33 @@ def main():
             sql(
                 "SELECT count(*) FROM pg_tables WHERE schemaname IN ('identity','listings','search','conversations')"
             )
-            != "23"
+            != "24"
         ):
-            raise RuntimeError("Expected 23 domain tables")
+            raise RuntimeError("Expected 24 domain tables")
+        migrate("rollback")
+        if sql("SELECT max(version) FROM public.schema_migrations") != "20261018152702":
+            raise RuntimeError("Rollback did not return to the prior migration head")
+        if sql("SELECT to_regclass('conversations.origin_retirement_operations') IS NULL") != "t":
+            raise RuntimeError("Rollback left the retirement-operation table behind")
+        if (
+            sql(
+                "SELECT count(*) FROM pg_attribute a JOIN pg_class c ON c.oid=a.attrelid "
+                "JOIN pg_namespace n ON n.oid=c.relnamespace WHERE a.attname IN "
+                "('retirement_pending_operation_id','retirement_pending_cutoff_utc',"
+                "'participant_writes_blocked_at') AND NOT a.attisdropped "
+                "AND n.nspname IN ('listings','search','conversations')"
+            )
+            != "0"
+        ):
+            raise RuntimeError("Rollback left retirement columns behind")
+        migrate()
+        if sql("SELECT max(version) FROM public.schema_migrations") != "20261021101000":
+            raise RuntimeError("Reapply did not restore the current migration head")
+        for filename in ("schema-smoke.sql", "retired-origin-smoke.sql"):
+            sql((ROOT / "database/tests" / filename).read_text())
         print(
-            "PASS: PostgreSQL 18.6; clean migrations, exact head, repeat apply and both schema smoke suites"
+            "PASS: PostgreSQL 18.6; clean migrations, exact head, repeat apply, both smoke suites, "
+            "latest down/up and retirement-marker checks"
         )
     finally:
         if container:
