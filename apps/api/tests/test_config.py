@@ -67,6 +67,34 @@ def test_settings_are_read_fresh(monkeypatch):
     assert after.environment == "test"
 
 
+def test_database_dsn_is_optional_and_secret_masked(monkeypatch):
+    """Keep the health-only default credential-free and mask configured DSNs."""
+    assert load_settings().database_dsn is None
+
+    dsn = "postgresql://clip_user:synthetic-secret@localhost/clip"
+    monkeypatch.setenv("CLIP_DATABASE_DSN", dsn)
+    settings = load_settings()
+    assert settings.database_dsn is not None
+    assert settings.database_dsn.get_secret_value() == dsn
+    assert str(settings.database_dsn) == "**********"
+    assert "synthetic-secret" not in repr(settings)
+
+
+@pytest.mark.parametrize(
+    "dsn",
+    ["", "   ", 'postgresql://clip_user:synthetic-secret@localhost/clip?bad="'],
+)
+def test_invalid_database_dsn_fails_without_echoing_secret(monkeypatch, dsn):
+    """Reject empty or malformed connection strings without returning inputs."""
+    monkeypatch.setenv("CLIP_DATABASE_DSN", dsn)
+    with pytest.raises(ConfigurationError) as captured:
+        load_settings()
+    message = str(captured.value)
+    assert "CLIP_DATABASE_DSN" in message
+    assert "synthetic-secret" not in message
+    assert "input_value" not in message
+
+
 def test_dotenv_and_examples_are_not_loaded(monkeypatch, tmp_path):
     """Synthetic local files must not silently become runtime configuration."""
     for name in (".env", ".env.example"):

@@ -15,7 +15,7 @@ Stop the foreground server with Ctrl+C. The server binds only to loopback, requi
 
 ## Startup settings
 
-The API reads these non-secret values from the process environment at startup:
+The API reads validated non-secret settings from the process environment at startup. Secret-bearing inputs use `SecretStr` and are never included in configuration errors or logs:
 
 | Variable | Type and local default | Behavior |
 |---|---|---|
@@ -25,10 +25,11 @@ The API reads these non-secret values from the process environment at startup:
 | `CLIP_EMAIL_PROVIDER` | `disabled` or `fake`; default `disabled` | Explicit local/test helper selection; production rejects `fake`. No email is sent or claimed delivered. |
 | `CLIP_STORAGE_PROVIDER` | `disabled` or `fake`; default `disabled` | Authorizes only explicit test-helper construction; production rejects `fake`. No real storage is configured. |
 | `CLIP_DEVELOPMENT_AUTH` | Boolean; default `false` | Reserved testing control; production rejects `true`. This setting creates no public authentication bypass. |
+| `CLIP_DATABASE_DSN` | Optional PostgreSQL connection string; absent by default | Psycopg validates its syntax and masks the value. If present, the FastAPI lifespan creates a lazy `AsyncConnectionPool` with minimum 0 and maximum 1 connection, then closes it on shutdown. This does not make `/health` a readiness check. The current cloud task definition has no API database secret reference or access policy; do not deploy a DSN until its dedicated SSM reference and runtime role are reviewed and configured. |
 
 For example, `CLIP_ENVIRONMENT=test CLIP_DEBUG=false uv run --locked uvicorn app.main:app --app-dir apps/api --host 127.0.0.1 --port 8000` uses explicit test settings. No file is automatically loaded: `.env.example` is documentation, not a source of runtime settings. Restart your server after changing environment values. Configuration failures name the affected settings but do not echo supplied values; startup stops instead of falling back to a successful response.
 
-No database/provider setting is required by this liveness-only skeleton. The selected future PostgreSQL runtime driver is Psycopg 3's async API with its pool; it is not installed or wired into this health-only application yet ([DEC-13](../../docs/decisions/postgresql-driver-and-connection-boundary.md)). Required setting names and missing-value checks must be added with the tasks that implement those dependencies; no placeholder credential or fake service is required to start locally. PD-06 implements selection safeguards; PD-10 supplies [controlled test helpers](../../tests/fixtures/core/README.md) that normal API startup never installs. Unknown provider names fail startup, and the skeleton never falls back to fake success. Do not treat production configuration mode alone as evidence of a working or safe cloud deployment.
+No database setting is required for credential-free local liveness. Psycopg 3 and its async pool are now pinned and wired into the optional process lifespan ([DEC-13](../../docs/decisions/postgresql-driver-and-connection-boundary.md)); no pool exists unless `CLIP_DATABASE_DSN` is supplied. No SSM application DSN reference, ECS secret mapping, or runtime IAM access has been configured, and this step makes no cloud change. Use only the approved runtime secret channel when that integration is separately reviewed; never place a real DSN in `.env`, command history, tests, or chat. PD-06 implements selection safeguards; PD-10 supplies [controlled test helpers](../../tests/fixtures/core/README.md) that normal API startup never installs. Unknown provider names fail startup, and the skeleton never falls back to fake success. Do not treat production configuration mode alone as evidence of a working or safe cloud deployment.
 
 ## Tests
 

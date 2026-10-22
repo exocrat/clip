@@ -2,7 +2,15 @@
 
 from typing import Literal, Self
 
-from pydantic import ValidationError, ValidationInfo, field_validator, model_validator
+from psycopg import ProgrammingError
+from psycopg.conninfo import conninfo_to_dict
+from pydantic import (
+    SecretStr,
+    ValidationError,
+    ValidationInfo,
+    field_validator,
+    model_validator,
+)
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -32,6 +40,26 @@ class Settings(BaseSettings):
     email_provider: Literal["disabled", "fake"] = "disabled"
     storage_provider: Literal["disabled", "fake"] = "disabled"
     development_auth: bool = False
+    # Optional while this API exposes no database-backed domain operation.
+    # Runtime delivery must use an approved secret reference; values stay masked.
+    database_dsn: SecretStr | None = None
+
+    @field_validator("database_dsn")
+    @classmethod
+    def validate_database_dsn(cls, value: SecretStr | None) -> SecretStr | None:
+        """Validate PostgreSQL connection syntax without exposing its contents."""
+        if value is None:
+            return None
+        conninfo = value.get_secret_value()
+        if not conninfo.strip():
+            raise ValueError("must not be empty")
+        try:
+            conninfo_to_dict(conninfo)
+        except ProgrammingError:
+            raise ValueError(
+                "must be valid PostgreSQL connection information"
+            ) from None
+        return value
 
     @field_validator(
         "identity_provider", "email_provider", "storage_provider", "development_auth"

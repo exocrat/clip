@@ -42,9 +42,11 @@ for shared resource startup and shutdown.
 
 ## Implications
 
-- A future FastAPI lifespan implementation will create and close the
-  process-level pool. The existing `/health` remains process liveness, not a
-  database-readiness claim.
+- FastAPI lifespan creates and closes an optional process-level pool only when
+  `CLIP_DATABASE_DSN` is explicitly supplied. It starts with `min_size=0`,
+  `max_size=1`, and `open(wait=False)`: startup makes no database connection.
+  The bound is a conservative initial default pending deployment-capacity
+  sizing. `/health` remains process liveness, not database readiness.
 - Each domain's implementation owns its SQL, transaction, and connection
   acquisition. Cross-domain calls pass only typed contract arguments/results;
   a live connection, cursor, or transaction is never passed between domains.
@@ -53,11 +55,15 @@ for shared resource startup and shutdown.
   future CN-01 work. Do not hand-edit generated `public.py`.
 - The runtime dependencies are LGPL-3.0-only; retain their license notices and
   include the relevant license records with any distributed application image.
-- The package pin adds dependencies only. It adds no database setting,
-  credential, pool instance, readiness endpoint, or database operation.
-- Before runtime implementation, add validated non-secret settings and secret
-  delivery, size the pool against deployment connection capacity, and define
-  separate readiness behavior and tests.
+- `CLIP_DATABASE_DSN` is optional and validated with Psycopg's conninfo parser;
+  Pydantic `SecretStr` masks it in representations. No actual DSN value is
+  stored or documented.
+- The selected SSM path, dedicated application database principal, ECS secret
+  mapping, and execution-role permission remain pending; the existing PD-16
+  master/probe credentials are not application credentials. No cloud resource
+  or IAM policy is changed by this checkpoint.
+- Reassess pool sizing against deployment connection capacity before enabling
+  a deployed DB-backed service, and define separate readiness behavior then.
 
 ## Approver
 
