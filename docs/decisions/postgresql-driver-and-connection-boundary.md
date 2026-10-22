@@ -21,9 +21,13 @@ the Conversations activity and retirement-marker operations?
 
 Use Psycopg 3's asynchronous API, `psycopg_pool.AsyncConnectionPool`, and
 explicit parameterized SQL. No ORM is selected. The exact stable package
-release, distribution extras, and lockfile change remain a separate dependency
-step; verify the package artifact and its LGPL-3.0-only license before adding
-it to runtime dependencies.
+release and distribution choices are `psycopg[binary]==3.3.6` and the separately
+versioned `psycopg-pool==3.3.3`. PyPI metadata identifies both releases as
+stable, compatible with Python 3.14, and licensed `LGPL-3.0-only`; the bundled
+`psycopg-binary==3.3.6` component has the same declared license. The lockfile
+records the resolved artifacts and hashes. The binary extra is selected for a
+self-contained client library across the supported local platforms; deployment
+image/platform validation remains part of runtime implementation and CI.
 
 ## Rationale
 
@@ -47,12 +51,13 @@ for shared resource startup and shutdown.
 - The generated `ConversationsPublic` protocol defines the typed injection
   surface; the provider implementation and application composition wiring remain
   future CN-01 work. Do not hand-edit generated `public.py`.
-- No driver package, database setting, credential, pool, readiness endpoint,
-  or database operation is added by this decision record.
-- Before runtime implementation, choose and lock an exact stable package
-  release/extras, review its license, add validated non-secret settings and
-  secret delivery, size the pool against deployment connection capacity, and
-  define separate readiness behavior and tests.
+- The runtime dependencies are LGPL-3.0-only; retain their license notices and
+  include the relevant license records with any distributed application image.
+- The package pin adds dependencies only. It adds no database setting,
+  credential, pool instance, readiness endpoint, or database operation.
+- Before runtime implementation, add validated non-secret settings and secret
+  delivery, size the pool against deployment connection capacity, and define
+  separate readiness behavior and tests.
 
 ## Approver
 
