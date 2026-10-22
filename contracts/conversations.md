@@ -106,34 +106,39 @@ versions while ciphertext needs them. The byte ceilings are not plaintext
 character limits or an algorithm choice.
 
 The team selected `@open-e2ee/signal-protocol-sdk` 13.0.0 for the client
-protocol, subject to recording the team source/dependency review before
-runtime adoption. The client keeps SDK protocol state in IndexedDB and caches
-decrypted history locally for the user's normal chat experience; the server
-stores encrypted message envelopes, unencrypted retry-control metadata, and
-public-key/prekey material. Retry controls contain no chat content and are
-never logged. Neither keys nor plaintext history are backed up by CLIP.
+protocol after the team's source/dependency review. The CLIP protocol ID is
+`open-e2ee-signal`; `protocol_version` is the exact SDK release `13.0.0`, and
+the first CLIP envelope version is `1`. The client keeps SDK protocol state
+and decrypted history locally in IndexedDB for the user's normal chat
+experience; the server stores encrypted message envelopes, unencrypted
+retry-control metadata, and public-key/prekey material. Retry controls contain
+no chat content and are never logged. Neither keys nor plaintext history are
+backed up by CLIP.
 Browser-data loss can therefore make retained history unreadable. This
-selection does not mean the runtime crypto, browser UI, or server relay has
-been implemented.
+selection is the design boundary; the isolated web client crypto adapter now
+exists, but the real CLIP relay/key-directory integration, durable decrypted-
+history store and browser UI remain unimplemented.
 
 The application message payload is versioned independently of the server
-envelope. Its v1 plaintext payload contains the authenticated application
-context and message content; after SDK decryption, the receiving client checks
-that the context matches the outer conversation, kind, sender, recipient, and
-key-version fields. The server can reject mismatched claimed routing metadata,
-but only the receiving client can verify the decrypted context. SDK-produced
-protocol ciphertext remains opaque. Public key bundles use typed JSON fields
-matching OpenE2EE 13.0.0's `PreKeyBundle`: a v1 composite identity, registration
-and device IDs, an EC signed prekey, a reusable KEM last-resort prekey, and
-separately selected one-time prekeys. Public byte fields are canonical
-standard-padded Base64 and are decoded to bytes by the client adapter; CLIP
-does not invent another key format or cryptographic primitive. The reviewed
-browser security policy still applies: no third-party runtime scripts on the
+envelope. Its UTF-8 JSON v1 object has exactly these fields:
+`{version:1,conversation_id,kind:"message",sender_user_id,recipient_user_id,`
+`sender_key_version,recipient_key_version,client_timestamp_ms,text}`. The
+client timestamp and operation ID are generated before SDK encryption; the
+operation ID is the SDK `clientMessageId` and is not duplicated in plaintext.
+After SDK decryption, the receiving client checks every context field against
+the authenticated thread, sender, own recipient ID, key versions, and outer
+client timestamp before storing or displaying plaintext. A mismatch fails
+closed. The server can reject mismatched claimed routing metadata, but only
+the receiving client can verify the decrypted context. SDK-produced protocol
+ciphertext remains opaque. Public key bundles use typed JSON fields matching
+OpenE2EE 13.0.0's `PreKeyBundle`: a v1 composite identity, registration and
+device IDs, an EC signed prekey, a reusable KEM last-resort prekey, and
+separately selected one-time prekeys. Public byte fields are validated as
+canonical standard-padded Base64 and mapped to the SDK's branded public-key
+types; CLIP does not invent another key format or cryptographic primitive.
+The reviewed browser security policy still applies: no third-party runtime scripts on the
 conversation origin, strict CSP and safe rendering, and review of every bundled
 runtime dependency.
-The reviewed browser security policy still applies: no third-party runtime
-scripts on the conversation origin, strict CSP and safe rendering, and review
-of every bundled runtime dependency.
 
 Conversations exposes own-key registration and prekey publication only for the
 authenticated account, plus member-scoped public-key lookup and a separate
