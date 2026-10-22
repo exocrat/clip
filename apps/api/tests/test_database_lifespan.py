@@ -46,6 +46,7 @@ def test_lifespan_opens_and_closes_injected_pool_without_database_access():
         assert pool.opened is True
         assert pool.wait is False
         assert application.state.database_pool is pool
+        assert not hasattr(application.state, "origin_retirement_operations")
         response = client.get("/health")
         assert response.status_code == 200
         assert response.json() == {"status": "ok"}

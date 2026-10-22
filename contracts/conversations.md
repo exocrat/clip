@@ -343,7 +343,8 @@ The result is `{outcome,marked_count}`, where `outcome` is `marked`,
 `blocked_recent_activity`, or `already_marked`. `marked` with count zero means
 the origin has no associated threads; `blocked_recent_activity` marks none;
 `already_marked` means all associated threads were already marked before this
-operation. A mixture of marked and unmarked threads is an inconsistent state:
+operation, and `marked_count` reports the number of those existing markers. A
+mixture of marked and unmarked threads is an inconsistent state:
 stop and reconcile through the Conversations API rather than partially
 proceeding. Operation IDs are globally unique. Repeating the same ID with the
 same origin and cutoff returns its stored result; reusing it for a different

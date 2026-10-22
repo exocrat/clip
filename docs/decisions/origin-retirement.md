@@ -55,7 +55,8 @@ participant-write time to be at or before the server-derived activity cutoff
    the original outcome; reuse for another origin or cutoff is a stable
    conflict without changes. `marked` with zero threads is success;
    `blocked_recent_activity` marks none; `already_marked` means every related
-   thread was marked before this operation. Mixed marker state must stop for
+   thread was marked before this operation, and its `marked_count` is the
+   number of those existing markers. Mixed marker state must stop for
    Conversations-API reconciliation.
 5. A blocked result clears pending state without clearing content; a later
    attempt uses a new operation ID. An unknown result leaves the origin

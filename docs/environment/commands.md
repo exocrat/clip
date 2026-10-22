@@ -440,12 +440,14 @@ incorporate latest main and pass CI before merging, repeating if main advances.
 ### CI quality gates — PD-12 Step 3
 
 CI runs the registered Black, root/data pytest, boundary, contract freshness,
-`npm run check` and simulated database-wrapper safety commands. Python lint/type
-tools remain deferred under the existing tooling decision.
+`npm run check`, database-wrapper safety, clean-schema, and Conversations
+retirement-operation checks. Python lint/type tools remain deferred under the
+existing tooling decision.
 
 | Command | Effect / failure |
 |---|---|
 | `uv run --locked python scripts/check_database.py` | Requires local Unix-socket Docker. Creates a fresh PostgreSQL 18.6 container with temporary memory-backed data, no host port/volume; dbmate 2.36.0 checks clean apply of five migrations, exact head `20261021101000`, repeat migration, both SQL smoke suites and the latest migration down/up round-trip. Removes only its own container; nonzero on SQL/setup/cleanup failure. Never targets retained Compose data. |
+| `uv run --locked python scripts/check.py conversations-retirement` | Requires local Unix-socket Docker and locked Python dependencies. Creates a fresh PostgreSQL 18.6 container with tmpfs storage and a random host port bound only to `127.0.0.1`; applies the checked-in migrations with dbmate 2.36.0; runs `apps/api/tests/test_origin_retirement.py` using a synthetic role/database; then removes only its own container. No caller-selected database target or cloud configuration is accepted. Nonzero on startup, migration, test, timeout, or cleanup failure. |
 | `uv run --locked python scripts/check_secrets.py` | Requires local Unix-socket Docker. Gitleaks 8.30.1 scans tracked and nonignored new source in a temporary snapshot, offline/read-only. Uses `.gitleaks.toml`; findings print file/line/rule only and fail. This scans current source, not Git history; ignored files are excluded and symlinks rejected. |
 
 Images may be downloaded from public registries. No cloud/provider configuration

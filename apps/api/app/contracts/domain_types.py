@@ -760,7 +760,7 @@ class OriginRetirementCommand(ContractModel):
 
 
 class RetirementMarkerResult(ContractModel):
-    """All-or-none marker outcome; this records no content cleanup."""
+    """Marker outcome/count; already-marked reports the existing marker count."""
 
     outcome: Literal["marked", "blocked_recent_activity", "already_marked"]
     marked_count: int = Field(ge=0)
