@@ -15,7 +15,11 @@ done
 : "${PGHOST:?Listings database task failed; database endpoint is not configured.}"
 : "${PGPORT:?Listings database task failed; database port is not configured.}"
 : "${PGUSER:?Listings database task failed; database login is not configured.}"
-: "${PGPASSWORD:?Listings database task failed; database credential is unavailable.}"
+# Admin actions receive a password directly. The least-privilege seed task
+# receives only CLIP_DATABASE_URL and extracts its own application password.
+if [ "${1:-}" != 'seed' ]; then
+  : "${PGPASSWORD:?Listings database task failed; database credential is unavailable.}"
+fi
 : "${PGDATABASE:?Listings database task failed; database target is not configured.}"
 
 # Do not inherit unbounded libpq or PostgreSQL work limits from the task.
@@ -63,7 +67,8 @@ database_url_password() {
 bootstrap() {
   [ "$PGDATABASE" = 'clip_test' ] && [ "$PGUSER" != 'clip_test_listings_app' ] \
     || fail 'Listings database bootstrap refused an unexpected admin connection target.'
-  app_password=$(database_url_password)
+  app_password=$(database_url_password) \
+    || fail 'Listings database bootstrap refused an invalid database URL secret.'
 
   existing=$(psql_query --command="SELECT (EXISTS (SELECT 1 FROM pg_database WHERE datname = 'clip_test_listings'))::int || ' ' || (EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'clip_test_listings_app'))::int") \
     || fail 'Listings database bootstrap could not inspect the isolated target.'
@@ -154,7 +159,8 @@ SQL
 seed() {
   [ "$PGDATABASE" = 'clip_test_listings' ] && [ "$PGUSER" = 'clip_test_listings_app' ] \
     || fail 'Listings seed refused an unexpected database/login target.'
-  app_password=$(database_url_password)
+  app_password=$(database_url_password) \
+    || fail 'Listings seed refused an invalid database URL secret.'
   PGPASSWORD="$app_password" psql_fixed <<'SQL' \
     || fail 'Synthetic Listings seller seed failed; inspect the ECS task result.'
 BEGIN;
