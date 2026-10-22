@@ -6,6 +6,7 @@ authorization, persistence, provider calls, retries, encryption, or cleanup.
 
 from __future__ import annotations
 
+import base64
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Annotated, Generic, Literal, TypeVar
@@ -20,6 +21,7 @@ from pydantic import (
     PlainSerializer,
     SecretStr,
     WithJsonSchema,
+    model_validator,
 )
 
 UserId = UUID
@@ -642,6 +644,97 @@ class PublicKeyBundleView(ContractModel):
     protocol_id: str
     protocol_version: str
     key_version: int = Field(ge=1)
+
+
+class PublicPreKeyMaterial(ContractModel):
+    """One public one-time prekey in OpenE2EE's supported client profile."""
+
+    key_type: Literal["ecPreKey", "kemOneTimePreKey"]
+    key_id: int = Field(ge=0)
+    public_key_base64: str = Field(min_length=1, max_length=4096, repr=False)
+    signature_base64: str | None = Field(
+        default=None, min_length=1, max_length=256, repr=False
+    )
+
+    @model_validator(mode="after")
+    def validate_signature_shape(self) -> PublicPreKeyMaterial:
+        for value in (self.public_key_base64, self.signature_base64):
+            if value is None:
+                continue
+            try:
+                decoded = base64.b64decode(value, validate=True)
+            except ValueError as exc:
+                raise ValueError(
+                    "prekey bytes must use standard padded Base64"
+                ) from exc
+            if not decoded or base64.b64encode(decoded).decode("ascii") != value:
+                raise ValueError("prekey bytes must use standard padded Base64")
+        if self.key_type == "kemOneTimePreKey" and self.signature_base64 is None:
+            raise ValueError("KEM one-time prekeys require an identity signature")
+        if self.key_type == "ecPreKey" and self.signature_base64 is not None:
+            raise ValueError("EC one-time prekeys do not carry a signature")
+        return self
+
+
+class PublicPreKeyBatchRequest(ContractModel):
+    """Idempotent public one-time prekey publication for the active key version."""
+
+    key_version: int = Field(ge=1)
+    prekeys: list[PublicPreKeyMaterial] = Field(min_length=1, max_length=200)
+    operation_id: OperationId
+
+    @model_validator(mode="after")
+    def validate_unique_prekey_ids(self) -> PublicPreKeyBatchRequest:
+        identifiers = [(prekey.key_type, prekey.key_id) for prekey in self.prekeys]
+        if len(identifiers) != len(set(identifiers)):
+            raise ValueError("prekey IDs must be unique within each key type")
+        return self
+
+
+class OwnPreKeyInventory(ContractModel):
+    """Counts only the authenticated account's unconsumed public prekeys."""
+
+    key_version: int = Field(ge=1)
+    ec_one_time_count: int = Field(ge=0)
+    kem_one_time_count: int = Field(ge=0)
+
+
+class PublicPreKeyBatchView(ContractModel):
+    """Accepted public-prekey counts for the caller's active key version."""
+
+    key_version: int = Field(ge=1)
+    ec_one_time_count: int = Field(ge=0)
+    kem_one_time_count: int = Field(ge=0)
+
+
+class PreKeyBundleRequest(ContractModel):
+    """Idempotency key for atomically reserving a member's one-time prekeys."""
+
+    operation_id: OperationId
+
+
+class MemberPreKeyBundle(ContractModel):
+    """Peer's public session bundle plus any atomically consumed one-time keys."""
+
+    key_bundle: KeyBundle
+    registration_id: int = Field(ge=1, le=16383)
+    device_id: Literal[1] = 1
+    ec_one_time_prekey: PublicPreKeyMaterial | None = None
+    kem_one_time_prekey: PublicPreKeyMaterial | None = None
+
+    @model_validator(mode="after")
+    def validate_selected_prekey_types(self) -> MemberPreKeyBundle:
+        if (
+            self.ec_one_time_prekey is not None
+            and self.ec_one_time_prekey.key_type != "ecPreKey"
+        ):
+            raise ValueError("EC one-time prekey field requires an EC prekey")
+        if (
+            self.kem_one_time_prekey is not None
+            and self.kem_one_time_prekey.key_type != "kemOneTimePreKey"
+        ):
+            raise ValueError("KEM one-time prekey field requires a KEM prekey")
+        return self
 
 
 class ContactPreparationRequest(ContractModel):

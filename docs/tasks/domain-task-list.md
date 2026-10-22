@@ -35,7 +35,7 @@ Read these repository copies before starting and revisit the relevant sections w
 | `docs/tasks/pre-domain-task-list.md` | PRE-00, shared local/cloud foundation, datasets, work log, tooling, checklists, and handoff. |
 | `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | Experiment boundary and its own tasks. |
 | `docs/status/work-log.md`, `docs/decisions/`, and current environment inventory | Actual status, approved decisions, and verified infrastructure facts. |
-| `contracts/README.md`, `contracts/source/`, and registered generated outputs | Exact contract source and generated paths. DL-00 defines 50 domain HTTP operations, four domain `public.py` modules, and shared contract types. These generated declarations contain no domain behavior; providers remain with their named tasks. |
+| `contracts/README.md`, `contracts/source/`, and registered generated outputs | Exact contract source and generated paths. DL-00 defined 50 domain HTTP operations; CN-01 adds three E2EE prekey operations in its Conversations contract. Four domain `public.py` modules and shared contract types remain generated declarations without domain behavior; providers remain with their named tasks. |
 | `docs/architecture/foundation-traceability.md` and `docs/evaluation/README.md` | Per-requirement owners/paths/evidence and canonical evidence homes. The traceability map records planned domain paths, not implementation acceptance. |
 
 Use source authority by subject rather than treating every document as one flat priority list:

@@ -101,21 +101,56 @@ members and use a compatible protocol. Keep referenced historical public
 versions while ciphertext needs them. The byte ceilings are not plaintext
 character limits or an algorithm choice.
 
-The concrete protocol/library, serialization/nonce/authentication format,
-browser storage, replacement/rotation behavior and tests remain the explicit
-CN-01 Step 2 security-design approval gate. Do not generate keys, invent
-cryptography, silently choose a wire format, or imply history recovery after
-key loss. Until that gate is accepted, contracts specify only the reviewed
-envelope boundary, not implementable crypto details.
+The team selected `@open-e2ee/signal-protocol-sdk` 13.0.0 for the client
+protocol, subject to the recorded team source/dependency review before runtime
+adoption. The client keeps the SDK protocol state in IndexedDB and caches
+decrypted history locally for the user's normal chat experience; the server
+stores only encrypted envelopes and public-key/prekey material. Neither keys
+nor plaintext history are backed up by CLIP. Browser-data loss can therefore
+make retained history unreadable. This selection does not mean the runtime
+crypto, browser UI, or server relay has been implemented.
 
-Conversations exposes own-key registration for the authenticated account and
-key lookup only for the caller's authorized conversation members. The server
-allocates a strictly increasing version and permits at most one active bundle
-per user; a caller cannot register or replace another user's key. Retire an
-old public version from active lookup when replaced, but keep the version
-available to authorized history while retained envelopes reference it. The
-accepted protocol determines how a new active key is introduced to prior
-threads; the server never transfers or recovers private keys.
+The application message payload is versioned independently of the server
+envelope. Its v1 plaintext payload contains the authenticated application
+context and message content; after SDK decryption, the receiving client checks
+that the context matches the outer conversation, kind, sender, recipient, and
+key-version fields. The server can reject mismatched claimed routing metadata,
+but only the receiving client can verify the decrypted context. The SDK's
+serialized protocol ciphertext and public identity bundle remain opaque; CLIP
+does not add a second encryption layer or invent a cryptographic primitive.
+The reviewed browser security policy still applies: no third-party runtime
+scripts on the conversation origin, strict CSP and safe rendering, and review
+of every bundled runtime dependency.
+
+Conversations exposes own-key registration and prekey publication only for the
+authenticated account, plus member-scoped public-key lookup and a separate
+prekey-bundle operation. The server allocates a strictly increasing key
+version and permits one active browser-device bundle per user; a caller cannot
+register or replace another user's key. The opaque identity bundle contains
+only public identity/signed-prekey material (including the KEM last-resort
+public key); one-time prekeys are uploaded separately. The service keeps
+referenced historical public versions while retained ciphertext needs them
+and never transfers or recovers private keys.
+
+One-time prekey publication is idempotent by `(authenticated_user,
+operation_id)`. Repeating the same operation and exact batch returns its
+original result; reusing the operation ID with a different key version or
+batch is a stable conflict. A batch contains 1–200 unique `(key_type,key_id)`
+pairs for the active key version. EC one-time prekeys carry public bytes only;
+KEM one-time prekeys also carry their identity signature. Inventory exposes
+only counts for the caller's active version, never key bytes. A consumed bundle
+is requested only for an authorized conversation member; Conversations
+determines the peer from the stored thread and atomically reserves that peer's
+available one-time prekeys. Its retry key is scoped to the authenticated
+caller and conversation: an identical retry returns the same reserved public
+bundle without consuming another key, while changed-target reuse conflicts.
+The response contains the peer's public identity bundle, registration ID,
+fixed single-device ID `1`, and any selected EC/KEM one-time public keys. If
+the optional EC one-time key is exhausted, the signed EC prekey may be used;
+if the KEM one-time pool is exhausted, the public KEM last-resort key in the
+identity bundle is the fallback. Private material is never returned. These
+operations do not create a conversation or imply that the server can decrypt
+messages.
 
 ## Ordered conversation entries and messages
 

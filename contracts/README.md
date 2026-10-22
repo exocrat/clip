@@ -78,7 +78,7 @@ provider behavior remains with domain implementation tasks:
 | [Search](source/search.py) | HTTP mappings; consumes Listings, Conversations and Identity interfaces; implementation SE-01/SE-02. |
 | [Conversations](source/conversations.py) | HTTP mappings, ten internal callables, and the injectable `ConversationsPublic` protocol; implementation CN-01/CN-02, notification delivery CN-03. |
 
-The generated contract-only OpenAPI contains 50 domain HTTP mappings plus
+The generated contract-only OpenAPI contains 53 domain HTTP mappings plus
 health. The running API still serves only implemented `/health`; generated
 domain routes are never installed or used to return fake success.
 

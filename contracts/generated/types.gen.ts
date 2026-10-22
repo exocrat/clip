@@ -990,6 +990,25 @@ export type MemberKeyBundles = {
 };
 
 /**
+ * MemberPreKeyBundle
+ *
+ * Peer's public session bundle plus any atomically consumed one-time keys.
+ */
+export type MemberPreKeyBundle = {
+    /**
+     * Device Id
+     */
+    device_id?: 1;
+    ec_one_time_prekey?: PublicPreKeyMaterial | null;
+    kem_one_time_prekey?: PublicPreKeyMaterial | null;
+    key_bundle: KeyBundle;
+    /**
+     * Registration Id
+     */
+    registration_id: number;
+};
+
+/**
  * MessageRequest
  *
  * Encrypted message plus stable retry key.
@@ -1102,6 +1121,26 @@ export type OwnContacts = {
      * Upi Id
      */
     upi_id: string | null;
+};
+
+/**
+ * OwnPreKeyInventory
+ *
+ * Counts only the authenticated account's unconsumed public prekeys.
+ */
+export type OwnPreKeyInventory = {
+    /**
+     * Ec One Time Count
+     */
+    ec_one_time_count: number;
+    /**
+     * Kem One Time Count
+     */
+    kem_one_time_count: number;
+    /**
+     * Key Version
+     */
+    key_version: number;
 };
 
 /**
@@ -1253,6 +1292,18 @@ export type PasswordResetChallengeRequest = {
 };
 
 /**
+ * PreKeyBundleRequest
+ *
+ * Idempotency key for atomically reserving a member's one-time prekeys.
+ */
+export type PreKeyBundleRequest = {
+    /**
+     * Operation Id
+     */
+    operation_id: string;
+};
+
+/**
  * ProfilePatch
  *
  * Own-profile partial update; omitted and explicit null have distinct meaning.
@@ -1326,6 +1377,70 @@ export type PublicKeyBundleView = {
      * User Id
      */
     user_id: string;
+};
+
+/**
+ * PublicPreKeyBatchRequest
+ *
+ * Idempotent public one-time prekey publication for the active key version.
+ */
+export type PublicPreKeyBatchRequest = {
+    /**
+     * Key Version
+     */
+    key_version: number;
+    /**
+     * Operation Id
+     */
+    operation_id: string;
+    /**
+     * Prekeys
+     */
+    prekeys: Array<PublicPreKeyMaterial>;
+};
+
+/**
+ * PublicPreKeyBatchView
+ *
+ * Accepted public-prekey counts for the caller's active key version.
+ */
+export type PublicPreKeyBatchView = {
+    /**
+     * Ec One Time Count
+     */
+    ec_one_time_count: number;
+    /**
+     * Kem One Time Count
+     */
+    kem_one_time_count: number;
+    /**
+     * Key Version
+     */
+    key_version: number;
+};
+
+/**
+ * PublicPreKeyMaterial
+ *
+ * One public one-time prekey in OpenE2EE's supported client profile.
+ */
+export type PublicPreKeyMaterial = {
+    /**
+     * Key Id
+     */
+    key_id: number;
+    /**
+     * Key Type
+     */
+    key_type: 'ecPreKey' | 'kemOneTimePreKey';
+    /**
+     * Public Key Base64
+     */
+    public_key_base64: string;
+    /**
+     * Signature Base64
+     */
+    signature_base64?: string | null;
 };
 
 /**
@@ -2828,6 +2943,68 @@ export type ConversationsReadOfferResponses = {
 
 export type ConversationsReadOfferResponse = ConversationsReadOfferResponses[keyof ConversationsReadOfferResponses];
 
+export type ConversationsConsumeMemberPrekeysData = {
+    body: PreKeyBundleRequest;
+    path: {
+        /**
+         * Conversation Id
+         */
+        conversation_id: string;
+    };
+    query?: never;
+    url: '/conversations/{conversation_id}/prekey-bundle';
+};
+
+export type ConversationsConsumeMemberPrekeysErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorEnvelope;
+    /**
+     * Unauthorized
+     */
+    401: ErrorEnvelope;
+    /**
+     * Forbidden
+     */
+    403: ErrorEnvelope;
+    /**
+     * Not Found
+     */
+    404: ErrorEnvelope;
+    /**
+     * Conflict
+     */
+    409: ErrorEnvelope;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorEnvelope;
+    /**
+     * Too Many Requests
+     */
+    429: ErrorEnvelope;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorEnvelope;
+    /**
+     * Service Unavailable
+     */
+    503: ErrorEnvelope;
+};
+
+export type ConversationsConsumeMemberPrekeysError = ConversationsConsumeMemberPrekeysErrors[keyof ConversationsConsumeMemberPrekeysErrors];
+
+export type ConversationsConsumeMemberPrekeysResponses = {
+    /**
+     * Successful Response
+     */
+    200: MemberPreKeyBundle;
+};
+
+export type ConversationsConsumeMemberPrekeysResponse = ConversationsConsumeMemberPrekeysResponses[keyof ConversationsConsumeMemberPrekeysResponses];
+
 export type ConversationsReadStateData = {
     body?: never;
     path: {
@@ -4098,6 +4275,120 @@ export type ConversationsRegisterOwnKeyResponses = {
 };
 
 export type ConversationsRegisterOwnKeyResponse = ConversationsRegisterOwnKeyResponses[keyof ConversationsRegisterOwnKeyResponses];
+
+export type ConversationsReadOwnPrekeyInventoryData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/me/conversation-prekeys';
+};
+
+export type ConversationsReadOwnPrekeyInventoryErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorEnvelope;
+    /**
+     * Unauthorized
+     */
+    401: ErrorEnvelope;
+    /**
+     * Forbidden
+     */
+    403: ErrorEnvelope;
+    /**
+     * Not Found
+     */
+    404: ErrorEnvelope;
+    /**
+     * Conflict
+     */
+    409: ErrorEnvelope;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorEnvelope;
+    /**
+     * Too Many Requests
+     */
+    429: ErrorEnvelope;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorEnvelope;
+    /**
+     * Service Unavailable
+     */
+    503: ErrorEnvelope;
+};
+
+export type ConversationsReadOwnPrekeyInventoryError = ConversationsReadOwnPrekeyInventoryErrors[keyof ConversationsReadOwnPrekeyInventoryErrors];
+
+export type ConversationsReadOwnPrekeyInventoryResponses = {
+    /**
+     * Successful Response
+     */
+    200: OwnPreKeyInventory;
+};
+
+export type ConversationsReadOwnPrekeyInventoryResponse = ConversationsReadOwnPrekeyInventoryResponses[keyof ConversationsReadOwnPrekeyInventoryResponses];
+
+export type ConversationsPublishOwnPrekeysData = {
+    body: PublicPreKeyBatchRequest;
+    path?: never;
+    query?: never;
+    url: '/me/conversation-prekeys';
+};
+
+export type ConversationsPublishOwnPrekeysErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorEnvelope;
+    /**
+     * Unauthorized
+     */
+    401: ErrorEnvelope;
+    /**
+     * Forbidden
+     */
+    403: ErrorEnvelope;
+    /**
+     * Not Found
+     */
+    404: ErrorEnvelope;
+    /**
+     * Conflict
+     */
+    409: ErrorEnvelope;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorEnvelope;
+    /**
+     * Too Many Requests
+     */
+    429: ErrorEnvelope;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorEnvelope;
+    /**
+     * Service Unavailable
+     */
+    503: ErrorEnvelope;
+};
+
+export type ConversationsPublishOwnPrekeysError = ConversationsPublishOwnPrekeysErrors[keyof ConversationsPublishOwnPrekeysErrors];
+
+export type ConversationsPublishOwnPrekeysResponses = {
+    /**
+     * Successful Response
+     */
+    200: PublicPreKeyBatchView;
+};
+
+export type ConversationsPublishOwnPrekeysResponse = ConversationsPublishOwnPrekeysResponses[keyof ConversationsPublishOwnPrekeysResponses];
 
 export type ListingsListMineData = {
     body?: never;

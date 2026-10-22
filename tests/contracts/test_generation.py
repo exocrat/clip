@@ -248,7 +248,7 @@ def test_actual_api_schema_matches_generated_contract():
         for operation in path.values()
         if isinstance(operation, dict) and "operationId" in operation
     }
-    assert len(contract_operation_ids) == 51
+    assert len(contract_operation_ids) == 54
     assert len(app.routes) == 1
     assert asyncio.run(asgi_get(app, "/health")) == (200, {"status": "ok"})
     for path in ("/openapi.json", "/docs", "/redoc"):
@@ -288,7 +288,7 @@ def test_schema_build_does_not_import_real_application(monkeypatch):
     monkeypatch.setitem(sys.modules, "app.main", None)
     health, domains = generator.load_sources()
     schema = generator.declared_schema(health, domains)
-    assert len(schema["paths"]) == 44
+    assert len(schema["paths"]) == 46
 
 
 def test_generated_types_accept_valid_consumer_reject_wrong_status(tmp_path):
