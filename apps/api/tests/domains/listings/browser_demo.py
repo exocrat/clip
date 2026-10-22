@@ -25,8 +25,10 @@ from uuid import UUID, uuid4
 
 ROOT = Path(__file__).resolve().parents[5]
 sys.path.insert(0, str(ROOT / "apps/api"))
+sys.path.insert(0, str(ROOT))
 
 from fastapi import Depends, FastAPI, Request  # noqa: E402
+from psycopg import AsyncConnection  # noqa: E402
 from psycopg.rows import dict_row  # noqa: E402
 from psycopg_pool import AsyncConnectionPool  # noqa: E402
 import uvicorn  # noqa: E402
@@ -65,7 +67,9 @@ def require_demo_settings(settings: Settings) -> None:
         )
 
 
-def create_demo_app(conninfo: str, settings: Settings) -> FastAPI:
+def create_demo_app(
+    conninfo: str, settings: Settings, *, image_ui_preview: bool = False
+) -> FastAPI:
     """Bind the real store only to the launcher-owned database and fake caller.
 
     The launcher, not HTTP input, chooses this connection. The ordinary API app
@@ -75,8 +79,8 @@ def create_demo_app(conninfo: str, settings: Settings) -> FastAPI:
 
     @asynccontextmanager
     async def lifespan(application: FastAPI):
-        pool: AsyncConnectionPool[dict[str, Any]] = AsyncConnectionPool(
-            conninfo, kwargs={"row_factory": dict_row}, open=False
+        pool: AsyncConnectionPool[AsyncConnection[dict[str, Any]]] = (
+            AsyncConnectionPool(conninfo, kwargs={"row_factory": dict_row}, open=False)
         )
         await pool.open()
         try:
@@ -111,13 +115,25 @@ def create_demo_app(conninfo: str, settings: Settings) -> FastAPI:
         lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None
     )
     install_error_handlers(application)
-    application.include_router(router)
+    if image_ui_preview:
+        from apps.api.tests.domains.listings.browser_image_preview import (
+            install_image_preview,
+        )
+
+        # Register the browser's exact SPA paths before the API's dynamic
+        # /listings/{listing_id} path so names such as /listings/new reach React.
+        install_image_preview(application, settings, ROOT / "apps/web/dist")
+        application.include_router(router, prefix="/api")
+    else:
+        application.include_router(router)
 
     @application.middleware("http")
     async def local_requests_only(request: Request, call_next):
         """Deny remote peers/hosts and cross-origin browser writes in this test app."""
         origin = request.headers.get("origin")
         allowed_origins = {"http://127.0.0.1:5173", "http://localhost:5173"}
+        if image_ui_preview:
+            allowed_origins.add("http://127.0.0.1:5174")
         if (
             request.client is None
             or request.client.host not in {"127.0.0.1", "::1"}
@@ -147,14 +163,15 @@ def create_demo_app(conninfo: str, settings: Settings) -> FastAPI:
             await connection.execute(
                 """
                 INSERT INTO listings.image_uploads (
-                    id, owner_id, object_key, state, created_at, expires_at,
+                    id, owner_id, object_key, operation_id, state, created_at, expires_at,
                     confirmed_at, confirmed_media_type, confirmed_size_bytes
-                ) VALUES (%s, %s, %s, 'confirmed', %s, %s, %s, 'image/jpeg', 2048)
+                ) VALUES (%s, %s, %s, %s, 'confirmed', %s, %s, %s, 'image/jpeg', 2048)
                 """,
                 (
                     upload_id,
                     caller.user_id,
                     f"synthetic/browser/{upload_id}",
+                    upload_id,
                     now,
                     now + timedelta(hours=24),
                     now,
@@ -228,12 +245,18 @@ def main() -> None:
     parser.add_argument(
         "--isolated-listings-browser", action="store_true", required=True
     )
+    parser.add_argument(
+        "--image-ui-preview",
+        action="store_true",
+        help="Serve the built UI and temporary local image storage on loopback 5174",
+    )
     action = parser.add_mutually_exclusive_group()
     action.add_argument("--resume", type=Path)
     action.add_argument("--inspect", type=Path)
     args = parser.parse_args()
     settings = load_settings()
     require_demo_settings(settings)
+    port = 5174 if args.image_ui_preview else 8000
 
     def stop_requested(signum, frame):
         """Turn terminal/termination signals into cleanup, including Uvicorn replay."""
@@ -273,7 +296,7 @@ def main() -> None:
     with socket.socket() as listener:
         # Match Uvicorn's restart behavior when prior connections are in TIME_WAIT.
         listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        listener.bind(("127.0.0.1", 8000))
+        listener.bind(("127.0.0.1", port))
     session = (
         args.resume.resolve()
         if args.resume
@@ -392,18 +415,21 @@ def main() -> None:
             },
         )
         print(
-            f"ISOLATED LISTINGS BROWSER: real PostgreSQL, synthetic Identity/image metadata. Session: {session}",
+            f"ISOLATED LISTINGS BROWSER: real PostgreSQL, synthetic Identity; "
+            f"{'temporary local image storage' if args.image_ui_preview else 'synthetic image metadata'}. "
+            f"Session: {session}",
             flush=True,
         )
         print(
-            "API: http://127.0.0.1:8000; Ctrl+C stops it and its database, retaining rows for --resume.",
+            f"{'UI/API' if args.image_ui_preview else 'API'}: http://127.0.0.1:{port}; "
+            "Ctrl+C stops it and its database, retaining rows for --resume.",
             flush=True,
         )
         conninfo = f"postgresql://{DB_USER}@/{DATABASE}?host={socket_directory}&sslmode=disable"
         uvicorn.run(
-            create_demo_app(conninfo, settings),
+            create_demo_app(conninfo, settings, image_ui_preview=args.image_ui_preview),
             host="127.0.0.1",
-            port=8000,
+            port=port,
             access_log=False,
             log_level="warning",
         )

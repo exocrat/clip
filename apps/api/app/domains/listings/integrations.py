@@ -2,7 +2,7 @@
 
 from app.core.errors import ERRORS, PublicError
 from app.core.identifiers import UserId
-from app.domains.identity import public as identity_public
+import app.domains.identity.public as identity_public
 
 
 class PublicListingsIdentity:

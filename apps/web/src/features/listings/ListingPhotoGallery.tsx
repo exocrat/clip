@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ListingImagePreview } from './ListingImagePreview';
 import { ListingPhotoPlaceholder } from './ListingPhotoPlaceholder';
 
 /** Show one selected photo area and a thumbnail choice for each remaining photo. */
@@ -10,9 +11,11 @@ export function ListingPhotoGallery({ imageIds }: { imageIds: string[] }) {
   return (
     <div className="listings-gallery">
       <figure className="listings-photo listings-gallery__main">
-        <ListingPhotoPlaceholder />
+        {imageIds.length
+          ? <ListingImagePreview imageId={imageIds[safeIndex]} alt={`Listing photo ${safeIndex + 1}`} />
+          : <ListingPhotoPlaceholder />}
         <figcaption className="listings-muted">
-          {imageIds.length ? `Photo ${safeIndex + 1} of ${imageIds.length}. Real photo delivery is not connected yet.` : 'No photos are attached to this listing.'}
+          {imageIds.length ? `Photo ${safeIndex + 1} of ${imageIds.length}.` : 'No photos are attached to this listing.'}
         </figcaption>
       </figure>
       {others.length ? (
@@ -24,9 +27,10 @@ export function ListingPhotoGallery({ imageIds }: { imageIds: string[] }) {
               key={id}
               type="button"
               aria-label={`Show photo ${index + 1}`}
+              aria-pressed={selected === index}
               onClick={() => setSelected(index)}
             >
-              <ListingPhotoPlaceholder compact />
+              <ListingImagePreview imageId={id} alt={`Listing photo ${index + 1}`} compact allowRetry={false} />
               <span>Photo {index + 1}</span>
             </button>
           ))}

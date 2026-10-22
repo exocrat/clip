@@ -6,6 +6,9 @@ import type {
   ListingManagementView,
   ListingReplacement,
   PageResultListingManagementView,
+  ImageDelivery,
+  ImageUploadRequest,
+  UploadInstruction,
 } from '../../../../../contracts/generated/types.gen';
 
 export type {
@@ -16,6 +19,8 @@ export type {
   ListingManagementView,
   ListingReplacement,
   PageResultListingManagementView,
+  ImageUploadRequest,
+  UploadInstruction,
 };
 
 /** Test controls are compiled out of the production build. Auth stays server-owned. */
@@ -37,6 +42,8 @@ export class ListingsApiError extends Error {
   }
 }
 
+export class ListingImageFinalError extends Error {}
+
 /** Call the same-origin API; writes have no automatic retry or client actor ID. */
 export async function listingsRequest<T>(
   path: string,
@@ -54,6 +61,7 @@ export async function listingsRequest<T>(
     throw new ListingsApiError(0);
   }
   if (!response.ok) throw new ListingsApiError(response.status);
+  if (response.status === 204) return undefined as T;
   try {
     return await response.json() as T;
   } catch {
@@ -94,6 +102,140 @@ export const replaceListing = (listingId: string, body: ListingReplacement) =>
   listingsRequest<ListingDetail>(`/listings/${encodeURIComponent(listingId)}`, {
     method: 'PUT', body: JSON.stringify(body),
   });
+
+export const createImageUpload = (body: ImageUploadRequest, signal?: AbortSignal) =>
+  listingsRequest<UploadInstruction>('/image-uploads', {
+    method: 'POST', body: JSON.stringify(body), signal,
+  });
+
+export const confirmImageUpload = (uploadId: string, signal?: AbortSignal) =>
+  listingsRequest<ConfirmedImage>(
+    `/image-uploads/${encodeURIComponent(uploadId)}/confirm`,
+    { method: 'POST', signal },
+  );
+
+export const cancelImageUpload = (uploadId: string) =>
+  listingsRequest<void>(
+    `/image-uploads/${encodeURIComponent(uploadId)}`,
+    { method: 'DELETE' },
+  );
+
+export const readImageDelivery = (imageId: string, signal?: AbortSignal) =>
+  listingsRequest<ImageDelivery>(
+    `/images/${encodeURIComponent(imageId)}/delivery`,
+    signal ? { signal } : {},
+  );
+
+function putImageBytes(
+  file: File,
+  instruction: UploadInstruction,
+  onProgress: (percentage: number) => void,
+  signal?: AbortSignal,
+): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const request = new XMLHttpRequest();
+    if (signal?.aborted) {
+      reject(new DOMException('Upload cancelled', 'AbortError'));
+      return;
+    }
+    const abort = () => request.abort();
+    request.open('PUT', instruction.upload_url);
+    for (const [name, value] of Object.entries(instruction.required_headers)) {
+      request.setRequestHeader(name, value);
+    }
+    request.upload.onprogress = (event) => {
+      if (event.lengthComputable) {
+        onProgress(Math.min(99, Math.round((event.loaded / event.total) * 100)));
+      }
+    };
+    request.onload = () => resolve(request.status);
+    request.onerror = () => reject(new Error('The photo could not be sent. Check your connection and retry.'));
+    request.ontimeout = () => reject(new Error('The photo upload took too long. Retry the photo.'));
+    request.onabort = () => reject(new DOMException('Upload cancelled', 'AbortError'));
+    request.onloadend = () => signal?.removeEventListener('abort', abort);
+    signal?.addEventListener('abort', abort, { once: true });
+    request.timeout = 120_000;
+    request.send(file);
+  });
+}
+
+/** Preserve recoverable errors while explaining uploads that need a new selection. */
+async function confirmUploadedImage(uploadId: string, signal?: AbortSignal) {
+  try {
+    return await confirmImageUpload(uploadId, signal);
+  } catch (error) {
+    if (error instanceof ListingsApiError && error.status === 422) {
+      throw new ListingImageFinalError('This file could not be verified as a valid JPEG, PNG, or WebP photo of 10 MiB or smaller. Remove it and choose another photo.');
+    }
+    if (error instanceof ListingsApiError && error.status === 409) {
+      throw new ListingImageFinalError('This photo upload expired or is no longer usable. Remove it and choose the photo again.');
+    }
+    throw error;
+  }
+}
+
+/** Upload bytes directly to the private object store, then confirm server-inspected content. */
+export async function uploadListingImage(
+  file: File,
+  operationId: string,
+  onProgress: (percentage: number) => void,
+  onIntent: (uploadId: string) => void,
+  previousUploadId?: string,
+  signal?: AbortSignal,
+): Promise<ConfirmedImage> {
+  // A lost confirmation response may hide an already-confirmed object. Check
+  // that same ID before asking for another upload URL or sending bytes again.
+  if (previousUploadId) {
+    try {
+      const confirmed = await confirmUploadedImage(previousUploadId, signal);
+      onProgress(100);
+      return confirmed;
+    } catch (error) {
+      if (!(error instanceof ListingsApiError && error.status === 404)) throw error;
+      // The object is absent; replay the original intent and send the same file.
+    }
+  }
+  const requestBody: ImageUploadRequest = {
+    media_type: file.type as ImageUploadRequest['media_type'],
+    size_bytes: file.size,
+    operation_id: operationId,
+  };
+  let instruction: UploadInstruction;
+  try {
+    instruction = await createImageUpload(requestBody, signal);
+  } catch (error) {
+    if (error instanceof ListingsApiError && error.status === 409) {
+      throw new ListingImageFinalError('This photo upload expired. Remove it and choose the photo again.');
+    }
+    throw error;
+  }
+  onIntent(instruction.upload_id);
+  let status = await putImageBytes(file, instruction, onProgress, signal);
+
+  // A signed URL can expire while the seller is choosing/uploading a large photo.
+  // Replaying the same idempotency key mints a fresh URL for the same object key.
+  if (status === 403) {
+    try {
+      instruction = await createImageUpload(requestBody, signal);
+    } catch (error) {
+      if (error instanceof ListingsApiError && error.status === 409) {
+        throw new ListingImageFinalError('This photo upload expired. Remove it and choose the photo again.');
+      }
+      throw error;
+    }
+    status = await putImageBytes(file, instruction, onProgress, signal);
+  }
+
+  // 412 means a prior attempt may have stored the complete create-only object;
+  // the server's confirmation step inspects it before accepting the image.
+  if ((status < 200 || status >= 300) && status !== 412) {
+    throw new Error(status === 403
+      ? 'The photo upload link expired or was rejected. Retry the photo.'
+      : 'The photo could not be uploaded. Retry the photo.');
+  }
+  onProgress(100);
+  return confirmUploadedImage(instruction.upload_id, signal);
+}
 
 /** Prepare metadata only through the separate test app; never emulate an upload. */
 export function prepareDemoImage(): Promise<ConfirmedImage> {

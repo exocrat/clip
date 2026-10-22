@@ -1,5 +1,5 @@
 /** A neutral photo area used until the listing has a deliverable image. */
-export function ListingPhotoPlaceholder({ compact = false }: { compact?: boolean }) {
+export function ListingPhotoPlaceholder({ compact = false, message = 'Not uploaded yet' }: { compact?: boolean; message?: string }) {
   return (
     <div className={`listings-photo-placeholder${compact ? ' listings-photo-placeholder--compact' : ''}`}>
       <svg viewBox="0 0 80 60" aria-hidden="true" focusable="false">
@@ -8,7 +8,7 @@ export function ListingPhotoPlaceholder({ compact = false }: { compact?: boolean
         <path d="M4 46 24 25 44 46 56 34 76 54" />
       </svg>
       <strong>Listing photo</strong>
-      <span>Not uploaded yet</span>
+      <span>{message}</span>
     </div>
   );
 }

@@ -55,6 +55,62 @@ def test_production_settings_reject_test_controls(variable, value, monkeypatch):
     assert variable in str(captured.value)
 
 
+def _set_isolated_test_profile(monkeypatch, **overrides):
+    """Build one valid test profile, then apply a single adversarial setting."""
+    values = {
+        "CLIP_ENVIRONMENT": "test",
+        "CLIP_DEVELOPMENT_AUTH": "true",
+        "CLIP_ISOLATED_LISTINGS_TEST_CALLER": "true",
+        "CLIP_DATABASE_URL": "postgresql://clip_test:secret@db.invalid/clip_test_listings",
+        "CLIP_STORAGE_PROVIDER": "s3",
+        "CLIP_IMAGE_BUCKET": "clip-test-listings-images-ap-south-1-li02",
+        "CLIP_IMAGE_REGION": "ap-south-1",
+        "CLIP_IMAGE_KEY_PREFIX": "listings/test/run-20261022",
+    }
+    values.update(overrides)
+    for name, value in values.items():
+        monkeypatch.setenv(name, value)
+
+
+def test_isolated_listings_test_caller_requires_the_private_test_configuration(
+    monkeypatch,
+):
+    """Accept only its dedicated database, bucket and run-scoped key prefix."""
+    _set_isolated_test_profile(monkeypatch)
+
+    settings = load_settings()
+
+    assert settings.isolated_listings_test_caller is True
+    assert settings.database_url is not None
+    assert settings.database_url.get_secret_value().endswith("/clip_test_listings")
+
+
+@pytest.mark.parametrize(
+    ("variable", "value"),
+    [
+        ("CLIP_ENVIRONMENT", "production"),
+        ("CLIP_ENVIRONMENT", "local"),
+        ("CLIP_DEVELOPMENT_AUTH", "false"),
+        (
+            "CLIP_DATABASE_URL",
+            "postgresql://clip_test:secret@db.invalid/clip_test",
+        ),
+        ("CLIP_STORAGE_PROVIDER", "fake"),
+        ("CLIP_IMAGE_BUCKET", "shared-bucket"),
+        ("CLIP_IMAGE_REGION", "us-east-1"),
+        ("CLIP_IMAGE_KEY_PREFIX", "listings/shared/run-20261022"),
+    ],
+)
+def test_isolated_listings_test_caller_rejects_nonisolated_targets(
+    variable, value, monkeypatch
+):
+    """Refuse shared/prod settings and never expose supplied credentials."""
+    _set_isolated_test_profile(monkeypatch, **{variable: value})
+
+    with pytest.raises(ConfigurationError):
+        load_settings()
+
+
 @pytest.mark.parametrize(
     "variable",
     [

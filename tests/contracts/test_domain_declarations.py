@@ -158,6 +158,10 @@ def test_only_implemented_listings_http_routes_are_installed():
         "/listings/{listing_id}/selection",
         "/listings/{listing_id}/conversations/{conversation_id}/offer",
         "/listings/{listing_id}/conversations/{conversation_id}/offer-withdrawals",
+        "/image-uploads",
+        "/image-uploads/{upload_id}/confirm",
+        "/image-uploads/{upload_id}",
+        "/images/{image_id}/delivery",
     }
     assert not any(path.startswith("/auth/") for path in paths)
 

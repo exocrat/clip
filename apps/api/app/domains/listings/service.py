@@ -9,9 +9,9 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import AsyncContextManager, Literal, Protocol
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from app.core.auth import CallerContext
 from app.core.errors import ERRORS, FieldError, PublicError
@@ -23,7 +23,10 @@ from app.contracts.domain_types import (
     ConversationId,
     CreateListingRequest,
     ExistingListingImage,
+    ConfirmedImage,
     ImageId,
+    ImageDelivery,
+    ImageUploadRequest,
     ListingDetail,
     ListingId,
     ListingManagementView,
@@ -43,6 +46,7 @@ from app.contracts.domain_types import (
     PageResult,
     RetirementMarkerResult,
     SelectionChange,
+    UploadInstruction,
     UserId,
 )
 
@@ -63,11 +67,74 @@ class RetiredListingImage:
     object_key: str
 
 
+@dataclass(frozen=True)
+class AbandonedImageUpload:
+    """Expired unattached upload whose object must be removed before its row."""
+
+    upload_id: ImageId
+    object_key: str
+
+
+@dataclass(frozen=True)
+class PendingImageUpload:
+    """Persisted owner-bound image intent, including its private object key."""
+
+    upload_id: ImageId
+    owner_id: UserId
+    object_key: str
+    operation_id: UUID
+    requested_media_type: Literal["image/jpeg", "image/png", "image/webp"] | None
+    requested_size_bytes: int | None
+    state: Literal["pending", "confirmed", "failed", "expired"]
+    created_at: datetime
+    expires_at: datetime
+    confirmed_media_type: Literal["image/jpeg", "image/png", "image/webp"] | None = None
+    confirmed_size_bytes: int | None = None
+
+
+@dataclass(frozen=True)
+class StoredImageMetadata:
+    """Verified type and actual byte count read from the stored object."""
+
+    media_type: Literal["image/jpeg", "image/png", "image/webp"]
+    size_bytes: int
+
+
+@dataclass(frozen=True)
+class ListingImageDeliveryTarget:
+    """One retained image reference and the listing that controls its visibility."""
+
+    listing: ListingManagementView
+    object_key: str
+
+
+class InvalidImageContent(Exception):
+    """Stored bytes are oversized or do not match an allowed image signature."""
+
+
 class ListingsImageStorage(Protocol):
-    """Storage boundary for removing an image object after database retirement."""
+    """Storage boundary for signed upload, inspection and later cleanup."""
+
+    def object_key_for(self, upload_id: ImageId) -> str:
+        """Build the private run-scoped key from a server-generated upload ID."""
+        ...
+
+    async def create_upload_url(
+        self, object_key: str, media_type: str, expires_at: datetime
+    ) -> str:
+        """Sign one create-only upload request for a bounded time."""
+        ...
+
+    async def inspect_object(self, object_key: str) -> StoredImageMetadata | None:
+        """Verify stored bytes and return their type/size, or None if absent."""
+        ...
 
     async def delete_object(self, object_key: str) -> None:
         """Return only when deleted or already absent; raise on unknown outcomes."""
+        ...
+
+    async def create_download_url(self, object_key: str, expires_at: datetime) -> str:
+        """Sign a short-lived read for one already-authorized image reference."""
         ...
 
 
@@ -84,6 +151,46 @@ class ListingsStore(Protocol):
 
     async def read_catalogue(self) -> CatalogueView:
         """Return active owned categories and conditions for form selection."""
+        ...
+
+    async def create_image_upload(
+        self,
+        owner_id: UserId,
+        request: ImageUploadRequest,
+        upload_id: ImageId,
+        object_key: str,
+        now: datetime,
+    ) -> PendingImageUpload:
+        """Create or replay one owner-scoped pending upload intent atomically."""
+        ...
+
+    async def read_image_upload(
+        self, owner_id: UserId, upload_id: ImageId
+    ) -> PendingImageUpload | None:
+        """Read one upload intent only when it belongs to the authenticated owner."""
+        ...
+
+    async def confirm_image_upload(
+        self,
+        owner_id: UserId,
+        upload_id: ImageId,
+        media_type: Literal["image/jpeg", "image/png", "image/webp"],
+        size_bytes: int,
+        now: datetime,
+    ) -> ConfirmedImage:
+        """Confirm verified storage metadata in one owner-scoped transaction."""
+        ...
+
+    async def reject_image_upload(
+        self, owner_id: UserId, upload_id: ImageId, now: datetime
+    ) -> bool:
+        """Persist invalid or expired state while retaining its object key."""
+        ...
+
+    async def cancel_image_upload(
+        self, owner_id: UserId, upload_id: ImageId, now: datetime
+    ) -> bool:
+        """Mark an unattached intent failed for the approved cleanup path."""
         ...
 
     async def confirmed_images_belong_to(
@@ -118,6 +225,12 @@ class ListingsStore(Protocol):
 
     async def read_listing(self, listing_id: ListingId) -> ListingManagementView | None:
         """Read one non-retired listing with its ordered controlled references."""
+        ...
+
+    async def read_image_for_delivery(
+        self, image_id: ImageId
+    ) -> ListingImageDeliveryTarget | None:
+        """Read an attached image and its visibility owner from one live listing."""
         ...
 
     async def list_owned_listings(
@@ -224,13 +337,37 @@ class ListingsStore(Protocol):
     async def list_retired_images_for_cleanup(
         self, limit: int
     ) -> tuple[RetiredListingImage, ...]:
-        """Return durable image-deletion work without removing its retry metadata."""
+        """Return due retired-image work without removing its retry metadata."""
+        ...
+
+    async def defer_retired_image_cleanup(
+        self, image_id: ImageId, object_key: str
+    ) -> None:
+        """Delay a failed deletion while retaining the retired image reference."""
         ...
 
     async def finish_retired_image_cleanup(
         self, image_id: ImageId, object_key: str
     ) -> None:
         """Remove image/upload metadata after storage confirms the object is absent."""
+        ...
+
+    async def list_abandoned_uploads_for_cleanup(
+        self, limit: int
+    ) -> tuple[AbandonedImageUpload, ...]:
+        """Expire and return a bounded batch of unlinked, overdue uploads."""
+        ...
+
+    async def defer_abandoned_upload_cleanup(
+        self, upload_id: ImageId, object_key: str
+    ) -> None:
+        """Delay a failed deletion while retaining the expired upload reference."""
+        ...
+
+    async def finish_abandoned_upload_cleanup(
+        self, upload_id: ImageId, object_key: str
+    ) -> None:
+        """Remove an unattached upload row only after storage confirms absence."""
         ...
 
 
@@ -334,6 +471,129 @@ class ListingsService:
         self._clock = clock
         self._image_storage = image_storage
 
+    async def create_image_upload(
+        self, caller: CallerContext, request: ImageUploadRequest
+    ) -> UploadInstruction:
+        """Persist an owner-scoped intent and issue a five-minute create-only URL."""
+        await _require_regular_eligible(caller, self._identity)
+        if self._image_storage is None:
+            raise PublicError(ERRORS[503])
+
+        now = self._clock()
+        upload_id = uuid4()
+        object_key = self._image_storage.object_key_for(upload_id)
+        intent = await self._store.create_image_upload(
+            caller.user_id, request, upload_id, object_key, now
+        )
+        if (
+            intent.state != "pending"
+            or intent.expires_at <= now
+            or intent.requested_media_type != request.media_type
+            or intent.requested_size_bytes != request.size_bytes
+        ):
+            raise PublicError(ERRORS[409])
+
+        url_expires_at = min(intent.expires_at, now + timedelta(minutes=5))
+        try:
+            upload_url = await self._image_storage.create_upload_url(
+                intent.object_key, request.media_type, url_expires_at
+            )
+        except Exception:
+            # The intent is durable. Repeating the same operation can mint a
+            # fresh URL without extending the original 24-hour deadline.
+            raise PublicError(ERRORS[503]) from None
+        return UploadInstruction(
+            upload_id=intent.upload_id,
+            upload_url=upload_url,
+            required_headers={
+                "Content-Type": request.media_type,
+                "If-None-Match": "*",
+            },
+            url_expires_at=url_expires_at,
+        )
+
+    async def confirm_image_upload(
+        self, caller: CallerContext, upload_id: ImageId
+    ) -> ConfirmedImage:
+        """Confirm an owner's pending object only after inspecting its stored bytes."""
+        await _require_eligible(caller, self._identity)
+        if self._image_storage is None:
+            raise PublicError(ERRORS[503])
+
+        intent = await self._store.read_image_upload(caller.user_id, upload_id)
+        if intent is None:
+            raise PublicError(ERRORS[404])
+        now = self._clock()
+        if intent.state == "confirmed":
+            if (
+                intent.confirmed_media_type is None
+                or intent.confirmed_size_bytes is None
+            ):
+                raise PublicError(ERRORS[503])
+            return ConfirmedImage(
+                upload_id=upload_id,
+                media_type=intent.confirmed_media_type,
+                size_bytes=intent.confirmed_size_bytes,
+            )
+        if intent.state != "pending":
+            raise PublicError(ERRORS[409])
+        if intent.expires_at <= now:
+            await self._store.reject_image_upload(caller.user_id, upload_id, now)
+            raise PublicError(ERRORS[409])
+
+        try:
+            stored = await self._image_storage.inspect_object(intent.object_key)
+        except InvalidImageContent:
+            if not await self._store.reject_image_upload(
+                caller.user_id, upload_id, self._clock()
+            ):
+                raise PublicError(ERRORS[404])
+            raise PublicError(
+                ERRORS[422], (FieldError("image_upload", "invalid_image_content"),)
+            ) from None
+        except Exception:
+            # A storage timeout has an unknown outcome. Leave the intent pending
+            # so a retry can inspect the same create-only object safely.
+            raise PublicError(ERRORS[503]) from None
+        confirmed_at = self._clock()
+        if intent.expires_at <= confirmed_at:
+            await self._store.reject_image_upload(
+                caller.user_id, upload_id, confirmed_at
+            )
+            raise PublicError(ERRORS[409])
+        if stored is None:
+            raise PublicError(ERRORS[404])
+        if (
+            stored.media_type != intent.requested_media_type
+            or stored.size_bytes != intent.requested_size_bytes
+            or not 1 <= stored.size_bytes <= 10_485_760
+        ):
+            if not await self._store.reject_image_upload(
+                caller.user_id, upload_id, confirmed_at
+            ):
+                raise PublicError(ERRORS[404])
+            raise PublicError(
+                ERRORS[422], (FieldError("image_upload", "invalid_image_content"),)
+            )
+        return await self._store.confirm_image_upload(
+            caller.user_id,
+            upload_id,
+            stored.media_type,
+            stored.size_bytes,
+            confirmed_at,
+        )
+
+    async def cancel_image_upload(
+        self, caller: CallerContext, upload_id: ImageId
+    ) -> None:
+        """Cancel an unattached intent while retaining its key for safe cleanup."""
+        await _require_eligible(caller, self._identity)
+        found = await self._store.cancel_image_upload(
+            caller.user_id, upload_id, self._clock()
+        )
+        if not found:
+            raise PublicError(ERRORS[404])
+
     async def read_catalogue(self, caller: CallerContext) -> CatalogueView:
         """Read current catalogue labels for an eligible authenticated account."""
         await _require_eligible(caller, self._identity)
@@ -398,6 +658,36 @@ class ListingsService:
         if view.owner_id != caller.user_id and not self._is_discoverable(view):
             raise PublicError(ERRORS[404])
         return _detail(view)
+
+    async def get_image_delivery(
+        self, caller: CallerContext, image_id: ImageId
+    ) -> ImageDelivery:
+        """Authorize the owning listing before signing a private S3 read URL."""
+        await _require_eligible(caller, self._identity)
+        if self._image_storage is None:
+            raise PublicError(ERRORS[503])
+
+        target = await self._store.read_image_for_delivery(image_id)
+        if target is None:
+            raise PublicError(ERRORS[404])
+        if target.listing.owner_id != caller.user_id and not self._is_discoverable(
+            target.listing
+        ):
+            # Match detail reads: a hidden listing does not disclose whether a
+            # particular image ID exists.
+            raise PublicError(ERRORS[404])
+
+        now = self._clock()
+        url_expires_at = now + timedelta(minutes=5)
+        try:
+            url = await self._image_storage.create_download_url(
+                target.object_key, url_expires_at
+            )
+        except Exception:
+            # Do not include the signed URL, object key, or provider error in
+            # the public response or logs.
+            raise PublicError(ERRORS[503]) from None
+        return ImageDelivery(url=url, url_expires_at=url_expires_at)
 
     async def list_mine(
         self, caller: CallerContext, query: PageQuery
@@ -692,36 +982,103 @@ class ListingsService:
             )
         return result
 
-    async def cleanup_retired_image_objects(self, limit: int = 100) -> int:
-        """Delete queued objects and forget keys only after confirmed absence.
+    async def cleanup_image_objects(self, limit: int = 100) -> int:
+        """Clean a bounded batch of retired images and abandoned upload objects.
 
-        Storage deletion is idempotent. If its result is unknown, the image and
-        upload rows remain available for a later retry. This method is intended
-        for the Listings-owned cleanup worker, not a public route.
+        This is an internal Listings worker operation, never a public route.
+        Database references are retained until S3 confirms deletion or absence.
+        Failed objects receive a five-minute retry delay so newer work can
+        advance through the bounded queue.
         """
-        if type(limit) is not int or not 1 <= limit <= 500:
-            raise ValueError("Cleanup batch limit must be between 1 and 500")
-        if self._image_storage is None:
+        self._validate_cleanup_limit(limit)
+        storage = self._image_storage
+        if storage is None:
             raise PublicError(ERRORS[503])
 
+        retired = await self._store.list_retired_images_for_cleanup(limit)
+        remaining = limit - len(retired)
+        abandoned = (
+            await self._store.list_abandoned_uploads_for_cleanup(remaining)
+            if remaining
+            else ()
+        )
+        deleted = 0
+        failed = False
+
+        for image in retired:
+            try:
+                await storage.delete_object(image.object_key)
+                await self._store.finish_retired_image_cleanup(
+                    image.image_id, image.object_key
+                )
+            except Exception:
+                # A timeout can hide a successful delete. Retain the reference
+                # and cool it down; a later idempotent delete resolves outcome.
+                failed = True
+                try:
+                    await self._store.defer_retired_image_cleanup(
+                        image.image_id, image.object_key
+                    )
+                except Exception:
+                    pass
+                continue
+            deleted += 1
+
+        for upload in abandoned:
+            try:
+                await storage.delete_object(upload.object_key)
+                await self._store.finish_abandoned_upload_cleanup(
+                    upload.upload_id, upload.object_key
+                )
+            except Exception:
+                failed = True
+                try:
+                    await self._store.defer_abandoned_upload_cleanup(
+                        upload.upload_id, upload.object_key
+                    )
+                except Exception:
+                    pass
+                continue
+            deleted += 1
+
+        if failed:
+            raise PublicError(ERRORS[503])
+        return deleted
+
+    async def cleanup_retired_image_objects(self, limit: int = 100) -> int:
+        """Retain the earlier worker entry point for a retired-image-only pass."""
+        self._validate_cleanup_limit(limit)
+        storage = self._image_storage
+        if storage is None:
+            raise PublicError(ERRORS[503])
         images = await self._store.list_retired_images_for_cleanup(limit)
         deleted = 0
         failed = False
         for image in images:
             try:
-                await self._image_storage.delete_object(image.object_key)
+                await storage.delete_object(image.object_key)
+                await self._store.finish_retired_image_cleanup(
+                    image.image_id, image.object_key
+                )
             except Exception:
-                # The provider may have deleted the object before losing its
-                # response. Keep the key so a retry can safely confirm absence.
                 failed = True
+                try:
+                    await self._store.defer_retired_image_cleanup(
+                        image.image_id, image.object_key
+                    )
+                except Exception:
+                    pass
                 continue
-            await self._store.finish_retired_image_cleanup(
-                image.image_id, image.object_key
-            )
             deleted += 1
         if failed:
             raise PublicError(ERRORS[503])
         return deleted
+
+    @staticmethod
+    def _validate_cleanup_limit(limit: int) -> None:
+        """Keep one worker pass between one and five hundred object records."""
+        if type(limit) is not int or not 1 <= limit <= 500:
+            raise ValueError("Cleanup batch limit must be between 1 and 500")
 
     def _require_conversations(self) -> ListingsConversations:
         """Require the explicit Conversations adapter instead of faking success."""

@@ -56,6 +56,16 @@ check.
 
 ## LI-02 camera/gallery checkpoint
 
+For the Step 9 desktop review, the agent starts the built UI at
+`http://127.0.0.1:5174/listings/new` using the explicit isolated Listings
+browser command in the [command registry](commands.md#li-01-step-7-isolated-postgresql-browser-checkpoint).
+That page uses a fixed synthetic seller, a separate real local PostgreSQL
+container, and temporary in-memory photo storage; its banner states that no AWS
+is used. The agent first checks uploads, retry, saved rows, galleries and
+responsive layouts in a desktop browser. Human review then checks the visible
+experience. The loopback address works on this computer only; it does not let a
+phone reach the server.
+
 Use controlled synthetic item photos. Verify existing-image selection, taking a
 new photo on supported phone browsers, cancellation, unavailable capture and
 permission handling where applicable, progress/retry, and desktop file selection.
@@ -68,4 +78,4 @@ Do not require a particular HTML attribute or camera API before implementation
 review. Browser capture support varies; ordinary file selection must remain
 available. [MDN's capture reference](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/capture)
 documents the platform limitation. Repeat the journey against real storage at
-LI-02 Step 11; isolated checks leave that obligation pending.
+LI-02 Step 12; isolated checks leave that obligation pending.

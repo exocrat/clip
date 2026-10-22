@@ -233,7 +233,7 @@ def main():
         actual = sql(
             "SELECT version FROM public.schema_migrations ORDER BY version"
         ).splitlines()
-        if not expected or actual != expected or actual[-1] != "20261021105546":
+        if not expected or actual != expected or actual[-1] != "20261022062357":
             raise RuntimeError("Migration history differs from the expected head")
         migrate()
         for filename in ("schema-smoke.sql", "retired-origin-smoke.sql"):
@@ -252,9 +252,12 @@ def main():
             VALUES ('00000000-0000-4000-8000-000000000001', 'listing',
                 '00000000-0000-4000-8000-000000000002', clock_timestamp(), 'marked', 0)
         """)
-        # Return past the additive optional-pickup migration before exercising
-        # the existing retirement migration's separate data-preserving guard.
-        migrate("rollback")
+        # Return to the retirement migration before exercising its separate
+        # data-preserving rollback guard. Later domain migrations are additive
+        # and must be removed first in reverse order.
+        retirement_index = expected.index("20261020142319")
+        for _ in expected[retirement_index + 1 :]:
+            migrate("rollback")
         migrate("rollback", expect_failure=True)
         if (
             sql("SELECT count(*) FROM conversations.origin_retirement_operations")
@@ -268,7 +271,7 @@ def main():
         sql(
             "DELETE FROM conversations.origin_retirement_operations WHERE operation_id = '00000000-0000-4000-8000-000000000001'"
         )
-        for _ in expected[:-1]:
+        for _ in expected[: retirement_index + 1]:
             migrate("rollback")
         if sql("SELECT count(*) FROM public.schema_migrations") != "0":
             raise RuntimeError("Expected rollback to remove every applied migration")

@@ -75,9 +75,9 @@ BEGIN
         VALUES (item, seller, 'Synthetic books', 'Controlled database fixture', category,
             'good', 0, true, 'Synthetic pickup area', 'available');
     INSERT INTO listings.image_uploads
-        (id, owner_id, object_key, state, created_at, expires_at, confirmed_at,
+        (id, owner_id, object_key, operation_id, state, created_at, expires_at, confirmed_at,
             confirmed_media_type, confirmed_size_bytes)
-        VALUES (upload, seller, 'test/' || image::text, 'confirmed', CURRENT_TIMESTAMP,
+        VALUES (upload, seller, 'test/' || image::text, upload, 'confirmed', CURRENT_TIMESTAMP,
             CURRENT_TIMESTAMP + INTERVAL '24 hours', CURRENT_TIMESTAMP, 'image/png', 1);
     INSERT INTO listings.images (id, listing_id, upload_id, object_key, position, media_type, size_bytes)
         VALUES (image, item, upload, 'test/' || image::text, 0, 'image/png', 1);
@@ -97,9 +97,9 @@ BEGIN
             statement_timestamp() - INTERVAL '200 days',
             statement_timestamp() - INTERVAL '190 days');
     INSERT INTO listings.image_uploads
-        (id, owner_id, object_key, state, created_at, expires_at, confirmed_at,
+        (id, owner_id, object_key, operation_id, state, created_at, expires_at, confirmed_at,
             confirmed_media_type, confirmed_size_bytes)
-        VALUES (retirement_upload, seller, 'test/' || retirement_image::text,
+        VALUES (retirement_upload, seller, 'test/' || retirement_image::text, retirement_upload,
             'confirmed', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '24 hours',
             CURRENT_TIMESTAMP, 'image/png', 1);
     INSERT INTO listings.images (id, listing_id, upload_id, object_key, position, media_type, size_bytes)

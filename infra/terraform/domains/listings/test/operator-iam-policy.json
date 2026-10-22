@@ -1,0 +1,66 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "CreateOnlyBoundedListingsRoles",
+      "Effect": "Allow",
+      "Action": "iam:CreateRole",
+      "Resource": [
+        "arn:aws:iam::335523638354:role/clip/listings/test/clip-test-listings-task-ap-south-1-li02",
+        "arn:aws:iam::335523638354:role/clip/listings/test/clip-test-listings-execution-ap-south-1-li02",
+        "arn:aws:iam::335523638354:role/clip/listings/test/clip-test-listings-db-setup-execution-ap-south-1-li02"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "iam:PermissionsBoundary": "arn:aws:iam::335523638354:policy/clip/listings/test/CLIPListingsTestRuntimeBoundary"
+        }
+      }
+    },
+    {
+      "Sid": "SetOnlyTheListingsBoundary",
+      "Effect": "Allow",
+      "Action": "iam:PutRolePermissionsBoundary",
+      "Resource": [
+        "arn:aws:iam::335523638354:role/clip/listings/test/clip-test-listings-task-ap-south-1-li02",
+        "arn:aws:iam::335523638354:role/clip/listings/test/clip-test-listings-execution-ap-south-1-li02",
+        "arn:aws:iam::335523638354:role/clip/listings/test/clip-test-listings-db-setup-execution-ap-south-1-li02"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "iam:PermissionsBoundary": "arn:aws:iam::335523638354:policy/clip/listings/test/CLIPListingsTestRuntimeBoundary"
+        }
+      }
+    },
+    {
+      "Sid": "ManageOnlyListingsRoleTrustAndInlinePolicies",
+      "Effect": "Allow",
+      "Action": [
+        "iam:PutRolePolicy",
+        "iam:DeleteRolePolicy",
+        "iam:TagRole",
+        "iam:UntagRole",
+        "iam:DeleteRole"
+      ],
+      "Resource": [
+        "arn:aws:iam::335523638354:role/clip/listings/test/clip-test-listings-task-ap-south-1-li02",
+        "arn:aws:iam::335523638354:role/clip/listings/test/clip-test-listings-execution-ap-south-1-li02",
+        "arn:aws:iam::335523638354:role/clip/listings/test/clip-test-listings-db-setup-execution-ap-south-1-li02"
+      ]
+    },
+    {
+      "Sid": "PassOnlyListingsRolesToEcsTasks",
+      "Effect": "Allow",
+      "Action": "iam:PassRole",
+      "Resource": [
+        "arn:aws:iam::335523638354:role/clip/listings/test/clip-test-listings-task-ap-south-1-li02",
+        "arn:aws:iam::335523638354:role/clip/listings/test/clip-test-listings-execution-ap-south-1-li02",
+        "arn:aws:iam::335523638354:role/clip/listings/test/clip-test-listings-db-setup-execution-ap-south-1-li02"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "iam:PassedToService": "ecs-tasks.amazonaws.com"
+        }
+      }
+    }
+  ]
+}

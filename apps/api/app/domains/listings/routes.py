@@ -1,19 +1,23 @@
 """HTTP handlers for the implemented Listings lifecycle commands."""
 
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 
-from fastapi import APIRouter, Depends, Query, Request, status
+from fastapi import APIRouter, Depends, Query, Request, Response, status
 
 from app.core.auth import CallerContext, require_caller
 from app.core.errors import ERRORS, PublicError
 from app.contracts.domain_types import (
     CreateListingRequest,
+    ConfirmedImage,
     CatalogueView,
     AvailabilityChange,
     ConversationId,
     ErrorEnvelope,
+    ImageDelivery,
     ListingDetail,
     ListingId,
+    ImageId,
+    ImageUploadRequest,
     ListingOwnerView,
     ListingReplacement,
     PageQuery,
@@ -23,12 +27,13 @@ from app.contracts.domain_types import (
     OfferView,
     OfferWithdrawalRequest,
     SelectionChange,
+    UploadInstruction,
 )
 from app.domains.listings.service import ListingsService
 
 router = APIRouter()
 
-_ERROR_RESPONSES = {
+_ERROR_RESPONSES: dict[int | str, dict[str, Any]] = {
     400: {"model": ErrorEnvelope, "description": "Bad Request"},
     401: {"model": ErrorEnvelope, "description": "Unauthorized"},
     403: {"model": ErrorEnvelope, "description": "Forbidden"},
@@ -48,7 +53,13 @@ def _service(request: Request) -> ListingsService:
     if store is None or identity is None:
         raise PublicError(ERRORS[503])
     conversations = getattr(request.app.state, "listings_conversations", None)
-    return ListingsService(store, identity, conversations=conversations)
+    image_storage = getattr(request.app.state, "listings_image_storage", None)
+    return ListingsService(
+        store,
+        identity,
+        conversations=conversations,
+        image_storage=image_storage,
+    )
 
 
 @router.get(
@@ -64,6 +75,72 @@ async def read_catalogue(
 ) -> CatalogueView:
     """Supply the reviewed catalogue endpoint without duplicating labels in the UI."""
     return await service.read_catalogue(caller)
+
+
+@router.post(
+    "/image-uploads",
+    response_model=UploadInstruction,
+    status_code=status.HTTP_201_CREATED,
+    summary="listings_create_image_upload",
+    operation_id="listings_create_image_upload",
+    responses=_ERROR_RESPONSES,
+)
+async def create_image_upload(
+    body: ImageUploadRequest,
+    caller: Annotated[CallerContext, Depends(require_caller)],
+    service: Annotated[ListingsService, Depends(_service)],
+) -> UploadInstruction:
+    """Create a pending upload owned by the authenticated regular seller."""
+    return await service.create_image_upload(caller, body)
+
+
+@router.post(
+    "/image-uploads/{upload_id}/confirm",
+    response_model=ConfirmedImage,
+    summary="listings_confirm_image_upload",
+    operation_id="listings_confirm_image_upload",
+    responses=_ERROR_RESPONSES,
+)
+async def confirm_image_upload(
+    upload_id: ImageId,
+    caller: Annotated[CallerContext, Depends(require_caller)],
+    service: Annotated[ListingsService, Depends(_service)],
+) -> ConfirmedImage:
+    """Confirm an uploaded object only for its authenticated owner."""
+    return await service.confirm_image_upload(caller, upload_id)
+
+
+@router.delete(
+    "/image-uploads/{upload_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="listings_cancel_image_upload",
+    operation_id="listings_cancel_image_upload",
+    responses=_ERROR_RESPONSES,
+)
+async def cancel_image_upload(
+    upload_id: ImageId,
+    caller: Annotated[CallerContext, Depends(require_caller)],
+    service: Annotated[ListingsService, Depends(_service)],
+) -> Response:
+    """Cancel one owner's unattached intent, retaining its key for cleanup."""
+    await service.cancel_image_upload(caller, upload_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.get(
+    "/images/{image_id}/delivery",
+    response_model=ImageDelivery,
+    summary="listings_get_image_delivery",
+    operation_id="listings_get_image_delivery",
+    responses=_ERROR_RESPONSES,
+)
+async def get_image_delivery(
+    image_id: ImageId,
+    caller: Annotated[CallerContext, Depends(require_caller)],
+    service: Annotated[ListingsService, Depends(_service)],
+) -> ImageDelivery:
+    """Return a short-lived S3 URL only after the listing visibility check."""
+    return await service.get_image_delivery(caller, image_id)
 
 
 @router.post(

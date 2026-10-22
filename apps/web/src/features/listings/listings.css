@@ -51,6 +51,21 @@
 .listings-gallery__thumbnail { min-width: 0; padding: var(--space-1); color: var(--color-text); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-control); cursor: pointer; }
 .listings-gallery__thumbnail .listings-photo-placeholder { aspect-ratio: 1; }
 .listings-list-card__links { display: flex; flex-direction: column; gap: var(--space-3); }
+.listings-form input.listings-file-input { position: absolute; width: 1px; height: 1px; min-height: 0; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; clip-path: inset(50%); border: 0; }
+.listings-image-picker__controls { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.listings-image-picker__controls button { min-height: 2.75rem; }
+.listings-image-preview { display: block; width: 100%; max-height: 32rem; aspect-ratio: 4 / 3; object-fit: contain; background: var(--color-surface-muted); border-radius: var(--radius-control); }
+.listings-image-preview--compact { aspect-ratio: 1; max-height: none; object-fit: cover; }
+.listings-image-tile__preview .listings-image-preview--compact { max-height: 12rem; }
+.listings-image-loading { display: grid; min-height: 8rem; place-items: center; padding: var(--space-3); color: var(--color-muted); background: var(--color-surface-muted); border-radius: var(--radius-control); }
+.listings-image-unavailable { display: grid; gap: var(--space-2); justify-items: start; }
+.listings-image-unavailable p { margin: 0; }
+.listings-image-picker progress { display: block; width: 100%; min-height: 1rem; accent-color: var(--color-primary); }
+@media (max-width: 36rem) {
+  .listings-image-picker__controls { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .listings-image-picker__controls button { width: 100%; }
+  .listings-image-preview { aspect-ratio: 4 / 3; }
+}
 @media (max-width: 36rem) {
   .listings-fields, .listings-card dl { grid-template-columns: minmax(0, 1fr); }
   .listings-card dd { margin-block-end: var(--space-2); }

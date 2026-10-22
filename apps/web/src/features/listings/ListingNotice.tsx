@@ -7,8 +7,7 @@ export function ListingNotice() {
       {isolatedListingsDemo && (
         <aside className="listings-demo" aria-label="Local test mode">
           <strong>Isolated Listings test — synthetic seller</strong>
-          <p>Listings save to real local PostgreSQL. Sign-in and image records are synthetic.
-            No photo has been uploaded. Real Identity, image storage and chat are pending.</p>
+          <p>This development mode uses a synthetic seller supplied by the separate local test server. Image storage availability depends on that server. Real sign-in, cloud storage verification, and chat integration remain pending.</p>
         </aside>
       )}
       <p className="listings-muted">

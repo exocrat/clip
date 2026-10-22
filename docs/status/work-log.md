@@ -48,8 +48,8 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PRE-00 | Integration owner | done | Foundation gate audit accepted; DL-00 is unblocked | performed | verified/accepted by user | Reviewed handoff PR #8 merged to `main` at `2cd83e7`; hosted Foundation quality gates passed for head `18c966e` against base `68d9da9` (run `39323851584`); clean-checkout evidence at `0747be6`; see [PD-19 handoff](foundation-handoff.md) | None. PR #8 has no GitHub review event; independent-review completion remains user-reported without a separate artifact. | 2026-10-19 21:20:55 UTC |
 | DL-00 | Shared-core/contract coordinator; all domains review | in progress | Steps 1–13 local work complete; independent review and exact merge gate next | Steps 1–13 performed | User reports affected domain owners reviewed and approved the contract documents; four declarations derive from those reviewed signatures | `task/pre-00-dl-00-foundation`; 50 HTTP operations, 19 internal callables, eight generated artifacts; `make check` passed (421 Python, 63 data, 16 web tests; Black 71 files; boundary/contract/mypy/web/database/safety/secrets checks) | Independent peer review and exact-revision merge remain; cleanup implementation still needs its separate approval; real providers/integrations and crypto/worker implementation remain downstream | 2026-10-20 05:17:32 UTC |
 | ID-01 | A | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | ID-READY, LI-01, LI-02, SE-CORE, SE-02, CN-CORE, CN-02 | — |
-| LI-01 | B | in progress | Step 11 LI-CORE and remaining Step 7/9/10 gates. | Steps 1–4/6, isolated Step 5 increments, Steps 8–10 checks, and available Step 9 scenarios implemented; Step 7 partial, current create/edit/detail/My Listings checkpoint verified in isolated mode. | Suraj verified the multi-image edit/gallery checkpoint, approved seller-only selected-buyer visibility, and verified Step 10. Phone-device observation and remaining Step 7 checks are not claimed. | `domain/listings` / `8d243e4` plus uncommitted changes; 61 focused Listings tests passed, 1 direct database test skipped outside wrapper; disposable PostgreSQL workflow passed; Black and `git diff --check` pass. | Step 11–13; new-thread rejection after retirement requires the unimplemented Conversations-owned thread-start path; affected-consumer/schema review of nullable pickup, native schema check, real Identity/image/chat integrations, and five pre-existing backend boundary findings remain. | 2026-10-21 13:01:52 UTC |
-| LI-02 | B | not started | — | No LI-02 implementation started. Revised task definition permits a private RDS/S3 rehearsal before upstream integration. | pending | No LI-02 implementation outputs; procedure in `docs/tasks/domain-task-list.md` | LI-CORE and ID-READY remain required for Step 13/shared integration and final acceptance; Step 11 isolated cloud rehearsal may precede them after its exact plan is approved. | — |
+| LI-01 | B | in progress | Step 11 LI-CORE and remaining Step 7/9/10 gates. | Steps 1–4/6, isolated Step 5 increments, Steps 8–10 checks, and available Step 9 scenarios implemented; Step 7 partial, current create/edit/detail/My Listings checkpoint verified in isolated mode. | Suraj verified the multi-image edit/gallery checkpoint, approved seller-only selected-buyer visibility, and verified Step 10. Phone-device observation and remaining Step 7 checks are not claimed. | `domain/listings` / `e398c96`; 61 focused Listings tests passed, 1 direct database test skipped outside wrapper; disposable PostgreSQL workflow passed; Black and `git diff --check` pass. | Step 11–13; new-thread rejection after retirement requires the unimplemented Conversations-owned thread-start path; affected-consumer/schema review of nullable pickup, native schema check, real Identity/image/chat integrations, and five pre-existing backend boundary findings remain. | 2026-10-21 15:35:55 UTC |
+| LI-02 | B | in progress | Step 12 isolated cloud rehearsal: prepare/review exact deployment and run plan, then deploy privately and verify mobile website behavior after deployment. | Steps 1–11 performed and verified; Step 12 not started. | Steps 1–11 verified by Suraj; mobile website verification belongs to Step 12 after deployment. | `domain/listings`; Step 11 `make check`: 540 Python tests passed, 1 skipped; 63 data tests passed; boundaries 0 violations; 8 contract artifacts current; mypy passed; web lint, 38 tests, TypeScript and production build passed; 35 database safety cases passed; disposable PostgreSQL 18.6 apply/head/repeat/smokes/rollback/reapply passed; Gitleaks 8.30.1 source-snapshot scan passed. Terraform 1.15.9 exact plan SHA `520a5ad1af425698152b092fb636fa6e0715197977b461d3f5b6cc94b3f81a7b` applied to account `335523638354`, Region `ap-south-1`: 0 added, 2 changed, 0 destroyed. Live CORS includes `if-none-match`; policy denies run-prefix PUTs without `If-None-Match: *`. | Step 12 exact deployment/run-window/cost/access/cleanup plan and its separate approval remain. ECS app/service and private SSM access route still need creation and verification; mobile browser access must use an approved reachable URL. LI-CORE/ID-READY gate Step 13. | 2026-10-22 11:36:10 UTC |
 | SE-01 | C | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | SE-CORE, LI-01, LI-02, DATA-READY | — |
 | SE-02 | C | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | SE-CORE, ID-READY, LI-CORE | — |
 | CN-01 | D | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | Isolated development: PRE-00, then DL-00 and a reviewed contract/stub. Later real gates: CN-CORE; SE-02's real request interfaces for request-response integration; CN-03's producer path for final NFR-05 acceptance. | — |
@@ -113,6 +113,459 @@ actual LI-CORE/ID-READY and shared-environment checks as final acceptance gates.
 Updated the task list, stub/integration gate, project task index, and status
 rows. No application code or cloud resources changed; no plan, deployment,
 upload, or apply ran.
+
+### LI-02 task order and dependency reconciliation — 2026-10-21 15:35:55 UTC
+
+Suraj confirmed DL-00 is complete and accepted moving the local quality/security
+gate ahead of the isolated cloud rehearsal. Updated LI-02 Steps 11–12 and the
+stub gate, project index, human browser checkpoint, and Listings status rows to
+match. A fetch read `origin/main` at `44cd8ff`; its work-log row still marks
+DL-00 in progress, and GitHub listed no open PRs. This source-status mismatch is
+recorded as stale rather than represented as updated. No application code,
+cloud resource, deployment, or upload was changed or run. LI-02 remains not
+started until Step 1 is performed and verified.
+
+### LI-02 Step 1 — local storage and upload-contract inspection — 2026-10-21 15:40:34 UTC
+
+Suraj verified Step 1. Repository review found no approved image bucket or
+image-specific IAM/CORS/lifecycle policy in the latest recorded inventory
+(2026-10-19). The CLIP S3 bucket is for Terraform state and must remain separate;
+the existing unowned bucket is explicitly not available for adoption. The
+documented shared PostgreSQL instance is private, encrypted, PostgreSQL 18.6,
+and stopped. The frozen upload contract specifies 1–8 JPEG/PNG/WebP images,
+each 1–10,485,760 bytes, a maximum five-minute delivery URL, a 24-hour upload
+intent expiry, and safe abandoned metadata cleanup within a further 24 hours.
+The repository has declaration-only upload routes and the test UI uses prepared
+image metadata; actual object upload/delivery is not implemented. Image decoder
+and pixel/dimension limits are not selected.
+
+The only local AWS CLI profile is `default`; repository guidance identifies it
+as unapproved and says to use each contributor's own approved non-root profile.
+At the time of this initial inspection no approved profile was available, so no
+AWS API call was made. No cloud resources or data were changed. See the dated
+Step 1 live-inspection follow-up below for the result after Suraj configured
+and identity-verified his own non-root profile.
+
+### LI-02 Step 1 — live read-only storage and identity inspection — 2026-10-21 16:03:05 UTC
+
+Suraj configured local AWS CLI profile `surajs2`; STS read-back confirmed
+`arn:aws:iam::335523638354:user/surajs2` in account `335523638354`, region
+`ap-south-1`. Read-only RDS inspection confirmed
+`clip-shared-test-postgres` is stopped, private, encrypted, deletion-protected,
+PostgreSQL 18.6. The account bucket listing returned only the PD-15 Terraform
+state bucket and `ds252-w4-bucket-adityamedhe`, which remains explicitly
+unowned and was not inspected or adopted. The state bucket was checked only
+to confirm it is unsuitable as an image store: all S3 public-access blocks are
+enabled, encryption is AES256, its policy status is non-public, and it has no
+CORS or lifecycle configuration. The seven `clip-shared-test-*` IAM role names
+are the existing shared infrastructure roles. This profile is denied
+permission to list attached and inline role policies, so their effective S3
+permissions and the absence of image-specific policies are not verified. No
+Listings image bucket appeared in the account bucket listing. No cloud
+resource, object, or database was changed or read for application data. The user accepted that upload
+dimensions are not limited for display consistency; if optional CLIP image
+embedding is built later, use the selected model's preprocessing on a copy and
+guard decoded image size during processing, preserving the uploaded original.
+The IAM-policy subcheck remains pending because of AccessDenied. Other Step 1
+findings await human verification. Step 2 has not started.
+
+### LI-02 Steps 1–2 — IAM verification and isolated storage design — 2026-10-21 16:47:22 UTC
+
+Suraj verified the Step 1 findings and Step 2 understanding before execution.
+Read-only IAM calls confirmed `IAMReadOnlyAccess` is directly attached to
+`surajs2`; it can list all seven `clip-shared-test-*` roles and their policy
+attachments/inline policy documents. The developer group has
+`PowerUserAccess` and `CLIPParameterStoreTeamAccess`; the user also has
+read-only billing/budget policies. The existing API task role has no policies;
+existing execution-role policies cover ECR image pulls, CloudWatch log writes,
+and only the exact PD-16 SSM parameters. No existing Listings image storage
+access was found. No AWS resource or data was changed.
+
+Step 2 prepared the Listings test Terraform root at
+`infra/terraform/domains/listings/test/`: private SSE-S3 bucket with all public
+access blocked, TLS-only bucket policy, local Vite CORS, task/execution roles
+with an external administrator-owned permissions boundary, object access
+limited to `listings/*`, a specific database URL parameter reference, and a
+seven-day log group. `runtime-role-boundary.json` gives the exact boundary
+document and ARN expected from the administrator. The README records the
+purpose, owner, state key, data class, exposure, 80 MiB test-data cap, proposed
+two-hour run window, cost basis, rollback, and cleanup. `terraform fmt
+-recursive infra/terraform/domains/listings/test` and
+`python3 -m json.tool infra/terraform/domains/listings/test/runtime-role-boundary.json`
+passed. No tests, backend initialization, plan, apply, deployment, upload,
+database write, or cleanup ran. Step 2 awaits Suraj's verification. Before a
+Step 3 plan, the administrator must create the named boundary and grant the
+scoped IAM role-management/PassRole permissions described in the root README;
+the operator assignment and exact cost refresh also remain necessary.
+
+### LI-02 Step 2 — full rehearsal access inventory and administrator bundle — 2026-10-21 17:13:25 UTC
+
+Suraj directed that the cloud rehearsal be fully prepared so one administrator
+request covers LI-02 through Step 12. Read the LI-02 route, shared/test ECS and
+RDS roles, current migration path, application configuration, and current AWS
+policy evidence. `surajs2` has direct `IAMReadOnlyAccess`, read-only billing
+policies, and group `PowerUserAccess` plus `CLIPParameterStoreTeamAccess`.
+Live IAM simulation allowed representative ECR image-push, ECS task/service,
+RDS start, SSM session/parameter, and state-object actions; `iam:CreateRole`
+and `iam:PassRole` were implicit denies. Listing the exact Terraform state
+prefix succeeded and returned no objects. The state bucket policy only denies
+insecure transport. No cloud resources or policies were changed.
+
+Expanded the Listings Terraform root with a third role for the fixed one-shot
+database setup task. Its execution role can read only the existing RDS master
+parameter and the Listings database URL; the API execution role can read only
+the Listings URL; the API task role has S3 operations only under the selected
+`listings/test/<test_run_id>/` prefix. The setup task itself receives no AWS
+task role. The intended test database is `clip_test_listings` on the existing
+private RDS instance, with an isolated application login; a fixed setup task
+creates or removes it, and a separate fixed migration task uses the checked-in
+migrations. Step 12 adds only task definitions/service and uses these roles.
+No extra IAM role is planned after the one-time administrator setup.
+
+Added `operator-iam-policy.json` for the exact three roles. It grants only
+role creation with the exact permissions boundary, inline-policy/tag/delete
+management on those roles, and `iam:PassRole` to ECS tasks. Existing
+`IAMReadOnlyAccess` covers the Terraform read calls. The single
+administrator-owned runtime boundary is narrowed by `aws:PrincipalArn` so the
+database master secret is usable only by the setup execution role, while S3,
+ECR, logs and the Listings DB URL are limited to the roles that need them.
+AWS Access Analyzer returned no findings for the operator policy or boundary.
+The README records database bootstrap/cleanup, run-scoped storage, the exact
+admin request, and the required configuration-only transition to real
+Identity/shared DB/storage; provider/caller implementation remains in LI-02
+Steps 4–11.
+
+`terraform fmt -recursive`, both JSON parses, AWS Access Analyzer validation,
+and `git diff --check` passed. Backend-free Terraform init/validation could not
+run because the installed CLI is 1.16.6 and the root pins 1.15.9; this did not
+contact the S3 backend. No tests, backend initialization, plan, apply, secret
+read, database write, deployment, upload, or cleanup occurred. Step 2 awaits
+Suraj's verification before Step 3.
+
+### LI-02 Step 2 — pinned Terraform validation — 2026-10-21 17:25:55 UTC
+
+Suraj installed Terraform 1.15.9 in `~/.local/bin` and ran
+`TERRAFORM_BIN=$HOME/.local/bin/terraform make terraform-check`. Formatting
+and backend-free initialization/schema validation passed for
+`infra/terraform/bootstrap`, `infra/terraform/domains/listings/test`, and
+`infra/terraform/shared/test`, using the locked AWS provider 6.69.1. No AWS
+backend, state, resource, or secret was accessed or changed. This resolves the
+local CLI-version validation blocker; the expanded Step 2 result still awaits
+Suraj's verification before Step 3.
+
+### LI-02 administrator access check — 2026-10-21 17:41:34 UTC
+
+Suraj reported the administrator had completed the access request. Read-only
+AWS checks in account `335523638354` confirmed direct `IAMFullAccess` on
+`surajs2`; group `DS252-Project-Developers` still carries
+`PowerUserAccess` and `CLIPParameterStoreTeamAccess`. The requested runtime
+boundary at
+`arn:aws:iam::335523638354:policy/clip/listings/test/CLIPListingsTestRuntimeBoundary`
+was not found, and listing local policies under `/clip/listings/test/` returned
+none. `IAMFullAccess` is broader than the proposed operator policy and makes
+that scoped policy redundant while attached. No AWS resources or policies
+were changed by these checks. Step 3 remains gated on the exact runtime
+boundary being created, plus the task's separate cost and plan reviews.
+
+### LI-02 runtime boundary created — 2026-10-21 17:44:55 UTC
+
+Suraj verified the AWS identity as account `335523638354`, user `surajs2`, then
+created the customer-managed policy from
+`infra/terraform/domains/listings/test/runtime-role-boundary.json`. AWS
+returned the exact configured ARN
+`arn:aws:iam::335523638354:policy/clip/listings/test/CLIPListingsTestRuntimeBoundary`
+at version `v1`. This policy is a maximum-permissions boundary for the three
+future Listings ECS roles; it is not attached to `surajs2` and grants no direct
+user access. No roles or other test resources were created. Step 2's IAM
+prerequisite is satisfied; Step 3 requires a refreshed target/cost review and
+approval of the exact Terraform plan before any apply.
+
+### LI-02 Step 3 — exact Terraform plan prepared — 2026-10-21 17:51:24 UTC
+
+Suraj verified Step 3. Confirmed account `335523638354`, Region `ap-south-1`,
+boundary version `v1`, empty remote state prefix, and absence of the named
+bucket, Listings roles, and log group. The account budget is an annual period
+from 2026-10-17 to 2027-10-17, with a USD 200 limit, USD 3.035 actual spend,
+and USD 5.143 forecast; credits are excluded. Cost Explorer's same-period
+unblended amount returned approximately zero, so that total does not reconcile
+with the budget actual. The plan's new resources add no running
+compute or database; S3 and CloudWatch charges depend on actual storage,
+requests, and logs. The existing two-hour shared-stack estimate in the root
+README remains a prior reference, not a current marginal cost calculation.
+
+Initialized the selected root's existing S3 backend without migration and
+prepared `/tmp/clip-li02-step3-20261021.tfplan` using Terraform 1.15.9 and
+provider 6.69.1. Inputs are `test_run_id=li02-run-20261021` and
+`cleanup_review_date=2026-11-04`. The owner-only saved plan (mode 600) has
+SHA-256
+`9646c9a795215e8b5842c58c780257791ede360bd8914d4eb2d137f85881488a` and
+contains 15 creates, zero updates, and zero deletions: the private S3 bucket
+and seven bucket controls, three bounded IAM roles and their three inline
+policies, plus the seven-day Listings log group. It creates no ECS task/service,
+database, RDS, VPC, or shared infrastructure. The plan remains unapplied;
+exact plan approval is pending. Updated the Listings test README to reflect
+the live IAMFullAccess and runtime-boundary state. `git diff --check` passed.
+
+### LI-02 Step 3 — approved plan applied — 2026-10-22 04:56:10 UTC
+
+Suraj approved the exact saved plan after the two-hour marginal-cost estimate.
+Confirmed its SHA-256 remained
+`9646c9a795215e8b5842c58c780257791ede360bd8914d4eb2d137f85881488a`, the
+target caller was `surajs2` in account `335523638354`, the named S3 bucket,
+roles, and log group were absent, and the runtime boundary was still version
+`v1`. Terraform initially resolved the shell's default profile to a different
+account and blocked a read-only state check; retrying with
+`AWS_PROFILE=surajs2` showed the remote state prefix was empty. Applied the
+approved saved plan with that explicit profile: 15 added, 0 changed, 0
+destroyed. Terraform state and outputs now record the bucket, three bounded
+roles, and log group. Read-only AWS checks confirmed all public-access blocks,
+AES256 encryption, bucket-owner enforcement, non-public bucket policy,
+disabled versioning, one-day incomplete multipart cleanup, all three role
+boundaries (boundary usage 3), and seven-day log retention. No ECS task/service,
+database, RDS, EC2, network, or upload was created or started. No application
+code changed. Await Suraj's verification of the applied result before Step 4.
+
+### LI-02 Step 4 verified; Step 5 image-content validation prepared — 2026-10-22 05:48:54 UTC
+
+Suraj verified Step 3 and the Step 4 understanding, then selected five minutes
+for each S3 upload URL. Added the Listings S3 adapter and owner-authorized
+intent/confirm/cancel routes. Upload intents persist `(owner_id, operation_id)`
+and declared type/size, replay only matching requests, receive a unique
+server-generated key, and use signed PUT headers `Content-Type` and
+`If-None-Match: *`. The new forward migration backfills existing rows and
+adds the immutable retry metadata. Cancellation marks an unattached upload
+failed while retaining its object key for the separately gated cleanup step.
+Step 4 confirmation initially checked S3-reported type and size; Step 5 below
+extends it to inspect the stored bytes before confirmation.
+
+Updated the isolated bucket CORS and policy source to allow the signed header
+and reject non-conditional PUTs under only the existing run prefix. Terraform
+1.15.9 format/target validation passed. The exact saved plan
+`/tmp/clip-li02-step4.tfplan` (SHA-256
+`520a5ad1af425698152b092fb636fa6e0715197977b461d3f5b6cc94b3f81a7b`)
+contains exactly 0 adds, 2 in-place changes, and 0 destroys: update bucket CORS
+and bucket policy. It has not been applied; separate exact-plan approval is
+required. Black, Python compileall, `uv lock --check`, and `git diff --check`
+passed. A compatibility scan found older Listings fixtures inserting directly
+into `listings.image_uploads`; updated them to provide the new required
+`operation_id` using the fixture upload ID. This keeps migration-backed local
+database/browser fixtures compatible without changing their behavior. Fixed
+the five older mypy findings: page results now retain the already-validated
+page-size literal type, and pool annotations now describe Psycopg connections
+whose row factory returns dictionaries. Targeted mypy passes for all seven API
+source files. Suraj verified the Step 4 implementation and these typing fixes.
+
+Step 5 now reads the uploaded object's bounded bytes from S3 during confirmation,
+recognizes JPEG/PNG/WebP from their file signatures, and requires the detected
+type, S3 content metadata, and original upload declaration to agree. Oversized,
+empty or mismatched content is rejected before the database marks it confirmed.
+The existing create/replacement request schemas already require one to eight
+images, so those limits and the required-image rule did not need changes. Invalid
+content receives a safe 422 field error. Targeted mypy passes for all seven API
+source files; Black, compileall and `git diff --check` pass. No tests were run.
+
+### LI-02 Step 6 — upload-state and transaction-safety implementation prepared — 2026-10-22 05:55:46 UTC
+
+Invalid image bytes or metadata mismatch now move an unattached pending upload
+to `failed` with a fixed failure code; a passed deadline moves it to `expired`.
+Both paths retain the private object key for the separately approved Step 8
+cleanup work. A missing object or storage timeout does not mark failure: the
+intent remains pending so an in-window upload or a retry can resolve it. The
+confirmation path checks expiry again after S3 inspection, then commits verified
+metadata only for a still-pending owner row. Listing creation and replacement
+already lock/require owner-bound, confirmed, unexpired uploads and insert/update
+the listing and image references inside one PostgreSQL transaction, so partial
+database writes roll back together. Added `ListingsStore.reject_image_upload`
+and its PostgreSQL implementation for the durable failed/expired transition.
+Targeted mypy (seven API files), Black, compileall and `git diff --check` pass;
+no tests or database/cloud operations were run. Step 6 awaits Suraj's
+verification.
+
+### LI-02 Step 7 — private authorized image delivery prepared — 2026-10-22 06:16:28 UTC
+
+Added `GET /images/{image_id}/delivery` using the reviewed response contract.
+The service requires a current eligible caller, reads the image and its listing
+visibility fields together from the non-retired/non-pending PostgreSQL view,
+and allows the owner to view retained images or other eligible users to view
+images only while the listing is discoverable. Unknown, detached, retired, or
+hidden image references return the same 404 behavior as inaccessible listing
+details. Authorized requests receive a private S3 GET URL capped at five
+minutes, with `private, no-store` response cache control; the key and signing
+details are not returned or logged. Existing isolated Terraform already defines
+SSE-S3, public-access blocking, one-day incomplete-multipart abortion, and
+scoped `GetObject` permission; no cloud change or apply was made. Python
+compileall and `git diff --check` pass. Black/mypy could not run because `uv` is
+not installed; no tests were run (test coverage belongs to Step 10). Step 7
+awaits Suraj's verification.
+The aggregate `make terraform-check` could not complete
+because its sanitized environment selected account `484394572488`; direct
+backend-free validation with the selected profile passed. No RDS/ECS runtime
+was started and no browser upload UI is available before LI-02 Step 9.
+
+### LI-02 Step 8 — bounded retry-safe cleanup prepared — 2026-10-22 06:36:59 UTC
+
+Suraj separately approved the exact destructive cleanup order: wait until an
+upload's 24-hour intent deadline plus a five-minute grace period, keep each
+pass bounded (100 by default, maximum 500), delete from S3 before deleting
+database metadata, and retry uncertain/failing deletes after five minutes.
+Implemented internal `cleanup_image_objects` processing for retired images
+and expired unattached uploads. Expired pending or confirmed-but-unattached
+intents are locked and made terminal before the storage call, preventing a
+late confirmation or listing edit from attaching an object while it is being
+removed. Cleanup uses only database-tracked keys, verifies retired image and
+upload owner/key agreement, and deletes metadata only after S3 confirms
+success/absence. Added per-object retry timestamps and chronological due-work
+indexes in migration `20261022062357_listing_image_cleanup_retries.sql`. No
+public cleanup route, recurring schedule, database migration apply, or cloud
+operation was added. Python compileall and `git diff --check` pass; tests are
+deferred to Step 10. Suraj verified the Step 8 implementation on 2026-10-22.
+
+### LI-02 Step 9 — responsive image interface implemented — 2026-10-22 06:52:28 UTC
+
+Added phone gallery/camera and computer file selection, client-side type/size
+feedback, previews, upload progress, retry and rejection handling, ordered
+image editing, and real authorized image previews on detail and My Listings
+pages. Uploads use the reviewed short-lived URL and Listings confirmation flow;
+server-side byte inspection remains authoritative. `git diff --check` passes.
+The active shell has no Node executable, so typecheck and browser/device review
+could not run; tests remain assigned to Step 10. No migration, database, or
+cloud action occurred. Await the required desktop/phone browser checkpoint and
+Suraj's implementation verification before Step 10.
+
+### LI-02 Step 9 — agent browser audit — 2026-10-22 07:11:46 UTC
+
+Recovered Node 24.22.0 from the local cache and ran `npm run check`: lint,
+TypeScript, 32 web tests and the production build pass. Fixed an unsupported
+ARIA label and the local review server's route ordering, which had sent
+`/listings/new` to the API's listing-ID route. Started a separate loopback UI/API
+preview at `http://127.0.0.1:5174` with an isolated PostgreSQL container, fixed
+synthetic seller and temporary local-only image storage. Browser checks created
+listings with two and eight photos, recovered a simulated lost confirmation
+response without a second byte upload, confirmed the eight-photo cap and
+rejected over-cap selections, loaded gallery and My Listings images, and
+saved/re-read an image reorder. No page errors or horizontal overflow at
+1280×800, 768×1024, 390×844, 360×800 and 844×390. A read-only query confirmed
+both new rows in the harness's isolated PostgreSQL database. Python
+Black/compileall and `git diff --check` pass. No AWS or shared database
+operation occurred. Suraj's desktop review and physical phone camera/gallery
+check remain pending; the current review URL is loopback-only.
+
+### LI-02 Step 9 — desktop/browser review verified — 2026-10-22 07:19:08 UTC
+
+Suraj verified the Step 9 implementation after reviewing the agent-run browser
+audit and local UI. The physical-phone camera/gallery check was not performed;
+keep it pending until an approved reachable test URL is available. Step 10 is
+next.
+
+### LI-02 Step 10 — fake-storage and failure checks performed — 2026-10-22 07:38:49 UTC
+
+Added Listings service and fake S3-adapter tests for signed-intent ownership,
+type/size/content checks, URL expiry, repeated confirmation, missing objects,
+timeouts, bounded cleanup, delete failure retention and retry. Added web-client
+tests for byte-upload headers, URL renewal, lost-confirmation recovery and
+failure without a duplicate PUT. Extended the disposable PostgreSQL workflow
+with an actual row-lock race: cleanup skips an intent locked by confirmation;
+after its expired confirmation is rejected, a later cleanup pass claims it.
+The database helper now checks migration head `20261022062357` and rolls back
+all later additive migrations before its retirement-data guard; its command
+docs, database migration inventory and native-check target match that head.
+
+Checks passed: API fake-storage and production-guard tests (89); `npm run
+check` (lint, TypeScript, 38 web tests, production build); and
+`scripts/check_database.py --listings-store` (PostgreSQL 18.6 clean/repeat
+apply, both SQL smokes, Listings store/race, full rollback and clean reapply).
+Loopback UI automation used mocked upload responses and confirmed camera
+cancellation keeps the selected photo and unsupported/over-10-MiB files are
+rejected before a new upload intent. `git diff --check` passed. No cloud or
+shared-database action. Actual-phone camera/gallery remains pending. Step 10
+awaits Suraj's verification before Step 11.
+
+### LI-02 Step 11 — local gates and isolated-profile guard — 2026-10-22 09:42:00 UTC
+
+Added a server-side isolated Listings caller profile for the later cloud rehearsal.
+It supplies one fixed synthetic seller without reading caller identity from any
+request field, and startup refuses to serve unless the configured database is
+the dedicated `clip_test_listings` database under a non-superuser role. The
+profile also requires the exact private test bucket, region, and run-scoped key
+prefix; production and shared configurations cannot enable it. The test
+deployment README records these requirements and the fixture-seeding boundary.
+The application composition root selects this profile only when the explicit
+test flag is enabled. Architecture boundary allowlists and contract route
+expectations were updated to match the reviewed composition and currently
+installed image routes.
+
+The full `make check` passed: Black (90 files unchanged), 540 Python tests with
+1 existing skip, 63 data tests, zero architecture-boundary violations, all 8
+generated contract artifacts current, mypy, web lint/38 tests/TypeScript/build,
+35 simulated database-safety cases, PostgreSQL 18.6 clean and repeat migration
+apply with both SQL smokes and complete rollback/reapply, and Gitleaks 8.30.1
+source-snapshot scan. `git diff --check` and the native-check shell syntax check
+also passed. An earlier aggregate run exposed stale boundary/route expectations;
+those repository checks were aligned with the actual public composition/routes,
+then the aggregate suite passed. The local configuration and database-guard
+tests verify that unsafe targets are rejected.
+
+The implementation-side security audit confirmed that the test bucket blocks
+public access, enforces bucket-owner object ownership and encryption, requires
+TLS, and limits the runtime role to run-scoped object keys; the isolated caller
+is fixed server-side and cannot be selected through client claims. The security
+review follow-up found that startup checked only the database name and
+superuser bit. It now also requires the exact `clip_test_listings_app`
+login/effective role and rejects database/role creation, replication, and
+row-security-bypass attributes. The Step 12 setup task must create this exact
+non-elevated login. Focused profile/config tests (36), Black, and
+`git diff --check` pass after this change. Suraj is the named security reviewer;
+his review of IAM, bucket exposure, and proposed deployment settings remains
+pending. No cloud rehearsal, Terraform plan, or apply was performed. Step 10
+was verified by Suraj; Step 11 awaits his review and verification of this result.
+
+### LI-02 Step 11 — command-based cloud security review — 2026-10-22 10:42:17 UTC
+
+Suraj identified himself as the named security reviewer and asked for command-
+based inspection. Confirmed the active `surajs2` CLI identity is IAM user
+`arn:aws:iam::335523638354:user/surajs2`. Read-only AWS commands verified the
+LI-02 bucket has all four public-access-block settings enabled,
+`BucketOwnerEnforced`, SSE-S3/AES256, disabled versioning, and
+`PolicyStatus.IsPublic=false`. The live bucket policy currently has only the
+TLS-deny statement; live CORS allows the loopback Vite origin but omits
+`If-None-Match`. This is the known unapplied Step 4 change; cloud upload must
+wait for its exact plan approval and apply.
+
+The three live task roles are trusted only to ECS tasks in this account and
+have the Listings runtime boundary attached (default v1, three boundary uses).
+The live task role's S3 actions cover only
+`listings/test/li02-run-20261021/*`; execution-role reads are limited to the
+database URL, and only the setup execution role can read the master-password
+parameter. The boundary caps S3 at the Listings test prefix and limits ECR,
+logs, and exact SSM parameters. IAM simulation says the current operator can
+start/resume/terminate SSM sessions on `*`; this is broader than the Listings
+target. The documented private route itself has no public IP, listener, or
+inbound rule, but its actual ECS host/task is not built: the cluster reports
+zero tasks and zero registered instances, and SSM has no managed instances.
+The future route and host mapping therefore remain unverified until Step 12.
+
+Terraform `fmt` passed, but `make terraform-check` did not complete: its clean
+environment drops `AWS_PROFILE` while retaining the default home directory,
+so the AWS provider read the default root identity in account `484394572488`,
+which the Listings provider correctly rejects. With the intended profile,
+direct backend-free `terraform validate` of the Listings root passed. No plan,
+apply, deployment, upload, or other cloud mutation occurred. The live review
+and the local test-profile guard await Suraj's verification; Step 12 still
+requires review of its exact deployment settings and separate approvals.
+
+### LI-02 Step 11 verified; Step 4 conditional-write plan applied — 2026-10-22 11:36:10 UTC
+
+Suraj verified Step 11 and clarified that human mobile website verification is
+for Step 12 after deployment; a physical-phone check is not a Step 9 gate. Per
+Suraj's explicit request, applied the saved Step 4 Terraform plan
+`/tmp/clip-li02-step4.tfplan` (SHA-256
+`520a5ad1af425698152b092fb636fa6e0715197977b461d3f5b6cc94b3f81a7b`) with
+Terraform 1.15.9 as `surajs2` in account `335523638354`, Region `ap-south-1`.
+It changed only the private LI-02 bucket CORS and policy: 0 added, 2 changed,
+0 destroyed. Read-only AWS verification confirmed CORS allows
+`If-None-Match` and the bucket policy denies PUTs under the run prefix when
+the header is absent or differs from `*`. No ECS/RDS runtime, upload, database
+write, or phone test was performed. Step 12 remains the next checkpoint.
 
 ### LI-01 task start — 2026-10-20 08:57:01 UTC
 

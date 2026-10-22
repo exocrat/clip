@@ -15,6 +15,7 @@ from typing import Any
 from uuid import UUID, uuid4
 
 import pytest
+from psycopg import AsyncConnection
 from psycopg.errors import CheckViolation
 from psycopg.rows import dict_row
 from psycopg.types.json import Jsonb
@@ -34,7 +35,11 @@ from app.contracts.domain_types import (
 from app.core.auth import CallerContext
 from app.core.errors import PublicError
 from app.domains.listings.postgres_store import PostgresListingsStore
-from app.domains.listings.service import ListingsService, RetiredListingImage
+from app.domains.listings.service import (
+    AbandonedImageUpload,
+    ListingsService,
+    RetiredListingImage,
+)
 
 
 class _EligibleIdentity:
@@ -92,7 +97,7 @@ def test_postgres_store_persists_listing_and_owner_command_workflow() -> None:
 
 async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
     """Seed synthetic boundaries, call the store, and inspect committed rows."""
-    pool: AsyncConnectionPool[dict[str, Any]] = AsyncConnectionPool(
+    pool: AsyncConnectionPool[AsyncConnection[dict[str, Any]]] = AsyncConnectionPool(
         conninfo=conninfo,
         kwargs={"row_factory": dict_row},
         min_size=1,
@@ -139,14 +144,15 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
                     await connection.execute(
                         """
                         INSERT INTO listings.image_uploads (
-                            id, owner_id, object_key, state, created_at, expires_at,
+                            id, owner_id, object_key, operation_id, state, created_at, expires_at,
                             confirmed_at, confirmed_media_type, confirmed_size_bytes
-                        ) VALUES (%s, %s, %s, 'confirmed', %s, %s, %s, 'image/jpeg', 2048)
+                        ) VALUES (%s, %s, %s, %s, 'confirmed', %s, %s, %s, 'image/jpeg', 2048)
                         """,
                         (
                             upload_id,
                             owner_id,
                             f"test/listings/{upload_id}",
+                            upload_id,
                             created_at,
                             created_at + timedelta(hours=24),
                             now,
@@ -653,14 +659,15 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
                 await connection.execute(
                     """
                     INSERT INTO listings.image_uploads (
-                        id, owner_id, object_key, state, created_at, expires_at,
+                        id, owner_id, object_key, operation_id, state, created_at, expires_at,
                         confirmed_at, confirmed_media_type, confirmed_size_bytes
-                    ) VALUES (%s, %s, %s, 'confirmed', %s, %s, %s, 'image/jpeg', 2048)
+                    ) VALUES (%s, %s, %s, %s, 'confirmed', %s, %s, %s, 'image/jpeg', 2048)
                     """,
                     (
                         old_upload_id,
                         owner_id,
                         old_object_key,
+                        old_upload_id,
                         now - timedelta(minutes=1),
                         now + timedelta(hours=23, minutes=59),
                         now - timedelta(minutes=1),
@@ -869,5 +876,61 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
                 (optional_listing.listing_id,),
             )
             assert await result.fetchone() == {"pickup_area": None}
+
+        # Hold an expired pending intent's row lock while confirmation and
+        # cleanup race. SKIP LOCKED leaves it alone until confirmation loses
+        # on expiry; the next cleanup pass can then claim the same object key.
+        racing_upload_id = uuid4()
+        async with pool.connection() as connection:
+            await connection.execute(
+                """
+                INSERT INTO listings.image_uploads (
+                    id, owner_id, object_key, operation_id,
+                    requested_media_type, requested_size_bytes,
+                    state, created_at, expires_at
+                ) VALUES (
+                    %s, %s, %s, %s, 'image/png', 2048,
+                    'pending', %s, %s
+                )
+                """,
+                (
+                    racing_upload_id,
+                    owner_id,
+                    f"test/listings/{racing_upload_id}",
+                    racing_upload_id,
+                    now - timedelta(hours=25),
+                    now - timedelta(hours=1),
+                ),
+            )
+
+        async with pool.connection() as blocker:
+            async with blocker.transaction():
+                await blocker.execute(
+                    "SELECT id FROM listings.image_uploads WHERE id = %s FOR UPDATE",
+                    (racing_upload_id,),
+                )
+                assert await store.list_abandoned_uploads_for_cleanup(100) == ()
+                confirmation = asyncio.create_task(
+                    store.confirm_image_upload(
+                        owner_id,
+                        racing_upload_id,
+                        "image/png",
+                        2048,
+                        now,
+                    )
+                )
+                await asyncio.sleep(0.02)
+                assert not confirmation.done()
+
+        with pytest.raises(PublicError) as expired_confirmation:
+            await confirmation
+        assert expired_confirmation.value.spec.status == 409
+        claimed = await store.list_abandoned_uploads_for_cleanup(100)
+        assert claimed == (
+            AbandonedImageUpload(
+                upload_id=racing_upload_id,
+                object_key=f"test/listings/{racing_upload_id}",
+            ),
+        )
     finally:
         await pool.close()

@@ -4,9 +4,7 @@ import { Button } from '../../shared/ui';
 import { ListingNotice } from './ListingNotice';
 import { ListingImageSet, type ListingImageChoice } from './ListingImageSet';
 import {
-  isolatedListingsDemo,
   listingPrice,
-  prepareDemoImage,
   readCatalogue,
   readOwnedListing,
   replaceListing,
@@ -50,9 +48,9 @@ export function ListingEdit({ listingId }: { listingId?: string }) {
   const [images, setImages] = useState<ListingImageChoice[]>([]);
   const [loadError, setLoadError] = useState('');
   const [saveError, setSaveError] = useState('');
-  const [imageError, setImageError] = useState('');
   const [errors, setErrors] = useState<ListingFormErrors>({});
-  const [loadingImage, setLoadingImage] = useState(false);
+  const [imagePending, setImagePending] = useState(false);
+  const [imageUnresolved, setImageUnresolved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [reload, setReload] = useState(0);
   const summary = useRef<HTMLDivElement>(null);
@@ -88,25 +86,9 @@ export function ListingEdit({ listingId }: { listingId?: string }) {
     setValues((current) => current ? { ...current, [field]: value } : current);
   }
 
-  async function addPreparedImage() {
-    if (images.length >= 8) return;
-    setLoadingImage(true);
-    setImageError('');
-    try {
-      const prepared = await prepareDemoImage();
-      setImages((current) => current.length < 8
-        ? [...current, { source: 'upload', upload_id: prepared.upload_id }]
-        : current);
-    } catch (failure) {
-      setImageError((failure as Error).message);
-    } finally {
-      setLoadingImage(false);
-    }
-  }
-
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (!listing || !listingId || !values || saving) return;
+    if (!listing || !listingId || !values || saving || imagePending || imageUnresolved) return;
     const result = validateListingFields(values, Date.now(), true);
     const nextErrors = { ...result.errors };
     if (images.length < 1 || images.length > 8) {
@@ -166,7 +148,7 @@ export function ListingEdit({ listingId }: { listingId?: string }) {
           <Button onClick={() => setReload((current) => current + 1)}>Retry loading listing</Button>
         </div>
       ) : !listing || !catalogue || !values ? <p role="status">Loading your saved listing…</p> : (
-        <form onSubmit={submit} noValidate className="listings-form" aria-busy={saving}>
+        <form onSubmit={submit} noValidate className="listings-form" aria-busy={saving || imagePending}>
           <p className="listings-muted">Editing your saved listing · revision {listing.revision}</p>
           <p className="listings-price">Current asking price: {listingPrice(listing.asking_price_paise)}</p>
           {Object.keys(errors).length > 0 ? (
@@ -185,7 +167,7 @@ export function ListingEdit({ listingId }: { listingId?: string }) {
               ) : null}
             </div>
           ) : null}
-          <fieldset disabled={saving || loadingImage}>
+          <fieldset disabled={saving}>
             <legend>Listing details</legend>
             <label htmlFor="edit-listing-title">Title <span>(required)</span></label>
             <input id="edit-listing-title" value={values.title} onChange={(event) => change('title', event.target.value)} {...invalid('title')} />
@@ -232,16 +214,24 @@ export function ListingEdit({ listingId }: { listingId?: string }) {
           </fieldset>
           <p className="listings-muted">Reorder the photos below. Removing a photo schedules its old file for cleanup after the save succeeds.</p>
           <ListingImageSet
+            key={`${listingId}:${reload}`}
             images={images}
-            onChange={setImages}
-            onAddPrepared={isolatedListingsDemo ? addPreparedImage : undefined}
-            adding={loadingImage}
+            onChange={(next) => {
+              setImages(next);
+              setErrors((current) => {
+                const nextErrors = { ...current };
+                delete nextErrors.images;
+                return nextErrors;
+              });
+            }}
+            onBusyChange={setImagePending}
+            onPendingChange={setImageUnresolved}
             disabled={saving}
-            error={imageError || errors.images}
+            error={errors.images}
           />
-          <p role="status">{saving ? 'Saving your changes…' : `${images.length} of 8 photo references selected.`}</p>
+          <p role="status">{saving ? 'Saving your changes…' : imagePending ? 'Checking and saving selected photos…' : imageUnresolved ? 'Retry or remove unfinished photos before saving.' : `${images.length} of 8 confirmed photos selected.`}</p>
           <div className="listings-form-actions">
-            <Button type="submit" disabled={saving || loadingImage}>{saving ? 'Saving…' : 'Save changes'}</Button>
+            <Button type="submit" disabled={saving || imagePending || imageUnresolved}>{saving ? 'Saving…' : 'Save changes'}</Button>
             <Link to="/my/listings">Cancel and return to My Listings</Link>
           </div>
         </form>

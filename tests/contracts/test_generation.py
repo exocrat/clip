@@ -246,6 +246,10 @@ def test_actual_api_schema_matches_generated_contract():
         "/listings/{listing_id}/selection",
         "/listings/{listing_id}/conversations/{conversation_id}/offer",
         "/listings/{listing_id}/conversations/{conversation_id}/offer-withdrawals",
+        "/image-uploads",
+        "/image-uploads/{upload_id}/confirm",
+        "/image-uploads/{upload_id}",
+        "/images/{image_id}/delivery",
     }
     assert set(actual["paths"]) == implemented_paths
     for path in implemented_paths:

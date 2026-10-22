@@ -1,6 +1,8 @@
 """Shared typed, redacted process-environment configuration for the API."""
 
+import re
 from typing import Literal, Self
+from urllib.parse import urlsplit
 
 from pydantic import (
     Field,
@@ -15,6 +17,11 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class ConfigurationError(RuntimeError):
     """Report invalid startup settings without echoing supplied values."""
+
+
+ISOLATED_LISTINGS_TEST_DATABASE = "clip_test_listings"
+ISOLATED_LISTINGS_TEST_BUCKET = "clip-test-listings-images-ap-south-1-li02"
+ISOLATED_LISTINGS_TEST_REGION = "ap-south-1"
 
 
 class Settings(BaseSettings):
@@ -37,8 +44,12 @@ class Settings(BaseSettings):
     # Fake selectors authorize test-package helpers only; no real adapter is configured.
     identity_provider: Literal["disabled", "fake"] = "disabled"
     email_provider: Literal["disabled", "fake"] = "disabled"
-    storage_provider: Literal["disabled", "fake"] = "disabled"
+    storage_provider: Literal["disabled", "fake", "s3"] = "disabled"
+    image_bucket: str | None = None
+    image_region: str | None = None
+    image_key_prefix: str | None = None
     development_auth: bool = False
+    isolated_listings_test_caller: bool = False
     # SecretStr prevents accidental repr/log output of embedded credentials.
     database_url: SecretStr | None = None
     # Listings compares prices against this configurable whole-rupee threshold.
@@ -58,7 +69,11 @@ class Settings(BaseSettings):
         return value
 
     @field_validator(
-        "identity_provider", "email_provider", "storage_provider", "development_auth"
+        "identity_provider",
+        "email_provider",
+        "storage_provider",
+        "development_auth",
+        "isolated_listings_test_caller",
     )
     @classmethod
     def reject_production_test_controls(
@@ -80,6 +95,38 @@ class Settings(BaseSettings):
         """Prevent detailed error responses from being enabled in production."""
         if self.environment == "production" and self.debug:
             raise ValueError("Debug must be disabled in production")
+        if self.storage_provider == "s3" and not all(
+            (self.image_bucket, self.image_region, self.image_key_prefix)
+        ):
+            raise ValueError(
+                "S3 storage requires an image bucket, region, and key prefix"
+            )
+        if self.storage_provider != "s3" and any(
+            (self.image_bucket, self.image_region, self.image_key_prefix)
+        ):
+            raise ValueError("Image S3 settings require storage_provider=s3")
+        if self.isolated_listings_test_caller:
+            database = (
+                urlsplit(self.database_url.get_secret_value()).path.strip("/")
+                if self.database_url is not None
+                else ""
+            )
+            if (
+                self.environment != "test"
+                or not self.development_auth
+                or database != ISOLATED_LISTINGS_TEST_DATABASE
+                or self.storage_provider != "s3"
+                or self.image_bucket != ISOLATED_LISTINGS_TEST_BUCKET
+                or self.image_region != ISOLATED_LISTINGS_TEST_REGION
+                or self.image_key_prefix is None
+                or not re.fullmatch(
+                    r"listings/test/[a-z0-9][a-z0-9-]{2,39}",
+                    self.image_key_prefix or "",
+                )
+            ):
+                raise ValueError(
+                    "The isolated Listings test caller requires the dedicated test database and bucket configuration"
+                )
         return self
 
 

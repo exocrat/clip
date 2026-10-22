@@ -47,8 +47,8 @@ BEGIN
             CURRENT_TIMESTAMP - INTERVAL '190 days'
         FROM listings.categories WHERE code = 'books';
     INSERT INTO listings.image_uploads
-        (id, owner_id, object_key, state, created_at, expires_at, confirmed_at)
-        VALUES (upload, seller, 'test/retirement/' || image::text, 'confirmed',
+        (id, owner_id, object_key, operation_id, state, created_at, expires_at, confirmed_at)
+        VALUES (upload, seller, 'test/retirement/' || image::text, upload, 'confirmed',
             CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '24 hours', CURRENT_TIMESTAMP);
     INSERT INTO listings.images
         (id, listing_id, upload_id, object_key, position, media_type, size_bytes)

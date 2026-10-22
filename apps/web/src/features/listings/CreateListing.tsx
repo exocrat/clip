@@ -4,7 +4,7 @@ import { Button } from '../../shared/ui';
 import { ListingNotice } from './ListingNotice';
 import { ListingImageSet, type ListingImageChoice } from './ListingImageSet';
 import {
-  createListing, isolatedListingsDemo, prepareDemoImage, readCatalogue,
+  createListing, readCatalogue,
   type CatalogueView,
 } from './listingsApi';
 import { validateListingForm, type ListingFormErrors, type ListingFormValues } from './listingForm';
@@ -35,7 +35,7 @@ export function CreateListing({ children }: PropsWithChildren) {
   const [saving, setSaving] = useState(false);
   const [images, setImages] = useState<ListingImageChoice[]>([]);
   const [imagePending, setImagePending] = useState(false);
-  const [imageError, setImageError] = useState('');
+  const [imageUnresolved, setImageUnresolved] = useState(false);
   const summary = useRef<HTMLDivElement>(null);
   // Preserve the exact key/intent across a manual retry after a lost response.
   const attempt = useRef<{ intent: string; operationId: string } | null>(null);
@@ -56,23 +56,9 @@ export function CreateListing({ children }: PropsWithChildren) {
     setValues((current) => ({ ...current, [field]: value }));
   }
 
-  async function prepareImage() {
-    setImagePending(true);
-    setImageError('');
-    try {
-      const prepared = await prepareDemoImage();
-      setImages((current) => current.length < 8
-        ? [...current, { source: 'upload', upload_id: prepared.upload_id }]
-        : current);
-      setErrors((current) => ({ ...current, images: undefined }));
-    }
-    catch (error) { setImageError((error as Error).message); }
-    finally { setImagePending(false); }
-  }
-
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (saving) return;
+    if (saving || imagePending || imageUnresolved) return;
     const uploadIds = images.flatMap((image) => image.source === 'upload' ? [image.upload_id] : []);
     const result = validateListingForm(values, uploadIds);
     setErrors(result.errors);
@@ -108,7 +94,7 @@ export function CreateListing({ children }: PropsWithChildren) {
       {loadError ? (
         <div role="alert"><p>{loadError}</p><Button onClick={() => setReload((value) => value + 1)}>Retry loading choices</Button></div>
       ) : !catalogue ? <p role="status">Loading item categories and conditions…</p> : (
-        <form onSubmit={submit} noValidate className="listings-form" aria-busy={saving}>
+        <form onSubmit={submit} noValidate className="listings-form" aria-busy={saving || imagePending}>
           {Object.keys(errors).length > 0 && (
             <div ref={summary} tabIndex={-1} role="alert" className="listings-alert">
               <strong>Check these details before publishing:</strong>
@@ -157,30 +143,23 @@ export function CreateListing({ children }: PropsWithChildren) {
             </select>
             <p className="listings-muted">This is your statement; CLIP does not verify it. A buyer can ask for proof in chat.</p>
           </fieldset>
-          {isolatedListingsDemo ? (
-            <>
-              <p className="listings-muted">Prepared image records let you try the 1–8 image flow. No photo file is uploaded or validated.</p>
-              <ListingImageSet
-                images={images}
-                onChange={(next) => {
-                  setImages(next);
-                  setErrors((current) => ({ ...current, images: undefined }));
-                }}
-                onAddPrepared={prepareImage}
-                adding={imagePending}
-                disabled={saving}
-                error={errors.images ?? imageError}
-              />
-            </>
-          ) : (
-            <fieldset id="listing-images">
-              <legend>Listing photos</legend>
-              <p>Photo uploads are not connected yet. Add at least one confirmed photo to publish.</p>
-              {fieldError('images')}
-            </fieldset>
-          )}
-          <p role="status">{saving ? 'Saving your listing…' : imagePending ? 'Image record pending — not published.' : images.length ? `${images.length} prepared image reference${images.length === 1 ? '' : 's'} ready; no photo files have been uploaded.` : 'Unpublished form — add at least one confirmed image.'}</p>
-          <Button type="submit" disabled={saving || imagePending}>{saving ? 'Saving…' : 'Publish listing'}</Button>
+          <ListingImageSet
+            images={images}
+            onChange={(next) => {
+              setImages(next);
+              setErrors((current) => {
+                const nextErrors = { ...current };
+                delete nextErrors.images;
+                return nextErrors;
+              });
+            }}
+            onBusyChange={setImagePending}
+            onPendingChange={setImageUnresolved}
+            disabled={saving}
+            error={errors.images}
+          />
+          <p role="status">{saving ? 'Saving your listing…' : imagePending ? 'Checking and saving selected photos…' : imageUnresolved ? 'Retry or remove unfinished photos before publishing.' : images.length ? `${images.length} confirmed photo${images.length === 1 ? '' : 's'} ready to publish.` : 'Add at least one confirmed photo before publishing.'}</p>
+          <Button type="submit" disabled={saving || imagePending || imageUnresolved}>{saving ? 'Saving…' : 'Publish listing'}</Button>
         </form>
       )}
       {children}

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { Button } from '../../shared/ui';
 import { ListingNotice } from './ListingNotice';
+import { ListingImagePreview } from './ListingImagePreview';
 import { ListingPhotoPlaceholder } from './ListingPhotoPlaceholder';
 import { listingPrice, readMyListings, type ListingManagementView } from './listingsApi';
 import './listings.css';
@@ -61,7 +62,9 @@ export function MyListings() {
           {listings.map((listing) => (
             <li className="listings-list-card" key={listing.listing_id}>
               <figure className="listings-list-photo" aria-label={`Photo preview for ${listing.title}`}>
-                <ListingPhotoPlaceholder compact />
+                {listing.image_ids[0]
+                  ? <ListingImagePreview imageId={listing.image_ids[0]} alt={`First photo of ${listing.title}`} compact />
+                  : <ListingPhotoPlaceholder compact />}
               </figure>
               <div>
                 <p className="listings-status">

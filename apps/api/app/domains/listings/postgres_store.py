@@ -19,9 +19,11 @@ from app.contracts.domain_types import (
     CategoryCode,
     Category,
     CatalogueView,
+    ConfirmedImage,
     CreateListingRequest,
     ExistingListingImage,
     ImageId,
+    ImageUploadRequest,
     ListingDetail,
     ListingId,
     ListingManagementView,
@@ -31,7 +33,13 @@ from app.contracts.domain_types import (
     SelectionChange,
     UserId,
 )
-from app.domains.listings.service import PendingListingRetirement, RetiredListingImage
+from app.domains.listings.service import (
+    AbandonedImageUpload,
+    ListingImageDeliveryTarget,
+    PendingImageUpload,
+    PendingListingRetirement,
+    RetiredListingImage,
+)
 
 # This projection keeps list/detail reads to one SQL query per request. The
 # threshold is injected from typed API settings so every read uses the same
@@ -118,7 +126,7 @@ class PostgresListingsStore:
 
     def __init__(
         self,
-        pool: AsyncConnectionPool[dict[str, Any]],
+        pool: AsyncConnectionPool[AsyncConnection[dict[str, Any]]],
         sensitive_price_threshold_paise: int,
     ) -> None:
         """Bind the database pool and validated Listings price threshold."""
@@ -154,6 +162,248 @@ class PostgresListingsStore:
                 for r in rows
                 if r["kind"] == "condition"
             ],
+        )
+
+    async def create_image_upload(
+        self,
+        owner_id: UserId,
+        request: ImageUploadRequest,
+        upload_id: ImageId,
+        object_key: str,
+        now: datetime,
+    ) -> PendingImageUpload:
+        """Create or replay one immutable owner-scoped upload intent."""
+        async with self._connection() as connection:
+            async with connection.transaction():
+                await connection.execute(
+                    "SELECT pg_advisory_xact_lock(hashtext(%s), hashtext(%s))",
+                    (str(owner_id), str(request.operation_id)),
+                )
+                cursor = await connection.execute(
+                    """
+                    SELECT id, owner_id, object_key, operation_id,
+                        requested_media_type, requested_size_bytes, state,
+                        created_at, expires_at, confirmed_media_type,
+                        confirmed_size_bytes
+                    FROM listings.image_uploads
+                    WHERE owner_id = %s AND operation_id = %s
+                    FOR UPDATE
+                    """,
+                    (owner_id, request.operation_id),
+                )
+                row = await cursor.fetchone()
+                if row is not None:
+                    intent = self._image_upload(row)
+                    if (
+                        intent.requested_media_type != request.media_type
+                        or intent.requested_size_bytes != request.size_bytes
+                    ):
+                        raise _conflict()
+                    return intent
+
+                expires_at = now + timedelta(hours=24)
+                cursor = await connection.execute(
+                    """
+                    INSERT INTO listings.image_uploads (
+                        id, owner_id, object_key, operation_id,
+                        requested_media_type, requested_size_bytes, state,
+                        created_at, expires_at
+                    ) VALUES (%s, %s, %s, %s, %s, %s, 'pending', %s, %s)
+                    RETURNING id, owner_id, object_key, operation_id,
+                        requested_media_type, requested_size_bytes, state,
+                        created_at, expires_at, confirmed_media_type,
+                        confirmed_size_bytes
+                    """,
+                    (
+                        upload_id,
+                        owner_id,
+                        object_key,
+                        request.operation_id,
+                        request.media_type,
+                        request.size_bytes,
+                        now,
+                        expires_at,
+                    ),
+                )
+                created = await cursor.fetchone()
+        if created is None:
+            raise PublicError(ERRORS[503])
+        return self._image_upload(created)
+
+    async def read_image_upload(
+        self, owner_id: UserId, upload_id: ImageId
+    ) -> PendingImageUpload | None:
+        """Return an upload only to the owner recorded in Listings storage."""
+        async with self._connection() as connection:
+            cursor = await connection.execute(
+                """
+                SELECT id, owner_id, object_key, operation_id,
+                    requested_media_type, requested_size_bytes, state,
+                    created_at, expires_at, confirmed_media_type,
+                    confirmed_size_bytes
+                FROM listings.image_uploads
+                WHERE id = %s AND owner_id = %s
+                """,
+                (upload_id, owner_id),
+            )
+            row = await cursor.fetchone()
+        return self._image_upload(row) if row is not None else None
+
+    async def confirm_image_upload(
+        self,
+        owner_id: UserId,
+        upload_id: ImageId,
+        media_type: Literal["image/jpeg", "image/png", "image/webp"],
+        size_bytes: int,
+        now: datetime,
+    ) -> ConfirmedImage:
+        """Serialize storage confirmation and persist its verified metadata."""
+        async with self._connection() as connection:
+            async with connection.transaction():
+                cursor = await connection.execute(
+                    """
+                    SELECT state, expires_at, confirmed_media_type,
+                        confirmed_size_bytes, requested_media_type,
+                        requested_size_bytes
+                    FROM listings.image_uploads
+                    WHERE id = %s AND owner_id = %s
+                    FOR UPDATE
+                    """,
+                    (upload_id, owner_id),
+                )
+                row = await cursor.fetchone()
+                if row is None:
+                    raise PublicError(ERRORS[404])
+                if row["state"] == "confirmed":
+                    if (
+                        row["confirmed_media_type"] != media_type
+                        or row["confirmed_size_bytes"] != size_bytes
+                    ):
+                        raise _conflict()
+                    return ConfirmedImage(
+                        upload_id=upload_id,
+                        media_type=media_type,
+                        size_bytes=size_bytes,
+                    )
+                if (
+                    row["state"] != "pending"
+                    or row["expires_at"] <= now
+                    or row["requested_media_type"] != media_type
+                    or row["requested_size_bytes"] != size_bytes
+                ):
+                    raise _conflict()
+                await connection.execute(
+                    """
+                    UPDATE listings.image_uploads
+                    SET state = 'confirmed', confirmed_at = %s,
+                        confirmed_media_type = %s, confirmed_size_bytes = %s,
+                        failure_code = NULL
+                    WHERE id = %s AND owner_id = %s
+                    """,
+                    (now, media_type, size_bytes, upload_id, owner_id),
+                )
+        return ConfirmedImage(
+            upload_id=upload_id, media_type=media_type, size_bytes=size_bytes
+        )
+
+    async def reject_image_upload(
+        self, owner_id: UserId, upload_id: ImageId, now: datetime
+    ) -> bool:
+        """Record invalid content or expiry without discarding its cleanup key."""
+        async with self._connection() as connection:
+            async with connection.transaction():
+                cursor = await connection.execute(
+                    """
+                    SELECT state, expires_at FROM listings.image_uploads
+                    WHERE id = %s AND owner_id = %s FOR UPDATE
+                    """,
+                    (upload_id, owner_id),
+                )
+                row = await cursor.fetchone()
+                if row is None:
+                    return False
+                if row["state"] in ("failed", "expired"):
+                    return True
+                if row["state"] != "pending":
+                    raise _conflict()
+                attached_cursor = await connection.execute(
+                    "SELECT EXISTS (SELECT 1 FROM listings.images WHERE upload_id = %s) AS attached",
+                    (upload_id,),
+                )
+                attached = await attached_cursor.fetchone()
+                if attached is not None and attached["attached"]:
+                    raise _conflict()
+                expired = row["expires_at"] <= now
+                await connection.execute(
+                    """
+                    UPDATE listings.image_uploads
+                    SET state = %s, confirmed_at = NULL,
+                        confirmed_media_type = NULL,
+                        confirmed_size_bytes = NULL, failure_code = %s
+                    WHERE id = %s AND owner_id = %s AND state = 'pending'
+                    """,
+                    (
+                        "expired" if expired else "failed",
+                        "upload_expired" if expired else "invalid_content",
+                        upload_id,
+                        owner_id,
+                    ),
+                )
+        return True
+
+    async def cancel_image_upload(
+        self, owner_id: UserId, upload_id: ImageId, now: datetime
+    ) -> bool:
+        """Mark an unattached intent failed and preserve its key for cleanup retry."""
+        del now  # Keep the original intent deadline unchanged for audit/recovery.
+        async with self._connection() as connection:
+            async with connection.transaction():
+                cursor = await connection.execute(
+                    """
+                    SELECT state FROM listings.image_uploads
+                    WHERE id = %s AND owner_id = %s FOR UPDATE
+                    """,
+                    (upload_id, owner_id),
+                )
+                row = await cursor.fetchone()
+                if row is None:
+                    return False
+                cursor = await connection.execute(
+                    "SELECT EXISTS (SELECT 1 FROM listings.images WHERE upload_id = %s) AS attached",
+                    (upload_id,),
+                )
+                attached = await cursor.fetchone()
+                if attached is not None and attached["attached"]:
+                    raise _conflict()
+                if row["state"] not in ("failed", "expired"):
+                    await connection.execute(
+                        """
+                        UPDATE listings.image_uploads
+                        SET state = 'failed', confirmed_at = NULL,
+                            confirmed_media_type = NULL,
+                            confirmed_size_bytes = NULL,
+                            failure_code = 'cancelled'
+                        WHERE id = %s AND owner_id = %s
+                        """,
+                        (upload_id, owner_id),
+                    )
+        return True
+
+    @staticmethod
+    def _image_upload(row: dict[str, Any]) -> PendingImageUpload:
+        """Translate private upload columns into the service's typed record."""
+        return PendingImageUpload(
+            upload_id=row["id"],
+            owner_id=row["owner_id"],
+            object_key=row["object_key"],
+            operation_id=row["operation_id"],
+            requested_media_type=row["requested_media_type"],
+            requested_size_bytes=row["requested_size_bytes"],
+            state=row["state"],
+            created_at=row["created_at"],
+            expires_at=row["expires_at"],
+            confirmed_media_type=row["confirmed_media_type"],
+            confirmed_size_bytes=row["confirmed_size_bytes"],
         )
 
     async def confirmed_images_belong_to(
@@ -310,6 +560,30 @@ class PostgresListingsStore:
         """Read one retained listing and its ordered, non-retired image references."""
         async with self._connection() as connection:
             return await self._get_view(connection, listing_id)
+
+    async def read_image_for_delivery(
+        self, image_id: ImageId
+    ) -> ListingImageDeliveryTarget | None:
+        """Find an attached image through one currently readable listing snapshot."""
+        query = f"""
+            WITH authorized_listing AS (
+                {_VIEW_QUERY}
+            )
+            SELECT authorized_listing.*, image.object_key
+            FROM authorized_listing
+            JOIN listings.images AS image
+                ON image.listing_id = authorized_listing.listing_id
+            WHERE image.id = %s AND image.retired_at IS NULL
+        """
+        async with self._connection() as connection:
+            cursor = await connection.execute(query, (self._threshold, image_id))
+            row = await cursor.fetchone()
+        if row is None:
+            return None
+        object_key = row.pop("object_key")
+        return ListingImageDeliveryTarget(
+            listing=_management_view(row), object_key=object_key
+        )
 
     async def list_owned_listings(
         self, owner_id: UserId, query: PageQuery
@@ -747,26 +1021,180 @@ class PostgresListingsStore:
     async def list_retired_images_for_cleanup(
         self, limit: int
     ) -> tuple[RetiredListingImage, ...]:
-        """Read a bounded batch while retaining keys for safe retries."""
+        """Read due retired images first, preserving failed work for retry."""
         async with self._connection() as connection:
             cursor = await connection.execute(
                 """
-                SELECT image.id, image.object_key, upload.object_key AS upload_object_key
+                SELECT image.id, image.object_key,
+                    upload.object_key AS upload_object_key,
+                    listing.owner_id AS listing_owner_id,
+                    upload.owner_id AS upload_owner_id
                 FROM listings.images AS image
                 JOIN listings.image_uploads AS upload ON upload.id = image.upload_id
+                JOIN listings.sale_listings AS listing ON listing.id = image.listing_id
                 WHERE image.retired_at IS NOT NULL
+                    AND (image.cleanup_retry_after IS NULL
+                        OR image.cleanup_retry_after <= statement_timestamp())
                 ORDER BY image.retired_at, image.id
                 LIMIT %s
                 """,
                 (limit,),
             )
             rows = await cursor.fetchall()
-        if any(row["object_key"] != row["upload_object_key"] for row in rows):
+        if any(
+            row["object_key"] != row["upload_object_key"]
+            or row["listing_owner_id"] != row["upload_owner_id"]
+            for row in rows
+        ):
             raise PublicError(ERRORS[503])
         return tuple(
             RetiredListingImage(image_id=row["id"], object_key=row["object_key"])
             for row in rows
         )
+
+    async def defer_retired_image_cleanup(
+        self, image_id: ImageId, object_key: str
+    ) -> None:
+        """Set a five-minute cooldown after an unknown or failed S3 delete."""
+        async with self._connection() as connection:
+            await connection.execute(
+                """
+                UPDATE listings.images AS image
+                SET cleanup_retry_after = statement_timestamp() + INTERVAL '5 minutes'
+                WHERE image.id = %s AND image.object_key = %s
+                    AND image.retired_at IS NOT NULL
+                    AND EXISTS (
+                        SELECT 1 FROM listings.image_uploads AS upload
+                        JOIN listings.sale_listings AS listing
+                            ON listing.id = image.listing_id
+                        WHERE upload.id = image.upload_id
+                            AND upload.object_key = image.object_key
+                            AND upload.owner_id = listing.owner_id
+                    )
+                """,
+                (image_id, object_key),
+            )
+
+    async def list_abandoned_uploads_for_cleanup(
+        self, limit: int
+    ) -> tuple[AbandonedImageUpload, ...]:
+        """Expire then claim due unlinked uploads without racing confirmation."""
+        async with self._connection() as connection:
+            async with connection.transaction():
+                cursor = await connection.execute(
+                    """
+                    SELECT upload.id, upload.object_key, upload.state
+                    FROM listings.image_uploads AS upload
+                    WHERE upload.expires_at <= statement_timestamp()
+                            - INTERVAL '5 minutes'
+                        AND (upload.cleanup_retry_after IS NULL
+                            OR upload.cleanup_retry_after <= statement_timestamp())
+                        AND upload.state IN ('pending', 'confirmed', 'failed', 'expired')
+                        AND NOT EXISTS (
+                            SELECT 1 FROM listings.images AS image
+                            WHERE image.upload_id = upload.id
+                        )
+                    ORDER BY upload.expires_at, upload.id
+                    LIMIT %s
+                    FOR UPDATE OF upload SKIP LOCKED
+                    """,
+                    (limit,),
+                )
+                rows = await cursor.fetchall()
+                for row in rows:
+                    if row["state"] not in ("pending", "confirmed"):
+                        continue
+                    reason = (
+                        "upload_expired"
+                        if row["state"] == "pending"
+                        else "unattached_upload_expired"
+                    )
+                    await connection.execute(
+                        """
+                        UPDATE listings.image_uploads AS upload
+                        SET state = 'expired', confirmed_at = NULL,
+                            confirmed_media_type = NULL,
+                            confirmed_size_bytes = NULL,
+                            failure_code = %s
+                        WHERE upload.id = %s AND upload.object_key = %s
+                            AND upload.state = %s
+                            AND NOT EXISTS (
+                                SELECT 1 FROM listings.images AS image
+                                WHERE image.upload_id = upload.id
+                            )
+                        """,
+                        (reason, row["id"], row["object_key"], row["state"]),
+                    )
+        return tuple(
+            AbandonedImageUpload(upload_id=row["id"], object_key=row["object_key"])
+            for row in rows
+        )
+
+    async def defer_abandoned_upload_cleanup(
+        self, upload_id: ImageId, object_key: str
+    ) -> None:
+        """Set a five-minute cooldown while retaining the unlinked upload row."""
+        async with self._connection() as connection:
+            await connection.execute(
+                """
+                UPDATE listings.image_uploads AS upload
+                SET cleanup_retry_after = statement_timestamp() + INTERVAL '5 minutes'
+                WHERE upload.id = %s AND upload.object_key = %s
+                    AND upload.state IN ('failed', 'expired')
+                    AND upload.expires_at <= statement_timestamp()
+                            - INTERVAL '5 minutes'
+                    AND NOT EXISTS (
+                        SELECT 1 FROM listings.images AS image
+                        WHERE image.upload_id = upload.id
+                    )
+                """,
+                (upload_id, object_key),
+            )
+
+    async def finish_abandoned_upload_cleanup(
+        self, upload_id: ImageId, object_key: str
+    ) -> None:
+        """Remove only a due, terminal, unattached upload after S3 confirms absence."""
+        async with self._connection() as connection:
+            async with connection.transaction():
+                cursor = await connection.execute(
+                    """
+                    SELECT state, object_key,
+                        expires_at <= statement_timestamp() - INTERVAL '5 minutes'
+                            AS grace_elapsed
+                    FROM listings.image_uploads
+                    WHERE id = %s
+                    FOR UPDATE
+                    """,
+                    (upload_id,),
+                )
+                row = await cursor.fetchone()
+                if row is None:
+                    return
+                attached_cursor = await connection.execute(
+                    """
+                    SELECT EXISTS (
+                        SELECT 1 FROM listings.images WHERE upload_id = %s
+                    ) AS attached
+                    """,
+                    (upload_id,),
+                )
+                attached = await attached_cursor.fetchone()
+                if (
+                    row["object_key"] != object_key
+                    or row["state"] not in ("failed", "expired")
+                    or not row["grace_elapsed"]
+                    or (attached is not None and attached["attached"])
+                ):
+                    raise PublicError(ERRORS[503])
+                await connection.execute(
+                    """
+                    DELETE FROM listings.image_uploads
+                    WHERE id = %s AND object_key = %s
+                        AND state IN ('failed', 'expired')
+                    """,
+                    (upload_id, object_key),
+                )
 
     async def finish_retired_image_cleanup(
         self, image_id: ImageId, object_key: str
@@ -777,9 +1205,12 @@ class PostgresListingsStore:
                 cursor = await connection.execute(
                     """
                     SELECT image.upload_id, image.object_key,
-                        upload.object_key AS upload_object_key
+                        upload.object_key AS upload_object_key,
+                        upload.owner_id AS upload_owner_id,
+                        listing.owner_id AS listing_owner_id
                     FROM listings.images AS image
                     JOIN listings.image_uploads AS upload ON upload.id = image.upload_id
+                    JOIN listings.sale_listings AS listing ON listing.id = image.listing_id
                     WHERE image.id = %s AND image.retired_at IS NOT NULL
                     FOR UPDATE OF image, upload
                     """,
@@ -791,6 +1222,7 @@ class PostgresListingsStore:
                 if (
                     row["object_key"] != object_key
                     or row["upload_object_key"] != object_key
+                    or row["upload_owner_id"] != row["listing_owner_id"]
                 ):
                     raise PublicError(ERRORS[503])
                 await connection.execute(
@@ -948,8 +1380,8 @@ class PostgresListingsStore:
                 upload["confirmed_media_type"] is None
                 or upload["confirmed_size_bytes"] is None
             ):
-                # Upload confirmation is not yet implemented by LI-02. Do not
-                # trust client metadata or publish an image with unknown facts.
+                # Historical confirmed rows may predate verifier metadata. Do
+                # not invent facts or publish an image with unknown details.
                 raise PublicError(ERRORS[503])
             attached_cursor = await connection.execute(
                 "SELECT EXISTS (SELECT 1 FROM listings.images WHERE upload_id = %s) AS attached",
