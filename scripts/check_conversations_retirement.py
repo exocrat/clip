@@ -1,4 +1,4 @@
-"""Run Conversations retirement operations against a fresh local PostgreSQL.
+"""Run Conversations database operations against a fresh local PostgreSQL.
 
 The harness binds a generated host port to loopback only, uses tmpfs instead of
 a persistent volume, applies the checked-in migrations, runs focused API tests,
@@ -177,6 +177,7 @@ def main() -> int:
                 "-m",
                 "pytest",
                 "apps/api/tests/test_origin_retirement.py",
+                "apps/api/tests/test_thread_creation.py",
                 "-q",
                 "-W",
                 "error",
@@ -189,9 +190,11 @@ def main() -> int:
         )
         output = (result.stdout + result.stderr).replace(password, "[REDACTED]")
         if result.returncode:
-            raise RuntimeError(f"retirement integration tests failed: {output[-4000:]}")
+            raise RuntimeError(
+                f"Conversations integration tests failed: {output[-4000:]}"
+            )
         print(output.strip())
-        print("PASS: focused retirement operations on fresh PostgreSQL 18.6")
+        print("PASS: focused Conversations operations on fresh PostgreSQL 18.6")
         return 0
     except (
         OSError,
@@ -200,7 +203,7 @@ def main() -> int:
         subprocess.TimeoutExpired,
         RuntimeError,
     ) as error:
-        print(f"Conversations retirement check failed: {error}", file=sys.stderr)
+        print(f"Conversations database check failed: {error}", file=sys.stderr)
         return 1
     finally:
         if container is not None:

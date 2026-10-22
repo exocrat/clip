@@ -51,11 +51,13 @@ for shared resource startup and shutdown.
   acquisition. Cross-domain calls pass only typed contract arguments/results;
   a live connection, cursor, or transaction is never passed between domains.
 - The generated `ConversationsPublic` protocol defines the typed injection
-  surface. The initial `PostgresOriginRetirementOperations` provider implements
-  only `get_origin_activity` and `mark_origin_retired` and is tested directly;
-  it is not imported by `main.py` or composed into an application operation.
-  The complete provider, domain-owned composition, and real owner integration
-  remain future CN-01 work. Do not hand-edit generated `public.py`.
+  surface. `PostgresOriginRetirementOperations` implements
+  `get_origin_activity` and `mark_origin_retired`; `PostgresThreadCreationOperations`
+  implements Listing and Wanted Request open/create using Identity's public
+  eligibility callable. Both are tested directly. Neither is imported by
+  `main.py` or composed into an application operation; domain-owned composition
+  and real owner integration remain future CN-01 work. Do not hand-edit
+  generated `public.py`.
 - The runtime dependencies are LGPL-3.0-only; retain their license notices and
   include the relevant license records with any distributed application image.
 - `CLIP_DATABASE_DSN` is optional and validated with Psycopg's conninfo parser;
