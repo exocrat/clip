@@ -159,6 +159,7 @@
         "description": "OpenE2EE relay envelope metadata and its opaque transport payload.",
         "properties": {
           "client_timestamp_ms": {
+            "maximum": 9007199254740991.0,
             "minimum": 0.0,
             "title": "Client Timestamp Ms",
             "type": "integer"
@@ -169,6 +170,7 @@
             "type": "integer"
           },
           "payload_base64": {
+            "maxLength": 87384,
             "minLength": 1,
             "title": "Payload Base64",
             "type": "string"
@@ -745,7 +747,7 @@
       },
       "EntryPage": {
         "additionalProperties": false,
-        "description": "Ordered entry page and replay-safe cursor state.",
+        "description": "Visible entry page plus the last global sequence inspected for this member.",
         "properties": {
           "has_more": {
             "title": "Has More",
@@ -758,15 +760,15 @@
             "title": "Items",
             "type": "array"
           },
-          "last_sequence": {
+          "scanned_through_sequence": {
             "minimum": 0.0,
-            "title": "Last Sequence",
+            "title": "Scanned Through Sequence",
             "type": "integer"
           }
         },
         "required": [
           "items",
-          "last_sequence",
+          "scanned_through_sequence",
           "has_more"
         ],
         "title": "EntryPage",

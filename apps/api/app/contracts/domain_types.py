@@ -253,14 +253,29 @@ class CipherEnvelope(ContractModel):
     protocol_version: str
     envelope_version: int = Field(ge=1)
     sdk_message_type: Literal["ciphertext", "prekey_bundle", "retry_request"]
-    client_timestamp_ms: int = Field(ge=0, strict=True)
+    client_timestamp_ms: int = Field(ge=0, le=9_007_199_254_740_991, strict=True)
     sender_key_version: int | None = Field(default=None, ge=1)
     recipient_key_version: int | None = Field(default=None, ge=1)
-    payload_base64: str = Field(min_length=1, repr=False)
+    payload_base64: str = Field(min_length=1, max_length=87384, repr=False)
 
     @model_validator(mode="after")
     def validate_sdk_envelope_metadata(self) -> CipherEnvelope:
-        """Keep encrypted message key references distinct from retry controls."""
+        """Validate selected SDK metadata while keeping payload bytes opaque."""
+        if (
+            self.protocol_id != "open-e2ee-signal"
+            or self.protocol_version != "13.0.0"
+            or self.envelope_version != 1
+        ):
+            raise ValueError("unsupported conversation protocol or envelope version")
+        try:
+            payload = base64.b64decode(self.payload_base64, validate=True)
+        except ValueError as exc:
+            raise ValueError("payload must use standard padded Base64") from exc
+        if (
+            not 1 <= len(payload) <= 65536
+            or base64.b64encode(payload).decode("ascii") != self.payload_base64
+        ):
+            raise ValueError("payload has invalid Base64 or byte length")
         has_versions = (
             self.sender_key_version is not None
             and self.recipient_key_version is not None
@@ -623,10 +638,10 @@ class ConversationEntry(ContractModel):
 
 
 class EntryPage(ContractModel):
-    """Ordered entry page and replay-safe cursor state."""
+    """Visible entry page plus the last global sequence inspected for this member."""
 
     items: list[ConversationEntry]
-    last_sequence: int = Field(ge=0)
+    scanned_through_sequence: int = Field(ge=0)
     has_more: bool
 
 
@@ -642,6 +657,13 @@ class MessageRequest(ContractModel):
 
     envelope: CipherEnvelope
     operation_id: OperationId
+
+    @model_validator(mode="after")
+    def validate_operation_id(self) -> MessageRequest:
+        """Require the SDK retry key to be the contract's UUIDv4 operation ID."""
+        if self.operation_id.version != 4:
+            raise ValueError("operation_id must be UUIDv4")
+        return self
 
 
 class ReadState(ContractModel):

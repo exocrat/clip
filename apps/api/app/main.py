@@ -10,6 +10,7 @@ from app.core.config import Settings, load_settings
 from app.core.database import PoolFactory, PoolLifecycle, create_async_connection_pool
 from app.core.errors import install_error_handlers
 from app.core.logging import RequestLoggingMiddleware, configure_logging
+import app.domains.conversations.routes as conversations_routes
 
 configure_logging()
 
@@ -58,6 +59,9 @@ def create_app(
 
     install_error_handlers(application)
     application.add_middleware(RequestLoggingMiddleware)
+    # Mount the Conversations public HTTP router; domain methods remain private
+    # to their route adapter and are never imported by this composition root.
+    application.include_router(conversations_routes.router)
 
     @application.get(**HEALTH_ROUTE)
     async def health() -> HealthResponse:

@@ -451,7 +451,7 @@ export type DraftMatchResult = {
 /**
  * EntryPage
  *
- * Ordered entry page and replay-safe cursor state.
+ * Visible entry page plus the last global sequence inspected for this member.
  */
 export type EntryPage = {
     /**
@@ -463,9 +463,9 @@ export type EntryPage = {
      */
     items: Array<ConversationEntry>;
     /**
-     * Last Sequence
+     * Scanned Through Sequence
      */
-    last_sequence: number;
+    scanned_through_sequence: number;
 };
 
 /**

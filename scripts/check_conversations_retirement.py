@@ -1,4 +1,4 @@
-"""Run Conversations database operations against a fresh local PostgreSQL.
+"""Run Conversations retirement, creation, message and read-state checks locally.
 
 The harness binds a generated host port to loopback only, uses tmpfs instead of
 a persistent volume, applies the checked-in migrations, runs focused API tests,
@@ -159,7 +159,7 @@ def main() -> int:
             ],
             extra={"DATABASE_URL": database_url},
         )
-        if sql("SELECT max(version) FROM public.schema_migrations") != "20261021101000":
+        if sql("SELECT max(version) FROM public.schema_migrations") != "20261022213000":
             raise RuntimeError(
                 "the disposable database is not at the current migration head"
             )
@@ -178,6 +178,9 @@ def main() -> int:
                 "pytest",
                 "apps/api/tests/test_origin_retirement.py",
                 "apps/api/tests/test_thread_creation.py",
+                "apps/api/tests/test_conversation_messages.py",
+                "apps/api/tests/test_conversation_message_contract.py",
+                "apps/api/tests/test_conversation_message_routes.py",
                 "-q",
                 "-W",
                 "error",

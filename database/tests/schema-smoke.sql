@@ -155,22 +155,26 @@ BEGIN
     -- Deliberately fake opaque bytes validate storage shape only; they are not
     -- cryptographic fixtures, real keys or a successful encryption claim.
     INSERT INTO conversations.public_key_versions (id, user_id, version, public_key_material, protocol_id)
-        VALUES (seller_key, seller, 1, decode('01', 'hex'), 'synthetic-storage-test'),
-            (buyer_key, buyer, 1, decode('02', 'hex'), 'synthetic-storage-test'),
-            (outsider_key, outsider, 1, decode('03', 'hex'), 'synthetic-storage-test');
+        VALUES (seller_key, seller, 1, decode('01', 'hex'), 'open-e2ee-signal'),
+            (buyer_key, buyer, 1, decode('02', 'hex'), 'open-e2ee-signal'),
+            (outsider_key, outsider, 1, decode('03', 'hex'), 'open-e2ee-signal');
     INSERT INTO conversations.entries (id, conversation_id, sender_id, client_operation_id, kind)
         VALUES (message, thread, buyer, operation, 'message');
     rejected := false;
     BEGIN
         INSERT INTO conversations.encrypted_payloads
-            (entry_id, protocol_id, envelope_version, sender_key_version_id, recipient_key_version_id, envelope)
-            VALUES (message, 'synthetic-storage-test', 1, buyer_key, outsider_key, decode('00', 'hex'));
+            (entry_id, protocol_id, protocol_version, envelope_version, sdk_message_type,
+                client_timestamp_ms, sender_key_version_id, recipient_key_version_id, envelope)
+            VALUES (message, 'open-e2ee-signal', '13.0.0', 1, 'ciphertext', 1,
+                buyer_key, outsider_key, decode('00', 'hex'));
     EXCEPTION WHEN check_violation THEN rejected := true;
     END;
     IF NOT rejected THEN RAISE EXCEPTION 'Outsider envelope key was accepted'; END IF;
     INSERT INTO conversations.encrypted_payloads
-        (entry_id, protocol_id, envelope_version, sender_key_version_id, recipient_key_version_id, envelope)
-        VALUES (message, 'synthetic-storage-test', 1, buyer_key, seller_key, decode('00', 'hex'));
+        (entry_id, protocol_id, protocol_version, envelope_version, sdk_message_type,
+            client_timestamp_ms, sender_key_version_id, recipient_key_version_id, envelope)
+        VALUES (message, 'open-e2ee-signal', '13.0.0', 1, 'ciphertext', 1,
+            buyer_key, seller_key, decode('00', 'hex'));
     SET CONSTRAINTS ALL IMMEDIATE;
     SET CONSTRAINTS ALL DEFERRED;
     IF NOT EXISTS (SELECT 1 FROM conversations.members WHERE conversation_id = thread AND user_id = seller
@@ -259,8 +263,10 @@ BEGIN
     INSERT INTO conversations.entries (id, conversation_id, sender_id, client_operation_id, kind)
         VALUES (contact_entry, thread, buyer, gen_random_uuid(), 'contact_share');
     INSERT INTO conversations.encrypted_payloads
-        (entry_id, protocol_id, envelope_version, sender_key_version_id, recipient_key_version_id, envelope)
-        VALUES (contact_entry, 'synthetic-storage-test', 1, buyer_key, seller_key, decode('00', 'hex'));
+        (entry_id, protocol_id, protocol_version, envelope_version, sdk_message_type,
+            client_timestamp_ms, sender_key_version_id, recipient_key_version_id, envelope)
+        VALUES (contact_entry, 'open-e2ee-signal', '13.0.0', 1, 'ciphertext', 1,
+            buyer_key, seller_key, decode('00', 'hex'));
     SELECT last_activity_at INTO activity_head FROM conversations.threads WHERE id = thread;
     PERFORM pg_sleep(0.002);
     INSERT INTO conversations.contact_shares (entry_id) VALUES (contact_entry);
@@ -312,7 +318,7 @@ BEGIN
 
     -- Retention may purge history but must preserve the single logical offer.
     UPDATE conversations.offers SET current_revision = NULL, history_deleted_at = statement_timestamp() WHERE id = offer;
-    UPDATE conversations.entries SET content_deleted_at = statement_timestamp() WHERE id = offer_entry;
+    UPDATE conversations.entries SET content_deleted_at = clock_timestamp() WHERE id = offer_entry;
     DELETE FROM conversations.offer_revisions WHERE offer_id = offer;
     SET CONSTRAINTS ALL IMMEDIATE;
     IF NOT EXISTS (SELECT 1 FROM conversations.offers WHERE id = offer AND current_revision IS NULL

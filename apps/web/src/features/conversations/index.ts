@@ -20,3 +20,5 @@ export type {
   ReceivedConversationMessage,
   SendConversationMessage,
 } from './crypto';
+export { createDisplayedReadAcknowledger } from './read-state';
+export type { AcknowledgeRead } from './read-state';

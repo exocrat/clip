@@ -178,7 +178,7 @@ def main():
         actual = sql(
             "SELECT version FROM public.schema_migrations ORDER BY version"
         ).splitlines()
-        if not expected or actual != expected or actual[-1] != "20261021101000":
+        if not expected or actual != expected or actual[-1] != "20261022213000":
             raise RuntimeError("Migration history differs from the expected head")
         migrate()
         for filename in ("schema-smoke.sql", "retired-origin-smoke.sql"):
@@ -191,23 +191,45 @@ def main():
         ):
             raise RuntimeError("Expected 24 domain tables")
         migrate("rollback")
-        if sql("SELECT max(version) FROM public.schema_migrations") != "20261018152702":
+        if sql("SELECT max(version) FROM public.schema_migrations") != "20261021101000":
             raise RuntimeError("Rollback did not return to the prior migration head")
-        if sql("SELECT to_regclass('conversations.origin_retirement_operations') IS NULL") != "t":
-            raise RuntimeError("Rollback left the retirement-operation table behind")
         if (
             sql(
-                "SELECT count(*) FROM pg_attribute a JOIN pg_class c ON c.oid=a.attrelid "
-                "JOIN pg_namespace n ON n.oid=c.relnamespace WHERE a.attname IN "
-                "('retirement_pending_operation_id','retirement_pending_cutoff_utc',"
-                "'participant_writes_blocked_at') AND NOT a.attisdropped "
-                "AND n.nspname IN ('listings','search','conversations')"
+                "SELECT to_regclass('conversations.origin_retirement_operations') IS NOT NULL"
+            )
+            != "t"
+        ):
+            raise RuntimeError("Rollback removed the prior retirement-operation table")
+        if (
+            sql(
+                "SELECT count(*) FROM pg_attribute a "
+                "WHERE NOT a.attisdropped AND ((a.attrelid = 'conversations.entries'::regclass "
+                "AND a.attname = 'recipient_id') OR (a.attrelid = 'conversations.encrypted_payloads'::regclass "
+                "AND a.attname IN ('protocol_version','sdk_message_type','client_timestamp_ms')))"
             )
             != "0"
         ):
-            raise RuntimeError("Rollback left retirement columns behind")
+            raise RuntimeError("Rollback left message-transport columns behind")
+        if (
+            sql(
+                "SELECT count(*) FROM pg_attribute a "
+                "WHERE NOT a.attisdropped AND ((a.attrelid IN "
+                "('listings.sale_listings'::regclass, 'search.wanted_requests'::regclass) "
+                "AND a.attname IN ('retirement_pending_operation_id','retirement_pending_cutoff_utc')) "
+                "OR (a.attrelid = 'conversations.threads'::regclass "
+                "AND a.attname = 'participant_writes_blocked_at'))"
+            )
+            != "5"
+        ):
+            raise RuntimeError(
+                "Rollback removed retirement state from the prior migration"
+            )
+        if sql("SELECT count(*) FROM conversations.entries") != "0":
+            raise RuntimeError(
+                "Smoke fixture rows unexpectedly survived their transaction"
+            )
         migrate()
-        if sql("SELECT max(version) FROM public.schema_migrations") != "20261021101000":
+        if sql("SELECT max(version) FROM public.schema_migrations") != "20261022213000":
             raise RuntimeError("Reapply did not restore the current migration head")
         for filename in ("schema-smoke.sql", "retired-origin-smoke.sql"):
             sql((ROOT / "database/tests" / filename).read_text())

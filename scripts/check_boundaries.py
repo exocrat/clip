@@ -14,8 +14,17 @@ from pathlib import Path
 import re
 
 DOMAINS = frozenset({"identity", "listings", "search", "conversations"})
-# No router exceptions are approved yet. Changes need exact-file/module review.
-COMPOSITION_IMPORTS: dict[str, frozenset[str]] = {}
+# The composition root may mount the Conversations public HTTP router only.
+# It may not import domain operation/service methods; the router adapter owns
+# that same-domain binding. Add other exact router modules only after review.
+COMPOSITION_IMPORTS: dict[str, frozenset[str]] = {
+    "apps/api/app/main.py": frozenset(
+        {
+            "app.domains.conversations.routes",
+            "app.domains.conversations.routes.router",
+        }
+    ),
+}
 SQL_TABLE = re.compile(
     r'\b(?:FROM|JOIN|UPDATE|INTO|TRUNCATE(?:\s+TABLE)?)\s+"?(identity|listings|search|conversations)"?\s*\.\s*"?[a-z_][a-z_0-9]*',
     re.IGNORECASE,

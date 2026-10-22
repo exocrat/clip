@@ -205,8 +205,9 @@ server-received timestamp from authenticated membership and the stored entry.
 OpenE2EE `retry_request` is a protocol control envelope, not an encrypted
 chat message. It is accepted through the same member-only message submission
 operation and ordered entry stream, but returned with `kind=protocol_control`;
-the server routes it only to the other thread member, does not create unread
-text counts or notification intents, and does not parse its opaque
+the server records the other member as its recipient and returns it only to
+that recipient. The sender cannot retrieve its own control entry. It does not
+create unread text counts or notification intents, and the server does not parse its opaque
 `payload_base64`. Its key-version fields are null. Its SDK payload is
 unencrypted and may contain protocol retry metadata, so it is treated as
 sensitive: never log or expose it outside the two members. The control entry
@@ -226,8 +227,13 @@ declared idempotency scopes.
 Messages are retrieved only by a member, in ascending sequence order, using
 incremental `sequence > after_sequence` retrieval rather than numbered pages.
 The cursor is a nonnegative committed sequence (default zero); the response
-includes entries, the last returned sequence and `has_more`, with a bounded
-page size of 20 by default and 20/50/100 allowed. An empty page does not
+includes visible entries, `scanned_through_sequence`, and `has_more`, with a
+bounded visible page size of 20 by default and 20/50/100 allowed. The cursor
+means the greatest global sequence the server inspected, not necessarily the
+last returned entry. Because a sender cannot retrieve its own recipient-only
+retry controls, a response may contain no visible entries while advancing the
+cursor across those controls. Clients continue while `has_more` is true and do
+not interpret skipped sequence numbers as message loss. An empty scan does not
 advance the cursor. Each entry exposes only the metadata needed to render the
 authorized thread: ID, sequence, kind, sender, creation instant and either the
 opaque SDK transport envelope (encrypted message or unencrypted retry
