@@ -31,6 +31,16 @@ psql_fixed() {
     --dbname="$PGDATABASE" "$@" >/dev/null 2>&1
 }
 
+psql_query() {
+  # Return only the fixed metadata query's value to a command substitution.
+  # Keep diagnostics private; unlike write commands, these callers need stdout
+  # to distinguish absent objects, verified ownership, and an idle database.
+  timeout --signal=TERM --kill-after=5s 60s psql \
+    --no-psqlrc --quiet --set=ON_ERROR_STOP=1 \
+    --host="$PGHOST" --port="$PGPORT" --username="$PGUSER" \
+    --dbname="$PGDATABASE" --tuples-only --no-align "$@" 2>/dev/null
+}
+
 database_url_password() {
   : "${CLIP_DATABASE_URL:?Listings database task failed; URL secret is unavailable.}"
   # The operator-generated URL uses a random 64-character hex password.
@@ -55,9 +65,13 @@ bootstrap() {
     || fail 'Listings database bootstrap refused an unexpected admin connection target.'
   app_password=$(database_url_password)
 
-  existing=$(psql_fixed --tuples-only --no-align --command="SELECT (EXISTS (SELECT 1 FROM pg_database WHERE datname = 'clip_test_listings'))::int || ' ' || (EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'clip_test_listings_app'))::int") \
+  existing=$(psql_query --command="SELECT (EXISTS (SELECT 1 FROM pg_database WHERE datname = 'clip_test_listings'))::int || ' ' || (EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'clip_test_listings_app'))::int") \
     || fail 'Listings database bootstrap could not inspect the isolated target.'
-  [ "$existing" = '0 0' ] || fail 'Listings database bootstrap found existing database state; run the reviewed stop cleanup before retrying.'
+  case "$existing" in
+    '0 0') ;;
+    '0 1'|'1 0'|'1 1') fail 'Listings database bootstrap found existing database state; run the reviewed stop cleanup before retrying.' ;;
+    *) fail 'Listings database bootstrap received an invalid inspection result; preserve the database state.' ;;
+  esac
 
   if {
     cat <<'SQL'
@@ -163,7 +177,7 @@ SQL
 cleanup() {
   [ "$PGDATABASE" = 'clip_test' ] && [ "$PGUSER" != 'clip_test_listings_app' ] \
     || fail 'Listings cleanup refused an unexpected admin connection target.'
-  state=$(psql_fixed --tuples-only --no-align --command="SELECT (EXISTS (SELECT 1 FROM pg_database WHERE datname = 'clip_test_listings'))::int || ' ' || (EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'clip_test_listings_app'))::int") \
+  state=$(psql_query --command="SELECT (EXISTS (SELECT 1 FROM pg_database WHERE datname = 'clip_test_listings'))::int || ' ' || (EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'clip_test_listings_app'))::int") \
     || fail 'Listings cleanup could not inspect the isolated target.'
   case "$state" in
     '0 0')
@@ -177,8 +191,10 @@ cleanup() {
       return
       ;;
     '1 0') fail 'Listings cleanup found a database without its dedicated owner role; refusing destructive repair.' ;;
+    '1 1') ;;
+    *) fail 'Listings cleanup received an invalid inspection result; preserve the database state.' ;;
   esac
-  owner=$(psql_fixed --tuples-only --no-align --command="SELECT pg_get_userbyid(datdba) FROM pg_database WHERE datname = 'clip_test_listings'") \
+  owner=$(psql_query --command="SELECT pg_get_userbyid(datdba) FROM pg_database WHERE datname = 'clip_test_listings'") \
     || fail 'Listings cleanup could not verify the isolated database owner.'
   [ "$owner" = 'clip_test_listings_app' ] \
     || fail 'Listings cleanup found a database not owned by the dedicated Listings role.'
@@ -197,8 +213,11 @@ SQL
 check_idle() {
   [ "$PGDATABASE" = 'clip_test' ] && [ "$PGUSER" != 'clip_test_listings_app' ] \
     || fail 'Listings idle check refused an unexpected admin connection target.'
-  result=$(psql_fixed --tuples-only --no-align --command="SELECT count(*) FROM pg_stat_activity WHERE pid <> pg_backend_pid() AND backend_type = 'client backend'") \
+  result=$(psql_query --command="SELECT count(*) FROM pg_stat_activity WHERE pid <> pg_backend_pid() AND backend_type = 'client backend'") \
     || fail 'Listings shared-database idle check failed; preserve the shared RDS state.'
+  case "$result" in
+    ''|*[!0-9]*) fail 'Listings idle check received an invalid inspection result; preserve the shared RDS state.' ;;
+  esac
   [ "$result" = '0' ] || fail 'Other database clients are connected; preserving the shared RDS state.'
   printf '%s\n' 'Shared RDS has no other PostgreSQL client sessions.'
 }

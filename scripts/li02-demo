@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Start or stop the isolated LI-02 cloud demo with explicit plan gates.
+"""Start, resume, or stop the isolated LI-02 cloud demo with explicit plan gates.
 
 The command targets only account 335523638354 in ap-south-1. It uses fixed
 Terraform/task definitions, records the shared RDS baseline locally without
@@ -701,6 +701,116 @@ def start(profile: str) -> None:
     print("Use synthetic listings and images only. Open this same URL on desktop and phone; run scripts/li02-demo stop when finished.")
 
 
+def resume_database(profile: str) -> None:
+    """Recover a failed isolated database phase without rebuilding or removing its ALB."""
+    require_tools("aws", "terraform")
+    verify_account(profile)
+    baseline = load_baseline()
+    api_uri = baseline.get("api_image_uri")
+    database_uri = baseline.get("database_image_uri")
+    run_id = baseline.get("run_id")
+    if not all((api_uri, database_uri, run_id)):
+        raise DemoError(
+            "The saved LI-02 baseline lacks its run ID or immutable image digests; preserve it and inspect state."
+        )
+    if not parameter_exists(profile, URL_PARAMETER):
+        raise DemoError(
+            "The LI-02 database URL parameter is missing; preserve the partial run and inspect it before recovery."
+        )
+    if rds_info(profile).get("DBInstanceStatus") != "available":
+        raise DemoError(
+            "Shared RDS is not available; do not run recovery against an uncertain target."
+        )
+    ensure_no_shared_ecs_tasks(profile)
+    service = aws_json(
+        profile,
+        "ecs",
+        "describe-services",
+        "--cluster",
+        CLUSTER,
+        "--services",
+        "clip-test-listings-demo-ap-south-1-li02",
+    ).get("services", [])
+    if len(service) != 1 or service[0].get("status") != "ACTIVE":
+        raise DemoError(
+            "The LI-02 app service is absent or inactive; use the full stop/review path before recovery."
+        )
+    if any(
+        service[0].get(field) != 0
+        for field in ("desiredCount", "runningCount", "pendingCount")
+    ):
+        raise DemoError(
+            "The LI-02 app service must remain at zero while the isolated database is repaired."
+        )
+    terraform_init()
+    state = command(
+        ["terraform", f"-chdir={TF_ROOT}", "state", "list"], capture=True
+    ).splitlines()
+    required = (
+        "aws_lb.demo[0]",
+        "aws_ecs_service.demo_api[0]",
+        "aws_ecs_task_definition.database_bootstrap[0]",
+        "aws_ecs_task_definition.database_cleanup[0]",
+        "aws_ecs_task_definition.database_migration[0]",
+        "aws_ecs_task_definition.database_seed[0]",
+    )
+    if any(address not in state for address in required):
+        raise DemoError(
+            "The saved Terraform state lacks required LI-02 route/service/database tasks; preserve state and inspect it."
+        )
+
+    require_approval(
+        "The fixed cleanup task checks the exact isolated database/login and owner. It drops only clip_test_listings "
+        "when owned by clip_test_listings_app, or removes only an orphaned dedicated login; a mismatched owner fails closed.",
+        "DROP LI02 DATABASE",
+    )
+    run_task(profile, "cleanup")
+    require_approval(
+        "The fixed bootstrap, migration, and seed tasks create only clip_test_listings, apply checked-in migrations, "
+        "and add one synthetic seller. The shared clip_test database remains untouched.",
+        "RUN LI02 DATABASE SETUP",
+    )
+    for action in ("bootstrap", "migration", "seed"):
+        run_task(profile, action)
+
+    require_approval(
+        "This starts one LI-02 ECS web task behind the existing public HTTP ALB; the URL remains synthetic-data-only.",
+        "START LI02 WEB APP",
+    )
+    terraform_apply_plan(
+        run_variables(
+            enabled=True,
+            app_enabled=True,
+            run_id=run_id,
+            api_uri=api_uri,
+            database_uri=database_uri,
+        )
+    )
+    command(
+        [
+            "aws",
+            "ecs",
+            "wait",
+            "services-stable",
+            "--cluster",
+            CLUSTER,
+            "--services",
+            "clip-test-listings-demo-ap-south-1-li02",
+            "--profile",
+            profile,
+            "--region",
+            REGION,
+        ]
+    )
+    url = command(
+        ["terraform", f"-chdir={TF_ROOT}", "output", "-raw", "demo_url"], capture=True
+    ).strip()
+    print(f"LI-02 isolated demo is running: {url}")
+    print(
+        "Use synthetic listings and images only. Open this same URL on desktop and phone; run scripts/li02-demo stop when finished."
+    )
+
+
 def delete_run_objects(profile: str, run_id: str) -> None:
     """Delete and verify only the exact current LI-02 test-run S3 prefix."""
     prefix = f"listings/test/{run_id}/"
@@ -1009,7 +1119,7 @@ def restore_rds_baseline(
 def main() -> int:
     """Parse the exact lifecycle action and require an explicit AWS profile."""
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=("start", "stop"))
+    parser.add_argument("action", choices=("start", "resume-database", "stop"))
     parser.add_argument("--profile", required=True, help="Explicit approved AWS CLI profile name")
     args = parser.parse_args()
     global ACTIVE_PROFILE
@@ -1017,6 +1127,8 @@ def main() -> int:
     try:
         if args.action == "start":
             start(args.profile)
+        elif args.action == "resume-database":
+            resume_database(args.profile)
         else:
             stop(args.profile)
     except (DemoError, OSError, subprocess.SubprocessError) as exc:

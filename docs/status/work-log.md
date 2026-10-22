@@ -49,7 +49,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | DL-00 | Shared-core/contract coordinator; all domains review | in progress | Steps 1–13 local work complete; independent review and exact merge gate next | Steps 1–13 performed | User reports affected domain owners reviewed and approved the contract documents; four declarations derive from those reviewed signatures | `task/pre-00-dl-00-foundation`; 50 HTTP operations, 19 internal callables, eight generated artifacts; `make check` passed (421 Python, 63 data, 16 web tests; Black 71 files; boundary/contract/mypy/web/database/safety/secrets checks) | Independent peer review and exact-revision merge remain; cleanup implementation still needs its separate approval; real providers/integrations and crypto/worker implementation remain downstream | 2026-10-20 05:17:32 UTC |
 | ID-01 | A | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | ID-READY, LI-01, LI-02, SE-CORE, SE-02, CN-CORE, CN-02 | — |
 | LI-01 | B | in progress | Step 11 LI-CORE and remaining Step 7/9/10 gates. | Steps 1–4/6, isolated Step 5 increments, Steps 8–10 checks, and available Step 9 scenarios implemented; Step 7 partial, current create/edit/detail/My Listings checkpoint verified in isolated mode. | Suraj verified the multi-image edit/gallery checkpoint, approved seller-only selected-buyer visibility, and verified Step 10. Phone-device observation and remaining Step 7 checks are not claimed. | `domain/listings` / `e398c96`; 61 focused Listings tests passed, 1 direct database test skipped outside wrapper; disposable PostgreSQL workflow passed; Black and `git diff --check` pass. | Step 11–13; new-thread rejection after retirement requires the unimplemented Conversations-owned thread-start path; affected-consumer/schema review of nullable pickup, native schema check, real Identity/image/chat integrations, and five pre-existing backend boundary findings remain. | 2026-10-21 15:35:55 UTC |
-| LI-02 | B | in progress | Step 12: commit the Cost Explorer start-date correction, then rerun preflight and continue exact cloud-plan preparation. | Steps 1–11 verified; Step 12 implementation and monthly guard committed; cloud test has not started. Cost/resource investigation complete. | Suraj approved implementation commit `370f08d` and monthly-preflight commit `8fd709c`, directed in-session review for that preparation, requested a thorough cost investigation with no drastic action, and clarified USD 200 as a monthly ceiling. Independent peer approval is not claimed. | `domain/listings` at `8fd709c`. Profile `surajs2` verifies account `335523638354`. [Cost/resource evidence](../evaluation/domain/li-02/cost-investigation-2026-10-22.json): USD 4.607 reported before credits, approximately zero reported net after credits; USD 319.408 forecast over 2026-10-17–2027-10-17. Shared NAT/public IP plus stopped-RDS storage cost about USD 1.55/day before credits. Start preflight checks calendar-month usage and estimated month-end spend excluding credits against USD 200. | First start attempt halted at Cost Explorer validation because forecast start must be today, not the first of the month. No database, image, Terraform or other cloud changes occurred. The correction is uncommitted and requires exact-diff commit approval before retry; then source/build, config review, exact cloud plans/approvals, deployment and desktop/mobile checks remain. Keep shared RDS/data; LI-CORE/ID-READY remain Step 13 gates. | 2026-10-22 16:03:49 UTC |
+| LI-02 | B | in progress | Step 12: review/commit the local query-capture fix, publish a corrected database image and review the task-definition update while preserving the existing ALB/run; then resume setup and desktop/mobile checks. | Steps 1–11 verified; initial Step 12 infrastructure is applied, but the app is not running. | Suraj approved commits `370f08d`, `8fd709c`, `5145cc9`, the initial infrastructure plan, database setup, and image pushes; requested investigation of the false database errors. New commit/image/plan approvals remain. Independent peer approval is not claimed. | `domain/listings` base `5145cc9`; recovery command and query fix are uncommitted. Account `335523638354`, Region `ap-south-1`, profile `surajs2`. Start preflight: USD 4.23 actual / USD 17.22 estimated month-end versus USD 200 monthly ceiling. Initial plan `84204321d945d551e7b9fe8ea9c7955255d9c7e1f5e534b2fea4e421b0429bbe` applied: 16 added, 8 changed, 0 destroyed. Local lifecycle regression checks: 21 passed. | Root cause confirmed in source and reproduced locally: `psql_fixed` discarded stdout, making existence, owner and idle-query captures empty. Prior claims that the database existed or had another owner are withdrawn; neither task proves those facts. Both stopped before database writes. Local fix captures only metadata and rejects malformed results; the deployed database image still contains the bug and must be replaced before retrying. Existing ALB/images/secret/state remain, app service at zero. No AWS changes during this investigation. LI-CORE/ID-READY remain Step 13 gates. | 2026-10-22 17:00:21 UTC |
 | SE-01 | C | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | SE-CORE, LI-01, LI-02, DATA-READY | — |
 | SE-02 | C | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | SE-CORE, ID-READY, LI-CORE | — |
 | CN-01 | D | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | Isolated development: PRE-00, then DL-00 and a reviewed contract/stub. Later real gates: CN-CORE; SE-02's real request interfaces for request-response integration; CN-03's producer path for final NFR-05 acceptance. | — |
@@ -746,6 +746,78 @@ script to total complete reported days through yesterday and add the forecast
 from today through next month; missing forecast data still fails closed. This
 correction is uncommitted and must be reviewed/committed before retrying the
 immutable-revision start workflow.
+
+### LI-02 Step 12 — first infrastructure apply and database bootstrap blocker — 2026-10-22 16:50:18 UTC
+
+**Correction from the 17:00:21 source audit:** the database-existence and owner
+inferences below were based on misleading script errors. The query wrapper
+discarded every result; these messages establish neither existence nor owner.
+
+Suraj approved image publication for revision `5145cc967d43a9794ede1c6a68902c353e7d0183`; Buildx 0.30.1 built and pushed the web/API and database images. The approved exact Terraform plan `84204321d945d551e7b9fe8ea9c7955255d9c7e1f5e534b2fea4e421b0429bbe` applied in account `335523638354`, Region `ap-south-1`: 16 resources added, 8 changed, 0 destroyed. It created the public HTTP ALB route, LI-02 task definitions, and service at desired count zero; updated the LI-02 bucket CORS/policy and role scope. The generated URL is `http://clip-li02-demo-1058174990.ap-south-1.elb.amazonaws.com` and is not yet serving the app.
+
+Suraj approved the fixed database setup. Bootstrap exited 1 at its read-only guard: either `clip_test_listings` or `clip_test_listings_app` already existed. The reviewed script checks both before any SQL write; no DB object/data was changed. The only LI-02 bootstrap log stream is this attempt, and project records show no earlier database bootstrap. Source of the live state remains unknown. At Suraj request, added `make li02-demo-resume-database AWS_PROFILE=<approved-profile>` in `Makefile` and `scripts/li02-demo`, with documentation in `docs/environment/commands.md` and the test-root README. It verifies the saved run and zero-count app service, gates owner-checked removal of only the isolated DB/login, repeats database setup, and reuses existing route/images. Syntax/help, Makefile dry-run, and `git diff --check` passed. Initial recovery was blocked by an expired `surajs2` token; after Suraj refreshed it and the account was verified, the fixed cleanup task exited 1 with `Listings cleanup found a database not owned by the dedicated Listings role.` This guard failed before any database mutation. No setup, migration, seed, or app task ran. The exact owner/source is unknown, so inspect ownership read-only before another database action. Existing RDS is available; no app ECS task is running.
+
+### LI-02 Step 12 — cleanup refused mismatched database owner — 2026-10-22 16:53:58 UTC
+
+**Correction from the 17:00:21 source audit:** the reported ownership mismatch
+was a false inference caused by discarded query stdout, not verified RDS state.
+
+After refreshing and verifying `surajs2` in account `335523638354`, reran the
+resume preflight. The fixed cleanup task exited 1 and emitted the bounded
+message `Listings cleanup found a database not owned by the dedicated Listings
+role.` Its owner guard failed before any drop or other SQL mutation. The failed
+bootstrap had also stopped at its read-only existence check. No migration,
+seed, or web app task ran; the ALB, images, generated URL secret and Terraform
+state remain in place, and the app service remains at zero. The exact database
+owner/source is unknown, so do not retry cleanup until ownership is inspected.
+
+### LI-02 Step 12 — lifecycle query-output defect identified and fixed locally — 2026-10-22 17:00:21 UTC
+
+At Suraj's request, traced Git/source and the earlier partial-start path.
+Commit `370f08d` introduced `psql_fixed` with stdout and stderr redirected to
+`/dev/null`, then used it in command substitutions for existence, ownership and
+idle checks. Consequently a successful `0 0` result was reported as existing
+state, an empty captured owner as an ownership mismatch, and a successful `0`
+client count as a busy database. Reproduced all three errors locally without
+AWS or a database. The prior partial start failed at Buildx before database
+task deployment/execution; its cleanup removed the generated URL parameter
+and local run metadata and did not perform database creation or cleanup.
+Neither later failed task reached a database mutation. Database existence and
+ownership remain unverified; the earlier contrary claims are withdrawn.
+
+Added `psql_query` to the Listings lifecycle shell script so metadata reaches
+its internal checks while diagnostics stay suppressed. Writes retain the
+silent bounded helper. Bootstrap/cleanup reject invalid existence responses
+explicitly, and idle checks reject empty/nonnumeric replies. Added the
+Listings-owned `test_demo_database_lifecycle.py` regression harness: the real
+shell script runs against a controlled local psql process, with 21 cases for
+empty/existing/owned/mismatched states, failed queries, zero/nonzero clients,
+no writes on invalid states, and private diagnostics/deadline settings.
+All 21 passed; shell syntax and Black checks are part of the local verification.
+These checks do not verify real PostgreSQL bootstrap/migrations. No AWS change,
+commit or image push occurred. Existing ALB/run state can be retained, but a
+corrected immutable database image and separately approved task-definition plan
+are required before another setup/cleanup attempt.
+
+### LI-02 Step 12 — corrected lifecycle passes real local PostgreSQL — 2026-10-22 17:06:28 UTC
+
+Suraj verified the diagnosis and directed continuing. Ran
+`python3 /tmp/li02-local-lifecycle-check.py` against a uniquely named disposable
+`postgres:18.6-bookworm` container with tmpfs data, no published ports and only
+synthetic local credentials. The corrected shell script passed empty-state
+cleanup, bootstrap/owner assertion, repeat-bootstrap rejection, all checked-in
+migrations through the existing pinned database image, repeated seller seed,
+idle check, wrong-owner cleanup refusal with database preservation, restored-
+owner cleanup and repeat cleanup. Exact database/login absence and preservation
+of the test `clip_test` database were asserted; the disposable container was
+removed in `finally`. This was local PostgreSQL with local admin privileges and
+TLS disabled; live RDS privileges/TLS remain cloud checks. The existing
+`clip-local-postgres-1` container and AWS resources were untouched. Also completed
+the resume target's Makefile help/phony registration and corrected the runbook's
+claims about which cloud lifecycle phases have actually been exercised.
+Next: approve the reviewed seven-file LI-02 commit, then publish only a corrected
+database image and review a plan that preserves the existing ALB/run and keeps
+the app count zero until bootstrap/migrations/seed pass.
 
 ### LI-01 task start — 2026-10-20 08:57:01 UTC
 

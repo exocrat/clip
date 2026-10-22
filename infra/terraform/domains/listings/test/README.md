@@ -88,9 +88,11 @@ run-scoped prefix and role permissions. Bucket CORS allows only the exact
 deployed HTTP origin and `If-None-Match: *` upload header.
 
 The lifecycle commands are registered as
-`make li02-demo-start AWS_PROFILE=<approved-profile>` and
-`make li02-demo-stop AWS_PROFILE=<approved-profile>`. They are implemented but
-have not been exercised against AWS. Start requires clean committed build
+`make li02-demo-start AWS_PROFILE=<approved-profile>`,
+`make li02-demo-resume-database AWS_PROFILE=<approved-profile>`, and
+`make li02-demo-stop AWS_PROFILE=<approved-profile>`. The work log records the
+partial cloud runs and pending database, browser and full teardown checks.
+Start requires clean committed build
 inputs, preflights account/region, budget, shared task use, and state, captures
 the RDS and ECS capacity baselines in an ignored non-secret local file, and
 builds/pushes uniquely tagged images from that immutable source. It creates the
@@ -101,6 +103,14 @@ synthetic seller, then enables the app and prints the ALB URL. Each Terraform
 saved plan is displayed with a SHA-256 and requires that exact text to be typed
 before apply. RDS start is a separate exact prompt when it was stopped at
 baseline. No custom domain or subdomain is needed for this HTTP endpoint.
+
+The database lifecycle uses a separate bounded query helper to capture fixed
+metadata internally; write output and client diagnostics remain suppressed.
+Empty or malformed query results stop execution before database writes. If a
+database-image defect blocks a partial run, publish the corrected image from a
+reviewed commit and review/apply its task-definition plan with app count zero
+before resuming. The resume command uses deployed task definitions; it does
+not rebuild images or install local script changes into running AWS tasks.
 
 Stop scales the LI-02 service to zero, drops only the isolated Listings
 database/login, removes the exact S3 run prefix and the database URL parameter,
@@ -116,7 +126,10 @@ after its idle check and separate exact prompt. If another workload appears or
 the capacity check fails, leave shared resources available and report the
 difference. Shared foundation costs continue while the demo is off.
 
-If interrupted, retain the ignored baseline file and resume with `stop`; it
+If a database task fails after route creation, retain the ignored baseline file
+and use `make li02-demo-resume-database AWS_PROFILE=<approved-profile>` to
+retry the guarded database phase without rebuilding images or recreating the
+route. For other interrupted states, retain the file and use `stop`; it
 contains no credentials. Do not infer cloud state from the file alone: refresh
 the account inventory and review Terraform/AWS state before any manual recovery.
 
