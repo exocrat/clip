@@ -85,15 +85,19 @@ or request details from the corresponding origin owner.
 ## E2EE key and envelope boundary
 
 The client encrypts/decrypts message text, optional offer notes and
-contact-share field names/values. Conversations stores and relays ciphertext
-only; it never stores message plaintext, note plaintext, contact values, or
-private/decryption keys. The server cannot recover a lost private key. MVP
-supports one active browser device/key bundle per user.
+contact-share field names/values. Conversations stores/relays encrypted
+payloads and the SDK's unencrypted retry-control metadata; it never stores
+message plaintext, note plaintext, contact values, or private/decryption keys.
+The retry control is not chat content and is routed only to the other
+authorized member. The server cannot recover a lost private key. MVP supports
+one active browser device/key bundle per user.
 
 The approved storage ceilings are 1–16 KiB for an encoded public-key bundle
-and 1–64 KiB for an encoded encrypted envelope. Each retained envelope is
-tagged with an allowlisted protocol ID and positive envelope version and names
-the sender and recipient public-key versions. The client protocol must bind
+and 1–64 KiB for the decoded OpenE2EE payload bytes. Each relay envelope is
+tagged with an allowlisted protocol ID, positive envelope version, SDK message
+type and client timestamp. Encrypted message types name the sender and
+recipient public-key versions; retry controls have no key-version claims. The
+client protocol must bind
 conversation, payload kind, sender, recipient and key versions, reject
 tampering/wrong-recipient use, and preserve history according to the
 human-approved key-change behavior. Key references must belong to the actual
@@ -102,13 +106,15 @@ versions while ciphertext needs them. The byte ceilings are not plaintext
 character limits or an algorithm choice.
 
 The team selected `@open-e2ee/signal-protocol-sdk` 13.0.0 for the client
-protocol, subject to the recorded team source/dependency review before runtime
-adoption. The client keeps the SDK protocol state in IndexedDB and caches
+protocol, subject to recording the team source/dependency review before
+runtime adoption. The client keeps SDK protocol state in IndexedDB and caches
 decrypted history locally for the user's normal chat experience; the server
-stores only encrypted envelopes and public-key/prekey material. Neither keys
-nor plaintext history are backed up by CLIP. Browser-data loss can therefore
-make retained history unreadable. This selection does not mean the runtime
-crypto, browser UI, or server relay has been implemented.
+stores encrypted message envelopes, unencrypted retry-control metadata, and
+public-key/prekey material. Retry controls contain no chat content and are
+never logged. Neither keys nor plaintext history are backed up by CLIP.
+Browser-data loss can therefore make retained history unreadable. This
+selection does not mean the runtime crypto, browser UI, or server relay has
+been implemented.
 
 The application message payload is versioned independently of the server
 envelope. Its v1 plaintext payload contains the authenticated application
@@ -179,6 +185,39 @@ plaintext message fields and malformed/unsupported envelope metadata. A
 write that cannot atomically persist required primary records returns failure;
 no success is reported for a partial message.
 
+`CipherEnvelope` carries the OpenE2EE relay fields needed to reconstruct an
+incoming SDK `Envelope`: `sdk_message_type`, `client_timestamp_ms`, and
+`payload_base64`, alongside CLIP's protocol/version fields. For encrypted
+`ciphertext` and `prekey_bundle` messages, both key-version references are
+required. The client timestamp is milliseconds, is set before encryption,
+and must match the SDK timestamp and the timestamp bound into the encrypted
+message. It exists only for SDK replay/retry matching; it is not authoritative
+for sequence, participant activity, retention, or authorization. CLIP's
+`operation_id` is the SDK `clientMessageId`, so retries reuse both exactly.
+The server supplies the SDK envelope's sender, recipient, entry ID, and
+server-received timestamp from authenticated membership and the stored entry.
+
+OpenE2EE `retry_request` is a protocol control envelope, not an encrypted
+chat message. It is accepted through the same member-only message submission
+operation and ordered entry stream, but returned with `kind=protocol_control`;
+the server routes it only to the other thread member, does not create unread
+text counts or notification intents, and does not parse its opaque
+`payload_base64`. Its key-version fields are null. Its SDK payload is
+unencrypted and may contain protocol retry metadata, so it is treated as
+sensitive: never log or expose it outside the two members. The control entry
+uses the normal server sequence and server activity timestamp, is subject to
+the same no-write marker, rate limiting and content-retention rules, and is
+not presented as a user message. Clients pass it to the SDK's retry-request
+receive path rather than decrypting or rendering it. `sender_key` and
+`unidentified_sender` are not accepted by CLIP's one-device, 1:1 MVP.
+
+For every OpenE2EE message or retry-control send, the client generates a fresh
+UUIDv4 `operation_id` that is globally unique for that sender across
+conversations and SDK message types; it reuses that ID only for an identical
+retry. Reuse for another conversation, type, timestamp, or payload is a
+conflict. Non-SDK writes such as offer revisions retain their separately
+declared idempotency scopes.
+
 Messages are retrieved only by a member, in ascending sequence order, using
 incremental `sequence > after_sequence` retrieval rather than numbered pages.
 The cursor is a nonnegative committed sequence (default zero); the response
@@ -186,16 +225,18 @@ includes entries, the last returned sequence and `has_more`, with a bounded
 page size of 20 by default and 20/50/100 allowed. An empty page does not
 advance the cursor. Each entry exposes only the metadata needed to render the
 authorized thread: ID, sequence, kind, sender, creation instant and either the
-opaque encrypted envelope or a content-deleted marker. It never exposes an
+opaque SDK transport envelope (encrypted message or unencrypted retry
+control) or a content-deleted marker. It never exposes an
 envelope to a nonparticipant or content after its approved purge.
 
-Every participant write carries a client-generated UUID operation ID scoped
-to `(conversation_id, sender_id)` for retry deduplication. An identical retry
-returns the original entry/sequence; reuse with different intent returns a
-stable conflict. After retained content is purged, an operation ID remains
-reserved and retry cannot recreate the expired payload. Step 9 records exact
-opaque-byte retry equality and an owner-reviewed 409 conflict after content
-purge in the [combined registry](combined.md).
+Every participant write carries a client-generated UUID operation ID for
+retry deduplication. OpenE2EE sends require that ID to be globally unique per
+sender across conversations and SDK envelope types; identical retries return
+the original entry/sequence, while reuse with different intent or scope
+returns a stable conflict. After retained content is purged, an operation ID
+remains reserved and retry cannot recreate the expired payload. Step 9 records
+exact opaque-byte retry equality and an owner-reviewed 409 conflict after
+content purge in the [combined registry](combined.md).
 Reads, polling, key lookup, acknowledgements and workers do not advance
 `last_activity_at`.
 
@@ -433,7 +474,9 @@ request/operation/entity IDs and safe outcome codes; neither ciphertext nor
 key material is logged or attached to traces/evidence.
 
 The required deterministic checks are assigned in Steps 9/12 and CN-01/02/03:
-two-client ciphertext exchange and tampering/wrong-key failure; participant
+two-client ciphertext exchange, SDK prekey/ciphertext relay reconstruction,
+retry-request control routing without unread/notification side effects, and
+tampering/wrong-key failure; participant
 and ID-substitution denial; origin-pair duplicate/concurrent creation and
 close/create races; ordered/incremental reads and retry; monotonic read
 acknowledgements; listing availability-gated offer writes and revisions;
@@ -444,9 +487,9 @@ retention. Isolated stubs cannot establish real cross-domain acceptance.
 
 ## Explicit review items
 
-- CN-01 Step 2 must approve the actual established E2EE library/protocol,
-  serialization, browser key handling, key-change and key-loss behavior before
-  message implementation; this contract deliberately does not choose them.
+- CN-01 Step 2 selected OpenE2EE 13.0.0 and the envelope fields above; runtime
+  adoption remains gated on recording the team source/dependency review and
+  implementing the browser storage, key-change and key-loss behavior.
 - The user reports that affected owners reviewed origin create/close locks,
   activity completeness, read-receipt visibility, no-write behavior after
   origin retirement and the retirement-marker operation, notification

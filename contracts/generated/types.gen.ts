@@ -100,9 +100,13 @@ export type ChallengeAccepted = {
 /**
  * CipherEnvelope
  *
- * Opaque encrypted payload transport metadata; never plaintext content.
+ * OpenE2EE relay envelope metadata and its opaque transport payload.
  */
 export type CipherEnvelope = {
+    /**
+     * Client Timestamp Ms
+     */
+    client_timestamp_ms: number;
     /**
      * Envelope Version
      */
@@ -122,11 +126,15 @@ export type CipherEnvelope = {
     /**
      * Recipient Key Version
      */
-    recipient_key_version: number;
+    recipient_key_version?: number | null;
+    /**
+     * Sdk Message Type
+     */
+    sdk_message_type: 'ciphertext' | 'prekey_bundle' | 'retry_request';
     /**
      * Sender Key Version
      */
-    sender_key_version: number;
+    sender_key_version?: number | null;
 };
 
 /**
@@ -209,7 +217,7 @@ export type ContactValueRequest = {
 /**
  * ConversationEntry
  *
- * Ordered message/share envelope metadata; content may be retired.
+ * Ordered message/control/share envelope metadata; content may be retired.
  */
 export type ConversationEntry = {
     /**
@@ -228,7 +236,7 @@ export type ConversationEntry = {
     /**
      * Kind
      */
-    kind: 'message' | 'contact_share';
+    kind: 'message' | 'protocol_control' | 'contact_share';
     /**
      * Sender User Id
      */
@@ -1018,7 +1026,7 @@ export type MemberPreKeyBundle = {
 /**
  * MessageRequest
  *
- * Encrypted message plus stable retry key.
+ * OpenE2EE message/control envelope plus stable retry key.
  */
 export type MessageRequest = {
     envelope: CipherEnvelope;

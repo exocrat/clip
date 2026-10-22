@@ -246,14 +246,35 @@ class CatalogueView(ContractModel):
 
 
 class CipherEnvelope(ContractModel):
-    """Opaque encrypted payload transport metadata; never plaintext content."""
+    """OpenE2EE relay envelope metadata and its opaque transport payload."""
 
     protocol_id: str
     protocol_version: str
     envelope_version: int = Field(ge=1)
-    sender_key_version: int = Field(ge=1)
-    recipient_key_version: int = Field(ge=1)
+    sdk_message_type: Literal["ciphertext", "prekey_bundle", "retry_request"]
+    client_timestamp_ms: int = Field(ge=0, strict=True)
+    sender_key_version: int | None = Field(default=None, ge=1)
+    recipient_key_version: int | None = Field(default=None, ge=1)
     payload_base64: str = Field(min_length=1, repr=False)
+
+    @model_validator(mode="after")
+    def validate_sdk_envelope_metadata(self) -> CipherEnvelope:
+        """Keep encrypted message key references distinct from retry controls."""
+        has_versions = (
+            self.sender_key_version is not None
+            and self.recipient_key_version is not None
+        )
+        if self.sdk_message_type == "retry_request":
+            if (
+                self.sender_key_version is not None
+                or self.recipient_key_version is not None
+            ):
+                raise ValueError(
+                    "retry requests must not claim encryption key versions"
+                )
+        elif not has_versions:
+            raise ValueError("encrypted SDK envelopes require both key versions")
+        return self
 
 
 class ListingSummary(ContractModel):
@@ -452,6 +473,15 @@ class OfferRevisionRequest(ContractModel):
     expected_revision: int | None = Field(default=None, ge=1)
     operation_id: OperationId
 
+    @model_validator(mode="after")
+    def validate_encrypted_note(self) -> OfferRevisionRequest:
+        if (
+            self.note_envelope is not None
+            and self.note_envelope.sdk_message_type != "ciphertext"
+        ):
+            raise ValueError("offer notes require an encrypted ciphertext envelope")
+        return self
+
 
 class OfferWithdrawalRequest(ContractModel):
     """Append an offer withdrawal revision under its stable operation key."""
@@ -567,15 +597,28 @@ class ConversationSummary(ContractModel):
 
 
 class ConversationEntry(ContractModel):
-    """Ordered message/share envelope metadata; content may be retired."""
+    """Ordered message/control/share envelope metadata; content may be retired."""
 
     entry_id: UUID
     sequence: int = Field(ge=1)
-    kind: Literal["message", "contact_share"]
+    kind: Literal["message", "protocol_control", "contact_share"]
     sender_user_id: UserId
     created_at: UtcInstant
     envelope: CipherEnvelope | None = None
     content_deleted: bool = False
+
+    @model_validator(mode="after")
+    def validate_entry_envelope_kind(self) -> ConversationEntry:
+        if self.envelope is None:
+            return self
+        sdk_type = self.envelope.sdk_message_type
+        if self.kind == "protocol_control" and sdk_type != "retry_request":
+            raise ValueError("protocol controls require an SDK retry request")
+        if self.kind == "message" and sdk_type not in {"ciphertext", "prekey_bundle"}:
+            raise ValueError("messages require encrypted SDK content")
+        if self.kind == "contact_share" and sdk_type != "ciphertext":
+            raise ValueError("contact shares require encrypted SDK content")
+        return self
 
 
 class EntryPage(ContractModel):
@@ -594,7 +637,7 @@ class EntryQuery(ContractModel):
 
 
 class MessageRequest(ContractModel):
-    """Encrypted message plus stable retry key."""
+    """OpenE2EE message/control envelope plus stable retry key."""
 
     envelope: CipherEnvelope
     operation_id: OperationId
@@ -831,6 +874,12 @@ class ContactShareRequest(ContractModel):
 
     envelope: CipherEnvelope
     operation_id: OperationId
+
+    @model_validator(mode="after")
+    def validate_encrypted_contact_share(self) -> ContactShareRequest:
+        if self.envelope.sdk_message_type != "ciphertext":
+            raise ValueError("contact shares require an encrypted ciphertext envelope")
+        return self
 
 
 class ConversationQuery(ContractModel):

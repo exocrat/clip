@@ -156,8 +156,13 @@
       },
       "CipherEnvelope": {
         "additionalProperties": false,
-        "description": "Opaque encrypted payload transport metadata; never plaintext content.",
+        "description": "OpenE2EE relay envelope metadata and its opaque transport payload.",
         "properties": {
+          "client_timestamp_ms": {
+            "minimum": 0.0,
+            "title": "Client Timestamp Ms",
+            "type": "integer"
+          },
           "envelope_version": {
             "minimum": 1.0,
             "title": "Envelope Version",
@@ -177,22 +182,45 @@
             "type": "string"
           },
           "recipient_key_version": {
-            "minimum": 1.0,
-            "title": "Recipient Key Version",
-            "type": "integer"
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recipient Key Version"
+          },
+          "sdk_message_type": {
+            "enum": [
+              "ciphertext",
+              "prekey_bundle",
+              "retry_request"
+            ],
+            "title": "Sdk Message Type",
+            "type": "string"
           },
           "sender_key_version": {
-            "minimum": 1.0,
-            "title": "Sender Key Version",
-            "type": "integer"
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sender Key Version"
           }
         },
         "required": [
           "protocol_id",
           "protocol_version",
           "envelope_version",
-          "sender_key_version",
-          "recipient_key_version",
+          "sdk_message_type",
+          "client_timestamp_ms",
           "payload_base64"
         ],
         "title": "CipherEnvelope",
@@ -320,7 +348,7 @@
       },
       "ConversationEntry": {
         "additionalProperties": false,
-        "description": "Ordered message/share envelope metadata; content may be retired.",
+        "description": "Ordered message/control/share envelope metadata; content may be retired.",
         "properties": {
           "content_deleted": {
             "default": false,
@@ -350,6 +378,7 @@
           "kind": {
             "enum": [
               "message",
+              "protocol_control",
               "contact_share"
             ],
             "title": "Kind",
@@ -1674,7 +1703,7 @@
       },
       "MessageRequest": {
         "additionalProperties": false,
-        "description": "Encrypted message plus stable retry key.",
+        "description": "OpenE2EE message/control envelope plus stable retry key.",
         "properties": {
           "envelope": {
             "$ref": "#/components/schemas/CipherEnvelope"
