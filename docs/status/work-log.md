@@ -49,7 +49,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | DL-00 | Shared-core/contract coordinator; all domains review | in progress | Steps 1–13 local work complete; independent review and exact merge gate next | Steps 1–13 performed | User reports affected domain owners reviewed and approved the contract documents; four declarations derive from those reviewed signatures | `task/pre-00-dl-00-foundation`; 50 HTTP operations, 19 internal callables, eight generated artifacts; `make check` passed (421 Python, 63 data, 16 web tests; Black 71 files; boundary/contract/mypy/web/database/safety/secrets checks) | Independent peer review and exact-revision merge remain; cleanup implementation still needs its separate approval; real providers/integrations and crypto/worker implementation remain downstream | 2026-10-20 05:17:32 UTC |
 | ID-01 | A | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | ID-READY, LI-01, LI-02, SE-CORE, SE-02, CN-CORE, CN-02 | — |
 | LI-01 | B | in progress | Step 11 LI-CORE and remaining Step 7/9/10 gates. | Steps 1–4/6, isolated Step 5 increments, Steps 8–10 checks, and available Step 9 scenarios implemented; Step 7 partial, current create/edit/detail/My Listings checkpoint verified in isolated mode. | Suraj verified the multi-image edit/gallery checkpoint, approved seller-only selected-buyer visibility, and verified Step 10. Phone-device observation and remaining Step 7 checks are not claimed. | `domain/listings` / `e398c96`; 61 focused Listings tests passed, 1 direct database test skipped outside wrapper; disposable PostgreSQL workflow passed; Black and `git diff --check` pass. | Step 11–13; new-thread rejection after retirement requires the unimplemented Conversations-owned thread-start path; affected-consumer/schema review of nullable pickup, native schema check, real Identity/image/chat integrations, and five pre-existing backend boundary findings remain. | 2026-10-21 15:35:55 UTC |
-| LI-02 | B | in progress | Step 12 local implementation complete for review; next obtain independent Security review, then refresh AWS identity/budget and inspect exact plans before deployment. | Steps 1–11 verified; Step 12 design verified; local implementation performed but not deployed or tested against AWS. | Suraj selected generated HTTP URL, public ECS demo for laptop/phone, ten-listing synthetic cap, and start/stop that preserves shared infrastructure; HTTPS deferred to integration. | Current `domain/listings` worktree based on `5eef3ff`. Implemented app/UI image, isolated cap, conditional HTTP ALB/service, fixed DB task definitions, and lifecycle start/stop. Static checks: Python AST/shell syntax, Terraform format, Terraform validate and `git diff --check` pass. No app tests, plan, AWS call, or cloud change. Previously recorded Step 4 apply/evidence remains; last valid account inventory on 2026-10-22 had shared RDS stopped, URL parameter absent, actual spend USD 4.087 / forecast USD 30.384 / USD 200 limit. Current-session credentials still do not verify target account; refresh before any cloud action. | Independent Security review of public/unauthenticated route and cleanup; exact current AWS identity/budget/inventory; clean committed source revision under per-commit approval; exact Terraform plan review; deployment and desktop/mobile verification. Preserve shared RDS/VPC/NAT/other domains and only restore captured RDS state after task/session checks and separate approval. LI-CORE/ID-READY remain Step 13 integration gates. | 2026-10-22 14:07:56 UTC |
+| LI-02 | B | in progress | Step 12: review and commit the monthly budget-preflight correction, then continue source/build and exact cloud-plan preparation. | Steps 1–11 verified; Step 12 implementation verified; cloud test has not started. Cost/resource investigation complete. | Suraj approved the implementation commit at `370f08d`, directed in-session review for that preparation, and requested a thorough cost investigation with no drastic action. Suraj clarified that USD 200 is a monthly ceiling. Independent peer approval is not claimed. | `domain/listings` at `370f08d`; prior static checks and Gitleaks passed. Profile `surajs2` verifies account `335523638354`. [Cost/resource evidence](../evaluation/domain/li-02/cost-investigation-2026-10-22.json): USD 4.607 reported before credits, approximately zero reported net after credits; USD 319.408 forecast over 2026-10-17–2027-10-17. Shared NAT/public IP plus stopped-RDS storage cost about USD 1.55/day before credits. Start preflight now checks current calendar-month usage and forecast excluding credits against the USD 200 monthly ceiling. ECS/EC2 capacity zero; RDS stopped; no ALB/NLB or LI-02 app deployment. | Monthly preflight correction is uncommitted and needs the repository's exact-diff commit approval before immutable image build/start. AWS budget configuration itself was not changed. Then source/build, config review, exact cloud plans/approvals, deployment and desktop/mobile checks remain. Keep shared RDS/data; LI-CORE/ID-READY remain Step 13 gates. | 2026-10-22 15:56:54 UTC |
 | SE-01 | C | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | SE-CORE, LI-01, LI-02, DATA-READY | — |
 | SE-02 | C | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | SE-CORE, ID-READY, LI-CORE | — |
 | CN-01 | D | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | Isolated development: PRE-00, then DL-00 and a reviewed contract/stub. Later real gates: CN-CORE; SE-02's real request interfaces for request-response integration; CN-03's producer path for final NFR-05 acceptance. | — |
@@ -673,6 +673,67 @@ approved shared master login name `clip_test_admin`. No tests, AWS command,
 Terraform plan/apply, deployment, or commit ran. Step 12 still requires code
 review, independent Security review, a current target-account/budget preflight,
 exact plan approval, and desktop/phone browser verification after deployment.
+
+### LI-02 Step 12 — annual forecast and persistent idle-cost investigation — 2026-10-22 15:38:52 UTC
+
+Suraj requested a thorough read-only investigation after seeing the USD 319.408
+forecast. The refreshed `surajs2` identity belongs to account `335523638354`.
+Budgets excludes credits and covers 2026-10-17–2027-10-17: USD 4.607 actual,
+USD 319.408 forecast, USD 200 reference. Account-wide Cost Explorer records
+reconcile USD 4.6072318081 usage with matching credits (net approximately zero),
+with estimated/delayed data and only part of October 22 reported. GetCredits
+was denied to this IAM user; no fresh remaining-credit balance or root fallback.
+
+The shared PD-16 NAT has remained available since October 19. Complete daily
+records show USD 1.344 NAT + USD 0.12 public IPv4 + USD 0.0845 stopped-RDS
+storage, approximately USD 1.55/day or USD 46–47 per 30 days before traffic and
+minor storage/requests. This persistent shared cost remains after ordinary
+LI-02 stop. Three Cost Explorer API requests add a USD 0.03 list-price charge
+before credits. AWS does not expose an exact reconstruction of the forecast
+in the budget response; no exact causal decomposition of USD 319.408 is claimed.
+
+Checked EC2, NAT, RDS, ELBv2 and EBS across all 18 enabled regions: only the
+known shared Mumbai NAT/RDS remain; no EC2 instances, EBS volumes or ALB/NLB
+load balancers. ECS tasks/hosts and shared-service desired count are zero. The
+LI-02 image bucket and log group are empty. Regional audit events since the
+recorded shutdown show no new compute launches. RDS is stopped with automatic
+restart scheduled for 2026-10-26 18:23:35 UTC; the existing shared-foundation
+idle review deadline remains 2026-10-23 18:23:35 UTC.
+
+[Primary billing/resource evidence](../evaluation/domain/li-02/cost-investigation-2026-10-22.json).
+No AWS resource, budget, credential policy or lifecycle guard was changed;
+no build/push/start/task/plan/apply/delete ran. Deployment preparation remains
+held for cost review. Suraj directed performing the preparation review together
+in this session; no independent approval is represented by that instruction.
+
+### Shared idle-cost follow-up — retain RDS and inspect NAT lifecycle — 2026-10-22 15:46:58 UTC
+
+Suraj chose to retain shared RDS compute stop/start behavior and database
+storage. Repository inspection found no NAT-only teardown/recreate command
+or independent NAT enable flag: NAT, EIP and its route remain coupled to
+the shared base phase. Whole-stack disable/destroy would affect RDS and is
+unsuitable for that request. The current private ECS architecture needs NAT
+throughout the Listings cloud run for outbound AWS service access; the
+LI-02 lifecycle does not manage it. No shared-infrastructure change or
+cloud operation was performed.
+
+### LI-02 Step 12 — interpret the USD 200 ceiling monthly — 2026-10-22 15:56:54 UTC
+
+Suraj clarified that USD 200 is an approximate monthly ceiling. Updated
+`scripts/li02-demo` so start reads current calendar-month Cost Explorer usage
+and month-end forecast, excludes credit records to match the configured
+budget's cost treatment, and compares both with the USD 200 limit. The annual
+budget forecast is not used as a monthly gate. Missing monthly usage/forecast
+data fails closed; the check reports that Cost Explorer data can be delayed.
+AWS budget configuration and all cloud resources
+were left unchanged. Mocked checks passed below the cap despite a USD 319.408
+annual budget forecast and blocked when either monthly usage or month-end
+forecast reached the cap; Python AST and `git diff --check` pass. The pinned
+Black check requests broad formatting changes to pre-existing lines in this
+script, so those unrelated changes were left out. No actual AWS preflight,
+build, plan, apply, or deployment was run. The source change remains
+uncommitted pending review of the exact diff and the existing repository
+commit-approval gate.
 
 ### LI-01 task start — 2026-10-20 08:57:01 UTC
 

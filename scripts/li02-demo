@@ -82,18 +82,18 @@ def command(
     return result.stdout or "" if capture else ""
 
 
-def aws(profile: str, *args: str, capture: bool = True) -> str:
-    """Run AWS CLI calls with the explicit profile and fixed Region."""
+def aws(profile: str, *args: str, region: str = REGION, capture: bool = True) -> str:
+    """Run AWS CLI calls with the explicit profile and selected Region."""
     return command(
-        ["aws", *args, "--profile", profile, "--region", REGION, "--no-cli-pager"],
+        ["aws", *args, "--profile", profile, "--region", region, "--no-cli-pager"],
         capture=capture,
     )
 
 
-def aws_json(profile: str, *args: str) -> dict[str, Any]:
+def aws_json(profile: str, *args: str, region: str = REGION) -> dict[str, Any]:
     """Parse JSON output from a read-only or non-secret AWS CLI command."""
     try:
-        return json.loads(aws(profile, *args))
+        return json.loads(aws(profile, *args, region=region))
     except json.JSONDecodeError as exc:
         raise DemoError("AWS CLI returned unexpected JSON; no action was taken.") from exc
 
@@ -146,7 +146,7 @@ def verify_account(profile: str) -> None:
 
 
 def verify_identity_and_budget(profile: str) -> dict[str, Any]:
-    """Check the exact account and ensure start stays below the current budget."""
+    """Check account identity and compare month-to-date costs with the monthly cap."""
     verify_account(profile)
     budget = aws_json(
         profile,
@@ -157,18 +157,73 @@ def verify_identity_and_budget(profile: str) -> dict[str, Any]:
         "--budget-name",
         BUDGET_NAME,
     ).get("Budget", {})
-    actual = float(budget.get("CalculatedSpend", {}).get("ActualSpend", {}).get("Amount", "0"))
-    forecast = float(budget.get("CalculatedSpend", {}).get("ForecastedSpend", {}).get("Amount", "0"))
     limit = float(budget.get("BudgetLimit", {}).get("Amount", "0"))
+    today = dt.datetime.now(dt.UTC).date()
+    month_start = today.replace(day=1).isoformat()
+    tomorrow = (today + dt.timedelta(days=1)).isoformat()
+    next_month = (today.replace(day=28) + dt.timedelta(days=4)).replace(day=1)
+    no_credits = json.dumps(
+        {"Not": {"Dimensions": {"Key": "RECORD_TYPE", "Values": ["Credit"]}}},
+        separators=(",", ":"),
+    )
+    month_costs = aws_json(
+        profile,
+        "ce",
+        "get-cost-and-usage",
+        "--time-period",
+        json.dumps({"Start": month_start, "End": tomorrow}, separators=(",", ":")),
+        "--granularity",
+        "MONTHLY",
+        "--metrics",
+        "UnblendedCost",
+        "--filter",
+        no_credits,
+        region="us-east-1",
+    )
+    periods = month_costs.get("ResultsByTime", [])
+    if not periods:
+        raise DemoError("Cost Explorer returned no month-to-date cost period; refusing an unverified start.")
+    actual = sum(
+        float(period.get("Total", {}).get("UnblendedCost", {}).get("Amount", "0"))
+        for period in periods
+    )
+    forecast_response = aws_json(
+        profile,
+        "ce",
+        "get-cost-forecast",
+        "--time-period",
+        json.dumps(
+            {"Start": month_start, "End": next_month.isoformat()},
+            separators=(",", ":"),
+        ),
+        "--metric",
+        "UNBLENDED_COST",
+        "--granularity",
+        "MONTHLY",
+        "--filter",
+        no_credits,
+        region="us-east-1",
+    )
+    forecast_amount = forecast_response.get("Total", {}).get("Amount")
+    if forecast_amount is None:
+        raise DemoError("Cost Explorer returned no monthly forecast; refusing an unverified start.")
+    forecast = float(forecast_amount)
     if limit <= 0 or actual >= limit or forecast >= limit:
         raise DemoError(
-            f"Budget preflight failed: actual USD {actual:.2f}, forecast USD {forecast:.2f}, limit USD {limit:.2f}."
+            f"Monthly budget preflight failed: reported usage is USD {actual:.2f}, estimated month-end spend is "
+            f"USD {forecast:.2f}, and the monthly limit is USD {limit:.2f}."
         )
     print(
-        f"Target verified: account {ACCOUNT_ID}, Region {REGION}; current budget actual USD {actual:.2f}, "
-        f"forecast USD {forecast:.2f}, limit USD {limit:.2f}."
+        f"Target verified: account {ACCOUNT_ID}, Region {REGION}; calendar-month usage is USD {actual:.2f}, "
+        f"estimated month-end spend is USD {forecast:.2f}, and the monthly limit is USD {limit:.2f}. "
+        "Cost Explorer data can be delayed."
     )
-    return {"actual_usd": actual, "forecast_usd": forecast, "limit_usd": limit}
+    return {
+        "calendar_month_start": month_start,
+        "reported_actual_excluding_credits_usd": actual,
+        "forecast_month_end_excluding_credits_usd": forecast,
+        "monthly_limit_usd": limit,
+    }
 
 
 def rds_info(profile: str) -> dict[str, Any]:
