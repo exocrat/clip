@@ -17,6 +17,7 @@ import {
   type ListingFormValues,
 } from './listingForm';
 import './listings.css';
+import { newOperationId } from './operationId';
 
 function localDateTime(instant: string): string {
   const date = new Date(instant);
@@ -116,7 +117,7 @@ export function ListingEdit({ listingId }: { listingId?: string }) {
     };
     const serialized = JSON.stringify(intent);
     if (attempt.current?.intent !== serialized) {
-      attempt.current = { intent: serialized, operationId: crypto.randomUUID() };
+      attempt.current = { intent: serialized, operationId: newOperationId() };
     }
     setSaving(true);
     try {

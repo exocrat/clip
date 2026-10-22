@@ -49,7 +49,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | DL-00 | Shared-core/contract coordinator; all domains review | in progress | Steps 1–13 local work complete; independent review and exact merge gate next | Steps 1–13 performed | User reports affected domain owners reviewed and approved the contract documents; four declarations derive from those reviewed signatures | `task/pre-00-dl-00-foundation`; 50 HTTP operations, 19 internal callables, eight generated artifacts; `make check` passed (421 Python, 63 data, 16 web tests; Black 71 files; boundary/contract/mypy/web/database/safety/secrets checks) | Independent peer review and exact-revision merge remain; cleanup implementation still needs its separate approval; real providers/integrations and crypto/worker implementation remain downstream | 2026-10-20 05:17:32 UTC |
 | ID-01 | A | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | ID-READY, LI-01, LI-02, SE-CORE, SE-02, CN-CORE, CN-02 | — |
 | LI-01 | B | in progress | Step 11 LI-CORE and remaining Step 7/9/10 gates. | Steps 1–4/6, isolated Step 5 increments, Steps 8–10 checks, and available Step 9 scenarios implemented; Step 7 partial, current create/edit/detail/My Listings checkpoint verified in isolated mode. | Suraj verified the multi-image edit/gallery checkpoint, approved seller-only selected-buyer visibility, and verified Step 10. Phone-device observation and remaining Step 7 checks are not claimed. | `domain/listings` / `e398c96`; 61 focused Listings tests passed, 1 direct database test skipped outside wrapper; disposable PostgreSQL workflow passed; Black and `git diff --check` pass. | Step 11–13; new-thread rejection after retirement requires the unimplemented Conversations-owned thread-start path; affected-consumer/schema review of nullable pickup, native schema check, real Identity/image/chat integrations, and five pre-existing backend boundary findings remain. | 2026-10-21 15:35:55 UTC |
-| LI-02 | B | in progress | Step 12: review/commit the local query-capture fix, publish a corrected database image and review the task-definition update while preserving the existing ALB/run; then resume setup and desktop/mobile checks. | Steps 1–11 verified; initial Step 12 infrastructure is applied, but the app is not running. | Suraj approved commits `370f08d`, `8fd709c`, `5145cc9`, the initial infrastructure plan, database setup, and image pushes; requested investigation of the false database errors. New commit/image/plan approvals remain. Independent peer approval is not claimed. | `domain/listings` base `5145cc9`; recovery command and query fix are uncommitted. Account `335523638354`, Region `ap-south-1`, profile `surajs2`. Start preflight: USD 4.23 actual / USD 17.22 estimated month-end versus USD 200 monthly ceiling. Initial plan `84204321d945d551e7b9fe8ea9c7955255d9c7e1f5e534b2fea4e421b0429bbe` applied: 16 added, 8 changed, 0 destroyed. Local lifecycle regression checks: 21 passed. | Root cause confirmed in source and reproduced locally: `psql_fixed` discarded stdout, making existence, owner and idle-query captures empty. Prior claims that the database existed or had another owner are withdrawn; neither task proves those facts. Both stopped before database writes. Local fix captures only metadata and rejects malformed results; the deployed database image still contains the bug and must be replaced before retrying. Existing ALB/images/secret/state remain, app service at zero. No AWS changes during this investigation. LI-CORE/ID-READY remain Step 13 gates. | 2026-10-22 17:00:21 UTC |
+| LI-02 | B | in progress | Step 12: review/commit the RDS-compatible ownership/logging correction and HTTP operation-ID fix; publish corrected API/database images and review the existing-run update plan, then resume fixed setup/app gates and desktop/mobile checks. | Steps 1–11 verified; route exists, app service remains zero. | Suraj approved commit `4aa9705`, its database image push and exact five-task replacement plan; previously authorized isolated cleanup/setup. Revised RDS role-membership behavior and new images/plan require review. Independent peer approval is not claimed. | Account `335523638354`, Region `ap-south-1`, profile `surajs2`. Plan `a749908bd4259d354edc8b5015135a479bd1b010a7fa3558f6e872113b3f731c` applied: five database task-definition replacements using digest `e073c4905049d60bcb342fccaef98cd6c302d6993505d8ed65a6815588d1514d`. Local checks: 21 lifecycle regressions, 41 web tests/type/build/lint, and restricted-admin real PostgreSQL lifecycle pass. | Corrected AWS cleanup passed with `Isolated Listings database cleanup already passed.`, establishing no isolated database/login existed. Bootstrap then failed before role creation because RDS denied setting `log_parameter_max_length`; privately classified RDS log confirmed that exact category/parameter, raw logs withheld. Local correction keeps statement/duration/error logging guards while avoiding that unsupported cap. Restricted local admin exposed and verified explicit SET-only, non-inherited membership of the dedicated app-owner role for create/grants/drop; dropping the role removes membership. Create/Edit now reuse the image uploader’s cryptographic UUID fallback for the approved HTTP origin. Existing ALB/API/secret/run state retained; no migration/seed/web task ran in AWS. LI-CORE/ID-READY remain Step 13 gates. | 2026-10-22 17:22:27 UTC |
 | SE-01 | C | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | SE-CORE, LI-01, LI-02, DATA-READY | — |
 | SE-02 | C | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | SE-CORE, ID-READY, LI-CORE | — |
 | CN-01 | D | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | Isolated development: PRE-00, then DL-00 and a reviewed contract/stub. Later real gates: CN-CORE; SE-02's real request interfaces for request-response integration; CN-03's producer path for final NFR-05 acceptance. | — |
@@ -818,6 +818,57 @@ claims about which cloud lifecycle phases have actually been exercised.
 Next: approve the reviewed seven-file LI-02 commit, then publish only a corrected
 database image and review a plan that preserves the existing ALB/run and keeps
 the app count zero until bootstrap/migrations/seed pass.
+
+### LI-02 Step 12 — live query correction verified; RDS permissions and HTTP compatibility — 2026-10-22 17:22:27 UTC
+
+The exact database image built from approved commit `4aa9705` passed the real
+local lifecycle before publication. Suraj approved its ECR push and exact plan
+`a749908bd4259d354edc8b5015135a479bd1b010a7fa3558f6e872113b3f731c`:
+only five database task definitions were replaced, with no ALB/service-count,
+IAM, network or database mutation in the apply. Digest is
+`sha256:e073c4905049d60bcb342fccaef98cd6c302d6993505d8ed65a6815588d1514d`.
+The saved baseline retains the original image tags plus this correction tag
+for stop cleanup. Managed ECS capacity had scaled to zero and restarted for
+the approved fixed cleanup task. Its log says cleanup already passed: no
+isolated database/login existed, confirming the prior errors were misleading.
+
+The next fixed bootstrap stopped before CREATE ROLE: private classification
+of the current RDS error log found permission denied to set
+`log_parameter_max_length`. No raw log, credential or verifier was displayed.
+Reproduced this locally with a non-superuser CREATEDB/CREATEROLE operator and
+only the logging-setting permissions needed by the shared PD-16 guard.
+Removed the unsupported non-error bind cap requirement: PostgreSQL documents
+that it only affects statement/duration logs, which remain disabled and
+verified. Error-bind suppression and all other logging guards remain. No
+parameter group or shared privilege expansion is requested. The same local
+restriction check exposed CREATE DATABASE ownership needing SET-role rights;
+bootstrap now grants only membership of its new app-owner role to CURRENT_USER
+with INHERIT FALSE/SET TRUE, ownership operations SET ROLE explicitly, and
+cleanup resets the operator before dropping that role (removing membership).
+The app role gains no administrator membership. Real local restricted-admin
+bootstrap, migrations, repeated seed, idle, wrong-owner refusal and exact
+cleanup all passed; disposable resources were removed.
+
+Expanded the restricted-admin check to assert SET permission without inherited
+privileges and to keep a controlled app-role client connected during the idle
+check. PostgreSQL hides that other role's backend type from a restricted
+operator; the previous filter could miss it. The idle query now conservatively
+counts a named database session with hidden backend type as busy. The expanded
+real local run passed busy-client refusal, termination of only that controlled
+app client during exact isolated cleanup, database/login removal and shared
+test database preservation. All 21 shell regression cases, shell syntax, diff
+whitespace and network-isolated source secret scanning also passed.
+
+Frontend readiness inspection also found direct `crypto.randomUUID()` calls
+in Create/Edit, unavailable on the approved public HTTP origin. Extracted the
+already-used image-upload fallback to Listings-owned `operationId.ts` and
+reused it in CreateListing, ListingEdit and ListingImageSet. It uses secure
+random bytes and UUID v4 bits when native UUID support is absent. Added three
+capability regression cases. `npm run check` with the recorded pinned Node
+PATH passed lint, all 41 tests, TypeScript and production build. No shared
+frontend composition/styles were edited. Both corrections remain uncommitted;
+new image publication, revised fixed setup and exact apply approvals remain.
+The existing API service is zero; AWS migration/seed/browser checks are pending.
 
 ### LI-01 task start — 2026-10-20 08:57:01 UTC
 

@@ -112,6 +112,21 @@ reviewed commit and review/apply its task-definition plan with app count zero
 before resuming. The resume command uses deployed task definitions; it does
 not rebuild images or install local script changes into running AWS tasks.
 
+Bootstrap supports the non-superuser RDS administrator: it grants that operator
+permission to `SET ROLE` only into the newly created dedicated Listings role,
+with inherited privileges disabled. Ownership operations explicitly switch to
+that role; cleanup resets the role before dropping the dedicated login, which
+also removes its operator membership. The application login receives no
+administrator membership. Statement/duration/error-statement logging remains
+disabled and verified in the password-setting transaction; error bind values
+are suppressed. The non-error bind-parameter cap is not changed because RDS
+does not permit it and it only affects statement/duration logs that the guard
+already disables. See [PostgreSQL logging settings](https://www.postgresql.org/docs/18/runtime-config-logging.html)
+and the shared [password logging boundary](../../../../docs/decisions/private-postgresql-probe-login.md).
+The idle guard treats another role's database session with a hidden backend
+type as busy, so restricted statistics visibility cannot hide an active client
+and incorrectly permit stopping shared RDS.
+
 Stop scales the LI-02 service to zero, drops only the isolated Listings
 database/login, removes the exact S3 run prefix and the database URL parameter,
 then uses a reviewed plan to remove the temporary ALB, subnet/route, host

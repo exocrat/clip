@@ -86,7 +86,9 @@ BEGIN
   PERFORM set_config('log_min_error_statement', 'panic', true);
   PERFORM set_config('log_min_duration_sample', '-1', true);
   PERFORM set_config('log_statement_sample_rate', '0', true);
-  PERFORM set_config('log_parameter_max_length', '0', true);
+  -- RDS administrators cannot set the superuser-only non-error parameter cap.
+  -- It affects statement/duration logs, which this session disables and checks
+  -- below (the same boundary used by the shared PD-16 setup task).
   PERFORM set_config('log_parameter_max_length_on_error', '0', true);
 END
 $local_logging$;
@@ -98,7 +100,6 @@ BEGIN
     OR current_setting('log_min_duration_sample')::integer <> -1
     OR current_setting('log_statement_sample_rate')::double precision <> 0
     OR current_setting('log_transaction_sample_rate')::double precision <> 0
-    OR current_setting('log_parameter_max_length')::integer <> 0
     OR current_setting('log_parameter_max_length_on_error')::integer <> 0
     OR lower(coalesce(current_setting('pgaudit.log', true), 'none')) NOT IN ('none', '')
     OR coalesce(current_setting('auto_explain.log_min_duration', true), '-1') <> '-1'
@@ -110,6 +111,10 @@ CREATE ROLE clip_test_listings_app WITH LOGIN NOSUPERUSER NOCREATEDB NOCREATEROL
 SQL
     printf '%s\n' "$app_password" "$app_password"
     cat <<'SQL'
+-- A non-superuser operator needs SET permission to create a database owned by
+-- this new role. Do not inherit its privileges; this membership disappears
+-- when cleanup drops the dedicated role.
+GRANT clip_test_listings_app TO CURRENT_USER WITH INHERIT FALSE, SET TRUE;
 COMMIT;
 CREATE DATABASE clip_test_listings OWNER clip_test_listings_app TEMPLATE template0 ENCODING 'UTF8';
 SQL
@@ -124,6 +129,7 @@ SQL
 
   PGDATABASE=clip_test_listings psql_fixed <<'SQL' \
     || fail 'Listings database bootstrap could not apply the isolated database grants.'
+SET ROLE clip_test_listings_app;
 REVOKE CONNECT, TEMPORARY ON DATABASE clip_test_listings FROM PUBLIC;
 REVOKE CREATE ON SCHEMA public FROM PUBLIC;
 GRANT CONNECT ON DATABASE clip_test_listings TO clip_test_listings_app;
@@ -199,12 +205,15 @@ cleanup() {
   [ "$owner" = 'clip_test_listings_app' ] \
     || fail 'Listings cleanup found a database not owned by the dedicated Listings role.'
   psql_fixed <<'SQL' || fail 'Listings cleanup could not terminate connections to the isolated database.'
+SET ROLE clip_test_listings_app;
 SELECT pg_terminate_backend(pid)
 FROM pg_stat_activity
 WHERE datname = 'clip_test_listings' AND pid <> pg_backend_pid();
 SQL
   psql_fixed <<'SQL' || fail 'Listings cleanup failed; inspect the ECS task result without exposing credentials.'
+SET ROLE clip_test_listings_app;
 DROP DATABASE clip_test_listings;
+RESET ROLE;
 DROP ROLE clip_test_listings_app;
 SQL
   printf '%s\n' 'Isolated Listings database cleanup passed.'
@@ -213,7 +222,9 @@ SQL
 check_idle() {
   [ "$PGDATABASE" = 'clip_test' ] && [ "$PGUSER" != 'clip_test_listings_app' ] \
     || fail 'Listings idle check refused an unexpected admin connection target.'
-  result=$(psql_query --command="SELECT count(*) FROM pg_stat_activity WHERE pid <> pg_backend_pid() AND backend_type = 'client backend'") \
+  # A non-superuser can see another role's database/session but not its backend
+  # type. Treat that hidden type as busy rather than overlooking a live client.
+  result=$(psql_query --command="SELECT count(*) FROM pg_stat_activity WHERE pid <> pg_backend_pid() AND (backend_type = 'client backend' OR (backend_type IS NULL AND datname IS NOT NULL))") \
     || fail 'Listings shared-database idle check failed; preserve the shared RDS state.'
   case "$result" in
     ''|*[!0-9]*) fail 'Listings idle check received an invalid inspection result; preserve the shared RDS state.' ;;

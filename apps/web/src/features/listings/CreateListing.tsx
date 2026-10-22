@@ -8,6 +8,7 @@ import {
   type CatalogueView,
 } from './listingsApi';
 import { validateListingForm, type ListingFormErrors, type ListingFormValues } from './listingForm';
+import { newOperationId } from './operationId';
 import './listings.css';
 
 const emptyForm: ListingFormValues = {
@@ -70,7 +71,7 @@ export function CreateListing({ children }: PropsWithChildren) {
     }
     const intent = JSON.stringify(result.intent);
     if (attempt.current?.intent !== intent) {
-      attempt.current = { intent, operationId: crypto.randomUUID() };
+      attempt.current = { intent, operationId: newOperationId() };
     }
     setSaving(true);
     try {
