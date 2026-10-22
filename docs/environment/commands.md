@@ -20,6 +20,7 @@ For EACH command record: creator task, exact invocation and required inputs, sup
 | Contract regenerate/stale-check | PD-11/DL-00 | Health generation/check and actual API schema/consumer regression checks implemented in PD-11; full domain declarations remain DL-00. Exact commands below. |
 | Terraform static format/validate (no remote state mutation) | PD-15/13 | `make terraform-check` with Terraform 1.15.9: format check and backend-free validation, readonly provider lock; individual targets documented below. Public provider downloads may be needed; no cloud login or apply. |
 | Plan/apply/build-release/deploy/verify/rollback/teardown | PD-15/16; domain/EXP additions | PD-15 documents reviewed plan/apply/verify/cleanup. PD-16 per-run ECS capacity plans and RDS stop/start templates are in `infra/terraform/shared/test/README.md`; select exact targets and review/approve each cloud operation. These are not local/CI checks. |
+| Isolated Listings demo start/stop | LI-02 Step 12 | Implemented locally as `make li02-demo-start AWS_PROFILE=<approved-profile>` and `make li02-demo-stop AWS_PROFILE=<approved-profile>`; not yet exercised. Fixed profile/account/Region checks, budget and shared-task preflight, immutable image build, staged exact Terraform plan hashes, fixed database tasks, run-scoped S3 cleanup, ECR reference checks, and conditional shared RDS baseline restoration are wired. No command was run against AWS. |
 | Search evaluator/load workload/NFR manifests | SE-01 | Not implemented |
 | Two-client chat/read-state/latency measurement | CN-01/CN-03 | Not implemented |
 | Integrated peak/runtime-loss/DB-restore checks | INT-01 | Not implemented |
@@ -27,6 +28,31 @@ For EACH command record: creator task, exact invocation and required inputs, sup
 | Final regression/export/demo/package verification | CLOSE-00 | Not implemented |
 
 An absent command assigned to the selected creation step is an expected output; the agent creates/registers/tests it. An absent prerequisite or uncertain expected effect blocks the dependent action and requires a question. No cloud operation belongs in the generic local/CI aggregate target.
+
+## LI-02 Step 12 demo lifecycle
+
+Run from the repository root with Python 3, AWS CLI, Terraform 1.15.9, Docker
+Buildx and an explicitly approved AWS profile. The command fixes the target to
+account `335523638354`, Region `ap-south-1`, shared cluster `clip-shared-test`,
+RDS `clip-shared-test-postgres`, and the existing shared API ECR repository.
+Start refuses modified LI-02 build inputs and requires a committed source
+revision. No credentials, URL values, or database passwords are printed or
+written to Terraform state. Local baseline metadata is ignored by Git and
+contains only resource IDs/status, run ID and image digests.
+
+| Exact command | Effects and gates | Expected result / recovery |
+|---|---|---|
+| `make li02-demo-start AWS_PROFILE=<approved-profile>` | Checks caller account, current budget, shared ECS task use, capacity-provider/ASG baseline, RDS status, master-parameter name, and state target. Builds UI/API and fixed dbmate/database-task images from clean committed source and pushes unique tags to the existing shared ECR repo. If RDS was stopped, asks before starting it. Creates `/clip/test/listings-database-url` as one Standard SecureString using a generated random password and a mode-0600 temporary JSON file. Shows each exact Terraform saved plan and SHA-256, requiring that SHA to be typed before apply. Creates the ALB/task definitions with app desired count zero, runs fixed bootstrap, pinned migration and synthetic-seller seed tasks, then plans/applies the one-task service. | Exit 0 prints the generated HTTP URL. If a step fails, `.demo-baseline.json` remains so `stop` can clean the partial run. Inspect its recorded run data and current AWS/Terraform state before manual recovery; never delete the baseline file to bypass cleanup. No HTTPS/domain is configured. |
+| `make li02-demo-stop AWS_PROFILE=<approved-profile>` | Sets only the LI-02 service to zero, waits for it to stop, and runs the fixed cleanup task to drop only `clip_test_listings` and `clip_test_listings_app`. If RDS was initially stopped, the separate idle-check task must find no other PostgreSQL client sessions before restoring its stopped state. Deletes the exact run-scoped S3 prefix and URL parameter, applies a saved plan that removes the temporary ALB/subnet/route/SG ingress/service/task definitions, removes only unreferenced LI-02 ECR digests and clears LI-02 log streams. Waits for shared ECS desired/in-service capacity to match its captured baseline where no other task depends on it. Each destructive action and saved Terraform plan requires its own typed confirmation. | Exit 0 means the public route, app, isolated database, run objects, unused LI-02 images and logs are gone. The Step 4 empty image bucket, IAM roles, empty log group, state backend, shared `clip_test` database, shared RDS instance and shared VPC/NAT/ECS cluster/capacity provider remain. If another workload appears, leave shared capacity/RDS available and report the difference. |
+
+The first start can start shared RDS only after a separate exact prompt; stop
+may return it to the captured stopped state only after the database idle task
+and another exact prompt. It never deletes the RDS instance or touches shared
+application data. If interrupted, keep the local baseline file, refresh the
+current account inventory, and resume with `stop`; the script refuses to guess
+an account, resource, or database target. The command has not yet been run
+against AWS, and cloud deployment remains separately gated by review of the
+current exact plans, cost and public exposure.
 
 ## PD-07 Step 1 — local web bootstrap
 
@@ -137,9 +163,11 @@ registry image must be rebuilt from the exact reviewed commit.
 The current engine has only the legacy builder, which ignores the
 Dockerfile-specific ignore file and would send the repository's 1.7 GB context.
 The Dockerfile avoids BuildKit-only instructions, and this procedure stages an
-allowlisted context under `/tmp` containing only the two locked dependency
-files, API source, Dockerfile and its ignore file. The Docker build uses the
-host's native architecture and never contacts AWS:
+allowlisted context under `/tmp` containing the Python and web lockfiles, API
+and web source, generated frontend types, Dockerfile and its ignore file. The
+image serves the built website and API from one process; the demo disclosure is
+enabled only with `--build-arg VITE_LISTINGS_PUBLIC_DEMO=true`. The Docker build
+uses the host's native architecture and never contacts AWS:
 
 ```sh
 (
@@ -162,9 +190,12 @@ cleanup() {
   exit "$result"
 }
 trap cleanup EXIT
-mkdir -p "$build_context/apps/api"
+mkdir -p "$build_context/apps/api" "$build_context/apps/web" "$build_context/contracts"
 cp pyproject.toml uv.lock "$build_context/"
 cp -R apps/api/app "$build_context/apps/api/"
+cp -R apps/web "$build_context/apps/"
+cp -R contracts/generated "$build_context/contracts/"
+cp package.json package-lock.json "$build_context/"
 cp apps/api/Dockerfile apps/api/Dockerfile.dockerignore "$build_context/"
 sudo docker build --file "$build_context/Dockerfile" --tag "$image_tag" "$build_context"
 image_id=$(sudo docker image inspect --format '{{.Id}}' "$image_tag")

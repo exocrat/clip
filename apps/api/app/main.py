@@ -2,9 +2,12 @@
 
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from psycopg import AsyncConnection
 from psycopg.rows import dict_row
 from psycopg_pool import AsyncConnectionPool
@@ -60,7 +63,9 @@ async def lifespan(application: FastAPI) -> AsyncIterator[None]:
         ) from None
 
     application.state.listings_store = PostgresListingsStore(
-        pool, settings.sensitive_purchase_threshold_paise
+        pool,
+        settings.sensitive_purchase_threshold_paise,
+        isolated_listing_limit=settings.isolated_listings_max_count,
     )
     if settings.isolated_listings_test_caller:
         from app.domains.listings.isolated_test import IsolatedListingsTestIdentity
@@ -100,12 +105,6 @@ app = FastAPI(
 
 install_error_handlers(app)
 app.add_middleware(RequestLoggingMiddleware)
-app.include_router(listings_router)
-if settings.isolated_listings_test_caller:
-    from app.domains.listings.isolated_test import isolated_test_caller
-
-    # The fixed test identity is injected server-side; request claims are ignored.
-    app.dependency_overrides[require_caller] = isolated_test_caller
 
 
 @app.get(**HEALTH_ROUTE)
@@ -116,3 +115,41 @@ async def health() -> HealthResponse:
     deployment readiness. It exposes no configuration or private state.
     """
     return HealthResponse(status="ok")
+
+
+if settings.serve_web_app:
+    # Give the same-origin hosted UI its explicit /api path. The local Vite
+    # proxy keeps its existing prefix rewrite against the unprefixed API.
+    app.include_router(listings_router, prefix="/api")
+
+    @app.get("/api/demo-info", include_in_schema=False)
+    async def demo_info() -> dict[str, str | bool]:
+        """Label the unauthenticated isolated deployment as synthetic demo data."""
+        return {"mode": "isolated-listings-demo", "synthetic_data_only": True}
+
+    web_root = Path("/app/web")
+    if not (web_root / "index.html").is_file():
+        raise RuntimeError("The isolated web app build is missing")
+    app.mount("/assets", StaticFiles(directory=web_root / "assets"), name="assets")
+
+    @app.get("/", include_in_schema=False)
+    async def web_index() -> FileResponse:
+        """Serve the built Listings UI from the same ECS task as its API."""
+        return FileResponse(web_root / "index.html")
+
+    @app.get("/{web_path:path}", include_in_schema=False)
+    async def web_route(web_path: str) -> FileResponse:
+        """Support browser refreshes on client routes without masking API misses."""
+        if web_path == "api" or web_path.startswith("api/"):
+            from fastapi import HTTPException
+
+            raise HTTPException(status_code=404)
+        return FileResponse(web_root / "index.html")
+else:
+    app.include_router(listings_router)
+
+if settings.isolated_listings_test_caller:
+    from app.domains.listings.isolated_test import isolated_test_caller
+
+    # The fixed test identity is injected server-side; request claims are ignored.
+    app.dependency_overrides[require_caller] = isolated_test_caller

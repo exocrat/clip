@@ -10,6 +10,9 @@ locals {
   db_master_parameter_arn = "arn:aws:ssm:ap-south-1:335523638354:parameter/clip/test/database-master-password"
   ecr_repository_arn      = "arn:aws:ecr:ap-south-1:335523638354:repository/clip-shared-test-api"
   runtime_boundary_arn    = "arn:aws:iam::335523638354:policy/clip/listings/test/CLIPListingsTestRuntimeBoundary"
+  browser_origins = var.demo_enabled ? [
+    "http://${aws_lb.demo[0].dns_name}",
+  ] : [var.test_web_origin]
 }
 
 resource "aws_s3_bucket" "images" {
@@ -61,7 +64,7 @@ resource "aws_s3_bucket_cors_configuration" "images" {
   cors_rule {
     allowed_headers = ["content-type", "if-none-match", "x-amz-*"]
     allowed_methods = ["GET", "HEAD", "PUT"]
-    allowed_origins = [var.test_web_origin]
+    allowed_origins = local.browser_origins
     expose_headers  = ["ETag"]
     max_age_seconds = 300
   }

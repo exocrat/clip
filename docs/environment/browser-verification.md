@@ -54,9 +54,17 @@ the phone, not this developer's computer. Prepare the access method when needed;
 do not silently change loopback bindings or expose services as part of a layout
 check.
 
-## LI-02 camera/gallery checkpoint
+For Suraj's LI-02 Step 12, the website and API are deployed to ECS behind a
+public load balancer. The laptop and phone open the same deployed URL; neither
+device depends on a server or forwarding rule on the laptop. The public demo is
+unauthenticated while running and uses only the fixed synthetic seller and
+synthetic data. Step 12 uses the generated ALB HTTP hostname and exact CORS
+origin; HTTPS is deferred until real integration. The actual phone check verifies the deployed website and listing
+image flow; no separate camera/gallery acceptance gate is added here.
 
-For the Step 9 desktop review, the agent starts the built UI at
+## LI-02 browser checkpoints
+
+For the Step 9 local desktop review, the agent starts the built UI at
 `http://127.0.0.1:5174/listings/new` using the explicit isolated Listings
 browser command in the [command registry](commands.md#li-01-step-7-isolated-postgresql-browser-checkpoint).
 That page uses a fixed synthetic seller, a separate real local PostgreSQL
@@ -66,16 +74,18 @@ responsive layouts in a desktop browser. Human review then checks the visible
 experience. The loopback address works on this computer only; it does not let a
 phone reach the server.
 
-Use controlled synthetic item photos. Verify existing-image selection, taking a
-new photo on supported phone browsers, cancellation, unavailable capture and
-permission handling where applicable, progress/retry, and desktop file selection.
-Verify preview orientation and usable controls on the actual device. Captured
-files still obey the approved image type/size/count rules; unsupported files
-need a clear rejection or a separately reviewed conversion policy. A cancelled
-picker/capture must preserve prior selections and leave no false upload success.
+Use controlled synthetic item photos. Review existing-image selection,
+progress/retry, rejection, gallery/file-picker behavior and previews in the
+local desktop browser and responsive viewport checks. The actual mobile website
+check occurs only at Step 12 after deployment; verify the deployed site and
+listing image flow are usable on the selected supported phone/browser. It does
+not add a separate camera-capture acceptance gate. Captured files still obey
+the approved image type/size/count rules; unsupported files need a clear
+rejection or a separately reviewed conversion policy.
 
 Do not require a particular HTML attribute or camera API before implementation
 review. Browser capture support varies; ordinary file selection must remain
 available. [MDN's capture reference](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/capture)
-documents the platform limitation. Repeat the journey against real storage at
-LI-02 Step 12; isolated checks leave that obligation pending.
+documents the platform limitation. Step 9's local checks use no AWS. At Step 12,
+use the approved reachable URL for the deployed mobile website check; isolated
+browser checks remain separate from the real RDS/S3 rehearsal.

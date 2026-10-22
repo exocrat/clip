@@ -23,13 +23,14 @@ export type {
   UploadInstruction,
 };
 
-/** Test controls are compiled out of the production build. Auth stays server-owned. */
+/** The synthetic browser helpers remain development-only; auth stays server-owned. */
+export const publicListingsDemo = import.meta.env.VITE_LISTINGS_PUBLIC_DEMO === 'true';
 export const isolatedListingsDemo =
   import.meta.env.DEV && import.meta.env.VITE_LISTINGS_ISOLATED_DEMO === 'true';
 
 /** Keep failures actionable without reflecting raw API/provider diagnostics. */
 export class ListingsApiError extends Error {
-  constructor(public readonly status: number) {
+  constructor(public readonly status: number, code?: string) {
     const messages: Record<number, string> = {
       401: 'Your session is missing or expired. Sign in again before continuing.',
       403: 'This account is not allowed to perform this action.',
@@ -38,7 +39,9 @@ export class ListingsApiError extends Error {
       422: 'Some details were rejected. Check the fields, dates and confirmed images.',
       503: 'A required service is unavailable. Your form has been kept; try again later.',
     };
-    super(messages[status] ?? 'The request could not be completed. Please try again.');
+    super(code === 'demo_listing_limit_reached'
+      ? 'This isolated demo has reached its ten-listing limit. Stop and restart it to begin a fresh run.'
+      : messages[status] ?? 'The request could not be completed. Please try again.');
   }
 }
 
@@ -60,7 +63,20 @@ export async function listingsRequest<T>(
     if (error instanceof DOMException && error.name === 'AbortError') throw error;
     throw new ListingsApiError(0);
   }
-  if (!response.ok) throw new ListingsApiError(response.status);
+  if (!response.ok) {
+    let code: string | undefined;
+    try {
+      const payload = await response.json() as {
+        error?: { details?: Array<{ code?: string }> };
+      };
+      code = payload.error?.details?.find((detail) =>
+        detail.code === 'demo_listing_limit_reached'
+      )?.code;
+    } catch {
+      // An unstructured error body must not replace the safe status message.
+    }
+    throw new ListingsApiError(response.status, code);
+  }
   if (response.status === 204) return undefined as T;
   try {
     return await response.json() as T;

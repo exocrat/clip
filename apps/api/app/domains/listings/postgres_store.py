@@ -128,8 +128,9 @@ class PostgresListingsStore:
         self,
         pool: AsyncConnectionPool[AsyncConnection[dict[str, Any]]],
         sensitive_price_threshold_paise: int,
+        isolated_listing_limit: int | None = None,
     ) -> None:
-        """Bind the database pool and validated Listings price threshold."""
+        """Bind the pool, price threshold, and optional isolated-demo limit."""
         if (
             type(sensitive_price_threshold_paise) is not int
             or sensitive_price_threshold_paise < 0
@@ -138,6 +139,11 @@ class PostgresListingsStore:
             raise ValueError("The sensitive-purchase threshold must be whole rupees")
         self._pool = pool
         self._threshold = sensitive_price_threshold_paise
+        if isolated_listing_limit is not None and (
+            type(isolated_listing_limit) is not int or isolated_listing_limit < 1
+        ):
+            raise ValueError("The isolated listing limit must be a positive integer")
+        self._isolated_listing_limit = isolated_listing_limit
 
     async def read_catalogue(self) -> CatalogueView:
         """Read active form choices from Listings tables in one ordered query."""
@@ -485,6 +491,21 @@ class PostgresListingsStore:
                 )
                 if previous is not None:
                     return previous
+
+                if self._isolated_listing_limit is not None:
+                    # Serialize demo creates before counting so concurrent
+                    # requests cannot exceed the isolated profile's hard cap.
+                    await connection.execute("SELECT pg_advisory_xact_lock(1202, 10)")
+                    cursor = await connection.execute(
+                        "SELECT count(*) AS listing_count "
+                        "FROM listings.sale_listings",
+                    )
+                    row = await cursor.fetchone()
+                    if row is None or row["listing_count"] >= self._isolated_listing_limit:
+                        raise PublicError(
+                            ERRORS[409],
+                            (FieldError("listings", "demo_listing_limit_reached"),),
+                        )
 
                 category_id = await self._active_category_id(
                     connection, request.category_code

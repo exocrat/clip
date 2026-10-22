@@ -49,7 +49,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | DL-00 | Shared-core/contract coordinator; all domains review | in progress | Steps 1–13 local work complete; independent review and exact merge gate next | Steps 1–13 performed | User reports affected domain owners reviewed and approved the contract documents; four declarations derive from those reviewed signatures | `task/pre-00-dl-00-foundation`; 50 HTTP operations, 19 internal callables, eight generated artifacts; `make check` passed (421 Python, 63 data, 16 web tests; Black 71 files; boundary/contract/mypy/web/database/safety/secrets checks) | Independent peer review and exact-revision merge remain; cleanup implementation still needs its separate approval; real providers/integrations and crypto/worker implementation remain downstream | 2026-10-20 05:17:32 UTC |
 | ID-01 | A | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | ID-READY, LI-01, LI-02, SE-CORE, SE-02, CN-CORE, CN-02 | — |
 | LI-01 | B | in progress | Step 11 LI-CORE and remaining Step 7/9/10 gates. | Steps 1–4/6, isolated Step 5 increments, Steps 8–10 checks, and available Step 9 scenarios implemented; Step 7 partial, current create/edit/detail/My Listings checkpoint verified in isolated mode. | Suraj verified the multi-image edit/gallery checkpoint, approved seller-only selected-buyer visibility, and verified Step 10. Phone-device observation and remaining Step 7 checks are not claimed. | `domain/listings` / `e398c96`; 61 focused Listings tests passed, 1 direct database test skipped outside wrapper; disposable PostgreSQL workflow passed; Black and `git diff --check` pass. | Step 11–13; new-thread rejection after retirement requires the unimplemented Conversations-owned thread-start path; affected-consumer/schema review of nullable pickup, native schema check, real Identity/image/chat integrations, and five pre-existing backend boundary findings remain. | 2026-10-21 15:35:55 UTC |
-| LI-02 | B | in progress | Step 12 isolated cloud rehearsal: prepare/review exact deployment and run plan, then deploy privately and verify mobile website behavior after deployment. | Steps 1–11 performed and verified; Step 12 not started. | Steps 1–11 verified by Suraj; mobile website verification belongs to Step 12 after deployment. | `domain/listings`; Step 11 `make check`: 540 Python tests passed, 1 skipped; 63 data tests passed; boundaries 0 violations; 8 contract artifacts current; mypy passed; web lint, 38 tests, TypeScript and production build passed; 35 database safety cases passed; disposable PostgreSQL 18.6 apply/head/repeat/smokes/rollback/reapply passed; Gitleaks 8.30.1 source-snapshot scan passed. Terraform 1.15.9 exact plan SHA `520a5ad1af425698152b092fb636fa6e0715197977b461d3f5b6cc94b3f81a7b` applied to account `335523638354`, Region `ap-south-1`: 0 added, 2 changed, 0 destroyed. Live CORS includes `if-none-match`; policy denies run-prefix PUTs without `If-None-Match: *`. | Step 12 exact deployment/run-window/cost/access/cleanup plan and its separate approval remain. ECS app/service and private SSM access route still need creation and verification; mobile browser access must use an approved reachable URL. LI-CORE/ID-READY gate Step 13. | 2026-10-22 11:36:10 UTC |
+| LI-02 | B | in progress | Step 12 local implementation complete for review; next obtain independent Security review, then refresh AWS identity/budget and inspect exact plans before deployment. | Steps 1–11 verified; Step 12 design verified; local implementation performed but not deployed or tested against AWS. | Suraj selected generated HTTP URL, public ECS demo for laptop/phone, ten-listing synthetic cap, and start/stop that preserves shared infrastructure; HTTPS deferred to integration. | Current `domain/listings` worktree based on `5eef3ff`. Implemented app/UI image, isolated cap, conditional HTTP ALB/service, fixed DB task definitions, and lifecycle start/stop. Static checks: Python AST/shell syntax, Terraform format, Terraform validate and `git diff --check` pass. No app tests, plan, AWS call, or cloud change. Previously recorded Step 4 apply/evidence remains; last valid account inventory on 2026-10-22 had shared RDS stopped, URL parameter absent, actual spend USD 4.087 / forecast USD 30.384 / USD 200 limit. Current-session credentials still do not verify target account; refresh before any cloud action. | Independent Security review of public/unauthenticated route and cleanup; exact current AWS identity/budget/inventory; clean committed source revision under per-commit approval; exact Terraform plan review; deployment and desktop/mobile verification. Preserve shared RDS/VPC/NAT/other domains and only restore captured RDS state after task/session checks and separate approval. LI-CORE/ID-READY remain Step 13 integration gates. | 2026-10-22 14:07:56 UTC |
 | SE-01 | C | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | SE-CORE, LI-01, LI-02, DATA-READY | — |
 | SE-02 | C | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | SE-CORE, ID-READY, LI-CORE | — |
 | CN-01 | D | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | Isolated development: PRE-00, then DL-00 and a reviewed contract/stub. Later real gates: CN-CORE; SE-02's real request interfaces for request-response integration; CN-03's producer path for final NFR-05 acceptance. | — |
@@ -93,8 +93,9 @@ accepted.
 Current checkpoint: `domain/listings` contains the accepted contract changes,
 verified LI-01 Steps 1–4, and the partial Step 5 implementation and evidence.
 Suraj confirmed completing the Firefox Responsive Design Mode layout
-inspection. Actual-phone camera/gallery checks remain pending for LI-02. The
-Listings walkthrough remains in progress.
+inspection. On 2026-10-22, Suraj clarified LI-02's human mobile website check
+belongs at Step 12 after deployment; no separate phone camera/gallery check is
+required. The Listings walkthrough remains in progress.
 
 ## Dated history entries
 
@@ -566,6 +567,112 @@ It changed only the private LI-02 bucket CORS and policy: 0 added, 2 changed,
 `If-None-Match` and the bucket policy denies PUTs under the run prefix when
 the header is absent or differs from `*`. No ECS/RDS runtime, upload, database
 write, or phone test was performed. Step 12 remains the next checkpoint.
+
+### LI-02 Step 12 preparation — mobile scope and live prerequisites — 2026-10-22 12:42:45 UTC
+
+Suraj verified the Step 4 apply result and Step 12 understanding. Read-only AWS
+inventory confirmed account `335523638354`/user `surajs2`; the shared
+`clip-shared-test` ECS cluster is active with zero registered instances/tasks
+and one existing shared API service; shared RDS `clip-shared-test-postgres`
+(`db.t4g.micro`) is stopped; no SSM managed instance is online; the Listings DB
+URL SecureString parameter is absent while the shared RDS master-password
+parameter exists as version 1; the shared API ECR contains only the baseline
+image digest tagged `68d6179db03dcf983278b290d22a939af625bba1`. Current account
+budget reads USD 4.087 actual and USD 30.384 forecast against a USD 200 limit.
+No cloud resources or secrets were changed/read.
+
+Updated the LI-02 task and browser instructions to defer human mobile website
+verification until after Step 12 deployment and to require LI-02-specific
+start/stop commands. The current local Vite plus SSM port-forward is laptop-only;
+an approved phone-reachable private path is still unresolved. Step 12 also needs
+its app/migration/setup task definitions and service, isolated database URL,
+immutable image builds, current target/cost plan, and exact operation approvals.
+No ECS task, database, parameter, ECR image, network route, deployment, or
+upload was created.
+
+Suraj confirmed the phone will use the same trusted Wi-Fi as the laptop. A
+read-only WSL network check found the current WSL2 address `172.23.53.94/20`
+behind NAT, so that address is not the phone-facing URL. The proposed route is
+a temporary Windows Wi-Fi-IP to WSL Vite-port forward, with an inbound firewall
+rule limited to the phone's exact Wi-Fi IP and a matching exact-origin S3 CORS
+entry. Exact Windows/phone addresses, Wi-Fi client isolation, firewall profile,
+and route changes still require review; no host firewall, forwarding, or cloud
+configuration was changed. The `docs/environment/commands.md` registry has no
+LI-02-specific start/stop command yet. Those commands must leave shared RDS and
+the shared API untouched; start-up must preflight RDS readiness and the exact
+LI-02 target, and stop must tear down only the LI-02 runtime and temporary
+phone route while retaining the isolated test data for the approved cleanup.
+Read-only ECS verification further confirmed the existing shared API service is
+ACTIVE but desired/running/pending are all zero. The LI-02 stop command can
+therefore target only its own service; the shared RDS start/stop remains a
+separate reviewed operation. The initial demo cannot be instant from the
+current stopped-RDS state.
+
+Suraj asked whether changing campus Wi-Fi between the hostel and department
+would require route changes, and proposed using the phone's mobile hotspot for
+the laptop. Prefer that portable route if a reachability check confirms the
+phone can open a local page served by its tethered laptop. Do not broaden the
+firewall to a campus subnet. If campus Wi-Fi is used, recheck client isolation
+and exact IPs at each location; the private URL origin and scoped S3 CORS entry
+may change.
+
+### LI-02 Step 12 — public ECS demo architecture verified — 2026-10-22 13:13:43 UTC
+
+Suraj verified a public ECS-served demo for laptop and phone, a hard ten-listing
+limit confined to the isolated profile, synthetic data only, and one-command
+start/stop that removes LI-02-owned runtime resources and test data. Shared RDS,
+VPC/NAT, and other domains' resources remain untouched; their baseline costs
+continue. Corrected the Step 12 task/index and Listings test-root design to
+remove the previous laptop/SSM/private-Wi-Fi route. The deployed UI/API path,
+HTTPS hostname/certificate, test-only cap implementation, and start/stop command
+are not implemented yet. No code, Terraform plan/apply, or AWS resources changed.
+
+### LI-02 Step 12 — ECS app packaging and isolated listing cap — 2026-10-22 13:19:54 UTC
+
+Started the local Step 12 implementation. The API container now builds and
+bundles the web app, can serve that UI and the `/api` Listings routes from the
+same ECS task only when the isolated caller profile is enabled, and shows a
+synthetic-data disclosure in the isolated web build. The isolated profile now
+requires a ten-listing limit; the PostgreSQL adapter serializes demo creates
+and rejects an 11th listing without constraining other profiles. Updated the
+API image build context and test-root CORS origin validation for a future
+reviewed HTTPS origin. No tests/build, Terraform plan/apply, AWS action, or
+deployment was run. Public listener/service, lifecycle commands, hostname and
+certificate, and shared-resource preflights remain pending.
+
+### LI-02 Step 12 — HTTP demo and shared-state restoration direction — 2026-10-22 13:33:15 UTC
+
+Suraj chose the generated public HTTP ALB URL for the isolated synthetic demo
+and deferred HTTPS to real integration. He requested restoring shared RDS and
+ECS capacity to their pre-demo state where safe and confirmed he believes he is
+authorized for the shared RDS. Updated the task and Terraform-root design to
+record this direction. No AWS operation is authorized by this design update;
+the exact operation plan and cloud approval gates remain. The lifecycle must
+leave a shared resource available if another workload starts depending on it,
+and report that it could not restore baseline state.
+
+### LI-02 Step 12 — implementation gap audit — 2026-10-22 13:37:26 UTC
+
+Suraj confirmed the generated HTTP endpoint and deferred HTTPS until integration. Audited the Step 12 root: the conditional ALB, subnet, ingress rule, API task/service and output are present, but Terraform does not define the promised fixed database setup/migration/cleanup task definitions and no executable `li02-demo start/stop` command is registered. The `/clip/test/listings-database-url` parameter is absent in the last valid account inventory. Corrected the root runbook to distinguish Terraform teardown from separately reviewed RDS baseline restoration and to state that a custom domain is unnecessary. No AWS call or resource change occurred. Step 12 remains blocked from deployment until these missing pieces, fresh account/budget preflight, source digest and exact plan are ready.
+
+### LI-02 Step 12 — fixed database tasks and lifecycle implementation — 2026-10-22 14:07:56 UTC
+
+Implemented the fixed database bootstrap, pinned migration, synthetic-seller
+seed, cleanup and idle-check ECS task definitions plus a local start/stop
+driver. Start preflights the target account/budget/shared task use, captures
+shared RDS/ECS baselines, pins pushed images by digest, and gates each saved
+Terraform plan by its hash. Stop removes the isolated database, exact S3 run
+prefix, URL SecureString, temporary public route/service, unreferenced tagged
+images and LI-02 log streams; it does not gate cleanup on budget availability.
+It restores shared RDS only after the idle task and separate typed approval.
+Preserved pre-existing untracked `data/runs/` and `database/migrations.zip`.
+Static checks passed: Python syntax parsing, shell syntax, Terraform format,
+Terraform validate and `git diff --check`. Validation caught and fixed use of
+an unavailable RDS data-source username attribute; the task uses the already
+approved shared master login name `clip_test_admin`. No tests, AWS command,
+Terraform plan/apply, deployment, or commit ran. Step 12 still requires code
+review, independent Security review, a current target-account/budget preflight,
+exact plan approval, and desktop/phone browser verification after deployment.
 
 ### LI-01 task start — 2026-10-20 08:57:01 UTC
 

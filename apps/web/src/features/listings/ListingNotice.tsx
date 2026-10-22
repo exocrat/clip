@@ -1,13 +1,21 @@
-import { isolatedListingsDemo } from './listingsApi';
+import { isolatedListingsDemo, publicListingsDemo } from './listingsApi';
 
 /** Explain the platform's limits and label the separate local synthetic demo. */
 export function ListingNotice() {
   return (
     <>
-      {isolatedListingsDemo && (
-        <aside className="listings-demo" aria-label="Local test mode">
-          <strong>Isolated Listings test — synthetic seller</strong>
-          <p>This development mode uses a synthetic seller supplied by the separate local test server. Image storage availability depends on that server. Real sign-in, cloud storage verification, and chat integration remain pending.</p>
+      {(isolatedListingsDemo || publicListingsDemo) && (
+        <aside className="listings-demo" aria-label="Listings test mode">
+          <strong>
+            {publicListingsDemo
+              ? 'Isolated Listings demo — synthetic seller and data'
+              : 'Local Listings test — synthetic seller'}
+          </strong>
+          <p>
+            {publicListingsDemo
+              ? 'This public rehearsal uses a fixed synthetic seller. Do not enter real personal information or upload real personal photos.'
+              : 'This local test uses a synthetic seller supplied by the local test server.'}
+          </p>
         </aside>
       )}
       <p className="listings-muted">

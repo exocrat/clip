@@ -61,6 +61,7 @@ def _set_isolated_test_profile(monkeypatch, **overrides):
         "CLIP_ENVIRONMENT": "test",
         "CLIP_DEVELOPMENT_AUTH": "true",
         "CLIP_ISOLATED_LISTINGS_TEST_CALLER": "true",
+        "CLIP_ISOLATED_LISTINGS_MAX_COUNT": "10",
         "CLIP_DATABASE_URL": "postgresql://clip_test:secret@db.invalid/clip_test_listings",
         "CLIP_STORAGE_PROVIDER": "s3",
         "CLIP_IMAGE_BUCKET": "clip-test-listings-images-ap-south-1-li02",
@@ -99,6 +100,7 @@ def test_isolated_listings_test_caller_requires_the_private_test_configuration(
         ("CLIP_IMAGE_BUCKET", "shared-bucket"),
         ("CLIP_IMAGE_REGION", "us-east-1"),
         ("CLIP_IMAGE_KEY_PREFIX", "listings/shared/run-20261022"),
+        ("CLIP_ISOLATED_LISTINGS_MAX_COUNT", "9"),
     ],
 )
 def test_isolated_listings_test_caller_rejects_nonisolated_targets(

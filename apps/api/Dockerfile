@@ -1,3 +1,16 @@
+FROM node:24.22.0-slim AS web-build
+
+WORKDIR /workspace
+
+COPY package.json package-lock.json ./
+RUN npm ci
+
+COPY apps/web ./apps/web
+COPY contracts/generated ./contracts/generated
+ARG VITE_LISTINGS_PUBLIC_DEMO=false
+ENV VITE_LISTINGS_PUBLIC_DEMO=${VITE_LISTINGS_PUBLIC_DEMO}
+RUN npm run build
+
 FROM python:3.14.8-slim-trixie AS build
 
 COPY --from=ghcr.io/astral-sh/uv:0.10.7 /uv /uvx /bin/
@@ -23,6 +36,7 @@ WORKDIR /app
 
 COPY --from=build --chown=10001:10001 /opt/venv /opt/venv
 COPY --chown=10001:10001 apps/api/app /app/apps/api/app
+COPY --from=web-build --chown=10001:10001 /workspace/apps/web/dist /app/web
 
 USER 10001:10001
 

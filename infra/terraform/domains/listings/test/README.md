@@ -14,28 +14,28 @@ roles, shared ECS cluster, RDS instance, VPC, or Terraform state bucket.
 | Owner | Listings/Images, Suraj (B); cloud test operator remains a separately named per-window assignment. |
 | Terraform root/state | `infra/terraform/domains/listings/test/`; `domains/listings/test/terraform.tfstate`; resources are declared directly in this root, with no reusable module needed for this single environment. Required `test_run_id` fixes the rehearsal's S3 prefix. |
 | Data class | Seller-provided listing photos. Treat them as private user content that may accidentally include personal details. No real user data is allowed in the rehearsal. |
-| Exposure | Account `335523638354`, Region `ap-south-1`; bucket blocks all public access, enforces bucket-owner ownership, uses SSE-S3 and a TLS-only bucket policy. Browser upload CORS is limited to the local Vite origin `http://127.0.0.1:5173` (or the documented `localhost` equivalent). No website hosting or public app ingress is created. |
+| Exposure | Account `335523638354`, Region `ap-south-1`; the image bucket blocks all public access, enforces bucket-owner ownership, uses SSE-S3 and a TLS-only bucket policy. Step 12's website/API route is public over HTTP only while the LI-02 demo is running. It is unauthenticated and accepts synthetic data only. Browser upload CORS is restricted to the exact generated ALB origin. HTTPS is deferred to real integration. |
 | Objects and permissions | Bucket `clip-test-listings-images-ap-south-1-li02`; app keys use `listings/test/<test_run_id>/`, where Terraform fixes the selected run ID. The API task role can only get, put, and delete objects under that exact run prefix. The API execution role can pull the reviewed image from the existing shared API ECR repository, write only to this test log group, and read only `/clip/test/listings-database-url`. A separate one-shot database-setup execution role can pull its reviewed image, write to the same bounded log group, and read only `/clip/test/database-master-password` plus `/clip/test/listings-database-url`. Its task definition has no AWS task role. All three roles use the administrator-owned boundary ARN `arn:aws:iam::335523638354:policy/clip/listings/test/CLIPListingsTestRuntimeBoundary`; each inline policy is narrower than that ceiling. |
 | Upload/delivery limits | Reuse the reviewed contract: 1–8 JPEG/PNG/WebP images, each 1–10 MiB; controlled object keys; browser upload uses short-lived signed PUT instructions; authorized reads use the existing maximum five-minute signed delivery URL. |
-| Retention and cleanup | Do not expire confirmed images by object age: an attached listing may remain active. The Listings cleanup worker deletes an exact pending/failed/retired key only after the database state permits deletion and S3 confirms absence. Preserve retry metadata until then. S3 lifecycle aborts only incomplete multipart uploads after one day. Versioning is disabled so a successful object delete does not leave old image versions behind. The isolated run uses a dedicated `clip_test_listings` database on the existing RDS instance and a run-scoped S3 prefix. Remove synthetic rows and objects through the reviewed cleanup path, then drop only that dedicated database with the one-shot setup task. Do not alter the shared `clip_test` database; `force_destroy` is not enabled. |
-| Test window and data cap | Reuse the shared private ECS/RDS/VPC/NAT foundation; do not create a second database or network. Proposed isolated rehearsal cap: one ECS host/task, up to two active hours, and at most one listing with eight maximum-size images (80 MiB total). The previously reviewed shared-stack reference is about USD 0.35 for two fully active hours before traffic, startup/scale-in tail, and continuing base charges. The bucket itself has no hourly fee; storage, request, transfer, and log charges depend on actual use. Refresh account spend, credit eligibility, and the exact cost estimate before the Step 3/Step 12 approvals. |
-| Rollback | Disable the Listings test task first; keep the shared cluster/RDS/network/state resources untouched. Delete only LI-02-owned images and metadata through the reviewed cleanup procedure. Prepare a fresh destroy plan for this root after the bucket is verified empty; never use `force_destroy`. |
+| Retention and cleanup | Do not expire confirmed images by object age during a run: an attached listing may remain active. The Listings cleanup worker deletes an exact pending/failed/retired key only after the database state permits deletion and S3 confirms absence. Preserve retry metadata until then. S3 lifecycle aborts only incomplete multipart uploads after one day. Versioning is disabled. The isolated run uses a dedicated `clip_test_listings` database on the existing shared RDS instance and a run-scoped S3 prefix. The LI-02 stop command removes test rows/objects and drops only `clip_test_listings`; preserve the shared RDS instance and shared `clip_test` database. Before destroying this root, verify the bucket is empty; `force_destroy` stays disabled. |
+| Test window and data cap | Reuse the shared ECS/RDS/VPC/NAT foundation; do not create a second RDS instance or network. The public ALB and LI-02 runtime exist only while demonstrating. Enforce at most ten synthetic listings in the isolated test profile and retain the existing 1–8 image, 10 MiB per-image contract (up to 800 MiB across ten full listings). There is no fixed two-hour test duration; the operator starts the demo for verification/showing and runs stop when done. Refresh current shared-account spend, credit eligibility, and exact ALB/runtime costs before Step 12 approval. Shared RDS/network/storage costs continue outside LI-02 and are not represented as demo teardown savings. |
+| Rollback | Stop public ingress, clean the isolated Listings database and run prefix, remove LI-02 runtime resources and LI-02-owned logs/images, then verify no demo task or endpoint remains. Never delete shared RDS/VPC/NAT or another domain's ECR images/resources. Restoring the RDS start/stop state is a separate approved operation; it must preserve the captured baseline and must not disrupt a new shared consumer. Prepare a fresh destroy plan for this root only after the bucket is verified empty; never use `force_destroy`. |
 
 The local browser uploads directly to S3 using a Listings-issued URL that is
 valid for at most five minutes and requires the signed `Content-Type` and
 `If-None-Match: *` headers. The bucket policy denies PUT requests under the
 current test-run prefix if the create-only condition is missing, and CORS
-allows the browser to send that header from the loopback Vite origin. It is
-not a public bucket: the origin restriction is a browser rule, while IAM
-remains the authority for object access. A later hosted frontend origin must
-be separately reviewed and added to the test root before that origin is used.
+allows the browser to send that header from the exact configured origin. For
+Step 12, Terraform uses the generated ALB HTTP origin. The bucket remains
+private, object requests use HTTPS, and IAM remains the authority for access.
 
 The isolated cloud API may enable its fixed seller only with
 `CLIP_ISOLATED_LISTINGS_TEST_CALLER=true` and
 `CLIP_DEVELOPMENT_AUTH=true`. Settings also require `CLIP_ENVIRONMENT=test`,
 database URL path `clip_test_listings`, the exact private test bucket and
 `ap-south-1` region, and a single-segment `listings/test/<test_run_id>` prefix.
-The API database URL must use the dedicated login `clip_test_listings_app`.
+The API database URL must use the dedicated login `clip_test_listings_app`,
+and `CLIP_ISOLATED_LISTINGS_MAX_COUNT=10` enables the serialized database cap.
 On startup, the API checks the connected database and both the login/effective
 role names; it refuses to serve this caller outside `clip_test_listings` or
 when the role is a superuser, can create databases or roles, can replicate, or
@@ -48,40 +48,89 @@ starts. Request models reject extra fields, including a client-supplied owner
 ID. Production settings reject this profile flag, and shared deployment must
 leave it false while using the real Identity caller.
 
-## Isolated app route for Step 12
+## Isolated public app route and demo lifecycle for Step 12
 
-Step 12 will add a Listings-owned ECS task definition/service to the existing
-private `clip-shared-test` cluster and its capacity provider; it will not
-replace or edit the shared API service. Use bridge networking with container
-port `8000` mapped to host port `18001`, no public IP, listener, or inbound
-security-group rule. The API task uses the API task and execution role ARNs
-output by this root and the exact `/clip/test/listings-database-url`
-SecureString reference. The API execution role is also used by the fixed
-one-shot migration task; that task has no task role. A separate fixed
-one-shot database-setup task uses the database-setup execution role, reads
-the existing RDS master secret and the Listings database URL, creates or
-removes only `clip_test_listings` and its dedicated application login, and
-does not receive AWS credentials inside the container. Its startup, migration,
-and cleanup commands must be fixed in reviewed task definitions rather than
-supplied as arbitrary ECS overrides. The database URL is a SecureString
-created through the existing `/clip/*` Parameter Store access; its value is
-never put in Terraform state, output, tags, or logs.
+Step 12 serves the built Listings website and its API from ECS in the existing
+`clip-shared-test` cluster. The browser must not depend on a Vite server or
+proxy running on the operator's laptop. A public load balancer routes the
+website and API over one reviewed origin; desktop and phone use the same URL.
+Use the ALB's generated HTTP hostname for the isolated demo. The demo has no sign-in flow:
+while it is running, visitors use the same fixed synthetic seller. The page
+must identify the environment as a demo and must not accept real user data.
+Backend enforcement caps the isolated test database at ten synthetic listings;
+the cap is unavailable in shared/production profiles. Existing per-listing
+image limits remain 1–8 images, 10 MiB maximum each.
 
-Build the API and database-task images from the same selected source revision
-and push immutable digests to the existing `clip-shared-test-api` ECR
-repository. The migration task must use the repository's pinned migration
-tool/version and exact checked-in migrations. The dedicated database login
-owns only the isolated Listings test database so migrations can create their
-schemas there; the RDS master login is used only by the one-shot setup task.
+The app container serves its bundled UI from `/` and the API under `/api`; its
+health endpoint remains `/health`. Runtime static serving is enabled only
+alongside the isolated caller. The build marks the isolated demo disclosure in
+the Listings UI, while development-only synthetic helper endpoints remain
+compiled out of the deployed bundle.
 
-Run the local Vite UI at `http://127.0.0.1:5173`; its existing `/api` proxy
-targets local port `8000`. The named operator opens an SSM port-forward from
-local port `8000` to port `18001` on the private ECS host. The browser then
-uses the Listings UI and its short-lived S3 URL from the operator's machine.
-Only the operator reaches the API through SSM; S3 remains private and grants
-the ECS task role only the `listings/test/<test_run_id>/*` object operations. This route uses the
-existing private network/cluster and does not create web hosting or a public
-endpoint. Step 12 must verify the actual SSM target and mapping before use.
+The API task uses this root's API task/execution roles and the exact
+`/clip/test/listings-database-url` SecureString reference. The API execution
+role is also used by the fixed one-shot migration task, which has no task role.
+A separate fixed one-shot database-setup task uses the database-setup execution
+role and the existing RDS master secret only to create/drop the dedicated
+`clip_test_listings` database and login. It does not receive AWS credentials
+inside the container. Startup, migration, and cleanup commands are fixed in
+reviewed task definitions rather than supplied as arbitrary ECS overrides.
+The database URL is never put in Terraform state, output, tags, or logs.
+Build the website/API and database-task artifacts from one selected source
+revision and pin deployments by immutable digest. The migration task uses the
+repository's pinned migration tool/version and checked-in migrations.
+
+The test profile rejects client-supplied owner IDs and refuses startup unless
+it is in `clip_test_listings` with the least-privilege application role. The
+caller remains source-fixed and production settings reject the profile.
+S3 stays private; short-lived signed uploads and reads use the existing
+run-scoped prefix and role permissions. Bucket CORS allows only the exact
+deployed HTTP origin and `If-None-Match: *` upload header.
+
+The lifecycle commands are registered as
+`make li02-demo-start AWS_PROFILE=<approved-profile>` and
+`make li02-demo-stop AWS_PROFILE=<approved-profile>`. They are implemented but
+have not been exercised against AWS. Start requires clean committed build
+inputs, preflights account/region, budget, shared task use, and state, captures
+the RDS and ECS capacity baselines in an ignored non-secret local file, and
+builds/pushes uniquely tagged images from that immutable source. It creates the
+database URL as one SecureString without printing its value, creates the ALB
+and fixed task definitions with the app count at zero, bootstraps only
+`clip_test_listings`, applies the checked-in migrations, seeds one fixed
+synthetic seller, then enables the app and prints the ALB URL. Each Terraform
+saved plan is displayed with a SHA-256 and requires that exact text to be typed
+before apply. RDS start is a separate exact prompt when it was stopped at
+baseline. No custom domain or subdomain is needed for this HTTP endpoint.
+
+Stop scales the LI-02 service to zero, drops only the isolated Listings
+database/login, removes the exact S3 run prefix and the database URL parameter,
+then uses a reviewed plan to remove the temporary ALB, subnet/route, host
+ingress rule, ECS service and task definitions. It deletes only unreferenced
+LI-02 ECR image digests and clears LI-02 log streams. It preserves the Step 4
+empty image bucket, IAM roles, empty log group, state backend, shared RDS and
+`clip_test` database, VPC, NAT, ECS cluster/capacity provider, and other
+domains' artifacts. It never deletes or Terraform-manages a shared resource.
+When no other task/session depends on shared capacity or RDS, stop waits for
+the recorded ECS capacity baseline and may restore the shared RDS stopped state
+after its idle check and separate exact prompt. If another workload appears or
+the capacity check fails, leave shared resources available and report the
+difference. Shared foundation costs continue while the demo is off.
+
+If interrupted, retain the ignored baseline file and resume with `stop`; it
+contains no credentials. Do not infer cloud state from the file alone: refresh
+the account inventory and review Terraform/AWS state before any manual recovery.
+
+The app uses the existing RDS instance only while available. If it was stopped
+at baseline, start may bring it up only under its separate approved operation;
+stop restores the prior state only after checking there is no other shared
+consumer. Human
+mobile verification happens after deployment using the phone's browser over
+the same public URL; no Wi-Fi, hotspot, WSL forwarding, or separate camera
+behavior check is required. Record desktop upload and mobile website/image-flow
+observations separately. Have Security review public exposure, the fixed
+synthetic caller, ten-listing cap, logs, teardown, and current costs. This
+remains an isolated rehearsal and does not accept ID-READY, LI-CORE, real
+authentication, or full LI-02 integration.
 
 ## Operator access for self-operated LI-02
 
@@ -130,6 +179,6 @@ its own reviewed configuration and run plan.
 
 No backend initialization, Terraform plan, AWS mutation, upload, database
 write, deployment, or cleanup is performed by Step 2. Step 3 owns exact-plan
-review and apply approval. Step 12 adds task definitions and the service using
-the three role ARNs prepared here, then verifies the private SSM route against
-the approved target.
+review and apply approval. Step 12 adds the public endpoint and ECS service,
+then verifies the browser, API, database and image paths against the approved
+target.

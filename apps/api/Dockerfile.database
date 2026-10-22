@@ -1,0 +1,19 @@
+FROM ghcr.io/amacneil/dbmate:2.36.0@sha256:520c740c6e0ad73fde2cd1ea7e2b779aaf789d22aca8858f87a478e7094535fb
+
+USER root
+
+# GNU timeout bounds each one-shot PostgreSQL command. The pushed image is
+# deployed by its immutable ECR digest; dbmate itself stays at the repo pin.
+RUN apk add --no-cache coreutils
+
+RUN addgroup -S -g 10001 clip && adduser -S -u 10001 -G clip clip
+
+COPY --chown=10001:10001 database/migrations /db/migrations
+COPY --chown=10001:10001 infra/terraform/domains/listings/test/scripts/database-lifecycle.sh /usr/local/bin/listings-database-lifecycle
+COPY --chown=10001:10001 infra/terraform/domains/listings/test/scripts/run-dbmate-migration.sh /usr/local/bin/listings-dbmate-migration
+
+RUN chmod 0755 /usr/local/bin/listings-database-lifecycle /usr/local/bin/listings-dbmate-migration
+
+USER 10001:10001
+
+ENTRYPOINT ["/usr/local/bin/dbmate"]

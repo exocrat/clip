@@ -5,7 +5,8 @@
 	migrate migration-status seed data-generate data-validate data-load \
 	test test-python test-data test-web format format-python format-check \
 	check-python-format contracts-generate contracts-check contracts-double-check check \
-	terraform-format terraform-format-check terraform-validate terraform-check
+	terraform-format terraform-format-check terraform-validate terraform-check \
+	li02-demo-start li02-demo-stop
 
 help:
 	@printf '%s\n' \
@@ -17,7 +18,8 @@ help:
 	  'data-validate: RUN_NAME=...; data-load: unavailable until domain readiness' \
 	  'test / test-python / test-data / test-web: registered test/check commands' \
 	  'format / format-check / contracts-generate / contracts-check / contracts-double-check / check' \
-	  'terraform-format / terraform-format-check / terraform-validate / terraform-check'
+	  'terraform-format / terraform-format-check / terraform-validate / terraform-check' \
+	  'li02-demo-start / li02-demo-stop: AWS_PROFILE=<approved-profile>; cloud actions require interactive approval'
 
 # Setup does not start services or install a Git hook as a hidden side effect.
 setup:
@@ -115,3 +117,13 @@ terraform-validate:
 
 terraform-check:
 	bash scripts/terraform-static-check.sh check
+
+# The LI-02 lifecycle driver gates each reviewed plan, shared RDS transition,
+# and isolated-data cleanup behind an explicit terminal confirmation.
+li02-demo-start:
+	@test -n "$(AWS_PROFILE)" || { printf '%s\n' 'Set AWS_PROFILE to the approved project profile.' >&2; exit 2; }
+	python3 scripts/li02-demo start --profile "$(AWS_PROFILE)"
+
+li02-demo-stop:
+	@test -n "$(AWS_PROFILE)" || { printf '%s\n' 'Set AWS_PROFILE to the approved project profile.' >&2; exit 2; }
+	python3 scripts/li02-demo stop --profile "$(AWS_PROFILE)"
