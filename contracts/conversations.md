@@ -115,9 +115,16 @@ envelope. Its v1 plaintext payload contains the authenticated application
 context and message content; after SDK decryption, the receiving client checks
 that the context matches the outer conversation, kind, sender, recipient, and
 key-version fields. The server can reject mismatched claimed routing metadata,
-but only the receiving client can verify the decrypted context. The SDK's
-serialized protocol ciphertext and public identity bundle remain opaque; CLIP
-does not add a second encryption layer or invent a cryptographic primitive.
+but only the receiving client can verify the decrypted context. SDK-produced
+protocol ciphertext remains opaque. Public key bundles use typed JSON fields
+matching OpenE2EE 13.0.0's `PreKeyBundle`: a v1 composite identity, registration
+and device IDs, an EC signed prekey, a reusable KEM last-resort prekey, and
+separately selected one-time prekeys. Public byte fields are canonical
+standard-padded Base64 and are decoded to bytes by the client adapter; CLIP
+does not invent another key format or cryptographic primitive. The reviewed
+browser security policy still applies: no third-party runtime scripts on the
+conversation origin, strict CSP and safe rendering, and review of every bundled
+runtime dependency.
 The reviewed browser security policy still applies: no third-party runtime
 scripts on the conversation origin, strict CSP and safe rendering, and review
 of every bundled runtime dependency.
@@ -126,11 +133,16 @@ Conversations exposes own-key registration and prekey publication only for the
 authenticated account, plus member-scoped public-key lookup and a separate
 prekey-bundle operation. The server allocates a strictly increasing key
 version and permits one active browser-device bundle per user; a caller cannot
-register or replace another user's key. The opaque identity bundle contains
-only public identity/signed-prekey material (including the KEM last-resort
-public key); one-time prekeys are uploaded separately. The service keeps
-referenced historical public versions while retained ciphertext needs them
-and never transfers or recovers private keys.
+register or replace another user's key. Registration and lookup use the same
+explicit public fields: protocol ID/version, registration ID, fixed device ID
+`1`, composite identity (32-byte X25519 and 32-byte Ed25519 public keys), EC
+signed prekey (32-byte public key and 64-byte signature), and KEM last-resort
+prekey (1569-byte tagged ML-KEM-1024 public key and 64-byte signature).
+One-time prekeys are uploaded separately. The service validates canonical
+Base64 and expected byte lengths, but does not claim to cryptographically
+verify prekey signatures; the SDK verifies them during session setup. The
+service keeps referenced historical public versions while retained ciphertext
+needs them and never transfers or recovers private keys.
 
 One-time prekey publication is idempotent by `(authenticated_user,
 operation_id)`. Repeating the same operation and exact batch returns its
@@ -144,13 +156,15 @@ determines the peer from the stored thread and atomically reserves that peer's
 available one-time prekeys. Its retry key is scoped to the authenticated
 caller and conversation: an identical retry returns the same reserved public
 bundle without consuming another key, while changed-target reuse conflicts.
-The response contains the peer's public identity bundle, registration ID,
-fixed single-device ID `1`, and any selected EC/KEM one-time public keys. If
+The response contains the peer's typed public identity bundle, registration
+ID, fixed single-device ID `1`, and any selected EC/KEM one-time public keys.
+These fields map to the SDK's `PreKeyBundle` fields after Base64 decoding. If
 the optional EC one-time key is exhausted, the signed EC prekey may be used;
-if the KEM one-time pool is exhausted, the public KEM last-resort key in the
-identity bundle is the fallback. Private material is never returned. These
-operations do not create a conversation or imply that the server can decrypt
-messages.
+the KEM one-time field is returned when reserved, otherwise the stored signed
+KEM last-resort field is used. The adapter places exactly one of
+`kem_one_time_prekey` or `kem_last_resort_prekey` in the SDK bundle. Private
+material is never returned. These operations do not create a conversation or
+imply that the server can decrypt messages.
 
 ## Ordered conversation entries and messages
 

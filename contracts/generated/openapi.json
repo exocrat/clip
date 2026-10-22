@@ -893,12 +893,22 @@
       },
       "KeyBundle": {
         "additionalProperties": false,
-        "description": "One user's public bundle and its compatible protocol metadata.",
+        "description": "Typed public SDK bundle and its compatible protocol metadata.",
         "properties": {
-          "bundle_base64": {
-            "minLength": 1,
-            "title": "Bundle Base64",
-            "type": "string"
+          "device_id": {
+            "const": 1,
+            "default": 1,
+            "title": "Device Id",
+            "type": "integer"
+          },
+          "ec_signed_prekey": {
+            "$ref": "#/components/schemas/PublicEcSignedPreKey"
+          },
+          "identity": {
+            "$ref": "#/components/schemas/PublicCompositeIdentityV1"
+          },
+          "kem_last_resort_prekey": {
+            "$ref": "#/components/schemas/PublicKemPreKey"
           },
           "key_version": {
             "minimum": 1.0,
@@ -913,6 +923,12 @@
             "title": "Protocol Version",
             "type": "string"
           },
+          "registration_id": {
+            "maximum": 16383.0,
+            "minimum": 1.0,
+            "title": "Registration Id",
+            "type": "integer"
+          },
           "user_id": {
             "format": "uuid",
             "title": "User Id",
@@ -924,7 +940,10 @@
           "protocol_id",
           "protocol_version",
           "key_version",
-          "bundle_base64"
+          "registration_id",
+          "identity",
+          "ec_signed_prekey",
+          "kem_last_resort_prekey"
         ],
         "title": "KeyBundle",
         "type": "object"
@@ -2206,14 +2225,116 @@
         "title": "ProfileView",
         "type": "object"
       },
+      "PublicCompositeIdentityV1": {
+        "additionalProperties": false,
+        "description": "OpenE2EE public identity tuple; private identity keys never cross the API.",
+        "properties": {
+          "ed25519_public_key_base64": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Ed25519 Public Key Base64",
+            "type": "string"
+          },
+          "version": {
+            "const": 1,
+            "default": 1,
+            "title": "Version",
+            "type": "integer"
+          },
+          "x25519_public_key_base64": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "X25519 Public Key Base64",
+            "type": "string"
+          }
+        },
+        "required": [
+          "x25519_public_key_base64",
+          "ed25519_public_key_base64"
+        ],
+        "title": "PublicCompositeIdentityV1",
+        "type": "object"
+      },
+      "PublicEcSignedPreKey": {
+        "additionalProperties": false,
+        "description": "Public X25519 signed prekey and its OpenE2EE identity signature.",
+        "properties": {
+          "key_id": {
+            "maximum": 4294967295.0,
+            "minimum": 0.0,
+            "title": "Key Id",
+            "type": "integer"
+          },
+          "public_key_base64": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Public Key Base64",
+            "type": "string"
+          },
+          "signature_base64": {
+            "maxLength": 88,
+            "minLength": 1,
+            "title": "Signature Base64",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key_id",
+          "public_key_base64",
+          "signature_base64"
+        ],
+        "title": "PublicEcSignedPreKey",
+        "type": "object"
+      },
+      "PublicKemPreKey": {
+        "additionalProperties": false,
+        "description": "Public tagged ML-KEM-1024 prekey and its identity signature.",
+        "properties": {
+          "key_id": {
+            "maximum": 4294967295.0,
+            "minimum": 0.0,
+            "title": "Key Id",
+            "type": "integer"
+          },
+          "public_key_base64": {
+            "maxLength": 2200,
+            "minLength": 1,
+            "title": "Public Key Base64",
+            "type": "string"
+          },
+          "signature_base64": {
+            "maxLength": 88,
+            "minLength": 1,
+            "title": "Signature Base64",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key_id",
+          "public_key_base64",
+          "signature_base64"
+        ],
+        "title": "PublicKemPreKey",
+        "type": "object"
+      },
       "PublicKeyBundleRequest": {
         "additionalProperties": false,
-        "description": "Opaque standard padded Base64 public-key bundle registration.",
+        "description": "Register own public OpenE2EE identity and reusable signed prekeys.",
         "properties": {
-          "bundle_base64": {
-            "minLength": 1,
-            "title": "Bundle Base64",
-            "type": "string"
+          "device_id": {
+            "const": 1,
+            "default": 1,
+            "title": "Device Id",
+            "type": "integer"
+          },
+          "ec_signed_prekey": {
+            "$ref": "#/components/schemas/PublicEcSignedPreKey"
+          },
+          "identity": {
+            "$ref": "#/components/schemas/PublicCompositeIdentityV1"
+          },
+          "kem_last_resort_prekey": {
+            "$ref": "#/components/schemas/PublicKemPreKey"
           },
           "operation_id": {
             "format": "uuid",
@@ -2227,12 +2348,21 @@
           "protocol_version": {
             "title": "Protocol Version",
             "type": "string"
+          },
+          "registration_id": {
+            "maximum": 16383.0,
+            "minimum": 1.0,
+            "title": "Registration Id",
+            "type": "integer"
           }
         },
         "required": [
           "protocol_id",
           "protocol_version",
-          "bundle_base64",
+          "registration_id",
+          "identity",
+          "ec_signed_prekey",
+          "kem_last_resort_prekey",
           "operation_id"
         ],
         "title": "PublicKeyBundleRequest",

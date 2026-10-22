@@ -613,14 +613,73 @@ class ReadAcknowledgement(ContractModel):
     last_read_sequence: int = Field(ge=0)
 
 
+def _validate_base64_key(value: str, expected_bytes: int, label: str) -> None:
+    """Require canonical standard Base64 for one SDK public-key field."""
+    try:
+        decoded = base64.b64decode(value, validate=True)
+    except ValueError as exc:
+        raise ValueError(f"{label} must use standard padded Base64") from exc
+    if (
+        len(decoded) != expected_bytes
+        or base64.b64encode(decoded).decode("ascii") != value
+    ):
+        raise ValueError(f"{label} has an invalid encoding or byte length")
+
+
+class PublicCompositeIdentityV1(ContractModel):
+    """OpenE2EE public identity tuple; private identity keys never cross the API."""
+
+    version: Literal[1] = 1
+    x25519_public_key_base64: str = Field(min_length=1, max_length=64, repr=False)
+    ed25519_public_key_base64: str = Field(min_length=1, max_length=64, repr=False)
+
+    @model_validator(mode="after")
+    def validate_public_key_lengths(self) -> PublicCompositeIdentityV1:
+        _validate_base64_key(self.x25519_public_key_base64, 32, "X25519 key")
+        _validate_base64_key(self.ed25519_public_key_base64, 32, "Ed25519 key")
+        return self
+
+
+class PublicEcSignedPreKey(ContractModel):
+    """Public X25519 signed prekey and its OpenE2EE identity signature."""
+
+    key_id: int = Field(ge=0, le=4_294_967_295)
+    public_key_base64: str = Field(min_length=1, max_length=64, repr=False)
+    signature_base64: str = Field(min_length=1, max_length=88, repr=False)
+
+    @model_validator(mode="after")
+    def validate_key_lengths(self) -> PublicEcSignedPreKey:
+        _validate_base64_key(self.public_key_base64, 32, "EC signed prekey")
+        _validate_base64_key(self.signature_base64, 64, "EC prekey signature")
+        return self
+
+
+class PublicKemPreKey(ContractModel):
+    """Public tagged ML-KEM-1024 prekey and its identity signature."""
+
+    key_id: int = Field(ge=0, le=4_294_967_295)
+    public_key_base64: str = Field(min_length=1, max_length=2200, repr=False)
+    signature_base64: str = Field(min_length=1, max_length=88, repr=False)
+
+    @model_validator(mode="after")
+    def validate_key_lengths(self) -> PublicKemPreKey:
+        _validate_base64_key(self.public_key_base64, 1569, "KEM prekey")
+        _validate_base64_key(self.signature_base64, 64, "KEM prekey signature")
+        return self
+
+
 class KeyBundle(ContractModel):
-    """One user's public bundle and its compatible protocol metadata."""
+    """Typed public SDK bundle and its compatible protocol metadata."""
 
     user_id: UserId
     protocol_id: str
     protocol_version: str
     key_version: int = Field(ge=1)
-    bundle_base64: str = Field(min_length=1, repr=False)
+    registration_id: int = Field(ge=1, le=16383)
+    device_id: Literal[1] = 1
+    identity: PublicCompositeIdentityV1
+    ec_signed_prekey: PublicEcSignedPreKey
+    kem_last_resort_prekey: PublicKemPreKey
 
 
 class MemberKeyBundles(ContractModel):
@@ -630,11 +689,15 @@ class MemberKeyBundles(ContractModel):
 
 
 class PublicKeyBundleRequest(ContractModel):
-    """Opaque standard padded Base64 public-key bundle registration."""
+    """Register own public OpenE2EE identity and reusable signed prekeys."""
 
     protocol_id: str
     protocol_version: str
-    bundle_base64: str = Field(min_length=1, repr=False)
+    registration_id: int = Field(ge=1, le=16383)
+    device_id: Literal[1] = 1
+    identity: PublicCompositeIdentityV1
+    ec_signed_prekey: PublicEcSignedPreKey
+    kem_last_resort_prekey: PublicKemPreKey
     operation_id: OperationId
 
 
@@ -659,17 +722,33 @@ class PublicPreKeyMaterial(ContractModel):
 
     @model_validator(mode="after")
     def validate_signature_shape(self) -> PublicPreKeyMaterial:
-        for value in (self.public_key_base64, self.signature_base64):
-            if value is None:
-                continue
+        try:
+            public_key = base64.b64decode(self.public_key_base64, validate=True)
+        except ValueError as exc:
+            raise ValueError("prekey bytes must use standard padded Base64") from exc
+        if (
+            not public_key
+            or base64.b64encode(public_key).decode("ascii") != self.public_key_base64
+        ):
+            raise ValueError("prekey bytes must use standard padded Base64")
+        expected_length = 32 if self.key_type == "ecPreKey" else 1569
+        if len(public_key) != expected_length:
+            raise ValueError("prekey public key has an invalid byte length")
+
+        if self.signature_base64 is not None:
             try:
-                decoded = base64.b64decode(value, validate=True)
+                signature = base64.b64decode(self.signature_base64, validate=True)
             except ValueError as exc:
                 raise ValueError(
                     "prekey bytes must use standard padded Base64"
                 ) from exc
-            if not decoded or base64.b64encode(decoded).decode("ascii") != value:
+            if (
+                not signature
+                or base64.b64encode(signature).decode("ascii") != self.signature_base64
+            ):
                 raise ValueError("prekey bytes must use standard padded Base64")
+            if len(signature) != 64:
+                raise ValueError("prekey signature has an invalid byte length")
         if self.key_type == "kemOneTimePreKey" and self.signature_base64 is None:
             raise ValueError("KEM one-time prekeys require an identity signature")
         if self.key_type == "ecPreKey" and self.signature_base64 is not None:
@@ -735,6 +814,10 @@ class MemberPreKeyBundle(ContractModel):
             and self.kem_one_time_prekey.key_type != "kemOneTimePreKey"
         ):
             raise ValueError("KEM one-time prekey field requires a KEM prekey")
+        if self.registration_id != self.key_bundle.registration_id:
+            raise ValueError("registration ID must match the registered key bundle")
+        if self.device_id != self.key_bundle.device_id:
+            raise ValueError("device ID must match the registered key bundle")
         return self
 
 

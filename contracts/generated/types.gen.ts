@@ -560,13 +560,16 @@ export type ImageUploadRequest = {
 /**
  * KeyBundle
  *
- * One user's public bundle and its compatible protocol metadata.
+ * Typed public SDK bundle and its compatible protocol metadata.
  */
 export type KeyBundle = {
     /**
-     * Bundle Base64
+     * Device Id
      */
-    bundle_base64: string;
+    device_id?: 1;
+    ec_signed_prekey: PublicEcSignedPreKey;
+    identity: PublicCompositeIdentityV1;
+    kem_last_resort_prekey: PublicKemPreKey;
     /**
      * Key Version
      */
@@ -579,6 +582,10 @@ export type KeyBundle = {
      * Protocol Version
      */
     protocol_version: string;
+    /**
+     * Registration Id
+     */
+    registration_id: number;
     /**
      * User Id
      */
@@ -1332,15 +1339,78 @@ export type ProfileView = {
 };
 
 /**
+ * PublicCompositeIdentityV1
+ *
+ * OpenE2EE public identity tuple; private identity keys never cross the API.
+ */
+export type PublicCompositeIdentityV1 = {
+    /**
+     * Ed25519 Public Key Base64
+     */
+    ed25519_public_key_base64: string;
+    /**
+     * Version
+     */
+    version?: 1;
+    /**
+     * X25519 Public Key Base64
+     */
+    x25519_public_key_base64: string;
+};
+
+/**
+ * PublicEcSignedPreKey
+ *
+ * Public X25519 signed prekey and its OpenE2EE identity signature.
+ */
+export type PublicEcSignedPreKey = {
+    /**
+     * Key Id
+     */
+    key_id: number;
+    /**
+     * Public Key Base64
+     */
+    public_key_base64: string;
+    /**
+     * Signature Base64
+     */
+    signature_base64: string;
+};
+
+/**
+ * PublicKemPreKey
+ *
+ * Public tagged ML-KEM-1024 prekey and its identity signature.
+ */
+export type PublicKemPreKey = {
+    /**
+     * Key Id
+     */
+    key_id: number;
+    /**
+     * Public Key Base64
+     */
+    public_key_base64: string;
+    /**
+     * Signature Base64
+     */
+    signature_base64: string;
+};
+
+/**
  * PublicKeyBundleRequest
  *
- * Opaque standard padded Base64 public-key bundle registration.
+ * Register own public OpenE2EE identity and reusable signed prekeys.
  */
 export type PublicKeyBundleRequest = {
     /**
-     * Bundle Base64
+     * Device Id
      */
-    bundle_base64: string;
+    device_id?: 1;
+    ec_signed_prekey: PublicEcSignedPreKey;
+    identity: PublicCompositeIdentityV1;
+    kem_last_resort_prekey: PublicKemPreKey;
     /**
      * Operation Id
      */
@@ -1353,6 +1423,10 @@ export type PublicKeyBundleRequest = {
      * Protocol Version
      */
     protocol_version: string;
+    /**
+     * Registration Id
+     */
+    registration_id: number;
 };
 
 /**
