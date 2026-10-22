@@ -160,40 +160,42 @@ def verify_identity_and_budget(profile: str) -> dict[str, Any]:
     limit = float(budget.get("BudgetLimit", {}).get("Amount", "0"))
     today = dt.datetime.now(dt.UTC).date()
     month_start = today.replace(day=1).isoformat()
-    tomorrow = (today + dt.timedelta(days=1)).isoformat()
+    today_iso = today.isoformat()
     next_month = (today.replace(day=28) + dt.timedelta(days=4)).replace(day=1)
     no_credits = json.dumps(
         {"Not": {"Dimensions": {"Key": "RECORD_TYPE", "Values": ["Credit"]}}},
         separators=(",", ":"),
     )
-    month_costs = aws_json(
-        profile,
-        "ce",
-        "get-cost-and-usage",
-        "--time-period",
-        json.dumps({"Start": month_start, "End": tomorrow}, separators=(",", ":")),
-        "--granularity",
-        "MONTHLY",
-        "--metrics",
-        "UnblendedCost",
-        "--filter",
-        no_credits,
-        region="us-east-1",
-    )
-    periods = month_costs.get("ResultsByTime", [])
-    if not periods:
-        raise DemoError("Cost Explorer returned no month-to-date cost period; refusing an unverified start.")
-    actual = sum(
-        float(period.get("Total", {}).get("UnblendedCost", {}).get("Amount", "0"))
-        for period in periods
-    )
+    actual = 0.0
+    if month_start < today_iso:
+        month_costs = aws_json(
+            profile,
+            "ce",
+            "get-cost-and-usage",
+            "--time-period",
+            json.dumps({"Start": month_start, "End": today_iso}, separators=(",", ":")),
+            "--granularity",
+            "MONTHLY",
+            "--metrics",
+            "UnblendedCost",
+            "--filter",
+            no_credits,
+            region="us-east-1",
+        )
+        periods = month_costs.get("ResultsByTime", [])
+        if not periods:
+            raise DemoError("Cost Explorer returned no month-to-date cost period; refusing an unverified start.")
+        actual = sum(
+            float(period.get("Total", {}).get("UnblendedCost", {}).get("Amount", "0"))
+            for period in periods
+        )
     forecast_response = aws_json(
         profile,
         "ce",
         "get-cost-forecast",
         "--time-period",
         json.dumps(
-            {"Start": month_start, "End": next_month.isoformat()},
+            {"Start": today_iso, "End": next_month.isoformat()},
             separators=(",", ":"),
         ),
         "--metric",
@@ -207,7 +209,7 @@ def verify_identity_and_budget(profile: str) -> dict[str, Any]:
     forecast_amount = forecast_response.get("Total", {}).get("Amount")
     if forecast_amount is None:
         raise DemoError("Cost Explorer returned no monthly forecast; refusing an unverified start.")
-    forecast = float(forecast_amount)
+    forecast = actual + float(forecast_amount)
     if limit <= 0 or actual >= limit or forecast >= limit:
         raise DemoError(
             f"Monthly budget preflight failed: reported usage is USD {actual:.2f}, estimated month-end spend is "
