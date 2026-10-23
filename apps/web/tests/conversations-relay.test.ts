@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { inMemoryStore } from '@open-e2ee/signal-protocol-sdk/local/store/memory';
 import type { Envelope } from '@open-e2ee/signal-protocol-sdk';
 import type {
@@ -168,18 +168,32 @@ describe('CLIP SDK relay adapter', () => {
       sessions.push(a);
       const b = await createConversationSession(bob, thread, server.api(bob), inMemoryStore(), { acknowledgeUnrecoverableHistoryRisk: true });
       sessions.push(b);
+      const originalCas = aliceStore.compareAndSetMetadata.bind(aliceStore);
+      const quota = vi.spyOn(aliceStore, 'compareAndSetMetadata').mockImplementation(async (key, expected, value) => {
+        if (key.startsWith('clip:history:')) throw new Error('Synthetic storage quota failure');
+        return originalCas(key, expected, value);
+      });
+      try {
+        await expect(a.sendText(message(bob))).rejects.toThrow('Local history write failed');
+        expect(server.entries.length).toBe(0);
+        expect(server.submitted.length).toBe(0);
+      } finally { quota.mockRestore(); }
       for (const [sender, receiver, senderId, recipientId] of [[a, b, alice, bob], [b, a, bob, alice]] as const) {
         await establish(sender, server, senderId, recipientId);
         const outgoing = message(recipientId);
-        const sent = await sender.crypto.sendText(outgoing);
+        const sent = await sender.sendText(outgoing);
         const entry = server.entries.at(-1);
         if (!entry?.envelope) throw new Error('Expected committed synthetic envelope');
         expect(sent.messageId).toBe(entry.entry_id);
-        let displayed = false;
-        await receiver.crypto.receiveText({ conversation_id: thread, message_id: entry.entry_id, sequence: entry.sequence,
+        if (!receiver.history || !sender.history) throw new Error('Expected local history');
+        await expect(receiver.receiveText({ conversation_id: crypto.randomUUID(), message_id: entry.entry_id, sequence: entry.sequence,
           sender_user_id: senderId, sender_device_id: 1, expected_sender_key_version: 1, expected_recipient_key_version: 1,
-          envelope: entry.envelope }, { put: async (received) => { displayed = received.text === outgoing.text; } });
-        expect(displayed).toBe(true);
+          envelope: entry.envelope })).rejects.toThrow('Local receive conversation mismatch');
+        await receiver.receiveText({ conversation_id: thread, message_id: entry.entry_id, sequence: entry.sequence,
+          sender_user_id: senderId, sender_device_id: 1, expected_sender_key_version: 1, expected_recipient_key_version: 1,
+          envelope: entry.envelope });
+        expect((await receiver.history.read()).received.at(-1)?.text).toBe(outgoing.text);
+        expect((await sender.history.read()).sent.at(-1)?.confirmation?.message_id).toBe(entry.entry_id);
         expect(server.submitted.every((body) => !body.includes(outgoing.text))).toBe(true);
       }
       expect(server.entries.length).toBe(2);
@@ -208,13 +222,17 @@ describe('CLIP SDK relay adapter', () => {
       await establish(a, server, alice, bob);
       server.loseNextMessageReply = true;
       const outgoing = message(bob);
-      await expect(a.crypto.sendText(outgoing)).rejects.toThrow();
+      await expect(a.sendText(outgoing)).rejects.toThrow();
       expect(server.entries.length).toBe(1);
-      const replay = new ConversationRelay(alice, thread, server.api(alice), store);
+      if (!a.history) throw new Error('Expected local history');
+      expect((await a.history.read()).sent[0].confirmation).toBeNull();
+      await expect(a.sendText(outgoing)).rejects.toThrow('Local history write failed');
+      const replay = new ConversationRelay(alice, thread, server.api(alice), store, a.history);
       await replay.retrySend(outgoing.operation_id);
       expect(server.entries.length).toBe(1);
       expect(server.submitted.length >= 2).toBe(true);
       expect(new Set(server.submitted).size).toBe(1);
+      expect((await a.history.read()).sent[0].confirmation?.message_id).toBe(server.entries[0].entry_id);
       await expect(new ConversationRelay(alice, crypto.randomUUID(), server.api(alice), store)
         .retrySend(outgoing.operation_id)).rejects.toBeInstanceOf(ConversationCryptoError);
       const oldPeer = server.keys.get(bob)?.at(-1);

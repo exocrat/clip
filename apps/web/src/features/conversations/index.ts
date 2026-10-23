@@ -39,3 +39,5 @@ export { ConversationApi, ConversationApiError } from './api';
 export type { ConversationHttpTransport, ConversationListQuery } from './api';
 export { ConversationRelay, createConversationSession, openIndexedDbConversationSession } from './relay';
 export type { ConversationSession } from './relay';
+export { ConversationLocalHistory } from './history';
+export type { LocalConversationHistory, LocalSentMessage } from './history';

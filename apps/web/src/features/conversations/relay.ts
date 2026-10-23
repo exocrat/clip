@@ -19,7 +19,10 @@ import {
   ConversationCrypto, ConversationCryptoError, assertConversationKeyState,
   toOpenE2eePreKeyBundle,
   type ConversationEnvelopeRoute, type ConversationRouteRegistry,
+  type SendConversationMessage,
+  type ConversationReceiveContext,
 } from './crypto';
+import { ConversationLocalHistory } from './history';
 
 const OWNER_KEY = 'clip:conversation-store-owner:v1';
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -48,6 +51,7 @@ export class ConversationRelay implements SignalProtocolRelayServer, Conversatio
     readonly conversationId: string | null,
     private readonly api: ConversationApi,
     private readonly storage: SignalProtocolLocalStore,
+    private readonly history?: ConversationLocalHistory,
   ) {}
 
   private thread(): string {
@@ -344,6 +348,7 @@ export class ConversationRelay implements SignalProtocolRelayServer, Conversatio
     }
     const result = await this.api.submitMessage(prepared.conversationId, prepared.request);
     if (result.sender_user_id !== this.userId) throw new ConversationCryptoError('Committed message sender mismatch');
+    await this.history?.confirmSent(prepared.request.operation_id, result);
     return { messageId: result.entry_id, serverTimestamp: Date.parse(result.created_at) };
   }
 
@@ -378,6 +383,9 @@ export class ConversationRelay implements SignalProtocolRelayServer, Conversatio
 export type ConversationSession = {
   crypto: ConversationCrypto;
   relay: ConversationRelay;
+  history: ConversationLocalHistory | null;
+  sendText: (request: SendConversationMessage) => ReturnType<ConversationCrypto['sendText']>;
+  receiveText: (context: ConversationReceiveContext) => ReturnType<ConversationCrypto['receiveText']>;
   stop: () => Promise<void>;
 };
 
@@ -405,7 +413,8 @@ export async function createConversationSession(
     await storage.compareAndSetMetadata(OWNER_KEY, null, userId);
     if (await storage.getMetadata(OWNER_KEY) !== userId) throw new ConversationCryptoError('Browser account binding changed');
   }
-  const relay = new ConversationRelay(userId, conversationId, api, storage);
+  const history = conversationId === null ? null : new ConversationLocalHistory(userId, conversationId, storage);
+  const relay = new ConversationRelay(userId, conversationId, api, storage, history ?? undefined);
   const client = await createSignalProtocolClient({
     identity: { userId, deviceId: 1 }, adapters: { storage, relay },
     protocol: { postQuantum: PostQuantumPolicy.Required, braid: BraidPolicy.Required },
@@ -415,7 +424,24 @@ export async function createConversationSession(
     await client.stop();
     throw new ConversationCryptoError('Encryption key publication did not complete');
   }
-  return { relay, crypto: new ConversationCrypto(client, relay, relay), stop: () => client.stop() };
+  const conversationCrypto = new ConversationCrypto(client, relay, relay);
+  return { relay, crypto: conversationCrypto, history,
+    // The application entry point retains sender text before SDK encryption.
+    // A failed/unknown attempt must retry relay.retrySend with the same UUID.
+    sendText: async (request) => {
+      if (!history) throw new ConversationCryptoError('Select an authorized conversation first');
+      const copy = { ...request };
+      await history.stageSent(copy);
+      return conversationCrypto.sendText(copy);
+    },
+    // A thread-bound cache cannot accept a verified message for a different thread.
+    receiveText: async (context) => {
+      if (!history || context.conversation_id !== history.conversationId) {
+        throw new ConversationCryptoError('Local receive conversation mismatch');
+      }
+      return conversationCrypto.receiveText(context, history);
+    },
+    stop: () => client.stop() };
 }
 
 /** Browser entry point; no additional service or crypto setup is required. */

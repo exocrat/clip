@@ -88,8 +88,10 @@ silently reuse its private state. The factory refuses a failed SDK sync and
 suppresses SDK logging rather than forwarding keys/content/error internals.
 It preserves the SDK's required PQ/Braid policy and key maintenance defaults.
 
-The returned `{crypto, relay, stop}` provides the existing crypto boundary,
-the transport, and explicit shutdown. `relay.retrySend(operationId)` reuses
+The returned `{crypto, relay, history, sendText, receiveText, stop}` provides the existing crypto
+boundary, the transport, browser-local history and explicit shutdown. Use the
+session's `sendText(request)`, not the low-level `crypto.sendText`, to durably
+stage the sender's text before encryption. `relay.retrySend(operationId)` reuses
 the persisted prepared ciphertext, timestamp and operation ID, including after
 adapter recreation. Directory identity/registration changes block posting or
 retrying the old ciphertext. Call `stop()` before replacing the active client;
@@ -121,4 +123,36 @@ increment proves prepared HTTP retry, not every SDK recovery path.
 `tests/conversations-relay.test.ts` uses actual SDK clients/crypto and a reviewed
 HTTP-contract double. This proves isolated client behavior, not real Identity,
 PostgreSQL transport, browser IndexedDB reload/concurrency, or CN-CORE acceptance.
-Application history persistence, page wiring and those real checks remain pending.
+Page wiring and those real checks remain pending.
+
+### Browser-local history
+
+For a selected thread, `session.receiveText(context)` verifies that the receive
+context matches the selected thread and supplies `session.history` to the crypto
+helper. Verified incoming text is saved before SDK receive completion.
+`history.read()` returns detached,
+sequence-ordered received messages and outgoing records with their exact send
+request and optional server confirmation. It does not fetch or acknowledge reads.
+Registration-only sessions have null history and cannot send text.
+
+The relay records a validated server confirmation against staged sender text.
+After an unknown network outcome or local confirmation failure, retry the exact
+prepared ciphertext through `relay.retrySend`; the returned confirmation repairs
+local history without encrypting again. Reusing `session.sendText` with the same
+operation is rejected. A staged record alone does not prove ciphertext was
+prepared or the server accepted it. If encryption failed before preparation,
+there is no prepared retry; never silently encrypt it again under the same UUID.
+The pending record remains visible to composition code for explicit resolution.
+
+`history.ts` stores versioned account/thread-bound plaintext snapshots in the
+same SDK-local store (IndexedDB in the browser factory). Atomic compare-and-set
+merges concurrent writes, rejects conflicting sequence/message identities and
+bounds contention retries. Storage/quota/corruption failures fail closed with
+generic diagnostics. It rewrites a thread snapshot per write: large-history
+paging/performance has not been established. This cache is browser-local, not a
+backup, server plaintext store or key recovery. Same-origin script compromise
+can read it, just as it can read local keys; clearing/eviction can lose it.
+It must only be used after the validated session/key startup boundary, not as
+an offline authentication bypass. No changes to retention or backup policy are
+implied. The memory-store history tests and real-SDK/HTTP-double tests do not
+prove browser reload, eviction/quota, multi-tab durability or real sign-in.
