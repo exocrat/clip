@@ -545,10 +545,17 @@
             "type": "string"
           },
           "pickup_area": {
-            "maxLength": 120,
-            "minLength": 1,
-            "title": "Pickup Area",
-            "type": "string"
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pickup Area"
           },
           "proof_available": {
             "anyOf": [
@@ -575,7 +582,6 @@
           "condition_code",
           "asking_price_paise",
           "negotiable",
-          "pickup_area",
           "image_upload_ids",
           "operation_id"
         ],
@@ -822,6 +828,28 @@
         "title": "ErrorEnvelope",
         "type": "object"
       },
+      "ExistingListingImage": {
+        "additionalProperties": false,
+        "description": "Keep one of the listing's currently attached images in place/order.",
+        "properties": {
+          "image_id": {
+            "format": "uuid",
+            "title": "Image Id",
+            "type": "string"
+          },
+          "source": {
+            "const": "existing",
+            "title": "Source",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source",
+          "image_id"
+        ],
+        "title": "ExistingListingImage",
+        "type": "object"
+      },
       "HealthResponse": {
         "description": "Only process liveness is promised; no dependency readiness is implied.",
         "properties": {
@@ -1002,8 +1030,15 @@
             "type": "boolean"
           },
           "pickup_area": {
-            "title": "Pickup Area",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pickup Area"
           },
           "proof_available": {
             "anyOf": [
@@ -1129,8 +1164,15 @@
             "type": "string"
           },
           "pickup_area": {
-            "title": "Pickup Area",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pickup Area"
           },
           "proof_available": {
             "anyOf": [
@@ -1294,8 +1336,15 @@
             "type": "string"
           },
           "pickup_area": {
-            "title": "Pickup Area",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pickup Area"
           },
           "proof_available": {
             "anyOf": [
@@ -1378,7 +1427,7 @@
       },
       "ListingReplacement": {
         "additionalProperties": false,
-        "description": "Full listing replacement with revision guard and explicit nullable fields.",
+        "description": "Replace listing details and its ordered keep/add image selection.",
         "properties": {
           "asking_price_paise": {
             "minimum": 0.0,
@@ -1422,14 +1471,27 @@
             "title": "Expected Revision",
             "type": "integer"
           },
-          "image_upload_ids": {
+          "images": {
             "items": {
-              "format": "uuid",
-              "type": "string"
+              "discriminator": {
+                "mapping": {
+                  "existing": "#/components/schemas/ExistingListingImage",
+                  "upload": "#/components/schemas/NewListingImage"
+                },
+                "propertyName": "source"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/ExistingListingImage"
+                },
+                {
+                  "$ref": "#/components/schemas/NewListingImage"
+                }
+              ]
             },
             "maxItems": 8,
             "minItems": 1,
-            "title": "Image Upload Ids",
+            "title": "Images",
             "type": "array"
           },
           "negotiable": {
@@ -1442,10 +1504,17 @@
             "type": "string"
           },
           "pickup_area": {
-            "maxLength": 120,
-            "minLength": 1,
-            "title": "Pickup Area",
-            "type": "string"
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pickup Area"
           },
           "proof_available": {
             "anyOf": [
@@ -1477,7 +1546,7 @@
           "available_from",
           "available_until",
           "proof_available",
-          "image_upload_ids",
+          "images",
           "operation_id"
         ],
         "title": "ListingReplacement",
@@ -1556,8 +1625,15 @@
             "type": "boolean"
           },
           "pickup_area": {
-            "title": "Pickup Area",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pickup Area"
           },
           "sensitive_purchase": {
             "title": "Sensitive Purchase",
@@ -1641,6 +1717,28 @@
           "id_token"
         ],
         "title": "MicrosoftSessionRequest",
+        "type": "object"
+      },
+      "NewListingImage": {
+        "additionalProperties": false,
+        "description": "Attach one newly confirmed, owner-bound image upload.",
+        "properties": {
+          "source": {
+            "const": "upload",
+            "title": "Source",
+            "type": "string"
+          },
+          "upload_id": {
+            "format": "uuid",
+            "title": "Upload Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source",
+          "upload_id"
+        ],
+        "title": "NewListingImage",
         "type": "object"
       },
       "OfferRevisionRequest": {

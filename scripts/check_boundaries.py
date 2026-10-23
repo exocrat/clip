@@ -14,8 +14,26 @@ from pathlib import Path
 import re
 
 DOMAINS = frozenset({"identity", "listings", "search", "conversations"})
-# No router exceptions are approved yet. Changes need exact-file/module review.
-COMPOSITION_IMPORTS: dict[str, frozenset[str]] = {}
+# The ASGI composition root wires Listings-owned implementation modules and
+# the separately reviewed Conversations public interface. Keep this list exact.
+COMPOSITION_IMPORTS: dict[str, frozenset[str]] = {
+    "apps/api/app/main.py": frozenset(
+        {
+            "app.domains.listings.routes",
+            "app.domains.listings.routes.router",
+            "app.domains.listings.integrations",
+            "app.domains.listings.integrations.PublicListingsIdentity",
+            "app.domains.listings.postgres_store",
+            "app.domains.listings.postgres_store.PostgresListingsStore",
+            "app.domains.listings.s3_storage",
+            "app.domains.listings.s3_storage.S3ListingsImageStorage",
+            "app.domains.listings.isolated_test",
+            "app.domains.listings.isolated_test.require_isolated_test_database",
+            "app.domains.listings.isolated_test.IsolatedListingsTestIdentity",
+            "app.domains.listings.isolated_test.isolated_test_caller",
+        }
+    ),
+}
 SQL_TABLE = re.compile(
     r'\b(?:FROM|JOIN|UPDATE|INTO|TRUNCATE(?:\s+TABLE)?)\s+"?(identity|listings|search|conversations)"?\s*\.\s*"?[a-z_][a-z_0-9]*',
     re.IGNORECASE,

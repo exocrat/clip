@@ -140,12 +140,30 @@ def test_generated_modules_are_byte_for_byte_source_derivatives():
         assert generated.partition("\n")[2].lstrip("\n") == expected
 
 
-def test_declarations_do_not_install_unimplemented_http_routes():
-    """Only implemented health is reachable; generated domain routes stay offline."""
+def test_only_implemented_listings_http_routes_are_installed():
+    """Mount the implemented Listings subset without installing other declarations."""
     from app.main import app
 
-    assert {route.path for route in app.routes} == {"/health"}
-    assert not any(route.path.startswith("/auth/") for route in app.routes)
+    # Inspect the public schema instead of FastAPI's internal router objects.
+    # Newer FastAPI versions can keep included routers as a single internal
+    # object, while OpenAPI still shows the actual installed endpoints.
+    paths = set(app.openapi()["paths"])
+    assert paths == {
+        "/health",
+        "/catalogue",
+        "/listings",
+        "/listings/{listing_id}",
+        "/me/listings",
+        "/listings/{listing_id}/availability",
+        "/listings/{listing_id}/selection",
+        "/listings/{listing_id}/conversations/{conversation_id}/offer",
+        "/listings/{listing_id}/conversations/{conversation_id}/offer-withdrawals",
+        "/image-uploads",
+        "/image-uploads/{upload_id}/confirm",
+        "/image-uploads/{upload_id}",
+        "/images/{image_id}/delivery",
+    }
+    assert not any(path.startswith("/auth/") for path in paths)
 
 
 def test_contract_timestamps_are_aware_and_serialize_as_canonical_utc():

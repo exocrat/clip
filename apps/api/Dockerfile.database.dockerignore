@@ -1,0 +1,12 @@
+**
+!database/
+!database/migrations/
+!database/migrations/**
+!infra/
+!infra/terraform/
+!infra/terraform/domains/
+!infra/terraform/domains/listings/
+!infra/terraform/domains/listings/test/
+!infra/terraform/domains/listings/test/scripts/
+!infra/terraform/domains/listings/test/scripts/database-lifecycle.sh
+!infra/terraform/domains/listings/test/scripts/run-dbmate-migration.sh

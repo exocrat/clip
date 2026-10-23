@@ -1,4 +1,5 @@
--- Regression for PR #5. Run only in an isolated, administrator-owned test DB.
+-- Regression for API-owned retirement marking. Run only in an isolated,
+-- administrator-owned test DB.
 -- Every fixture is synthetic; rollback restores data and session-local settings.
 BEGIN;
 DO $$
@@ -19,6 +20,9 @@ DECLARE
     image uuid := gen_random_uuid();
     sale_thread uuid := gen_random_uuid();
     request_thread uuid := gen_random_uuid();
+    offer_id uuid := gen_random_uuid();
+    offer_entry uuid := gen_random_uuid();
+    share_entry uuid := gen_random_uuid();
     seller_key uuid := gen_random_uuid();
     buyer_key uuid := gen_random_uuid();
     target_thread uuid;
@@ -43,8 +47,8 @@ BEGIN
             CURRENT_TIMESTAMP - INTERVAL '190 days'
         FROM listings.categories WHERE code = 'books';
     INSERT INTO listings.image_uploads
-        (id, owner_id, object_key, state, created_at, expires_at, confirmed_at)
-        VALUES (upload, seller, 'test/retirement/' || image::text, 'confirmed',
+        (id, owner_id, object_key, operation_id, state, created_at, expires_at, confirmed_at)
+        VALUES (upload, seller, 'test/retirement/' || image::text, upload, 'confirmed',
             CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '24 hours', CURRENT_TIMESTAMP);
     INSERT INTO listings.images
         (id, listing_id, upload_id, object_key, position, media_type, size_bytes)
@@ -92,17 +96,39 @@ BEGIN
             END IF;
         END LOOP;
     END LOOP;
+    INSERT INTO conversations.entries
+        (id, conversation_id, sender_id, client_operation_id, kind)
+        VALUES (offer_entry, sale_thread, buyer, gen_random_uuid(), 'offer');
+    INSERT INTO conversations.offers
+        (id, conversation_id, buyer_id, current_revision, next_revision)
+        VALUES (offer_id, sale_thread, buyer, 1, 2);
+    INSERT INTO conversations.offer_revisions
+        (offer_id, revision, entry_id, amount_paise, status)
+        VALUES (offer_id, 1, offer_entry, 0, 'submitted');
+    INSERT INTO conversations.entries
+        (id, conversation_id, sender_id, client_operation_id, kind)
+        VALUES (share_entry, request_thread, buyer, gen_random_uuid(), 'contact_share');
+    INSERT INTO conversations.encrypted_payloads
+        (entry_id, protocol_id, envelope_version,
+            sender_key_version_id, recipient_key_version_id, envelope)
+        VALUES (share_entry, 'synthetic-retirement-test', 1, buyer_key, seller_key, decode('00', 'hex'));
+    INSERT INTO conversations.contact_shares (entry_id) VALUES (share_entry);
     SET CONSTRAINTS ALL IMMEDIATE;
     SET CONSTRAINTS ALL DEFERRED;
 
     -- Seed only the historic closure instant under the test administrator's
     -- session-local replica mode. No FK/identity/content changes are made here.
-    -- This simulates 190 elapsed days without weakening the retirement or entry
-    -- guards being tested: restore origin mode before either operation below.
+    -- This simulates 190 elapsed days without weakening the local 180-day guard.
     SET LOCAL session_replication_role = replica;
     UPDATE search.wanted_requests SET closed_at = CURRENT_TIMESTAMP - INTERVAL '190 days'
         WHERE id = request;
     SET LOCAL session_replication_role = origin;
+    -- The retirement API sets this marker while holding the same per-thread
+    -- lock used for participant writes. This smoke tests the local guard that
+    -- rejects later writes; API activity checks and race scheduling are covered
+    -- by service integration tests, not by this SQL fixture.
+    UPDATE conversations.threads SET participant_writes_disabled_at = statement_timestamp()
+        WHERE id IN (sale_thread, request_thread);
     UPDATE listings.sale_listings SET retired_at = statement_timestamp(),
         title = NULL, description = NULL, category_id = NULL, condition_code = NULL,
         asking_price_paise = NULL, negotiable = NULL, pickup_area = NULL,
@@ -134,7 +160,7 @@ BEGIN
                 SET CONSTRAINTS ALL IMMEDIATE;
             EXCEPTION WHEN check_violation THEN
                 GET STACKED DIAGNOSTICS reason = MESSAGE_TEXT;
-                IF reason <> 'New entries require a non-retired origin' THEN
+                IF reason <> 'New entries are disabled for this conversation' THEN
                     RAISE EXCEPTION 'Unexpected rejection in retired-origin regression';
                 END IF;
                 rejected := true;
@@ -149,7 +175,49 @@ BEGIN
             END IF;
         END LOOP;
     END LOOP;
-    RAISE NOTICE 'Retired-origin regression passed for messages and contact shares on both origins';
+
+    -- The Conversations offer-revision guard must independently lock/check the
+    -- marker, even if Listings already checked the listing state.
+    SELECT next_sequence, last_activity_at INTO before_sequence, before_activity
+        FROM conversations.threads WHERE id = sale_thread;
+    rejected := false;
+    BEGIN
+        UPDATE conversations.offers SET current_revision = 2, next_revision = 3
+            WHERE id = offer_id;
+        INSERT INTO conversations.offer_revisions
+            (offer_id, revision, entry_id, amount_paise, status)
+            VALUES (offer_id, 2, offer_entry, 0, 'submitted');
+    EXCEPTION WHEN check_violation THEN
+        GET STACKED DIAGNOSTICS reason = MESSAGE_TEXT;
+        IF reason <> 'Participant writes are disabled for this conversation' THEN
+            RAISE EXCEPTION 'Offer revision failed for an unexpected reason';
+        END IF;
+        rejected := true;
+    END;
+    IF NOT rejected OR (SELECT next_sequence FROM conversations.threads WHERE id = sale_thread) <> before_sequence
+        OR (SELECT last_activity_at FROM conversations.threads WHERE id = sale_thread) <> before_activity THEN
+        RAISE EXCEPTION 'Retirement marker did not safely reject an offer revision';
+    END IF;
+
+    -- This duplicate is deliberate: the BEFORE INSERT trigger must reject the
+    -- write because of the marker before the primary-key check can run.
+    SELECT next_sequence, last_activity_at INTO before_sequence, before_activity
+        FROM conversations.threads WHERE id = request_thread;
+    rejected := false;
+    BEGIN
+        INSERT INTO conversations.contact_shares (entry_id) VALUES (share_entry);
+    EXCEPTION WHEN check_violation THEN
+        GET STACKED DIAGNOSTICS reason = MESSAGE_TEXT;
+        IF reason <> 'Participant writes are disabled for this conversation' THEN
+            RAISE EXCEPTION 'Contact-share insert failed for an unexpected reason';
+        END IF;
+        rejected := true;
+    END;
+    IF NOT rejected OR (SELECT next_sequence FROM conversations.threads WHERE id = request_thread) <> before_sequence
+        OR (SELECT last_activity_at FROM conversations.threads WHERE id = request_thread) <> before_activity THEN
+        RAISE EXCEPTION 'Retirement marker did not safely reject a contact-share write';
+    END IF;
+    RAISE NOTICE 'Retirement-marker regression passed for messages, offers and contact shares on both origins';
 END;
 $$;
 ROLLBACK;

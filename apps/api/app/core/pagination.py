@@ -2,7 +2,7 @@
 
 from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Annotated, Generic, TypeVar
+from typing import Annotated, Generic, Literal, TypeVar, cast
 
 from fastapi import Query
 
@@ -37,7 +37,7 @@ class Page(Generic[T]):
 
     items: tuple[T, ...]
     page: int
-    page_size: int
+    page_size: Literal[20, 50, 100]
     has_next: bool
 
 
@@ -52,7 +52,7 @@ def page_from_window(request: PageRequest, rows: Sequence[T]) -> Page[T]:
     return Page(
         tuple(rows[: request.page_size]),
         request.page,
-        request.page_size,
+        cast(Literal[20, 50, 100], request.page_size),
         len(rows) > request.page_size,
     )
 

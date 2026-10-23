@@ -36,8 +36,19 @@ was changed. [Tool rationale](../docs/decisions/database-migration-tool.md).
 | `20261018094331_mvp_integrity.sql` | Cross-row guards, deferred publication/member/entry/offer consistency, immutable origin/key/operation identities, sequence allocation, unread-episode and source-derived notification invariants. |
 | `20261018094332_initial_catalogue.sql` | The approved eight categories/four conditions only; no users, fake credentials, private data or final evaluation dataset. |
 | `20261018152702_reject_retired_origin_entries.sql` | Forward correction: reject new entries on permanently retired origins under the existing origin lock, before allocating sequence/activity state. Down restores the original guard. |
+| `20261020102224_listing_owner_command_results.sql` | Add Listings-owned saved request/results for availability and selection retries; delete them atomically when a listing retires. |
+| `20261020111741_listing_create_command_results.sql` | Save the original create request/result for retry; on retirement clear both payloads but preserve the owner/operation/listing key so a later retry cannot create another listing. |
+| `20261020113531_listing_selection_and_confirmed_image_metadata.sql` | Add the missing nullable selected-conversation reference and buyer/conversation pair constraint, plus nullable fields for image metadata verified during LI-02 upload confirmation. |
+| `20261020142319_api_owned_retirement_and_trigger_boundaries.sql` | Add paired owner-side pending-operation/cutoff fields and thread write-disable markers; replace cross-domain trigger checks with API-owned checks while retaining local thread, sequence, offer and origin protections. The marker is checked under the thread lock for entries, offer revisions and contact-share inserts; rollback refuses while retirement records or markers exist. |
+| `20261021105546_optional_listing_pickup_area.sql` | Allow a null pickup area on live listings while preserving other live/retired requirements. Down refuses while live rows without an area exist; never invents data. |
+| `20261022050000_listing_image_upload_intents.sql` | Persist owner-scoped upload operation keys and declared metadata so image-upload intents can be retried safely before confirmation. |
+| `20261022062357_listing_image_cleanup_retries.sql` | Add bounded cleanup retry timestamps and indexes for retired images and abandoned uploads. |
 
-Expected current migration version: **20261018152702**. One integrator allocates
+The optional-pickup forward migration is under Listings writer scope; affected
+consumer/schema review and exact shared-database apply remain pending. Local
+isolated checks do not authorize shared/Compose/cloud migration.
+
+Expected current migration version: **20261022062357**. One integrator allocates
 later timestamp identifiers; no parallel heads or uncoordinated edits to initial
 DDL. Published/applied migrations are corrected forward, not rewritten.
 
@@ -122,7 +133,7 @@ password and are visible to administrators of the local Docker engine.
 | `bash database/local-db.sh start` | Validate local context/configuration/resource ownership, create/start only PostgreSQL, then wait for authenticated TCP `SELECT 1`. Exit 0 means connectivity, not migrations. |
 | `bash database/local-db.sh wait` | Up to 30 authenticated connection attempts with a 2-second connection timeout and 2-second pauses; nonzero on timeout/absent container. Final sanitized connection diagnostic is retained. |
 | `bash database/local-db.sh migrate` | Wait for connectivity, then run pinned dbmate 2.36.0 `migrate` with strict ordering and no schema dump. Applies pending migrations only to `clip_local`. Nonzero aborts; inspect sanitized output before recovery. |
-| `bash database/local-db.sh status` | Wait for connectivity and show dbmate migration status. A successful listing can still contain pending migrations; compare to expected head `20261018152702`, not merely process exit status. |
+| `bash database/local-db.sh status` | Wait for connectivity and show dbmate migration status. A successful listing can still contain pending migrations; compare to expected branch head `20261022062357`, not merely process exit status. |
 | `bash database/local-db.sh stop` | Stop only the validated service container, retaining its container and named data volume. An absent container is a successful no-op. |
 | `bash database/local-db.sh reset --confirm-delete-local-data` | **Permanently delete all local database data.** Warn, validate labels/clone/image/port/mount, stop/remove only the service container, then remove only `clip-local_clip_local_postgres_data`, without force. Leaves the database stopped. Explicitly review/approve this destructive invocation before using it; then run `start` and `migrate` to recreate. |
 | `bash database/local-db.sh --help` | Show fixed usage without password/Docker setup. |
@@ -186,16 +197,17 @@ integration and must preserve the same target/refusal behavior.
   `guard_upload` protects owner/key/deadline and attached-confirmation state.
   These cannot prove a cloud object exists or that its bytes were validated.
 - `listings.guard_origin` preserves owner/retired identity, anchors continuous
-  inactivity, and checks retirement age/conversation activity. It performs
-  integrity-only FK reads, not a public cross-domain service. Application
-  transactions must follow the reviewed origin-before-thread locking contract;
-  runtime consumers cannot use another domain's private tables directly.
+  inactivity, and enforces the local 180-day retirement age. Listings obtains
+  conversation activity and selected-buyer membership through Conversations'
+  public operations; the trigger no longer reads Identity or Conversations.
 - `conversations.guard_thread`, `guard_member`, `guard_entry`, `register_unread`
-  and `check_thread` bind two participants, allocate monotonically ordered entry
-  sequences, preserve operation keys, coalesce unread episodes and reject
-  nonexistent/decreasing read watermarks. Forward migration `20261018152702`
-  checks the locked origin's retirement state before sequence/activity changes;
-  ordinary unavailability or request closure still permits discussion. API authentication and actual displayed
+  and `check_thread` preserve local thread identity, membership, ordered entry
+  sequences, operation keys, unread episodes and read-watermark invariants.
+  `guard_entry`, `guard_offer_revision` and the contact-share insert guard lock
+  the thread and reject its no-write marker. Entry insertion then advances the
+  sequence and activity time from the server clock. The retirement API checks
+  origin state/activity and sets markers through public calls; ordinary
+  unavailability or request closure still permits discussion. API authentication and actual displayed
   acknowledgements remain CN-01 work. Whole-transaction/savepoint rollback is
   required on duplicate inserts; blindly using `ON CONFLICT DO NOTHING` after
   sequence allocation is not the duplicate-return contract.
@@ -215,6 +227,17 @@ integration and must preserve the same target/refusal behavior.
   dispatch email, fence a worker's provider call or guarantee exactly-once
   delivery. CN-01/CN-03 still implement atomic intent persistence, final read/
   recipient checks, retry scheduling and external-effect handling.
+
+Migration `20261020142319` removes cross-domain business-table reads/writes from
+the origin, thread, entry and offer-revision triggers while retaining local
+integrity protections and structural foreign keys. Each origin owner's pending
+operation ID is paired with its server-derived cutoff so unknown outcomes can
+be retried with the exact request. Public reads/commands hide pending Listings;
+the seller's management list keeps retained rows visible. The thread write
+marker and content-free result ledger support the owning public APIs; no
+database trigger calls a Python `public.py` function. The selected-conversation
+backfill migration also fails closed instead of querying Conversations to
+infer Listings-owned state.
 
 All trigger exceptions contain fixed messages, not user input/ciphertext.
 Applications must still redact native driver/database diagnostic details.
@@ -250,12 +273,14 @@ read/reminder/cleanup races. No concurrency or full acceptance is claimed yet.
 `tests/retired-origin-smoke.sql` is a second rollback-only administrator test
 restricted to an isolated `clip_test_` database. It proves ordinary listing
 unavailability/request closure still allow messages and contact shares, then
-checks both origin types reject those same entries after permanent retirement
-without advancing thread sequence/activity. To model a historical closure, it
-briefly uses session-local replica mode only while backdating that fixture's
-closure instant; origin mode is restored before the actual retirement and entry
-guards are tested. The test is not an application bypass or a production script.
-`native-checks.sh` now expects four migrations and runs both smoke suites before
+sets the Conversations-owned no-write marker and checks both origin types
+reject those same entries without advancing thread sequence/activity. To model
+a historical closure, it briefly uses session-local replica mode only while
+backdating that fixture's closure instant; origin mode is restored before
+retirement and the marker guard are tested. The test does not exercise the
+public API's activity check or concurrent ordering; those remain service
+integration checks. It is not an application bypass or a production script.
+`native-checks.sh` now expects nine migrations and runs both smoke suites before
 and after rollback/reapply. The original native results below describe the
 initial three-migration checkpoint, not a run of the revised harness.
 
@@ -422,8 +447,22 @@ was corrected and final state/aborted-sequence rollback checked on the rerun.
 
 `uv run --locked python scripts/check_database.py` uses the same PostgreSQL
 18.6 image and dbmate 2.36.0 as local development, with a new `clip_test_ci`
-database, no published port and temporary memory-backed storage. It checks clean
-apply/exact head, repeated application, both existing SQL smoke suites and the
-23-table inventory, then removes only its own container. Local Linux ARM64
-execution passed; actual hosted CI, other platform rows and affected-owner
+database, no published port and temporary memory-backed storage. The current
+checker requires clean apply/exact branch head (`20261022062357`), repeated
+application, both SQL smoke suites, the 26-table inventory, rollback of all
+nine migrations and a clean reapply, then removes only its own container. The
+`--listings-store` option additionally mounts one private temporary Unix-socket
+directory and runs the focused Listings adapter workflow against that same
+disposable database. It uses synthetic test rows and Identity/Conversations test
+doubles; it does not call object storage or touch the shared Compose database.
+The checker prints a compact SQL-selected sample listing row before removing
+the disposable container.
+earlier head `20261020111741` passed locally at
+2026-10-20 11:22:17 UTC. Head `20261020113531` passed the disposable check,
+including seven rollbacks and clean reapply. The API-owned retirement migration
+is now the expected head. Its disposable check passed clean apply, exact head,
+repeat apply, both smoke suites, refusal to roll back while a synthetic
+retirement result exists, full empty-state rollback, and clean reapply. The
+shared Compose database remains untouched. This is local evidence, not hosted
+CI. The macOS native schema-inventory run, other platform rows and affected-owner
 acceptance remain pending. See the [command registry](../docs/environment/commands.md).

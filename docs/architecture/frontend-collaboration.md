@@ -132,8 +132,8 @@ it is not an additional product route.
 | `/sign-in` | `SignInPage` | `identity/IdentityPlaceholder` | A — ID-01 |
 | `/auth/callback` | `AuthCallbackPage` | `identity/IdentityPlaceholder` | A — ID-01 |
 | `/` | `DiscoveryPage` | `search/SearchPlaceholder` contains `listings/ListingsPlaceholder` for sale summaries; wanted browse is C-only | C — SE-01/SE-02; B — LI-01/LI-02 integration |
-| `/listings/new` | `ListingCreatePage` | `listings/ListingsPlaceholder` contains `identity/IdentityPlaceholder` for eligibility | B — LI-01/LI-02; A — ID-01 integration |
-| `/listings/:listingId` | `ListingDetailPage` | `listings/ListingsPlaceholder` contains `search/SearchPlaceholder` save action and `conversations/ConversationsPlaceholder` start/reopen action | B — LI-01/LI-02; C — SE-02; D — CN-01 integration |
+| `/listings/new` | `ListingCreatePage` | `listings/CreateListing` contains `identity/IdentityPlaceholder` for the pending real eligibility connection | B — LI-01/LI-02; A — ID-01 integration |
+| `/listings/:listingId` | `ListingDetailPage` | `listings/ListingDetail` contains the public `search/SearchPlaceholder` save action and `conversations/ConversationsPlaceholder` start/reopen action | B — LI-01/LI-02; C — SE-02; D — CN-01 integration |
 | `/listings/:listingId/edit` | `ListingEditPage` | `listings/ListingsPlaceholder` | B — LI-01/LI-02 |
 | `/my/listings` | `MyListingsPage` | Local view switch; sale view uses `listings/ListingsPlaceholder` with a `conversations/ConversationsPlaceholder` seller-inbox connection; wanted view uses `search/SearchPlaceholder` with a listings match placeholder | B — LI-01/LI-02; C — SE-02; D — CN-02 integration |
 | `/saved` | `SavedListingsPage` | `search/SearchPlaceholder` contains `listings/ListingsPlaceholder` summaries/availability | C — SE-02; B — LI-01/LI-02 integration |
@@ -152,11 +152,16 @@ and owner and provides an explicit `children` slot for page-level composition.
 That slot is a presentation boundary, not a finalized cross-domain data/event
 contract. Domain owners may replace the implementation behind their public
 entry point; changes to a public export or cross-domain prop/event connection
-must be coordinated with affected consumers and reflected in this map. The
-only scaffold interaction is local selection of the two approved view toggles.
-There is no API call, authentication result, save, message,
-contact, offer, or other simulated domain success. Feature `.gitkeep` markers
-remain tracked alongside these placeholders for the later owners' handoff.
+must be coordinated with affected consumers and reflected in this map.
+The foundation scaffold has only local selection of the two approved view
+toggles. LI-01 Step 7's first increment replaces the Listings create/detail
+placeholders with API-backed public exports from the same Listings entry point.
+It preserves the existing A/C/D child slots and adds no cross-domain data/event
+props. Its isolated browser harness uses real local PostgreSQL but synthetic
+trusted Identity and image-confirmation metadata, explicitly labelled in the UI.
+It supplies no real sign-in, photo upload/delivery, save-to-favourites, chat,
+contact or offer behavior. Edit/My Listings remain placeholders at this checkpoint.
+Listings removed its own `.gitkeep`; other feature markers remain with their owners.
 
 Page-composition ownership is intentionally unassigned. When an integration
 requires a shared page edit, the available integrator/merger coordinates it and

@@ -14,10 +14,11 @@ not read Listings tables or maintain a listing projection. Search clients use
 the Listings-owned browse/detail HTTP operations directly; Search's draft-match
 and saved-list operations call only Listings' reviewed public query/summary
 operations. Search calls Conversations to start or look up a Wanted Request
-response thread and to read the minimal origin-activity result. After separate
-human approval of the exact cleanup order, its retirement path may also invoke
-the Conversations-owned retirement marker. Conversations never calls Search or
-Listings. This preserves the reviewed acyclic graph.
+response thread and to use its public activity and no-write-marker operations
+for retirement. Destructive local content/object cleanup still needs its
+separate approval.
+Conversations never calls Search or Listings. This preserves the reviewed
+acyclic graph.
 
 The chosen listing boundary is the Listings-owned query backed by PostgreSQL
 native full-text search, using `pg_catalog.english` for both the stored vector
@@ -109,8 +110,22 @@ conversation. Reopening preserves request/responder uniqueness. A retired
 request cannot reopen. Create/edit validate the active category through
 Listings; Search owns all Wanted Request writes and closure/reopen state.
 Exact close-versus-first-conversation serialization is specified with the
-Conversations operation in Step 8/9. The reviewed retirement policy applies;
-the cleanup mechanism and destructive ordering remain Step 10's human gate.
+Conversations operation in Step 8/9.
+
+Search also owns its retirement decision and pending-operation state. It must
+not read Conversations tables from a trigger. Commit a unique pending
+operation ID and its server-derived cutoff on the request before calling
+Conversations; keep that exact pair so an unknown result can be retried after a
+process restart with the identical request. Keep the request out of new
+response-thread, edit/reopen, and discovery paths while the outcome is
+unresolved. Use `get_origin_activity` only as a preflight, then call
+`mark_origin_retired` for Conversations' authoritative all-or-none locked
+check. A recent write returns `blocked_recent_activity`, marks no threads, and
+causes Search to clear both pending fields; a later attempt uses a new ID and
+cutoff. Reusing an ID for a different origin or cutoff conflicts. The API-only
+lock/recheck/marker sequence is approved. It does not approve destructive
+clearing of request content or objects; the exact local cleanup method and
+order still need approval before implementing that deletion.
 
 Author lists use `created_at DESC, request_id DESC` with shared page sizes.
 Public and owner reads apply authorization and visibility before pagination.
@@ -181,9 +196,9 @@ automatic write retry is implied.
 - The user reports that domain owners approved the public Wanted Request field
   set, authenticated-only marketplace visibility, and request-origin operation
   boundaries in Step 10. The acyclic call rule remains mandatory.
-- Human approval of the concrete destructive retirement mechanism/order is
-  still required before cleanup implementation. This contract does not
-  authorize cleanup.
+- Human approval of each domain's concrete destructive content/object cleanup
+  mechanism and order is still required before deletion is implemented. The
+  Conversations no-write-marker sequence is approved separately.
 - Listing search configuration/index ownership is accepted in the existing
   PD-08 decision; real query plans, data, relevance, load and NFR evidence
   remain SE-01 work.

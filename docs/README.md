@@ -20,6 +20,7 @@ The root [README](../README.md) describes the project. Agents start from [AGENTS
 - [Frontend page inventory and collaboration map](architecture/frontend-collaboration.md)
 - [Human browser, mobile layout and camera verification](environment/browser-verification.md)
 - [Responsive UI and camera verification decision](decisions/responsive-ui-and-camera-verification.md)
+- [Provisional sensitive-purchase price threshold](decisions/sensitive-purchase-threshold.md)
 - [Initial repository bootstrap](tasks/bootstrap-task-list.md)
 - [Project phase/milestone/owner index](tasks/project-task-index.md)
 - [Final regression/cost/delivery tasks](tasks/final-closeout-task-list.md)

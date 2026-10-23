@@ -11,7 +11,7 @@ How can uploads be tracked before a listing has its required usable images?
 - Expose incomplete listings or keep no durable upload/confirmation state, weakening publication and abandoned-object reconciliation.
 
 ## Selected choice
-Use Listings-owned `image_uploads` with pending/confirmed/failed/expired state, controlled unique object key, owner and original expiry. Pending and confirmed-but-unattached intents expire 24 hours after creation. Remove abandoned-object metadata within another 24 hours after expiry/failure once cleanup is safe; preserve the object key until actual deletion/absence is confirmed. Confirmed attached intent/image references remain until their image is retired. Do not introduce a public draft listing.
+Use Listings-owned `image_uploads` with pending/confirmed/failed/expired state, controlled unique object key, owner and original expiry. Pending and confirmed-but-unattached intents expire 24 hours after creation. Remove abandoned-object metadata within another 24 hours after expiry/failure once cleanup is safe; preserve the object key until actual deletion/absence is confirmed. Confirmed attached intent/image references remain until their image is retired. Editing a listing may retire individual images while the listing remains active; the cleanup worker must queue those image rows independently of parent-listing retirement. Do not introduce a public draft listing.
 
 ## Rationale
 Keeps the required-image publication invariant while supporting upload confirmation, failure and abandoned-object cleanup.

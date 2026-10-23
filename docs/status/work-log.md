@@ -48,8 +48,8 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PRE-00 | Integration owner | done | Foundation gate audit accepted; DL-00 is unblocked | performed | verified/accepted by user | Reviewed handoff PR #8 merged to `main` at `2cd83e7`; hosted Foundation quality gates passed for head `18c966e` against base `68d9da9` (run `39323851584`); clean-checkout evidence at `0747be6`; see [PD-19 handoff](foundation-handoff.md) | None. PR #8 has no GitHub review event; independent-review completion remains user-reported without a separate artifact. | 2026-10-19 21:20:55 UTC |
 | DL-00 | Shared-core/contract coordinator; all domains review | in progress | Steps 1–13 local work complete; independent review and exact merge gate next | Steps 1–13 performed | User reports affected domain owners reviewed and approved the contract documents; four declarations derive from those reviewed signatures | `task/pre-00-dl-00-foundation`; 50 HTTP operations, 19 internal callables, eight generated artifacts; `make check` passed (421 Python, 63 data, 16 web tests; Black 71 files; boundary/contract/mypy/web/database/safety/secrets checks) | Independent peer review and exact-revision merge remain; cleanup implementation still needs its separate approval; real providers/integrations and crypto/worker implementation remain downstream | 2026-10-20 05:17:32 UTC |
 | ID-01 | A | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | ID-READY, LI-01, LI-02, SE-CORE, SE-02, CN-CORE, CN-02 | — |
-| LI-01 | B | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | LI-CORE, LI-02, SE-CORE | — |
-| LI-02 | B | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | LI-CORE, ID-READY | — |
+| LI-01 | B | in progress | Finish the remaining Step 7 browser states and current-head Step 11 checks/reviews; prepare a progress PR without claiming LI-CORE. Steps 12–13 remain integration-gated. | Steps 1–6 and 8–10 implemented and locally checked; Step 7 partial (create/detail/edit/My Listings/gallery). | Suraj verified the multi-image edit/gallery checkpoint, seller-only selected-buyer visibility, and Step 10. No LI-01 phone-device result is claimed. | domain/listings at 6ffbe0b; focused Listings suite: 61 passed, one database-only test skipped outside the wrapper; disposable PostgreSQL workflow passed; current worktree `make check` passed 2026-10-23 (573 Python, 63 data, 42 web tests; remaining contract, type, boundary, database, safety, formatting, lint, and build checks passed). | LI-CORE not accepted. Remaining Step 7 states; Step 11 query-plan, current aggregate, and affected-owner review; native schema check; five pre-existing backend boundary findings; real Identity, Conversations, storage, and Search integration; Steps 12–13. | 2026-10-23 10:38:31 UTC |
+| LI-02 | B | in progress | Defer Step 3 until shared ECS use is over and its saved capacity baseline is restored; then prepare a fresh plan and review its exact hash and cost. | Steps 1–11 and 1.5 verified. The prior Step 12 public ECS browser flow and phone photo upload worked. The revised dedicated-RDS harness is committed; its prepared plan was discarded and never applied. | Suraj verified Step 11, Step 1.5, and the prior browser/mobile flow. | domain/listings at 6ffbe0b; Terraform 1.15.9 fmt/validate, Python compilation, 27 lifecycle cases, CLI help, and diff check passed before commit; current worktree `make check` passed 2026-10-23 (573 Python, 63 data, 42 web tests; remaining contract, type, boundary, database, safety, formatting, lint, and build checks passed). Plan 30112961a2479c760dfa32f91b0b57013a2a4079924abc3a5fd85dee06d6b6fd is invalid for apply. | Baseline li02-c2090c6c3294 remains images-ready. No disposable LI-02 RDS, ALB, service, or URL parameter was created by the revised plan. Prior preflight: account 335523638354, ap-south-1, MTD USD 6.14, forecast USD 21.42, USD 200 monthly cap. The previous shared-RDS test database was not queried and may remain; the new harness never touches shared RDS. Wait for an idle shared ECS baseline before restarting. | 2026-10-23 10:38:31 UTC |
 | SE-01 | C | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | SE-CORE, LI-01, LI-02, DATA-READY | — |
 | SE-02 | C | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | SE-CORE, ID-READY, LI-CORE | — |
 | CN-01 | D | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | Isolated development: PRE-00, then DL-00 and a reviewed contract/stub. Later real gates: CN-CORE; SE-02's real request interfaces for request-response integration; CN-03's producer path for final NFR-05 acceptance. | — |
@@ -82,21 +82,27 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 
 ## Listings preparation checkpoint
 
-Suraj (B) selected `domain/listings` for Listings work and related task-document
-updates. Suraj requested these preparation and contract corrections be
-published directly to main without a PR, with a separate branch for LI-01/LI-02.
-The current draft is prepared in a clean local main worktree. Affected-owner
-review remains pending for the frontend guidance and shared contract changes.
-LI-01/LI-02 implementation remains not started; no readiness milestone is
-accepted by this preparation.
+Suraj (B) owns LI-01 and LI-02 on branch domain/listings, currently at
+6ffbe0b based on main 44cd8ff. No PR is open. Current checkpoint:
 
-Current checkpoint: camera/gallery, responsive UI and explicit human browser
-guidance drafted; Suraj confirmed completing the Firefox Responsive Design
-Mode layout inspection. Actual-phone camera/gallery checks remain pending for
-LI-02. The public-interface contract audit found declaration mismatches and
-prepared corrections; affected-owner review and publication remain pending.
-The local foundation is available for further inspection. The Listings
-walkthrough remains in progress.
+- LI-01: isolated listing create/read/edit, availability/selection/retirement,
+  seller controls, and browser UI are implemented; Step 7 remains partial.
+  LI-CORE, Step 11 review/remaining checks, and real Identity, Conversations,
+  Search, and image integration are not accepted.
+- LI-02: local upload/security checks and the earlier public Step 12 demo were
+  verified; the app ran from ECS and the phone photo flow worked in Firefox.
+  The new harness is designed to provision a disposable PostgreSQL 18.6 instance
+  and leaves shared RDS untouched. Its prepared plan was discarded, not applied.
+- The earlier demo teardown stopped shared RDS, but its prior test database
+  was not queried and may remain. Existing ECR artifacts are retained.
+- Do not resume the isolated cloud test while shared ECS work is active. The
+  last read in this session (2026-10-23 10:13:48 UTC) showed no running ECS
+  tasks, ASG desired capacity zero, and the former shared host terminating;
+  completion of scale-in was not yet confirmed.
+
+Local browser checks remain separate from the cloud demo. The next Listings
+handoff is a traceability progress PR after current-head checks and review
+preparation; it does not claim LI-CORE, ID-READY, or completed LI-02 Step 12.
 
 ## Dated history entries
 
@@ -105,6 +111,17 @@ Update the task status row after each step and human verification. The row is th
 Add a history entry when it records a meaningful outcome, decision, changed output, check result, blocker, consequential human direction, or task/merge closeout. Group related steps when that keeps their results understandable. Do not add a separate history entry just to say that a routine step was verified and the next one may begin.
 
 Include the task and covered step(s), contributor, date/time, and the details needed to understand or verify the outcome: relevant execution/verification state, changed paths, exact checks/results, decision/evidence reference, blocker/owner, or next action as applicable. Keep entries brief, omit repeated background, and link existing artifacts rather than duplicating them. Use exact UTC date and time for new entries. Keep historical timestamp precision as recorded; never guess or backfill an unknown time. Preserve distinct decisions, evidence, and other contributors' useful history.
+
+### Shared idle-cost follow-up — retain RDS and inspect NAT lifecycle — 2026-10-22 15:46:58 UTC
+
+Suraj chose to retain shared RDS compute stop/start behavior and database
+storage. Repository inspection found no NAT-only teardown/recreate command
+or independent NAT enable flag: NAT, EIP and its route remain coupled to
+the shared base phase. Whole-stack disable/destroy would affect RDS and is
+unsuitable for that request. The current private ECS architecture needs NAT
+throughout the Listings cloud run for outbound AWS service access; the
+LI-02 lifecycle does not manage it. No shared-infrastructure change or
+cloud operation was performed.
 
 ### BOOT-00 — seed installation and source validation — 2026-10-14
 Suraj (B); completed and human-verified. Cloned the existing exocrat/clip repository, preserved `.git` and `LICENSE`, and installed 28 supplied bundle files at the clone root from `origin/main` revision `3e81554ce3d713478d8f0979d76480e286096455`. All paths were present with no nested bundle directory. The submitted PRD checksum matched the source and bundle manifest: `8ac241d1e72472a5dc77edad18579ec5d2ca3ff2ac8fd454cbc6e9627abf4ad1`. Added README navigation, source provenance, workstation facts, and the A/B/C/D roster; Aditya (A) is the default release/status coordinator and the shared cloud operator remains unselected.
@@ -1407,11 +1424,232 @@ OpenAPI now includes the filter, sort values, and 200 response body. `git diff
 --check` passed. No application tests were run. Affected-owner review remains
 pending.
 
+### Cross-domain retirement handoff — Step 4 migration drafted — 2026-10-20 14:24:26 UTC
+
+Reused the already verified handoff work: the contract outcome and retry rules,
+the Conversations participant-check callable, the Step 5 checkpoint, and the
+selected-conversation migration correction were already complete. Added the
+next forward migration, `20261020142319_api_owned_retirement_and_trigger_boundaries.sql`.
+It adds the Listings/Search pending-operation IDs, the Conversations thread
+participant-write marker, and the content-free operation-result ledger. It
+replaces the four named triggers so their up-path checks no longer read or
+write another domain's tables: origin guards retain local lifecycle and
+180-day checks, thread guards retain local identity/order protections, entry
+inserts lock their own thread and use server time, and offer revisions retain
+local consistency checks. Structural FKs remain. The down section restores the
+previous trigger behavior for disposable rollback. The migration was not
+applied; no tests or database checks ran. Focused SQL validation,
+migration apply/rollback/reapply, and affected-owner review remain pending in
+the next verified step.
+
+### Cross-domain retirement handoff — Step 5 disposable verification — 2026-10-20 14:30:10 UTC
+
+Updated the database/schema/retirement decision docs and the disposable/native
+check definitions for migration head `20261020142319` (26 domain tables, eight
+migrations). Updated the rollback-only smoke fixtures: they now verify a blocked
+retirement result cannot report marked threads, and that the Conversations
+thread no-write marker rejects new messages/contact shares for both origin
+types without advancing sequence or activity. The fixture does not claim to
+test service API activity checks or concurrent ordering. `python3
+scripts/check_database.py` passed against its newly created PostgreSQL 18.6
+container: clean apply, exact head, repeat apply, both SQL smokes, rollback of
+all eight migrations, complete namespace removal, clean reapply, and both
+smokes again. The checker removed its own container; the shared Compose database
+was not used. `bash -n database/tests/native-checks.sh` and `git diff --check`
+passed. The native schema-inventory run was updated but not run here; C/D review
+and real retirement service behavior remain pending.
+
+### Cross-domain retirement handoff — Step 6 guard and rollback corrections — 2026-10-20 14:36:58 UTC
+
+The handoff audit found two requirements not yet covered by the Step 5 smoke:
+offer-revision and contact-share subtype writes needed their own local marker
+check under the Conversations thread lock, and rollback must not silently drop
+stored retirement outcomes or active markers. Updated the unpublished forward
+migration: `guard_offer_revision` now locks/checks the thread; the existing
+contact-share identity trigger checks the marker on inserts while retaining its
+update-rejection behavior; and down migration refuses to proceed while the
+operation ledger or pending/no-write markers contain state. Expanded the
+rollback-only smoke to attempt a marked offer revision and contact-share write
+and confirm rejection without activity/sequence changes. Extended the
+disposable checker to seed a result, require down migration to fail for the
+specific data-preservation reason, confirm the result/head remain, then clear
+that synthetic row and complete the normal eight-migration rollback/reapply.
+`python3 scripts/check_database.py` passed PostgreSQL 18.6 clean apply, exact
+head, repeat apply, both smokes, expected data-preserving rollback refusal,
+complete empty rollback, clean reapply and repeated smokes. The checker removed
+its disposable container; the shared database was untouched. Native schema
+inventory and affected-owner review remain pending.
+
+### LI-01 Steps 1–6 — contract, storage, and retirement implementation — 2026-10-20 08:57:01–2026-10-21 10:03:48 UTC
+
+Suraj (B) audited and reused the existing Listings schema and catalogue; no
+duplicate tables were needed. The accepted defaults include the configurable
+500,000-paise sensitive-purchase threshold, with mobile/laptop categories
+always flagged and proof availability treated as an unverified seller
+statement. Listings service/API and PostgreSQL storage now use trusted caller
+identity, owner checks, retry-safe create/owner commands, and the public
+Identity/Conversations boundaries. The selected buyer/conversation pair and
+verified image metadata have Listings-owned storage.
+
+The Step 5 retirement path uses the public Conversations activity/marker
+interface: eligibility is 180 days unavailable or past the availability end,
+plus 90 days without participant writes in every related conversation.
+Listings persists the same operation ID/cutoff for retries, clears it only on a
+confirmed blocked result, and keeps unknown outcomes retryable. After marking,
+the approved local cleanup scrubs listing details and receipts; image metadata
+is retained until object deletion is confirmed. No cross-domain private-table
+backfill remains. Forward migrations add the necessary command receipts,
+selection pair, retirement boundary, and configuration fields; shared Compose
+data was not used.
+
+Disposable PostgreSQL 18.6/dbmate checks passed clean and repeat migration
+application, SQL smokes, Listings store/retirement workflows, and guarded
+rollback/reapply at the checkpoints recorded here. Focused API, Black, mypy,
+contract-generation, and diff checks passed where available. Real
+Conversations/storage workers, affected-owner/native schema review, and final
+integration remain pending. The cross-domain retirement handoff entries are retained as recorded.
+
+### LI-01 Steps 7–10 — local Listings UI, authorization, and scenarios — 2026-10-21 10:18:55–12:24:23 UTC
+
+Implemented the isolated responsive create/detail/edit/My Listings surfaces,
+ordered multi-image editing, loading/error/retry states, and owner-only
+availability/selection behavior. User clarification made pickup optional;
+migration 20261021105546 supports omitted/null create and explicit-null
+replacement clearing without inventing data on rollback. Step 8 keeps selected
+buyer/conversation fields seller-only. Step 9 covers validation, lifecycle and
+retirement boundaries; Step 10 covers seller capability, owner, availability,
+selection, and offer-command behavior against reviewed test doubles.
+
+The focused Listings suite passed 61 tests (one database-only test is skipped
+when run without its wrapper); disposable PostgreSQL workflows passed. Web
+lint/tests/types/build, Black, contract freshness, and diff checks passed at
+their recorded checkpoints. Suraj verified the multi-image gallery and Step 10.
+Step 7 remains partial; the local phone-device check, real sign-in/photo
+upload, real Conversations offer writes, and Search integration are not claimed.
+
+### LI-02 Steps 1–3 — isolated storage and initial infrastructure — 2026-10-21 13:01:52–2026-10-22 04:56:10 UTC
+
+The rehearsal design selected a private SSE-S3 bucket, public-access blocking,
+TLS enforcement, run-scoped object permissions, bounded ECS roles, a
+permissions boundary, and seven-day logs. The initial Terraform apply used
+approved plan 9646c9a795215e8b5842c58c780257791ede360bd8914d4eb2d137f85881488a
+(15 resources added; no runtime, RDS, or ECS service). The bucket enforces If-None-Match: * for run-prefix uploads. Account, role, and
+resource checks used profile surajs2 in 335523638354/ap-south-1; no shared
+application data was read.
+
+### LI-02 Steps 4–11 — upload lifecycle and local security gate — 2026-10-22 05:48:54–11:36:10 UTC
+
+The approved Step 4 plan 520a5ad1af425698152b092fb636fa6e0715197977b461d3f5b6cc94b3f81a7b changed only bucket CORS/policy to require If-None-Match: * on run-prefix uploads. Implemented five-minute authorized upload/delivery URLs, 1–8 image and 10 MiB limits, server-side JPEG/PNG/WebP byte checks, owner-bound confirmation, transactional listing references, retry-safe pending/failed/expired states, private delivery, and bounded cleanup after the approved 24-hour intent expiry plus five-minute grace period.
+The isolated caller is fixed server-side and startup rejects the wrong database,
+application role, bucket, region, or run prefix. The security review found the
+bucket private/encrypted with run-scoped task-role access; the future ECS route
+was not yet deployed at that checkpoint.
+
+The current Step 11 aggregate passed: 540 Python tests, 63 data tests, web
+lint/tests/types/build, mypy, generated-contract checks, PostgreSQL 18.6
+migration/smoke and rollback/reapply checks, database-safety cases, and
+Gitleaks. The human mobile website check was explicitly deferred to Step 12.
+Real cloud/browser verification was not claimed by this local gate.
+
+### LI-02 Step 12 — public demo, lifecycle debugging, and verified run — 2026-10-22 12:42:45–18:30:10 UTC
+
+Suraj selected an internet-facing ECS/ALB demo over generated HTTP DNS, with
+synthetic data only and a hard ten-listing cap; HTTPS was deferred. The laptop
+does not serve the application. Fixed bootstrap, migration, seed, app, cleanup,
+and idle-check task definitions plus the one-command start/stop driver were
+implemented. The initial Terraform plan
+84204321d945d551e7b9fe8ea9c7955255d9c7e1f5e534b2fea4e421b0429bbe created
+the demo route and fixed tasks with the app at zero. Follow-up approved task
+plans were a749908bd4259d354edc8b5015135a479bd1b010a7fa3558f6e872113b3f731c,
+57bcd9ad8a5f3239ce81748583e55430e7834dc4ae6fb780c6dd9e23f016eaa7, and
+dfa3b8120f8b315d88b48c439221b05bfe508b91fa128a6110f6ee3f91ba2ac9; the app
+was started by plan
+2549a58825bacade16eace34150f3da024022a9c1b743f338e05ee71073ab228. Stop plan
+5ab2778bb6ee7c1f5afa5a170a443815ab30d6bd6ecd61873a8c2957760cec85 removed
+the public route and LI-02 runtime resources.
+
+A suppressed-stdout psql helper caused false database-exists/owner errors;
+those claims were withdrawn and the helper was corrected. The local lifecycle
+harness then passed 27 cases. A separate restricted-admin PostgreSQL 18.6 local
+run passed setup, migrations, seed, idle checks, and exact cleanup. Cloud
+bootstrap, migrations, and seed also passed; the first cloud stop skipped DB
+cleanup because task-definition discovery failed. The deployed browser
+flow created two synthetic listings and three private S3 images; API and S3
+checks confirmed persisted metadata and encrypted objects. Suraj verified a
+phone photo upload in Firefox; Chrome behavior on HTTP remained undiagnosed.
+Browser evidence: [API/browser results](../evaluation/domain/li-02/cloud-browser-c842663.json), [desktop capture](../evaluation/domain/li-02/cloud-desktop-c842663.png), and [mobile emulation](../evaluation/domain/li-02/cloud-mobile-c842663.png). Cost/resource evidence: [the 2026-10-22 investigation](../evaluation/domain/li-02/cost-investigation-2026-10-22.json).
+
+The first stop skipped database cleanup because it failed to locate the exact
+task definitions. The route, four run-prefix objects, run URL parameter, and
+run-tagged images were later removed; shared RDS was separately returned to
+stopped. The old clip_test_listings catalog was not queried and may remain on
+shared RDS. Existing untagged ECR digests were retained per Suraj's direction.
+The old ALB URL is gone. This historical public demo does not prove the revised
+disposable-RDS start/stop flow.
+
+### LI-02 Step 1.5 and lifecycle/integration audit — 2026-10-22 18:35:55–19:32:15 UTC; 2026-10-23 06:31:31 UTC
+
+Added owner Mark unavailable/Mark available controls and All/Available/
+Unavailable My Listings filters, using the existing revision-checked
+availability API and stable retry keys. npm run check passed (42 web tests),
+and Suraj verified this behavior. Start/stop recovery was consolidated into one
+driver that records phases, checks ownership, retains its baseline until
+cleanup succeeds, preserves existing ECR artifacts, and prints the matching
+opposite command. The prior shared RDS stop was confirmed; the previous shared
+database itself was not queried.
+
+The Step 13 readiness audit found that the isolated build is not yet plug-and-
+play for real shared deployment: Identity context/provider, real shared
+database/migration inputs, shared storage/runtime policy, and required
+Conversations integration remain. The CLIP_DATABASE_URL contract is unchanged
+and the storage adapter is reusable, but a one-toggle real-deployment switch
+has not been implemented. Local checking remains independent of the cloud
+harness.
+
+### LI-02 Steps 2–3 — reproducible harness and deferred disposable-RDS plan — 2026-10-23 06:31:31–10:13:48 UTC
+
+Suraj verified the consolidated lifecycle. A first start stopped at an expired
+AWS session; after reauthentication, run images were published and RDS
+recovery in ap-south-1a failed for capacity. Suraj chose a dedicated private,
+encrypted, single-AZ PostgreSQL 18.6 db.t4g.micro in ap-south-1b so LI-02
+would never start, connect to, or modify shared RDS. The app's
+CLIP_DATABASE_URL interface remains unchanged. Commit 6ffbe0b contains this
+harness; Terraform 1.15.9 formatting/validation, Python compilation, 27
+lifecycle cases, CLI help, and diff checks passed.
+
+Preflight at account 335523638354/ap-south-1 reported USD 6.14 month-to-date
+and USD 21.42 forecast against the USD 200 monthly cap. Plan
+30112961a2479c760dfa32f91b0b57013a2a4079924abc3a5fd85dee06d6b6fd proposed
+20 additions and 8 in-place changes, including the disposable RDS and public
+route, but was not applied; its temporary file was discarded. At the latest
+read, 2026-10-23 10:13:48 UTC, ECS had no running tasks and ASG desired capacity
+was zero while the former shared host was terminating. No new LI-02 RDS, ALB,
+service, or URL parameter was created. Suraj chose to defer another cloud run
+until shared capacity is idle. Generate a fresh plan later; this hash is invalid.
+
+### Listings traceability preparation — current-head local gate — 2026-10-23 10:38:31 UTC
+
+Step 2 audit completed on `domain/listings` at `6ffbe0b` against `origin/main`
+`44cd8ff`; no open PR was found. `make check` passed: 573 Python tests passed,
+1 skipped, 63 data tests passed, 42 web tests passed, and formatting, contracts,
+type checks, boundaries, web build, database, safety, and secrets checks passed.
+The run also corrected an expired synthetic caller in the Listings
+authorization test fixture; Black reformatted three existing API files. No
+cloud action or Git publication occurred.
+
 ## Pending integration ledger
 
 | Task/step | Mode, source/version, double and scenarios | Required real dependency | Owner roles | Trigger | Real checks and expected result | Current evidence/state |
 |---|---|---|---|---|---|---|
 | DL-00 Step 11; Search → Listings | Isolated; HTTP 0.1.0 / generator format 2; `apps/api/tests/domains/search/doubles/listings.py`; success/repeat, denied 403, expired caller 401, missing ID 404, timeout/unavailable 503 | Accepted LI-CORE implementation and the consuming SE-01 integration checkpoint | Listings B; Search C | LI-CORE is accepted and SE-01 reaches its real Listings integration checks | Run SE-01 Steps 3–8 against real Listings: verify availability/filter/order/page ties, category labels, saved/current summaries and retired-content privacy; denied/expired/missing/failure outcomes preserve safe errors; confirm Search uses only the public interface. | Isolated tests pass in the 55-test contract/double run; real provider checks remain pending. |
+| LI-01 Step 5 / Step 11 — migration and database smoke | Isolated PostgreSQL 18.6/dbmate 2.36.0; never the shared Compose database | Current expected head 20261022062357, 26 domain tables across 11 migrations; retirement rollback guard at 20261020142319 | Listings B; database/migration maintainer if needed | Before LI-CORE/Step 11 database acceptance | Clean/repeat apply, SQL smokes, retirement rollback refusal, empty rollback/reapply; native inventory of 26 tables, 23 functions, 35 triggers | Historical disposable check passed at 20261020142319. Step 11 aggregate passed at current head; native schema-inventory run and affected-owner review remain pending. |
+| LI-01 Steps 9–10 — isolated owner-command and lifecycle behavior | Local Listings service/store, disposable PostgreSQL, reviewed Conversations test double, synthetic Identity context | Real Identity and Conversations interfaces/providers | LI-CORE Step 11 and real consumer integration | Verify owner/auth denial, idempotent create/command replay and conflict, competing edits, availability/selection/offer gates, 180/90-day retirement, content/receipt cleanup, and 500,000-paise/category/proof boundaries | Focused suite: 61 passed, one direct DB-only skip outside wrapper; PostgreSQL workflow passed. Real Conversations offer writes and thread-start rejection, Identity, images, and Search remain pending. |
+| LI-01 Step 5 — retirement integration and cleanup decision | Listings-owned pending operation ID/cutoff; public Conversations activity/marker interface only | Real Conversations provider and LI-02 storage/worker | Before real retirement acceptance at INT-01 | Verify 180-day eligibility plus 90 quiet days, all-or-none marker, stable retry identity, blocking while pending, receipt/detail scrub, and retry-safe object deletion | Listings coordinator, cleanup and focused tests are implemented; real Conversations/storage worker wiring and retired My Listings behavior remain pending. |
+| LI-01 Steps 11–13 — real integrations and human browser verification | Real auth, ordered migrations, APIs/UI, image and Search dependencies | ID-READY, LI-CORE, CN-02, LI-02, SE-CORE; affected owners | Step 11 review; Step 13 after LI-02 and SE-CORE | Current full checks/query plans and public-boundary review; then real owner-auth create/edit/availability, image-backed discovery exclusion, desktop and phone journey | Not accepted. Real Identity, Conversations, storage, and Search integration plus desktop/phone Step 13 checks remain pending. |
+
+| LI-01 Step 7 — isolated browser create/detail/My Listings/edit | Local HTTP browser demo with synthetic caller and image metadata; real Listings API/PostgreSQL | ID-READY and public A/C/D connections; LI-02/SE-CORE for real media/discovery | Resume remaining Step 7 states before LI-CORE | Complete validation/loading/unavailable/error cases and record browser observations | Multi-image edit/gallery verified. Step 7 remains partial; no real sign-in or photo upload is claimed. Phone website check remains LI-02 Step 12. |
+
+| LI-01 Step 7 pickup-area correction | Nullable pickup contract/model and disposable/browser PostgreSQL | Affected consumers/schema owners and native/shared migration check | Before shared integration of migration 20261021105546 | Verify omitted/null create, explicit-null replacement, nullable reads, preserved existing values, and safe rollback without inventing data | Local SQL/API/UI checks passed and Suraj verified the browser behavior; consumer review and native/shared migration checks remain pending. |
 
 ## Resolved integration evidence
 

@@ -141,8 +141,8 @@ VALUES ('{ids['sk']}','{s}',1,decode('01','hex'),'synthetic-storage-test'),('{id
 
     def image(self, ids, image, position):
         """Build a confirmed synthetic upload and its image without storage calls."""
-        return f"""INSERT INTO listings.image_uploads(id,owner_id,object_key,state,expires_at,confirmed_at)
-VALUES ('{image}','{ids['seller']}','test/{image}','confirmed',CURRENT_TIMESTAMP+INTERVAL '24 hours',CURRENT_TIMESTAMP);
+        return f"""INSERT INTO listings.image_uploads(id,owner_id,object_key,operation_id,state,expires_at,confirmed_at)
+VALUES ('{image}','{ids['seller']}','test/{image}','{image}','confirmed',CURRENT_TIMESTAMP+INTERVAL '24 hours',CURRENT_TIMESTAMP);
 INSERT INTO listings.images(id,listing_id,upload_id,object_key,position,media_type,size_bytes)
 VALUES ('{image}','{ids['item']}','{image}','test/{image}',{position},'image/png',1);"""
 
