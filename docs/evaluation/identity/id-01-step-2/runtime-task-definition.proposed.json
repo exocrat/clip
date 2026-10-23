@@ -1,0 +1,53 @@
+{
+  "family": "clip-test-identity-email-ap-south-1-id01",
+  "taskRoleArn": "arn:aws:iam::335523638354:role/clip-shared-test-api-task",
+  "executionRoleArn": "arn:aws:iam::335523638354:role/clip-shared-test-api-execution",
+  "networkMode": "bridge",
+  "requiresCompatibilities": [
+    "EC2"
+  ],
+  "cpu": "256",
+  "memory": "512",
+  "runtimePlatform": {
+    "operatingSystemFamily": "LINUX",
+    "cpuArchitecture": "X86_64"
+  },
+  "containerDefinitions": [
+    {
+      "name": "identity-email-smoke",
+      "image": "IMAGE_DIGEST_PENDING_REVIEW",
+      "essential": true,
+      "user": "10001:10001",
+      "cpu": 256,
+      "memory": 512,
+      "command": [
+        "python",
+        "-m",
+        "app.domains.identity.email_smoke"
+      ],
+      "workingDirectory": "/app/apps/api",
+      "environment": [
+        {
+          "name": "CLIP_ENVIRONMENT",
+          "value": "test"
+        },
+        {
+          "name": "CLIP_DEBUG",
+          "value": "false"
+        },
+        {
+          "name": "CLIP_EMAIL_PROVIDER",
+          "value": "disabled"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/clip-shared-test",
+          "awslogs-region": "ap-south-1",
+          "awslogs-stream-prefix": "identity-email-smoke"
+        }
+      }
+    }
+  ]
+}

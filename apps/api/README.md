@@ -22,7 +22,7 @@ The API reads these non-secret values from the process environment at startup:
 | `CLIP_ENVIRONMENT` | `local`, `test`, or `production`; default `local` | Rejects unsupported or empty values. This labels configuration mode, not deployment readiness. |
 | `CLIP_DEBUG` | Boolean; default `false` | Controls FastAPI debug responses; production rejects `true`. Invalid or empty boolean values fail startup. |
 | `CLIP_IDENTITY_PROVIDER` | `disabled` or `fake`; default `disabled` | Explicit local/test helper selection; production rejects `fake`. No real/fake authentication is implemented here. |
-| `CLIP_EMAIL_PROVIDER` | `disabled` or `fake`; default `disabled` | Explicit local/test helper selection; production rejects `fake`. No email is sent or claimed delivered. |
+| `CLIP_EMAIL_PROVIDER` | `disabled`, `fake`, or `ses`; default `disabled` | Explicit local/test helper selection; production rejects `fake`. No email is sent or claimed delivered. |
 | `CLIP_STORAGE_PROVIDER` | `disabled` or `fake`; default `disabled` | Authorizes only explicit test-helper construction; production rejects `fake`. No real storage is configured. |
 | `CLIP_DEVELOPMENT_AUTH` | Boolean; default `false` | Reserved testing control; production rejects `true`. This setting creates no public authentication bypass. |
 
@@ -75,3 +75,19 @@ Fresh credential-free child processes import `app.main` with a ten-second timeou
 generated runtime module. The handler still returns only `{"status":"ok"}`.
 Generation and public schema publication are separate; no schema endpoint or
 marketplace feature is enabled.
+
+## Identity provider setup (ID-01 Step 2)
+
+The [setup record](../../docs/environment/identity-provider-setup.md) documents
+Microsoft registration inputs, sandbox SES configuration and pending approvals.
+`CLIP_EMAIL_PROVIDER=ses` requires explicit controlled recipients through the
+JSON-array setting `CLIP_SES_TEST_RECIPIENTS`; production rejects SES until its
+separate configuration review. Defaults remain disabled. Fixed non-secret
+settings are `CLIP_SES_REGION=ap-south-1` and
+`CLIP_SES_SENDER=no-reply@clip-iisc.site`. The Identity-owned transport has no
+public route and does not generate/verify OTPs or authenticate anyone.
+
+The Identity one-shot runtime test is documented in the
+[command registry](../../docs/environment/commands.md#identity-one-shot-email-command--id-01-step-2).
+Its separate approval, task-role checks and single-message/deadline guards keep
+it outside normal API startup; no live delivery has yet been tested.

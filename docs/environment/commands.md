@@ -574,3 +574,38 @@ cycles through its original owner clone, with catalogue/head and volume retained
 clean migration checks used disposable containers. Other-machine checks remain
 pending. Exact logs/source overlay are linked from the work log; Step 6 consolidates
 the evidence and task review.
+
+## Identity provider offline checks — ID-01 Step 2
+
+From the repository root, after `uv sync --locked`:
+
+```bash
+uv run --locked pytest apps/api/tests/domains/identity/test_email.py apps/api/tests/core/test_provider_settings.py apps/api/tests/test_config.py -q -W error
+```
+
+Runs controlled configuration/transport checks using injected clients and
+synthetic recipients. No AWS client, send, network listener or database is
+created. Exit 0 means collected offline checks pass; failures and exit 5 are not
+success. This does not establish SES permission, actual delivery, Microsoft
+sign-in or ID-READY. The [setup record](identity-provider-setup.md) owns real gates.
+
+## Identity one-shot email command — ID-01 Step 2
+
+Offline checks from the repository root:
+
+```bash
+uv run --locked pytest apps/api/tests/domains/identity -q -W error
+uv run --locked mypy --no-incremental apps/api/app/domains/identity/email_smoke.py
+```
+
+Tests inject synthetic providers/role responses and never send mail. Exit 0
+means collected local checks pass, not delivery or runtime-role evidence.
+
+The future approved ECS image uses working directory `/app/apps/api` and command
+`python -m app.domains.identity.email_smoke`. This is a LIVE operation only with
+separately approved task/image/send inputs; do not run it as a local delivery
+shortcut. Default settings refuse sending. It requires explicit smoke approval,
+test mode, SES selection, exactly one allowlisted recipient and the expected ECS
+container-role credentials. It attempts one fixed generic message, suppresses SDK
+logs and exits within a 45-second command deadline. Success output means provider
+acceptance only. See the [bounded plan](../evaluation/identity/id-01-step-2/runtime-test-plan.md).

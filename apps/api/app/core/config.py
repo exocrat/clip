@@ -2,7 +2,13 @@
 
 from typing import Literal, Self
 
-from pydantic import ValidationError, ValidationInfo, field_validator, model_validator
+from pydantic import (
+    Field,
+    ValidationError,
+    ValidationInfo,
+    field_validator,
+    model_validator,
+)
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -29,7 +35,12 @@ class Settings(BaseSettings):
     debug: bool = False
     # Fake selectors authorize test-package helpers only; no real adapter is configured.
     identity_provider: Literal["disabled", "fake"] = "disabled"
-    email_provider: Literal["disabled", "fake"] = "disabled"
+    email_provider: Literal["disabled", "fake", "ses"] = "disabled"
+    # Step 2 permits only explicitly controlled sandbox recipients. General delivery
+    # requires a separately reviewed production configuration increment.
+    ses_region: Literal["ap-south-1"] = "ap-south-1"
+    ses_sender: Literal["no-reply@clip-iisc.site"] = "no-reply@clip-iisc.site"
+    ses_test_recipients: tuple[str, ...] = Field(default=(), repr=False)
     storage_provider: Literal["disabled", "fake"] = "disabled"
     development_auth: bool = False
 
@@ -52,6 +63,28 @@ class Settings(BaseSettings):
         return value
 
     @model_validator(mode="after")
+    def restrict_ses_sandbox(self) -> Self:
+        """Require an explicit bounded recipient list and refuse production sending.
+
+        The list limits local/test dispatch; it neither verifies SES identities
+        nor authorizes a live send. Those actions retain their human gates.
+        """
+        if self.email_provider == "ses":
+            if self.environment == "production" or not self.ses_test_recipients:
+                raise ValueError(
+                    "SES currently requires controlled local/test recipients"
+                )
+            if len(self.ses_test_recipients) > 5 or any(
+                not recipient.isascii()
+                or recipient.count("@") != 1
+                or any(character.isspace() for character in recipient)
+                or not all(recipient.split("@"))
+                for recipient in self.ses_test_recipients
+            ):
+                raise ValueError("Invalid controlled SES recipients")
+        return self
+
+    @model_validator(mode="after")
     def reject_production_debug(self) -> Self:
         """Prevent detailed error responses from being enabled in production."""
         if self.environment == "production" and self.debug:
@@ -72,7 +105,8 @@ def load_settings() -> Settings:
             (
                 "CLIP_" + str(detail["loc"][0]).upper()
                 if detail["loc"]
-                else "CLIP_DEBUG (must be false when CLIP_ENVIRONMENT=production)"
+                else "CLIP_DEBUG (must be false when CLIP_ENVIRONMENT=production); "
+                "CLIP_EMAIL_PROVIDER; CLIP_SES_TEST_RECIPIENTS"
             )
             for detail in error.errors(include_input=False, include_url=False)
         }

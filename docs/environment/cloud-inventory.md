@@ -162,3 +162,14 @@ User named **Aditya** as current operator and accepted a 96-hour idle clock from
 ### Cost precision accepted — 2026-10-19 UTC
 
 User accepted approximate recent bounded PD-16 run costs and negligible run impact for closeout; exact delayed-charge reconciliation is no longer a blocker ([DEC-12](../decisions/foundation-cost-review-precision.md)). Earlier dated billing-follow-up notes are superseded on that point. Estimates remain estimates, not a measured zero or bill. Retained NAT/storage/other costs, USD 50 pause/review point, USD 25 reserve and project-wide budget still apply. No billing/resource action occurred.
+
+### ID-01 SES sender policy applied — 2026-10-23 06:17:00 UTC
+
+Aditya approved/applied exact saved plan `baa80880c96c379289a90a482a888aac9cc5d087aba40e211a17677a18695e9a`
+in the existing shared test root/state. Added inline policy
+`clip-shared-test-identity-email` to `clip-shared-test-api-task`, allowing only
+SendEmail for verified `clip-iisc.site` with exact From `no-reply@clip-iisc.site`.
+Role-policy JSON/state verified; state serial 9 and lock absent. Compute remains
+off: original RDS stopped, ECS/ASG zero. No deployment or email send; actual
+runtime delivery unverified. Existing idle clock/retained costs unchanged;
+policy retained until separately reviewed removal. [Evidence](../evaluation/identity/id-01-step-2/permission-apply-result.md).

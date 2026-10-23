@@ -44,6 +44,20 @@ Rahul's local profile `clip-project` uses interactive `aws login --profile clip-
 The AWS account `335523638354` has the verified one-year budget `CLIP-Account-Actual-Spend-From-2026-10-17` (2026-10-17 through 2027-10-17), USD 200 reference amount, with actual incurred-spend notifications above USD 50, 80, 100, 120, and 130. All thresholds are configured for `adityalaxmi1@iisc.ac.in`, `surajs2@iisc.ac.in`, `mohitmahapa1@iisc.ac.in`, and `rahulkoyye@iisc.ac.in`; credits are excluded from the cost basis. This is an account-specific notification, not a spending cap or a secret-access control. Details and limitations are in [cloud inventory](cloud-inventory.md). Rahul verified the budget configuration.
 
 No secret values, keys, tokens, passwords, MFA codes, or local credential files are recorded here. Existing provider/database references are added by their owning tasks only after an approved access method is configured and verified.
+## ID-01 Microsoft app registration — user-reported — 2026-10-22 14:02:07 UTC
+
+Aditya supplied these non-secret identifiers in chat; they have not been independently checked in the Microsoft portal.
+
+| Field | Value/status |
+|---|---|
+| Application (client) ID | `ab3a63e3-d4db-4c3c-b4bf-ac5f7573ffbb` |
+| Directory (tenant) ID | `19d07278-f040-4722-8202-b1174cf3a4d3` |
+| Supported account types | Aditya confirmed the portal selection is any organizational directory plus personal Microsoft accounts on 2026-10-22 14:03:25 UTC; not independently inspected |
+| SPA redirect URIs | Aditya confirmed `http://localhost:5173/auth/callback` and `https://clip-iisc.site/auth/callback` are configured on 2026-10-22 14:03:25 UTC; not independently inspected |
+| Client secret | None requested or recorded; SPA uses authorization code with PKCE |
+
+The identifiers and portal settings are human-reported and not independently inspected. The registration does not establish a validated sign-in implementation.
+
 ## Selected shared store
 
 - Store: AWS Systems Manager Parameter Store in account `335523638354`, Region `ap-south-1`.
@@ -74,3 +88,14 @@ The user approved [DEC-10](../decisions/broad-human-operator-access.md), retaini
 ## Current setup status
 
 PD-16 records the master reference provisioned; the probe reference remains planned and application/provider references are deferred to their owning tasks. Reported team access and runtime permission boundaries have not been independently verified. PD-14 itself created no parameter/key/resource; later PD-16 provisioning is recorded in the [inventory](cloud-inventory.md#pd-1516-recorded-deployment--2026-10-19).
+
+## ID-01 SES runtime access — setup partial
+
+See the [provider setup record](identity-provider-setup.md) for the verified-domain
+observation, proposed sender-scoped task-role policy and pending live checks.
+Use task-role credentials in ECS and the existing approved interactive profile
+locally; no static SES/SMTP credential or new secret parameter is selected.
+Aditya approved the exact Terraform plan and applied the sender-scoped inline
+policy on 2026-10-23 06:17:00 UTC; attached policy/state verified. No static
+credential was created and no email delivery or runtime task credential use was
+tested. See the [apply evidence](../evaluation/identity/id-01-step-2/permission-apply-result.md).
