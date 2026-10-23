@@ -47,7 +47,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PD-19 | Integration owner (current branch) | done | Steps 1–9 and combined foundation handoff complete | Steps 1–9 performed | User confirms all work before PRE-00 is complete | PR #8 merged at `2cd83e7` from head `18c966e` against base `68d9da9`; [Foundation quality gates passed](https://github.com/exocrat/clip/actions/runs/39323851584) for that exact head/base; `make test` (395 Python, 63 data, 16 web), Black, contract freshness and 10 `make check` gates passed; [handoff](foundation-handoff.md) | No open PD-19 work per user confirmation. Linux AMD64/macOS results remain user-confirmed without raw outputs. PR #8 has no submitted GitHub review; independent-review completion is user-confirmed, with no separate review artifact linked. Refresh cloud snapshot before any operation. | 2026-10-19 21:09:05 UTC |
 | PRE-00 | Integration owner | done | Foundation gate audit accepted; DL-00 is unblocked | performed | verified/accepted by user | Reviewed handoff PR #8 merged to `main` at `2cd83e7`; hosted Foundation quality gates passed for head `18c966e` against base `68d9da9` (run `39323851584`); clean-checkout evidence at `0747be6`; see [PD-19 handoff](foundation-handoff.md) | None. PR #8 has no GitHub review event; independent-review completion remains user-reported without a separate artifact. | 2026-10-19 21:20:55 UTC |
 | DL-00 | Shared-core/contract coordinator; all domains review | done | Steps 1–13 and task-wide audit complete; accepted and merged | Steps 1–13 performed; accepted by user | User confirmed full acceptance and merge on 2026-10-22 05:30:49 UTC | PR #9 merged to `main` at `f5576ef`; current `main` is `44cd8ff`; Step 13 check evidence is recorded below and was not rerun for this update | None for DL-00; cleanup implementation remains separately gated; real providers/integrations and crypto/worker implementation remain downstream | 2026-10-22 05:30:49 UTC |
-| ID-01 | A | in progress | Step5 private transactional OTP increment human-verified; marker lifetime retention approved; next prepare Step6 activation plan; real public/provider integration pending | Steps1/3 verified; Step2 sandbox verified/production staged; Step4 private implementation verified; Step5 private implementation performed and verified/full step partial | Plan verified with three-attempt/latest-expiry correction; Step5 private result verified by Aditya | `task/id-01-identity` at `7d6be86` plus uncommitted Step5; [evidence](../evaluation/identity/id-01-step-5/README.md);563 Python/63 data/16 web; full11 gates and runtime mypy passed | Cleanup design; original real public/provider/key/DB-role checks; Step4 sign-in/session, Step2 production access, current-main integration and ID-READY pending | 2026-10-23 19:53:44 UTC |
+| ID-01 | A | in progress | Step6 private atomic activation/current-state gate human-verified; next explain/verify Step7 design | Steps1/3 verified; Step2 sandbox verified/production staged; Steps4/5 private verified; Step6 private performed and verified/full integration pending | Step6 private implementation verified by Aditya; local checkpoint commit authorized | `task/id-01-identity` at `f9d33eb` plus verified Step6 checkpoint; [evidence](../evaluation/identity/id-01-step-6/README.md);597 Python/63 data/16 web; full11 gates/runtime mypy passed | Step6 public session/actual authorization composition; original Step4/5 real provider/runtime gates; Step2 production, current-main integration, Step7 cleanup design and ID-READY pending | 2026-10-23 20:16:11 UTC |
 | LI-01 | B | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | LI-CORE, LI-02, SE-CORE | — |
 | LI-02 | B | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | LI-CORE, ID-READY | — |
 | SE-01 | C | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | SE-CORE, LI-01, LI-02, DATA-READY | — |
@@ -105,6 +105,40 @@ Update the task status row after each step and human verification. The row is th
 Add a history entry when it records a meaningful outcome, decision, changed output, check result, blocker, consequential human direction, or task/merge closeout. Group related steps when that keeps their results understandable. Do not add a separate history entry just to say that a routine step was verified and the next one may begin.
 
 Include the task and covered step(s), contributor, date/time, and the details needed to understand or verify the outcome: relevant execution/verification state, changed paths, exact checks/results, decision/evidence reference, blocker/owner, or next action as applicable. Keep entries brief, omit repeated background, and link existing artifacts rather than duplicating them. Use exact UTC date and time for new entries. Keep historical timestamp precision as recorded; never guess or backfill an unknown time. Preserve distinct decisions, evidence, and other contributors' useful history.
+
+### ID-01 — Step6 private activation checkpoint checked — 2026-10-23 20:07:32 UTC
+
+Aditya verified Step6 plan and directed implementation. Added actual Argon2id
+hashing and atomic initial-OTP user/credential/enrollment creation, binding the
+consumed challenge to its new account.336-hour lifetime starts at successful
+verification; no reenrollment or replay renewal. Fresh private account-state gate
+denies exact expiry/revocation despite a cached caller. Hash/SQL failures roll
+back every write and consumption; wrong OTP never invokes expensive hashing.
+Pinned argon2-cffi25.1.0/bindings26.1.0 only; existing lock versions unchanged.
+Focused52 cases passed (12 password/22 actual activation/18 existing OTP DB),
+runtime mypy two files and lock/dependency checks passed. Full make check passed
+all11 gates: Black98 files,597 Python/63 data/16 web, boundaries/current contracts/
+types/build,35 wrapper safety cases, actual migration/four smokes and Gitleaks.
+Final evidence scan flagged source hashes beside password filenames; verified
+checksums and separated manifest fields without scanner bypass. Documentation
+links/whitespace passed; [code/check/limits evidence](../evaluation/identity/id-01-step-6/README.md).
+No schema/core auth/public route/session, other feature, live email, retained DB,
+cleanup worker or cloud action changed. Step6 changes remain uncommitted and
+await human verification. Public session/current authorization and original
+provider/runtime gates remain for Step7/8/11/12; ID-READY is not accepted.
+
+### ID-01 — Step6 activation writer scope — 2026-10-23 20:00:02 UTC
+
+Aditya verified Step6 plan and explicitly directed implementation after committing
+the verified Step5 checkpoint. Reserve Identity temporary password/activation
+modules and matching tests, pyproject.toml/uv.lock for pinned Argon2id library,
+command/domain/decision/evidence/status docs. Reviewed schema/actual Step5 consume
+boundary exist; no migration needed. Implement real atomic user/credential/
+enrollment creation only after valid initial OTP; immutable336-hour lifetime,
+no reenrollment and fresh private account-state checks. Hashing uses approved
+19MiB/t2/p1 and15–128 character rules; no plaintext persistence. Public session
+response needs Step7 design/wiring and remains original integration gate; no fake
+session/CallerContext, public route, live provider, retained DB or cloud action.
 
 ### ID-01 — Step5 minimal request-marker retention approved — 2026-10-23 19:53:44 UTC
 
@@ -1678,6 +1712,7 @@ runtime-permission checks remain pending.
 | ID-01 Step3 combined migration-chain integration | Real disposable PostgreSQL18.6/dbmate2.36.0; five-migration isolated branch at80abc52 plus new Identity forward guard; no schema double | Accepted current-main migrations (known PR10 head20261022062357), reconciled shared checker/docs and owning-domain changes | Aditya; affected schema/domain owners; Rahul(D) reviews | After isolated Identity implementation, before ID-READY review/merge | Integrate current main; verify full ordered clean/upgrade/down/reapply chain and affected-domain checks; never claim missing earlier migrations applied from higher version alone | Identity-only schema checks/full local gates passed; PR10 merge and combined-chain check deliberately deferred by Aditya |
 | ID-01 Step4 actual sign-in/session integration | Real RSA plus synthetic signed tokens/controlled metadata at reviewed Identity contract44cd8ff; real disposable PostgreSQL mapping, not a fake account store | Reviewed trusted login-attempt nonce creation/consumption, PKCE/state/session/cookie wiring, real Microsoft/IISc account and runtime DB permissions | Aditya; shared/frontend/security reviewers and Rahul(D) | Before exposing public credential exchange and before ID-READY; return at Step7/11 wiring | Verify real signed issuer/key/audience/time/email domain, trusted single-use attempt/replay behavior, actual session/CallerContext, failed-provider/privacy behavior and deployed runtime configuration | Private validator/store tests and public metadata read passed; no real user login, public route or session issued; original real checks pending |
 | ID-01 Step5 real OTP/public/runtime integration | Real private PostgreSQL service plus synthetic mail/SDK at reviewed Identity contract44cd8ff;18 actual DB cases/full local gates passed | Reviewed cleanup design, runtime key/DB-role wiring, real provider and public/API/UI path with actual activation/reset/session mutations | Aditya; shared/frontend/security reviewers and Rahul(D) | Private checkpoint verified; owning Steps6/7/11/12 and provider access ready, with separate exact send/cloud approval | Verify actual provider/configuration and uniform acknowledgement/timing, trusted source binding, durable retry/rate/attempt behavior, actual atomic activation/reset/session revocation, privacy and cleanup gates | Private transaction/SES composition checked; no real OTP send or public route; required real integration remains pending; not ID-READY acceptance |
+| ID-01 Step6 public activation/current authorization integration | Real Argon2id plus actual private activation/eligibility against disposable PostgreSQL at reviewed Identity contract44cd8ff; no session fake | Reviewed actual session/authenticated-caller/HTTP wiring and protected operations, runtime DB/key configuration and real provider path | Aditya; shared/frontend/security owners and Rahul(D) | Private result verified; owning Steps7/8/11/12 ready | Verify public activation SessionView with trusted session, original336-hour lifetime, no reenrollment, actual expired/revoked protected-operation denial, concurrent activation/reset/login integration and safe errors/privacy |22 activation DB/12 hash cases and all local gates passed; public/session/consumer wiring remains pending; not FR-03 or ID-READY acceptance |
 
 
 ## Resolved integration evidence

@@ -126,3 +126,13 @@ Network fetches are synchronous with bounded size/socket timeout; future async
 HTTP wiring must move blocking operations off the event loop and enforce an
 overall request deadline. Public endpoint/clock-skew/session policy is not
 implicitly authorized by this private implementation.
+
+## Temporary activation — ID-01 Step6 (private)
+
+Identity now composes real PostgreSQL OTP consumption with salted Argon2id
+hashing and atomic temporary user/credential/enrollment creation. Runtime library
+argon2-cffi25.1.0 and bindings26.1.0 are pinned in the root manifest/lock.
+[Identity module documentation](app/domains/identity/README.md) explains the
+approved parameters,14-day lifetime, no-renewal guard and fresh account-state
+gate. This private increment adds no HTTP route or session/cookie behavior.
+Public activation/session and actual protected-operation wiring remain pending.

@@ -720,3 +720,22 @@ OTP down/up with legacy-row preservation. Occupied down refusal is covered by
 actual service tests. Native harness source is updated but no new macOS run is
 claimed; PR10/current-main integration remains pending. These commands accept no
 retained/cloud DB target and do not authorize provider sends or cleanup jobs.
+
+### Temporary account activation — ID-01 Step6 (private)
+
+```sh
+uv run --locked pytest apps/api/tests/domains/identity/test_temporary_passwords.py apps/api/tests/domains/identity/test_temporary_activation_postgres.py apps/api/tests/domains/identity/test_temporary_postgres.py -q -W error
+uv run --locked mypy --no-incremental apps/api/app/domains/identity/temporary_passwords.py apps/api/app/domains/identity/temporary_accounts.py
+uv lock --check --offline
+uv pip check --python .venv/bin/python
+```
+
+Uses actual Argon2id hashing and the shared private disposable PostgreSQL fixture,
+controlled time and synthetic OTP/mail/password data only. Tests activation time,
+exact336-hour expiry, concurrent/replayed proof, rejected challenge/password,
+atomic rollback on hash/credential/enrollment failure, enrollment after credential
+cleanup and stale-caller/current-state denial. Existing Step5 integration tests
+remain included. No user input/password/OTP file, actual email, ambient DB target,
+cloud action or live cleanup is used. Runtime hashes are sensitive and never
+responses/logs; lock pins argon2-cffi25.1.0 and bindings26.1.0. Public session/API/UI
+and real protected-operation/provider checks remain pending before ID-READY.

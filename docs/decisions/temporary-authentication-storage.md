@@ -48,7 +48,8 @@ No raw OTP is persisted. No automatic key rotation or live send is authorized.
 
 The verified password plan for Steps 6–7 uses Argon2id with 19 MiB memory,
 two iterations and parallelism one, accepting 15–128 characters including
-spaces. This record does not claim password activation/login/reset is implemented.
+spaces. Step6 now implements private atomic activation with the approved password hash;
+password sign-in/reset and public session wiring remain pending.
 Aditya approved service-lifetime retention of minimal request deduplication
 markers on2026-10-23 19:53:44 UTC (recording time). Preserve only the keyed request
 digest, key version, challenge ID and original expiry; no email, IP, target
@@ -57,3 +58,21 @@ resend after challenge cleanup. These markers remain sensitive/linkable. The
 [canonical retention decision](private-data-retention.md) records this narrow
 exception; ordinary private-data windows and destructive cleanup review remain.
 No automatic key rotation, cleanup execution or cloud action is authorized.
+
+## ID-01 Step6 implementation boundary
+
+Aditya verified and directed Step6 implementation on2026-10-23. The existing
+schema and real Step5 transaction support atomic initial-OTP consumption,
+user/credential/enrollment creation and immutable336-hour expiry. Hash only after
+valid proof, using pinned argon2-cffi25.1.0 with explicit approved parameters;
+never persist/log raw passwords. Initial consumed OTP becomes bound to its new
+account in the same transaction. Failure rolls back every write and consumption.
+
+A private fresh-account gate denies expiry/revocation despite a stale caller.
+It is not authentication or a session endpoint. Public activation's session
+response, cookie/CSRF/nonce/session lifetimes and actual protected-operation
+composition remain original Step7/8/11/12 design/integration obligations; no fake
+session or complete FR-03 claim is introduced. Existing service-lifetime
+enrollment/request markers and separate cleanup gates remain unchanged.
+
+Library reference: [argon2-cffi API and explicit parameters](https://argon2-cffi.readthedocs.io/en/stable/api.html).

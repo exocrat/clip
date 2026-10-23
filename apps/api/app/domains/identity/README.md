@@ -80,3 +80,30 @@ commitments reject key/version replacement. Runtime secret references and DB rol
 permissions remain deployment review gates; tests inject synthetic keys only.
 No public route or production factory is added, and real provider/public timing
 checks are pending. Retention cleanup remains separately gated.
+
+## Private temporary activation and current-state check — Step6
+
+`temporary_passwords.py` uses pinned argon2-cffi25.1.0 (bindings26.1.0 in the
+root lock) with explicit Argon2id19MiB/t2/p1,16-byte random salt and32-byte hash.
+Password inputs must be SecretStr,15–128 Unicode characters including spaces;
+no trimming/normalization/truncation. Reject malformed UTF-8 text safely. This
+module hashes only; routine password authentication/reset remain Step7.
+
+`temporary_accounts.py` composes with Step5's actual consume transaction.
+`TemporaryActivation.activate` accepts challenge ID, code and secret password,
+recovering the login solely from protected OTP state. After initial proof, hash
+inside the target-locked transaction; insert active temporary user, protected
+credential and service-lifetime enrollment guard, then bind the consumed OTP to
+that user. Every write and consumption roll back on hashing/SQL failure.
+Concurrent/replayed verification creates at most one account and never renews
+its original336-hour activation/expiry. No email/password hash is returned.
+
+`PostgresTemporaryAccounts.require_current` is a private fresh-state gate for a
+caller already authenticated by later session wiring. It checks caller expiry,
+actual temporary class/active status/intact profile and account lifetime on each
+call, with bounded SQL waits. Cached valid_until cannot extend account expiry or
+hide revocation. It does not authenticate a caller, install request scope or
+supply marketplace capabilities. Step7/8 must wire it into actual authorization;
+Step11/12 must verify public routes/browser/provider behavior. Activation returns
+private account facts only; the reviewed public session response remains pending.
+No migration, session/CallerContext issuance, cleanup job or route is added.
