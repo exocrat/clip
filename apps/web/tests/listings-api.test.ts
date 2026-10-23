@@ -1,5 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createListing, listingsRequest, readMyListings, type CreateListingRequest } from '../src/features/listings/listingsApi';
+import {
+  changeListingAvailability,
+  createListing,
+  listingsRequest,
+  readMyListings,
+  type AvailabilityChange,
+  type CreateListingRequest,
+} from '../src/features/listings/listingsApi';
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -38,5 +45,26 @@ describe('Listings HTTP failures and write retries', () => {
       credentials: 'same-origin',
     }));
     expect(JSON.stringify(fetch.mock.calls[0][1])).not.toMatch(/owner_id|user_id|account_id/i);
+  });
+  it('changes availability through the owner route with the current revision and stable operation key', async () => {
+    const fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({ listing_id: 'listing-id' }), { status: 200 }));
+    vi.stubGlobal('fetch', fetch);
+    await changeListingAvailability('listing/one', {
+      expected_revision: 7,
+      availability: 'unavailable',
+      available_from: '2026-10-22T10:00:00Z',
+      available_until: null,
+      operation_id: 'operation-id',
+    } satisfies AvailabilityChange);
+    expect(fetch).toHaveBeenCalledWith('/api/listings/listing%2Fone/availability', expect.objectContaining({
+      method: 'PUT',
+      body: JSON.stringify({
+        expected_revision: 7,
+        availability: 'unavailable',
+        available_from: '2026-10-22T10:00:00Z',
+        available_until: null,
+        operation_id: 'operation-id',
+      }),
+    }));
   });
 });

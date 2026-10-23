@@ -49,7 +49,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | DL-00 | Shared-core/contract coordinator; all domains review | in progress | Steps 1–13 local work complete; independent review and exact merge gate next | Steps 1–13 performed | User reports affected domain owners reviewed and approved the contract documents; four declarations derive from those reviewed signatures | `task/pre-00-dl-00-foundation`; 50 HTTP operations, 19 internal callables, eight generated artifacts; `make check` passed (421 Python, 63 data, 16 web tests; Black 71 files; boundary/contract/mypy/web/database/safety/secrets checks) | Independent peer review and exact-revision merge remain; cleanup implementation still needs its separate approval; real providers/integrations and crypto/worker implementation remain downstream | 2026-10-20 05:17:32 UTC |
 | ID-01 | A | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | ID-READY, LI-01, LI-02, SE-CORE, SE-02, CN-CORE, CN-02 | — |
 | LI-01 | B | in progress | Step 11 LI-CORE and remaining Step 7/9/10 gates. | Steps 1–4/6, isolated Step 5 increments, Steps 8–10 checks, and available Step 9 scenarios implemented; Step 7 partial, current create/edit/detail/My Listings checkpoint verified in isolated mode. | Suraj verified the multi-image edit/gallery checkpoint, approved seller-only selected-buyer visibility, and verified Step 10. Phone-device observation and remaining Step 7 checks are not claimed. | `domain/listings` / `e398c96`; 61 focused Listings tests passed, 1 direct database test skipped outside wrapper; disposable PostgreSQL workflow passed; Black and `git diff --check` pass. | Step 11–13; new-thread rejection after retirement requires the unimplemented Conversations-owned thread-start path; affected-consumer/schema review of nullable pickup, native schema check, real Identity/image/chat integrations, and five pre-existing backend boundary findings remain. | 2026-10-21 15:35:55 UTC |
-| LI-02 | B | in progress | Step 12: approve the staged seed-secret fix and database-only image publication, review its task plan, retry only seed, then review the one-task start plan and test real S3/desktop/mobile. | Steps 1–11 verified; AWS bootstrap and all migrations passed; seed stopped at its startup credential guard; app service remains zero. | Suraj approved `c842663`, both release pushes, exact plan `57bcd9ad8a5f3239ce81748583e55430e7834dc4ae6fb780c6dd9e23f016eaa7`, revised isolated setup and app-plan preparation. Seed credential correction/new publication awaits approval. | Account `335523638354`, ap-south-1, profile `surajs2`. API digest `34e4dd5dd56f5c6be0a8af1d3a4a0bf475d6132f9e0f756743e781512994b063`; DB digest `b514d2688dfd62f55978bb69bd97d802f82d0c690499f3699acd2c7212dd4eff`. Release plan applied: 6 task-definition replacements and 1 zero-count service reference update. Local checks: 27 shell regressions, 41 web tests/build/lint/typecheck, real restricted-admin lifecycle and packaged API browser create/edit on insecure HTTP at desktop/phone widths; local S3 doubled. Real S3 OPTIONS preflight returned 200 with required origin/headers. | AWS bootstrap and migration tasks exited 0; do not discard their progress. Seed task has only CLIP_DATABASE_URL as intended, but global PGPASSWORD requirement blocked it before SQL. Local fix requires direct password only for admin actions; seed uses validated URL password. Prior local harness masked the mismatch by forwarding an extra admin password; corrected minimal seed environment and credential-negative tests pass. Existing database/schema, ALB/API/secret/run remain. Retry only seed after corrected DB definitions. Real cloud upload/browser, human phone and stop checks pending; LI-CORE/ID-READY remain Step 13 gates. | 2026-10-22 17:45:19 UTC |
+| LI-02 | B | in progress | Step 2 lifecycle consolidation and shared-integration readiness audit verified; awaiting explicit approval of the staged commit before Step 3 fresh startup. | Steps 1–11 verified; Step 12 public browser and phone photo upload verified; Step 1.5 availability controls/filter verified; Step 2 verified. | Suraj verified Step 2 on 2026-10-23; exact commit approval remains separate per CONTRIBUTING.md. | `domain/listings` at `2289df1`; 12 staged paths across My Listings, lifecycle orchestration, command/runbook documentation, work log, and Step 12 browser evidence. Earlier Python syntax/Black, CLI help, Make dry-runs, 42 web tests/checks, and current Gitleaks 8.30.1 source scan passed; staged whitespace check passes. | Read-only inventory at 19:26 found no LI-02 ALB, no running ECS tasks, and shared ECS host ASG desired/instance counts at zero; run S3 prefix and database URL SSM parameter were absent. A fresh RDS query at 19:28 confirmed `clip-shared-test-postgres` is stopped (`db.t4g.micro`, 20 GiB gp3); compute hours are off while shared provisioned storage/backups remain billable. No active or inactive LI-02 database cleanup task definitions exist; the isolated database is presumed to remain (catalog not queried live). Startup's owner-check reset will drop only `clip_test_listings` owned by `clip_test_listings_app`, then recreate/migrate/seed it; shared `clip_test` remains untouched. Twelve previously untagged ECR digests remain and are outside the run-specific cleanup tag list. Cost Explorer's estimated $0 values do not establish current charges. After commit approval/apply, refresh inventory, start the demo, verify browser/mobile behavior, then stop and verify teardown. ID-READY, LI-CORE and DL-00 peer/merge gates remain before real shared integration. | 2026-10-23 06:31:31 UTC |
 | SE-01 | C | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | SE-CORE, LI-01, LI-02, DATA-READY | — |
 | SE-02 | C | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | SE-CORE, ID-READY, LI-CORE | — |
 | CN-01 | D | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | Isolated development: PRE-00, then DL-00 and a reviewed contract/stub. Later real gates: CN-CORE; SE-02's real request interfaces for request-response integration; CN-03's producer path for final NFR-05 acceptance. | — |
@@ -894,6 +894,25 @@ with no PGPASSWORD supplied to seed: all passed, including repeated seed,
 SET-only membership, busy-client refusal and exact cleanup. Existing cloud
 bootstrap/migration progress is retained; next update only the DB image/task
 definitions and rerun seed, with no cleanup or schema recreation.
+
+### LI-02 Step 12 — first teardown exposed a cleanup-task discovery gap — 2026-10-22 18:30:10 UTC
+
+- Suraj authorized removing this LI-02 run. In account `335523638354`, ap-south-1, stop plan `5ab2778bb6ee7c1f5afa5a170a443815ab30d6bd6ecd61873a8c2957760cec85` applied: 0 add, 1 S3 CORS update back to local origin, 16 LI-02 route/service/task-definition/network resources destroyed. The app service and shared ASG capacity returned to zero. Four run-prefix S3 objects, the LI-02 URL SecureString, six tagged ECR image digests and ten log streams were removed. The permanent Step 4 bucket, IAM roles, empty log group, state backend and shared network remain.
+- Teardown did not run the DB cleanup or idle-check tasks: recent CloudTrail `RunTask` events show only prior seed/bootstrap/migration/cleanup attempts, with no task after the deployed seed. The stop flow's active task-definition prefix lookup produced no task definitions, so it silently skipped database cleanup, still deleted the URL parameter and later deregistered the task definitions. The operator's original baseline file was also removed despite leaving RDS available. Thus database drop and shared RDS restoration are not complete; RDS remains available because its idle check was not proven. No claim of full teardown.
+- Read-only checks: run S3 prefix empty, ALB absent, no tagged LI-02 images, URL parameter absent, ECS running task count zero, ASG desired capacity zero. The parent OCI image digests are deleted; untagged child-manifest billing still needs inspection. Stop workflow must fail closed, retain its baseline until every cleanup/restoration check passes, and locate the exact cleanup task definitions reliably before another cloud run. Original RDS stopped baseline is recorded in earlier work-log evidence and must be restored only after owner-checked cleanup/idle check.
+- Frontend audit found the verified My Listings design requires an availability action; the API supports `PUT /listings/{listing_id}/availability`, but the page currently has no control. User called out this gap. Add the seller's mark-unavailable action using the existing API and human-verified page scope before rebuilding the demo.
+
+### LI-02 Step 12 — Chrome reachability narrowed to browser behavior — 2026-10-22 18:07:15 UTC
+
+- Suraj clarified that Chrome on the phone still failed after entering `http://`. From this environment the exact ALB hostname and `/listings/new` returned HTTP 200 with no redirect. HTTPS on port 443 timed out; the demo has no TLS listener by approved design. This confirms the public HTTP route is live but does not establish whether phone Chrome rewrites/blocks the URL or encounters another browser-specific issue. Need the final address-bar scheme and displayed Chrome error to distinguish causes; no cloud configuration changed.
+
+### LI-02 Step 12 — public cloud flow and human mobile samples confirmed — 2026-10-22 18:05:27 UTC
+
+- Suraj (B); isolated Step 12 continues. Approved seed-fix plan `dfa3b8120f8b315d88b48c439221b05bfe508b91fa128a6110f6ee3f91ba2ac9` applied; only seed was retried after existing successful bootstrap/migrations. Seed passed. Approved app-start plan `2549a58825bacade16eace34150f3da024022a9c1b743f338e05ee71073ab228` enabled one healthy ECS task at the existing public HTTP ALB.
+- Real cloud browser create/edit/image delivery passed against API, isolated RDS and S3. Replaying create-only image PUT returned 412. Desktop and Pixel 7 emulation evidence: [browser results](../evaluation/domain/li-02/cloud-browser-c842663.json), [desktop](../evaluation/domain/li-02/cloud-desktop-c842663.png), [mobile emulation](../evaluation/domain/li-02/cloud-mobile-c842663.png). Emulation is distinct from human device testing.
+- Suraj reports the actual phone works in Firefox, including taking/uploading a photo; Chrome did not reach the demo. Chrome's HTTPS upgrade is a possible explanation, not a diagnosed device setting. HTTPS remains deferred by the approved demo decision.
+- Read-only cross-check: persisted API returned `sample title hi` (`c5f27afd-ba49-45b6-b70d-e65b52c3c4be`, one PNG, 70,741 bytes) and `sample title from phone` (`0ee65797-d9db-4bbf-befa-91a97f34f151`, two JPEGs, 3,738,944 and 64,600 bytes). AWS S3 head-object independently confirmed all three objects under this run prefix, AES256 encryption, and matching content types/sizes; signed GETs returned 200 with matching byte counts. This was an API-backed database read, not a direct SQL inspection. No data was changed and signed URLs were not logged.
+- Shared RDS original pre-test stopped baseline was reconciled in ignored runtime metadata using pre-test inventory and the first run's CloudTrail start event; retry's available capture retained as context. No RDS stop occurred. Run image manifest dependencies were retained for later cleanup verification. Remaining: access/expiry checks, reviewed stop/restoration and resource cleanup verification, human Step 12 acceptance. Step 13 real Identity/LI-CORE integrations remain pending.
 
 ### LI-01 task start — 2026-10-20 08:57:01 UTC
 
@@ -2975,6 +2994,139 @@ the command but does not prove offer persistence; CN-02 remains the real
 integration gate. The Conversations-owned thread-start path is absent from this
 checkout, so its post-retirement rejection also remains pending. Step 10 result
 is awaiting Suraj's verification; LI-01 stays in progress.
+
+### LI-02 Step 1.5 — owner availability controls and My Listings filters — 2026-10-22 18:35:55 UTC
+
+Following Suraj's verified scope, added Mark unavailable / Mark available
+controls to each owner listing and an All / Available / Unavailable selector.
+Filtered views fetch every owner page before presenting results. Changes call
+the existing owner-only, revision-checked, idempotent Listings availability
+operation and preserve the listing's stated time window. A stale revision
+offers a reload; transient failures retain the same operation key for safe
+retry. The local browser route uses the same frontend/API and is independent of
+the cloud test.
+
+`npm run check` passed: Biome lint, 42 web tests, TypeScript checks and Vite
+production build. Added an API adapter test for the exact availability route,
+body, revision and operation ID. No API contract, database schema, or cloud
+resource changed. The local desktop/browser command and checks remain separate
+from Step 12's deployed mobile review.
+
+Suraj verified the Step 1.5 result on 2026-10-22. A follow-up read-only AWS
+inventory refresh was attempted, but the CLI could not update the `surajs2`
+SSO token cache because this session has read-only access to `/home/suraj/.aws`;
+no cloud state was changed. The last successful post-stop inventory remains the
+current recorded cloud evidence pending a writable authorized AWS session.
+
+### LI-02 Step 12 — lifecycle consolidation and shared-integration readiness audit — 2026-10-22 19:02:35 UTC
+
+Replaced the separate database-resume action with recovery inside the normal
+`start` command. The single driver now records phases and run-owned assets,
+checks for stale LI-02 state before a fresh run, owner-checks the dedicated
+database before bootstrap, and fails closed if cleanup definitions or phase
+ownership are ambiguous. `stop` retains its baseline until demo cleanup and
+captured shared-state restoration succeed, verifies the URL parameter is gone,
+and skips an empty run-scoped S3 prefix. New ECR builds disable Buildx
+provenance to avoid creating separate untagged provenance artifacts. Start and
+stop print the exact opposite command for the same profile. No AWS operation
+or commit occurred.
+
+Local checks passed: Black check, Python bytecode compilation, CLI help,
+`make -n` for start and stop, no public resume-command references, and
+`git diff --check`. The Step 1.5 UI/API check remains the prior verified result
+(`npm run check`, 42 tests); it was not rerun during this lifecycle-only step.
+
+The separate Step 13 readiness audit found the local/isolated Listings build is
+not ready to plug into the real shared deployment. LI-CORE and ID-READY are
+not accepted; DL-00 still awaits independent review and merge. Runtime uses the
+fixed isolated caller, while `PublicListingsIdentity` calls a declaration-only
+Identity function that safely returns 503 until wired. Conversations public
+calls are also declaration-only. Configuration has no real Identity provider,
+and serving the bundled website is explicitly limited to the isolated caller.
+The concrete S3 adapter and the built UI/API can be reused, but shared Identity
+context, ordered shared migrations, shared bucket/runtime policy, Conversations
+implementation where required, and shared UI/API deployment settings remain
+integration work. The task plan permits the eventual environment selection to
+change configuration and trusted-caller wiring without changing Listings
+business behavior; a literal shared-mode toggle is not implemented yet.
+
+Step 2 awaits Suraj's verification. Step 3 remains gated on an approved clean
+source revision and a refreshed live AWS inventory. The new fixed cleanup task
+will owner-check and remove the isolated database left by the last run; any
+owner mismatch still fails closed. Untagged ECR residue must be checked before
+claiming the prior run left no billable LI-02 artifacts.
+
+### LI-02 — live teardown inventory refreshed — 2026-10-22 19:09:57 UTC
+
+Read-only checks in account `335523638354`, `ap-south-1` confirmed the LI-02
+load balancer is absent; the LI-02 ECS service is inactive with zero tasks; the
+shared ECS API service is desired/running zero; and the shared ECS host ASG is
+at zero. The run-scoped Listings S3 prefix is empty and the database URL
+parameter is absent. The shared NAT gateway remains, as in the foundation
+baseline. Shared RDS `clip-shared-test-postgres` is **available** (`db.t4g.micro`,
+20 GiB), while the recorded pre-test state was stopped, so teardown has not
+restored the prior billable state. Recent RDS connection metrics were zero after
+the test workload stopped. No active LI-02 database cleanup task definitions
+are present; prior history records that the isolated-database cleanup was
+skipped, so its data is presumed to remain (the live database catalog was not
+queried). No LI-02-tagged ECR images remain, but 12 untagged digests pushed
+during this run remain in the shared repository; confirm ownership and unique
+layer storage before removing them. Cost Explorer through October 22 returns
+estimated zero service amounts and cannot establish the final charge. No AWS
+mutation occurred. RDS restoration should remain part of teardown; because the
+optional database cleanup task is unavailable, the lifecycle script needs an
+approved preserve-database path before it can restore the captured stopped
+state safely.
+
+### LI-02 — RDS stop requested; database reset path confirmed — 2026-10-22 19:21:22 UTC
+
+Suraj directed restoring shared RDS to stopped and requested removal of the
+isolated Listings database because the next startup recreates it. Live checks
+confirmed account `335523638354`, `ap-south-1`, RDS available, zero running ECS
+tasks, and zero database connections in the latest published five-minute
+metrics through 19:15 UTC. No active or inactive LI-02 database task
+definitions exist, so an owner-checked database drop could not be run without
+preparing additional cleanup infrastructure. To avoid that temporary
+deployment, the isolated database remains stored for now; the next startup
+reset will remove it only if owned by `clip_test_listings_app`, then recreate,
+migrate, and seed it. `StopDBInstance` was requested at 19:17 UTC; RDS still
+reported `stopping` at 19:21 UTC, so completion remains unverified. No ECR
+digests were removed, per Suraj's direction. The uncommitted local stop driver
+still deletes run images and must be changed to preserve ECR before reuse. No
+Terraform change or other AWS mutation occurred beyond the RDS stop request.
+
+### LI-02 — RDS stop confirmed; residual billing and lifecycle readiness checked — 2026-10-22 19:28:13 UTC
+
+A fresh read-only query in account `335523638354`, `ap-south-1` confirmed
+`clip-shared-test-postgres` is `stopped` (`db.t4g.micro`, 20 GiB gp3). The
+19:26 resource inventory found no LI-02 ALB, no running ECS tasks, and shared
+ECS host ASG desired/instance counts at zero. Twelve untagged ECR image
+digests remain; no delete was run, consistent with Suraj's ECR-retention
+direction. The isolated `clip_test_listings` catalog was not queried and may
+remain on the stopped shared RDS; it has no separate DB-instance charge, while
+the RDS storage/backups remain billable as shared baseline. The stop helper
+only considers tags recorded for the current run; the existing untagged ECR
+digests are not targeted. A complete clean start/stop cycle has not yet
+verified the revised procedure.
+
+### LI-02 — ECR cleanup scope clarified — 2026-10-22 19:32:15 UTC
+
+Suraj clarified that prior ECR digests should remain, while generated images for
+an individual LI-02 run may be cleaned up. Review of `delete_run_images` shows
+it considers only the run's saved tags, and retains a digest with other tags or
+references from active task definitions; it asks before deleting any eligible
+digest. Existing untagged digests are outside that tag list. No ECR code change
+is required for the clarified retention behavior.
+
+### LI-02 Step 2 — lifecycle consolidation and readiness audit verified — 2026-10-23 06:31:31 UTC
+
+Suraj verified Step 2. The staged candidate contains the My Listings
+availability/filter behavior, consolidated LI-02 start/stop orchestration,
+command/runbook updates, and the referenced Step 12 browser evidence. The
+Gitleaks 8.30.1 source snapshot and staged whitespace check passed. Existing
+local preview data and `database/migrations.zip` remain unstaged. The next
+cloud start still requires an approved immutable commit and fresh inventory;
+no AWS resources changed during this checkpoint.
 
 ## Pending integration ledger
 

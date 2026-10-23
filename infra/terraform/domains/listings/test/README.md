@@ -87,11 +87,11 @@ S3 stays private; short-lived signed uploads and reads use the existing
 run-scoped prefix and role permissions. Bucket CORS allows only the exact
 deployed HTTP origin and `If-None-Match: *` upload header.
 
-The lifecycle commands are registered as
-`make li02-demo-start AWS_PROFILE=<approved-profile>`,
-`make li02-demo-resume-database AWS_PROFILE=<approved-profile>`, and
-`make li02-demo-stop AWS_PROFILE=<approved-profile>`. The work log records the
-partial cloud runs and pending database, browser and full teardown checks.
+The lifecycle has two operator commands:
+`make li02-demo-start AWS_PROFILE=<approved-profile>` and
+`make li02-demo-stop AWS_PROFILE=<approved-profile>`. Start also continues a
+recorded partial run, so there is no separate resume command. The work log
+records prior partial runs and the current pending cloud inventory.
 Start requires clean committed build
 inputs, preflights account/region, budget, shared task use, and state, captures
 the RDS and ECS capacity baselines in an ignored non-secret local file, and
@@ -104,13 +104,22 @@ saved plan is displayed with a SHA-256 and requires that exact text to be typed
 before apply. RDS start is a separate exact prompt when it was stopped at
 baseline. No custom domain or subdomain is needed for this HTTP endpoint.
 
+Before bootstrap, start runs the fixed owner-check cleanup task. It drops only
+`clip_test_listings` when owned by `clip_test_listings_app`, removes only that
+exact orphaned login, and fails closed on any owner mismatch. One explicit
+database reset/setup approval covers this cleanup followed by bootstrap,
+migrations, and the synthetic seller seed. The shared `clip_test` database is
+never modified. If a start phase fails, rerun the same start command to
+continue from the saved baseline; use stop to discard the partial run.
+
 The database lifecycle uses a separate bounded query helper to capture fixed
 metadata internally; write output and client diagnostics remain suppressed.
-Empty or malformed query results stop execution before database writes. If a
-database-image defect blocks a partial run, publish the corrected image from a
-reviewed commit and review/apply its task-definition plan with app count zero
-before resuming. The resume command uses deployed task definitions; it does
-not rebuild images or install local script changes into running AWS tasks.
+Empty or malformed query results stop execution before database writes. Normal
+start retries reuse the recorded immutable image digests. If a published image
+has a defect, publish a corrected image from a reviewed commit and apply its
+separately reviewed task-definition plan with the app count at zero before
+rerunning start. The driver never substitutes local code for an existing
+deployed digest or task definition.
 
 Bootstrap supports the non-superuser RDS administrator: it grants that operator
 permission to `SET ROLE` only into the newly created dedicated Listings role,
@@ -141,12 +150,13 @@ after its idle check and separate exact prompt. If another workload appears or
 the capacity check fails, leave shared resources available and report the
 difference. Shared foundation costs continue while the demo is off.
 
-If a database task fails after route creation, retain the ignored baseline file
-and use `make li02-demo-resume-database AWS_PROFILE=<approved-profile>` to
-retry the guarded database phase without rebuilding images or recreating the
-route. For other interrupted states, retain the file and use `stop`; it
-contains no credentials. Do not infer cloud state from the file alone: refresh
-the account inventory and review Terraform/AWS state before any manual recovery.
+If a database task or owner check fails, retain the ignored baseline file and
+rerun `make li02-demo-start AWS_PROFILE=<approved-profile>` to continue the
+recorded phase. The driver fails closed if a required cleanup task definition
+is missing or a saved state is ambiguous. For teardown, use the single stop
+command; it retains baseline metadata until cleanup and shared-state restoration
+are confirmed. The file contains no credentials. Do not delete it to bypass a
+failed check or infer live cloud state from the file alone.
 
 The app uses the existing RDS instance only while available. If it was stopped
 at baseline, start may bring it up only under its separate approved operation;

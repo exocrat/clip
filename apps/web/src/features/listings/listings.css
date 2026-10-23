@@ -28,6 +28,8 @@
 .listings-card dd { margin: 0; }
 .listings-id { font-size: var(--font-size-small); }
 .listings-list { display: grid; gap: var(--space-4); padding: 0; list-style: none; }
+.listings-filter { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); margin-block: var(--space-4); }
+.listings-filter select { min-width: min(100%, 15rem); min-height: 2.75rem; padding: var(--space-2) var(--space-3); color: var(--color-text); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-control); }
 .listings-list-card, .listings-empty { gap: var(--space-4); padding: var(--space-4); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-control); }
 .listings-list-card { display: grid; grid-template-columns: 8rem minmax(0, 1fr) auto; align-items: center; }
 .listings-list-card > div { min-width: 0; }
@@ -51,6 +53,7 @@
 .listings-gallery__thumbnail { min-width: 0; padding: var(--space-1); color: var(--color-text); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-control); cursor: pointer; }
 .listings-gallery__thumbnail .listings-photo-placeholder { aspect-ratio: 1; }
 .listings-list-card__links { display: flex; flex-direction: column; gap: var(--space-3); }
+.listings-list-card__links button { min-height: 2.75rem; }
 .listings-form input.listings-file-input { position: absolute; width: 1px; height: 1px; min-height: 0; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; clip-path: inset(50%); border: 0; }
 .listings-image-picker__controls { display: flex; flex-wrap: wrap; gap: var(--space-3); }
 .listings-image-picker__controls button { min-height: 2.75rem; }
@@ -72,6 +75,7 @@
   .listings-form fieldset, .listings-card { padding: var(--space-3); }
   .listings-list-card { grid-template-columns: minmax(0, 1fr); align-items: flex-start; }
   .listings-list-photo { width: min(100%, 12rem); }
+  .listings-list-card__links { align-items: flex-start; }
   .listings-gallery { grid-template-columns: minmax(0, 1fr); }
   .listings-gallery__thumbnails { grid-template-columns: repeat(4, minmax(0, 1fr)); max-height: 12rem; }
 }

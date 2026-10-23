@@ -1,4 +1,5 @@
 import type {
+  AvailabilityChange,
   CatalogueView,
   ConfirmedImage,
   CreateListingRequest,
@@ -12,6 +13,7 @@ import type {
 } from '../../../../../contracts/generated/types.gen';
 
 export type {
+  AvailabilityChange,
   CatalogueView,
   ConfirmedImage,
   CreateListingRequest,
@@ -118,6 +120,15 @@ export const replaceListing = (listingId: string, body: ListingReplacement) =>
   listingsRequest<ListingDetail>(`/listings/${encodeURIComponent(listingId)}`, {
     method: 'PUT', body: JSON.stringify(body),
   });
+
+/** Change owner availability through the revision-guarded Listings operation. */
+export const changeListingAvailability = (
+  listingId: string,
+  body: AvailabilityChange,
+) => listingsRequest<ListingDetail>(
+  `/listings/${encodeURIComponent(listingId)}/availability`,
+  { method: 'PUT', body: JSON.stringify(body) },
+);
 
 export const createImageUpload = (body: ImageUploadRequest, signal?: AbortSignal) =>
   listingsRequest<UploadInstruction>('/image-uploads', {
