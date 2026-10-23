@@ -162,11 +162,23 @@ def test_generated_modules_are_byte_for_byte_source_derivatives():
 
 
 def test_declarations_do_not_install_unimplemented_http_routes():
-    """Only implemented health is reachable; generated domain routes stay offline."""
+    """Only health and implemented Conversations routes are mounted."""
     from app.main import app
 
-    assert {route.path for route in app.routes} == {"/health"}
-    assert not any(route.path.startswith("/auth/") for route in app.routes)
+    paths = set(app.openapi()["paths"])
+    assert paths == {
+        "/health",
+        "/conversations",
+        "/conversations/{conversation_id}",
+        "/conversations/{conversation_id}/entries",
+        "/conversations/{conversation_id}/messages",
+        "/conversations/{conversation_id}/read-state",
+        "/conversations/{conversation_id}/keys",
+        "/conversations/{conversation_id}/prekey-bundle",
+        "/me/conversation-key",
+        "/me/conversation-prekeys",
+    }
+    assert not any(path.startswith("/auth/") for path in paths)
 
 
 def test_contract_timestamps_are_aware_and_serialize_as_canonical_utc():

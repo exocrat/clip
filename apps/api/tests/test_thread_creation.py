@@ -314,13 +314,15 @@ def test_wanted_request_creation_requires_regular_responder_and_notifies_author(
 def test_concurrent_wanted_request_creates_return_one_thread_and_one_intent():
     async def scenario(pool):
         author_id, responder_id, request_id = await seed_users_and_request(pool)
-        operations = PostgresThreadCreationOperations(
-            pool, eligibility_double()[0]
-        )
+        operations = PostgresThreadCreationOperations(pool, eligibility_double()[0])
         request = WantedConversationContext(request_id=request_id, author_id=author_id)
         results = await asyncio.gather(
-            operations.open_or_create_wanted_conversation(caller(responder_id), request),
-            operations.open_or_create_wanted_conversation(caller(responder_id), request),
+            operations.open_or_create_wanted_conversation(
+                caller(responder_id), request
+            ),
+            operations.open_or_create_wanted_conversation(
+                caller(responder_id), request
+            ),
         )
         assert {result.created for result in results} == {False, True}
         assert results[0].conversation_id == results[1].conversation_id

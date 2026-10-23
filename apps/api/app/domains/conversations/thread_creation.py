@@ -174,7 +174,7 @@ class PostgresThreadCreationOperations:
                     )
         except PublicError:
             raise
-        except (PsycopgError, PoolTimeout):
+        except PsycopgError, PoolTimeout:
             # Creation may have committed before a network failure became
             # visible; the caller can retry the exact pair safely.
             raise self._unavailable() from None

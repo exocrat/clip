@@ -229,14 +229,23 @@ async def asgi_get(app, path):
 
 
 def test_actual_api_schema_matches_generated_contract():
-    """The live app exposes only implemented health; domain routes remain declarations."""
+    """Implemented routes retain declared operation IDs and success wire schemas."""
     from app.main import app
 
     actual = app.openapi()
     declared = json.loads((ROOT / "contracts/generated/openapi.json").read_text())
     assert declared["x-clip-generator-format"] == 2
     assert actual["info"] == declared["info"]
-    assert set(actual["paths"]) == {"/health"}
+    assert set(actual["paths"]) <= set(declared["paths"])
+    for path, methods in actual["paths"].items():
+        for method, operation in methods.items():
+            expected = declared["paths"][path][method]
+            assert operation["operationId"] == expected["operationId"]
+            for code, response in operation["responses"].items():
+                if code.startswith("2"):
+                    assert response.get("content") == expected["responses"][code].get(
+                        "content"
+                    )
     assert actual["paths"]["/health"] == declared["paths"]["/health"]
     assert (
         actual["components"]["schemas"]["HealthResponse"]
@@ -249,7 +258,6 @@ def test_actual_api_schema_matches_generated_contract():
         if isinstance(operation, dict) and "operationId" in operation
     }
     assert len(contract_operation_ids) == 54
-    assert len(app.routes) == 1
     assert asyncio.run(asgi_get(app, "/health")) == (200, {"status": "ok"})
     for path in ("/openapi.json", "/docs", "/redoc"):
         status, _ = asyncio.run(asgi_get(app, path))

@@ -277,8 +277,9 @@ forward correction `20261018152702_reject_retired_origin_entries.sql`. That
 checkpoint's head was `20261018152702`; the current CN-01 branch adds
 `20261021101000_api_owned_retirement_and_trigger_boundaries.sql`, so its
 historical expected head was `20261021101000` across five migrations. The CN-01
-message-transport migration advances the current branch head to `20261022213000`
-across six migrations.
+message-transport migration advanced the branch head to `20261022213000`
+across six migrations. The public key-directory migration advances the current
+CN-01 head to `20261023080000` across seven migrations.
 `database/dbmate.version` pins 2.36.0 and
 `database/tests/schema-smoke.sql` prepares rollback-only synthetic integrity
 checks for a validated local `clip_test_` database. Step 5 now implements the
@@ -313,7 +314,7 @@ registry access; no cloud resource/provider is invoked.
 | `bash database/local-db.sh start` | Create/start only the local service, then authenticated readiness. Nonzero on unavailable tools, ownership/configuration/port conflict or readiness failure; inspect sanitized output. |
 | `bash database/local-db.sh wait` | Authenticated TCP `SELECT 1`, up to 30 attempts (2-second connect timeout and pauses). Exit 0 means connectivity only; absent container/timeout fails. |
 | `bash database/local-db.sh migrate` | Pinned dbmate 2.36.0, fixed local URL, strict transactional migrations, no schema dump/implicit dotenv. Exit 0 means the tool finished; Step 6 separately verifies expected head/schema. Inspect failures before retry; never automatically reset. |
-| `bash database/local-db.sh status` | Display migration state. Pending migrations can appear with exit 0; on the current CN-01 branch compare expected head `20261022213000` (six migrations). |
+| `bash database/local-db.sh status` | Display migration state. Pending migrations can appear with exit 0; on the current CN-01 branch compare expected head `20261023080000` (seven migrations). |
 | `bash database/local-db.sh stop` | Stop validated local container; retain all volume data. Absent container succeeds. |
 | `bash database/local-db.sh reset --confirm-delete-local-data` | Warn and permanently delete only the validated service container and `clip-local_clip_local_postgres_data`. Requires deliberate approval of that destructive action. No force/prune/broad volume deletion; leaves DB stopped. Missing confirmation fails before Docker. |
 | `bash database/local-db.sh --help` | Fixed usage; no tools/password required. |
@@ -357,7 +358,7 @@ The corrected Compose wrapper's 22 simulated cases also passed. The initial
 sandbox shared-memory denial and corrected harness/CLI failures remain recorded
 in the work log; no failure is counted as a pass.
 
-The native pass just described is historical evidence for the initial three migrations. The next checkpoint updated the harness for head `20261018152702` and four migrations; that macOS/dbmate route was not rerun here. The current CN-01 branch has six migrations and expects head `20261022213000`; rerun the native route against this branch before treating it as current evidence. PR #5 correction checks include the then-current SQL round-trip and both smoke suites on an isolated Linux ARM64 PostgreSQL image, plus 35 simulated lifecycle cases. Internal metadata is preserved before separately redacting human diagnostics; these tests do not establish the real Compose lifecycle.
+The native pass just described is historical evidence for the initial three migrations. The next checkpoint updated the harness for head `20261018152702` and four migrations; that macOS/dbmate route was not rerun here. The current CN-01 branch has seven migrations and expects head `20261023080000`; rerun the native route against this branch before treating it as current evidence. PR #5 correction checks include the then-current SQL round-trip and both smoke suites on an isolated Linux ARM64 PostgreSQL image, plus 35 simulated lifecycle cases. Internal metadata is preserved before separately redacting human diagnostics; these tests do not establish the real Compose lifecycle.
 
 Deferred: container image/Compose runtime, loopback TCP/SCRAM readiness,
 stop/start volume persistence, approved reset/recreate, platform/locale parity,
@@ -448,7 +449,7 @@ existing tooling decision.
 
 | Command | Effect / failure |
 |---|---|
-| `uv run --locked python scripts/check_database.py` | Requires local Unix-socket Docker. Creates a fresh PostgreSQL 18.6 container with temporary memory-backed data, no host port/volume; dbmate 2.36.0 checks clean apply of six migrations, exact head `20261022213000`, repeat migration, both SQL smoke suites and the latest migration down/up round-trip. Removes only its own container; nonzero on SQL/setup/cleanup failure. Never targets retained Compose data. |
+| `uv run --locked python scripts/check_database.py` | Requires local Unix-socket Docker. Creates a fresh PostgreSQL 18.6 container with temporary memory-backed data, no host port/volume; dbmate 2.36.0 checks clean apply of seven migrations, exact head `20261023080000`, repeat migration, both SQL smoke suites and the latest migration down/up round-trip. Removes only its own container; nonzero on SQL/setup/cleanup failure. Never targets retained Compose data. |
 | `uv run --locked python scripts/check.py conversations-retirement` | Requires local Unix-socket Docker and locked Python dependencies. Creates a fresh PostgreSQL 18.6 container with tmpfs storage and a random host port bound only to `127.0.0.1`; applies the checked-in migrations with dbmate 2.36.0; runs `apps/api/tests/test_origin_retirement.py` and `apps/api/tests/test_thread_creation.py` with synthetic data; then removes only its own container. No caller-selected database target or cloud configuration is accepted. Nonzero on startup, migration, test, timeout, or cleanup failure. |
 | `uv run --locked python scripts/check_secrets.py` | Requires local Unix-socket Docker. Gitleaks 8.30.1 scans tracked and nonignored new source in a temporary snapshot, offline/read-only. Uses `.gitleaks.toml`; findings print file/line/rule only and fail. This scans current source, not Git history; ignored files are excluded and symlinks rejected. |
 
