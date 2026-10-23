@@ -625,3 +625,18 @@ expected result is 28 passing tests. The wrapper itself can send when explicitly
 run with approved ECS settings; do not invoke it as a local test command. Its
 [live request and cleanup plan](../evaluation/identity/id-01-step-2/runtime-diagnostic-approval.md)
 require separate exact approval. No new Make target or deployment command added.
+
+### SES authorization diagnostic offline checks — ID-01 Step 2
+
+```bash
+uv run --locked pytest apps/api/tests/domains/identity/test_authorization_diagnostic.py apps/api/tests/domains/identity/test_runtime_diagnostic.py apps/api/tests/domains/identity/test_email.py apps/api/tests/domains/identity/test_email_smoke.py -q -W error
+uv run --locked black --check docs/evaluation/identity/id-01-step-2/runtime_authorization_diagnostic.py apps/api/tests/domains/identity/test_authorization_diagnostic.py
+```
+
+These are offline checks (37 tests), not a send command. The extended diagnostic
+parses denied-resource/reason text only in memory and emits fixed categories;
+[the exact live plan](../evaluation/identity/id-01-step-2/runtime-authorization-plan.md)
+retains a separate approved task/send/cleanup window. Shared sandbox plans must
+preserve the private `TF_VAR_ses_sandbox_recipient_identity_arn` when its additional
+identity scope is still needed; see the shared Terraform README. Never supply
+its value in a shell argument, repository file or printed evidence.

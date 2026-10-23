@@ -61,3 +61,20 @@ AMI. See the [decision](../../../../docs/decisions/shared-test-ecs-image-pin.md)
 This is an approved source correction, pending fresh cloud-plan verification;
 no launch-template update or compute start has been applied. Future image
 upgrades and launches retain their separate approval and verification gates.
+
+## SES sandbox controlled-recipient scope — ID-01 Step 2
+
+The real task-role diagnostic identified a denial on the verified recipient's
+SES identity. `identity-email.tf` accepts the sensitive optional
+`ses_sandbox_recipient_identity_arn`, adding only that exact identity alongside
+the sender domain while retaining `ses:SendEmail` and the exact FromAddress.
+Pass the approved value privately through `TF_VAR_ses_sandbox_recipient_identity_arn`;
+never commit/print the address or ARN. IAM and protected Terraform state retain
+it; sensitivity masks normal rendered output, not state access.
+
+Preserve this input in subsequent shared sandbox plans. Omitting it proposes
+removing the added resource and can restore the sandbox delivery failure; inspect
+that diff deliberately. Once SES production access/configuration is reviewed,
+remove the test-recipient resource through a separately reviewed plan and verify
+normal delivery. This is a sandbox test exception, not the production recipient
+model. All original exact plan, role-ownership and cloud approval gates remain.

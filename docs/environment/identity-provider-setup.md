@@ -1,8 +1,9 @@
 # ID-01 provider setup and verification
 
-Status: Step 2 partial. Local operator SES inbox delivery is human-confirmed
-on 2026-10-23 10:26:07 UTC; ECS application-role delivery failed and needs
-diagnosis. Production access remains pending. Historical snapshots follow.
+Status: Step 2 partial. Real ECS application-role SES submission, inbox delivery
+and owned cleanup passed on 2026-10-23 17:17:30 UTC after the exact sandbox
+recipient-identity permission correction. Production access/configuration review
+remains pending. Historical snapshots follow.
 The [decision](../decisions/identity-provider-setup.md) and
 [work log](../status/work-log.md) distinguish approved direction from evidence.
 
@@ -132,3 +133,31 @@ Required remaining setup gates: safely diagnose and verify real application-role
 delivery, production-access decision/configuration review, then human Step 2
 result verification. Microsoft real token/callback behavior and OTP/account flows
 remain later implementation/integration checks, not missing Step 2 services.
+
+## ECS authorization failure isolated — 2026-10-23 16:57:21 UTC
+
+Approved real diagnostic ran exact :1/image/wrapper after renewed login and full
+preflight. Settings, signed task-role identity and client construction passed;
+SES submission returned AccessDeniedException. No retry/send acceptance. Prompt
+guarded desired-zero cleanup verified owned host/root removed and ECS/ASG zero;
+RDS untouched. Exact denied policy/resource/condition remains unknown, despite
+previous sender-scope simulation allowed. No permissions changed.
+[Result and next gate](../evaluation/identity/id-01-step-2/runtime-diagnostic-result.md).
+
+## Real task-role delivery verified — 2026-10-23 17:17:30 UTC
+
+Enhanced diagnosis identified SES authorization denial on the controlled recipient
+identity. Approved exact Terraform update added only that private verified ARN to
+the existing sender-domain Resource list, retaining ses:SendEmail and exact
+FromAddress. Optional sensitive ses_sandbox_recipient_identity_arn input must be
+preserved in later sandbox plans and deliberately removed after production-access
+review; no private destination appears in this repository. Shared state serial10,
+released lock and actual attached policy verified; no DB/resource drift applied.
+
+One corrected :1/image task returned submission_accepted/exit0; Aditya confirmed
+inbox receipt. Prompt guarded cleanup removed owned host/root and returned
+ECS/ASG zero, verified17:17:09.706322 UTC; RDS unchanged. Full aggregate458 Python/
+63 data/16 web tests and other11-gate checks passed; Terraform three roots valid.
+[Exact diagnosis/fix/delivery evidence](../evaluation/identity/id-01-step-2/sandbox-recipient-fix-result.md).
+Step2 remains partial for production access/configuration review and full result
+verification; account/OTP/session/UI implementation remains later steps.

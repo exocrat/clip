@@ -6,18 +6,19 @@ Human result verification and affected-owner review pending.
 
 ## Current checkpoint
 
-Historical snapshots below preserve the original setup checks. The sender policy
-is now applied, the AMD64 image published, and smoke definition :1 registered;
-all temporary builder resources are removed. The real ECS send failed with
-content-free output, and owned ECS host/root cleanup was verified. A subsequent
-local CLI SES message was delivered and human-confirmed. Step 2 remains partial.
+Historical snapshots below preserve the original setup checks. Sender permission,
+AMD64 image and smoke definition :1 are in place; temporary builders are removed.
+The initial real ECS sends failed. Enhanced diagnosis identified a denial on the
+controlled recipient identity; the exact narrow shared-role policy update fixed
+it. Corrected actual-role submission, human inbox receipt and prompt owned-host/
+root cleanup passed. See [final fix evidence](sandbox-recipient-fix-result.md).
 
-The offline-tested [diagnostic wrapper](runtime_diagnostic.py) and
-[exact next runtime/cleanup request](runtime-diagnostic-approval.md) are prepared.
-No diagnostic task/send has run. Actual application-role delivery and SES
-production access remain pending. See the [work log](../../../status/work-log.md)
-and [provider setup](../../../environment/identity-provider-setup.md) for current
-state and approvals; historical proposal language below is not current status.
+Step2 remains partial for SES production access/configuration review ; Aditya verified the sandbox fix/delivery/cleanup
+report and authorized staged continuation. The private sandbox-recipient Terraform input must
+be preserved until deliberately removed in that reviewed transition. Later
+Identity implementation and ID-READY acceptance remain pending. Current decisions,
+state and checks are in the [work log](../../../status/work-log.md) and
+[provider setup](../../../environment/identity-provider-setup.md).
 
 ## Changes
 Identity private SES transport and offline tests; shared disabled-by-default

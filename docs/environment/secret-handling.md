@@ -99,3 +99,16 @@ Aditya approved the exact Terraform plan and applied the sender-scoped inline
 policy on 2026-10-23 06:17:00 UTC; attached policy/state verified. No static
 credential was created and no email delivery or runtime task credential use was
 tested. See the [apply evidence](../evaluation/identity/id-01-step-2/permission-apply-result.md).
+
+## ID-01 SES controlled-recipient input
+
+The shared test root's `ses_sandbox_recipient_identity_arn` is the private ARN of
+the single approved verified inbox identity. Supply through the corresponding
+TF_VAR environment input in child memory, not a shell argument, committed tfvars
+or log. Terraform marks it sensitive to hide normal plan rendering, but the
+IAM policy and access-controlled state/saved plan contain it. Preserve the input
+on subsequent sandbox plans; omission proposes removal. The exact sender
+condition remains no-reply@clip-iisc.site. Remove this sandbox-specific identity
+scope only through the reviewed production-access/configuration transition,
+then verify real sending. No new SMTP/API secret is required. See
+[diagnosis/fix evidence](../evaluation/identity/id-01-step-2/sandbox-recipient-fix-result.md).

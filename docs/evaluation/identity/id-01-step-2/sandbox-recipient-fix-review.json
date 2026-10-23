@@ -1,0 +1,26 @@
+{
+  "plan_path": "/tmp/clip-id01-recipient-policy-nubfv6rz/recipient-policy.tfplan",
+  "sha256": "36e9738a7120549a9541f0571fb3b213994ebba8efc04edad1566115a11e3d47",
+  "changes": [
+    {
+      "address": "aws_iam_role_policy.api_identity_email[0]",
+      "actions": [
+        "update"
+      ]
+    }
+  ],
+  "source_hashes": {
+    "infra/terraform/shared/test/base.tf": "77f90f591fc4ef994b9ca2b450c35a599d2924ed1b7b6e15477d359e3c2e1d62",
+    "infra/terraform/shared/test/identity-email.tf": "059f953ea0a899cbc6897249f09a1114115796190781c2967091a857c0b51886",
+    "infra/terraform/shared/test/locals.tf": "92b1dd0e50adbc0937e845acc2b4476f67bd2d1a20c4a26b65a5e3a7649d374e",
+    "infra/terraform/shared/test/network.tf": "cc22c15bb83d0ef3cff78db5059f52e26c42a3fc4fa1ff01351b4f885dc9b008",
+    "infra/terraform/shared/test/outputs.tf": "b252fcac10aae837f8525b9ba11db2ba188ec1ff5db4bf2e31c1d23ff9faf4ce",
+    "infra/terraform/shared/test/service.tf": "fdaf611d0909bb8c8ff115b5034dc978c407c15f99964b94e7d9cf17c5039536",
+    "infra/terraform/shared/test/variables.tf": "f382a6a45f28aeda6afcfa093d781abceccb54dc75f5728a91aa1886e3593dcc",
+    "infra/terraform/shared/test/versions.tf": "85378f9c60b449e27a7d8fe68661c2d359fd088f620d34c541177abe76ddb332",
+    "infra/terraform/shared/test/.terraform.lock.hcl": "8e943f65218efc74b64233304fcea1a642c1c394452dcc1a4c0e138a20d78b5d"
+  },
+  "secret_absence_check": true,
+  "recipient_resource_private": true,
+  "scope": "one inline policy update; exact sender domain plus controlled recipient identity; same FromAddress condition; no database/compute/network change"
+}

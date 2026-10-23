@@ -32,12 +32,16 @@ Use Amazon SES v2 in `ap-south-1` for Identity email delivery, proposed sender
 `no-reply@clip-iisc.site`, retaining CLIP-owned OTP/password/session state.
 CN-03 may reuse the provider/domain after its own owner review, without importing
 Identity-private transport code or claiming its worker is implemented.
-The sender permission remains a review proposal until shared-core approval.
+The reviewed shared task-role permission is applied. A verified sandbox delivery
+check required adding the one controlled recipient identity alongside the sender
+domain; the exact FromAddress condition remains. Preserve that private Terraform
+input during sandbox work and review its removal after production access.
 
 ## Rationale
 Matches the existing application-owned temporary authentication decision and
 uses the existing AWS environment. Microsoft registration details and SES domain
-verification are recorded; real runtime delivery remains unverified.
+verification are recorded; real task-role delivery is now human-confirmed.
+Production-access/configuration review remains pending.
 
 ## Implications
 The initial adapter is sandbox-only, explicitly selected, with at most five

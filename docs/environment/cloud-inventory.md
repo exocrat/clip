@@ -258,3 +258,30 @@ Cluster/service/ASG zero, no manual backstop or other workload interruption.
 No RDS calls; concurrent DB use remains untouched/unverified here. No new live
 retry. Image/definition/content-free logs retained for approved diagnostic handoff;
 builder remains fully removed. [Evidence](../evaluation/identity/id-01-step-2/runtime-corrected-result.md).
+
+### ID-01 diagnostic ECS host promptly removed — 2026-10-23 16:57:21 UTC
+
+One approved diagnostic task8d59687bbf7f446d84591adf7a81f1e6 ran and exited1
+with SES AccessDeniedException; no resend. Sole owned host i-093fdd05f7b394ef5
+and root vol-07e5d27895688b25a removed after guarded prompt SetDesiredCapacity(0),
+verified16:57:09.886355 UTC; ECS tasks/registered hosts and ASG desired/instances
+zero. No managed alarm/scaling/draining configuration change or other workload
+interruption. RDS calls0; concurrent database state remains outside this record.
+Image/task/log proof retained; [diagnostic evidence](../evaluation/identity/id-01-step-2/runtime-diagnostic-result.md).
+
+### ID-01 sandbox recipient permission and real delivery verified — 2026-10-23 17:17:30 UTC
+
+Shared inline SES policy now permits the sender domain plus one privately supplied
+controlled-recipient identity under the unchanged exact sender condition. Exact
+reviewed single-update plan36e9738a7120549a9541f0571fb3b213994ebba8efc04edad1566115a11e3d47
+applied; state serial10/lock release/attached policy verified, no other managed
+change. Shared-root refresh read RDS metadata without a DB change.
+
+Enhanced diagnostic host i-01edad09fd8c5e4d4/root vol-0dd35ab2e3a7797c4 removed
+17:10:41.527682 UTC. Corrected verification task403eba24a7d2428394d76272148ab882
+accepted actual SES submission and human inbox receipt. Its host
+i-0bbef51578c9e5ecf/root vol-04f1705171090cf51 removed17:17:09.706322 UTC.
+Both used guarded prompt cleanup; ECS/ASG zero, runtime RDS calls0, no other
+workload interrupted. Normal managed scaling/draining unchanged. Images/task
+definition/log evidence retained. SES sandbox/production access pending.
+[Evidence](../evaluation/identity/id-01-step-2/sandbox-recipient-fix-result.md).
