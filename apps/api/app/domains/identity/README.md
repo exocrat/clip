@@ -33,3 +33,50 @@ design/real checks before exposing the existing public contract route.
 Synthetic keys/documents are injected only by tests; production never selects
 a fake key source via configuration. Real Microsoft claims/callback and runtime
 DB-role checks remain pending.
+
+## Private temporary-authentication primitives — Step 5 (partial)
+
+`temporary_crypto.py` normalizes protected login identifiers and binds keyed OTP
+verifiers and AES-GCM target ciphertext to one challenge/purpose/expiry.
+`temporary_policy.py` models three failed verifications shared across resends
+until the latest OTP expires. Its pure values require transactional persistence
+and locking before they can enforce abuse limits.
+
+`temporary_delivery.py` prepares a uniform six-digit code with an in-memory,
+one-shot delivery ticket using the existing `email.py` transport. Persist only
+the explicit protected fields, never the whole preparation object or ticket.
+After a newly eligible reservation commits, dispatch once outside the async
+event loop; discard duplicate/ineligible tickets. Expired, discarded or already
+attempted tickets cannot submit. An uncertain provider outcome is not retried.
+Discarding releases Python references; it does not promise memory zeroization.
+
+`temporary_challenges.py` now supplies private PostgreSQL enforcement for
+idempotency, eligibility, send limits, atomic verification/consumption and
+key-version continuity. These modules
+are not wired to startup or public routes and grant no account/session authority.
+Minimal request markers have approved service-lifetime retention. Actual
+provider/public integration and the separate private-state cleanup design
+remain pending. Public acceptance must not reveal eligibility or dispatch
+outcome; response timing/background execution still need integration checks.
+
+`PostgresTemporaryChallenges.start` commits a generic acknowledgement and optional
+private one-shot send ticket. The HTTP adapter must serialize only ID/expiry and
+finish a uniform response before dispatch outside the event loop; ticket presence
+and provider status must never reach the client. Committed-but-unsent requests
+remain unsent on retries; deliberate resend needs a new operation ID and ordinary
+cooldown/limits. No durable raw-code outbox or automatic retry is introduced.
+
+`consume` invokes a trusted callback on the same connection/transaction as code
+consumption. It commits wrong-code counters before returning safe422; exhausted
+windows return429. Superseded/expired/consumed/wrong-purpose challenges fail.
+Suppressed reset acknowledgements follow the same failed-attempt statuses as
+eligible requests. Callback failure rolls back consumption and its own SQL.
+The callback must not send, commit, open another connection or invert target/user
+lock order. Step6/7 must still implement real activation/password/session effects.
+
+First key adoption rejects existing temporary credentials/enrollments/challenges;
+current deployments require reviewed migration rather than guessed keys. Existing
+commitments reject key/version replacement. Runtime secret references and DB role
+permissions remain deployment review gates; tests inject synthetic keys only.
+No public route or production factory is added, and real provider/public timing
+checks are pending. Retention cleanup remains separately gated.

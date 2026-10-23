@@ -684,3 +684,39 @@ locked PyJWT2.15.1 crypto and psycopg3.3.6 binary; tests do not call Microsoft.
 Public discovery/JWKS reads are distinct from sign-in checks. No public route,
 session cookie, trusted CallerContext or production Microsoft integration is
 installed by these checks; nonce lifecycle/session design remains a real gate.
+
+### Temporary OTP primitives and offline delivery — ID-01 Step 5 (partial)
+
+```sh
+uv run --locked pytest apps/api/tests/domains/identity/test_temporary_crypto.py apps/api/tests/domains/identity/test_temporary_policy.py apps/api/tests/domains/identity/test_temporary_delivery.py apps/api/tests/domains/identity/test_email.py -q -W error
+uv run --locked mypy --no-incremental apps/api/app/domains/identity/temporary_crypto.py apps/api/app/domains/identity/temporary_policy.py apps/api/app/domains/identity/temporary_delivery.py
+```
+
+Uses synthetic keys, controlled time and a recording SDK client with the actual
+SES adapter. Exercises normalization, protected target/verifier binding, shared
+attempt windows, concurrent one-shot delivery, leading-zero codes, suppression,
+expiry and uncertain provider failures. No AWS client, live send or database is
+used. These checks do not establish transactional persistence or real delivery.
+
+### Transactional temporary OTP checks — ID-01 Step5
+
+```sh
+uv run --locked pytest apps/api/tests/domains/identity/test_temporary_postgres.py -q -W error
+uv run --locked mypy --no-incremental apps/api/app/domains/identity/temporary_challenges.py apps/api/app/domains/identity/temporary_crypto.py apps/api/app/domains/identity/temporary_policy.py apps/api/app/domains/identity/temporary_delivery.py
+uv run --locked python scripts/check_database.py
+```
+
+The test reuses `postgres_fixtures.py` through explicit Identity conftest
+registration. Each module gets a new private socket/SCRAM PostgreSQL18.6/dbmate
+2.36.0 target with no host port, network or retained data; cleanup removes only
+its owned container. Synthetic mail capture/SDK failures do not contact AWS.
+Checks exercise source/target limits, shared failures/latest expiry, duplicate
+and consume races, rollback, eligibility, non-renewal, key continuity and safe
+uncertain SES outcomes. No password activation/reset or session is implemented.
+
+The migration checker now verifies six migrations/head20261023192856,27 tables,
+four SQL smokes, preserved historical Step3 failure/round-trip proof, and empty
+OTP down/up with legacy-row preservation. Occupied down refusal is covered by
+actual service tests. Native harness source is updated but no new macOS run is
+claimed; PR10/current-main integration remains pending. These commands accept no
+retained/cloud DB target and do not authorize provider sends or cleanup jobs.

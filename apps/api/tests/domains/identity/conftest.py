@@ -9,3 +9,7 @@ from apps.api.tests.domains.identity.microsoft_fixtures import SignedTokens
 def signed_tokens():
     """Reuse an in-memory synthetic RSA key while every token gets fresh dates."""
     return SignedTokens()
+
+
+# Explicit fixture import registers the same safe disposable route for both services.
+from apps.api.tests.domains.identity.postgres_fixtures import disposable_database

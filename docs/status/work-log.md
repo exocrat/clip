@@ -47,7 +47,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PD-19 | Integration owner (current branch) | done | Steps 1–9 and combined foundation handoff complete | Steps 1–9 performed | User confirms all work before PRE-00 is complete | PR #8 merged at `2cd83e7` from head `18c966e` against base `68d9da9`; [Foundation quality gates passed](https://github.com/exocrat/clip/actions/runs/39323851584) for that exact head/base; `make test` (395 Python, 63 data, 16 web), Black, contract freshness and 10 `make check` gates passed; [handoff](foundation-handoff.md) | No open PD-19 work per user confirmation. Linux AMD64/macOS results remain user-confirmed without raw outputs. PR #8 has no submitted GitHub review; independent-review completion is user-confirmed, with no separate review artifact linked. Refresh cloud snapshot before any operation. | 2026-10-19 21:09:05 UTC |
 | PRE-00 | Integration owner | done | Foundation gate audit accepted; DL-00 is unblocked | performed | verified/accepted by user | Reviewed handoff PR #8 merged to `main` at `2cd83e7`; hosted Foundation quality gates passed for head `18c966e` against base `68d9da9` (run `39323851584`); clean-checkout evidence at `0747be6`; see [PD-19 handoff](foundation-handoff.md) | None. PR #8 has no GitHub review event; independent-review completion remains user-reported without a separate artifact. | 2026-10-19 21:20:55 UTC |
 | DL-00 | Shared-core/contract coordinator; all domains review | done | Steps 1–13 and task-wide audit complete; accepted and merged | Steps 1–13 performed; accepted by user | User confirmed full acceptance and merge on 2026-10-22 05:30:49 UTC | PR #9 merged to `main` at `f5576ef`; current `main` is `44cd8ff`; Step 13 check evidence is recorded below and was not rerun for this update | None for DL-00; cleanup implementation remains separately gated; real providers/integrations and crypto/worker implementation remain downstream | 2026-10-22 05:30:49 UTC |
-| ID-01 | A | in progress | Step4 private validator/account mapping human-verified; next audit/verify Step5 temporary OTP implementation/security plan | Step1/3 verified; Step2 sandbox verified/production staged; Step4 private real-crypto/DB implementation performed | Aditya verified isolated Step4 result; original real sign-in/session gates remain pending | `task/id-01-identity` at `382cac9` plus uncommitted Step4; [evidence](../evaluation/identity/id-01-step-4/README.md);519 Python/63 data/16 web; runtime mypy passed | Step4 real Microsoft/browser/nonce-attempt/session/runtime DB-role checks; Step2 production access; PR10/main integration and ID-READY pending | 2026-10-23 18:29:16 UTC |
+| ID-01 | A | in progress | Step5 private transactional OTP increment human-verified; marker lifetime retention approved; next prepare Step6 activation plan; real public/provider integration pending | Steps1/3 verified; Step2 sandbox verified/production staged; Step4 private implementation verified; Step5 private implementation performed and verified/full step partial | Plan verified with three-attempt/latest-expiry correction; Step5 private result verified by Aditya | `task/id-01-identity` at `7d6be86` plus uncommitted Step5; [evidence](../evaluation/identity/id-01-step-5/README.md);563 Python/63 data/16 web; full11 gates and runtime mypy passed | Cleanup design; original real public/provider/key/DB-role checks; Step4 sign-in/session, Step2 production access, current-main integration and ID-READY pending | 2026-10-23 19:53:44 UTC |
 | LI-01 | B | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | LI-CORE, LI-02, SE-CORE | — |
 | LI-02 | B | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | LI-CORE, ID-READY | — |
 | SE-01 | C | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | SE-CORE, LI-01, LI-02, DATA-READY | — |
@@ -105,6 +105,87 @@ Update the task status row after each step and human verification. The row is th
 Add a history entry when it records a meaningful outcome, decision, changed output, check result, blocker, consequential human direction, or task/merge closeout. Group related steps when that keeps their results understandable. Do not add a separate history entry just to say that a routine step was verified and the next one may begin.
 
 Include the task and covered step(s), contributor, date/time, and the details needed to understand or verify the outcome: relevant execution/verification state, changed paths, exact checks/results, decision/evidence reference, blocker/owner, or next action as applicable. Keep entries brief, omit repeated background, and link existing artifacts rather than duplicating them. Use exact UTC date and time for new entries. Keep historical timestamp precision as recorded; never guess or backfill an unknown time. Preserve distinct decisions, evidence, and other contributors' useful history.
+
+### ID-01 — Step5 minimal request-marker retention approved — 2026-10-23 19:53:44 UTC
+
+Aditya approved retaining minimal OTP request deduplication markers for the
+service lifetime, preserving same-operation no-resend after OTP cleanup. Only
+keyed request digest, key version, challenge ID and original expiry survive;
+no email/IP/target digest/code/verifier/ciphertext. Recorded the narrow exception
+in canonical private-data/temporary-auth decisions and reconciled schema,
+database/domain/root docs and evidence. Markers remain sensitive/linkable;
+ordinary private-data windows and separately reviewed Step7 cleanup design
+remain. Documentation-only change; prior563 Python/63 data/16 web/full-gate
+results reused, with no code/configuration behavior change or new cloud/send/
+cleanup/commit action. Step5 private implementation is human-verified; real
+public/provider/runtime integration remains pending before ID-READY.
+
+### ID-01 — Step5 transactional OTP checkpoint checked — 2026-10-23 19:39:55 UTC
+
+Aditya directed remaining Step5 work. Added protected challenge metadata and four
+Identity tables in forward migration20261023192856, plus private PostgreSQL
+reservation/consume service. Source/target locking enforces cooldown/hour limits;
+three failures survive resends through latest expiry; same-operation retries do
+not send; consume and trusted callback are atomic, while wrong counters commit.
+Suppressed requests share statuses/budgets after review caught and corrected an
+enumeration gap. Key commitments reject accidental replacement/legacy adoption.
+Down locks and refuses occupied security state. Reused private disposable DB
+fixture; preserved original Step3 round-trip proof and legacy OTP rows through
+new up/down.18 actual OTP DB tests passed; runtime mypy four files; full make
+check passed11 gates: Black94 files,563 Python/63 data/16 web, boundaries/current
+contracts/types/build,35 wrapper safety cases, actual migration/four smokes and
+Gitleaks. Bash syntax,213 local doc targets and whitespace passed.
+[Detailed code/check/limit evidence](../evaluation/identity/id-01-step-5/README.md).
+No public route, real account/password/session mutation, retained/shared DB,
+cloud/send/deploy/commit/push/merge or cleanup worker. Marker retention remains
+undecided; public timing/configuration/provider and later atomic real mutations
+remain integration gates. Private result awaits human verification; Step5 and
+ID-READY remain incomplete.
+
+### ID-01 — Step5 transaction implementation writer scope — 2026-10-23 19:28:56 UTC
+
+Aditya explicitly directed starting remaining Step5 work. Reserve the Identity
+OTP forward migration20261023192856, private challenge service and matching
+tests; disposable DB test fixture reuse; existing migration checker/native
+harness and schema/command/domain/status documentation. Implement real local
+transactional request/attempt/send limits and atomic consume callback against
+reviewed Identity contract44cd8ff. New minimal operation table does not select a
+retention exception: its cleanup horizon remains pending; no cleanup job or
+live provider/shared DB action. Occupied rollback must fail rather than erase
+replay/verification state. Step6/7 account/password/session mutations and public
+HTTP/background timing wiring remain later checkpoints.
+
+### ID-01 — Step5 private OTP delivery started — 2026-10-23 19:14:26 UTC
+
+Aditya directed starting the remaining work while request-marker retention is
+unresolved. Added `temporary_delivery.py`: uniform six-digit generation,
+purpose-bound templates and a transient one-shot ticket composing with the
+existing SES adapter. Tickets release private references on dispatch/discard,
+refuse expiry and suppress concurrent/repeated transport calls even after an
+uncertain failure; durable deduplication still requires the pending store.
+`test_temporary_delivery.py` uses only synthetic identities and a recording SDK.
+The focused crypto/policy/delivery/SES suite passed35 tests, runtime mypy passed
+three files, Black passed the new files and whitespace checks passed. Registered
+commands and documented private boundaries/remaining integration. No live email,
+AWS client, database/migration, account activation, public route or commit.
+Step5 remains partial: retention decision precedes transactional persistence;
+actual eligibility/rate-limit/atomic consume and public timing checks pending.
+
+### ID-01 — Step5 policy correction and private primitives — 2026-10-23 18:47:21 UTC
+
+Aditya verified the Step5 plan, correcting the failure budget to three shared
+attempts until the latest OTP expires. Recorded approved parameters in the
+temporary-authentication decision and clarified canonical Steps5/7/11 to cover
+reset challenges, password sign-in/reset and their UI. Added private
+`temporary_crypto.py` (normalized keyed identifiers, purpose-bound verifiers and
+AES-GCM target protection) and `temporary_policy.py` (immutable controlled-time
+failure window preserving failures across resends), with matching tests.
+Focused pytest passed19 cases; Black passed four files; runtime mypy passed two
+files after correcting a tuple-return annotation mismatch caught by its first
+run. These primitives do not yet enforce database atomicity, dispatch email,
+activate an account or expose a route. Step5 remains partial, uncommitted;
+request-marker retention is awaiting Aditya's decision before persistence is
+finalized. No cloud/send/deploy/shared DB action or readiness acceptance.
 
 ### ID-01 — Step4 private validator/account mapping checked — 2026-10-23 18:22:07 UTC
 Aditya explicitly directed implementation with reaffirmed Microsoft/exact signed-email policy. Added fixed-origin bounded TLS discovery/JWKS cache and actual PyJWT RSA/issuer/key/tenant/audience/time/nonce/domain validation, safe401/503; Identity-only psycopg account transaction/advisory lock prevents duplicate/orphan users and never reactivates ineligible mappings. Microsoft selector remains disabled by default/local-test only; actual production entry-point refusal verified. PyJWT2.15.1 crypto/psycopg3.3.6 binary locked; source shared/fixture dependencies documented.53 token tests and8 actual PostgreSQL cases passed;16 concurrent callbacks produced one account/mapping, no sessions. Initial DB fixture bootstrap-socket failure corrected before app execution; subsequent combined90 tests/runtime mypy passed. Public metadata read verified8 issuer-bound RSA keys, no sign-in/token. Full make check passed all11 gates: Black85 files,519 Python/63 data/16 web, boundaries/contracts/mypy/web build,35 DB safety cases, actual migration checks and Gitleaks. [Evidence/code explanations/limits](../evaluation/identity/id-01-step-4/README.md). No public auth route/session/caller issuance, frontend, retained/shared DB, cloud/send/deploy action, commit/push/merge or PR10 integration. Expected-nonce lifecycle/session design and real Microsoft/browser/runtime checks remain original Step4/12 obligations; Linux persistence test route only, no new macOS pass claimed. Isolated result awaits human verification; no readiness acceptance.
@@ -1596,6 +1677,7 @@ runtime-permission checks remain pending.
 | ID-01 Step 2 production delivery/configuration | Reviewed contract at44cd8ff; actual SES adapter/task-role sandbox delivery and inbox/cleanup verified; isolated Steps3–11 permitted | SES production access and reviewed production-safe provider configuration | Aditya; shared owner reviews policy | Production access granted; resume earliest pending Step2 subcheck before readiness acceptance | Refresh provider status, review sandbox-guard/recipient-scope transition, verify required real production-configuration checks under separate cloud/send approval | Sandbox IAM/runtime/inbox/cleanup passed and human-verified; production gate remains pending; not ID-READY acceptance |
 | ID-01 Step3 combined migration-chain integration | Real disposable PostgreSQL18.6/dbmate2.36.0; five-migration isolated branch at80abc52 plus new Identity forward guard; no schema double | Accepted current-main migrations (known PR10 head20261022062357), reconciled shared checker/docs and owning-domain changes | Aditya; affected schema/domain owners; Rahul(D) reviews | After isolated Identity implementation, before ID-READY review/merge | Integrate current main; verify full ordered clean/upgrade/down/reapply chain and affected-domain checks; never claim missing earlier migrations applied from higher version alone | Identity-only schema checks/full local gates passed; PR10 merge and combined-chain check deliberately deferred by Aditya |
 | ID-01 Step4 actual sign-in/session integration | Real RSA plus synthetic signed tokens/controlled metadata at reviewed Identity contract44cd8ff; real disposable PostgreSQL mapping, not a fake account store | Reviewed trusted login-attempt nonce creation/consumption, PKCE/state/session/cookie wiring, real Microsoft/IISc account and runtime DB permissions | Aditya; shared/frontend/security reviewers and Rahul(D) | Before exposing public credential exchange and before ID-READY; return at Step7/11 wiring | Verify real signed issuer/key/audience/time/email domain, trusted single-use attempt/replay behavior, actual session/CallerContext, failed-provider/privacy behavior and deployed runtime configuration | Private validator/store tests and public metadata read passed; no real user login, public route or session issued; original real checks pending |
+| ID-01 Step5 real OTP/public/runtime integration | Real private PostgreSQL service plus synthetic mail/SDK at reviewed Identity contract44cd8ff;18 actual DB cases/full local gates passed | Reviewed cleanup design, runtime key/DB-role wiring, real provider and public/API/UI path with actual activation/reset/session mutations | Aditya; shared/frontend/security reviewers and Rahul(D) | Private checkpoint verified; owning Steps6/7/11/12 and provider access ready, with separate exact send/cloud approval | Verify actual provider/configuration and uniform acknowledgement/timing, trusted source binding, durable retry/rate/attempt behavior, actual atomic activation/reset/session revocation, privacy and cleanup gates | Private transaction/SES composition checked; no real OTP send or public route; required real integration remains pending; not ID-READY acceptance |
 
 
 ## Resolved integration evidence

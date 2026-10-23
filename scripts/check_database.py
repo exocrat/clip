@@ -18,7 +18,8 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[1]
 POSTGRES_IMAGE = "postgres:18.6-bookworm"
 DBMATE_IMAGE = "ghcr.io/amacneil/dbmate:2.36.0"
-IDENTITY_HEAD = "20261023173439"
+IDENTITY_GUARD = "20261023173439"
+IDENTITY_HEAD = "20261023192856"
 
 
 def main():
@@ -87,8 +88,8 @@ def main():
     def migrate(directory=None, *, rollback=False):
         """Apply/undo only disposable-target migrations, never ambient .env inputs.
 
-        A private baseline directory exercises upgrade from previously applied
-        migrations; rollback removes only the new Identity guard migration.
+        Private baseline directories exercise historical and current upgrades;
+        rollback removes only the latest applied migration in this fresh target.
         """
         directory = directory or ROOT / "database/migrations"
         run(
@@ -123,6 +124,15 @@ def main():
                 "DATABASE_URL": f"postgres://clip_ci:{password}@127.0.0.1:5432/clip_test_ci?sslmode=disable"
             },
         )
+
+    def migrate_guard():
+        """Exercise the original Step3 upgrade with exactly its historical chain."""
+        with tempfile.TemporaryDirectory(prefix="clip-identity-guard-") as name:
+            directory = Path(name)
+            for source in (ROOT / "database/migrations").glob("*.sql"):
+                if source.name.split("_")[0] <= IDENTITY_GUARD:
+                    shutil.copyfile(source, directory / source.name)
+            migrate(directory)
 
     try:
         # No names to collide with existing services, no ports or named volumes.
@@ -188,24 +198,30 @@ def main():
             "schema-smoke.sql",
             "retired-origin-smoke.sql",
             "identity-schema-smoke.sql",
+            "identity-otp-smoke.sql",
         ):
             sql((ROOT / "database/tests" / filename).read_text())
         if (
             sql(
                 "SELECT count(*) FROM pg_tables WHERE schemaname IN ('identity','listings','search','conversations')"
             )
-            != "23"
+            != "27"
         ):
-            raise RuntimeError("Expected 23 domain tables")
+            raise RuntimeError("Expected 27 domain tables")
         # The only rollback is against this invocation's fresh disposable target.
         # Seed older-schema rows, reject incompatible data atomically, then verify
         # upgrade/down/reapply preserve every fixture value and original guard.
+        # Empty OTP rollback preserves all older data; occupied rollback is
+        # separately checked by the actual transactional service suite.
+        migrate(rollback=True)
+        if sql("SELECT max(version) FROM public.schema_migrations") != IDENTITY_GUARD:
+            raise RuntimeError("OTP rollback did not restore the Identity guard head")
         migrate(rollback=True)
         migrations = sorted((ROOT / "database/migrations").glob("*.sql"))
         with tempfile.TemporaryDirectory(prefix="clip-identity-baseline-") as name:
             baseline = Path(name)
             for source in migrations:
-                if not source.name.startswith(IDENTITY_HEAD + "_"):
+                if source.name.split("_")[0] < IDENTITY_GUARD:
                     shutil.copyfile(source, baseline / source.name)
             migrate(baseline)
         sql((ROOT / "database/tests/identity-upgrade-seed.sql").read_text())
@@ -214,7 +230,7 @@ def main():
             "WHERE id = 'e2300000-0000-4000-8000-000000000001'"
         )
         try:
-            migrate()
+            migrate_guard()
         except RuntimeError as error:
             if "users_display_name_length" not in str(error):
                 raise
@@ -223,7 +239,7 @@ def main():
         if (
             sql(
                 "SELECT count(*) FROM public.schema_migrations WHERE version = '"
-                + IDENTITY_HEAD
+                + IDENTITY_GUARD
                 + "'"
             )
             != "0"
@@ -249,7 +265,7 @@ def main():
             "UPDATE identity.users SET display_name = 'Identity upgrade fixture' "
             "WHERE id = 'e2300000-0000-4000-8000-000000000001'"
         )
-        migrate()
+        migrate_guard()
         sql((ROOT / "database/tests/identity-upgrade-check.sql").read_text())
         sql((ROOT / "database/tests/identity-schema-smoke.sql").read_text())
         migrate(rollback=True)
@@ -261,8 +277,8 @@ def main():
             != "0"
         ):
             raise RuntimeError("Identity rollback left its provider-mapping trigger")
-        migrate()
-        migrate()
+        migrate_guard()
+        migrate_guard()
         sql((ROOT / "database/tests/identity-upgrade-check.sql").read_text())
         for filename in (
             "schema-smoke.sql",
@@ -270,9 +286,39 @@ def main():
             "identity-schema-smoke.sql",
         ):
             sql((ROOT / "database/tests" / filename).read_text())
+        # Legacy verifier rows survive both OTP directions without invented
+        # encryption/key references; the new service fails closed on adoption.
+        sql(
+            "INSERT INTO identity.otp_challenges "
+            "(id,target_lookup_digest,verifier,purpose,expires_at) VALUES "
+            "('e2300000-0000-4000-8000-000000000099',decode('11','hex'),decode('22','hex'),"
+            "'initial_verification',CURRENT_TIMESTAMP + INTERVAL '10 minutes')"
+        )
+        migrate()
+        if (
+            sql(
+                "SELECT key_version IS NULL AND encrypted_target IS NULL FROM identity.otp_challenges "
+                "WHERE id='e2300000-0000-4000-8000-000000000099'"
+            )
+            != "t"
+        ):
+            raise RuntimeError("OTP upgrade invented legacy key/encryption data")
+        migrate(rollback=True)
+        if (
+            sql(
+                "SELECT encode(verifier,'hex') FROM identity.otp_challenges "
+                "WHERE id='e2300000-0000-4000-8000-000000000099'"
+            )
+            != "22"
+        ):
+            raise RuntimeError("OTP rollback changed a legacy verifier")
+        migrate()
+        migrate()
+        sql((ROOT / "database/tests/identity-upgrade-check.sql").read_text())
+        sql((ROOT / "database/tests/identity-otp-smoke.sql").read_text())
         print(
-            "PASS: PostgreSQL 18.6; clean/repeat migrations, three smoke suites; "
-            "Identity incompatible-upgrade atomicity and data-preserving upgrade/down/reapply"
+            "PASS: PostgreSQL 18.6; clean/repeat migrations, four smoke suites; "
+            "Identity incompatible-upgrade atomicity, data-preserving guard/OTP upgrade/down/reapply"
         )
     finally:
         if container:

@@ -8,7 +8,7 @@
 
 This document proposes the complete MVP data inventory and its relational boundaries. It creates no tables or domain behavior. Names, types, constraints and indexes below are proposals unless identified as already approved. The review gates at the end must be resolved before dependent initial migrations. After approval, versioned migrations in `database/migrations/` become the executable schema source; this document explains their intent and must stay consistent with them.
 
-**Step 3 continuation, authorized by Mohit:** Mohit explicitly directed proceeding before remaining affected-owner review, allowing later corrections while staying within Stream 3 paths. Migrations live in [database/migrations](../../database/migrations/), with this isolated branch expected dbmate head `20261023173439`; [database/README.md](../../database/README.md) records the files and verification provenance. This exception overrode the immediate review-before-creation wait; it did not waive the required checks. The user later confirmed the carried PD-08 checks and owner acceptance complete. Historical native/ARM64 evidence and the limits of the user-confirmed other-machine platform results are recorded in the work log. This does not accept future domain contracts, a cryptographic protocol implementation, or a cloud action.
+**Step 3 continuation, authorized by Mohit:** Mohit explicitly directed proceeding before remaining affected-owner review, allowing later corrections while staying within Stream 3 paths. Migrations live in [database/migrations](../../database/migrations/), with this isolated branch expected dbmate head `20261023192856`; [database/README.md](../../database/README.md) records the files and verification provenance. This exception overrode the immediate review-before-creation wait; it did not waive the required checks. The user later confirmed the carried PD-08 checks and owner acceptance complete. Historical native/ARM64 evidence and the limits of the user-confirmed other-machine platform results are recorded in the work log. This does not accept future domain contracts, a cryptographic protocol implementation, or a cloud action.
 
 ## Sources and approved boundaries
 
@@ -373,3 +373,28 @@ The new storage checks and data-preserving round trip use disposable real
 PostgreSQL only, not a schema test double. Microsoft validation, normalization/
 key rotation, hash/verifier design, session policy, safe cleanup and service
 authorization remain their original ID-01 gates. See the database README.
+
+## ID-01 Step5 protected challenge transaction state
+
+Forward migration20261023192856 adds `identity.otp_key_binding`,
+`identity.otp_operations`, `identity.otp_send_reservations` and
+`identity.otp_verification_windows`; domain table count is27 on this isolated
+branch. The existing challenge gains nullable key version, authenticated target
+ciphertext and supersession time with protected-field/time checks. Legacy rows
+are preserved; the new service requires reviewed adoption before existing
+unbound temporary state can be used. No raw code or password is stored.
+
+The service serializes source then target for sends, and target then account for
+verification/reset eligibility. Three failures survive resends until the latest
+code expires. Correct verification, consume and the later owning mutation share
+one transaction; failed verification counters commit before returning an error.
+Suppressed acknowledgements consume the same limits and failure budget, without
+creating phantom users or persisting dummy reset verifiers. Public uniform timing
+and actual activation/reset/session checks remain integration gates.
+
+Aditya approved service-lifetime retention of minimal request markers, limited
+to keyed request digest, key version, challenge ID and original expiry. Cleanup
+of the separate operational state still requires the owning retention design;
+no deletion job is authorized. Ordinary OTP private-data retention and immediate
+access revocation remain unchanged. Occupied down migrations fail
+closed under exclusive locks; review a security-state migration before rollback.

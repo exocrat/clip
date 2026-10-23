@@ -37,8 +37,9 @@ was changed. [Tool rationale](../docs/decisions/database-migration-tool.md).
 | `20261018094332_initial_catalogue.sql` | The approved eight categories/four conditions only; no users, fake credentials, private data or final evaluation dataset. |
 | `20261018152702_reject_retired_origin_entries.sql` | Forward correction: reject new entries on permanently retired origins under the existing origin lock, before allocating sequence/activity state. Down restores the original guard. |
 | `20261023173439_identity_account_profile_integrity.sql` | Identity-only forward guards: contract profile/contact length bounds, paired chronological revocation event and immutable provider/account mapping. Down removes only its own checks/trigger/function, preserving data. |
+| `20261023192856_identity_otp_transactions.sql` | Protected OTP metadata plus key commitments, minimal operation acknowledgements, send reservations and shared verification windows. Empty-state down preserves legacy rows; occupied down fails closed. |
 
-Expected branch migration version: **20261023173439**. One integrator allocates
+Expected branch migration version: **20261023192856**. One integrator allocates
 later timestamp identifiers; no parallel heads or uncoordinated edits to initial
 DDL. Published/applied migrations are corrected forward, not rewritten.
 
@@ -458,3 +459,31 @@ The native macOS harness is wired to the fifth migration,21 functions/33 trigger
 and new smoke. Bash syntax is checked here; execution of this revised native
 harness is not claimed on this Linux ARM64 machine. Historical macOS evidence
 above remains evidence only for its original revision.
+
+## ID-01 Step5 isolated OTP transactions
+
+Migration20261023192856 adds four Identity-owned tables (27 domain tables total)
+and nullable protected fields to the existing OTP table. Legacy rows remain
+unchanged and cannot be verified by the new service. Minimal operation markers
+contain a keyed request digest, key version, public challenge ID and expiry;
+they contain no target/IP digest, email, code or verifier. Aditya approved
+service-lifetime marker retention; the canonical private-data retention decision
+records the exception. The migration implements no cleanup job; other private
+state retains its separate windows and cleanup-design gate.
+
+`otp_send_reservations` stores protected target/source identifiers for send
+limits, including suppressed requests. `otp_verification_windows` holds three
+failed verifications per target/purpose through the latest code's expiry.
+`otp_key_binding` stores only SHA-256 commitments to three high-entropy keys;
+the service rejects accidental key/version changes or unreviewed legacy-state
+adoption. Keys themselves are never stored here.
+
+Down takes exclusive locks and refuses occupied security state instead of
+silently deleting deduplication/attempt/key guards. A deployed rollback with
+state needs a reviewed migration/reset plan. Empty OTP down/up and legacy-row
+preservation are exercised by `scripts/check_database.py`, which pins Step3's
+older round trip separately so that adding this migration cannot invalidate its
+original proof. Four SQL smoke suites now run. The native harness source expects
+six migrations,27 tables,21 functions/33 triggers; only Bash syntax is checked
+on this contributor's Linux ARM64 environment. PR10/current-main integration
+and affected-owner review remain pending before ID-READY/shared application.

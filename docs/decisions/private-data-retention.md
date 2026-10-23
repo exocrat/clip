@@ -16,6 +16,7 @@ Mohit approved these windows, measured from the stated trigger:
 | Data | Retention/cleanup |
 |---|---|
 | Used/expired OTP challenges | Delete 24 hours after consumption or expiry, whichever first makes the challenge unusable. |
+| Minimal Identity OTP request marker | Retain for the service lifetime so the same operation cannot resend after OTP cleanup. Only keyed request digest, key version, challenge ID and original expiry; no email, IP, target digest, OTP, verifier or ciphertext. |
 | Expired/revoked sessions | Delete 7 days after the earlier terminal event. |
 | Permanently expired/revoked temporary password hashes | Delete within 24 hours. |
 | Identity source contacts/profile | Remove on user field deletion; otherwise retain while active and at most 30 days after expiry/permanent revocation. Field deletion takes effect immediately in future contact retrieval. |
@@ -24,6 +25,13 @@ Mohit approved these windows, measured from the stated trigger:
 | Sent/suppressed/terminally failed notification records | Delete after 30 days from terminal completion, preserving a separately reviewed bounded replay/deduplication guard when needed. |
 
 Access expires/revokes immediately; these windows never extend access. Preserve minimal origin/participant/thread records while the parent origin exists to maintain one-conversation-per-pair. Preserve a keyed normalized-login enrollment identifier and original activation/expiry for the service's operating lifetime to prevent temporary-account self-renewal; remove password/contact content under its own window. This identifier is sensitive/linkable, not anonymous data. Create the guard only after verified activation.
+
+Aditya (A) approved the minimal OTP request-marker exception on
+2026-10-23 19:53:44 UTC (recording time). The keyed digest is sensitive/linkable,
+not anonymous. This exception does not extend OTP validity or retention of
+challenge content, target/source rate records, passwords or contact data. The
+owning Step7 cleanup design must preserve markers while deleting private state
+under its approved rules; no destructive mechanism is authorized here.
 
 ## Rationale
 Bounds retained content while avoiding replay, duplicate conversation creation or account-lifetime reset as a side effect of cleanup.
