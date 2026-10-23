@@ -68,9 +68,57 @@ operation ID after an ambiguous outcome. Fetching entries never acknowledges rea
 
 Identity must supply the authenticated request function, including session and
 CSRF behavior. The adapter has no default transport or test-identity fallback.
-It is not yet mounted by the scaffold pages. Real auth, SDK relay/startup,
+It is not yet mounted by the scaffold pages. Real auth, page composition,
 local history persistence and two-browser integration remain pending. In
 particular, `readOwnKey()` now maps the approved authenticated
 `GET /me/conversation-key`: only an explicit valid null means never registered.
-Errors or malformed bundles never become a missing key. The SDK relay must
-connect this operation to its own-identity lookup before startup is complete.
+Errors or malformed bundles never become a missing key.
+
+## Conversations SDK relay
+
+Use the public `openIndexedDbConversationSession(userId, conversationId, api,
+options)` entry point to compose the real OpenE2EE SDK with the authenticated
+HTTP adapter. The account ID must come from Identity's trusted session view.
+Pass null for `conversationId` to publish keys before any chat exists; peer
+operations require a selected authorized conversation. First key creation
+requires `acknowledgeUnrecoverableHistoryRisk: true` after the user accepts the
+existing warning. Existing directory keys with missing local keys fail closed.
+The local store is atomically bound to an account; a different account cannot
+silently reuse its private state. The factory refuses a failed SDK sync and
+suppresses SDK logging rather than forwarding keys/content/error internals.
+It preserves the SDK's required PQ/Braid policy and key maintenance defaults.
+
+The returned `{crypto, relay, stop}` provides the existing crypto boundary,
+the transport, and explicit shutdown. `relay.retrySend(operationId)` reuses
+the persisted prepared ciphertext, timestamp and operation ID, including after
+adapter recreation. Directory identity/registration changes block posting or
+retrying the old ciphertext. Call `stop()` before replacing the active client;
+the IndexedDB factory also closes its store. `createConversationSession` accepts
+an explicitly supplied platform store for composition/testing; production does
+not select the memory adapter or install test authentication.
+
+`ConversationRelay` maps own/member identity reads, single-device discovery,
+public bundle registration, batches of up to 200 public OTPs, and peer OTP
+reservation to the reviewed API. Registration/publication requests and prepared
+message writes are journaled using SDK-local metadata before HTTP submission.
+The versioned journal contains public material or ciphertext, never HTTP
+credentials. Inventory times come from matching actual SDK-local key records,
+not invented server timestamps. Concurrent reservation calls use distinct
+reservations; distinct SDK client instances never share a reservation intent.
+A failed reservation retries within that client, while a restarted client may
+reserve fresh keys, leaving the old unused reservation consumed server-side.
+
+Retrieval remains CLIP entry polling and the existing receive helper. SDK local
+delivery completion neither acknowledges reads nor deletes retained API entries;
+the UI must still acknowledge actually displayed messages. Delivery receipts
+are disabled to preserve the approved no-peer-receipts behavior. No socket,
+presence, group, linked-device, sealed-sender or server device-set capability is
+advertised. Unsupported operations, including stale-KEM clearing and implicit
+own-identity replacement, throw rather than report fake success. Automatic
+protocol-control receive/resend recovery still needs integration checks; this
+increment proves prepared HTTP retry, not every SDK recovery path.
+
+`tests/conversations-relay.test.ts` uses actual SDK clients/crypto and a reviewed
+HTTP-contract double. This proves isolated client behavior, not real Identity,
+PostgreSQL transport, browser IndexedDB reload/concurrency, or CN-CORE acceptance.
+Application history persistence, page wiring and those real checks remain pending.

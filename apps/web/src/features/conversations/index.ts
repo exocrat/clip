@@ -37,3 +37,5 @@ export { createDisplayedReadAcknowledger } from './read-state';
 export type { AcknowledgeRead } from './read-state';
 export { ConversationApi, ConversationApiError } from './api';
 export type { ConversationHttpTransport, ConversationListQuery } from './api';
+export { ConversationRelay, createConversationSession, openIndexedDbConversationSession } from './relay';
+export type { ConversationSession } from './relay';
