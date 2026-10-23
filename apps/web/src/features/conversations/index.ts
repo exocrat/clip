@@ -1,5 +1,13 @@
 export { ConversationsPlaceholder } from './ConversationsPlaceholder';
 export type { ConversationsPlaceholderProps } from './ConversationsPlaceholder';
+export { ConversationInbox } from './ConversationInbox';
+export type { ConversationInboxItem, ConversationInboxProps } from './ConversationInbox';
+export { ConversationThread } from './ConversationThread';
+export type {
+  ConversationDisplayEntry,
+  ConversationKeyUiState,
+  ConversationThreadProps,
+} from './ConversationThread';
 export {
   CLIP_ENVELOPE_VERSION,
   CLIP_PROTOCOL_ID,
