@@ -231,12 +231,12 @@ check_idle() {
   # A non-superuser can see another role's database/session but not its backend
   # type. Treat that hidden type as busy rather than overlooking a live client.
   result=$(psql_query --command="SELECT count(*) FROM pg_stat_activity WHERE pid <> pg_backend_pid() AND (backend_type = 'client backend' OR (backend_type IS NULL AND datname IS NOT NULL))") \
-    || fail 'Listings shared-database idle check failed; preserve the shared RDS state.'
+    || fail 'Listings database idle check failed; preserve the disposable database for inspection.'
   case "$result" in
-    ''|*[!0-9]*) fail 'Listings idle check received an invalid inspection result; preserve the shared RDS state.' ;;
+    ''|*[!0-9]*) fail 'Listings idle check received an invalid inspection result; preserve the disposable database for inspection.' ;;
   esac
-  [ "$result" = '0' ] || fail 'Other database clients are connected; preserving the shared RDS state.'
-  printf '%s\n' 'Shared RDS has no other PostgreSQL client sessions.'
+  [ "$result" = '0' ] || fail 'Other database clients are connected; preserving the disposable database.'
+  printf '%s\n' 'The disposable LI-02 database has no other PostgreSQL client sessions.'
 }
 
 case "${1:-}" in

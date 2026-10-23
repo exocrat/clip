@@ -269,8 +269,9 @@ resource "aws_iam_role_policy" "task_images" {
   })
 }
 
-# A fixed one-shot database bootstrap task uses the shared RDS master secret
-# only to create/drop the isolated Listings database and its dedicated login.
+# A fixed one-shot database bootstrap task uses the approved test master secret
+# only against the disposable LI-02 RDS to create/drop its Listings database
+# and dedicated login; it never connects to shared RDS.
 # Its task definition has no task role; the execution role injects only the
 # required SecureStrings and writes to the Listings test log group.
 resource "aws_iam_role" "db_setup_execution" {

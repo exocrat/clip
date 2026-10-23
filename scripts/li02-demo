@@ -4,8 +4,8 @@
 The start command continues a saved partial run from its last recorded phase.
 
 The command targets only account 335523638354 in ap-south-1. It uses fixed
-Terraform/task definitions, records the shared RDS baseline locally without
-credentials, and asks for the displayed plan hash before each Terraform apply.
+Terraform/task definitions, records the shared ECS capacity baseline locally
+without credentials, and asks for the displayed plan hash before each apply.
 """
 
 from __future__ import annotations
@@ -33,7 +33,7 @@ ACCOUNT_ID = "335523638354"
 REGION = "ap-south-1"
 CLUSTER = "clip-shared-test"
 CAPACITY_PROVIDER = "clip-shared-test-capacity"
-RDS_ID = "clip-shared-test-postgres"
+DEMO_DATABASE_ID = "clip-test-listings-ap-south-1-li02"
 ECR_REPO = f"{ACCOUNT_ID}.dkr.ecr.{REGION}.amazonaws.com/clip-shared-test-api"
 BUCKET = "clip-test-listings-images-ap-south-1-li02"
 URL_PARAMETER = "/clip/test/listings-database-url"
@@ -54,6 +54,10 @@ DEMO_STATE_MARKERS = (
     "aws_lb_listener.demo_http",
     "aws_ecs_task_definition.demo_api",
     "aws_ecs_service.demo_api",
+    "aws_db_instance.demo",
+    "aws_db_subnet_group.demo",
+    "aws_security_group.demo_database",
+    "aws_vpc_security_group_ingress_rule.demo_database_from_ecs",
     "aws_ecs_task_definition.database_",
 )
 REQUIRED_DEMO_STATE_ADDRESSES = (
@@ -68,6 +72,10 @@ REQUIRED_DEMO_STATE_ADDRESSES = (
     "aws_lb_listener.demo_http[0]",
     "aws_ecs_task_definition.demo_api[0]",
     "aws_ecs_service.demo_api[0]",
+    "aws_db_instance.demo[0]",
+    "aws_db_subnet_group.demo[0]",
+    "aws_security_group.demo_database[0]",
+    "aws_vpc_security_group_ingress_rule.demo_database_from_ecs[0]",
     "aws_ecs_task_definition.database_bootstrap[0]",
     "aws_ecs_task_definition.database_cleanup[0]",
     "aws_ecs_task_definition.database_migration[0]",
@@ -274,18 +282,21 @@ def verify_identity_and_budget(profile: str) -> dict[str, Any]:
     }
 
 
-def rds_info(profile: str) -> dict[str, Any]:
-    """Read the shared RDS status and endpoint without retrieving credentials."""
+def demo_database_info(profile: str) -> dict[str, Any]:
+    """Read only the disposable LI-02 RDS status and endpoint metadata."""
     result = aws_json(
         profile,
         "rds",
         "describe-db-instances",
         "--db-instance-identifier",
-        RDS_ID,
+        DEMO_DATABASE_ID,
     )
     instances = result.get("DBInstances", [])
-    if len(instances) != 1 or instances[0].get("DBInstanceIdentifier") != RDS_ID:
-        raise DemoError("Could not identify exactly the shared test RDS instance.")
+    if (
+        len(instances) != 1
+        or instances[0].get("DBInstanceIdentifier") != DEMO_DATABASE_ID
+    ):
+        raise DemoError("Could not identify exactly the disposable LI-02 RDS instance.")
     return instances[0]
 
 
@@ -444,16 +455,30 @@ def put_secret_parameter(profile: str, name: str, value: str) -> None:
         Path(filename).unlink(missing_ok=True)
 
 
-def ensure_demo_database_secret(
-    profile: str, rds: dict[str, Any], baseline: dict[str, Any]
-) -> None:
-    """Create or reuse this run's isolated DB URL without exposing its value."""
-    url_present = parameter_exists(profile, URL_PARAMETER)
-    master_present = parameter_exists(profile, MASTER_PARAMETER)
-    if not master_present:
+def get_database_master_credentials(profile: str) -> tuple[str, int]:
+    """Read the approved test master secret/version into memory without displaying it."""
+    parameter = aws_json(
+        profile,
+        "ssm",
+        "get-parameter",
+        "--name",
+        MASTER_PARAMETER,
+        "--with-decryption",
+    ).get("Parameter", {})
+    value = parameter.get("Value")
+    version = parameter.get("Version")
+    if not isinstance(value, str) or not value or not isinstance(version, int):
         raise DemoError(
-            "Required shared RDS master-password parameter is absent; stop before database setup."
+            "The approved database master parameter is incomplete; no Terraform action was taken."
         )
+    return value, version
+
+
+def ensure_demo_database_secret(
+    profile: str, database: dict[str, Any], baseline: dict[str, Any]
+) -> None:
+    """Create this run's app URL secret for the disposable database without exposing it."""
+    url_present = parameter_exists(profile, URL_PARAMETER)
     if url_present and baseline.get("url_parameter_owned") is True:
         print(
             "The isolated Listings database URL SecureString is already recorded for this run."
@@ -465,16 +490,16 @@ def ensure_demo_database_secret(
             "refusing to reuse or later delete unowned state."
         )
 
-    endpoint = rds.get("Endpoint", {})
+    endpoint = database.get("Endpoint", {})
     host, port = endpoint.get("Address"), endpoint.get("Port")
     if not host or not port:
         raise DemoError(
-            "The shared RDS endpoint is unavailable; no database secret was created."
+            "The disposable LI-02 RDS endpoint is unavailable; no database secret was created."
         )
     password = secrets.token_hex(32)
     url = f"postgresql://{DB_ROLE}:{quote(password, safe='')}@{host}:{port}/{DB_NAME}?sslmode=require"
     require_approval(
-        "This creates one Standard SecureString parameter for the isolated Listings database URL/login. "
+        "This creates one Standard SecureString parameter for the disposable LI-02 database URL/login. "
         "The generated password and URL are never printed.",
         "CREATE LI02 DB SECRETS",
     )
@@ -595,7 +620,10 @@ def terraform_init() -> None:
 
 
 def terraform_apply_plan(
-    variables: dict[str, str | None], *, destroy: bool = False
+    variables: dict[str, str | None],
+    *,
+    destroy: bool = False,
+    env_overrides: dict[str, str] | None = None,
 ) -> None:
     """Show and hash a saved exact plan; apply only after matching typed approval."""
     with tempfile.TemporaryDirectory(prefix="li02-demo-plan-") as temporary:
@@ -613,7 +641,7 @@ def terraform_apply_plan(
         for name, value in variables.items():
             if value is not None:
                 args.extend(["-var", f"{name}={value}"])
-        command(args)
+        command(args, env_overrides=env_overrides)
         plan_text = command(
             ["terraform", f"-chdir={TF_ROOT}", "show", "-no-color", str(plan_file)],
             capture=True,
@@ -625,7 +653,8 @@ def terraform_apply_plan(
             f"APPLY {plan_sha}",
         )
         command(
-            ["terraform", f"-chdir={TF_ROOT}", "apply", "-input=false", str(plan_file)]
+            ["terraform", f"-chdir={TF_ROOT}", "apply", "-input=false", str(plan_file)],
+            env_overrides=env_overrides,
         )
 
 
@@ -699,6 +728,8 @@ def run_variables(
     run_id: str,
     api_uri: str | None,
     database_uri: str | None,
+    database_master_password_version: int = 1,
+    database_engine_version: str | None = None,
 ) -> dict[str, str | None]:
     """Create the complete non-secret variable map for this exact LI-02 run."""
     expiry = (dt.datetime.now(dt.UTC).date() + dt.timedelta(days=30)).isoformat()
@@ -707,13 +738,15 @@ def run_variables(
         "demo_app_enabled": str(app_enabled).lower(),
         "api_image_uri": api_uri,
         "database_image_uri": database_uri,
+        "database_master_password_version": str(database_master_password_version),
+        "demo_database_engine_version": database_engine_version,
         "test_run_id": run_id,
         "cleanup_review_date": expiry,
     }
 
 
 def save_baseline(data: dict[str, Any]) -> None:
-    """Persist only non-secret run metadata needed to restore the shared baseline."""
+    """Persist non-secret run metadata and the shared ECS capacity baseline."""
     temporary = BASELINE.with_suffix(".tmp")
     temporary.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
     os.chmod(temporary, 0o600)
@@ -793,6 +826,22 @@ def demo_state_addresses() -> list[str]:
     ]
 
 
+def verify_demo_database_state(profile: str) -> None:
+    """Refuse to adopt or overlook an LI-02 RDS instance outside this Terraform state."""
+    addresses = state_addresses()
+    managed = "aws_db_instance.demo[0]" in addresses
+    instances = aws_json(profile, "rds", "describe-db-instances").get(
+        "DBInstances", []
+    )
+    exists = any(
+        item.get("DBInstanceIdentifier") == DEMO_DATABASE_ID for item in instances
+    )
+    if managed != exists:
+        raise DemoError(
+            "The disposable LI-02 RDS instance and Terraform state disagree; preserve the run and inspect before continuing."
+        )
+
+
 def verify_empty_demo_target(profile: str) -> None:
     """Fail before starting a fresh run when LI-02 route, state, or secret residue exists."""
     terraform_init()
@@ -817,7 +866,16 @@ def verify_empty_demo_target(profile: str) -> None:
         )
     if not parameter_exists(profile, MASTER_PARAMETER):
         raise DemoError(
-            "The shared RDS master-password parameter is absent; no isolated run was started."
+            "The approved test RDS master-password parameter is absent; no isolated run was started."
+        )
+    databases = aws_json(profile, "rds", "describe-db-instances").get(
+        "DBInstances", []
+    )
+    if any(
+        item.get("DBInstanceIdentifier") == DEMO_DATABASE_ID for item in databases
+    ):
+        raise DemoError(
+            "The disposable LI-02 RDS instance already exists without a saved run; inspect it before starting."
         )
     repositories = aws_json(
         profile,
@@ -865,18 +923,16 @@ def continue_start(profile: str, baseline: dict[str, Any]) -> None:
         raise DemoError(
             "The saved run lacks its revision or ID; preserve it and inspect state before recovery."
         )
+    if baseline.get("database_mode") != "disposable-rds":
+        if baseline.get("database_may_exist") or baseline.get("infrastructure_ready"):
+            raise DemoError(
+                "This saved run may still target shared RDS; preserve it and inspect before continuing with the disposable database."
+            )
+        baseline["database_mode"] = "disposable-rds"
+        baseline["database_instance"] = DEMO_DATABASE_ID
+        save_baseline(baseline)
     terraform_init()
-
-    rds = rds_info(profile)
-    rds_status = rds.get("DBInstanceStatus")
-    if rds_status == "stopped" and baseline.get("rds_status") != "stopped":
-        raise DemoError(
-            "Shared RDS is stopped although this run captured it available; preserve the baseline and inspect it."
-        )
-    if rds_status not in ("available", "stopped"):
-        raise DemoError(
-            f"Shared RDS is {rds_status!r}; wait for a stable state before starting."
-        )
+    verify_demo_database_state(profile)
 
     service = demo_service(profile)
     if service and service.get("desiredCount", 0) > 0:
@@ -927,60 +983,18 @@ def continue_start(profile: str, baseline: dict[str, Any]) -> None:
     baseline["phase"] = "images-ready"
     save_baseline(baseline)
 
-    # Publish immutable images before starting RDS so a failed image build does
-    # not leave the shared database billing in its temporary available state.
-    if rds_status == "stopped":
-        require_approval(
-            f"The shared RDS instance {RDS_ID} was stopped at baseline and must be started for this isolated test.",
-            f"START {RDS_ID}",
-        )
-        aws(
-            profile,
-            "rds",
-            "start-db-instance",
-            "--db-instance-identifier",
-            RDS_ID,
-            capture=False,
-        )
-        command(
-            [
-                "aws",
-                "rds",
-                "wait",
-                "db-instance-available",
-                "--db-instance-identifier",
-                RDS_ID,
-                "--profile",
-                profile,
-                "--region",
-                REGION,
-            ]
-        )
-        rds = rds_info(profile)
-        rds_status = rds.get("DBInstanceStatus")
-    if rds_status != "available":
-        raise DemoError(
-            f"Shared RDS is {rds_status!r}; wait for a stable available state before starting."
-        )
-
-    if not parameter_exists(profile, URL_PARAMETER):
-        if baseline.get("database_setup_complete") is True:
-            raise DemoError(
-                "The recorded database URL parameter is missing; preserve the run and inspect it."
-            )
-        ensure_demo_database_secret(profile, rds, baseline)
-    elif baseline.get("url_parameter_owned") is not True:
-        raise DemoError(
-            "The existing database URL parameter is not recorded as owned by this run; refusing to reuse it."
-        )
-    baseline["phase"] = "credentials-ready"
-    save_baseline(baseline)
-
+    database_master_password, database_master_password_version = (
+        get_database_master_credentials(profile)
+    )
+    terraform_secret_environment = {
+        "TF_VAR_database_master_password": database_master_password
+    }
     addresses = state_addresses()
     if not all(address in addresses for address in REQUIRED_DEMO_STATE_ADDRESSES):
         require_approval(
-            "This prepares the isolated ALB/subnet/security rule and fixed database task definitions. "
-            "The ECS app remains at zero until the isolated database passes.",
+            "This creates the private disposable LI-02 PostgreSQL instance, its test-only network access, "
+            "the temporary public route, and fixed database tasks. The app service remains at zero. "
+            "The shared RDS instance and its databases are not used.",
             "START LI02 INFRASTRUCTURE",
         )
         terraform_apply_plan(
@@ -990,8 +1004,12 @@ def continue_start(profile: str, baseline: dict[str, Any]) -> None:
                 run_id=run_id,
                 api_uri=api_uri,
                 database_uri=database_uri,
-            )
+                database_master_password_version=database_master_password_version,
+                database_engine_version=baseline.get("database_engine_version"),
+            ),
+            env_overrides=terraform_secret_environment,
         )
+
     addresses = state_addresses()
     if not all(address in addresses for address in REQUIRED_DEMO_STATE_ADDRESSES):
         raise DemoError(
@@ -999,6 +1017,32 @@ def continue_start(profile: str, baseline: dict[str, Any]) -> None:
         )
     baseline["infrastructure_ready"] = True
     baseline["phase"] = "infrastructure-ready"
+    save_baseline(baseline)
+
+    database = demo_database_info(profile)
+    if database.get("DBInstanceStatus") != "available":
+        raise DemoError(
+            f"The disposable LI-02 database is {database.get('DBInstanceStatus')!r}; wait for it to become available."
+        )
+    database_engine_version = database.get("EngineVersion")
+    if not isinstance(database_engine_version, str) or not database_engine_version:
+        raise DemoError(
+            "The disposable LI-02 database did not report its PostgreSQL version; preserve the run and inspect it."
+        )
+    baseline["database_engine_version"] = database_engine_version
+    save_baseline(baseline)
+
+    if not parameter_exists(profile, URL_PARAMETER):
+        if baseline.get("database_setup_complete") is True:
+            raise DemoError(
+                "The recorded database URL parameter is missing; preserve the run and inspect it."
+            )
+        ensure_demo_database_secret(profile, database, baseline)
+    elif baseline.get("url_parameter_owned") is not True:
+        raise DemoError(
+            "The existing database URL parameter is not recorded as owned by this run; refusing to reuse it."
+        )
+    baseline["phase"] = "credentials-ready"
     save_baseline(baseline)
 
     service = demo_service(profile)
@@ -1052,7 +1096,10 @@ def continue_start(profile: str, baseline: dict[str, Any]) -> None:
                 run_id=run_id,
                 api_uri=api_uri,
                 database_uri=database_uri,
-            )
+                database_master_password_version=database_master_password_version,
+                database_engine_version=database_engine_version,
+            ),
+            env_overrides=terraform_secret_environment,
         )
     url = wait_for_demo(profile, baseline)
     print(f"LI-02 isolated demo is running: {url}")
@@ -1074,18 +1121,12 @@ def start(profile: str) -> None:
     budget = verify_identity_and_budget(profile)
     ensure_no_shared_ecs_tasks(profile)
     verify_empty_demo_target(profile)
-    rds = rds_info(profile)
-    status = rds.get("DBInstanceStatus")
-    if status not in ("available", "stopped"):
-        raise DemoError(
-            f"Shared RDS is {status!r}; wait for a stable state and rerun preflight."
-        )
     baseline = {
         "account": ACCOUNT_ID,
         "region": REGION,
         "revision": revision,
-        "rds_instance": RDS_ID,
-        "rds_status": status,
+        "database_instance": DEMO_DATABASE_ID,
+        "database_mode": "disposable-rds",
         "run_id": f"li02-{secrets.token_hex(6)}",
         "started_at_utc": dt.datetime.now(dt.UTC).isoformat(),
         "phase": "preflight",
@@ -1288,7 +1329,7 @@ def delete_demo_log_streams(profile: str) -> None:
 
 
 def stop(profile: str) -> None:
-    """Stop ingress/service, clear isolated data, destroy LI-02 resources and restore safe baseline."""
+    """Stop ingress/service, clear test data, destroy LI-02 resources, and preserve shared services."""
     require_tools("aws", "terraform")
     # Cleanup must remain available when the budget threshold is exceeded or
     # the Budgets API is unavailable; only the target account is a hard gate.
@@ -1337,16 +1378,7 @@ def stop(profile: str) -> None:
         )
 
     terraform_init()
-    rds = rds_info(profile)
-    rds_status = rds.get("DBInstanceStatus")
-    if rds_status not in ("available", "stopped"):
-        raise DemoError(
-            f"Shared RDS is {rds_status!r}; do not clean up against an uncertain target."
-        )
-    if baseline.get("rds_status") == "available" and rds_status != "available":
-        raise DemoError(
-            "Shared RDS no longer matches its captured available baseline; preserve the run and inspect it."
-        )
+    verify_demo_database_state(profile)
 
     task_definitions = aws_json(
         profile,
@@ -1357,7 +1389,6 @@ def stop(profile: str) -> None:
         "--status",
         "ACTIVE",
     ).get("taskDefinitionArns", [])
-    idle_verified = bool(baseline.get("rds_idle_verified", False))
     database_may_exist = baseline.get("database_may_exist")
     if database_may_exist is None:
         # Older run files have no phase marker. Existing task definitions are
@@ -1375,41 +1406,27 @@ def stop(profile: str) -> None:
             "The isolated database may exist but saved immutable images are missing; preserve the run and inspect it."
         )
     if database_may_exist:
-        if rds_status != "available":
+        if baseline.get("database_mode") != "disposable-rds":
             raise DemoError(
-                "The isolated database may exist but shared RDS is stopped; preserve all data and inspect it."
+                "The saved database state may belong to shared RDS; no cleanup was attempted. Preserve it and inspect before proceeding."
+            )
+        database = demo_database_info(profile)
+        if database.get("DBInstanceStatus") != "available":
+            raise DemoError(
+                f"The disposable LI-02 database is {database.get('DBInstanceStatus')!r}; preserve it and retry cleanup when available."
             )
         require_database_task_definition(profile, "cleanup")
         require_approval(
-            "This runs the fixed owner-check cleanup task. It drops only clip_test_listings when owned by "
-            "clip_test_listings_app, or removes only that exact orphaned login; a mismatched owner fails closed.",
+            "This runs the fixed owner-check task against the disposable LI-02 RDS only. It drops only clip_test_listings when owned by "
+            "clip_test_listings_app, or removes only that exact orphaned login; a mismatched owner fails closed. Shared RDS is untouched.",
             "DROP LI02 DATABASE",
         )
         run_task(profile, "cleanup")
         baseline["database_may_exist"] = False
         baseline["database_setup_complete"] = False
         save_baseline(baseline)
-
-    if (
-        baseline.get("rds_status") == "stopped"
-        and rds_status == "available"
-        and not idle_verified
-    ):
-        no_db_task_ran = (
-            database_may_exist is False
-            and baseline.get("infrastructure_ready") is not True
-            and not task_definitions
-        )
-        if no_db_task_ran:
-            # The script never provisioned a DB task, so verify no shared ECS
-            # task appeared before returning RDS to its captured stopped state.
-            ensure_no_shared_ecs_tasks(profile)
-        else:
-            require_database_task_definition(profile, "idle-check")
-            run_task(profile, "idle-check")
-            idle_verified = True
-            baseline["rds_idle_verified"] = True
-            save_baseline(baseline)
+        require_database_task_definition(profile, "idle-check")
+        run_task(profile, "idle-check")
 
     delete_run_objects(profile, run_id)
     delete_run_parameters(profile, baseline)
@@ -1417,9 +1434,9 @@ def stop(profile: str) -> None:
     demo_addresses = demo_state_addresses()
     if demo_addresses:
         require_approval(
-            "This removes the temporary public ALB, LI-02 subnet/route, host ingress rule, ECS service and fixed task definitions. "
-            "The verified Step 4 bucket, IAM roles, empty log group, state backend and all shared resources remain.",
-            "REMOVE LI02 PUBLIC ROUTE",
+            "This removes the disposable LI-02 RDS instance and its data, the temporary public ALB, LI-02 subnet/route, host ingress rule, ECS service and fixed task definitions. "
+            "The disposable RDS data is permanently deleted without a final snapshot. The shared RDS, VPC, ECS cluster, Step 4 bucket/IAM roles, empty log group and state backend remain.",
+            "REMOVE LI02 RESOURCES",
         )
         terraform_apply_plan(
             run_variables(
@@ -1435,89 +1452,16 @@ def stop(profile: str) -> None:
     other_tasks = running_ecs_tasks(profile)
     if other_tasks:
         print(
-            f"Shared ECS now has {len(other_tasks)} running task(s); leaving shared ECS/RDS available and retaining the baseline for a later safe retry."
+            f"Shared ECS now has {len(other_tasks)} running task(s); leaving shared ECS unchanged and retaining the baseline for a later safe retry."
         )
         print(f"Retry with: make li02-demo-stop AWS_PROFILE={profile}")
         return
     wait_for_ecs_capacity_baseline(profile, baseline)
-    restored = restore_rds_baseline(profile, baseline, idle_verified=idle_verified)
-    if not restored:
-        print(
-            "LI-02 demo resources and isolated data are removed; baseline retained because RDS is still available."
-        )
-        print(f"Retry with: make li02-demo-stop AWS_PROFILE={profile}")
-        return
     BASELINE.unlink(missing_ok=True)
     print(
-        "LI-02 public route, app, isolated database, run objects and logs are removed; captured shared RDS state is restored."
+        "LI-02 public route, app, disposable RDS database, run objects and logs are removed; shared RDS is untouched and shared ECS capacity returned to its captured baseline."
     )
     print(f"Restart it with: make li02-demo-start AWS_PROFILE={profile}")
-
-
-def restore_rds_baseline(
-    profile: str, baseline: dict[str, Any], *, idle_verified: bool = False
-) -> bool:
-    """Return RDS to its captured state only when cluster and database are idle."""
-    current_status = rds_info(profile).get("DBInstanceStatus")
-    if baseline.get("rds_status") != "stopped":
-        if current_status != "available":
-            raise DemoError(
-                f"RDS was available at baseline but is now {current_status!r}; preserve the baseline and inspect it."
-            )
-        print("RDS was available before the demo and remains available.")
-        return True
-    if current_status == "stopped":
-        print("RDS is already stopped at its captured baseline.")
-        return True
-    if current_status != "available":
-        raise DemoError(
-            f"Cannot restore RDS baseline from current status {current_status!r}."
-        )
-    if not idle_verified:
-        if (
-            baseline.get("database_may_exist") is False
-            and baseline.get("infrastructure_ready") is not True
-        ):
-            # No LI-02 database task or public service was ever provisioned.
-            # Verify the shared cluster is idle before restoring a stopped RDS.
-            ensure_no_shared_ecs_tasks(profile)
-        else:
-            print(
-                "RDS was stopped at baseline, but its fixed idle-check task did not verify idleness; leaving it available."
-            )
-            return False
-    ensure_no_shared_ecs_tasks(profile)
-    print(
-        "RDS was stopped before the demo. The stop command has no automatic proof that no external client "
-        "depends on it; verify the shared-team window before restoring that state."
-    )
-    require_approval(
-        f"Stop the shared RDS instance {RDS_ID} to restore its captured baseline?",
-        f"STOP {RDS_ID}",
-    )
-    aws(
-        profile,
-        "rds",
-        "stop-db-instance",
-        "--db-instance-identifier",
-        RDS_ID,
-        capture=False,
-    )
-    command(
-        [
-            "aws",
-            "rds",
-            "wait",
-            "db-instance-stopped",
-            "--db-instance-identifier",
-            RDS_ID,
-            "--profile",
-            profile,
-            "--region",
-            REGION,
-        ]
-    )
-    return True
 
 
 def main() -> int:

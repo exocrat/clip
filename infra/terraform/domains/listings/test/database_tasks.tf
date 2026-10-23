@@ -1,13 +1,9 @@
-data "aws_db_instance" "shared" {
-  db_instance_identifier = "clip-shared-test-postgres"
-}
-
 locals {
   database_task_family_prefix = "clip-test-listings-db-${local.region}-li02"
   database_admin_username     = "clip_test_admin"
   database_task_environment = [
-    { name = "PGHOST", value = data.aws_db_instance.shared.address },
-    { name = "PGPORT", value = tostring(data.aws_db_instance.shared.port) },
+    { name = "PGHOST", value = aws_db_instance.demo[0].address },
+    { name = "PGPORT", value = tostring(aws_db_instance.demo[0].port) },
     { name = "PGSSLMODE", value = "require" },
   ]
 }

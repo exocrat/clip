@@ -104,3 +104,40 @@ variable "demo_public_availability_zone" {
     error_message = "demo_public_availability_zone must differ from the shared public subnet's ap-south-1a zone."
   }
 }
+
+variable "demo_database_availability_zone" {
+  description = "Private Availability Zone for the disposable LI-02 PostgreSQL instance."
+  type        = string
+  default     = "ap-south-1b"
+
+  validation {
+    condition     = var.demo_database_availability_zone == "ap-south-1b"
+    error_message = "demo_database_availability_zone must use ap-south-1b, the existing secondary private subnet's Availability Zone."
+  }
+}
+
+variable "demo_database_engine_version" {
+  description = "PostgreSQL engine version for the disposable database; match the shared test foundation's PostgreSQL 18.6 runtime."
+  type        = string
+  default     = "18.6"
+
+  validation {
+    condition     = var.demo_database_engine_version == "18.6"
+    error_message = "The LI-02 disposable database must match the shared test foundation's PostgreSQL 18.6 runtime."
+  }
+}
+
+variable "database_master_password" {
+  description = "Existing approved test-RDS master password, supplied only as an ephemeral value to RDS's write-only password field."
+  type        = string
+  sensitive   = true
+  ephemeral   = true
+  default     = null
+  nullable    = true
+}
+
+variable "database_master_password_version" {
+  description = "Write-only password version; increment only after an explicitly approved database credential rotation."
+  type        = number
+  default     = 1
+}

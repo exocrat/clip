@@ -49,7 +49,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | DL-00 | Shared-core/contract coordinator; all domains review | in progress | Steps 1–13 local work complete; independent review and exact merge gate next | Steps 1–13 performed | User reports affected domain owners reviewed and approved the contract documents; four declarations derive from those reviewed signatures | `task/pre-00-dl-00-foundation`; 50 HTTP operations, 19 internal callables, eight generated artifacts; `make check` passed (421 Python, 63 data, 16 web tests; Black 71 files; boundary/contract/mypy/web/database/safety/secrets checks) | Independent peer review and exact-revision merge remain; cleanup implementation still needs its separate approval; real providers/integrations and crypto/worker implementation remain downstream | 2026-10-20 05:17:32 UTC |
 | ID-01 | A | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | ID-READY, LI-01, LI-02, SE-CORE, SE-02, CN-CORE, CN-02 | — |
 | LI-01 | B | in progress | Step 11 LI-CORE and remaining Step 7/9/10 gates. | Steps 1–4/6, isolated Step 5 increments, Steps 8–10 checks, and available Step 9 scenarios implemented; Step 7 partial, current create/edit/detail/My Listings checkpoint verified in isolated mode. | Suraj verified the multi-image edit/gallery checkpoint, approved seller-only selected-buyer visibility, and verified Step 10. Phone-device observation and remaining Step 7 checks are not claimed. | `domain/listings` / `e398c96`; 61 focused Listings tests passed, 1 direct database test skipped outside wrapper; disposable PostgreSQL workflow passed; Black and `git diff --check` pass. | Step 11–13; new-thread rejection after retirement requires the unimplemented Conversations-owned thread-start path; affected-consumer/schema review of nullable pickup, native schema check, real Identity/image/chat integrations, and five pre-existing backend boundary findings remain. | 2026-10-21 15:35:55 UTC |
-| LI-02 | B | in progress | Step 2 lifecycle consolidation and shared-integration readiness audit verified; awaiting explicit approval of the staged commit before Step 3 fresh startup. | Steps 1–11 verified; Step 12 public browser and phone photo upload verified; Step 1.5 availability controls/filter verified; Step 2 verified. | Suraj verified Step 2 on 2026-10-23; exact commit approval remains separate per CONTRIBUTING.md. | `domain/listings` at `2289df1`; 12 staged paths across My Listings, lifecycle orchestration, command/runbook documentation, work log, and Step 12 browser evidence. Earlier Python syntax/Black, CLI help, Make dry-runs, 42 web tests/checks, and current Gitleaks 8.30.1 source scan passed; staged whitespace check passes. | Read-only inventory at 19:26 found no LI-02 ALB, no running ECS tasks, and shared ECS host ASG desired/instance counts at zero; run S3 prefix and database URL SSM parameter were absent. A fresh RDS query at 19:28 confirmed `clip-shared-test-postgres` is stopped (`db.t4g.micro`, 20 GiB gp3); compute hours are off while shared provisioned storage/backups remain billable. No active or inactive LI-02 database cleanup task definitions exist; the isolated database is presumed to remain (catalog not queried live). Startup's owner-check reset will drop only `clip_test_listings` owned by `clip_test_listings_app`, then recreate/migrate/seed it; shared `clip_test` remains untouched. Twelve previously untagged ECR digests remain and are outside the run-specific cleanup tag list. Cost Explorer's estimated $0 values do not establish current charges. After commit approval/apply, refresh inventory, start the demo, verify browser/mobile behavior, then stop and verify teardown. ID-READY, LI-CORE and DL-00 peer/merge gates remain before real shared integration. | 2026-10-23 06:31:31 UTC |
+| LI-02 | B | in progress | Step 3 can resume using a LI-02-owned disposable RDS; local change review and exact cloud-plan approval remain before any AWS mutation. | Steps 1–11 verified; Step 12 public browser and phone photo upload verified; Step 1.5 availability controls/filter verified; Step 2 verified. Step 3 understanding verified; previous images pushed, but no LI-02 route/app/database setup created. | Suraj verified the separate-database approach: keep the app's existing `CLIP_DATABASE_URL` contract and all shared RDS data untouched; use only the isolated test root to create/delete a PostgreSQL 18.6 database instance. | `domain/listings` at `038bb28`; two run-specific ECR images remain in baseline `li02-c2090c6c3294`. The local harness now points fixed database tasks to a separate private, encrypted `db.t4g.micro` in `ap-south-1b` and refuses to continue an old run if its database/infrastructure may already have reached shared RDS. PostgreSQL is pinned to 18.6 to match the established foundation. Terraform 1.15.9 validate, Terraform fmt check, Python compilation, 27 database lifecycle wrapper cases, and `git diff --check` passed. | No AWS changes were made. Shared RDS remains outside the new harness lifecycle; the existing run is still at `images-ready` with no URL parameter, ALB, ECS service, or LI-02 database. Recheck live state and exact cost before preparing a plan; commit the reviewed harness change before relying on it for a reproducible deployment. | 2026-10-23 09:47:05 UTC |
 | SE-01 | C | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | SE-CORE, LI-01, LI-02, DATA-READY | — |
 | SE-02 | C | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | SE-CORE, ID-READY, LI-CORE | — |
 | CN-01 | D | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | Isolated development: PRE-00, then DL-00 and a reviewed contract/stub. Later real gates: CN-CORE; SE-02's real request interfaces for request-response integration; CN-03's producer path for final NFR-05 acceptance. | — |
@@ -3127,6 +3127,56 @@ Gitleaks 8.30.1 source snapshot and staged whitespace check passed. Existing
 local preview data and `database/migrations.zip` remain unstaged. The next
 cloud start still requires an approved immutable commit and fresh inventory;
 no AWS resources changed during this checkpoint.
+
+### LI-02 Step 3 — startup preflight blocked by expired AWS session — 2026-10-23 08:38:33 UTC
+
+Suraj verified the Step 3 scope. `make li02-demo-start AWS_PROFILE=surajs2`
+passed the local source/tool checks but AWS STS rejected the saved session as
+expired during the first identity check. The command exited before creating a
+baseline or changing AWS resources; no images were built or pushed. Re-run
+after authenticating `surajs2` and verifying the caller account is
+`335523638354`.
+
+### LI-02 Step 3 — images published; shared RDS start blocked by AZ capacity — 2026-10-23 08:46:17 UTC
+
+Suraj reauthenticated and the script revalidated account `335523638354`, region
+`ap-south-1`, month-to-date spend USD 6.14, forecast USD 21.42, and USD 200
+monthly limit. With approval, it built and pushed the two `038bb28` images to
+the shared test ECR repository under the run-specific tags saved in baseline
+`li02-c2090c6c3294`. The approved RDS start returned
+`InsufficientDBInstanceCapacity` twice for `db.t4g.micro` in `ap-south-1a`.
+A read-only check confirmed RDS is still stopped and single-AZ in `ap-south-1a`;
+the shared subnet group has active subnets in `ap-south-1a` and `ap-south-1b`.
+The run remains at `images-ready`; no URL parameter, database task, ALB, or ECS
+service was created. Further attempts should wait for same-AZ capacity or follow
+a separately reviewed plan for a shared-RDS topology change.
+
+### LI-02 Step 3 — RDS recovery stopped by capacity shortage — 2026-10-23 09:18:18 UTC
+
+The third start request was accepted and RDS began recovery. At 09:11 UTC, the
+RDS event log reported insufficient `db.t4g.micro` capacity in `ap-south-1a`
+and said it was putting the instance into `stopping`. A fresh read at 09:18
+confirmed `stopping`. No operator stop request was issued. The AWS waiter was
+ended because the instance was no longer progressing toward `available`. The
+run baseline and two pushed images are retained; there is no public ALB, ECS
+service, URL parameter, or LI-02 database setup. AWS gives no recovery ETA.
+
+### LI-02 Step 3 — separate the demo database from shared RDS — 2026-10-23 09:47:05 UTC
+
+Suraj verified the separate-database direction. Updated only the LI-02 test
+Terraform root, demo lifecycle driver, test task diagnostics, Step 12/runbook
+documentation, and status record. The app's existing `CLIP_DATABASE_URL`
+runtime contract remains unchanged. The demo now provisions a private,
+encrypted, single-AZ disposable PostgreSQL 18.6 `db.t4g.micro` in `ap-south-1b`
+and fixed tasks target it; stop owner-checks and removes its data, then deletes
+that RDS instance without a final snapshot. The script no longer starts,
+connects to, or stops shared RDS. The existing approved master-password
+parameter is only read and injected through Terraform's ephemeral,
+write-only input; it is not modified or printed. Local validation passed:
+Terraform fmt/validate (1.15.9), Python compilation, 27 database lifecycle
+wrapper cases, and `git diff --check`. No Terraform plan or AWS resource/data
+change was made. Existing images and the resumable `images-ready` baseline are
+retained pending review/commit and a fresh approved cloud plan.
 
 ## Pending integration ledger
 
