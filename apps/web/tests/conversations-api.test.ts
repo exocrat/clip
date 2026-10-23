@@ -120,6 +120,10 @@ describe('ConversationApi', () => {
   });
 
   it('rejects malformed public-key bundles and mismatched prekey inventory versions', async () => {
+    expect(await setup(null).api.readOwnKey()).toBeNull();
+    await expect(setup({}, 503).api.readOwnKey()).rejects.toMatchObject({ kind: 'http', status: 503 });
+    await expect(setup({}, 401).api.readOwnKey()).rejects.toMatchObject({ kind: 'http', status: 401 });
+    await expect(setup({ user_id: alice }).api.readOwnKey()).rejects.toMatchObject({ kind: 'invalid_response' });
     await expect(setup({ members: [{ user_id: alice }, { user_id: bob }] }).api.readMemberKeys(thread))
       .rejects.toMatchObject({ kind: 'invalid_response' });
     expect(await setup({ key_version: 1, ec_one_time_count: 0, kem_one_time_count: 0 }).api.readOwnInventory())
@@ -138,6 +142,10 @@ describe('ConversationApi', () => {
       kem_last_resort_prekey: { key_id: 2, public_key_base64: btoa('k'.repeat(1569)), signature_base64: btoa('s'.repeat(64)) },
     };
     const key = { ...material, user_id: bob, key_version: 1 };
+    const ownRead = setup(key);
+    expect(await ownRead.api.readOwnKey()).toEqual(key);
+    expect(ownRead.transport.mock.calls[0][0]).toBe('/me/conversation-key');
+    expect(ownRead.transport.mock.calls[0][1].method).toBe('GET');
     const own = setup({ user_id: alice, key_version: 1, protocol_id: material.protocol_id, protocol_version: material.protocol_version });
     await own.api.registerOwnKey({ ...material, operation_id: operation });
     expect(own.transport.mock.calls[0][0]).toBe('/me/conversation-key');

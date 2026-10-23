@@ -73,6 +73,97 @@ def prekey(key_id: int, *, kem: bool = False) -> PublicPreKeyMaterial:
     )
 
 
+def test_own_key_lookup_distinguishes_first_use_rotation_and_retired_state():
+    async def scenario(pool):
+        from test_thread_creation import seed_users_and_listing
+
+        alice, bob, _ = await seed_users_and_listing(pool)
+        keys = PostgresKeyDirectory(pool)
+        assert await keys.read_own_key(caller(alice)) is None
+        registered = await keys.register_own_key(caller(alice), public_bundle())
+        own = await keys.read_own_key(caller(alice))
+        assert own.user_id == alice and own.key_version == registered.key_version == 1
+        assert await keys.read_own_key(caller(bob)) is None
+        from dataclasses import replace
+
+        expired = replace(
+            caller(alice), valid_until=datetime.now(UTC) - timedelta(seconds=1)
+        )
+        with pytest.raises(PublicError) as error:
+            await keys.read_own_key(expired)
+        assert error.value.spec.status == 401
+        await keys.register_own_key(caller(alice), public_bundle(registration_id=2))
+        assert (await keys.read_own_key(caller(alice))).registration_id == 2
+        async with pool.connection() as connection:
+            await connection.execute(
+                "UPDATE conversations.public_key_versions SET retired_at = clock_timestamp() "
+                "WHERE user_id = %s AND retired_at IS NULL",
+                (alice,),
+            )
+        with pytest.raises(PublicError) as error:
+            await keys.read_own_key(caller(alice))
+        assert error.value.spec.status == 409
+
+        # Even missing bundle rows cannot erase durable registration evidence.
+        async with pool.connection() as connection:
+            await connection.execute(
+                "DELETE FROM conversations.public_key_versions WHERE user_id = %s",
+                (alice,),
+            )
+        with pytest.raises(PublicError) as error:
+            await keys.read_own_key(caller(alice))
+        assert error.value.spec.status == 409
+
+    run_scenario(scenario)
+
+
+def test_own_key_lookup_never_maps_corrupt_or_misbound_material_to_absence():
+    async def scenario(pool):
+        alice, bob, *_ = await seed_thread(pool)
+        keys = PostgresKeyDirectory(pool)
+        with pytest.raises(PublicError) as error:
+            await keys.read_own_key(caller(alice))
+        assert error.value.spec.status == 503
+        await keys.register_own_key(caller(alice), public_bundle())
+        own = await keys.read_own_key(caller(alice))
+        # Simulate corrupt imported storage, not an application registration path.
+        async with pool.connection() as connection:
+            await connection.execute(
+                "UPDATE conversations.public_key_versions SET retired_at = clock_timestamp() "
+                "WHERE user_id = %s AND retired_at IS NULL",
+                (bob,),
+            )
+            await connection.execute(
+                "INSERT INTO conversations.public_key_versions "
+                "(id, user_id, version, protocol_id, public_key_material) VALUES (%s, %s, 2, %s, %s)",
+                (uuid4(), bob, own.protocol_id, own.model_dump_json().encode()),
+            )
+        with pytest.raises(PublicError) as error:
+            await keys.read_own_key(caller(bob))
+        assert error.value.spec.status == 503
+
+    run_scenario(scenario)
+
+
+def test_own_key_lookup_is_coherent_during_registration():
+    async def scenario(pool):
+        alice, *_ = await seed_thread(pool)
+        keys = PostgresKeyDirectory(pool)
+        await keys.register_own_key(caller(alice), public_bundle())
+        rotation, *reads = await asyncio.gather(
+            keys.register_own_key(caller(alice), public_bundle()),
+            *(keys.read_own_key(caller(alice)) for _ in range(3)),
+        )
+        assert rotation.key_version == 3
+        assert all(
+            value is not None and value.user_id == alice and value.key_version in (2, 3)
+            for value in reads
+        )
+        assert (await keys.read_own_key(caller(alice))).key_version == 3
+
+    run_scenario(scenario)
+
+
 def test_inbox_membership_filters_unread_and_summary_privacy():
     async def scenario(pool):
         alice, bob, origin, thread, *_ = await seed_thread(pool)
@@ -437,6 +528,7 @@ def test_directory_rollback_refuses_to_erase_durable_state():
         "/conversations/{id}",
         "/conversations/{id}/keys",
         "/me/conversation-prekeys",
+        "/me/conversation-key",
     ],
 )
 def test_directory_http_reads_require_trusted_auth_and_a_database(path):
@@ -473,6 +565,51 @@ def test_directory_http_writes_have_no_client_identity_bypass():
                 path, json=body, headers={"X-User-ID": str(uuid4())}
             )
             assert response.status_code == 401
+
+
+def test_http_own_key_lookup_is_account_scoped_without_a_conversation():
+    async def scenario(pool):
+        from test_thread_creation import seed_users_and_listing
+
+        alice, bob, _ = await seed_users_and_listing(pool)
+        actor = [caller(alice)]
+        app = create_app(Settings(environment="test", database_dsn=TEST_DATABASE_DSN))
+        app.dependency_overrides[require_caller] = lambda: actor[0]
+        with TestClient(app) as client:
+            fresh = client.get("/me/conversation-key")
+            assert fresh.status_code == 200 and fresh.json() is None
+            assert fresh.headers["cache-control"] == "no-store"
+            assert (
+                client.put(
+                    "/me/conversation-key", json=public_bundle().model_dump(mode="json")
+                ).status_code
+                == 200
+            )
+            own = client.get("/me/conversation-key")
+            assert own.status_code == 200
+            assert own.json()["user_id"] == str(alice)
+            assert own.json()["key_version"] == 1
+            assert set(own.json()) == {
+                "user_id",
+                "key_version",
+                "protocol_id",
+                "protocol_version",
+                "registration_id",
+                "device_id",
+                "identity",
+                "ec_signed_prekey",
+                "kem_last_resort_prekey",
+            }
+            actor[0] = caller(bob)
+            assert (
+                client.get(
+                    f"/me/conversation-key?user_id={alice}",
+                    headers={"X-User-ID": str(alice)},
+                ).json()
+                is None
+            )
+
+    run_scenario(scenario)
 
 
 def test_http_endpoints_round_trip_through_real_postgres_with_test_identity():

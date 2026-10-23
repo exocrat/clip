@@ -257,7 +257,7 @@ def test_actual_api_schema_matches_generated_contract():
         for operation in path.values()
         if isinstance(operation, dict) and "operationId" in operation
     }
-    assert len(contract_operation_ids) == 54
+    assert len(contract_operation_ids) == 55
     assert asyncio.run(asgi_get(app, "/health")) == (200, {"status": "ok"})
     for path in ("/openapi.json", "/docs", "/redoc"):
         status, _ = asyncio.run(asgi_get(app, path))

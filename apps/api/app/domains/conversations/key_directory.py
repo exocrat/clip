@@ -139,6 +139,48 @@ class PostgresKeyDirectory:
             raise PublicError(ERRORS[404])
         return UUID(str(row[0]))
 
+    async def read_own_key(self, caller: CallerContext) -> KeyBundle | None:
+        """Distinguish first registration from lost browser keys without a thread.
+
+        Null means no public version has ever existed. A retired latest version,
+        malformed bundle or inconsistent owner/version must never look like a
+        fresh account: callers fail closed instead of replacing a lost identity.
+        The account lock gives a coherent read against concurrent registration.
+        """
+        async with self._transaction(caller) as connection:
+            await self._lock(connection, f"key-account:{caller.user_id}")
+            cursor = await connection.execute(
+                "SELECT version, protocol_id, public_key_material, retired_at "
+                "FROM conversations.public_key_versions WHERE user_id = %s "
+                "ORDER BY version DESC LIMIT 1",
+                (caller.user_id,),
+            )
+            row = await cursor.fetchone()
+            if row is None:
+                # Durable registration evidence also survives missing bundle rows.
+                # Missing storage must not become permission to replace an identity.
+                cursor = await connection.execute(
+                    "SELECT EXISTS (SELECT 1 FROM conversations.key_directory_operations "
+                    "WHERE user_id = %s AND request->>'kind' = 'register')",
+                    (caller.user_id,),
+                )
+                history = await cursor.fetchone()
+                if history is None:
+                    raise PublicError(ERRORS[503])
+                if history[0]:
+                    raise self._conflict()
+                return None
+            if row[3] is not None:
+                raise self._conflict()
+            bundle = self._decode(row[2])
+            if (
+                bundle.user_id != caller.user_id
+                or bundle.key_version != row[0]
+                or bundle.protocol_id != row[1]
+            ):
+                raise PublicError(ERRORS[503])
+            return bundle
+
     async def register_own_key(
         self, caller: CallerContext, payload: PublicKeyBundleRequest
     ) -> PublicKeyBundleView:

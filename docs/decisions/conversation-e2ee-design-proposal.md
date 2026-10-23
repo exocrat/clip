@@ -37,6 +37,18 @@ The official Signal `libsignal` repository is relevant as a protocol implementat
 8. **Team source and dependency review/go-no-go:** Before runtime adoption of `13.0.0`, the team reviews the exact source revision, complete production dependency tree, license/provenance, protocol profile, key/storage/trust design, and adversarial test plan, and records its conclusion. This is a team review; an independent or external reviewer is not required. If the team cannot resolve a security question, stop and revisit the candidate. The package release and v1 application payload format have been selected; this contract work does not claim the source/dependency review or runtime security tests are complete.
 9. **Verification plan:** After team source/dependency review, pin the selected package release and reviewed dependency tree in the lockfile. Add deterministic two-client tests for initial exchange, both directions, restart persistence, replay/duplicate/out-of-order behavior, altered ciphertext/context, wrong peer/key, key replacement/re-verification, lost/evicted local state, and server-side ciphertext-only storage/logging. Use synthetic test identities/keys only. Test browser persistence/clearing, registration-time warning, peer key-change UI, dependency/CSP policy, and failure UI; no cloud measurement in this step.
 
+## Own public identity lookup — approved 2026-10-24
+
+Rahul approved `GET /me/conversation-key` so SDK startup can check the signed-in
+account's public identity independently of any conversation. It returns the
+current public `KeyBundle`, or null only if the account has never registered
+a public version. Retired-only, inconsistent, incompatible or unavailable
+storage is an error and cannot trigger first-key creation. The read uses the
+same account lock as registration and is not cached. This resolves the own-key
+lookup contract gap while preserving unrecoverable key loss and account-directory
+trust. Cookie/CSRF/authentication transport remains Identity-owned; no new
+private-key recovery path is introduced.
+
 ## Remaining review and implementation checks
 
 The user has approved the direction and format choices below. The remaining work is team source/dependency review and implementation verification, not another product-choice vote.

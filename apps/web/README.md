@@ -70,5 +70,7 @@ Identity must supply the authenticated request function, including session and
 CSRF behavior. The adapter has no default transport or test-identity fallback.
 It is not yet mounted by the scaffold pages. Real auth, SDK relay/startup,
 local history persistence and two-browser integration remain pending. In
-particular, safe first-use/lost-key startup needs an own-public-key read operation;
-that contract addition awaits approval and is not implemented by this adapter.
+particular, `readOwnKey()` now maps the approved authenticated
+`GET /me/conversation-key`: only an explicit valid null means never registered.
+Errors or malformed bundles never become a missing key. The SDK relay must
+connect this operation to its own-identity lookup before startup is complete.

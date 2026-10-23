@@ -20,6 +20,7 @@ from contracts.source.types import (
     ListingThreadParticipantCheck,
     MemberPreKeyBundle,
     MemberKeyBundles,
+    KeyBundle,
     MessageRequest,
     NotificationAttemptResult,
     NotificationClaimRequest,
@@ -110,6 +111,12 @@ HTTP_OPERATIONS = (
         "operation_id": "conversations_read_member_keys",
         "path_parameters": {"conversation_id": ConversationId},
         "response": MemberKeyBundles,
+    },
+    {
+        "method": "GET",
+        "path": "/me/conversation-key",
+        "operation_id": "conversations_read_own_key",
+        "response": KeyBundle | None,
     },
     {
         "method": "PUT",

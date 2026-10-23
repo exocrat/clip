@@ -17,6 +17,7 @@ from app.contracts.domain_types import (
     ConversationSummary,
     PageResult,
     MemberKeyBundles,
+    KeyBundle,
     MemberPreKeyBundle,
     OwnPreKeyInventory,
     PreKeyBundleRequest,
@@ -100,6 +101,21 @@ async def read_state(
 ) -> ReadState:
     """Return only the authenticated member's monotonic read watermark."""
     return await _operations(request).read_state(caller, conversation_id)
+
+
+@router.get(
+    "/me/conversation-key",
+    response_model=KeyBundle | None,
+    operation_id="conversations_read_own_key",
+)
+async def read_own_key(
+    request: Request,
+    response: Response,
+    caller: CallerContext = Depends(require_caller),
+) -> KeyBundle | None:
+    """Read only the authenticated account's current public bundle, never private keys."""
+    response.headers["Cache-Control"] = "no-store"
+    return await PostgresKeyDirectory(_pool(request)).read_own_key(caller)
 
 
 @router.put(

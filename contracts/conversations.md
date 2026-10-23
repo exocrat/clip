@@ -160,6 +160,17 @@ The reviewed browser security policy still applies: no third-party runtime scrip
 conversation origin, strict CSP and safe rendering, and review of every bundled
 runtime dependency.
 
+`GET /me/conversation-key` returns only the authenticated caller's current
+`KeyBundle`, without requiring a conversation or accepting a target user ID.
+It returns HTTP 200 with JSON null only when no public version has ever been
+registered for that account. Existing history without a valid active latest
+bundle is an error, never null. Malformed/misbound stored material and storage
+failures fail closed. The read serializes with own-key registration, does not
+advance participant activity, and returns `Cache-Control: no-store`. This allows
+the browser to distinguish first registration from lost local key state; it
+does not retrieve or restore private keys. Normal unauthenticated/expired
+session behavior still applies. Rahul approved this addition on 2026-10-24.
+
 Conversations exposes own-key registration and prekey publication only for the
 authenticated account, plus member-scoped public-key lookup and a separate
 prekey-bundle operation. The server allocates a strictly increasing key

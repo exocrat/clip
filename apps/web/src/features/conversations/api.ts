@@ -3,6 +3,7 @@ import type {
   ConversationSummary,
   ConversationsListMineData,
   EntryPage,
+  KeyBundle,
   MemberKeyBundles,
   MemberPreKeyBundle,
   MessageRequest,
@@ -208,6 +209,12 @@ export class ConversationApi {
   readMemberKeys(conversationId: string): Promise<MemberKeyBundles> {
     return this.request(`${this.threadPath(conversationId)}/keys`, 'GET',
       (value) => record(value) && Array.isArray(value.members) && value.members.length >= 2 && value.members.every(keyBundle));
+  }
+
+  /** Null is an explicit never-registered account, never a fallback for HTTP failure. */
+  readOwnKey(): Promise<KeyBundle | null> {
+    return this.request('/me/conversation-key', 'GET',
+      (value) => value === null || keyBundle(value));
   }
 
   registerOwnKey(payload: PublicKeyBundleRequest): Promise<PublicKeyBundleView> {

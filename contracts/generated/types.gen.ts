@@ -4301,6 +4301,65 @@ export type IdentitySetOwnContactResponses = {
 
 export type IdentitySetOwnContactResponse = IdentitySetOwnContactResponses[keyof IdentitySetOwnContactResponses];
 
+export type ConversationsReadOwnKeyData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/me/conversation-key';
+};
+
+export type ConversationsReadOwnKeyErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorEnvelope;
+    /**
+     * Unauthorized
+     */
+    401: ErrorEnvelope;
+    /**
+     * Forbidden
+     */
+    403: ErrorEnvelope;
+    /**
+     * Not Found
+     */
+    404: ErrorEnvelope;
+    /**
+     * Conflict
+     */
+    409: ErrorEnvelope;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorEnvelope;
+    /**
+     * Too Many Requests
+     */
+    429: ErrorEnvelope;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorEnvelope;
+    /**
+     * Service Unavailable
+     */
+    503: ErrorEnvelope;
+};
+
+export type ConversationsReadOwnKeyError = ConversationsReadOwnKeyErrors[keyof ConversationsReadOwnKeyErrors];
+
+export type ConversationsReadOwnKeyResponses = {
+    /**
+     * Response Conversations Read Own Key
+     *
+     * Successful Response
+     */
+    200: KeyBundle | null;
+};
+
+export type ConversationsReadOwnKeyResponse = ConversationsReadOwnKeyResponses[keyof ConversationsReadOwnKeyResponses];
+
 export type ConversationsRegisterOwnKeyData = {
     body: PublicKeyBundleRequest;
     path?: never;
