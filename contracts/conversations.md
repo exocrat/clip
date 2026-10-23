@@ -119,6 +119,26 @@ selection is the design boundary; the isolated web client crypto adapter now
 exists, but the real CLIP relay/key-directory integration, durable decrypted-
 history store and browser UI remain unimplemented.
 
+The client checks local IndexedDB identity state before opening the protocol
+client. First-time key creation requires an explicit acknowledgement of the
+permanent-history-loss warning. If local identity state is absent while the
+account directory still publishes an identity for that account, startup fails
+closed: the client does not silently create a replacement key, and the server
+cannot restore the missing private key. Directory lookup errors also fail
+closed. A later product flow may offer deliberate account-key replacement, but
+it must not imply that replacement restores prior history.
+
+OpenE2EE's IndexedDB contact-identity pin is the durable record of an accepted
+peer identity; CLIP does not treat a numeric public-bundle version change by
+itself as an identity change. On an SDK untrusted-identity result, the client
+blocks sending and exposes a key-change state. Sending resumes only after the
+user deliberately accepts the current directory identity, with the account-
+directory trust limitation shown, and a new session is established. The client
+re-reads the current directory identity at acceptance time and rejects stale
+or mismatching bundles. It does not accept the SDK exception's identity value
+as the new key. The feature-level warning strings are defined for the later UI
+step; this implementation does not yet display dialogs or registration UI.
+
 The application message payload is versioned independently of the server
 envelope. Its UTF-8 JSON v1 object has exactly these fields:
 `{version:1,conversation_id,kind:"message",sender_user_id,recipient_user_id,`

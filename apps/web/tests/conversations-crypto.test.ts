@@ -2,11 +2,11 @@ import {
   BraidPolicy,
   PostQuantumPolicy,
   ProtocolAddress,
+  UntrustedIdentityError,
   createSignalProtocolClient,
   type Ciphertext,
   type PreKeyBundle,
   type SendResult,
-  type SignalProtocolClient,
 } from '@open-e2ee/signal-protocol-sdk';
 import { inMemoryStore } from '@open-e2ee/signal-protocol-sdk/local/store/memory';
 import {
@@ -23,6 +23,10 @@ import {
   CLIP_PROTOCOL_VERSION,
   ConversationCrypto,
   ConversationCryptoError,
+  ConversationKeyChangeRequiredError,
+  ConversationKeyStateLostError,
+  KeyRegistrationAcknowledgementRequiredError,
+  assertConversationKeyState,
   decodeConversationMessage,
   encodeConversationMessage,
   toOpenE2eePreKeyBundle,
@@ -41,6 +45,46 @@ const messageContext = {
   recipient_key_version: 7,
   client_timestamp_ms: 1_797_000_000_000,
   text: 'encrypted hello',
+};
+
+const bytes = (length: number, fill = '\x01') => btoa(fill.repeat(length));
+const memberBundle: MemberPreKeyBundle = {
+  registration_id: 44,
+  device_id: 1,
+  key_bundle: {
+    user_id: 'bob',
+    protocol_id: CLIP_PROTOCOL_ID,
+    protocol_version: CLIP_PROTOCOL_VERSION,
+    key_version: 7,
+    registration_id: 44,
+    device_id: 1,
+    identity: {
+      version: 1,
+      x25519_public_key_base64: bytes(32),
+      ed25519_public_key_base64: bytes(32),
+    },
+    ec_signed_prekey: {
+      key_id: 9,
+      public_key_base64: bytes(32),
+      signature_base64: bytes(64),
+    },
+    kem_last_resort_prekey: {
+      key_id: 10,
+      public_key_base64: bytes(1569),
+      signature_base64: bytes(64),
+    },
+  },
+  ec_one_time_prekey: {
+    key_type: 'ecPreKey',
+    key_id: 11,
+    public_key_base64: bytes(32),
+  },
+  kem_one_time_prekey: {
+    key_type: 'kemOneTimePreKey',
+    key_id: 12,
+    public_key_base64: bytes(1569),
+    signature_base64: bytes(64),
+  },
 };
 
 describe('conversation message context', () => {
@@ -88,46 +132,6 @@ describe('conversation message context', () => {
 });
 
 describe('authenticated participant key bundle', () => {
-  const bytes = (length: number) => btoa('\x01'.repeat(length));
-  const memberBundle: MemberPreKeyBundle = {
-    registration_id: 44,
-    device_id: 1,
-    key_bundle: {
-      user_id: 'bob',
-      protocol_id: CLIP_PROTOCOL_ID,
-      protocol_version: CLIP_PROTOCOL_VERSION,
-      key_version: 7,
-      registration_id: 44,
-      device_id: 1,
-      identity: {
-        version: 1,
-        x25519_public_key_base64: bytes(32),
-        ed25519_public_key_base64: bytes(32),
-      },
-      ec_signed_prekey: {
-        key_id: 9,
-        public_key_base64: bytes(32),
-        signature_base64: bytes(64),
-      },
-      kem_last_resort_prekey: {
-        key_id: 10,
-        public_key_base64: bytes(1569),
-        signature_base64: bytes(64),
-      },
-    },
-    ec_one_time_prekey: {
-      key_type: 'ecPreKey',
-      key_id: 11,
-      public_key_base64: bytes(32),
-    },
-    kem_one_time_prekey: {
-      key_type: 'kemOneTimePreKey',
-      key_id: 12,
-      public_key_base64: bytes(1569),
-      signature_base64: bytes(64),
-    },
-  };
-
   it('maps a member-scoped directory bundle to exactly one SDK KEM prekey choice', () => {
     const sdkBundle = toOpenE2eePreKeyBundle(memberBundle, {
       userId: 'bob',
@@ -160,6 +164,123 @@ describe('authenticated participant key bundle', () => {
 });
 
 describe('OpenE2EE adapter', () => {
+  it('requires acknowledgement before first key creation and refuses silent replacement after loss', () => {
+    expect(() => assertConversationKeyState('alice', true, true)).not.toThrow();
+    expect(() => assertConversationKeyState('alice', false, false)).toThrow(
+      KeyRegistrationAcknowledgementRequiredError,
+    );
+    expect(() => assertConversationKeyState('alice', false, false, true)).not.toThrow();
+    expect(() => assertConversationKeyState('alice', false, true, true)).toThrow(
+      ConversationKeyStateLostError,
+    );
+  });
+
+  it('blocks sending until a participant session is established for the current bundle version', async () => {
+    const send = vi.fn(async () => ({
+      clientMessageId: 'operation-1',
+      messageId: 'message-1',
+      timestamp: messageContext.client_timestamp_ms,
+      clientTimestamp: messageContext.client_timestamp_ms,
+      recipientDeviceCount: 1,
+    } satisfies SendResult));
+    const client = {
+      userId: 'alice',
+      establishSession: vi.fn(async () => undefined),
+      acceptIdentityRotation: vi.fn(),
+      send,
+      processIncomingEnvelope: vi.fn(),
+      completeReceive: vi.fn(),
+    } as unknown as ConstructorParameters<typeof ConversationCrypto>[0];
+    const crypto = new ConversationCrypto(client, { register: vi.fn() });
+
+    await expect(crypto.sendText({
+      conversation_id: messageContext.conversation_id,
+      operation_id: 'operation-1',
+      recipient_user_id: 'bob',
+      sender_key_version: 3,
+      recipient_key_version: 7,
+      client_timestamp_ms: messageContext.client_timestamp_ms,
+      text: messageContext.text,
+    })).rejects.toThrow(ConversationCryptoError);
+    expect(send).not.toHaveBeenCalled();
+    await crypto.establishParticipantSession(memberBundle, { userId: 'bob', keyVersion: 7 });
+    await expect(crypto.sendText({
+      conversation_id: messageContext.conversation_id,
+      operation_id: 'operation-1',
+      recipient_user_id: 'bob',
+      sender_key_version: 3,
+      recipient_key_version: 7,
+      client_timestamp_ms: messageContext.client_timestamp_ms,
+      text: messageContext.text,
+    })).resolves.toMatchObject({ clientMessageId: 'operation-1' });
+    expect(send).toHaveBeenCalledOnce();
+  });
+
+  it('blocks a changed identity until the current directory identity is deliberately accepted', async () => {
+    const changedMember: MemberPreKeyBundle = {
+      ...memberBundle,
+      key_bundle: {
+        ...memberBundle.key_bundle,
+        key_version: 8,
+        identity: {
+          ...memberBundle.key_bundle.identity,
+          x25519_public_key_base64: bytes(32, '\x02'),
+        },
+      },
+    };
+    const candidate = toOpenE2eePreKeyBundle(changedMember, { userId: 'bob', keyVersion: 8 });
+    const establishSession = vi.fn()
+      .mockRejectedValueOnce(new UntrustedIdentityError(ProtocolAddress.create('bob', 1), candidate.identity))
+      .mockResolvedValue(undefined);
+    const send = vi.fn(async () => ({
+      clientMessageId: 'operation-1',
+      messageId: 'message-1',
+      timestamp: messageContext.client_timestamp_ms,
+      clientTimestamp: messageContext.client_timestamp_ms,
+      recipientDeviceCount: 1,
+    } satisfies SendResult));
+    const acceptIdentityRotation = vi.fn(async () => undefined);
+    const relay = {
+      getIdentityKey: vi.fn()
+        .mockResolvedValueOnce({
+          ...candidate.identity,
+          x25519PublicKey: bytes(32, '\x03'),
+        } as typeof candidate.identity)
+        .mockResolvedValue(candidate.identity),
+    };
+    const client = {
+      userId: 'alice',
+      establishSession,
+      acceptIdentityRotation,
+      send,
+      processIncomingEnvelope: vi.fn(),
+      completeReceive: vi.fn(),
+    } as unknown as ConstructorParameters<typeof ConversationCrypto>[0];
+    const crypto = new ConversationCrypto(client, { register: vi.fn() }, relay);
+
+    await expect(crypto.establishParticipantSession(changedMember, { userId: 'bob', keyVersion: 8 }))
+      .rejects.toBeInstanceOf(ConversationKeyChangeRequiredError);
+    await expect(crypto.sendText({
+      conversation_id: messageContext.conversation_id,
+      operation_id: 'operation-1',
+      recipient_user_id: 'bob',
+      sender_key_version: 3,
+      recipient_key_version: 8,
+      client_timestamp_ms: messageContext.client_timestamp_ms,
+      text: messageContext.text,
+    })).rejects.toThrow(ConversationCryptoError);
+    expect(send).not.toHaveBeenCalled();
+
+    await expect(crypto.acceptDirectoryKeyChange(changedMember, { userId: 'bob', keyVersion: 8 }))
+      .rejects.toBeInstanceOf(ConversationKeyChangeRequiredError);
+    expect(acceptIdentityRotation).not.toHaveBeenCalled();
+    await crypto.acceptDirectoryKeyChange(changedMember, { userId: 'bob', keyVersion: 8 });
+    expect(relay.getIdentityKey).toHaveBeenCalledTimes(2);
+    expect(relay.getIdentityKey).toHaveBeenCalledWith('bob');
+    expect(acceptIdentityRotation).toHaveBeenCalledWith('bob', candidate.identity);
+    expect(establishSession).toHaveBeenCalledTimes(2);
+  });
+
   it('uses the SDK send API with stable CLIP operation ID and timestamp before relay routing', async () => {
     const routeRegister = vi.fn<(route: ConversationEnvelopeRoute) => void>();
     const send = vi.fn(async (_recipient: string, _content: string, _options?: unknown) => ({
@@ -171,11 +292,14 @@ describe('OpenE2EE adapter', () => {
     } satisfies SendResult));
     const client = {
       userId: 'alice',
+      establishSession: vi.fn(async () => undefined),
+      acceptIdentityRotation: vi.fn(),
       send,
       processIncomingEnvelope: vi.fn(),
       completeReceive: vi.fn(),
-    } as unknown as SignalProtocolClient;
+    } as unknown as ConstructorParameters<typeof ConversationCrypto>[0];
     const crypto = new ConversationCrypto(client, { register: routeRegister });
+    await crypto.establishParticipantSession(memberBundle, { userId: 'bob', keyVersion: 7 });
 
     await crypto.sendText({
       conversation_id: messageContext.conversation_id,
@@ -225,7 +349,7 @@ describe('OpenE2EE adapter', () => {
       send: vi.fn(),
       processIncomingEnvelope,
       completeReceive: vi.fn(),
-    } as unknown as SignalProtocolClient;
+    } as unknown as ConstructorParameters<typeof ConversationCrypto>[0];
     const crypto = new ConversationCrypto(client, { register: vi.fn() });
 
     await expect(
@@ -263,7 +387,7 @@ describe('OpenE2EE adapter', () => {
       send: vi.fn(),
       processIncomingEnvelope,
       completeReceive: vi.fn(),
-    } as unknown as SignalProtocolClient;
+    } as unknown as ConstructorParameters<typeof ConversationCrypto>[0];
     const crypto = new ConversationCrypto(client, { register: vi.fn() });
     const history: ConversationHistoryStore = { put: vi.fn() };
     const context = {

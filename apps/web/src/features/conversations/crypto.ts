@@ -12,6 +12,8 @@ import {
   type PublicKey,
   type Signature,
 } from '@open-e2ee/signal-protocol-sdk';
+import { isUntrustedIdentityError } from '@open-e2ee/signal-protocol-sdk';
+import { compositeIdentitiesEqual } from '@open-e2ee/signal-protocol-sdk/keys';
 import { indexedDbStore } from '@open-e2ee/signal-protocol-sdk/local/store/web';
 import type {
   CipherEnvelope,
@@ -94,14 +96,69 @@ export interface ConversationHistoryStore {
 
 type ProtocolClient = Pick<
   SignalProtocolClient,
-  'userId' | 'establishSession' | 'send' | 'processIncomingEnvelope' | 'completeReceive'
->;
+  | 'userId'
+  | 'establishSession'
+  | 'send'
+  | 'processIncomingEnvelope'
+  | 'completeReceive'
+> & {
+  acceptIdentityRotation(
+    userId: string,
+    identity: PreKeyBundle['identity'],
+  ): Promise<unknown>;
+};
+
+type IdentityDirectory = Pick<SignalProtocolRelayServer, 'getIdentityKey'>;
+
+export const KEY_REGISTRATION_WARNING =
+  'CLIP cannot restore encryption keys. If this browser data is lost or cleared, existing chats may become permanently unreadable. A new key will not restore them.';
+export const PEER_KEY_CHANGE_WARNING =
+  'Accepting this key trusts CLIP’s account directory; it does not verify that the same person controls the account.';
 
 export class ConversationCryptoError extends Error {
   constructor(message: string) {
     super(message);
     this.name = 'ConversationCryptoError';
   }
+}
+
+/** A newly published peer identity needs the user's deliberate acceptance. */
+export class ConversationKeyChangeRequiredError extends ConversationCryptoError {
+  constructor(
+    readonly userId: string,
+    readonly keyVersion: number,
+  ) {
+    super('Participant encryption identity changed; sending is blocked pending acceptance');
+    this.name = 'ConversationKeyChangeRequiredError';
+  }
+}
+
+/** The browser lost local protocol state while the account still has a registered key. */
+export class ConversationKeyStateLostError extends ConversationCryptoError {
+  constructor(readonly userId: string) {
+    super('This browser no longer has the account encryption key; the server cannot restore it');
+    this.name = 'ConversationKeyStateLostError';
+  }
+}
+
+/** First-time registration must be preceded by an explicit history-loss acknowledgement. */
+export class KeyRegistrationAcknowledgementRequiredError extends ConversationCryptoError {
+  constructor() {
+    super('Acknowledge the permanent-history-loss warning before creating an encryption key');
+    this.name = 'KeyRegistrationAcknowledgementRequiredError';
+  }
+}
+
+/** Guard automatic key creation against silent replacement after browser data loss. */
+export function assertConversationKeyState(
+  userId: string,
+  hasLocalIdentity: boolean,
+  hasDirectoryIdentity: boolean,
+  acknowledgedHistoryLossRisk = false,
+): void {
+  if (hasLocalIdentity) return;
+  if (hasDirectoryIdentity) throw new ConversationKeyStateLostError(userId);
+  if (!acknowledgedHistoryLossRisk) throw new KeyRegistrationAcknowledgementRequiredError();
 }
 
 export function encodeConversationMessage(
@@ -282,9 +339,16 @@ export function toOpenE2eePreKeyBundle(
 }
 
 export class ConversationCrypto {
+  private readonly pendingIdentityChanges = new Map<
+    string,
+    { identity: PreKeyBundle['identity']; keyVersion: number }
+  >();
+  private readonly establishedPeerVersions = new Map<string, number>();
+
   constructor(
     private readonly client: ProtocolClient,
     private readonly routes: ConversationRouteRegistry,
+    private readonly identityDirectory?: IdentityDirectory,
   ) {}
 
   /** Establish only from the authenticated Conversations key-directory response. */
@@ -293,12 +357,63 @@ export class ConversationCrypto {
     expected: { userId: string; keyVersion: number },
   ): Promise<void> {
     const bundle = toOpenE2eePreKeyBundle(member, expected);
+    try {
+      await this.client.establishSession(ProtocolAddress.create(expected.userId, 1), bundle);
+    } catch (error) {
+      if (!isUntrustedIdentityError(error)) throw error;
+      if (error.untrustedAddress.userId !== expected.userId || error.untrustedAddress.deviceId !== 1) {
+        throw error;
+      }
+      this.pendingIdentityChanges.set(expected.userId, {
+        identity: bundle.identity,
+        keyVersion: expected.keyVersion,
+      });
+      this.establishedPeerVersions.delete(expected.userId);
+      throw new ConversationKeyChangeRequiredError(expected.userId, expected.keyVersion);
+    }
+    this.pendingIdentityChanges.delete(expected.userId);
+    this.establishedPeerVersions.set(expected.userId, expected.keyVersion);
+  }
+
+  /**
+   * Accept only the current identity from the authenticated directory, then
+   * replace the SDK's pinned identity and establish a fresh session.
+   */
+  async acceptDirectoryKeyChange(
+    member: MemberPreKeyBundle,
+    expected: { userId: string; keyVersion: number },
+  ): Promise<void> {
+    const pending = this.pendingIdentityChanges.get(expected.userId);
+    const bundle = toOpenE2eePreKeyBundle(member, expected);
+    if (
+      !pending ||
+      pending.keyVersion !== expected.keyVersion ||
+      !compositeIdentitiesEqual(pending.identity, bundle.identity)
+    ) {
+      throw new ConversationKeyChangeRequiredError(expected.userId, expected.keyVersion);
+    }
+    if (!this.identityDirectory) {
+      throw new ConversationCryptoError('Current account-directory identity cannot be verified');
+    }
+    const currentIdentity = await this.identityDirectory.getIdentityKey(expected.userId);
+    if (!currentIdentity || !compositeIdentitiesEqual(currentIdentity, bundle.identity)) {
+      throw new ConversationKeyChangeRequiredError(expected.userId, expected.keyVersion);
+    }
+    await this.client.acceptIdentityRotation(expected.userId, currentIdentity);
+    this.pendingIdentityChanges.delete(expected.userId);
     await this.client.establishSession(ProtocolAddress.create(expected.userId, 1), bundle);
+    this.establishedPeerVersions.set(expected.userId, expected.keyVersion);
   }
 
   async sendText(request: SendConversationMessage): Promise<SendResult> {
     if (!request.text.trim()) {
       throw new ConversationCryptoError('Message text cannot be empty');
+    }
+    if (
+      this.pendingIdentityChanges.has(request.recipient_user_id) ||
+      this.establishedPeerVersions.get(request.recipient_user_id) !== request.recipient_key_version
+    ) {
+      throw new ConversationCryptoError('Establish a trusted participant session before sending');
     }
     const senderId = this.client.userId;
     const route: ConversationEnvelopeRoute = {
@@ -409,8 +524,19 @@ export async function openIndexedDbConversationCrypto(
   userId: string,
   relay: SignalProtocolRelayServer,
   routes: ConversationRouteRegistry,
+  options: { acknowledgeUnrecoverableHistoryRisk?: true } = {},
 ): Promise<ConversationCrypto> {
   const storage = await indexedDbStore();
+  const hasLocalIdentity = await storage.hasIdentityKey();
+  if (!hasLocalIdentity) {
+    const accountIdentity = await relay.getIdentityKey(userId);
+    assertConversationKeyState(
+      userId,
+      false,
+      accountIdentity !== null,
+      options.acknowledgeUnrecoverableHistoryRisk === true,
+    );
+  }
   const client = await createSignalProtocolClient({
     identity: { userId },
     adapters: { storage, relay },
@@ -419,5 +545,5 @@ export async function openIndexedDbConversationCrypto(
       braid: BraidPolicy.Required,
     },
   });
-  return new ConversationCrypto(client, routes);
+  return new ConversationCrypto(client, routes, relay);
 }
