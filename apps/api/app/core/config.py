@@ -122,8 +122,7 @@ class Settings(BaseSettings):
                 or self.image_bucket != ISOLATED_LISTINGS_TEST_BUCKET
                 or self.image_region != ISOLATED_LISTINGS_TEST_REGION
                 or self.image_key_prefix is None
-                or self.isolated_listings_max_count
-                != ISOLATED_LISTINGS_TEST_MAX_COUNT
+                or self.isolated_listings_max_count != ISOLATED_LISTINGS_TEST_MAX_COUNT
                 or not re.fullmatch(
                     r"listings/test/[a-z0-9][a-z0-9-]{2,39}",
                     self.image_key_prefix or "",
@@ -137,7 +136,9 @@ class Settings(BaseSettings):
                 "The isolated Listings limit requires the isolated test caller"
             )
         if self.serve_web_app and not self.isolated_listings_test_caller:
-            raise ValueError("The ECS web app mode requires the isolated Listings test caller")
+            raise ValueError(
+                "The ECS web app mode requires the isolated Listings test caller"
+            )
         return self
 
 

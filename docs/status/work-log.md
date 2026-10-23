@@ -48,8 +48,8 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PRE-00 | Integration owner | done | Foundation gate audit accepted; DL-00 is unblocked | performed | verified/accepted by user | Reviewed handoff PR #8 merged to `main` at `2cd83e7`; hosted Foundation quality gates passed for head `18c966e` against base `68d9da9` (run `39323851584`); clean-checkout evidence at `0747be6`; see [PD-19 handoff](foundation-handoff.md) | None. PR #8 has no GitHub review event; independent-review completion remains user-reported without a separate artifact. | 2026-10-19 21:20:55 UTC |
 | DL-00 | Shared-core/contract coordinator; all domains review | in progress | Steps 1–13 local work complete; independent review and exact merge gate next | Steps 1–13 performed | User reports affected domain owners reviewed and approved the contract documents; four declarations derive from those reviewed signatures | `task/pre-00-dl-00-foundation`; 50 HTTP operations, 19 internal callables, eight generated artifacts; `make check` passed (421 Python, 63 data, 16 web tests; Black 71 files; boundary/contract/mypy/web/database/safety/secrets checks) | Independent peer review and exact-revision merge remain; cleanup implementation still needs its separate approval; real providers/integrations and crypto/worker implementation remain downstream | 2026-10-20 05:17:32 UTC |
 | ID-01 | A | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | ID-READY, LI-01, LI-02, SE-CORE, SE-02, CN-CORE, CN-02 | — |
-| LI-01 | B | in progress | Step 11 LI-CORE and remaining Step 7/9/10 gates. | Steps 1–4/6, isolated Step 5 increments, Steps 8–10 checks, and available Step 9 scenarios implemented; Step 7 partial, current create/edit/detail/My Listings checkpoint verified in isolated mode. | Suraj verified the multi-image edit/gallery checkpoint, approved seller-only selected-buyer visibility, and verified Step 10. Phone-device observation and remaining Step 7 checks are not claimed. | `domain/listings` / `e398c96`; 61 focused Listings tests passed, 1 direct database test skipped outside wrapper; disposable PostgreSQL workflow passed; Black and `git diff --check` pass. | Step 11–13; new-thread rejection after retirement requires the unimplemented Conversations-owned thread-start path; affected-consumer/schema review of nullable pickup, native schema check, real Identity/image/chat integrations, and five pre-existing backend boundary findings remain. | 2026-10-21 15:35:55 UTC |
-| LI-02 | B | in progress | Step 3 can resume using a LI-02-owned disposable RDS; local change review and exact cloud-plan approval remain before any AWS mutation. | Steps 1–11 verified; Step 12 public browser and phone photo upload verified; Step 1.5 availability controls/filter verified; Step 2 verified. Step 3 understanding verified; previous images pushed, but no LI-02 route/app/database setup created. | Suraj verified the separate-database approach: keep the app's existing `CLIP_DATABASE_URL` contract and all shared RDS data untouched; use only the isolated test root to create/delete a PostgreSQL 18.6 database instance. | `domain/listings` at `038bb28`; two run-specific ECR images remain in baseline `li02-c2090c6c3294`. The local harness now points fixed database tasks to a separate private, encrypted `db.t4g.micro` in `ap-south-1b` and refuses to continue an old run if its database/infrastructure may already have reached shared RDS. PostgreSQL is pinned to 18.6 to match the established foundation. Terraform 1.15.9 validate, Terraform fmt check, Python compilation, 27 database lifecycle wrapper cases, and `git diff --check` passed. | No AWS changes were made. Shared RDS remains outside the new harness lifecycle; the existing run is still at `images-ready` with no URL parameter, ALB, ECS service, or LI-02 database. Recheck live state and exact cost before preparing a plan; commit the reviewed harness change before relying on it for a reproducible deployment. | 2026-10-23 09:47:05 UTC |
+| LI-01 | B | in progress | Finish the remaining Step 7 browser states and current-head Step 11 checks/reviews; prepare a progress PR without claiming LI-CORE. Steps 12–13 remain integration-gated. | Steps 1–6 and 8–10 implemented and locally checked; Step 7 partial (create/detail/edit/My Listings/gallery). | Suraj verified the multi-image edit/gallery checkpoint, seller-only selected-buyer visibility, and Step 10. No LI-01 phone-device result is claimed. | domain/listings at 6ffbe0b; focused Listings suite: 61 passed, one database-only test skipped outside the wrapper; disposable PostgreSQL workflow passed; current worktree `make check` passed 2026-10-23 (573 Python, 63 data, 42 web tests; remaining contract, type, boundary, database, safety, formatting, lint, and build checks passed). | LI-CORE not accepted. Remaining Step 7 states; Step 11 query-plan, current aggregate, and affected-owner review; native schema check; five pre-existing backend boundary findings; real Identity, Conversations, storage, and Search integration; Steps 12–13. | 2026-10-23 10:38:31 UTC |
+| LI-02 | B | in progress | Defer Step 3 until shared ECS use is over and its saved capacity baseline is restored; then prepare a fresh plan and review its exact hash and cost. | Steps 1–11 and 1.5 verified. The prior Step 12 public ECS browser flow and phone photo upload worked. The revised dedicated-RDS harness is committed; its prepared plan was discarded and never applied. | Suraj verified Step 11, Step 1.5, and the prior browser/mobile flow. | domain/listings at 6ffbe0b; Terraform 1.15.9 fmt/validate, Python compilation, 27 lifecycle cases, CLI help, and diff check passed before commit; current worktree `make check` passed 2026-10-23 (573 Python, 63 data, 42 web tests; remaining contract, type, boundary, database, safety, formatting, lint, and build checks passed). Plan 30112961a2479c760dfa32f91b0b57013a2a4079924abc3a5fd85dee06d6b6fd is invalid for apply. | Baseline li02-c2090c6c3294 remains images-ready. No disposable LI-02 RDS, ALB, service, or URL parameter was created by the revised plan. Prior preflight: account 335523638354, ap-south-1, MTD USD 6.14, forecast USD 21.42, USD 200 monthly cap. The previous shared-RDS test database was not queried and may remain; the new harness never touches shared RDS. Wait for an idle shared ECS baseline before restarting. | 2026-10-23 10:38:31 UTC |
 | SE-01 | C | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | SE-CORE, LI-01, LI-02, DATA-READY | — |
 | SE-02 | C | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | SE-CORE, ID-READY, LI-CORE | — |
 | CN-01 | D | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | Isolated development: PRE-00, then DL-00 and a reviewed contract/stub. Later real gates: CN-CORE; SE-02's real request interfaces for request-response integration; CN-03's producer path for final NFR-05 acceptance. | — |
@@ -82,20 +82,27 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 
 ## Listings preparation checkpoint
 
-Suraj (B) selected one `domain/listings` branch to hold the accepted contract
-corrections and LI-01 work together. The contract corrections are from
-`44cd8ff`, now this branch's base. Suraj directed that the recorded
-DL-00/contract review status is sufficient to begin LI-01; this records the
-decision to proceed and does not add reviewer evidence. LI-01 is active on
-`domain/listings`; LI-02 remains not started and no readiness milestone is
-accepted.
+Suraj (B) owns LI-01 and LI-02 on branch domain/listings, currently at
+6ffbe0b based on main 44cd8ff. No PR is open. Current checkpoint:
 
-Current checkpoint: `domain/listings` contains the accepted contract changes,
-verified LI-01 Steps 1–4, and the partial Step 5 implementation and evidence.
-Suraj confirmed completing the Firefox Responsive Design Mode layout
-inspection. On 2026-10-22, Suraj clarified LI-02's human mobile website check
-belongs at Step 12 after deployment; no separate phone camera/gallery check is
-required. The Listings walkthrough remains in progress.
+- LI-01: isolated listing create/read/edit, availability/selection/retirement,
+  seller controls, and browser UI are implemented; Step 7 remains partial.
+  LI-CORE, Step 11 review/remaining checks, and real Identity, Conversations,
+  Search, and image integration are not accepted.
+- LI-02: local upload/security checks and the earlier public Step 12 demo were
+  verified; the app ran from ECS and the phone photo flow worked in Firefox.
+  The new harness is designed to provision a disposable PostgreSQL 18.6 instance
+  and leaves shared RDS untouched. Its prepared plan was discarded, not applied.
+- The earlier demo teardown stopped shared RDS, but its prior test database
+  was not queried and may remain. Existing ECR artifacts are retained.
+- Do not resume the isolated cloud test while shared ECS work is active. The
+  last read in this session (2026-10-23 10:13:48 UTC) showed no running ECS
+  tasks, ASG desired capacity zero, and the former shared host terminating;
+  completion of scale-in was not yet confirmed.
+
+Local browser checks remain separate from the cloud demo. The next Listings
+handoff is a traceability progress PR after current-head checks and review
+preparation; it does not claim LI-CORE, ID-READY, or completed LI-02 Step 12.
 
 ## Dated history entries
 
@@ -104,607 +111,6 @@ Update the task status row after each step and human verification. The row is th
 Add a history entry when it records a meaningful outcome, decision, changed output, check result, blocker, consequential human direction, or task/merge closeout. Group related steps when that keeps their results understandable. Do not add a separate history entry just to say that a routine step was verified and the next one may begin.
 
 Include the task and covered step(s), contributor, date/time, and the details needed to understand or verify the outcome: relevant execution/verification state, changed paths, exact checks/results, decision/evidence reference, blocker/owner, or next action as applicable. Keep entries brief, omit repeated background, and link existing artifacts rather than duplicating them. Use exact UTC date and time for new entries. Keep historical timestamp precision as recorded; never guess or backfill an unknown time. Preserve distinct decisions, evidence, and other contributors' useful history.
-
-### LI-02 task route revised — 2026-10-21 13:01:52 UTC
-
-At Suraj's direction, added a private pre-integration cloud rehearsal to LI-02:
-the Listings app uses real RDS/S3 with an isolated test database, a synthetic
-Identity fixture, a server-side-only test caller, and run-scoped objects. Kept
-actual LI-CORE/ID-READY and shared-environment checks as final acceptance gates.
-Updated the task list, stub/integration gate, project task index, and status
-rows. No application code or cloud resources changed; no plan, deployment,
-upload, or apply ran.
-
-### LI-02 task order and dependency reconciliation — 2026-10-21 15:35:55 UTC
-
-Suraj confirmed DL-00 is complete and accepted moving the local quality/security
-gate ahead of the isolated cloud rehearsal. Updated LI-02 Steps 11–12 and the
-stub gate, project index, human browser checkpoint, and Listings status rows to
-match. A fetch read `origin/main` at `44cd8ff`; its work-log row still marks
-DL-00 in progress, and GitHub listed no open PRs. This source-status mismatch is
-recorded as stale rather than represented as updated. No application code,
-cloud resource, deployment, or upload was changed or run. LI-02 remains not
-started until Step 1 is performed and verified.
-
-### LI-02 Step 1 — local storage and upload-contract inspection — 2026-10-21 15:40:34 UTC
-
-Suraj verified Step 1. Repository review found no approved image bucket or
-image-specific IAM/CORS/lifecycle policy in the latest recorded inventory
-(2026-10-19). The CLIP S3 bucket is for Terraform state and must remain separate;
-the existing unowned bucket is explicitly not available for adoption. The
-documented shared PostgreSQL instance is private, encrypted, PostgreSQL 18.6,
-and stopped. The frozen upload contract specifies 1–8 JPEG/PNG/WebP images,
-each 1–10,485,760 bytes, a maximum five-minute delivery URL, a 24-hour upload
-intent expiry, and safe abandoned metadata cleanup within a further 24 hours.
-The repository has declaration-only upload routes and the test UI uses prepared
-image metadata; actual object upload/delivery is not implemented. Image decoder
-and pixel/dimension limits are not selected.
-
-The only local AWS CLI profile is `default`; repository guidance identifies it
-as unapproved and says to use each contributor's own approved non-root profile.
-At the time of this initial inspection no approved profile was available, so no
-AWS API call was made. No cloud resources or data were changed. See the dated
-Step 1 live-inspection follow-up below for the result after Suraj configured
-and identity-verified his own non-root profile.
-
-### LI-02 Step 1 — live read-only storage and identity inspection — 2026-10-21 16:03:05 UTC
-
-Suraj configured local AWS CLI profile `surajs2`; STS read-back confirmed
-`arn:aws:iam::335523638354:user/surajs2` in account `335523638354`, region
-`ap-south-1`. Read-only RDS inspection confirmed
-`clip-shared-test-postgres` is stopped, private, encrypted, deletion-protected,
-PostgreSQL 18.6. The account bucket listing returned only the PD-15 Terraform
-state bucket and `ds252-w4-bucket-adityamedhe`, which remains explicitly
-unowned and was not inspected or adopted. The state bucket was checked only
-to confirm it is unsuitable as an image store: all S3 public-access blocks are
-enabled, encryption is AES256, its policy status is non-public, and it has no
-CORS or lifecycle configuration. The seven `clip-shared-test-*` IAM role names
-are the existing shared infrastructure roles. This profile is denied
-permission to list attached and inline role policies, so their effective S3
-permissions and the absence of image-specific policies are not verified. No
-Listings image bucket appeared in the account bucket listing. No cloud
-resource, object, or database was changed or read for application data. The user accepted that upload
-dimensions are not limited for display consistency; if optional CLIP image
-embedding is built later, use the selected model's preprocessing on a copy and
-guard decoded image size during processing, preserving the uploaded original.
-The IAM-policy subcheck remains pending because of AccessDenied. Other Step 1
-findings await human verification. Step 2 has not started.
-
-### LI-02 Steps 1–2 — IAM verification and isolated storage design — 2026-10-21 16:47:22 UTC
-
-Suraj verified the Step 1 findings and Step 2 understanding before execution.
-Read-only IAM calls confirmed `IAMReadOnlyAccess` is directly attached to
-`surajs2`; it can list all seven `clip-shared-test-*` roles and their policy
-attachments/inline policy documents. The developer group has
-`PowerUserAccess` and `CLIPParameterStoreTeamAccess`; the user also has
-read-only billing/budget policies. The existing API task role has no policies;
-existing execution-role policies cover ECR image pulls, CloudWatch log writes,
-and only the exact PD-16 SSM parameters. No existing Listings image storage
-access was found. No AWS resource or data was changed.
-
-Step 2 prepared the Listings test Terraform root at
-`infra/terraform/domains/listings/test/`: private SSE-S3 bucket with all public
-access blocked, TLS-only bucket policy, local Vite CORS, task/execution roles
-with an external administrator-owned permissions boundary, object access
-limited to `listings/*`, a specific database URL parameter reference, and a
-seven-day log group. `runtime-role-boundary.json` gives the exact boundary
-document and ARN expected from the administrator. The README records the
-purpose, owner, state key, data class, exposure, 80 MiB test-data cap, proposed
-two-hour run window, cost basis, rollback, and cleanup. `terraform fmt
--recursive infra/terraform/domains/listings/test` and
-`python3 -m json.tool infra/terraform/domains/listings/test/runtime-role-boundary.json`
-passed. No tests, backend initialization, plan, apply, deployment, upload,
-database write, or cleanup ran. Step 2 awaits Suraj's verification. Before a
-Step 3 plan, the administrator must create the named boundary and grant the
-scoped IAM role-management/PassRole permissions described in the root README;
-the operator assignment and exact cost refresh also remain necessary.
-
-### LI-02 Step 2 — full rehearsal access inventory and administrator bundle — 2026-10-21 17:13:25 UTC
-
-Suraj directed that the cloud rehearsal be fully prepared so one administrator
-request covers LI-02 through Step 12. Read the LI-02 route, shared/test ECS and
-RDS roles, current migration path, application configuration, and current AWS
-policy evidence. `surajs2` has direct `IAMReadOnlyAccess`, read-only billing
-policies, and group `PowerUserAccess` plus `CLIPParameterStoreTeamAccess`.
-Live IAM simulation allowed representative ECR image-push, ECS task/service,
-RDS start, SSM session/parameter, and state-object actions; `iam:CreateRole`
-and `iam:PassRole` were implicit denies. Listing the exact Terraform state
-prefix succeeded and returned no objects. The state bucket policy only denies
-insecure transport. No cloud resources or policies were changed.
-
-Expanded the Listings Terraform root with a third role for the fixed one-shot
-database setup task. Its execution role can read only the existing RDS master
-parameter and the Listings database URL; the API execution role can read only
-the Listings URL; the API task role has S3 operations only under the selected
-`listings/test/<test_run_id>/` prefix. The setup task itself receives no AWS
-task role. The intended test database is `clip_test_listings` on the existing
-private RDS instance, with an isolated application login; a fixed setup task
-creates or removes it, and a separate fixed migration task uses the checked-in
-migrations. Step 12 adds only task definitions/service and uses these roles.
-No extra IAM role is planned after the one-time administrator setup.
-
-Added `operator-iam-policy.json` for the exact three roles. It grants only
-role creation with the exact permissions boundary, inline-policy/tag/delete
-management on those roles, and `iam:PassRole` to ECS tasks. Existing
-`IAMReadOnlyAccess` covers the Terraform read calls. The single
-administrator-owned runtime boundary is narrowed by `aws:PrincipalArn` so the
-database master secret is usable only by the setup execution role, while S3,
-ECR, logs and the Listings DB URL are limited to the roles that need them.
-AWS Access Analyzer returned no findings for the operator policy or boundary.
-The README records database bootstrap/cleanup, run-scoped storage, the exact
-admin request, and the required configuration-only transition to real
-Identity/shared DB/storage; provider/caller implementation remains in LI-02
-Steps 4–11.
-
-`terraform fmt -recursive`, both JSON parses, AWS Access Analyzer validation,
-and `git diff --check` passed. Backend-free Terraform init/validation could not
-run because the installed CLI is 1.16.6 and the root pins 1.15.9; this did not
-contact the S3 backend. No tests, backend initialization, plan, apply, secret
-read, database write, deployment, upload, or cleanup occurred. Step 2 awaits
-Suraj's verification before Step 3.
-
-### LI-02 Step 2 — pinned Terraform validation — 2026-10-21 17:25:55 UTC
-
-Suraj installed Terraform 1.15.9 in `~/.local/bin` and ran
-`TERRAFORM_BIN=$HOME/.local/bin/terraform make terraform-check`. Formatting
-and backend-free initialization/schema validation passed for
-`infra/terraform/bootstrap`, `infra/terraform/domains/listings/test`, and
-`infra/terraform/shared/test`, using the locked AWS provider 6.69.1. No AWS
-backend, state, resource, or secret was accessed or changed. This resolves the
-local CLI-version validation blocker; the expanded Step 2 result still awaits
-Suraj's verification before Step 3.
-
-### LI-02 administrator access check — 2026-10-21 17:41:34 UTC
-
-Suraj reported the administrator had completed the access request. Read-only
-AWS checks in account `335523638354` confirmed direct `IAMFullAccess` on
-`surajs2`; group `DS252-Project-Developers` still carries
-`PowerUserAccess` and `CLIPParameterStoreTeamAccess`. The requested runtime
-boundary at
-`arn:aws:iam::335523638354:policy/clip/listings/test/CLIPListingsTestRuntimeBoundary`
-was not found, and listing local policies under `/clip/listings/test/` returned
-none. `IAMFullAccess` is broader than the proposed operator policy and makes
-that scoped policy redundant while attached. No AWS resources or policies
-were changed by these checks. Step 3 remains gated on the exact runtime
-boundary being created, plus the task's separate cost and plan reviews.
-
-### LI-02 runtime boundary created — 2026-10-21 17:44:55 UTC
-
-Suraj verified the AWS identity as account `335523638354`, user `surajs2`, then
-created the customer-managed policy from
-`infra/terraform/domains/listings/test/runtime-role-boundary.json`. AWS
-returned the exact configured ARN
-`arn:aws:iam::335523638354:policy/clip/listings/test/CLIPListingsTestRuntimeBoundary`
-at version `v1`. This policy is a maximum-permissions boundary for the three
-future Listings ECS roles; it is not attached to `surajs2` and grants no direct
-user access. No roles or other test resources were created. Step 2's IAM
-prerequisite is satisfied; Step 3 requires a refreshed target/cost review and
-approval of the exact Terraform plan before any apply.
-
-### LI-02 Step 3 — exact Terraform plan prepared — 2026-10-21 17:51:24 UTC
-
-Suraj verified Step 3. Confirmed account `335523638354`, Region `ap-south-1`,
-boundary version `v1`, empty remote state prefix, and absence of the named
-bucket, Listings roles, and log group. The account budget is an annual period
-from 2026-10-17 to 2027-10-17, with a USD 200 limit, USD 3.035 actual spend,
-and USD 5.143 forecast; credits are excluded. Cost Explorer's same-period
-unblended amount returned approximately zero, so that total does not reconcile
-with the budget actual. The plan's new resources add no running
-compute or database; S3 and CloudWatch charges depend on actual storage,
-requests, and logs. The existing two-hour shared-stack estimate in the root
-README remains a prior reference, not a current marginal cost calculation.
-
-Initialized the selected root's existing S3 backend without migration and
-prepared `/tmp/clip-li02-step3-20261021.tfplan` using Terraform 1.15.9 and
-provider 6.69.1. Inputs are `test_run_id=li02-run-20261021` and
-`cleanup_review_date=2026-11-04`. The owner-only saved plan (mode 600) has
-SHA-256
-`9646c9a795215e8b5842c58c780257791ede360bd8914d4eb2d137f85881488a` and
-contains 15 creates, zero updates, and zero deletions: the private S3 bucket
-and seven bucket controls, three bounded IAM roles and their three inline
-policies, plus the seven-day Listings log group. It creates no ECS task/service,
-database, RDS, VPC, or shared infrastructure. The plan remains unapplied;
-exact plan approval is pending. Updated the Listings test README to reflect
-the live IAMFullAccess and runtime-boundary state. `git diff --check` passed.
-
-### LI-02 Step 3 — approved plan applied — 2026-10-22 04:56:10 UTC
-
-Suraj approved the exact saved plan after the two-hour marginal-cost estimate.
-Confirmed its SHA-256 remained
-`9646c9a795215e8b5842c58c780257791ede360bd8914d4eb2d137f85881488a`, the
-target caller was `surajs2` in account `335523638354`, the named S3 bucket,
-roles, and log group were absent, and the runtime boundary was still version
-`v1`. Terraform initially resolved the shell's default profile to a different
-account and blocked a read-only state check; retrying with
-`AWS_PROFILE=surajs2` showed the remote state prefix was empty. Applied the
-approved saved plan with that explicit profile: 15 added, 0 changed, 0
-destroyed. Terraform state and outputs now record the bucket, three bounded
-roles, and log group. Read-only AWS checks confirmed all public-access blocks,
-AES256 encryption, bucket-owner enforcement, non-public bucket policy,
-disabled versioning, one-day incomplete multipart cleanup, all three role
-boundaries (boundary usage 3), and seven-day log retention. No ECS task/service,
-database, RDS, EC2, network, or upload was created or started. No application
-code changed. Await Suraj's verification of the applied result before Step 4.
-
-### LI-02 Step 4 verified; Step 5 image-content validation prepared — 2026-10-22 05:48:54 UTC
-
-Suraj verified Step 3 and the Step 4 understanding, then selected five minutes
-for each S3 upload URL. Added the Listings S3 adapter and owner-authorized
-intent/confirm/cancel routes. Upload intents persist `(owner_id, operation_id)`
-and declared type/size, replay only matching requests, receive a unique
-server-generated key, and use signed PUT headers `Content-Type` and
-`If-None-Match: *`. The new forward migration backfills existing rows and
-adds the immutable retry metadata. Cancellation marks an unattached upload
-failed while retaining its object key for the separately gated cleanup step.
-Step 4 confirmation initially checked S3-reported type and size; Step 5 below
-extends it to inspect the stored bytes before confirmation.
-
-Updated the isolated bucket CORS and policy source to allow the signed header
-and reject non-conditional PUTs under only the existing run prefix. Terraform
-1.15.9 format/target validation passed. The exact saved plan
-`/tmp/clip-li02-step4.tfplan` (SHA-256
-`520a5ad1af425698152b092fb636fa6e0715197977b461d3f5b6cc94b3f81a7b`)
-contains exactly 0 adds, 2 in-place changes, and 0 destroys: update bucket CORS
-and bucket policy. It has not been applied; separate exact-plan approval is
-required. Black, Python compileall, `uv lock --check`, and `git diff --check`
-passed. A compatibility scan found older Listings fixtures inserting directly
-into `listings.image_uploads`; updated them to provide the new required
-`operation_id` using the fixture upload ID. This keeps migration-backed local
-database/browser fixtures compatible without changing their behavior. Fixed
-the five older mypy findings: page results now retain the already-validated
-page-size literal type, and pool annotations now describe Psycopg connections
-whose row factory returns dictionaries. Targeted mypy passes for all seven API
-source files. Suraj verified the Step 4 implementation and these typing fixes.
-
-Step 5 now reads the uploaded object's bounded bytes from S3 during confirmation,
-recognizes JPEG/PNG/WebP from their file signatures, and requires the detected
-type, S3 content metadata, and original upload declaration to agree. Oversized,
-empty or mismatched content is rejected before the database marks it confirmed.
-The existing create/replacement request schemas already require one to eight
-images, so those limits and the required-image rule did not need changes. Invalid
-content receives a safe 422 field error. Targeted mypy passes for all seven API
-source files; Black, compileall and `git diff --check` pass. No tests were run.
-
-### LI-02 Step 6 — upload-state and transaction-safety implementation prepared — 2026-10-22 05:55:46 UTC
-
-Invalid image bytes or metadata mismatch now move an unattached pending upload
-to `failed` with a fixed failure code; a passed deadline moves it to `expired`.
-Both paths retain the private object key for the separately approved Step 8
-cleanup work. A missing object or storage timeout does not mark failure: the
-intent remains pending so an in-window upload or a retry can resolve it. The
-confirmation path checks expiry again after S3 inspection, then commits verified
-metadata only for a still-pending owner row. Listing creation and replacement
-already lock/require owner-bound, confirmed, unexpired uploads and insert/update
-the listing and image references inside one PostgreSQL transaction, so partial
-database writes roll back together. Added `ListingsStore.reject_image_upload`
-and its PostgreSQL implementation for the durable failed/expired transition.
-Targeted mypy (seven API files), Black, compileall and `git diff --check` pass;
-no tests or database/cloud operations were run. Step 6 awaits Suraj's
-verification.
-
-### LI-02 Step 7 — private authorized image delivery prepared — 2026-10-22 06:16:28 UTC
-
-Added `GET /images/{image_id}/delivery` using the reviewed response contract.
-The service requires a current eligible caller, reads the image and its listing
-visibility fields together from the non-retired/non-pending PostgreSQL view,
-and allows the owner to view retained images or other eligible users to view
-images only while the listing is discoverable. Unknown, detached, retired, or
-hidden image references return the same 404 behavior as inaccessible listing
-details. Authorized requests receive a private S3 GET URL capped at five
-minutes, with `private, no-store` response cache control; the key and signing
-details are not returned or logged. Existing isolated Terraform already defines
-SSE-S3, public-access blocking, one-day incomplete-multipart abortion, and
-scoped `GetObject` permission; no cloud change or apply was made. Python
-compileall and `git diff --check` pass. Black/mypy could not run because `uv` is
-not installed; no tests were run (test coverage belongs to Step 10). Step 7
-awaits Suraj's verification.
-The aggregate `make terraform-check` could not complete
-because its sanitized environment selected account `484394572488`; direct
-backend-free validation with the selected profile passed. No RDS/ECS runtime
-was started and no browser upload UI is available before LI-02 Step 9.
-
-### LI-02 Step 8 — bounded retry-safe cleanup prepared — 2026-10-22 06:36:59 UTC
-
-Suraj separately approved the exact destructive cleanup order: wait until an
-upload's 24-hour intent deadline plus a five-minute grace period, keep each
-pass bounded (100 by default, maximum 500), delete from S3 before deleting
-database metadata, and retry uncertain/failing deletes after five minutes.
-Implemented internal `cleanup_image_objects` processing for retired images
-and expired unattached uploads. Expired pending or confirmed-but-unattached
-intents are locked and made terminal before the storage call, preventing a
-late confirmation or listing edit from attaching an object while it is being
-removed. Cleanup uses only database-tracked keys, verifies retired image and
-upload owner/key agreement, and deletes metadata only after S3 confirms
-success/absence. Added per-object retry timestamps and chronological due-work
-indexes in migration `20261022062357_listing_image_cleanup_retries.sql`. No
-public cleanup route, recurring schedule, database migration apply, or cloud
-operation was added. Python compileall and `git diff --check` pass; tests are
-deferred to Step 10. Suraj verified the Step 8 implementation on 2026-10-22.
-
-### LI-02 Step 9 — responsive image interface implemented — 2026-10-22 06:52:28 UTC
-
-Added phone gallery/camera and computer file selection, client-side type/size
-feedback, previews, upload progress, retry and rejection handling, ordered
-image editing, and real authorized image previews on detail and My Listings
-pages. Uploads use the reviewed short-lived URL and Listings confirmation flow;
-server-side byte inspection remains authoritative. `git diff --check` passes.
-The active shell has no Node executable, so typecheck and browser/device review
-could not run; tests remain assigned to Step 10. No migration, database, or
-cloud action occurred. Await the required desktop/phone browser checkpoint and
-Suraj's implementation verification before Step 10.
-
-### LI-02 Step 9 — agent browser audit — 2026-10-22 07:11:46 UTC
-
-Recovered Node 24.22.0 from the local cache and ran `npm run check`: lint,
-TypeScript, 32 web tests and the production build pass. Fixed an unsupported
-ARIA label and the local review server's route ordering, which had sent
-`/listings/new` to the API's listing-ID route. Started a separate loopback UI/API
-preview at `http://127.0.0.1:5174` with an isolated PostgreSQL container, fixed
-synthetic seller and temporary local-only image storage. Browser checks created
-listings with two and eight photos, recovered a simulated lost confirmation
-response without a second byte upload, confirmed the eight-photo cap and
-rejected over-cap selections, loaded gallery and My Listings images, and
-saved/re-read an image reorder. No page errors or horizontal overflow at
-1280×800, 768×1024, 390×844, 360×800 and 844×390. A read-only query confirmed
-both new rows in the harness's isolated PostgreSQL database. Python
-Black/compileall and `git diff --check` pass. No AWS or shared database
-operation occurred. Suraj's desktop review and physical phone camera/gallery
-check remain pending; the current review URL is loopback-only.
-
-### LI-02 Step 9 — desktop/browser review verified — 2026-10-22 07:19:08 UTC
-
-Suraj verified the Step 9 implementation after reviewing the agent-run browser
-audit and local UI. The physical-phone camera/gallery check was not performed;
-keep it pending until an approved reachable test URL is available. Step 10 is
-next.
-
-### LI-02 Step 10 — fake-storage and failure checks performed — 2026-10-22 07:38:49 UTC
-
-Added Listings service and fake S3-adapter tests for signed-intent ownership,
-type/size/content checks, URL expiry, repeated confirmation, missing objects,
-timeouts, bounded cleanup, delete failure retention and retry. Added web-client
-tests for byte-upload headers, URL renewal, lost-confirmation recovery and
-failure without a duplicate PUT. Extended the disposable PostgreSQL workflow
-with an actual row-lock race: cleanup skips an intent locked by confirmation;
-after its expired confirmation is rejected, a later cleanup pass claims it.
-The database helper now checks migration head `20261022062357` and rolls back
-all later additive migrations before its retirement-data guard; its command
-docs, database migration inventory and native-check target match that head.
-
-Checks passed: API fake-storage and production-guard tests (89); `npm run
-check` (lint, TypeScript, 38 web tests, production build); and
-`scripts/check_database.py --listings-store` (PostgreSQL 18.6 clean/repeat
-apply, both SQL smokes, Listings store/race, full rollback and clean reapply).
-Loopback UI automation used mocked upload responses and confirmed camera
-cancellation keeps the selected photo and unsupported/over-10-MiB files are
-rejected before a new upload intent. `git diff --check` passed. No cloud or
-shared-database action. Actual-phone camera/gallery remains pending. Step 10
-awaits Suraj's verification before Step 11.
-
-### LI-02 Step 11 — local gates and isolated-profile guard — 2026-10-22 09:42:00 UTC
-
-Added a server-side isolated Listings caller profile for the later cloud rehearsal.
-It supplies one fixed synthetic seller without reading caller identity from any
-request field, and startup refuses to serve unless the configured database is
-the dedicated `clip_test_listings` database under a non-superuser role. The
-profile also requires the exact private test bucket, region, and run-scoped key
-prefix; production and shared configurations cannot enable it. The test
-deployment README records these requirements and the fixture-seeding boundary.
-The application composition root selects this profile only when the explicit
-test flag is enabled. Architecture boundary allowlists and contract route
-expectations were updated to match the reviewed composition and currently
-installed image routes.
-
-The full `make check` passed: Black (90 files unchanged), 540 Python tests with
-1 existing skip, 63 data tests, zero architecture-boundary violations, all 8
-generated contract artifacts current, mypy, web lint/38 tests/TypeScript/build,
-35 simulated database-safety cases, PostgreSQL 18.6 clean and repeat migration
-apply with both SQL smokes and complete rollback/reapply, and Gitleaks 8.30.1
-source-snapshot scan. `git diff --check` and the native-check shell syntax check
-also passed. An earlier aggregate run exposed stale boundary/route expectations;
-those repository checks were aligned with the actual public composition/routes,
-then the aggregate suite passed. The local configuration and database-guard
-tests verify that unsafe targets are rejected.
-
-The implementation-side security audit confirmed that the test bucket blocks
-public access, enforces bucket-owner object ownership and encryption, requires
-TLS, and limits the runtime role to run-scoped object keys; the isolated caller
-is fixed server-side and cannot be selected through client claims. The security
-review follow-up found that startup checked only the database name and
-superuser bit. It now also requires the exact `clip_test_listings_app`
-login/effective role and rejects database/role creation, replication, and
-row-security-bypass attributes. The Step 12 setup task must create this exact
-non-elevated login. Focused profile/config tests (36), Black, and
-`git diff --check` pass after this change. Suraj is the named security reviewer;
-his review of IAM, bucket exposure, and proposed deployment settings remains
-pending. No cloud rehearsal, Terraform plan, or apply was performed. Step 10
-was verified by Suraj; Step 11 awaits his review and verification of this result.
-
-### LI-02 Step 11 — command-based cloud security review — 2026-10-22 10:42:17 UTC
-
-Suraj identified himself as the named security reviewer and asked for command-
-based inspection. Confirmed the active `surajs2` CLI identity is IAM user
-`arn:aws:iam::335523638354:user/surajs2`. Read-only AWS commands verified the
-LI-02 bucket has all four public-access-block settings enabled,
-`BucketOwnerEnforced`, SSE-S3/AES256, disabled versioning, and
-`PolicyStatus.IsPublic=false`. The live bucket policy currently has only the
-TLS-deny statement; live CORS allows the loopback Vite origin but omits
-`If-None-Match`. This is the known unapplied Step 4 change; cloud upload must
-wait for its exact plan approval and apply.
-
-The three live task roles are trusted only to ECS tasks in this account and
-have the Listings runtime boundary attached (default v1, three boundary uses).
-The live task role's S3 actions cover only
-`listings/test/li02-run-20261021/*`; execution-role reads are limited to the
-database URL, and only the setup execution role can read the master-password
-parameter. The boundary caps S3 at the Listings test prefix and limits ECR,
-logs, and exact SSM parameters. IAM simulation says the current operator can
-start/resume/terminate SSM sessions on `*`; this is broader than the Listings
-target. The documented private route itself has no public IP, listener, or
-inbound rule, but its actual ECS host/task is not built: the cluster reports
-zero tasks and zero registered instances, and SSM has no managed instances.
-The future route and host mapping therefore remain unverified until Step 12.
-
-Terraform `fmt` passed, but `make terraform-check` did not complete: its clean
-environment drops `AWS_PROFILE` while retaining the default home directory,
-so the AWS provider read the default root identity in account `484394572488`,
-which the Listings provider correctly rejects. With the intended profile,
-direct backend-free `terraform validate` of the Listings root passed. No plan,
-apply, deployment, upload, or other cloud mutation occurred. The live review
-and the local test-profile guard await Suraj's verification; Step 12 still
-requires review of its exact deployment settings and separate approvals.
-
-### LI-02 Step 11 verified; Step 4 conditional-write plan applied — 2026-10-22 11:36:10 UTC
-
-Suraj verified Step 11 and clarified that human mobile website verification is
-for Step 12 after deployment; a physical-phone check is not a Step 9 gate. Per
-Suraj's explicit request, applied the saved Step 4 Terraform plan
-`/tmp/clip-li02-step4.tfplan` (SHA-256
-`520a5ad1af425698152b092fb636fa6e0715197977b461d3f5b6cc94b3f81a7b`) with
-Terraform 1.15.9 as `surajs2` in account `335523638354`, Region `ap-south-1`.
-It changed only the private LI-02 bucket CORS and policy: 0 added, 2 changed,
-0 destroyed. Read-only AWS verification confirmed CORS allows
-`If-None-Match` and the bucket policy denies PUTs under the run prefix when
-the header is absent or differs from `*`. No ECS/RDS runtime, upload, database
-write, or phone test was performed. Step 12 remains the next checkpoint.
-
-### LI-02 Step 12 preparation — mobile scope and live prerequisites — 2026-10-22 12:42:45 UTC
-
-Suraj verified the Step 4 apply result and Step 12 understanding. Read-only AWS
-inventory confirmed account `335523638354`/user `surajs2`; the shared
-`clip-shared-test` ECS cluster is active with zero registered instances/tasks
-and one existing shared API service; shared RDS `clip-shared-test-postgres`
-(`db.t4g.micro`) is stopped; no SSM managed instance is online; the Listings DB
-URL SecureString parameter is absent while the shared RDS master-password
-parameter exists as version 1; the shared API ECR contains only the baseline
-image digest tagged `68d6179db03dcf983278b290d22a939af625bba1`. Current account
-budget reads USD 4.087 actual and USD 30.384 forecast against a USD 200 limit.
-No cloud resources or secrets were changed/read.
-
-Updated the LI-02 task and browser instructions to defer human mobile website
-verification until after Step 12 deployment and to require LI-02-specific
-start/stop commands. The current local Vite plus SSM port-forward is laptop-only;
-an approved phone-reachable private path is still unresolved. Step 12 also needs
-its app/migration/setup task definitions and service, isolated database URL,
-immutable image builds, current target/cost plan, and exact operation approvals.
-No ECS task, database, parameter, ECR image, network route, deployment, or
-upload was created.
-
-Suraj confirmed the phone will use the same trusted Wi-Fi as the laptop. A
-read-only WSL network check found the current WSL2 address `172.23.53.94/20`
-behind NAT, so that address is not the phone-facing URL. The proposed route is
-a temporary Windows Wi-Fi-IP to WSL Vite-port forward, with an inbound firewall
-rule limited to the phone's exact Wi-Fi IP and a matching exact-origin S3 CORS
-entry. Exact Windows/phone addresses, Wi-Fi client isolation, firewall profile,
-and route changes still require review; no host firewall, forwarding, or cloud
-configuration was changed. The `docs/environment/commands.md` registry has no
-LI-02-specific start/stop command yet. Those commands must leave shared RDS and
-the shared API untouched; start-up must preflight RDS readiness and the exact
-LI-02 target, and stop must tear down only the LI-02 runtime and temporary
-phone route while retaining the isolated test data for the approved cleanup.
-Read-only ECS verification further confirmed the existing shared API service is
-ACTIVE but desired/running/pending are all zero. The LI-02 stop command can
-therefore target only its own service; the shared RDS start/stop remains a
-separate reviewed operation. The initial demo cannot be instant from the
-current stopped-RDS state.
-
-Suraj asked whether changing campus Wi-Fi between the hostel and department
-would require route changes, and proposed using the phone's mobile hotspot for
-the laptop. Prefer that portable route if a reachability check confirms the
-phone can open a local page served by its tethered laptop. Do not broaden the
-firewall to a campus subnet. If campus Wi-Fi is used, recheck client isolation
-and exact IPs at each location; the private URL origin and scoped S3 CORS entry
-may change.
-
-### LI-02 Step 12 — public ECS demo architecture verified — 2026-10-22 13:13:43 UTC
-
-Suraj verified a public ECS-served demo for laptop and phone, a hard ten-listing
-limit confined to the isolated profile, synthetic data only, and one-command
-start/stop that removes LI-02-owned runtime resources and test data. Shared RDS,
-VPC/NAT, and other domains' resources remain untouched; their baseline costs
-continue. Corrected the Step 12 task/index and Listings test-root design to
-remove the previous laptop/SSM/private-Wi-Fi route. The deployed UI/API path,
-HTTPS hostname/certificate, test-only cap implementation, and start/stop command
-are not implemented yet. No code, Terraform plan/apply, or AWS resources changed.
-
-### LI-02 Step 12 — ECS app packaging and isolated listing cap — 2026-10-22 13:19:54 UTC
-
-Started the local Step 12 implementation. The API container now builds and
-bundles the web app, can serve that UI and the `/api` Listings routes from the
-same ECS task only when the isolated caller profile is enabled, and shows a
-synthetic-data disclosure in the isolated web build. The isolated profile now
-requires a ten-listing limit; the PostgreSQL adapter serializes demo creates
-and rejects an 11th listing without constraining other profiles. Updated the
-API image build context and test-root CORS origin validation for a future
-reviewed HTTPS origin. No tests/build, Terraform plan/apply, AWS action, or
-deployment was run. Public listener/service, lifecycle commands, hostname and
-certificate, and shared-resource preflights remain pending.
-
-### LI-02 Step 12 — HTTP demo and shared-state restoration direction — 2026-10-22 13:33:15 UTC
-
-Suraj chose the generated public HTTP ALB URL for the isolated synthetic demo
-and deferred HTTPS to real integration. He requested restoring shared RDS and
-ECS capacity to their pre-demo state where safe and confirmed he believes he is
-authorized for the shared RDS. Updated the task and Terraform-root design to
-record this direction. No AWS operation is authorized by this design update;
-the exact operation plan and cloud approval gates remain. The lifecycle must
-leave a shared resource available if another workload starts depending on it,
-and report that it could not restore baseline state.
-
-### LI-02 Step 12 — implementation gap audit — 2026-10-22 13:37:26 UTC
-
-Suraj confirmed the generated HTTP endpoint and deferred HTTPS until integration. Audited the Step 12 root: the conditional ALB, subnet, ingress rule, API task/service and output are present, but Terraform does not define the promised fixed database setup/migration/cleanup task definitions and no executable `li02-demo start/stop` command is registered. The `/clip/test/listings-database-url` parameter is absent in the last valid account inventory. Corrected the root runbook to distinguish Terraform teardown from separately reviewed RDS baseline restoration and to state that a custom domain is unnecessary. No AWS call or resource change occurred. Step 12 remains blocked from deployment until these missing pieces, fresh account/budget preflight, source digest and exact plan are ready.
-
-### LI-02 Step 12 — fixed database tasks and lifecycle implementation — 2026-10-22 14:07:56 UTC
-
-Implemented the fixed database bootstrap, pinned migration, synthetic-seller
-seed, cleanup and idle-check ECS task definitions plus a local start/stop
-driver. Start preflights the target account/budget/shared task use, captures
-shared RDS/ECS baselines, pins pushed images by digest, and gates each saved
-Terraform plan by its hash. Stop removes the isolated database, exact S3 run
-prefix, URL SecureString, temporary public route/service, unreferenced tagged
-images and LI-02 log streams; it does not gate cleanup on budget availability.
-It restores shared RDS only after the idle task and separate typed approval.
-Preserved pre-existing untracked `data/runs/` and `database/migrations.zip`.
-Static checks passed: Python syntax parsing, shell syntax, Terraform format,
-Terraform validate and `git diff --check`. Validation caught and fixed use of
-an unavailable RDS data-source username attribute; the task uses the already
-approved shared master login name `clip_test_admin`. No tests, AWS command,
-Terraform plan/apply, deployment, or commit ran. Step 12 still requires code
-review, independent Security review, a current target-account/budget preflight,
-exact plan approval, and desktop/phone browser verification after deployment.
-
-### LI-02 Step 12 — annual forecast and persistent idle-cost investigation — 2026-10-22 15:38:52 UTC
-
-Suraj requested a thorough read-only investigation after seeing the USD 319.408
-forecast. The refreshed `surajs2` identity belongs to account `335523638354`.
-Budgets excludes credits and covers 2026-10-17–2027-10-17: USD 4.607 actual,
-USD 319.408 forecast, USD 200 reference. Account-wide Cost Explorer records
-reconcile USD 4.6072318081 usage with matching credits (net approximately zero),
-with estimated/delayed data and only part of October 22 reported. GetCredits
-was denied to this IAM user; no fresh remaining-credit balance or root fallback.
-
-The shared PD-16 NAT has remained available since October 19. Complete daily
-records show USD 1.344 NAT + USD 0.12 public IPv4 + USD 0.0845 stopped-RDS
-storage, approximately USD 1.55/day or USD 46–47 per 30 days before traffic and
-minor storage/requests. This persistent shared cost remains after ordinary
-LI-02 stop. Three Cost Explorer API requests add a USD 0.03 list-price charge
-before credits. AWS does not expose an exact reconstruction of the forecast
-in the budget response; no exact causal decomposition of USD 319.408 is claimed.
-
-Checked EC2, NAT, RDS, ELBv2 and EBS across all 18 enabled regions: only the
-known shared Mumbai NAT/RDS remain; no EC2 instances, EBS volumes or ALB/NLB
-load balancers. ECS tasks/hosts and shared-service desired count are zero. The
-LI-02 image bucket and log group are empty. Regional audit events since the
-recorded shutdown show no new compute launches. RDS is stopped with automatic
-restart scheduled for 2026-10-26 18:23:35 UTC; the existing shared-foundation
-idle review deadline remains 2026-10-23 18:23:35 UTC.
-
-[Primary billing/resource evidence](../evaluation/domain/li-02/cost-investigation-2026-10-22.json).
-No AWS resource, budget, credential policy or lifecycle guard was changed;
-no build/push/start/task/plan/apply/delete ran. Deployment preparation remains
-held for cost review. Suraj directed performing the preparation review together
-in this session; no independent approval is represented by that instruction.
 
 ### Shared idle-cost follow-up — retain RDS and inspect NAT lifecycle — 2026-10-22 15:46:58 UTC
 
@@ -716,558 +122,6 @@ unsuitable for that request. The current private ECS architecture needs NAT
 throughout the Listings cloud run for outbound AWS service access; the
 LI-02 lifecycle does not manage it. No shared-infrastructure change or
 cloud operation was performed.
-
-### LI-02 Step 12 — interpret the USD 200 ceiling monthly — 2026-10-22 15:56:54 UTC
-
-Suraj clarified that USD 200 is an approximate monthly ceiling. Updated
-`scripts/li02-demo` so start reads current calendar-month Cost Explorer usage
-and month-end forecast, excludes credit records to match the configured
-budget's cost treatment, and compares both with the USD 200 limit. The annual
-budget forecast is not used as a monthly gate. Missing monthly usage/forecast
-data fails closed; the check reports that Cost Explorer data can be delayed.
-AWS budget configuration and all cloud resources
-were left unchanged. Mocked checks passed below the cap despite a USD 319.408
-annual budget forecast and blocked when either monthly usage or month-end
-forecast reached the cap; Python AST and `git diff --check` pass. The pinned
-Black check requests broad formatting changes to pre-existing lines in this
-script, so those unrelated changes were left out. No actual AWS preflight,
-build, plan, apply, or deployment was run. The source change remains
-uncommitted pending review of the exact diff and the existing repository
-commit-approval gate.
-
-### LI-02 Step 12 — correct Cost Explorer forecast date boundary — 2026-10-22 16:03:49 UTC
-
-After commit `8fd709c`, the start workflow ran identity, budget and monthly
-usage preflight, then AWS rejected the month-start forecast request because
-GetCostForecast requires its start date to be today or later (the reported
-earliest supported date was 2026-10-22). The command stopped before RDS,
-container publication, Terraform or any resource change. Updated the local
-script to total complete reported days through yesterday and add the forecast
-from today through next month; missing forecast data still fails closed. This
-correction is uncommitted and must be reviewed/committed before retrying the
-immutable-revision start workflow.
-
-### LI-02 Step 12 — first infrastructure apply and database bootstrap blocker — 2026-10-22 16:50:18 UTC
-
-**Correction from the 17:00:21 source audit:** the database-existence and owner
-inferences below were based on misleading script errors. The query wrapper
-discarded every result; these messages establish neither existence nor owner.
-
-Suraj approved image publication for revision `5145cc967d43a9794ede1c6a68902c353e7d0183`; Buildx 0.30.1 built and pushed the web/API and database images. The approved exact Terraform plan `84204321d945d551e7b9fe8ea9c7955255d9c7e1f5e534b2fea4e421b0429bbe` applied in account `335523638354`, Region `ap-south-1`: 16 resources added, 8 changed, 0 destroyed. It created the public HTTP ALB route, LI-02 task definitions, and service at desired count zero; updated the LI-02 bucket CORS/policy and role scope. The generated URL is `http://clip-li02-demo-1058174990.ap-south-1.elb.amazonaws.com` and is not yet serving the app.
-
-Suraj approved the fixed database setup. Bootstrap exited 1 at its read-only guard: either `clip_test_listings` or `clip_test_listings_app` already existed. The reviewed script checks both before any SQL write; no DB object/data was changed. The only LI-02 bootstrap log stream is this attempt, and project records show no earlier database bootstrap. Source of the live state remains unknown. At Suraj request, added `make li02-demo-resume-database AWS_PROFILE=<approved-profile>` in `Makefile` and `scripts/li02-demo`, with documentation in `docs/environment/commands.md` and the test-root README. It verifies the saved run and zero-count app service, gates owner-checked removal of only the isolated DB/login, repeats database setup, and reuses existing route/images. Syntax/help, Makefile dry-run, and `git diff --check` passed. Initial recovery was blocked by an expired `surajs2` token; after Suraj refreshed it and the account was verified, the fixed cleanup task exited 1 with `Listings cleanup found a database not owned by the dedicated Listings role.` This guard failed before any database mutation. No setup, migration, seed, or app task ran. The exact owner/source is unknown, so inspect ownership read-only before another database action. Existing RDS is available; no app ECS task is running.
-
-### LI-02 Step 12 — cleanup refused mismatched database owner — 2026-10-22 16:53:58 UTC
-
-**Correction from the 17:00:21 source audit:** the reported ownership mismatch
-was a false inference caused by discarded query stdout, not verified RDS state.
-
-After refreshing and verifying `surajs2` in account `335523638354`, reran the
-resume preflight. The fixed cleanup task exited 1 and emitted the bounded
-message `Listings cleanup found a database not owned by the dedicated Listings
-role.` Its owner guard failed before any drop or other SQL mutation. The failed
-bootstrap had also stopped at its read-only existence check. No migration,
-seed, or web app task ran; the ALB, images, generated URL secret and Terraform
-state remain in place, and the app service remains at zero. The exact database
-owner/source is unknown, so do not retry cleanup until ownership is inspected.
-
-### LI-02 Step 12 — lifecycle query-output defect identified and fixed locally — 2026-10-22 17:00:21 UTC
-
-At Suraj's request, traced Git/source and the earlier partial-start path.
-Commit `370f08d` introduced `psql_fixed` with stdout and stderr redirected to
-`/dev/null`, then used it in command substitutions for existence, ownership and
-idle checks. Consequently a successful `0 0` result was reported as existing
-state, an empty captured owner as an ownership mismatch, and a successful `0`
-client count as a busy database. Reproduced all three errors locally without
-AWS or a database. The prior partial start failed at Buildx before database
-task deployment/execution; its cleanup removed the generated URL parameter
-and local run metadata and did not perform database creation or cleanup.
-Neither later failed task reached a database mutation. Database existence and
-ownership remain unverified; the earlier contrary claims are withdrawn.
-
-Added `psql_query` to the Listings lifecycle shell script so metadata reaches
-its internal checks while diagnostics stay suppressed. Writes retain the
-silent bounded helper. Bootstrap/cleanup reject invalid existence responses
-explicitly, and idle checks reject empty/nonnumeric replies. Added the
-Listings-owned `test_demo_database_lifecycle.py` regression harness: the real
-shell script runs against a controlled local psql process, with 21 cases for
-empty/existing/owned/mismatched states, failed queries, zero/nonzero clients,
-no writes on invalid states, and private diagnostics/deadline settings.
-All 21 passed; shell syntax and Black checks are part of the local verification.
-These checks do not verify real PostgreSQL bootstrap/migrations. No AWS change,
-commit or image push occurred. Existing ALB/run state can be retained, but a
-corrected immutable database image and separately approved task-definition plan
-are required before another setup/cleanup attempt.
-
-### LI-02 Step 12 — corrected lifecycle passes real local PostgreSQL — 2026-10-22 17:06:28 UTC
-
-Suraj verified the diagnosis and directed continuing. Ran
-`python3 /tmp/li02-local-lifecycle-check.py` against a uniquely named disposable
-`postgres:18.6-bookworm` container with tmpfs data, no published ports and only
-synthetic local credentials. The corrected shell script passed empty-state
-cleanup, bootstrap/owner assertion, repeat-bootstrap rejection, all checked-in
-migrations through the existing pinned database image, repeated seller seed,
-idle check, wrong-owner cleanup refusal with database preservation, restored-
-owner cleanup and repeat cleanup. Exact database/login absence and preservation
-of the test `clip_test` database were asserted; the disposable container was
-removed in `finally`. This was local PostgreSQL with local admin privileges and
-TLS disabled; live RDS privileges/TLS remain cloud checks. The existing
-`clip-local-postgres-1` container and AWS resources were untouched. Also completed
-the resume target's Makefile help/phony registration and corrected the runbook's
-claims about which cloud lifecycle phases have actually been exercised.
-Next: approve the reviewed seven-file LI-02 commit, then publish only a corrected
-database image and review a plan that preserves the existing ALB/run and keeps
-the app count zero until bootstrap/migrations/seed pass.
-
-### LI-02 Step 12 — live query correction verified; RDS permissions and HTTP compatibility — 2026-10-22 17:22:27 UTC
-
-The exact database image built from approved commit `4aa9705` passed the real
-local lifecycle before publication. Suraj approved its ECR push and exact plan
-`a749908bd4259d354edc8b5015135a479bd1b010a7fa3558f6e872113b3f731c`:
-only five database task definitions were replaced, with no ALB/service-count,
-IAM, network or database mutation in the apply. Digest is
-`sha256:e073c4905049d60bcb342fccaef98cd6c302d6993505d8ed65a6815588d1514d`.
-The saved baseline retains the original image tags plus this correction tag
-for stop cleanup. Managed ECS capacity had scaled to zero and restarted for
-the approved fixed cleanup task. Its log says cleanup already passed: no
-isolated database/login existed, confirming the prior errors were misleading.
-
-The next fixed bootstrap stopped before CREATE ROLE: private classification
-of the current RDS error log found permission denied to set
-`log_parameter_max_length`. No raw log, credential or verifier was displayed.
-Reproduced this locally with a non-superuser CREATEDB/CREATEROLE operator and
-only the logging-setting permissions needed by the shared PD-16 guard.
-Removed the unsupported non-error bind cap requirement: PostgreSQL documents
-that it only affects statement/duration logs, which remain disabled and
-verified. Error-bind suppression and all other logging guards remain. No
-parameter group or shared privilege expansion is requested. The same local
-restriction check exposed CREATE DATABASE ownership needing SET-role rights;
-bootstrap now grants only membership of its new app-owner role to CURRENT_USER
-with INHERIT FALSE/SET TRUE, ownership operations SET ROLE explicitly, and
-cleanup resets the operator before dropping that role (removing membership).
-The app role gains no administrator membership. Real local restricted-admin
-bootstrap, migrations, repeated seed, idle, wrong-owner refusal and exact
-cleanup all passed; disposable resources were removed.
-
-Expanded the restricted-admin check to assert SET permission without inherited
-privileges and to keep a controlled app-role client connected during the idle
-check. PostgreSQL hides that other role's backend type from a restricted
-operator; the previous filter could miss it. The idle query now conservatively
-counts a named database session with hidden backend type as busy. The expanded
-real local run passed busy-client refusal, termination of only that controlled
-app client during exact isolated cleanup, database/login removal and shared
-test database preservation. All 21 shell regression cases, shell syntax, diff
-whitespace and network-isolated source secret scanning also passed.
-
-Frontend readiness inspection also found direct `crypto.randomUUID()` calls
-in Create/Edit, unavailable on the approved public HTTP origin. Extracted the
-already-used image-upload fallback to Listings-owned `operationId.ts` and
-reused it in CreateListing, ListingEdit and ListingImageSet. It uses secure
-random bytes and UUID v4 bits when native UUID support is absent. Added three
-capability regression cases. `npm run check` with the recorded pinned Node
-PATH passed lint, all 41 tests, TypeScript and production build. No shared
-frontend composition/styles were edited. Both corrections remain uncommitted;
-new image publication, revised fixed setup and exact apply approvals remain.
-The existing API service is zero; AWS migration/seed/browser checks are pending.
-
-### LI-02 Step 12 — real bootstrap/migrations pass; minimal seed environment corrected — 2026-10-22 17:45:19 UTC
-
-Published the approved `c842663` release images after their real restricted-admin
-local lifecycle and packaged API/browser checks passed over insecure HTTP.
-Desktop/phone-width create/edit passed; S3 was doubled locally. Real bucket
-OPTIONS returned 200 and allowed the existing ALB origin, Content-Type and
-If-None-Match. The approved exact plan
-`57bcd9ad8a5f3239ce81748583e55430e7834dc4ae6fb780c6dd9e23f016eaa7`
-applied only six image-based task-definition replacements and the zero-count
-service reference. AWS cleanup, bootstrap and migrations passed. Seed stopped
-before SQL: the fixed task injects only CLIP_DATABASE_URL, while the script
-incorrectly required PGPASSWORD globally. Its bounded log confirmed that exact
-startup failure. The local harness had masked this by forwarding an extra admin
-password to seed; this validation gap is corrected, not an RDS data problem.
-
-The local patch requires PGPASSWORD only for admin actions, preserves seed's
-URL-derived app password, and aborts on invalid URL extraction before any SQL.
-Regression coverage is now 27 passing cases, including minimal seed secrets,
-missing admin secrets and invalid URL rejection. Built the patch locally and
-reran the real restricted-admin lifecycle and packaged HTTP browser checks
-with no PGPASSWORD supplied to seed: all passed, including repeated seed,
-SET-only membership, busy-client refusal and exact cleanup. Existing cloud
-bootstrap/migration progress is retained; next update only the DB image/task
-definitions and rerun seed, with no cleanup or schema recreation.
-
-### LI-02 Step 12 — first teardown exposed a cleanup-task discovery gap — 2026-10-22 18:30:10 UTC
-
-- Suraj authorized removing this LI-02 run. In account `335523638354`, ap-south-1, stop plan `5ab2778bb6ee7c1f5afa5a170a443815ab30d6bd6ecd61873a8c2957760cec85` applied: 0 add, 1 S3 CORS update back to local origin, 16 LI-02 route/service/task-definition/network resources destroyed. The app service and shared ASG capacity returned to zero. Four run-prefix S3 objects, the LI-02 URL SecureString, six tagged ECR image digests and ten log streams were removed. The permanent Step 4 bucket, IAM roles, empty log group, state backend and shared network remain.
-- Teardown did not run the DB cleanup or idle-check tasks: recent CloudTrail `RunTask` events show only prior seed/bootstrap/migration/cleanup attempts, with no task after the deployed seed. The stop flow's active task-definition prefix lookup produced no task definitions, so it silently skipped database cleanup, still deleted the URL parameter and later deregistered the task definitions. The operator's original baseline file was also removed despite leaving RDS available. Thus database drop and shared RDS restoration are not complete; RDS remains available because its idle check was not proven. No claim of full teardown.
-- Read-only checks: run S3 prefix empty, ALB absent, no tagged LI-02 images, URL parameter absent, ECS running task count zero, ASG desired capacity zero. The parent OCI image digests are deleted; untagged child-manifest billing still needs inspection. Stop workflow must fail closed, retain its baseline until every cleanup/restoration check passes, and locate the exact cleanup task definitions reliably before another cloud run. Original RDS stopped baseline is recorded in earlier work-log evidence and must be restored only after owner-checked cleanup/idle check.
-- Frontend audit found the verified My Listings design requires an availability action; the API supports `PUT /listings/{listing_id}/availability`, but the page currently has no control. User called out this gap. Add the seller's mark-unavailable action using the existing API and human-verified page scope before rebuilding the demo.
-
-### LI-02 Step 12 — Chrome reachability narrowed to browser behavior — 2026-10-22 18:07:15 UTC
-
-- Suraj clarified that Chrome on the phone still failed after entering `http://`. From this environment the exact ALB hostname and `/listings/new` returned HTTP 200 with no redirect. HTTPS on port 443 timed out; the demo has no TLS listener by approved design. This confirms the public HTTP route is live but does not establish whether phone Chrome rewrites/blocks the URL or encounters another browser-specific issue. Need the final address-bar scheme and displayed Chrome error to distinguish causes; no cloud configuration changed.
-
-### LI-02 Step 12 — public cloud flow and human mobile samples confirmed — 2026-10-22 18:05:27 UTC
-
-- Suraj (B); isolated Step 12 continues. Approved seed-fix plan `dfa3b8120f8b315d88b48c439221b05bfe508b91fa128a6110f6ee3f91ba2ac9` applied; only seed was retried after existing successful bootstrap/migrations. Seed passed. Approved app-start plan `2549a58825bacade16eace34150f3da024022a9c1b743f338e05ee71073ab228` enabled one healthy ECS task at the existing public HTTP ALB.
-- Real cloud browser create/edit/image delivery passed against API, isolated RDS and S3. Replaying create-only image PUT returned 412. Desktop and Pixel 7 emulation evidence: [browser results](../evaluation/domain/li-02/cloud-browser-c842663.json), [desktop](../evaluation/domain/li-02/cloud-desktop-c842663.png), [mobile emulation](../evaluation/domain/li-02/cloud-mobile-c842663.png). Emulation is distinct from human device testing.
-- Suraj reports the actual phone works in Firefox, including taking/uploading a photo; Chrome did not reach the demo. Chrome's HTTPS upgrade is a possible explanation, not a diagnosed device setting. HTTPS remains deferred by the approved demo decision.
-- Read-only cross-check: persisted API returned `sample title hi` (`c5f27afd-ba49-45b6-b70d-e65b52c3c4be`, one PNG, 70,741 bytes) and `sample title from phone` (`0ee65797-d9db-4bbf-befa-91a97f34f151`, two JPEGs, 3,738,944 and 64,600 bytes). AWS S3 head-object independently confirmed all three objects under this run prefix, AES256 encryption, and matching content types/sizes; signed GETs returned 200 with matching byte counts. This was an API-backed database read, not a direct SQL inspection. No data was changed and signed URLs were not logged.
-- Shared RDS original pre-test stopped baseline was reconciled in ignored runtime metadata using pre-test inventory and the first run's CloudTrail start event; retry's available capture retained as context. No RDS stop occurred. Run image manifest dependencies were retained for later cleanup verification. Remaining: access/expiry checks, reviewed stop/restoration and resource cleanup verification, human Step 12 acceptance. Step 13 real Identity/LI-CORE integrations remain pending.
-
-### LI-01 task start — 2026-10-20 08:57:01 UTC
-
-Suraj (B) verified the LI-01 task sequence and directed proceeding with the
-recorded DL-00/contract review status. Created isolated worktree
-`/home/suraj/src/clip-li-01` on `task/li-01-listing-lifecycle` from `main` at
-`44cd8ff`; preserved the existing dirty `domain/listings` checkout. No LI-01
-implementation changed. Step 1 reuses the earlier contract/preparation audit
-and awaits human verification before execution.
-
-### LI-01 Step 1 — current contract/schema/frontend inspection — 2026-10-20 09:07:01 UTC
-
-Suraj (B); performed and subsequently verified by Suraj before Step 2. Reused the prior `public.py`
-and browser-preparation audit, then inspected `contracts/listings.md`, editable
-contract sources, shared conventions, existing Listings migrations/catalogue,
-Listings frontend routes/placeholders and linked decisions. Confirmed zero is
-valid and asking prices are integer paise in whole-rupee increments. The
-catalogue (8 categories/4 conditions), text/image limits, and availability
-rules are already recorded; the configured sensitive-price threshold and its
-owner remain a Step 2 decision. Step 2's examples also call already-settled
-category, condition, pickup and availability rules "still-missing"; proposed
-clarifying that they are reused, not reopened. The shared MVP migration already
-creates the Listings/catalogue/image tables, constraints and indexes. This
-conflicts with Step 3's wording to "add" the schema and migration; proposed
-clarifying that it must audit/reuse the existing schema and add only a
-necessary follow-up migration, never duplicate tables. No product/code/schema
-files changed.
-`git diff --check` passed.
-
-### LI-01 Step 2 — provisional sensitive-price threshold — 2026-10-20 09:13:35 UTC
-
-Suraj (B) selected ₹5,000 (500,000 paise) as a changeable provisional
-threshold, with Listings owning the setting. The flag uses strict `price >
-threshold`; mobile phones and laptops are always flagged by category. Recorded
-the decision and linked it from the Listings contract; updated the task list to
-reuse already-settled catalogue/field rules and to inspect/reuse existing
-schema, adding a migration only for a proven gap. Updated the schema proposal
-to point to the provisional decision. No runtime setting or migration was
-implemented. `git diff --check` passed. Suraj verified Step 2 at 2026-10-20
-09:16 UTC.
-
-### LI-01 Step 3 — existing schema and migration audit — 2026-10-20 09:17:11 UTC
-
-Suraj (B); performed, awaiting verification. Compared the Listings contract
-with existing shared migrations, catalogue seed, integrity triggers, and
-schema-smoke examples. Existing DDL already has the listing fields, owner and
-catalogue references, availability/retirement fields, whole-rupee price checks,
-image upload/reference tables, 1–8-image publication check, integrity guards,
-and listing/catalogue/owner/price/search/retirement indexes. The ₹5,000
-threshold belongs in application configuration, not the database. No concrete
-schema gap was found in this file-level audit; no migration is proposed. Query
-plan performance remains a Step 11 check. No schema files changed and no live
-database or migration tests were run. `git diff --check` passed.
-
-### LI-01 Step 4 — create/read/replace implementation — 2026-10-20 09:33:37 UTC
-
-Added Listings service validation and owner checks plus HTTP handlers for
-create, detail read, owner-list read, and full replacement. Owner identity comes
-only from trusted `CallerContext`; create/replacement check current eligibility,
-active catalogue values, text/availability boundaries, and owner-bound
-confirmed images. The service expects an injected store to persist listing/image
-changes atomically and enforce revision conflicts. Mounted the routes in the
-API; startup has no store or Identity wiring yet, so requests fail closed until
-those adapters are provided. No schema migration or fake/default store was
-added. Updated the existing contract-schema checks to expect only the
-implemented Listings route subset. A text edge remains: generated Pydantic
-models check raw maximum length before the service trims outer whitespace. The
-canonical source can fix this with a pre-validation rule, but generated outputs
-must be rebuilt; `uv` is unavailable and system Python lacks FastAPI, so no
-generated file was hand-edited. `git diff --check` and Python syntax parsing
-passed; application tests and contract generation were not run. Step 4 awaits
-human verification.
-
-### LI-01 Step 5 visibility follow-up — 2026-10-20 09:52:05 UTC
-
-Suraj confirmed unavailable listings must remain visible in the seller's
-management view while retained and asked that post-retirement visibility be
-studied. Recorded this follow-up in the origin-retirement decision and Step 5;
-the approved retirement timing and cleanup rules are unchanged. Step 5 has not
-started and still awaits its explanation approval.
-
-### LI-01 Step 5 — availability, selection and offer command boundary — 2026-10-20 10:01:01 UTC
-
-Suraj approved Step 5. Added service rules and HTTP routes for owner-only
-availability/window changes, seller selection or clearing, buyer offer
-submission/revision, and offer withdrawal. Selection calls the declared
-Conversations participant-check interface; offer writes call its declared
-offer interface while a Listings-owned state guard is held. The guard must
-serialize with availability and retirement writers. Store methods own atomic
-revision checks and operation replay; the user-facing API still fails closed
-because no storage, Identity, or Conversations adapters are configured.
-Updated only existing route/schema expectations to recognize this implemented
-route subset; no behavior tests were added or run. Python AST parsing and
-`git diff --check` passed.
-
-Retirement eligibility scanning, marker calls and content/image cleanup were
-not implemented. The exact destructive cleanup mechanism/order still needs its
-separate approval. The current schema inventory also has no durable operation
-result shape for availability/selection retries, so resolve that storage need
-before wiring the real adapter; no migration had yet been added at this
-checkpoint. Step 5 remains partial and awaits human verification of this
-increment.
-
-### LI-01 Step 5 — additive owner-command result storage — 2026-10-20 10:28:19 UTC
-
-Suraj approved a separate Listings table for availability and selection retry
-results and approved deleting those records when their listing retires. Added
-forward migration `20261020102224_listing_owner_command_results.sql`; its key
-is listing + command kind + operation ID, and it saves the validated request
-and original response. An after-retirement trigger deletes the saved copies in
-the same database transaction. Updated the Listings/combined contract and schema
-inventory to define replay while retained, 409 on conflicting key reuse, and a
-retired-state conflict after saved-result deletion. Added rollback-only SQL smoke
-coverage for duplicate keys and retirement cleanup; updated current migration
-head/object counts.
-
-Static checks passed: `git diff --check`, `bash -n database/tests/native-checks.sh`,
-and Python AST parsing. The native PostgreSQL/dbmate check did not run because
-the documented tool paths are absent in this environment; the first invocation
-stopped at its usage check and changed no database. The existing shared Compose
-database was left untouched. No production store adapter is configured, so
-this migration supplies the persistent shape but does not by itself activate
-live retry behavior. Suraj verified this owner-command result-storage increment
-at 10:31 UTC. This verifies the storage design and documented change, not a
-native database run or live adapter behavior; LI-01 Step 5 remains partial.
-
-### LI-01 Step 5 — owner-command result storage verified — 2026-10-20 10:31:43 UTC
-
-Suraj verified the additive Listings-owned result-storage increment and the
-decision to delete those saved results when a listing retires. Step 5 remains
-partial: the migration has not been applied to a real test database, the
-rollback-only SQL smoke has not run, and no concrete store/Identity/Conversations
-adapters provide live retry or selection behavior. The pending integration
-ledger records the work and checks still required. No tests or database changes
-were run for this verification.
-
-### LI-01 Step 5 — disposable database checker aligned — 2026-10-20 10:35:24 UTC
-
-Updated `scripts/check_database.py` to require migration head
-`20261020102224` and 24 domain tables, and updated the current database README
-description to match. Historical results for earlier schema heads remain as
-recorded. At this documentation checkpoint, the disposable check had not yet
-run; it passed in the following entry.
-
-### LI-01 Step 5 — disposable PostgreSQL migration check passed — 2026-10-20 10:37:45 UTC
-
-Ran `python3 scripts/check_database.py`; `uv` is unavailable here, and this
-standalone checker uses Python's standard library with its pinned PostgreSQL
-18.6/dbmate 2.36.0 images. It passed clean migration application through head
-`20261020102224`, repeat application, the current domain-table inventory, and
-both SQL smoke suites. The owner-command SQL smoke therefore passed its duplicate
-key and retirement result-deletion checks. The checker removed only its own
-temporary container; the shared Compose database was untouched. This verifies
-the database schema/smoke path, not live API retries or runtime adapters. The
-macOS-only native rollback/reapply/inventory check and service/API behavior
-checks remain pending.
-
-### LI-01 Step 5 — create-retry receipt migration and smoke passed — 2026-10-20 11:25:06 UTC
-
-Following the user's verification of the additive create-retry storage approach,
-added the forward-only migration `20261020111741_listing_create_command_results.sql`.
-It stores the create request and original response under `(owner_id,
-operation_id)` while listing content is retained. Retirement clears both
-content-bearing payloads in the listing transaction but preserves the
-owner/operation/listing key; a database guard prevents restoring payloads after
-retirement. The combined contract describes the proposed safe 409 response for
-a later retry; affected-owner review and contract-version classification remain
-pending. Updated the schema inventory, database/command documentation,
-migration checker, native harness, SQL smoke, LI-01 test expectations, and work
-log. No runtime store/route behavior is wired yet.
-
-`python3 scripts/check_database.py` passed against disposable PostgreSQL 18.6 at
-11:22:17 UTC:
-clean apply at head `20261020111741`, repeat apply, both SQL smoke suites, and
-the 25-table inventory. The smoke verified create receipt retention, payload
-scrubbing on retirement, rejection of payload restoration, and rejection of a
-second listing using the retired operation key; existing seller-command result
-deletion also passed. The checker removed only its own temporary container; the
-shared Compose database was untouched. `git diff --check` and
-`bash -n database/tests/native-checks.sh` passed. macOS native
-rollback/reapply/inventory and runtime API retry checks remain pending.
-
-### LI-01 Step 5 — bounded storage-adapter writer reservation — 2026-10-20 11:35:31 UTC
-
-Suraj (B), `domain/listings`, is the bounded current writer for additive API
-dependency/lock entries, database URL configuration and lifespan wiring, and
-the owned PostgreSQL adapter plus focused checks/docs. Shared dependency and
-configuration sections will only receive the entries required for this work.
-While mapping the existing owner view to the schema, found that the reviewed
-Listing management type exposes `selected_conversation_id` but
-`listings.sale_listings` stores only `selected_buyer_id`; the SQL adapter cannot
-persist or reload the contracted buyer/conversation pair as-is. The bounded
-schema addition is a nullable conversation reference and pair-integrity check;
-the existing migration history remains untouched. Conversations-owner review
-is pending. No code or migration for this reservation had yet been changed at
-the time of this entry.
-
-### LI-01 Step 5 — PostgreSQL adapter and API startup wiring — 2026-10-20 11:53:19 UTC
-
-Added pinned Psycopg async/pool dependencies to root `pyproject.toml` and
-regenerated only their entries plus transitive lock data in `uv.lock`. Added an
-optional redacted `CLIP_DATABASE_URL` setting and an API lifespan that opens a
-bounded PostgreSQL pool only when configured and closes it on shutdown. No DSN
-keeps health-only startup available and Listings fails closed. The new
-`PostgresListingsStore` implements retained-listing reads, owner lists,
-create/edit, availability/selection writes, owner-command replay, atomic
-create receipts and a row lock held across listing-offer calls. A separate
-Listings identity adapter calls Identity's public eligibility declaration and
-fails with 503 while Identity remains unimplemented; Conversations receives
-only its public declarations and likewise remains unavailable. The service no
-longer asks a Listings SQL store to read Identity eligibility.
-
-Adapter mapping found two specific schema needs. Added
-`20261020113531_listing_selection_and_confirmed_image_metadata.sql` without
-rewriting an earlier migration: it stores the selected conversation paired
-with the buyer, enforces the pair, backfills existing selected threads, and
-adds nullable fields for LI-02 to record actual media type/size after object
-inspection. `schema-smoke.sql` checks both pair integrity and metadata shape.
-The writer refuses to attach an upload whose verified metadata is missing; the
-LI-02 verifier still needs to populate it. Conversations-owner review of the
-cross-domain conversation reference remains pending. Post-retirement create
-retry behavior still awaits affected-owner review/version classification;
-retirement and destructive cleanup remain outside this increment. The
-provisional sensitive-price threshold is currently passed through the adapter
-constructor; moving it to environment configuration and adding its rule tests
-remains Step 6.
-
-`uv sync --locked` and `uv lock --check` passed. `uv run --locked pytest
-apps/api/tests -q -W error` passed (250 tests) after correcting the existing
-`AsyncContextManager` import in the newly imported service. Pinned Black check
-passed for nine changed Python files. `python3 scripts/check_database.py`
-passed clean apply at head `20261020113531`, repeat apply, both SQL smoke
-suites, 25 domain tables, rollback of all seven migrations and clean reapply.
-The shared Compose database was not used. `bash -n
-database/tests/native-checks.sh` and `git diff --check` passed. These checks do
-not yet exercise the Python store methods against PostgreSQL; that belongs in
-the isolated Step 9–10 behavior checks. The macOS native schema-inventory run,
-affected-owner review and real Identity/Conversations/LI-02 integration remain
-pending. This increment awaits Suraj's verification.
-
-### LI-01 Step 5 — local PostgreSQL workflow exercised — 2026-10-20 12:19:03 UTC
-
-Fixed the buyer-selection service call to pass the Identity capability adapter
-to the eligibility check. Added a focused PostgreSQL workflow test covering
-create, same-key replay and changed-intent conflict, image replacement, buyer
-selection, availability change, command replay, clearing a buyer while
-unavailable, owner-list visibility, and non-owner denial. The test uses
-synthetic Identity and Conversations doubles; its image metadata is fixture
-data and does not represent an S3 upload.
-
-Extended `scripts/check_database.py --listings-store` additively. It uses a fresh
-memory-backed PostgreSQL 18.6 container, a private temporary Unix socket, no
-host port, and no shared Compose database. It applies and rolls back all seven
-migrations, runs both SQL smoke suites, then runs the adapter workflow after
-reapply and prints a SQL-selected sample row before removing its container.
-The row showed the revised synthetic listing as unavailable at revision 5,
-with one live image, one create receipt, three owner-command receipts, and no
-selected buyer/conversation after the seller cleared selection. The command
-passed; its focused PostgreSQL test passed (1 test).
-
-`uv run --locked pytest apps/api/tests -q -W error` passed 250 tests and skipped
-the one database-backed test because the regular API-only run has no database.
-The focused database command ran that test successfully. Black, Python compile,
-and `git diff --check` passed. The disposable container and socket were removed;
-the shared Compose database was untouched. Step 5 remains partial: retirement
-logic/cleanup, offer and concurrency cases, affected-owner reviews, and real
-Identity/Conversations/LI-02 integrations remain pending. Human verification of
-this increment is pending.
-
-### LI-01 Step 5 — retirement boundary review — 2026-10-20 12:31:35 UTC
-
-Suraj verified the preceding disposable-PostgreSQL workflow checkpoint. Read
-the origin-retirement decision and only the Listings/Conversations public
-interfaces and Listings retirement paths. The Conversations declaration offers
-`get_origin_activity` (thread count plus latest participant-write time) and
-`mark_origin_retired` (an all-or-none no-write marker, with no content cleanup).
-Those calls are declarations only. Listings has no retirement scan, marker
-integration, or content/image cleanup implementation.
-
-The database already records continuous eligibility, checks retirement timing,
-requires no participant writes within 90 days, and scrubs create retry payloads
-and deletes seller-command receipts when a listing is marked retired. However,
-`listings.guard_origin` currently queries `conversations.threads` directly both
-to validate selected-buyer membership and to lock/read `last_activity_at`.
-LI-01 says to use Conversations public calls and not read its private tables,
-so the existing trigger path needs affected-owner/database review before
-Listings retirement is built around it. The owner view after retirement remains undecided; unavailable
-listings must remain visible while their content is retained. Object cleanup
-and its retry-safe order remain behind their separate approval. No application
-code or migrations changed and no tests were run in this review.
-
-### LI-01 Step 5 — shared retirement-interface checkpoint recorded — 2026-10-20 14:04:37 UTC
-
-Suraj approved the API-only retirement sequence and asked to implement the
-coordinated handoff changes on `domain/listings`. Added an unnumbered shared
-checkpoint inside LI-01 Step 5, preserving all existing step numbers. It
-records the 180/90-day rules, pending-operation and retry behavior, lock/write
-ordering, domain owner split, expected contract/document/migration/check
-outputs, and remaining review/integration gates. Physical content/object
-deletion and final retired-listing visibility in My Listings remain separate
-open decisions. This checkpoint updated only the task list and work log; no
-contract, application code, or migration changed, and no tests were run.
-
-### LI-01 Step 2 — retirement contracts and schema proposal updated — 2026-10-20 14:15:07 UTC
-
-Updated the Conversations result type from a boolean retirement flag to the
-three approved outcomes (`marked`, `blocked_recent_activity`,
-`already_marked`) plus `marked_count`. Clarified the public retirement call's
-all-thread lock order, race behavior, unique operation/replay rules, and that
-the marker does not delete content. Updated Listings/Search and shared-boundary
-contracts to require public API calls and owner-side pending state; the exact
-Listings buyer/listing/conversation participant-check API already existed, so
-no new callable was needed. Updated the retirement decision and database
-schema proposal, marking not-yet-migrated fields/table as planned and noting
-the unpublished SQL backfill that Step 3 must remove. Generated the contract
-artifacts with the recorded local uv/Node installations; all eight artifacts
-are current and the generator freshness check passed. `git diff --check`
-passed. No application behavior, migration, or database changed; no tests were
-run. C/D review and real Conversations implementation remain pending.
-
-### LI-01 Step 3 — unpublished migration backfill removed — 2026-10-20 14:19:55 UTC
-
-Removed the `UPDATE ... FROM conversations.threads` that populated Listings'
-selected-conversation ID by reading Conversations' private table in
-`20261020113531_listing_selection_and_confirmed_image_metadata.sql`. Kept the
-Listings-owned image metadata backfill, selected-buyer/conversation pair check,
-and structural FK. If existing selected-buyer rows lack a stored conversation
-ID, the migration now fails closed instead of guessing; any such populated-DB
-upgrade needs an API-backed data-reconciliation plan. `git diff --check` passed,
-and inspection confirms the migration no longer queries `conversations` (the
-structural FK remains). The migration was not applied to any database. Step 3
-awaits human verification.
-
-### LI-01 Step 6 — configurable sensitive-purchase flag — 2026-10-21 10:03:48 UTC
-
-Suraj confirmed the earlier Step 3 migration correction and verified that
-`proof_available` remains the optional seller statement; a buyer-requested proof
-image in chat belongs to Conversations and does not change the Listings tasks
-or contracts. Added typed `CLIP_SENSITIVE_PURCHASE_THRESHOLD_PAISE` configuration
-with the approved 500,000-paise default and nonnegative whole-rupee validation,
-wired it through API startup to the Listings PostgreSQL store, and documented
-the setting in `apps/api/README.md`. The store no longer has a hidden threshold
-default. Added configuration checks and database-backed cases for the exact
-threshold, above-threshold price, mobile/laptop categories at zero price, and
-reclassification; the existing optional proof value remains unchanged.
-
-`.venv/bin/pytest apps/api/tests/test_config.py apps/api/tests/domains/listings/test_postgres_store.py -q -W error`
-passed 18 tests and skipped the database-backed test outside the wrapper.
-`.venv/bin/python scripts/check_database.py --listings-store` passed PostgreSQL
-18.6 clean apply/repeat, both SQL smokes, the Listings adapter workflow (1 test),
-full rollback, and clean reapply. Black check on five Python files, Python
-compile, and `git diff --check` passed. `uv` was unavailable on PATH, so the
-installed `.venv` tools were used. Node-dependent contract checks were not
-needed because no contract shape changed; they remain pending for their later
-task gate. Suraj verified Step 6 on 2026-10-21 10:08:34 UTC; Step 7 is next.
 
 ### BOOT-00 — seed installation and source validation — 2026-10-14
 Suraj (B); completed and human-verified. Cloned the existing exocrat/clip repository, preserved `.git` and `LICENSE`, and installed 28 supplied bundle files at the clone root from `origin/main` revision `3e81554ce3d713478d8f0979d76480e286096455`. All paths were present with no nested bundle directory. The submitted PRD checksum matched the source and bundle manifest: `8ac241d1e72472a5dc77edad18579ec5d2ca3ff2ac8fd454cbc6e9627abf4ad1`. Added README navigation, source provenance, workstation facts, and the A/B/C/D roster; Aditya (A) is the default release/status coordinator and the shared cloud operator remains unselected.
@@ -2626,571 +1480,176 @@ complete empty rollback, clean reapply and repeated smokes. The checker removed
 its disposable container; the shared database was untouched. Native schema
 inventory and affected-owner review remain pending.
 
-
-### LI-01 Step 5 — offer gates and Listings retirement coordinator — 2026-10-20 15:02:18 UTC
-
-Added focused Listings offer-boundary tests. They verify that an eligible buyer
-can submit only when the listing is within its availability window, ordinary
-unavailability still permits withdrawal, retired listings block both actions,
-owner/ineligible callers cannot submit, and availability changes wait while an
-offer call holds the Listings row lock. These use a test-only Conversations
-implementation and do not prove real offer persistence.
-
-Implemented the Listings retirement coordinator in `service.py` and its local
-transaction support in `postgres_store.py`. It checks local 180-day eligibility,
-commits a pending operation ID and a server-derived 90-day activity cutoff
-before calling Conversations, validates the activity preflight, and sends the
-same stored request to the locked marker operation. A confirmed blocked result
-clears both pending fields; API errors and unknown outcomes keep both fields for
-an exact retry. A confirmed marker leaves the listing pending until its
-separately approved local content/image cleanup is implemented. Normal listing
-reads and offer guards hide pending rows, while the owner's retained-listing
-query keeps them visible in My Listings.
-
-The unpublished migration `20261020142319` now adds the cutoff column and
-paired-null constraint for both Listings and Search. This is necessary because
-the operation ID alone cannot reproduce the same request after a restart. No
-committed/shared-applied migration was edited. Listings/Search/combined
-contracts and the schema, database, task and retirement-decision docs now say
-the exact pending ID/cutoff pair must be retained.
-
-`.venv/bin/pytest apps/api/tests/domains/listings/test_retirement_service.py apps/api/tests/domains/listings/test_offer_boundary.py -q -W error` passed (16 tests). `.venv/bin/python scripts/check_database.py --listings-store` passed PostgreSQL 18.6 clean apply/repeat, both SQL smokes, the Listings PostgreSQL workflow, the eight-migration rollback and clean reapply; its disposable container was removed. Black, Python compilation and `git diff --check` passed. Targeted mypy reported three errors in existing page-size/pool typing code; they are deferred to the task-wide type/build gate. No real Conversations provider, shared database, object cleanup or content deletion was used. Step 5 remains partial pending the cleanup decision/order, remaining offer/concurrency tests, owner reviews, and real integration.
-### LI-01 Step 5 — approved Listings cleanup implemented — 2026-10-20 15:14:39 UTC
-
-Suraj approved the Listings-local retirement cleanup order. After Conversations returns `marked` or `already_marked`, the Listings store now verifies the same pending operation ID/cutoff and, in one transaction, marks the listing retired/unavailable, clears user-entered details and selected-buyer fields, marks its attached images retired, and clears the pending pair. Existing triggers scrub create receipt payloads and remove seller-command receipts. The Conversations tables and Search saved references are not changed.
-
-Added a Listings cleanup-worker service method. It selects retired image rows only when their parent listing is retired, passes each stored object key to the image-storage boundary, and removes the image/upload rows only after the adapter confirms the object was deleted or already absent. Errors/unknown outcomes leave the object key available for another idempotent attempt. No S3 adapter or scheduled worker is wired yet; that real integration remains LI-02 work. The current My Listings behavior continues to omit retired listings; the possible content-free marker is still a follow-up decision.
-
-Updated the Listings contract, origin-retirement decision, task list and integration ledger to record the approved cleanup method and its remaining real-provider gates. No migration or shared database change was needed; the existing image `retired_at` field serves as durable cleanup work.
-
-`.venv/bin/pytest apps/api/tests/domains/listings/test_retirement_service.py apps/api/tests/domains/listings/test_offer_boundary.py -q -W error` passed (18 tests). `.venv/bin/python scripts/check_database.py --listings-store` passed PostgreSQL 18.6 clean apply/repeat, both smokes, the Listings adapter workflow, full eight-migration rollback and clean reapply. The database workflow verified the 180-day guard, content/receipt scrubbing, image cleanup queue, and deletion of image/upload metadata after confirmation. Black, Python compilation and `git diff --check` passed. Real Conversations and object-storage integration remain pending. Cleanup implementation awaits user verification; no commit or push.
-
-### LI-01 Step 7 — bounded frontend writer and browser scope — 2026-10-21 10:18:55 UTC
-
-Suraj verified the Step 7 scope: real Listings API/PostgreSQL writes with trusted
-synthetic accounts and prepared image records in a labelled loopback-only demo.
-Suraj (B), `domain/listings`, is the sole current writer for the Listings create/
-detail/edit/sale-management compositions in `apps/web/src/pages/ScaffoldPages.tsx`
-and the bounded development API proxy in `apps/web/vite.config.ts`. Feature code
-stays in `src/features/listings/`; other domains' slots/public connections remain
-owned by A/C/D. The frontend collaboration map and command documentation receive
-only the corresponding Listings updates. A/C/D affected-owner review remains
-pending; no external messages were sent. `git fetch origin main` completed after
-explicit user permission, no newer frontend differences were found, and GitHub
-reported no open PRs. No merge or conflict resolution was performed. First browser
-checkpoint is create → read saved detail → refresh; pause for human desktop/phone
-inspection before edit/My Listings.
-
-### LI-01 Step 7 — create/detail first browser checkpoint — 2026-10-21 10:35:23 UTC
-
-Suraj (B); isolated implementation performed, human browser inspection pending.
-Implemented responsive create/detail components in the Listings feature with
-field validation, optional proof statement, safe loading/errors, stable create
-retry identity, unpublished/pending-image feedback and platform-limit wording.
-Connected the existing reviewed `/catalogue` endpoint to Listings-owned active
-SQL values. Public page composition keeps A/C/D child slots and uses only the
-Listings entry point. Edit/My Listings and remaining owner/state scenarios are
-not implemented by this increment; Step 7 remains partial.
-
-The separate test-package `browser_demo.py` launcher creates or resumes only
-its labelled, private-socket PostgreSQL 18.6 database, migrates it with dbmate
-2.36.0 and serves actual Listings routes/store on loopback 8000. Trusted account
-and image-confirmation metadata are synthetic; no real sign-in, object or photo
-is validated. Test activation/remote-write rejection and absent production test
-routes are checked. The development-only Vite proxy and explicit demo flag
-serve the browser at `http://127.0.0.1:5173/listings/new`. Owned API/web processes
-remain running for inspection; private session `/tmp/clip-listings-browser-zzk_siwg`,
-container `8e94650dc9d79617425a2b8e3dd42b3df17e3d1e8c753445c05c977dcd400cd7`.
-The existing `clip-local-postgres-1` database was not used or changed. No commit,
-push, merge, cloud operation or external message occurred.
-
-Checks:
-
-- `npm run check`: lint, 30 tests, both TypeScript projects and production build
-  passed. Production output contains no test-image endpoint.
-- `UV_CACHE_DIR=/tmp/clip-uv-cache uv run --locked pytest apps/api/tests -q -W error`:
-  281 passed, 1 database test skipped in this plain run.
-- `UV_CACHE_DIR=/tmp/clip-uv-cache uv run --locked python scripts/check_database.py --listings-store`:
-  that database test passed (1 passed); PostgreSQL 18.6 clean apply/repeat, both
-  SQL smokes, guarded/full rollback and clean reapply passed.
-- `UV_CACHE_DIR=/tmp/clip-uv-cache uv run --locked pytest apps/api/tests/domains/listings/test_browser_demo.py -q -W error`:
-  final focused 9 tests passed. Black check on the five changed/new Step 7 Python
-  files passed.
-- `UV_CACHE_DIR=/tmp/clip-uv-cache uv run --locked python scripts/generate_contracts.py check`:
-  all eight registered artifacts current, format 2. The recorded existing Node
-  24.22.0 and uv 0.10.7 executables were activated on this command's PATH; the
-  earlier Node-unavailable freshness check is now resolved in this session.
-- Real HTTP smoke through Vite verified eight categories/four conditions, missing
-  image rejection, create, fresh detail, identical retry, changed-intent conflict
-  and owner read. Read-only SQL inspection confirmed saved row
-  `b4834eab-b70c-4f3c-9ede-2d17967411b0`, title `Synthetic Step 7 smoke textbook`,
-  price 0, availability available and proof NULL. A stop/resume preserved that
-  row. A subprocess SIGINT check verified clean launcher exit and stopped owned
-  container; it was then resumed for the human check.
-- Scoped Gitleaks 8.30.1 scan passed on 25 changed/new Listings files, excluding
-  existing unrelated untracked artifacts. `git diff --check` passed.
-- `uv run --locked pytest ...test_browser_demo.py tests/architecture/test_boundaries.py -q -W error`:
-  68 passed, 1 repository-boundary failure. `scripts/check_boundaries.py` reports
-  five existing violations: four root API composition imports and one Identity
-  public-module import spelling. Inspection of those files from committed
-  `8d243e4` reproduces all five; this increment adds no violations. Keep this
-  production composition/guard gate pending at Step 11; no scanner exceptions
-  were added or integration acceptance claimed.
-
-Initial verification exposed a PostgreSQL bootstrap-readiness race, a test
-import-order leak and launcher restart/signal handling issues. Fixed the ready
-check to wait for the final TCP server, isolated the entry-point test in its own
-process, matched Uvicorn's reusable socket check and ensured signals run bounded
-container shutdown. Successful reruns above supersede those failed attempts.
-
-Human inspection must cover creation/refresh, zero/invalid price and dates, proof
-omitted/Yes/No, sensitive-category/price boundaries, missing images, network
-error/retry and desktop/narrow portrait/landscape layouts. Browser/version and
-observations remain pending; terminal checks do not verify those UI behaviors.
-See `apps/web/README.md` and the registered launcher/inspect/resume commands.
-
-### LI-01 Step 7 — first browser feedback and UI corrections — 2026-10-21 10:48:18 UTC
-
-Suraj reports creation and the redirect work. Requested clearer validation copy,
-confirmation of the catalogue/pickup rule and a visible listing-photo placeholder.
-Updated only Listings UI: `listingForm.ts` now names missing fields and gives plain
-price/date/photo guidance; `CreateListing.tsx` explains the selected condition;
-`ListingDetail.tsx` includes a labelled vector photo placeholder and simpler
-published/missing-listing messages; `listings.css` keeps the photo area responsive.
-The condition meanings match `mvp-database-schema.md`: new/unused, prior use with
-minimal wear, normal wear, substantial wear. The existing catalogue seed supplies
-all four choices. Pickup area remains required by the reviewed contract and the
-`listing_live_or_retired` database check. No stored values, API/contract, schema,
-shared UI or other feature code changed. My Listings is still the next unfinished
-Step 7 screen; saved detail URLs work now. This is not full Step 7 verification.
-
-`npm run check` passed lint, 30 web tests, both typecheck projects and production
-build; `git diff --check` passed. Await human visual recheck of the messages,
-condition guidance and photo placeholder, plus browser/version and desktop/phone
-observations. Other pending integrations and the pre-existing backend boundary
-findings remain recorded at their original checkpoints.
-
-### LI-01 Step 7 — pickup optionality correction and writer scope — 2026-10-21 10:56:32 UTC
-
-Suraj verified that the current create/detail flow and prior UI corrections work,
-and corrected the product requirement: pickup area is optional. This is a change
-to the requirement, not merely its label. Blank form means not provided; create
-omission/null stores SQL NULL, replacement uses explicit null to clear, provided
-text keeps the existing trim/1–120 limits, and detail shows Not specified.
-Suraj (B), `domain/listings`, is the bounded writer for Listings' pickup field in
-`contracts/source/types.py`, regenerated declarations, contract/schema/product
-documentation, and one additive Listings migration with matching isolated/native
-checker head updates. This scope does not alter other domain implementations or
-existing applied migrations. Affected consumer/schema review remains pending;
-no shared/Compose/cloud database apply or external communication is authorized.
-Implement and verify this correction before the next Step 7 screen increment.
-
-### LI-01 Step 7 — optional pickup implemented and locally verified — 2026-10-21 11:02:08 UTC
-
-Suraj (B); pickup-area requirement correction implemented, human recheck pending.
-Updated the existing field-limit decision and canonical Listings/combined/schema/
-product references. `contracts/source/types.py` permits create omission/null,
-requires explicit nullable pickup on full replacement, and exposes nullable
-pickup on reads. Regenerated artifacts using the registered generator; no
-generated file was edited directly. Listings service/store pass absent values
-through as SQL NULL; supplied text retains trim/length validation. The form marks
-pickup optional and omits blank input; detail displays Not specified. Existing
-filled pickup values remain unchanged. Consumers must handle nullable pickup;
-Search's reviewed double type-checks, and affected-owner review is still pending.
-
-Added forward migration `20261021105546_optional_listing_pickup_area.sql`; it
-relaxes only pickup in the live-row check. Its down path refuses existing live
-rows with null pickup rather than inventing data or deleting rows. Original
-migrations are unchanged. Updated the disposable/native checker heads to nine
-migrations and preserved the separate retirement rollback refusal test. Native
-macOS execution remains pending; `bash -n database/tests/native-checks.sh` passed.
-Only the disposable checker and labelled browser-test container were migrated;
-shared Compose/cloud databases were untouched. Restarted the same isolated
-browser session without resetting its four existing listings. HTTP create/read/
-retry with omitted and explicit null pickup succeeded; read-only checks preserve
-previous pickup values. New synthetic listing:
-`6ff1f312-52bc-401b-bd60-42ce9eb4d3c1`.
-
-Checks:
-
-- `npm run check`: lint, 31 tests, types and build passed.
-- `uv run --locked python scripts/check_database.py --listings-store`: 1 real
-  PostgreSQL workflow passed, including omitted create, replacement clearing,
-  fresh read and refusal of actual down SQL while null pickup rows exist. Clean
-  nine-migration apply/repeat, both smokes, separate retirement rollback guard,
-  full rollback and clean reapply passed.
-- `uv run --locked pytest apps/api/tests tests/contracts -q -W error`: 330 passed,
-  1 plain-run DB skip, 2 failures in old mounted-route inventories that omitted
-  this increment's `/catalogue`. Updated only those Listings expectations in
-  `tests/contracts/test_domain_declarations.py` and `test_generation.py`, and
-  set the catalogue route summary to its declared operation name. Focused rerun
-  of both failed checks and the two new nullable-field model tests: 4 passed.
-  No full-suite rerun or aggregate pass is claimed.
-- `uv run --locked mypy --no-incremental apps/api/tests/domains/search/doubles/listings.py`:
-  passed. `uv run --locked python scripts/generate_contracts.py check`: eight
-  artifacts current (format 2). Pinned Node/uv activated from existing installs.
-- Black check passed on nine relevant changed Python files; `git diff --check`
-  passed. Scoped Gitleaks 8.30.1 scan passed on 41 changed/new Listings files; existing
-  unrelated untracked artifacts were excluded.
-
-Current browser URL/session are unchanged. Recheck a blank pickup field saves
-and shows Not specified, then resume edit/My Listings within Step 7. No contract
-consumer acceptance, native run, readiness/full task completion, commit, push,
-shared migration or external message is claimed.
-
-### LI-01 Step 7 — My Listings page and photo placeholders implemented — 2026-10-21 11:22:17 UTC
-
-Suraj verified the My Listings increment and asked that later Identity
-integration remain straightforward. After the earlier optional-pickup browser
-recheck, Suraj confirmed that behavior works. The page reads the existing owner-only
-`GET /me/listings` contract through the Listings API client. It sends no owner,
-user or account identifier; the server resolves the current caller and filters
-the rows. The local browser harness supplies a trusted synthetic caller, while
-real authentication remains an ID-READY integration gate. The feature handles
-loading, safe errors/retry, an empty account, saved listing links and the
-contract's page continuation. The Search wanted tab stays at its existing
-public boundary. Removed the scaffold's visible Conversations placeholder from
-My Listings; a real conversation link belongs to the Conversations feature.
-Added a small neutral photo placeholder to every sale-list row and reused the
-same placeholder illustration on detail. It states that no photo is uploaded;
-the browser demo's synthetic image references are not presented as real photos.
-After Suraj's screenshot showed the details starting at different horizontal
-positions, changed sale rows to fixed thumbnail/action columns with a flexible
-details column; narrow layouts stack those columns.
-Retired-listing display remains the previously recorded open decision.
-
-The live endpoint rejected an explicitly supplied `page_size=20`, while its
-documented default worked. The client now sends the page number only and lets
-the API use its 20-row default; no backend contract change was made.
-
-`npm run check` passed after the page, placeholder and row-alignment changes:
-lint, 32 web tests, type checks and production build.
-The live Vite-proxied `GET /api/me/listings?page=1` returned five saved rows
-from the isolated PostgreSQL database; `git diff --check` passed. No write,
-shared database, real sign-in, or photo upload was exercised. Pause for human
-desktop/phone browser inspection of My Listings and the pending optional-pickup
-correction before another Step 7 increment.
-
-### LI-01 Step 7 — ordered multi-image edit and local database verification — 2026-10-21 11:41:13 UTC
-
-Added the owner edit page using the existing paginated owner-list contract to
-load a fresh listing revision. Sellers can keep current photos, add prepared
-test upload records, remove photos, and move them up or down; the ordered list
-is saved with the full replacement request. The editor protects the last photo
-and caps the selection at eight. My Listings now links to Edit, and the detail
-page shows a main photo area with thumbnails for the rest. The browser's
-prepared-image path creates metadata only; it does not upload or display image
-bytes. When a saved edit removes an image, its retired row is sent to the
-existing cleanup queue even if its listing remains active.
-
-The PostgreSQL schema does not permit unretiring an image row. The adapter now
-preserves retained rows, changes their positions safely within the transaction,
-and retires omitted rows; a later re-add must use a new confirmed upload. No
-migration was needed. Contract notes and the upload staging decision record
-these replacement and cleanup semantics.
-
-`npm run check` passed: lint, 32 web tests, type checks and production build.
-All focused Listings API tests passed (31; the environment-only direct store
-test is skipped outside the disposable database wrapper). Contract generation
-reports eight registered artifacts current. The disposable PostgreSQL Listings
-workflow passed, including create, retain/add/reorder/remove, and a follow-up
-edit that confirms removed images enter cleanup while the listing stays live.
-The initial database run found and corrected a store edit-placement issue and
-then a schema guard against unretiring; the final disposable run passed. Suraj
-verified the current browser checkpoint, including the multi-image editing and
-gallery behavior. This does not accept real photo upload/delivery, phone-device
-behavior, real sign-in or cross-domain integration. No commit or push.
-
-### LI-01 Step 7 — multi-image browser checkpoint verified — 2026-10-21 11:51:54 UTC
-
-Suraj verified the ordered multi-image editor and detail gallery in the local
-isolated browser checkpoint. Step 7 remains partial while its remaining
-validation/loading/unavailable/error scenarios are checked in the broader task
-work, and phone-device observations are not recorded. Real file upload and
-delivery remain LI-02 work. Step 8 is next; no Step 8 changes have started.
-
-### LI-01 Step 8 — response privacy and seller authorization — 2026-10-21 12:03:35 UTC
-
-Suraj approved making selected-buyer state seller-only. Updated the Listings
-contract: selected buyer and selected conversation values are returned only in
-the seller's owner-management/command responses. Public detail and discovery do
-not include them; Conversations would need a separately defined buyer notice.
-The existing `ListingDetail` response filter already removes owner ID,
-revision, selected buyer/conversation IDs and owner timestamps, while
-`/me/listings` is queried using the authenticated caller's ID. Edit,
-availability and selection services compare the trusted caller with the stored
-listing owner before reaching the write adapter. Sensitive status remains a
-server-computed display flag; the optional proof answer remains an explicit,
-unverified seller statement.
-
-Added `test_authorization.py` for public-detail redaction (including the owner
-and a conversation participant), owner-only management data, non-owner edit,
-availability and selection rejection, and owner-only access to unavailable
-detail. The offer test's synthetic caller expiry was extended because it used
-the wall clock while freezing its service clock; it began expiring at noon on
-the test date.
-
-`pytest apps/api/tests/domains/listings` passed: 39 passed, 1 direct database
-test skipped outside the disposable wrapper. The new authorization tests and
-existing Listings test files pass Black; contract generation reports eight
-registered artifacts current; `git diff --check` passed. No database or API
-schema change was required. Step 8 checks are complete; Step 9 is next. Real
-Identity, Search, Conversations and photo integrations remain pending.
-
-### LI-01 Step 9 — Listings scenario coverage — 2026-10-21 12:19:38 UTC
-
-Added synthetic request validation for required fields, whole-rupee price
-boundaries and the omitted proof declaration. Extended the authorization tests
-to check the inclusive availability start, exclusive end, future windows,
-unavailable status, and the owner's retained detail access. Extended the
-disposable PostgreSQL workflow to prove two edits at one revision yield one
-winner and one conflict, reopening clears the retirement clock, a new
-unavailable period becomes eligible at exactly 180 days (not 179), and
-availability-window expiry reaches retirement at the same 180-day boundary.
-The workflow also retains the thread, participants and content-free create
-operation identifiers after retirement; it scrubs request/result payloads,
-blocks an exact late create retry and rejects reopening. Existing checks cover
-the ₹5,000 threshold, mobile/laptop categories, reclassification, and omitted,
-true and false proof values. Retirement coordinator fixtures check the exact
-90-day cutoff and both a recent write that blocks the marker and a write exactly
-at the cutoff.
-
-Changed `scripts/check_database.py` so its sample-row evidence accepts the
-winner of the new competing-edit test. The first run correctly exposed the
-wrapper's stale hard-coded title expectation; the next full disposable run
-passed PostgreSQL 18.6 migration apply/repeat, SQL smokes, the real Listings
-adapter workflow, full rollback and clean reapply. Direct Listings tests passed
-(59 passed, 1 database-only test skipped because that direct invocation lacks
-the disposable DB); Black and `git diff --check` passed. The focused wrapper
-removes its disposable database; the shared database was not used.
-
-New thread creation after retirement belongs to the Conversations-owned
-thread-start path. That path is not implemented in the current checkout; the
-database trigger intentionally no longer reads the other domain's state. This
-step therefore records post-retirement thread-start rejection as a required
-Conversations integration check, not as a Listings-local pass. No production
-code or schema changed. Step 10 is next; real Identity, Conversations, image
-and Search integrations remain pending.
-
-### LI-01 Step 10 — isolated seller, capability and offer checks — 2026-10-21 12:24:23 UTC
-
-Added a synthetic temporary-account test to `test_offer_boundary.py`. It
-replaces Identity's declaration with a test implementation that records the
-requested capability and denies `regular`; Listings receives a trusted
-temporary `CallerContext`, returns 403, and sends no offer command to the
-reviewed Conversations double. Existing isolated checks cover seller/owner
-authorization, availability changes and lock ordering, buyer selection,
-offer first-submit/revision/withdrawal gating, and unavailable/retired cases. The PostgreSQL
-workflow from Step 9 exercises the real Listings store for create/edit,
-availability, selection, idempotency, concurrency and retirement.
-
-`.venv/bin/pytest apps/api/tests/domains/listings -q` passed (61 passed, one
-database-only test skipped outside the wrapper). `.venv/bin/python
-scripts/check_database.py --listings-store` passed the disposable PostgreSQL
-18.6 migrations, SQL smokes, Listings store workflow, rollback and clean
-reapply. Black and `git diff --check` passed. No production behavior, contract,
-schema, or real provider integration changed. The Conversations double records
-the command but does not prove offer persistence; CN-02 remains the real
-integration gate. The Conversations-owned thread-start path is absent from this
-checkout, so its post-retirement rejection also remains pending. Step 10 result
-is awaiting Suraj's verification; LI-01 stays in progress.
-
-### LI-02 Step 1.5 — owner availability controls and My Listings filters — 2026-10-22 18:35:55 UTC
-
-Following Suraj's verified scope, added Mark unavailable / Mark available
-controls to each owner listing and an All / Available / Unavailable selector.
-Filtered views fetch every owner page before presenting results. Changes call
-the existing owner-only, revision-checked, idempotent Listings availability
-operation and preserve the listing's stated time window. A stale revision
-offers a reload; transient failures retain the same operation key for safe
-retry. The local browser route uses the same frontend/API and is independent of
-the cloud test.
-
-`npm run check` passed: Biome lint, 42 web tests, TypeScript checks and Vite
-production build. Added an API adapter test for the exact availability route,
-body, revision and operation ID. No API contract, database schema, or cloud
-resource changed. The local desktop/browser command and checks remain separate
-from Step 12's deployed mobile review.
-
-Suraj verified the Step 1.5 result on 2026-10-22. A follow-up read-only AWS
-inventory refresh was attempted, but the CLI could not update the `surajs2`
-SSO token cache because this session has read-only access to `/home/suraj/.aws`;
-no cloud state was changed. The last successful post-stop inventory remains the
-current recorded cloud evidence pending a writable authorized AWS session.
-
-### LI-02 Step 12 — lifecycle consolidation and shared-integration readiness audit — 2026-10-22 19:02:35 UTC
-
-Replaced the separate database-resume action with recovery inside the normal
-`start` command. The single driver now records phases and run-owned assets,
-checks for stale LI-02 state before a fresh run, owner-checks the dedicated
-database before bootstrap, and fails closed if cleanup definitions or phase
-ownership are ambiguous. `stop` retains its baseline until demo cleanup and
-captured shared-state restoration succeed, verifies the URL parameter is gone,
-and skips an empty run-scoped S3 prefix. New ECR builds disable Buildx
-provenance to avoid creating separate untagged provenance artifacts. Start and
-stop print the exact opposite command for the same profile. No AWS operation
-or commit occurred.
-
-Local checks passed: Black check, Python bytecode compilation, CLI help,
-`make -n` for start and stop, no public resume-command references, and
-`git diff --check`. The Step 1.5 UI/API check remains the prior verified result
-(`npm run check`, 42 tests); it was not rerun during this lifecycle-only step.
-
-The separate Step 13 readiness audit found the local/isolated Listings build is
-not ready to plug into the real shared deployment. LI-CORE and ID-READY are
-not accepted; DL-00 still awaits independent review and merge. Runtime uses the
-fixed isolated caller, while `PublicListingsIdentity` calls a declaration-only
-Identity function that safely returns 503 until wired. Conversations public
-calls are also declaration-only. Configuration has no real Identity provider,
-and serving the bundled website is explicitly limited to the isolated caller.
-The concrete S3 adapter and the built UI/API can be reused, but shared Identity
-context, ordered shared migrations, shared bucket/runtime policy, Conversations
-implementation where required, and shared UI/API deployment settings remain
-integration work. The task plan permits the eventual environment selection to
-change configuration and trusted-caller wiring without changing Listings
-business behavior; a literal shared-mode toggle is not implemented yet.
-
-Step 2 awaits Suraj's verification. Step 3 remains gated on an approved clean
-source revision and a refreshed live AWS inventory. The new fixed cleanup task
-will owner-check and remove the isolated database left by the last run; any
-owner mismatch still fails closed. Untagged ECR residue must be checked before
-claiming the prior run left no billable LI-02 artifacts.
-
-### LI-02 — live teardown inventory refreshed — 2026-10-22 19:09:57 UTC
-
-Read-only checks in account `335523638354`, `ap-south-1` confirmed the LI-02
-load balancer is absent; the LI-02 ECS service is inactive with zero tasks; the
-shared ECS API service is desired/running zero; and the shared ECS host ASG is
-at zero. The run-scoped Listings S3 prefix is empty and the database URL
-parameter is absent. The shared NAT gateway remains, as in the foundation
-baseline. Shared RDS `clip-shared-test-postgres` is **available** (`db.t4g.micro`,
-20 GiB), while the recorded pre-test state was stopped, so teardown has not
-restored the prior billable state. Recent RDS connection metrics were zero after
-the test workload stopped. No active LI-02 database cleanup task definitions
-are present; prior history records that the isolated-database cleanup was
-skipped, so its data is presumed to remain (the live database catalog was not
-queried). No LI-02-tagged ECR images remain, but 12 untagged digests pushed
-during this run remain in the shared repository; confirm ownership and unique
-layer storage before removing them. Cost Explorer through October 22 returns
-estimated zero service amounts and cannot establish the final charge. No AWS
-mutation occurred. RDS restoration should remain part of teardown; because the
-optional database cleanup task is unavailable, the lifecycle script needs an
-approved preserve-database path before it can restore the captured stopped
-state safely.
-
-### LI-02 — RDS stop requested; database reset path confirmed — 2026-10-22 19:21:22 UTC
-
-Suraj directed restoring shared RDS to stopped and requested removal of the
-isolated Listings database because the next startup recreates it. Live checks
-confirmed account `335523638354`, `ap-south-1`, RDS available, zero running ECS
-tasks, and zero database connections in the latest published five-minute
-metrics through 19:15 UTC. No active or inactive LI-02 database task
-definitions exist, so an owner-checked database drop could not be run without
-preparing additional cleanup infrastructure. To avoid that temporary
-deployment, the isolated database remains stored for now; the next startup
-reset will remove it only if owned by `clip_test_listings_app`, then recreate,
-migrate, and seed it. `StopDBInstance` was requested at 19:17 UTC; RDS still
-reported `stopping` at 19:21 UTC, so completion remains unverified. No ECR
-digests were removed, per Suraj's direction. The uncommitted local stop driver
-still deletes run images and must be changed to preserve ECR before reuse. No
-Terraform change or other AWS mutation occurred beyond the RDS stop request.
-
-### LI-02 — RDS stop confirmed; residual billing and lifecycle readiness checked — 2026-10-22 19:28:13 UTC
-
-A fresh read-only query in account `335523638354`, `ap-south-1` confirmed
-`clip-shared-test-postgres` is `stopped` (`db.t4g.micro`, 20 GiB gp3). The
-19:26 resource inventory found no LI-02 ALB, no running ECS tasks, and shared
-ECS host ASG desired/instance counts at zero. Twelve untagged ECR image
-digests remain; no delete was run, consistent with Suraj's ECR-retention
-direction. The isolated `clip_test_listings` catalog was not queried and may
-remain on the stopped shared RDS; it has no separate DB-instance charge, while
-the RDS storage/backups remain billable as shared baseline. The stop helper
-only considers tags recorded for the current run; the existing untagged ECR
-digests are not targeted. A complete clean start/stop cycle has not yet
-verified the revised procedure.
-
-### LI-02 — ECR cleanup scope clarified — 2026-10-22 19:32:15 UTC
-
-Suraj clarified that prior ECR digests should remain, while generated images for
-an individual LI-02 run may be cleaned up. Review of `delete_run_images` shows
-it considers only the run's saved tags, and retains a digest with other tags or
-references from active task definitions; it asks before deleting any eligible
-digest. Existing untagged digests are outside that tag list. No ECR code change
-is required for the clarified retention behavior.
-
-### LI-02 Step 2 — lifecycle consolidation and readiness audit verified — 2026-10-23 06:31:31 UTC
-
-Suraj verified Step 2. The staged candidate contains the My Listings
-availability/filter behavior, consolidated LI-02 start/stop orchestration,
-command/runbook updates, and the referenced Step 12 browser evidence. The
-Gitleaks 8.30.1 source snapshot and staged whitespace check passed. Existing
-local preview data and `database/migrations.zip` remain unstaged. The next
-cloud start still requires an approved immutable commit and fresh inventory;
-no AWS resources changed during this checkpoint.
-
-### LI-02 Step 3 — startup preflight blocked by expired AWS session — 2026-10-23 08:38:33 UTC
-
-Suraj verified the Step 3 scope. `make li02-demo-start AWS_PROFILE=surajs2`
-passed the local source/tool checks but AWS STS rejected the saved session as
-expired during the first identity check. The command exited before creating a
-baseline or changing AWS resources; no images were built or pushed. Re-run
-after authenticating `surajs2` and verifying the caller account is
-`335523638354`.
-
-### LI-02 Step 3 — images published; shared RDS start blocked by AZ capacity — 2026-10-23 08:46:17 UTC
-
-Suraj reauthenticated and the script revalidated account `335523638354`, region
-`ap-south-1`, month-to-date spend USD 6.14, forecast USD 21.42, and USD 200
-monthly limit. With approval, it built and pushed the two `038bb28` images to
-the shared test ECR repository under the run-specific tags saved in baseline
-`li02-c2090c6c3294`. The approved RDS start returned
-`InsufficientDBInstanceCapacity` twice for `db.t4g.micro` in `ap-south-1a`.
-A read-only check confirmed RDS is still stopped and single-AZ in `ap-south-1a`;
-the shared subnet group has active subnets in `ap-south-1a` and `ap-south-1b`.
-The run remains at `images-ready`; no URL parameter, database task, ALB, or ECS
-service was created. Further attempts should wait for same-AZ capacity or follow
-a separately reviewed plan for a shared-RDS topology change.
-
-### LI-02 Step 3 — RDS recovery stopped by capacity shortage — 2026-10-23 09:18:18 UTC
-
-The third start request was accepted and RDS began recovery. At 09:11 UTC, the
-RDS event log reported insufficient `db.t4g.micro` capacity in `ap-south-1a`
-and said it was putting the instance into `stopping`. A fresh read at 09:18
-confirmed `stopping`. No operator stop request was issued. The AWS waiter was
-ended because the instance was no longer progressing toward `available`. The
-run baseline and two pushed images are retained; there is no public ALB, ECS
-service, URL parameter, or LI-02 database setup. AWS gives no recovery ETA.
-
-### LI-02 Step 3 — separate the demo database from shared RDS — 2026-10-23 09:47:05 UTC
-
-Suraj verified the separate-database direction. Updated only the LI-02 test
-Terraform root, demo lifecycle driver, test task diagnostics, Step 12/runbook
-documentation, and status record. The app's existing `CLIP_DATABASE_URL`
-runtime contract remains unchanged. The demo now provisions a private,
-encrypted, single-AZ disposable PostgreSQL 18.6 `db.t4g.micro` in `ap-south-1b`
-and fixed tasks target it; stop owner-checks and removes its data, then deletes
-that RDS instance without a final snapshot. The script no longer starts,
-connects to, or stops shared RDS. The existing approved master-password
-parameter is only read and injected through Terraform's ephemeral,
-write-only input; it is not modified or printed. Local validation passed:
-Terraform fmt/validate (1.15.9), Python compilation, 27 database lifecycle
-wrapper cases, and `git diff --check`. No Terraform plan or AWS resource/data
-change was made. Existing images and the resumable `images-ready` baseline are
-retained pending review/commit and a fresh approved cloud plan.
+### LI-01 Steps 1–6 — contract, storage, and retirement implementation — 2026-10-20 08:57:01–2026-10-21 10:03:48 UTC
+
+Suraj (B) audited and reused the existing Listings schema and catalogue; no
+duplicate tables were needed. The accepted defaults include the configurable
+500,000-paise sensitive-purchase threshold, with mobile/laptop categories
+always flagged and proof availability treated as an unverified seller
+statement. Listings service/API and PostgreSQL storage now use trusted caller
+identity, owner checks, retry-safe create/owner commands, and the public
+Identity/Conversations boundaries. The selected buyer/conversation pair and
+verified image metadata have Listings-owned storage.
+
+The Step 5 retirement path uses the public Conversations activity/marker
+interface: eligibility is 180 days unavailable or past the availability end,
+plus 90 days without participant writes in every related conversation.
+Listings persists the same operation ID/cutoff for retries, clears it only on a
+confirmed blocked result, and keeps unknown outcomes retryable. After marking,
+the approved local cleanup scrubs listing details and receipts; image metadata
+is retained until object deletion is confirmed. No cross-domain private-table
+backfill remains. Forward migrations add the necessary command receipts,
+selection pair, retirement boundary, and configuration fields; shared Compose
+data was not used.
+
+Disposable PostgreSQL 18.6/dbmate checks passed clean and repeat migration
+application, SQL smokes, Listings store/retirement workflows, and guarded
+rollback/reapply at the checkpoints recorded here. Focused API, Black, mypy,
+contract-generation, and diff checks passed where available. Real
+Conversations/storage workers, affected-owner/native schema review, and final
+integration remain pending. The cross-domain retirement handoff entries are retained as recorded.
+
+### LI-01 Steps 7–10 — local Listings UI, authorization, and scenarios — 2026-10-21 10:18:55–12:24:23 UTC
+
+Implemented the isolated responsive create/detail/edit/My Listings surfaces,
+ordered multi-image editing, loading/error/retry states, and owner-only
+availability/selection behavior. User clarification made pickup optional;
+migration 20261021105546 supports omitted/null create and explicit-null
+replacement clearing without inventing data on rollback. Step 8 keeps selected
+buyer/conversation fields seller-only. Step 9 covers validation, lifecycle and
+retirement boundaries; Step 10 covers seller capability, owner, availability,
+selection, and offer-command behavior against reviewed test doubles.
+
+The focused Listings suite passed 61 tests (one database-only test is skipped
+when run without its wrapper); disposable PostgreSQL workflows passed. Web
+lint/tests/types/build, Black, contract freshness, and diff checks passed at
+their recorded checkpoints. Suraj verified the multi-image gallery and Step 10.
+Step 7 remains partial; the local phone-device check, real sign-in/photo
+upload, real Conversations offer writes, and Search integration are not claimed.
+
+### LI-02 Steps 1–3 — isolated storage and initial infrastructure — 2026-10-21 13:01:52–2026-10-22 04:56:10 UTC
+
+The rehearsal design selected a private SSE-S3 bucket, public-access blocking,
+TLS enforcement, run-scoped object permissions, bounded ECS roles, a
+permissions boundary, and seven-day logs. The initial Terraform apply used
+approved plan 9646c9a795215e8b5842c58c780257791ede360bd8914d4eb2d137f85881488a
+(15 resources added; no runtime, RDS, or ECS service). The bucket enforces If-None-Match: * for run-prefix uploads. Account, role, and
+resource checks used profile surajs2 in 335523638354/ap-south-1; no shared
+application data was read.
+
+### LI-02 Steps 4–11 — upload lifecycle and local security gate — 2026-10-22 05:48:54–11:36:10 UTC
+
+The approved Step 4 plan 520a5ad1af425698152b092fb636fa6e0715197977b461d3f5b6cc94b3f81a7b changed only bucket CORS/policy to require If-None-Match: * on run-prefix uploads. Implemented five-minute authorized upload/delivery URLs, 1–8 image and 10 MiB limits, server-side JPEG/PNG/WebP byte checks, owner-bound confirmation, transactional listing references, retry-safe pending/failed/expired states, private delivery, and bounded cleanup after the approved 24-hour intent expiry plus five-minute grace period.
+The isolated caller is fixed server-side and startup rejects the wrong database,
+application role, bucket, region, or run prefix. The security review found the
+bucket private/encrypted with run-scoped task-role access; the future ECS route
+was not yet deployed at that checkpoint.
+
+The current Step 11 aggregate passed: 540 Python tests, 63 data tests, web
+lint/tests/types/build, mypy, generated-contract checks, PostgreSQL 18.6
+migration/smoke and rollback/reapply checks, database-safety cases, and
+Gitleaks. The human mobile website check was explicitly deferred to Step 12.
+Real cloud/browser verification was not claimed by this local gate.
+
+### LI-02 Step 12 — public demo, lifecycle debugging, and verified run — 2026-10-22 12:42:45–18:30:10 UTC
+
+Suraj selected an internet-facing ECS/ALB demo over generated HTTP DNS, with
+synthetic data only and a hard ten-listing cap; HTTPS was deferred. The laptop
+does not serve the application. Fixed bootstrap, migration, seed, app, cleanup,
+and idle-check task definitions plus the one-command start/stop driver were
+implemented. The initial Terraform plan
+84204321d945d551e7b9fe8ea9c7955255d9c7e1f5e534b2fea4e421b0429bbe created
+the demo route and fixed tasks with the app at zero. Follow-up approved task
+plans were a749908bd4259d354edc8b5015135a479bd1b010a7fa3558f6e872113b3f731c,
+57bcd9ad8a5f3239ce81748583e55430e7834dc4ae6fb780c6dd9e23f016eaa7, and
+dfa3b8120f8b315d88b48c439221b05bfe508b91fa128a6110f6ee3f91ba2ac9; the app
+was started by plan
+2549a58825bacade16eace34150f3da024022a9c1b743f338e05ee71073ab228. Stop plan
+5ab2778bb6ee7c1f5afa5a170a443815ab30d6bd6ecd61873a8c2957760cec85 removed
+the public route and LI-02 runtime resources.
+
+A suppressed-stdout psql helper caused false database-exists/owner errors;
+those claims were withdrawn and the helper was corrected. The local lifecycle
+harness then passed 27 cases. A separate restricted-admin PostgreSQL 18.6 local
+run passed setup, migrations, seed, idle checks, and exact cleanup. Cloud
+bootstrap, migrations, and seed also passed; the first cloud stop skipped DB
+cleanup because task-definition discovery failed. The deployed browser
+flow created two synthetic listings and three private S3 images; API and S3
+checks confirmed persisted metadata and encrypted objects. Suraj verified a
+phone photo upload in Firefox; Chrome behavior on HTTP remained undiagnosed.
+Browser evidence: [API/browser results](../evaluation/domain/li-02/cloud-browser-c842663.json), [desktop capture](../evaluation/domain/li-02/cloud-desktop-c842663.png), and [mobile emulation](../evaluation/domain/li-02/cloud-mobile-c842663.png). Cost/resource evidence: [the 2026-10-22 investigation](../evaluation/domain/li-02/cost-investigation-2026-10-22.json).
+
+The first stop skipped database cleanup because it failed to locate the exact
+task definitions. The route, four run-prefix objects, run URL parameter, and
+run-tagged images were later removed; shared RDS was separately returned to
+stopped. The old clip_test_listings catalog was not queried and may remain on
+shared RDS. Existing untagged ECR digests were retained per Suraj's direction.
+The old ALB URL is gone. This historical public demo does not prove the revised
+disposable-RDS start/stop flow.
+
+### LI-02 Step 1.5 and lifecycle/integration audit — 2026-10-22 18:35:55–19:32:15 UTC; 2026-10-23 06:31:31 UTC
+
+Added owner Mark unavailable/Mark available controls and All/Available/
+Unavailable My Listings filters, using the existing revision-checked
+availability API and stable retry keys. npm run check passed (42 web tests),
+and Suraj verified this behavior. Start/stop recovery was consolidated into one
+driver that records phases, checks ownership, retains its baseline until
+cleanup succeeds, preserves existing ECR artifacts, and prints the matching
+opposite command. The prior shared RDS stop was confirmed; the previous shared
+database itself was not queried.
+
+The Step 13 readiness audit found that the isolated build is not yet plug-and-
+play for real shared deployment: Identity context/provider, real shared
+database/migration inputs, shared storage/runtime policy, and required
+Conversations integration remain. The CLIP_DATABASE_URL contract is unchanged
+and the storage adapter is reusable, but a one-toggle real-deployment switch
+has not been implemented. Local checking remains independent of the cloud
+harness.
+
+### LI-02 Steps 2–3 — reproducible harness and deferred disposable-RDS plan — 2026-10-23 06:31:31–10:13:48 UTC
+
+Suraj verified the consolidated lifecycle. A first start stopped at an expired
+AWS session; after reauthentication, run images were published and RDS
+recovery in ap-south-1a failed for capacity. Suraj chose a dedicated private,
+encrypted, single-AZ PostgreSQL 18.6 db.t4g.micro in ap-south-1b so LI-02
+would never start, connect to, or modify shared RDS. The app's
+CLIP_DATABASE_URL interface remains unchanged. Commit 6ffbe0b contains this
+harness; Terraform 1.15.9 formatting/validation, Python compilation, 27
+lifecycle cases, CLI help, and diff checks passed.
+
+Preflight at account 335523638354/ap-south-1 reported USD 6.14 month-to-date
+and USD 21.42 forecast against the USD 200 monthly cap. Plan
+30112961a2479c760dfa32f91b0b57013a2a4079924abc3a5fd85dee06d6b6fd proposed
+20 additions and 8 in-place changes, including the disposable RDS and public
+route, but was not applied; its temporary file was discarded. At the latest
+read, 2026-10-23 10:13:48 UTC, ECS had no running tasks and ASG desired capacity
+was zero while the former shared host was terminating. No new LI-02 RDS, ALB,
+service, or URL parameter was created. Suraj chose to defer another cloud run
+until shared capacity is idle. Generate a fresh plan later; this hash is invalid.
+
+### Listings traceability preparation — current-head local gate — 2026-10-23 10:38:31 UTC
+
+Step 2 audit completed on `domain/listings` at `6ffbe0b` against `origin/main`
+`44cd8ff`; no open PR was found. `make check` passed: 573 Python tests passed,
+1 skipped, 63 data tests passed, 42 web tests passed, and formatting, contracts,
+type checks, boundaries, web build, database, safety, and secrets checks passed.
+The run also corrected an expired synthetic caller in the Listings
+authorization test fixture; Black reformatted three existing API files. No
+cloud action or Git publication occurred.
 
 ## Pending integration ledger
 
 | Task/step | Mode, source/version, double and scenarios | Required real dependency | Owner roles | Trigger | Real checks and expected result | Current evidence/state |
 |---|---|---|---|---|---|---|
 | DL-00 Step 11; Search → Listings | Isolated; HTTP 0.1.0 / generator format 2; `apps/api/tests/domains/search/doubles/listings.py`; success/repeat, denied 403, expired caller 401, missing ID 404, timeout/unavailable 503 | Accepted LI-CORE implementation and the consuming SE-01 integration checkpoint | Listings B; Search C | LI-CORE is accepted and SE-01 reaches its real Listings integration checks | Run SE-01 Steps 3–8 against real Listings: verify availability/filter/order/page ties, category labels, saved/current summaries and retired-content privacy; denied/expired/missing/failure outcomes preserve safe errors; confirm Search uses only the public interface. | Isolated tests pass in the 55-test contract/double run; real provider checks remain pending. |
-| LI-01 Step 5 / Step 11 — migration and database smoke | Disposable database only; PostgreSQL 18.6 and dbmate 2.36.0; synthetic rollback-only SQL smokes; never target the shared Compose database | The disposable checker expects head `20261020142319` and 26 domain tables. The native harness uses its own temporary cluster. | Listings B; database/migration maintainer if required by the shared migration process | Before LI-01 Step 11 database acceptance; focused disposable check passed for the API-owned retirement migration; run native check if its platform gate is required | Disposable check: clean apply, exact eight-migration head `20261020142319`, repeat apply, both SQL smokes, prove rollback refuses recorded retirement state, remove only the synthetic test result, roll back all eight migrations, clean reapply. Native check: 26 tables, 23 functions, 35 triggers, smokes before/after rollback, clean reapply and identical schema inventory. The smokes cover owner-command/create receipts, buyer/conversation and confirmed-image constraints, blocked retirement result counts, and no-write enforcement for messages, offer revisions and contact-share inserts on listing and Wanted Request threads. | `python3 scripts/check_database.py` passed: exact PostgreSQL 18.6 head, 26 tables, repeat apply, both smokes, expected data-preserving rollback refusal, empty-state rollback of eight migrations and clean reapply. Disposable container removed; shared Compose database untouched. The updated native schema-inventory run remains pending. |
-| LI-01 Steps 9–10 — isolated owner-command and lifecycle behavior | Local API/service/database tests; reviewed Conversations test double for participant checks and offer writes; controlled clock and synthetic listings/conversations | Concrete transactional Listings store and test fixtures; reviewed Identity capability interface and Conversations public contract/double | Listings B; Identity A and Conversations D for interface review | Step 9 local scenarios checked; Step 10 isolated result verified by Suraj; Step 11 acceptance remains later | Cover create/edit/owner and non-owner outcomes; availability transitions and windows; select/clear/replace buyer with eligibility and conversation membership checks; offer submit/revise/withdraw boundary through the double; operation replay (same key/same request returns original result before stale-revision rejection; same key/changed request is 409); rollback on partial failure; concurrent same-key retries and competing revisions. For create, verify owner/operation-scoped same-intent replay, changed-intent conflict, and that retirement scrubs content while a later retry conflicts without recreating or revealing the listing. Cover retirement at 180-day and availability-end rules plus 90 days without participant writes in every associated conversation, reset after eligibility-restoring reopen/window edit, unavailable discovery exclusion but owner-view visibility, no reopen/new conversation/offer after retirement, and preservation of content-free origin/thread/account uniqueness references. Cover ₹5,000 threshold boundaries, price/category reclassification and proof declaration omitted/Yes/No. | Step 9 coverage is recorded above. Step 10 ran the focused Listings suite (61 passed, one direct database test skipped) and disposable PostgreSQL workflow/migration checks successfully. The Conversations double receives both first-submit and revision commands, and permits withdrawal only under the tested listing rules. A capability-boundary case proves a synthetic temporary user fails Identity's required `regular` capability and no offer command reaches the double. The double confirms the request boundary only; real Conversations offer writes remain pending CN-02. The missing Conversations thread-start path remains an integration check; real Identity, image and discovery gates remain. Suraj verified this result. |
-| LI-01 Step 5 — retirement integration and cleanup decision | Isolated Listings service/store with reviewed Conversations API test double; no private-table reads | DL-00 activity/marker signatures; stable pending operation ID and cutoff persisted on the Listings row | Real Conversations provider; real storage adapter/worker wiring under LI-02; post-retirement owner-view decision remains open | Listings B; Conversations D; affected content/image owners | Run isolated cleanup checks; require real Conversations and storage/worker integration before claiming real retirement | Verify local 180-day eligibility, exact stored 90-day cutoff, preflight completeness, all-or-none marker result handling, blocked clears both pending fields, unknown retains both for same-request retry, no reopen/edit/selection/offer/read/discovery while pending, and owner management visibility while content remains. Verify receipt scrubbing, retired-image work retention and post-confirmation object deletion; test failure/unknown retry behavior. | The Listings retirement coordinator is implemented against the typed public interface. Eight focused retirement/cleanup tests cover eligibility, marker results, incomplete activity, retry identity, durable object-key retention on errors, and successful metadata cleanup. A disposable PostgreSQL workflow verifies the ID/cutoff pair, pending-row visibility/command blocking, and cutoff stability across a later retry. Isolated local cleanup is implemented after user approval; real Conversations/storage integration and worker scheduling remain pending; retired My Listings behavior remains open. |
-| LI-01 Steps 11–13 — real integrations and human browser verification | Real ordered database migrations, authorized API/UI and actual image/search dependencies; desktop browser and supported phone browser | ID-READY and compatible Identity/Listings migrations for real auth/FKs; LI-CORE for consumers; CN-02 for real Conversations offer writes; LI-02 and SE-CORE for image-backed publication and discovery | Listings B; Identity A; Conversations D; Search C; Security/platform reviewers as required | Step 11 after isolated checks; Step 13 only after LI-02 and SE-CORE | Run the task's unit/API/UI tests, Black, type/build, generated-contract checks and CI; inspect query plans and list/detail paths for N+1 queries. Verify real owner auth and selected-buyer visibility, and ensure Search/Conversations use only public Listings interfaces. After LI-02/SE-CORE, create/edit an image-backed listing, check unavailable state and discovery exclusion, and manually inspect the journey in desktop and supported phone browsers; confirm camera/gallery/file behavior in LI-02's phone checks. Record exact revisions, commands/results and remaining integration gates. | Not reached. Real Identity/Conversations/storage adapters, LI-02 and SE-CORE are pending. Human desktop/phone verification is still required at Step 13. |
+| LI-01 Step 5 / Step 11 — migration and database smoke | Isolated PostgreSQL 18.6/dbmate 2.36.0; never the shared Compose database | Current expected head 20261022062357, 26 domain tables across 11 migrations; retirement rollback guard at 20261020142319 | Listings B; database/migration maintainer if needed | Before LI-CORE/Step 11 database acceptance | Clean/repeat apply, SQL smokes, retirement rollback refusal, empty rollback/reapply; native inventory of 26 tables, 23 functions, 35 triggers | Historical disposable check passed at 20261020142319. Step 11 aggregate passed at current head; native schema-inventory run and affected-owner review remain pending. |
+| LI-01 Steps 9–10 — isolated owner-command and lifecycle behavior | Local Listings service/store, disposable PostgreSQL, reviewed Conversations test double, synthetic Identity context | Real Identity and Conversations interfaces/providers | LI-CORE Step 11 and real consumer integration | Verify owner/auth denial, idempotent create/command replay and conflict, competing edits, availability/selection/offer gates, 180/90-day retirement, content/receipt cleanup, and 500,000-paise/category/proof boundaries | Focused suite: 61 passed, one direct DB-only skip outside wrapper; PostgreSQL workflow passed. Real Conversations offer writes and thread-start rejection, Identity, images, and Search remain pending. |
+| LI-01 Step 5 — retirement integration and cleanup decision | Listings-owned pending operation ID/cutoff; public Conversations activity/marker interface only | Real Conversations provider and LI-02 storage/worker | Before real retirement acceptance at INT-01 | Verify 180-day eligibility plus 90 quiet days, all-or-none marker, stable retry identity, blocking while pending, receipt/detail scrub, and retry-safe object deletion | Listings coordinator, cleanup and focused tests are implemented; real Conversations/storage worker wiring and retired My Listings behavior remain pending. |
+| LI-01 Steps 11–13 — real integrations and human browser verification | Real auth, ordered migrations, APIs/UI, image and Search dependencies | ID-READY, LI-CORE, CN-02, LI-02, SE-CORE; affected owners | Step 11 review; Step 13 after LI-02 and SE-CORE | Current full checks/query plans and public-boundary review; then real owner-auth create/edit/availability, image-backed discovery exclusion, desktop and phone journey | Not accepted. Real Identity, Conversations, storage, and Search integration plus desktop/phone Step 13 checks remain pending. |
 
-| LI-01 Step 7 — isolated browser create/detail/My Listings/edit | HTTP 0.1.0 / format 2; real Listings API/PostgreSQL, test-only `browser_demo.py` trusted synthetic seller/image metadata; create/read/retry/error/owner-list/edit and ordered image replacement | ID-READY at Step 11; LI-02 and SE-CORE at Step 13; A/C/D public frontend integrations | B Listings; A Identity; C Search; D Conversations | Human checks each usable Step 7 increment; resume real original checkpoints as accepted providers arrive | Verify remaining validation/loading/unavailable/error states; record phone layout separately; later replace synthetic account/image records with real auth/upload/delivery and test owner/denial/availability/discovery using accepted revisions | Suraj verified the current multi-image edit/gallery checkpoint. Step 7 remains partial; no real sign-in/photos/chat or readiness acceptance. |
+| LI-01 Step 7 — isolated browser create/detail/My Listings/edit | Local HTTP browser demo with synthetic caller and image metadata; real Listings API/PostgreSQL | ID-READY and public A/C/D connections; LI-02/SE-CORE for real media/discovery | Resume remaining Step 7 states before LI-CORE | Complete validation/loading/unavailable/error cases and record browser observations | Multi-image edit/gallery verified. Step 7 remains partial; no real sign-in or photo upload is claimed. Phone website check remains LI-02 Step 12. |
 
-| LI-01 Step 7 pickup-area correction | HTTP 0.1.0 / format 2; nullable pickup model, real disposable/browser PostgreSQL, synthetic Identity/image metadata | Affected consumer/schema review; exact shared migration apply; original ID-READY/LI-02/SE-CORE gates | B Listings, C Search reviewer, affected domain/schema owners | Before shared integration of corrected pickup types/migration | Accept omitted/null create, explicit-null replacement clearing and nullable reads; preserve supplied values, reject malformed supplied text, and retain safe rollback; consumer UI handles missing area | Local SQL/API/UI checks pass; Suraj verified the optional pickup browser behavior; affected-owner review and native/shared real gates pending. |
+| LI-01 Step 7 pickup-area correction | Nullable pickup contract/model and disposable/browser PostgreSQL | Affected consumers/schema owners and native/shared migration check | Before shared integration of migration 20261021105546 | Verify omitted/null create, explicit-null replacement, nullable reads, preserved existing values, and safe rollback without inventing data | Local SQL/API/UI checks passed and Suraj verified the browser behavior; consumer review and native/shared migration checks remain pending. |
 
 ## Resolved integration evidence
 

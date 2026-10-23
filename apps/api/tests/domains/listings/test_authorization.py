@@ -111,7 +111,9 @@ def _service(listing: ListingManagementView) -> tuple[ListingsService, _Store]:
 
 
 def _caller(user_id: UUID) -> CallerContext:
-    return CallerContext(user_id, "regular", NOW + timedelta(days=1))
+    # CallerContext validates expiry against wall-clock time, independently of
+    # the fixed service clock used by these behavior tests.
+    return CallerContext(user_id, "regular", datetime(2099, 1, 1, tzinfo=UTC))
 
 
 @pytest.mark.parametrize("viewer_id", [OWNER_ID, BUYER_ID, OUTSIDER_ID])

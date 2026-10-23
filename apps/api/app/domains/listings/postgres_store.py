@@ -501,7 +501,10 @@ class PostgresListingsStore:
                         "FROM listings.sale_listings",
                     )
                     row = await cursor.fetchone()
-                    if row is None or row["listing_count"] >= self._isolated_listing_limit:
+                    if (
+                        row is None
+                        or row["listing_count"] >= self._isolated_listing_limit
+                    ):
                         raise PublicError(
                             ERRORS[409],
                             (FieldError("listings", "demo_listing_limit_reached"),),

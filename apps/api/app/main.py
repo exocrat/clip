@@ -145,6 +145,7 @@ if settings.serve_web_app:
 
             raise HTTPException(status_code=404)
         return FileResponse(web_root / "index.html")
+
 else:
     app.include_router(listings_router)
 
