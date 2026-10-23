@@ -10,12 +10,15 @@ import json
 import os
 from pathlib import Path
 import secrets
+import shutil
 import subprocess
 import time
+import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 POSTGRES_IMAGE = "postgres:18.6-bookworm"
 DBMATE_IMAGE = "ghcr.io/amacneil/dbmate:2.36.0"
+IDENTITY_HEAD = "20261023173439"
 
 
 def main():
@@ -81,8 +84,13 @@ def main():
             extra={"PGPASSWORD": password},
         )
 
-    def migrate():
-        """Apply strictly ordered locked-tool migrations without implicit .env input."""
+    def migrate(directory=None, *, rollback=False):
+        """Apply/undo only disposable-target migrations, never ambient .env inputs.
+
+        A private baseline directory exercises upgrade from previously applied
+        migrations; rollback removes only the new Identity guard migration.
+        """
+        directory = directory or ROOT / "database/migrations"
         run(
             docker
             + [
@@ -102,15 +110,14 @@ def main():
                 "--env",
                 "DATABASE_URL",
                 "--mount",
-                f"type=bind,src={ROOT}/database/migrations,dst=/db/migrations,readonly",
+                f"type=bind,src={directory},dst=/db/migrations,readonly",
                 DBMATE_IMAGE,
                 "--env-file",
                 "/dev/null",
                 "--migrations-dir",
                 "/db/migrations",
                 "--no-dump-schema",
-                "migrate",
-                "--strict",
+                *(["rollback"] if rollback else ["migrate", "--strict"]),
             ],
             extra={
                 "DATABASE_URL": f"postgres://clip_ci:{password}@127.0.0.1:5432/clip_test_ci?sslmode=disable"
@@ -174,10 +181,14 @@ def main():
         actual = sql(
             "SELECT version FROM public.schema_migrations ORDER BY version"
         ).splitlines()
-        if not expected or actual != expected or actual[-1] != "20261018152702":
+        if not expected or actual != expected or actual[-1] != IDENTITY_HEAD:
             raise RuntimeError("Migration history differs from the expected head")
         migrate()
-        for filename in ("schema-smoke.sql", "retired-origin-smoke.sql"):
+        for filename in (
+            "schema-smoke.sql",
+            "retired-origin-smoke.sql",
+            "identity-schema-smoke.sql",
+        ):
             sql((ROOT / "database/tests" / filename).read_text())
         if (
             sql(
@@ -186,8 +197,82 @@ def main():
             != "23"
         ):
             raise RuntimeError("Expected 23 domain tables")
+        # The only rollback is against this invocation's fresh disposable target.
+        # Seed older-schema rows, reject incompatible data atomically, then verify
+        # upgrade/down/reapply preserve every fixture value and original guard.
+        migrate(rollback=True)
+        migrations = sorted((ROOT / "database/migrations").glob("*.sql"))
+        with tempfile.TemporaryDirectory(prefix="clip-identity-baseline-") as name:
+            baseline = Path(name)
+            for source in migrations:
+                if not source.name.startswith(IDENTITY_HEAD + "_"):
+                    shutil.copyfile(source, baseline / source.name)
+            migrate(baseline)
+        sql((ROOT / "database/tests/identity-upgrade-seed.sql").read_text())
+        sql(
+            "UPDATE identity.users SET display_name = repeat('x', 81) "
+            "WHERE id = 'e2300000-0000-4000-8000-000000000001'"
+        )
+        try:
+            migrate()
+        except RuntimeError as error:
+            if "users_display_name_length" not in str(error):
+                raise
+        else:
+            raise RuntimeError("Identity migration silently accepted incompatible data")
+        if (
+            sql(
+                "SELECT count(*) FROM public.schema_migrations WHERE version = '"
+                + IDENTITY_HEAD
+                + "'"
+            )
+            != "0"
+        ):
+            raise RuntimeError("Failed Identity migration left an applied version")
+        if (
+            sql(
+                "SELECT count(*) FROM pg_constraint WHERE conname IN "
+                "('users_display_name_length', 'users_revocation_consistency', 'contacts_value_lengths')"
+            )
+            != "0"
+        ):
+            raise RuntimeError("Failed Identity migration left partial constraints")
+        if (
+            sql(
+                "SELECT char_length(display_name) FROM identity.users "
+                "WHERE id = 'e2300000-0000-4000-8000-000000000001'"
+            )
+            != "81"
+        ):
+            raise RuntimeError("Failed Identity migration rewrote fixture data")
+        sql(
+            "UPDATE identity.users SET display_name = 'Identity upgrade fixture' "
+            "WHERE id = 'e2300000-0000-4000-8000-000000000001'"
+        )
+        migrate()
+        sql((ROOT / "database/tests/identity-upgrade-check.sql").read_text())
+        sql((ROOT / "database/tests/identity-schema-smoke.sql").read_text())
+        migrate(rollback=True)
+        sql((ROOT / "database/tests/identity-upgrade-check.sql").read_text())
+        if (
+            sql(
+                "SELECT count(*) FROM pg_trigger WHERE tgname = 'external_identities_history'"
+            )
+            != "0"
+        ):
+            raise RuntimeError("Identity rollback left its provider-mapping trigger")
+        migrate()
+        migrate()
+        sql((ROOT / "database/tests/identity-upgrade-check.sql").read_text())
+        for filename in (
+            "schema-smoke.sql",
+            "retired-origin-smoke.sql",
+            "identity-schema-smoke.sql",
+        ):
+            sql((ROOT / "database/tests" / filename).read_text())
         print(
-            "PASS: PostgreSQL 18.6; clean migrations, exact head, repeat apply and both schema smoke suites"
+            "PASS: PostgreSQL 18.6; clean/repeat migrations, three smoke suites; "
+            "Identity incompatible-upgrade atomicity and data-preserving upgrade/down/reapply"
         )
     finally:
         if container:

@@ -273,8 +273,9 @@ checkpoint IDs; no cloud/reset/merge authority or passed check is implied.
 
 PD-08 Step 3 reserves `database/migrations/20261018094330_mvp_tables.sql`,
 `20261018094331_mvp_integrity.sql`, `20261018094332_initial_catalogue.sql`, and
-forward correction `20261018152702_reject_retired_origin_entries.sql`; current
-expected head is `20261018152702`. `database/dbmate.version` pins 2.36.0 and
+forward correction `20261018152702_reject_retired_origin_entries.sql` and Identity
+hardening `20261023173439_identity_account_profile_integrity.sql`; current
+isolated-branch head is `20261023173439` (PR10 integration deferred). `database/dbmate.version` pins 2.36.0 and
 `database/tests/schema-smoke.sql` prepares rollback-only synthetic integrity
 checks for a validated local `clip_test_` database. Step 5 now implements the
 local lifecycle commands below; their real Docker/PostgreSQL execution remains
@@ -308,7 +309,7 @@ registry access; no cloud resource/provider is invoked.
 | `bash database/local-db.sh start` | Create/start only the local service, then authenticated readiness. Nonzero on unavailable tools, ownership/configuration/port conflict or readiness failure; inspect sanitized output. |
 | `bash database/local-db.sh wait` | Authenticated TCP `SELECT 1`, up to 30 attempts (2-second connect timeout and pauses). Exit 0 means connectivity only; absent container/timeout fails. |
 | `bash database/local-db.sh migrate` | Pinned dbmate 2.36.0, fixed local URL, strict transactional migrations, no schema dump/implicit dotenv. Exit 0 means the tool finished; Step 6 separately verifies expected head/schema. Inspect failures before retry; never automatically reset. |
-| `bash database/local-db.sh status` | Display migration state. Pending migrations can appear with exit 0; compare expected head `20261018152702`. |
+| `bash database/local-db.sh status` | Display migration state. Pending migrations can appear with exit 0; isolated branch head is `20261023173439`; do not apply the isolated chain to retained/shared data before current-main integration. |
 | `bash database/local-db.sh stop` | Stop validated local container; retain all volume data. Absent container succeeds. |
 | `bash database/local-db.sh reset --confirm-delete-local-data` | Warn and permanently delete only the validated service container and `clip-local_clip_local_postgres_data`. Requires deliberate approval of that destructive action. No force/prune/broad volume deletion; leaves DB stopped. Missing confirmation fails before Docker. |
 | `bash database/local-db.sh --help` | Fixed usage; no tools/password required. |
@@ -442,7 +443,7 @@ tools remain deferred under the existing tooling decision.
 
 | Command | Effect / failure |
 |---|---|
-| `uv run --locked python scripts/check_database.py` | Requires local Unix-socket Docker. Creates a fresh PostgreSQL 18.6 container with temporary memory-backed data, no host port/volume; dbmate 2.36.0 checks clean apply, exact head `20261018152702`, repeat migration and both SQL smoke suites. Removes only its own container; nonzero on SQL/setup/cleanup failure. Never targets retained Compose data. |
+| `uv run --locked python scripts/check_database.py` | Requires local Unix-socket Docker. Creates a fresh PostgreSQL 18.6 container with temporary memory-backed data, no host port/volume; dbmate 2.36.0 checks clean apply, exact isolated-branch head `20261023173439`, repeat migration and three SQL smoke suites; verifies failed-upgrade atomicity and data-preserving Identity upgrade/down/reapply. Removes only its own container; nonzero on SQL/setup/cleanup failure. Never targets retained Compose data. |
 | `uv run --locked python scripts/check_secrets.py` | Requires local Unix-socket Docker. Gitleaks 8.30.1 scans tracked and nonignored new source in a temporary snapshot, offline/read-only. Uses `.gitleaks.toml`; findings print file/line/rule only and fail. This scans current source, not Git history; ignored files are excluded and symlinks rejected. |
 
 Images may be downloaded from public registries. No cloud/provider configuration
@@ -640,3 +641,25 @@ retains a separate approved task/send/cleanup window. Shared sandbox plans must
 preserve the private `TF_VAR_ses_sandbox_recipient_identity_arn` when its additional
 identity scope is still needed; see the shared Terraform README. Never supply
 its value in a shell argument, repository file or printed evidence.
+
+### Identity schema verification — ID-01 Step3
+
+`uv run --locked python scripts/check_database.py` is the existing database gate
+used by `make check`; it now covers the Identity-only fifth migration and three
+SQL smokes. It creates only a new tmpfs PostgreSQL18.6 container with no host
+ports/retained volume and uses pinned dbmate2.36.0 with strict ordered migration,
+explicit empty dotenv input and advisory locks. No external target arguments,
+cloud/profile/database credentials or retained database are accepted.
+
+The new identity-schema-smoke.sql checks valid/invalid profile/contact bounds,
+revocation event pairing/chronology, provider-mapping immutability/uniqueness/FK,
+and original UTC/activation/enrollment protections. identity-upgrade-seed.sql and
+identity-upgrade-check.sql create/verify only synthetic rows in that disposable
+database. Upgrade failure must preserve incompatible data and leave no applied
+version/partial constraints. Successful upgrade/down/reapply preserves rows.
+
+The native macOS runner's source now expects five migrations/head20261023173439,
+21 functions/33 triggers and three smokes; only Bash syntax is checked on this
+Linux ARM64 contributor environment. Earlier native run evidence is historical.
+PR10/current-main combined-chain verification remains pending before ID-READY;
+no persistent/shared database apply is authorized by local check success.

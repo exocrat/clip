@@ -36,8 +36,9 @@ was changed. [Tool rationale](../docs/decisions/database-migration-tool.md).
 | `20261018094331_mvp_integrity.sql` | Cross-row guards, deferred publication/member/entry/offer consistency, immutable origin/key/operation identities, sequence allocation, unread-episode and source-derived notification invariants. |
 | `20261018094332_initial_catalogue.sql` | The approved eight categories/four conditions only; no users, fake credentials, private data or final evaluation dataset. |
 | `20261018152702_reject_retired_origin_entries.sql` | Forward correction: reject new entries on permanently retired origins under the existing origin lock, before allocating sequence/activity state. Down restores the original guard. |
+| `20261023173439_identity_account_profile_integrity.sql` | Identity-only forward guards: contract profile/contact length bounds, paired chronological revocation event and immutable provider/account mapping. Down removes only its own checks/trigger/function, preserving data. |
 
-Expected current migration version: **20261018152702**. One integrator allocates
+Expected branch migration version: **20261023173439**. One integrator allocates
 later timestamp identifiers; no parallel heads or uncoordinated edits to initial
 DDL. Published/applied migrations are corrected forward, not rewritten.
 
@@ -427,3 +428,33 @@ apply/exact head, repeated application, both existing SQL smoke suites and the
 23-table inventory, then removes only its own container. Local Linux ARM64
 execution passed; actual hosted CI, other platform rows and affected-owner
 acceptance remain pending. See the [command registry](../docs/environment/commands.md).
+
+## ID-01 Step3 isolated Identity schema
+
+Aditya is the current writer for migration20261023173439 and its Identity storage
+checks on task/id-01-identity. This branch contains the four foundation migrations
+plus this forward correction. PR10's seven additional accepted migrations are
+explicitly deferred by Aditya; a higher branch version is not proof those ran.
+Before ID-READY review/merge, incorporate current main and verify the entire
+ordered chain and affected-domain checks. Do not apply this isolated chain to a
+retained/shared environment ahead of that integration: strict dbmate would reject
+later introducing earlier timestamped migrations. No persistent database was
+migrated by this step.
+
+Run `uv run --locked python scripts/check_database.py`. Its fresh network-isolated
+PostgreSQL18.6/dbmate2.36.0 test checks clean/repeat apply, three rollback-only
+smokes and unchanged23 domain tables. It then rolls back only the new guards,
+seeds synthetic regular/temporary/provider/contact rows at the old head, verifies
+a failed incompatible-data upgrade leaves no version/partial constraints/data
+rewrite, and exercises successful upgrade/down/reapply with fixture preservation.
+The runner accepts no database target and removes only its own disposable container.
+The seeded rows exist only in that new tmpfs database; they are not user data.
+
+Existing Identity UUID/provider-tuple/expiry indexes remain; no duplicate index,
+new table, raw credential storage or authentication behavior is introduced.
+The migration validates existing rows and fails atomically if they violate the
+new limits/revocation pairing; it does not truncate data or infer timestamps.
+The native macOS harness is wired to the fifth migration,21 functions/33 triggers
+and new smoke. Bash syntax is checked here; execution of this revised native
+harness is not claimed on this Linux ARM64 machine. Historical macOS evidence
+above remains evidence only for its original revision.

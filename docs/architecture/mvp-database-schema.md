@@ -8,7 +8,7 @@
 
 This document proposes the complete MVP data inventory and its relational boundaries. It creates no tables or domain behavior. Names, types, constraints and indexes below are proposals unless identified as already approved. The review gates at the end must be resolved before dependent initial migrations. After approval, versioned migrations in `database/migrations/` become the executable schema source; this document explains their intent and must stay consistent with them.
 
-**Step 3 continuation, authorized by Mohit:** Mohit explicitly directed proceeding before remaining affected-owner review, allowing later corrections while staying within Stream 3 paths. Migrations live in [database/migrations](../../database/migrations/), with current expected dbmate head `20261018152702`; [database/README.md](../../database/README.md) records the files and verification provenance. This exception overrode the immediate review-before-creation wait; it did not waive the required checks. The user later confirmed the carried PD-08 checks and owner acceptance complete. Historical native/ARM64 evidence and the limits of the user-confirmed other-machine platform results are recorded in the work log. This does not accept future domain contracts, a cryptographic protocol implementation, or a cloud action.
+**Step 3 continuation, authorized by Mohit:** Mohit explicitly directed proceeding before remaining affected-owner review, allowing later corrections while staying within Stream 3 paths. Migrations live in [database/migrations](../../database/migrations/), with this isolated branch expected dbmate head `20261023173439`; [database/README.md](../../database/README.md) records the files and verification provenance. This exception overrode the immediate review-before-creation wait; it did not waive the required checks. The user later confirmed the carried PD-08 checks and owner acceptance complete. Historical native/ARM64 evidence and the limits of the user-confirmed other-machine platform results are recorded in the work log. This does not accept future domain contracts, a cryptographic protocol implementation, or a cloud action.
 
 ## Sources and approved boundaries
 
@@ -62,9 +62,9 @@ Notation for every table below:
 
 | Table / primary key | Columns | Constraints and access indexes |
 |---|---|---|
-| `identity.users` / `id uuid` | `account_class text`, `status text`, `display_name text?`, `created_at instant`, `activated_at instant?`, `expires_at instant?`, `revoked_at instant?`, `profile_removed_at instant?`, `revision bigint` | Class `regular`/`temporary`; lifecycle pending/active/revoked. Active temporary accounts require original activation and expiry instants; regular accounts do not inherit temporary expiry. Profile removal clears display/contact content but retains approved UUID references; this is not an anonymity claim. Index temporary expiry for lifecycle maintenance. |
-| `identity.external_identities` / `id uuid` | `user_id uuid`, `provider text`, `issuer text`, `subject text`, `created_at instant` | FK user; unique `(provider, issuer, subject)` for concurrent sign-in deduplication; index `user_id`. Persist verified stable identifiers, never raw Microsoft tokens. |
-| `identity.contacts` / `user_id uuid` | `email text?`, `phone text?`, `upi_id text?`, `updated_at instant` | PK/FK user. Private own-contact source; absence differs from an empty value. Own-contact service validates normalization/format. No general profile/search exposure. Source contacts are available to authorized Identity operations; the approved encrypted conversation share does not imply source-contact E2EE. |
+| `identity.users` / `id uuid` | `account_class text`, `status text`, `display_name text?`, `created_at instant`, `activated_at instant?`, `expires_at instant?`, `revoked_at instant?`, `profile_removed_at instant?`, `revision bigint` | Class `regular`/`temporary`; lifecycle pending/active/revoked. Optional display name is at most80 Unicode code points; null/empty semantics match the public contract. Revoked status is paired with a non-null `revoked_at` at/after creation; other statuses have no revocation timestamp. Active temporary accounts require original activation and expiry instants; regular accounts do not inherit temporary expiry. Profile removal clears display/contact content but retains approved UUID references; this is not an anonymity claim. Index temporary expiry for lifecycle maintenance. |
+| `identity.external_identities` / `id uuid` | `user_id uuid`, `provider text`, `issuer text`, `subject text`, `created_at instant` | FK user; unique `(provider, issuer, subject)` for concurrent sign-in deduplication; index `user_id`. Provider mapping ID, owner UUID, provider/issuer/subject tuple and creation time are immutable after insertion; harmless no-op updates remain allowed. Persist verified stable identifiers, never raw Microsoft tokens. |
+| `identity.contacts` / `user_id uuid` | `email text?`, `phone text?`, `upi_id text?`, `updated_at instant` | PK/FK user. Private own-contact source; absence differs from an empty value. Present fields are nonempty and at most254 code points, matching the public request bound. Own-contact service validates normalization/format. No general profile/search exposure. Source contacts are available to authorized Identity operations; the approved encrypted conversation share does not imply source-contact E2EE. |
 
 Mohit approved first successful initial email verification as activation, with expiry exactly 14 × 24 hours later in UTC. Set the original activation/expiry once; registration/password entry, login, resend, repeated verification, reset and profile edits cannot extend it. A must review the stable normalized-login/enrollment guard implementation before migration acceptance. Authorization compares the current clock/account state even before maintenance marks expiry; no database `CHECK(now())` is proposed.
 
@@ -360,3 +360,16 @@ Review this consolidated document and its linked decisions using the applicable 
 For each affected area, report the exact reviewed artifact, acceptance or concrete findings, and any required contract/constraint clarification. Missing public transaction/locking or crypto compatibility decisions must be resolved before dependent migration acceptance; do not substitute a fake contract. Storage review does not approve an unselected cryptographic protocol or replace CN-01's security design/tests.
 
 Mohit authorized Step 3 before this owner review; later corrections remained in the reviewed source paths. The user subsequently confirmed PD-08 owner acceptance and executable checks complete; specific other-machine run artifacts are unavailable in this checkout. Full cryptographic protocol design/testing remains with CN-01, and cloud actions retain their separate approvals. PD-08 is user-confirmed complete; PRE-00 still requires PD-19 and the combined reviewed/main-merged PD-17–19 handoff.
+
+## ID-01 Step3 branch-local schema verification
+
+Aditya verified the Identity-only hardening plan on2026-10-23. Migration
+20261023173439 reuses the seven Identity tables and existing useful indexes,
+adding profile/contact bounds, revocation event consistency and immutable
+provider mapping only. Existing UTC/UUID/336-hour lifetime/enrollment guards stay.
+The branch deliberately excludes PR10 until later integration; its expected
+head does not imply the full accepted-main migration chain is installed.
+The new storage checks and data-preserving round trip use disposable real
+PostgreSQL only, not a schema test double. Microsoft validation, normalization/
+key rotation, hash/verifier design, session policy, safe cleanup and service
+authorization remain their original ID-01 gates. See the database README.
