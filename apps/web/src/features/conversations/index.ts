@@ -35,3 +35,5 @@ export type {
 } from './crypto';
 export { createDisplayedReadAcknowledger } from './read-state';
 export type { AcknowledgeRead } from './read-state';
+export { ConversationApi, ConversationApiError } from './api';
+export type { ConversationHttpTransport, ConversationListQuery } from './api';

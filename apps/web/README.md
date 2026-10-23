@@ -55,3 +55,20 @@ These commands need no AWS credentials, external accounts, or production
 endpoints. The current scaffold does not read frontend environment variables
 or call an application API. `npm ci` downloads packages in the committed lockfile
 from the configured npm registry.
+
+## Conversations API boundary
+
+`features/conversations` exports `ConversationApi` and `ConversationHttpTransport`.
+The adapter implements the reviewed inbox, summary, entries, message, explicit
+displayed-read and public-key/prekey HTTP mappings using generated contract types.
+It validates successful response shapes, rejects malformed routing/cursors/key
+material, and exposes only content-free error status/kind. It never automatically
+retries a write; the caller must retain and reuse its prepared ciphertext and
+operation ID after an ambiguous outcome. Fetching entries never acknowledges reads.
+
+Identity must supply the authenticated request function, including session and
+CSRF behavior. The adapter has no default transport or test-identity fallback.
+It is not yet mounted by the scaffold pages. Real auth, SDK relay/startup,
+local history persistence and two-browser integration remain pending. In
+particular, safe first-use/lost-key startup needs an own-public-key read operation;
+that contract addition awaits approval and is not implemented by this adapter.
