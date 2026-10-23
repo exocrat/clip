@@ -33,8 +33,9 @@ class Settings(BaseSettings):
 
     environment: Literal["local", "test", "production"] = "local"
     debug: bool = False
-    # Fake selectors authorize test-package helpers only; no real adapter is configured.
-    identity_provider: Literal["disabled", "fake"] = "disabled"
+    # Selectors default disabled. Private Microsoft preparation is local/test only
+    # until reviewed login-attempt and session wiring enables the real API flow.
+    identity_provider: Literal["disabled", "fake", "microsoft"] = "disabled"
     email_provider: Literal["disabled", "fake", "ses"] = "disabled"
     # Step 2 permits only explicitly controlled sandbox recipients. General delivery
     # requires a separately reviewed production configuration increment.
@@ -61,6 +62,15 @@ class Settings(BaseSettings):
                 "Test providers and development authentication are forbidden in production"
             )
         return value
+
+    @model_validator(mode="after")
+    def restrict_microsoft_integration(self) -> Self:
+        """Keep private validation unavailable in production before session wiring."""
+        if self.identity_provider == "microsoft" and self.environment == "production":
+            raise ValueError(
+                "Microsoft session integration is not enabled for production"
+            )
+        return self
 
     @model_validator(mode="after")
     def restrict_ses_sandbox(self) -> Self:

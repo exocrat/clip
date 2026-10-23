@@ -21,12 +21,22 @@ Step 4 must validate signatures, issuer against the signed tenant/discovery rule
 client-ID audience, expiry and required claims; `common` is not an accepted literal
 issuer. Do not impose an IISc tenant-ID allowlist.
 
-Aditya specified the exact `@iisc.ac.in` email-domain rule for regular accounts.
-This rule is recorded direction, not proof of current institutional mailbox
-control: Microsoft email/username claims can be mutable or absent. Required-claim
-selection and the security reconciliation with the reviewed Identity eligibility
-contract remain a Step 4 decision gate; do not silently authorize from an
-unvalidated string or invent a mailbox-control guarantee.
+Aditya reaffirmed the exact `@iisc.ac.in` email-domain rule on
+2026-10-23 18:02:37 UTC after discussing mutable Microsoft claims and current
+unverified-domain filtering. No bypass of this application's actual configuration
+was demonstrated; this decision does not claim impossibility of bypass or prove
+current mailbox control. Retain Microsoft SSO plus backend domain validation;
+no additional regular-account mailbox OTP or IISc tenant allowlist is selected.
+
+The backend must first validate the signed Microsoft v2 token, then require a
+usable signed `email` claim whose parsed domain, case-normalized, is exactly
+`iisc.ac.in`. Reject missing/malformed email and every other domain, including
+subdomains/lookalikes; do not fall back to `preferred_username`, display name,
+client-provided email or an unsigned decoded token. The durable account key stays
+provider/validated issuer/subject, not email. The eligibility-policy choice is
+resolved; implementation must still verify issuer/key/tenant binding, audience,
+time claims and the reviewed login-attempt/replay design. Real configuration and
+provider behavior remain integration checks; no extra flow is implied by them.
 
 Use Amazon SES v2 in `ap-south-1` for Identity email delivery, proposed sender
 `no-reply@clip-iisc.site`, retaining CLIP-owned OTP/password/session state.
@@ -56,7 +66,8 @@ See [setup and pending checks](../environment/identity-provider-setup.md).
 
 ## Approver
 Aditya (A): recorded Microsoft audience/domain/callback direction on 2026-10-22;
-authorized completion of the Step 2 setup increment on 2026-10-23. Cloud changes,
+authorized completion of the Step 2 setup increment on 2026-10-23; reaffirmed
+Microsoft SSO plus exact backend email-domain eligibility at18:02:37 UTC. Cloud changes,
 live sends, and affected-owner review remain separate gates.
 
 ## Supersedes

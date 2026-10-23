@@ -663,3 +663,24 @@ The native macOS runner's source now expects five migrations/head20261023173439,
 Linux ARM64 contributor environment. Earlier native run evidence is historical.
 PR10/current-main combined-chain verification remains pending before ID-READY;
 no persistent/shared database apply is authorized by local check success.
+
+### Microsoft token/account checks — ID-01 Step4
+
+```bash
+uv run --locked pytest apps/api/tests/domains/identity/test_microsoft.py apps/api/tests/domains/identity/test_microsoft_postgres.py -q -W error
+uv run --locked mypy --no-incremental apps/api/app/domains/identity/microsoft.py apps/api/app/domains/identity/microsoft_accounts.py apps/api/app/core/config.py
+```
+
+The first file uses fresh in-memory RSA keys and controlled public-metadata
+responses, never a real user/token. The second requires a local Unix-socket
+Docker context and creates a new network-none tmpfs PostgreSQL18.6 instance,
+SCRAM-authenticated socket under a private test directory, and pinned dbmate
+2.36.0 migrations. No retained target or host ports are accepted. It tests actual
+validator/store concurrency, stable mapping, revocation and transaction failure;
+finally removes only its own container. Root/API pytest includes these real DB
+checks, so Docker is now required for that full suite. Runtime dependencies are
+locked PyJWT2.15.1 crypto and psycopg3.3.6 binary; tests do not call Microsoft.
+
+Public discovery/JWKS reads are distinct from sign-in checks. No public route,
+session cookie, trusted CallerContext or production Microsoft integration is
+installed by these checks; nonce lifecycle/session design remains a real gate.

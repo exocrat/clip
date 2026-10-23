@@ -17,6 +17,13 @@ inputs. PKCE/state/nonce/replay handling must be implemented and checked there;
 registration alone does not prove successful authentication. No client secret
 or Graph permission is needed for this selected flow.
 
+Aditya reaffirmed Microsoft SSO plus exact backend `email` domain eligibility on
+2026-10-23 18:02:37 UTC: require a fully validated token and a usable signed email
+with domain exactly iisc.ac.in; missing/malformed/nonmatching claims fail closed.
+No username/display-name/client-email fallback, additional regular-user OTP or
+IISc tenant allowlist. Account identity uses provider/issuer/subject. See the
+canonical provider decision for the discussed limits and remaining real checks.
+
 ## SES runtime setup
 Account `335523638354`, region `ap-south-1`; domain `clip-iisc.site` and DKIM
 were verified in the recorded 2026-10-23 04:48:31 UTC inspection. Sandbox remained
@@ -161,3 +168,18 @@ ECS/ASG zero, verified17:17:09.706322 UTC; RDS unchanged. Full aggregate458 Pyth
 [Exact diagnosis/fix/delivery evidence](../evaluation/identity/id-01-step-2/sandbox-recipient-fix-result.md).
 Step2 remains partial for production access/configuration review and full result
 verification; account/OTP/session/UI implementation remains later steps.
+
+## Step4 private Microsoft implementation — 2026-10-23 18:22:07 UTC
+
+Real RSA validator/fixed-origin cached discovery and transactional account mapping
+are implemented locally and checked against synthetic signed tokens plus actual
+PostgreSQL. Public Microsoft discovery/JWKS also matched configured origins and
+issuer/key assumptions. No real user sign-in occurred.
+
+Explicit microsoft selection is restricted to local/test; default remains
+disabled and actual production entry-point activation is refused. No public
+session endpoint, browser PKCE/state or trusted nonce-attempt creation/consumption
+is installed. Required expected nonce cannot come from browser-supplied expected
+data. Session/cookie/CSRF/replay design and real provider/browser/runtime-role
+checks remain before Step4/ID-READY integration acceptance.
+[Implementation, source hashes and checks](../evaluation/identity/id-01-step-4/README.md).

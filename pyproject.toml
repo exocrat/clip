@@ -8,8 +8,10 @@ requires-python = ">=3.14,<3.15"
 dependencies = [
     "boto3==1.43.116",
     "fastapi==0.143.3",
+    "psycopg[binary]==3.3.6",
     "pydantic==2.14.1",
     "pydantic-settings==2.16.0",
+    "pyjwt[crypto]==2.15.1",
     "uvicorn==0.54.0",
 ]
 

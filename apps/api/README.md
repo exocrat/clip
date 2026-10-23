@@ -21,7 +21,7 @@ The API reads these non-secret values from the process environment at startup:
 |---|---|---|
 | `CLIP_ENVIRONMENT` | `local`, `test`, or `production`; default `local` | Rejects unsupported or empty values. This labels configuration mode, not deployment readiness. |
 | `CLIP_DEBUG` | Boolean; default `false` | Controls FastAPI debug responses; production rejects `true`. Invalid or empty boolean values fail startup. |
-| `CLIP_IDENTITY_PROVIDER` | `disabled` or `fake`; default `disabled` | Explicit local/test helper selection; production rejects `fake`. No real/fake authentication is implemented here. |
+| `CLIP_IDENTITY_PROVIDER` | `disabled`, `fake`, or `microsoft`; default `disabled` | `microsoft` permits private local/test validator construction; production rejects this incomplete integration and all fake auth. No sign-in route/session is installed. |
 | `CLIP_EMAIL_PROVIDER` | `disabled`, `fake`, or `ses`; default `disabled` | Explicit local/test helper selection; production rejects `fake`. No email is sent or claimed delivered. |
 | `CLIP_STORAGE_PROVIDER` | `disabled` or `fake`; default `disabled` | Authorizes only explicit test-helper construction; production rejects `fake`. No real storage is configured. |
 | `CLIP_DEVELOPMENT_AUTH` | Boolean; default `false` | Reserved testing control; production rejects `true`. This setting creates no public authentication bypass. |
@@ -39,7 +39,7 @@ uv sync --locked
 uv run --locked pytest apps/api/tests -q -W error
 ```
 
-`uv run --locked pytest` runs all currently configured test roots; PD-11 contract generation tests also require root `npm ci` and the pinned Node toolchain. The API-only command above needs no Node installation. API tests start the real ASGI app in explicit test mode using FastAPI's TestClient; no HTTP listener, database, provider or cloud access is needed. The tests discard inherited `CLIP_`/`AWS_` settings for isolation and restore the developer's environment afterward. Synthetic cases cover local defaults, typed overrides, malformed/empty values, production-debug rejection, redacted errors, fresh reads and ignored dotenv/example files. Fresh credential-free subprocesses verify invalid configuration prevents the actual entry point from importing. Temporary fixture files stay under pytest's temporary directory.
+`uv run --locked pytest` runs all currently configured test roots; PD-11 contract generation tests also require root `npm ci` and the pinned Node toolchain. The API-only command above needs no Node installation. Foundation API tests start the real ASGI app in explicit test mode using FastAPI's TestClient without an HTTP listener/provider/cloud call. ID-01 Microsoft persistence tests additionally require local Docker: they create only their own tmpfs PostgreSQL18.6 database, private Unix socket and synthetic records, then remove the container; no retained database or host port is used. The tests discard inherited `CLIP_`/`AWS_` settings for isolation and restore the developer's environment afterward. Synthetic cases cover local defaults, typed overrides, malformed/empty values, production-debug rejection, redacted errors, fresh reads and ignored dotenv/example files. Fresh credential-free subprocesses verify invalid configuration prevents the actual entry point from importing. Temporary fixture files stay under pytest's temporary directory.
 
 Exit 0 means the collected suite passed; a failure must be investigated, and exit 5 (no tests collected) is not a pass. The development-only `httpx2` pin supports the installed Starlette TestClient. No fake identity or storage implementation is used, and this suite does not prove domain integration, deployed readiness or performance.
 
@@ -91,3 +91,38 @@ The Identity one-shot runtime test is documented in the
 [command registry](../../docs/environment/commands.md#identity-one-shot-email-command--id-01-step-2).
 Its separate approval, task-role checks and single-message/deadline guards keep
 it outside normal API startup; no live delivery has yet been tested.
+
+## ID-01 Step4 private Microsoft preparation
+
+Identity owns microsoft.py and microsoft_accounts.py. PyJWT2.15.1 with its crypto
+extra validates actual RSA assertions; psycopg3.3.6 binary supports transactional
+local account persistence. Construction/import does not fetch keys or connect.
+The real factory permits only explicit microsoft selection in local/test, with
+disabled default and production refusal until complete session integration.
+
+The validator uses fixed public-cloud v2 discovery/JWKS, registered client-ID
+audience, RS256-only signatures, key-issuer/tenant binding, required/time claims,
+trusted expected nonce and exact signed-email domain iisc.ac.in. There is no
+username/client-email fallback, extra regular-user OTP or tenant allowlist.
+Only provider/issuer/subject are persisted; token/email/nonce are not copied to
+account/profile/session tables. Existing eligible accounts are reused; revoked,
+pending, wrong-class or profile-removed records are denied without reactivation.
+
+The private service returns an account record only. It does not issue a cookie,
+SessionView or CallerContext, register HTTP routes or implement browser PKCE/
+state/nonce consumption. Expected nonce must originate from a reviewed trusted
+server-bound login attempt; no browser-supplied expected value may be wired.
+That design and real Microsoft/browser/database-role integration remain required
+before ID-READY. Do not treat the public-metadata read as an actual sign-in test.
+
+Offline RSA/key tests and isolated real-PostgreSQL checks:
+
+```bash
+uv run --locked pytest apps/api/tests/domains/identity/test_microsoft.py apps/api/tests/domains/identity/test_microsoft_postgres.py -q -W error
+uv run --locked mypy --no-incremental apps/api/app/domains/identity/microsoft.py apps/api/app/domains/identity/microsoft_accounts.py apps/api/app/core/config.py
+```
+
+Network fetches are synchronous with bounded size/socket timeout; future async
+HTTP wiring must move blocking operations off the event loop and enforce an
+overall request deadline. Public endpoint/clock-skew/session policy is not
+implicitly authorized by this private implementation.
