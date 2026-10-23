@@ -1,12 +1,20 @@
-import { useState, type PropsWithChildren } from 'react';
-import { useParams } from 'react-router';
+import { Suspense, lazy, useState, type PropsWithChildren } from 'react';
+import { useLocation, useParams } from 'react-router';
 import { ConversationsPlaceholder } from '../features/conversations';
 import { IdentityPlaceholder as IdentityFeaturePlaceholder } from '../features/identity';
 import { ListingsPlaceholder as ListingsFeaturePlaceholder } from '../features/listings';
 import { SearchPlaceholder as SearchFeaturePlaceholder } from '../features/search';
 import { PageFrame, SegmentedControl } from '../shared/ui';
+import { isLocalConversationDemoAllowed } from './conversationDemoGate';
+import type { ConversationDemoPageProps } from './ConversationDemo';
 
 type View = 'sales' | 'wanted';
+
+const LazyConversationDemoPage = import.meta.env.DEV
+  ? lazy(() =>
+      import('./ConversationDemo').then((module) => ({ default: module.ConversationDemoPage })),
+    )
+  : null;
 
 function RoutePage({ title, children }: PropsWithChildren<{ title: string }>) {
   return (
@@ -23,6 +31,31 @@ function RouteValue({ name, value }: { name: string; value?: string }) {
       Route parameter <code>{name}</code>: <code>{value ?? 'not present'}</code>. No record is
       loaded by this scaffold.
     </p>
+  );
+}
+
+function DevelopmentConversationDemo(props: ConversationDemoPageProps) {
+  if (!LazyConversationDemoPage) return null;
+  return (
+    <Suspense
+      fallback={
+        <RoutePage title={props.page === 'inbox' ? 'My conversations' : 'Conversation'}>
+          <p role="status">Loading local conversation demo…</p>
+        </RoutePage>
+      }
+    >
+      <RoutePage title={props.page === 'inbox' ? 'My conversations' : 'Conversation'}>
+        <LazyConversationDemoPage {...props} />
+      </RoutePage>
+    </Suspense>
+  );
+}
+
+function localConversationDemoEnabled(search: string): boolean {
+  return (
+    import.meta.env.DEV &&
+    typeof window !== 'undefined' &&
+    isLocalConversationDemoAllowed(true, window.location.hostname, search)
   );
 }
 
@@ -136,6 +169,10 @@ export function SavedListingsPage() {
 }
 
 export function ConversationsPage() {
+  const { search } = useLocation();
+  if (localConversationDemoEnabled(search)) {
+    return <DevelopmentConversationDemo page="inbox" />;
+  }
   return (
     <RoutePage title="My conversations">
       <ConversationsPlaceholder title="Buyer and seller conversation views">
@@ -147,6 +184,10 @@ export function ConversationsPage() {
 
 export function ConversationDetailPage() {
   const { conversationId } = useParams();
+  const { search } = useLocation();
+  if (localConversationDemoEnabled(search)) {
+    return <DevelopmentConversationDemo conversationId={conversationId} page="thread" />;
+  }
   return (
     <RoutePage title="Conversation">
       <RouteValue name="conversationId" value={conversationId} />

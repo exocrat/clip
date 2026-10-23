@@ -28,6 +28,8 @@ export type ConversationThreadProps = {
   entries: ConversationDisplayEntry[];
   key_state: ConversationKeyUiState;
   last_read_sequence: number;
+  /** Changes only the privacy/call-to-action copy for a loopback synthetic demo. */
+  presentationMode?: 'live' | 'local-demo';
   loading?: boolean;
   onRefresh: () => Promise<void>;
   onSend: (text: string, operationId: string) => Promise<void>;
@@ -53,6 +55,7 @@ export function ConversationThread({
   entries,
   key_state,
   last_read_sequence,
+  presentationMode = 'live',
   loading = false,
   onRefresh,
   onSend,
@@ -194,7 +197,9 @@ export function ConversationThread({
   return (
     <section aria-label="Private conversation" className="conversation-thread">
       <div className="conversation-thread__privacy" role="note">
-        Messages are encrypted on your device. CLIP cannot read them.
+        {presentationMode === 'local-demo'
+          ? 'Local demo only: messages are not encrypted or sent to a service.'
+          : 'Messages are encrypted on your device. CLIP cannot read them.'}
       </div>
       <KeyStatePanel
         acknowledgedRegistration={acknowledgedRegistration}
@@ -268,7 +273,7 @@ export function ConversationThread({
           value={draft}
         />
         <Button disabled={!canSend || !draft.trim()} type="submit">
-          Send encrypted message
+          {presentationMode === 'local-demo' ? 'Add demo message' : 'Send encrypted message'}
         </Button>
       </form>
     </section>

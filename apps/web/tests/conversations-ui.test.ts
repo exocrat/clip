@@ -43,6 +43,13 @@ describe('ConversationThread UI', () => {
     expect(html).toContain('Send encrypted message');
   });
 
+  it('identifies the local demo as unencrypted and local-only', () => {
+    const html = renderThread({ presentationMode: 'local-demo' });
+    expect(html).toContain('messages are not encrypted or sent to a service');
+    expect(html).toContain('Add demo message');
+    expect(html).not.toContain('Send encrypted message');
+  });
+
   it('shows the account-directory warning and provides no ignore/continue action on key change', () => {
     const html = renderThread({
       key_state: { kind: 'key_change', participant_label: 'The other participant' },
