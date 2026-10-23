@@ -173,3 +173,88 @@ Role-policy JSON/state verified; state serial 9 and lock absent. Compute remains
 off: original RDS stopped, ECS/ASG zero. No deployment or email send; actual
 runtime delivery unverified. Existing idle clock/retained costs unchanged;
 policy retained until separately reviewed removal. [Evidence](../evaluation/identity/id-01-step-2/permission-apply-result.md).
+
+### ID-01 temporary AMD64 builder running — 2026-10-23 07:11:04 UTC
+
+Aditya approved the exact builder plan plus one bounded native build and owned
+VM/disk cleanup. Five-resource apply succeeded in Identity state (serial 2):
+private t3.small `i-086dd4b9830033682`, encrypted root `vol-0125a996fffc44f69`,
+security group `sg-00f275fda4e0f5104`, dedicated builder role/policy/profile.
+No public IP/ingress and exact role policy verified. OS shutdown terminates and
+root DeleteOnTermination true. Launched 2026-10-23 07:10:15 UTC; operator hard
+expiry 2026-10-23 08:10:15 UTC, USD 1 incremental cap. SSM online; bootstrap timer
+verification pending. Source remains `52186a0`; no build/push/send yet. Shared
+RDS/ECS/ASG remain off; original shared idle deadline unchanged. Temporary IAM/
+profile/group removal retains separate exact cleanup-plan approval.
+
+### ID-01 builder image validated; cleanup scheduled — 2026-10-23 07:16:45 UTC
+
+Supersedes pending bootstrap/build state above: timer/SSM/Docker/native checks and
+one committed-source build passed. Exact image/source and checks are in
+[build evidence](../evaluation/identity/id-01-step-2/builder-build-result.md).
+Builder remains private/running; approved absolute shutdown timer verified for
+08:10:00 UTC (earlier than one-hour operator expiry). No image publication or
+application email. Termination/root-volume deletion remain unverified until
+actual cleanup; temporary role/profile/policy/group require later removal plan.
+
+### ID-01 image published; builder VM/disk removed — 2026-10-23 07:23:06 UTC
+
+Supersedes the preceding running-builder snapshots. Exact committed-source image
+published/verified under approved tag `id01-amd64-52186a0466fe`, immutable digest
+`sha256:3ef8b13d3b102dc97e67d79d91e43eb8d4b2cc02fbabb45cf6001c8a93eddd1d`
+in existing `clip-shared-test-api`. Size 68,148,997 registry bytes; retained for
+runtime-test handoff, image removal separately reviewed. Builder
+`i-086dd4b9830033682` terminated and root `vol-0125a996fffc44f69` absent verified
+07:22:28.116194 UTC. No builder compute/disk retained. Dedicated builder role,
+inline policy, profile and group `sg-00f275fda4e0f5104` remain pending approved
+Identity-root removal plan. RDS stopped/ECS/ASG zero confirmed; original shared
+idle deadline unchanged. No application runtime task/email. [Evidence](../evaluation/identity/id-01-step-2/image-publication-result.md).
+
+### Concurrent RDS start observed during Identity preflight — 2026-10-23 09:12:58 UTC
+
+Supersedes the RDS-stopped observation above for the latest snapshot only:
+original RDS resource `db-PYRRZJPVKPGHIXDAHUWATXGH7A` reported `starting` at
+09:11:20 UTC. CloudTrail records IAM user `surajs2` starting it without error at
+08:49:32 UTC, after two capacity errors. This Identity session made no DB change;
+concurrent operator/task approval/window not established here. ECS cluster and
+ASG remained at zero in the snapshot. [Evidence](../evaluation/identity/id-01-step-2/runtime-registration-preflight-stop.md).
+
+### ID-01 smoke definition registered; temporary builder fully removed — 2026-10-23 09:27:10 UTC
+
+Approved Identity saved-plan apply registered
+`arn:aws:ecs:ap-south-1:335523638354:task-definition/clip-test-identity-email-ap-south-1-id01:1`
+with exact verified image/shared roles and disabled-by-default email controls.
+No task launched. Temporary builder role/policy/profile and security group now
+verified absent, superseding their retained status above. VM/root cleanup already
+verified; Identity state serial 3 contains no builder resources and lock is absent.
+ECS/ASG capacity stays zero; no RDS calls/change under approved concurrent-work
+exclusion. Image retained for test, task definition retained for separately
+approved run/cleanup; no email. [Evidence](../evaluation/identity/id-01-step-2/runtime-registration-apply-result.md).
+
+### ID-01 first runtime invocation: no compute observed — 2026-10-23 09:49:29 UTC
+
+Approved one CLI RunTask invocation failed; no task ARN/matching task or host
+observed. At 09:48:44.053417 UTC cluster/ASG capacity remained zero. Image/task
+retained, builder fully removed, no RDS calls/change. No owned resource required
+cleanup, no automatic retry. [Result](../evaluation/identity/id-01-step-2/runtime-attempt-result.md).
+
+### ID-01 corrected single runtime request accepted — 2026-10-23 09:55:32 UTC
+
+Aditya explicitly approved one corrected idempotent request under the same
+one-message/one-host/45-minute/USD1 scope. Original marker/token reused; prior
+task/audit reconciliation and fresh preflight passed; memory-file input validated
+offline. Task `f5352e809bfb4d5e87f1d72f6aff8e6f` accepted PROVISIONING using
+registered :1 and existing capacity provider. Exact window starts
+09:55:23.140122 UTC, expires 10:40:23.140122 UTC. No RDS calls; API service remains
+disabled. Monitoring/cleanup in progress; email submission/receipt not yet proved.
+
+### ID-01 runtime stopped; owned ECS capacity removed — 2026-10-23 10:14:29 UTC
+
+Supersedes the corrected-request provisioning snapshot. Exact :1 task ran and
+exited1; no delivery accepted, human reports no email. Existing managed scale-in
+terminated only test host `i-06514fe65a4232752` and deleted root
+`vol-028a4fa0eea059363`, verified 10:14:07.756278 UTC before the run expiry.
+Cluster/service/ASG zero, no manual backstop or other workload interruption.
+No RDS calls; concurrent DB use remains untouched/unverified here. No new live
+retry. Image/definition/content-free logs retained for approved diagnostic handoff;
+builder remains fully removed. [Evidence](../evaluation/identity/id-01-step-2/runtime-corrected-result.md).

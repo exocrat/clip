@@ -609,3 +609,19 @@ test mode, SES selection, exactly one allowlisted recipient and the expected ECS
 container-role credentials. It attempts one fixed generic message, suppresses SDK
 logs and exits within a 45-second command deadline. Success output means provider
 acceptance only. See the [bounded plan](../evaluation/identity/id-01-step-2/runtime-test-plan.md).
+
+### Identity diagnostic wrapper offline checks — ID-01 Step 2
+
+Run from the repository root:
+
+```bash
+uv run --locked pytest apps/api/tests/domains/identity/test_runtime_diagnostic.py apps/api/tests/domains/identity/test_email.py apps/api/tests/domains/identity/test_email_smoke.py -q -W error
+uv run --locked black --check docs/evaluation/identity/id-01-step-2/runtime_diagnostic.py apps/api/tests/domains/identity/test_runtime_diagnostic.py
+```
+
+The tests import the exact reviewed diagnostic command from the evaluation folder
+and inject offline SDK failures/success. They perform no AWS calls or sends;
+expected result is 28 passing tests. The wrapper itself can send when explicitly
+run with approved ECS settings; do not invoke it as a local test command. Its
+[live request and cleanup plan](../evaluation/identity/id-01-step-2/runtime-diagnostic-approval.md)
+require separate exact approval. No new Make target or deployment command added.

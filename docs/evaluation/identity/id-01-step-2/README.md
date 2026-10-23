@@ -4,6 +4,21 @@
 `task/id-01-identity` based on `44cd8ff`, uncommitted worktree.
 Human result verification and affected-owner review pending.
 
+## Current checkpoint
+
+Historical snapshots below preserve the original setup checks. The sender policy
+is now applied, the AMD64 image published, and smoke definition :1 registered;
+all temporary builder resources are removed. The real ECS send failed with
+content-free output, and owned ECS host/root cleanup was verified. A subsequent
+local CLI SES message was delivered and human-confirmed. Step 2 remains partial.
+
+The offline-tested [diagnostic wrapper](runtime_diagnostic.py) and
+[exact next runtime/cleanup request](runtime-diagnostic-approval.md) are prepared.
+No diagnostic task/send has run. Actual application-role delivery and SES
+production access remain pending. See the [work log](../../../status/work-log.md)
+and [provider setup](../../../environment/identity-provider-setup.md) for current
+state and approvals; historical proposal language below is not current status.
+
 ## Changes
 Identity private SES transport and offline tests; shared disabled-by-default
 sandbox configuration; boto3 1.43.116 manifest/uv lock; canonical provider

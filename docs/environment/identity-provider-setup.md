@@ -1,7 +1,8 @@
 # ID-01 provider setup and verification
 
-Status: Step 2 partial; sender-scoped IAM policy applied and attachment verified
-on 2026-10-23 06:17:00 UTC. No live email or runtime delivery test performed.
+Status: Step 2 partial. Local operator SES inbox delivery is human-confirmed
+on 2026-10-23 10:26:07 UTC; ECS application-role delivery failed and needs
+diagnosis. Production access remains pending. Historical snapshots follow.
 The [decision](../decisions/identity-provider-setup.md) and
 [work log](../status/work-log.md) distinguish approved direction from evidence.
 
@@ -88,3 +89,46 @@ partial until required real setup checks and human result verification pass.
 uses injected clients and synthetic `.invalid` destinations, without AWS calls.
 The full API suite and repository format/type gates remain applicable. Commands
 are recorded in the [registry](commands.md#identity-provider-offline-checks--id-01-step-2).
+
+## Runtime image available — 2026-10-23 07:23:06 UTC
+
+The [published image record](../evaluation/identity/id-01-step-2/published-image.json)
+pins the approved `52186a0` AMD64 artifact and verified registry/config digests.
+Native image validation and publication passed; temporary builder VM/root disk
+removed. Dedicated temporary IAM/profile/group cleanup and actual smoke task
+registration/run remain pending. No email-delivery evidence yet.
+
+## Runtime task registered — 2026-10-23 09:27:10 UTC
+
+Identity-owned smoke definition
+`arn:aws:ecs:ap-south-1:335523638354:task-definition/clip-test-identity-email-ap-south-1-id01:1`
+is registered and verified against the immutable image/expected roles/disabled
+controls. All temporary builder resources removed; no task launched or message
+sent. [Apply evidence](../evaluation/identity/id-01-step-2/runtime-registration-apply-result.md).
+Current SES read-only snapshot remains sandboxed/healthy, sending enabled,
+200/day and 1/second. Exact one-email run, inbox observation, owned test cleanup
+and production access remain pending. Leave concurrent RDS activity untouched.
+
+## Real runtime result: failed, cleanup verified — 2026-10-23 10:14:29 UTC
+
+Corrected request launched exact :1 task; signed identity audit matches the
+application role/task, but transport returned only `failed_or_uncertain` and
+exit1. Human reports no test email. Do not count provider delivery as verified.
+Owned task/host/root cleanup passed via managed scale-in; ECS/ASG zero, RDS
+untouched. No resend. Exact transport cause still needs safe code/stage diagnosis;
+current sandbox/production-access gate remains. [Result](../evaluation/identity/id-01-step-2/runtime-corrected-result.md).
+
+## Local delivery confirmed — 2026-10-23 10:26:07 UTC
+
+One explicitly requested local AWS CLI SendEmail call under the approved operator
+was accepted at 10:24:06 UTC; Aditya confirms inbox receipt. Sending enabled,
+sender and controlled recipient verification passed; sandbox remained active.
+No address/content/provider payload recorded. This verifies local operator
+delivery only, not the application task-role path. No ECS resources started.
+The local pinned SDK lacked optional login-provider CRT support before any send;
+CLI used the existing login successfully without changing dependencies. This
+local credential-provider issue is not evidence of the earlier ECS root cause.
+Required remaining setup gates: safely diagnose and verify real application-role
+delivery, production-access decision/configuration review, then human Step 2
+result verification. Microsoft real token/callback behavior and OTP/account flows
+remain later implementation/integration checks, not missing Step 2 services.

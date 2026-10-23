@@ -1,4 +1,4 @@
-# Preserve upstream rules; exempt only one historical source-bundle checksum.
+# Preserve upstream rules; exempt only exact reviewed non-secret values/paths.
 [extend]
 useDefault = true
 
@@ -10,3 +10,10 @@ condition = "AND"
 regexTarget = "secret"
 paths = ['''(^|/)docs/source/bundle-manifest\.json$''']
 regexes = ['''^1dbf459ba65c4f26b077d6b017bb39a1bb105274a9ec0ba83b408f75a6a0ba9e$''']
+
+[[rules.allowlists]]
+description = "Exact public ID-01 Docker image tag, not a credential"
+condition = "AND"
+regexTarget = "secret"
+paths = ['''(^|/)docs/evaluation/identity/id-01-step-2/(image-publication-request\.md|builder-build-result\.md|builder-plan\.md|builder-proposal/(build|publish)\.sh\.proposed)$''']
+regexes = ['''^id01-amd64-52186a0466fe$''']

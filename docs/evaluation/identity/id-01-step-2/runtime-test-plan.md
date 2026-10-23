@@ -82,3 +82,39 @@ submission outcome, Aditya's delivery observation, one-message count, redacted
 logs and zero-compute cleanup. No email/token/body/recipient in repository proof.
 Simulator-only acceptance cannot replace inbox receipt. Production access remains
 separately pending; Step 2 and ID-READY stay incomplete until required real gates.
+
+## Current exact run request — 2026-10-23 09:35:46 UTC
+
+The image is now published and :1 registered; earlier preparation-only gates
+above are historical. Aditya verified registration/builder cleanup. Use the
+[exact current run approval request](runtime-run-approval.md), which supersedes
+unresolved image/definition placeholders and the former RDS-off requirement.
+RDS is explicitly excluded/untouched for concurrent Suraj work. The exact request
+also proposes a narrow, guarded idle-host cleanup backstop for explicit approval;
+none of its RunTask/send/compute actions have run or are authorized yet.
+
+## Development cleanup direction — 2026-10-23 10:20:49 UTC
+
+Aditya requested bypassing the 15-minute idle scale-in wait during development.
+ECS managed scaling owns this fixed delay; managed termination protection is
+already disabled. Do not edit ECS-managed alarms or claim a configurable delay
+was disabled. AWS documents the behavior at
+https://docs.aws.amazon.com/AmazonECS/latest/developerguide/managed-scaling-behavior.html.
+
+For the next separately approved development run, replace the minute-35 fallback
+with prompt operator-controlled cleanup after the owned task is STOPPED: serialize
+the shared ECS window, verify no running/pending tasks or desired service work,
+verify the sole host belongs to this run and ASG min0/max1, then set desired
+capacity to zero once. Recheck immediately before mutation; stop on concurrent
+work or ownership ambiguity. Verify host termination, root deletion and ECS/ASG
+zero. Keep managed draining enabled, leave RDS untouched, and retain the normal
+managed-scaling cleanup as fallback if the guarded action is unsafe.
+
+This records the requested development policy; no automation, Terraform or live
+AWS setting has changed. Include the exact guarded command and checks in the
+next run approval; the previous completed run's approval remains historical.
+
+**Before development ends / before production:** remove the development early
+scale-to-zero override, restore reliance on normal ECS managed scale-in, and
+verify its cleanup behavior. Aditya owns this release-gate check. The AWS-managed
+15-minute behavior remains enabled underneath throughout.

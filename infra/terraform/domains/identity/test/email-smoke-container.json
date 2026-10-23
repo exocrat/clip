@@ -1,0 +1,38 @@
+[
+  {
+    "name": "identity-email-smoke",
+    "image": "335523638354.dkr.ecr.ap-south-1.amazonaws.com/clip-shared-test-api@sha256:3ef8b13d3b102dc97e67d79d91e43eb8d4b2cc02fbabb45cf6001c8a93eddd1d",
+    "essential": true,
+    "user": "10001:10001",
+    "cpu": 256,
+    "memory": 512,
+    "command": [
+      "python",
+      "-m",
+      "app.domains.identity.email_smoke"
+    ],
+    "workingDirectory": "/app/apps/api",
+    "environment": [
+      {
+        "name": "CLIP_ENVIRONMENT",
+        "value": "test"
+      },
+      {
+        "name": "CLIP_DEBUG",
+        "value": "false"
+      },
+      {
+        "name": "CLIP_EMAIL_PROVIDER",
+        "value": "disabled"
+      }
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "/ecs/clip-shared-test",
+        "awslogs-region": "ap-south-1",
+        "awslogs-stream-prefix": "identity-email-smoke"
+      }
+    }
+  }
+]
