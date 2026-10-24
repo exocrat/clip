@@ -1,5 +1,6 @@
 import { Link, NavLink, Outlet } from 'react-router';
 import './AppShell.css';
+import { IdentitySessionControl } from '../features/identity';
 
 const previewRoutes = [
   { to: '/sign-in', label: 'Sign in' },
@@ -22,6 +23,7 @@ export function AppShell() {
     <div className="app-shell">
       <header className="app-shell__header">
         <Link className="app-shell__brand" to="/">Campus Marketplace</Link>
+        <IdentitySessionControl />
         <nav aria-label="Scaffold route preview" className="app-shell__nav">
           {previewRoutes.map(({ to, label }) => (
             <NavLink
@@ -37,7 +39,7 @@ export function AppShell() {
           ))}
         </nav>
         <p className="app-shell__note">
-          Navigation previews scaffold routes; authentication and domain actions are not implemented.
+          Marketplace links preview unfinished domain routes. Identity sign-in is being verified locally.
         </p>
       </header>
       <Outlet />

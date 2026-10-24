@@ -1,5 +1,6 @@
 """Fresh private PostgreSQL for Identity integration tests; never retained targets."""
 
+from contextlib import contextmanager
 import json
 import os
 from pathlib import Path
@@ -16,7 +17,19 @@ ROOT = Path(__file__).resolve().parents[5]
 @pytest.fixture(scope="module")
 def disposable_database(tmp_path_factory):
     """Create one fresh database, migrate it and remove only its own container."""
-    root = tmp_path_factory.mktemp("identity-postgres")
+    with disposable_identity_database(
+        tmp_path_factory.mktemp("identity-postgres")
+    ) as connect:
+        yield connect
+
+
+@contextmanager
+def disposable_identity_database(root):
+    """Reusable owned local test DB only; no caller-selected DSN or retained target.
+
+    The explicit UI preview shares the same no-network, ephemeral PostgreSQL and
+    migration path as tests; always remove only the container created here.
+    """
     root.chmod(0o700)
     socket = root / "socket"
     socket.mkdir()

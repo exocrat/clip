@@ -480,3 +480,74 @@ def test_implemented_http_operation_ids_match_canonical_registry(identity_runtim
     for path, methods in schema["paths"].items():
         for method, operation in methods.items():
             assert operation["operationId"] == expected[(path, method)]
+
+
+def test_eight_character_password_activation_login_and_reset_boundary(identity_runtime):
+    """One backend policy accepts eight, rejects seven, and never consumes on bad length."""
+    state = identity_runtime
+    with client(state) as browser:
+        requested = browser.post(
+            "/auth/temporary/registration-challenges",
+            headers=HEADERS,
+            json={"email": EMAIL, "operation_id": str(uuid4())},
+        )
+        assert requested.status_code == 202
+        payload = {
+            "challenge_id": requested.json()["challenge_id"],
+            "code": state.mail.code(),
+            "password": "demoPas",
+        }
+        assert (
+            browser.post(
+                "/auth/temporary/accounts", headers=HEADERS, json=payload
+            ).status_code
+            == 422
+        )
+        payload["password"] = "demoPass"
+        assert (
+            browser.post(
+                "/auth/temporary/accounts", headers=HEADERS, json=payload
+            ).status_code
+            == 201
+        )
+        state.clock[0] += timedelta(minutes=1)
+        reset = browser.post(
+            "/auth/temporary/password-reset-challenges",
+            headers=HEADERS,
+            json={"email": EMAIL, "operation_id": str(uuid4())},
+        )
+        assert reset.status_code == 202
+        reset_payload = {
+            "challenge_id": reset.json()["challenge_id"],
+            "code": state.mail.code(),
+            "new_password": "newDemo",
+        }
+        assert (
+            browser.post(
+                "/auth/temporary/password-resets", headers=HEADERS, json=reset_payload
+            ).status_code
+            == 422
+        )
+        reset_payload["new_password"] = "newDemo8"
+        assert (
+            browser.post(
+                "/auth/temporary/password-resets", headers=HEADERS, json=reset_payload
+            ).status_code
+            == 204
+        )
+        assert (
+            browser.post(
+                "/auth/temporary/sessions",
+                headers=HEADERS,
+                json={"email": EMAIL, "password": "demoPass"},
+            ).status_code
+            == 401
+        )
+        assert (
+            browser.post(
+                "/auth/temporary/sessions",
+                headers=HEADERS,
+                json={"email": EMAIL, "password": "newDemo8"},
+            ).status_code
+            == 200
+        )

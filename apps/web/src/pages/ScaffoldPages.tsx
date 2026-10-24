@@ -1,7 +1,7 @@
 import { useState, type PropsWithChildren } from 'react';
 import { useParams } from 'react-router';
 import { ConversationsPlaceholder } from '../features/conversations';
-import { IdentityPlaceholder as IdentityFeaturePlaceholder } from '../features/identity';
+import { SignIn, IdentityPlaceholder as IdentityFeaturePlaceholder } from '../features/identity';
 import { ListingsPlaceholder as ListingsFeaturePlaceholder } from '../features/listings';
 import { SearchPlaceholder as SearchFeaturePlaceholder } from '../features/search';
 import { PageFrame, SegmentedControl } from '../shared/ui';
@@ -29,7 +29,7 @@ function RouteValue({ name, value }: { name: string; value?: string }) {
 export function SignInPage() {
   return (
     <RoutePage title="Sign in">
-      <IdentityFeaturePlaceholder title="Sign-in and temporary onboarding" />
+      <SignIn />
     </RoutePage>
   );
 }

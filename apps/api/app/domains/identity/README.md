@@ -85,7 +85,7 @@ checks are pending. Retention cleanup remains separately gated.
 
 `temporary_passwords.py` uses pinned argon2-cffi25.1.0 (bindings26.1.0 in the
 root lock) with explicit Argon2id19MiB/t2/p1,16-byte random salt and32-byte hash.
-Password inputs must be SecretStr,15–128 Unicode characters including spaces;
+Password inputs must be SecretStr,8–128 Unicode characters including spaces;
 no trimming/normalization/truncation. Reject malformed UTF-8 text safely. This
 module hashes only; routine password authentication/reset remain Step7.
 

@@ -1,0 +1,82 @@
+[
+  {
+    "path": "apps/api/app/domains/identity/temporary_passwords.py",
+    "sha256": "e2f99f08e73d3a7984fe9ae434bc11285d9572b75787211140244b2697926f7f"
+  },
+  {
+    "path": "apps/api/tests/domains/identity/postgres_fixtures.py",
+    "sha256": "d48aaca7542f7140f1f46c4fde442aeeb9218c132f2bea76f4c3e91e0a2e79e1"
+  },
+  {
+    "path": "apps/api/tests/domains/identity/test_identity_http.py",
+    "sha256": "ce02b1d0f3489f7cefcc5f0a57f2d3ce412b2bc0cc41e17c90d17f0d2284b38c"
+  },
+  {
+    "path": "apps/api/tests/domains/identity/test_temporary_passwords.py",
+    "sha256": "94c8d66d420b47ad1e159648f50ee97d4dfe1129f6e5811237d6ad49c6735560"
+  },
+  {
+    "path": "apps/api/tests/domains/identity/test_ui_preview.py",
+    "sha256": "f65eb1e6a8a6e15e8f188235b70582428bdb91ba5e80ceecf53d2c653df500dc"
+  },
+  {
+    "path": "apps/web/src/App.tsx",
+    "sha256": "c5e1dcc96787a9c23957460a6a5581d26993d917d9cf4f5bf704fd9333c7e051"
+  },
+  {
+    "path": "apps/web/src/app/AppShell.tsx",
+    "sha256": "f3fdb258f7c64483d35f65999162750ffd94662074980222599a0cc2cbedc291"
+  },
+  {
+    "path": "apps/web/src/features/identity/PreviewMailbox.tsx",
+    "sha256": "5965f2887efd7988bac98f6a12c7079c9d5a726b68787f281cb53baa6528f90a"
+  },
+  {
+    "path": "apps/web/src/features/identity/SignIn.tsx",
+    "sha256": "a893a194a79801715ba901d02cbf65872759926aeeeefefe8b11cf35888b7d56"
+  },
+  {
+    "path": "apps/web/src/features/identity/api.ts",
+    "sha256": "2d6b08870d0febea7ef39281db881d95319db85c46b97a1c900c04156bba6d89"
+  },
+  {
+    "path": "apps/web/src/features/identity/identity.css",
+    "sha256": "8610f6fcc772d07f2e5f10876e2912248cab29d1c2a8b6160b313f5dcfb56fb5"
+  },
+  {
+    "path": "apps/web/src/features/identity/index.ts",
+    "sha256": "892b9b31d443f09dabc3286cc83bd3f3c646af7588715202c2b05ea189f53cc2"
+  },
+  {
+    "path": "apps/web/src/features/identity/session.tsx",
+    "sha256": "dc23fed8f55288c9bfa6d21176956c84df998e996c0fb71e4ba89e0925bf3fb4"
+  },
+  {
+    "path": "apps/web/src/pages/ScaffoldPages.tsx",
+    "sha256": "4b2d576e9df5544ccacc6c725081b672114bc80dc80a203a403d0ae3079e36c8"
+  },
+  {
+    "path": "apps/web/tests/identity.test.tsx",
+    "sha256": "e21ecdf27f633cfc53914dbf0bc4f01f198b38a115323c3912cd6429e39be989"
+  },
+  {
+    "path": "apps/web/vite.config.ts",
+    "sha256": "730d6c42ac83153fedf36962e24686a945f66a83433ebe656e8421290a503dbf"
+  },
+  {
+    "path": "apps/web/vitest.config.ts",
+    "sha256": "ea302e084187b30abaa1bb5d97426cae97f14e7136061fb769958af984410c40"
+  },
+  {
+    "path": "package-lock.json",
+    "sha256": "5f45511648ec35c06b8e627613f946d3eb23b1a785840a44a5d23d8ea59f3b3d"
+  },
+  {
+    "path": "package.json",
+    "sha256": "bd0085f17f05864dc08c92beb1bfb807a7ad62f6b2137b470e1b32c135ce3b4c"
+  },
+  {
+    "path": "scripts/identity_ui_preview.py",
+    "sha256": "87878ff6835b3d1e45469748f84be1010edcd856cae713c3fdf4f22cb883b3da"
+  }
+]

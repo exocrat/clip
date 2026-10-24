@@ -202,3 +202,12 @@ No mailbox/payment verification is claimed. Source fields never change login.
 Bounded cleanup removes source contacts and display names30days after the earliest
 permanent revocation/temporary expiry, preserving users and lifetime markers.
 Actual scheduling and observed retention deadlines remain separately gated.
+
+## Temporary password length revision
+
+Aditya approved an8-character minimum on2026-10-24 09:15:28 UTC (recording
+time). Activation, password reset and password verification share the same
+8–128 Unicode-character policy, including spaces, without trimming or
+normalization. The backend enforces the limit; the UI provides matching guidance.
+Existing longer passwords remain valid. Hashing/session/lifetime policy is
+unchanged. See [temporary authentication](../docs/decisions/temporary-authentication-storage.md).

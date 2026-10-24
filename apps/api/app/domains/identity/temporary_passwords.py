@@ -31,7 +31,7 @@ class TemporaryPasswords:
 
     @staticmethod
     def validate(password: SecretStr) -> None:
-        """Accept 15–128 Unicode characters, including spaces, without rewriting.
+        """Accept 8–128 Unicode characters, including spaces, without rewriting.
 
         Bound input before UTF-8 encoding; invalid surrogate text fails safely.
         This checks policy only and neither authenticates nor stores anything.
@@ -39,7 +39,7 @@ class TemporaryPasswords:
         if not isinstance(password, SecretStr):
             raise PublicError(ERRORS[422])
         value = password.get_secret_value()
-        if not 15 <= len(value) <= 128:
+        if not 8 <= len(value) <= 128:
             raise PublicError(ERRORS[422])
         try:
             value.encode("utf-8")

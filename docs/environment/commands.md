@@ -826,3 +826,36 @@ retention/concurrency; shared guarded fake and actual production startup control
 remain in their existing owners' tests. No provider/send/retained DB/cloud action.
 The full make check includes these tests and all pre-existing OTP/session/privacy
 coverage; local results cannot accept real provider/browser/consumer/readiness.
+
+### Identity first UI checkpoint — ID-01 Step11
+
+```sh
+CLIP_ENVIRONMENT=test uv run --locked python scripts/identity_ui_preview.py --synthetic-preview --seconds 1800
+npm run dev -- --mode identity-preview
+```
+
+Separate foreground terminals; URL `http://localhost:5173/sign-in`. Both bind
+loopback only; fixed API8001/Vite5173, fail on conflicts. Script creates only an
+owned no-network disposable PostgreSQL18.6/dbmate2.36.0 database, transient keys
+and synthetic-only mailbox. It refuses non-test environment/implicit enablement;
+60–3600s cap, default1800s, or Ctrl+C then own DB removal. Stop Vite separately.
+No real SES/Microsoft call, account/credential input, retained DB or cloud action.
+Use only the reserved example recipient documented in apps/web/README.md.
+Preview mode cannot build/deploy; ordinary dev has no proxy and ordinary builds
+remove preview inbox. Normal API startup stays health-only.
+
+```sh
+uv run --locked pytest apps/api/tests/domains/identity/test_ui_preview.py apps/api/tests/test_health.py -q -W error
+npm run check
+```
+
+Python checks refusal, health-only production composition, actual registration/
+SQL/cookie and non-loopback denial. Web checks include DOM interaction tests
+with synthetic contract responses and existing route/import boundaries. Source
+formatter remains disabled automatically; an explicit one-off web-local command
+can format only this step's new files using `npx biome format --write
+--javascript-formatter-enabled=true --javascript-formatter-indent-style=space
+--javascript-formatter-indent-width=2 --javascript-formatter-line-width=100
+--javascript-formatter-quote-style=single <explicit-file-paths>` from apps/web.
+No shared formatter configuration change. Full make check remains required;
+local/browser doubles do not accept actual provider/device/ID-READY gates.

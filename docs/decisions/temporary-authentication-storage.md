@@ -47,7 +47,7 @@ expiry, using separate versioned 256-bit keys for lookup, verifier and AES-GCM.
 No raw OTP is persisted. No automatic key rotation or live send is authorized.
 
 The verified password plan for Steps 6–7 uses Argon2id with 19 MiB memory,
-two iterations and parallelism one, accepting 15–128 characters including
+two iterations and parallelism one, accepting 8–128 characters including
 spaces. Step6 now implements private atomic activation with the approved password hash;
 password sign-in/reset and public session wiring remain pending.
 Aditya approved service-lifetime retention of minimal request deduplication
@@ -88,3 +88,12 @@ The reviewed reset state-race409 is returned only after valid proof; incorrect/
 unknown codes retain generic422/429. Bounded cleanup is dry-run by default,
 requires an explicit matching target for CLI apply, preserves lifetime markers
 and enables no schedule. No cloud cleanup/send/deployment approval is inferred.
+
+## Password minimum revision — 2026-10-24
+
+Aditya explicitly changed the minimum from15 to8characters during Step11 on
+2026-10-24 09:15:28 UTC (recording time). Apply the same8–128 Unicode-character
+bound to activation, login verification and reset, retaining whitespace/Unicode
+without normalization and the existing Argon2id cost/salt parameters. The earlier
+Step6 evidence records its original15-character boundary; it is historical, not
+the current rule. API/UI/boundary/integration tests must agree with the new rule.

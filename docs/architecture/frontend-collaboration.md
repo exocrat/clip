@@ -129,7 +129,7 @@ it is not an additional product route.
 
 | Page path | Page component | Public feature placeholders and connections | Owning task(s) |
 |---|---|---|---|
-| `/sign-in` | `SignInPage` | `identity/IdentityPlaceholder` | A — ID-01 |
+| `/sign-in` | `SignInPage` | `identity/SignIn` (temporary sign-in/registration first checkpoint; Microsoft/reset pending) | A — ID-01 |
 | `/auth/callback` | `AuthCallbackPage` | `identity/IdentityPlaceholder` | A — ID-01 |
 | `/` | `DiscoveryPage` | `search/SearchPlaceholder` contains `listings/ListingsPlaceholder` for sale summaries; wanted browse is C-only | C — SE-01/SE-02; B — LI-01/LI-02 integration |
 | `/listings/new` | `ListingCreatePage` | `listings/ListingsPlaceholder` contains `identity/IdentityPlaceholder` for eligibility | B — LI-01/LI-02; A — ID-01 integration |
@@ -270,3 +270,21 @@ feature stubs are created by these planning steps. DL-00 and the domain task
 lists must define the business contracts before implementation depends on them.
 Step 9 updates downstream task and agent instructions to the implemented
 scaffold and reviewed contracts.
+
+## ID-01 Step11 first UI checkpoint
+
+Aditya is the reserved current writer on task/id-01-identity for Identity feature
+exports and bounded Identity page/shell composition. `/sign-in` now uses public
+`SignIn`; `App` supplies public `IdentityProvider` and the shell uses public
+`IdentitySessionControl`. The existing IdentityPlaceholder export remains for
+unchanged marketplace compositions. No route/private feature boundary changes.
+The first visible increment supplies temporary sign-in/registration/OTP and
+session/logout controls. `/auth/callback`, password reset and `/account/contacts`
+remain original Step11 pending checkpoints. Human desktop/phone-layout checks
+are pending; actual-phone keyboard/provider/deployed acceptance remains open.
+
+The explicit development-only identity-preview mode uses a fixed loopback proxy
+and synthetic test inbox with actual disposable Identity SQL/HTTP. It rejects
+build/deployment of that mode; normal builds eliminate the test inbox module.
+Normal development does not enable this proxy; unconfigured backend main is
+still health-only. See [first checkpoint evidence](../evaluation/identity/id-01-step-11/README.md).

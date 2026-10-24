@@ -11,7 +11,7 @@ from app.domains.identity.temporary_passwords import TemporaryPasswords
 
 
 @pytest.mark.parametrize(
-    "value", ["x" * 15, "x" * 128, "  synthetic passphrase  ", "é" * 15, " " * 15]
+    "value", ["x" * 8, "x" * 128, "  synthetic passphrase  ", "é" * 8, " " * 8]
 )
 def test_exact_password_preserved_with_approved_parameters(value):
     encoded = TemporaryPasswords().hash(SecretStr(value))
@@ -31,7 +31,7 @@ def test_exact_password_preserved_with_approved_parameters(value):
 @pytest.mark.parametrize(
     "value",
     [
-        SecretStr("x" * 14),
+        SecretStr("x" * 7),
         SecretStr("x" * 129),
         SecretStr("\ud800" * 15),
         "synthetic plain string",

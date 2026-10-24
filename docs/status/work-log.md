@@ -47,7 +47,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PD-19 | Integration owner (current branch) | done | Steps 1–9 and combined foundation handoff complete | Steps 1–9 performed | User confirms all work before PRE-00 is complete | PR #8 merged at `2cd83e7` from head `18c966e` against base `68d9da9`; [Foundation quality gates passed](https://github.com/exocrat/clip/actions/runs/39323851584) for that exact head/base; `make test` (395 Python, 63 data, 16 web), Black, contract freshness and 10 `make check` gates passed; [handoff](foundation-handoff.md) | No open PD-19 work per user confirmation. Linux AMD64/macOS results remain user-confirmed without raw outputs. PR #8 has no submitted GitHub review; independent-review completion is user-confirmed, with no separate review artifact linked. Refresh cloud snapshot before any operation. | 2026-10-19 21:09:05 UTC |
 | PRE-00 | Integration owner | done | Foundation gate audit accepted; DL-00 is unblocked | performed | verified/accepted by user | Reviewed handoff PR #8 merged to `main` at `2cd83e7`; hosted Foundation quality gates passed for head `18c966e` against base `68d9da9` (run `39323851584`); clean-checkout evidence at `0747be6`; see [PD-19 handoff](foundation-handoff.md) | None. PR #8 has no GitHub review event; independent-review completion remains user-reported without a separate artifact. | 2026-10-19 21:20:55 UTC |
 | DL-00 | Shared-core/contract coordinator; all domains review | done | Steps 1–13 and task-wide audit complete; accepted and merged | Steps 1–13 performed; accepted by user | User confirmed full acceptance and merge on 2026-10-22 05:30:49 UTC | PR #9 merged to `main` at `f5576ef`; current `main` is `44cd8ff`; Step 13 check evidence is recorded below and was not rerun for this update | None for DL-00; cleanup implementation remains separately gated; real providers/integrations and crypto/worker implementation remain downstream | 2026-10-22 05:30:49 UTC |
-| ID-01 | A | in progress | Step10 local result verified and checkpoint commit authorized; next Step11 UI understanding/ownership plan | Steps1/3 verified; Steps4–9 local verified; Step2 sandbox verified/production staged; Step10 local performed/verified, real gates pending | Step10 result verified by Aditya; checkpoint commit authorized | `task/id-01-identity` at `cfb9509` plus uncommitted Step10; [evidence](../evaluation/identity/id-01-step-10/README.md);767 Python/63data/16web; all11 gates and final focused privacy suite passed | Actual runtime/provider/browser/current-main/peer acceptance and UI/ID-READY; actual CN-02 sharing integration; full consumer matrix Step14 outside ID-READY | 2026-10-24 08:45:31 UTC |
+| ID-01 | A | in progress | Step11 first UI and8-character correction checked; checkpoint commit authorized, then remaining UI increment | Steps1/3 verified; Steps4–10 local verified; Step2 production staged; Step11 partial: first local UI increment performed, Microsoft/reset/contact UI pending | Step11 plan verified; first visible increment verified by Aditya;8-character correction and checkpoint commit authorized | `task/id-01-identity` at `1175d12` plus uncommitted Step11; [evidence](../evaluation/identity/id-01-step-11/README.md);771 Python/63data/32web; corrected all11 gates passed; first UI human-verified | Human browser/layout/device checks; remaining Step11 UI; actual runtime/provider/current-main/peer/ID-READY and CN-02 integration; consumer matrix Step14 outside ID-READY | 2026-10-24 09:20:33 UTC |
 | LI-01 | B | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | LI-CORE, LI-02, SE-CORE | — |
 | LI-02 | B | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | LI-CORE, ID-READY | — |
 | SE-01 | C | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | SE-CORE, LI-01, LI-02, DATA-READY | — |
@@ -105,6 +105,62 @@ Update the task status row after each step and human verification. The row is th
 Add a history entry when it records a meaningful outcome, decision, changed output, check result, blocker, consequential human direction, or task/merge closeout. Group related steps when that keeps their results understandable. Do not add a separate history entry just to say that a routine step was verified and the next one may begin.
 
 Include the task and covered step(s), contributor, date/time, and the details needed to understand or verify the outcome: relevant execution/verification state, changed paths, exact checks/results, decision/evidence reference, blocker/owner, or next action as applicable. Keep entries brief, omit repeated background, and link existing artifacts rather than duplicating them. Use exact UTC date and time for new entries. Keep historical timestamp precision as recorded; never guess or backfill an unknown time. Preserve distinct decisions, evidence, and other contributors' useful history.
+
+### ID-01 — Step11 verified first UI and password revision — 2026-10-24 09:15:28 UTC
+
+Aditya verified the first temporary-authentication UI increment, explicitly
+changed the minimum password length from15 to8characters, authorized its
+checkpoint commit and directed continuation of Step11. No specific browser/
+viewport/device observations were supplied; do not invent actual-device evidence.
+Apply8–128 consistently to real backend activation/reset/login validation, UI
+registration/help and canonical Identity/password decision, preserving hashing,
+exact Unicode/whitespace and account/session lifetime semantics. Add seven/eight
+API/UI/hash boundary checks; full corrected make check passed all11gates
+(771 Python/63data/32web) on2026-10-24 09:20:33 UTC.
+Remaining Step11 Microsoft/reset/contact UI and runtime/provider/peer/device
+checks stay open. No push/merge/cloud/send/deployment approval is implied.
+
+### ID-01 — Step11 first browser checkpoint ready — 2026-10-24 09:08:21 UTC
+
+Aditya(A), task/id-01-identity at1175d12 plus uncommitted Step11. Implemented the
+verified first visible increment: same-origin cookie/CSRF API layer, in-memory
+fenced session provider, temporary sign-in/registration/OTP and session/logout
+controls, responsive feature styling and bounded public page/shell composition.
+Kept all routes and other feature/private boundaries; existing Identity exports
+remain compatible. Actual disposable PostgreSQL/HTTP preview binds only local
+ports8001/5173, synthetic-only transient inbox, test-environment gate and1800s
+cap; preview builds refuse, normal bundle excludes synthetic-inbox markers and
+ordinary API main remains health-only. No real provider/send or retained DB.
+
+[Per-file/partial-state evidence](../evaluation/identity/id-01-step-11/README.md)
+records the actual UI logout bug/fix, test startup-cache failure and owned
+interrupted run, subprocess isolation and corrected checks. Final make check
+passed all11gates:770 Python/63data/32web; Black118/boundaries/contracts/web/
+database/safety/Gitleaks. Existing Node versions unchanged;17source hashes and
+160local file targets checked before final metadata links. Headless Chromium
+showed no horizontal overflow at1280x800/390x844/844x390; screenshot inspected
+outside repo without OTP/secret. First human desktop/phone-layout/device result
+awaits verification at http://localhost:5173/sign-in; test address/instructions
+are in web README/evidence. Headless inspection browser closed; capped preview
+left running for the human. Step11 stays partial: Microsoft PKCE/callback,
+forgot-password/reset, contact/profile UI and remaining browser/provider checks
+are pending. No new step, commit, cloud/deploy/cleanup/push/merge or readiness
+acceptance; current-main/peer/provider/CN/device gates retain their owners.
+
+### ID-01 — Step11 UI writer reservation and first checkpoint — 2026-10-24 08:49:34 UTC
+
+Aditya(A) verified Step11 UI plan and directed implementation on task/id-01-identity
+at1175d12. Reserve Identity feature/public exports and owned tests; bounded
+SignInPage/AuthCallbackPage/AccountContactsPage composition in ScaffoldPages;
+App/session shell connection; web test/dev configuration and root dependency
+manifest/lock; local synthetic preview harness and reusable disposable SQL helper;
+frontend-map/command/evidence/status documentation. Aditya is sole current writer
+for those shared compositions; preserve other feature private code/exports/routes.
+Scaffold matches the verified map; no material Step11 definition gap found.
+First human-browser checkpoint is temporary sign-in/registration with explicit
+loopback-only real disposable SQL and synthetic mail capture; Microsoft callback,
+reset and contact editor stay pending within Step11. No live provider/send,
+cloud/deploy/retained DB/commit/push/merge action is authorized.
 
 ### ID-01 — Step10 deterministic security coverage checked — 2026-10-24 07:32:48 UTC
 
