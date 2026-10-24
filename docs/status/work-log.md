@@ -47,7 +47,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PD-19 | Integration owner (current branch) | done | Steps 1–9 and combined foundation handoff complete | Steps 1–9 performed | User confirms all work before PRE-00 is complete | PR #8 merged at `2cd83e7` from head `18c966e` against base `68d9da9`; [Foundation quality gates passed](https://github.com/exocrat/clip/actions/runs/39323851584) for that exact head/base; `make test` (395 Python, 63 data, 16 web), Black, contract freshness and 10 `make check` gates passed; [handoff](foundation-handoff.md) | No open PD-19 work per user confirmation. Linux AMD64/macOS results remain user-confirmed without raw outputs. PR #8 has no submitted GitHub review; independent-review completion is user-confirmed, with no separate review artifact linked. Refresh cloud snapshot before any operation. | 2026-10-19 21:09:05 UTC |
 | PRE-00 | Integration owner | done | Foundation gate audit accepted; DL-00 is unblocked | performed | verified/accepted by user | Reviewed handoff PR #8 merged to `main` at `2cd83e7`; hosted Foundation quality gates passed for head `18c966e` against base `68d9da9` (run `39323851584`); clean-checkout evidence at `0747be6`; see [PD-19 handoff](foundation-handoff.md) | None. PR #8 has no GitHub review event; independent-review completion remains user-reported without a separate artifact. | 2026-10-19 21:20:55 UTC |
 | DL-00 | Shared-core/contract coordinator; all domains review | done | Steps 1–13 and task-wide audit complete; accepted and merged | Steps 1–13 performed; accepted by user | User confirmed full acceptance and merge on 2026-10-22 05:30:49 UTC | PR #9 merged to `main` at `f5576ef`; current `main` is `44cd8ff`; Step 13 check evidence is recorded below and was not rerun for this update | None for DL-00; cleanup implementation remains separately gated; real providers/integrations and crypto/worker implementation remain downstream | 2026-10-22 05:30:49 UTC |
-| ID-01 | A | in progress | Step11 recovery UI verified and checkpoint commit authorized; next private contact editor | Steps1/3 verified; Steps4–10 local verified; Step2 production staged; Step11 partial: first UI/8-character policy verified and committed; reset local performed/verified; Microsoft/contact pending | First UI and reset increment verified by Aditya; checkpoint commit authorized | `task/id-01-identity` at `4d56101` plus uncommitted reset UI; [evidence](../evaluation/identity/id-01-step-11/reset-checkpoint.md);771 Python/63data/40web; all11 gates passed; fresh capped loopback preview | Human reset/layout/device checks; Microsoft/contact UI; actual runtime/provider/current-main/peer/ID-READY and CN-02 integration; consumer matrix Step14 outside ID-READY | 2026-10-24 09:33:04 UTC |
+| ID-01 | A | in progress | Step11 private contact editor verified and checkpoint commit authorized; next Microsoft sign-in/callback implementation | Steps1/3 verified; Steps4–10 local verified; Step2 production staged; Step11 partial: first UI/password/recovery verified; contact local performed/verified; Microsoft callback pending | Contact increment verified by Aditya; checkpoint commit authorized | `task/id-01-identity` at `bcfff32` plus uncommitted contact UI; [evidence](../evaluation/identity/id-01-step-11/contacts-checkpoint.md);771 Python/63data/61web; all11 gates passed; fresh capped loopback preview | Human contact/layout/device checks; Microsoft callback UI; actual runtime/provider/current-main/peer/ID-READY and CN-02 integration; consumer matrix Step14 outside ID-READY | 2026-10-24 12:37:01 UTC |
 | LI-01 | B | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | LI-CORE, LI-02, SE-CORE | — |
 | LI-02 | B | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | LI-CORE, ID-READY | — |
 | SE-01 | C | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | SE-CORE, LI-01, LI-02, DATA-READY | — |
@@ -105,6 +105,40 @@ Update the task status row after each step and human verification. The row is th
 Add a history entry when it records a meaningful outcome, decision, changed output, check result, blocker, consequential human direction, or task/merge closeout. Group related steps when that keeps their results understandable. Do not add a separate history entry just to say that a routine step was verified and the next one may begin.
 
 Include the task and covered step(s), contributor, date/time, and the details needed to understand or verify the outcome: relevant execution/verification state, changed paths, exact checks/results, decision/evidence reference, blocker/owner, or next action as applicable. Keep entries brief, omit repeated background, and link existing artifacts rather than duplicating them. Use exact UTC date and time for new entries. Keep historical timestamp precision as recorded; never guess or backfill an unknown time. Preserve distinct decisions, evidence, and other contributors' useful history.
+
+### ID-01 — Step11 contact editor browser checkpoint — 2026-10-24 11:18:34 UTC
+
+Aditya(A) continued approved Step11 on task/id-01-identity atbcfff32 after verified
+recovery. Added the existing account-contact page's public own editor, generated-
+type GET/set/delete client, explicit CSRF/refetch, field validation/error/empty
+states and responsive cards. Values stay in the actor-keyed editor; known
+logout/account changes invalidate stale reads/writes. Confirmed deletion hides
+old rows before refetch; unknown outcomes hide private values and never auto-
+retry writes. Preserve same-actor unfinished drafts on focus and unrelated
+field saves. No user-supplied actor target, new route, private cross-feature
+import, server/schema/contract/dependency/provider change or contact disclosure.
+
+[Per-file and mode evidence](../evaluation/identity/id-01-step-11/contacts-checkpoint.md)
+records21new contact UI cases, actual local anonymous gate and explicitly
+controlled positive browser layouts at1280x800/390x844/844x390, without contact/
+OTP/credential evidence; owned headless browser closed. Original terminated143
+run and benign-prose secret-scan finding were not passes; scanner rules stayed
+unchanged and corrected evidence passed. Final unrelated-draft correction was
+verified after a temporary automatic-approval usage-limit review failure;
+normal approval path resumed on Aditya's direction, no bypass. Final full make
+check passed all11gates:771 Python/63data/61web, Black118, boundaries/contracts/
+web/build/actual PostgreSQL/safety/Gitleaks;6source hashes and162local Markdown
+targets checked before final metadata links. No failed/skipped check accepted.
+
+The capped preview expired during the interruption. Fresh1800s owned disposable
+backend restarted for human verification; Vite remains loopback5173, API8001.
+Recreate only the synthetic example account and use synthetic contact fields.
+Aditya verified the contact increment and authorized its checkpoint commit
+on2026-10-24 12:37:01 UTC (recording time). No specific browser/device
+measurements were supplied; actual-device acceptance remains open.
+Microsoft callback remains Step11; provider/runtime/current-main/CN-02/peer/
+readiness gates retain owners. No Step12/cloud/send/retained cleanup/deployment/
+push/merge or complete FR/NFR/ID-READY claim.
 
 ### ID-01 — Step11 password recovery browser checkpoint — 2026-10-24 09:29:11 UTC
 

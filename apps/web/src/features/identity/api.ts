@@ -5,6 +5,9 @@ import type {
   PasswordResetChallengeRequest,
   ResetTemporaryPasswordRequestWritable,
   SessionView,
+  OwnContacts,
+  ContactValueRequest,
+  IdentitySetOwnContactData,
   TemporarySessionRequestWritable,
 } from '../../../../../contracts/generated/types.gen';
 
@@ -103,6 +106,23 @@ function acknowledgement(result: unknown): ChallengeAccepted {
   return { challenge_id: row.challenge_id, expires_at: row.expires_at };
 }
 
+/** Path field names come from the generated HTTP operation, never arbitrary input. */
+export type ContactKind = IdentitySetOwnContactData['path']['contact_kind'];
+
+/** Return only the three approved own-contact fields; reject malformed dependencies. */
+function ownContacts(result: unknown): OwnContacts {
+  if (!result || typeof result !== 'object') throw new IdentityError(503);
+  const row = result as Record<string, unknown>;
+  for (const field of ['email', 'phone', 'upi_id']) {
+    if (row[field] !== null && typeof row[field] !== 'string') throw new IdentityError(503);
+  }
+  return {
+    email: row.email as string | null,
+    phone: row.phone as string | null,
+    upi_id: row.upi_id as string | null,
+  };
+}
+
 /** Explicit reviewed endpoints; no target actor comes from browser input. */
 export const identityApi = {
   async me() {
@@ -125,6 +145,17 @@ export const identityApi = {
   },
   async activate(body: ActivateTemporaryRequestWritable) {
     return session(await request('/auth/temporary/accounts', 'POST', body));
+  },
+  async contacts(): Promise<OwnContacts> {
+    return ownContacts(await request('/me/contacts'));
+  },
+  async setContact(kind: ContactKind, body: ContactValueRequest) {
+    if (!['email', 'phone', 'upi_id'].includes(kind)) throw new IdentityError(422);
+    await request(`/me/contacts/${kind}`, 'PUT', body, true);
+  },
+  async deleteContact(kind: ContactKind) {
+    if (!['email', 'phone', 'upi_id'].includes(kind)) throw new IdentityError(422);
+    await request(`/me/contacts/${kind}`, 'DELETE', undefined, true);
   },
   async logout() {
     await request('/auth/session', 'DELETE', undefined, true);

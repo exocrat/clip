@@ -139,7 +139,7 @@ it is not an additional product route.
 | `/saved` | `SavedListingsPage` | `search/SearchPlaceholder` contains `listings/ListingsPlaceholder` summaries/availability | C — SE-02; B — LI-01/LI-02 integration |
 | `/my/conversations` | `ConversationsPage` | `conversations/ConversationsPlaceholder` contains `listings/ListingsPlaceholder` context | D — CN-01/CN-02; B — LI-01 integration |
 | `/my/conversations/:conversationId` | `ConversationDetailPage` | `conversations/ConversationsPlaceholder` contains listing selection/availability and identity contact-option placeholders | D — CN-01/CN-02; B — LI-01 and A — ID-01 integration |
-| `/account/contacts` | `AccountContactsPage` | `identity/IdentityPlaceholder` | A — ID-01 |
+| `/account/contacts` | `AccountContactsPage` | `identity/ContactsEditor` (own-source editor; human verification pending) | A — ID-01 |
 | `/wanted/:requestId` | `WantedRequestPage` | `search/SearchPlaceholder` contains identity eligibility and conversations contact-requester placeholders | C — SE-02; A — ID-01 and D — CN-01/CN-02 integration |
 
 Public wrappers are `src/features/identity/IdentityPlaceholder.tsx`,
@@ -297,3 +297,15 @@ page composition or public feature prop change. API requests use the reviewed
 reset-specific operations, generic acknowledgement and single-use proof; reset
 issues no new session. Human recovery/portrait/landscape verification remains
 pending. Microsoft callback and private contact editor remain later Step11 work.
+
+### ID-01 Step11 private contact editor increment
+
+Aditya continues as sole reserved Identity/page writer after verified recovery
+checkpointbcfff32. AccountContactsPage now composes public ContactsEditor on its
+existing route. Existing Identity placeholder/props/session exports remain
+compatible; other feature/private/page connections are unchanged. Contact values
+stay inside an actor-keyed own editor, with CSRF writes and confirmed refetch;
+known logout/account changes unmount private drafts and fence late responses.
+There is no general profile/directory or Conversation contact-sharing endpoint
+or client bypass. Actual CN-02 deliberate sharing remains its original gate.
+Human contact-editor desktop/phone/browser verification is pending.

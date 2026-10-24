@@ -133,3 +133,7 @@ checkpoint. Remaining Step11 work still needs its visible-increment review.
 The subsequent [password recovery checkpoint](reset-checkpoint.md) builds on
 verified first UI/8-character commit4d56101. Its separate hashes/results do not
 replace this historical first-increment evidence.
+
+The later [private contact editor checkpoint](contacts-checkpoint.md) has its
+own source hashes and pending browser verification; the first UI evidence above
+remains tied to its original corrected checkpoint.

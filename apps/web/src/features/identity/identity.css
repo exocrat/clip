@@ -14,3 +14,6 @@
 .identity-actions, .identity-session { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); margin-top: var(--space-4); }
 .identity-wrap, .identity-session { overflow-wrap: anywhere; }
 @media (max-width: 42rem) { .identity-layout { grid-template-columns: minmax(0, 1fr); gap: var(--space-3); margin: var(--space-4) auto; } .identity-intro { padding: 0; } .identity-card { padding: var(--space-4); } .identity-actions > button { flex: 1 1 12rem; } }
+.identity-contacts { max-width: 70rem; margin-inline: auto; }
+.identity-contact-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); margin-top: var(--space-5); }
+@media (max-width: 60rem) { .identity-contact-grid { grid-template-columns: minmax(0, 1fr); } }

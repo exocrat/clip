@@ -108,3 +108,26 @@ needed for128astral characters; the explicit character-count check remains the
 client hint and backend authorization/validation remains authoritative.
 This recovery increment awaits human browser verification; Microsoft callback
 and own-contact UI remain pending Step11 increments.
+
+## Private contact editor browser checkpoint
+
+Open `http://localhost:5173/account/contacts` in the same capped local preview.
+Sign in with the synthetic account you created (or register the reserved example
+account again if the disposable database was restarted). Signed-out visitors see
+a sign-in prompt and no contact request. Use synthetic contact values only.
+
+Save email, phone and UPI one at a time; confirm a refresh shows the saved values.
+Delete one field and confirm it disappears while the others remain. Blank fields
+have an explicit empty state; clearing a draft does not delete a saved value.
+Changing contact email does not change the sign-in email. Saving contacts does
+not share them; actual Conversation selection/confirmation remains CN-02 work.
+Copies already shared have separate retention. Errors/rate limits do not claim
+success; uncertain writes require an explicit refresh before another attempt.
+
+The page keeps drafts in memory, clears its UI on known logout/account changes,
+and ignores old unmounted-editor responses. The session provider rechecks on
+focus; ordinary focus changes preserve an unfinished draft for the same actor. Saving
+one field also preserves unfinished edits in the other fields.
+It uses no browser storage for contacts and never accepts an actor ID from the
+URL. Human desktop/portrait/landscape and actual-device checks remain required.
+Microsoft callback remains the next unimplemented Step11 UI scope.

@@ -866,3 +866,10 @@ its synthetic account. Wait the shared60s OTP cooldown, then exercise Forgot
 password → reset code → new password → explicit sign-in. Existing make check/
 npm run check include the added reset UI cases. Preview restart discards only
 its own ephemeral data; it never reconnects to a retained/shared database.
+
+The Step11 contact-editor increment uses the same capped synthetic preview and
+registered make check/npm run check commands. Visit `/account/contacts` after
+signing in. Existing backend tests use actual own-contact SQL/HTTP; new DOM
+cases cover CSRF/refetch/delete/privacy/known-actor race behavior. Headless layout
+positive controls use explicitly intercepted synthetic read results and are not
+real authenticated provider evidence; human exercises the actual local API.
