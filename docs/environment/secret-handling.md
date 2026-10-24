@@ -131,8 +131,10 @@ and current gates are consolidated in [provider history](../evaluation/identity/
 
 ### ID-01 persistent runtime references — local preparation only
 
-`/clip/test/identity/authentication-keys` and `/clip/test/identity/database-url`
-are proposed Standard SecureStrings, not provisioned by the local implementation.
+`/clip/test/identity/authentication-keys` was provisioned with explicit Aditya
+approval on 2026-10-24 18:47:02 UTC: Standard SecureString version1,
+AWS-managed aws/ssm key, account335523638354/ap-south-1. Metadata confirmed;
+no decrypted read. `/clip/test/identity/database-url` remains proposed/unprovisioned.
 The existing `/clip/test/identity/email-delivery` reference retains its reviewed
 routing schema and four-hour refresh policy. No live reads were performed for
 this preparation.

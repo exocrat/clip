@@ -949,3 +949,24 @@ Checks regular cookie/eligibility, temporary browsing and sale/upload denial,
 contact CSRF, logout, expiry/revocation, per-app isolation, one-time installation,
 pool closure and refusal of incomplete/production/demo bindings. No website or
 provider acceptance is inferred. `app.main:app` remains unbound by default.
+
+
+### Identity database setup procedure — ID-01 Step12 (local checks only)
+
+`uv run --locked pytest apps/api/tests/domains/identity/test_database_setup.py -q -W error`
+uses the owned networkless PostgreSQL18.6 fixture and applies current migrations.
+It changes roles/ACLs only inside that disposable container and removes the owned
+container afterward. Requires the locked environment and local Unix-socket Docker;
+no AWS credentials, cloud calls, published DB port or shared database URL are used.
+Expected: real SCRAM restricted-login validation, unchanged-key startup audit,
+existing-role collision and unsafe metadata/logging/target refusals, and rollback
+after a post-create failure. Failures remain failures; no retry or live fallback.
+`make check` includes these tests. Strict typing:
+`uv run --locked mypy --strict apps/api/app/domains/identity/database_setup.py`.
+
+`database_setup.py` exposes operator-only `inspect_identity_database` and
+`create_identity_role` functions with an explicit connection factory and expected
+database/admin. They are not connected to startup or a live CLI. Each transaction
+has5-second statement/3-second lock limits; the execution launcher must separately
+bound total process/connection time. Live launcher/private networking, credentials,
+RDS start, exact SQL, URL publication and cleanup still need their reviewed plans.

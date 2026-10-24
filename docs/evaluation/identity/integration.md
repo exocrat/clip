@@ -253,3 +253,124 @@ After this gate: separately plan the database login/URL and shared PUBLIC-grant
 baseline with the current DB operator; then scoped runtime IAM and sender update;
 then proxy/TLS/deployment and real browser/provider checks. The existing email
 secret is retained. This request does not start or alter Suraj's environment.
+
+Creation result — 2026-10-24 18:47:02 UTC: Aditya explicitly approved the exact cloud
+mutation after automatic review requested clearer action approval. The initial
+SDK attempt stopped before generation/write because the optional login credential
+dependency was missing; STS CLI metadata confirmed the correct account/operator.
+Used CLI session credentials captured only in memory for the SDK; no dependency,
+profile or application configuration change. One create-only PutParameter
+succeeded, validated key schema before submission and confirmed only metadata:
+`/clip/test/identity/authentication-keys`, SecureString, Standard, version1,
+aws/ssm. No decrypted read, overwrite, file containing keys, database/IAM/compute
+change or send. Retain keys; runtime access/adoption and DB URL remain pending.
+Aditya verified the provisioning result; execution record changes are uncommitted.
+
+
+## Database login and URL setup plan
+
+Step12 planning checkpoint — 2026-10-24 19:39:13 UTC; Aditya(A). Read-only RDS
+metadata confirms `clip-shared-test-postgres`, resource ID
+`db-PYRRZJPVKPGHIXDAHUWATXGH7A`, stopped, PostgreSQL18.6, database `clip_test`,
+private endpoint `clip-shared-test-postgres.cnsu8kgiimug.ap-south-1.rds.amazonaws.com:5432`,
+security group `sg-02f98707f8e43d2ea`, account335523638354/ap-south-1. No SQL,
+secret-value retrieval, start/stop, task launch or mutation performed.
+
+Audit: the local role proposal and restricted-role integration checks exist.
+PD-16 recorded PUBLIC CONNECT/TEMP and public-schema CREATE revocation, so do
+not repeat revocations by default. Actual current ACLs, Identity migration presence,
+RDS ability to set proposed role logging defaults, and private execution availability
+remain unverified. A superuser disposable test does not prove RDS-admin permissions.
+The historical setup task creates only the probe login; it cannot be rerun as an
+Identity setup procedure. These are explicit preflight gates, not assumed success.
+
+Ordered execution plan (each live gate requires its own exact approved action):
+
+1. Prepare an Identity-owned bounded setup/preflight procedure locally. Keep the
+   existing probe task/script unchanged. Test on disposable PostgreSQL: absent
+   schema/unsafe logging/PUBLIC grants reject without changing shared defaults;
+   create only the new role and named grants; existing-role collision rejects;
+   verify restricted operations and denied DDL/cross-domain access. Register the
+   local command and preserve redacted output. This is the next implementation
+   increment after human plan verification, not a cloud operation.
+2. Review a fresh private execution route using an immutable image and separate
+   setup permissions; neither the app nor its runtime role receives the master
+   secret. Existing shared roles/tasks are not repurposed silently. Before any
+   launch/start, record exact task/image/roles, active operator/window, costs,
+   concurrency and cleanup caps. No public ingress or direct laptop connection.
+3. Separately approve a bounded start of this exact stopped RDS and necessary
+   private execution capacity. Inspect current SQL metadata only: database and
+   migration versions, ownership, table/sequence/default ACLs, PUBLIC/schema
+   privileges, role-name collisions and effective logging. Never retrieve business
+   rows or key/credential values as evidence. If migrations are absent, stop for
+   a separate migration plan; if PUBLIC grants differ, stop for affected-owner
+   review. Do not revoke another contributor's privileges automatically.
+4. After reviewing actual preflight findings and exact SQL, separately approve
+   role/password/grant creation. Create `clip_test_identity_app` with the flags
+   and named grants in the role proposal, explicit CONNECT, no memberships and
+   connection limit10. Apply credential-safe logging guards before password work;
+   fail closed if RDS lacks necessary privileges. No global logging weakening,
+   owner changes, schema migration or application-data mutation. Generate the
+   password privately; never place plaintext or verifier in task overrides/logs.
+5. Separately approve create-only Standard SecureString
+   `/clip/test/identity/database-url` with aws/ssm, using the restricted login and
+   exact private endpoint/database plus verify-full/system-root TLS. No overwrite.
+   Preserve the credential privately between approved setup/publication phases;
+   if either phase fails, keep the unused role disabled or roll back its creation
+   where possible, and inspect outcome before retries. Do not lose an enabled
+   unrecorded credential or automatically drop/rotate an existing role.
+6. Approve a controlled runtime read/validation against actual RDS using the new
+   login, persistent keys and required schema. Verify TLS chain/hostname, logging,
+   exact allowed/denied privileges and key commitments with the read-only startup
+   audit. No OTP/account/key adoption writes or mail in this check. Schema source
+   and runtime revision must match the reviewed source hashes.
+7. Record sanitized metadata/results, retain the persistent key/URL references,
+   and clean up only owned temporary execution resources under the approved
+   cleanup plan. Stop shared RDS/capacity only when the named operator confirms
+   the coordinated window has ended and authorizes the exact stop. Subsequent
+   runtime IAM, SES sender, proxy/TLS/deployment/provider/browser checks remain
+   separate; this checkpoint does not complete ID-READY.
+
+No cloud spend is authorized by this plan. The start/launch request must supply a
+fresh budget/headroom check, exact duration/concurrency/cost ceiling and rollback;
+these cannot be inferred from old run approvals. Preserve Suraj's resources and
+workloads throughout. No new RDS instance or alternate shared database is proposed.
+
+
+### Local database setup procedure
+
+The database plan was human-verified. `database_setup.py` now implements explicit
+read-only catalog preflight and create-only role/password/grant setup. It has no
+AWS code, live CLI, secret storage or default-app import. Callers supply trusted
+connections plus expected database and administrator; future execution must also
+verify endpoint/TLS/account and bound connection/process time.
+
+Preflight checks effective logging before any verifier submission; exact
+current/session user and database; absent target role; PUBLIC database/schema/
+table/default-table-or-sequence grants; required migration versions and exact
+Identity table inventory. No automatic baseline repair or migration. Role creation
+holds a transaction advisory lock, computes SCRAM client-side, creates only the
+named restricted role, sets its logging defaults and applies named grants/CONNECT
+atomically. Plaintext does not enter SQL; no password/verifier/error SQL is output.
+Existing roles are rejected rather than modified. If commit acknowledgement is
+ambiguous, inspect metadata before retries; retaining/publishing credentials and
+handling an unused live role remain the operator's separately approved duties.
+
+`test_database_setup.py` uses actual disposable PostgreSQL with synthetic private
+credentials.14focused tests pass, including working SCRAM login checked by the
+existing runtime validator, unsafe PUBLIC/default grants, missing schema/version,
+logging, wrong-target, collision and post-create rollback. Strict mypy passes the
+new implementation. Focused log `/tmp/clip-id12-database-setup-focused.log`;
+full gates passed in `/tmp/clip-id12-database-setup-check.log`. No RDS/cloud/secret
+read or mutation occurred during this implementation. Aditya verified the local result and authorized commit/continuation; this does not prove RDS-admin permissions or TLS.
+
+[Setup source snapshot](id-01-step-12/database-setup-source-hashes.json) pins the
+implementation, tests and reviewed SQL proposal.
+
+Final setup checks — 2026-10-24 21:24:08 UTC: `make check` exited0/all11gates;
+1022Python passed/1existing DB-only skip,63data/118web, Black149files, zero boundary
+violations, current generated contracts, type/lint/build,35wrapper safety cases,
+actual PostgreSQL18.6 clean/repeat/upgrade/atomicity/rollback/reapply and
+Gitleaks8.30.1 source scan. Strict setup mypy, source hashes, relative file links
+and `git diff --check` pass. Local result and prior provisioning records remain
+Aditya verified the local result and explicitly authorized commit/continuation.
