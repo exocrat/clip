@@ -21,6 +21,8 @@ from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from app.core.errors import ERRORS, PublicError, error_response, install_error_handlers
 from app.core.logging import RequestLoggingMiddleware
+from app.core.runtime_bindings import runtime_scope
+from app.domains.identity.capabilities import Capability
 from app.domains.identity.microsoft import MicrosoftTokenValidator
 from app.domains.identity.sessions import (
     IdentitySessions,
@@ -121,6 +123,15 @@ class IdentityBrowserMiddleware:
         self.app, self.sessions, self.policy = app, sessions, policy
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        """Bind this explicit runtime per request, isolated from parallel app scopes."""
+        with runtime_scope(
+            {
+                "identity.check_account_eligibility": self.sessions.capabilities.check_account_eligibility
+            }
+        ):
+            await self._handle(scope, receive, send)
+
+    async def _handle(self, scope: Scope, receive: Receive, send: Send) -> None:
         """Never consume/log bodies or trust submitted caller/forwarding headers."""
         if scope["type"] != "http" or scope.get("path") == "/health":
             await self.app(scope, receive, send)
@@ -435,7 +446,11 @@ def create_identity_app(
     @app.get("/me", operation_id="identity_read_me", response_model=SessionView)
     def me(request: Request) -> SessionView:
         """Fresh session/current-account summary established by the middleware."""
-        return session_view(current(request))
+        identity = current(request)
+        sessions.capabilities.require_capability(
+            identity.caller, Capability.READ_OWN_PROFILE
+        )
+        return session_view(identity)
 
     @app.delete("/auth/session", operation_id="identity_logout", status_code=204)
     def logout(request: Request) -> Response:

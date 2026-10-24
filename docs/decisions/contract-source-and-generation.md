@@ -29,8 +29,10 @@ signatures and explicit HTTP metadata separate from domain implementations.
 Shared technical types remain owned by `app.core`; declarations reuse them
 rather than creating competing definitions.
 
-Generate declaration-only domain `public.py` modules from this source when
-DL-00 supplies the reviewed domain contracts. Generate the HTTP OpenAPI schema
+Generate typed domain `public.py` interfaces from this source when
+DL-00 supplies the reviewed contracts. Unbound operations remain declarations;
+the approved ID-01 Step8 extension below adds scoped technical dispatch only for
+explicitly reviewed runtime-binding metadata. Generate the HTTP OpenAPI schema
 from explicit HTTP declarations using FastAPI's schema machinery, then generate
 frontend TypeScript declarations with pinned `@hey-api/openapi-ts@0.99.0`
 using its TypeScript-only plugin (approved during step 5).
@@ -152,3 +154,24 @@ regression tests cover these rules. The final local aggregate and exact results
 are recorded in the [DL-00 work log](../status/work-log.md).
 These checks establish contract and repository quality only; no domain provider
 or FR/NFR behavior is claimed as implemented.
+
+## ID-01 Step8 scoped runtime adapter extension — approved
+
+Aditya verified [the capability/runtime binding plan](identity-capabilities-and-runtime-binding.md)
+on2026-10-24. Canonical callables still raise NotImplementedError when invoked;
+Identity RUNTIME_BINDINGS selects only check_account_eligibility. The format2
+generator replaces that one refusal body with a typed shared-core dispatcher,
+requiring its reviewed technical import, refusing source body, supported signature
+and BaseModel result. No business logic/private provider import enters public.py.
+Other domain/contact outputs stay refusing and byte-identical. HTTP/OpenAPI/
+TypeScript signatures and format version remain unchanged.
+
+Trusted composition supplies an immutable ContextVar mapping for each runtime
+scope/request. There is no mutable global provider, environment discovery or
+implicit binding. Unbound/malformed results fail safe503, including strict
+revalidation of preconstructed Pydantic models without private warnings. Actual
+eligibility SQL/authorization stays in Identity and runs outside the event loop.
+Workers must enter explicit trusted scopes; imports/schema generation remain
+side-effect-free. Source/refusal invariants, generated adapter shape/isolation,
+current output checks and boundary tests cover the narrow exception. This does
+not accept real runtime/consumer integration or authorize provider/cloud actions.

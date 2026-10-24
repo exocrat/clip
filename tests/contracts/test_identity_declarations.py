@@ -99,4 +99,9 @@ def test_generated_public_module_is_present(domain):
     """Generation materializes importable declaration modules for each owner."""
     path = ROOT / f"apps/api/app/domains/{domain}/public.py"
     assert path.is_file()
-    assert "Generated declaration-only" in path.read_text().splitlines()[0]
+    expected = (
+        "Generated typed runtime"
+        if domain == "identity"
+        else "Generated declaration-only"
+    )
+    assert expected in path.read_text().splitlines()[0]

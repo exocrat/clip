@@ -1,8 +1,9 @@
-# Generated declaration-only identity interface; format 2. Do not edit.
+# Generated typed runtime identity interface; format 2. Do not edit.
 """Reviewed Identity HTTP operations and internal declaration-only callables."""
 
 from app.core.auth import CallerContext
 from app.core.identifiers import UserId
+from app.core.runtime_bindings import dispatch_runtime as _dispatch_runtime
 
 from app.contracts.domain_types import (
     AccountClass,
@@ -28,6 +29,9 @@ from app.contracts.domain_types import (
     ShareableContactOptions,
     TemporarySessionRequest,
 )
+
+# Reviewed runtime adapter metadata; source callables below remain declarations.
+RUNTIME_BINDINGS = frozenset({"check_account_eligibility"})
 
 HTTP_OPERATIONS = (
     {
@@ -137,9 +141,15 @@ async def check_account_eligibility(
     """Declare the minimal current account-capability lookup.
 
     This declaration returns no profile, contact, login, or denial-reason data.
-    The owning Identity service supplies the eventual implementation.
+    Source invocation refuses; approved metadata generates a scoped technical
+    adapter to the real Identity provider without changing this signature.
     """
-    raise NotImplementedError("declaration-only")
+    return await _dispatch_runtime(
+        "identity.check_account_eligibility",
+        AccountEligibility,
+        user_id,
+        required_class,
+    )
 
 
 async def get_shareable_contact_options(

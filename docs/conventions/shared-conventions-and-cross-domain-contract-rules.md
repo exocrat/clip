@@ -327,3 +327,16 @@ The runtime interaction protocol is `docs/prompts/reusable-task-prompt.md`; Git/
 ## Dependency test doubles
 
 Use `docs/architecture/stubs-and-integration-gates.md` for explicit isolated checkpoints. Test doubles implement the frozen public types/errors and adversarial scenarios, use controlled synthetic data and stay in test-only bindings. They never establish real identity/ownership/contact/encryption/storage/notification integration, schema integrity or NFR evidence. Production/deployed configuration rejects fake providers and cannot silently fallback to them. Domain owners track and verify the original real integration obligations before accepting readiness or complete work.
+
+## ID-01 Step8 reviewed generated runtime binding
+
+The [scoped adapter decision](../decisions/identity-capabilities-and-runtime-binding.md)
+extends generated typed interfaces without putting business policy or private
+provider imports in them. Source callables stay declarations; only the reviewed
+Identity eligibility metadata generates dispatch through a technical core
+ContextVar scope. Trusted application/worker composition supplies async callbacks;
+no import, request field, mutable global or environment flag binds a provider.
+Missing/invalid dependencies fail503; result models are revalidated strictly and
+private validation data is suppressed. Boundary rules are unchanged. Other
+unimplemented declarations still refuse. No new HTTP lookup/types or automatic
+readiness acceptance follows from this extension.

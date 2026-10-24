@@ -23,6 +23,7 @@ from app.core.auth import CallerContext
 from app.core.errors import ERRORS, PublicError
 from app.core.identifiers import new_id
 from app.core.timestamps import as_utc
+from app.domains.identity.capabilities import PostgresCapabilities
 from app.domains.identity.microsoft import MicrosoftTokenValidator
 from app.domains.identity.microsoft_accounts import PostgresMicrosoftAccounts
 from app.domains.identity.temporary_accounts import TemporaryActivation
@@ -108,6 +109,7 @@ class IdentitySessions:
         self._connect = connect
         self._keys = keys
         self._clock = clock
+        self.capabilities = PostgresCapabilities(connect, clock)
         self.challenges = PostgresTemporaryChallenges(connect, keys, clock)
         self._activation = TemporaryActivation(self.challenges)
         self._passwords = TemporaryPasswords()

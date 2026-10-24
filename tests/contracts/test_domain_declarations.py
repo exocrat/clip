@@ -121,14 +121,31 @@ def test_every_generated_callable_fails_closed_without_implementation():
             assert ast.get_docstring(function)
             assert len(function.body) == 2
             refusal = function.body[1]
-            assert isinstance(refusal, ast.Raise)
-            assert isinstance(refusal.exc, ast.Call)
-            assert isinstance(refusal.exc.func, ast.Name)
-            assert refusal.exc.func.id == "NotImplementedError"
+            if domain == "identity" and function.name == "check_account_eligibility":
+                assert isinstance(refusal, ast.Return) and isinstance(
+                    refusal.value, ast.Await
+                )
+                call = refusal.value.value
+                assert isinstance(call, ast.Call) and isinstance(call.func, ast.Name)
+                assert call.func.id == "_dispatch_runtime"
+                assert (
+                    ast.literal_eval(call.args[0])
+                    == "identity.check_account_eligibility"
+                )
+                assert [argument.id for argument in call.args[1:]] == [
+                    "AccountEligibility",
+                    "user_id",
+                    "required_class",
+                ]
+            else:
+                assert isinstance(refusal, ast.Raise)
+                assert isinstance(refusal.exc, ast.Call)
+                assert isinstance(refusal.exc.func, ast.Name)
+                assert refusal.exc.func.id == "NotImplementedError"
 
 
-def test_generated_modules_are_byte_for_byte_source_derivatives():
-    """Only the controlled editable-source import rewrite differs from source."""
+def test_generated_modules_preserve_source_except_approved_dispatch():
+    """Only import rewrites and the reviewed one-function technical body may differ."""
     for domain in DOMAINS:
         source = (ROOT / f"contracts/source/{domain}.py").read_text()
         expected = source.replace(
@@ -136,8 +153,33 @@ def test_generated_modules_are_byte_for_byte_source_derivatives():
             "from app.contracts.domain_types import",
         )
         generated = (ROOT / f"apps/api/app/domains/{domain}/public.py").read_text()
-        assert generated.splitlines()[0].startswith("# Generated declaration-only")
-        assert generated.partition("\n")[2].lstrip("\n") == expected
+        if domain != "identity":
+            assert generated.splitlines()[0].startswith("# Generated declaration-only")
+            assert generated.partition("\n")[2].lstrip("\n") == expected
+            continue
+        assert generated.splitlines()[0].startswith(
+            "# Generated typed runtime identity"
+        )
+        original = ast.parse(expected)
+        actual = ast.parse(generated.partition("\n")[2])
+        before = {
+            node.name: node
+            for node in original.body
+            if isinstance(node, ast.AsyncFunctionDef)
+        }
+        after = {
+            node.name: node
+            for node in actual.body
+            if isinstance(node, ast.AsyncFunctionDef)
+        }
+        # The independent structural test above verifies exactly what the one
+        # replacement does; restore it here to prove everything else is unchanged.
+        after["check_account_eligibility"].body[1] = before[
+            "check_account_eligibility"
+        ].body[1]
+        assert ast.dump(actual, include_attributes=False) == ast.dump(
+            original, include_attributes=False
+        )
 
 
 def test_declarations_do_not_install_unimplemented_http_routes():

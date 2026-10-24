@@ -774,3 +774,22 @@ rechecks cutoffs. Do not delete lifetime markers/users/contacts/key bindings.
 The revised migration checker expects seven versions/head20261023202807 and30
 tables/five smokes while preserving historical Step3/5 proofs. Revised native
 harness is syntax-checked only on Linux; PR10/current-main integration pending.
+
+### Capability policy and public runtime binding — ID-01 Step8
+
+```sh
+uv run --locked pytest apps/api/tests/core/test_runtime_bindings.py apps/api/tests/domains/identity/test_capabilities_postgres.py apps/api/tests/domains/identity/test_capabilities_http.py tests/contracts/test_runtime_binding_generation.py tests/contracts/test_domain_declarations.py tests/contracts/test_identity_declarations.py -q -W error
+uv run --locked mypy --no-incremental apps/api/app/core/runtime_bindings.py apps/api/app/domains/identity/capabilities.py apps/api/app/domains/identity/sessions.py apps/api/app/domains/identity/http.py apps/api/app/domains/identity/public.py
+make contracts-check
+```
+
+Uses explicit context scopes and actual PostgreSQL/RSA/session/HTTP with synthetic
+keys/accounts only, through the existing new private socket/tmpfs DB fixture.
+Tests26 regular/temporary matrix combinations, fresh lifecycle/stale/forged
+context, exact class/boolean result, unavailable/unbound503, parallel real
+providers, generated adapter invariants and malformed results/metadata. HTTP
+probes are fixture-only capability categories, not implemented marketplace
+resources. Source declarations refuse; only generated eligibility dispatches.
+Other generated domains and HTTP/OpenAPI/TypeScript shapes stay unchanged.
+No runtime/provider/cloud/retained data action or full FR-03 claim; Step14 keeps
+its required actual consumer matrix and ID-READY keeps real integration gates.

@@ -152,3 +152,34 @@ only the explicit DSN environment input and requires matching expected database;
 --apply is an explicit write, not approval to run against retained/cloud data.
 No scheduler is enabled. Exact deployment/operator approval and observed runs
 are still required before claiming production retention deadlines are met.
+
+## Current capabilities and public eligibility — Step8
+
+`capabilities.py` supplies an explicit allowlist for each active class. Both may
+browse/search/save, manage own wanted/profile/contacts, start listing-origin
+conversations, use existing authorized conversations, submit offers and share
+selected own contacts. Only regular accounts may manage sale listings or start
+wanted-response conversations. New/unmapped enum categories default to denial.
+Resource ownership, membership, consent and availability remain with owners.
+
+`PostgresCapabilities.require_capability` accepts only an already-authenticated
+CallerContext and code-owned Capability. It rechecks account status/class/expiry/
+profile and caller deadline, rejecting stale or mismatched facts. It does not
+authenticate a constructed caller. Existing GET /me now uses the fresh own-profile
+gate; HTTP middleware still establishes actual session context first.
+
+The real async `check_account_eligibility` reads only lifecycle fields outside
+the event loop. Returns exactly AccountEligibility{eligible:bool}; missing/
+ineligible=false, unavailable=503, optional required class is an exact match.
+An offline account may be eligible; this operation is not authentication. IDs
+must originate from trusted context/authoritative relationships. No profile,
+contact, denial reason or new HTTP user-directory endpoint is exposed.
+
+Canonical RUNTIME_BINDINGS and the generator produce a thin public wrapper for
+only this function, using `core.runtime_bindings` scoped dispatch. `sessions.py`
+constructs the real provider without I/O, and `http.py` binds it per request;
+parallel runtimes cannot overwrite each other. Explicit worker scopes are also
+required. No mutable global provider or fake fallback; missing/wrong results
+fail503. Other public contact/provider declarations remain unimplemented until
+their owning increments. Full consumer API matrix remains Step14, and default
+app.main/runtime/provider/browser/cloud readiness gates remain unchanged.

@@ -47,7 +47,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PD-19 | Integration owner (current branch) | done | Steps 1–9 and combined foundation handoff complete | Steps 1–9 performed | User confirms all work before PRE-00 is complete | PR #8 merged at `2cd83e7` from head `18c966e` against base `68d9da9`; [Foundation quality gates passed](https://github.com/exocrat/clip/actions/runs/39323851584) for that exact head/base; `make test` (395 Python, 63 data, 16 web), Black, contract freshness and 10 `make check` gates passed; [handoff](foundation-handoff.md) | No open PD-19 work per user confirmation. Linux AMD64/macOS results remain user-confirmed without raw outputs. PR #8 has no submitted GitHub review; independent-review completion is user-confirmed, with no separate review artifact linked. Refresh cloud snapshot before any operation. | 2026-10-19 21:09:05 UTC |
 | PRE-00 | Integration owner | done | Foundation gate audit accepted; DL-00 is unblocked | performed | verified/accepted by user | Reviewed handoff PR #8 merged to `main` at `2cd83e7`; hosted Foundation quality gates passed for head `18c966e` against base `68d9da9` (run `39323851584`); clean-checkout evidence at `0747be6`; see [PD-19 handoff](foundation-handoff.md) | None. PR #8 has no GitHub review event; independent-review completion remains user-reported without a separate artifact. | 2026-10-19 21:20:55 UTC |
 | DL-00 | Shared-core/contract coordinator; all domains review | done | Steps 1–13 and task-wide audit complete; accepted and merged | Steps 1–13 performed; accepted by user | User confirmed full acceptance and merge on 2026-10-22 05:30:49 UTC | PR #9 merged to `main` at `f5576ef`; current `main` is `44cd8ff`; Step 13 check evidence is recorded below and was not rerun for this update | None for DL-00; cleanup implementation remains separately gated; real providers/integrations and crypto/worker implementation remain downstream | 2026-10-22 05:30:49 UTC |
-| ID-01 | A | in progress | Step7 sessions/password/reset/nonce/actual HTTP/cleanup human-verified; next explain/verify Step8 capability plan | Steps1/3 verified; Steps4–6 local verified; Step2 sandbox verified/production staged; Step7 local performed and verified, runtime gates pending | Step7 local result verified by Aditya; checkpoint commit authorized | `task/id-01-identity` at `90121c9` plus verified Step7 checkpoint; [evidence](../evaluation/identity/id-01-step-7/README.md);646 Python/63 data/16 web; full11 gates/runtime mypy passed | Actual browser/provider/runtime key/DB/TLS/proxy and main integration; Step2 general production delivery; cleanup scheduling approval and observed run checks; capability/contact/UI/ID-READY pending | 2026-10-24 05:47:19 UTC |
+| ID-01 | A | in progress | Step8 fresh capability policy/scoped generated public eligibility human-verified; next explain/verify Step9 own profile/contact plan | Steps1/3 verified; Steps4–7 local verified; Step2 sandbox verified/production staged; Step8 local performed and verified, runtime/consumer gates pending | Step8 local result verified by Aditya; checkpoint commit authorized | `task/id-01-identity` at `3da24db` plus verified Step8 checkpoint; [evidence](../evaluation/identity/id-01-step-8/README.md);709 Python/63 data/16 web; full11 gates/runtime Mypy passed | Actual runtime/provider/browser/current-main and peer acceptance; contact/UI/ID-READY work; full consumer matrix Step14 remains outside ID-READY | 2026-10-24 06:23:29 UTC |
 | LI-01 | B | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | LI-CORE, LI-02, SE-CORE | — |
 | LI-02 | B | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | LI-CORE, ID-READY | — |
 | SE-01 | C | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | SE-CORE, LI-01, LI-02, DATA-READY | — |
@@ -105,6 +105,42 @@ Update the task status row after each step and human verification. The row is th
 Add a history entry when it records a meaningful outcome, decision, changed output, check result, blocker, consequential human direction, or task/merge closeout. Group related steps when that keeps their results understandable. Do not add a separate history entry just to say that a routine step was verified and the next one may begin.
 
 Include the task and covered step(s), contributor, date/time, and the details needed to understand or verify the outcome: relevant execution/verification state, changed paths, exact checks/results, decision/evidence reference, blocker/owner, or next action as applicable. Keep entries brief, omit repeated background, and link existing artifacts rather than duplicating them. Use exact UTC date and time for new entries. Keep historical timestamp precision as recorded; never guess or backfill an unknown time. Preserve distinct decisions, evidence, and other contributors' useful history.
+
+### ID-01 — Step8 capability/public eligibility checkpoint checked — 2026-10-24 06:15:10 UTC
+
+Aditya verified Step8 policy/scoped generated binding before implementation.
+Added explicit regular/temporary capability allowlists and fresh bounded SQL
+eligibility/caller lifecycle checks. Temporary users retain wanted authorship/
+existing authorized threads but cannot manage sales/start wanted responses.
+Only generated eligibility now dispatches to an explicit immutable ContextVar
+runtime scope; canonical source stays refusing, no private public-module import,
+mutable global provider, new lookup route or fake fallback. Result shape is
+strictly revalidated; missing/unavailable/malformed503 fails closed. HTTP binds
+its real provider per request and GET /me uses fresh own-profile enforcement.
+Corrected a test-only concurrency deadlock; two interrupted focused runs were
+not passes, then12 dispatcher/43 policy-HTTP cases and36 declaration/generator
+cases passed. Final full make check passed11 gates: Black112 files,709 Python/
+63 data/16 web, CI parity/boundaries/eight current artifacts/types/build,
+35 wrapper cases, actual migration/five smokes and Gitleaks. Runtime Mypy five
+files,208 local doc targets and whitespace passed. [Detailed file/check evidence](../evaluation/identity/id-01-step-8/README.md).
+Other public outputs/HTTP schemas/TypeScript/models/main/dependencies/migrations
+unchanged. No other feature/cloud/send/retained DB, commit/push/merge or FR-03/
+ID-READY closeout. Result awaits human verification; Step9 and actual runtime/
+provider/browser/consumer/peer gates remain.
+
+### ID-01 — Step8 capability/runtime binding writer scope — 2026-10-24 05:50:29 UTC
+
+Aditya verified Step8 policy and scoped generated runtime dispatcher, then
+directed implementation. Reserve Identity capability/eligibility service and
+session/HTTP composition/tests; shared technical context-scoped runtime bridge,
+canonical Identity binding metadata/generator/its tests and regenerated Identity
+public interface; decision/convention/command/evidence/status docs. Preserve
+reviewed callable signature and boolean-only eligibility; source declarations
+remain refusing and generated adapter has no business logic/private imports.
+Only eligibility is bound; other domain/contact declarations stay unchanged.
+Use real SQL/current session probes and trusted-context isolated policy checks;
+no new marketplace endpoint/schema/migration, consumer private edit, provider/
+cloud/retained DB or FR-03/ID-READY acceptance. Full consumer matrix remainsStep14.
 
 ### ID-01 — Step7 local sessions/HTTP/cleanup checkpoint checked — 2026-10-23 20:57:44 UTC
 
@@ -1752,6 +1788,7 @@ runtime-permission checks remain pending.
 | ID-01 Step5 real OTP/public/runtime integration | Real private PostgreSQL plus Step7 actual HTTP ack/dispatch/reset/session composition with synthetic mail/SDK; no schema fake | Real controlled SES OTP/inbox and reviewed runtime key/DB/TLS/proxy/source/provider configuration | Aditya; shared/frontend/security reviewers and Rahul(D) | Separate exact send/cloud approval and owning Step11/12 runtime ready; sandbox can proceed without production access | Verify real delivery/code redemption, uniform browser acknowledgement/timing, trusted peer handling and actual runtime replay/rate/privacy behavior | Local HTTP/DB activation/reset/limits/one-shot timing and cleanup checked; no real OTP send or configured public website; original provider/runtime checks pending |
 | ID-01 Step6 public activation/current authorization integration | Real Argon2id/SQL plus Step7 actual HTTP activation SessionView, atomic session and trusted protected-request context | Reviewed runtime/browser deployment and actual marketplace capability/contact consumers | Aditya; shared/frontend/security owners and Rahul(D) | Local Step7 result verified; owning Steps8/9/11/12 runtime ready | Verify actual configured activation/login/session/lifetime/no-renewal and expired/revoked marketplace denial with real consumer paths | Local actual activation/session/current-context/rollback/race checks pass; runtime/browser/consumer integration pending; not full FR-03/ID-READY acceptance |
 | ID-01 Step7 actual runtime retention/session acceptance | Actual SQL/Argon2/RSA/HTTP and bounded cleanup CLI checked only with disposable data; design approved, no deployed schedule | Merged migration/runtime secret/DB role/proxy/TLS configuration, enabled approved cleanup operation/schedule and real provider/browser flows | Aditya/operator; shared/security owners and Rahul(D) | Human verifies local result; exact deployment/cleanup/cloud/send plan approved before execution | Verify real cookie/CSRF/replay/session/privacy behavior, source/proxy trust, reset/login revocation races and observed cleanup deadlines while permanent markers survive | Local implementation/checks performed; no enabled cleanup schedule, real runtime/provider/browser or shared deployment acceptance |
+| ID-01 Step8 real consumer/runtime capability acceptance | Explicit scoped generated eligibility with real PostgreSQL/session/RSA and fixture HTTP probes; verified canonical signatures and policy | Configured runtime/worker composition and actual owning-domain marketplace endpoints after accepted dependencies | Aditya; consuming owners and Rahul(D) | Local Step8 result verified; owning consumer integration checkpoints/current-main runtime ready, final matrix atStep14 | Verify authoritative target binding, fresh class/lifecycle checks and per-resource ownership/membership/state, no private data/cross-domain imports, actual regular/temporary/expired/revoked API matrix | Local provider/matrix/scoped dispatcher/HTTP probes passed; no fabricated consumer endpoint or FR-03 acceptance; real consumers remain pending |
 
 
 ## Resolved integration evidence

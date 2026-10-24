@@ -149,3 +149,14 @@ permissions and provider/browser behavior before enabling real authentication.
 The [session decision](../../docs/decisions/identity-sessions-and-cleanup.md) and
 [command registry](../../docs/environment/commands.md) define checks and cleanup
 boundaries. No cloud resources, real send or enabled cleanup schedule is added.
+
+## Capability/eligibility binding — ID-01 Step8
+
+Identity now applies the approved regular/temporary rules against fresh account
+state and binds its actual boolean eligibility provider per explicit HTTP runtime
+scope. Generated public eligibility dispatch preserves the reviewed signature
+without business/private imports; unconfigured calls fail503. Default app.main
+still serves health only. [Identity module details](app/domains/identity/README.md)
+explain the matrix and ownership limits; [the decision](../../docs/decisions/identity-capabilities-and-runtime-binding.md)
+records scoped binding. No new marketplace/lookup route or runtime/cloud
+activation is added. Existing own-session summary uses fresh capability checks.

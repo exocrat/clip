@@ -158,3 +158,21 @@ remain cookie-only; exact origin/custom-header guards apply to unsafe requests.
 The [combined registry](combined.md) and canonical typed sources define these
 operations; regenerate declarations. Real provider/runtime/browser and peer
 integration acceptance remain pending.
+
+## ID-01 Step8 capability/runtime implementation
+
+[Verified policy and binding](../docs/decisions/identity-capabilities-and-runtime-binding.md)
+now implement the regular/temporary matrix with fresh Identity status/class/
+lifetime checks. Temporary accounts retain browsing open Wanted Requests and
+wanted authorship/existing authorized conversation rights, but cannot initiate
+wanted responses or manage sale listings. Domain owners retain ownership,
+participant, consent and resource-state checks; explicit public discovery stays
+public. Context construction alone grants no authentication.
+
+check_account_eligibility keeps the reviewed async signature and returns only
+eligible. None means either active class; a supplied class matches exactly.
+Missing/ineligible targets return false; invalid arguments422 and dependency/
+unconfigured runtime503 fail closed. Target IDs must come from trusted context
+or authoritative domain relationships. The generated scoped wrapper contains
+only technical dispatch; actual provider reads fresh SQL. No public directory,
+new HTTP operation, provider/cloud setup or full FR-03 acceptance is introduced.
