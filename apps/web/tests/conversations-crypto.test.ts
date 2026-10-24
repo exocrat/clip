@@ -458,6 +458,8 @@ describe('OpenE2EE adapter', () => {
             protocol_version: CLIP_PROTOCOL_VERSION,
             envelope_version: CLIP_ENVELOPE_VERSION,
             sdk_message_type: 'ciphertext',
+            sdk_client_message_id: '00000000-0000-4000-8000-000000000005',
+            recovery_for_entry_id: null,
             client_timestamp_ms: messageContext.client_timestamp_ms,
             sender_key_version: 3,
             recipient_key_version: 7,

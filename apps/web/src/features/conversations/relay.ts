@@ -26,10 +26,70 @@ import { ConversationLocalHistory } from './history';
 
 const OWNER_KEY = 'clip:conversation-store-owner:v1';
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const SDK_RECOVERY_ID = /^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}):(retry-request|resend|null)(?::([2-9]|[1-9][0-9]+))?$/;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const unsupported = async (): Promise<never> => { throw new ConversationCryptoError('Unsupported CLIP relay operation'); };
 
-type PreparedSend = { conversationId: string; recipientUserId: string; recipientRegistrationId?: number; request: MessageRequest };
+type PreparedSend = {
+  conversationId: string;
+  recipientUserId: string;
+  recipientRegistrationId?: number;
+  localKeyVersion: number;
+  peerKeyVersion: number;
+  sdkClientMessageId: string;
+  recoveryTargetId: string | null;
+  request: MessageRequest;
+};
+type RecoveryFamilyRoute = {
+  conversationId: string;
+  peerUserId: string;
+  targetEntryId: string;
+  originalSdkClientMessageId: string;
+};
+type ReceivedMessageRoute = {
+  conversationId: string;
+  entryId: string;
+  sequence: number;
+  peerUserId: string;
+  sdkClientMessageId: string;
+  timestamp: number;
+  senderKeyVersion: number;
+  recipientKeyVersion: number;
+};
 type JournalRequest = { operation_id: string; [key: string]: unknown };
+
+function sdkFamily(sdkClientMessageId: string): { root: string; kind: 'retry-request' | 'resend' | 'null' } | null {
+  const match = SDK_RECOVERY_ID.exec(sdkClientMessageId);
+  if (!match) return null;
+  if (match[3] !== undefined && !Number.isSafeInteger(Number(match[3]))) return null;
+  return { root: match[1], kind: match[2] as 'retry-request' | 'resend' | 'null' };
+}
+
+function isSdkClientMessageId(value: string): boolean {
+  return value.length <= 128 && /^[\x21-\x7e]+$/.test(value) &&
+    (UUID_V4.test(value) || sdkFamily(value) !== null);
+}
+
+function readRetryControl(payloadBase64: string): {
+  targetEntryId: string; originalSdkClientMessageId: string; familyId: string; timestamp: number;
+} {
+  try {
+    const decoded = atob(payloadBase64);
+    if (decoded.length < 1 || decoded.length > 2048 || btoa(decoded) !== payloadBase64) throw new Error();
+    const bytes = Uint8Array.from(decoded, (character) => character.charCodeAt(0));
+    const value: unknown = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes));
+    if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error();
+    const request = value as Record<string, unknown>;
+    if (request.v !== 1 || typeof request.failedEnvelopeId !== 'string' || !UUID.test(request.failedEnvelopeId) ||
+      typeof request.retryId !== 'string' || !UUID.test(request.retryId) ||
+      typeof request.failedTimestamp !== 'number' || !Number.isSafeInteger(request.failedTimestamp) || request.failedTimestamp < 0 ||
+      typeof request.failedClientMessageId !== 'string' || !UUID_V4.test(request.failedClientMessageId)) throw new Error();
+    return { targetEntryId: request.failedEnvelopeId, originalSdkClientMessageId: request.failedClientMessageId,
+      familyId: request.retryId.toLowerCase(), timestamp: request.failedTimestamp };
+  } catch {
+    throw new ConversationCryptoError('SDK recovery request metadata is invalid');
+  }
+}
 
 /** One authenticated account, one active SDK client, one selected conversation.
  * HTTP auth is supplied by Identity through ConversationApi. The relay advertises
@@ -288,39 +348,207 @@ export class ConversationRelay implements SignalProtocolRelayServer, Conversatio
   async send(envelope: Envelope) {
     if (envelope.senderUserId !== this.userId || envelope.senderDeviceId !== 1 || envelope.targetDeviceId !== 1 ||
       envelope.contentKind === 'receipt' || envelope.deliveryClass === 'ephemeral' || envelope.declaredDeviceIds !== undefined ||
-      !envelope.clientMessageId || !UUID_V4.test(envelope.clientMessageId) ||
+      !envelope.clientMessageId || !isSdkClientMessageId(envelope.clientMessageId) ||
       !['ciphertext', 'prekey_bundle', 'retry_request'].includes(envelope.messageType)) {
       throw new ConversationCryptoError('Unsupported or misrouted SDK envelope');
     }
     await this.peer(envelope.targetUserId);
     const route = this.routes.get(envelope.clientMessageId);
+    const family = sdkFamily(envelope.clientMessageId);
     const control = envelope.messageType === 'retry_request';
-    let senderVersion: number | null = null;
-    let recipientVersion: number | null = null;
-    if (!control) {
-      if (!route || route.recipient_user_id !== envelope.targetUserId || route.client_timestamp_ms !== envelope.timestamp) {
-        throw new ConversationCryptoError('SDK envelope has no matching application route');
+    let recoveryTargetId: string | null = null;
+    let recoveryOriginal: PreparedSend | null = null;
+    let localKeyVersion: number;
+    let peerKeyVersion: number;
+    if (control) {
+      const parsed = readRetryControl(typeof envelope.ciphertext === 'string' ? envelope.ciphertext :
+        btoa(Array.from(envelope.ciphertext, (byte) => String.fromCharCode(byte)).join('')));
+      if (family?.kind !== 'retry-request' || family.root !== parsed.familyId) {
+        throw new ConversationCryptoError('SDK recovery family does not match its request');
       }
-      senderVersion = route.sender_key_version;
-      recipientVersion = route.recipient_key_version;
+      const failed = await this.readReceivedRoute(parsed.targetEntryId);
+      if (!failed || failed.conversationId !== this.conversationId || failed.peerUserId !== envelope.targetUserId ||
+        failed.sdkClientMessageId !== parsed.originalSdkClientMessageId || failed.timestamp !== parsed.timestamp) {
+        throw new ConversationCryptoError('SDK recovery request does not match the failed incoming entry');
+      }
+      localKeyVersion = failed.recipientKeyVersion;
+      peerKeyVersion = failed.senderKeyVersion;
+      recoveryTargetId = parsed.targetEntryId;
+      await this.persistRecoveryRoute(family.root, {
+        conversationId: this.thread(), peerUserId: envelope.targetUserId,
+        targetEntryId: parsed.targetEntryId, originalSdkClientMessageId: parsed.originalSdkClientMessageId,
+      });
+    } else if (family?.kind === 'resend' || family?.kind === 'null') {
+      const savedFamily = await this.readRecoveryRoute(family.root);
+      if (!savedFamily || savedFamily.conversationId !== this.conversationId || savedFamily.peerUserId !== envelope.targetUserId) {
+        throw new ConversationCryptoError('SDK recovery response has no matching saved request');
+      }
+      const original = await this.readPrepared(savedFamily.originalSdkClientMessageId);
+      if (!original || original.recipientUserId !== envelope.targetUserId ||
+        original.sdkClientMessageId !== savedFamily.originalSdkClientMessageId ||
+        original.request.envelope.client_timestamp_ms !== envelope.timestamp) {
+        throw new ConversationCryptoError('SDK recovery response does not match the original send');
+      }
+      recoveryOriginal = original;
+      localKeyVersion = original.localKeyVersion;
+      peerKeyVersion = original.peerKeyVersion;
+      recoveryTargetId = savedFamily.targetEntryId;
+    } else if (!route || route.recipient_user_id !== envelope.targetUserId || route.client_timestamp_ms !== envelope.timestamp) {
+      throw new ConversationCryptoError('SDK envelope has no matching application route');
+    } else {
+      localKeyVersion = route.sender_key_version;
+      peerKeyVersion = route.recipient_key_version;
+    }
+    const isNullRecovery = family?.kind === 'null';
+    const senderVersion = control || isNullRecovery ? null : family ?
+      recoveryOriginal?.request.envelope.sender_key_version ?? null : route?.sender_key_version ?? null;
+    const recipientVersion = control || isNullRecovery ? null : family ?
+      recoveryOriginal?.request.envelope.recipient_key_version ?? null : route?.recipient_key_version ?? null;
+    if (!control && !isNullRecovery && (senderVersion === null || recipientVersion === null)) {
+      throw new ConversationCryptoError('SDK recovery response has no original key context');
     }
     const payload = typeof envelope.ciphertext === 'string' ? envelope.ciphertext :
       btoa(Array.from(envelope.ciphertext, (byte) => String.fromCharCode(byte)).join(''));
-    const request: MessageRequest = { operation_id: envelope.clientMessageId, envelope: {
+    const storageKey = `clip:relay:v1:${this.userId}:message:${envelope.clientMessageId}`;
+    const previous = await this.storage.getMetadata(storageKey);
+    const oldPrepared = previous ? this.localJson<PreparedSend>(previous) : null;
+    const operationId = oldPrepared?.request.operation_id ?? (UUID_V4.test(envelope.clientMessageId)
+      ? envelope.clientMessageId : crypto.randomUUID());
+    const request: MessageRequest = { operation_id: operationId, envelope: {
       protocol_id: CLIP_PROTOCOL_ID, protocol_version: CLIP_PROTOCOL_VERSION, envelope_version: CLIP_ENVELOPE_VERSION,
       sdk_message_type: envelope.messageType as 'ciphertext' | 'prekey_bundle' | 'retry_request',
       client_timestamp_ms: envelope.timestamp, sender_key_version: senderVersion,
       recipient_key_version: recipientVersion, payload_base64: payload,
+      sdk_client_message_id: envelope.clientMessageId, recovery_for_entry_id: recoveryTargetId,
     } };
-    const key = `clip:relay:v1:${this.userId}:message:${request.operation_id}`;
-    const prepared: PreparedSend = { conversationId: this.thread(), request,
+    const prepared: PreparedSend = { conversationId: this.thread(), request, sdkClientMessageId: envelope.clientMessageId,
+      recoveryTargetId, localKeyVersion, peerKeyVersion,
       recipientUserId: envelope.targetUserId,
       ...(envelope.recipientRegistrationId === undefined ? {} : { recipientRegistrationId: envelope.recipientRegistrationId }),
     };
     const serialized = JSON.stringify(prepared);
-    await this.storage.compareAndSetMetadata(key, null, serialized);
-    if (await this.storage.getMetadata(key) !== serialized) throw new ConversationCryptoError('Prepared ciphertext changed for a retry');
+    if (previous === null) await this.storage.compareAndSetMetadata(storageKey, null, serialized);
+    const saved = await this.storage.getMetadata(storageKey);
+    if (!saved || saved !== serialized) throw new ConversationCryptoError('Prepared ciphertext changed for a retry');
+    if (oldPrepared && oldPrepared.request.envelope.payload_base64 !== payload) {
+      throw new ConversationCryptoError('SDK message ID was reused with different ciphertext');
+    }
     return this.post(prepared);
+  }
+
+  /** Persist server-verified routing for the SDK response before its receive pass. */
+  async registerIncomingRecovery(context: ConversationReceiveContext): Promise<void> {
+    const envelope = context.envelope;
+    if (envelope.sdk_message_type !== 'retry_request') {
+      if (context.recovery_target) return;
+      if (envelope.envelope_version !== CLIP_ENVELOPE_VERSION || envelope.recovery_for_entry_id !== null ||
+        typeof envelope.sdk_client_message_id !== 'string' || !UUID_V4.test(envelope.sdk_client_message_id)) {
+        throw new ConversationCryptoError('Incoming application message cannot be used for SDK recovery');
+      }
+      const route: ReceivedMessageRoute = {
+        conversationId: context.conversation_id, entryId: context.message_id, sequence: context.sequence,
+        peerUserId: context.sender_user_id, sdkClientMessageId: envelope.sdk_client_message_id,
+        timestamp: envelope.client_timestamp_ms, senderKeyVersion: context.expected_sender_key_version,
+        recipientKeyVersion: context.expected_recipient_key_version,
+      };
+      const key = this.receivedRouteKey(route.entryId);
+      const serialized = JSON.stringify(route);
+      const existing = await this.storage.getMetadata(key);
+      if (existing === null) await this.storage.compareAndSetMetadata(key, null, serialized);
+      if (await this.storage.getMetadata(key) !== serialized) {
+        throw new ConversationCryptoError('Incoming SDK recovery route changed');
+      }
+      return;
+    }
+    const family = sdkFamily(envelope.sdk_client_message_id ?? '');
+    if (family?.kind !== 'retry-request' || !context.recovery_target ||
+      context.recovery_target.sender_user_id !== this.userId ||
+      context.recovery_target.entry_id !== envelope.recovery_for_entry_id) {
+      throw new ConversationCryptoError('Incoming recovery request target is inconsistent');
+    }
+    const parsed = readRetryControl(envelope.payload_base64);
+    if (parsed.familyId !== family.root || parsed.targetEntryId !== context.recovery_target.entry_id) {
+      throw new ConversationCryptoError('Incoming recovery family does not match its target');
+    }
+    const original = await this.readPrepared(parsed.originalSdkClientMessageId);
+    if (!original || original.recipientUserId !== context.sender_user_id ||
+      original.conversationId !== context.conversation_id ||
+      original.sdkClientMessageId !== parsed.originalSdkClientMessageId ||
+      original.request.envelope.client_timestamp_ms !== parsed.timestamp) {
+      throw new ConversationCryptoError('Incoming recovery request has no matching original send');
+    }
+    await this.persistRecoveryRoute(family.root, {
+      conversationId: context.conversation_id, peerUserId: context.sender_user_id,
+      targetEntryId: context.recovery_target.entry_id, originalSdkClientMessageId: parsed.originalSdkClientMessageId,
+    });
+  }
+
+  private recoveryRouteKey(familyId: string): string {
+    return `clip:relay:v2:${this.userId}:recovery:${this.thread()}:${familyId}`;
+  }
+
+  private receivedRouteKey(entryId: string): string {
+    return `clip:relay:v2:${this.userId}:received:${this.thread()}:${entryId}`;
+  }
+
+  private async readReceivedRoute(entryId: string): Promise<ReceivedMessageRoute | null> {
+    const raw = await this.storage.getMetadata(this.receivedRouteKey(entryId));
+    if (raw === null) return null;
+    const route = this.localJson<ReceivedMessageRoute>(raw);
+    if (route.entryId !== entryId || route.conversationId !== this.conversationId ||
+      !UUID.test(entryId) || !UUID_V4.test(route.sdkClientMessageId) ||
+      !Number.isSafeInteger(route.sequence) || route.sequence < 1 ||
+      !Number.isSafeInteger(route.timestamp) || route.timestamp < 0 ||
+      !Number.isSafeInteger(route.senderKeyVersion) || route.senderKeyVersion < 1 ||
+      !Number.isSafeInteger(route.recipientKeyVersion) || route.recipientKeyVersion < 1) {
+      throw new ConversationCryptoError('Stored incoming SDK route is invalid');
+    }
+    return route;
+  }
+
+  private async persistRecoveryRoute(familyId: string, route: RecoveryFamilyRoute): Promise<void> {
+    const key = this.recoveryRouteKey(familyId);
+    const serialized = JSON.stringify(route);
+    const existing = await this.storage.getMetadata(key);
+    if (existing === null) await this.storage.compareAndSetMetadata(key, null, serialized);
+    if (await this.storage.getMetadata(key) !== serialized) {
+      throw new ConversationCryptoError('SDK recovery family was reused with another target');
+    }
+  }
+
+  private async readRecoveryRoute(familyId: string): Promise<RecoveryFamilyRoute | null> {
+    const raw = await this.storage.getMetadata(this.recoveryRouteKey(familyId));
+    if (raw === null) return null;
+    const route = this.localJson<RecoveryFamilyRoute>(raw);
+    if (route.conversationId !== this.conversationId || !UUID.test(route.targetEntryId) ||
+      !UUID_V4.test(route.originalSdkClientMessageId) || route.peerUserId === this.userId) {
+      throw new ConversationCryptoError('Stored SDK recovery route is invalid');
+    }
+    return route;
+  }
+
+  private async readPrepared(sdkClientMessageId: string): Promise<PreparedSend | null> {
+    const raw = await this.storage.getMetadata(`clip:relay:v1:${this.userId}:message:${sdkClientMessageId}`);
+    if (raw === null) return null;
+    const prepared = this.localJson<PreparedSend>(raw);
+    const storedSdkId = prepared.sdkClientMessageId ?? prepared.request.envelope.sdk_client_message_id ??
+      prepared.request.operation_id;
+    const recoveryTargetId = prepared.recoveryTargetId ?? prepared.request.envelope.recovery_for_entry_id ?? null;
+    if (storedSdkId !== sdkClientMessageId ||
+      (prepared.request.envelope.sdk_client_message_id !== undefined &&
+        prepared.request.envelope.sdk_client_message_id !== sdkClientMessageId) ||
+      !UUID_V4.test(prepared.request.operation_id) ||
+      (prepared.request.envelope.recovery_for_entry_id !== undefined &&
+        prepared.request.envelope.recovery_for_entry_id !== recoveryTargetId)) {
+      throw new ConversationCryptoError('Stored SDK send mapping is invalid');
+    }
+    const localKeyVersion = prepared.localKeyVersion ?? prepared.request.envelope.sender_key_version;
+    const peerKeyVersion = prepared.peerKeyVersion ?? prepared.request.envelope.recipient_key_version;
+    if (!Number.isSafeInteger(localKeyVersion) || localKeyVersion < 1 ||
+      !Number.isSafeInteger(peerKeyVersion) || peerKeyVersion < 1) {
+      throw new ConversationCryptoError('Stored SDK key context is invalid');
+    }
+    return { ...prepared, sdkClientMessageId: storedSdkId, recoveryTargetId, localKeyVersion, peerKeyVersion };
   }
 
   private async post(prepared: PreparedSend) {
@@ -336,14 +564,12 @@ export class ConversationRelay implements SignalProtocolRelayServer, Conversatio
       prepared.recipientRegistrationId !== recipient.registration_id)) {
       throw new ConversationCryptoError('Participant registration changed');
     }
-    const envelope = prepared.request.envelope;
-    if (envelope.sdk_message_type !== 'retry_request') {
-      for (const [userId, version] of [[this.userId, envelope.sender_key_version], [prepared.recipientUserId, envelope.recipient_key_version]] as const) {
-        const expected = members.find((key) => key.user_id === userId && key.key_version === version);
-        const latest = current(userId);
-        if (!expected || !latest || !compositeIdentitiesEqual(this.sdkBundle(expected).identity, this.sdkBundle(latest).identity)) {
-          throw new ConversationCryptoError('Participant identity changed; refresh key verification');
-        }
+    for (const [userId, version] of [[this.userId, prepared.localKeyVersion],
+      [prepared.recipientUserId, prepared.peerKeyVersion]] as const) {
+      const expected = members.find((key) => key.user_id === userId && key.key_version === version);
+      const latest = current(userId);
+      if (!expected || !latest || !compositeIdentitiesEqual(this.sdkBundle(expected).identity, this.sdkBundle(latest).identity)) {
+        throw new ConversationCryptoError('Participant identity changed; refresh key verification');
       }
     }
     const result = await this.api.submitMessage(prepared.conversationId, prepared.request);
@@ -417,7 +643,7 @@ export async function createConversationSession(
   const relay = new ConversationRelay(userId, conversationId, api, storage, history ?? undefined);
   const client = await createSignalProtocolClient({
     identity: { userId, deviceId: 1 }, adapters: { storage, relay },
-    protocol: { postQuantum: PostQuantumPolicy.Required, braid: BraidPolicy.Required },
+    protocol: { postQuantum: PostQuantumPolicy.Required, braid: BraidPolicy.Required, contentRecovery: { mode: 'off' } },
     logger: {}, deliveryReceipts: 'off',
   });
   if (client.syncStatus !== 'synced') {

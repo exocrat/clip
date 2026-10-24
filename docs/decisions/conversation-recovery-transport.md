@@ -5,10 +5,26 @@
 **Status:** Rahul verified the detailed revision on 2026-10-24 06:33:47 UTC.
 The format and behavior below are approved for implementation. The recovery
 storage migration, typed contracts, generated outputs and PostgreSQL message
-provider now support the v2 transport and preserve v1 reads. Normal
-affected-owner code review remains part of the PR process. Client SDK recovery
-handling and browser integration remain pending; automatic recovery is not yet
-available end to end.
+provider support the v2 transport and preserve v1 reads. The isolated client
+SDK protocol-control path is implemented and tested; browser/page integration
+and real-service checks remain pending. Normal affected-owner code review
+remains part of the PR process.
+
+## Sender content-recovery policy
+
+CLIP explicitly configures OpenE2EE `protocol.contentRecovery.mode` as `off` in
+every client constructor. The SDK must not keep its additional resendable
+plaintext record, even if a future local store qualifies for protected
+recovery. On a failed decryption, the SDK may still send its retry request;
+the original sender then answers with the SDK's null control and the original
+message is not restored. The existing CLIP-local conversation-history cache
+is separate and remains governed by its local-only history design; this choice
+adds no backup or service-side plaintext storage.
+
+When page-level control handling is wired, describe this to the sender as a
+recipient decryption problem, not as a failed send: the encrypted entry may
+have been accepted by the service even though the recipient could not read it.
+Do not offer automatic resend; a user retry would be a new message.
 
 ## Problem and SDK evidence
 

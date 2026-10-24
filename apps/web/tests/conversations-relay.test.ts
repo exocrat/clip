@@ -116,9 +116,15 @@ class RelayHttpFixture {
         const key = `${actor}:${request.operation_id}`;
         const saved = this.operations.get(key);
         if (saved) return saved.request === JSON.stringify(request) ? reply(saved.result) : reply({}, 409);
+        const recovery = request.envelope.recovery_for_entry_id == null ? null :
+          this.entries.find((item) => item.entry_id === request.envelope.recovery_for_entry_id) ?? null;
         const entry: ConversationEntry = { entry_id: crypto.randomUUID(), sequence: this.entries.length + 1,
-          kind: request.envelope.sdk_message_type === 'retry_request' ? 'protocol_control' : 'message',
-          sender_user_id: actor, created_at: new Date().toISOString(), content_deleted: false, envelope: request.envelope };
+          kind: request.envelope.sdk_message_type === 'retry_request' || recovery ? 'protocol_control' : 'message',
+          sender_user_id: actor, created_at: new Date().toISOString(), content_deleted: false,
+          envelope: request.envelope,
+          ...(recovery ? { recovery_target: { entry_id: recovery.entry_id, sequence: recovery.sequence,
+            sender_user_id: recovery.sender_user_id, created_at: recovery.created_at } } : {}),
+        };
         this.entries.push(entry);
         this.operations.set(key, { request: JSON.stringify(request), result: entry });
         if (this.loseNextMessageReply) {
@@ -142,6 +148,14 @@ const message = (recipientId: string, operation = crypto.randomUUID()) => ({
   operation_id: operation, client_timestamp_ms: Date.now(),
   sender_key_version: 1, recipient_key_version: 1, text: 'Synthetic encrypted exchange',
 });
+
+function receiveContext(entry: ConversationEntry, senderId: string): import('../src/features/conversations').ConversationReceiveContext {
+  if (!entry.envelope) throw new Error('Expected an encrypted entry');
+  return { conversation_id: thread, message_id: entry.entry_id, sequence: entry.sequence,
+    sender_user_id: senderId, sender_device_id: 1, expected_sender_key_version: 1,
+    expected_recipient_key_version: 1, envelope: entry.envelope,
+    recovery_target: entry.recovery_target ?? null };
+}
 
 describe('CLIP SDK relay adapter', () => {
   it('requires the history-loss acknowledgement and can register keys before any conversation exists', async () => {
@@ -211,6 +225,65 @@ describe('CLIP SDK relay adapter', () => {
       await expect(a.relay.fetchPreKeyBundle(mallory, 1)).rejects.toBeInstanceOf(ConversationCryptoError);
     } finally { await Promise.all(sessions.map((session) => session.stop())); }
   }, 30_000);
+
+  it('handles an undecryptable message with SDK null response when local recovery is disabled', async () => {
+    const server = new RelayHttpFixture();
+    const sessions: ConversationSession[] = [];
+    try {
+      const aliceStore = inMemoryStore();
+      const a = await createConversationSession(alice, thread, server.api(alice), aliceStore,
+        { acknowledgeUnrecoverableHistoryRisk: true });
+      sessions.push(a);
+      const bobStore = inMemoryStore();
+      const b = await createConversationSession(bob, thread, server.api(bob), bobStore,
+        { acknowledgeUnrecoverableHistoryRisk: true });
+      sessions.push(b);
+      await establish(a, server, alice, bob);
+      const priming = await a.sendText(message(bob));
+      const first = server.entries.at(-1);
+      if (!first?.envelope || !b.history) throw new Error('Expected priming message and recipient history');
+      await b.crypto.receiveText(receiveContext(first, alice), b.history);
+      expect((await b.history.read()).received.some((item) => item.message_id === priming.messageId)).toBe(true);
+
+      const outgoing = message(bob);
+      const sent = await a.sendText(outgoing);
+      const original = server.entries.at(-1);
+      if (!original?.envelope || !a.history) throw new Error('Expected original message and sender history');
+      // In-memory local stores declare no encryption and the SDK's default
+      // recovery policy intentionally retains no resendable message plaintext.
+      // Simulate lost recipient session state so the real SDK emits its retry
+      // request, then verify the sender answers with the SDK's null control.
+      expect(aliceStore.protection.atRest).toBe('none');
+      expect((await aliceStore.getMessageRecord(`${bob}:1`, outgoing.client_timestamp_ms))).toBeNull();
+      await bobStore.clearAllSessions();
+      await expect(b.crypto.receiveText(receiveContext(original, alice), b.history)).rejects.toThrow();
+      const request = server.entries.at(-1);
+      if (!request) throw new Error('Expected SDK retry request');
+      expect(request?.kind).toBe('protocol_control');
+      expect(request?.envelope?.sdk_message_type).toBe('retry_request');
+      expect(request?.envelope?.sdk_client_message_id).toMatch(/:retry-request$/);
+      expect(request?.envelope?.recovery_for_entry_id).toBe(original.entry_id);
+      const requestBody = JSON.parse(server.submitted.at(-1) ?? '{}') as MessageRequest;
+      expect(requestBody.operation_id).not.toBe(request?.envelope?.sdk_client_message_id);
+
+      const handled = await a.crypto.receiveProtocolEntry(receiveContext(request, bob), a.history);
+      expect(handled).toBe('handled');
+      const nullResponse = server.entries.at(-1);
+      if (!nullResponse) throw new Error('Expected SDK null response');
+      expect(nullResponse?.kind).toBe('protocol_control');
+      expect(nullResponse?.envelope?.sdk_client_message_id).toMatch(/:null$/);
+      expect(nullResponse?.envelope?.recovery_for_entry_id).toBe(original.entry_id);
+      const nullBody = JSON.parse(server.submitted.at(-1) ?? '{}') as MessageRequest;
+      expect(nullBody.operation_id).not.toBe(nullResponse?.envelope?.sdk_client_message_id);
+
+      const result = await b.crypto.receiveProtocolEntry(receiveContext(nullResponse, alice), b.history);
+      expect(result).toBe('handled');
+      const received = (await b.history.read()).received.filter((item) => item.message_id === original.entry_id);
+      expect(received).toHaveLength(0);
+      expect(sent.messageId).toBe(original.entry_id);
+      expect(server.submitted.every((body) => !body.includes(outgoing.text))).toBe(true);
+    } finally { await Promise.all(sessions.map((session) => session.stop())); }
+  }, 60_000);
 
   it('retries the original prepared ciphertext after an ambiguous commit, including adapter restart', async () => {
     const server = new RelayHttpFixture();
@@ -285,7 +358,7 @@ describe('CLIP SDK relay adapter', () => {
     const server = new RelayHttpFixture();
     const relay = new ConversationRelay(alice, thread, server.api(alice), inMemoryStore());
     const route: ConversationEnvelopeRoute = { ...message(bob), sender_user_id: alice,
-      protocol_id: 'open-e2ee-signal', protocol_version: '13.0.0', envelope_version: 1 };
+      protocol_id: 'open-e2ee-signal', protocol_version: '13.0.0', envelope_version: 2 };
     relay.register(route);
     expect(() => relay.register({ ...route, conversation_id: crypto.randomUUID() })).toThrow(ConversationCryptoError);
     expect(() => relay.register({ ...route, recipient_user_id: mallory })).toThrow(ConversationCryptoError);

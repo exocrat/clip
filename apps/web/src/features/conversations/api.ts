@@ -36,6 +36,8 @@ export class ConversationApiError extends Error {
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const SDK_RECOVERY_ID = /^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}):(retry-request|resend|null)(?::([2-9]|[1-9][0-9]+))?$/;
 type RecordValue = Record<string, unknown>;
 const record = (value: unknown): value is RecordValue =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -43,6 +45,12 @@ const natural = (value: unknown): value is number =>
   typeof value === 'number' && Number.isSafeInteger(value) && value >= 0;
 const positive = (value: unknown): value is number => natural(value) && value > 0;
 const uuid = (value: unknown): value is string => typeof value === 'string' && UUID.test(value);
+const sdkMessageId = (value: unknown): value is string => {
+  if (typeof value !== 'string' || value.length > 128 || !/^[\x21-\x7e]+$/.test(value)) return false;
+  if (UUID_V4.test(value)) return true;
+  const match = SDK_RECOVERY_ID.exec(value);
+  return Boolean(match && (match[3] === undefined || Number.isSafeInteger(Number(match[3]))));
+};
 const instant = (value: unknown): boolean =>
   typeof value === 'string' && value.endsWith('Z') && Number.isFinite(Date.parse(value));
 
@@ -100,20 +108,45 @@ function entry(value: unknown): boolean {
   const envelope = value.envelope;
   if (value.content_deleted) return envelope == null;
   if (!record(envelope) || envelope.protocol_id !== 'open-e2ee-signal' ||
-    envelope.protocol_version !== '13.0.0' || envelope.envelope_version !== 1 ||
+    envelope.protocol_version !== '13.0.0' || (envelope.envelope_version !== 1 && envelope.envelope_version !== 2) ||
     !natural(envelope.client_timestamp_ms) || typeof envelope.payload_base64 !== 'string') return false;
+  const recoveryTarget = value.recovery_target;
+  const hasRecoveryTarget = recoveryTarget !== null && recoveryTarget !== undefined;
+  if (hasRecoveryTarget && (!record(recoveryTarget) || !uuid(recoveryTarget.entry_id) ||
+    !positive(recoveryTarget.sequence) || !uuid(recoveryTarget.sender_user_id) || !instant(recoveryTarget.created_at))) return false;
+  if (envelope.envelope_version === 2 && (!sdkMessageId(envelope.sdk_client_message_id) ||
+    !(envelope.recovery_for_entry_id === null || uuid(envelope.recovery_for_entry_id)))) return false;
+  if (envelope.envelope_version === 1 && envelope.sdk_client_message_id != null &&
+    !sdkMessageId(envelope.sdk_client_message_id)) return false;
+  const recoveryId = envelope.envelope_version === 2 ? envelope.sdk_client_message_id as string : null;
+  const familyMatch = recoveryId === null ? null : SDK_RECOVERY_ID.exec(recoveryId);
+  const hasRecoveryReference = envelope.envelope_version === 2 && envelope.recovery_for_entry_id != null;
+  if (hasRecoveryTarget !== hasRecoveryReference ||
+    (hasRecoveryTarget && recoveryTarget && (recoveryTarget.entry_id !== envelope.recovery_for_entry_id ||
+      recoveryTarget.sender_user_id !== value.sender_user_id))) return false;
   try {
     const payload = atob(envelope.payload_base64);
     if (payload.length < 1 || payload.length > 65536 || btoa(payload) !== envelope.payload_base64) return false;
   } catch {
     return false;
   }
-  return value.kind === 'protocol_control'
-    ? envelope.sdk_message_type === 'retry_request' && envelope.sender_key_version === null && envelope.recipient_key_version === null
-    : positive(envelope.sender_key_version) && positive(envelope.recipient_key_version) &&
-      (value.kind === 'contact_share'
-        ? envelope.sdk_message_type === 'ciphertext'
-        : ['ciphertext', 'prekey_bundle'].includes(String(envelope.sdk_message_type)));
+  if (value.kind === 'protocol_control') {
+    if (envelope.envelope_version === 1 && envelope.sdk_message_type === 'retry_request' &&
+      !hasRecoveryTarget && envelope.sender_key_version === null && envelope.recipient_key_version === null) return true;
+    if (!hasRecoveryReference || !familyMatch) return false;
+    if (envelope.sdk_message_type === 'retry_request') {
+      return familyMatch[2] === 'retry-request' && envelope.sender_key_version === null &&
+        envelope.recipient_key_version === null;
+    }
+    if (familyMatch[2] === 'null') return envelope.sender_key_version === null && envelope.recipient_key_version === null;
+    return ['resend'].includes(familyMatch[2]) && positive(envelope.sender_key_version) &&
+      positive(envelope.recipient_key_version) && ['ciphertext', 'prekey_bundle'].includes(String(envelope.sdk_message_type));
+  }
+  if (hasRecoveryReference || familyMatch || envelope.sdk_message_type === 'retry_request') return false;
+  return positive(envelope.sender_key_version) && positive(envelope.recipient_key_version) &&
+    (value.kind === 'contact_share'
+      ? envelope.sdk_message_type === 'ciphertext'
+      : ['ciphertext', 'prekey_bundle'].includes(String(envelope.sdk_message_type)));
 }
 
 const inventory = (value: unknown): boolean => record(value) && positive(value.key_version) &&

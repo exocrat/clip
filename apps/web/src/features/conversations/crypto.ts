@@ -6,7 +6,9 @@ import {
   type IncomingEnvelope,
   type ReceiveOutcome,
   type SendResult,
-  type SignalProtocolClient,
+  type DecryptedEnvelope,
+  type DeliveryRecoveredEvent,
+  type DefaultSignalProtocolClient,
   type SignalProtocolRelayServer,
   type PreKeyBundle,
   type PublicKey,
@@ -24,7 +26,8 @@ import type {
 
 export const CLIP_PROTOCOL_ID = 'open-e2ee-signal';
 export const CLIP_PROTOCOL_VERSION = '13.0.0';
-export const CLIP_ENVELOPE_VERSION = 1;
+export const CLIP_ENVELOPE_VERSION = 2;
+const LEGACY_ENVELOPE_VERSION = 1;
 const MAX_CIPHERTEXT_BYTES = 64 * 1024;
 
 export type ConversationMessageContext = {
@@ -55,6 +58,7 @@ export type ConversationEnvelopeRoute = {
 /** The application relay uses this operation-id map to bind SDK sends to CLIP threads. */
 export interface ConversationRouteRegistry {
   register(route: ConversationEnvelopeRoute): void;
+  registerIncomingRecovery?(context: ConversationReceiveContext): Promise<void>;
 }
 
 export type SendConversationMessage = Omit<
@@ -88,6 +92,12 @@ export type ConversationReceiveContext = {
   expected_sender_key_version: number;
   expected_recipient_key_version: number;
   envelope: CipherEnvelope;
+  recovery_target?: {
+    entry_id: string;
+    sequence: number;
+    sender_user_id: string;
+    created_at: string;
+  } | null;
 };
 
 export interface ConversationHistoryStore {
@@ -96,12 +106,15 @@ export interface ConversationHistoryStore {
 }
 
 type ProtocolClient = Pick<
-  SignalProtocolClient,
+  DefaultSignalProtocolClient,
   | 'userId'
   | 'establishSession'
   | 'send'
   | 'processIncomingEnvelope'
   | 'completeReceive'
+  | 'receiveIncomingEnvelopes'
+  | 'processPendingReceives'
+  | 'registerHook'
   | 'hasSession'
 > & {
   acceptIdentityRotation(
@@ -346,6 +359,11 @@ export class ConversationCrypto {
     { identity: PreKeyBundle['identity']; keyVersion: number }
   >();
   private readonly establishedPeerVersions = new Map<string, number>();
+  private recoveryHooksInstalled = false;
+  private readonly recoveryContexts = new Map<string, ConversationReceiveContext>();
+  private readonly recoveredTargetIds = new Set<string>();
+  private activeRecoveryHistory: ConversationHistoryStore | null = null;
+  private recoveryHookError: ConversationCryptoError | null = null;
 
   constructor(
     private readonly client: ProtocolClient,
@@ -489,7 +507,9 @@ export class ConversationCrypto {
     if (
       context.envelope.protocol_id !== CLIP_PROTOCOL_ID ||
       context.envelope.protocol_version !== CLIP_PROTOCOL_VERSION ||
-      context.envelope.envelope_version !== CLIP_ENVELOPE_VERSION ||
+      ![LEGACY_ENVELOPE_VERSION, CLIP_ENVELOPE_VERSION].includes(context.envelope.envelope_version) ||
+      (context.envelope.envelope_version === CLIP_ENVELOPE_VERSION &&
+        typeof context.envelope.sdk_client_message_id !== 'string') ||
       !['ciphertext', 'prekey_bundle'].includes(context.envelope.sdk_message_type) ||
       context.envelope.sender_key_version !== context.expected_sender_key_version ||
       context.envelope.recipient_key_version !== context.expected_recipient_key_version
@@ -506,12 +526,18 @@ export class ConversationCrypto {
 
     const incoming: IncomingEnvelope = {
       id: context.message_id,
+      ...(context.envelope.sdk_client_message_id === null || context.envelope.sdk_client_message_id === undefined
+        ? {}
+        : { clientMessageId: context.envelope.sdk_client_message_id }),
       senderUserId: context.sender_user_id,
       senderDeviceId: context.sender_device_id,
       ciphertext: context.envelope.payload_base64,
       timestamp: context.envelope.client_timestamp_ms,
       messageType: context.envelope.sdk_message_type,
     };
+    if (context.envelope.envelope_version === CLIP_ENVELOPE_VERSION) {
+      await this.routes.registerIncomingRecovery?.(context);
+    }
     const outcome = await this.client.processIncomingEnvelope(incoming);
     if (outcome.kind !== 'processed') return outcome;
 
@@ -543,6 +569,105 @@ export class ConversationCrypto {
     await this.client.completeReceive(outcome.messageId);
     return message;
   }
+
+  /**
+   * Handle a server-marked recovery control using the SDK's retry-family receive
+   * path. Encrypted recovery content is written at the server-proven original
+   * position before the SDK is allowed to finish its receive work.
+   */
+  async receiveProtocolEntry(
+    context: ConversationReceiveContext,
+    history: ConversationHistoryStore,
+  ): Promise<'handled' | 'pending' | 'recovered'> {
+    const envelope = context.envelope;
+    if (envelope.envelope_version !== CLIP_ENVELOPE_VERSION ||
+      typeof envelope.sdk_client_message_id !== 'string' || !context.recovery_target ||
+      (envelope.recovery_for_entry_id !== context.recovery_target.entry_id) ||
+      !['ciphertext', 'prekey_bundle', 'retry_request'].includes(envelope.sdk_message_type)) {
+      throw new ConversationCryptoError('Recovery envelope metadata is incomplete or inconsistent');
+    }
+    this.installRecoveryHooks();
+    if (!this.routes.registerIncomingRecovery) {
+      throw new ConversationCryptoError('Recovery routing is unavailable');
+    }
+    await this.routes.registerIncomingRecovery(context);
+    this.recoveryContexts.set(context.message_id, context);
+    this.recoveredTargetIds.delete(context.recovery_target.entry_id);
+    this.activeRecoveryHistory = history;
+    this.recoveryHookError = null;
+    const incoming: IncomingEnvelope = {
+      id: context.message_id,
+      clientMessageId: envelope.sdk_client_message_id,
+      senderUserId: context.sender_user_id,
+      senderDeviceId: context.sender_device_id,
+      ciphertext: envelope.payload_base64,
+      timestamp: envelope.client_timestamp_ms,
+      messageType: envelope.sdk_message_type,
+    };
+    const received = await this.client.receiveIncomingEnvelopes([incoming]);
+    await this.client.processPendingReceives();
+    if (this.recoveryHookError) throw this.recoveryHookError;
+    if (received.failedMessageIds.includes(context.message_id)) return 'pending';
+    const targetId = context.recovery_target.entry_id;
+    const recovered = this.recoveredTargetIds.has(targetId);
+    if (received.processedMessageIds.includes(context.message_id)) {
+      this.recoveryContexts.delete(context.message_id);
+      this.recoveredTargetIds.delete(targetId);
+      if (this.recoveryContexts.size === 0) this.activeRecoveryHistory = null;
+      return recovered ? 'recovered' : 'handled';
+    }
+    return 'pending';
+  }
+
+  private installRecoveryHooks(): void {
+    if (this.recoveryHooksInstalled) return;
+    this.client.registerHook('onDeliveryRecovered', (event: DeliveryRecoveredEvent) => {
+      const matches = [...this.recoveryContexts.values()].filter((item) =>
+        item.recovery_target?.entry_id === event.failedEnvelopeId);
+      if (matches.length > 1 || (matches.length === 1 && matches[0].sender_user_id !== event.senderUserId)) {
+        this.recoveryHookError = new ConversationCryptoError('SDK recovery family does not match the server target');
+        throw this.recoveryHookError;
+      }
+    });
+    this.client.registerHook('onMessageDecrypted', async (decrypted: DecryptedEnvelope) => {
+      const matches = [...this.recoveryContexts.values()].filter((item) =>
+        item.message_id === decrypted.messageId || item.recovery_target?.entry_id === decrypted.messageId);
+      const item = matches[0];
+      const target = item?.recovery_target;
+      if (matches.length !== 1 || !item || !target || !this.activeRecoveryHistory) {
+        this.recoveryHookError = new ConversationCryptoError('SDK decrypted content has no unique recovery route');
+        throw this.recoveryHookError;
+      }
+      if (decrypted.senderId !== target.sender_user_id || decrypted.senderId !== item.sender_user_id) {
+        this.recoveryHookError = new ConversationCryptoError('Recovered message sender does not match the original entry');
+        throw this.recoveryHookError;
+      }
+      try {
+        const decoded = decodeConversationMessage(decrypted.content, {
+          conversation_id: item.conversation_id,
+          sender_user_id: target.sender_user_id,
+          recipient_user_id: this.client.userId,
+          sender_key_version: item.expected_sender_key_version,
+          recipient_key_version: item.expected_recipient_key_version,
+          client_timestamp_ms: item.envelope.client_timestamp_ms,
+        });
+        await this.activeRecoveryHistory.put({
+          message_id: target.entry_id,
+          sequence: target.sequence,
+          sender_user_id: decoded.sender_user_id,
+          client_timestamp_ms: decoded.client_timestamp_ms,
+          sender_key_version: decoded.sender_key_version,
+          recipient_key_version: decoded.recipient_key_version,
+          text: decoded.text,
+        });
+        this.recoveredTargetIds.add(target.entry_id);
+      } catch {
+        this.recoveryHookError = new ConversationCryptoError('Recovered content failed context or local-history validation');
+        throw this.recoveryHookError;
+      }
+    });
+    this.recoveryHooksInstalled = true;
+  }
 }
 
 /** Production constructor: SDK state is local to this browser and never backed up by CLIP. */
@@ -569,6 +694,9 @@ export async function openIndexedDbConversationCrypto(
     protocol: {
       postQuantum: PostQuantumPolicy.Required,
       braid: BraidPolicy.Required,
+      // Never retain resendable plaintext in the SDK, even if a future store
+      // qualifies as protected. CLIP's approved policy has no local resend cache.
+      contentRecovery: { mode: 'off' },
     },
   });
   return new ConversationCrypto(client, routes, relay, storage);
