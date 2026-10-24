@@ -1,4 +1,4 @@
-"""Private, one-shot OTP delivery using the reviewed SES transport.
+"""Private, one-shot OTP dispatch using the reviewed email transport boundary.
 
 The future transactional challenge store must commit its reservation before
 calling ``dispatch``. This module owns no database or public route. Tickets stay
@@ -18,7 +18,7 @@ from app.domains.identity.temporary_crypto import TemporaryKeys, normalize_login
 
 
 class EmailSender(Protocol):
-    """Identity-private narrow transport implemented by SesEmailSender."""
+    """Identity-private transport; approved router may try each real provider once."""
 
     def send(self, recipient: str, subject: str, body: str) -> None:
         """Submit once; acceptance cannot establish inbox delivery."""
@@ -26,10 +26,12 @@ class EmailSender(Protocol):
 
 
 class OtpDelivery:
-    """Hold one transient code and allow at most one transport attempt.
+    """Hold one transient code and allow at most one dispatch to its transport.
 
     A timeout may follow provider acceptance, so a failed/uncertain attempt burns
-    the ticket too. Concurrent calls cannot send twice. Durable operation-ID
+    the ticket too. The approved router may make one attempt per provider,
+    reusing the same message after uncertainty. Concurrent calls cannot dispatch
+    the pair twice. Durable operation-ID
     deduplication must additionally be enforced by the transactional store.
     """
 
@@ -55,7 +57,8 @@ class OtpDelivery:
 
         Provider errors are reduced to false without exception text or logging.
         The owning service must keep this result private and use the same generic
-        acknowledgement for eligible and ineligible targets. No retry is made.
+        acknowledgement for eligible and ineligible targets. This ticket never
+        retries; the approved router may perform one cross-provider fallback.
         """
         instant = as_utc(now)
         with self._lock:

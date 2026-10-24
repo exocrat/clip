@@ -47,7 +47,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PD-19 | Integration owner (current branch) | done | Steps 1–9 and combined foundation handoff complete | Steps 1–9 performed | User confirms all work before PRE-00 is complete | PR #8 merged at `2cd83e7` from head `18c966e` against base `68d9da9`; [Foundation quality gates passed](https://github.com/exocrat/clip/actions/runs/39323851584) for that exact head/base; `make test` (395 Python, 63 data, 16 web), Black, contract freshness and 10 `make check` gates passed; [handoff](foundation-handoff.md) | No open PD-19 work per user confirmation. Linux AMD64/macOS results remain user-confirmed without raw outputs. PR #8 has no submitted GitHub review; independent-review completion is user-confirmed, with no separate review artifact linked. Refresh cloud snapshot before any operation. | 2026-10-19 21:09:05 UTC |
 | PRE-00 | Integration owner | done | Foundation gate audit accepted; DL-00 is unblocked | performed | verified/accepted by user | Reviewed handoff PR #8 merged to `main` at `2cd83e7`; hosted Foundation quality gates passed for head `18c966e` against base `68d9da9` (run `39323851584`); clean-checkout evidence at `0747be6`; see [PD-19 handoff](foundation-handoff.md) | None. PR #8 has no GitHub review event; independent-review completion remains user-reported without a separate artifact. | 2026-10-19 21:20:55 UTC |
 | DL-00 | Shared-core/contract coordinator; all domains review | done | Steps 1–13 and task-wide audit complete; accepted and merged | Steps 1–13 performed; accepted by user | User confirmed full acceptance and merge on 2026-10-22 05:30:49 UTC | PR #9 merged to `main` at `f5576ef`; current `main` is `44cd8ff`; Step 13 check evidence is recorded below and was not rerun for this update | None for DL-00; cleanup implementation remains separately gated; real providers/integrations and crypto/worker implementation remain downstream | 2026-10-22 05:30:49 UTC |
-| ID-01 | A | in progress | Step11 local UI human-verified; next Step12 understanding/integration plan | Steps1/3 verified; Steps4–10 local verified; Step2 production staged; Step11 local increments verified; real checks pending | Aditya verified Microsoft local result and authorized commit/continuation; Step12 understanding not yet verified | `task/id-01-identity`; Microsoft checkpoint approved for commit; [evidence](../evaluation/identity/id-01-step-11/microsoft-checkpoint.md);771 Python/63data/92web; all11gates passed | Actual provider/consent/cache/PKCE/runtime/device/current-main/peer/ID-READY and CN-02 integration; Step14 consumer matrix outside ID-READY | 2026-10-24 13:28:17 UTC |
+| ID-01 | A | in progress | Step12 verify sender selected and implemented locally; verified; checkpoint commit authorized; local main merge next | Resend verify delivery to IISc human-confirmed; local sender settings/adapters/desired IAM aligned;82focused tests/Black passed | Aditya approved verify sender and avoiding no-reply/marketing-style addresses; local result verified; explicit checkpoint commit and local main merge authorized | `task/id-01-identity` at `29ab71a` plus uncommitted changes; [sender result](../evaluation/identity/id-01-step-12/email-routing-checkpoint.md); live SES policy unchanged | Exact SES policy plan/apply; runtime/main/SSM permissions/device/peer acceptance and key rotation; SES production pending; Step14 outside scope | 2026-10-24 16:20:35 UTC |
 | LI-01 | B | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | LI-CORE, LI-02, SE-CORE | — |
 | LI-02 | B | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | LI-CORE, ID-READY | — |
 | SE-01 | C | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | SE-CORE, LI-01, LI-02, DATA-READY | — |
@@ -105,6 +105,114 @@ Update the task status row after each step and human verification. The row is th
 Add a history entry when it records a meaningful outcome, decision, changed output, check result, blocker, consequential human direction, or task/merge closeout. Group related steps when that keeps their results understandable. Do not add a separate history entry just to say that a routine step was verified and the next one may begin.
 
 Include the task and covered step(s), contributor, date/time, and the details needed to understand or verify the outcome: relevant execution/verification state, changed paths, exact checks/results, decision/evidence reference, blocker/owner, or next action as applicable. Keep entries brief, omit repeated background, and link existing artifacts rather than duplicating them. Use exact UTC date and time for new entries. Keep historical timestamp precision as recorded; never guess or backfill an unknown time. Preserve distinct decisions, evidence, and other contributors' useful history.
+
+### ID-01 — Step12 verified sender policy implementation — 2026-10-24 16:14:25 UTC
+
+Aditya(A) selected verify@clip-iisc.site for Identity verification/reset mail and
+rejected generic no-reply/marketing sender names. This is a product/configuration
+choice following human-confirmed verify delivery, not proof of IISc filtering rules.
+A reserves bounded shared edits on task/id-01-identity: core/config.py SES sender,
+.env.example/API README, and shared/test/identity-email.tf FromAddress condition;
+Identity adapter/tests/decisions/evidence stay in A's scope. No concurrent writer
+claim is recorded for these bounded sender edits; affected-owner review and exact
+cloud plan/apply approval remain pending. At2026-10-24 16:15:52 UTC, local Resend/SES settings/examples and desired exact
+IAM sender condition aligned;82focused email/routing/config/provider tests and
+Black/whitespace passed. [Per-file evidence](../evaluation/identity/id-01-step-12/email-routing-checkpoint.md).
+Live SES policy unchanged; separate plan/apply and runtime verification remain.
+No DNS, secret value, provider send, deployed policy or main merge action.
+Result uncommitted and awaits verification.
+
+### ID-01 — Step12 Gmail delivery and DMARC IISc retest — 2026-10-24 15:34:02 UTC
+
+Aditya(A) confirmed Gmail test receipt; earlier accepted IISc mail remained
+unreceived. After Aditya added DMARC and authorized a retest, verified public
+TXT `_dmarc.clip-iisc.site` equals `v=DMARC1; p=none;`. Exactly one Resend IISc
+submission accepted at this checkpoint; receipt pending, no retry/SES fallback.
+[Provider evidence](../environment/identity-provider-setup.md) distinguishes
+Gmail delivery from IISc/hosted acceptance. No secret/recipient/provider ID in
+repo evidence; no agent DNS edit, deploy, commit, push or merge. Original runtime,
+main/peer and SES production gates remain pending; no readiness closeout.
+At2026-10-24 15:38:12 UTC, Aditya reported Resend dashboard Delivered but no
+IISc receipt. Official provider semantics distinguish recipient-server acceptance
+from mailbox placement. Institutional quarantine/rules/message trace are the next
+diagnostic path; exact cause unknown. No new send or DNS/provider change.
+
+### ID-01 — Step12 Resend edge rejection diagnosed — 2026-10-24 14:19:07 UTC
+
+Aditya(A) confirmed no inbox receipt and requested one retry. Single actual
+Resend submission failed HTTP403/1010; private response text omitted, no further
+send or SES fallback. Added explicit CLIP User-Agent to resend_email.py and an
+offline request-header assertion; Black/44focused tests passed and source hashes
+updated. This is a candidate client-identification fix, not a live pass or proof
+of credential/domain failure. Prior full gate predates the header change. Setup/
+evidence records updated; await fresh live-send approval, key rotation and original
+runtime/provider/peer/main gates. No cloud config/deploy/commit/push/merge action.
+At2026-10-24 14:22:05 UTC, after official Resend403/1010 documentation review
+and fresh authorization, one corrected actual adapter submission received a valid
+success response. No retry/fallback. Local provider acceptance passed; inbox
+receipt and deployed/runtime readiness remain pending. No sensitive values stored.
+
+### ID-01 — Step12 Resend secret and failed local submission — 2026-10-24 14:15:45 UTC
+
+Aditya(A) reports Resend domain verification, supplied a key and explicitly
+requested secure storage/one local test to a controlled inbox. Verified approved
+non-root AWS caller/account, created previously absent Standard SecureString
+`/clip/test/identity/email-delivery` version1 under aws/ssm, privately verified
+read-back. No value/local credential file/repo secret or existing-secret overwrite.
+Pinned SDK direct AWS-login loading failed MissingDependencyException; CLI-exported
+short-lived credentials were used only in memory, with no dependency change.
+The actual Resend adapter test submission failed, acceptance/delivery unconfirmed;
+no retry or SES fallback. Provider/network cause not established. Record key
+rotation due to chat exposure, confirm inbox status and diagnose before retry.
+Operator SSM access does not establish task-role permission/runtime readiness.
+No DNS/deploy/shared-DB/commit/push/merge action. [Safe metadata](../environment/secret-handling.md).
+
+### ID-01 — IISc-only verify sender retest — 2026-10-24 16:10:19 UTC
+
+At Aditya's request, one Resend message from verify@clip-iisc.site was addressed
+only to the IISc test inbox; provider accepted it. Receipt pending, no Gmail copy,
+retry or SES fallback. [Setup record](../environment/identity-provider-setup.md).
+No private recipient/message ID recorded. Identity and IISc mail-trace gates remain.
+At16:11:27 UTC Aditya confirmed IISc receipt. This confirms local Resend delivery
+for verify@ and this message; prior no-reply comparison also changed subject, so
+cause is not isolated. Hosted runtime/SES and sender-policy decisions remain.
+
+### ID-01 — Step12 dual-provider email preparation — 2026-10-24 14:01:17 UTC
+
+Aditya(A) selected Resend initially/SES later and changed runtime refresh to four
+hours, with one alternate attempt after any first-provider failure. Recorded the
+[decision](../decisions/identity-email-routing.md), including possible duplicate
+same-code delivery after uncertainty, no fake fallback and existing auth limits.
+Implemented private Resend controlled-recipient transport, immutable bounded
+primary/alternate router and one-version SSM SecureString loader, without shared
+main/config/Vite changes. [Per-file/result evidence](../evaluation/identity/id-01-step-12/email-routing-checkpoint.md):
+44new offline cases,60focused email tests, strict mypy3modules passed. Full make
+check exited0/all11gates:815 Python/63data/92web, Black122, boundaries/generated/
+types/build,35safety, actual PostgreSQL18.6 migration/upgrade/down/reapply/atomicity
+and Gitleaks. Proposed secret reference is unprovisioned; adapters unconnected to
+normal app; SES production guard unchanged. No live read/send/account/DNS/cloud/
+shared-DB/commit/push/merge action. Result awaits verification. Original exact
+local-main merge approval, runtime/Resend setup/SSM/IAM/provider/device/peer checks
+remain pending; ID-READY and ID-01 incomplete, Step14 outside scope.
+
+### ID-01 — Step12 baseline audit and current-main integration proposal — 2026-10-24 13:38:19 UTC
+
+Aditya(A) verified Step12 understanding. Audited actual implementation and
+canonical readiness/stub/checklist requirements; no material task-definition gap.
+Normal branch API remains health-only; real runtime/keys/DB grants/TLS/source/
+provider wiring is pending. GitHub API verified main `defec38f` and PR10 merge;
+SSH query failed on system config permissions, read-only API succeeded. Traditional
+merge-tree found13textual conflicts; initial binary UTF-8 decoding failure was
+corrected without an index/worktree merge. Prepared [bounded merge-resolution and
+runtime plan](../evaluation/identity/id-01-step-12/integration-plan.md), preserving
+Listings accepted composition and both migration/contract histories. Baseline
+make check exited0/all11gates:771 Python/63data/92web, Black118, types/build/
+boundaries/generated,35safety, actual PostgreSQL18.6 clean/repeat/five-smoke/
+upgrade/down/reapply/atomicity and Gitleaks. Raw local log at
+`/tmp/clip-id12-audit-check.log`; no combined-main/provider acceptance inferred.
+Plan/log only; no code/config/provider/cloud/shared-DB/commit/push/merge changes.
+Await audit verification and separate exact local `defec38f` merge-without-commit
+approval before shared runtime edits. ID-READY/ID-01 remain incomplete.
 
 ### ID-01 — Step11 gated Microsoft UI browser checkpoint — 2026-10-24 13:17:13 UTC
 

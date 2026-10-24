@@ -112,3 +112,39 @@ condition remains no-reply@clip-iisc.site. Remove this sandbox-specific identity
 scope only through the reviewed production-access/configuration transition,
 then verify real sending. No new SMTP/API secret is required. See
 [diagnosis/fix evidence](../evaluation/identity/id-01-step-2/sandbox-recipient-fix-result.md).
+
+## ID-01 dual email configuration — proposed, not provisioned
+
+Aditya selected [four-hour runtime routing](../decisions/identity-email-routing.md).
+Proposed exact Standard SecureString: `/clip/test/identity/email-delivery`, using
+`alias/aws/ssm`. Proposed private JSON fields: `version` (integer1), `primary`
+(`resend` or `ses`), `resend_api_key` (actual sending-only/domain-restricted key).
+No value/example credential is recorded here. Keep all fields in one parameter
+version to switch order/key together. The proposal does not claim name availability,
+creation, permissions or effective access. Review exact task-role `ssm:GetParameter`
+permission/account/region and verify secret-manager access before dependent live
+setup. API runtime must retrieve the value, not rely on ECS startup environment
+injection. Do not request keys in chat or put values in CLI arguments/logs.
+
+Existing SES task-role policy/sandbox restrictions remain. Resend account/DNS/
+credential, SSM writes/IAM and live delivery tests retain separate approval.
+The current local Resend adapter supports controlled recipients only; general
+production enablement is not performed by recording this reference.
+
+### Resend secret provisioning — 2026-10-24 14:15:45 UTC
+
+Aditya explicitly supplied a key and authorized secure storage and one local
+Resend test submission. Verified AWS caller IAM user `adityalaxmi1` in account
+`335523638354`, region `ap-south-1`. Created the previously absent parameter
+`/clip/test/identity/email-delivery` as Standard SecureString, `alias/aws/ssm`,
+version1; decrypted read-back matched privately. Existing parameters were not
+overwritten. Value was not written into repository/local credential files or
+printed. The key was originally supplied in chat; operator should rotate it in
+Resend and replace the stored credential through an approved private path.
+
+CLI login was usable; the pinned Python SDK's direct login provider failed with
+MissingDependencyException. Used CLI-exported short-lived credentials captured
+only in process memory; no dependency/configuration change. This establishes
+operator storage/read access, not ECS task-role read permission. Test submission
+failed with a redacted adapter error; acceptance/delivery unconfirmed, no retry
+or SES fallback. Exact provider/network cause is not established.

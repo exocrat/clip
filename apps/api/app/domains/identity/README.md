@@ -141,7 +141,9 @@ Microsoft login-attempt cookie/digest expires after ten minutes; public nonce is
 HMAC-derived from that private secret, consumed once with mapping/session commit.
 Browser MSAL PKCE/state still needs actual Step11 integration. No tenant/domain
 policy changed. OTP handlers commit generic acknowledgements before background
-one-shot dispatch outside the event loop; ambiguous sends never auto-retry.
+one-shot dispatch outside the event loop; individual adapters never auto-retry.
+The subsequently approved dual-provider router may try the alternate once after
+an ambiguous failure, reusing the same OTP; see the routing decision below.
 This is local HTTP integration evidence, not an actual provider/inbox/browser run.
 
 `cleanup.py.IdentityCleanup.run` is count-only by default, bounded per table and
@@ -222,3 +224,10 @@ to reset, relogin, deletion, revocation and bounded cleanup/concurrent denied
 writes. See [Step10 coverage/evidence](../../../../../docs/evaluation/identity/id-01-step-10/README.md).
 These are synthetic controlled provider tests; actual deployed/browser/CN and
 ID-READY gates remain open. No production implementation changed in Step10.
+
+Private email preparation now includes `resend_email.py` (fixed TLS endpoint,
+controlled recipients, single bounded submission), `email_routing.py` (four-hour
+configuration snapshot and primary/alternate attempt), and `email_configuration.py`
+(one approved SSM SecureString snapshot). Runtime composition remains explicit and
+unconnected to `app.main`; imports/construction do not send or read secrets.
+See [the approved behavior and deployment gates](../../../../../docs/decisions/identity-email-routing.md).

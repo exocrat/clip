@@ -84,7 +84,7 @@ Microsoft registration inputs, sandbox SES configuration and pending approvals.
 JSON-array setting `CLIP_SES_TEST_RECIPIENTS`; production rejects SES until its
 separate configuration review. Defaults remain disabled. Fixed non-secret
 settings are `CLIP_SES_REGION=ap-south-1` and
-`CLIP_SES_SENDER=no-reply@clip-iisc.site`. The Identity-owned transport has no
+`CLIP_SES_SENDER=verify@clip-iisc.site`. The Identity-owned transport has no
 public route and does not generate/verify OTPs or authenticate anyone.
 
 The Identity one-shot runtime test is documented in the

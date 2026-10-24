@@ -40,7 +40,7 @@ class Settings(BaseSettings):
     # Step 2 permits only explicitly controlled sandbox recipients. General delivery
     # requires a separately reviewed production configuration increment.
     ses_region: Literal["ap-south-1"] = "ap-south-1"
-    ses_sender: Literal["no-reply@clip-iisc.site"] = "no-reply@clip-iisc.site"
+    ses_sender: Literal["verify@clip-iisc.site"] = "verify@clip-iisc.site"
     ses_test_recipients: tuple[str, ...] = Field(default=(), repr=False)
     storage_provider: Literal["disabled", "fake"] = "disabled"
     development_auth: bool = False

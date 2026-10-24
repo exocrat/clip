@@ -223,3 +223,15 @@ change. Server never logs/persists the assertion; browser SDK redirect artifacts
 are transient under its session cache with explicit cleanup, not a CLIP bearer
 store. No cached-token/silent-auth fallback or automatic exchange retry. Real
 provider/cache/browser evidence remains required before readiness acceptance.
+
+## Approved email routing — 2026-10-24
+
+The private delivery boundary keeps its signature and application-owned OTP state.
+Under [the routing decision](../docs/decisions/identity-email-routing.md), one
+consumed ticket may invoke a router that attempts each real provider at most once,
+primary then alternate, with identical message/OTP even after uncertain failure.
+Two delivered copies are possible; no new code, renewed lifetime or auth success
+is inferred. No provider outcome is returned through public challenge responses.
+Routing/key configuration refreshes on demand at four-hour intervals; real
+configuration/provider acceptance and SES restrictions remain separate gates.
+No generated/public API shape change.

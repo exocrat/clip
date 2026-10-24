@@ -16,6 +16,8 @@ variable "ses_sandbox_recipient_identity_arn" {
 }
 
 # ID-01 Step 2: shared-role permission for the verified SES sender.
+# Desired sender changed by Aditya to verify@; deployed role still uses the old
+# sender until a separately approved exact plan/apply updates this condition.
 # Domain verification and recipient ownership remain separately checked;
 # this policy neither enables compute nor authorizes a live email test.
 resource "aws_iam_role_policy" "api_identity_email" {
@@ -35,7 +37,7 @@ resource "aws_iam_role_policy" "api_identity_email" {
       ])
       Condition = {
         StringEquals = {
-          "ses:FromAddress" = "no-reply@clip-iisc.site"
+          "ses:FromAddress" = "verify@clip-iisc.site"
         }
       }
     }]

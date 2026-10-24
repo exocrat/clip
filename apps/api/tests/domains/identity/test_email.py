@@ -39,7 +39,7 @@ def test_single_recipient_submission():
     sender.send(RECIPIENT, "CLIP verification", "SYNTHETIC_BODY")
     assert len(client.calls) == 1
     assert client.calls[0]["Destination"] == {"ToAddresses": [RECIPIENT]}
-    assert client.calls[0]["FromEmailAddress"] == "no-reply@clip-iisc.site"
+    assert client.calls[0]["FromEmailAddress"] == "verify@clip-iisc.site"
 
 
 def test_denied_destination_never_calls_provider():
@@ -103,7 +103,7 @@ def test_real_sdk_shape_and_timeouts_without_network(monkeypatch):
             "send_email",
             {"MessageId": "synthetic-accepted-id"},
             {
-                "FromEmailAddress": "no-reply@clip-iisc.site",
+                "FromEmailAddress": "verify@clip-iisc.site",
                 "Destination": {"ToAddresses": [RECIPIENT]},
                 "Content": {
                     "Simple": {

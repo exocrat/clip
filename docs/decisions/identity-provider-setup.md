@@ -38,6 +38,11 @@ resolved; implementation must still verify issuer/key/tenant binding, audience,
 time claims and the reviewed login-attempt/replay design. Real configuration and
 provider behavior remain integration checks; no extra flow is implied by them.
 
+Current email routing is [Resend initially with SES fallback, four-hour runtime
+refresh and bounded two-provider attempts](identity-email-routing.md), approved
+by Aditya on2026-10-24. The following records the initial SES setup and its
+remaining sandbox/production gates.
+
 Use Amazon SES v2 in `ap-south-1` for Identity email delivery, proposed sender
 `no-reply@clip-iisc.site`, retaining CLIP-owned OTP/password/session state.
 CN-03 may reuse the provider/domain after its own owner review, without importing
@@ -57,6 +62,8 @@ Production-access/configuration review remains pending.
 The initial adapter is sandbox-only, explicitly selected, with at most five
 controlled allowlisted destinations; production configuration refuses it.
 No automatic SDK retry: a timed-out submission may already have been accepted.
+The later approved email-routing decision allows one alternate real-provider
+attempt with the same message despite that ambiguity; duplicates are possible.
 Connect/read timeouts are 3/5 seconds per socket operation, not an absolute
 end-to-end deadline. Step 5 owns OTP templates, throttling and challenge state;
 no generic mail endpoint is introduced. General production delivery requires a

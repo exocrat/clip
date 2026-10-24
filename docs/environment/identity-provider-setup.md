@@ -204,3 +204,127 @@ no policy/DB/cloud deployment changed. Real controlled SES OTP send/inbox checks
 retain separate approval; production access is needed for general delivery,
 not for an approved verified-recipient sandbox check. Cleanup schedule remains
 disabled; exact target/dry-run/apply and schedule deployment need their approvals.
+
+## Updated active-provider plan — 2026-10-24
+
+Aditya approved [Resend initially and SES later](../decisions/identity-email-routing.md),
+with one alternate-provider attempt even after uncertainty and four-hour runtime
+refresh. This adds a real transport alternative, not provider-managed auth. Local
+controlled-recipient adapter/router/SSM-loader preparation passes checks; neither
+normal application wiring nor Resend account/DNS/key setup is performed. Existing
+SES production access remains pending. Verify active Resend setup and real flows
+before readiness; general SES fallback must retain sandbox restrictions until
+production transition is accepted. See [local result and pending gates](../evaluation/identity/id-01-step-12/email-routing-checkpoint.md).
+
+### Resend test checkpoint — 2026-10-24 14:15:45 UTC
+
+Aditya reports the domain verified in Resend. Authorized key storage and a single
+local controlled-recipient test. SecureString version1 was created and privately
+verified under the approved operator profile; no key/contact/body in evidence.
+The actual Resend adapter submission failed; acceptance and inbox receipt remain
+unconfirmed. No automatic resend or alternate-provider call occurred. Cause
+needs diagnosis; do not claim API-key scope, sender readiness or delivery passed.
+ECS runtime/permission/config refresh and general provider acceptance remain pending.
+
+### One authorized Resend retry — 2026-10-24 14:19:07 UTC
+
+Aditya confirmed no inbox receipt, then explicitly requested one retry. One
+submission failed HTTP403/edge1010; no SES fallback or further send. This proves
+an HTTP-client edge rejection, not an invalid credential/domain. Added explicit
+CLIP client User-Agent and offline header assertion; this is a candidate fix,
+not a verified live correction. Black and44focused routing/adapter tests pass.
+Actual resend with this header requires fresh explicit approval.
+
+### Corrected Resend submission — 2026-10-24 14:22:05 UTC
+
+Aditya authorized one further test after reviewing Resend's official
+[403/1010 guidance](https://resend.com/docs/knowledge-base/403-error-1010).
+The actual local adapter with explicit CLIP User-Agent submitted exactly once
+and received a valid success ID. No retry or SES fallback. Provider acceptance
+passed; human inbox receipt remains pending. Key, recipient, message and provider
+ID omitted from evidence. This verifies local transport submission, not ECS
+permissions/runtime wiring, arbitrary recipient delivery or general readiness.
+
+### DMARC verification and authorized IISc retest — 2026-10-24 15:34:02 UTC
+
+Aditya confirmed receipt of the previously authorized Gmail test (accepted at
+2026-10-24 14:23:58 UTC), while earlier IISc receipt remained absent. After Aditya
+reported adding DMARC and requested a retest, a public DNS-over-HTTPS lookup
+returned the `_dmarc.clip-iisc.site` TXT record `v=DMARC1; p=none;`. One actual
+Resend submission to the controlled IISc inbox was accepted at this checkpoint,
+with no retry or SES fallback. Subject: CLIP email delivery test - DMARC configured.
+IISc inbox receipt remains pending; DMARC is not proof of inbox placement. No
+additional DNS edit, deployment or secret update performed. Sender/key/transport
+now have local accepted-submission and human-confirmed Gmail delivery evidence;
+ECS runtime and IISc recipient delivery remain unverified. Private addresses,
+provider IDs and credential values omitted.
+
+### IISc acceptance versus mailbox receipt — 2026-10-24 15:38:12 UTC
+
+Aditya reports the latest test is Delivered in Resend but absent from the IISc
+mailbox. Dashboard event is human-reported, not independently fetched. Resend's
+[official explanation](https://resend.com/docs/knowledge-base/what-if-an-email-says-delivered-but-the-recipient-has-not-received-it)
+defines Delivered as recipient-server250OK acceptance; later sorting, quarantine
+or discard is not reported to Resend. Exact IISc filtering cause remains unknown.
+Gmail delivery is human-confirmed, public DMARC verified; IISc delivery acceptance
+is reported, inbox access remains unresolved. Next check all mailbox folders/rules
+and institutional quarantine; mail administrator traces the latest test by sender,
+private recipient, subject, sent2026-10-24 15:34:02 UTC and dashboard SMTP Message-ID.
+No new send, domain edit or provider switch is authorized by this diagnosis.
+
+### Alternate Resend From-address test — 2026-10-24 15:56:15 UTC
+
+At Aditya's request, exactly one Resend submission used
+`CLIP Verification <verify@clip-iisc.site>` to the existing IISc test mailbox.
+Resend returned a valid accepted-submission ID. No retry or SES fallback. Inbox
+receipt remains pending, so changing the From local-part is not yet shown to affect
+mailbox placement. Sender display/address, recipient, provider ID and body omitted
+from the durable work-log evidence except the nonsecret From local-part.
+
+### Paired-recipient sender comparison — 2026-10-24 16:06:57 UTC
+
+At Aditya's explicit request, submitted exactly two Resend messages, each addressed
+to both of his previously verified test inboxes: one from `no-reply@clip-iisc.site`
+and one from `verify@clip-iisc.site`. Resend accepted both submissions. No retry
+or SES fallback. Acceptance is not inbox placement; per-inbox receipt remains for
+Aditya to verify. No recipient, message ID, key or body was added to repository
+evidence. No app/deployment/DNS change.
+
+### Paired comparison: IISc accepted verify sender — 2026-10-24 16:08:47 UTC
+
+Aditya reports the most recent `verify@clip-iisc.site` message arrived at his IISc
+mailbox; the paired `no-reply@clip-iisc.site` message did not. Both corresponding
+Gmail copies arrived. Both Resend submissions had the same two recipients, body,
+client/key/domain/runtime and close send times. The From address and subject
+changed together, so this points to a sender/subject or recipient-filtering
+difference but does not isolate one cause. IISc accepted at least the verify
+variant, proving the path can reach this mailbox. No further send authorized or
+performed. To isolate sender from subject later, hold subject/body constant in a
+single controlled comparison and inspect the delivered message authentication
+headers; exact mail-flow cause still requires Exchange trace.
+
+### IISc-only verify sender test — 2026-10-24 16:10:19 UTC
+
+At Aditya's request, one Resend message from `verify@clip-iisc.site` was addressed
+only to the previously approved IISc test inbox. Resend accepted it; inbox receipt
+pending. No Gmail recipient, retry or SES fallback. This isolates recipient count
+from the prior paired message, not sender/subject or recipient filtering. No private
+recipient, body or provider ID retained in evidence.
+
+### IISc-only verify sender receipt confirmed — 2026-10-24 16:11:27 UTC
+
+Aditya confirms receipt in the IISc mailbox of the single-recipient
+`verify@clip-iisc.site` test accepted at2026-10-24 16:10:19 UTC. This verifies a
+Resend path into this IISc mailbox for this sender/message. Earlier paired test
+used a different From address and subject together, so it cannot attribute the
+no-reply absence to the address alone. It does not establish application/ECS
+runtime delivery, production reputation, or SES behavior.
+
+### Current sender direction — 2026-10-24 16:14:25 UTC
+
+Aditya selected `verify@clip-iisc.site` for application verification/reset emails;
+no-reply/marketing-style senders are no longer selected. Local Resend sender, SES
+settings/example and desired IAM FromAddress condition are being aligned. Existing
+live SES policy still permits the historical no-reply sender until an exact
+reviewed cloud plan/apply; no live policy update or send is performed here.
+This preserves verified-domain/DKIM/DMARC and sandbox/production acceptance gates.
