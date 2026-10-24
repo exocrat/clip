@@ -217,3 +217,39 @@ PostgreSQL18.6 lifecycle and Gitleaks8.30.1 source scan. Source hashes, relative
 file links and `git diff --check` pass. Raw full log:
 `/tmp/clip-id12-runtime-check.log`. Aditya verified this local result and authorized its commit/continuation.
 No live checks or ID-READY acceptance inferred.
+
+
+### Next live gate: create persistent keys only
+
+Read-only preflight on 2026-10-24 18:37:02 UTC confirmed account335523638354,
+operator `arn:aws:iam::335523638354:user/adityalaxmi1`, region ap-south-1.
+DescribeParameters returned only `/clip/test/identity/email-delivery`, Standard
+SecureString version1. No parameter values were requested. The shared API task
+role has one inline SES policy and no attached policies; its live From condition
+still names no-reply, and it has no SSM read statement. These are future IAM
+changes, not part of the following request. No RDS/shared DB operation occurred.
+
+Proposed bounded action, awaiting separate approval:
+
+- Target only `/clip/test/identity/authentication-keys` in that account/region,
+  using profile adityalaxmi1. Create one Standard SecureString with aws/ssm;
+  `Overwrite=false`. No overwrite, advanced tier, IAM, database, compute or send.
+- Generate three independent32-byte keys with the OS cryptographic random source
+  in process memory, encode canonical base64 and use schema_version1 and a stable
+  UTC-derived key_version. Parse through the reviewed runtime validator before
+  submission. Never print values or pass them in shell arguments/files/logs.
+- Use one bounded SDK submission with automatic mutation retries disabled. Stop
+  if target/account differs, name exists, paid tier is needed or any AWS error
+  occurs. If the response is ambiguous, inspect metadata rather than overwrite
+  or retry creation. Confirm only Type/Tier/Version metadata; no decrypted read.
+- No compute duration/concurrency or paid provider activity. One Standard
+  parameter plus bounded control-plane requests; no new paid infrastructure or
+  advanced-tier enrollment. Stop for an unexpected cost/configuration requirement.
+- Retain the persistent secret across restarts. No automatic deletion/rotation;
+  deleting a key after data adoption can make retained data unusable. If unused
+  creation must be undone, deletion requires its own explicit approval.
+
+After this gate: separately plan the database login/URL and shared PUBLIC-grant
+baseline with the current DB operator; then scoped runtime IAM and sender update;
+then proxy/TLS/deployment and real browser/provider checks. The existing email
+secret is retained. This request does not start or alter Suraj's environment.
