@@ -285,3 +285,22 @@ Both used guarded prompt cleanup; ECS/ASG zero, runtime RDS calls0, no other
 workload interrupted. Normal managed scaling/draining unchanged. Images/task
 definition/log evidence retained. SES sandbox/production access pending.
 [Evidence](../evaluation/identity/provider-history.md#delivery-diagnostics).
+
+
+### ID-01 private database preflight cleanup — 2026-10-24 21:59:41 UTC
+
+Aditya explicitly approved the1hour preflight window anchored21:40:05 UTC, account
+335523638354/ap-south-1. Original RDS resource db-PYRRZJPVKPGHIXDAHUWATXGH7A
+started and is now confirmed stopped. One existing Identity definition:1 task ran
+with sleep-only overrides, no secrets or exposed ports. Verified private SSM tunnel
+and hostname-verified TLS; metadata inspection failed UndefinedTable before a
+complete safe snapshot, likely public.schema_migrations absent, not independently
+confirmed. One approved master-secret read requested privately; no DB writes or
+key/email-secret reads. No schema/role/grant/URL/provider readiness claimed.
+
+Cleanup confirmed: task/tunnel stopped, cluster hosts/tasks0, API desired/running/
+pending0, ASG desired0/empty, owned i-00c9b68c7757c8da2 terminated and root
+vol-0161f12c2748b1dc7 deleted; no active SSM sessions. Guarded early scale-in initially
+rejected ScalingActivityInProgress, later accepted with honor-cooldown and fresh
+idle checks. NAT/data/SSM/IAM/task definitions/state retained; ongoing retained
+costs continue. No network or shared-policy change. [Sanitized record](../evaluation/identity/id-01-step-12/database-preflight-result.json).

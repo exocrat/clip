@@ -374,3 +374,127 @@ actual PostgreSQL18.6 clean/repeat/upgrade/atomicity/rollback/reapply and
 Gitleaks8.30.1 source scan. Strict setup mypy, source hashes, relative file links
 and `git diff --check` pass. Local result and prior provisioning records remain
 Aditya verified the local result and explicitly authorized commit/continuation.
+
+
+## Private database preflight window — approval request
+
+Prepared 2026-10-24 21:29:32 UTC; Aditya(A), profile adityalaxmi1,
+account335523638354, ap-south-1. Local procedure committed at13db098. Read-only
+AWS checks show original RDS stopped, shared cluster ACTIVE with0registered hosts/
+running/pending tasks, ASG `clip-shared-test-ecs-host` min0/max1/desired0. Existing
+launch template lt-0327bb81cb3269f0b/version1 uses private c7i-flex.large,
+AMI ami-0c10ee7b040aa465e and host SG sg-0a3c8d683731470b4. RDS SG
+sg-02f98707f8e43d2ea already allows5432 from that host SG. No ingress change.
+
+### Exact bounded actions, none executed
+
+1. Recheck operator/account, exact RDS resource ID, empty tasks/services/ASG and
+   current owner window. Start only `clip-shared-test-postgres`, resource
+   db-PYRRZJPVKPGHIXDAHUWATXGH7A; wait at most20minutes for availability.
+   Do not recreate, change class/storage/parameters/network or stop another run.
+2. Launch at most one standalone task in `clip-shared-test` using capacity
+   provider `clip-shared-test-capacity` (weight1/base0), count1, no service:
+   `clip-test-identity-email-ap-south-1-id01:1`. Its existing digest is
+   sha256:3ef8b13d3b102dc97e67d79d91e43eb8d4b2cc02fbabb45cf6001c8a93eddd1d.
+   Use exactly [these overrides](id-01-step-12/database-preflight-task-overrides.json):
+   `python -c 'import time; time.sleep(1800)'`. The overridden command never imports
+   the email sender/API, and the definition has no injected secrets or ports.
+   Existing task/execution roles stay unchanged. No task registration, image build,
+   push, API deployment, mail, DB write or IAM change. Capacity provider may start
+   only the existing ASG's one permitted host; do not manually scale out.
+3. Discover the sole task's actual container-instance/EC2 ID, check expected VPC/
+   SG/AMI ownership, SSM Online and agent>=3.1.1374.0 (plus current security
+   support). Installed local plugin is1.2.896.0. Use
+   `AWS-StartPortForwardingSessionToRemoteHost` only to the exact recorded RDS
+   endpoint on5432, local loopback15432 if free; no broad shell/RunCommand or
+   inbound rule. Stop if agent/private route is unsupported; no automatic upgrade.
+4. Authorize one private decrypted retrieval of
+   `/clip/test/database-master-password` for the operator's read-only SQL metadata
+   preflight, captured in memory only; no master credential in task overrides,
+   image, command arguments, environment dump or output. Use username
+   `clip_test_admin`, database clip_test, host equal to the original RDS hostname
+   for TLS verification, hostaddr127.0.0.1 through the tunnel and port15432. Require
+   verify-full and an approved AWS RDS trust bundle/system trust; reject bad TLS,
+   never disable verification. Bound connection3s, SQL5s, locks3s, tunnel/inspection
+   to10minutes. Inspect catalogs/migration metadata only: report safe presence/
+   match/count/privilege/logging flags, never business rows, role password hashes,
+   key commitments or credentials. No authentication-key/email-secret read.
+5. Stop on wrong target/collision/missing migrations/unsafe grants or logging,
+   unavailable permission, concurrent work or unexpected spend/configuration.
+   No self-repair, migration, setup-function call, role/password/grant/URL creation
+   or retry of an uncertain mutation. Capture sanitized findings for the next
+   exact SQL/setup approval. The current preflight validator may reject RDS
+   logging defaults; this is a finding, not permission to change them.
+6. Close only the owned tunnel/session and stop only the owned task. Under the
+   explicitly approved development cleanup guard, recheck empty tasks and desired
+   services, sole owned host and ASG min0/max1; then restore desired0 rather than
+   waiting15minutes. If concurrent work appears, preserve it and ask the operator;
+   otherwise use normal managed draining/scale-in when prompt cleanup is unsafe.
+   Stop the same RDS only after verifying the serialized window is still ours.
+   Verify original stopped/zero baseline and host/root deletion. No deletion of
+   persistent data/secrets, snapshots, state, IAM or task definition. Retain normal
+   managed scale-in behavior; development override ends before production.
+
+### Duration, cost, permissions and retention
+
+One operator, one task, at most one existing host and original RDS. One-hour
+operator cutoff from first start submission, including startup/checks/cleanup;
+record actual UTC start/deadline before mutation. Stop early on failure. Task has
+its own30minute sleep bound; the whole window and AWS spending are not automatic
+hard caps. Escalate cleanup failure and report remaining billable resources.
+
+AWS Pricing GetProducts current Mumbai On-Demand results: c7i-flex.large Linux
+Shared0.08479USD/hour; PostgreSQL db.t4g.micro Single-AZ0.021USD/hour. Combined
+one-hour compute0.10579USD; allow an operating ceiling1USD for this short run,
+including small root-volume/control-plane/NAT/log traffic, not an AWS-enforced
+cap. Existing NAT/storage/backups/state retention continue independently; no new
+paid subscription or long-lived infrastructure. [Session Manager on EC2 has no
+additional charge](https://aws.amazon.com/systems-manager/pricing/).
+
+Current Budgets metadata: project actual8.233USD, forecast382.855USD against
+200USD limit; second account budget actual8.244USD/forecast16.25USD against5USD.
+Forecast horizons differ; neither is a hard spending cap or current credit proof.
+Human must explicitly accept the bounded window despite this forecast mismatch;
+no assumption that earlier budget deferral authorizes it. The prior25USD reserve
+and remaining credits are not freshly verified. No budget/alert changes proposed.
+
+[Official remote-host forwarding prerequisites](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-sessions-start.html)
+require appropriate SSM agent/plugin and network connectivity. Local source runs
+from13db098; the old container is only a bounded host keeper, not a deployed
+Identity revision or provider acceptance. If this window is approved, it authorizes
+only the stated starts/task/tunnel/master-secret read/metadata SQL and guarded
+cleanup. All database writes and runtime provisioning remain separately gated.
+
+
+### Private preflight execution — failed metadata check, cleanup complete
+
+Aditya explicitly approved the bounded window. Anchor2026-10-24 21:40:05 UTC,
+deadline22:40:05 UTC. Original RDS reached available; one secret-free sleep task
+ran on the expected sole private host. SSM agent3.3.5390.0, exact VPC/SG/AMI and
+host ownership checked. Approved tunnel and hostname-verified TLS with the public
+AWS RDS regional CA bundle succeeded. Requested one master-secret retrieval kept
+in memory; no authentication-key/email-secret retrieval or DB writes.
+
+Metadata collection failed with UndefinedTable before publishing its snapshot.
+The likely missing relation is public.schema_migrations at the migration check;
+the failing relation was not separately confirmed. No complete versions/grants/
+logging snapshot or canonical startup acceptance is available. Do not infer
+Identity migrations applied or that a new role can be created. No automatic
+migration or repeat secret read was attempted. A focused, separately approved
+metadata follow-up must establish actual schema state before any write plan.
+
+Task/tunnel stopped; host terminated, root deletion confirmed, ASG0/no instances.
+Initial desired-zero cleanup was rejected with ScalingActivityInProgress; waited,
+rechecked idle guards and successfully submitted it with honor-cooldown. RDS stop
+accepted; original RDS confirmed stopped by 2026-10-24 21:59:41 UTC. Final
+cluster hosts/running/pending0, shared API desired/running/pending0 and no active
+SSM sessions. Owned host/root deletion and ASG0 confirmed; cleanup complete
+within the one-hour window. [Sanitized execution record](id-01-step-12/database-preflight-result.json).
+No email, deployment, IAM/network or secret provisioning action occurred. Retain
+existing NAT, data, credentials/state and task definition; task-wide acceptance pending.
+
+Aditya verified the execution failure/cleanup and authorized commit/continuation.
+Next: prepare a focused metadata collector that checks relation existence before
+querying it and retains safe partial diagnostics, then obtain a new bounded
+window/secret-read approval if live follow-up is needed. No migrations or role
+setup can proceed on this incomplete schema evidence.
