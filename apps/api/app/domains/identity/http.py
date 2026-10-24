@@ -1,12 +1,12 @@
 """Explicit Identity HTTP composition with real sessions, origin/CSRF and cookies.
 
-Construction requires trusted real dependencies; unconfigured app.main remains
-health-only. This module never discovers secrets, DB targets or a fake provider.
+Construction requires trusted real dependencies; unconfigured app.main keeps Identity unavailable
+while preserving accepted Listings routes. This module never discovers secrets, DB targets or a fake provider.
 Proxy/TLS/source wiring and real browser/provider verification remain deployment
 checks; forwarded identity/IP headers are deliberately not trusted here.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 import hmac
 from ipaddress import IPv4Address, IPv6Address, ip_address
@@ -244,6 +244,53 @@ def create_identity_app(
     """
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
     install_error_handlers(app)
+    install_identity_http(
+        app, IdentityHttpDependencies(sessions, policy, sender, validator, clock)
+    )
+    app.add_middleware(RequestLoggingMiddleware)
+    return app
+
+
+@dataclass(frozen=True)
+class IdentityHttpDependencies:
+    """Explicit trusted bindings, not an environment switch or auth credential.
+
+    Sessions own real persistence/keys; the clock, sender and validator are supplied
+    by reviewed composition. This object performs no discovery, I/O or fallback.
+    Controlled signer/mail ports are permitted only in explicit local/test apps.
+    """
+
+    sessions: IdentitySessions = field(repr=False)
+    policy: BrowserPolicy
+    sender: EmailSender = field(repr=False)
+    validator: MicrosoftTokenValidator = field(repr=False)
+    clock: Callable[[], datetime] = field(repr=False)
+
+    def __post_init__(self) -> None:
+        """Reject incomplete/wrong runtime bindings before installing any route."""
+        if (
+            not isinstance(self.sessions, IdentitySessions)
+            or not isinstance(self.policy, BrowserPolicy)
+            or not isinstance(self.validator, MicrosoftTokenValidator)
+            or not callable(getattr(self.sender, "send", None))
+            or not callable(self.clock)
+        ):
+            raise ValueError("Complete trusted Identity dependencies required")
+
+
+def install_identity_http(app: FastAPI, runtime: IdentityHttpDependencies) -> None:
+    """Install real auth routes and request-scoped caller policy into an existing app.
+
+    The composition root owns error/logging middleware, health and lifespan; do not
+    create a nested/mounted app that would split state or trusted caller context.
+    Call once before startup. No provider/DB/secret I/O occurs during installation.
+    """
+    if not isinstance(runtime, IdentityHttpDependencies):
+        raise ValueError("Complete trusted Identity dependencies required")
+    if getattr(app.state, "identity_http_installed", False):
+        raise ValueError("Identity HTTP already installed")
+    sessions, policy = runtime.sessions, runtime.policy
+    sender, validator, clock = runtime.sender, runtime.validator, runtime.clock
     app.add_middleware(IdentityBrowserMiddleware, sessions=sessions, policy=policy)
     app.add_middleware(
         CORSMiddleware,
@@ -252,7 +299,6 @@ def create_identity_app(
         allow_methods=["GET", "POST", "DELETE", "PATCH", "PUT", "OPTIONS"],
         allow_headers=["Content-Type", "X-CLIP-Request", "X-CSRF-Token"],
     )
-    app.add_middleware(RequestLoggingMiddleware)
 
     def source(request: Request) -> IPv4Address | IPv6Address:
         """Use only transport peer IP; deployment must review any proxy adaptation."""
@@ -520,4 +566,4 @@ def create_identity_app(
         sessions.contacts.delete_contact(current(request).caller, contact_kind)
         return Response(status_code=204)
 
-    return app
+    app.state.identity_http_installed = True

@@ -1,8 +1,9 @@
 # ID-01 current integration handoff
 
 Owner Aditya(A); primary independent reviewer Rahul(D), plus affected owners.
-Current code revision `890adb1`: local main merge committed; no remote publication
-or ID-READY acceptance. Documentation consolidation changes no runtime behavior.
+Committed base `8616301` includes local main merge `890adb1` and compact docs.
+The local API composition increment below is uncommitted; no remote publication
+or ID-READY acceptance.
 
 ## Main reconciliation
 
@@ -103,3 +104,66 @@ actual Identity composition. No isolated fixed caller may authorize real session
   SECORE/SE02 and CNCORE/CN01/CN02. It is outside current ID-READY scope.
 - Step15 retains sanitized evidence/contract/checklist/individual FR closeout.
   ID-READY and ID-01 remain incomplete until their actual required checks pass.
+
+## Local API composition
+
+Aditya authorized this Step12 increment and separately approved the narrow
+Listings adapter correction. No new task-definition gap: main/contracts/real
+Identity services exist; actual provider/runtime/device gates remain pending.
+A is recorded current writer for main.py/application.py, the exact boundary allowlist and shared
+docs. Suraj's affected-owner review is still required for the adapter change.
+
+| Changed code | Purpose and important behavior |
+| --- | --- |
+| apps/api/app/application.py | Side-effect-free create_app retains one Listings/health app and its existing lifespan/pool/routes; accepts explicit Identity bindings only in local/test with DB settings. Rejects production/demo/development-auth composition. Default ASGI app stays unbound, no ambient provider/key discovery. |
+| apps/api/app/main.py | Thin default entry retains established settings/app exports, validates settings and configures logging; re-exports the factory without changing ASGI startup. |
+| apps/api/app/domains/identity/http.py | Immutable validated IdentityHttpDependencies and one-time install_identity_http reuse actual auth/session/CSRF/contact middleware/routes inside an existing app. Root owns logging/errors/health/lifespan. Standalone create_identity_app retains its signature/behavior. |
+| scripts/check_boundaries.py | Exact application.py import exception adds only Identity HTTP module/dependency/installer names; no cross-domain private imports elsewhere. |
+| apps/api/app/domains/listings/integrations.py | Approved eligibility call removes blanket regular-class restriction; regular-only seller guards remain in Listings. Fixes real temporary catalogue403. No table reads or authority from browser IDs. |
+| apps/api/tests/domains/listings/test_offer_boundary.py | Approved adapter regression covers eligible/ineligible temporary buyers and the existing additional listing-owner eligibility recheck, without fake success for denied accounts. |
+| apps/api/tests/domains/identity/test_application_composition.py | Eight real composed-app SQL/cookie cases, controlled signer/mail only: regular catalogue/own reads, contact CSRF, logout, temporary browse versus sale/upload denial, forged-header denial, expiry/revocation, per-app isolation/pool closure and incomplete/production/demo refusal. |
+
+Focused composed tests plus existing unbound adapter case:9passed. Expanded
+startup/health/composition/offer selection57passed. Strict mypy for main,
+application, Identity HTTP and Listings adapter passed4sources. Final full
+aggregate checks are recorded below.
+Retained failed runs show new test-fixture corrections (libpq DSN versus required
+URI, nonce201status, reserved E164 phone), real temporary catalogue403 and a new
+test's incorrect assumption that owner-list reads must be denied. The latter
+now asserts empty actor-scoped reads and tests the reviewed sale/upload creation
+restrictions directly. No product validation/expiry check was weakened, no
+failure relabeled or test disabled. Logs: /tmp/clip-id12-composition-*.log.
+
+This proves local composition with real SQL/session/public eligibility. It does
+not turn on Microsoft/Resend, discover SSM secrets, apply IAM/database grants,
+change proxy/TLS trust or deploy anything. No actual-phone/provider proof or
+complete cross-domain Step14 result. No new schema/generated/public API shape.
+The initial full regression also found established main.settings imports and an
+old regular-only offer test expectation. Preserved main exports by moving the
+reusable factory out of the default-entry module; expanded the approved offer
+regression to cover eligible/ineligible temporary buyers and existing seller
+eligibility recheck. No auth or seller-eligibility guard removed.
+[Seven source hashes](id-01-step-12/composition-source-hashes.json) pin the local
+implementation. Final full checks are recorded below; user verification and
+explicit commit approval remain pending.
+
+### Final local composition result — 2026-10-24 17:56:54 UTC
+
+Final make check exited0/all11gates:976Python passed/1existing DB-only skip,
+63data,118web; Black144files,0boundary violations,8generated artifacts current,
+contract types, lint/build,35wrapper safety, actual PostgreSQL18.6 combined
+14migration clean/repeat/upgrade/atomicity/rollback/reapply and Gitleaks8.30.1.
+Strict mypy passed4runtime files. Focused startup/health/composition/offer suite
+57passed, including the positive seller eligibility recheck. Latest source
+snapshot contains7code/test files; source/schema/public API/Terraform/frontend
+configuration otherwise unchanged. No phone/cloud/provider/SSM/send proof inferred.
+
+Raw final log: /tmp/clip-id12-composition-final-check.log; targeted regression
+log: /tmp/clip-id12-composition-regressions-final.log. Initial failed logs remain
+in /tmp/clip-id12-composition-*.log (fixture corrections, temporary eligibility
+bug, preserved main.settings exports and prior offer expectation). No test disabled.
+
+Aditya verified the implementation plan and explicitly authorized the bounded
+Listings adapter correction; this resulting code remains uncommitted and awaits
+human verification/explicit commit approval. Suraj/affected-owner peer review and
+all actual deployment/runtime/provider/ID-READY gates remain pending.

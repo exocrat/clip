@@ -937,3 +937,15 @@ commands, not deployment or task-completion evidence.
 | `VITE_LISTINGS_ISOLATED_DEMO=true npm run dev` | Runs the same development web server on loopback 5173; exposes only labelled local Listings controls for preparing synthetic image metadata through the separate test app. Production builds ignore this development flag. | Ctrl+C stops the owned Vite process. Missing API/dependencies produce visible failures, not simulated successful saves. |
 | `CLIP_ENVIRONMENT=test CLIP_DEVELOPMENT_AUTH=true uv run --locked python apps/api/tests/domains/listings/browser_demo.py --isolated-listings-browser --inspect SESSION_PATH` | Requires the exact printed retained session path and matching container ownership label. Executes read-only SQL against that running browser database to print synthetic listing ID/title/price/status/proof values. | Fails closed on wrong owner/path/label, stopped/unavailable container or SQL failure; never inspects the shared database. |
 | `CLIP_ENVIRONMENT=test CLIP_DEVELOPMENT_AUTH=true uv run --locked python apps/api/tests/domains/listings/browser_demo.py --isolated-listings-browser --resume SESSION_PATH` | Validates the recorded private session/container label, starts that same database without resetting rows, reapplies only pending migrations, and serves the isolated API again. | Ctrl+C retains rows. Does not remove containers/volumes/session files. Cleanup requires a separate targeted action. |
+
+### Shared Identity/Listings API composition — ID-01 Step12
+
+`uv run --locked pytest apps/api/tests/domains/identity/test_application_composition.py apps/api/tests/domains/listings/test_integrations.py -q -W error`
+checks the real shared factory with disposable PostgreSQL, actual session/OTP/
+signed-token validation and Listings routes. Synthetic signer/mail are explicit
+controlled ports; no fake caller override, external provider, shared database,
+secret-manager read or retained data. Requires local Docker and locked setup.
+Checks regular cookie/eligibility, temporary browsing and sale/upload denial,
+contact CSRF, logout, expiry/revocation, per-app isolation, one-time installation,
+pool closure and refusal of incomplete/production/demo bindings. No website or
+provider acceptance is inferred. `app.main:app` remains unbound by default.

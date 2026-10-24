@@ -231,3 +231,11 @@ configuration snapshot and primary/alternate attempt), and `email_configuration.
 (one approved SSM SecureString snapshot). Runtime composition remains explicit and
 unconnected to `app.main`; imports/construction do not send or read secrets.
 See [the approved behavior and deployment gates](../../../../../docs/decisions/identity-email-routing.md).
+
+Step12 separates `IdentityHttpDependencies`/`install_identity_http` from the
+standalone `create_identity_app` wrapper. The shared root can install these same
+routes and middleware once in the actual Listings app, sharing cookies/caller
+scope and public eligibility while preserving its lifespan. Standalone tests and
+synthetic preview retain their old factory signature. Default startup stays
+unbound; production/demo composition is refused until reviewed runtime wiring.
+[Current integration evidence](../../../../../docs/evaluation/identity/integration.md#local-api-composition).

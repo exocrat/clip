@@ -61,3 +61,21 @@ claims scope carries owner-checked sharing context. HTTP middleware clears
 ambient claims and binds its real providers per request; trusted Conversations
 composition installs an inner scope after its authorization/confirmation checks.
 No browser input, import or object construction installs authority automatically.
+
+## Step12 composition continuation — 2026-10-24
+
+Aditya authorized local shared API composition under the verified runtime plan.
+The side-effect-free `app.application.create_app` (re-exported from app.main)
+may accept explicit `IdentityHttpDependencies`; the Identity
+installer binds the existing real session/CSRF/context/routes into that same app,
+retaining Listings lifecycle and public eligibility consumption. Default startup
+stays unbound; production/isolated-demo/development-auth combinations are refused.
+No implicit secret/provider discovery or fake caller fallback is added.
+
+Actual composition exposed temporary catalogue denial in the Listings adapter:
+it requested regular class even for browsing. Aditya explicitly authorized the
+narrow adapter correction to request current eligibility without a class filter;
+Listings still enforces regular-only seller actions itself. Suraj's affected-owner
+review remains pending. This changes neither the public signature nor approved
+temporary capability policy. Real integration tests do not replace the final
+Step14 consumer matrix or provider/runtime/device acceptance.

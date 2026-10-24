@@ -222,3 +222,27 @@ real signature/date validation enabled; lifecycle/reset/contact/cleanup journeys
 use disposable SQL and actual HTTP. Existing guarded test identity providers and
 production-startup rejection tests are reused. This does not enable public auth
 in app.main or replace provider/browser/readiness acceptance.
+
+## Explicit Identity and Listings composition — ID-01 Step12
+
+`app.application.create_app(settings, identity=bindings)` (also re-exported from
+app.main) can install real Identity
+routes/session middleware into the same application that owns Listings' pool,
+state and routes. `IdentityHttpDependencies` requires actual session service,
+BrowserPolicy, sender, Microsoft validator and clock. Installation performs no
+provider/secret/DB discovery; the existing lifespan opens/closes the explicitly
+configured Listings database pool. No mounted sub-app or fixed test caller is
+used to authenticate cross-domain requests.
+
+The trusted factory requires explicit local/test bindings and database settings;
+it refuses production, development-auth and isolated hosted-demo combinations.
+Default `app.main:app` remains Identity-unbound, with its accepted health/Listings
+surface unchanged. This is a local composition building block, not live website
+authentication. Persistent keys, least-privilege DB/SSM access, source/proxy/TLS,
+provider/browser checks and reviewed production startup remain pending.
+
+The approved Listings adapter now asks Identity for current account eligibility
+without forcing regular class on every lookup. Listings' own regular-only guards
+still deny temporary sale/image creation; browsing is permitted. See the
+[handoff and checks](../../docs/evaluation/identity/integration.md#local-api-composition)
+and [registered test command](../../docs/environment/commands.md#shared-identitylistings-api-composition--id-01-step12).

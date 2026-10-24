@@ -15,11 +15,13 @@ criteria and action approvals still come from their canonical sources.
 
 - Local Identity schema/services/API/UI are implemented and human-verified.
 - Main/PR10 reconciliation is committed as `890adb1`; checkpoint `7a9b4a4`
-  contains dual-provider email preparation. Latest full gate:967Python passed,
+  contains dual-provider email preparation. Latest local composition gate:976Python passed,
   one DB-only skip covered separately,63data and118web passed; all11gates passed.
 - Resend `verify@clip-iisc.site` delivered to Gmail and IISc, human-confirmed.
   SES sandbox task-role delivery and owned cleanup passed; production access is
   pending. No new current cloud state is inferred from historical snapshots.
+- A new explicit local API composition increment is prepared but uncommitted;
+  [result/remaining work](integration.md#local-api-composition).
 - Normal application composition still lacks real Identity runtime wiring.
   Microsoft sign-in is disabled. ID-READY is not accepted; no final FR03 claim.
 
