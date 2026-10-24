@@ -31,6 +31,7 @@ export type ConversationThreadProps = {
   /** Changes only the privacy/call-to-action copy for a loopback synthetic demo. */
   presentationMode?: 'live' | 'local-demo';
   loading?: boolean;
+  recoveredPending?: { operationId: string; text: string } | null;
   onRefresh: () => Promise<void>;
   onSend: (text: string, operationId: string) => Promise<void>;
   /** Retry must reuse the same operation ID and the originally prepared ciphertext. */
@@ -57,6 +58,7 @@ export function ConversationThread({
   last_read_sequence,
   presentationMode = 'live',
   loading = false,
+  recoveredPending = null,
   onRefresh,
   onSend,
   onRetry,
@@ -72,6 +74,10 @@ export function ConversationThread({
   const [acknowledgedRegistration, setAcknowledgedRegistration] = useState(false);
   const messageListRef = useRef<HTMLOListElement>(null);
   const canSend = key_state.kind === 'ready' && !pending && !actionBusy;
+
+  useEffect(() => {
+    if (!pending && recoveredPending) setPending({ ...recoveredPending, state: 'failed' });
+  }, [pending, recoveredPending]);
 
   useEffect(() => {
     if (typeof document === 'undefined') return;

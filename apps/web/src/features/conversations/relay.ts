@@ -424,7 +424,7 @@ export async function createConversationSession(
     await client.stop();
     throw new ConversationCryptoError('Encryption key publication did not complete');
   }
-  const conversationCrypto = new ConversationCrypto(client, relay, relay);
+  const conversationCrypto = new ConversationCrypto(client, relay, relay, storage);
   return { relay, crypto: conversationCrypto, history,
     // The application entry point retains sender text before SDK encryption.
     // A failed/unknown attempt must retry relay.retrySend with the same UUID.

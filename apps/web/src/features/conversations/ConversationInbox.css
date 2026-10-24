@@ -75,3 +75,10 @@
 .conversation-inbox__empty {
   color: var(--color-muted);
 }
+
+.conversation-inbox__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}

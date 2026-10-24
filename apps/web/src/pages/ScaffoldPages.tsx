@@ -1,6 +1,6 @@
 import { Suspense, lazy, useState, type PropsWithChildren } from 'react';
 import { useLocation, useParams } from 'react-router';
-import { ConversationsPlaceholder } from '../features/conversations';
+import { ConversationDetailPage as ConnectedConversationDetail, ConversationInboxPage, ConversationsPlaceholder } from '../features/conversations';
 import { IdentityPlaceholder as IdentityFeaturePlaceholder } from '../features/identity';
 import { ListingsPlaceholder as ListingsFeaturePlaceholder } from '../features/listings';
 import { SearchPlaceholder as SearchFeaturePlaceholder } from '../features/search';
@@ -175,9 +175,7 @@ export function ConversationsPage() {
   }
   return (
     <RoutePage title="My conversations">
-      <ConversationsPlaceholder title="Buyer and seller conversation views">
-        <ListingsFeaturePlaceholder title="Listing and request context" />
-      </ConversationsPlaceholder>
+      <ConversationInboxPage />
     </RoutePage>
   );
 }
@@ -190,8 +188,8 @@ export function ConversationDetailPage() {
   }
   return (
     <RoutePage title="Conversation">
-      <RouteValue name="conversationId" value={conversationId} />
-      <ConversationsPlaceholder title="Private conversation and offer controls">
+      <ConnectedConversationDetail conversationId={conversationId} />
+      <ConversationsPlaceholder title="Offer, listing selection, and contact sharing">
         <ListingsFeaturePlaceholder title="Listing selection and availability" />
         <IdentityFeaturePlaceholder title="Contact options for deliberate sharing" />
       </ConversationsPlaceholder>

@@ -15,6 +15,9 @@ export type ConversationInboxProps = {
   loadError?: boolean;
   onRefresh: () => Promise<void>;
   onOpen: (conversationId: string) => void;
+  page?: number;
+  hasNextPage?: boolean;
+  onPageChange?: (page: number) => void;
 };
 
 /** Participant-scoped inbox presentation; data and authorization stay with its caller. */
@@ -24,6 +27,9 @@ export function ConversationInbox({
   loadError = false,
   onRefresh,
   onOpen,
+  page = 1,
+  hasNextPage = false,
+  onPageChange,
 }: ConversationInboxProps) {
   return (
     <section aria-labelledby="conversation-inbox-title" className="conversation-inbox">
@@ -78,6 +84,13 @@ export function ConversationInbox({
           ))}
         </ul>
       )}
+      {onPageChange ? (
+        <nav aria-label="Conversation pages" className="conversation-inbox__pagination">
+          <Button disabled={loading || page <= 1} onClick={() => onPageChange(page - 1)} variant="secondary">Previous</Button>
+          <span>Page {page}</span>
+          <Button disabled={loading || !hasNextPage} onClick={() => onPageChange(page + 1)} variant="secondary">Next</Button>
+        </nav>
+      ) : null}
     </section>
   );
 }

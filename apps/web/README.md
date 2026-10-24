@@ -68,9 +68,13 @@ operation ID after an ambiguous outcome. Fetching entries never acknowledges rea
 
 Identity must supply the authenticated request function, including session and
 CSRF behavior. The adapter has no default transport or test-identity fallback.
-It is not yet mounted by the scaffold pages. Real auth, page composition,
-local history persistence and two-browser integration remain pending. In
-particular, `readOwnKey()` now maps the approved authenticated
+The Conversations routes now compose the adapter and session/history helpers
+through `ConversationPageRuntimeProvider`. Identity must mount that provider
+with the authenticated user ID and its session/CSRF-aware API adapter; no such
+provider is mounted by the current app shell yet. Until then, live routes show
+an explicit sign-in/session-unavailable state and never invent an actor. Real
+Identity auth, browser IndexedDB reload/concurrency and two-browser integration
+remain pending. In particular, `readOwnKey()` maps the approved authenticated
 `GET /me/conversation-key`: only an explicit valid null means never registered.
 Errors or malformed bundles never become a missing key.
 
@@ -156,3 +160,22 @@ It must only be used after the validated session/key startup boundary, not as
 an offline authentication bypass. No changes to retention or backup policy are
 implied. The memory-store history tests and real-SDK/HTTP-double tests do not
 prove browser reload, eviction/quota, multi-tab durability or real sign-in.
+
+### Conversation route composition
+
+`ConversationInboxPage` loads the caller-scoped inbox and opens the selected
+conversation. `ConversationDetailPage` first asks the API for the route's
+summary and confirms the authenticated caller is one of its participants,
+then opens the account/thread-bound IndexedDB session, resumes a pinned peer
+session or establishes one from the member-scoped prekey endpoint, and displays
+decrypted server entries alongside browser-local sender/recipient history.
+It advances the entry cursor only after a page has been processed, retries
+ambiguous sends using the same operation ID and prepared ciphertext, and sends
+read acknowledgements only when the thread UI reports messages visibly
+displayed. The shared route scaffold imports these controllers through the
+Conversations public `index.ts` only. Offer, selection and contact-sharing
+sections remain explicit placeholders for CN-02/Identity work.
+
+The provider is an injection point, not an authentication implementation.
+Until Identity supplies and mounts it, the production routes stay unavailable;
+do not wire a browser-provided user ID or demo identity into this boundary.

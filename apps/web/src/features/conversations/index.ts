@@ -41,3 +41,5 @@ export { ConversationRelay, createConversationSession, openIndexedDbConversation
 export type { ConversationSession } from './relay';
 export { ConversationLocalHistory } from './history';
 export type { LocalConversationHistory, LocalSentMessage } from './history';
+export { ConversationDetailPage, ConversationInboxPage, ConversationPageRuntimeProvider } from './ConversationPages';
+export type { ConversationPageRuntime } from './ConversationPages';

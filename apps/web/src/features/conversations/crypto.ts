@@ -15,6 +15,7 @@ import {
 import { isUntrustedIdentityError } from '@open-e2ee/signal-protocol-sdk';
 import { compositeIdentitiesEqual } from '@open-e2ee/signal-protocol-sdk/keys';
 import { indexedDbStore } from '@open-e2ee/signal-protocol-sdk/local/store/web';
+import type { SignalProtocolLocalStore } from '@open-e2ee/signal-protocol-sdk/local/store';
 import type {
   CipherEnvelope,
   KeyBundle,
@@ -101,6 +102,7 @@ type ProtocolClient = Pick<
   | 'send'
   | 'processIncomingEnvelope'
   | 'completeReceive'
+  | 'hasSession'
 > & {
   acceptIdentityRotation(
     userId: string,
@@ -349,6 +351,7 @@ export class ConversationCrypto {
     private readonly client: ProtocolClient,
     private readonly routes: ConversationRouteRegistry,
     private readonly identityDirectory?: IdentityDirectory,
+    private readonly localStore?: Pick<SignalProtocolLocalStore, 'getContactIdentity'>,
   ) {}
 
   /** Establish only from the authenticated Conversations key-directory response. */
@@ -403,6 +406,29 @@ export class ConversationCrypto {
     this.pendingIdentityChanges.delete(expected.userId);
     await this.client.establishSession(ProtocolAddress.create(expected.userId, 1), bundle);
     this.establishedPeerVersions.set(expected.userId, expected.keyVersion);
+  }
+
+  /** Resume a persisted SDK session only when its pinned identity still matches
+   * the current account directory entry; this avoids consuming a fresh prekey
+   * on every page reload and fails closed on a key change or missing session.
+   */
+  async resumeParticipantSession(expected: { userId: string; keyVersion: number }): Promise<boolean> {
+    if (!this.identityDirectory || !this.localStore) return false;
+    const address = ProtocolAddress.create(expected.userId, 1);
+    if (!(await this.client.hasSession(address))) return false;
+    const [current, trusted] = await Promise.all([
+      this.identityDirectory.getIdentityKey(expected.userId),
+      this.localStore.getContactIdentity(address),
+    ]);
+    if (!current) throw new ConversationCryptoError('Participant identity unavailable');
+    if (!trusted) throw new ConversationCryptoError('Saved participant identity is unavailable');
+    if (!compositeIdentitiesEqual(current, trusted.identity)) {
+      this.pendingIdentityChanges.set(expected.userId, { identity: current, keyVersion: expected.keyVersion });
+      throw new ConversationKeyChangeRequiredError(expected.userId, expected.keyVersion);
+    }
+    this.pendingIdentityChanges.delete(expected.userId);
+    this.establishedPeerVersions.set(expected.userId, expected.keyVersion);
+    return true;
   }
 
   async sendText(request: SendConversationMessage): Promise<SendResult> {
@@ -545,5 +571,5 @@ export async function openIndexedDbConversationCrypto(
       braid: BraidPolicy.Required,
     },
   });
-  return new ConversationCrypto(client, routes, relay);
+  return new ConversationCrypto(client, routes, relay, storage);
 }

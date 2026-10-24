@@ -180,6 +180,7 @@ describe('CLIP SDK relay adapter', () => {
       } finally { quota.mockRestore(); }
       for (const [sender, receiver, senderId, recipientId] of [[a, b, alice, bob], [b, a, bob, alice]] as const) {
         await establish(sender, server, senderId, recipientId);
+        expect(await sender.crypto.resumeParticipantSession({ userId: recipientId, keyVersion: 1 })).toBe(true);
         const outgoing = message(recipientId);
         const sent = await sender.sendText(outgoing);
         const entry = server.entries.at(-1);

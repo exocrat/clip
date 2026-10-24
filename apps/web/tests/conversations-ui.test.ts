@@ -1,9 +1,12 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { MemoryRouter } from 'react-router';
 import { describe, expect, it, vi } from 'vitest';
 import {
   ConversationInbox,
   ConversationThread,
+  ConversationInboxPage,
+  ConversationDetailPage,
   KEY_REGISTRATION_WARNING,
   PEER_KEY_CHANGE_WARNING,
   type ConversationDisplayEntry,
@@ -105,5 +108,16 @@ describe('ConversationInbox UI', () => {
     expect(html).toContain('aria-label="Open A bicycle listing"');
     expect(html).toContain('>2 unread</span>');
     expect(html).toContain('Private messages are encrypted on your device.');
+  });
+});
+
+describe('Conversation route composition', () => {
+  it('keeps inbox and thread unavailable until Identity supplies an authenticated runtime', () => {
+    const inbox = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(ConversationInboxPage)));
+    const thread = renderToStaticMarkup(createElement(ConversationDetailPage, { conversationId: 'sample-id' }));
+    expect(inbox).toContain('Sign in to load your conversations');
+    expect(thread).toContain('Sign in to view this conversation');
+    expect(inbox).not.toContain('sample');
+    expect(thread).not.toContain('Send encrypted message');
   });
 });
