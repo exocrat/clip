@@ -739,3 +739,38 @@ remain included. No user input/password/OTP file, actual email, ambient DB targe
 cloud action or live cleanup is used. Runtime hashes are sensitive and never
 responses/logs; lock pins argon2-cffi25.1.0 and bindings26.1.0. Public session/API/UI
 and real protected-operation/provider checks remain pending before ID-READY.
+
+### Sessions, Identity HTTP and bounded cleanup — ID-01 Step7
+
+```sh
+uv run --locked pytest apps/api/tests/domains/identity/test_sessions_postgres.py apps/api/tests/domains/identity/test_identity_http.py apps/api/tests/domains/identity/test_identity_cleanup.py -q -W error
+uv run --locked mypy --no-incremental apps/api/app/domains/identity/sessions.py apps/api/app/domains/identity/http.py apps/api/app/domains/identity/cleanup.py scripts/identity_cleanup.py apps/api/app/domains/identity/microsoft_accounts.py apps/api/app/domains/identity/temporary_accounts.py apps/api/app/domains/identity/temporary_passwords.py apps/api/app/domains/identity/temporary_challenges.py
+uv run --locked python scripts/check_database.py
+make contracts-check
+```
+
+Requires local Docker for fresh private PostgreSQL18.6/dbmate2.36.0, no retained
+DB target or host port. Actual RSA/Argon2id/session/HTTP/cleanup implementations
+use synthetic keys/accounts/mail only. Covers cookie/CORS/CSRF/origin/context,
+atomic credential/reset/activation/Microsoft replay races, idle/absolute/account
+expiry, limits, bounded cleanup/CLI target checks and permanent guard retention.
+No real provider or frontend browser is used. Normal app.main is health-only;
+explicit create_identity_app runtime binding still needs reviewed secrets/DB
+roles/TLS/proxy/provider configuration before deployment. Never treat arbitrary
+forwarded headers as trusted source/identity.
+
+Cleanup invocation (reference only; no retained/cloud execution authorized):
+
+```sh
+uv run --locked python scripts/identity_cleanup.py --expected-database clip_test_identity
+```
+
+Supply CLIP_IDENTITY_DATABASE_URL through the approved secret-access path,
+never argv/logs/files; no dotenv fallback. Default is count-only; --apply writes
+only after exact target/dry-run/operator approval, and --batch-size is1–1000
+(default100 per table). No schedule is installed. Output is per-table counts,
+errors are generic and apply can be partially committed before a failure; retry
+rechecks cutoffs. Do not delete lifetime markers/users/contacts/key bindings.
+The revised migration checker expects seven versions/head20261023202807 and30
+tables/five smokes while preserving historical Step3/5 proofs. Revised native
+harness is syntax-checked only on Linux; PR10/current-main integration pending.

@@ -37,48 +37,55 @@ class PostgresMicrosoftAccounts:
     def get_or_create(self, identity: MicrosoftIdentity) -> RegularAccount:
         """Create/retrieve an active regular account; never reactivate/prompt login."""
         try:
-            binding = json.dumps(
-                ["microsoft", identity.issuer, identity.subject], separators=(",", ":")
-            )
-            lock = int.from_bytes(
-                hashlib.sha256(binding.encode()).digest()[:8], "big", signed=True
-            )
             with self._connect() as connection:
                 if connection.info.transaction_status != TransactionStatus.IDLE:
                     raise PublicError(ERRORS[503])
                 with connection.transaction():
-                    connection.execute("SET LOCAL lock_timeout = '3s'")
-                    connection.execute("SET LOCAL statement_timeout = '5s'")
-                    connection.execute("SELECT pg_advisory_xact_lock(%s)", (lock,))
-                    row = connection.execute(
-                        "SELECT u.id, u.display_name, u.account_class, u.status, u.profile_removed_at "
-                        "FROM identity.external_identities AS e JOIN identity.users AS u ON u.id = e.user_id "
-                        "WHERE e.provider = %s AND e.issuer = %s AND e.subject = %s FOR UPDATE OF u",
-                        ("microsoft", identity.issuer, identity.subject),
-                    ).fetchone()
-                    if row is not None:
-                        if (
-                            row[2] != "regular"
-                            or row[3] != "active"
-                            or row[4] is not None
-                        ):
-                            raise PublicError(ERRORS[401])
-                        return RegularAccount(row[0], row[1])
-                    user_id = new_id()
-                    connection.execute(
-                        "INSERT INTO identity.users (id, account_class, status) VALUES (%s, 'regular', 'active')",
-                        (user_id,),
-                    )
-                    connection.execute(
-                        "INSERT INTO identity.external_identities (id, user_id, provider, issuer, subject) "
-                        "VALUES (%s, %s, 'microsoft', %s, %s)",
-                        (new_id(), user_id, identity.issuer, identity.subject),
-                    )
-                    return RegularAccount(user_id, None)
+                    return self.get_or_create_in(connection, identity)
         except PublicError:
             raise
         except Exception:
             raise PublicError(ERRORS[503]) from None
+
+    @staticmethod
+    def get_or_create_in(
+        connection: Connection[tuple[Any, ...]], identity: MicrosoftIdentity
+    ) -> RegularAccount:
+        """Compose mapping inside the trusted caller's account/session transaction.
+
+        Caller owns commit/rollback; validated identity is required. Provider-tuple
+        advisory lock precedes account lock. No session or raw assertion is stored.
+        """
+        binding = json.dumps(
+            ["microsoft", identity.issuer, identity.subject], separators=(",", ":")
+        )
+        lock = int.from_bytes(
+            hashlib.sha256(binding.encode()).digest()[:8], "big", signed=True
+        )
+        connection.execute("SET LOCAL lock_timeout = '3s'")
+        connection.execute("SET LOCAL statement_timeout = '5s'")
+        connection.execute("SELECT pg_advisory_xact_lock(%s)", (lock,))
+        row = connection.execute(
+            "SELECT u.id, u.display_name, u.account_class, u.status, u.profile_removed_at "
+            "FROM identity.external_identities AS e JOIN identity.users AS u ON u.id = e.user_id "
+            "WHERE e.provider = %s AND e.issuer = %s AND e.subject = %s FOR UPDATE OF u",
+            ("microsoft", identity.issuer, identity.subject),
+        ).fetchone()
+        if row is not None:
+            if row[2] != "regular" or row[3] != "active" or row[4] is not None:
+                raise PublicError(ERRORS[401])
+            return RegularAccount(row[0], row[1])
+        user_id = new_id()
+        connection.execute(
+            "INSERT INTO identity.users (id, account_class, status) VALUES (%s, 'regular', 'active')",
+            (user_id,),
+        )
+        connection.execute(
+            "INSERT INTO identity.external_identities (id, user_id, provider, issuer, subject) "
+            "VALUES (%s, %s, 'microsoft', %s, %s)",
+            (new_id(), user_id, identity.issuer, identity.subject),
+        )
+        return RegularAccount(user_id, None)
 
 
 class MicrosoftAccountService:

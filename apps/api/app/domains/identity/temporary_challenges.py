@@ -116,7 +116,10 @@ class PostgresTemporaryChallenges:
                 occupied = connection.execute(
                     "SELECT EXISTS(SELECT 1 FROM identity.temporary_credentials) "
                     "OR EXISTS(SELECT 1 FROM identity.temporary_enrollments) "
-                    "OR EXISTS(SELECT 1 FROM identity.otp_challenges)"
+                    "OR EXISTS(SELECT 1 FROM identity.otp_challenges) "
+                    "OR EXISTS(SELECT 1 FROM identity.auth_source_events) "
+                    "OR EXISTS(SELECT 1 FROM identity.microsoft_login_attempts) "
+                    "OR EXISTS(SELECT 1 FROM identity.sessions WHERE last_seen_at IS NOT NULL)"
                 ).fetchone()
                 if occupied is None or occupied[0]:
                     raise PublicError(ERRORS[503])
@@ -380,14 +383,23 @@ class PostgresTemporaryChallenges:
                         candidate = self._keys.otp_verifier(
                             code, challenge_id, purpose, target, initial[2]
                         )
+                        matches = row is not None and hmac.compare_digest(
+                            row[3], candidate
+                        )
+                        # The reviewed reset contract permits a state-race409 only
+                        # after correct proof; wrong/unknown codes remain uniform.
+                        if (
+                            purpose == "password_reset"
+                            and matches
+                            and row is not None
+                            and (not eligible or user_id != row[5])
+                        ):
+                            raise PublicError(ERRORS[409])
                         valid = (
                             eligible
                             and row is not None
                             and user_id == row[5]
-                            and hmac.compare_digest(
-                                row[3],
-                                candidate,
-                            )
+                            and matches
                         )
                     except ValueError:
                         valid = False

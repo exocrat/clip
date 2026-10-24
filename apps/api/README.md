@@ -136,3 +136,16 @@ argon2-cffi25.1.0 and bindings26.1.0 are pinned in the root manifest/lock.
 approved parameters,14-day lifetime, no-renewal guard and fresh account-state
 gate. This private increment adds no HTTP route or session/cookie behavior.
 Public activation/session and actual protected-operation wiring remain pending.
+
+## Explicit Identity HTTP composition — ID-01 Step7
+
+`app.domains.identity.http.create_identity_app` implements auth/GET /me endpoints
+with explicit trusted session/store/key/sender/validator dependencies, origin/
+CSRF and cookie guards. Default `app.main` remains health-only until approved
+runtime wiring is supplied. Local HTTP tests use actual disposable PostgreSQL,
+Argon2id and real RSA validation with synthetic keys; no provider is contacted.
+Deployment must review TLS/forwarded peer trust, runtime secret references/DB
+permissions and provider/browser behavior before enabling real authentication.
+The [session decision](../../docs/decisions/identity-sessions-and-cleanup.md) and
+[command registry](../../docs/environment/commands.md) define checks and cleanup
+boundaries. No cloud resources, real send or enabled cleanup schedule is added.

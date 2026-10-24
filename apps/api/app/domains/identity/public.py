@@ -13,6 +13,8 @@ from app.contracts.domain_types import (
     ContactField,
     ContactValueRequest,
     MicrosoftSessionRequest,
+    MicrosoftLoginAttempt,
+    CsrfToken,
     NotificationRecipient,
     NotificationWorkerContext,
     OwnContacts,
@@ -28,6 +30,19 @@ from app.contracts.domain_types import (
 )
 
 HTTP_OPERATIONS = (
+    {
+        "method": "POST",
+        "path": "/auth/microsoft/login-attempts",
+        "operation_id": "identity_start_microsoft_login_attempt",
+        "response": MicrosoftLoginAttempt,
+        "status_code": 201,
+    },
+    {
+        "method": "GET",
+        "path": "/auth/csrf",
+        "operation_id": "identity_read_csrf_token",
+        "response": CsrfToken,
+    },
     {
         "method": "POST",
         "path": "/auth/microsoft/sessions",

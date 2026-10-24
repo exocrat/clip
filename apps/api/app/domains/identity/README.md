@@ -27,9 +27,9 @@ Provider errors are safe503; invalid tokens/accounts safe401; token/email/nonce
 are not persisted or logged. No sessions or caller contexts are created.
 
 The private `authenticate` method requires a trusted expected nonce and is NOT
-a session-creation endpoint. Browser PKCE/state, login-attempt creation and
-single-use redemption, cookie/CSRF/lifetime/session wiring need their explicit
-design/real checks before exposing the existing public contract route.
+a session-creation endpoint. Step7 now supplies server attempt redemption and explicit cookie/CSRF/session
+HTTP composition. Browser PKCE/state and real provider/runtime wiring still
+need their original checks before live enablement.
 Synthetic keys/documents are injected only by tests; production never selects
 a fake key source via configuration. Real Microsoft claims/callback and runtime
 DB-role checks remain pending.
@@ -107,3 +107,48 @@ supply marketplace capabilities. Step7/8 must wire it into actual authorization;
 Step11/12 must verify public routes/browser/provider behavior. Activation returns
 private account facts only; the reviewed public session response remains pending.
 No migration, session/CallerContext issuance, cleanup job or route is added.
+
+## Sessions, actual HTTP composition and bounded cleanup — Step7
+
+`IdentitySessions` uses opaque256-bit secrets and domain-separated SHA-256
+session/attempt digests. Seven-day absolute and24-hour idle expiry are checked
+server-side, capped by temporary lifetime. Fresh authentication locks user then
+session and establishes CallerContext; raw cookie/nonce/assertion never persists.
+A real dummy Argon2 hash makes unknown/ineligible password checks equivalent.
+Five failures per target/15minutes survive successful logins; source budget100
+requests/15minutes is shared across credential/attempt requests. No password
+state is exposed. Reset hashes/consumes/revokes all sessions under the same target/
+user lock as login. Account revocation is internal; no new public admin route.
+
+`microsoft_accounts.py.get_or_create_in` and
+`temporary_accounts.py.activate_with` compose account and session writes in the
+same transaction. `temporary_passwords.py.verify` bounds trusted stored hash
+parameters before real verification. Reset state races return409 only after
+correct OTP proof; wrong/unknown codes retain422/429 behavior.
+
+`http.py.create_identity_app` supplies actual reviewed auth/GET /me routes with
+explicit trusted services, real validator and sender. It does not discover keys,
+DB URLs, cloud roles or fake providers; unconfigured app.main stays health-only.
+Middleware refuses invalid TLS/origin/development peer before reading sessions,
+sets only trusted request scope, requires non-simple unsafe headers and
+session-bound CSRF, and emits no-store. Secure HttpOnly host-only Lax cookies
+carry bearers; JSON contains only SessionView/nonce/CSRF/acknowledgements. Explicit
+insecure development mode requires both loopback origins and transport. CORS has
+exact origins/headers. Transport peer IP is used; deployment proxy/TLS/source
+adaptation requires review before public enablement. Never trust arbitrary XFF.
+
+Microsoft login-attempt cookie/digest expires after ten minutes; public nonce is
+HMAC-derived from that private secret, consumed once with mapping/session commit.
+Browser MSAL PKCE/state still needs actual Step11 integration. No tenant/domain
+policy changed. OTP handlers commit generic acknowledgements before background
+one-shot dispatch outside the event loop; ambiguous sends never auto-retry.
+This is local HTTP integration evidence, not an actual provider/inbox/browser run.
+
+`cleanup.py.IdentityCleanup.run` is count-only by default, bounded per table and
+rechecks cutoffs under target/user locks. Apply commits per candidate and may be
+partial on failure; rerun safely rechecks eligibility. Never delete users,
+contacts, lifetime markers or key bindings. `scripts/identity_cleanup.py` reads
+only the explicit DSN environment input and requires matching expected database;
+--apply is an explicit write, not approval to run against retained/cloud data.
+No scheduler is enabled. Exact deployment/operator approval and observed runs
+are still required before claiming production retention deadlines are met.

@@ -46,3 +46,17 @@ Mohit (C), explicit approval of the retention durations and minimal-record excep
 
 ## Supersedes
 None.
+
+## ID-01 reviewed implementation mechanism
+
+Aditya verified the [bounded Identity cleanup design](identity-sessions-and-cleanup.md)
+in Step7. OTP first-unusable time includes supersession; session terminal time
+includes idle expiry. Permanent temporary credential hashes are eligible at
+expiry/revocation immediately, allowing a separately approved hourly deployment
+to meet the within24-hour requirement. Obsolete login/OTP source/target windows
+and attempt metadata are removed24hours after their protection window ends.
+Per-table batches default100/max1000; dry-run default, target-checked explicit
+apply and cutoff rechecks under compatible locks. Lifetime enrollment/request
+markers, key commitments, users and contacts survive this mechanism. No active
+scheduler or actual retention-deadline evidence is claimed until approved
+runtime deployment/run verification. Step9 owns contact/profile cleanup.

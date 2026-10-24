@@ -147,3 +147,14 @@ documentation review is reported approved; provider and abuse-control settings
 that ID-01 requires the human to approve remain gates before enabling a real
 provider. No live provider, account, credential, database, or cloud action is
 authorized here.
+
+## ID-01 reviewed session extension
+
+Aditya verified [session/CSRF/cleanup settings](../docs/decisions/identity-sessions-and-cleanup.md).
+Canonical additions: POST /auth/microsoft/login-attempts returns public nonce/expiry
+plus a private HttpOnly attempt cookie, consumed once on assertion exchange;
+GET /auth/csrf returns a session-bound CSRF token with no-store. Session secrets
+remain cookie-only; exact origin/custom-header guards apply to unsafe requests.
+The [combined registry](combined.md) and canonical typed sources define these
+operations; regenerate declarations. Real provider/runtime/browser and peer
+integration acceptance remain pending.

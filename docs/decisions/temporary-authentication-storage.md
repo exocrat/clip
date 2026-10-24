@@ -76,3 +76,15 @@ session or complete FR-03 claim is introduced. Existing service-lifetime
 enrollment/request markers and separate cleanup gates remain unchanged.
 
 Library reference: [argon2-cffi API and explicit parameters](https://argon2-cffi.readthedocs.io/en/stable/api.html).
+
+## ID-01 Step7 implementation
+
+Aditya verified [sessions/login/CSRF/cleanup choices](identity-sessions-and-cleanup.md)
+and the two canonical nonce/CSRF endpoint additions. Real transactional password
+login, atomic activation/session and reset/hash/all-session revocation, internal
+account revocation and HTTP guards are now implemented with explicit dependency
+composition. Actual browser PKCE/state/provider/runtime integration remains open.
+The reviewed reset state-race409 is returned only after valid proof; incorrect/
+unknown codes retain generic422/429. Bounded cleanup is dry-run by default,
+requires an explicit matching target for CLI apply, preserves lifetime markers
+and enables no schedule. No cloud cleanup/send/deployment approval is inferred.

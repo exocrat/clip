@@ -7,7 +7,7 @@ current account eligibility. Public session transport/issuance remains Step7.
 
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Callable
+from typing import Callable, TypeVar
 from uuid import UUID
 
 from psycopg.pq import TransactionStatus
@@ -23,6 +23,8 @@ from app.domains.identity.temporary_challenges import (
     VerifiedOtp,
 )
 from app.domains.identity.temporary_passwords import TemporaryPasswords
+
+T = TypeVar("T")
 
 TEMPORARY_LIFETIME = timedelta(hours=336)
 
@@ -54,9 +56,25 @@ class TemporaryActivation:
         and retained enrollments cannot create or renew accounts. No session is
         returned; later public wiring must complete its reviewed session response.
         """
+        return self.activate_with(
+            challenge_id, code, password, lambda connection, account: account
+        )
+
+    def activate_with(
+        self,
+        challenge_id: UUID,
+        code: str,
+        password: SecretStr,
+        apply: Callable[[Database, TemporaryAccount], T],
+    ) -> T:
+        """Add a trusted session mutation to the same activation/consume transaction.
+
+        Callback must neither commit nor open another connection; failure rolls
+        back all activation/session writes. No browser callback is accepted.
+        """
         self._passwords.validate(password)
 
-        def create(connection: Database, proof: VerifiedOtp) -> TemporaryAccount:
+        def create(connection: Database, proof: VerifiedOtp) -> T:
             """Run only inside consume's target-locked transaction; never commit here."""
             if proof.purpose != "initial_verification" or proof.user_id is not None:
                 raise PublicError(ERRORS[422])
@@ -101,7 +119,7 @@ class TemporaryActivation:
                 "UPDATE identity.otp_challenges SET user_id=%s WHERE id=%s",
                 (user_id, proof.challenge_id),
             )
-            return TemporaryAccount(user_id, activated, expires)
+            return apply(connection, TemporaryAccount(user_id, activated, expires))
 
         return self._challenges.consume(
             challenge_id, "initial_verification", code, create

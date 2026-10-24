@@ -8,7 +8,7 @@
 
 This document proposes the complete MVP data inventory and its relational boundaries. It creates no tables or domain behavior. Names, types, constraints and indexes below are proposals unless identified as already approved. The review gates at the end must be resolved before dependent initial migrations. After approval, versioned migrations in `database/migrations/` become the executable schema source; this document explains their intent and must stay consistent with them.
 
-**Step 3 continuation, authorized by Mohit:** Mohit explicitly directed proceeding before remaining affected-owner review, allowing later corrections while staying within Stream 3 paths. Migrations live in [database/migrations](../../database/migrations/), with this isolated branch expected dbmate head `20261023192856`; [database/README.md](../../database/README.md) records the files and verification provenance. This exception overrode the immediate review-before-creation wait; it did not waive the required checks. The user later confirmed the carried PD-08 checks and owner acceptance complete. Historical native/ARM64 evidence and the limits of the user-confirmed other-machine platform results are recorded in the work log. This does not accept future domain contracts, a cryptographic protocol implementation, or a cloud action.
+**Step 3 continuation, authorized by Mohit:** Mohit explicitly directed proceeding before remaining affected-owner review, allowing later corrections while staying within Stream 3 paths. Migrations live in [database/migrations](../../database/migrations/), with this isolated branch expected dbmate head `20261023202807`; [database/README.md](../../database/README.md) records the files and verification provenance. This exception overrode the immediate review-before-creation wait; it did not waive the required checks. The user later confirmed the carried PD-08 checks and owner acceptance complete. Historical native/ARM64 evidence and the limits of the user-confirmed other-machine platform results are recorded in the work log. This does not accept future domain contracts, a cryptographic protocol implementation, or a cloud action.
 
 ## Sources and approved boundaries
 
@@ -398,3 +398,22 @@ of the separate operational state still requires the owning retention design;
 no deletion job is authorized. Ordinary OTP private-data retention and immediate
 access revocation remain unchanged. Occupied down migrations fail
 closed under exclusive locks; review a security-state migration before rollback.
+
+## ID-01 Step7 session/login extension
+
+[Reviewed session/cleanup policy](../decisions/identity-sessions-and-cleanup.md)
+adds nullable `sessions.last_seen_at` and three Identity tables through
+migration20261023202807: `password_login_windows`, `auth_source_events`,
+`microsoft_login_attempts`.30 domain tables. Raw session/attempt secrets, passwords,
+assertions and source addresses are not stored. Seven-day absolute/24-hour idle
+sessions, temporary-expiry cap and single-use browser-bound nonce state are
+server-enforced. Legacy session activity is not backfilled; occupied down fails.
+
+Account/session creation and reset/hash/all-session revocation compose in one
+owner transaction. Lock order is source→target→user→session for temporary
+credentials; final Microsoft redemption locks attempt→provider tuple→user.
+Current authentication locks user→session. Cleanup rechecks under compatible
+locks per candidate; it never deletes permanent user/guard/contact records.
+Operational rate/attempt state ages out only after it no longer protects active
+windows. Source and target failure windows remain separate from OTP's three
+attempt budget. No cleanup schedule or public/cloud enablement is implied.

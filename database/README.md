@@ -38,8 +38,9 @@ was changed. [Tool rationale](../docs/decisions/database-migration-tool.md).
 | `20261018152702_reject_retired_origin_entries.sql` | Forward correction: reject new entries on permanently retired origins under the existing origin lock, before allocating sequence/activity state. Down restores the original guard. |
 | `20261023173439_identity_account_profile_integrity.sql` | Identity-only forward guards: contract profile/contact length bounds, paired chronological revocation event and immutable provider/account mapping. Down removes only its own checks/trigger/function, preserving data. |
 | `20261023192856_identity_otp_transactions.sql` | Protected OTP metadata plus key commitments, minimal operation acknowledgements, send reservations and shared verification windows. Empty-state down preserves legacy rows; occupied down fails closed. |
+| `20261023202807_identity_sessions_and_login.sql` | Nullable legacy-safe last-seen session time, bounded password failure windows/source events and server Microsoft attempt digests. Occupied down refuses security-state loss. |
 
-Expected branch migration version: **20261023192856**. One integrator allocates
+Expected branch migration version: **20261023202807**. One integrator allocates
 later timestamp identifiers; no parallel heads or uncoordinated edits to initial
 DDL. Published/applied migrations are corrected forward, not rewritten.
 
@@ -487,3 +488,26 @@ original proof. Four SQL smoke suites now run. The native harness source expects
 six migrations,27 tables,21 functions/33 triggers; only Bash syntax is checked
 on this contributor's Linux ARM64 environment. PR10/current-main integration
 and affected-owner review remain pending before ID-READY/shared application.
+
+## ID-01 Step7 sessions, sign-in and cleanup state
+
+Forward migration20261023202807 adds `last_seen_at` to sessions without inventing
+legacy activity; unbound legacy sessions cannot silently authenticate. Three
+Identity tables add password target windows (five failures), protected auth
+source events and ten-minute single-use Microsoft attempts.30 domain tables and
+seven migrations on this isolated branch. Down locks and refuses occupied state.
+Existing Step3/5 round trips remain pinned to their historical heads; the
+checker now tests five SQL smokes and session empty down/up. Native source
+expects seven migrations/30 tables with unchanged21 functions/33 triggers; only
+Bash syntax is checked here, no new native macOS evidence.
+
+Identity cleanup operates only on OTP/session/credential and obsolete rate/
+attempt state under the approved decision, preserving enrollment/operation/key
+markers. CLI defaults to dry-run and requires actual database name matching its
+explicit --expected-database; DSN is environment-only and errors/counts exclude
+credentials and identifiers. Apply is bounded, per-item transactional and safe
+to rerun after partial failure; it is not a blanket cascade or scheduled job.
+No retained/shared database apply or cleanup occurred. PR10/current-main ordered
+migration reconciliation and affected-owner review remain mandatory before
+shared deployment/readiness. A higher branch head does not prove earlier main
+migrations were installed.

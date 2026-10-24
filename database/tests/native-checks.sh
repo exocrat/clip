@@ -67,9 +67,9 @@ migrate() {
 
 # Check clean apply, repeat application and schema inventory at both clean heads.
 check_head() {
-  [[ $(sql --command 'SELECT max(version) FROM public.schema_migrations') == 20261023192856 ]]
-  [[ $(sql --command 'SELECT count(*) FROM public.schema_migrations') == 6 ]]
-  [[ $(sql --command "SELECT count(*) FROM pg_tables WHERE schemaname IN ('identity','listings','search','conversations')") == 27 ]]
+  [[ $(sql --command 'SELECT max(version) FROM public.schema_migrations') == 20261023202807 ]]
+  [[ $(sql --command 'SELECT count(*) FROM public.schema_migrations') == 7 ]]
+  [[ $(sql --command "SELECT count(*) FROM pg_tables WHERE schemaname IN ('identity','listings','search','conversations')") == 30 ]]
   [[ $(sql --command 'SELECT count(*) FROM listings.categories') == 8 ]]
   [[ $(sql --command 'SELECT count(*) FROM listings.conditions') == 4 ]]
   [[ $(sql --command 'SHOW server_version_num') == 180006 ]]
@@ -122,10 +122,11 @@ sql --file "$root/database/tests/schema-smoke.sql" > "$evidence/smoke-first.log"
 sql --file "$root/database/tests/retired-origin-smoke.sql" > "$evidence/retirement-first.log" 2>&1
 sql --file "$root/database/tests/identity-schema-smoke.sql" > "$evidence/identity-first.log" 2>&1
 sql --file "$root/database/tests/identity-otp-smoke.sql" > "$evidence/otp-first.log" 2>&1
+sql --file "$root/database/tests/identity-session-smoke.sql" > "$evidence/session-first.log" 2>&1
 
 # No fixture commits remain after the smoke rollback; down/up is confined to
 # this disposable database and is not the persistent Compose-volume reset.
-for revision in 1 2 3 4 5 6; do migrate rollback > "$evidence/rollback-$revision.log" 2>&1; done
+for revision in 1 2 3 4 5 6 7; do migrate rollback > "$evidence/rollback-$revision.log" 2>&1; done
 [[ $(sql --command 'SELECT count(*) FROM public.schema_migrations') == 0 ]]
 [[ $(sql --command "SELECT count(*) FROM pg_namespace WHERE nspname IN ('identity','listings','search','conversations')") == 0 ]]
 migrate migrate > "$evidence/apply-second.log" 2>&1
@@ -134,8 +135,9 @@ sql --file "$root/database/tests/schema-smoke.sql" > "$evidence/smoke-second.log
 sql --file "$root/database/tests/retired-origin-smoke.sql" > "$evidence/retirement-second.log" 2>&1
 sql --file "$root/database/tests/identity-schema-smoke.sql" > "$evidence/identity-second.log" 2>&1
 sql --file "$root/database/tests/identity-otp-smoke.sql" > "$evidence/otp-second.log" 2>&1
+sql --file "$root/database/tests/identity-session-smoke.sql" > "$evidence/session-second.log" 2>&1
 inventory > "$evidence/inventory-second.txt"
 cmp "$evidence/inventory-first.txt" "$evidence/inventory-second.txt"
 clean_env "$pgbin/pg_dump" --host="$socket" --port=55438 --username=clip_native_test \
   --dbname=clip_test_native --schema-only --no-owner --no-privileges > "$evidence/schema.sql"
-printf '%s\n' 'PASS: native clean apply/head, repeat migrate, four smoke suites twice, six down migrations, clean reapply and identical runtime schema inventory.'
+printf '%s\n' 'PASS: native clean apply/head, repeat migrate, five smoke suites twice, seven down migrations, clean reapply and identical runtime schema inventory.'

@@ -107,6 +107,19 @@ class SessionView(ContractModel):
     display_name: str | None = None
 
 
+class MicrosoftLoginAttempt(ContractModel):
+    """Public nonce paired with a private server-bound HttpOnly attempt cookie."""
+
+    nonce: str = Field(min_length=32, max_length=128, repr=False)
+    expires_at: UtcInstant
+
+
+class CsrfToken(ContractModel):
+    """Session-bound request protection token; never a session credential."""
+
+    csrf_token: str = Field(min_length=32, max_length=128, repr=False)
+
+
 class MicrosoftSessionRequest(ContractModel):
     """Provider assertion exchanged by Identity, never persisted or logged."""
 

@@ -183,3 +183,24 @@ is installed. Required expected nonce cannot come from browser-supplied expected
 data. Session/cookie/CSRF/replay design and real provider/browser/runtime-role
 checks remain before Step4/ID-READY integration acceptance.
 [Implementation, source hashes and checks](../evaluation/identity/id-01-step-4/README.md).
+
+## ID-01 Step7 local implementation / runtime gate
+
+The verified [session design](../decisions/identity-sessions-and-cleanup.md) now
+has actual PostgreSQL/session/nonce/password/reset/HTTP and bounded cleanup code.
+`create_identity_app` takes explicit trusted connections, TemporaryKeys, clock,
+real Microsoft validator and approved sender; it discovers no SSM parameters,
+DB credentials or fake provider. Default app.main remains health-only.
+Local HTTP/RSA/DB checks use synthetic mail/assertions, not a real browser or
+provider. This changes implementation state, not the SES production status.
+
+Before live enablement, review actual Parameter Store key/DB credential references
+and scoped execution access, real application DB privileges (the existing probe
+login has no domain-table permissions), merged migration chain, current image,
+HTTPS/trusted ALB proxy and source handling, browser MSAL PKCE/state and provider
+behavior. Current code uses only the transport peer IP and ignores arbitrary
+forwarded identity/IP headers. No application secret was created/read here and
+no policy/DB/cloud deployment changed. Real controlled SES OTP send/inbox checks
+retain separate approval; production access is needed for general delivery,
+not for an approved verified-recipient sandbox check. Cleanup schedule remains
+disabled; exact target/dry-run/apply and schedule deployment need their approvals.

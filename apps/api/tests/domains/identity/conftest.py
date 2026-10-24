@@ -13,3 +13,6 @@ def signed_tokens():
 
 # Explicit fixture import registers the same safe disposable route for both services.
 from apps.api.tests.domains.identity.postgres_fixtures import disposable_database
+
+# Shared Step7 integration fixture composes real services; no autouse auth injection.
+from apps.api.tests.domains.identity.session_fixtures import identity_runtime

@@ -403,7 +403,7 @@ def test_reset_uses_login_identifier_and_rechecks_account_state(otp):
             (NOW, user),
         )
     denied(
-        422,
+        409,
         lambda: service.consume(
             request.challenge_id, "password_reset", code, lambda c, p: p.user_id
         ),
@@ -447,7 +447,7 @@ def test_key_change_fails_closed_and_legacy_adoption_requires_review(otp):
     denied(503, lambda: changed.start(EMAIL, "initial_verification", uuid4(), SOURCE))
     with connect() as c:
         c.execute(
-            "TRUNCATE identity.otp_operations,identity.otp_send_reservations,identity.otp_verification_windows,identity.otp_key_binding"
+            "TRUNCATE identity.password_login_windows,identity.otp_operations,identity.otp_send_reservations,identity.otp_verification_windows,identity.otp_key_binding"
         )
     denied(
         503,
