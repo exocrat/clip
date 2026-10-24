@@ -15,7 +15,7 @@ type SessionState = {
   user: SessionView | null;
 };
 type SessionContext = SessionState & {
-  refresh: () => Promise<void>;
+  refresh: () => Promise<SessionView | null>;
   accept: (user: SessionView) => void;
   clear: () => void;
 };
@@ -47,7 +47,10 @@ export function IdentityProvider({ children }: PropsWithChildren) {
     const current = ++generation.current;
     try {
       const user = await identityApi.me();
-      if (current === generation.current) accept(user);
+      if (current === generation.current) {
+        accept(user);
+        return user;
+      }
     } catch (error) {
       if (current === generation.current)
         setState({
@@ -56,6 +59,7 @@ export function IdentityProvider({ children }: PropsWithChildren) {
           user: null,
         });
     }
+    return null;
   }, [accept]);
   useEffect(() => {
     void refresh();

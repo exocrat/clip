@@ -47,7 +47,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PD-19 | Integration owner (current branch) | done | Steps 1–9 and combined foundation handoff complete | Steps 1–9 performed | User confirms all work before PRE-00 is complete | PR #8 merged at `2cd83e7` from head `18c966e` against base `68d9da9`; [Foundation quality gates passed](https://github.com/exocrat/clip/actions/runs/39323851584) for that exact head/base; `make test` (395 Python, 63 data, 16 web), Black, contract freshness and 10 `make check` gates passed; [handoff](foundation-handoff.md) | No open PD-19 work per user confirmation. Linux AMD64/macOS results remain user-confirmed without raw outputs. PR #8 has no submitted GitHub review; independent-review completion is user-confirmed, with no separate review artifact linked. Refresh cloud snapshot before any operation. | 2026-10-19 21:09:05 UTC |
 | PRE-00 | Integration owner | done | Foundation gate audit accepted; DL-00 is unblocked | performed | verified/accepted by user | Reviewed handoff PR #8 merged to `main` at `2cd83e7`; hosted Foundation quality gates passed for head `18c966e` against base `68d9da9` (run `39323851584`); clean-checkout evidence at `0747be6`; see [PD-19 handoff](foundation-handoff.md) | None. PR #8 has no GitHub review event; independent-review completion remains user-reported without a separate artifact. | 2026-10-19 21:20:55 UTC |
 | DL-00 | Shared-core/contract coordinator; all domains review | done | Steps 1–13 and task-wide audit complete; accepted and merged | Steps 1–13 performed; accepted by user | User confirmed full acceptance and merge on 2026-10-22 05:30:49 UTC | PR #9 merged to `main` at `f5576ef`; current `main` is `44cd8ff`; Step 13 check evidence is recorded below and was not rerun for this update | None for DL-00; cleanup implementation remains separately gated; real providers/integrations and crypto/worker implementation remain downstream | 2026-10-22 05:30:49 UTC |
-| ID-01 | A | in progress | Step11 private contact editor verified and checkpoint commit authorized; next Microsoft sign-in/callback implementation | Steps1/3 verified; Steps4–10 local verified; Step2 production staged; Step11 partial: first UI/password/recovery verified; contact local performed/verified; Microsoft callback pending | Contact increment verified by Aditya; checkpoint commit authorized | `task/id-01-identity` at `bcfff32` plus uncommitted contact UI; [evidence](../evaluation/identity/id-01-step-11/contacts-checkpoint.md);771 Python/63data/61web; all11 gates passed; fresh capped loopback preview | Human contact/layout/device checks; Microsoft callback UI; actual runtime/provider/current-main/peer/ID-READY and CN-02 integration; consumer matrix Step14 outside ID-READY | 2026-10-24 12:37:01 UTC |
+| ID-01 | A | in progress | Step11 local UI human-verified; next Step12 understanding/integration plan | Steps1/3 verified; Steps4–10 local verified; Step2 production staged; Step11 local increments verified; real checks pending | Aditya verified Microsoft local result and authorized commit/continuation; Step12 understanding not yet verified | `task/id-01-identity`; Microsoft checkpoint approved for commit; [evidence](../evaluation/identity/id-01-step-11/microsoft-checkpoint.md);771 Python/63data/92web; all11gates passed | Actual provider/consent/cache/PKCE/runtime/device/current-main/peer/ID-READY and CN-02 integration; Step14 consumer matrix outside ID-READY | 2026-10-24 13:28:17 UTC |
 | LI-01 | B | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | LI-CORE, LI-02, SE-CORE | — |
 | LI-02 | B | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | LI-CORE, ID-READY | — |
 | SE-01 | C | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | SE-CORE, LI-01, LI-02, DATA-READY | — |
@@ -105,6 +105,41 @@ Update the task status row after each step and human verification. The row is th
 Add a history entry when it records a meaningful outcome, decision, changed output, check result, blocker, consequential human direction, or task/merge closeout. Group related steps when that keeps their results understandable. Do not add a separate history entry just to say that a routine step was verified and the next one may begin.
 
 Include the task and covered step(s), contributor, date/time, and the details needed to understand or verify the outcome: relevant execution/verification state, changed paths, exact checks/results, decision/evidence reference, blocker/owner, or next action as applicable. Keep entries brief, omit repeated background, and link existing artifacts rather than duplicating them. Use exact UTC date and time for new entries. Keep historical timestamp precision as recorded; never guess or backfill an unknown time. Preserve distinct decisions, evidence, and other contributors' useful history.
+
+### ID-01 — Step11 gated Microsoft UI browser checkpoint — 2026-10-24 13:17:13 UTC
+
+Aditya(A) continued verified Step11 on task/id-01-identity atb3fe7aa. Added lazy
+real pinned MSAL Browser5.26.0/default OIDC flow behind disabled public build
+flag/exact registered origins and unconditional synthetic-preview block. Fresh
+server nonce/HttpOnly cookie precedes SDK code/PKCE/state; matching own consumed
+state/nonce/expiry precedes one regular-session assertion exchange. No app bearer
+cache, raw provider output, silent acquisition, automatic exchange retry or
+Microsoft logout. SDK cache cleanup requested, own marker/response URL removed;
+actual artifact/consent/browser checks remain live gates. Added safe callback
+status recovery through the existing generation fence, expiry response rejection,
+shared form guard and no-referrer metadata. Preserved routes/public exports and
+all other feature private code; backend/schema/domain policy unchanged.
+
+[Per-file/check evidence](../evaluation/identity/id-01-step-11/microsoft-checkpoint.md)
+records31controlled SDK/DOM cases, actual SDK5type-option corrections and safe
+cleanup-outcome handling. Final make check passed all11gates:771 Python/63data/
+92web, Black118/boundaries/contracts/web/build/actualDB/safety/Gitleaks. Browser/
+backend client and callbacks matched; existing dependency versions unchanged,
+only2MSAL packages added.14source hashes and178local Markdown targets matched
+before final metadata links. Real local headless disabled/callback states had no
+overflow at1280x800/390x844/844x390; URL material not displayed and stripped,
+zero provider requests; safe screenshot inspected outside repo and browser closed.
+These are controlled/local UI checks, not real Microsoft or actual-phone proof.
+
+Fresh1800s disposable preview backend started on loopback8001; Vite5173 reused.
+Recreate synthetic account if checking current CLIP session recovery. Microsoft
+is disabled in this preview and by default; flag grants no server authority or
+live action approval. At2026-10-24 13:28:17 UTC, Aditya verified the local
+result and explicitly authorized its commit and continuation.
+Original real provider/key/DB/TLS/proxy/consent/cache/device/current-main/peer/
+readiness gates remain, with CN-02 actual consent/encryption and Step14 consumer
+matrix in their owned scope. No Step12/cloud/send/deployment/push/merge or FR/
+NFR/ID-READY closeout. Specific device observations were not invented.
 
 ### ID-01 — Step11 contact editor browser checkpoint — 2026-10-24 11:18:34 UTC
 

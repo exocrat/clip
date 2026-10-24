@@ -6,6 +6,8 @@ import type {
   ResetTemporaryPasswordRequestWritable,
   SessionView,
   OwnContacts,
+  MicrosoftLoginAttempt,
+  MicrosoftSessionRequest,
   ContactValueRequest,
   IdentitySetOwnContactData,
   TemporarySessionRequestWritable,
@@ -47,6 +49,7 @@ function session(value: unknown): SessionView {
     (row.display_name != null && typeof row.display_name !== 'string')
   )
     throw new IdentityError(503);
+  if (Date.parse(row.valid_until) <= Date.now()) throw new IdentityError(401);
   return {
     user_id: row.user_id,
     account_class: row.account_class as SessionView['account_class'],
@@ -145,6 +148,24 @@ export const identityApi = {
   },
   async activate(body: ActivateTemporaryRequestWritable) {
     return session(await request('/auth/temporary/accounts', 'POST', body));
+  },
+  async microsoftAttempt(): Promise<MicrosoftLoginAttempt> {
+    const result = await request('/auth/microsoft/login-attempts', 'POST');
+    if (!result || typeof result !== 'object') throw new IdentityError(503);
+    const row = result as Record<string, unknown>;
+    if (
+      typeof row.nonce !== 'string' ||
+      !/^[A-Za-z0-9_-]{32,128}$/.test(row.nonce) ||
+      typeof row.expires_at !== 'string' ||
+      !Number.isFinite(Date.parse(row.expires_at))
+    )
+      throw new IdentityError(503);
+    return { nonce: row.nonce, expires_at: row.expires_at };
+  },
+  async microsoftSession(body: MicrosoftSessionRequest): Promise<SessionView> {
+    const result = session(await request('/auth/microsoft/sessions', 'POST', body));
+    if (result.account_class !== 'regular') throw new IdentityError(503, true);
+    return result;
   },
   async contacts(): Promise<OwnContacts> {
     return ownContacts(await request('/me/contacts'));

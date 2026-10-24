@@ -137,3 +137,7 @@ replace this historical first-increment evidence.
 The later [private contact editor checkpoint](contacts-checkpoint.md) has its
 own source hashes and pending browser verification; the first UI evidence above
 remains tied to its original corrected checkpoint.
+
+The [gated Microsoft sign-in/callback checkpoint](microsoft-checkpoint.md) records
+the remaining local Step11 UI implementation and its separate provider/browser
+gates. Earlier source hashes remain tied to their own historical checkpoint.

@@ -5,6 +5,8 @@ import { Button } from '../../shared/ui';
 import { identityApi, IdentityError, safeError } from './api';
 import { useIdentity } from './session';
 import './identity.css';
+import { MicrosoftSignInButton } from './MicrosoftSignIn';
+import { beginMicrosoft, MicrosoftSignInError } from './microsoft';
 
 type Mode = 'login' | 'register' | 'verify' | 'forgot' | 'reset';
 const headings: Record<Mode, string> = {
@@ -72,11 +74,13 @@ export function SignIn() {
       await work();
     } catch (failure) {
       setError(
-        failure instanceof IdentityError && failure.uncertain && mode === 'reset'
-          ? 'We could not confirm the reset. Try signing in with your new password before requesting another code.'
-          : failure instanceof IdentityError && failure.uncertain && mode === 'verify'
-            ? 'We could not confirm account creation. Try signing in with the password you chose.'
-            : safeError(failure),
+        failure instanceof MicrosoftSignInError
+          ? failure.message
+          : failure instanceof IdentityError && failure.uncertain && mode === 'reset'
+            ? 'We could not confirm the reset. Try signing in with your new password before requesting another code.'
+            : failure instanceof IdentityError && failure.uncertain && mode === 'verify'
+              ? 'We could not confirm account creation. Try signing in with the password you chose.'
+              : safeError(failure),
       );
     } finally {
       sending.current = false;
@@ -193,13 +197,21 @@ export function SignIn() {
         <h2>{headings[mode]}</h2>
         <p className="identity-muted">
           {mode === 'login'
-            ? 'Use your verified temporary account.'
+            ? 'Use an eligible IISc Microsoft account or your verified temporary account.'
             : mode === 'register'
               ? 'We’ll send a code to verify your personal email.'
               : mode === 'forgot'
                 ? 'Enter the email you used for your temporary account.'
                 : 'Enter the six-digit code and choose your password.'}
         </p>
+        {mode === 'login' && (
+          <MicrosoftSignInButton
+            disabled={busy || status === 'loading'}
+            onClick={() => {
+              void act(beginMicrosoft);
+            }}
+          />
+        )}
         {status === 'loading' && <p role="status">Checking your session…</p>}
         {status === 'unavailable' && (
           <p role="status">Session status is unavailable. You can try signing in.</p>

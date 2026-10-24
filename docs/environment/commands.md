@@ -873,3 +873,15 @@ signing in. Existing backend tests use actual own-contact SQL/HTTP; new DOM
 cases cover CSRF/refetch/delete/privacy/known-actor race behavior. Headless layout
 positive controls use explicitly intercepted synthetic read results and are not
 real authenticated provider evidence; human exercises the actual local API.
+
+### Microsoft browser UI — ID-01 Step11
+
+Existing `npm run check` and `make check` include the controlled SDK/callback/
+StrictMode/replay/recovery tests. The same capped identity-preview commands serve
+local disabled-button and callback/error/status screens; no new resource/provider
+or route. Preview always disables Microsoft. Public build flag
+VITE_MICROSOFT_SIGN_IN_ENABLED defaults false in the example; the API does not
+read it and it grants no authority. Actual enablement, metadata/token traffic,
+registered localhost/HTTPS redirect, consent/default scopes, provider artifacts
+and server-cookie flow need their own approved live/runtime verification plan.
+No live-enable command or provider action is authorized by this registry entry.

@@ -17,3 +17,5 @@
 .identity-contacts { max-width: 70rem; margin-inline: auto; }
 .identity-contact-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); margin-top: var(--space-5); }
 @media (max-width: 60rem) { .identity-contact-grid { grid-template-columns: minmax(0, 1fr); } }
+
+.identity-microsoft { display: grid; gap: var(--space-2); margin-block: var(--space-4); }

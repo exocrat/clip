@@ -130,7 +130,7 @@ it is not an additional product route.
 | Page path | Page component | Public feature placeholders and connections | Owning task(s) |
 |---|---|---|---|
 | `/sign-in` | `SignInPage` | `identity/SignIn` (temporary sign-in/registration first checkpoint; Microsoft/reset pending) | A — ID-01 |
-| `/auth/callback` | `AuthCallbackPage` | `identity/IdentityPlaceholder` | A — ID-01 |
+| `/auth/callback` | `AuthCallbackPage` | `identity/MicrosoftCallback` (gated SDK flow; actual provider checks pending) | A — ID-01 |
 | `/` | `DiscoveryPage` | `search/SearchPlaceholder` contains `listings/ListingsPlaceholder` for sale summaries; wanted browse is C-only | C — SE-01/SE-02; B — LI-01/LI-02 integration |
 | `/listings/new` | `ListingCreatePage` | `listings/ListingsPlaceholder` contains `identity/IdentityPlaceholder` for eligibility | B — LI-01/LI-02; A — ID-01 integration |
 | `/listings/:listingId` | `ListingDetailPage` | `listings/ListingsPlaceholder` contains `search/SearchPlaceholder` save action and `conversations/ConversationsPlaceholder` start/reopen action | B — LI-01/LI-02; C — SE-02; D — CN-01 integration |
@@ -309,3 +309,16 @@ known logout/account changes unmount private drafts and fence late responses.
 There is no general profile/directory or Conversation contact-sharing endpoint
 or client bypass. Actual CN-02 deliberate sharing remains its original gate.
 Human contact-editor desktop/phone/browser verification is pending.
+
+### ID-01 Step11 Microsoft UI increment
+
+Aditya remains reserved Identity/shared-page writer. SignIn composes its private
+Microsoft button through the shared submission guard; AuthCallbackPage now uses
+public MicrosoftCallback. Existing public feature exports and all approved routes
+remain. New own-controller lazily selects only the real pinned SDK, with explicit
+origin/build activation and unconditional synthetic-preview disablement. Callback
+success requires one server exchange; safe status recovery uses IdentityProvider's
+generation fence. The provider refresh result now returns a current SessionView
+or null while existing callers may ignore it. No other feature private imports.
+The app's no-referrer HTML metadata protects redirect material; shared-owner/peer
+review remains before integration. Live provider activation is separately gated.

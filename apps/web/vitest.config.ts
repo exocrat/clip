@@ -8,6 +8,7 @@ export default mergeConfig(viteConfig({ command: 'serve', mode: 'test' }), {
   test: {
     include: ['tests/**/*.test.ts', 'tests/**/*.test.tsx'],
     environment: 'node',
+    environmentOptions: { jsdom: { url: 'http://localhost:5173' } },
     passWithNoTests: false,
   },
 });

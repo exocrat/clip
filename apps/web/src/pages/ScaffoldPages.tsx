@@ -1,7 +1,7 @@
 import { useState, type PropsWithChildren } from 'react';
 import { useParams } from 'react-router';
 import { ConversationsPlaceholder } from '../features/conversations';
-import { ContactsEditor, SignIn, IdentityPlaceholder as IdentityFeaturePlaceholder } from '../features/identity';
+import { MicrosoftCallback, ContactsEditor, SignIn, IdentityPlaceholder as IdentityFeaturePlaceholder } from '../features/identity';
 import { ListingsPlaceholder as ListingsFeaturePlaceholder } from '../features/listings';
 import { SearchPlaceholder as SearchFeaturePlaceholder } from '../features/search';
 import { PageFrame, SegmentedControl } from '../shared/ui';
@@ -37,7 +37,7 @@ export function SignInPage() {
 export function AuthCallbackPage() {
   return (
     <RoutePage title="Authentication return">
-      <IdentityFeaturePlaceholder title="Authentication callback state" />
+      <MicrosoftCallback />
     </RoutePage>
   );
 }

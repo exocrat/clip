@@ -78,3 +78,33 @@ and [provider safety](provider-safety.md).
 - [Microsoft ID-token claims and authorization limits](https://learn.microsoft.com/en-us/entra/identity-platform/id-token-claims-reference)
 - [SES v2 SendEmail request/acceptance semantics](https://docs.aws.amazon.com/boto3/latest/reference/services/sesv2/client/send_email.html)
 - [SDK total-attempt configuration](https://docs.aws.amazon.com/boto3/latest/guide/retries.html)
+
+## Step11 browser implementation — 2026-10-24
+
+Under Aditya's verified Step11 plan, pin MSAL Browser5.26.0 for the existing
+Microsoft SPA code/PKCE flow. Fixed public client/common authority and exact
+registered callback origins; no new tenant allowlist or Graph data permission.
+The SDK supplies its standard OIDC defaults including offline_access in addition
+to the requested openid/profile/email. Actual consent, redirect and cleanup must
+be reviewed and observed before live enablement; no provider request occurred.
+
+Default public build flag VITE_MICROSOFT_SIGN_IN_ENABLED is false. The synthetic
+preview always disables Microsoft. Enabling a button does not wire or authorize
+a server/provider: reviewed real API/key/DB/TLS/proxy/provider gates still apply.
+The actual server alone validates claims/domain/nonce/cookie and creates a session.
+
+A fresh server attempt gives public nonce/expiry plus HttpOnly cookie. Browser
+stores only its random state/public nonce/expiry in CLIP's scoped session marker;
+MSAL owns its sessionStorage redirect artifacts. No CLIP cookie bearer or raw
+assertion is stored by application code or logged/server-persisted. Clear SDK
+cache before new starts and on completed/failed callback, and consume CLIP's
+marker before awaiting the response. Do not reuse SDK account/token cache or
+silently acquire/refresh credentials. Cleanup cannot promise crash/backups/browser
+storage erasure; actual SDK/browser artifact checks remain a live gate.
+
+Matching state/nonce and fresh expiry precede one assertion exchange; backend
+full verification is authoritative. Coalesce only in-flight callback work for
+React StrictMode, never replay a settled sign-in result after logout. Safe GET
+session recovery uses the existing generation fence. Callback strips response
+query/fragment and the app uses no-referrer. Provider diagnostics stay out of UI/
+logs. No global Microsoft logout, live call or deployment is approved here.

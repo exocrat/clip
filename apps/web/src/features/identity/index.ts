@@ -5,3 +5,5 @@ export { IdentityProvider, useIdentity } from './session';
 export { SignIn, IdentitySessionControl } from './SignIn';
 
 export { ContactsEditor } from './ContactsEditor';
+
+export { MicrosoftCallback } from './MicrosoftSignIn';

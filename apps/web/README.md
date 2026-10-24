@@ -53,8 +53,8 @@ Open `http://127.0.0.1:4173` and stop the foreground process with Ctrl+C. Build
 first; preview serves only the generated local assets and does not deploy them.
 
 These commands need no AWS credentials, external accounts, or production
-endpoints. The current scaffold does not read frontend environment variables
-or call an application API. `npm ci` downloads packages in the committed lockfile
+endpoints. Identity reads its documented public build flag and calls the reviewed
+same-origin API when configured. `npm ci` downloads packages in the committed lockfile
 from the configured npm registry.
 
 ## Identity first browser checkpoint — explicit local synthetic mode
@@ -131,3 +131,37 @@ one field also preserves unfinished edits in the other fields.
 It uses no browser storage for contacts and never accepts an actor ID from the
 URL. Human desktop/portrait/landscape and actual-device checks remain required.
 Microsoft callback remains the next unimplemented Step11 UI scope.
+
+## Microsoft sign-in/callback checkpoint
+
+The pinned MSAL Browser5.26.0 adapter now backs the existing Microsoft button and
+`/auth/callback`. It uses the reviewed public client/common authority, server
+nonce plus SDK state/PKCE, one-shot server exchange, SDK cache cleanup, safe
+failure and explicit current-session recovery. Actual regular-account eligibility
+and cookie issuance remain server-authoritative. There is no cached-token reuse
+or automatic credential retry; logout revokes CLIP's session only.
+
+Public build setting `VITE_MICROSOFT_SIGN_IN_ENABLED` defaults false. It is never
+a secret or authorization credential. Exact permitted callback origins are
+`http://localhost:5173` and `https://clip-iisc.site`;127.0.0.1 is not a registered
+Microsoft callback. The identity-preview mode unconditionally disables Microsoft,
+even if the flag is set. No current runtime/provider activation is authorized.
+Do not enable a live flow until the separately reviewed actual API/provider/
+permissions/TLS/proxy/key/DB configuration and test plan are ready.
+
+In the synthetic preview, sign out to see the disabled **Continue with Microsoft**
+button. Open `/auth/callback` to inspect the safe unavailable/no-active-attempt
+screen, Back to sign in and Check sign-in status. The last action uses only a
+safe current-session read; it cannot repeat the assertion exchange. If an existing
+temporary session is recovered it says current CLIP session, not IISc proof.
+Inspect desktop/phone portrait/landscape. These are local UI checks, not actual
+Microsoft acceptance. Native phone keyboard/provider/cache/PKCE checks stay open.
+
+MSAL's redirect cache uses sessionStorage and its standard defaults include
+OIDC offline_access; these SDK artifacts are cleared around the callback and
+never copied to CLIP's app storage. CLIP stores only public state/nonce/expiry in
+its own one-shot marker. No client secret, Graph data scope, raw-token logging,
+CLIP bearer localStorage or automatic silent acquisition. Referrer metadata and
+callback response URLs are suppressed/cleaned. See the [reviewed provider
+mechanism](../../docs/decisions/identity-provider-setup.md#step11-browser-implementation--2026-10-24)
+and [checkpoint evidence](../../docs/evaluation/identity/id-01-step-11/microsoft-checkpoint.md).

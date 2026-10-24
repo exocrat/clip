@@ -211,3 +211,15 @@ time). Activation, password reset and password verification share the same
 normalization. The backend enforces the limit; the UI provides matching guidance.
 Existing longer passwords remain valid. Hashing/session/lifetime policy is
 unchanged. See [temporary authentication](../docs/decisions/temporary-authentication-storage.md).
+
+## Step11 browser Microsoft composition
+
+The [browser implementation mechanism](../docs/decisions/identity-provider-setup.md#step11-browser-implementation--2026-10-24)
+keeps the registered code/PKCE flow and server-bound nonce/cookie/session contract.
+MSAL validates its response; application state/nonce/expiry checks precede one
+POST /auth/microsoft/sessions. These client checks never replace backend signature,
+issuer/audience/domain/cookie/nonce checks. No HTTP/schema or eligibility-policy
+change. Server never logs/persists the assertion; browser SDK redirect artifacts
+are transient under its session cache with explicit cleanup, not a CLIP bearer
+store. No cached-token/silent-auth fallback or automatic exchange retry. Real
+provider/cache/browser evidence remains required before readiness acceptance.
