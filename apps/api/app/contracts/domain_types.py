@@ -8,6 +8,7 @@ authorization, persistence, provider calls, retries, encryption, or cleanup.
 from __future__ import annotations
 
 import base64
+import re
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Annotated, Generic, Literal, TypeVar
@@ -251,8 +252,12 @@ class CipherEnvelope(ContractModel):
 
     protocol_id: str
     protocol_version: str
-    envelope_version: int = Field(ge=1)
+    envelope_version: int = Field(ge=1, le=2)
     sdk_message_type: Literal["ciphertext", "prekey_bundle", "retry_request"]
+    sdk_client_message_id: str | None = Field(
+        default=None, min_length=1, max_length=128
+    )
+    recovery_for_entry_id: UUID | None = None
     client_timestamp_ms: int = Field(ge=0, le=9_007_199_254_740_991, strict=True)
     sender_key_version: int | None = Field(default=None, ge=1)
     recipient_key_version: int | None = Field(default=None, ge=1)
@@ -264,7 +269,7 @@ class CipherEnvelope(ContractModel):
         if (
             self.protocol_id != "open-e2ee-signal"
             or self.protocol_version != "13.0.0"
-            or self.envelope_version != 1
+            or self.envelope_version not in {1, 2}
         ):
             raise ValueError("unsupported conversation protocol or envelope version")
         try:
@@ -280,7 +285,13 @@ class CipherEnvelope(ContractModel):
             self.sender_key_version is not None
             and self.recipient_key_version is not None
         )
-        if self.sdk_message_type == "retry_request":
+        recovery_suffix = None
+        if self.envelope_version == 2 and self.sdk_client_message_id is not None:
+            recovery_suffix = self.sdk_client_message_id.split(":", 1)[1:]
+        is_null_recovery = bool(
+            recovery_suffix and recovery_suffix[0].startswith("null")
+        )
+        if self.sdk_message_type == "retry_request" or is_null_recovery:
             if (
                 self.sender_key_version is not None
                 or self.recipient_key_version is not None
@@ -290,6 +301,50 @@ class CipherEnvelope(ContractModel):
                 )
         elif not has_versions:
             raise ValueError("encrypted SDK envelopes require both key versions")
+        if self.envelope_version == 1:
+            if self.recovery_for_entry_id is not None:
+                raise ValueError("legacy envelopes cannot identify a recovery target")
+        else:
+            if self.sdk_client_message_id is None:
+                raise ValueError("v2 envelopes require the SDK client message ID")
+            try:
+                sdk_id_bytes = self.sdk_client_message_id.encode("ascii")
+            except UnicodeEncodeError as exc:
+                raise ValueError("SDK client message ID must be ASCII") from exc
+            if len(sdk_id_bytes) > 128 or any(
+                byte < 32 or byte > 126 for byte in sdk_id_bytes
+            ):
+                raise ValueError(
+                    "SDK client message ID must be bounded printable ASCII"
+                )
+            recovery_id = re.fullmatch(
+                r"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})"
+                r"(?::(retry-request|resend|null)(?::([2-9]|[1-9][0-9]+))?)?",
+                self.sdk_client_message_id,
+            )
+            if recovery_id is None:
+                raise ValueError("SDK client message ID has an unsupported format")
+            if (
+                recovery_id.group(3)
+                and int(recovery_id.group(3)) > 9_007_199_254_740_991
+            ):
+                raise ValueError("recovery attempt exceeds the SDK safe integer range")
+            is_recovery = recovery_id.group(2) is not None
+            if is_recovery != (self.recovery_for_entry_id is not None):
+                raise ValueError("recovery SDK IDs must bind an original entry")
+            if not is_recovery and self.sdk_message_type == "retry_request":
+                raise ValueError("retry requests must use a recovery SDK ID")
+            if not is_recovery and UUID(recovery_id.group(1)).version != 4:
+                raise ValueError("ordinary v2 SDK IDs must be UUIDv4")
+            if is_recovery and recovery_id.group(2) == "retry-request":
+                if self.sdk_message_type != "retry_request":
+                    raise ValueError(
+                        "retry-request IDs require retry request envelopes"
+                    )
+            elif is_recovery and self.sdk_message_type == "retry_request":
+                raise ValueError(
+                    "only retry-request IDs may use retry request envelopes"
+                )
         return self
 
 
@@ -621,20 +676,56 @@ class ConversationEntry(ContractModel):
     sender_user_id: UserId
     created_at: UtcInstant
     envelope: CipherEnvelope | None = None
+    recovery_target: RecoveryTarget | None = None
     content_deleted: bool = False
 
     @model_validator(mode="after")
     def validate_entry_envelope_kind(self) -> ConversationEntry:
         if self.envelope is None:
+            if self.recovery_target is not None:
+                raise ValueError("recovery targets require a retained envelope")
             return self
         sdk_type = self.envelope.sdk_message_type
-        if self.kind == "protocol_control" and sdk_type != "retry_request":
-            raise ValueError("protocol controls require an SDK retry request")
+        if self.kind == "protocol_control":
+            if self.envelope.envelope_version == 1:
+                if sdk_type != "retry_request" or self.recovery_target is not None:
+                    raise ValueError("legacy protocol controls require a retry request")
+            elif (
+                self.envelope.recovery_for_entry_id is None
+                or self.recovery_target is None
+            ):
+                raise ValueError(
+                    "protocol controls require a stored v2 recovery target"
+                )
+        if self.kind != "protocol_control" and (
+            self.envelope.recovery_for_entry_id is not None
+            or self.recovery_target is not None
+        ):
+            raise ValueError("only protocol controls may identify a recovery target")
+        if (
+            self.kind == "protocol_control"
+            and sdk_type == "retry_request"
+            and self.envelope.envelope_version == 2
+        ):
+            if (
+                self.envelope.sdk_client_message_id is None
+                or not self.envelope.sdk_client_message_id.endswith(":retry-request")
+            ):
+                raise ValueError("retry requests require a retry-request SDK ID")
         if self.kind == "message" and sdk_type not in {"ciphertext", "prekey_bundle"}:
             raise ValueError("messages require encrypted SDK content")
         if self.kind == "contact_share" and sdk_type != "ciphertext":
             raise ValueError("contact shares require encrypted SDK content")
         return self
+
+
+class RecoveryTarget(ContractModel):
+    """Stored original entry details used to restore recovered content in place."""
+
+    entry_id: UUID
+    sequence: int = Field(ge=1)
+    sender_user_id: UserId
+    created_at: UtcInstant
 
 
 class EntryPage(ContractModel):
@@ -653,16 +744,22 @@ class EntryQuery(ContractModel):
 
 
 class MessageRequest(ContractModel):
-    """OpenE2EE message/control envelope plus stable retry key."""
+    """OpenE2EE envelope plus a UUIDv4 CLIP write identity."""
 
     envelope: CipherEnvelope
     operation_id: OperationId
 
     @model_validator(mode="after")
     def validate_operation_id(self) -> MessageRequest:
-        """Require the SDK retry key to be the contract's UUIDv4 operation ID."""
+        """Keep v1's shared ID compatible and v2's API ID independently typed."""
         if self.operation_id.version != 4:
             raise ValueError("operation_id must be UUIDv4")
+        if (
+            self.envelope.envelope_version == 1
+            and self.envelope.sdk_client_message_id
+            not in {None, str(self.operation_id)}
+        ):
+            raise ValueError("v1 SDK client ID must equal operation_id")
         return self
 
 

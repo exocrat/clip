@@ -64,8 +64,9 @@ visibility are recorded in the combined contract.
 The [Conversations contract](conversations.md) is the Step 8 thread, encrypted
 entry, read-state, offer, contact-share, notification-intent, and activity
 boundary; the combined registry records Step 9 operations and page connections.
-It preserves the acyclic origin-owner call direction; the crypto protocol and
-destructive cleanup order remain separate approval gates.
+It preserves the acyclic origin-owner call direction. OpenE2EE 13.0.0 and the
+v2 recovery transport are approved; browser recovery handling and the
+destructive cleanup order remain separate implementation/review gates.
 
 The owner-reviewed sources register each domain's HTTP operations and internal
 callables. Generation creates the four public modules and shared model module;

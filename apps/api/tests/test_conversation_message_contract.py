@@ -57,6 +57,11 @@ def test_message_request_requires_a_uuid_v4_retry_key():
             envelope=CipherEnvelope(**envelope()),
             operation_id="00000000-0000-0000-0000-000000000000",
         )
+    with pytest.raises(ValidationError):
+        MessageRequest(
+            envelope=CipherEnvelope(**envelope(sdk_client_message_id=str(uuid4()))),
+            operation_id=uuid4(),
+        )
 
 
 def test_retry_control_requires_null_key_references():
@@ -68,3 +73,65 @@ def test_retry_control_requires_null_key_references():
         )
     )
     assert control.sdk_message_type == "retry_request"
+
+
+def test_v2_sdk_id_and_recovery_target_are_typed_separately_from_operation_id():
+    operation_id = uuid4()
+    sdk_id = str(uuid4())
+    request = MessageRequest(
+        envelope=CipherEnvelope(
+            **envelope(
+                envelope_version=2,
+                sdk_client_message_id=sdk_id,
+            )
+        ),
+        operation_id=operation_id,
+    )
+    assert request.operation_id != request.envelope.sdk_client_message_id
+
+    for change in (
+        {"sdk_client_message_id": None},
+        {"sdk_client_message_id": "not-an-sdk-id"},
+        {"sdk_client_message_id": f"{uuid4()}:{'x' * 100}"},
+        {"sdk_client_message_id": f"{uuid4()}:resend:9007199254740992"},
+        {
+            "sdk_client_message_id": f"{uuid4()}:retry-request",
+            "sdk_message_type": "retry_request",
+            "sender_key_version": None,
+            "recipient_key_version": None,
+        },
+    ):
+        candidate = envelope(
+            envelope_version=2,
+            sdk_client_message_id=str(uuid4()),
+        )
+        candidate.update(change)
+        with pytest.raises(ValidationError):
+            CipherEnvelope(**candidate)
+
+
+def test_v2_retry_and_null_controls_require_recovery_target_and_null_key_refs():
+    family_id = uuid4()
+    original_entry_id = uuid4()
+    retry = CipherEnvelope(
+        **envelope(
+            envelope_version=2,
+            sdk_message_type="retry_request",
+            sdk_client_message_id=f"{family_id}:retry-request",
+            recovery_for_entry_id=original_entry_id,
+            sender_key_version=None,
+            recipient_key_version=None,
+        )
+    )
+    null = CipherEnvelope(
+        **envelope(
+            envelope_version=2,
+            sdk_client_message_id=f"{family_id}:null",
+            recovery_for_entry_id=original_entry_id,
+            sender_key_version=None,
+            recipient_key_version=None,
+        )
+    )
+    assert (
+        retry.recovery_for_entry_id == null.recovery_for_entry_id == original_entry_id
+    )

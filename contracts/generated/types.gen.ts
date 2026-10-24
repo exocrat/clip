@@ -128,6 +128,14 @@ export type CipherEnvelope = {
      */
     recipient_key_version?: number | null;
     /**
+     * Recovery For Entry Id
+     */
+    recovery_for_entry_id?: string | null;
+    /**
+     * Sdk Client Message Id
+     */
+    sdk_client_message_id?: string | null;
+    /**
      * Sdk Message Type
      */
     sdk_message_type: 'ciphertext' | 'prekey_bundle' | 'retry_request';
@@ -237,6 +245,7 @@ export type ConversationEntry = {
      * Kind
      */
     kind: 'message' | 'protocol_control' | 'contact_share';
+    recovery_target?: RecoveryTarget | null;
     /**
      * Sender User Id
      */
@@ -1026,7 +1035,7 @@ export type MemberPreKeyBundle = {
 /**
  * MessageRequest
  *
- * OpenE2EE message/control envelope plus stable retry key.
+ * OpenE2EE envelope plus a UUIDv4 CLIP write identity.
  */
 export type MessageRequest = {
     envelope: CipherEnvelope;
@@ -1547,6 +1556,30 @@ export type ReadState = {
      * Own Last Read Sequence
      */
     own_last_read_sequence: number;
+};
+
+/**
+ * RecoveryTarget
+ *
+ * Stored original entry details used to restore recovered content in place.
+ */
+export type RecoveryTarget = {
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Entry Id
+     */
+    entry_id: string;
+    /**
+     * Sender User Id
+     */
+    sender_user_id: string;
+    /**
+     * Sequence
+     */
+    sequence: number;
 };
 
 /**

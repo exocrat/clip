@@ -3,10 +3,12 @@
 **Date:** 2026-10-24
 **Origin:** CN-01 Steps 6/8/9, isolated OpenE2EE recovery integration.
 **Status:** Rahul verified the detailed revision on 2026-10-24 06:33:47 UTC.
-The format and behavior below are approved for implementation. Normal
-affected-owner code review remains part of the PR process. Typed contracts,
-generated outputs, migrations and runtime changes are still pending; the
-current runtime implements envelope v1.
+The format and behavior below are approved for implementation. The recovery
+storage migration, typed contracts, generated outputs and PostgreSQL message
+provider now support the v2 transport and preserve v1 reads. Normal
+affected-owner code review remains part of the PR process. Client SDK recovery
+handling and browser integration remain pending; automatic recovery is not yet
+available end to end.
 
 ## Problem and SDK evidence
 

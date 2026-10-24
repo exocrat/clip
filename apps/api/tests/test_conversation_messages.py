@@ -139,6 +139,33 @@ def message_request(
     return MessageRequest(envelope=envelope, operation_id=operation_id or uuid4())
 
 
+def recovery_request(
+    *,
+    operation_id: UUID | None = None,
+    sdk_id: str,
+    recovery_for_entry_id: UUID,
+    sdk_type: str = "ciphertext",
+    payload: bytes = b"opaque-recovery-bytes",
+    timestamp: int = 10,
+    sender_version: int | None = 1,
+    recipient_version: int | None = 1,
+) -> MessageRequest:
+    """Build a synthetic v2 SDK control with a separate CLIP operation ID."""
+    envelope = CipherEnvelope(
+        protocol_id="open-e2ee-signal",
+        protocol_version="13.0.0",
+        envelope_version=2,
+        sdk_message_type=sdk_type,
+        sdk_client_message_id=sdk_id,
+        recovery_for_entry_id=recovery_for_entry_id,
+        client_timestamp_ms=timestamp,
+        sender_key_version=sender_version,
+        recipient_key_version=recipient_version,
+        payload_base64=b64encode(payload).decode("ascii"),
+    )
+    return MessageRequest(envelope=envelope, operation_id=operation_id or uuid4())
+
+
 def test_wanted_request_author_can_send_and_retrieve_participant_messages():
     async def scenario(pool):
         author, responder, _request, conversation, _author_key, _responder_key = (
@@ -285,6 +312,134 @@ def test_message_retry_ordering_private_controls_and_display_read_state():
                 (conversation,),
             )
             assert (await cursor.fetchone())[0] == before_activity
+
+    run_scenario(scenario)
+
+
+def test_v2_recovery_controls_bind_original_and_return_stored_target():
+    async def scenario(pool):
+        author, responder, _request, conversation, _author_key, _responder_key = (
+            await seed_thread(pool)
+        )
+        operations = PostgresMessageOperations(pool)
+        original = await operations.submit_message(
+            caller(author), conversation, message_request(timestamp=1234)
+        )
+        family_id = uuid4()
+        request = recovery_request(
+            sdk_id=f"{family_id}:retry-request",
+            recovery_for_entry_id=original.entry.entry_id,
+            sdk_type="retry_request",
+            sender_version=None,
+            recipient_version=None,
+            payload=b"opaque-retry-metadata",
+        )
+        requested = await operations.submit_message(
+            caller(responder), conversation, request
+        )
+        assert requested.entry.sequence == 2
+        assert requested.entry.kind == "protocol_control"
+        assert (
+            requested.entry.envelope.sdk_client_message_id
+            == request.envelope.sdk_client_message_id
+        )
+        assert requested.entry.envelope.recovery_for_entry_id == original.entry.entry_id
+        assert requested.entry.recovery_target.entry_id == original.entry.entry_id
+        assert requested.entry.recovery_target.sequence == original.entry.sequence
+        assert requested.entry.recovery_target.sender_user_id == author
+
+        replay = await operations.submit_message(
+            caller(responder), conversation, request
+        )
+        assert replay.replayed is True
+        assert replay.entry == requested.entry
+
+        resend = recovery_request(
+            sdk_id=f"{family_id}:resend",
+            recovery_for_entry_id=original.entry.entry_id,
+            timestamp=1234,
+            payload=b"opaque-resend-envelope",
+        )
+        sent_resend = await operations.submit_message(
+            caller(author), conversation, resend
+        )
+        assert sent_resend.entry.sequence == 3
+        assert sent_resend.entry.kind == "protocol_control"
+        assert sent_resend.entry.recovery_target.entry_id == original.entry.entry_id
+
+        null = recovery_request(
+            sdk_id=f"{family_id}:null",
+            recovery_for_entry_id=original.entry.entry_id,
+            sender_version=None,
+            recipient_version=None,
+            payload=b"opaque-null-envelope",
+        )
+        sent_null = await operations.submit_message(caller(author), conversation, null)
+        assert sent_null.entry.sequence == 4
+        assert sent_null.entry.recovery_target.entry_id == original.entry.entry_id
+
+        recipient_page = await operations.read_entries(
+            caller(responder), conversation, EntryQuery()
+        )
+        sender_page = await operations.read_entries(
+            caller(author), conversation, EntryQuery()
+        )
+        assert [entry.sequence for entry in recipient_page.items] == [1, 3, 4]
+        assert [entry.sequence for entry in sender_page.items] == [1, 2]
+
+    run_scenario(scenario)
+
+
+def test_v2_recovery_rejects_wrong_sender_target_and_reused_sdk_id():
+    async def scenario(pool):
+        author, responder, _request, conversation, _author_key, _responder_key = (
+            await seed_thread(pool)
+        )
+        operations = PostgresMessageOperations(pool)
+        original = await operations.submit_message(
+            caller(author), conversation, message_request(timestamp=1234)
+        )
+        family_id = uuid4()
+        first_request = recovery_request(
+            sdk_id=f"{family_id}:retry-request",
+            recovery_for_entry_id=original.entry.entry_id,
+            sdk_type="retry_request",
+            sender_version=None,
+            recipient_version=None,
+        )
+        with pytest.raises(PublicError) as wrong_requester:
+            await operations.submit_message(caller(author), conversation, first_request)
+        assert wrong_requester.value.spec.status == 409
+
+        accepted = await operations.submit_message(
+            caller(responder), conversation, first_request
+        )
+        wrong_target = recovery_request(
+            sdk_id=f"{uuid4()}:retry-request",
+            recovery_for_entry_id=uuid4(),
+            sdk_type="retry_request",
+            sender_version=None,
+            recipient_version=None,
+        )
+        with pytest.raises(PublicError) as missing_target:
+            await operations.submit_message(
+                caller(responder), conversation, wrong_target
+            )
+        assert missing_target.value.spec.status == 409
+
+        changed_operation = recovery_request(
+            sdk_id=first_request.envelope.sdk_client_message_id,
+            recovery_for_entry_id=original.entry.entry_id,
+            sdk_type="retry_request",
+            sender_version=None,
+            recipient_version=None,
+        )
+        with pytest.raises(PublicError) as duplicate_sdk_id:
+            await operations.submit_message(
+                caller(responder), conversation, changed_operation
+            )
+        assert duplicate_sdk_id.value.spec.status == 409
+        assert accepted.entry.sequence == 2
 
     run_scenario(scenario)
 

@@ -178,11 +178,11 @@ def main() -> int:
                 "pytest",
                 "apps/api/tests/test_origin_retirement.py",
                 "apps/api/tests/test_thread_creation.py",
+                "apps/api/tests/test_conversation_recovery_storage.py",
                 "apps/api/tests/test_conversation_messages.py",
                 "apps/api/tests/test_conversation_message_contract.py",
                 "apps/api/tests/test_conversation_message_routes.py",
                 "apps/api/tests/test_conversation_directory.py",
-                "apps/api/tests/test_conversation_recovery_storage.py",
                 "-q",
                 "-W",
                 "error",
@@ -196,7 +196,7 @@ def main() -> int:
         output = (result.stdout + result.stderr).replace(password, "[REDACTED]")
         if result.returncode:
             raise RuntimeError(
-                f"Conversations integration tests failed: {output[-4000:]}"
+                f"Conversations integration tests failed: {output[-12000:]}"
             )
         print(output.strip())
         print("PASS: focused Conversations operations on fresh PostgreSQL 18.6")

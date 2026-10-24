@@ -223,39 +223,53 @@ no success is reported for a partial message.
 
 `CipherEnvelope` carries the OpenE2EE relay fields needed to reconstruct an
 incoming SDK `Envelope`: `sdk_message_type`, `client_timestamp_ms`, and
-`payload_base64`, alongside CLIP's protocol/version fields. For encrypted
-`ciphertext` and `prekey_bundle` messages, both key-version references are
-required. The client timestamp is milliseconds, is set before encryption,
-and must match the SDK timestamp and the timestamp bound into the encrypted
-message. It exists only for SDK replay/retry matching; it is not authoritative
-for sequence, participant activity, retention, or authorization. CLIP's
-`operation_id` is the SDK `clientMessageId`, so retries reuse both exactly.
-The server supplies the SDK envelope's sender, recipient, entry ID, and
-server-received timestamp from authenticated membership and the stored entry.
+`payload_base64`, alongside CLIP's protocol/version fields. The v2 envelope
+also carries the exact `sdk_client_message_id` and, for recovery traffic, the
+original `recovery_for_entry_id`. For ordinary v2 messages, the SDK ID is a
+UUIDv4; for recovery it has the SDK's family suffix and is distinct from the
+UUIDv4 `operation_id` used for CLIP API idempotency. Both IDs are stored and
+independently unique per sender. Existing v1 messages remain readable and use
+their operation ID as their SDK ID. For encrypted `ciphertext` and
+`prekey_bundle` messages, both key-version references are required except the
+SDK's `null` recovery response, which has none. The client timestamp is
+milliseconds, is set before encryption, and must match the SDK timestamp and
+the timestamp bound into encrypted message content. It exists only for SDK
+replay/retry matching; it is not authoritative for sequence, participant
+activity, retention, or authorization. The server supplies the SDK envelope's
+sender, recipient, transport entry ID and server-received timestamp from
+authenticated membership and the stored entry.
 
-OpenE2EE `retry_request` is a protocol control envelope, not an encrypted
-chat message. It is accepted through the same member-only message submission
-operation and ordered entry stream, but returned with `kind=protocol_control`;
-the server records the other member as its recipient and returns it only to
-that recipient. The sender cannot retrieve its own control entry. It does not
-create unread text counts or notification intents, and the server does not parse its opaque
-`payload_base64`. Its key-version fields are null. Its SDK payload is
-unencrypted and may contain protocol retry metadata, so it is treated as
-sensitive: never log or expose it outside the two members. The control entry
-uses the normal server sequence and server activity timestamp, is subject to
-the same no-write marker, rate limiting and content-retention rules, and is
-not presented as a user message. Clients pass it to the SDK's retry-request
-receive path rather than decrypting or rendering it. `sender_key` and
-`unidentified_sender` are not accepted by CLIP's one-device, 1:1 MVP.
+SDK recovery requests, encrypted resends and null responses are ordered
+`protocol_control` entries, sent through the member-only message operation.
+The server stores the SDK ID, binds each control to the original retained
+message, and returns a server-derived `recovery_target` containing that
+original entry's ID, sequence, sender and server timestamp. It does not use a
+currently open thread or a client-supplied target to correlate recovery.
+Recovery families are bound to the original recipient, conversation and
+message; only that recipient may request recovery, and only the original
+sender may answer an accepted request attempt. Request controls are routed
+only to the original sender; resend/null controls only to the original
+recipient. The sender cannot retrieve controls addressed to the other member.
+No control creates unread text counts or notification intents. The server
+never parses or logs opaque SDK payloads. Retry requests and null responses
+have no application key-version references; a resend preserves the original
+message's SDK timestamp and sender/recipient key versions. Controls use the
+normal server sequence and activity timestamp, obey the no-write marker,
+rate limits and content retention, and are not presented as separate user
+messages. Clients use the SDK's batch recovery receive path, persist recovered
+content at the original chat position, then acknowledge SDK receipt. `sender_key`
+and `unidentified_sender` are not accepted by CLIP's one-device, 1:1 MVP.
 
-**Approved recovery revision (2026-10-24; implementation pending):** the UUID-to-SDK-ID equality
-described in this v1 contract supports ordinary sends but is incompatible
-with the pinned SDK's automatic retry-family IDs. The
+**Approved recovery revision (2026-10-24):** the original v1 UUID-to-SDK-ID
+equality supports old ordinary sends but is incompatible with the pinned
+SDK's automatic retry-family IDs. The
 [approved v2 recovery transport](../docs/decisions/conversation-recovery-transport.md)
 separates those IDs, preserves them on retrieval, links recovery responses
 to the original chat entry, and defines authorization, deduplication and
-rollout checks. Rahul verified its detailed shape; typed contracts and
-runtime changes remain pending. Automatic SDK recovery remains incomplete;
+rollout checks. Rahul verified its detailed shape. The typed contracts,
+generated schemas and PostgreSQL message provider now support v2 transport;
+browser SDK recovery handling remains pending. Automatic SDK recovery is not
+complete until that client path is implemented and tested;
 v1 retry-control storage alone is not evidence of recovery support.
 
 For every OpenE2EE message or retry-control send, the client generates a fresh

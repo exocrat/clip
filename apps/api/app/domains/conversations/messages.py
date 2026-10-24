@@ -1,6 +1,7 @@
 """Conversations-owned persistence for ordered encrypted entries and read state."""
 
 import base64
+import re
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -8,6 +9,7 @@ from typing import Any, cast
 from uuid import UUID, uuid4
 
 from psycopg import AsyncConnection, Error as PsycopgError
+from psycopg.errors import IntegrityError
 from psycopg_pool import AsyncConnectionPool, PoolTimeout
 
 from app.contracts.domain_types import (
@@ -72,10 +74,28 @@ class PostgresMessageOperations:
             or base64.b64encode(payload).decode("ascii") != envelope.payload_base64
             or envelope.protocol_id != "open-e2ee-signal"
             or envelope.protocol_version != "13.0.0"
-            or envelope.envelope_version != 1
+            or envelope.envelope_version not in {1, 2}
         ):
             raise PublicError(ERRORS[422], (FieldError("body", "invalid_envelope"),))
         return payload
+
+    @staticmethod
+    def _recovery_identity(envelope: CipherEnvelope) -> tuple[str, UUID, int] | None:
+        """Parse an SDK recovery ID into its kind, family UUID and attempt."""
+        if envelope.recovery_for_entry_id is None:
+            return None
+        match = re.fullmatch(
+            r"(?P<family>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})"
+            r":(?P<kind>retry-request|resend|null)(?::(?P<attempt>[2-9]|[1-9][0-9]+))?",
+            envelope.sdk_client_message_id or "",
+        )
+        if match is None:
+            raise PublicError(ERRORS[422], (FieldError("body", "invalid_recovery_id"),))
+        return (
+            match.group("kind"),
+            UUID(match.group("family")),
+            int(match.group("attempt") or "1"),
+        )
 
     @staticmethod
     async def _require_member(
@@ -122,13 +142,17 @@ class PostgresMessageOperations:
             "payload.protocol_id, payload.protocol_version, payload.envelope_version, "
             "payload.sdk_message_type, payload.client_timestamp_ms, "
             "payload.sender_key_version_id, payload.recipient_key_version_id, payload.envelope, "
-            "sender_key.version, recipient_key.version "
+            "sender_key.version, recipient_key.version, entry.sdk_client_message_id, "
+            "entry.recovery_for_entry_id, recovery_original.sequence, "
+            "recovery_original.sender_id, recovery_original.created_at "
             "FROM conversations.entries AS entry "
             "LEFT JOIN conversations.encrypted_payloads AS payload ON payload.entry_id = entry.id "
             "LEFT JOIN conversations.public_key_versions AS sender_key "
             "ON sender_key.id = payload.sender_key_version_id "
             "LEFT JOIN conversations.public_key_versions AS recipient_key "
             "ON recipient_key.id = payload.recipient_key_version_id "
+            "LEFT JOIN conversations.entries AS recovery_original "
+            "ON recovery_original.id = entry.recovery_for_entry_id "
             "WHERE entry.sender_id = %s AND entry.client_operation_id = %s",
             (user_id, operation_id),
         )
@@ -156,6 +180,11 @@ class PostgresMessageOperations:
             payload,
             sender_key_version,
             recipient_key_version,
+            sdk_client_message_id,
+            recovery_for_entry_id,
+            recovery_sequence,
+            recovery_sender_id,
+            recovery_created_at,
         ) = row
         envelope = None
         if payload is not None and content_deleted_at is None:
@@ -165,6 +194,8 @@ class PostgresMessageOperations:
                 envelope_version=envelope_version,
                 sdk_message_type=sdk_message_type,
                 client_timestamp_ms=client_timestamp_ms,
+                sdk_client_message_id=sdk_client_message_id,
+                recovery_for_entry_id=recovery_for_entry_id,
                 sender_key_version=sender_key_version,
                 recipient_key_version=recipient_key_version,
                 payload_base64=base64.b64encode(bytes(payload)).decode("ascii"),
@@ -176,6 +207,21 @@ class PostgresMessageOperations:
             sender_user_id=sender_id,
             created_at=created_at,
             envelope=envelope,
+            recovery_target=(
+                {
+                    "entry_id": recovery_for_entry_id,
+                    "sequence": recovery_sequence,
+                    "sender_user_id": recovery_sender_id,
+                    "created_at": recovery_created_at,
+                }
+                if (
+                    payload is not None
+                    and content_deleted_at is None
+                    and recovery_for_entry_id is not None
+                    and recovery_created_at is not None
+                )
+                else None
+            ),
             content_deleted=content_deleted_at is not None,
         )
 
@@ -188,9 +234,14 @@ class PostgresMessageOperations:
         """Write one opaque entry atomically and replay only exact live retries."""
         caller.require_current()
         payload = self._payload(request.envelope)
+        recovery = self._recovery_identity(request.envelope)
+        recovery_kind = recovery[0] if recovery is not None else None
+        recovery_family_id = recovery[1] if recovery is not None else None
+        recovery_attempt = recovery[2] if recovery is not None else None
         kind = (
             "protocol_control"
-            if request.envelope.sdk_message_type == "retry_request"
+            if recovery is not None
+            or request.envelope.sdk_message_type == "retry_request"
             else "message"
         )
         try:
@@ -209,10 +260,107 @@ class PostgresMessageOperations:
                         "SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))",
                         (f"message:{caller.user_id}:{request.operation_id}",),
                     )
+                    prior = await self._entry_by_operation(
+                        connection, caller.user_id, request.operation_id
+                    )
+                    expected_recipient = (
+                        other_member if kind == "protocol_control" else None
+                    )
+                    sdk_client_message_id = (
+                        request.envelope.sdk_client_message_id
+                        if request.envelope.envelope_version == 2
+                        else str(request.operation_id)
+                    )
+                    if prior is not None:
+                        same_request = (
+                            prior[1] == conversation_id
+                            and prior[3] == kind
+                            and prior[5] == expected_recipient
+                            and prior[7] is None
+                            and prior[8] == request.envelope.protocol_id
+                            and prior[9] == request.envelope.protocol_version
+                            and prior[10] == request.envelope.envelope_version
+                            and prior[11] == request.envelope.sdk_message_type
+                            and prior[12] == request.envelope.client_timestamp_ms
+                            and prior[16] == request.envelope.sender_key_version
+                            and prior[17] == request.envelope.recipient_key_version
+                            and bytes(prior[15]) == payload
+                            and prior[18] == sdk_client_message_id
+                            and prior[19] == request.envelope.recovery_for_entry_id
+                        )
+                        if not same_request:
+                            raise self._conflict()
+                        return MessageWriteResult(self._entry_from_row(prior), True)
+
+                    recovery_requester_id = None
+                    new_entry_id = uuid4()
+                    if recovery is not None:
+                        cursor = await connection.execute(
+                            "SELECT original.id, original.sequence, original.sender_id, "
+                            "original.created_at, original.content_deleted_at, original.kind, "
+                            "original.conversation_id FROM conversations.entries AS original "
+                            "WHERE original.id = %s",
+                            (request.envelope.recovery_for_entry_id,),
+                        )
+                        original = await cursor.fetchone()
+                        if (
+                            original is None
+                            or original[6] != conversation_id
+                            or original[5] != "message"
+                            or original[4] is not None
+                        ):
+                            raise self._conflict(
+                                "recovery_for_entry_id", "invalid_target"
+                            )
+                        original_sender_id = original[2]
+                        recovery_requester_id = (
+                            caller.user_id
+                            if recovery_kind == "retry-request"
+                            else other_member
+                        )
+                        if recovery_kind == "retry-request":
+                            if original_sender_id != other_member:
+                                raise self._conflict(
+                                    "recovery_for_entry_id", "invalid_target"
+                                )
+                            if recovery_attempt == 1:
+                                await connection.execute(
+                                    "INSERT INTO conversations.recovery_families "
+                                    "(requester_id, family_id, conversation_id, original_entry_id, first_request_entry_id) "
+                                    "VALUES (%s, %s, %s, %s, %s) ON CONFLICT DO NOTHING",
+                                    (
+                                        recovery_requester_id,
+                                        recovery_family_id,
+                                        conversation_id,
+                                        request.envelope.recovery_for_entry_id,
+                                        new_entry_id,
+                                    ),
+                                )
+                        else:
+                            if caller.user_id != original_sender_id:
+                                raise self._conflict(
+                                    "recovery_for_entry_id", "wrong_sender"
+                                )
+                            cursor = await connection.execute(
+                                "SELECT conversation_id, original_entry_id FROM conversations.recovery_families "
+                                "WHERE requester_id = %s AND family_id = %s",
+                                (recovery_requester_id, recovery_family_id),
+                            )
+                            family = await cursor.fetchone()
+                            if family != (
+                                conversation_id,
+                                request.envelope.recovery_for_entry_id,
+                            ):
+                                raise self._conflict(
+                                    "recovery_for_entry_id", "unknown_recovery"
+                                )
 
                     sender_key_id = None
                     recipient_key_id = None
-                    if request.envelope.sdk_message_type != "retry_request":
+                    if (
+                        recovery_kind not in {"retry-request", "null"}
+                        and request.envelope.sdk_message_type != "retry_request"
+                    ):
                         sender_version = request.envelope.sender_key_version
                         recipient_version = request.envelope.recipient_key_version
                         if sender_version is None or recipient_version is None:
@@ -231,61 +379,42 @@ class PostgresMessageOperations:
                             recipient_version,
                         )
 
-                    prior = await self._entry_by_operation(
-                        connection, caller.user_id, request.operation_id
-                    )
-                    if prior is not None:
-                        expected_recipient = (
-                            other_member if kind == "protocol_control" else None
-                        )
-                        same_request = (
-                            prior[1] == conversation_id
-                            and prior[3] == kind
-                            and prior[5] == expected_recipient
-                            and prior[7] is None
-                            and prior[8] == request.envelope.protocol_id
-                            and prior[9] == request.envelope.protocol_version
-                            and prior[10] == request.envelope.envelope_version
-                            and prior[11] == request.envelope.sdk_message_type
-                            and prior[12] == request.envelope.client_timestamp_ms
-                            and prior[13] == sender_key_id
-                            and prior[14] == recipient_key_id
-                            and bytes(prior[15]) == payload
-                        )
-                        if not same_request:
-                            raise self._conflict()
-                        return MessageWriteResult(self._entry_from_row(prior), True)
-
                     if blocked_at is not None:
                         raise self._conflict("conversation_id", "writes_disabled")
 
                     recipient_id = other_member if kind == "protocol_control" else None
                     cursor = await connection.execute(
                         "INSERT INTO conversations.entries "
-                        "(id, conversation_id, sequence, sender_id, client_operation_id, kind, recipient_id) "
-                        "VALUES (%s, %s, %s, %s, %s, %s, %s) "
-                        "RETURNING id, sequence, created_at",
+                        "(id, conversation_id, sequence, sender_id, client_operation_id, kind, recipient_id, "
+                        "sdk_client_message_id, recovery_for_entry_id, recovery_requester_id, "
+                        "recovery_family_id, recovery_attempt, recovery_kind) "
+                        "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) "
+                        "RETURNING id",
                         (
-                            uuid4(),
+                            new_entry_id,
                             conversation_id,
                             next_sequence,
                             caller.user_id,
                             request.operation_id,
                             kind,
                             recipient_id,
+                            sdk_client_message_id,
+                            request.envelope.recovery_for_entry_id,
+                            recovery_requester_id,
+                            recovery_family_id,
+                            recovery_attempt,
+                            recovery_kind,
                         ),
                     )
-                    inserted = await cursor.fetchone()
-                    if inserted is None:
+                    if await cursor.fetchone() is None:
                         raise self._unavailable()
-                    entry_id, sequence, created_at = inserted
                     await connection.execute(
                         "INSERT INTO conversations.encrypted_payloads "
                         "(entry_id, protocol_id, protocol_version, envelope_version, sdk_message_type, "
                         "client_timestamp_ms, sender_key_version_id, recipient_key_version_id, envelope) "
                         "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
                         (
-                            entry_id,
+                            new_entry_id,
                             request.envelope.protocol_id,
                             request.envelope.protocol_version,
                             request.envelope.envelope_version,
@@ -302,31 +431,18 @@ class PostgresMessageOperations:
                             conversation_id,
                             caller.user_id,
                             other_member,
-                            sequence,
+                            next_sequence,
                         )
-                    row = (
-                        entry_id,
-                        conversation_id,
-                        sequence,
-                        kind,
-                        caller.user_id,
-                        recipient_id,
-                        created_at,
-                        None,
-                        request.envelope.protocol_id,
-                        request.envelope.protocol_version,
-                        request.envelope.envelope_version,
-                        request.envelope.sdk_message_type,
-                        request.envelope.client_timestamp_ms,
-                        sender_key_id,
-                        recipient_key_id,
-                        payload,
-                        request.envelope.sender_key_version,
-                        request.envelope.recipient_key_version,
+                    saved = await self._entry_by_operation(
+                        connection, caller.user_id, request.operation_id
                     )
-                    return MessageWriteResult(self._entry_from_row(row), False)
+                    if saved is None:
+                        raise self._unavailable()
+                    return MessageWriteResult(self._entry_from_row(saved), False)
         except PublicError:
             raise
+        except IntegrityError:
+            raise self._conflict("operation_id", "recovery_conflict") from None
         except PsycopgError, PoolTimeout:
             raise self._unavailable() from None
 
@@ -421,13 +537,17 @@ class PostgresMessageOperations:
                         "payload.protocol_id, payload.protocol_version, payload.envelope_version, "
                         "payload.sdk_message_type, payload.client_timestamp_ms, "
                         "payload.sender_key_version_id, payload.recipient_key_version_id, payload.envelope, "
-                        "sender_key.version, recipient_key.version "
+                        "sender_key.version, recipient_key.version, entry.sdk_client_message_id, "
+                        "entry.recovery_for_entry_id, recovery_original.sequence, "
+                        "recovery_original.sender_id, recovery_original.created_at "
                         "FROM conversations.entries AS entry "
                         "LEFT JOIN conversations.encrypted_payloads AS payload ON payload.entry_id = entry.id "
                         "LEFT JOIN conversations.public_key_versions AS sender_key "
                         "ON sender_key.id = payload.sender_key_version_id "
                         "LEFT JOIN conversations.public_key_versions AS recipient_key "
                         "ON recipient_key.id = payload.recipient_key_version_id "
+                        "LEFT JOIN conversations.entries AS recovery_original "
+                        "ON recovery_original.id = entry.recovery_for_entry_id "
                         "WHERE entry.conversation_id = %s AND entry.sequence > %s "
                         "ORDER BY entry.sequence LIMIT %s",
                         (conversation_id, query.after_sequence, scan_limit),

@@ -223,36 +223,44 @@ origin_id,initiator_user_id,caller_role,counterparty_user_id,last_activity_at,
 own_last_read_sequence,unread_count,current_offer?}` where `caller_role` is
 `initiator` or `origin_owner` and `current_offer` is an optional
 `CurrentOfferSummary{offer_id,revision,amount_paise,status,updated_at}`;
-`ConversationEntry{entry_id,sequence,kind,sender_user_id,created_at,envelope?}`;
+`ConversationEntry{entry_id,sequence,kind,sender_user_id,created_at,envelope?,
+recovery_target?}`; `RecoveryTarget{entry_id,sequence,sender_user_id,created_at}`;
 and `CipherEnvelope{protocol_id,protocol_version,envelope_version,
-sdk_message_type,client_timestamp_ms,sender_key_version?,
-recipient_key_version?,payload_base64}`. Encrypted `ciphertext` and
-`prekey_bundle` envelopes require both key-version references; `retry_request`
-requires both to be null. Its unencrypted SDK payload is an opaque,
-member-only protocol control, not chat content. It gets an ordered
-`protocol_control` entry, routes only to the other member, creates no unread
-text count or notification, and is not rendered as a user message. The server
-does not parse or log it. `sender_key` and `unidentified_sender` are not
-supported in the 1:1 MVP. An entry after purge retains its ordering/header
-metadata and sets a content-deleted marker instead of an envelope. The server
-supplies actor/sender IDs, recipient IDs, SDK entry ID, server receive
-timestamp, sequence and authoritative activity timestamp. The client
-timestamp is SDK replay/retry metadata only and cannot authorize or set server
-sequence/activity/retention. `operation_id` is also the SDK
-`clientMessageId`. Payload/base64 fields are required and nonempty; unknown
+sdk_message_type,sdk_client_message_id?,recovery_for_entry_id?,
+client_timestamp_ms,sender_key_version?,recipient_key_version?,payload_base64}`.
+Version 1 remains readable and uses its API operation UUID as the SDK ID. In
+version 2, an ordinary SDK ID is UUIDv4 and is stored separately from the
+UUIDv4 API `operation_id`; recovery IDs preserve the SDK family/type/attempt
+suffix and bind the original entry. Those SDK IDs are also globally unique per
+sender. A v2 retry request has no key references. A resend carries the original
+timestamp and sender/recipient key versions. A null response has no
+application key references. Recovery entries are recipient-only
+`protocol_control` entries and the server returns the original's stored target
+details; ordinary entries cannot claim a recovery target. The SDK payload is
+opaque, member-only protocol data rather than user chat content. Recovery
+controls create no unread text count or notification and are never rendered as
+separate messages. The server does not parse or log them. `sender_key` and
+`unidentified_sender` are not supported in the 1:1 MVP. An entry after purge
+retains its ordering/header metadata and sets a content-deleted marker instead
+of an envelope. The server supplies actor/sender IDs, recipient IDs, transport
+entry ID, server receive timestamp, sequence and authoritative activity
+timestamp. The client timestamp is SDK replay/retry metadata only and cannot
+authorize or set server sequence/activity/retention. Payload/base64 fields are
+required and nonempty; unknown
 protocol metadata, invalid key-version combinations, null IDs, empty payloads,
 booleans-as-integers and oversized decoded bytes are rejected. Client writes
 carry a required UUIDv4 `operation_id` only on operations whose row declares
 it. OpenE2EE message/control IDs must be fresh and globally unique per sender;
 other operations use their separately declared retry scopes.
 
-The preceding entry/envelope shapes describe the current v1 declarations.
+The preceding entry/envelope shapes describe v1 compatibility and the v2 recovery fields.
 The [CN-01 recovery transport revision](../docs/decisions/conversation-recovery-transport.md)
-is an approved v2 correction awaiting implementation: SDK retry-family IDs are not UUIDs and must be
-stored/returned separately from CLIP UUID operation IDs. It also specifies
-original-message correlation and non-rendered recovery responses. Typed
-source, generated schemas and provider changes remain pending, with normal
-code review required; do not infer automatic recovery support from the v1 row.
+is the approved behavior: SDK retry-family IDs are stored and returned
+separately from CLIP UUID operation IDs, and recovery responses carry their
+server-resolved original-message context. The canonical types, generated
+schemas and PostgreSQL message provider now support v2 transport; SDK/browser
+recovery handling remains a later CN-01 checkpoint, and normal code review is
+still required.
 
 Read operations and monotonic read acknowledgements do not need an
 idempotency key. For keyed writes, equality means the same normalized typed
@@ -275,8 +283,8 @@ shared error envelope. Safe field codes never echo submitted values.
 |---|---|---|
 | GET /conversations — conversations_list_mine | `view=initiated\|origin_owner\|all` (default all), `origin_kind?`, `origin_id?`, `counterparty_user_id?`, `offer_status?` (`submitted\|withdrawn`), `offer_min_paise?`, `offer_max_paise?`, `sort=last_activity_desc\|offer_amount_asc\|offer_amount_desc`, page/page_size → `PageResult[ConversationSummary]` | Eligible caller; only own memberships. Default sort `last_activity_at DESC, conversation_id DESC`; amount sort uses current offer amount then last activity DESC and ID DESC, with no-offer threads last. Filters run before pagination; amount bounds are nonnegative whole-rupee paise. Reads only conversation/membership/current-offer summary state; no origin-domain lookup. Empty filters omitted; empty/unknown values and invalid ranges are 422. Storage failure is 503. Tests verify owner/initiator views, ID substitution, filters, no-offer behavior, tie ordering, pages, and outages. |
 | GET /conversations/{conversation_id} — conversations_read_summary | UUID path → `ConversationSummary` | Eligible member only. Reads thread/member summary and current authorized offer summary; never loads origin records. Same safe 404 for missing/nonmember. Read-only and no activity renewal. Tests participant, nonparticipant, expired/revoked account, and redacted response. |
-| GET /conversations/{conversation_id}/entries — conversations_read_entries | UUID path; `after_sequence` nonnegative default 0; `page_size` 20 default, allowed 20/50/100 → `EntryPage{items,scanned_through_sequence,has_more}` | Eligible member only. Returns visible committed entries with sequence greater than cursor in ascending sequence; recipient-only retry controls are hidden from their sender. The cursor is the greatest global sequence inspected, so a page containing only hidden controls may be empty but advance; `has_more` directs the client to continue scanning. Entries contain sender, kind, timestamp, and encrypted envelope or content-deleted marker. A scan with no rows leaves the cursor unchanged. No acknowledgement or activity write. Tests ordering, empty/end pages, recipient-only control routing/cursor progress, limits, purge markers and nonmember denial. |
-| POST /conversations/{conversation_id}/messages — conversations_submit_message | `MessageRequest{envelope: CipherEnvelope,operation_id}` → `ConversationEntry` (201; identical retry 200) | Eligible member only; 1–64 KiB decoded payload. Encrypted `ciphertext`/`prekey_bundle` types require matching current/historical member key versions; server derives actor, sender, recipient, entry ID and server timestamp. `operation_id` is reused as SDK `clientMessageId`; it is globally unique per sender across SDK sends and cannot be reused in another conversation/type. `client_timestamp_ms` is SDK replay/retry metadata only, never authoritative for server sequence/activity/retention. A `retry_request` with null key versions is routed only to the other member as `kind=protocol_control`; its SDK payload is unencrypted opaque protocol metadata, never parsed/logged/rendered, and creates no unread text count or notification. All writes are ordered and advance server participant activity under the thread lock/no-write marker. Text messages create/update one reminder intent per unread episode, due 15 minutes after the first unread text; protocol controls do not. Identical retry before purge returns original sequence; reuse with different content/type/conversation, or after purge, returns a stable 409; a content-free marker never recreates payload or intent. 422 malformed/unsupported envelope, 429 rate limited, 503 database failure; no false success on partial transaction. Tests two-client exchange, SDK envelope reconstruction, retry control routing/no unread effects, bad/tampered/wrong-recipient metadata, limits, duplicate/concurrent send, notification atomicity, rollback and dependency timeout. |
+| GET /conversations/{conversation_id}/entries — conversations_read_entries | UUID path; `after_sequence` nonnegative default 0; `page_size` 20 default, allowed 20/50/100 → `EntryPage{items,scanned_through_sequence,has_more}` | Eligible member only. Returns visible committed entries with sequence greater than cursor in ascending sequence; all recipient-only recovery controls are hidden from their sender. The cursor is the greatest global sequence inspected, so a page containing only hidden controls may be empty but advance; `has_more` directs the client to continue scanning. Entries contain sender, kind, timestamp, encrypted envelope or content-deleted marker, and server-derived recovery target when applicable. A scan with no rows leaves the cursor unchanged. No acknowledgement or activity write. Tests ordering, empty/end pages, recipient-only control routing/cursor progress, limits, purge markers and nonmember denial. |
+| POST /conversations/{conversation_id}/messages — conversations_submit_message | `MessageRequest{envelope: CipherEnvelope,operation_id}` → `ConversationEntry` (201; identical retry 200) | Eligible member only; 1–64 KiB decoded payload. Encrypted `ciphertext`/`prekey_bundle` types require matching current/historical member key versions except null recovery controls; server derives actor, sender, recipient, entry ID and server timestamp. `operation_id` is a UUIDv4 API idempotency key. V1 uses it as the SDK ID for compatibility; v2 stores the separate exact `sdk_client_message_id`, UUIDv4 for ordinary messages and SDK family/type/attempt ID for recovery, globally unique per sender. `recovery_for_entry_id` is accepted only for v2 recovery controls and must match the stored original and recovery family. The response returns server-derived `recovery_target` details from that original entry. Only the original recipient can request recovery and only the original sender can answer an accepted request attempt; requests/resends/nulls route only to the counterpart. Retry requests and null responses have no application key references; a resend must match the original SDK timestamp and key references. The server never parses/logs SDK payloads. Controls advance ordered sequence/activity but create no unread text count or notification. `client_timestamp_ms` is SDK matching metadata, never authoritative for sequence/activity/retention. Text messages create/update one reminder intent per unread episode, due 15 minutes after the first unread text; controls do not. Identical retry before purge returns original sequence; reuse of either ID with different content/type/conversation, or after purge, returns a stable 409; a content-free marker never recreates payload or intent. 422 malformed/unsupported envelope, 429 rate limited, 503 database failure; no false success on partial transaction. Tests two-client exchange, SDK envelope reconstruction, control routing/no unread effects, bad/tampered/wrong-recipient metadata, limits, duplicate/concurrent send, notification atomicity, rollback and dependency timeout. |
 | GET /conversations/{conversation_id}/read-state — conversations_read_state | UUID path → `ReadState{own_last_read_sequence}` | Eligible member only. Returns only the caller's watermark. Peer receipt, `read_at`, online/presence and unrelated activity are not exposed in the MVP; the server still reads the recipient watermark for notification suppression. Read-only/no timer renewal. Tests membership and watermark isolation. |
 | PUT /conversations/{conversation_id}/read-state — conversations_acknowledge_read | `ReadAcknowledgement{last_read_sequence}` nonnegative → `ReadState` (200) | Eligible member only and only through the greatest committed sequence. Monotonic atomic max; older/equal repeats succeed without decreasing state. Does not count as participant activity and does not create a notification. Invalid/future sequence 422; unknown thread/nonmember safe 404. Tests repeated/out-of-order ack, future cursor, parallel ack and notification suppression read. |
 | GET /conversations/{conversation_id}/offer — conversations_read_offer | UUID path → `Optional[OfferView]` | Eligible member only. Current offer/revision metadata and optional encrypted note envelope for Sale Listing origin; null for no offer or Wanted Request origin. Reads do not renew activity. Offers are never inferred as payment/reservation. Tests buyer/seller, no offer, wanted origin, note redaction boundaries, purge marker and nonmember denial. |
@@ -396,7 +404,7 @@ destructive cleanup mechanism remains required before implementation.
 | Identity/contact | Keep the trimmed display name (1–80 code points), email ≤254 chars, E.164 phone, and bounded ASCII UPI VPA validation. Same-key OTP retry does not send again; deliberate resend needs a new operation ID. Do not automatically resend after an ambiguous provider outcome. | A; approved (user-reported) |
 | Participant identity | Keep counterparty UUID for scoped conversation filtering only. Do not add global profile/name lookup; render role and origin context. Historical offer revisions remain participant-only; only current offer summary is exposed by the summary operation. | A, D; approved (user-reported) |
 | Selection / receipts | Selection state is visible only to the listing owner and the participants in the selected conversation, never public discovery or other buyers. Expose only the caller's read watermark; do not expose peer read sequence, timestamps, or presence. | B, D; approved (user-reported) |
-| Images / transport | Use five-minute image delivery URLs, with actual signing/storage behavior left to LI-02. Use standard padded Base64 for opaque encrypted envelope and public-key bundle bytes; crypto protocol/library remains CN-01 Step 2. | B, D; approved (user-reported) |
+| Images / transport | Use five-minute image delivery URLs, with actual signing/storage behavior left to LI-02. Use standard padded Base64 for opaque encrypted envelope and public-key bundle bytes; OpenE2EE 13.0.0 is the approved CN-01 Step 2 library, subject to normal code review. | B, D; approved (user-reported) |
 | Polling | Keep immediate fetch on focus and after writes, 2-second active polling, pause while hidden, and back off after failure. A 5-second interval would consume the full NFR-05 delivery budget before network/render time; 2 seconds is the better starting point, subject to measurement. | D; approved (user-reported) |
 | Internal contexts / notifications | Construct origin-owner and worker contexts only in server composition/worker wiring, never bind them from HTTP. Check origin kind against caller capability. Keep notification claim default 20/max 50; lease duration, worker identity and dispatch recovery stay CN-03 implementation gates. | A, D; approved (user-reported) |
 
