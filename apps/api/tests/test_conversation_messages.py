@@ -139,6 +139,42 @@ def message_request(
     return MessageRequest(envelope=envelope, operation_id=operation_id or uuid4())
 
 
+def test_wanted_request_author_can_send_and_retrieve_participant_messages():
+    async def scenario(pool):
+        author, responder, _request, conversation, _author_key, _responder_key = (
+            await seed_thread(pool)
+        )
+        operations = PostgresMessageOperations(pool)
+
+        author_send = await operations.submit_message(
+            caller(author),
+            conversation,
+            message_request(payload=b"opaque-author-ciphertext", timestamp=10),
+        )
+        responder_send = await operations.submit_message(
+            caller(responder),
+            conversation,
+            message_request(payload=b"opaque-responder-ciphertext", timestamp=11),
+        )
+
+        assert [author_send.entry.sequence, responder_send.entry.sequence] == [1, 2]
+        author_view = await operations.read_entries(
+            caller(author), conversation, EntryQuery()
+        )
+        responder_view = await operations.read_entries(
+            caller(responder), conversation, EntryQuery()
+        )
+        for page in (author_view, responder_view):
+            assert [entry.sequence for entry in page.items] == [1, 2]
+            assert [entry.sender_user_id for entry in page.items] == [author, responder]
+            assert [entry.envelope.payload_base64 for entry in page.items] == [
+                b64encode(b"opaque-author-ciphertext").decode("ascii"),
+                b64encode(b"opaque-responder-ciphertext").decode("ascii"),
+            ]
+
+    run_scenario(scenario)
+
+
 def test_message_retry_ordering_private_controls_and_display_read_state():
     async def scenario(pool):
         alice, bob, _request, conversation, _alice_key, _bob_key = await seed_thread(
