@@ -1,7 +1,8 @@
 """Verify migrations/smoke checks in a new, disposable local PostgreSQL container.
 
-No target arguments, host ports, persistent volumes or caller database settings
-are accepted. Only this invocation's container is removed, even after failure.
+No database target, host port, persistent data volume or caller database setting
+is accepted. ``--listings-store`` adds one adapter check using a private temporary
+Unix socket. Only this invocation's container is removed, even after failure.
 Requires local Docker; pinned images may be downloaded from public registries.
 """
 
@@ -12,8 +13,10 @@ from pathlib import Path
 import secrets
 import shutil
 import subprocess
-import time
+import sys
 import tempfile
+import time
+from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parents[1]
 POSTGRES_IMAGE = "postgres:18.6-bookworm"
@@ -25,12 +28,21 @@ IDENTITY_HEAD = "20261023202807"
 
 def main():
     """Create an isolated database, verify real SQL, then remove owned resources."""
-    argparse.ArgumentParser(description=__doc__).parse_args()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--listings-store",
+        action="store_true",
+        help="also exercise the Listings adapter against this disposable database",
+    )
+    arguments = parser.parse_args()
     env = {key: os.environ[key] for key in ("HOME", "PATH")}
     password = secrets.token_hex(24)
     container = None
+    socket_temp = None
+    socket_directory = None
+    phase = "initialization"
 
-    def run(args, *, stdin=None, extra=None):
+    def run(args, *, stdin=None, extra=None, expect_failure=False):
         """Bound subprocess execution and redact the ephemeral password on failure."""
         result = subprocess.run(
             args,
@@ -43,16 +55,23 @@ def main():
         )
         if result.returncode:
             output = (result.stdout + result.stderr).replace(password, "[REDACTED]")
+            if expect_failure:
+                return result.returncode, output[-4000:]
             # Identify the failed tool without echoing its arguments/environment.
             tool = (
                 "psql"
                 if "psql" in args
-                else "dbmate" if DBMATE_IMAGE in args else "Docker"
+                else (
+                    "dbmate"
+                    if DBMATE_IMAGE in args
+                    else "pytest" if "pytest" in args else "Docker"
+                )
             )
             raise RuntimeError(f"{tool} exited {result.returncode}: {output[-4000:]}")
         return result.stdout.strip()
 
     # Pin a local Unix-socket context, never an ambient remote Docker endpoint.
+    phase = "local Docker context validation"
     context = run(["docker", "context", "show"])
     endpoint = json.loads(run(["docker", "context", "inspect", context]))[0][
         "Endpoints"
@@ -86,87 +105,130 @@ def main():
             extra={"PGPASSWORD": password},
         )
 
-    def migrate(directory=None, *, rollback=False):
-        """Apply/undo only disposable-target migrations, never ambient .env inputs.
+    def migrate(
+        operation="migrate", *, directory=None, rollback=False, expect_failure=False
+    ):
+        """Run the combined or a bounded historical chain only in this disposable target.
 
-        Private baseline directories exercise historical and current upgrades;
-        rollback removes only the latest applied migration in this fresh target.
+        Directory subsets exercise Identity upgrades; rollback and expected refusal
+        retain Listings retirement protection without ambient environment input.
         """
         directory = directory or ROOT / "database/migrations"
-        run(
-            docker
-            + [
-                "run",
-                "--rm",
-                # Match the source owner so private (umask 077) clones work
-                # without granting DAC override capabilities to the tool.
-                "--user",
-                f"{os.getuid()}:{os.getgid()}",
-                "--read-only",
-                "--cap-drop",
-                "ALL",
-                "--security-opt",
-                "no-new-privileges",
-                "--network",
-                f"container:{container}",
-                "--env",
-                "DATABASE_URL",
-                "--mount",
-                f"type=bind,src={directory},dst=/db/migrations,readonly",
-                DBMATE_IMAGE,
-                "--env-file",
-                "/dev/null",
-                "--migrations-dir",
-                "/db/migrations",
-                "--no-dump-schema",
-                *(["rollback"] if rollback else ["migrate", "--strict"]),
-            ],
+        if rollback:
+            operation = "rollback"
+        arguments = docker + [
+            "run",
+            "--rm",
+            # Match the source owner so private (umask 077) clones work
+            # without granting DAC override capabilities to the tool.
+            "--user",
+            f"{os.getuid()}:{os.getgid()}",
+            "--read-only",
+            "--cap-drop",
+            "ALL",
+            "--security-opt",
+            "no-new-privileges",
+            "--network",
+            f"container:{container}",
+            "--env",
+            "DATABASE_URL",
+            "--mount",
+            f"type=bind,src={directory},dst=/db/migrations,readonly",
+            DBMATE_IMAGE,
+            "--env-file",
+            "/dev/null",
+            "--migrations-dir",
+            "/db/migrations",
+            "--no-dump-schema",
+            operation,
+        ]
+        if operation == "migrate":
+            arguments.append("--strict")
+        result = run(
+            arguments,
             extra={
                 "DATABASE_URL": f"postgres://clip_ci:{password}@127.0.0.1:5432/clip_test_ci?sslmode=disable"
             },
+            expect_failure=expect_failure,
         )
+        if expect_failure:
+            expected_message = "Cannot roll back retirement migration while operation results or markers exist"
+            if not isinstance(result, tuple):
+                raise RuntimeError(
+                    "Expected rollback to refuse recorded retirement state"
+                )
+            if expected_message not in result[1]:
+                raise RuntimeError(
+                    "Rollback failed for a reason other than retained retirement state"
+                )
+        return result
 
     def migrate_guard(through=IDENTITY_GUARD):
-        """Exercise the original Step3 upgrade with exactly its historical chain."""
+        """Exercise Identity upgrades above the accepted combined predecessor chain."""
         with tempfile.TemporaryDirectory(prefix="clip-identity-guard-") as name:
             directory = Path(name)
             for source in (ROOT / "database/migrations").glob("*.sql"):
                 if source.name.split("_")[0] <= through:
                     shutil.copyfile(source, directory / source.name)
-            migrate(directory)
+            migrate(directory=directory)
 
     try:
         # No names to collide with existing services, no ports or named volumes.
-        container = run(
-            docker
-            + [
-                "run",
-                "--detach",
-                "--network",
-                "none",
-                "--stop-timeout",
-                "5",
-                "--tmpfs",
-                "/var/lib/postgresql:rw",
-                "--env",
-                "POSTGRES_PASSWORD",
-                "--env",
-                "POSTGRES_USER=clip_ci",
-                "--env",
-                "POSTGRES_DB=clip_test_ci",
-                "--env",
-                "POSTGRES_HOST_AUTH_METHOD=scram-sha-256",
-                "--env",
-                "POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256 --encoding=UTF8 --locale=C.UTF-8",
+        container_args = docker + [
+            "run",
+            "--detach",
+            "--network",
+            "none",
+            "--stop-timeout",
+            "5",
+            "--tmpfs",
+            "/var/lib/postgresql:rw",
+            "--env",
+            "POSTGRES_PASSWORD",
+            "--env",
+            "POSTGRES_USER=clip_ci",
+            "--env",
+            "POSTGRES_DB=clip_test_ci",
+            "--env",
+            "POSTGRES_HOST_AUTH_METHOD=scram-sha-256",
+            "--env",
+            "POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256 --encoding=UTF8 --locale=C.UTF-8",
+        ]
+        if arguments.listings_store:
+            socket_temp = tempfile.TemporaryDirectory(
+                prefix="clip-listings-test-", dir="/tmp"
+            )
+            socket_directory = Path(socket_temp.name) / "pgsocket"
+            socket_directory.mkdir()
+            # PostgreSQL runs as its own unprivileged container user. The short-
+            # lived parent remains private; only this socket directory is shared.
+            socket_directory.chmod(0o777)
+            container_args.extend(
+                [
+                    "--mount",
+                    f"type=bind,src={socket_directory},dst=/tmp/clip-pg-socket",
+                ]
+            )
+        container_args.extend(
+            [
                 POSTGRES_IMAGE,
                 "postgres",
                 "-c",
                 "timezone=UTC",
                 "-c",
                 "log_timezone=UTC",
-            ],
-            extra={"POSTGRES_PASSWORD": password},
+            ]
         )
+        if socket_directory is not None:
+            container_args.extend(
+                [
+                    "-c",
+                    "unix_socket_directories=/var/run/postgresql,/tmp/clip-pg-socket",
+                ]
+            )
+        phase = "starting the disposable PostgreSQL container"
+        container = run(container_args, extra={"POSTGRES_PASSWORD": password})
+        phase = "waiting for PostgreSQL startup"
         for attempt in range(60):
             try:
                 if sql("SELECT 1") == "1":
@@ -184,6 +246,7 @@ def main():
             != "0"
         ):
             raise RuntimeError("Expected an empty database")
+        phase = "applying migrations"
         migrate()
         expected = sorted(
             path.name.split("_")[0]
@@ -207,9 +270,24 @@ def main():
             sql(
                 "SELECT count(*) FROM pg_tables WHERE schemaname IN ('identity','listings','search','conversations')"
             )
-            != "30"
+            != "33"
         ):
-            raise RuntimeError("Expected 30 domain tables")
+            raise RuntimeError("Expected 33 domain tables")
+        # Keep the native harness's merged schema inventory tied to actual SQL,
+        # rather than treating textual conflict resolution as platform evidence.
+        functions = sql(
+            "SELECT count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace "
+            "WHERE n.nspname IN ('identity','listings','search','conversations')"
+        )
+        triggers = sql(
+            "SELECT count(*) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid "
+            "JOIN pg_namespace n ON n.oid=c.relnamespace WHERE NOT t.tgisinternal "
+            "AND n.nspname IN ('identity','listings','search','conversations')"
+        )
+        if (functions, triggers) != ("25", "37"):
+            raise RuntimeError(
+                f"Combined runtime inventory differs: functions={functions}, triggers={triggers}"
+            )
         # The only rollback is against this invocation's fresh disposable target.
         # Seed older-schema rows, reject incompatible data atomically, then verify
         # upgrade/down/reapply preserve every fixture value and original guard.
@@ -228,7 +306,7 @@ def main():
             for source in migrations:
                 if source.name.split("_")[0] < IDENTITY_GUARD:
                     shutil.copyfile(source, baseline / source.name)
-            migrate(baseline)
+            migrate(directory=baseline)
         sql((ROOT / "database/tests/identity-upgrade-seed.sql").read_text())
         sql(
             "UPDATE identity.users SET display_name = repeat('x', 81) "
@@ -344,13 +422,130 @@ def main():
         sql((ROOT / "database/tests/identity-upgrade-check.sql").read_text())
         sql((ROOT / "database/tests/identity-otp-smoke.sql").read_text())
         sql((ROOT / "database/tests/identity-session-smoke.sql").read_text())
-        print(
-            "PASS: PostgreSQL 18.6; clean/repeat migrations, five smoke suites; "
-            "Identity incompatible-upgrade atomicity, data-preserving guard/OTP/session upgrade/down/reapply"
+
+        phase = "rolling back and reapplying migrations"
+        sql("""
+            INSERT INTO conversations.origin_retirement_operations
+                (operation_id, origin_kind, origin_id, cutoff_utc, outcome, marked_count)
+            VALUES ('00000000-0000-4000-8000-000000000001', 'listing',
+                '00000000-0000-4000-8000-000000000002', clock_timestamp(), 'marked', 0)
+        """)
+        # Return to the retirement migration before exercising its separate
+        # data-preserving rollback guard. Later domain migrations are additive
+        # and must be removed first in reverse order.
+        retirement_index = expected.index("20261020142319")
+        for _ in expected[retirement_index + 1 :]:
+            migrate("rollback")
+        migrate("rollback", expect_failure=True)
+        if (
+            sql("SELECT count(*) FROM conversations.origin_retirement_operations")
+            != "1"
+            or sql("SELECT max(version) FROM public.schema_migrations")
+            != "20261020142319"
+        ):
+            raise RuntimeError(
+                "Rollback changed recorded retirement state or migration head"
+            )
+        sql(
+            "DELETE FROM conversations.origin_retirement_operations WHERE operation_id = '00000000-0000-4000-8000-000000000001'"
         )
+        for _ in expected[: retirement_index + 1]:
+            migrate("rollback")
+        if sql("SELECT count(*) FROM public.schema_migrations") != "0":
+            raise RuntimeError("Expected rollback to remove every applied migration")
+        if (
+            sql(
+                "SELECT count(*) FROM pg_namespace WHERE nspname IN ('identity','listings','search','conversations')"
+            )
+            != "0"
+        ):
+            raise RuntimeError("Expected rollback to remove every domain namespace")
+        migrate()
+        reapplied = sql(
+            "SELECT version FROM public.schema_migrations ORDER BY version"
+        ).splitlines()
+        if reapplied != expected:
+            raise RuntimeError("Migration history differs after clean reapply")
+        for filename in (
+            "schema-smoke.sql",
+            "retired-origin-smoke.sql",
+            "identity-schema-smoke.sql",
+            "identity-otp-smoke.sql",
+            "identity-session-smoke.sql",
+        ):
+            sql((ROOT / "database/tests" / filename).read_text())
+        if arguments.listings_store:
+            phase = "running the Listings adapter workflow"
+            host = quote(str(socket_directory), safe="")
+            test_database_url = (
+                f"postgresql://clip_ci:{password}@/clip_test_ci?"
+                f"host={host}&sslmode=disable"
+            )
+            output = run(
+                [
+                    sys.executable,
+                    "-m",
+                    "pytest",
+                    "apps/api/tests/domains/listings/test_postgres_store.py",
+                    "-q",
+                    "-W",
+                    "error",
+                ],
+                extra={"LISTINGS_TEST_DATABASE_URL": test_database_url},
+            )
+            if output:
+                print(output)
+            print(
+                "PASS: Listings adapter workflow used the disposable PostgreSQL database"
+            )
+            sample = sql("""
+                SELECT json_build_object(
+                    'listing_id', listing.id,
+                    'title', listing.title,
+                    'availability', listing.availability,
+                    'revision', listing.revision,
+                    'selected_buyer_id', listing.selected_buyer_id,
+                    'selected_conversation_id', listing.selected_conversation_id,
+                    'live_image_count', (
+                        SELECT count(*) FROM listings.images AS image
+                        WHERE image.listing_id = listing.id AND image.retired_at IS NULL
+                    ),
+                    'create_receipt_count', (
+                        SELECT count(*) FROM listings.create_command_results AS receipt
+                        WHERE receipt.listing_id = listing.id
+                    ),
+                    'owner_receipt_count', (
+                        SELECT count(*) FROM listings.owner_command_results AS receipt
+                        WHERE receipt.listing_id = listing.id
+                    )
+                )::text
+                FROM listings.sale_listings AS listing
+                WHERE listing.title IN (
+                    'Concurrent synthetic edit A',
+                    'Concurrent synthetic edit B'
+                )
+                """)
+            if not sample:
+                raise RuntimeError(
+                    "The Listings workflow did not leave its expected test row"
+                )
+            print(f"POSTGRES_LISTING_SAMPLE_ROW {sample}")
+        print(
+            "PASS: PostgreSQL 18.6; combined clean/head/repeat, five smokes, Identity upgrade/atomicity/rollback, protected retirement rollback and full clean reapply"
+        )
+    except (subprocess.TimeoutExpired, OSError, ValueError) as error:
+        raise RuntimeError(
+            f"Database checks failed during {phase} ({type(error).__name__})"
+        ) from None
     finally:
-        if container:
-            run(docker + ["rm", "--force", container])
+        try:
+            if container:
+                phase = "removing the disposable PostgreSQL container"
+                run(docker + ["rm", "--force", container])
+        finally:
+            if socket_temp is not None:
+                phase = "removing the temporary Unix socket directory"
+                socket_temp.cleanup()
 
 
 if __name__ == "__main__":
@@ -361,12 +556,14 @@ if __name__ == "__main__":
 
         print(f"Database checks failed: {error}", file=sys.stderr)
         raise SystemExit(1)
-    except subprocess.TimeoutExpired, OSError, ValueError:
+    except (subprocess.TimeoutExpired, OSError, ValueError) as error:
         # Do not emit command arguments/environment from unexpected failures.
         import sys
 
         print(
-            "Database checks failed; inspect pinned images, Docker availability or migration/schema changes.",
+            f"Database checks failed ({type(error).__name__}); "
+            "inspect pinned images, Docker availability "
+            "or migration/schema changes.",
             file=sys.stderr,
         )
         raise SystemExit(1)

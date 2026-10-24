@@ -48,6 +48,8 @@ terraform.rc
 terraform-output*.json
 *.sensitive
 *.sensitive.*
+infra/terraform/domains/listings/test/.demo-baseline.json
+infra/terraform/domains/listings/test/.demo-baseline.tmp
 
 # macOS Finder metadata.
 .DS_Store

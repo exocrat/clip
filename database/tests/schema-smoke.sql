@@ -18,11 +18,17 @@ DECLARE
     buyer uuid := gen_random_uuid();
     outsider uuid := gen_random_uuid();
     item uuid := gen_random_uuid();
+    retirement_item uuid := gen_random_uuid();
     upload uuid := gen_random_uuid();
     image uuid := gen_random_uuid();
+    retirement_upload uuid := gen_random_uuid();
+    retirement_image uuid := gen_random_uuid();
     thread uuid := gen_random_uuid();
     message uuid := gen_random_uuid();
     operation uuid := gen_random_uuid();
+    retirement_operation uuid := gen_random_uuid();
+    receipt_operation uuid := gen_random_uuid();
+    create_receipt_operation uuid := gen_random_uuid();
     seller_key uuid := gen_random_uuid();
     buyer_key uuid := gen_random_uuid();
     outsider_key uuid := gen_random_uuid();
@@ -32,6 +38,10 @@ DECLARE
     message_time timestamptz;
     category uuid;
     rejected boolean;
+    receipt_duplicate_rejected boolean;
+    receipt_count bigint;
+    create_receipt_duplicate_rejected boolean;
+    create_receipt_count bigint;
     sequence_head bigint;
 BEGIN
     IF (SELECT count(*) FROM listings.categories) <> 8
@@ -44,19 +54,146 @@ BEGIN
         (buyer, 'regular', 'active', 'Synthetic buyer'),
         (outsider, 'regular', 'active', 'Synthetic outsider');
 
+    INSERT INTO conversations.origin_retirement_operations
+        (operation_id, origin_kind, origin_id, cutoff_utc, outcome, marked_count)
+        VALUES (retirement_operation, 'listing', item, statement_timestamp(), 'marked', 0);
+    rejected := false;
+    BEGIN
+        INSERT INTO conversations.origin_retirement_operations
+            (operation_id, origin_kind, origin_id, cutoff_utc, outcome, marked_count)
+            VALUES (gen_random_uuid(), 'listing', item, statement_timestamp(),
+                'blocked_recent_activity', 1);
+    EXCEPTION WHEN check_violation THEN rejected := true;
+    END;
+    IF NOT rejected THEN
+        RAISE EXCEPTION 'Blocked retirement result accepted a nonzero marked count';
+    END IF;
+
     INSERT INTO listings.sale_listings
         (id, owner_id, title, description, category_id, condition_code,
             asking_price_paise, negotiable, pickup_area, availability)
         VALUES (item, seller, 'Synthetic books', 'Controlled database fixture', category,
             'good', 0, true, 'Synthetic pickup area', 'available');
     INSERT INTO listings.image_uploads
-        (id, owner_id, object_key, state, created_at, expires_at, confirmed_at)
-        VALUES (upload, seller, 'test/' || image::text, 'confirmed', CURRENT_TIMESTAMP,
-            CURRENT_TIMESTAMP + INTERVAL '24 hours', CURRENT_TIMESTAMP);
+        (id, owner_id, object_key, operation_id, state, created_at, expires_at, confirmed_at,
+            confirmed_media_type, confirmed_size_bytes)
+        VALUES (upload, seller, 'test/' || image::text, upload, 'confirmed', CURRENT_TIMESTAMP,
+            CURRENT_TIMESTAMP + INTERVAL '24 hours', CURRENT_TIMESTAMP, 'image/png', 1);
     INSERT INTO listings.images (id, listing_id, upload_id, object_key, position, media_type, size_bytes)
         VALUES (image, item, upload, 'test/' || image::text, 0, 'image/png', 1);
     SET CONSTRAINTS ALL IMMEDIATE;
     SET CONSTRAINTS ALL DEFERRED;
+
+    -- This second, old synthetic listing lets the smoke check the saved
+    -- command result and its removal at retirement without touching a thread.
+    INSERT INTO listings.sale_listings
+        (id, owner_id, title, description, category_id, condition_code,
+            asking_price_paise, negotiable, pickup_area, availability,
+            created_at, available_from, available_until)
+        VALUES (retirement_item, seller, 'Receipt cleanup fixture',
+            'Synthetic receipt cleanup test', category, 'good', 0, true,
+            'Synthetic pickup area', 'unavailable',
+            statement_timestamp() - INTERVAL '200 days',
+            statement_timestamp() - INTERVAL '200 days',
+            statement_timestamp() - INTERVAL '190 days');
+    INSERT INTO listings.image_uploads
+        (id, owner_id, object_key, operation_id, state, created_at, expires_at, confirmed_at,
+            confirmed_media_type, confirmed_size_bytes)
+        VALUES (retirement_upload, seller, 'test/' || retirement_image::text, retirement_upload,
+            'confirmed', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '24 hours',
+            CURRENT_TIMESTAMP, 'image/png', 1);
+    INSERT INTO listings.images (id, listing_id, upload_id, object_key, position, media_type, size_bytes)
+        VALUES (retirement_image, retirement_item, retirement_upload,
+            'test/' || retirement_image::text, 0, 'image/png', 1);
+    SET CONSTRAINTS ALL IMMEDIATE;
+    SET CONSTRAINTS ALL DEFERRED;
+
+    INSERT INTO listings.owner_command_results
+        (listing_id, command_kind, operation_id, request_payload, result_payload)
+        VALUES (retirement_item, 'availability', receipt_operation,
+            jsonb_build_object('expected_revision', 1, 'availability', 'unavailable'),
+            jsonb_build_object('listing_id', retirement_item, 'revision', 2));
+    IF NOT EXISTS (
+        SELECT 1 FROM listings.owner_command_results
+        WHERE listing_id = retirement_item AND command_kind = 'availability'
+            AND operation_id = receipt_operation
+            AND request_payload ->> 'availability' = 'unavailable'
+            AND result_payload ->> 'revision' = '2'
+    ) THEN
+        RAISE EXCEPTION 'Owner command request/result was not retained';
+    END IF;
+    receipt_duplicate_rejected := false;
+    BEGIN
+        INSERT INTO listings.owner_command_results
+            (listing_id, command_kind, operation_id, request_payload, result_payload)
+            VALUES (retirement_item, 'availability', receipt_operation,
+                jsonb_build_object('expected_revision', 1, 'availability', 'available'),
+                jsonb_build_object('listing_id', retirement_item, 'revision', 2));
+    EXCEPTION WHEN unique_violation THEN receipt_duplicate_rejected := true;
+    END;
+    IF NOT receipt_duplicate_rejected THEN
+        RAISE EXCEPTION 'Duplicate owner command key was accepted';
+    END IF;
+    INSERT INTO listings.create_command_results
+        (owner_id, operation_id, listing_id, request_payload, result_payload)
+        VALUES (seller, create_receipt_operation, retirement_item,
+            jsonb_build_object('title', 'Receipt cleanup fixture',
+                'description', 'Synthetic receipt cleanup test'),
+            jsonb_build_object('listing_id', retirement_item,
+                'title', 'Receipt cleanup fixture'));
+    IF NOT EXISTS (
+        SELECT 1 FROM listings.create_command_results
+        WHERE owner_id = seller AND operation_id = create_receipt_operation
+            AND listing_id = retirement_item
+            AND request_payload ->> 'title' = 'Receipt cleanup fixture'
+            AND result_payload ->> 'listing_id' = retirement_item::text
+    ) THEN
+        RAISE EXCEPTION 'Create request/result was not retained for retry';
+    END IF;
+    UPDATE listings.images SET retired_at = statement_timestamp()
+        WHERE id = retirement_image;
+    UPDATE listings.sale_listings SET retired_at = statement_timestamp(),
+        title = NULL, description = NULL, category_id = NULL, condition_code = NULL,
+        asking_price_paise = NULL, negotiable = NULL, pickup_area = NULL,
+        proof_available = NULL, selected_buyer_id = NULL
+        WHERE id = retirement_item;
+    SET CONSTRAINTS ALL IMMEDIATE;
+    SET CONSTRAINTS ALL DEFERRED;
+    SELECT count(*) INTO receipt_count FROM listings.owner_command_results
+        WHERE listing_id = retirement_item;
+    IF receipt_count <> 0 THEN
+        RAISE EXCEPTION 'Retirement kept a saved owner command result';
+    END IF;
+    SELECT count(*) INTO create_receipt_count FROM listings.create_command_results
+        WHERE owner_id = seller AND operation_id = create_receipt_operation
+            AND listing_id = retirement_item AND request_payload IS NULL
+            AND result_payload IS NULL;
+    IF create_receipt_count <> 1 THEN
+        RAISE EXCEPTION 'Retirement did not keep exactly one content-free create key';
+    END IF;
+    rejected := false;
+    BEGIN
+        UPDATE listings.create_command_results
+            SET request_payload = jsonb_build_object('title', 'Restored content'),
+                result_payload = jsonb_build_object('title', 'Restored content')
+            WHERE owner_id = seller AND operation_id = create_receipt_operation;
+    EXCEPTION WHEN check_violation THEN rejected := true;
+    END;
+    IF NOT rejected THEN
+        RAISE EXCEPTION 'Retired create receipt accepted content restoration';
+    END IF;
+    create_receipt_duplicate_rejected := false;
+    BEGIN
+        INSERT INTO listings.create_command_results
+            (owner_id, operation_id, listing_id, request_payload, result_payload)
+            VALUES (seller, create_receipt_operation, item,
+                jsonb_build_object('title', 'Second listing'),
+                jsonb_build_object('listing_id', item));
+    EXCEPTION WHEN unique_violation THEN create_receipt_duplicate_rejected := true;
+    END;
+    IF NOT create_receipt_duplicate_rejected THEN
+        RAISE EXCEPTION 'Retired create operation key allowed a second listing';
+    END IF;
 
     -- Scalar money/optionality checks preserve zero while refusing missing or
     -- fractional-rupee seller prices. No fixture emits contacts or payloads.
@@ -96,6 +233,28 @@ BEGIN
     INSERT INTO conversations.threads (id, listing_id, initiator_id, counterparty_id)
         VALUES (thread, item, buyer, seller);
     INSERT INTO conversations.members (conversation_id, user_id) VALUES (thread, buyer), (thread, seller);
+    UPDATE listings.sale_listings
+        SET selected_buyer_id = buyer, selected_conversation_id = thread
+        WHERE id = item;
+    IF NOT EXISTS (
+        SELECT 1 FROM listings.sale_listings
+        WHERE id = item AND selected_buyer_id = buyer
+            AND selected_conversation_id = thread
+    ) THEN
+        RAISE EXCEPTION 'Selected buyer/conversation pair was not retained';
+    END IF;
+    rejected := false;
+    BEGIN
+        UPDATE listings.sale_listings SET selected_conversation_id = NULL WHERE id = item;
+    EXCEPTION WHEN check_violation THEN rejected := true;
+    END;
+    IF NOT rejected THEN RAISE EXCEPTION 'Unpaired selected buyer was accepted'; END IF;
+    rejected := false;
+    BEGIN
+        UPDATE listings.image_uploads SET confirmed_size_bytes = NULL WHERE id = upload;
+    EXCEPTION WHEN check_violation THEN rejected := true;
+    END;
+    IF NOT rejected THEN RAISE EXCEPTION 'Incomplete confirmed image metadata was accepted'; END IF;
     SET CONSTRAINTS ALL IMMEDIATE;
     SET CONSTRAINTS ALL DEFERRED;
     rejected := false;

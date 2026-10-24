@@ -15,6 +15,14 @@ def test_local_startup_needs_no_external_settings():
     settings = load_settings()
     assert settings.environment == "local"
     assert settings.debug is False
+    assert settings.database_url is None
+    assert settings.sensitive_purchase_threshold_paise == 500_000
+
+
+def test_sensitive_purchase_threshold_can_be_configured(monkeypatch):
+    """Listings can change its price boundary through a whole-rupee setting."""
+    monkeypatch.setenv("CLIP_SENSITIVE_PURCHASE_THRESHOLD_PAISE", "750000")
+    assert load_settings().sensitive_purchase_threshold_paise == 750_000
 
 
 @pytest.mark.parametrize(
@@ -37,6 +45,9 @@ def test_environment_values_are_typed(monkeypatch, environment, debug, expected_
         ("CLIP_ENVIRONMENT", ""),
         ("CLIP_DEBUG", "synthetic-invalid-value"),
         ("CLIP_DEBUG", ""),
+        ("CLIP_SENSITIVE_PURCHASE_THRESHOLD_PAISE", "-100"),
+        ("CLIP_SENSITIVE_PURCHASE_THRESHOLD_PAISE", "500001"),
+        ("CLIP_SENSITIVE_PURCHASE_THRESHOLD_PAISE", "synthetic-invalid-value"),
     ],
 )
 def test_invalid_settings_fail_without_echoing_values(monkeypatch, variable, value):
@@ -65,6 +76,29 @@ def test_settings_are_read_fresh(monkeypatch):
     after = load_settings()
     assert before.environment == "local"
     assert after.environment == "test"
+
+
+def test_database_url_is_optional_and_redacted(monkeypatch):
+    """A configured database URL enables storage without exposing its password."""
+    monkeypatch.setenv(
+        "CLIP_DATABASE_URL",
+        "postgresql://clip_test:synthetic-secret@127.0.0.1:5432/clip_test",
+    )
+    settings = load_settings()
+    assert settings.database_url is not None
+    assert "synthetic-secret" not in repr(settings)
+    assert "synthetic-secret" not in str(settings.database_url)
+
+
+def test_invalid_database_url_fails_with_a_redacted_setting_name(monkeypatch):
+    """Reject a wrong URL scheme without echoing connection input."""
+    monkeypatch.setenv(
+        "CLIP_DATABASE_URL", "https://user:synthetic-secret@example.invalid"
+    )
+    with pytest.raises(ConfigurationError) as captured:
+        load_settings()
+    assert "CLIP_DATABASE_URL" in str(captured.value)
+    assert "synthetic-secret" not in str(captured.value)
 
 
 def test_dotenv_and_examples_are_not_loaded(monkeypatch, tmp_path):

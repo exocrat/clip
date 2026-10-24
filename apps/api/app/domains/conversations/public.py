@@ -185,7 +185,7 @@ async def get_origin_activity(
 async def mark_origin_retired(
     context: OriginOwnerContext, request: OriginRetirementCommand
 ) -> RetirementMarkerResult:
-    """Declare an all-or-none no-write marker; this does not delete content."""
+    """Declare all-or-none marking under stable thread locks; no content is deleted."""
     raise NotImplementedError("declaration-only")
 
 

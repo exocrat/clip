@@ -41,7 +41,11 @@ def test_preview_mail_route_is_not_installed_in_normal_startup():
             "--locked",
             "python",
             "-c",
-            "from app.main import app; assert {r.path for r in app.routes} == {'/health'}",
+            "from app.main import app; "
+            "paths = set(app.openapi()['paths']); "
+            "assert {'/health', '/listings'} <= paths; "
+            "assert not any(p.startswith('/__identity_preview__') or "
+            "p.startswith('/auth/') for p in paths)",
         ],
         cwd=Path(__file__).resolve().parents[5],
         env={key: os.environ[key] for key in ("HOME", "PATH")}

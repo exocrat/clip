@@ -239,7 +239,7 @@ describe('Cookie API and preview isolation', () => {
     expect(safeError(new Error('PRIVATE_PAYLOAD'))).not.toContain('PRIVATE_PAYLOAD');
     expect(safeError(new IdentityError(401))).toContain('session');
   });
-  it('disables the preview proxy normally and refuses any preview build', () => {
+  it('keeps only the Listings proxy normally and refuses any preview build', () => {
     expect(() => viteConfig({ command: 'build', mode: 'identity-preview' })).toThrow(
       /cannot be built/,
     );
@@ -247,7 +247,13 @@ describe('Cookie API and preview isolation', () => {
     expect(normal).toMatchObject({
       server: { host: '127.0.0.1', strictPort: true },
     });
-    expect(normal.server?.proxy).toBeUndefined();
+    expect(Object.keys(normal.server?.proxy ?? {})).toEqual(['/api']);
+    expect(normal.server?.proxy).toMatchObject({
+      '/api': { target: 'http://127.0.0.1:8000' },
+    });
+    const preview = viteConfig({ command: 'serve', mode: 'identity-preview' });
+    expect(preview.server?.proxy).toHaveProperty('/__identity_preview__');
+    expect(preview.server?.proxy).not.toHaveProperty('/api');
   });
 });
 

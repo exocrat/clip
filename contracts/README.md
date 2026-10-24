@@ -80,8 +80,11 @@ provider behavior remains with domain implementation tasks:
 | [Conversations](source/conversations.py) | HTTP mappings and ten internal callables; implementation CN-01/CN-02, notification delivery CN-03. |
 
 The generated contract-only OpenAPI contains 50 domain HTTP mappings plus
-health. The running API still serves only implemented `/health`; generated
-domain routes are never installed or used to return fake success.
+health. The running API currently installs health and the Listings create,
+detail, owner-list, and replacement routes. Other generated domain declarations
+remain offline until their owners implement them. Listings routes fail closed
+until trusted authentication and an explicit storage/Identity adapter are wired;
+the generated declarations are not runtime implementations.
 
 ## Tools and exact commands
 
@@ -102,9 +105,10 @@ make contracts-double-check
 
 `generate` builds the contract-only schema without importing/starting the real
 API, renders all artifacts in temporary storage, then writes registered outputs.
-The real app independently serves health only; generated domain endpoints are
-never installed. Health metadata is shared with the actual route. Generated
-JSON keys and text are deterministic; format 2 is recorded in each artifact.
+The real app installs health and the currently implemented Listings HTTP
+subset; the other generated domain endpoints remain offline. Health metadata is
+shared with the actual route. Generated JSON keys and text are deterministic;
+format 2 is recorded in each artifact.
 
 `check` renders in temporary storage and compares registered files, including
 missing outputs. Exit 0 means current; nonzero means drift or source/tool failure.
@@ -139,8 +143,9 @@ The API-only suite still needs only its Python dependencies. Negative generation
 checks copy all canonical source/core inputs into temporary trees and share
 installed tools without writing tracked outputs. Tests cover deterministic
 generation, missing/stale outputs, changed source, tool mismatches, sanitization,
-all 50 operation IDs, live health-only parity, noninstallation of domain routes,
-private type exposure, and TypeScript consumers. The Listings test double is
+all 50 operation IDs, live schema parity for health and implemented Listings
+routes, noninstallation of other domain routes, private type exposure, and
+TypeScript consumers. The Listings test double is
 type-checked against the generated `ListingsPublic` protocol with Mypy. HTTP
 tests use in-process ASGI only; no provider, database or cloud is used.
 

@@ -1,0 +1,94 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ListingsImageObjects",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject"
+      ],
+      "Resource": "arn:aws:s3:::clip-test-listings-images-ap-south-1-li02/listings/test/*",
+      "Condition": {
+        "ArnEquals": {
+          "aws:PrincipalArn": "arn:aws:iam::335523638354:role/clip/listings/test/clip-test-listings-task-ap-south-1-li02"
+        }
+      }
+    },
+    {
+      "Sid": "EcrAuthorizationToken",
+      "Effect": "Allow",
+      "Action": "ecr:GetAuthorizationToken",
+      "Resource": "*",
+      "Condition": {
+        "ArnEquals": {
+          "aws:PrincipalArn": [
+            "arn:aws:iam::335523638354:role/clip/listings/test/clip-test-listings-execution-ap-south-1-li02",
+            "arn:aws:iam::335523638354:role/clip/listings/test/clip-test-listings-db-setup-execution-ap-south-1-li02"
+          ]
+        }
+      }
+    },
+    {
+      "Sid": "PullReviewedApiImage",
+      "Effect": "Allow",
+      "Action": [
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:BatchGetImage",
+        "ecr:GetDownloadUrlForLayer"
+      ],
+      "Resource": "arn:aws:ecr:ap-south-1:335523638354:repository/clip-shared-test-api",
+      "Condition": {
+        "ArnEquals": {
+          "aws:PrincipalArn": [
+            "arn:aws:iam::335523638354:role/clip/listings/test/clip-test-listings-execution-ap-south-1-li02",
+            "arn:aws:iam::335523638354:role/clip/listings/test/clip-test-listings-db-setup-execution-ap-south-1-li02"
+          ]
+        }
+      }
+    },
+    {
+      "Sid": "WriteRedactedApiLogs",
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      "Resource": "arn:aws:logs:ap-south-1:335523638354:log-group:/ecs/clip-test-listings-ap-south-1-li02:*",
+      "Condition": {
+        "ArnEquals": {
+          "aws:PrincipalArn": [
+            "arn:aws:iam::335523638354:role/clip/listings/test/clip-test-listings-execution-ap-south-1-li02",
+            "arn:aws:iam::335523638354:role/clip/listings/test/clip-test-listings-db-setup-execution-ap-south-1-li02"
+          ]
+        }
+      }
+    },
+    {
+      "Sid": "ReadListingsDatabaseConnectionReference",
+      "Effect": "Allow",
+      "Action": "ssm:GetParameters",
+      "Resource": "arn:aws:ssm:ap-south-1:335523638354:parameter/clip/test/listings-database-url",
+      "Condition": {
+        "ArnEquals": {
+          "aws:PrincipalArn": [
+            "arn:aws:iam::335523638354:role/clip/listings/test/clip-test-listings-execution-ap-south-1-li02",
+            "arn:aws:iam::335523638354:role/clip/listings/test/clip-test-listings-db-setup-execution-ap-south-1-li02"
+          ]
+        }
+      }
+    },
+    {
+      "Sid": "BootstrapListingsDatabaseOnly",
+      "Effect": "Allow",
+      "Action": "ssm:GetParameters",
+      "Resource": "arn:aws:ssm:ap-south-1:335523638354:parameter/clip/test/database-master-password",
+      "Condition": {
+        "ArnEquals": {
+          "aws:PrincipalArn": "arn:aws:iam::335523638354:role/clip/listings/test/clip-test-listings-db-setup-execution-ap-south-1-li02"
+        }
+      }
+    }
+  ]
+}

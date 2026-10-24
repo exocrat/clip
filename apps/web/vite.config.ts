@@ -26,7 +26,14 @@ export default defineConfig(({ command, mode }) => {
               ].map((path) => [path, { target: 'http://127.0.0.1:8001', changeOrigin: false }]),
             ),
           }
-        : {}),
+        : {
+            proxy: {
+              '/api': {
+                target: 'http://127.0.0.1:8000',
+                rewrite: (path: string) => path.replace(/^\/api/, ''),
+              },
+            },
+          }),
     },
     preview: {
       host: '127.0.0.1',

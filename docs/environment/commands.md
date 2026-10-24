@@ -20,6 +20,7 @@ For EACH command record: creator task, exact invocation and required inputs, sup
 | Contract regenerate/stale-check | PD-11/DL-00 | Health generation/check and actual API schema/consumer regression checks implemented in PD-11; full domain declarations remain DL-00. Exact commands below. |
 | Terraform static format/validate (no remote state mutation) | PD-15/13 | `make terraform-check` with Terraform 1.15.9: format check and backend-free validation, readonly provider lock; individual targets documented below. Public provider downloads may be needed; no cloud login or apply. |
 | Plan/apply/build-release/deploy/verify/rollback/teardown | PD-15/16; domain/EXP additions | PD-15 documents reviewed plan/apply/verify/cleanup. PD-16 per-run ECS capacity plans and RDS stop/start templates are in `infra/terraform/shared/test/README.md`; select exact targets and review/approve each cloud operation. These are not local/CI checks. |
+| Isolated Listings demo lifecycle | LI-02 Step 12 | Implemented locally as `make li02-demo-start AWS_PROFILE=<approved-profile>` and `make li02-demo-stop AWS_PROFILE=<approved-profile>`. Start continues a recorded partial run from its saved phase; there is no separate resume command. The driver gates image publication, database operations, exact Terraform plans, public app start, and teardown. |
 | Search evaluator/load workload/NFR manifests | SE-01 | Not implemented |
 | Two-client chat/read-state/latency measurement | CN-01/CN-03 | Not implemented |
 | Integrated peak/runtime-loss/DB-restore checks | INT-01 | Not implemented |
@@ -27,6 +28,35 @@ For EACH command record: creator task, exact invocation and required inputs, sup
 | Final regression/export/demo/package verification | CLOSE-00 | Not implemented |
 
 An absent command assigned to the selected creation step is an expected output; the agent creates/registers/tests it. An absent prerequisite or uncertain expected effect blocks the dependent action and requires a question. No cloud operation belongs in the generic local/CI aggregate target.
+
+## LI-02 Step 12 demo lifecycle
+
+Run from the repository root with Python 3, AWS CLI, Terraform 1.15.9, Docker
+Buildx and an explicitly approved AWS profile. The command fixes the target to
+account `335523638354`, Region `ap-south-1`, shared cluster `clip-shared-test`,
+RDS `clip-shared-test-postgres`, and the existing shared API ECR repository.
+Start refuses modified LI-02 build inputs and requires a committed source
+revision. No credentials, URL values, or database passwords are printed or
+written to Terraform state. Local baseline metadata is ignored by Git and
+contains only resource IDs/status, run ID and image digests.
+
+| Exact command | Effects and gates | Expected result / recovery |
+|---|---|---|
+| `.venv/bin/pytest apps/api/tests/domains/listings/test_demo_database_lifecycle.py -q` | Runs the actual Listings lifecycle shell script with a controlled local psql process. Checks metadata capture, empty/existing/owned/mismatched states, invalid/failed queries, idle clients, private diagnostics and bounded client settings. No AWS, database or Docker access. | 27 passing regression cases, including the URL-only seed secret contract and admin-secret/invalid-URL rejection; these do not prove real PostgreSQL bootstrap, migrations or cleanup. |
+| `make li02-demo-start AWS_PROFILE=<approved-profile>` | Checks caller account, current budget, shared ECS task use, capacity-provider/ASG baseline, master-parameter metadata, and state target. Builds UI/API and fixed dbmate/database-task images from clean committed source and pushes unique tags to the existing shared test API ECR repo. Creates `/clip/test/listings-database-url` as one Standard SecureString using a generated app password and a mode-0600 temporary JSON file. The first exact saved Terraform plan creates the private, encrypted, single-AZ, 20-GiB `db.t4g.micro` PostgreSQL 18.6 disposable instance in `ap-south-1`, matching the shared test foundation's engine version, its narrowly scoped SG/subnet group, the ALB, and fixed task definitions with app desired count zero; the approved test master secret reaches this instance only through an ephemeral Terraform variable and its write-only password field. The shared RDS is never started, connected to, or modified; the CLI reads RDS inventory metadata only to detect a stray LI-02 instance. After separate approval, start owner-checks/resets only `clip_test_listings`, applies pinned migrations, seeds one synthetic seller, then separately plans/applies the one-task service. Rerunning start continues recorded partial phases and reuses saved immutable image digests. | Exit 0 prints the generated HTTP URL. If a phase fails, `.demo-baseline.json` remains; rerun `start` to continue or run `stop` to tear down. Owner mismatch, missing cleanup task, and ambiguous legacy state fail closed without erasing the baseline. Never delete the baseline file to bypass cleanup. No HTTPS/domain is configured. |
+| `make li02-demo-stop AWS_PROFILE=<approved-profile>` | Sets only the LI-02 service to zero. If the saved phase says the isolated database may contain data, verifies the exact cleanup task, owner-checks removal of only `clip_test_listings` and its dedicated login, then confirms the disposable database is idle. Deletes the exact run-scoped S3 prefix and owned URL parameter. Its exact saved Terraform plan deletes the LI-02 disposable RDS instance and data (without a final snapshot), and removes the temporary ALB/subnet/route/SG ingress/service/task definitions. It removes only unreferenced LI-02 ECR digests, clears LI-02 log streams, and waits for the recorded ECS capacity baseline. Shared RDS is never started, stopped, connected to, or changed. | Exit 0 means demo-owned route, app, disposable database/data, run objects, unused LI-02 images and log streams are removed. The Step 4 bucket, IAM roles, empty log group, state backend, shared `clip_test` database, shared RDS instance, VPC/NAT/ECS cluster/capacity provider remain. If cleanup is incomplete, the baseline stays for a safe retry. |
+
+The disposable RDS adds about USD 0.021 per available hour for compute in
+`ap-south-1`, plus 20 GiB of gp3 storage while it exists; RDS bills in one-second
+increments with a 10-minute minimum. The exact run cost also includes the
+temporary ALB and shared ECS capacity and must be checked against current
+billing data before apply. Stop deletes only the disposable LI-02 RDS. This
+driver has not yet completed an AWS run with the separate database. Refresh the
+current account inventory before using it. If interrupted, keep the local
+baseline file, then rerun `start` to continue or
+`stop` to clean up; the script refuses to guess an account, resource, or
+database target. Cloud actions still require review of the current exact plans,
+cost and public exposure.
 
 ## PD-07 Step 1 — local web bootstrap
 
@@ -40,7 +70,7 @@ PD-13 integrates the common front door later. See
 | Exact command | Inputs and effects | Success | Failure and recovery |
 |---|---|---|---|
 | `npm ci` | Requires the Step 1 manifest/lockfile and public npm-registry access; replaces this checkout's generated `node_modules/` and uses the contributor's npm cache. No cloud resources or private application data. | Exit 0; dependencies match the lockfile. | Resolve runtime/network or manifest/lock mismatch; do not hide it with unrelated upgrades or a second lockfile. |
-| `npm run dev` | Starts the foreground Vite process on `127.0.0.1:5173`; may write generated dependency-cache files inside ignored `node_modules/`. No application API calls/providers are configured. | Vite reports the exact loopback URL and serves the technical HTML/TSX mount point. | An occupied port fails instead of silently moving. Inspect the owned process; do not terminate an unrelated service. Stop this foreground process with Ctrl+C. |
+| `npm run dev` | Starts foreground Vite on `127.0.0.1:5173`; may write ignored dependency caches. LI-01 create/detail calls `/api`, forwarded only in development to local API `127.0.0.1:8000`. No test auth is activated by this command. | Exact loopback URL serves the app; Listings API success requires its configured dependencies. | An occupied port fails. Stop only the owned foreground process with Ctrl+C. |
 | `npm run build` | Type-checks the app and test/config TypeScript, then bundles into ignored `apps/web/dist/`, replacing that generated output. | Exit 0 from both TypeScript and Vite, with built assets. | Preserve the error and fix the owned source/configuration; a failed check is not deployment evidence. |
 | `npm run preview` | Requires the completed local build; starts a foreground loopback server on `127.0.0.1:4173` to inspect `apps/web/dist/`. | Exact preview URL serves the built HTML/assets. | Build first if output is missing; investigate occupied ports. Stop with Ctrl+C. This command does not deploy. |
 
@@ -137,9 +167,11 @@ registry image must be rebuilt from the exact reviewed commit.
 The current engine has only the legacy builder, which ignores the
 Dockerfile-specific ignore file and would send the repository's 1.7 GB context.
 The Dockerfile avoids BuildKit-only instructions, and this procedure stages an
-allowlisted context under `/tmp` containing only the two locked dependency
-files, API source, Dockerfile and its ignore file. The Docker build uses the
-host's native architecture and never contacts AWS:
+allowlisted context under `/tmp` containing the Python and web lockfiles, API
+and web source, generated frontend types, Dockerfile and its ignore file. The
+image serves the built website and API from one process; the demo disclosure is
+enabled only with `--build-arg VITE_LISTINGS_PUBLIC_DEMO=true`. The Docker build
+uses the host's native architecture and never contacts AWS:
 
 ```sh
 (
@@ -162,9 +194,12 @@ cleanup() {
   exit "$result"
 }
 trap cleanup EXIT
-mkdir -p "$build_context/apps/api"
+mkdir -p "$build_context/apps/api" "$build_context/apps/web" "$build_context/contracts"
 cp pyproject.toml uv.lock "$build_context/"
 cp -R apps/api/app "$build_context/apps/api/"
+cp -R apps/web "$build_context/apps/"
+cp -R contracts/generated "$build_context/contracts/"
+cp package.json package-lock.json "$build_context/"
 cp apps/api/Dockerfile apps/api/Dockerfile.dockerignore "$build_context/"
 sudo docker build --file "$build_context/Dockerfile" --tag "$image_tag" "$build_context"
 image_id=$(sudo docker image inspect --format '{{.Id}}' "$image_tag")
@@ -417,7 +452,7 @@ provider or cloud calls. [Outputs and limits](../../contracts/README.md).
 
 Contract regression command: `uv run --locked pytest tests/contracts -q -W error`.
 It checks canonical-source parity, all 50 declared domain HTTP operations, the
-live API's health-only route set, sensitive-field publication boundaries, and
+live API's health and implemented Listings route set, sensitive-field publication boundaries, and
 generated TypeScript consumers. Requires locked Python tools plus root `npm ci`
 (Node 24/TypeScript 5.9.3/Hey API 0.99.0). Synthetic negative cases use temporary
 trees and local tools; generated domain routes are never installed. Exit 0 means
@@ -443,11 +478,13 @@ tools remain deferred under the existing tooling decision.
 
 | Command | Effect / failure |
 |---|---|
-| `uv run --locked python scripts/check_database.py` | Requires local Unix-socket Docker. Creates a fresh PostgreSQL 18.6 container with temporary memory-backed data, no host port/volume; dbmate 2.36.0 checks clean apply, exact isolated-branch head `20261023173439`, repeat migration and three SQL smoke suites; verifies failed-upgrade atomicity and data-preserving Identity upgrade/down/reapply. Removes only its own container; nonzero on SQL/setup/cleanup failure. Never targets retained Compose data. |
+| `uv run --locked python scripts/check_database.py` | Requires local Unix-socket Docker. Creates a fresh PostgreSQL 18.6 container with temporary memory-backed data and no host port or persistent data volume; dbmate 2.36.0 checks clean apply, repeat migration, all five SQL smoke suites plus Identity upgrade/atomicity checks, rollback of every migration and clean reapply against the migration files in the current checkout. The combined14-migration chain ends at `20261023202807` with33domain tables. Removes only its own container; nonzero on SQL/setup/cleanup failure. Never targets retained Compose data. |
+| `uv run --locked python scripts/check_database.py --listings-store` | Runs those same isolated migration checks, then mounts only a private temporary Unix-socket directory and runs `apps/api/tests/domains/listings/test_postgres_store.py` against that container. Verifies real PostgreSQL create/edit/selection/availability writes and retry behavior using synthetic Identity/Conversations test doubles; prints a sample row selected from PostgreSQL before cleanup. No shared database, host port, real object storage or cloud resource is used. Removes the temporary container and socket directory. |
 | `uv run --locked python scripts/check_secrets.py` | Requires local Unix-socket Docker. Gitleaks 8.30.1 scans tracked and nonignored new source in a temporary snapshot, offline/read-only. Uses `.gitleaks.toml`; findings print file/line/rule only and fail. This scans current source, not Git history; ignored files are excluded and symlinks rejected. |
 
 Images may be downloaded from public registries. No cloud/provider configuration
-is forwarded. These commands accept no target arguments; `--help` describes them.
+is forwarded. The database checker never accepts a caller-selected database
+target; `--help` lists its optional check mode.
 Local/CI aggregate parity is implemented below; full lifecycle commands remain PD-13.
 
 ### CI execution boundary — PD-12 Step 4
@@ -754,7 +791,7 @@ DB target or host port. Actual RSA/Argon2id/session/HTTP/cleanup implementations
 use synthetic keys/accounts/mail only. Covers cookie/CORS/CSRF/origin/context,
 atomic credential/reset/activation/Microsoft replay races, idle/absolute/account
 expiry, limits, bounded cleanup/CLI target checks and permanent guard retention.
-No real provider or frontend browser is used. Normal app.main is health-only;
+No real provider or frontend browser is used. Normal app.main includes health/Listings; Identity runtime remains unbound;
 explicit create_identity_app runtime binding still needs reviewed secrets/DB
 roles/TLS/proxy/provider configuration before deployment. Never treat arbitrary
 forwarded headers as trusted source/identity.
@@ -842,14 +879,14 @@ and synthetic-only mailbox. It refuses non-test environment/implicit enablement;
 No real SES/Microsoft call, account/credential input, retained DB or cloud action.
 Use only the reserved example recipient documented in apps/web/README.md.
 Preview mode cannot build/deploy; ordinary dev has no proxy and ordinary builds
-remove preview inbox. Normal API startup stays health-only.
+remove preview inbox. Normal API startup includes health/Listings; Identity remains explicitly unbound.
 
 ```sh
 uv run --locked pytest apps/api/tests/domains/identity/test_ui_preview.py apps/api/tests/test_health.py -q -W error
 npm run check
 ```
 
-Python checks refusal, health-only production composition, actual registration/
+Python checks refusal, unbound-Identity production composition, actual registration/
 SQL/cookie and non-loopback denial. Web checks include DOM interaction tests
 with synthetic contract responses and existing route/import boundaries. Source
 formatter remains disabled automatically; an explicit one-off web-local command
@@ -885,3 +922,18 @@ read it and it grants no authority. Actual enablement, metadata/token traffic,
 registered localhost/HTTPS redirect, consent/default scopes, provider artifacts
 and server-cookie flow need their own approved live/runtime verification plan.
 No live-enable command or provider action is authorized by this registry entry.
+
+## LI-01 Step 7 — isolated PostgreSQL browser checkpoint
+
+Run from the repository root with the locked Python environment, Node 24/npm 11,
+and local Unix-socket Docker. [Web guide](../../apps/web/README.md#li-01-step-7-isolated-browser-check-with-real-postgresql)
+has manual actions, expected results and current limitations. These are test-only
+commands, not deployment or task-completion evidence.
+
+| Exact command | Target/effects and success | Stop/failure behavior |
+|---|---|---|
+| `CLIP_ENVIRONMENT=test CLIP_DEVELOPMENT_AUTH=true uv run --locked python apps/api/tests/domains/listings/browser_demo.py --isolated-listings-browser` | Creates its own labelled PostgreSQL 18.6 container, applies current migrations using dbmate 2.36.0 and seeds a synthetic seller. Serves actual Listings routes/store on loopback 8000 with explicit test-only trusted auth and image-confirmation metadata. Prints an owner-private `/tmp/clip-listings-browser-*` session path. Uses no ambient database URL, published DB port, shared Compose data, cloud, real sign-in or object storage. | Rejects non-test settings, missing development-auth opt-in, ambient database URL, nonlocal Docker or occupied API port. Ctrl+C stops only its API/container and retains rows. Failure stops the owned container and retains session data for diagnosis/resume; no automatic reset/removal. |
+| `npm run build` then `CLIP_ENVIRONMENT=test CLIP_DEVELOPMENT_AUTH=true uv run --locked python apps/api/tests/domains/listings/browser_demo.py --isolated-listings-browser --image-ui-preview` | Serves the built Listings UI and actual API/store on loopback 5174, with a fresh labelled PostgreSQL 18.6 database, a fixed synthetic seller, and temporary in-memory image storage. Supports create, edit, detail and My Listings photo review. The local adapter enforces the reviewed upload protocol and byte checks but never contacts AWS. The page banner identifies this mode. | Requires the built `apps/web/dist/`, local Unix-socket Docker and an unused 5174 port. Rejects non-test settings, missing development-auth opt-in, ambient database URL, nonlocal Docker and remote/cross-origin requests. Ctrl+C stops the owned API/database and discards local image bytes; database rows stay in the labelled stopped container for `--resume`. No AWS, shared database, real Identity or durable image storage. |
+| `VITE_LISTINGS_ISOLATED_DEMO=true npm run dev` | Runs the same development web server on loopback 5173; exposes only labelled local Listings controls for preparing synthetic image metadata through the separate test app. Production builds ignore this development flag. | Ctrl+C stops the owned Vite process. Missing API/dependencies produce visible failures, not simulated successful saves. |
+| `CLIP_ENVIRONMENT=test CLIP_DEVELOPMENT_AUTH=true uv run --locked python apps/api/tests/domains/listings/browser_demo.py --isolated-listings-browser --inspect SESSION_PATH` | Requires the exact printed retained session path and matching container ownership label. Executes read-only SQL against that running browser database to print synthetic listing ID/title/price/status/proof values. | Fails closed on wrong owner/path/label, stopped/unavailable container or SQL failure; never inspects the shared database. |
+| `CLIP_ENVIRONMENT=test CLIP_DEVELOPMENT_AUTH=true uv run --locked python apps/api/tests/domains/listings/browser_demo.py --isolated-listings-browser --resume SESSION_PATH` | Validates the recorded private session/container label, starts that same database without resetting rows, reapplies only pending migrations, and serves the isolated API again. | Ctrl+C retains rows. Does not remove containers/volumes/session files. Cleanup requires a separate targeted action. |
