@@ -1,0 +1,30 @@
+[
+  {
+    "path": "apps/api/app/core/config.py",
+    "sha256": "cfc52188c334659ca52dbc3f32ee5f5a5f104956ef81c147b6cac7238572bd7b"
+  },
+  {
+    "path": "apps/api/app/domains/identity/email.py",
+    "sha256": "c95a9d5b9fda43633a0618da991068eea8788599802b9adeee4f4c9b9a060354"
+  },
+  {
+    "path": "apps/api/app/domains/identity/email_routing.py",
+    "sha256": "e8011324af7ba86c0d092193ec8ca3dbb523a21e7722f4aa3018ed8495608b27"
+  },
+  {
+    "path": "apps/api/app/domains/identity/runtime_configuration.py",
+    "sha256": "deffdb55a1539b4c9574b9e87c47559b1c369738d34e3fc06666f4f12c84594c"
+  },
+  {
+    "path": "apps/api/app/domains/identity/runtime_database.py",
+    "sha256": "dce0a0dfe40d7cb90ae7676cc0444280b1f48d4d932513e2709a1a32884f1a62"
+  },
+  {
+    "path": "apps/api/tests/domains/identity/test_runtime_configuration.py",
+    "sha256": "f033b0a00058688007520cfa9b1a9abcf44db0d305c490b6c37f863d2d75e625"
+  },
+  {
+    "path": "database/roles/identity-runtime.sql.proposed",
+    "sha256": "19bf55d3bc1d8fc9e89a236e50ed9c5b53057a0a2dd93801a2c3729ca5e82d69"
+  }
+]

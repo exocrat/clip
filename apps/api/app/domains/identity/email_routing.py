@@ -67,6 +67,14 @@ class RefreshingEmailSender:
             self._expires = self._clock() + REFRESH_SECONDS
             return route
 
+    def warmup(self) -> None:
+        """Validate/cache startup configuration without submitting any message.
+
+        A successful load starts the same four-hour lifetime used by normal sends;
+        no credential, recipient or provider snapshot is returned to the caller.
+        """
+        self._snapshot()
+
     def send(self, recipient: str, subject: str, body: str) -> None:
         """Try primary once, then other provider once on any reported failure.
 

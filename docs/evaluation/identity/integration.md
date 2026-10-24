@@ -164,6 +164,56 @@ in /tmp/clip-id12-composition-*.log (fixture corrections, temporary eligibility
 bug, preserved main.settings exports and prior offer expectation). No test disabled.
 
 Aditya verified the implementation plan and explicitly authorized the bounded
-Listings adapter correction; this resulting code remains uncommitted and awaits
-human verification/explicit commit approval. Suraj/affected-owner peer review and
+Listings adapter correction; Aditya subsequently verified this result and authorized its commit;
+composition is committed at `fad1e2f`. Suraj/affected-owner peer review and
 all actual deployment/runtime/provider/ID-READY gates remain pending.
+
+
+## Secure runtime preparation
+
+Step12 local implementation; subsequently human-verified with explicit commit authorization. `prepare_local_identity`
+returns real dependencies for the explicit shared API factory. It does not enable
+`app.main:app`, provision secrets, change grants, send mail or discover Microsoft
+metadata. Tests use an offline SSM port and owned disposable PostgreSQL, not the
+shared RDS instance. Production and demo/bypass combinations remain rejected.
+
+| Path | Purpose |
+|---|---|
+| `apps/api/app/domains/identity/runtime_configuration.py` | Read bounded versioned SecureStrings; parse persistent independent keys; validate DB and warm the email snapshot before returning dependencies. |
+| `apps/api/app/domains/identity/runtime_database.py` | Validate an explicit private URI, open bounded connections and audit effective role/table/logging/migration/key-binding state read-only. |
+| `database/roles/identity-runtime.sql.proposed` | Reviewable minimum grants for a separate Identity login; not a migration or live apply script. |
+| `apps/api/app/core/config.py`, `email.py` | Accept the dual-provider selector while retaining controlled-recipient and production guards. |
+| `apps/api/app/domains/identity/email_routing.py` | Warm the four-hour routing cache without sending or exposing its configuration. |
+| `apps/api/tests/domains/identity/test_runtime_configuration.py` | Exercise real restricted-role OTP/session/contact operations, denied privileges, restart/key mismatch and malformed configuration. |
+
+The proposed login is `clip_test_identity_app`, separate from Listings. Only
+SELECT/INSERT are granted on permanent enrollment/external-identity/key/operation
+records; users additionally permit UPDATE, and other named Identity tables permit
+CRUD. No DDL, TRUNCATE, ownership, memberships or cross-domain data grants. Database
+CONNECT/PUBLIC TEMP and schema baseline changes need their own approved plan.
+Remote connections require `clip_test`, explicit credentials and verify-full TLS
+with system roots. Only the owned test-mode Unix socket may disable TLS.
+
+The authentication key parameter is loaded once per bootstrap; never regenerate it
+on restart or refresh it with the email preference. Existing database commitments
+must match. An empty database adopts keys through the established service transaction,
+not startup writes. The current default API remains unbound.
+
+Remaining live work: review/provision key and separate database-URL references;
+approve role/PUBLIC baseline and logging changes; scope runtime IAM; validate
+actual certificate chain, proxy/cookies/browser and provider delivery; finish device,
+independent/affected-owner review and hosted CI. No such action is authorized by
+this local result. ID-READY and Step12 remain incomplete; Step14 stays outside scope.
+
+[Runtime source snapshot](id-01-step-12/runtime-source-hashes.json). Focused suite:
+32 passed; raw log `/tmp/clip-id12-runtime-focused-2.log`. Strict mypy passed both
+new modules (`/tmp/clip-id12-runtime-types-final.log`). Full local gate result is
+recorded below after completion.
+
+Final local runtime checks — 2026-10-24 18:32:01 UTC: `make check` exited0; all11gates
+passed,1008Python/1existing DB-only skip,63data/118web, Black147files, zero boundary
+violations, current contracts, web build,35wrapper safety cases, actual
+PostgreSQL18.6 lifecycle and Gitleaks8.30.1 source scan. Source hashes, relative
+file links and `git diff --check` pass. Raw full log:
+`/tmp/clip-id12-runtime-check.log`. Aditya verified this local result and authorized its commit/continuation.
+No live checks or ID-READY acceptance inferred.

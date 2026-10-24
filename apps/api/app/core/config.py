@@ -45,7 +45,7 @@ class Settings(BaseSettings):
     # Selectors default disabled. Private Microsoft preparation is local/test only
     # until reviewed login-attempt and session wiring enables the real API flow.
     identity_provider: Literal["disabled", "fake", "microsoft"] = "disabled"
-    email_provider: Literal["disabled", "fake", "ses"] = "disabled"
+    email_provider: Literal["disabled", "fake", "ses", "dual"] = "disabled"
     # Step 2 permits only explicitly controlled sandbox recipients. General delivery
     # requires a separately reviewed production configuration increment.
     ses_region: Literal["ap-south-1"] = "ap-south-1"
@@ -115,7 +115,7 @@ class Settings(BaseSettings):
         The list limits local/test dispatch; it neither verifies SES identities
         nor authorizes a live send. Those actions retain their human gates.
         """
-        if self.email_provider == "ses":
+        if self.email_provider in ("ses", "dual"):
             if self.environment == "production" or not self.ses_test_recipients:
                 raise ValueError(
                     "SES currently requires controlled local/test recipients"

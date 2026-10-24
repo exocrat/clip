@@ -127,3 +127,30 @@ values in CLI arguments/logs/files. The local SDK's optional AWS-login dependenc
 was unavailable; CLI-exported temporary credentials stayed only in process memory.
 This establishes operator access, not deployed runtime permission. Full outcomes
 and current gates are consolidated in [provider history](../evaluation/identity/provider-history.md#resend-and-sender-outcome).
+
+
+### ID-01 persistent runtime references — local preparation only
+
+`/clip/test/identity/authentication-keys` and `/clip/test/identity/database-url`
+are proposed Standard SecureStrings, not provisioned by the local implementation.
+The existing `/clip/test/identity/email-delivery` reference retains its reviewed
+routing schema and four-hour refresh policy. No live reads were performed for
+this preparation.
+
+Authentication keys use exactly `schema_version` (integer 1), `key_version`
+(a stable safe label), `lookup`, `verifier`, and `target_encryption`. The last
+three are independent 32-byte random keys encoded as canonical standard base64.
+Generate and persist actual values only through a separately approved private
+procedure; never paste them into chat, repository, command arguments or evidence.
+Duplicates, extra fields and noncanonical encodings are rejected. Bootstrap reads
+keys once, verifies database commitments and never substitutes generated keys.
+Key rotation requires a reviewed data migration/recovery plan.
+
+The database reference contains an explicit private PostgreSQL URI for the
+separate `clip_test_identity_app` login. Remote targets require database
+`clip_test`, password and `sslmode=verify-full&sslrootcert=system`. Validate the
+actual certificate chain before live use. The
+[role proposal](../../database/roles/identity-runtime.sql.proposed) does not create
+or change a shared role. Public grants, credential generation, role logging,
+scoped SSM permissions and rollback require a concrete separately approved plan.
+See the [runtime handoff](../evaluation/identity/integration.md#secure-runtime-preparation).

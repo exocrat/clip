@@ -20,8 +20,10 @@ criteria and action approvals still come from their canonical sources.
 - Resend `verify@clip-iisc.site` delivered to Gmail and IISc, human-confirmed.
   SES sandbox task-role delivery and owned cleanup passed; production access is
   pending. No new current cloud state is inferred from historical snapshots.
-- A new explicit local API composition increment is prepared but uncommitted;
+- Explicit local API composition is verified and committed at `fad1e2f`;
   [result/remaining work](integration.md#local-api-composition).
+- [Secure runtime preparation](integration.md#secure-runtime-preparation) is locally
+  implemented and human-verified; live secrets/grants are pending.
 - Normal application composition still lacks real Identity runtime wiring.
   Microsoft sign-in is disabled. ID-READY is not accepted; no final FR03 claim.
 

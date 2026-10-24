@@ -33,7 +33,7 @@ class SesEmailSender:
 
     def __init__(self, settings: Settings, client: SesClient | None = None) -> None:
         """Bind validated sandbox settings and an optional offline SDK substitute."""
-        if settings.email_provider != "ses":
+        if settings.email_provider not in ("ses", "dual"):
             raise EmailUnavailable("Email provider is disabled")
         self._settings = settings
         self._client = client
