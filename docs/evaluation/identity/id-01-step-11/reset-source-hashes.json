@@ -1,0 +1,14 @@
+[
+  {
+    "path": "apps/web/src/features/identity/api.ts",
+    "sha256": "ffebc87ddb447f99fb9ec1d0160c25289848a5019559874c8b547f685bdfe9e9"
+  },
+  {
+    "path": "apps/web/src/features/identity/SignIn.tsx",
+    "sha256": "05bb2fda2773344213a6d6af75273aaac08e1cd3fc301496315b4ff86981515e"
+  },
+  {
+    "path": "apps/web/tests/identity.test.tsx",
+    "sha256": "1327a92cfaefefea7e90a3b0d7a2ef2cb3f472a6c2b627a91af441158877992f"
+  }
+]

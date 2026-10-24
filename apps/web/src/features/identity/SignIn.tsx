@@ -1,12 +1,26 @@
 import { lazy, Suspense, useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link } from 'react-router';
-import type { ChallengeAccepted } from '../../../../../contracts/generated/types.gen';
+import type { ChallengeAccepted, SessionView } from '../../../../../contracts/generated/types.gen';
 import { Button } from '../../shared/ui';
-import { identityApi, safeError } from './api';
+import { identityApi, IdentityError, safeError } from './api';
 import { useIdentity } from './session';
 import './identity.css';
 
-type Mode = 'login' | 'register' | 'verify';
+type Mode = 'login' | 'register' | 'verify' | 'forgot' | 'reset';
+const headings: Record<Mode, string> = {
+  login: 'Welcome back',
+  register: 'Create a temporary account',
+  verify: 'Verify your email',
+  forgot: 'Forgot your password?',
+  reset: 'Choose a new password',
+};
+const actions: Record<Mode, string> = {
+  login: 'Sign in',
+  register: 'Send verification code',
+  verify: 'Verify and create account',
+  forgot: 'Send reset code',
+  reset: 'Reset password',
+};
 const preview = import.meta.env.DEV && import.meta.env.MODE === 'identity-preview';
 const PreviewMailbox = preview ? lazy(() => import('./PreviewMailbox')) : null;
 
@@ -15,8 +29,11 @@ const PreviewMailbox = preview ? lazy(() => import('./PreviewMailbox')) : null;
  * reuses its operation ID; deliberate resend uses a fresh ID after cooldown.
  */
 export function SignIn() {
-  const { status, user, accept } = useIdentity();
+  const { status, user, accept, clear } = useIdentity();
   const [mode, setMode] = useState<Mode>('login');
+  const creatingPassword = mode === 'verify' || mode === 'reset';
+  const enteringEmail = mode === 'login' || mode === 'register' || mode === 'forgot';
+  const resetting = mode === 'forgot' || mode === 'reset';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [code, setCode] = useState('');
@@ -54,7 +71,13 @@ export function SignIn() {
     try {
       await work();
     } catch (failure) {
-      setError(safeError(failure));
+      setError(
+        failure instanceof IdentityError && failure.uncertain && mode === 'reset'
+          ? 'We could not confirm the reset. Try signing in with your new password before requesting another code.'
+          : failure instanceof IdentityError && failure.uncertain && mode === 'verify'
+            ? 'We could not confirm account creation. Try signing in with the password you chose.'
+            : safeError(failure),
+      );
     } finally {
       sending.current = false;
       setBusy(false);
@@ -68,14 +91,14 @@ export function SignIn() {
         id: crypto.randomUUID(),
         acknowledged: false,
       };
-    const result = await identityApi.register({
+    const result = await (resetting ? identityApi.resetChallenge : identityApi.register)({
       email: target,
       operation_id: operation.current.id,
     });
     operation.current.acknowledged = true;
     setChallenge(result);
     setCode('');
-    setMode('verify');
+    setMode(resetting ? 'reset' : 'verify');
     setSeconds(60);
     setNotice(
       'If this address is eligible, a verification code will be sent. Check your inbox and spam folder.',
@@ -84,20 +107,34 @@ export function SignIn() {
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     void act(async () => {
-      if (mode === 'register') {
+      if (mode === 'register' || mode === 'forgot') {
         await issue();
         return;
       }
-      if (mode === 'verify') {
+      if (creatingPassword) {
+        if (Array.from(password).length < 8 || Array.from(password).length > 128) {
+          setError('Use 8–128 characters for your password.');
+          return;
+        }
         if (!challenge || Date.parse(challenge.expires_at) <= Date.now()) {
           setError('This code has expired. Request a new code.');
           return;
         }
-        const result = await identityApi.activate({
-          challenge_id: challenge.challenge_id,
-          code,
-          password,
-        });
+        let result: SessionView | undefined;
+        if (mode === 'reset') {
+          await identityApi.resetPassword({
+            challenge_id: challenge.challenge_id,
+            code,
+            new_password: password,
+          });
+          clear(); // Server reset revokes every session and issues no replacement.
+        } else {
+          result = await identityApi.activate({
+            challenge_id: challenge.challenge_id,
+            code,
+            password,
+          });
+        }
         setPassword('');
         setCode('');
         setEmail('');
@@ -105,8 +142,8 @@ export function SignIn() {
         operation.current = null;
         setMode('login');
         setSeconds(0);
-        setNotice('');
-        accept(result);
+        setNotice(mode === 'reset' ? 'Password changed. Sign in with your new password.' : '');
+        if (result) accept(result);
       } else {
         const result = await identityApi.login({
           email: email.trim(),
@@ -153,19 +190,15 @@ export function SignIn() {
             unavailable in this preview.
           </p>
         )}
-        <h2>
-          {mode === 'login'
-            ? 'Welcome back'
-            : mode === 'register'
-              ? 'Create a temporary account'
-              : 'Verify your email'}
-        </h2>
+        <h2>{headings[mode]}</h2>
         <p className="identity-muted">
           {mode === 'login'
             ? 'Use your verified temporary account.'
             : mode === 'register'
               ? 'We’ll send a code to verify your personal email.'
-              : 'Enter the six-digit code and choose your password.'}
+              : mode === 'forgot'
+                ? 'Enter the email you used for your temporary account.'
+                : 'Enter the six-digit code and choose your password.'}
         </p>
         {status === 'loading' && <p role="status">Checking your session…</p>}
         {status === 'unavailable' && (
@@ -183,9 +216,15 @@ export function SignIn() {
         )}
         <form
           onSubmit={submit}
-          aria-label={mode === 'verify' ? 'Verify temporary account' : 'Temporary account'}
+          aria-label={
+            mode === 'reset'
+              ? 'Reset temporary password'
+              : mode === 'verify'
+                ? 'Verify temporary account'
+                : 'Temporary account'
+          }
         >
-          {mode !== 'verify' && (
+          {enteringEmail && (
             <label>
               Email address
               <input
@@ -203,7 +242,7 @@ export function SignIn() {
               />
             </label>
           )}
-          {mode === 'verify' && (
+          {creatingPassword && (
             <>
               <p>
                 Code requested for <strong className="identity-wrap">{email}</strong>.
@@ -226,24 +265,24 @@ export function SignIn() {
               </label>
             </>
           )}
-          {mode !== 'register' && (
+          {(mode === 'login' || creatingPassword) && (
             <>
               <label>
-                Password
+                {mode === 'reset' ? 'New password' : 'Password'}
                 <input
                   name="password"
                   type="password"
-                  autoComplete={mode === 'verify' ? 'new-password' : 'current-password'}
+                  autoComplete={creatingPassword ? 'new-password' : 'current-password'}
                   required
-                  minLength={mode === 'verify' ? 8 : undefined}
-                  maxLength={128}
+                  minLength={creatingPassword ? 8 : undefined}
+                  maxLength={256}
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   disabled={busy}
-                  aria-describedby={mode === 'verify' ? 'password-help' : undefined}
+                  aria-describedby={creatingPassword ? 'password-help' : undefined}
                 />
               </label>
-              {mode === 'verify' && (
+              {creatingPassword && (
                 <p id="password-help" className="identity-muted">
                   Use 8–128 characters. Spaces are allowed.
                 </p>
@@ -251,13 +290,7 @@ export function SignIn() {
             </>
           )}
           <Button type="submit" disabled={busy || status === 'loading'}>
-            {busy
-              ? 'Please wait…'
-              : mode === 'login'
-                ? 'Sign in'
-                : mode === 'register'
-                  ? 'Send verification code'
-                  : 'Verify and create account'}
+            {busy ? 'Please wait…' : actions[mode]}
           </Button>
         </form>
         {PreviewMailbox && (
@@ -267,15 +300,20 @@ export function SignIn() {
         )}
         <div className="identity-actions">
           {mode === 'login' ? (
-            <Button variant="secondary" disabled={busy} onClick={() => change('register')}>
-              Create temporary account
-            </Button>
+            <>
+              <Button variant="secondary" disabled={busy} onClick={() => change('register')}>
+                Create temporary account
+              </Button>
+              <Button variant="secondary" disabled={busy} onClick={() => change('forgot')}>
+                Forgot password
+              </Button>
+            </>
           ) : (
             <Button variant="secondary" disabled={busy} onClick={() => change('login')}>
               Back to sign in
             </Button>
           )}
-          {mode === 'verify' && (
+          {creatingPassword && (
             <>
               <Button
                 variant="secondary"
@@ -286,7 +324,11 @@ export function SignIn() {
               >
                 {seconds > 0 ? `Resend in ${seconds}s` : 'Send a new code'}
               </Button>
-              <Button variant="secondary" disabled={busy} onClick={() => change('register')}>
+              <Button
+                variant="secondary"
+                disabled={busy}
+                onClick={() => change(resetting ? 'forgot' : 'register')}
+              >
                 Use another email
               </Button>
             </>

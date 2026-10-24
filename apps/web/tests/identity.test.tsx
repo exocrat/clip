@@ -250,3 +250,134 @@ describe('Cookie API and preview isolation', () => {
     expect(normal.server?.proxy).toBeUndefined();
   });
 });
+
+describe('Temporary password recovery', () => {
+  async function resetForm() {
+    const user = userEvent.setup();
+    view();
+    await ready();
+    await user.click(screen.getByRole('button', { name: 'Forgot password' }));
+    await user.type(screen.getByLabelText('Email address'), 'synthetic-reset@example.invalid');
+    await user.click(screen.getByRole('button', { name: 'Send reset code' }));
+    await screen.findByRole('button', { name: 'Reset password' });
+    return user;
+  }
+
+  it('uses reset-specific endpoints, clears secrets and requires a new sign-in', async () => {
+    const calls: { path: string; body: unknown }[] = [];
+    mockApi((path, init) => {
+      calls.push({ path, body: init.body ? JSON.parse(String(init.body)) : undefined });
+      if (path === '/me') return response({}, 401);
+      if (path === '/auth/temporary/password-reset-challenges') return response(challenge, 202);
+      if (path === '/auth/temporary/password-resets') return response(null, 204);
+      return response(session);
+    });
+    const user = await resetForm();
+    expect(screen.getByRole('status').textContent).toMatch(/If this address is eligible/);
+    expect(screen.getByLabelText('New password').getAttribute('minlength')).toBe('8');
+    await user.type(screen.getByLabelText('Verification code'), '654321');
+    await user.type(screen.getByLabelText('New password'), 'resetPwd');
+    await user.click(screen.getByRole('button', { name: 'Reset password' }));
+    await screen.findByRole('heading', { name: 'Welcome back' });
+    expect(screen.getByRole('status').textContent).toMatch(/Sign in with your new password/);
+    expect(screen.getByLabelText('Password').getAttribute('value')).toBe('');
+    expect(screen.queryByLabelText('Verification code')).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'You’re signed in' })).toBeNull();
+    expect(calls.filter((row) => row.path.endsWith('/sessions'))).toHaveLength(0);
+    expect(calls.filter((row) => row.path.endsWith('/registration-challenges'))).toHaveLength(0);
+    expect(calls.find((row) => row.path.endsWith('/password-resets'))?.body).toEqual({
+      challenge_id: challenge.challenge_id,
+      code: '654321',
+      new_password: 'resetPwd',
+    });
+    await user.type(screen.getByLabelText('Email address'), 'synthetic-reset@example.invalid');
+    await user.type(screen.getByLabelText('Password'), 'resetPwd');
+    await user.click(screen.getByRole('button', { name: 'Sign in' }));
+    await screen.findByRole('heading', { name: 'You’re signed in' });
+  });
+
+  it('does not resubmit an uncertain reset and guides login with the new password', async () => {
+    let attempts = 0;
+    mockApi((path) => {
+      if (path === '/me') return response({}, 401);
+      if (path.endsWith('/password-reset-challenges')) return response(challenge, 202);
+      attempts++;
+      throw new Error('PRIVATE_RESET_DEPENDENCY');
+    });
+    const user = await resetForm();
+    await user.type(screen.getByLabelText('Verification code'), '654321');
+    await user.type(screen.getByLabelText('New password'), 'resetPwd');
+    await user.click(screen.getByRole('button', { name: 'Reset password' }));
+    const error = await screen.findByRole('alert');
+    expect(error.textContent).toMatch(/Try signing in with your new password/);
+    expect(document.body.textContent).not.toContain('PRIVATE_RESET_DEPENDENCY');
+    expect(attempts).toBe(1);
+    await user.click(screen.getByRole('button', { name: 'Back to sign in' }));
+    expect(screen.getByLabelText('Password').getAttribute('value')).toBe('');
+  });
+
+  it.each([422, 429, 503])('retains a safe reset screen after status %s', async (status) => {
+    mockApi((path) =>
+      path === '/me'
+        ? response({}, 401)
+        : path.endsWith('/password-reset-challenges')
+          ? response(challenge, 202)
+          : response({ private: 'PRIVATE_RESET_BODY' }, status),
+    );
+    const user = await resetForm();
+    await user.type(screen.getByLabelText('Verification code'), '654321');
+    await user.type(screen.getByLabelText('New password'), 'resetPwd');
+    await user.click(screen.getByRole('button', { name: 'Reset password' }));
+    await screen.findByRole('alert');
+    expect(screen.getByRole('heading', { name: 'Choose a new password' })).toBeTruthy();
+    expect(document.body.textContent).not.toContain('PRIVATE_RESET_BODY');
+    expect(screen.queryByRole('heading', { name: 'You’re signed in' })).toBeNull();
+  });
+
+  it('blocks an expired challenge without submitting a reset', async () => {
+    const fetcher = mockApi((path) =>
+      path === '/me'
+        ? response({}, 401)
+        : response({ ...challenge, expires_at: '2000-01-01T00:00:00.000000Z' }, 202),
+    );
+    const user = await resetForm();
+    await user.type(screen.getByLabelText('Verification code'), '654321');
+    await user.type(screen.getByLabelText('New password'), 'resetPwd');
+    await user.click(screen.getByRole('button', { name: 'Reset password' }));
+    expect((await screen.findByRole('alert')).textContent).toMatch(/code has expired/);
+    expect(fetcher.mock.calls.filter((row) => row[0].endsWith('/password-resets'))).toHaveLength(0);
+  });
+
+  it('counts Unicode password code points without truncating astral characters', async () => {
+    const requests: unknown[] = [];
+    mockApi((path, init) => {
+      if (path === '/me') return response({}, 401);
+      if (path.endsWith('/password-reset-challenges')) return response(challenge, 202);
+      requests.push(JSON.parse(String(init.body)));
+      return response(null, 204);
+    });
+    const user = await resetForm();
+    await user.type(screen.getByLabelText('Verification code'), '654321');
+    fireEvent.change(screen.getByLabelText('New password'), { target: { value: '🔒'.repeat(7) } });
+    fireEvent.submit(screen.getByRole('form', { name: 'Reset temporary password' }));
+    expect((await screen.findByRole('alert')).textContent).toMatch(/8–128 characters/);
+    expect(requests).toHaveLength(0);
+    fireEvent.change(screen.getByLabelText('New password'), { target: { value: '🔒'.repeat(8) } });
+    fireEvent.submit(screen.getByRole('form', { name: 'Reset temporary password' }));
+    await screen.findByRole('heading', { name: 'Welcome back' });
+    expect(requests).toEqual([
+      { challenge_id: challenge.challenge_id, code: '654321', new_password: '🔒'.repeat(8) },
+    ]);
+  });
+
+  it('changing reset email stays in recovery and clears prior code/password', async () => {
+    mockApi((path) => (path === '/me' ? response({}, 401) : response(challenge, 202)));
+    const user = await resetForm();
+    await user.type(screen.getByLabelText('Verification code'), '654321');
+    await user.type(screen.getByLabelText('New password'), 'resetPwd');
+    await user.click(screen.getByRole('button', { name: 'Use another email' }));
+    expect(screen.getByRole('heading', { name: 'Forgot your password?' })).toBeTruthy();
+    expect(screen.queryByLabelText('New password')).toBeNull();
+    expect(screen.queryByLabelText('Verification code')).toBeNull();
+  });
+});

@@ -129,3 +129,7 @@ passed all11gates,771 Python/63data/32web, including eight-character HTTP/UI/has
 boundaries. The original770-case result above belongs to the initial screen.
 Human verification and explicit commit authorization cover this corrected
 checkpoint. Remaining Step11 work still needs its visible-increment review.
+
+The subsequent [password recovery checkpoint](reset-checkpoint.md) builds on
+verified first UI/8-character commit4d56101. Its separate hashes/results do not
+replace this historical first-increment evidence.

@@ -2,7 +2,7 @@
 
 The web app is a runnable scaffold: it has the approved routes, shared shell,
 and domain-owned placeholders. Identity temporary sign-in/registration is now in its first local UI checkpoint.
-Other product surfaces remain placeholders; Microsoft callback/reset/contact
+Other product surfaces remain placeholders; Microsoft callback/contact
 editing and real provider/runtime acceptance are still pending.
 
 Use Node.js 24 LTS and npm 11, as recorded in the
@@ -89,3 +89,22 @@ HTTP results, covering forms, safe errors, duplicate/uncertain writes, session
 expiry/stale reads and CSRF. The existing route/boundary tests remain. Full web
 lint/types/tests/build uses `npm run check`. Human visual/device verification
 follows the [browser procedure](../../docs/environment/browser-verification.md).
+
+## Password recovery browser checkpoint
+
+After creating the synthetic account above, sign out and choose **Forgot
+password**. Enter the same reserved example email, request a reset code, and
+read **Check test inbox**. Enter the code and a new8–128character password.
+After reset, sign in explicitly with the new password; the old password and
+sessions must fail. The shared OTP cooldown is60seconds from the previous send,
+including registration, so wait a minute after registration before requesting
+reset. Acknowledgement stays generic for unknown/ineligible addresses. Incorrect
+or expired codes show a safe validation message; rate limits ask you to wait.
+
+Uncertain reset outcomes guide sign-in with the new password rather than an
+automatic retry. Passwords are never trimmed; UI and backend count Unicode code
+points, with eight minimum and128maximum. Browser input permits the UTF-16 space
+needed for128astral characters; the explicit character-count check remains the
+client hint and backend authorization/validation remains authoritative.
+This recovery increment awaits human browser verification; Microsoft callback
+and own-contact UI remain pending Step11 increments.

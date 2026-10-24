@@ -288,3 +288,12 @@ and synthetic test inbox with actual disposable Identity SQL/HTTP. It rejects
 build/deployment of that mode; normal builds eliminate the test inbox module.
 Normal development does not enable this proxy; unconfigured backend main is
 still health-only. See [first checkpoint evidence](../evaluation/identity/id-01-step-11/README.md).
+
+### ID-01 Step11 recovery increment
+
+After Aditya verified the first sign-in screen, the same reserved Identity writer
+adds forgot-password/request-code/reset states inside `/sign-in`; no new route,
+page composition or public feature prop change. API requests use the reviewed
+reset-specific operations, generic acknowledgement and single-use proof; reset
+issues no new session. Human recovery/portrait/landscape verification remains
+pending. Microsoft callback and private contact editor remain later Step11 work.

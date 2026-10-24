@@ -859,3 +859,10 @@ can format only this step's new files using `npx biome format --write
 --javascript-formatter-quote-style=single <explicit-file-paths>` from apps/web.
 No shared formatter configuration change. Full make check remains required;
 local/browser doubles do not accept actual provider/device/ID-READY gates.
+
+The Step11 recovery increment uses the same preview commands/ports and disposable
+backend; no new route/provider/resource. After restarting the harness, recreate
+its synthetic account. Wait the shared60s OTP cooldown, then exercise Forgot
+password → reset code → new password → explicit sign-in. Existing make check/
+npm run check include the added reset UI cases. Preview restart discards only
+its own ephemeral data; it never reconnects to a retained/shared database.

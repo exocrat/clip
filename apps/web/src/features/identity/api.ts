@@ -2,6 +2,8 @@ import type {
   ActivateTemporaryRequestWritable,
   ChallengeAccepted,
   RegistrationChallengeRequest,
+  PasswordResetChallengeRequest,
+  ResetTemporaryPasswordRequestWritable,
   SessionView,
   TemporarySessionRequestWritable,
 } from '../../../../../contracts/generated/types.gen';
@@ -88,6 +90,19 @@ export async function request(
   }
 }
 
+/** Validate a generic, non-enumerating challenge acknowledgement for either purpose. */
+function acknowledgement(result: unknown): ChallengeAccepted {
+  if (!result || typeof result !== 'object') throw new IdentityError(503, true);
+  const row = result as Record<string, unknown>;
+  if (
+    typeof row.challenge_id !== 'string' ||
+    typeof row.expires_at !== 'string' ||
+    !Number.isFinite(Date.parse(row.expires_at))
+  )
+    throw new IdentityError(503, true);
+  return { challenge_id: row.challenge_id, expires_at: row.expires_at };
+}
+
 /** Explicit reviewed endpoints; no target actor comes from browser input. */
 export const identityApi = {
   async me() {
@@ -98,15 +113,15 @@ export const identityApi = {
   },
   async register(body: RegistrationChallengeRequest): Promise<ChallengeAccepted> {
     const result = await request('/auth/temporary/registration-challenges', 'POST', body);
-    if (!result || typeof result !== 'object') throw new IdentityError(503, true);
-    const row = result as Record<string, unknown>;
-    if (
-      typeof row.challenge_id !== 'string' ||
-      typeof row.expires_at !== 'string' ||
-      !Number.isFinite(Date.parse(row.expires_at))
-    )
-      throw new IdentityError(503, true);
-    return { challenge_id: row.challenge_id, expires_at: row.expires_at };
+    return acknowledgement(result);
+  },
+  async resetChallenge(body: PasswordResetChallengeRequest): Promise<ChallengeAccepted> {
+    return acknowledgement(
+      await request('/auth/temporary/password-reset-challenges', 'POST', body),
+    );
+  },
+  async resetPassword(body: ResetTemporaryPasswordRequestWritable) {
+    await request('/auth/temporary/password-resets', 'POST', body);
   },
   async activate(body: ActivateTemporaryRequestWritable) {
     return session(await request('/auth/temporary/accounts', 'POST', body));
