@@ -281,6 +281,97 @@ describe('OpenE2EE adapter', () => {
     expect(establishSession).toHaveBeenCalledTimes(2);
   });
 
+  it('resumes only a persisted session whose pinned identity still matches the directory', async () => {
+    const pinned = toOpenE2eePreKeyBundle(memberBundle, { userId: 'bob', keyVersion: 7 }).identity;
+    const changedMember: MemberPreKeyBundle = {
+      ...memberBundle,
+      key_bundle: {
+        ...memberBundle.key_bundle,
+        key_version: 8,
+        identity: {
+          ...memberBundle.key_bundle.identity,
+          x25519_public_key_base64: bytes(32, '\x02'),
+        },
+      },
+    };
+    const changed = toOpenE2eePreKeyBundle(changedMember, { userId: 'bob', keyVersion: 8 }).identity;
+    const record = { identity: pinned, trustState: 'UNVERIFIED_TOFU' as const, firstSeenAt: 1,
+      lastSeenAt: 1, revision: 1, retiredIdentities: [] };
+    const localStore = { getContactIdentity: vi.fn(async () => record) };
+    const directory = { getIdentityKey: vi.fn(async () => pinned) };
+    const send = vi.fn(async () => ({
+      clientMessageId: 'operation-1', messageId: 'message-1', timestamp: messageContext.client_timestamp_ms,
+      clientTimestamp: messageContext.client_timestamp_ms, recipientDeviceCount: 1,
+    } satisfies SendResult));
+    const client = {
+      userId: 'alice',
+      hasSession: vi.fn(async () => true),
+      establishSession: vi.fn(async () => undefined),
+      acceptIdentityRotation: vi.fn(async () => undefined),
+      send,
+      processIncomingEnvelope: vi.fn(),
+      completeReceive: vi.fn(),
+    } as unknown as ConstructorParameters<typeof ConversationCrypto>[0];
+    const crypto = new ConversationCrypto(client, { register: vi.fn() }, directory, localStore);
+
+    await expect(crypto.resumeParticipantSession({ userId: 'bob', keyVersion: 7 })).resolves.toBe(true);
+    expect(client.establishSession).not.toHaveBeenCalled();
+
+    directory.getIdentityKey.mockResolvedValue(changed);
+    await expect(crypto.resumeParticipantSession({ userId: 'bob', keyVersion: 8 }))
+      .rejects.toBeInstanceOf(ConversationKeyChangeRequiredError);
+    await expect(crypto.sendText({
+      conversation_id: messageContext.conversation_id,
+      operation_id: 'operation-1',
+      recipient_user_id: 'bob',
+      sender_key_version: 3,
+      recipient_key_version: 8,
+      client_timestamp_ms: messageContext.client_timestamp_ms,
+      text: messageContext.text,
+    })).rejects.toThrow(ConversationCryptoError);
+    expect(send).not.toHaveBeenCalled();
+
+    await crypto.acceptDirectoryKeyChange(changedMember, { userId: 'bob', keyVersion: 8 });
+    await expect(crypto.sendText({
+      conversation_id: messageContext.conversation_id,
+      operation_id: 'operation-1',
+      recipient_user_id: 'bob',
+      sender_key_version: 3,
+      recipient_key_version: 8,
+      client_timestamp_ms: messageContext.client_timestamp_ms,
+      text: messageContext.text,
+    })).resolves.toMatchObject({ clientMessageId: 'operation-1' });
+    expect(client.acceptIdentityRotation).toHaveBeenCalledOnce();
+    expect(client.establishSession).toHaveBeenCalledOnce();
+    expect(send).toHaveBeenCalledOnce();
+  });
+
+  it('does not resume a missing SDK session or accept missing identity state', async () => {
+    const pinned = toOpenE2eePreKeyBundle(memberBundle, { userId: 'bob', keyVersion: 7 }).identity;
+    const client = {
+      userId: 'alice', hasSession: vi.fn(async () => false),
+      establishSession: vi.fn(async () => undefined), acceptIdentityRotation: vi.fn(),
+      send: vi.fn(), processIncomingEnvelope: vi.fn(), completeReceive: vi.fn(),
+    } as unknown as ConstructorParameters<typeof ConversationCrypto>[0];
+    const localStore = { getContactIdentity: vi.fn(async () => null) };
+    const directory = { getIdentityKey: vi.fn(async (_userId: string): Promise<PreKeyBundle['identity'] | null> => null) };
+    const crypto = new ConversationCrypto(client, { register: vi.fn() }, directory, localStore);
+
+    await expect(crypto.resumeParticipantSession({ userId: 'bob', keyVersion: 7 })).resolves.toBe(false);
+    expect(localStore.getContactIdentity).not.toHaveBeenCalled();
+    expect(directory.getIdentityKey).not.toHaveBeenCalled();
+
+    client.hasSession = vi.fn(async () => true);
+    await expect(crypto.resumeParticipantSession({ userId: 'bob', keyVersion: 7 }))
+      .rejects.toThrow('Participant identity unavailable');
+    expect(client.establishSession).not.toHaveBeenCalled();
+
+    directory.getIdentityKey = vi.fn(async () => pinned);
+    await expect(crypto.resumeParticipantSession({ userId: 'bob', keyVersion: 7 }))
+      .rejects.toThrow('Saved participant identity is unavailable');
+    expect(client.establishSession).not.toHaveBeenCalled();
+  });
+
   it('uses the SDK send API with stable CLIP operation ID and timestamp before relay routing', async () => {
     const routeRegister = vi.fn<(route: ConversationEnvelopeRoute) => void>();
     const send = vi.fn(async (_recipient: string, _content: string, _options?: unknown) => ({
