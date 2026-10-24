@@ -582,3 +582,22 @@ cycles through its original owner clone, with catalogue/head and volume retained
 clean migration checks used disposable containers. Other-machine checks remain
 pending. Exact logs/source overlay are linked from the work log; Step 6 consolidates
 the evidence and task review.
+
+## CN-01 — disposable Conversations database checks
+
+Run `uv run --locked python scripts/check_conversations_retirement.py` from
+the repository root, or use `.venv/bin/python` with the already synchronized
+locked environment. It requires local Unix-socket Docker and the pinned
+PostgreSQL 18.6/dbmate 2.36.0 images. It creates one tmpfs-backed database
+container on a generated loopback port, applies migrations to branch head
+`20261024063500`, runs the focused retirement/thread/message/directory/recovery
+storage tests with warnings treated as errors, then removes its own container.
+It accepts no database target and uses only synthetic users and opaque test
+payloads. Exit 0 means the collected checks passed; ordinary pytest without
+this harness skips database tests when its private test DSN is absent.
+
+`uv run --locked python scripts/check_database.py` separately checks clean
+migration application, exact/repeated head, both SQL smoke suites, latest
+rollback and reapplication on its own disposable database. It verifies that
+rolling back recovery storage preserves the prior directory/transport schema.
+These checks do not prove real Identity, origin-owner or browser integration.

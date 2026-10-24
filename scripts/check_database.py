@@ -178,7 +178,7 @@ def main():
         actual = sql(
             "SELECT version FROM public.schema_migrations ORDER BY version"
         ).splitlines()
-        if not expected or actual != expected or actual[-1] != "20261023080000":
+        if not expected or actual != expected or actual[-1] != "20261024063500":
             raise RuntimeError("Migration history differs from the expected head")
         migrate()
         for filename in ("schema-smoke.sql", "retired-origin-smoke.sql"):
@@ -187,11 +187,11 @@ def main():
             sql(
                 "SELECT count(*) FROM pg_tables WHERE schemaname IN ('identity','listings','search','conversations')"
             )
-            != "26"
+            != "27"
         ):
-            raise RuntimeError("Expected 26 domain tables")
+            raise RuntimeError("Expected 27 domain tables")
         migrate("rollback")
-        if sql("SELECT max(version) FROM public.schema_migrations") != "20261022213000":
+        if sql("SELECT max(version) FROM public.schema_migrations") != "20261023080000":
             raise RuntimeError("Rollback did not return to the prior migration head")
         if (
             sql(
@@ -212,12 +212,23 @@ def main():
             raise RuntimeError("Rollback removed prior message-transport columns")
         if (
             sql(
-                "SELECT to_regclass('conversations.public_prekeys') IS NULL "
-                "AND to_regclass('conversations.key_directory_operations') IS NULL"
+                "SELECT to_regclass('conversations.public_prekeys') IS NOT NULL "
+                "AND to_regclass('conversations.key_directory_operations') IS NOT NULL "
+                "AND to_regclass('conversations.recovery_families') IS NULL"
             )
             != "t"
         ):
-            raise RuntimeError("Rollback left key-directory tables behind")
+            raise RuntimeError(
+                "Rollback did not preserve key-directory tables or remove recovery storage"
+            )
+        if (
+            sql(
+                "SELECT count(*) FROM pg_attribute WHERE attrelid = 'conversations.entries'::regclass "
+                "AND NOT attisdropped AND attname = 'sdk_client_message_id'"
+            )
+            != "0"
+        ):
+            raise RuntimeError("Rollback left recovery entry columns behind")
         if (
             sql(
                 "SELECT count(*) FROM pg_attribute a "
@@ -237,7 +248,7 @@ def main():
                 "Smoke fixture rows unexpectedly survived their transaction"
             )
         migrate()
-        if sql("SELECT max(version) FROM public.schema_migrations") != "20261023080000":
+        if sql("SELECT max(version) FROM public.schema_migrations") != "20261024063500":
             raise RuntimeError("Reapply did not restore the current migration head")
         for filename in ("schema-smoke.sql", "retired-origin-smoke.sql"):
             sql((ROOT / "database/tests" / filename).read_text())

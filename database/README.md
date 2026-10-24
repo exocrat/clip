@@ -39,8 +39,9 @@ was changed. [Tool rationale](../docs/decisions/database-migration-tool.md).
 | `20261021101000_api_owned_retirement_and_trigger_boundaries.sql` | Add owner-pending retirement state, Conversations no-write markers and operation results; replace cross-domain trigger queries with owner/API boundaries while preserving Conversations-local protections. |
 | `20261022213000_conversation_message_transport.sql` | Add recipient-only protocol-control routing, globally scoped message retry IDs, exact SDK-envelope metadata, and local checks that preserve ordered writes and content-free replay markers. Requires owner-API reconciliation before use if a target already contains conversation entries. |
 | `20261023080000_conversation_public_key_directory.sql` | Store public one-time prekeys and durable caller/operation retry results. Consumed IDs stay reserved; private material is never accepted. Down refuses to remove populated directory storage. |
+| `20261024063500_conversation_recovery_storage.sql` | Preserve separate SDK IDs and original-message references; add immutable requester/family bindings and v2 payload guards for requests, resends and null responses. Backfills only Conversations-owned SDK metadata for existing v1 entries without changing ciphertext. Down refuses populated recovery/v2 state. |
 
-Expected current migration version on the CN-01 branch: **20261023080000**. One
+Expected current migration version on the CN-01 branch: **20261024063500**. One
 integrator allocates later timestamp identifiers; no parallel heads or
 uncoordinated edits to initial DDL. Published/applied migrations are corrected
 forward, not rewritten.
@@ -126,7 +127,7 @@ password and are visible to administrators of the local Docker engine.
 | `bash database/local-db.sh start` | Validate local context/configuration/resource ownership, create/start only PostgreSQL, then wait for authenticated TCP `SELECT 1`. Exit 0 means connectivity, not migrations. |
 | `bash database/local-db.sh wait` | Up to 30 authenticated connection attempts with a 2-second connection timeout and 2-second pauses; nonzero on timeout/absent container. Final sanitized connection diagnostic is retained. |
 | `bash database/local-db.sh migrate` | Wait for connectivity, then run pinned dbmate 2.36.0 `migrate` with strict ordering and no schema dump. Applies pending migrations only to `clip_local`. Nonzero aborts; inspect sanitized output before recovery. |
-| `bash database/local-db.sh status` | Wait for connectivity and show dbmate migration status. A successful listing can still contain pending migrations; compare to the current branch head `20261023080000`, not merely process exit status. |
+| `bash database/local-db.sh status` | Wait for connectivity and show dbmate migration status. A successful listing can still contain pending migrations; compare to the current branch head `20261024063500`, not merely process exit status. |
 | `bash database/local-db.sh stop` | Stop only the validated service container, retaining its container and named data volume. An absent container is a successful no-op. |
 | `bash database/local-db.sh reset --confirm-delete-local-data` | **Permanently delete all local database data.** Warn, validate labels/clone/image/port/mount, stop/remove only the service container, then remove only `clip-local_clip_local_postgres_data`, without force. Leaves the database stopped. Explicitly review/approve this destructive invocation before using it; then run `start` and `migrate` to recreate. |
 | `bash database/local-db.sh --help` | Show fixed usage without password/Docker setup. |
