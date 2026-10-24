@@ -50,3 +50,14 @@ Aditya(A), explicit verification of Step8 capability matrix and dispatcher plan.
 Extends the [contract generation decision](contract-source-and-generation.md)
 with a thin approved runtime adapter, preserving canonical declaration separation,
 all reviewed signature/ownership rules and the existing wanted-request policy.
+
+## Step9 extension
+
+The [verified Step9 plan](identity-contact-sharing-and-cleanup.md) adds only
+get_shareable_contact_options and get_selected_own_contacts to the selected
+Identity dispatch metadata, preserving declaration-only canonical bodies and
+unimplemented notification recipient resolution. A separate immutable technical
+claims scope carries owner-checked sharing context. HTTP middleware clears
+ambient claims and binds its real providers per request; trusted Conversations
+composition installs an inner scope after its authorization/confirmation checks.
+No browser input, import or object construction installs authority automatically.

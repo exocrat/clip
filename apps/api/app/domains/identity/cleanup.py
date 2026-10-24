@@ -1,6 +1,7 @@
 """Bounded Identity-only retention, dry-run by default; no scheduler is enabled.
 
-Preserve users, contacts, enrollment/operation lifetime markers and key bindings.
+Preserve users, enrollment/operation lifetime markers and key bindings. Source
+contacts and display names are removed thirty days after terminal account state.
 Each candidate is rechecked under compatible target/user locks in its own bounded
 transaction. Explicit runtime target/apply approval is separate from this code.
 """
@@ -171,11 +172,68 @@ class IdentityCleanup:
                             ).fetchone()
                             count += int(result is not None)
                 counts[table] = count
+            counts.update(self._profiles(now, apply, batch_size))
             return CleanupResult(not apply, counts)
         except Exception:
             # A partially applied bounded run may have committed earlier items;
             # rerunning rechecks eligibility and is safe. Never claim all-or-none.
             raise PublicError(ERRORS[503]) from None
+
+    def _profiles(self, now: datetime, apply: bool, batch_size: int) -> dict[str, int]:
+        """Bound user candidates, then lock/recheck before removing private fields.
+
+        Earliest permanent terminal state controls the thirty-day deadline. Keep
+        the account and lifetime enrollment/request markers; never delete users.
+        Source mutation uses the same user-first lock as own-contact operations.
+        """
+        cutoff = now - timedelta(days=30)
+        terminal = "LEAST(revoked_at,CASE WHEN account_class='temporary' THEN expires_at END)<=%s"
+        pending = "(profile_removed_at IS NULL OR display_name IS NOT NULL OR EXISTS(SELECT 1 FROM identity.contacts c WHERE c.user_id=u.id))"
+        with self._connect() as c:
+            self._fresh(c)
+            with c.transaction():
+                self._timeouts(c)
+                candidates = c.execute(
+                    f"SELECT id FROM identity.users u WHERE {terminal} AND {pending} ORDER BY id LIMIT %s",
+                    (cutoff, batch_size),
+                ).fetchall()
+        counts = {"contacts": 0, "profiles": 0}
+        for (user,) in candidates:
+            with self._connect() as c:
+                self._fresh(c)
+                with c.transaction():
+                    self._timeouts(c)
+                    row = c.execute(
+                        f"SELECT profile_removed_at,display_name FROM identity.users u WHERE id=%s AND {terminal} AND {pending} FOR UPDATE",
+                        (user, cutoff),
+                    ).fetchone()
+                    if row is None:
+                        continue
+                    if not apply:
+                        counts["contacts"] += int(
+                            c.execute(
+                                "SELECT 1 FROM identity.contacts WHERE user_id=%s",
+                                (user,),
+                            ).fetchone()
+                            is not None
+                        )
+                        counts["profiles"] += int(row[0] is None or row[1] is not None)
+                        continue
+                    counts["contacts"] += int(
+                        c.execute(
+                            "DELETE FROM identity.contacts WHERE user_id=%s RETURNING user_id",
+                            (user,),
+                        ).fetchone()
+                        is not None
+                    )
+                    counts["profiles"] += int(
+                        c.execute(
+                            "UPDATE identity.users SET display_name=NULL,profile_removed_at=COALESCE(profile_removed_at,%s),revision=revision+1 WHERE id=%s AND (display_name IS NOT NULL OR profile_removed_at IS NULL) RETURNING id",
+                            (now, user),
+                        ).fetchone()
+                        is not None
+                    )
+        return counts
 
     @staticmethod
     def _fresh(c: Database) -> None:

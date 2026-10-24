@@ -61,8 +61,9 @@ for subsequent requests. No domain queries Identity's private tables.
 
 Only the authenticated user may read or change their own profile. The current
 schema provides optional `display_name`; this contract adds no public profile
-lookup or other profile fields. Exact display-name limits and update semantics
-are finalized with operation details in Step 9 and reviewed in Step 10.
+lookup or other profile fields. Display-name updates trim to 1–80 Unicode code points; omission preserves the
+current name and explicit null clears it. The request remains bounded at 80
+code points before trimming.
 
 The authenticated user may collect, update or delete their own shareable
 `email`, `phone` and `upi_id` values. Temporary login email/password identity is
@@ -176,3 +177,28 @@ unconfigured runtime503 fail closed. Target IDs must come from trusted context
 or authoritative domain relationships. The generated scoped wrapper contains
 only technical dispatch; actual provider reads fresh SQL. No public directory,
 new HTTP operation, provider/cloud setup or full FR-03 acceptance is introduced.
+
+## Step9 trusted sharing implementation
+
+The [reviewed sharing/cleanup decision](../docs/decisions/identity-contact-sharing-and-cleanup.md)
+requires trusted composition to install the frozen, server-only
+`ContactSharingContext` from the generated public module through
+`core.runtime_bindings.runtime_claims({"identity.contact_share": context})`.
+Conversations must first establish actual participation, derive the actor and
+conversation from authoritative context, and accept only the UI-confirmed fields.
+This technical scope proves nothing by construction; it is never HTTP JSON or a
+client authorization flag. Identity matches actor/conversation, rechecks current
+account/capability, and requires requested fields to be a subset of the confirmed
+nonempty set. A participation-only context permits flags, never values. Missing
+or mismatched authority is403; missing runtime binding is503. A removed requested
+field yields safe422 with `fields/unavailable_contact`; do not substitute values.
+Real CN membership/confirmation/client encryption checks remain pending CN-02.
+
+Editable email preserves trimmed spelling/aliases and supports internationalized
+syntax with pinned email-validator, DNS/deliverability disabled. Phone is plus
+and8–15 digits with a nonzero leading country digit. UPI syntax is3–100 ASCII
+characters matching local-part `[A-Za-z0-9._-]+` and handle `[A-Za-z0-9.-]+`.
+No mailbox/payment verification is claimed. Source fields never change login.
+Bounded cleanup removes source contacts and display names30days after the earliest
+permanent revocation/temporary expiry, preserving users and lifetime markers.
+Actual scheduling and observed retention deadlines remain separately gated.

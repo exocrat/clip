@@ -57,6 +57,14 @@ to meet the within24-hour requirement. Obsolete login/OTP source/target windows
 and attempt metadata are removed24hours after their protection window ends.
 Per-table batches default100/max1000; dry-run default, target-checked explicit
 apply and cutoff rechecks under compatible locks. Lifetime enrollment/request
-markers, key commitments, users and contacts survive this mechanism. No active
+markers, key commitments and users survive this mechanism. Step7 originally
+preserved contacts; the approved Step9 extension below removes private source
+fields under their own thirty-day window. No active
 scheduler or actual retention-deadline evidence is claimed until approved
 runtime deployment/run verification. Step9 owns contact/profile cleanup.
+
+Step9 implements the [reviewed contact/profile cleanup mechanism](identity-contact-sharing-and-cleanup.md)
+with user-first locks, cutoff rechecks, bounded candidates and dry-run counts.
+It clears display_name and sets the permanent profile_removed_at marker, deletes
+source contacts and preserves account/enrollment/request/key records. No live
+cleanup or scheduling has been enabled by this code change.

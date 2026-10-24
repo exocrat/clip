@@ -175,3 +175,12 @@ Workers must enter explicit trusted scopes; imports/schema generation remain
 side-effect-free. Source/refusal invariants, generated adapter shape/isolation,
 current output checks and boundary tests cover the narrow exception. This does
 not accept real runtime/consumer integration or authorize provider/cloud actions.
+
+## ID-01 Step9 contact dispatch extension
+
+The [reviewed Step9 mechanism](identity-contact-sharing-and-cleanup.md) selects
+both contact functions in addition to eligibility, through the existing generator
+metadata. All three use typed scoped dispatch; notification resolution and other
+domains continue refusing. ContactSharingContext is a frozen internal Python
+record, exported through generated Identity/public shared types, without changing
+HTTP OpenAPI or TypeScript models. Regenerate; never hand-edit these outputs.

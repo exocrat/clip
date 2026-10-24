@@ -238,3 +238,59 @@ def test_cli_target_check_dry_run_and_apply_only_owned_database(identity_runtime
     )
     assert applied.returncode == 0 and json.loads(applied.stdout)["dry_run"] is False
     assert count(state, "users") == 1
+
+
+@pytest.mark.parametrize(
+    "mode", ["temporary_expiry", "temporary_revoked_first", "regular_revoked"]
+)
+def test_contacts_profile_exact_thirty_day_boundary_and_guards(
+    identity_runtime, signed_tokens, mode
+):
+    from app.contracts.domain_types import ProfilePatch
+    from apps.api.tests.domains.identity.test_capabilities_postgres import regular
+
+    state = identity_runtime
+    grant = (
+        regular(state, signed_tokens) if mode == "regular_revoked" else activate(state)
+    )
+    caller = grant.identity.caller
+    service = state.service.contacts
+    service.update_profile(
+        caller, ProfilePatch(display_name="Synthetic retained profile")
+    )
+    service.set_contact(caller, "email", "synthetic-retention@example.com")
+    start = state.clock[0]
+    if mode == "temporary_expiry":
+        terminal = start + timedelta(days=14)
+    else:
+        state.clock[0] += timedelta(days=1)
+        state.service.revoke_account(caller.user_id)
+        terminal = state.clock[0]
+    state.clock[0] = terminal + timedelta(days=30) - timedelta(microseconds=1)
+    result = state.cleanup.run(apply=True)
+    assert result.counts["contacts"] == result.counts["profiles"] == 0
+    assert count(state, "contacts") == 1
+    state.clock[0] += timedelta(microseconds=1)
+    result = state.cleanup.run()
+    assert result.counts["contacts"] == result.counts["profiles"] == 1
+    assert count(state, "contacts") == 1
+    result = state.cleanup.run(apply=True)
+    assert result.counts["contacts"] == result.counts["profiles"] == 1
+    assert count(state, "contacts") == 0
+    with state.connect() as c:
+        assert c.execute(
+            "SELECT display_name,profile_removed_at FROM identity.users WHERE id=%s",
+            (caller.user_id,),
+        ).fetchone() == (None, state.clock[0])
+    assert count(state, "users") == 1
+    if mode != "regular_revoked":
+        assert (
+            count(state, "temporary_enrollments")
+            == count(state, "otp_operations")
+            == count(state, "otp_key_binding")
+            == 1
+        )
+    else:
+        assert count(state, "external_identities") == 1
+    assert state.cleanup.run(apply=True).counts["profiles"] == 0
+    assert state.cleanup.run(apply=True).counts["contacts"] == 0

@@ -7,11 +7,12 @@ authorization, persistence, provider calls, retries, encryption, or cleanup.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Annotated, Generic, Literal, TypeVar
 from uuid import UUID
 
+from app.core.identifiers import format_id
 from app.core.timestamps import as_utc, format_timestamp, parse_timestamp
 from pydantic import (
     BaseModel,
@@ -195,6 +196,31 @@ class ContactValueRequest(ContractModel):
     """One contact field submitted to the authenticated Identity boundary."""
 
     value: str = Field(min_length=1, max_length=254, repr=False)
+
+
+@dataclass(frozen=True)
+class ContactSharingContext:
+    """Server-only scope after Conversation participation/confirmation checks.
+
+    Not an HTTP model or authentication credential. Trusted composition installs
+    this immutable record only for the approved flow; IDs alone grant nothing.
+    None permits availability only; selected values require confirmed fields.
+    """
+
+    actor_id: UserId = field(repr=False)
+    conversation_id: ConversationId = field(repr=False)
+    confirmed_fields: frozenset[ContactField] | None = field(default=None, repr=False)
+
+    def __post_init__(self) -> None:
+        """Validate opaque IDs/field scope without contacting another domain."""
+        format_id(self.actor_id)
+        format_id(self.conversation_id)
+        if self.confirmed_fields is not None and (
+            not isinstance(self.confirmed_fields, frozenset)
+            or not self.confirmed_fields
+            or not self.confirmed_fields <= {"email", "phone", "upi_id"}
+        ):
+            raise ValueError("Invalid confirmed contact fields")
 
 
 class ShareableContactOptions(ContractModel):

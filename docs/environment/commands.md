@@ -770,7 +770,8 @@ never argv/logs/files; no dotenv fallback. Default is count-only; --apply writes
 only after exact target/dry-run/operator approval, and --batch-size is1–1000
 (default100 per table). No schedule is installed. Output is per-table counts,
 errors are generic and apply can be partially committed before a failure; retry
-rechecks cutoffs. Do not delete lifetime markers/users/contacts/key bindings.
+rechecks cutoffs. Do not delete lifetime markers/users/key bindings. Step9 removes only source
+contacts/display names at the approved thirty-day terminal cutoff.
 The revised migration checker expects seven versions/head20261023202807 and30
 tables/five smokes while preserving historical Step3/5 proofs. Revised native
 harness is syntax-checked only on Linux; PR10/current-main integration pending.
@@ -793,3 +794,20 @@ resources. Source declarations refuse; only generated eligibility dispatches.
 Other generated domains and HTTP/OpenAPI/TypeScript shapes stay unchanged.
 No runtime/provider/cloud/retained data action or full FR-03 claim; Step14 keeps
 its required actual consumer matrix and ID-READY keeps real integration gates.
+
+### Own profile/contact sharing and cleanup — ID-01 Step9
+
+```sh
+uv run --locked pytest apps/api/tests/domains/identity/test_contacts.py apps/api/tests/domains/identity/test_contacts_http.py apps/api/tests/domains/identity/test_identity_cleanup.py tests/contracts/test_domain_declarations.py -q -W error
+uv run --locked mypy --no-incremental apps/api/app/core/runtime_bindings.py apps/api/app/domains/identity/contacts.py apps/api/app/domains/identity/cleanup.py apps/api/app/domains/identity/sessions.py apps/api/app/domains/identity/http.py apps/api/app/domains/identity/public.py
+```
+
+Uses only synthetic data/keys and owned disposable PostgreSQL, no provider or
+retained/cloud cleanup. Covers own display-name/field CRUD, immutable login,
+scoped confirmed-only sharing/privacy, fresh denial, concurrent writes and exact
+thirty-day cutoff/guard preservation. Controlled sharing grants are not actual
+CN membership/confirmation evidence. Existing contracts-generate/check commands
+regenerate the two additional selected dispatch adapters; HTTP schemas unchanged.
+Use the existing target-checked cleanup command only with separate actual-target
+approval; no scheduler/deadline acceptance follows from local tests. Full make
+check remains the aggregate gate; ID-READY/provider/browser integration is open.

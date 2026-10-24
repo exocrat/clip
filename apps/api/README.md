@@ -160,3 +160,14 @@ still serves health only. [Identity module details](app/domains/identity/README.
 explain the matrix and ownership limits; [the decision](../../docs/decisions/identity-capabilities-and-runtime-binding.md)
 records scoped binding. No new marketplace/lookup route or runtime/cloud
 activation is added. Existing own-session summary uses fresh capability checks.
+
+## Own profile/contact implementation — ID-01 Step9
+
+The explicit Identity HTTP factory now implements reviewed PATCH /me/profile,
+GET /me/contacts and PUT/DELETE /me/contacts/{contact_kind} with current session,
+origin/CSRF and no-store controls. Contact values stay out of /me and general
+responses. The private contact provider uses the actual Identity schema and
+scoped selected-contact public adapters; its trusted membership/confirmation
+preconditions remain Conversations-owned. The normal app.main still exposes
+health only. [Step9 evidence](../../docs/evaluation/identity/id-01-step-9/README.md)
+records local SQL/HTTP tests and pending runtime/browser/consumer gates.

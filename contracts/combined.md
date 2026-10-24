@@ -413,3 +413,15 @@ The user reports that domain owners reviewed the cleanup document. Human
 approval of this exact destructive cleanup mechanism/order remains required
 before implementation. No provider setup, cloud change, destructive execution,
 or domain feature code is authorized here.
+
+## Identity Step9 trusted contact composition
+
+The [Identity sharing boundary](identity.md#step9-trusted-sharing-implementation)
+and [approved mechanism](../docs/decisions/identity-contact-sharing-and-cleanup.md)
+require a server-only actor/conversation scope established after Conversations
+participation checks; selected disclosure additionally requires confirmed fields.
+Construction/IDs/client flags do not authorize disclosure. Availability remains
+flags-only, requested removed fields return safe422, and no broad sharing or
+user-directory HTTP route exists. Actual CN-02 client/participant integration
+remains required. Generated Python exposes ContactSharingContext for trusted
+composition; OpenAPI/TypeScript HTTP shapes remain unchanged.

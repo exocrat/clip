@@ -13,6 +13,7 @@ from app.contracts.domain_types import (
     ConversationId,
     ContactField,
     ContactValueRequest,
+    ContactSharingContext,
     MicrosoftSessionRequest,
     MicrosoftLoginAttempt,
     CsrfToken,
@@ -31,7 +32,13 @@ from app.contracts.domain_types import (
 )
 
 # Reviewed runtime adapter metadata; source callables below remain declarations.
-RUNTIME_BINDINGS = frozenset({"check_account_eligibility"})
+RUNTIME_BINDINGS = frozenset(
+    {
+        "check_account_eligibility",
+        "get_shareable_contact_options",
+        "get_selected_own_contacts",
+    }
+)
 
 HTTP_OPERATIONS = (
     {
@@ -160,7 +167,12 @@ async def get_shareable_contact_options(
     The caller must be the actor authorized by Conversations. Only availability
     flags are returned; this declaration reads no persistence or contact value.
     """
-    raise NotImplementedError("declaration-only")
+    return await _dispatch_runtime(
+        "identity.get_shareable_contact_options",
+        ShareableContactOptions,
+        caller,
+        conversation_id,
+    )
 
 
 async def get_selected_own_contacts(
@@ -173,7 +185,13 @@ async def get_selected_own_contacts(
     Only requested, currently present fields may be returned. Values are private
     and ephemeral; this declaration performs no read and always refuses calls.
     """
-    raise NotImplementedError("declaration-only")
+    return await _dispatch_runtime(
+        "identity.get_selected_own_contacts",
+        SelectedOwnContacts,
+        caller,
+        conversation_id,
+        fields,
+    )
 
 
 async def resolve_notification_recipient(

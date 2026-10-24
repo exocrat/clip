@@ -25,6 +25,38 @@ _active: ContextVar[RuntimeBindings] = ContextVar(
 )
 
 
+_claims: ContextVar[Mapping[str, object]] = ContextVar(
+    "clip_runtime_claims", default=MappingProxyType({})
+)
+
+
+@contextmanager
+def runtime_claims(claims: Mapping[str, object]) -> Iterator[None]:
+    """Install server-only claim objects after the owner checks its preconditions.
+
+    This technical scope authenticates nothing. Claim records must be immutable
+    and validated by their owning provider; HTTP input never installs them.
+    Nested/parallel scopes cannot overwrite or silently inherit one another.
+    """
+    snapshot = dict(claims)
+    if any(
+        not isinstance(name, str)
+        or not re.fullmatch(r"[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*", name)
+        for name in snapshot
+    ):
+        raise ValueError("Explicit runtime claim names required")
+    token = _claims.set(MappingProxyType(snapshot))
+    try:
+        yield
+    finally:
+        _claims.reset(token)
+
+
+def runtime_claim(name: str) -> object | None:
+    """Read only the current trusted claim object; no discovery or default proof."""
+    return _claims.get().get(name)
+
+
 @contextmanager
 def runtime_scope(bindings: RuntimeBindings) -> Iterator[None]:
     """Install a trusted immutable callback snapshot only for the enclosing scope.

@@ -21,7 +21,7 @@ from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from app.core.errors import ERRORS, PublicError, error_response, install_error_handlers
 from app.core.logging import RequestLoggingMiddleware
-from app.core.runtime_bindings import runtime_scope
+from app.core.runtime_bindings import runtime_claims, runtime_scope
 from app.domains.identity.capabilities import Capability
 from app.domains.identity.microsoft import MicrosoftTokenValidator
 from app.domains.identity.sessions import (
@@ -31,7 +31,7 @@ from app.domains.identity.sessions import (
     bound_value,
 )
 from app.domains.identity.temporary_delivery import EmailSender
-from contracts.source.types import (
+from app.contracts.domain_types import (
     ActivateTemporaryRequest,
     ChallengeAccepted,
     CsrfToken,
@@ -42,6 +42,11 @@ from contracts.source.types import (
     ResetTemporaryPasswordRequest,
     SessionView,
     TemporarySessionRequest,
+    ContactField,
+    ContactValueRequest,
+    OwnContacts,
+    ProfilePatch,
+    ProfileView,
 )
 
 PUBLIC_AUTH = frozenset(
@@ -124,10 +129,15 @@ class IdentityBrowserMiddleware:
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         """Bind this explicit runtime per request, isolated from parallel app scopes."""
-        with runtime_scope(
-            {
-                "identity.check_account_eligibility": self.sessions.capabilities.check_account_eligibility
-            }
+        with (
+            runtime_scope(
+                {
+                    "identity.check_account_eligibility": self.sessions.capabilities.check_account_eligibility,
+                    "identity.get_shareable_contact_options": self.sessions.contacts.get_shareable_contact_options,
+                    "identity.get_selected_own_contacts": self.sessions.contacts.get_selected_own_contacts,
+                }
+            ),
+            runtime_claims({}),
         ):
             await self._handle(scope, receive, send)
 
@@ -465,5 +475,49 @@ def create_identity_app(
             samesite="lax",
         )
         return response
+
+    @app.patch(
+        "/me/profile",
+        operation_id="identity_update_own_profile",
+        response_model=ProfileView,
+    )
+    def profile(payload: ProfilePatch, request: Request) -> ProfileView:
+        """Update only the current actor's reviewed display-name field."""
+        json_body(request)
+        return sessions.contacts.update_profile(current(request).caller, payload)
+
+    @app.get(
+        "/me/contacts",
+        operation_id="identity_read_own_contacts",
+        response_model=OwnContacts,
+    )
+    def own_contacts(request: Request) -> OwnContacts:
+        """Expose source values only to their authenticated current owner."""
+        return sessions.contacts.read_contacts(current(request).caller)
+
+    @app.put(
+        "/me/contacts/{contact_kind}",
+        operation_id="identity_set_own_contact",
+        status_code=204,
+    )
+    def set_contact(
+        contact_kind: ContactField, payload: ContactValueRequest, request: Request
+    ) -> Response:
+        """Validate/update one own field; never use it as login identity."""
+        json_body(request)
+        sessions.contacts.set_contact(
+            current(request).caller, contact_kind, payload.value
+        )
+        return Response(status_code=204)
+
+    @app.delete(
+        "/me/contacts/{contact_kind}",
+        operation_id="identity_delete_own_contact",
+        status_code=204,
+    )
+    def delete_contact(contact_kind: ContactField, request: Request) -> Response:
+        """Delete immediately/idempotently; copied encrypted shares are unchanged."""
+        sessions.contacts.delete_contact(current(request).caller, contact_kind)
+        return Response(status_code=204)
 
     return app

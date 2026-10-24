@@ -14,6 +14,21 @@ from pydantic import BaseModel, ValidationError
 from scripts.generate_contracts import DOMAINS, load_sources
 
 ROOT = Path(__file__).resolve().parents[2]
+BOUND_IDENTITY = {
+    "check_account_eligibility": ["AccountEligibility", "user_id", "required_class"],
+    "get_shareable_contact_options": [
+        "ShareableContactOptions",
+        "caller",
+        "conversation_id",
+    ],
+    "get_selected_own_contacts": [
+        "SelectedOwnContacts",
+        "caller",
+        "conversation_id",
+        "fields",
+    ],
+}
+
 EXPECTED_CALLABLES = {
     "identity": {
         "check_account_eligibility",
@@ -121,21 +136,16 @@ def test_every_generated_callable_fails_closed_without_implementation():
             assert ast.get_docstring(function)
             assert len(function.body) == 2
             refusal = function.body[1]
-            if domain == "identity" and function.name == "check_account_eligibility":
+            if domain == "identity" and function.name in BOUND_IDENTITY:
                 assert isinstance(refusal, ast.Return) and isinstance(
                     refusal.value, ast.Await
                 )
                 call = refusal.value.value
                 assert isinstance(call, ast.Call) and isinstance(call.func, ast.Name)
                 assert call.func.id == "_dispatch_runtime"
-                assert (
-                    ast.literal_eval(call.args[0])
-                    == "identity.check_account_eligibility"
-                )
-                assert [argument.id for argument in call.args[1:]] == [
-                    "AccountEligibility",
-                    "user_id",
-                    "required_class",
+                assert ast.literal_eval(call.args[0]) == "identity." + function.name
+                assert [argument.id for argument in call.args[1:]] == BOUND_IDENTITY[
+                    function.name
                 ]
             else:
                 assert isinstance(refusal, ast.Raise)
@@ -145,7 +155,7 @@ def test_every_generated_callable_fails_closed_without_implementation():
 
 
 def test_generated_modules_preserve_source_except_approved_dispatch():
-    """Only import rewrites and the reviewed one-function technical body may differ."""
+    """Only import rewrites and the reviewed selected-function technical body may differ."""
     for domain in DOMAINS:
         source = (ROOT / f"contracts/source/{domain}.py").read_text()
         expected = source.replace(
@@ -174,9 +184,8 @@ def test_generated_modules_preserve_source_except_approved_dispatch():
         }
         # The independent structural test above verifies exactly what the one
         # replacement does; restore it here to prove everything else is unchanged.
-        after["check_account_eligibility"].body[1] = before[
-            "check_account_eligibility"
-        ].body[1]
+        for name in BOUND_IDENTITY:
+            after[name].body[1] = before[name].body[1]
         assert ast.dump(actual, include_attributes=False) == ast.dump(
             original, include_attributes=False
         )

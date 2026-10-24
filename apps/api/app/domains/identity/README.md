@@ -147,7 +147,8 @@ This is local HTTP integration evidence, not an actual provider/inbox/browser ru
 `cleanup.py.IdentityCleanup.run` is count-only by default, bounded per table and
 rechecks cutoffs under target/user locks. Apply commits per candidate and may be
 partial on failure; rerun safely rechecks eligibility. Never delete users,
-contacts, lifetime markers or key bindings. `scripts/identity_cleanup.py` reads
+lifetime markers or key bindings. Step9 extends this mechanism to remove
+source contacts and clear display names after thirty days of terminal state. `scripts/identity_cleanup.py` reads
 only the explicit DSN environment input and requires matching expected database;
 --apply is an explicit write, not approval to run against retained/cloud data.
 No scheduler is enabled. Exact deployment/operator approval and observed runs
@@ -183,3 +184,29 @@ required. No mutable global provider or fake fallback; missing/wrong results
 fail503. Other public contact/provider declarations remain unimplemented until
 their owning increments. Full consumer API matrix remains Step14, and default
 app.main/runtime/provider/browser/cloud readiness gates remain unchanged.
+
+## Own profile/contacts and deliberate sharing — Step9
+
+`contacts.py.PostgresContacts` locks the current user before own source fields,
+rechecks lifecycle/caller/capability and uses field-only upserts/deletes. Display
+name omission preserves, null clears and valid text trims. Syntax-only email,
+E.164 phone and UPI validation never verifies ownership/payment or changes login.
+The HTTP factory exposes the reviewed own-profile PATCH and own-contact GET/PUT/
+DELETE routes with its existing session/origin/CSRF/no-store protections.
+`sessions.py` constructs the provider with explicit connection/clock dependencies.
+HTTP imports generated runtime models to share nominal types with its services.
+
+Generated public contact dispatch requires the server-only ContactSharingContext
+installed in a technical runtime-claims scope after Conversations verifies actual
+membership and UI confirmation. Options expose flags only; selection reveals
+only requested/confirmed/current own values; removed fields fail422. Missing
+claims fail403 and no binding fails503. Identity reads no Conversation tables.
+The HTTP boundary clears ambient claims; trusted composition may set an inner
+scope. The notification recipient operation remains unimplemented. See the
+[reviewed mechanism](../../../../../docs/decisions/identity-contact-sharing-and-cleanup.md).
+
+Cleanup clears display names/marks profiles and deletes source contacts at the
+thirty-day terminal cutoff under the same user lock. Users, enrollment/request
+markers and key commitments survive. No job or live cleanup is enabled. Actual
+CN participation/consent/client encryption, runtime/provider/browser/current-main
+reconciliation and ID-READY acceptance remain pending.

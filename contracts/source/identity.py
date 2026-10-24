@@ -12,6 +12,7 @@ from contracts.source.types import (
     ConversationId,
     ContactField,
     ContactValueRequest,
+    ContactSharingContext,
     MicrosoftSessionRequest,
     MicrosoftLoginAttempt,
     CsrfToken,
@@ -30,7 +31,13 @@ from contracts.source.types import (
 )
 
 # Reviewed runtime adapter metadata; source callables below remain declarations.
-RUNTIME_BINDINGS = frozenset({"check_account_eligibility"})
+RUNTIME_BINDINGS = frozenset(
+    {
+        "check_account_eligibility",
+        "get_shareable_contact_options",
+        "get_selected_own_contacts",
+    }
+)
 
 HTTP_OPERATIONS = (
     {
