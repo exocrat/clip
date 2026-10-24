@@ -14,6 +14,8 @@ export type ConversationDisplayEntry = {
   created_at: string;
   text: string | null;
   content_deleted: boolean;
+  /** A peer's authenticated SDK retry request says this original message could not be decrypted. */
+  delivery_notice?: 'recipient_unable_to_decrypt';
 };
 
 export type ConversationKeyUiState =
@@ -244,6 +246,11 @@ export function ConversationThread({
             ) : (
               <p className="conversation-thread__text">{entry.text}</p>
             )}
+            {entry.delivery_notice === 'recipient_unable_to_decrypt' ? (
+              <p className="conversation-thread__delivery-notice" role="status">
+                The recipient couldn’t decrypt this message. You can send it again as a new message.
+              </p>
+            ) : null}
             <time dateTime={entry.created_at}>{formatMessageTime(entry.created_at)}</time>
           </li>
         ))}

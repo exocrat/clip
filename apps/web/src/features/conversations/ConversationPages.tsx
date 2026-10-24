@@ -64,6 +64,7 @@ export function ConversationDetailPage({ conversationId }: { conversationId: str
   const runtime = useContext(RuntimeContext);
   const [ready, setReady] = useState<ReadyConversation | null>(null);
   const [entries, setEntries] = useState<ConversationDisplayEntry[]>([]);
+  const decryptionFailureIds = useRef(new Set<string>());
   const [recoveredPending, setRecoveredPending] = useState<{ operationId: string; text: string } | null>(null);
   const [readSequence, setReadSequence] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -123,6 +124,7 @@ export function ConversationDetailPage({ conversationId }: { conversationId: str
   useEffect(() => {
     const token = ++generation.current;
     cursor.current = 0;
+    decryptionFailureIds.current.clear();
     void initialize(false, token).catch(() => undefined);
     return () => {
       generation.current++;
@@ -134,14 +136,43 @@ export function ConversationDetailPage({ conversationId }: { conversationId: str
 
   const refresh = useCallback(async () => {
     if (!runtime || !conversationId || !ready?.session.history || keyState.kind !== 'ready') return;
+    const history = ready.session.history;
+    const observedDecryptionFailureIds = new Set(decryptionFailureIds.current);
     let after = cursor.current;
     const visible: ConversationDisplayEntry[] = [];
     for (let pageCount = 0; pageCount < 100; pageCount++) {
       const page = await runtime.api.readEntries(conversationId, after);
-      const local = await ready.session.history.read();
+      const local = await history.read();
       const pending = local.sent.find((item) => item.confirmation === null);
       setRecoveredPending(pending ? { operationId: pending.request.operation_id, text: pending.request.text } : null);
       for (const entry of page.items) {
+        if (entry.kind === 'protocol_control') {
+          // Recovery controls are protocol traffic, not chat bubbles. The SDK
+          // validates/handles them; only an authenticated retry request reports
+          // that the original sender's message was not decryptable.
+          if (entry.sender_user_id !== runtime.userId) {
+            if (!entry.envelope || !entry.recovery_target) {
+              throw new ConversationCryptoError('Recovery control metadata is incomplete');
+            }
+            const recoveryTarget = entry.recovery_target;
+            const outcome = await ready.session.crypto.receiveProtocolEntry({
+              conversation_id: conversationId,
+              message_id: entry.entry_id,
+              sequence: entry.sequence,
+              sender_user_id: entry.sender_user_id,
+              sender_device_id: 1,
+              expected_sender_key_version: entry.envelope.sender_key_version ?? 0,
+              expected_recipient_key_version: entry.envelope.recipient_key_version ?? 0,
+              envelope: entry.envelope,
+              recovery_target: recoveryTarget,
+            }, history);
+            if (outcome === 'pending') throw new ConversationCryptoError('Recovery control is still pending');
+            if (entry.envelope.sdk_message_type === 'retry_request') {
+              observedDecryptionFailureIds.add(recoveryTarget.entry_id);
+            }
+          }
+          continue;
+        }
         const display = await decryptEntry(entry, runtime.userId, ready, local.sent,
           (context) => ready.session.receiveText(context));
         if (display) visible.push(display);
@@ -152,9 +183,16 @@ export function ConversationDetailPage({ conversationId }: { conversationId: str
       cursor.current = after;
       if (!page.has_more) break;
     }
+    decryptionFailureIds.current = observedDecryptionFailureIds;
     setEntries((current) => {
       const byId = new Map(current.map((item) => [item.entry_id, item]));
       for (const item of visible) byId.set(item.entry_id, item);
+      for (const id of observedDecryptionFailureIds) {
+        const original = byId.get(id);
+        if (original && original.sender_user_id === runtime.userId) {
+          byId.set(id, { ...original, delivery_notice: 'recipient_unable_to_decrypt' });
+        }
+      }
       return [...byId.values()].sort((a, b) => a.sequence - b.sequence);
     });
   }, [conversationId, keyState.kind, ready, runtime]);
@@ -225,9 +263,7 @@ async function decryptEntry(
   sent: import('./history').LocalSentMessage[],
   receive: (context: ConversationReceiveContext) => Promise<unknown>,
 ): Promise<ConversationDisplayEntry | null> {
-  if (entry.kind === 'protocol_control') return { entry_id: entry.entry_id, sequence: entry.sequence,
-    sender_user_id: entry.sender_user_id, created_at: entry.created_at,
-    text: 'A secure-message recovery action is pending and could not be processed yet.', content_deleted: false };
+  if (entry.kind === 'protocol_control') return null;
   if (entry.kind === 'contact_share') return { entry_id: entry.entry_id, sequence: entry.sequence,
     sender_user_id: entry.sender_user_id, created_at: entry.created_at,
     text: 'A contact share is available through the contact-sharing flow.', content_deleted: false };

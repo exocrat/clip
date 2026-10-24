@@ -46,6 +46,13 @@ describe('ConversationThread UI', () => {
     expect(html).toContain('Send encrypted message');
   });
 
+  it('shows recipient decryption failure on the original message without presenting it as an unsent message', () => {
+    const html = renderThread({ entries: [{ ...entry, delivery_notice: 'recipient_unable_to_decrypt' }] });
+    expect(html).toContain('The recipient couldn’t decrypt this message. You can send it again as a new message.');
+    expect(html).not.toContain('Message not sent.');
+    expect(html).not.toContain('Retrying…');
+  });
+
   it('identifies the local demo as unencrypted and local-only', () => {
     const html = renderThread({ presentationMode: 'local-demo' });
     expect(html).toContain('messages are not encrypted or sent to a service');

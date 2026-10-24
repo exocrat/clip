@@ -82,6 +82,11 @@
   font-style: italic;
 }
 
+.conversation-thread__delivery-notice {
+  color: var(--color-muted);
+  font-size: var(--font-size-small);
+}
+
 .conversation-thread__retry-row {
   display: flex;
   align-items: center;
