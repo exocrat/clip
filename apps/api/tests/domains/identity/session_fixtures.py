@@ -79,3 +79,25 @@ def activate(state, email=EMAIL):
     """Use actual activation/session transaction, never direct synthetic account rows."""
     request, code = challenge(state, email=email)
     return state.service.activate(request.challenge_id, code, PASSWORD)
+
+
+@pytest.fixture
+def temporary_state(identity_runtime):
+    """Create approved lifecycle scenarios through actual owned services.
+
+    Returns the original grant so tests can probe stale context/cookies. Expiry
+    advances trusted time; revocation uses the real internal operation. No raw
+    SQL account fabrication or public fake-auth endpoint is installed.
+    """
+
+    def create(mode):
+        if mode not in {"active", "expired", "revoked"}:
+            raise ValueError("Unknown synthetic lifecycle scenario")
+        grant = activate(identity_runtime)
+        if mode == "expired":
+            identity_runtime.clock[0] += timedelta(days=14)
+        elif mode == "revoked":
+            identity_runtime.service.revoke_account(grant.identity.caller.user_id)
+        return grant
+
+    return create

@@ -811,3 +811,18 @@ regenerate the two additional selected dispatch adapters; HTTP schemas unchanged
 Use the existing target-checked cleanup command only with separate actual-target
 approval; no scheduler/deadline acceptance follows from local tests. Full make
 check remains the aggregate gate; ID-READY/provider/browser integration is open.
+
+### Deterministic Identity security integration — ID-01 Step10
+
+```sh
+uv run --locked pytest apps/api/tests/domains/identity/test_microsoft.py apps/api/tests/domains/identity/test_identity_security_integration.py apps/api/tests/core/test_security_boundaries.py tests/fixtures/core/test_providers.py -q -W error
+```
+
+Explicit signed_tokens/jwt_clock fixtures control only the installed PyJWT date
+lookup during requesting tests; actual RSA/claim checks stay enabled and the
+patch is restored afterward. No global wall-clock change or production fake
+activation. Owned disposable SQL/actual HTTP tests cover lifecycle/reset/contact/
+retention/concurrency; shared guarded fake and actual production startup controls
+remain in their existing owners' tests. No provider/send/retained DB/cloud action.
+The full make check includes these tests and all pre-existing OTP/session/privacy
+coverage; local results cannot accept real provider/browser/consumer/readiness.

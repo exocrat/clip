@@ -210,3 +210,15 @@ thirty-day terminal cutoff under the same user lock. Users, enrollment/request
 markers and key commitments survive. No job or live cleanup is enabled. Actual
 CN participation/consent/client encryption, runtime/provider/browser/current-main
 reconciliation and ID-READY acceptance remain pending.
+
+## Deterministic security fixtures and integration coverage — Step10
+
+Owned tests now explicitly control PyJWT time as well as the existing session/
+OTP/retention clock, retaining real RSA and claim checks. Temporary lifecycle
+fixtures use actual activation/expiry/revocation. The existing guarded scripted
+auth provider is test-only and cannot install a browser session or run in
+production. Additional real local HTTP/SQL checks connect contact/profile edits
+to reset, relogin, deletion, revocation and bounded cleanup/concurrent denied
+writes. See [Step10 coverage/evidence](../../../../../docs/evaluation/identity/id-01-step-10/README.md).
+These are synthetic controlled provider tests; actual deployed/browser/CN and
+ID-READY gates remain open. No production implementation changed in Step10.

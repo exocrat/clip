@@ -1,6 +1,6 @@
 """Actual RSA verification and fixed-origin cache safety, without provider I/O."""
 
-from datetime import UTC, datetime
+from datetime import UTC, timedelta
 import json
 
 from cryptography.hazmat.primitives.asymmetric import rsa
@@ -78,7 +78,7 @@ def test_invalid_claims_are_generic(signed_tokens, change):
 
 
 def test_expired_future_dates_and_bad_lifetime(signed_tokens):
-    now = int(datetime.now(UTC).timestamp())
+    now = int(signed_tokens.clock().timestamp())
     for change in [
         {"exp": now - 1, "iat": now - 100},
         {"iat": now + 60},
@@ -306,3 +306,28 @@ def test_consumer_tenant_remains_allowed_for_matching_signed_email(signed_tokens
 )
 def test_malformed_local_part_is_rejected(signed_tokens, email):
     denied(signed_tokens.validator(), signed_tokens.token({"email": email}))
+
+
+@pytest.mark.parametrize("claim", ["exp", "nbf", "iat"])
+def test_exact_signed_numeric_date_boundary(signed_tokens, jwt_clock, claim):
+    """Real RSA/zero-leeway date verification at an exact controlled boundary."""
+    instant = jwt_clock[0]
+    token = signed_tokens.token({claim: int(instant.timestamp())})
+    validator = signed_tokens.validator()
+    if claim == "exp":
+        jwt_clock[0] = instant - timedelta(microseconds=1)
+        validator.verify(token, expected_nonce=NONCE)
+        jwt_clock[0] = instant
+        denied(validator, token)
+    else:
+        jwt_clock[0] = instant - timedelta(microseconds=1)
+        denied(validator, token)
+        jwt_clock[0] = instant
+        validator.verify(token, expected_nonce=NONCE)
+
+
+def test_signed_fixture_claims_are_reproducible_at_fixed_time(signed_tokens):
+    first = signed_tokens.claims()
+    assert first == signed_tokens.claims()
+    assert first["exp"] - first["iat"] == 302
+    assert first["exp"] == 1893456300

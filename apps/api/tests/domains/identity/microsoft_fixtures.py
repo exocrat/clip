@@ -1,9 +1,7 @@
 """Ephemeral signed-token fixtures; no private key/token is written or sent."""
 
-from datetime import UTC, datetime
 import json
 
-from cryptography.hazmat.primitives.asymmetric import rsa
 import jwt
 
 from app.domains.identity.microsoft import (
@@ -21,15 +19,17 @@ EMAIL = "clip-test-fixture-do-not-send@iisc.ac.in"
 
 
 class SignedTokens:
-    """Sign synthetic claims with a new in-memory key; permit deliberate negatives."""
+    """Sign synthetic claims with explicit in-memory key/time; permit negatives."""
 
-    def __init__(self):
-        self.key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    def __init__(self, clock, key):
+        """Use explicitly controlled UTC and shared ephemeral signing material."""
+        self.clock = clock
+        self.key = key
         self.jwk = json.loads(jwt.algorithms.RSAAlgorithm.to_jwk(self.key.public_key()))
         self.jwk.update(kid="synthetic-key", use="sig", issuer=ISSUER)
 
     def claims(self):
-        now = int(datetime.now(UTC).timestamp())
+        now = int(self.clock().timestamp())
         return {
             "iss": ISSUER.replace("{tenantid}", TENANT),
             "tid": TENANT,

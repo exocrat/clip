@@ -47,7 +47,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PD-19 | Integration owner (current branch) | done | Steps 1–9 and combined foundation handoff complete | Steps 1–9 performed | User confirms all work before PRE-00 is complete | PR #8 merged at `2cd83e7` from head `18c966e` against base `68d9da9`; [Foundation quality gates passed](https://github.com/exocrat/clip/actions/runs/39323851584) for that exact head/base; `make test` (395 Python, 63 data, 16 web), Black, contract freshness and 10 `make check` gates passed; [handoff](foundation-handoff.md) | No open PD-19 work per user confirmation. Linux AMD64/macOS results remain user-confirmed without raw outputs. PR #8 has no submitted GitHub review; independent-review completion is user-confirmed, with no separate review artifact linked. Refresh cloud snapshot before any operation. | 2026-10-19 21:09:05 UTC |
 | PRE-00 | Integration owner | done | Foundation gate audit accepted; DL-00 is unblocked | performed | verified/accepted by user | Reviewed handoff PR #8 merged to `main` at `2cd83e7`; hosted Foundation quality gates passed for head `18c966e` against base `68d9da9` (run `39323851584`); clean-checkout evidence at `0747be6`; see [PD-19 handoff](foundation-handoff.md) | None. PR #8 has no GitHub review event; independent-review completion remains user-reported without a separate artifact. | 2026-10-19 21:20:55 UTC |
 | DL-00 | Shared-core/contract coordinator; all domains review | done | Steps 1–13 and task-wide audit complete; accepted and merged | Steps 1–13 performed; accepted by user | User confirmed full acceptance and merge on 2026-10-22 05:30:49 UTC | PR #9 merged to `main` at `f5576ef`; current `main` is `44cd8ff`; Step 13 check evidence is recorded below and was not rerun for this update | None for DL-00; cleanup implementation remains separately gated; real providers/integrations and crypto/worker implementation remain downstream | 2026-10-22 05:30:49 UTC |
-| ID-01 | A | in progress | Step9 local result verified and checkpoint commit authorized; next Step10 understanding/coverage audit plan | Steps1/3 verified; Steps4–8 local verified; Step2 sandbox verified/production staged; Step9 local performed/verified, real CN/runtime gates pending | Step9 result verified by Aditya; commit authorized | `task/id-01-identity` at `c34db1d` plus uncommitted Step9; [evidence](../evaluation/identity/id-01-step-9/README.md);752 Python/63 data/16 web; all11 gates and strict runtime Mypy passed | Actual runtime/provider/browser/current-main/peer acceptance and UI/ID-READY; actual CN-02 sharing integration; full consumer matrix Step14 remains outside ID-READY | 2026-10-24 07:23:42 UTC |
+| ID-01 | A | in progress | Step10 local result verified and checkpoint commit authorized; next Step11 UI understanding/ownership plan | Steps1/3 verified; Steps4–9 local verified; Step2 sandbox verified/production staged; Step10 local performed/verified, real gates pending | Step10 result verified by Aditya; checkpoint commit authorized | `task/id-01-identity` at `cfb9509` plus uncommitted Step10; [evidence](../evaluation/identity/id-01-step-10/README.md);767 Python/63data/16web; all11 gates and final focused privacy suite passed | Actual runtime/provider/browser/current-main/peer acceptance and UI/ID-READY; actual CN-02 sharing integration; full consumer matrix Step14 outside ID-READY | 2026-10-24 08:45:31 UTC |
 | LI-01 | B | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | LI-CORE, LI-02, SE-CORE | — |
 | LI-02 | B | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | LI-CORE, ID-READY | — |
 | SE-01 | C | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | SE-CORE, LI-01, LI-02, DATA-READY | — |
@@ -105,6 +105,44 @@ Update the task status row after each step and human verification. The row is th
 Add a history entry when it records a meaningful outcome, decision, changed output, check result, blocker, consequential human direction, or task/merge closeout. Group related steps when that keeps their results understandable. Do not add a separate history entry just to say that a routine step was verified and the next one may begin.
 
 Include the task and covered step(s), contributor, date/time, and the details needed to understand or verify the outcome: relevant execution/verification state, changed paths, exact checks/results, decision/evidence reference, blocker/owner, or next action as applicable. Keep entries brief, omit repeated background, and link existing artifacts rather than duplicating them. Use exact UTC date and time for new entries. Keep historical timestamp precision as recorded; never guess or backfill an unknown time. Preserve distinct decisions, evidence, and other contributors' useful history.
+
+### ID-01 — Step10 deterministic security coverage checked — 2026-10-24 07:32:48 UTC
+
+Aditya(A), task/id-01-identity at cfb9509 plus uncommitted Step10. Executed the
+verified plan: explicit per-test JWT time with real RSA/date checks, reusable
+actual temporary activation/expiry/revocation scenarios and11missing real local
+HTTP/SQL integration cases for fake isolation, reset/contact/lifetime/CSRF,
+retention cutoffs, bounded cleanup and concurrent stale writes. Reused existing
+OTP/session/reset races and production fake-startup checks. No material step
+source gap or production implementation defect found; runtime/contracts/schema/
+generated/dependencies remain unchanged. [Coverage/per-file evidence](../evaluation/identity/id-01-step-10/README.md)
+records every Step10 requirement and actual versus controlled dependencies.
+
+Microsoft/SQL/HTTP selection88passed; new integration11passed. Strengthened
+privacy capture to require actual non-propagating application log records and
+metadata-only formatted output; revised11tests passed. Full make check passed
+all11gates with767 Python/63data/16web, Black116, contracts/boundaries/web/build/
+actual database/safety/Gitleaks. Aggregate collected before that final test-only
+privacy strengthening; final focused run verifies its exact behavior. Five final
+source hashes and151local document targets checked before final metadata links.
+Aditya verified the Step10 local result and authorized its checkpoint commit
+on2026-10-24 08:45:31 UTC (recording time); Step11 not started. Provider/browser/
+CN/main reconciliation and peer/readiness gates remain pending. No live send,
+retained cleanup, scheduler/cloud change, commit/push/merge or closeout occurred.
+
+### ID-01 — Step10 fixture/coverage scope — 2026-10-24 07:26:20 UTC
+
+Aditya(A) verified Step10 fixture/security coverage plan and directed execution.
+Resume task/id-01-identity at cfb9509. Existing signed-token negatives, real
+session/OTP/reset races and production fake-selector rejection are reusable;
+reserve Identity test fixtures/conftest and owned test modules for explicit
+controlled JWT time, temporary lifecycle scenarios, contact/reset integration,
+bounded cleanup/race coverage and domain consumption of the existing guarded
+auth fake. Canonical sources/public contracts/runtime code remain unchanged
+unless an observed defect requires a scoped correction. No material Step10
+definition gap found. Local disposable SQL/controlled provider mode only;
+actual provider/browser/CN/main/peer gates remain open. No live send, retained
+cleanup, cloud change, commit, push, merge or Step11 action is authorized.
 
 ### ID-01 — Step9 own profile/contact/sharing/retention checked — 2026-10-24 07:08:51 UTC
 

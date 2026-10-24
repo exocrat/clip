@@ -171,3 +171,10 @@ scoped selected-contact public adapters; its trusted membership/confirmation
 preconditions remain Conversations-owned. The normal app.main still exposes
 health only. [Step9 evidence](../../docs/evaluation/identity/id-01-step-9/README.md)
 records local SQL/HTTP tests and pending runtime/browser/consumer gates.
+
+[Step10 security coverage](../../docs/evaluation/identity/id-01-step-10/README.md)
+maps Identity requirements to actual local tests. Explicit JWT-time fixtures keep
+real signature/date validation enabled; lifecycle/reset/contact/cleanup journeys
+use disposable SQL and actual HTTP. Existing guarded test identity providers and
+production-startup rejection tests are reused. This does not enable public auth
+in app.main or replace provider/browser/readiness acceptance.
