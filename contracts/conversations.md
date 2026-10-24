@@ -248,6 +248,16 @@ not presented as a user message. Clients pass it to the SDK's retry-request
 receive path rather than decrypting or rendering it. `sender_key` and
 `unidentified_sender` are not accepted by CLIP's one-device, 1:1 MVP.
 
+**Approved recovery revision (2026-10-24; implementation pending):** the UUID-to-SDK-ID equality
+described in this v1 contract supports ordinary sends but is incompatible
+with the pinned SDK's automatic retry-family IDs. The
+[approved v2 recovery transport](../docs/decisions/conversation-recovery-transport.md)
+separates those IDs, preserves them on retrieval, links recovery responses
+to the original chat entry, and defines authorization, deduplication and
+rollout checks. Rahul verified its detailed shape; typed contracts and
+runtime changes remain pending. Automatic SDK recovery remains incomplete;
+v1 retry-control storage alone is not evidence of recovery support.
+
 For every OpenE2EE message or retry-control send, the client generates a fresh
 UUIDv4 `operation_id` that is globally unique for that sender across
 conversations and SDK message types; it reuses that ID only for an identical

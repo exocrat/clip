@@ -64,6 +64,14 @@ The intended architecture keeps cryptography/key management behind a narrow clie
 
 ## Sources checked on 2026-10-22
 
+**2026-10-24 correction:** the original `operation_id = clientMessageId`
+mapping works for ordinary application sends, but automatic SDK recovery
+uses suffixed retry-family IDs. Rahul approved the detailed separate-ID
+[recovery transport revision](conversation-recovery-transport.md). Its exact
+v2 metadata, original-message correlation, retry/deduplication and compatibility
+rules are approved there for implementation; the installed v1 implementation has not
+yet adopted them. SDK recovery is an open implementation requirement.
+
 The tagged SDK source review confirmed that relay reconstruction requires a
 message type and client timestamp in addition to ciphertext bytes. The CLIP
 contract therefore carries those as explicit transport metadata, maps its

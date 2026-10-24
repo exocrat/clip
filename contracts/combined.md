@@ -245,6 +245,15 @@ booleans-as-integers and oversized decoded bytes are rejected. Client writes
 carry a required UUIDv4 `operation_id` only on operations whose row declares
 it. OpenE2EE message/control IDs must be fresh and globally unique per sender;
 other operations use their separately declared retry scopes.
+
+The preceding entry/envelope shapes describe the current v1 declarations.
+The [CN-01 recovery transport revision](../docs/decisions/conversation-recovery-transport.md)
+is an approved v2 correction awaiting implementation: SDK retry-family IDs are not UUIDs and must be
+stored/returned separately from CLIP UUID operation IDs. It also specifies
+original-message correlation and non-rendered recovery responses. Typed
+source, generated schemas and provider changes remain pending, with normal
+code review required; do not infer automatic recovery support from the v1 row.
+
 Read operations and monotonic read acknowledgements do not need an
 idempotency key. For keyed writes, equality means the same normalized typed
 intent and the same opaque ciphertext bytes after transport decoding, without
