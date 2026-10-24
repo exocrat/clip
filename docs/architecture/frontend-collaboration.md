@@ -292,7 +292,7 @@ The explicit development-only identity-preview mode uses a fixed loopback proxy
 and synthetic test inbox with actual disposable Identity SQL/HTTP. It rejects
 build/deployment of that mode; normal builds eliminate the test inbox module.
 Normal development does not enable this proxy; unconfigured backend main is
-still health-only. See [first checkpoint evidence](../evaluation/identity/id-01-step-11/README.md).
+still health-only. See [first checkpoint evidence](../evaluation/identity/implementation.md#step-11).
 
 ### ID-01 Step11 recovery increment
 

@@ -4,7 +4,7 @@
 `20261023202807`,33domain tables,25functions and37triggers. Older isolated
 Identity/Listings sections below retain their historical checkpoints; their
 former PR10 deferral/counts do not describe this combined checkout. See the
-[merge evidence](../docs/evaluation/identity/id-01-step-12/merge-checkpoint.md).
+[merge evidence](../docs/evaluation/identity/integration.md#main-reconciliation).
 
 PD-08 Step 3 created SQL migrations from the
 [schema](../docs/architecture/mvp-database-schema.md) under the approved

@@ -164,7 +164,7 @@ its own one-shot marker. No client secret, Graph data scope, raw-token logging,
 CLIP bearer localStorage or automatic silent acquisition. Referrer metadata and
 callback response URLs are suppressed/cleaned. See the [reviewed provider
 mechanism](../../docs/decisions/identity-provider-setup.md#step11-browser-implementation--2026-10-24)
-and [checkpoint evidence](../../docs/evaluation/identity/id-01-step-11/microsoft-checkpoint.md).
+and [checkpoint evidence](../../docs/evaluation/identity/implementation.md#step-11).
 
 endpoints. Listings calls `/api`; the development server forwards that prefix
 to `127.0.0.1:8000`, stripping it before reaching FastAPI. This proxy is development

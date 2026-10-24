@@ -646,7 +646,7 @@ shortcut. Default settings refuse sending. It requires explicit smoke approval,
 test mode, SES selection, exactly one allowlisted recipient and the expected ECS
 container-role credentials. It attempts one fixed generic message, suppresses SDK
 logs and exits within a 45-second command deadline. Success output means provider
-acceptance only. See the [bounded plan](../evaluation/identity/id-01-step-2/runtime-test-plan.md).
+acceptance only. See the [bounded plan](../evaluation/identity/provider-history.md#delivery-diagnostics).
 
 ### Identity diagnostic wrapper offline checks — ID-01 Step 2
 
@@ -661,7 +661,7 @@ The tests import the exact reviewed diagnostic command from the evaluation folde
 and inject offline SDK failures/success. They perform no AWS calls or sends;
 expected result is 28 passing tests. The wrapper itself can send when explicitly
 run with approved ECS settings; do not invoke it as a local test command. Its
-[live request and cleanup plan](../evaluation/identity/id-01-step-2/runtime-diagnostic-approval.md)
+[live request and cleanup plan](../evaluation/identity/provider-history.md#delivery-diagnostics)
 require separate exact approval. No new Make target or deployment command added.
 
 ### SES authorization diagnostic offline checks — ID-01 Step 2
@@ -673,7 +673,7 @@ uv run --locked black --check docs/evaluation/identity/id-01-step-2/runtime_auth
 
 These are offline checks (37 tests), not a send command. The extended diagnostic
 parses denied-resource/reason text only in memory and emits fixed categories;
-[the exact live plan](../evaluation/identity/id-01-step-2/runtime-authorization-plan.md)
+[the exact live plan](../evaluation/identity/provider-history.md#delivery-diagnostics)
 retains a separate approved task/send/cleanup window. Shared sandbox plans must
 preserve the private `TF_VAR_ses_sandbox_recipient_identity_arn` when its additional
 identity scope is still needed; see the shared Terraform README. Never supply

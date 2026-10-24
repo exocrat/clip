@@ -14,7 +14,7 @@ Which providers and setup boundaries support ID-READY?
 Use Microsoft SPA authorization code with PKCE, without a browser client secret
 or Graph permissions. Registration accepts organizational and personal Microsoft
 accounts. The registered client ID and callbacks are recorded in
-[secret handling](../environment/secret-handling.md#id-01-microsoft-app-registration--user-reported-2026-10-22-140207-utc).
+[secret handling](../environment/secret-handling.md#id-01-microsoft-app-registration--user-reported--2026-10-22-140207-utc).
 Use Microsoft public-cloud v2 discovery at
 `https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration`.
 Step 4 must validate signatures, issuer against the signed tenant/discovery rules,

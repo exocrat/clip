@@ -221,7 +221,7 @@ fixtures use actual activation/expiry/revocation. The existing guarded scripted
 auth provider is test-only and cannot install a browser session or run in
 production. Additional real local HTTP/SQL checks connect contact/profile edits
 to reset, relogin, deletion, revocation and bounded cleanup/concurrent denied
-writes. See [Step10 coverage/evidence](../../../../../docs/evaluation/identity/id-01-step-10/README.md).
+writes. See [Step10 coverage/evidence](../../../../../docs/evaluation/identity/implementation.md#step-10).
 These are synthetic controlled provider tests; actual deployed/browser/CN and
 ID-READY gates remain open. No production implementation changed in Step10.
 

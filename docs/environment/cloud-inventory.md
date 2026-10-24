@@ -172,7 +172,7 @@ SendEmail for verified `clip-iisc.site` with exact From `no-reply@clip-iisc.site
 Role-policy JSON/state verified; state serial 9 and lock absent. Compute remains
 off: original RDS stopped, ECS/ASG zero. No deployment or email send; actual
 runtime delivery unverified. Existing idle clock/retained costs unchanged;
-policy retained until separately reviewed removal. [Evidence](../evaluation/identity/id-01-step-2/permission-apply-result.md).
+policy retained until separately reviewed removal. [Evidence](../evaluation/identity/provider-history.md#setup-and-permissions).
 
 ### ID-01 temporary AMD64 builder running — 2026-10-23 07:11:04 UTC
 
@@ -191,7 +191,7 @@ profile/group removal retains separate exact cleanup-plan approval.
 
 Supersedes pending bootstrap/build state above: timer/SSM/Docker/native checks and
 one committed-source build passed. Exact image/source and checks are in
-[build evidence](../evaluation/identity/id-01-step-2/builder-build-result.md).
+[build evidence](../evaluation/identity/provider-history.md#builder-and-image).
 Builder remains private/running; approved absolute shutdown timer verified for
 08:10:00 UTC (earlier than one-hour operator expiry). No image publication or
 application email. Termination/root-volume deletion remain unverified until
@@ -208,7 +208,7 @@ runtime-test handoff, image removal separately reviewed. Builder
 07:22:28.116194 UTC. No builder compute/disk retained. Dedicated builder role,
 inline policy, profile and group `sg-00f275fda4e0f5104` remain pending approved
 Identity-root removal plan. RDS stopped/ECS/ASG zero confirmed; original shared
-idle deadline unchanged. No application runtime task/email. [Evidence](../evaluation/identity/id-01-step-2/image-publication-result.md).
+idle deadline unchanged. No application runtime task/email. [Evidence](../evaluation/identity/provider-history.md#builder-and-image).
 
 ### Concurrent RDS start observed during Identity preflight — 2026-10-23 09:12:58 UTC
 
@@ -217,7 +217,7 @@ original RDS resource `db-PYRRZJPVKPGHIXDAHUWATXGH7A` reported `starting` at
 09:11:20 UTC. CloudTrail records IAM user `surajs2` starting it without error at
 08:49:32 UTC, after two capacity errors. This Identity session made no DB change;
 concurrent operator/task approval/window not established here. ECS cluster and
-ASG remained at zero in the snapshot. [Evidence](../evaluation/identity/id-01-step-2/runtime-registration-preflight-stop.md).
+ASG remained at zero in the snapshot. [Evidence](../evaluation/identity/provider-history.md#builder-and-image).
 
 ### ID-01 smoke definition registered; temporary builder fully removed — 2026-10-23 09:27:10 UTC
 
@@ -229,14 +229,14 @@ verified absent, superseding their retained status above. VM/root cleanup alread
 verified; Identity state serial 3 contains no builder resources and lock is absent.
 ECS/ASG capacity stays zero; no RDS calls/change under approved concurrent-work
 exclusion. Image retained for test, task definition retained for separately
-approved run/cleanup; no email. [Evidence](../evaluation/identity/id-01-step-2/runtime-registration-apply-result.md).
+approved run/cleanup; no email. [Evidence](../evaluation/identity/provider-history.md#builder-and-image).
 
 ### ID-01 first runtime invocation: no compute observed — 2026-10-23 09:49:29 UTC
 
 Approved one CLI RunTask invocation failed; no task ARN/matching task or host
 observed. At 09:48:44.053417 UTC cluster/ASG capacity remained zero. Image/task
 retained, builder fully removed, no RDS calls/change. No owned resource required
-cleanup, no automatic retry. [Result](../evaluation/identity/id-01-step-2/runtime-attempt-result.md).
+cleanup, no automatic retry. [Result](../evaluation/identity/provider-history.md#delivery-diagnostics).
 
 ### ID-01 corrected single runtime request accepted — 2026-10-23 09:55:32 UTC
 
@@ -257,7 +257,7 @@ terminated only test host `i-06514fe65a4232752` and deleted root
 Cluster/service/ASG zero, no manual backstop or other workload interruption.
 No RDS calls; concurrent DB use remains untouched/unverified here. No new live
 retry. Image/definition/content-free logs retained for approved diagnostic handoff;
-builder remains fully removed. [Evidence](../evaluation/identity/id-01-step-2/runtime-corrected-result.md).
+builder remains fully removed. [Evidence](../evaluation/identity/provider-history.md#delivery-diagnostics).
 
 ### ID-01 diagnostic ECS host promptly removed — 2026-10-23 16:57:21 UTC
 
@@ -267,7 +267,7 @@ and root vol-07e5d27895688b25a removed after guarded prompt SetDesiredCapacity(0
 verified16:57:09.886355 UTC; ECS tasks/registered hosts and ASG desired/instances
 zero. No managed alarm/scaling/draining configuration change or other workload
 interruption. RDS calls0; concurrent database state remains outside this record.
-Image/task/log proof retained; [diagnostic evidence](../evaluation/identity/id-01-step-2/runtime-diagnostic-result.md).
+Image/task/log proof retained; [diagnostic evidence](../evaluation/identity/provider-history.md#delivery-diagnostics).
 
 ### ID-01 sandbox recipient permission and real delivery verified — 2026-10-23 17:17:30 UTC
 
@@ -284,4 +284,4 @@ i-0bbef51578c9e5ecf/root vol-04f1705171090cf51 removed17:17:09.706322 UTC.
 Both used guarded prompt cleanup; ECS/ASG zero, runtime RDS calls0, no other
 workload interrupted. Normal managed scaling/draining unchanged. Images/task
 definition/log evidence retained. SES sandbox/production access pending.
-[Evidence](../evaluation/identity/id-01-step-2/sandbox-recipient-fix-result.md).
+[Evidence](../evaluation/identity/provider-history.md#delivery-diagnostics).

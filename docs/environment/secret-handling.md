@@ -91,60 +91,39 @@ PD-16 records the master reference provisioned; the probe reference remains plan
 
 ## ID-01 SES runtime access — setup partial
 
-See the [provider setup record](identity-provider-setup.md) for the verified-domain
-observation, proposed sender-scoped task-role policy and pending live checks.
-Use task-role credentials in ECS and the existing approved interactive profile
-locally; no static SES/SMTP credential or new secret parameter is selected.
-Aditya approved the exact Terraform plan and applied the sender-scoped inline
-policy on 2026-10-23 06:17:00 UTC; attached policy/state verified. No static
-credential was created and no email delivery or runtime task credential use was
-tested. See the [apply evidence](../evaluation/identity/id-01-step-2/permission-apply-result.md).
+SES uses the task role in ECS and the operator's approved non-root profile locally;
+no static SES/SMTP credential. Sender-scoped policy applied2026-10-23 06:17:00 UTC;
+corrected sandbox task-role delivery/inbox/cleanup passed17:17:30. Production access
+and the live verify@ sender update remain pending. See [current setup](identity-provider-setup.md)
+and [historical permissions/delivery](../evaluation/identity/provider-history.md).
 
 ## ID-01 SES controlled-recipient input
 
-The shared test root's `ses_sandbox_recipient_identity_arn` is the private ARN of
-the single approved verified inbox identity. Supply through the corresponding
-TF_VAR environment input in child memory, not a shell argument, committed tfvars
-or log. Terraform marks it sensitive to hide normal plan rendering, but the
-IAM policy and access-controlled state/saved plan contain it. Preserve the input
-on subsequent sandbox plans; omission proposes removal. The exact sender
-condition remains no-reply@clip-iisc.site. Remove this sandbox-specific identity
-scope only through the reviewed production-access/configuration transition,
-then verify real sending. No new SMTP/API secret is required. See
-[diagnosis/fix evidence](../evaluation/identity/id-01-step-2/sandbox-recipient-fix-result.md).
+`ses_sandbox_recipient_identity_arn` is the private approved verified inbox ARN.
+Supply its TF_VAR input in child memory, not CLI arguments, committed tfvars or
+logs. It is sensitive in Terraform rendering but present in access-controlled
+state/policy/saved plans. Preserve it during sandbox work; omission removes scope.
+Deployed From condition still permits no-reply@clip-iisc.site; desired source uses
+verify@clip-iisc.site, awaiting exact reviewed plan/apply. Remove the recipient
+scope only through reviewed production transition and verify actual sending.
 
-## ID-01 dual email configuration — proposed, not provisioned
+## ID-01 dual email configuration
 
-Aditya selected [four-hour runtime routing](../decisions/identity-email-routing.md).
-Proposed exact Standard SecureString: `/clip/test/identity/email-delivery`, using
-`alias/aws/ssm`. Proposed private JSON fields: `version` (integer1), `primary`
-(`resend` or `ses`), `resend_api_key` (actual sending-only/domain-restricted key).
-No value/example credential is recorded here. Keep all fields in one parameter
-version to switch order/key together. The proposal does not claim name availability,
-creation, permissions or effective access. Review exact task-role `ssm:GetParameter`
-permission/account/region and verify secret-manager access before dependent live
-setup. API runtime must retrieve the value, not rely on ECS startup environment
-injection. Do not request keys in chat or put values in CLI arguments/logs.
+| Reference | Recorded state |
+| --- | --- |
+| Parameter | `/clip/test/identity/email-delivery` |
+| Account/region | `335523638354` / `ap-south-1` |
+| Storage | Standard SecureString, `alias/aws/ssm`, version1 |
+| Private schema | version(integer1), primary(resend/ses), resend_api_key |
+| Provisioning | Explicitly authorized; operator adityalaxmi1 create/decrypted read-back verified2026-10-24 14:15:45 UTC; no prior parameter overwritten. |
+| Runtime access | ECS task-role permission and live application loading remain unverified. |
 
-Existing SES task-role policy/sandbox restrictions remain. Resend account/DNS/
-credential, SSM writes/IAM and live delivery tests retain separate approval.
-The current local Resend adapter supports controlled recipients only; general
-production enablement is not performed by recording this reference.
-
-### Resend secret provisioning — 2026-10-24 14:15:45 UTC
-
-Aditya explicitly supplied a key and authorized secure storage and one local
-Resend test submission. Verified AWS caller IAM user `adityalaxmi1` in account
-`335523638354`, region `ap-south-1`. Created the previously absent parameter
-`/clip/test/identity/email-delivery` as Standard SecureString, `alias/aws/ssm`,
-version1; decrypted read-back matched privately. Existing parameters were not
-overwritten. Value was not written into repository/local credential files or
-printed. The key was originally supplied in chat; operator should rotate it in
-Resend and replace the stored credential through an approved private path.
-
-CLI login was usable; the pinned Python SDK's direct login provider failed with
-MissingDependencyException. Used CLI-exported short-lived credentials captured
-only in process memory; no dependency/configuration change. This establishes
-operator storage/read access, not ECS task-role read permission. Test submission
-failed with a redacted adapter error; acceptance/delivery unconfirmed, no retry
-or SES fallback. Exact provider/network cause is not established.
+Keep order/key in one parameter version for the approved four-hour runtime cache.
+A configuration switch without redeployment requires actual runtime retrieval,
+not ECS startup-only environment injection. Verify exact task-role access before
+live use. No credential value is recorded here; the key supplied in chat must be
+rotated privately through an approved path. Do not request keys in chat or print
+values in CLI arguments/logs/files. The local SDK's optional AWS-login dependency
+was unavailable; CLI-exported temporary credentials stayed only in process memory.
+This establishes operator access, not deployed runtime permission. Full outcomes
+and current gates are consolidated in [provider history](../evaluation/identity/provider-history.md#resend-and-sender-outcome).

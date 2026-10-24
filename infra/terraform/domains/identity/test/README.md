@@ -4,13 +4,13 @@ Current state: builder resources are removed; smoke definition :1 is registered.
 The initial ECS send failed and its owned compute/root disk were removed. Local
 operator SES delivery is confirmed; application-role diagnosis remains pending.
 The source and historical plan descriptions below do not authorize another apply
-or run. Current exact [diagnostic request](../../../../../docs/evaluation/identity/id-01-step-2/runtime-diagnostic-approval.md)
+or run. Current exact [diagnostic request](../../../../../docs/evaluation/identity/provider-history.md#delivery-diagnostics)
 requires separate approval and uses the existing definition/image unchanged.
 
 ID-01 Step 2 owns the temporary AMD64 image builder and separate one-shot email
 task definition. Aditya approved its concrete
 design and one non-applying plan; creation/apply and build/upload remain separate
-gates. See the [resource/permission/cost/cleanup plan](../../../../../docs/evaluation/identity/id-01-step-2/builder-plan.md).
+gates. See the [resource/permission/cost/cleanup plan](../../../../../docs/evaluation/identity/provider-history.md#builder-and-image).
 
 Use Terraform 1.15.9, locked AWS 6.69.1, default workspace, existing state bucket
 and exact key `domains/identity/test/terraform.tfstate`. No backend migration.
@@ -47,4 +47,4 @@ role/policy/profile/group resources and register one task definition. The builde
 VM/root disk already have verified cleanup evidence. Review that exact expected
 scope instead of the historical five-create builder scope above; stop for shared
 changes or any launch/replacement. See the
-[planning request](../../../../../docs/evaluation/identity/id-01-step-2/runtime-registration-plan-request.md).
+[planning request](../../../../../docs/evaluation/identity/provider-history.md#builder-and-image).

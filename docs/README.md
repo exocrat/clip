@@ -64,6 +64,7 @@ Code, scripts, manifests, generated contracts, migrations, actual provider/envir
 
 Both checklists are present in this bundle and apply from BOOT-00. Workstation facts are produced at `docs/environment/development-workstation.md` during BOOT-00/PD-02; do not fabricate them in planning.
 
+- [Identity evidence and current integration handoff](evaluation/identity/README.md)
 - [Identity provider setup and pending real checks](environment/identity-provider-setup.md)
 - [Identity provider setup decision](decisions/identity-provider-setup.md)
 - [Identity dual-provider email routing and four-hour refresh](decisions/identity-email-routing.md)
