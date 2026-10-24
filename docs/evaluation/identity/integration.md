@@ -498,3 +498,35 @@ Next: prepare a focused metadata collector that checks relation existence before
 querying it and retains safe partial diagnostics, then obtain a new bounded
 window/secret-read approval if live follow-up is needed. No migrations or role
 setup can proceed on this incomplete schema evidence.
+
+
+### Safe metadata collector follow-up
+
+Previous failed preflight/cleanup verified by Aditya and committed4628904. Local
+`database_metadata.py` replaces the ad-hoc all-or-nothing diagnostic pattern for
+future inspections; it does not change the strict setup/runtime validators.
+It checks the migration relation's existence, kind and version column before any
+known-version query. A missing tracker/unsupported relation/schema is a finding;
+remaining catalog checks continue. Uses one bounded repeatable-read/read-only
+transaction, stops on wrong target, exposes only fixed safe fields and code-owned
+failure phases, and retains completed findings if a later query/connection fails.
+`complete=true` only describes collection, never setup acceptance. No key binding,
+credential hash, contact/business data, raw exceptions or arbitrary row dumps.
+
+`test_database_metadata.py`:9actual disposable PostgreSQL cases pass; normal
+catalog findings, missing tracker/column/Identity schema, wrong database/admin,
+actual read-only snapshot, late partial-result preservation and private connection
+error suppression. Strict mypy passes the new module. No new CLI, AWS call,
+secret read or live window. Commands registered in the existing registry.
+Focused log `/tmp/clip-id12-database-metadata-focused.log`; full gates passed in
+`/tmp/clip-id12-database-metadata-check.log`. Aditya verified and approved the local result.
+A new exact window and master-secret-read approval is required before live use;
+previous window is closed and RDS/host remain at verified stopped/zero baseline.
+
+[Collector source snapshot](id-01-step-12/database-metadata-source-hashes.json).
+
+Final collector checks — 2026-10-24 22:06:46 UTC: `make check` exited0/all11gates;
+1031Python passed/1existing DB-only skip,63data/118web, Black151files, zero boundary
+violations, current contracts, types/lint/build,35wrapper safety cases, actual
+PostgreSQL18.6 lifecycle and Gitleaks8.30.1 source scan.9focused cases, strict mypy,
+source hashes, relative file links and diff whitespace pass. Aditya verified and approved the local result; no new live checks or readiness claim.

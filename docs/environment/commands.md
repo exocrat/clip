@@ -970,3 +970,22 @@ database/admin. They are not connected to startup or a live CLI. Each transactio
 has5-second statement/3-second lock limits; the execution launcher must separately
 bound total process/connection time. Live launcher/private networking, credentials,
 RDS start, exact SQL, URL publication and cleanup still need their reviewed plans.
+
+
+### Safe Identity database metadata — ID-01 Step12
+
+`uv run --locked pytest apps/api/tests/domains/identity/test_database_metadata.py -q -W error`
+checks only owned disposable PostgreSQL. Requires local Unix-socket Docker and
+locked setup; no AWS credentials, secret reads or shared database URL. Expected:
+missing migration tracker/column/schema reported as findings; later failures
+retain completed allowlisted fields; wrong targets stop; the actual transaction
+is repeatable-read/read-only. `make check` includes the suite. Strict types:
+`uv run --locked mypy --strict apps/api/app/domains/identity/database_metadata.py`.
+
+`collect_database_metadata` accepts an explicit trusted connection factory and
+expected database/admin, returning a serializable report. `complete` means the
+metadata collection completed, not that setup or migrations passed. Inspect
+required-version and inventory/logging/ACL fields; missing objects remain blockers.
+It has no live CLI, secret retrieval, provider, writes, repair or retries. Live
+callers still require exact endpoint/account/TLS checks, process/connection bounds,
+a separately approved secret read/window and sanitized report handling.

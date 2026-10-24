@@ -1,0 +1,10 @@
+[
+  {
+    "path": "apps/api/app/domains/identity/database_metadata.py",
+    "sha256": "f19bf078ec616ad8bacdac86f9d1b268fc3f532d8f41fb6cad6f0cae596b8355"
+  },
+  {
+    "path": "apps/api/tests/domains/identity/test_database_metadata.py",
+    "sha256": "cab069d68699514bc63123faa94f2ac263c090236ddc9fb505a7c8fd6dc9c6ae"
+  }
+]
