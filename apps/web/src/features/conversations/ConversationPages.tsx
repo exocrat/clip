@@ -58,6 +58,33 @@ function toInboxItem(summary: ConversationSummary, userId: string): Conversation
     role, last_activity_at: summary.last_activity_at, unread_count: summary.unread_count };
 }
 
+/** Process peer recovery traffic and return the original message to annotate, if it was not decryptable. */
+export async function processProtocolControlEntry(
+  entry: ConversationEntry,
+  userId: string,
+  conversationId: string,
+  session: ConversationSession,
+): Promise<string | null> {
+  if (entry.kind !== 'protocol_control' || entry.sender_user_id === userId) return null;
+  if (!entry.envelope || !entry.recovery_target || !session.history) {
+    throw new ConversationCryptoError('Recovery control metadata is incomplete');
+  }
+  const target = entry.recovery_target;
+  const outcome = await session.crypto.receiveProtocolEntry({
+    conversation_id: conversationId,
+    message_id: entry.entry_id,
+    sequence: entry.sequence,
+    sender_user_id: entry.sender_user_id,
+    sender_device_id: 1,
+    expected_sender_key_version: entry.envelope.sender_key_version ?? 0,
+    expected_recipient_key_version: entry.envelope.recipient_key_version ?? 0,
+    envelope: entry.envelope,
+    recovery_target: target,
+  }, session.history);
+  if (outcome === 'pending') throw new ConversationCryptoError('Recovery control is still pending');
+  return entry.envelope.sdk_message_type === 'retry_request' ? target.entry_id : null;
+}
+
 type ReadyConversation = { summary: ConversationSummary; session: ConversationSession; ownKey: KeyBundle; peerId: string; peerKeyVersion: number };
 
 export function ConversationDetailPage({ conversationId }: { conversationId: string | undefined }) {
@@ -150,27 +177,9 @@ export function ConversationDetailPage({ conversationId }: { conversationId: str
           // Recovery controls are protocol traffic, not chat bubbles. The SDK
           // validates/handles them; only an authenticated retry request reports
           // that the original sender's message was not decryptable.
-          if (entry.sender_user_id !== runtime.userId) {
-            if (!entry.envelope || !entry.recovery_target) {
-              throw new ConversationCryptoError('Recovery control metadata is incomplete');
-            }
-            const recoveryTarget = entry.recovery_target;
-            const outcome = await ready.session.crypto.receiveProtocolEntry({
-              conversation_id: conversationId,
-              message_id: entry.entry_id,
-              sequence: entry.sequence,
-              sender_user_id: entry.sender_user_id,
-              sender_device_id: 1,
-              expected_sender_key_version: entry.envelope.sender_key_version ?? 0,
-              expected_recipient_key_version: entry.envelope.recipient_key_version ?? 0,
-              envelope: entry.envelope,
-              recovery_target: recoveryTarget,
-            }, history);
-            if (outcome === 'pending') throw new ConversationCryptoError('Recovery control is still pending');
-            if (entry.envelope.sdk_message_type === 'retry_request') {
-              observedDecryptionFailureIds.add(recoveryTarget.entry_id);
-            }
-          }
+          const failedEntryId = await processProtocolControlEntry(entry, runtime.userId, conversationId,
+            ready.session);
+          if (failedEntryId) observedDecryptionFailureIds.add(failedEntryId);
           continue;
         }
         const display = await decryptEntry(entry, runtime.userId, ready, local.sent,

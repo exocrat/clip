@@ -10,6 +10,7 @@ import {
   ConversationRelay, KeyRegistrationAcknowledgementRequiredError, createConversationSession,
   type ConversationSession, type ConversationEnvelopeRoute,
 } from '../src/features/conversations';
+import { processProtocolControlEntry } from '../src/features/conversations/ConversationPages';
 
 const alice = '00000000-0000-4000-8000-000000000001';
 const bob = '00000000-0000-4000-8000-000000000002';
@@ -266,8 +267,8 @@ describe('CLIP SDK relay adapter', () => {
       const requestBody = JSON.parse(server.submitted.at(-1) ?? '{}') as MessageRequest;
       expect(requestBody.operation_id).not.toBe(request?.envelope?.sdk_client_message_id);
 
-      const handled = await a.crypto.receiveProtocolEntry(receiveContext(request, bob), a.history);
-      expect(handled).toBe('handled');
+      const failedEntryId = await processProtocolControlEntry(request, alice, thread, a);
+      expect(failedEntryId).toBe(original.entry_id);
       const nullResponse = server.entries.at(-1);
       if (!nullResponse) throw new Error('Expected SDK null response');
       expect(nullResponse?.kind).toBe('protocol_control');
@@ -276,8 +277,8 @@ describe('CLIP SDK relay adapter', () => {
       const nullBody = JSON.parse(server.submitted.at(-1) ?? '{}') as MessageRequest;
       expect(nullBody.operation_id).not.toBe(nullResponse?.envelope?.sdk_client_message_id);
 
-      const result = await b.crypto.receiveProtocolEntry(receiveContext(nullResponse, alice), b.history);
-      expect(result).toBe('handled');
+      const failureForNullResponse = await processProtocolControlEntry(nullResponse, bob, thread, b);
+      expect(failureForNullResponse).toBeNull();
       const received = (await b.history.read()).received.filter((item) => item.message_id === original.entry_id);
       expect(received).toHaveLength(0);
       expect(sent.messageId).toBe(original.entry_id);
