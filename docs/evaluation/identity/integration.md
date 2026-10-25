@@ -1066,3 +1066,64 @@ manifest hash, wrong image, invalid input and external diff driver refusal.
 Strict mypy and boundary check passed. The current actual package passes all nine
 local checks againstdefec38f. New upstream still requires main integration and
 refreshed lifecycle/full CI checks; no live-readiness acceptance is implied.
+
+### Explicit local runtime preparation and image trust finding — 2026-10-25 11:46:06 UTC
+
+Added `scripts/identity_runtime.py` and its owned tests. The command wraps existing
+`prepare_local_identity` and shared `create_app` without changing default startup,
+Settings, domain services, contracts, web pages, Dockerfile or Terraform. It refuses
+missing Listings configuration/debug before secret bootstrap, requires an explicit
+mode plus acknowledgement, and uses only the registered localhost5173 loopback
+browser policy. Check-only validates real Identity bootstrap without a listener or
+Listings pool; serve binds127.0.0.1:8000, one worker, no reload/forwarded-header trust,
+with existing safe JSON logs. Exceptions print fixed text, not private SDK/DSN data.
+Either real invocation still requires separate approval; no invocation was made.
+
+Fourteen tests passed, including offline mode/opt-in/failure/listener controls and
+an actual owned PostgreSQL/HTTP test: activation/session cookie/profile and allowed
+owner-list read, temporary seller-write denial and hostile Origin refusal. The new
+test initially used the wrong profile URL and an incomplete image-upload body;
+corrected the test to the canonical /me route and full reviewed request schema.
+No implementation behavior was changed to satisfy it. Strict mypy passed.
+
+**Concrete remaining image trust gap:** cached `python:3.14.8-slim-trixie` image ID
+`sha256:cbe8543d6805b7a78660e2ea2f17dc9313c6dfe38090b4958cc1fba9fea9ac10`
+is AMD64. Its extracted system CA bundle has150roots and contains none of the3
+roots in the public ap-south-1 RDS bundle used by the successful probe (bundle SHA
+`ca4a9dc14e06c3f84274eff3ffed0e5d4d3463141593e1159eb4a0904df6cd74`).
+Current Dockerfile does not add them; app DB URI requires sslrootcert=system.
+This confirms missing regional trust material, not a fresh live RDS chain check.
+
+The first network-disabled image process attempt failed with exec-format error on
+this ARM64 host. Rechecked by creating an owned stopped container and copying its
+public system CA file; no image process/network or cloud operation was used.
+Compared DER certificate bytes using host SSL contexts; removed the owned container.
+No image rebuild, root-store modification, DB connection or secret read occurred.
+
+Recommended fix for review: pin/provenance-check the public regional bundle, split
+its three roots into one public .crt per certificate under the Identity source,
+and add a narrowly scoped COPY/update-ca-certificates step before USER in the shared
+Dockerfile. Preserve verify-full/system roots and hostname verification; no insecure
+fallback. Check expiry, intended platform and installed root membership, then
+repeat real TLS success/hostname-failure checks in the final approved image.
+Shared Dockerfile work needs coordinated writer reservation/affected-owner review
+under CONTRIBUTING.md; it is deliberately left unchanged while Suraj integrates
+upstream. Live runtime prerequisites and final image/deployment approval remain
+pending. This is the next approval/coordination boundary, not local readiness.
+
+Local checkpoint review — 2026-10-25 11:48:05 UTC: full make check passed all11
+ordered gates (1074Python/1existing DB-only skip,63data,118web; Black158files),
+including actual PostgreSQL18.6 combined clean/repeat/upgrade/atomicity/rollback/
+reapply,35wrapper safety cases, contracts/types/boundaries/build and Gitleaks.
+Log `/tmp/clip-id-ready-autonomous-check.log`; both new scripts pass strict mypy,
+current offline package check and changed-document links/whitespace checks pass.
+No owned DB fixture/image-inspection container is intentionally retained.
+
+Applicable checklist review: isolated branch/source preserved; local-only tests
+and real/synthetic evidence distinguished; commands/function behavior documented;
+no secret values exposed or default production bypass introduced. Original
+worktree remains clean at85c4606. Task-wide ID-READY closeout remains incomplete:
+accepted-main integration/current hosted CI, independent/affected-owner approval,
+image trust fix, real schema/login/IAM/proxy/provider/browser/device/retention
+acceptance and exact authorized merge are still required. Stop at the shared-image
+coordination/live approval boundary; no background/cloud work is scheduled.

@@ -61,8 +61,12 @@ adityalaxmi1. Private JSON fields: version(integer1), primary(resend/ses),
 resend_api_key. Key/recipients/OTPs must stay out of chat/repo/logs. The key supplied
 in chat must be rotated privately. Operator access is not ECS task-role access.
 
-Current adapters accept at most five explicitly controlled recipients. No normal
-application composition constructs the router yet. Once both real adapters,
+Current adapters accept at most five explicitly controlled recipients. The default
+application composition remains Identity-unbound. An explicit
+operator-local bootstrap command is prepared in the
+[command registry](commands.md#explicit-real-local-identity-bootstrap--id-01-step12-preparation);
+it requires separate real-access approval and does not enable deployed startup.
+Once both real adapters,
 permissions/outbound access and live loader are deployed, changing primary/key
 can take effect without rebuilding/restarting; update delay is up to four hours
 per active process, or its next send after expiry. General sending is not enabled.

@@ -58,3 +58,17 @@ git show 890adb1:docs/evaluation/identity/id-01-step-2/runtime-run-approval.md
 ```
 
 Old approvals, prices and caps must not be reused for new cloud/provider work.
+
+## Autonomous local preparation — 2026-10-25 11:48:05 UTC
+
+Separate worktree `/tmp/clip-id-ready-local-hardening`, branch
+`task/id-ready-local-hardening`, starts from85c4606; original worktree unchanged.
+Offline review-consistency command committed17457d9; explicit real local runtime
+command prepared/tested without live bootstrap. Full local gate passed all11checks:
+1074Python/1existing DB-only skip,63data,118web; Black158files, actual PostgreSQL18.6
+lifecycle and Gitleaks.
+
+[Runtime preparation and concrete image CA finding](integration.md#explicit-local-runtime-preparation-and-image-trust-finding--2026-10-25-114606-utc):
+the cached AMD64 base system store contains none of the3regional RDS roots.
+Shared Dockerfile correction needs writer coordination/review; live setup and
+updated-main integration remain pending. No ID-READY acceptance or deployment.

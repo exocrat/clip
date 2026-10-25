@@ -1039,3 +1039,48 @@ real disposable migration tests before requesting a live apply.
 Focused offline regression command:
 `uv run --locked pytest apps/api/tests/domains/identity/test_readiness_audit.py -q -W error`.
 Strict types: `uv run --locked mypy --strict scripts/identity_readiness.py`.
+
+### Explicit real local Identity bootstrap — ID-01 Step12 preparation
+
+**Prepared only; running either mode requires separate live secret/DB access
+approval.** Import/help is offline:
+
+```bash
+uv run --locked python scripts/identity_runtime.py --help
+```
+
+After the exact account/region, references, database roles/URLs, recipient list,
+network/TLS route and execution window have been reviewed and approved:
+
+```bash
+uv run --locked python scripts/identity_runtime.py --check --approved-bootstrap
+uv run --locked python scripts/identity_runtime.py --serve --approved-bootstrap
+```
+
+The acknowledgement flag prevents accidental startup; it does not grant approval.
+Both modes retrieve fixed Identity SSM keys/DB URL/email configuration and perform
+real Identity database safety checks. Warmup does not send mail. `--check` opens no
+listener and does not start/check the Listings pool. `--serve` starts the existing
+combined app on127.0.0.1:8000, one worker, no reload or forwarded-header trust, with
+safe application logging and raw access logging disabled. Auth requests can create
+real state and dispatch real mail, so exact user/recipient/send/cleanup approval is
+required before exercising them. Ctrl+C closes the app's own pool; it does not
+stop cloud infrastructure or delete data.
+
+Requires explicit local/test Settings, Microsoft+dual selectors, controlled
+recipient list, debug off and the separate private Listings `CLIP_DATABASE_URL`;
+Identity uses its own fixed SSM DB URL/login. Do not put credential values in
+arguments, this guide, logs or chat. The UI uses registered
+`http://localhost:5173/auth/callback`;127.0.0.1 is not a Microsoft callback alias.
+Use the normal Vite API proxy to8000, not the synthetic preview proxy to8001.
+Enable the existing Microsoft UI flag only in the approved real test session.
+Default app.main, production rejection and synthetic preview behavior are unchanged.
+
+This is operator-local preparation, excluded from the production API image. It
+is not a deploy route or proof of image CA trust, actual permissions or delivery.
+The shared image currently lacks the regional RDS roots; resolve that review gate
+before expecting system-root TLS validation in its runtime. See the integration
+handoff's trust-store finding.
+
+Checks: `uv run --locked pytest apps/api/tests/domains/identity/test_runtime_command.py -q -W error`
+and `uv run --locked mypy --strict scripts/identity_runtime.py`.

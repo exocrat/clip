@@ -307,6 +307,14 @@ NAT cost alternatives are a [deferred note](../../environment/shared-test-founda
 not an accepted network change. Shared RDS/ASG state and concurrent users must be
 rechecked before every future run; do not stop Suraj's work on stale evidence.
 
+Subsequent local preparation on `task/id-ready-local-hardening` found a concrete
+image trust-store gap; it does not alter the implementation pinned at this file's
+header. The cached AMD64 base image contains none of the regional RDS roots used
+by the probe, while app TLS requires system roots. See the
+[offline evidence and proposed coordinated fix](integration.md#explicit-local-runtime-preparation-and-image-trust-finding--2026-10-25-114606-utc).
+Shared Dockerfile remains unchanged; reserve/review that bounded change after
+upstream integration before claiming image/runtime TLS acceptance.
+
 ## 9. Evidence and requested review outcome
 
 Latest source-identical full gate: **1048Python passed,1existing DB-only skip,

@@ -239,3 +239,14 @@ scope and public eligibility while preserving its lifespan. Standalone tests and
 synthetic preview retain their old factory signature. Default startup stays
 unbound; production/demo composition is refused until reviewed runtime wiring.
 [Current integration evidence](../../../../../docs/evaluation/identity/integration.md#local-api-composition).
+
+### Explicit local real-runtime command
+
+`scripts/identity_runtime.py` prepares the existing real local/test bindings and
+passes them to the shared application factory. It is never loaded by default API
+startup or copied into the production image. Import/help is offline; both explicit
+bootstrap modes require approved real SSM/DB access, and served auth requests may
+send real mail. The loopback origin/peer policy, separate domain credentials and
+production/demo refusal remain intact. See the
+[command registry](../../../../../docs/environment/commands.md#explicit-real-local-identity-bootstrap--id-01-step12-preparation)
+for safe usage and pending image/permissions gates.
