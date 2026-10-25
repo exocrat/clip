@@ -4,8 +4,8 @@ Prepared 2026-10-25 06:07:40 UTC by Aditya (A). Purpose: one place for the peopl
 whose features use Identity to understand **what changed, why, and what to check**.
 This includes the whole ID-READY branch, not just the latest logging/migration work.
 
-**Review source:** `task/id-ready-overnight-prep` (refresh to its committed head before owner review).
-Refreshed 2026-10-25 after the hosted-test startup addition; original prepared date retained above.
+**Review source:** `task/id-ready-overnight-prep` at `a76d3e81e1770bd01d4a7ffcddae2307b1c24872`.
+Refreshed 2026-10-25 20:05:44 UTC after the hosted-test startup addition; original prepared date retained above.
 **Comparison base:** fetched `origin/main` at `6c860603bdd81a98485e721d789b557c5d433948`.
 The pending migration-review candidate and this handoff are documentation additions;
 they do not change the implementation pinned above. Refresh this comparison if
