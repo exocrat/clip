@@ -1,0 +1,52 @@
+{
+  "recorded_at": "2026-10-25 01:18:58 UTC",
+  "branch": "search-domain",
+  "step": "SE-02 Step2 storage reuse/verification",
+  "human_result_verification": "pending",
+  "schema_changed": false,
+  "schema_head": "20261024153316",
+  "migration_count": 12,
+  "remote_heads_observed": {
+    "main": "defec38f59d4acb683f7b51950860f458aacfdd1",
+    "domain/listings": "23028365c2a981d8cc2656ce97d237553b325e0d"
+  },
+  "existing_storage": [
+    "search.wanted_requests fields/budget/live-retired constraints/closed_at anchor/indexes",
+    "search.saved_listings unique pair/restrictive FKs/indexes",
+    "paired pending operation and cutoff from API-only retirement migration"
+  ],
+  "checks": {
+    "native": "four SQL smokes twice, repeat apply,12 down migrations/clean reapply, identical inventory, stopped",
+    "optional_adapter_suite": "11 passed,3 optional skipped",
+    "wrapper_safety": "35 simulated cases passed",
+    "black": "scripts/check_database.py unchanged format",
+    "shell_syntax": "passed",
+    "ci_parity": "11 ordered checks pass",
+    "boundaries": "0 violations",
+    "contracts": "8 artifacts current",
+    "whitespace": "passed"
+  },
+  "source_sha256": {
+    "database/tests/search-storage-smoke.sql": "ebff61221201d2861c2178b22e0f8b9f8e44088da85b737339df6dcb2ab543cf",
+    "database/tests/native-checks.sh": "4160eefb16126b238efb5790bbb755b1ca0e2aa3245c7becf81eb3f8054e4208",
+    "scripts/check_database.py": "a49d763d237556ea43bc3502568fe4394287aec9bb0d18abc103e6fd46bd8437",
+    "database/README.md": "73464e11da674001c3910d15db7e00b82220a033d2480ae717b76a43c25fe82e",
+    "docs/environment/commands.md": "1db8d97ae33cff13e635543d959a2d5a9b34bae098d10a87d63f49cd35e203b6",
+    "apps/api/app/domains/search/README.md": "5ac329c1ff9a75aecfe67d961e6c539d809a1a18525a8e35a9a436c41c2a8900"
+  },
+  "log_sha256": {
+    "wrapper-safety.log": "435e7127b522f554db5888fbff76480bfeb93b3bc567465e009cd7dc3fc58d64",
+    "search-storage-second.log": "d911bdd7afa4f891349fbbade5aa17bb6f01b37442fc1aa00e922c6c4d6606e2",
+    "search-storage-first.log": "d911bdd7afa4f891349fbbade5aa17bb6f01b37442fc1aa00e922c6c4d6606e2",
+    "native.log": "ce80f7a5be989033699f9a92f965e46dff40d872ea879d392710ac1ca4147ffa",
+    "stop.log": "ca19178a35ab4153b75b494963b66ce8243e1b94c173107c87b44d09db23652d"
+  },
+  "inventory_sha256": "27b17765c9eeeab4bc058093ba486895a4c1da4ea78924cd64f860fcbd70b110",
+  "limitations": [
+    "No application actions/API/UI/idempotency implementation in this checkpoint",
+    "No concrete destructive request cleanup implementation/approval",
+    "Actual ID-READY/LI-CORE/SE-CORE and Conversations integrations pending",
+    "Docker full database/secret scan/hosted CI and independent affected-owner review pending"
+  ],
+  "install_commit_push_merge_cloud_actions": false
+}

@@ -4,7 +4,15 @@
 # and never accepts an existing PGDATA, database URL, host, or production target.
 set -euo pipefail
 set +x
-[[ $# == 2 ]] || { echo 'Usage: bash database/tests/native-checks.sh POSTGRES_PREFIX DBMATE_BINARY' >&2; exit 1; }
+[[ $# == 2 || ( $# == 3 && ( ${3:-} == --listings-store || ${3:-} == --embedding-worker || ${3:-} == --search-calibration || ${3:-} == --hybrid-read ) ) ]] || { echo 'Usage: bash database/tests/native-checks.sh POSTGRES_PREFIX DBMATE_BINARY [--listings-store|--embedding-worker|--search-calibration|--hybrid-read]' >&2; exit 1; }
+run_listings=false
+run_worker=0
+run_calibration=0
+run_hybrid=0
+[[ ${3:-} != --hybrid-read ]] || run_hybrid=1
+[[ ${3:-} != --search-calibration ]] || run_calibration=1
+[[ ${3:-} != --embedding-worker ]] || run_worker=1
+[[ $# == 2 ]] || run_listings=true
 [[ $(uname -s) == Darwin ]] || { echo 'This checkpoint is for native macOS only.' >&2; exit 1; }
 root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd -P)
 pgbin=$(cd -- "$1/bin" && pwd -P)
@@ -16,6 +24,14 @@ evidence=$(mktemp -d /tmp/clip-pd08-native-check.XXXXXX)
 cluster=$evidence/cluster
 socket=$evidence/socket
 mkdir "$socket"
+socket_directories=$socket
+adapter_socket=
+if [[ "$run_listings" == true ]]; then
+  adapter_root=$(mktemp -d /tmp/clip-listings-test-XXXXXX)
+  adapter_socket=$adapter_root/pgsocket
+  mkdir "$adapter_socket"
+  socket_directories=$socket,$adapter_socket
+fi
 printf 'Native check evidence: %s\n' "$evidence"
 
 # Always stop only this newly created cluster; retain source logs/data for review.
@@ -45,7 +61,7 @@ clean_env "$pgbin/initdb" --pgdata="$cluster" --username=clip_native_test \
   --encoding=UTF8 --locale=C --auth-local=trust --auth-host=reject \
   > "$evidence/initdb.log" 2>&1
 clean_env "$pgbin/pg_ctl" -D "$cluster" --log="$evidence/server.log" --wait \
-  --options="-k $socket -p 55438 -c listen_addresses='' -c timezone=UTC -c log_timezone=UTC" start \
+  --options="-k $socket_directories -p 55438 -c listen_addresses='' -c timezone=UTC -c log_timezone=UTC" start \
   > "$evidence/start.log" 2>&1
 clean_env "$pgbin/createdb" --host="$socket" --port=55438 \
   --username=clip_native_test clip_test_native
@@ -67,15 +83,15 @@ migrate() {
 
 # Check clean apply, repeat application and schema inventory at both clean heads.
 check_head() {
-  [[ $(sql --command 'SELECT max(version) FROM public.schema_migrations') == 20261022062357 ]]
-  [[ $(sql --command 'SELECT count(*) FROM public.schema_migrations') == 9 ]]
-  [[ $(sql --command "SELECT count(*) FROM pg_tables WHERE schemaname IN ('identity','listings','search','conversations')") == 26 ]]
+  [[ $(sql --command 'SELECT max(version) FROM public.schema_migrations') == 20261025013000 ]]
+  [[ $(sql --command 'SELECT count(*) FROM public.schema_migrations') == 14 ]]
+  [[ $(sql --command "SELECT count(*) FROM pg_tables WHERE schemaname IN ('identity','listings','search','conversations')") == 30 ]]
   [[ $(sql --command 'SELECT count(*) FROM listings.categories') == 8 ]]
   [[ $(sql --command 'SELECT count(*) FROM listings.conditions') == 4 ]]
   [[ $(sql --command 'SHOW server_version_num') == 180006 ]]
   [[ $(sql --command 'SHOW listen_addresses') == '' ]]
-  [[ $(sql --command "SELECT count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname IN ('identity','listings','search','conversations')") == 23 ]]
-  [[ $(sql --command "SELECT count(*) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace WHERE NOT t.tgisinternal AND n.nspname IN ('identity','listings','search','conversations')") == 35 ]]
+  [[ $(sql --command "SELECT count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname IN ('identity','listings','search','conversations')") == 32 ]]
+  [[ $(sql --command "SELECT count(*) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace WHERE NOT t.tgisinternal AND n.nspname IN ('identity','listings','search','conversations')") == 42 ]]
 }
 
 # Snapshot ordered runtime definitions rather than OIDs, fixture UUIDs or dump
@@ -119,19 +135,53 @@ migrate status > "$evidence/status-first.log" 2>&1
 migrate migrate > "$evidence/repeat-migrate.log" 2>&1
 check_head
 sql --file "$root/database/tests/schema-smoke.sql" > "$evidence/smoke-first.log" 2>&1
+sql --file "$root/database/tests/embedding-smoke.sql" > "$evidence/embedding-first.log" 2>&1
+sql --file "$root/database/tests/search-storage-smoke.sql" > "$evidence/search-storage-first.log" 2>&1
 sql --file "$root/database/tests/retired-origin-smoke.sql" > "$evidence/retirement-first.log" 2>&1
 
 # No fixture commits remain after the smoke rollback; down/up is confined to
 # this disposable database and is not the persistent Compose-volume reset.
-for revision in 1 2 3 4 5 6 7 8 9; do migrate rollback > "$evidence/rollback-$revision.log" 2>&1; done
+for revision in 1 2 3 4 5 6 7 8 9 10 11 12 13 14; do migrate rollback > "$evidence/rollback-$revision.log" 2>&1; done
 [[ $(sql --command 'SELECT count(*) FROM public.schema_migrations') == 0 ]]
 [[ $(sql --command "SELECT count(*) FROM pg_namespace WHERE nspname IN ('identity','listings','search','conversations')") == 0 ]]
 migrate migrate > "$evidence/apply-second.log" 2>&1
 check_head
 sql --file "$root/database/tests/schema-smoke.sql" > "$evidence/smoke-second.log" 2>&1
+sql --file "$root/database/tests/embedding-smoke.sql" > "$evidence/embedding-second.log" 2>&1
+sql --file "$root/database/tests/search-storage-smoke.sql" > "$evidence/search-storage-second.log" 2>&1
 sql --file "$root/database/tests/retired-origin-smoke.sql" > "$evidence/retirement-second.log" 2>&1
 inventory > "$evidence/inventory-second.txt"
 cmp "$evidence/inventory-first.txt" "$evidence/inventory-second.txt"
 clean_env "$pgbin/pg_dump" --host="$socket" --port=55438 --username=clip_native_test \
   --dbname=clip_test_native --schema-only --no-owner --no-privileges > "$evidence/schema.sql"
-printf '%s\n' 'PASS: native clean apply/head, repeat migrate, both smoke suites twice, nine down migrations, clean reapply and identical runtime schema inventory.'
+# Optional adapter target is a SECOND fresh database in this same owned cluster.
+# Committed race fixtures remain here for inspection until an approved cleanup;
+# they do not interfere with the empty-store migration round trip above.
+if [[ "$run_listings" == true ]]; then
+  sql --command 'CREATE ROLE clip_ci LOGIN'
+  clean_env "$pgbin/createdb" --host="$socket" --port=55438 \
+    --username=clip_native_test --owner=clip_ci clip_test_ci
+  adapter_url="postgres://clip_ci@localhost:55438/clip_test_ci?host=$adapter_socket&sslmode=disable"
+  clean_env DATABASE_URL="$adapter_url" "$dbmate" --env-file /dev/null \
+    --migrations-dir "$root/database/migrations" --no-dump-schema migrate --strict \
+    > "$evidence/adapter-migrate.log" 2>&1
+  # Run saved pagination fixtures last: their committed corpus exceeds the
+  # earlier mathematical bootstrap test's intentionally small batch budget.
+  clean_env LISTINGS_TEST_HYBRID_MODEL="$run_hybrid" LISTINGS_TEST_SEARCH_CALIBRATION="$run_calibration" LISTINGS_TEST_EMBEDDING_WORKER_MODEL="$run_worker" LISTINGS_TEST_DATABASE_URL="$adapter_url" "$root/.venv/bin/python" -m pytest \
+    "$root/apps/api/tests/domains/search/test_draft_matches_postgres.py" \
+    "$root/apps/api/tests/domains/search/test_wanted_retirement_postgres.py" \
+    "$root/apps/api/tests/domains/search/test_wanted_postgres.py" \
+    "$root/apps/api/tests/domains/search/test_step6_postgres.py" \
+    "$root/apps/api/tests/domains/search/test_wanted_response_postgres.py" \
+    "$root/apps/api/tests/domains/search/test_category_migration_postgres.py" \
+    "$root/apps/api/tests/domains/listings/test_postgres_store.py" \
+    "$root/apps/api/tests/domains/listings/test_browse_postgres.py" \
+    "$root/apps/api/tests/domains/listings/test_embedding_postgres.py" \
+    "$root/apps/api/tests/domains/listings/test_embedding_worker_postgres.py" \
+    "$root/apps/api/tests/domains/listings/test_hybrid_read_postgres.py" \
+    "$root/tests/evaluation/test_search_calibration_postgres.py" \
+    "$root/apps/api/tests/domains/search/test_saved_postgres.py" \
+    -q -W error > "$evidence/listings-tests.log" 2>&1
+  cat "$evidence/listings-tests.log"
+fi
+printf '%s\n' 'PASS: native clean apply/head, repeat migrate, four smoke suites twice, fourteen down migrations, clean reapply and identical runtime schema inventory.'

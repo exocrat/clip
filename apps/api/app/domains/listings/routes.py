@@ -30,8 +30,10 @@ from app.contracts.domain_types import (
     UploadInstruction,
 )
 from app.domains.listings.service import ListingsService
+from app.domains.listings.browse_routes import router as browse_router
 
 router = APIRouter()
+router.include_router(browse_router)
 
 _ERROR_RESPONSES: dict[int | str, dict[str, Any]] = {
     400: {"model": ErrorEnvelope, "description": "Bad Request"},

@@ -1,0 +1,15 @@
+{
+  "observations": [
+    {
+      "case": "empty_registry",
+      "outcome": "idle",
+      "pipeline_count": 0
+    }
+  ],
+  "peak_api_helper_rss_bytes": 371130368,
+  "max_simultaneous_helpers": 1,
+  "windows": 6,
+  "all_helpers_reaped": true,
+  "faults": [],
+  "elapsed_seconds": 0.9686800829949789
+}

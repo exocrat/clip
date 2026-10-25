@@ -1,0 +1,64 @@
+{
+  "task": "SE-01 amendment checkpoint5 / real native HTTP-model integration",
+  "utc": "2026-10-24 21:32:11 UTC",
+  "branch": "task/se-01-search",
+  "base": "defec38f59d4acb683f7b51950860f458aacfdd1",
+  "state": "local native HTTP/model/browser checkpoint verified; shutdown correction performed and checked; task incomplete",
+  "source_sha256": {
+    "apps/api/tests/domains/search/native_preview.py": "26051d5a2a2087a3d0ffdc4c2714c17e28b696ccd1e80195dc62b8aefce7e7d2",
+    "apps/api/tests/domains/search/test_native_preview.py": "db43a4ea6d24f0df0b26a49c2394c9ecbee9772b90ab16762eb7836294f0c872",
+    "apps/web/src/features/search/discoveryApi.ts": "e64c44939509b1c33f9b8c8f100ae708236f09edc92217e2e45317f8a8298a61",
+    "apps/web/src/features/search/SaleDiscovery.tsx": "ba62e349985487482ba3bc89ed8e6a29559bff26601ee3d8b77946462881cb25",
+    "apps/web/tests/discovery-api.test.ts": "dfe1b901dbb6080d981267ae197476f9b6eaf4f04b349cc77ae424b7b1d12aef"
+  },
+  "checks": {
+    "real_headless": "10 query requests over actual ASGI HTTP service plus blank/invalid/header guards; building-pipeline503/Keyword200 and closed-helper503/Keyword200; helper reaped and native database stopped",
+    "live_proxy": "10 real requests through existing Vite proxy, all200 with native-backend and private,no-store headers; UI200",
+    "python": "76 focused passed after shutdown regression test",
+    "web": "105 tests; lint57files; both TypeScript checks; production build passed",
+    "format": "Black140files unchanged",
+    "boundaries": "0 violations",
+    "contracts": "8 registered artifacts current",
+    "other": "CLI help, py_compile and diff check passed",
+    "ctrlc_cleanup": "Final corrected harness reran real query matrix; actual Ctrl+C exits0, report written, one helper reaped, private cluster stopped; ctrlc-result.json/ctrlc-stop.log"
+  },
+  "resources": {
+    "headless_peak_api_helper_rss_bytes": 299008000,
+    "headless_windows": 12,
+    "headless_helper_starts": 1,
+    "headless_helpers_reaped": true,
+    "bounds": "one helper;100windows per session (query reservations); sampled512MiB API+helper;30min; DB statement5s/lock1s; max4poolconnections; PG16MiBshared_buffers/10max_connections",
+    "limits": "Sampled RSS is a watchdog, not an OS memory reservation; PostgreSQL/Vite memory excluded, no deployment equivalence"
+  },
+  "preview": {
+    "url": "http://127.0.0.1:5173/",
+    "api_pid": 36900,
+    "session": 51734,
+    "directory": "/tmp/clip-listings-test-vh82oo1d",
+    "state": "stopped after human verification; database retained",
+    "shutdown": "Initial Ctrl+C stopped API/database but interrupted async helper cleanup/report. Exact helper-command check found no surviving helper. Shielded cleanup correction passed regression and actual Ctrl+C rerun; final owned processes stopped.",
+    "frontend": "existing Vite5688 retained; replaced only owned fixture36173/session88369",
+    "corrected_verification_directory": "/tmp/clip-listings-test-2742p4oq",
+    "corrected_verification_session": 91193
+  },
+  "correction": "Initial native bootstrap used dbmate --strict in global position; fixed to migrate --strict. Retained failure/stop logs; no data/model was started in that failed run. Final checks used fresh targets.",
+  "pending": [
+    "Production lifecycle/config/worker scheduling/bootstrap and Linux/resource validation",
+    "Real upstream Identity/Listings/images integration and accepted readiness",
+    "Final dataset20+human labels/relevance/NFR/load checks",
+    "Full CI/Docker secret scanner, task-wide review, independent review and exact Git approvals"
+  ],
+  "scope": "Only the isolated harness supplies synthetic identity/image metadata; actual collection router/service, Postgres store, vocabulary/typo/rank SQL, worker and offline helper are real. No model download/package/global install/cloud/production config/Git publication.",
+  "verified_utc": "2026-10-24 21:37:08 UTC",
+  "human_verification": "Mohit: It works. Real local search/browser verified; no additional device dimensions, keyboard or unreported scenarios inferred.",
+  "pre_shutdown_fix_source_sha256": {
+    "apps/api/tests/domains/search/native_preview.py": "08a60757c4872f16a9d2879805a46c485a935d50c36e192315142ec583606311",
+    "apps/api/tests/domains/search/test_native_preview.py": "c210474672ecd5116e225d9541295b327e01f77afc1b41176e017a7a719e76f1"
+  },
+  "shutdown_correction": {
+    "cause": "Uvicorn replayed SIGINT at first cleanup await, cancelling cleanup before helper close/report",
+    "change": "complete_cleanup runs owned shutdown in a shielded task, waits through late caller cancellation and propagates cleanup failures",
+    "evidence": "Fresh real-model/HTTP run then Ctrl+C exits0;12windows,334528512peak bytes, no faults, helper reaped/database stopped",
+    "historical_limit": "headless and original live proxy snapshots predate this cleanup-only correction; corrected real query results and cleanup stored separately"
+  }
+}

@@ -233,18 +233,23 @@ def main():
         actual = sql(
             "SELECT version FROM public.schema_migrations ORDER BY version"
         ).splitlines()
-        if not expected or actual != expected or actual[-1] != "20261022062357":
+        if not expected or actual != expected or actual[-1] != "20261025013000":
             raise RuntimeError("Migration history differs from the expected head")
         migrate()
-        for filename in ("schema-smoke.sql", "retired-origin-smoke.sql"):
+        for filename in (
+            "schema-smoke.sql",
+            "retired-origin-smoke.sql",
+            "embedding-smoke.sql",
+            "search-storage-smoke.sql",
+        ):
             sql((ROOT / "database/tests" / filename).read_text())
         if (
             sql(
                 "SELECT count(*) FROM pg_tables WHERE schemaname IN ('identity','listings','search','conversations')"
             )
-            != "26"
+            != "30"
         ):
-            raise RuntimeError("Expected 26 domain tables")
+            raise RuntimeError("Expected 30 domain tables")
         phase = "rolling back and reapplying migrations"
         sql("""
             INSERT INTO conversations.origin_retirement_operations
@@ -288,7 +293,12 @@ def main():
         ).splitlines()
         if reapplied != expected:
             raise RuntimeError("Migration history differs after clean reapply")
-        for filename in ("schema-smoke.sql", "retired-origin-smoke.sql"):
+        for filename in (
+            "schema-smoke.sql",
+            "retired-origin-smoke.sql",
+            "embedding-smoke.sql",
+            "search-storage-smoke.sql",
+        ):
             sql((ROOT / "database/tests" / filename).read_text())
         if arguments.listings_store:
             phase = "running the Listings adapter workflow"
@@ -302,7 +312,20 @@ def main():
                     sys.executable,
                     "-m",
                     "pytest",
+                    "apps/api/tests/domains/search/test_draft_matches_postgres.py",
+                    "apps/api/tests/domains/search/test_wanted_retirement_postgres.py",
+                    "apps/api/tests/domains/search/test_wanted_postgres.py",
+                    "apps/api/tests/domains/search/test_step6_postgres.py",
+                    "apps/api/tests/domains/search/test_wanted_response_postgres.py",
+                    "apps/api/tests/domains/search/test_category_migration_postgres.py",
                     "apps/api/tests/domains/listings/test_postgres_store.py",
+                    "apps/api/tests/domains/listings/test_browse_postgres.py",
+                    "apps/api/tests/domains/listings/test_embedding_postgres.py",
+                    "apps/api/tests/domains/listings/test_embedding_worker_postgres.py",
+                    "apps/api/tests/domains/listings/test_hybrid_read_postgres.py",
+                    "tests/evaluation/test_search_calibration_postgres.py",
+                    # Large committed pagination fixture follows bounded math checks.
+                    "apps/api/tests/domains/search/test_saved_postgres.py",
                     "-q",
                     "-W",
                     "error",
@@ -347,7 +370,7 @@ def main():
                 )
             print(f"POSTGRES_LISTING_SAMPLE_ROW {sample}")
         print(
-            "PASS: PostgreSQL 18.6; clean apply/head, repeat apply, both smokes, full rollback and clean reapply"
+            "PASS: PostgreSQL 18.6; clean apply/head, repeat apply, four smokes, full rollback and clean reapply"
         )
     except (subprocess.TimeoutExpired, OSError, ValueError) as error:
         raise RuntimeError(

@@ -131,7 +131,7 @@ it is not an additional product route.
 |---|---|---|---|
 | `/sign-in` | `SignInPage` | `identity/IdentityPlaceholder` | A — ID-01 |
 | `/auth/callback` | `AuthCallbackPage` | `identity/IdentityPlaceholder` | A — ID-01 |
-| `/` | `DiscoveryPage` | `search/SearchPlaceholder` contains `listings/ListingsPlaceholder` for sale summaries; wanted browse is C-only | C — SE-01/SE-02; B — LI-01/LI-02 integration |
+| `/` | `DiscoveryPage` | `search/SaleDiscovery` renders reviewed public sale-summary fields and links to B's existing detail route; wanted browse remains `search/SearchPlaceholder` until SE-02 | C — SE-01/SE-02; B — public data/detail/images integration |
 | `/listings/new` | `ListingCreatePage` | `listings/CreateListing` contains `identity/IdentityPlaceholder` for the pending real eligibility connection | B — LI-01/LI-02; A — ID-01 integration |
 | `/listings/:listingId` | `ListingDetailPage` | `listings/ListingDetail` contains the public `search/SearchPlaceholder` save action and `conversations/ConversationsPlaceholder` start/reopen action | B — LI-01/LI-02; C — SE-02; D — CN-01 integration |
 | `/listings/:listingId/edit` | `ListingEditPage` | `listings/ListingsPlaceholder` | B — LI-01/LI-02 |
@@ -169,6 +169,22 @@ becomes the current writer for that edit. Only one person edits a given page
 composition at a time; feature contributions remain in their owning feature
 roots. The current writer records the affected page and coordinates with the
 involved domain contributors before changing a public component connection.
+
+### SE-01 Step 7 first UI checkpoint — 2026-10-24
+
+Mohit (C) is the recorded writer for `ScaffoldPages.tsx`'s **DiscoveryPage sale
+view only**, the owned Search root/public export and this map update. Other
+page bodies, shared controls and other domains' private UI remain untouched.
+The actual discovery scaffold matched the map before editing. `SaleDiscovery`
+is a new public Search export; existing `SearchPlaceholder` props/exports remain
+for wanted/saved/other composition points. Search removed only its own `.gitkeep`.
+
+Text summaries use the owner-reviewed generated `ListingSummary` fields; no
+unpublished B component, private file, owner/selection data or image-body fetch
+is assumed. B's detail route and real image/provider integration retain their
+existing boundaries and affected-owner review. The initial local preview uses
+an explicitly labelled test-only HTTP fixture harness, not real SQL/auth/saved
+behavior. No browser verification is claimed until Mohit reports observations.
 
 App composition lives in `src/app/` and `src/pages/`. Pages import feature
 components only through these public entry points:
@@ -275,3 +291,22 @@ feature stubs are created by these planning steps. DL-00 and the domain task
 lists must define the business contracts before implementation depends on them.
 Step 9 updates downstream task and agent instructions to the implemented
 scaffold and reviewed contracts.
+
+
+### SE-01 mode/relevance feature increment
+
+SaleDiscovery now owns Keyword/Hybrid selection and both-mode Relevance inside
+its existing Search boundary, with no shared page/composition/public export change.
+Mode selection is immediate/outside drafts; it retains applied inputs and unsaved
+edits while resetting page1. History restores URL inputs. Associated visible help,
+blank relevance prevention and explicit Hybrid503 Retry/Use Keyword recovery
+follow the human-verified specification. The existing labelled fixture app adds
+hybrid-down recovery and accepts registered inputs without claiming real ranking.
+Automated checks pass; new Safari responsive/history/draft/error/keyboard behavior
+awaits human verification. No other feature private implementation is imported.
+
+### SE-02 Step7 composition reservation — 2026-10-25 08:13:02 UTC
+
+Mohit (C) is the current writer for Search composition in `ScaffoldPages.tsx`: Wanted discovery, My Wanted Requests, Saved Listings, Wanted detail and the existing ListingDetail save-action child slot. Search public components consume reviewed HTTP contracts, including Identity `GET /me`; other feature internals, routes and shared shell are outside this reservation. Human authorized Step7; release after implementation checks.
+
+Reservation released 2026-10-25 08:26:59 UTC after local checks. Search public components now fill the reserved slots using reviewed HTTP types; no other feature internals/routes changed. Browser verification and actual-provider integration remain pending.

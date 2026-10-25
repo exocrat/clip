@@ -314,7 +314,10 @@ class ListingQuery(ContractModel):
     negotiable: bool | None = None
     min_price_paise: int | None = Field(default=None, ge=0, multiple_of=100)
     max_price_paise: int | None = Field(default=None, ge=0, multiple_of=100)
-    sort: Literal["created_desc", "price_asc", "price_desc"] = "created_desc"
+    search_mode: Literal["keyword", "hybrid"] = "keyword"
+    sort: Literal["created_desc", "price_asc", "price_desc", "relevance"] = (
+        "created_desc"
+    )
     q: str | None = Field(default=None, max_length=120)
 
 

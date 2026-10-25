@@ -4,6 +4,8 @@
 !.env.example
 
 # Python and uv.
+# Repository-local tool binaries, interpreters, downloads and caches.
+/.tools/
 .venv/
 __pycache__/
 *.py[cod]

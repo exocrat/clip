@@ -72,3 +72,12 @@ Suraj — verified in the PD-07 frontend handoff discussion on 2026-10-17.
 ## Supersedes
 
 None. This resolves the earlier private-only wanted-request discovery proposal.
+
+## SE-01 planning clarification — 2026-10-24
+
+Mohit (C) confirmed that an eligible owner can read their own unavailable,
+non-retired Wanted Request at `GET /wanted-requests/{request_id}`. Return the
+reviewed owner-management view; other callers receive `404 not_found`. Public
+browse remains open-only, and retired content is unreadable to all callers.
+This aligns the Search contract with the existing generated public/owner union
+without changing generated declarations. SE-02 must test these distinctions.

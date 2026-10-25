@@ -1,0 +1,24 @@
+{
+  "captured_at": "2026-10-24T18:03:43.745520+00:00",
+  "isolated_only": true,
+  "actual_model": true,
+  "public_activation": false,
+  "nfr_accepted": false,
+  "cases": [
+    "full_long_source_publication",
+    "idle_connection_and_unlocked_listing",
+    "persisted_vectors_match_encoder",
+    "actual_helper_crash_records_failure",
+    "new_request_restarts_and_recovers",
+    "ABA_rejects_old_generation",
+    "fresh_generation_recovers",
+    "nontext_change_preserves_work",
+    "retirement_rejects_publication",
+    "no_job_idle"
+  ],
+  "windows": 16,
+  "helper_starts": 2,
+  "sampled_peak_host_helper_rss_bytes": 349323264,
+  "owned_helpers_reaped": true,
+  "elapsed_seconds": 1.845893707999494
+}

@@ -1,0 +1,89 @@
+{
+  "recorded_utc": "2026-10-25 08:49:53 UTC",
+  "tasks": [
+    "SE-01",
+    "SE-02"
+  ],
+  "checkpoint": "combined local handoff audit human-verified; real acceptance gates pending",
+  "base_head": "defec38f59d4acb683f7b51950860f458aacfdd1",
+  "branch": "search-domain",
+  "uncommitted": true,
+  "changed_file_fingerprints": 450,
+  "audit": "Requirements/checklist/status/evidence and local-gate audit; no new functional correction identified; not independent exhaustive peer review",
+  "checks": {
+    "root_python": {
+      "passed": 1270,
+      "skipped": 20,
+      "seconds": 64.63
+    },
+    "data": {
+      "passed": 94,
+      "seconds": 0.78
+    },
+    "web": {
+      "lint_files": 63,
+      "passed": 144,
+      "skipped": 2,
+      "types": "pass",
+      "build": "pass",
+      "skip": "opt-in native HTTP test; historical Step7 run2pass, not rerun here"
+    },
+    "black": {
+      "unchanged_files": 183
+    },
+    "native_postgresql": {
+      "passed": 20,
+      "optional_model_checks_skipped": 3,
+      "seconds": 3.68,
+      "migrations": 14,
+      "evidence": "/tmp/clip-pd08-native-check.t4do7b",
+      "cluster": "stopped",
+      "results": "clean apply/head, repeat migrate, four smoke suites twice, fourteen down migrations, clean reapply and identical runtime schema inventory"
+    },
+    "database_wrapper_safety": {
+      "passed": 35,
+      "mode": "controlled simulated Docker",
+      "sandbox_recovery": "/dev/fd denied initially; required escalated rerun passed"
+    },
+    "contracts": {
+      "current_artifacts": 8
+    },
+    "boundaries": {
+      "violations": 0
+    },
+    "contract_double_mypy": {
+      "source_files_passed": 1
+    },
+    "ci_parity": {
+      "ordered_checks": 11
+    },
+    "whitespace": "Earlier unstaged check passed but did not include new files. Staged review found raw diagnostic log whitespace (retained verbatim) and one documentation EOF blank (normalized). Source/docs check excludes raw .log transcripts explicitly."
+  },
+  "not_passed_or_not_run": [
+    "full make check: Docker database and pinned Gitleaks unavailable",
+    "full application mypy not claimed; only required double target checked",
+    "exact-head hosted CI and independent human peer/affected-owner review",
+    "new actual semantic inference: optional model checks skipped in this wrapper; historical evidence retained",
+    "real-provider integration and final deployed NFR checks"
+  ],
+  "tools": {
+    "docker_installed": false,
+    "gitleaks_installed": false,
+    "new_installs": false
+  },
+  "canonical_query_labels": "data/evaluation/query-labels.json absent; existing template remains draft; human20+reviewed labels and final dataset prerequisites retained",
+  "source_or_config_changes": "none in this increment",
+  "publication": "No staging/commit/push/PR/merge/cloud/deployment",
+  "next": "Await actual providers/final data/labels; separate approval and missing review/secret/CI gates required for publication.",
+  "human_verification": {
+    "contributor": "Mohit Mahapatra",
+    "recorded_utc": "2026-10-25 08:50:43 UTC",
+    "scope": "local handoff package only; no commit/publication/cloud authorization"
+  },
+  "staged_scope_review": {
+    "recorded_utc": "2026-10-25 08:53:37 UTC",
+    "commit_authorization": "Mohit explicitly approved local commit",
+    "code_changes": "none; one documentation EOF normalization only",
+    "sensitive_path_check": "No .aws/.tools/.venv/.env/key/state paths staged; not a replacement for pinned secret scanning."
+  }
+}

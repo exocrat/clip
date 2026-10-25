@@ -1,0 +1,65 @@
+{
+  "task": "SE-01 amendment checkpoint5 / normal API read-helper lifecycle",
+  "utc": "2026-10-24 23:47:46 UTC",
+  "branch": "task/se-01-search",
+  "base": "defec38f59d4acb683f7b51950860f458aacfdd1",
+  "state": "implemented and checked; awaiting Mohit result verification; SE-01 incomplete",
+  "final_source_sha256": {
+    ".env.example": "290b9368c1582fa3b6e72d94781dcc8606f2cfaedde5d828c17ad26334c398b7",
+    "apps/api/app/core/config.py": "ad2bb883c9f0844d92709e25732cacbaf0763110ba07ba14a4cbd8fe5cc7f3c1",
+    "apps/api/app/main.py": "a0ef63a6aba013fbae045b36ad0c0b1567949bda29897d356d79a5236f1c64cb",
+    "apps/api/app/domains/listings/search_runtime.py": "3fce7c4cc69c4a90a152a181075c1987d7b78400b9c8f7b60c77a38b131d7d39",
+    "apps/api/app/domains/listings/postgres_store.py": "8ea4055dec0d94b5376fb24ace58ebfa85c75168b3c2d418d9e2f1d0b776210a",
+    "apps/api/app/domains/listings/embedding_client.py": "64921aeea72a0f9372d4e7f405fa5913c0ee9577def707165c5f57a4d7e19ef4",
+    "scripts/check_boundaries.py": "78a8121f73b8cdf59bd1270d7b8b180edbdd87062bbc695d79fcc17f15512a08",
+    "apps/api/tests/test_config.py": "d28324210fa45a759bb2b68e41bdbb3dc3f821cbb9feb38665ecf7a23aa902cb",
+    "apps/api/tests/domains/listings/test_search_runtime.py": "3fa13b0bf3726e04190482f8fb6428ddf256d2065a71028057e91e1d529ca897",
+    "apps/api/tests/domains/search/normal_runtime_probe.py": "d4175c40bc75f4932b758a76c38196f586627ff2726e584b84fd93297897484a"
+  },
+  "checks": {
+    "focused_python": "367 passed -q -W error; config/health/security, lifecycle/modes/browse/keyword/hybrid/helper, Search and contracts",
+    "real_normal_lifespan": "Actual app.main with fresh native PostgreSQL/model; disabled/ready/unavailable;13HTTP requests; real examples work; Keyword200/Hybrid503 when disabled or missing interpreter; blank Hybrid200; pools retain transaction modes and close after each context",
+    "types": "mypy4application files passed",
+    "format": "Black143files unchanged",
+    "boundaries": "0violations; exact3composition allowlist entries added",
+    "contracts": "8registered artifacts current",
+    "other": "CLI help, prior source compile/type/import checks and diff check pass; no frontend code changed"
+  },
+  "actual_probe_directory": "/tmp/clip-listings-test-gwzjyrkq",
+  "resource_observation": {
+    "peak_api_helper_rss_bytes": 342491136,
+    "max_simultaneous_helpers": 1,
+    "windows": 11,
+    "all_helpers_reaped": true,
+    "faults": [],
+    "limits": "Probe6min/40windows/512MiB sampled app+helper; PG excluded. No deployment equivalence. Normal runtime uses existing client limits/queue with max2additional read connections per API process."
+  },
+  "configuration": [
+    "CLIP_HYBRID_SEARCH_ENABLED=false default",
+    "CLIP_HYBRID_SEARCH_INTERPRETER absolute explicit path required with true; venv invocation preserved",
+    "CLIP_HYBRID_SEARCH_MODEL_DIR absolute explicit path required with true",
+    "Existing CLIP_DATABASE_URL required when enabled; paths forbidden when disabled; no dotenv/file/download discovery"
+  ],
+  "behavior": [
+    "Malformed settings fail validation before resources",
+    "Expected read-pool/helper startup failure closes partial resources; yields unavailable; no fallback; Keyword remains on transactional command pool",
+    "Normal API injects real helper and separate autocommit read pool only for nonblank Hybrid",
+    "No registration/backfill/serving transition/worker dispatch/test identity added to normal app startup",
+    "Cancellation-safe owned cleanup; later adapter failure unwinds both resources; cleanup failures propagate"
+  ],
+  "probe_limits": [
+    "Only trusted caller/eligibility are synthetic in the separate guarded probe; actual app defaults do not select them",
+    "Explicit fixture bootstrap published vectors before the normal app started; it is not an application backfill implementation",
+    "Helper observer is instrumentation of real constructor/encode/close; no fake vector/runtime is used",
+    "After actual probe, only a helper module docstring and additional mocked lifecycle regression changed; runtime/search behavior unchanged"
+  ],
+  "pending": [
+    "Human verification of this result",
+    "Worker dispatch and controlled bootstrap/backfill/activation checkpoint",
+    "Actual ID-READY/LI-CORE/images and readiness acceptance",
+    "Linux packaging/deployment resource/capacity support; no activation performed",
+    "Final corpus20+human labels/relevance/load/NFR checks",
+    "Full CI/Docker secret scan/task-wide review/independent review/exact commit/push/merge approvals"
+  ],
+  "scope": "No install/global setup/schema migration/model download/cloud/hosting/publication or existing/shared DB action; default configuration remains disabled."
+}

@@ -1,0 +1,59 @@
+{
+  "captured_at": "2026-10-24T17:23:05.459183Z",
+  "preview_only": true,
+  "nfr04_accepted": false,
+  "human_review_verified": false,
+  "controlled_cases": [
+    {
+      "scenario": "campus_transport",
+      "expected_fixture": 0,
+      "top_fixture": 0,
+      "expected_top": true,
+      "scores": [
+        0.738967837017769,
+        0.2205328307478108,
+        0.2999725810675357
+      ]
+    },
+    {
+      "scenario": "calculus_study",
+      "expected_fixture": 1,
+      "top_fixture": 1,
+      "expected_top": true,
+      "scores": [
+        0.12091021368004407,
+        0.8070719069040883,
+        0.2962648375165149
+      ]
+    },
+    {
+      "scenario": "study_furniture",
+      "expected_fixture": 2,
+      "top_fixture": 2,
+      "expected_top": true,
+      "scores": [
+        0.2550659284877901,
+        0.26141667268008734,
+        0.7846533872818856
+      ]
+    }
+  ],
+  "query_round_trip_seconds": [
+    0.0037847499988856725,
+    0.0030510840006172657,
+    0.0028652500004682224
+  ],
+  "long_description_tokens": 903,
+  "long_description_chunks": 4,
+  "full_token_coverage": true,
+  "repeatability_exact": true,
+  "concurrent_calls_serialized": true,
+  "starts": 2,
+  "windows_started": 18,
+  "crash_recovery_same_vectors": true,
+  "helper_peak_rss_bytes": 237404160,
+  "sampled_peak_combined_rss_bytes": 294010880,
+  "max_simultaneous_owned_helpers": 1,
+  "all_owned_helpers_reaped": true,
+  "elapsed_seconds": 1.9080891250014247
+}

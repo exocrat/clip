@@ -280,12 +280,19 @@ This is a named checkpoint inside Step 5, not a new numbered step; later step nu
 **Owner:** Search. **Reviewers:** Listings and Identity.  
 **Early isolated start:** PRE-00/DL-00 under the stub guide. **Real integration/acceptance after:** DL-00, ID-READY, LI-CORE and usable schema/configuration. SE-CORE unblocks consumers; final cloud measurement also requires completed LI-01/LI-02 and a final validated reference dataset.  
 **FRs:** FR-06, FR-07. **NFR procedures:** NFR-01, NFR-02, NFR-04 at the steps below, only after the integrated browse/search behavior and its dataset are accurate.
+**Execution clarification (Mohit, 2026-10-24):** SE-01 includes implementing
+the browse/search query provider in steps 3–5. Mohit implements this work through
+the reviewed Listings-owned API/store boundary; Listings retains ownership of
+its records and indexes. Coordinate affected Listings/shared-file edits and
+writer reservations with Suraj before implementation. Search does not add
+competing routes, a projection, or private cross-domain table access.
+
 **Outputs:** Search query/index migrations, API/UI, final dataset via `data/generators/`, reviewed labels at `data/evaluation/query-labels.json`, evaluator/load tooling under `scripts/evaluation/`, browse/search workload profiles under `data/evaluation/workloads/`, tests/metrics, and NFR-01/02/04 evidence under `docs/evaluation/nfr/`.
 
 1. Inspect the current Listings read contract, available-only behavior, approved pagination/filter/sort shapes, database schema/indexes, generated types, existing synthetic-data generator, and search-evaluation files. Record exact reusable paths and verify seeds/counts/fingerprints before creating duplicates.
 2. In isolated mode create/reuse schema-shaped preview generator adapters/loader against the frozen contract and record final real validation as pending; this verified isolated checkpoint may advance under the stub guide. Complete the final generator adapters/loader after actual ID-READY and LI-CORE schemas/configuration exist. Generate twice and compare logical fingerprints; load a fresh local database; validate >=5,000 users/>=1,000 listings, constraints, referential integrity and current listing fields/availability; validate the new search indexes after step 4 before DATA-READY. Reconcile synthetic image references with LI-02 before cloud measurements. Register exact generate/load/reset commands and preserve fake-data safety; repair the assigned generator tooling explicitly rather than treating absent final data as a failed pre-domain gate.
 3. Implement paginated browse over available listings with stable ordering and a deterministic tie-breaker. Apply authorization and filters before pagination; verify records are neither skipped nor duplicated across pages for the frozen fixture set. Use only the listing-data boundary approved in DL-00; implement any selected projection/backfill/update synchronization and tests explicitly.
-4. Implement title/description search using PostgreSQL native indexed full-text search for MVP. Add/verify migrations and indexes through the repository migration path; PostgreSQL remains authoritative. Do not add a separate search service as an MVP dependency. Index ownership and migrations follow DL-00; never query private Listings tables outside the approved public interface.
+4. Implement title/description search using PostgreSQL native indexed full-text search for MVP. Mohit selected the [hybrid-search amendment](../decisions/hybrid-listing-search.md) on 2026-10-24: follow its six human-verified subcheckpoints for curated expansion, local-model feasibility, hybrid matching/relevance and comparative evaluation. The subsequently selected [known-vocabulary typo policy](../architecture/search-typo-tolerance.md) adds bounded spelling alternatives; general dictionary/brand correction is outside that scope. Documentation checkpoint 1 does not activate a model, new wire inputs or storage. Preserve this indexed baseline and all original real integration/NFR gates; affected-owner review and exact model/storage/scoring contracts precede hybrid integration. Add/verify migrations and indexes through the repository migration path; PostgreSQL remains authoritative. Do not add a separate search service as an MVP dependency. Index ownership and migrations follow DL-00; never query private Listings tables outside the approved public interface.
 5. Implement filters for item category, price range, condition, and negotiability; implement recency and price sorting with stable tie rules. Validate malformed/range-reversed filters and bound query length, page size, and expensive inputs through the approved shared error/rate-limit conventions.
 6. Preserve required-listing availability and saved-listing visibility semantics: unavailable listings are excluded from discovery; saved-item retrieval is handled by SE-02 and may still show an unavailable item. Do not infer availability from a cache or stale client state.
 7. Build responsive browse/search/filter/sort/pagination UI with loading, no-results, invalid-query, and retry states. Keep image-body transfer outside browse latency measurement as required by the PRD.
@@ -302,6 +309,14 @@ This is a named checkpoint inside Step 5, not a new numbered step; later step nu
 **Complete when:** FR-06–07 pass with deterministic results and NFR-01, NFR-02, and NFR-04 each pass with accurate, reproducible evidence. An unmet NFR leaves the task blocked; SE-CORE may still unblock its named implementation consumers.
 
 ### SE-02 — Implement wanted requests, draft matches, and saved listings
+
+**Approved schema correction (Mohit, 2026-10-25):** Step2 storage must use the
+[public category-code reference](../decisions/wanted-category-code-reference.md),
+not require a private Listings UUID lookup. Reuse the existing wanted/saved tables
+and preserve their constraints while migrating the wanted category reference.
+Mohit also approved the [local request/receipt retirement order](../architecture/wanted-request-retirement.md)
+on 2026-10-25. This permits its isolated implementation/tests, not scheduler
+activation, existing/shared-data runs or real integration acceptance.
 
 **Owner:** Search. **Reviewers:** Identity, Listings, and Conversations where a match leads to contact.  
 **Early isolated start:** PRE-00/DL-00 under the stub guide. **Real integration/acceptance after:** ID-READY, LI-CORE, and SE-CORE.  

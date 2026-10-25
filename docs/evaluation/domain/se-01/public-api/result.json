@@ -1,0 +1,46 @@
+{
+  "task": "SE-01 amendment checkpoint5/public API",
+  "utc": "2026-10-24 21:09:36 UTC",
+  "branch": "task/se-01-search",
+  "base": "defec38f59d4acb683f7b51950860f458aacfdd1",
+  "state": "performed; awaiting Mohit verification; task incomplete",
+  "source_sha256": {
+    "contracts/source/types.py": "b6b1240e149f55df56e35d4a5dbb3b6680cdc18235cb15755f56dab6dc1254de",
+    "apps/api/app/contracts/domain_types.py": "e2247e8e256c1a4fada6f5680b5e84bf967572912c77c77ebeca753bb77a0377",
+    "contracts/generated/openapi.json": "c1e94a8cb1ad337420dbaf0c12d52e906cf18182c51be82a1aaf0728fce521ed",
+    "contracts/generated/types.gen.ts": "992ccd996800813a5e79ca5534b29ca7e63189015cb103a9f4ea2d5b51d96510",
+    "apps/api/app/domains/listings/browse_validation.py": "9b408bd2df3be764494362c75ff4ace3cd6da36e4b028325b4c00133aa68395b",
+    "apps/api/app/domains/listings/browse_store.py": "5870c21209ac3574f8124f7d4b09bce0f752c58ad7998a80adc6d594820534ca",
+    "apps/api/app/domains/listings/postgres_store.py": "7c9802a7875eefbf111dbc8ae7de918eb84a16592b5de98ed44b6c7555726402",
+    "apps/api/app/domains/listings/browse_routes.py": "dcdba1eb3f2ff871aaea16a5665baab2aaf529e8a8c03888613665b4806d6b37",
+    "apps/api/app/domains/listings/hybrid_read.py": "84c31130fc37d0045efaa2bf3241e06f634f9ef1668d0f16986677f1e9478cb1",
+    "apps/api/tests/domains/listings/test_search_modes.py": "02228bf4bbe5b4528af542fb4043de9cec50d42282981820bc54cc6d1b192235",
+    "apps/api/tests/domains/listings/test_browse_postgres.py": "6a84aa05d667af07968d698925866e625dfe412156f7d011a099e3124564398f",
+    "apps/web/tests/discovery-contract.test.ts": "49f5450f12740db31b26618561fd52d075238f896edb0d653c5a9fb42e67edb4"
+  },
+  "checks": {
+    "focused_python": "408 passed, -q -W error; browse/modes/contract/keyword/hybrid/vocabulary/typo/expansion, Search, data, contracts",
+    "new_mode_tests": "42 passed",
+    "native": "11 passed, 3 unselected actual-model probes skipped; fresh private cluster, schema roundtrip and identical inventory; includes public adapter",
+    "web": "84 passed; lint, TypeScript and production build passed",
+    "mypy": "4 implementation files passed",
+    "black": "138 files unchanged",
+    "boundaries": "0 violations",
+    "contracts": "8 registered artifacts current",
+    "diff": "passed"
+  },
+  "native_directory": "/tmp/clip-pd08-native-check.CLc9g8",
+  "limits": [
+    "No model inference or installation in this checkpoint",
+    "No app helper lifecycle/bootstrap; default store has no helper and nonblank Hybrid returns503",
+    "Configured public HTTP+actual-model integration remains pending; dispatch mocks are not native/model correctness evidence",
+    "No ID-READY/LI-CORE/SE-CORE/DATA-READY or FR/NFR acceptance",
+    "Final human labels/data, Linux/resources, browser controls, full CI/Docker secret scanner and independent review remain pending"
+  ],
+  "corrected_checks": [
+    "Initial 20 test assertion failures compared normalized BrowseQuery with generated ListingQuery; corrected expected normalized type, no product workaround",
+    "Formatting canonical source required regeneration; two generator tests initially observed stale bytes before regeneration; final serially stable generation checks pass",
+    "Frontend test previously assumed every API field was serialized; now asserts omitted optional search_mode selects Keyword until UI checkpoint",
+    "Mypy required an explicit route wrapper return annotation; corrected"
+  ]
+}

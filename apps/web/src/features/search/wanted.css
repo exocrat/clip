@@ -1,0 +1,11 @@
+/* Search-owned responsive forms and cards; no cross-feature or shell selectors. */
+.wanted-feature { display: grid; gap: 1rem; min-width: 0; }
+.wanted-feature form, .wanted-feature fieldset { display: grid; gap: 1rem; min-width: 0; }
+.wanted-feature fieldset { border: 0; padding: 0; margin: 0; }
+.wanted-feature label { display: grid; gap: .35rem; }
+.wanted-feature input, .wanted-feature textarea, .wanted-feature select { box-sizing: border-box; max-width: 100%; width: 100%; font: inherit; padding: .65rem; }
+.wanted-card { border: 1px solid #b8c3cf; border-radius: .5rem; padding: 1rem; min-width: 0; overflow-wrap: anywhere; }
+.wanted-description { white-space: pre-wrap; }
+.wanted-feature nav { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+.wanted-feature button { max-width: 100%; white-space: normal; }
+.wanted-feature aside { padding: 1rem; background: #f2f5f8; overflow-wrap: anywhere; }

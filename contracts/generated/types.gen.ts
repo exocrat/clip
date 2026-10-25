@@ -3276,9 +3276,13 @@ export type ListingsQueryAvailableData = {
          */
         max_price_paise?: number | null;
         /**
+         * Search Mode
+         */
+        search_mode?: 'keyword' | 'hybrid';
+        /**
          * Sort
          */
-        sort?: 'created_desc' | 'price_asc' | 'price_desc';
+        sort?: 'created_desc' | 'price_asc' | 'price_desc' | 'relevance';
         /**
          * Q
          */
@@ -4939,7 +4943,7 @@ export type SearchStartWantedResponseResponses = {
     /**
      * OK
      */
-    200: unknown;
+    200: ConversationStartResult;
     /**
      * Successful Response
      */

@@ -215,7 +215,12 @@ class _Fixture:
         )
 
     def caller(self, user_id: UUID = OWNER_ID, account_class: str = "regular"):
-        return CallerContext(user_id, account_class, NOW + timedelta(days=1))
+        # Authentication uses real UTC, independently of the fixed upload clock.
+        # Keep this synthetic caller current without moving upload-expiry fixtures
+        # or bypassing the production eligibility check.
+        return CallerContext(
+            user_id, account_class, datetime.now(UTC) + timedelta(days=1)
+        )
 
     def request(self, **updates) -> ImageUploadRequest:
         values = {

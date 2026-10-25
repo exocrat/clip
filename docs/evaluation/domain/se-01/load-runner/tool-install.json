@@ -1,0 +1,18 @@
+{
+  "version": "2.3.0",
+  "archive_sha256": "b2417a3038edc5fe81dc178a889237724b595c5c9cfed875822008e46e862c7d",
+  "binary_sha256": "efb8282e24ffe18f54ce3679eaa71d72e0645bbb97b14e2a05cc8b192abf48e3",
+  "minimum_macos": [
+    12,
+    0,
+    0
+  ],
+  "host_macos": [
+    13,
+    7,
+    8
+  ],
+  "version_output": "k6 v2.3.0 (commit/e088784614, go1.26.8, darwin/arm64)",
+  "binary": ".tools/k6/v2.3.0/k6",
+  "source": "https://github.com/grafana/k6/releases/download/v2.3.0/k6-v2.3.0-macos-arm64.zip"
+}

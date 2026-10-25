@@ -1,0 +1,71 @@
+{
+  "recorded_at": "2026-10-25 05:22:55 UTC",
+  "branch": "search-domain",
+  "step": "SE-02 Step4 transient draft-title matching",
+  "human_scope_verification": "Step3 isolated result and Step4 scope verified",
+  "human_result_verification": "pending",
+  "implemented_operation": "POST /wanted-requests/draft-matches \u2014 search_match_draft_title",
+  "behavior": [
+    "Required trimmed title1\u2013120codepoints, body extras rejected",
+    "Current regular/temporary eligibility; public Listings available query only",
+    "Explicit Keyword/created_desc/page1/size20; no category/budget/price/condition/negotiable filters inferred",
+    "Bounded typed public summaries/has_more; malformed/duplicate/unavailable/oversized provider pages fail503",
+    "No Search store needed, no draft/history/request persistence; empty result valid, failure not empty success",
+    "Submission succeeds independently after a matching outage",
+    "Private/no-store success and safe auth/validation/dependency errors"
+  ],
+  "checks": {
+    "focused": "45passed in0.17s (draft20 plus existing wanted25 and actual wire comparisons)",
+    "full_root_python": "1224passed,17skipped in53.90s (-W error)",
+    "native": "17passed,3optional skipped in3.23s; four smokes twice,14downs/reapply/inventory,owned cluster stopped",
+    "native_matching": "Real Listings browse service/Postgres/native query over21 tied-time image-backed matching sources; unavailable/future/ended/pending/retired fixture exclusions, description-only and empty query cases, exact20/UUID-desc tie order/has_more, Search counts unchanged, independent submit succeeds after outage",
+    "mypy": "3changed application files pass",
+    "black": "170files unchanged",
+    "wrapper_safety": "35simulated cases passed",
+    "ci_parity": "11ordered checks pass",
+    "boundaries": "0violations",
+    "contracts": "8artifacts current; exact new path/body alias compared to declaration",
+    "shell_syntax": "passed",
+    "whitespace": "passed"
+  },
+  "fixture_boundaries": "Draft query uses actual Listings provider and synthetic Identity; ancillary submit proof explicitly injects existing wanted eligibility/catalogue fixtures. Test-only upstream rows are seeded in verified owned database. Only its retired image/upload metadata is removed; no object existed, immutable origins remain.",
+  "source_sha256": {
+    "apps/api/app/domains/search/draft_matches.py": "9f31625a7b514e70f490d69b86b06d6da2bc0558e357f56dd2cf81ebbd9f7369",
+    "apps/api/app/domains/search/wanted_models.py": "29c05c045a8d786c135f930f959df2852a225fb169db41c2ad577e59e06cd9d8",
+    "apps/api/app/domains/search/wanted_routes.py": "836074b83287775414a3ff767551fbbdac9900cc6448bd686373367803614fc8",
+    "apps/api/tests/domains/search/test_draft_matches.py": "168beffbe9a91aaa35d1d7950875384f87e20865f0e0ca27eff2e4ecc2819e06",
+    "apps/api/tests/domains/search/test_draft_matches_postgres.py": "74111e8edb14f242bb85a82671c08b0deca3f974f666a7ff163c38c9bb754400",
+    "tests/contracts/test_domain_declarations.py": "02445914a153ce7db48efcfa8acbd935c0db73ab065b5e46801ffc85e0956fc3",
+    "tests/contracts/test_generation.py": "aaa530e663fb86489889de59d29a17cadd53602272c926707d61b762c02ebcbf",
+    "database/tests/native-checks.sh": "dab9344a24fe8c04ab27aafc879352e320228c5bfb4155367c475feb4553ce28",
+    "scripts/check_database.py": "05e0abfde5efd5ab0facfc772052f4d18f69a52cf523b96da8f1f180324e743e",
+    "apps/api/app/domains/search/README.md": "b5da5f5c1c5cd45c21652227bdeb65a1e4d550a99f5455bcb266814844b6072c",
+    "apps/api/README.md": "a860c2f748ce440e008c75c67ce5caad83e873c2f58f1347bad7d64ecd450f54",
+    "contracts/search.md": "bcb68ace8a7a2d7e7acf1d7eda015a3287c93a35b8f36ab2debcd6626088ccfc",
+    "database/README.md": "d15d05f6c366055952a84e58f69b0a262c2f11a225ea797211e0a27d3f3aca6f",
+    "docs/environment/commands.md": "28e9b8e49e14ab4fe354552041b16ca77ec1192946924634e2398e7de20cd92e"
+  },
+  "log_sha256": {
+    "types.log": "8228fcc5ce46d42d01caf3cd941f4e9c5f2bcc372bb5b147a2f0572d2dd675a8",
+    "wrapper-safety.log": "435e7127b522f554db5888fbff76480bfeb93b3bc567465e009cd7dc3fc58d64",
+    "native-fixture-diagnostic.log": "62c50200d41ca84d50d2df7260fee17b81cec971c9bd4fce81db755719ee5106",
+    "native.log": "7db9d462becd9cb85aad78c823976d6a5d9886a9e395164a7f4e8034c56a3dd5",
+    "black.log": "f41cc7a719322813f19e0da3c064d66c1d604c5cb9e7ec509f63acfdf1d8b7b5",
+    "native-tests.log": "f55cfcdf99c489726411385f79a8c4d45b2772bc2328aa496abedfadfa6835ae",
+    "stop.log": "ca19178a35ab4153b75b494963b66ce8243e1b94c173107c87b44d09db23652d",
+    "python.log": "6091f03e46cded379e3482f8f541c7f35dec53720445257a708552a18b02f206",
+    "focused.log": "7e5ec627ee126eb754346211ba65568de2d15b84daa047ed3d02f1375d085b11"
+  },
+  "inventory_sha256": "a7ac890f201d9eae7bb68559fe37e2b29ee6e69258c0d74f0c000be4522e8e32",
+  "diagnostics": [
+    "First malformed-provider None items exposed TypeError; explicit tuple/int shape checks now return controlled503 and regression passes.",
+    "Initial native draft fixture left its retired image in the shared disposable-suite cleanup queue, causing unrelated Listings cleanup expectation to fail. Remove only that owned retired test metadata, preserve guards and immutable origin, rerun all native tests successfully."
+  ],
+  "pending": [
+    "Actual Identity/accepted Listings public provider wiring and SE-02 Step8 integration; normal defaults declaration-only fail503",
+    "Step5private saves,Step6broader tests,Step7responsive UI/request-response integration,Step8real integration,Step9final checks/review",
+    "Docker database/secret scan/hosted CI and independent review; SE-01 real dataset/labels/NFR gates"
+  ],
+  "schema_changed": false,
+  "new_tool_install_commit_push_merge_cloud_actions": false
+}

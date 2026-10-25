@@ -1,0 +1,4 @@
+# Isolated CPU inference helper; API/root environment remains Python 3.14.
+onnxruntime==1.23.2
+numpy==2.5.4
+tokenizers==0.23.3
