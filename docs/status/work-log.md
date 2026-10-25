@@ -49,7 +49,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | DL-00 | Shared-core/contract coordinator; all domains review | in progress | Steps 1–13 local work complete; independent review and exact merge gate next | Steps 1–13 performed | User reports affected domain owners reviewed and approved the contract documents; four declarations derive from those reviewed signatures | `task/pre-00-dl-00-foundation`; 50 HTTP operations, 19 internal callables, eight generated artifacts; `make check` passed (421 Python, 63 data, 16 web tests; Black 71 files; boundary/contract/mypy/web/database/safety/secrets checks) | Independent peer review and exact-revision merge remain; cleanup implementation still needs its separate approval; real providers/integrations and crypto/worker implementation remain downstream | 2026-10-20 05:17:32 UTC |
 | ID-01 | A | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | ID-READY, LI-01, LI-02, SE-CORE, SE-02, CN-CORE, CN-02 | — |
 | LI-01 | B | in progress | Finish the remaining Step 7 browser states and current-head Step 11 checks/reviews; prepare a progress PR without claiming LI-CORE. Steps 12–13 remain integration-gated. | Steps 1–6 and 8–10 implemented and locally checked; Step 7 partial (create/detail/edit/My Listings/gallery). | Suraj verified the multi-image edit/gallery checkpoint, seller-only selected-buyer visibility, and Step 10. No LI-01 phone-device result is claimed. | domain/listings at 6ffbe0b; focused Listings suite: 61 passed, one database-only test skipped outside the wrapper; disposable PostgreSQL workflow passed; current worktree `make check` passed 2026-10-23 (573 Python, 63 data, 42 web tests; remaining contract, type, boundary, database, safety, formatting, lint, and build checks passed). | LI-CORE not accepted. Remaining Step 7 states; Step 11 query-plan, current aggregate, and affected-owner review; native schema check; five pre-existing backend boundary findings; real Identity, Conversations, storage, and Search integration; Steps 12–13. | 2026-10-23 10:38:31 UTC |
-| LI-02 | B | in progress | Defer Step 3 until shared ECS use is over and its saved capacity baseline is restored; then prepare a fresh plan and review its exact hash and cost. | Steps 1–11 and 1.5 verified. The prior Step 12 public ECS browser flow and phone photo upload worked. The revised dedicated-RDS harness is committed; its prepared plan was discarded and never applied. | Suraj verified Step 11, Step 1.5, and the prior browser/mobile flow. | domain/listings at 6ffbe0b; Terraform 1.15.9 fmt/validate, Python compilation, 27 lifecycle cases, CLI help, and diff check passed before commit; current worktree `make check` passed 2026-10-23 (573 Python, 63 data, 42 web tests; remaining contract, type, boundary, database, safety, formatting, lint, and build checks passed). Plan 30112961a2479c760dfa32f91b0b57013a2a4079924abc3a5fd85dee06d6b6fd is invalid for apply. | Baseline li02-c2090c6c3294 remains images-ready. No disposable LI-02 RDS, ALB, service, or URL parameter was created by the revised plan. Prior preflight: account 335523638354, ap-south-1, MTD USD 6.14, forecast USD 21.42, USD 200 monthly cap. The previous shared-RDS test database was not queried and may remain; the new harness never touches shared RDS. Wait for an idle shared ECS baseline before restarting. | 2026-10-23 10:38:31 UTC |
+| LI-02 | B | in progress | Step 12 local implementation and read-only preflight verified. Prepare the current committed source for a fresh run, then review a new exact cloud plan; old plan hashes are invalid. | Steps 1–11 and 1.5 verified; Step 2 design, Step 12 implementation/tests, read-only preflight, and stale-baseline removal performed. No current demo deployment. | Suraj verified the dedicated-cluster/two-AZ design and Step 12 local implementation; authorized removal of the old local run baseline after its cloud resources were verified absent. | `task/li-02-isolated-runtime` based on `origin/main` at `defec38`; 9 lifecycle-driver tests, Black, Python compilation, Terraform fmt/validate, CLI help, and diff checks; read-only STS/billing/inventory/state checks; no plan/apply. Existing untracked `data/runs/` and `database/migrations.zip` remain untouched. | Current source changes are uncommitted; the demo requires a clean immutable revision before building fresh images. Shared NAT/public IPv4 and stopped shared-RDS storage/backups remain billable; no LI-02 host, route, RDS, or data remain. AWS's `$200` budget is annual; Suraj directs the demo guard to treat `$200` as a monthly threshold, with no AWS budget change. Exact-plan approval and post-deployment mobile check remain pending. | 2026-10-25 07:36:28 UTC |
 | SE-01 | C | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | SE-CORE, LI-01, LI-02, DATA-READY | — |
 | SE-02 | C | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | SE-CORE, ID-READY, LI-CORE | — |
 | CN-01 | D | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | Isolated development: PRE-00, then DL-00 and a reviewed contract/stub. Later real gates: CN-CORE; SE-02's real request interfaces for request-response integration; CN-03's producer path for final NFR-05 acceptance. | — |
@@ -1636,6 +1636,64 @@ type checks, boundaries, web build, database, safety, and secrets checks passed.
 The run also corrected an expired synthetic caller in the Listings
 authorization test fixture; Black reformatted three existing API files. No
 cloud action or Git publication occurred.
+
+### LI-02 Step 2 — isolated ECS target and RDS AZ fallback selected — 2026-10-25 07:02:45 UTC
+
+Suraj selected a dedicated LI-02 ECS cluster, capacity provider, and ASG-backed
+EC2 host in the shared VPC, leaving the shared ECS cluster/provider/ASG
+unchanged. Stop will scale the LI-02 ASG to zero, terminate the host, and remove
+its root volume while retaining the empty LI-02 cluster/provider/ASG for quick
+restart. The disposable RDS attempt will use `ap-south-1b` first and allow an
+`ap-south-1a` fallback only after an explicit insufficient-capacity result;
+each changed exact plan needs its own approval. Recorded in DEC-13, the LI-02
+resource design, and Step 12. Existing Terraform and lifecycle code are not yet
+updated; do not run the old lifecycle. No plan or AWS resource change occurred.
+
+### LI-02 Step 12 — isolated ECS runtime and RDS AZ fallback implementation — 2026-10-25 07:22:50 UTC
+
+Implemented a dedicated LI-02 ECS cluster, capacity provider, zero-to-one
+private ASG host, host security group/instance role, and task metadata firewall;
+the shared ECS cluster/provider/ASG are no longer targets. Stop retains the
+empty LI-02 control resources but removes its EC2 instance and verifies its
+tagged root volume is gone. Startup tries RDS `ap-south-1b`, then prepares a
+separately hash-gated `ap-south-1a` plan only after a single explicit
+`InsufficientDBInstanceCapacity` apply error and checks that neither state nor
+AWS contains the disposable instance. Consolidated start/stop to one typed
+run-scoped confirmation each; exact plan hashes remain separate and fallback
+plans still need their own approval. Added driver regression tests and updated
+the lifecycle/command docs. Tests: 9 passed; Black, Python compilation,
+Terraform fmt and offline validate passed. `terraform init -backend=false`
+could not refresh the expired `surajs2` session; no AWS plan/apply occurred.
+Step 12 implementation awaits Suraj's verification. Reauthenticate and refresh
+identity, budget, inventory and costs before any exact cloud plan. Human mobile
+website/image-flow verification remains after deployment in Step 12.
+
+### LI-02 Step 12 — verified cloud preflight and stale baseline cleanup — 2026-10-25 07:36:28 UTC
+
+Suraj reauthenticated `surajs2`; read-only STS confirmed IAM user
+`surajs2` in account `335523638354`. Current LI-02 Terraform state contains
+only its persistent image bucket, IAM, and log resources; there is no LI-02
+cluster/provider/host, demo ALB, disposable RDS, URL parameter, or run-prefix
+object. The shared ECS service and host ASG are at desired/running zero, shared
+RDS is stopped, and the shared NAT gateway/EIP plus three automated shared-RDS
+backups remain. No EC2 instance or EBS volume is present. The saved local run
+baseline was from 2026-10-23 (`images-ready`, commit `038bb28`), carried the old
+shared-ECS capacity snapshot, and had no database, URL-parameter, or demo
+infrastructure flag. Its immutable API images predate current API changes in
+`config.py`, `postgres_store.py`, and `main.py`, so resuming would not test the
+current source. After verifying the run was absent in AWS, removed only that
+local `.demo-baseline.json`; retained both ECR images as directed. No AWS
+resource changed.
+
+Cost Explorer estimated account-wide October 1–24 unblended cost excluding
+credits at USD 9.42 and USD 16.63 for the remaining October interval (about
+USD 26.05 total, subject to reporting delay); NAT gateway hours were USD 7.45,
+public IPv4 USD 0.68, and RDS USD 0.59 for the month-to-date period. The AWS
+USD 200 budget is a custom annual period (2026-10-17 through 2027-10-17), not a
+monthly AWS alert. Suraj directed that the demo's own start guard treat USD
+200 as a monthly threshold; the AWS budget was not modified. Next: prepare the
+fresh run from a clean committed revision and obtain approval for its new exact
+plan. Mobile website/image-flow verification remains after deployment.
 
 ## Pending integration ledger
 

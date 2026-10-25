@@ -24,20 +24,8 @@ data "aws_subnet" "shared_public" {
   }
 }
 
-data "aws_security_group" "shared_ecs_host" {
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.shared.id]
-  }
-
-  filter {
-    name   = "group-name"
-    values = ["clip-shared-test-ecs-host"]
-  }
-}
-
-data "aws_ecs_cluster" "shared" {
-  cluster_name = "clip-shared-test"
+data "aws_ssm_parameter" "ecs_optimized_ami" {
+  name = "/aws/service/ecs/optimized-ami/amazon-linux-2023/recommended/image_id"
 }
 
 resource "aws_subnet" "demo_public" {
@@ -89,11 +77,11 @@ resource "aws_security_group" "demo_alb" {
   }
 
   egress {
-    description     = "Forward app traffic only to the shared ECS host demo port."
+    description     = "Forward app traffic only to the LI-02 ECS host demo port."
     from_port       = 18001
     to_port         = 18001
     protocol        = "tcp"
-    security_groups = [data.aws_security_group.shared_ecs_host.id]
+    security_groups = [aws_security_group.demo_ecs_host.id]
   }
 
   tags = { Name = "clip-test-listings-alb-ap-south-1-li02" }
@@ -102,7 +90,7 @@ resource "aws_security_group" "demo_alb" {
 resource "aws_vpc_security_group_ingress_rule" "demo_from_alb" {
   count = var.demo_enabled ? 1 : 0
 
-  security_group_id            = data.aws_security_group.shared_ecs_host.id
+  security_group_id            = aws_security_group.demo_ecs_host.id
   referenced_security_group_id = aws_security_group.demo_alb[0].id
   description                  = "Temporary ALB access to the LI-02 app host port."
   ip_protocol                  = "tcp"
@@ -232,12 +220,12 @@ resource "aws_ecs_service" "demo_api" {
   count = var.demo_enabled ? 1 : 0
 
   name            = "clip-test-listings-demo-ap-south-1-li02"
-  cluster         = data.aws_ecs_cluster.shared.arn
+  cluster         = aws_ecs_cluster.demo.arn
   task_definition = aws_ecs_task_definition.demo_api[0].arn
   desired_count   = var.demo_app_enabled ? 1 : 0
 
   capacity_provider_strategy {
-    capacity_provider = "clip-shared-test-capacity"
+    capacity_provider = aws_ecs_capacity_provider.demo.name
     weight            = 1
     base              = 1
   }
@@ -265,8 +253,12 @@ resource "aws_ecs_service" "demo_api" {
     }
   }
 
-  depends_on = [aws_lb_listener.demo_http, aws_vpc_security_group_ingress_rule.demo_from_alb]
-  tags       = { Name = "clip-test-listings-demo-ap-south-1-li02" }
+  depends_on = [
+    aws_ecs_cluster_capacity_providers.demo,
+    aws_lb_listener.demo_http,
+    aws_vpc_security_group_ingress_rule.demo_from_alb,
+  ]
+  tags = { Name = "clip-test-listings-demo-ap-south-1-li02" }
 }
 
 output "demo_url" {

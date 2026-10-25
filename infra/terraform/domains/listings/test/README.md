@@ -1,12 +1,17 @@
 # Listings/Images isolated test Terraform root
 
 This root owns the domain-exclusive image bucket, its access controls, the
-disposable LI-02 database, the Listings ECS runtime and database-setup execution roles, and the bounded test log group. Its state key is
+disposable LI-02 database, the dedicated Listings ECS cluster/capacity,
+database-setup execution roles, and the bounded test log group. Its state key is
 `domains/listings/test/terraform.tfstate` in the existing PD-15 state bucket;
 use the default Terraform workspace. It does not adopt or edit the shared API
-roles, shared ECS cluster, shared RDS instance, VPC, or Terraform state bucket.
+roles, shared ECS cluster or capacity provider, shared RDS instance, VPC, or
+Terraform state bucket.
 
 ## Resource design prepared by LI-02 Step 2
+
+The current selected runtime and RDS-AZ design is recorded in
+[`DEC-13`](../../../../../docs/decisions/li02-isolated-ecs-runtime.md).
 
 | Field | Design |
 |---|---|
@@ -18,8 +23,8 @@ roles, shared ECS cluster, shared RDS instance, VPC, or Terraform state bucket.
 | Objects and permissions | Bucket `clip-test-listings-images-ap-south-1-li02`; app keys use `listings/test/<test_run_id>/`, where Terraform fixes the selected run ID. The API task role can only get, put, and delete objects under that exact run prefix. The API execution role can pull the reviewed image from the existing shared API ECR repository, write only to this test log group, and read only `/clip/test/listings-database-url`. A separate one-shot database-setup execution role can pull its reviewed image, write to the same bounded log group, and read only `/clip/test/database-master-password` plus `/clip/test/listings-database-url`. Its task definition has no AWS task role. All three roles use the administrator-owned boundary ARN `arn:aws:iam::335523638354:policy/clip/listings/test/CLIPListingsTestRuntimeBoundary`; each inline policy is narrower than that ceiling. |
 | Upload/delivery limits | Reuse the reviewed contract: 1–8 JPEG/PNG/WebP images, each 1–10 MiB; controlled object keys; browser upload uses short-lived signed PUT instructions; authorized reads use the existing maximum five-minute signed delivery URL. |
 | Retention and cleanup | Do not expire confirmed images by object age during a run: an attached listing may remain active. The Listings cleanup worker deletes an exact pending/failed/retired key only after the database state permits deletion and S3 confirms absence. Preserve retry metadata until then. S3 lifecycle aborts only incomplete multipart uploads after one day. Versioning is disabled. Each rehearsal uses the dedicated disposable `clip-test-listings-ap-south-1-li02` RDS instance, creates `clip_test_listings` inside it, and uses a run-scoped S3 prefix. Stop runs the owner-check cleanup, empties the run prefix, then destroys the disposable RDS without a final snapshot; shared RDS and its `clip_test` database remain untouched. Before destroying this root, verify the bucket is empty; `force_destroy` stays disabled. |
-| Test window and data cap | Reuse shared ECS/VPC/NAT but create a separate Single-AZ `db.t4g.micro` PostgreSQL 18.6 instance with 20 GiB encrypted gp3 storage in a private subnet, matching the shared test foundation's engine version. It exists only while the LI-02 demo is on; stop deletes the instance and storage. The public ALB and LI-02 runtime also exist only while demonstrating. Enforce at most ten synthetic listings and retain the existing 1–8 image, 10 MiB per-image contract (up to 800 MiB across ten full listings). There is no fixed two-hour test duration; the operator starts the demo for verification/showing and runs stop when done. Refresh current shared-account spend and exact RDS/ALB/runtime costs before Step 12 approval. Shared RDS/network/storage costs continue outside LI-02 and are not represented as demo teardown savings. |
-| Rollback | Stop public ingress, clean the disposable Listings database and run prefix, remove LI-02 runtime resources and LI-02-owned logs/images, then verify no demo task, endpoint, RDS instance, or database remains. Never delete shared RDS/VPC/NAT or another domain's ECR images/resources. The stop plan deletes only the LI-02-owned RDS instance and its data; no shared RDS state is changed. Prepare and review the exact plan before apply; never use `force_destroy` for the image bucket. |
+| Test window and data cap | Use a dedicated LI-02 ECS cluster, capacity provider, and ASG-backed private EC2 host; reuse the shared VPC, private workload subnet, NAT, ECR repository, and state backend without changing the shared ECS cluster/provider or shared ASG. The LI-02 ASG has min/desired capacity 0 and max 1. It launches one `c7i-flex.large` only while the demo runs, with a 30 GiB gp3 root volume deleted on instance termination. Stop returns the ASG to 0 and verifies that the instance and root volume are gone; the empty LI-02 cluster, provider, and ASG may remain for quick restart and have no EC2/ECS compute charge. Try the disposable Single-AZ PostgreSQL 18.6 `db.t4g.micro` in `ap-south-1b` first; only after AWS reports insufficient capacity, prepare an exact-plan fallback for `ap-south-1a`. Each distinct plan requires its own hash review and approval; if a failed apply leaves an RDS instance or ambiguous state, stop and inspect rather than retry automatically. The RDS instance uses 20 GiB encrypted gp3 storage in a private subnet and matches the shared test foundation's engine version. The RDS and storage exist only while the LI-02 demo is on; stop deletes the instance and storage. The public ALB also exists only while demonstrating. Enforce at most ten synthetic listings and retain the existing 1–8 image, 10 MiB per-image contract (up to 800 MiB across ten full listings). There is no fixed two-hour test duration; the operator starts the demo for verification/showing and runs stop when done. Refresh current shared-account spend and exact RDS/ALB/runtime costs before Step 12 approval. Shared RDS/network/storage costs continue outside LI-02 and are not represented as demo teardown savings. |
+| Rollback | Stop public ingress, clean the disposable Listings database and run prefix, remove LI-02 demo resources, terminate the dedicated host and delete its root volume, then verify no demo task, endpoint, RDS instance, or database remains. Keep the empty LI-02 ECS cluster/capacity provider/ASG at zero unless a separate reviewed plan removes them. Never delete shared RDS/VPC/NAT/ECS cluster/capacity provider or another domain's ECR images/resources. The stop plan deletes only the LI-02-owned RDS instance and its data; no shared RDS or ECS state is changed. Prepare and review the exact plan before apply; never use `force_destroy` for the image bucket. |
 
 The local browser uploads directly to S3 using a Listings-issued URL that is
 valid for at most five minutes and requires the signed `Content-Type` and
@@ -50,9 +55,16 @@ leave it false while using the real Identity caller.
 
 ## Isolated public app route and demo lifecycle for Step 12
 
-Step 12 serves the built Listings website and its API from ECS in the existing
-`clip-shared-test` cluster. The browser must not depend on a Vite server or
-proxy running on the operator's laptop. A public load balancer routes the
+**Selected Step 2 design, implemented in the LI-02 Step 12 Terraform and
+lifecycle driver:** use a dedicated LI-02 ECS cluster and ASG-backed EC2
+capacity. The shared ECS cluster, capacity provider, ASG, and host security
+group are not Terraform-managed or used by the demo service.
+
+Step 12 serves the built Listings website and API from ECS in the dedicated
+LI-02 cluster, using only LI-02's capacity provider and host security group.
+The shared ECS cluster, provider, ASG, and host security group remain unchanged.
+The browser must not depend on a Vite server or proxy running on the operator's
+laptop. A public load balancer routes the
 website and API over one reviewed origin; desktop and phone use the same URL.
 Use the ALB's generated HTTP hostname for the isolated demo. The demo has no sign-in flow:
 while it is running, visitors use the same fixed synthetic seller. The page
@@ -83,6 +95,17 @@ Build the website/API and database-task artifacts from one selected source
 revision and pin deployments by immutable digest. The migration task uses the
 repository's pinned migration tool/version and checked-in migrations.
 
+The private ECS host uses a dedicated EC2 instance role with the AWS-managed
+ECS container-instance policy. Its security group accepts the app port only
+from the temporary ALB and sends outbound traffic through the existing private
+subnet/NAT. The host has IMDSv2 required and an encrypted 30-GiB gp3 root disk
+tagged for exact teardown verification; its launch template sets the dedicated
+LI-02 cluster name. A persistent systemd firewall rule blocks bridge-mode task
+containers from reaching the EC2 metadata address, following [AWS's ECS task
+role guidance](https://docs.aws.amazon.com/AmazonECS/latest/bestpracticesguide/security-iam-roles.html);
+the separate task role remains bounded to Listings S3 and the application
+never receives the EC2 instance credentials.
+
 The test profile rejects client-supplied owner IDs and refuses startup unless
 it is in `clip_test_listings` with the least-privilege application role. The
 caller remains source-fixed and production settings reject the profile.
@@ -94,25 +117,32 @@ The lifecycle has two operator commands:
 `make li02-demo-start AWS_PROFILE=<approved-profile>` and
 `make li02-demo-stop AWS_PROFILE=<approved-profile>`. Start also continues a
 recorded partial run, so there is no separate resume command. The work log
-records prior partial runs and the current pending cloud inventory.
+records earlier run evidence and the current cloud-check gate.
 Start requires clean committed build inputs, preflights account/region, budget,
-shared task use, and state, captures only the shared ECS capacity baseline in an
-ignored non-secret local file, and builds/pushes uniquely tagged images from
-that immutable source. The first approved plan creates the private disposable
-RDS, LI-02 database tasks, and temporary ALB while keeping app count zero. Start
-creates the database URL as one SecureString without printing its value,
-bootstraps only `clip_test_listings`, applies checked-in migrations, seeds one
-fixed synthetic seller, then enables the app and prints the ALB URL. Each
-Terraform saved plan is displayed with a SHA-256 and requires that exact text
-to be typed before apply. Shared RDS is not started or changed. No custom
-domain or subdomain is needed for this HTTP endpoint.
+the LI-02 cluster/ASG state, and Terraform state, then builds/pushes uniquely
+tagged images from that immutable source. It asks once for
+`START LI02 DEMO <run-id>` before its first cloud write; that confirmation
+covers the run's image publication, generated secret, isolated database setup,
+and public demo start. The first exact-hash-approved plan creates the
+LI-02 cluster, capacity provider, ASG and zero-capacity host configuration,
+private disposable RDS, database tasks, and temporary ALB while keeping app
+count zero. Start creates the database URL as one SecureString without
+printing its value, bootstraps only `clip_test_listings`, applies checked-in
+migrations, seeds one fixed synthetic seller, then enables the app and prints
+the ALB URL. Each Terraform saved plan is displayed with a SHA-256 and requires
+that exact text to be typed before apply. RDS is attempted in `ap-south-1b`; only an explicit
+`InsufficientDBInstanceCapacity` response may advance the same start command to
+a fresh `ap-south-1a` plan, with a separate hash approval. The script verifies
+that neither AWS nor Terraform state contains a failed-attempt RDS instance
+before fallback. Shared RDS and shared ECS are not started or changed. No custom domain or
+subdomain is needed for this HTTP endpoint.
 
 Before bootstrap, start runs the fixed owner-check cleanup task. It drops only
 `clip_test_listings` when owned by `clip_test_listings_app`, removes only that
-exact orphaned login, and fails closed on any owner mismatch. One explicit
-database reset/setup approval covers this cleanup followed by bootstrap,
-migrations, and the synthetic seller seed. The shared `clip_test` database and
-shared RDS is never started, used for a database connection, or modified; the
+exact orphaned login, and fails closed on any owner mismatch. The run-level
+start confirmation covers this cleanup followed by bootstrap, migrations, and
+the synthetic seller seed. The shared `clip_test` database and
+shared RDS are never started, used for a database connection, or modified; the
 driver reads RDS inventory metadata only to detect a stray LI-02 instance. If a
 start phase fails, rerun the same start command to
 continue from the saved baseline; use stop to discard the partial run.
@@ -141,24 +171,29 @@ The idle guard treats another role's database session with a hidden backend
 type as busy, so restricted statistics visibility cannot hide an active client
 and incorrectly permit deleting the disposable LI-02 database.
 
-Stop scales the LI-02 service to zero, drops only the isolated Listings
+Stop asks once for `STOP LI02 DEMO <run-id>` before run teardown. This
+run-scoped confirmation is recorded for safe retries; the Terraform removal
+plan still requires its exact hash approval. Stop scales the LI-02 service to
+zero, drops only the isolated Listings
 database/login, verifies the database is idle, removes the exact S3 run prefix
 and database URL parameter, then uses a reviewed plan to delete the disposable
 RDS instance and remove the temporary ALB, subnet/route, host ingress rule, ECS
-service and task definitions. It deletes only unreferenced LI-02 ECR image
+service and task definitions. It then scales only the LI-02 ASG to zero and
+waits until its EC2 host and tagged root volume are absent. It retains the empty
+LI-02 ECS cluster/capacity-provider/ASG and dedicated host SG/role for restart.
+It deletes only unreferenced LI-02 ECR image
 digests and clears LI-02 log streams. It preserves the Step 4 empty image
 bucket, IAM roles, empty log group, state backend, shared RDS and `clip_test`
-database, VPC, NAT, ECS cluster/capacity provider, and other domains'
-artifacts. It never deletes or Terraform-manages a shared resource. If another
-ECS workload appears, leave shared capacity available and report the
-difference. Shared foundation costs continue while the demo is off.
+database, VPC, NAT, shared ECS cluster/capacity provider/ASG/host security
+group, and other domains' artifacts. It never deletes or Terraform-manages a
+shared resource. Shared foundation costs continue while the demo is off.
 
 If a database task or owner check fails, retain the ignored baseline file and
 rerun `make li02-demo-start AWS_PROFILE=<approved-profile>` to continue the
 recorded phase. The driver fails closed if a required cleanup task definition
 is missing or a saved state is ambiguous. For teardown, use the single stop
-command; it retains baseline metadata until database cleanup and shared ECS
-capacity handling are confirmed. The file contains no credentials. Do not
+command; it retains baseline metadata until database cleanup and dedicated
+LI-02 capacity termination are confirmed. The file contains no credentials. Do not
 delete it to bypass a failed check or infer live cloud state from the file
 alone.
 

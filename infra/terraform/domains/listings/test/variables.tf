@@ -111,8 +111,8 @@ variable "demo_database_availability_zone" {
   default     = "ap-south-1b"
 
   validation {
-    condition     = var.demo_database_availability_zone == "ap-south-1b"
-    error_message = "demo_database_availability_zone must use ap-south-1b, the existing secondary private subnet's Availability Zone."
+    condition     = contains(["ap-south-1a", "ap-south-1b"], var.demo_database_availability_zone)
+    error_message = "demo_database_availability_zone must use one of the two private subnet Availability Zones: ap-south-1a or ap-south-1b."
   }
 }
 

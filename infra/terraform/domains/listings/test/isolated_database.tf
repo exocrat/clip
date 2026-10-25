@@ -58,8 +58,8 @@ resource "aws_vpc_security_group_ingress_rule" "demo_database_from_ecs" {
   count = var.demo_enabled ? 1 : 0
 
   security_group_id            = aws_security_group.demo_database[0].id
-  referenced_security_group_id = data.aws_security_group.shared_ecs_host.id
-  description                  = "PostgreSQL from the existing private ECS host only."
+  referenced_security_group_id = aws_security_group.demo_ecs_host.id
+  description                  = "PostgreSQL from the dedicated private LI-02 ECS host only."
   ip_protocol                  = "tcp"
   from_port                    = 5432
   to_port                      = 5432
