@@ -4,8 +4,8 @@ Prepared 2026-10-25 06:07:40 UTC by Aditya (A). Purpose: one place for the peopl
 whose features use Identity to understand **what changed, why, and what to check**.
 This includes the whole ID-READY branch, not just the latest logging/migration work.
 
-**Review source:** `task/id-ready-local-hardening` at `7bc5b6083caac673ce264b6daa6675d5ddf3a20f`.
-Refreshed 2026-10-25 19:07:04 UTC after local image and browser-transport corrections; original prepared date retained above.
+**Review source:** `task/id-ready-overnight-prep` (refresh to its committed head before owner review).
+Refreshed 2026-10-25 after the hosted-test startup addition; original prepared date retained above.
 **Comparison base:** fetched `origin/main` at `6c860603bdd81a98485e721d789b557c5d433948`.
 The pending migration-review candidate and this handoff are documentation additions;
 they do not change the implementation pinned above. Refresh this comparison if
@@ -131,6 +131,33 @@ Existing isolated demos now expose only the reviewed CSRF response double under
 their existing profile/origin gates. The shared app installs it only in the guarded
 synthetic Listings profile before SPA fallback; default/production startup has no
 synthetic route. This supports demos and is not proof of real CSRF protection.
+
+### Latest local addition: explicit hosted test startup
+
+The ASGI composition now has a real, default-off startup path for the bounded
+test profile. When enabled, it requires `CLIP_ENVIRONMENT=test`, Microsoft and
+dual email selectors, the shared Listings database URL, the single reviewed HTTPS
+origin, and debug/development/demo flags off. It reads only the three fixed Identity
+SecureStrings, audits the separate Identity DB role, and warms the email route; it
+does not migrate, provision, or send mail. The same-origin bundled UI installs the
+Identity routes below `/api`, matching the web transport. `/api` is normalized only
+for the existing middleware's public-auth/logout CSRF policy checks.
+
+| Changed file | Purpose and review point |
+|---|---|
+| [settings](../../../apps/api/app/core/config.py) | Adds default-off test-runtime and exact-origin validation; rejects production, fake/development auth, debug, demo and incomplete configuration. |
+| [runtime configuration](../../../apps/api/app/domains/identity/runtime_configuration.py) | Shares fixed-reference loading between operator-local and hosted-test setup; hosted path derives the existing browser policy and refuses unapproved runtime mode. |
+| [ASGI entry](../../../apps/api/app/main.py) | Calls hosted preparation only for the explicit setting; startup fails closed if required references or the Identity role are unavailable. |
+| [application composition](../../../apps/api/app/application.py) | Allows this validated test profile to serve the UI and Identity on the same app, while preserving the normal default-unbound app. |
+| [Identity HTTP](../../../apps/api/app/domains/identity/http.py) | Installs existing routes under `/api` only for bundled-UI mode and retains the same origin/session/CSRF rules. |
+| [boundary checker](../../../scripts/check_boundaries.py) | Adds only the exact Identity runtime preparation import to the ASGI composition-root allowlist. |
+| Identity tests | Exercise settings refusal, default-unbound startup, explicit hosted composition, `/api` paths and offline secret/DB preparation. The full repository check passed locally. |
+
+These local changes do not wire ECS, SSM/IAM, DB URLs/roles, listener, TLS or a
+trusted proxy. The shared task/environment still lacks those settings and ingress
+details, so no hosted sign-in claim is made. Review the exact committed source and
+this separate infrastructure gate before enabling anything. Owner review remains
+pending and is explicitly deferred by Aditya until the morning.
 
 ## 3. Eligibility and capabilities — Listings, Search and Conversations
 
@@ -413,6 +440,7 @@ git diff 6c860603bdd81a98485e721d789b557c5d433948 7bc5b6083caac673ce264b6daa6675
 .env.example
 .gitleaks.toml
 README.md
+docs/decisions/identity-test-runtime-activation.md
 apps/api/Dockerfile
 apps/api/README.md
 apps/api/app/application.py
@@ -422,7 +450,13 @@ apps/api/app/core/config.py
 apps/api/app/core/runtime_bindings.py
 apps/api/app/domains/listings/integrations.py
 apps/api/app/main.py
+apps/api/app/domains/identity/runtime_configuration.py
 apps/api/tests/core/test_runtime_bindings.py
+apps/api/tests/core/test_provider_settings.py
+apps/api/tests/test_health.py
+apps/api/tests/domains/identity/test_main_runtime.py
+apps/api/tests/domains/identity/test_application_composition.py
+apps/api/tests/domains/identity/test_runtime_configuration.py
 apps/api/tests/domains/listings/browser_demo.py
 apps/api/tests/domains/listings/test_image_upload_service.py
 apps/api/tests/domains/listings/test_offer_boundary.py

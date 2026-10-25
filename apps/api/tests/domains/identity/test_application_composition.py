@@ -9,10 +9,12 @@ from urllib.parse import quote, urlencode
 from uuid import uuid4
 
 from fastapi.testclient import TestClient
+from fastapi import FastAPI
 from pydantic import SecretStr
 import pytest
 
 from app.core.config import ConfigurationError, Settings
+from app.core.errors import install_error_handlers
 from app.domains.identity.http import (
     IdentityBrowserMiddleware,
     IdentityHttpDependencies,
@@ -284,6 +286,71 @@ def test_factory_rejects_production_missing_database_and_demo_mix(
     )
     with pytest.raises(ConfigurationError):
         create_app(demo, identity=bindings)
+
+
+def test_identity_api_prefix_matches_same_origin_web_transport(
+    identity_runtime, signed_tokens
+):
+    """Hosted /api auth routes preserve the reviewed public-write exemption."""
+    state = identity_runtime
+    bindings = IdentityHttpDependencies(
+        state.service,
+        state.policy,
+        state.mail,
+        signed_tokens.validator(),
+        lambda: state.clock[0],
+    )
+    application = FastAPI()
+    install_error_handlers(application)
+    install_identity_http(application, bindings, path_prefix="/api")
+
+    with TestClient(
+        application, base_url=ORIGIN, client=("192.0.2.27", 50000)
+    ) as browser:
+        attempt = browser.post(
+            "/api/auth/temporary/sessions",
+            headers={"Origin": ORIGIN, "X-CLIP-Request": "1"},
+            json={"email": EMAIL, "password": "not-the-password"},
+        )
+        # A public authentication write is routed and reaches its normal
+        # credential check without a CSRF token; it is not a successful login.
+        assert attempt.status_code == 401
+
+
+def test_hosted_test_app_serves_ui_and_identity_under_api_prefix(
+    monkeypatch, tmp_path, identity_runtime, signed_tokens
+):
+    """The explicit same-origin hosted mode wires Identity beside feature APIs."""
+    state = identity_runtime
+    bindings = IdentityHttpDependencies(
+        state.service,
+        state.policy,
+        state.mail,
+        signed_tokens.validator(),
+        lambda: state.clock[0],
+    )
+    web_root = tmp_path / "web"
+    (web_root / "assets").mkdir(parents=True)
+    (web_root / "index.html").write_text("<html></html>")
+    monkeypatch.setattr("app.application.Path", lambda _path: web_root)
+    settings = Settings(
+        environment="test",
+        identity_provider="microsoft",
+        email_provider="dual",
+        ses_test_recipients=(EMAIL,),
+        identity_runtime_enabled=True,
+        identity_browser_origins=(ORIGIN,),
+        serve_web_app=True,
+        database_url=SecretStr("postgresql://listings@db.invalid/clip_test"),
+    )
+
+    application = create_app(settings, identity=bindings)
+
+    paths = application.openapi()["paths"]
+    assert "/api/auth/microsoft/sessions" in paths
+    assert "/api/auth/csrf" in paths
+    assert "/auth/microsoft/sessions" not in paths
+    assert "/api/listings" in paths
 
 
 def test_incomplete_dependency_bundle_rejected(identity_runtime, signed_tokens):

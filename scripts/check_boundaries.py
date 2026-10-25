@@ -19,6 +19,8 @@ DOMAINS = frozenset({"identity", "listings", "search", "conversations"})
 COMPOSITION_IMPORTS: dict[str, frozenset[str]] = {
     "apps/api/app/main.py": frozenset(
         {
+            "app.domains.identity.runtime_configuration",
+            "app.domains.identity.runtime_configuration.prepare_hosted_test_identity",
             "app.domains.listings.s3_storage",
             "app.domains.listings.s3_storage.S3ListingsImageStorage",
         }

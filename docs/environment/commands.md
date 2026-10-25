@@ -1155,6 +1155,28 @@ See the image-trust checks below and integration evidence.
 Checks: `uv run --locked pytest apps/api/tests/domains/identity/test_runtime_command.py -q -W error`
 and `uv run --locked mypy --strict scripts/identity_runtime.py`.
 
+### Hosted test-mode Identity startup — ID-01 Step12 preparation
+
+The default `app.main:app` stays Identity-unbound. The explicit ASGI opt-in is
+`CLIP_IDENTITY_RUNTIME_ENABLED=true`; Settings accept it only with
+`CLIP_ENVIRONMENT=test`, `CLIP_IDENTITY_PROVIDER=microsoft`,
+`CLIP_EMAIL_PROVIDER=dual`, debug/development auth off, a separate Listings
+`CLIP_DATABASE_URL`, the exact JSON origin list
+`CLIP_IDENTITY_BROWSER_ORIGINS=["https://clip-iisc.site"]`, and the approved
+controlled-recipient list. The app reads only the three fixed Identity SSM
+parameters during ASGI import and fails closed if they, the restricted Identity
+DB role, or the email snapshot are invalid. It performs no migrations or sends at
+startup. Auth requests can create account/session state and send real email.
+
+This is prepared code, not an operator command or current deployment config. The
+shared ECS task still lacks these settings, SSM access, the separate Listings DB
+URL/role, and a reviewed public HTTPS/proxy route. Do not enable the flag until
+the exact runtime, ingress, recipient and cleanup plan is approved. If
+`CLIP_SERVE_WEB_APP=true`, Identity routes and marketplace APIs use `/api` with
+the bundled UI; otherwise the HTTPS same-origin proxy must strip `/api` before
+forwarding to the API's unprefixed routes. Uvicorn forwarded-header trust remains
+unset until the actual proxy peer is verified.
+
 | `CLIP_ENVIRONMENT=test CLIP_DEVELOPMENT_AUTH=true uv run --locked python apps/api/tests/domains/listings/browser_demo.py --isolated-listings-browser --hybrid-search --resume SESSION_PATH` | Resumes that same local database and enables the real pinned helper, worker and Hybrid reader. Requires the repo-local CPython 3.13 helper and model under `.tools/semantic/`. Before serving, verifies the worker pool reaches `clip_listings_browser` over its private Unix socket, prepares existing rows, waits for complete vectors and activates the pinned pipeline. New listing creates/edits then use the database trigger and worker automatically; no copied vectors. | Refuses a mismatched database, unavailable helper/worker, failed vector job or incomplete five-minute bootstrap. Ctrl+C retains the labelled local database. No shared database or cloud target. |
 
 The browser harness also mounts real Wanted Request and Saved Listings routes

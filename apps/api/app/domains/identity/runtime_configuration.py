@@ -130,12 +130,48 @@ def prepare_local_identity(
         settings.environment not in {"local", "test"}
         or settings.identity_provider != "microsoft"
         or settings.email_provider != "dual"
+        or settings.identity_runtime_enabled
         or settings.development_auth
         or settings.isolated_listings_test_caller
         or settings.serve_web_app
         or not isinstance(policy, BrowserPolicy)
     ):
         raise ConfigurationError("Explicit safe local Identity configuration required")
+    return _prepare_identity(settings, policy, references, client=client, clock=clock)
+
+
+def prepare_hosted_test_identity(
+    settings: Settings,
+    references: RuntimeReferences = RuntimeReferences(),
+    *,
+    client: ParameterClient | None = None,
+    clock: Callable[[], datetime] = lambda: datetime.now(UTC),
+) -> IdentityHttpDependencies:
+    """Prepare real bindings for the explicit hosted test-environment opt-in.
+
+    The Settings validator requires real Microsoft/dual selectors, a Listings
+    database URL, exact HTTPS Origins, and test mode. This path still reads only
+    the three fixed Identity SecureStrings and performs a read-only role audit;
+    it never migrates, provisions or sends mail during startup.
+    """
+    if not settings.identity_runtime_enabled or settings.environment != "test":
+        raise ConfigurationError("Explicit hosted Identity test mode required")
+    try:
+        policy = BrowserPolicy(settings.identity_browser_origins)
+    except Exception:
+        raise ConfigurationError("Invalid hosted Identity browser policy") from None
+    return _prepare_identity(settings, policy, references, client=client, clock=clock)
+
+
+def _prepare_identity(
+    settings: Settings,
+    policy: BrowserPolicy,
+    references: RuntimeReferences,
+    *,
+    client: ParameterClient | None,
+    clock: Callable[[], datetime],
+) -> IdentityHttpDependencies:
+    """Load bounded runtime references and assemble the existing real services."""
     try:
         parameter_client = client or SsmEmailRouteLoader._make_client()
         keys = parse_authentication_keys(

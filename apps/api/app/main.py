@@ -7,12 +7,29 @@ from fastapi import FastAPI
 from psycopg_pool import AsyncConnectionPool
 
 from app.application import application_lifespan, create_app
-from app.core.config import load_settings
+from app.core.config import Settings, load_settings
 from app.core.logging import configure_logging
 from app.domains.listings.s3_storage import S3ListingsImageStorage
+from app.domains.identity.runtime_configuration import prepare_hosted_test_identity
 
 settings = load_settings()
 configure_logging()
+
+
+def create_configured_app(settings: Settings) -> FastAPI:
+    """Keep normal startup unbound; prepare real Identity only by test opt-in.
+
+    The enabled path reads fixed SecureStrings and validates the dedicated
+    Identity DB role during ASGI import. Missing or invalid live configuration
+    fails closed before the app serves requests. It never performs migrations or
+    sends mail during startup.
+    """
+    identity = (
+        prepare_hosted_test_identity(settings)
+        if settings.identity_runtime_enabled
+        else None
+    )
+    return create_app(settings, identity=identity)
 
 
 @asynccontextmanager
@@ -32,5 +49,5 @@ async def lifespan(application: FastAPI) -> AsyncIterator[None]:
         yield
 
 
-app = create_app(settings)
+app = create_configured_app(settings)
 app.router.lifespan_context = lifespan

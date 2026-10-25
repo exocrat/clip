@@ -19,6 +19,7 @@ from app.domains.identity.http import BrowserPolicy
 from app.domains.identity.runtime_configuration import (
     RuntimeReferences,
     parse_authentication_keys,
+    prepare_hosted_test_identity,
     prepare_local_identity,
     read_secure_parameter,
 )
@@ -178,6 +179,32 @@ def test_bootstrap_and_real_auth_work_with_restricted_role(runtime_case):
     state.sessions.logout(grant.token.get_secret_value())
     # A restarted process keeps the stored key binding; the loader never rekeys.
     bootstrap(case)
+
+
+def test_hosted_test_bootstrap_uses_exact_origins_and_no_send(runtime_case):
+    """The explicit ASGI path shares real startup checks without demo auth."""
+    case = runtime_case
+    settings = Settings(
+        environment="test",
+        identity_provider="microsoft",
+        email_provider="dual",
+        ses_test_recipients=(EMAIL,),
+        identity_runtime_enabled=True,
+        identity_browser_origins=("https://clip-iisc.site",),
+        database_url=case.target.dsn,
+    )
+    state = prepare_hosted_test_identity(
+        settings,
+        client=case.client,
+        clock=lambda: NOW,
+    )
+    assert state.policy.origins == ("https://clip-iisc.site",)
+    assert not state.policy.development
+    assert case.client.calls == [
+        REFS.authentication_keys,
+        REFS.database_url,
+        REFS.email_delivery,
+    ]
 
 
 def test_key_change_rejected_without_changing_persistent_binding(runtime_case):

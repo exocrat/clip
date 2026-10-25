@@ -108,10 +108,12 @@ actual Identity composition. No isolated fixed caller may authorize real session
 ## Local API composition
 
 Aditya authorized this Step12 increment and separately approved the narrow
-Listings adapter correction. No new task-definition gap: main/contracts/real
-Identity services exist; actual provider/runtime/device gates remain pending.
-A is recorded current writer for main.py/application.py, the exact boundary allowlist and shared
-docs. Suraj's affected-owner review is still required for the adapter change.
+Listings adapter correction. The local API composition exists, but the offline
+audit found that the current hosted task still lacks its runtime settings, DB URL,
+SSM permission and HTTPS ingress/proxy route. This increment supplies a guarded
+test-only startup path; it does not configure the hosted task. A is recorded current
+writer for main.py/application.py, the exact boundary allowlist and shared docs.
+Suraj's affected-owner review is still required for the adapter change.
 
 | Changed code | Purpose and important behavior |
 | --- | --- |
@@ -171,20 +173,27 @@ all actual deployment/runtime/provider/ID-READY gates remain pending.
 
 ## Secure runtime preparation
 
-Step12 local implementation; subsequently human-verified with explicit commit authorization. `prepare_local_identity`
-returns real dependencies for the explicit shared API factory. It does not enable
-`app.main:app`, provision secrets, change grants, send mail or discover Microsoft
-metadata. Tests use an offline SSM port and owned disposable PostgreSQL, not the
-shared RDS instance. Production and demo/bypass combinations remain rejected.
+Step12 local implementation; `prepare_local_identity` returns real dependencies
+for the explicit operator-local API factory. A separate hosted test-mode opt-in
+now binds these dependencies from `app.main:app` only when the full validated
+configuration is enabled. Both paths read fixed secret references, validate the
+restricted DB role, and warm the email snapshot without sending. They do not
+provision secrets, change grants, migrate the shared DB, or discover Microsoft
+metadata. Tests use offline SSM ports and owned disposable PostgreSQL, not shared
+RDS. Production and demo/bypass combinations remain rejected.
 
 | Path | Purpose |
 |---|---|
+| `apps/api/app/main.py` | Keep default startup unbound; only the explicit hosted test flag prepares and installs real Identity dependencies. |
+| `apps/api/app/application.py` | Allow the validated test-only composition and choose `/api` Identity paths when the bundled UI is served. |
+| `apps/api/app/domains/identity/http.py` | Install the existing Identity endpoints under the same `/api` prefix used by the bundled UI while preserving public-auth CSRF boundaries. |
+| `docs/decisions/identity-test-runtime-activation.md` | Record the default-off, test-only startup behavior and separate cloud/ingress gates. |
 | `apps/api/app/domains/identity/runtime_configuration.py` | Read bounded versioned SecureStrings; parse persistent independent keys; validate DB and warm the email snapshot before returning dependencies. |
 | `apps/api/app/domains/identity/runtime_database.py` | Validate an explicit private URI, open bounded connections and audit effective role/table/logging/migration/key-binding state read-only. |
 | `database/roles/identity-runtime.sql.proposed` | Reviewable minimum grants for a separate Identity login; not a migration or live apply script. |
-| `apps/api/app/core/config.py`, `email.py` | Accept the dual-provider selector while retaining controlled-recipient and production guards. |
+| `apps/api/app/core/config.py`, `email.py` | Validate the explicit test-only startup flag, exact HTTPS origin, separate Listings URL, dual-provider selector and recipient/production guards. |
 | `apps/api/app/domains/identity/email_routing.py` | Warm the four-hour routing cache without sending or exposing its configuration. |
-| `apps/api/tests/domains/identity/test_runtime_configuration.py` | Exercise real restricted-role OTP/session/contact operations, denied privileges, restart/key mismatch and malformed configuration. |
+| `apps/api/tests/domains/identity/test_runtime_configuration.py`, `test_main_runtime.py`, `apps/api/tests/core/test_provider_settings.py` | Exercise real restricted-role OTP/session/contact startup, default-unbound versus opted-in composition, environment parsing and unsafe-config refusals. |
 
 The proposed login is `clip_test_identity_app`, separate from Listings. Only
 SELECT/INSERT are granted on permanent enrollment/external-identity/key/operation
@@ -197,7 +206,8 @@ with system roots. Only the owned test-mode Unix socket may disable TLS.
 The authentication key parameter is loaded once per bootstrap; never regenerate it
 on restart or refresh it with the email preference. Existing database commitments
 must match. An empty database adopts keys through the established service transaction,
-not startup writes. The current default API remains unbound.
+not startup writes. The default API remains unbound; the new explicit hosted
+test-mode path is described below and is not configured in ECS yet.
 
 Remaining live work: review/provision key and separate database-URL references;
 approve role/PUBLIC baseline and logging changes; scope runtime IAM; validate
@@ -1388,12 +1398,18 @@ separate checks; Step14 is outside current ID-READY scope.
 The image is not the only remaining implementation prerequisite. Current source
 and Terraform show:
 
-- `apps/api/app/main.py` constructs `create_app(settings)` without Identity
-  dependencies. `application.py` deliberately keeps default startup unbound;
-  `create_app` rejects Identity composition in production and hosted-web mode.
+- `apps/api/app/main.py` keeps default startup Identity-unbound. The local
+  implementation now supports a separate explicit `CLIP_IDENTITY_RUNTIME_ENABLED`
+  test-only path, which loads real dependencies and installs the existing handlers
+  at startup. It requires `CLIP_ENVIRONMENT=test`, Microsoft plus dual email,
+  `CLIP_DEBUG=false`, the separate Listings DB URL, and exact HTTPS origins.
+  Production remains rejected and the flag defaults false.
 - `identity_runtime.py`/`prepare_local_identity` is an explicit local/test
   operator command. It reads fixed Identity SSM references only when invoked and
   refuses `serve_web_app`; it is not a hosted ASGI startup path.
+- `create_app` can place Identity routes under `/api` when the explicitly enabled
+  test app serves its bundled UI. Otherwise Identity retains its unprefixed API
+  paths and the external same-origin `/api` proxy must strip the prefix.
 - The shared ECS task currently sets only `CLIP_ENVIRONMENT=production` and
   `CLIP_DEBUG=false`. It has no Identity selector/runtime flag, database URL
   injection, or Identity parameter access. The Identity database URL parameter
@@ -1405,10 +1421,10 @@ and Terraform show:
   enabling arbitrary forwarded-header trust would be unsafe.
 
 Therefore do not treat the production frontend build or image as enough to run
-the morning account checks. Before code activation/deployment, inspect the current
+the morning account checks. Before enabling the new code path, inspect the current
 domain/DNS/hosting route and shared ingress, select the exact same-origin HTTPS
 path, and review how the application will trust that proxy and receive its
-separate DB/SSM configuration. The likely low-complexity shape is the existing
-API image serving the UI and `/api` on one HTTPS origin, but that remains an
-inference until the actual listener/host is identified. Do not implement or apply
-that wiring based on this note alone. No AWS state was queried for this audit.
+separate Listings/Identity DB and SSM configuration. The likely low-complexity
+shape is the existing API image serving the UI and `/api` on one HTTPS origin, but
+that remains an inference until the actual listener/host is identified. No AWS
+state was queried for this audit.
