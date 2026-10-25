@@ -1,3 +1,4 @@
+import { sessionFetch, SessionFetchError } from '../../shared/http/sessionFetch';
 import type {
   AvailabilityChange,
   CatalogueView,
@@ -56,14 +57,12 @@ export async function listingsRequest<T>(
 ): Promise<T> {
   let response: Response;
   try {
-    response = await fetch(`/api${path}`, {
-      credentials: 'same-origin',
-      ...options,
-      headers: { 'Content-Type': 'application/json', ...options.headers },
-    });
+    const headers = new Headers(options.headers);
+    if (!headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
+    response = await sessionFetch(path, { ...options, headers });
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') throw error;
-    throw new ListingsApiError(0);
+    throw new ListingsApiError(error instanceof SessionFetchError ? error.status : 0);
   }
   if (!response.ok) {
     let code: string | undefined;

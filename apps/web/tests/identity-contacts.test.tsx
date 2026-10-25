@@ -61,14 +61,14 @@ describe('Private own-contact editor', () => {
     const fetcher = mock(() => response({}, 401));
     view();
     await screen.findByRole('heading', { name: 'Sign in to edit your contact details' });
-    expect(fetcher.mock.calls.map((row) => row[0])).toEqual(['/me']);
+    expect(fetcher.mock.calls.map((row) => row[0])).toEqual(['/api/me']);
     expect(screen.queryByLabelText('Contact email')).toBeNull();
   });
 
   it.each(['regular', 'temporary'] as const)(
     'supports empty own contacts for %s without inventing values',
     async (account_class) => {
-      mock((path) => (path === '/me' ? response({ ...actor, account_class }) : response(blank)));
+      mock((path) => (path === '/api/me' ? response({ ...actor, account_class }) : response(blank)));
       view();
       expect((await screen.findByLabelText('Contact email')).getAttribute('value')).toBe('');
       expect(screen.getByText('No saved email.')).toBeTruthy();
@@ -86,8 +86,8 @@ describe('Private own-contact editor', () => {
     const calls: { path: string; init: RequestInit }[] = [];
     mock((path, init) => {
       calls.push({ path, init });
-      if (path === '/me') return response(actor);
-      if (path === '/auth/csrf') return response({ csrf_token: 'synthetic-contact-csrf' });
+      if (path === '/api/me') return response(actor);
+      if (path === '/api/auth/csrf') return response({ csrf_token: 'c'.repeat(64) });
       if (init.method === 'PUT') {
         saved = { ...saved, email: JSON.parse(String(init.body)).value };
         return response(null, 204);
@@ -105,22 +105,22 @@ describe('Private own-contact editor', () => {
     expect(screen.getByLabelText('UPI ID').getAttribute('value')).toBe(values.upi_id);
     expect(screen.getByRole('status').textContent).toBe('Email saved.');
     const write = calls.find((row) => row.init.method === 'PUT');
-    expect(write?.path).toBe('/me/contacts/email');
-    expect(write?.init.headers).toEqual({
-      'X-CLIP-Request': '1',
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': 'synthetic-contact-csrf',
+    expect(write?.path).toBe('/api/me/contacts/email');
+    expect(Object.fromEntries(new Headers(write?.init.headers))).toEqual({
+      'x-clip-request': '1',
+      'content-type': 'application/json',
+      'x-csrf-token': 'c'.repeat(64),
     });
     expect(JSON.parse(String(write?.init.body))).toEqual({ value: 'new-synthetic@example.com' });
-    expect(calls.filter((row) => row.path === '/me/contacts')).toHaveLength(2);
+    expect(calls.filter((row) => row.path === '/api/me/contacts')).toHaveLength(2);
   });
 
   it('hides a confirmed deleted value while its authoritative refetch is pending', async () => {
     let reads = 0;
     let finish: ((result: Response) => void) | undefined;
     mock((path, init) => {
-      if (path === '/me') return response(actor);
-      if (path === '/auth/csrf') return response({ csrf_token: 'synthetic-contact-csrf' });
+      if (path === '/api/me') return response(actor);
+      if (path === '/api/auth/csrf') return response({ csrf_token: 'c'.repeat(64) });
       if (init.method === 'DELETE') return response(null, 204);
       reads++;
       return reads === 1
@@ -145,10 +145,10 @@ describe('Private own-contact editor', () => {
 
   it('shows field validation errors without private dependency payload or OTP guidance', async () => {
     mock((path, init) =>
-      path === '/me'
+      path === '/api/me'
         ? response(actor)
-        : path === '/auth/csrf'
-          ? response({ csrf_token: 'synthetic-contact-csrf' })
+        : path === '/api/auth/csrf'
+          ? response({ csrf_token: 'c'.repeat(64) })
           : init.method === 'PUT'
             ? response({ error: { message: 'PRIVATE_CONTACT_DETAIL' } }, 422)
             : response(values),
@@ -168,7 +168,7 @@ describe('Private own-contact editor', () => {
 
   it('does not treat an outage as empty contacts, and permits an explicit safe retry', async () => {
     let down = true;
-    mock((path) => (path === '/me' ? response(actor) : down ? response({}, 503) : response(blank)));
+    mock((path) => (path === '/api/me' ? response(actor) : down ? response({}, 503) : response(blank)));
     const user = userEvent.setup();
     view();
     await screen.findByRole('alert');
@@ -182,7 +182,7 @@ describe('Private own-contact editor', () => {
   it('clears private values and stale responses on logout', async () => {
     let finish: ((result: Response) => void) | undefined;
     mock((path) =>
-      path === '/me'
+      path === '/api/me'
         ? response(actor)
         : new Promise<Response>((resolve) => {
             finish = resolve;
@@ -203,7 +203,7 @@ describe('Private own-contact editor', () => {
     let reads = 0;
     let finish: ((result: Response) => void) | undefined;
     mock((path) => {
-      if (path === '/me') return response(actor);
+      if (path === '/api/me') return response(actor);
       reads++;
       return reads === 1
         ? new Promise<Response>((resolve) => {
@@ -229,8 +229,8 @@ describe('Private own-contact editor', () => {
     let reads = 0;
     let finish: ((result: Response) => void) | undefined;
     mock((path, init) => {
-      if (path === '/me') return response(actor);
-      if (path === '/auth/csrf') return response({ csrf_token: 'synthetic-contact-csrf' });
+      if (path === '/api/me') return response(actor);
+      if (path === '/api/auth/csrf') return response({ csrf_token: 'c'.repeat(64) });
       if (init.method === 'PUT')
         return new Promise<Response>((resolve) => {
           finish = resolve;
@@ -260,8 +260,8 @@ describe('Private own-contact editor', () => {
     let writes = 0;
     let reads = 0;
     mock((path, init) => {
-      if (path === '/me') return response(actor);
-      if (path === '/auth/csrf') return response({ csrf_token: 'synthetic-contact-csrf' });
+      if (path === '/api/me') return response(actor);
+      if (path === '/api/auth/csrf') return response({ csrf_token: 'c'.repeat(64) });
       if (init.method === 'PUT') {
         writes++;
         throw new Error('PRIVATE_CONTACT_DEPENDENCY');
@@ -288,7 +288,7 @@ describe('Private own-contact editor', () => {
   it('hides contacts immediately after a fresh unauthorized response', async () => {
     let denied = false;
     mock((path) =>
-      denied ? response({}, 401) : path === '/me' ? response(actor) : response(values),
+      denied ? response({}, 401) : path === '/api/me' ? response(actor) : response(values),
     );
     const user = userEvent.setup();
     view();
@@ -303,8 +303,8 @@ describe('Private own-contact editor', () => {
     let writes = 0;
     let finish: ((result: Response) => void) | undefined;
     mock((path, init) => {
-      if (path === '/me') return response(actor);
-      if (path === '/auth/csrf') return response({ csrf_token: 'synthetic-contact-csrf' });
+      if (path === '/api/me') return response(actor);
+      if (path === '/api/auth/csrf') return response({ csrf_token: 'c'.repeat(64) });
       if (init.method === 'PUT') {
         writes++;
         return new Promise<Response>((resolve) => {
@@ -334,7 +334,7 @@ describe('Own-contact response boundary', () => {
   it('strips extra fields and never sends an actor ID', async () => {
     const fetcher = mock(() => response({ ...values, secret: 'PRIVATE_EXTRA' }));
     expect(await identityApi.contacts()).toEqual(values);
-    expect(fetcher.mock.calls[0][0]).toBe('/me/contacts');
+    expect(fetcher.mock.calls[0][0]).toBe('/api/me/contacts');
   });
   it.each([{ email: null }, { ...values, phone: 123 }, null])(
     'rejects malformed contact dependencies',
@@ -348,7 +348,7 @@ describe('Own-contact response boundary', () => {
 describe('Private draft lifecycle', () => {
   it('preserves an unfinished own draft on ordinary focus without browser persistence', async () => {
     const storage = vi.spyOn(Storage.prototype, 'setItem');
-    const fetcher = mock((path) => (path === '/me' ? response(actor) : response(values)));
+    const fetcher = mock((path) => (path === '/api/me' ? response(actor) : response(values)));
     const user = userEvent.setup();
     view();
     await screen.findByDisplayValue(values.email);
@@ -356,21 +356,21 @@ describe('Private draft lifecycle', () => {
     await user.type(screen.getByLabelText('Contact email'), 'unfinished-synthetic@example.com');
     fireEvent.focus(window);
     await waitFor(() =>
-      expect(fetcher.mock.calls.filter((row) => row[0] === '/me')).toHaveLength(2),
+      expect(fetcher.mock.calls.filter((row) => row[0] === '/api/me')).toHaveLength(2),
     );
     expect(screen.getByLabelText('Contact email').getAttribute('value')).toBe(
       'unfinished-synthetic@example.com',
     );
-    expect(fetcher.mock.calls.filter((row) => row[0] === '/me/contacts')).toHaveLength(1);
+    expect(fetcher.mock.calls.filter((row) => row[0] === '/api/me/contacts')).toHaveLength(1);
     expect(storage).not.toHaveBeenCalled();
   });
 
   it.each([403, 503])('hides private rows after a definite write failure %s', async (status) => {
     mock((path, init) =>
-      path === '/me'
+      path === '/api/me'
         ? response(actor)
-        : path === '/auth/csrf'
-          ? response({ csrf_token: 'synthetic-contact-csrf' })
+        : path === '/api/auth/csrf'
+          ? response({ csrf_token: 'c'.repeat(64) })
           : init.method === 'PUT'
             ? response({ detail: 'PRIVATE_FAILURE' }, status)
             : response(values),
@@ -392,8 +392,8 @@ describe('Independent contact drafts', () => {
   it('preserves another field’s unsaved draft when refetching a confirmed save', async () => {
     let saved = { ...values };
     mock((path, init) => {
-      if (path === '/me') return response(actor);
-      if (path === '/auth/csrf') return response({ csrf_token: 'synthetic-contact-csrf' });
+      if (path === '/api/me') return response(actor);
+      if (path === '/api/auth/csrf') return response({ csrf_token: 'c'.repeat(64) });
       if (init.method === 'PUT') {
         saved = { ...saved, email: JSON.parse(String(init.body)).value };
         return response(null, 204);

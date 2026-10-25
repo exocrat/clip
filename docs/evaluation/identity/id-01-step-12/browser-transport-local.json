@@ -1,0 +1,157 @@
+{
+  "recorded_at_utc": "2026-10-25 19:00:23 UTC",
+  "state": "local_transport_verified_human_owner_live_pending",
+  "source_base": "f6b2cf3f22fdc4050a371226e323980e3bed9024",
+  "source_dirty": true,
+  "source_sha256": [
+    {
+      "path": "apps/api/app/application.py",
+      "sha256": "8183b8db106969cfe5238cc5942ad5d3a6b4dae8a6e18c13be4932b3923aa3ed"
+    },
+    {
+      "path": "apps/api/tests/domains/identity/browser_csrf_fixtures.py",
+      "sha256": "22ccaffd34b821f33f636bf37104ea62da99b0bb7d80a1241d8ad92234c41529"
+    },
+    {
+      "path": "apps/api/tests/domains/identity/test_browser_csrf_fixtures.py",
+      "sha256": "07b28cf5402494e70b13f6730a9437d0a3d77af6d517c8ef836b9994b895b567"
+    },
+    {
+      "path": "apps/api/tests/domains/identity/test_browser_transport.py",
+      "sha256": "5dd8a47813ead73596514b525b4922e7716cce89c6d4190796d51da543ad5ee9"
+    },
+    {
+      "path": "apps/api/tests/domains/listings/browser_demo.py",
+      "sha256": "331151cf8a09b38e74233660907160ceea83e6297b78f9b335ad81e67bb2ef16"
+    },
+    {
+      "path": "apps/api/tests/domains/search/wanted_ui_preview.py",
+      "sha256": "cc12b507e686b43620a4c484ad67a78508c2cb68b2ea5e96ca6a192687586096"
+    },
+    {
+      "path": "apps/web/src/features/identity/api.ts",
+      "sha256": "1eaf77125ab38f02057fcb8e83664b4ea03940fef6314015efd66be12d211cc1"
+    },
+    {
+      "path": "apps/web/src/features/listings/listingsApi.ts",
+      "sha256": "b4bc95b0fffce0c41f697e6d73f3326debe824b02180d4de006f610c3b9f9746"
+    },
+    {
+      "path": "apps/web/src/features/search/wantedApi.ts",
+      "sha256": "576b29598eeafb033f32d3f8f5cf7951d230a4f2cf84a4c321ccfda927815e88"
+    },
+    {
+      "path": "apps/web/src/shared/http/sessionFetch.ts",
+      "sha256": "f7c5ff7f533d57585a8e8b691159dbe195d6ed7dddcc5e383cdc021a2ce22249"
+    },
+    {
+      "path": "apps/web/tests/helpers/csrf.ts",
+      "sha256": "b9cdf31a1151955687fca05cab85df54808e473eaea58126a758424674853368"
+    },
+    {
+      "path": "apps/web/tests/identity-contacts.test.tsx",
+      "sha256": "097683bb94629dd8f6239878b3aff9099d3b1361e90f0dafcfc8be7f95cfc413"
+    },
+    {
+      "path": "apps/web/tests/identity-microsoft.test.tsx",
+      "sha256": "35c897a14104f139ac070658697784e89a52e5cc11343aca7bc04585707f3f01"
+    },
+    {
+      "path": "apps/web/tests/identity.test.tsx",
+      "sha256": "b36bd3d45bfa85f37618d5d760d58b1ed26829eb5b70870daf8c32c58b67c06b"
+    },
+    {
+      "path": "apps/web/tests/listings-api.test.ts",
+      "sha256": "5a93600bd7ee83bb9cf1d9a7ed5aa09217cf13a7749cbc3eedc0ecb8ecb8876d"
+    },
+    {
+      "path": "apps/web/tests/listings-image-api.test.ts",
+      "sha256": "97180a34541941d5e414b8535924f77afaa266d614f644f72dc6ab1d7fbda3d7"
+    },
+    {
+      "path": "apps/web/tests/session-fetch-http.test.ts",
+      "sha256": "6c3c7233eb6a509cc2c789886ba64d343388fd076030a0157eb128c63c87be53"
+    },
+    {
+      "path": "apps/web/tests/session-fetch.test.ts",
+      "sha256": "ff103b7e8089cda906411c4411a841f3acb3322111511ea7050638909c39f61b"
+    },
+    {
+      "path": "apps/web/tests/wanted-api.test.ts",
+      "sha256": "52663668d7d8f2e3b95fd8b539dbc3ce55e4c0d989e677c9dce12a11d30cf786"
+    }
+  ],
+  "changes": {
+    "shared_transport": "apps/web/src/shared/http/sessionFetch.ts",
+    "feature_adapters": [
+      "apps/web/src/features/identity/api.ts",
+      "apps/web/src/features/listings/listingsApi.ts",
+      "apps/web/src/features/search/wantedApi.ts"
+    ],
+    "normal_identity_prefix": "/api",
+    "identity_preview_prefix": "",
+    "csrf_cache": false,
+    "automatic_transport_retry": false,
+    "redirect_policy": "error",
+    "credentials": "same-origin",
+    "deadline_seconds": 10,
+    "presigned_s3_byte_transport": "unchanged",
+    "real_auth_policy": "unchanged",
+    "public_auth_exemptions_match_server": 7
+  },
+  "checks": {
+    "shared_transport_unit_tests": 32,
+    "real_typescript_http_sql_test": "passed inside Python test; synthetic signer/mail/cookie browser bridge only",
+    "demo_and_existing_composition_subset": {
+      "passed": 22
+    },
+    "strict_mypy_modules": 2,
+    "full_aggregate": {
+      "passed_gates": 11,
+      "black_files": 258,
+      "python_passed": 1800,
+      "python_skipped": 24,
+      "data_passed": 94,
+      "web_passed": 257,
+      "web_skipped": 3
+    },
+    "business_writes_verified": [
+      "Listings availability with real regular session",
+      "Search wanted create/edit with real regular session",
+      "Search wanted create with real temporary session"
+    ],
+    "denials_verified": [
+      "missing CSRF",
+      "cookie changes between preflight and write",
+      "temporary seller operation",
+      "post-logout preflight prevents business write"
+    ],
+    "real_postgresql_schema": "owned disposable PostgreSQL18.6;17migrations",
+    "live_providers_or_real_rds": false,
+    "browser_device_acceptance": false,
+    "full_step14_matrix": false,
+    "gitleaks": "passed"
+  },
+  "logs": [
+    "/tmp/clip-id-ready-csrf-check.log",
+    "/tmp/clip-id-ready-csrf-web-check.log",
+    "/tmp/clip-id-ready-csrf-http.log",
+    "/tmp/clip-id-ready-csrf-http-node.log",
+    "/tmp/clip-id-ready-csrf-api.log",
+    "/tmp/clip-id-ready-csrf-types.log"
+  ],
+  "pending": [
+    "human result verification",
+    "Suraj/Mohit adapter and demo fixture review",
+    "independent peer/current hosted CI",
+    "latest AMD64/Hybrid image rebuild and deployed schema/role/permissions/proxy/provider/browser/retention acceptance"
+  ],
+  "external_actions": {
+    "aws_resource_api": false,
+    "secret_read": false,
+    "real_provider_send": false,
+    "push": false,
+    "deploy": false,
+    "teammate_message": false
+  }
+}

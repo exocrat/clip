@@ -60,10 +60,10 @@ describe('Identity UI with controlled reviewed HTTP results', () => {
     const calls: { path: string; init: RequestInit }[] = [];
     mockApi((path, init) => {
       calls.push({ path, init });
-      if (path === '/me') return response({}, 401);
-      if (path === '/auth/csrf') return response({ csrf_token: 'synthetic-csrf-value' });
-      if (path === '/auth/session') return response(null, 204);
-      if (path === '/auth/temporary/accounts') return response(session, 201);
+      if (path === '/api/me') return response({}, 401);
+      if (path === '/api/auth/csrf') return response({ csrf_token: 'c'.repeat(64) });
+      if (path === '/api/auth/session') return response(null, 204);
+      if (path === '/api/auth/temporary/accounts') return response(session, 201);
       return response(challenge, 202);
     });
     const user = userEvent.setup();
@@ -92,9 +92,9 @@ describe('Identity UI with controlled reviewed HTTP results', () => {
     });
     await user.click(screen.getByRole('button', { name: 'Sign out' }));
     await screen.findByRole('heading', { name: 'Welcome back' });
-    expect(calls.find((row) => row.path === '/auth/session')?.init.headers).toEqual({
-      'X-CLIP-Request': '1',
-      'X-CSRF-Token': 'synthetic-csrf-value',
+    expect(Object.fromEntries(new Headers(calls.find((row) => row.path === '/api/auth/session')?.init.headers))).toEqual({
+      'x-clip-request': '1',
+      'x-csrf-token': 'c'.repeat(64),
     });
     expect(screen.getByLabelText('Password').getAttribute('value')).toBe('');
   });
@@ -102,7 +102,7 @@ describe('Identity UI with controlled reviewed HTTP results', () => {
   it('retains operation ID after uncertain challenge outcome without automatic resend', async () => {
     const operations: string[] = [];
     mockApi((path, init) => {
-      if (path === '/me') return response({}, 401);
+      if (path === '/api/me') return response({}, 401);
       operations.push(JSON.parse(String(init.body)).operation_id);
       if (operations.length === 1) throw new Error('PRIVATE_TRANSPORT_DETAIL');
       return response(challenge, 202);
@@ -125,7 +125,7 @@ describe('Identity UI with controlled reviewed HTTP results', () => {
     'shows safe %s failure without echoing dependency input',
     async (status) => {
       mockApi((path) =>
-        response({ private: 'PRIVATE_DEPENDENCY_PAYLOAD' }, path === '/me' ? 401 : status),
+        response({ private: 'PRIVATE_DEPENDENCY_PAYLOAD' }, path === '/api/me' ? 401 : status),
       );
       const user = userEvent.setup();
       view();
@@ -142,7 +142,7 @@ describe('Identity UI with controlled reviewed HTTP results', () => {
   it('ignores duplicate form submissions while credential exchange is pending', async () => {
     let complete: ((value: Response) => void) | undefined;
     const fetcher = mockApi((path) =>
-      path === '/me'
+      path === '/api/me'
         ? response({}, 401)
         : new Promise<Response>((resolve) => {
             complete = resolve;
@@ -273,9 +273,9 @@ describe('Temporary password recovery', () => {
     const calls: { path: string; body: unknown }[] = [];
     mockApi((path, init) => {
       calls.push({ path, body: init.body ? JSON.parse(String(init.body)) : undefined });
-      if (path === '/me') return response({}, 401);
-      if (path === '/auth/temporary/password-reset-challenges') return response(challenge, 202);
-      if (path === '/auth/temporary/password-resets') return response(null, 204);
+      if (path === '/api/me') return response({}, 401);
+      if (path === '/api/auth/temporary/password-reset-challenges') return response(challenge, 202);
+      if (path === '/api/auth/temporary/password-resets') return response(null, 204);
       return response(session);
     });
     const user = await resetForm();
@@ -305,7 +305,7 @@ describe('Temporary password recovery', () => {
   it('does not resubmit an uncertain reset and guides login with the new password', async () => {
     let attempts = 0;
     mockApi((path) => {
-      if (path === '/me') return response({}, 401);
+      if (path === '/api/me') return response({}, 401);
       if (path.endsWith('/password-reset-challenges')) return response(challenge, 202);
       attempts++;
       throw new Error('PRIVATE_RESET_DEPENDENCY');
@@ -324,7 +324,7 @@ describe('Temporary password recovery', () => {
 
   it.each([422, 429, 503])('retains a safe reset screen after status %s', async (status) => {
     mockApi((path) =>
-      path === '/me'
+      path === '/api/me'
         ? response({}, 401)
         : path.endsWith('/password-reset-challenges')
           ? response(challenge, 202)
@@ -342,7 +342,7 @@ describe('Temporary password recovery', () => {
 
   it('blocks an expired challenge without submitting a reset', async () => {
     const fetcher = mockApi((path) =>
-      path === '/me'
+      path === '/api/me'
         ? response({}, 401)
         : response({ ...challenge, expires_at: '2000-01-01T00:00:00.000000Z' }, 202),
     );
@@ -357,7 +357,7 @@ describe('Temporary password recovery', () => {
   it('counts Unicode password code points without truncating astral characters', async () => {
     const requests: unknown[] = [];
     mockApi((path, init) => {
-      if (path === '/me') return response({}, 401);
+      if (path === '/api/me') return response({}, 401);
       if (path.endsWith('/password-reset-challenges')) return response(challenge, 202);
       requests.push(JSON.parse(String(init.body)));
       return response(null, 204);
@@ -377,7 +377,7 @@ describe('Temporary password recovery', () => {
   });
 
   it('changing reset email stays in recovery and clears prior code/password', async () => {
-    mockApi((path) => (path === '/me' ? response({}, 401) : response(challenge, 202)));
+    mockApi((path) => (path === '/api/me' ? response({}, 401) : response(challenge, 202)));
     const user = await resetForm();
     await user.type(screen.getByLabelText('Verification code'), '654321');
     await user.type(screen.getByLabelText('New password'), 'resetPwd');

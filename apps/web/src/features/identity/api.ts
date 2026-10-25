@@ -1,3 +1,4 @@
+import { sessionFetch, SessionFetchError } from '../../shared/http/sessionFetch';
 import type {
   ActivateTemporaryRequestWritable,
   ChallengeAccepted,
@@ -65,34 +66,20 @@ export async function request(
   body?: unknown,
   protectedWrite = false,
 ): Promise<unknown> {
-  const headers: Record<string, string> = {};
-  if (method !== 'GET') {
-    headers['X-CLIP-Request'] = '1';
-    if (body !== undefined) headers['Content-Type'] = 'application/json';
-    if (protectedWrite) {
-      const csrf = (await request('/auth/csrf')) as { csrf_token?: unknown };
-      if (typeof csrf?.csrf_token !== 'string') throw new IdentityError(503);
-      headers['X-CSRF-Token'] = csrf.csrf_token;
-    }
-  }
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 10_000);
   try {
-    const response = await fetch(path, {
+    const response = await sessionFetch(path, {
       method,
-      headers,
-      credentials: 'same-origin',
-      cache: 'no-store',
-      signal: controller.signal,
-      ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+      ...(body !== undefined ? { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {}),
+    }, {
+      prefix: import.meta.env.MODE === 'identity-preview' ? '' : '/api',
+      publicAuthentication: !protectedWrite,
     });
     if (!response.ok) throw new IdentityError(response.status);
     return response.status === 204 ? undefined : await response.json();
   } catch (error) {
     if (error instanceof IdentityError) throw error;
+    if (error instanceof SessionFetchError) throw new IdentityError(error.status, error.mutationDispatched);
     throw new IdentityError(503, method !== 'GET');
-  } finally {
-    clearTimeout(timeout);
   }
 }
 

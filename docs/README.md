@@ -86,3 +86,4 @@ Pipeline bootstrap: [explicit target-bound status, preparation, queueing and act
 
 Search load preparation: [local k6 runner and limits](../scripts/evaluation/k6/README.md), [versioned workloads](../data/evaluation/workloads/README.md).
 - [Shared API RDS system trust](decisions/identity-rds-system-trust.md)
+- [Shared browser cookie/CSRF transport](decisions/browser-session-transport.md)

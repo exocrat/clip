@@ -13,6 +13,7 @@ from psycopg.rows import dict_row
 from psycopg_pool import AsyncConnectionPool
 
 from app.contracts.health import CONTRACT_VERSION, HEALTH_ROUTE, HealthResponse
+from app.contracts.domain_types import CsrfToken
 from app.core.auth import require_caller
 from app.core.config import ConfigurationError, Settings, load_settings
 from app.core.errors import install_error_handlers
@@ -177,6 +178,21 @@ def create_app(
     if identity is not None:
         install_identity_http(app, identity)
     app.add_middleware(RequestLoggingMiddleware)
+
+    if settings.isolated_listings_test_caller:
+        # Existing public synthetic-only demo: never enabled alongside real
+        # Identity bindings or production settings. This is not a real session.
+        from fastapi import Response
+
+        @app.get(
+            ("/api" if settings.serve_web_app else "") + "/auth/csrf",
+            response_model=CsrfToken,
+            include_in_schema=False,
+        )
+        def isolated_csrf(response: Response) -> CsrfToken:
+            """Support the shared browser transport only in the guarded demo profile."""
+            response.headers["Cache-Control"] = "no-store"
+            return CsrfToken(csrf_token="isolated-demo-csrf-" + "0" * 46)
 
     @app.get(**HEALTH_ROUTE)
     async def health() -> HealthResponse:

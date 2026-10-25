@@ -1,3 +1,4 @@
+import { withCsrf } from './helpers/csrf';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ListingsApiError, uploadListingImage } from '../src/features/listings/listingsApi';
 
@@ -81,7 +82,7 @@ describe('Listings photo upload HTTP flow', () => {
     const fetch = vi.fn()
       .mockResolvedValueOnce(response(intent(), 201))
       .mockResolvedValueOnce(response({ upload_id: uploadId, media_type: 'image/png', size_bytes: fileBytes.size }));
-    vi.stubGlobal('fetch', fetch);
+    vi.stubGlobal('fetch', withCsrf(fetch));
     FakeXMLHttpRequest.statuses = [204];
     const progress: number[] = [];
     const intentIds: string[] = [];
@@ -109,7 +110,7 @@ describe('Listings photo upload HTTP flow', () => {
       .mockResolvedValueOnce(response(intent(), 201))
       .mockResolvedValueOnce(response({}, 503))
       .mockResolvedValueOnce(response({ upload_id: uploadId, media_type: 'image/png', size_bytes: fileBytes.size }));
-    vi.stubGlobal('fetch', fetch);
+    vi.stubGlobal('fetch', withCsrf(fetch));
     FakeXMLHttpRequest.statuses = [204];
     const onIntent = vi.fn();
 
@@ -134,7 +135,7 @@ describe('Listings photo upload HTTP flow', () => {
       .mockResolvedValueOnce(response(intent(), 201))
       .mockResolvedValueOnce(response(intent('https://private-storage.invalid/renewed'), 201))
       .mockResolvedValueOnce(response({ upload_id: uploadId, media_type: 'image/png', size_bytes: fileBytes.size }));
-    vi.stubGlobal('fetch', fetch);
+    vi.stubGlobal('fetch', withCsrf(fetch));
     FakeXMLHttpRequest.statuses = [403, 204];
 
     const confirmed = await uploadListingImage(fileBytes, operationId, vi.fn(), vi.fn());
@@ -152,7 +153,7 @@ describe('Listings photo upload HTTP flow', () => {
     const fetch = vi.fn()
       .mockResolvedValueOnce(response(intent(), 201))
       .mockResolvedValueOnce(response({ upload_id: uploadId, media_type: 'image/png', size_bytes: fileBytes.size }));
-    vi.stubGlobal('fetch', fetch);
+    vi.stubGlobal('fetch', withCsrf(fetch));
     FakeXMLHttpRequest.statuses = [412];
 
     await expect(uploadListingImage(fileBytes, operationId, vi.fn(), vi.fn()))
@@ -168,7 +169,7 @@ describe('Listings photo upload HTTP flow', () => {
       .mockResolvedValueOnce(response({}, 404))
       .mockResolvedValueOnce(response(intent(), 201))
       .mockResolvedValueOnce(response({ upload_id: uploadId, media_type: 'image/png', size_bytes: fileBytes.size }));
-    vi.stubGlobal('fetch', fetch);
+    vi.stubGlobal('fetch', withCsrf(fetch));
     FakeXMLHttpRequest.statuses = [204];
 
     await expect(uploadListingImage(fileBytes, operationId, vi.fn(), vi.fn(), uploadId))
@@ -181,7 +182,7 @@ describe('Listings photo upload HTTP flow', () => {
 
   it('does not automatically repeat a rejected byte upload', async () => {
     const fetch = vi.fn().mockResolvedValueOnce(response(intent(), 201));
-    vi.stubGlobal('fetch', fetch);
+    vi.stubGlobal('fetch', withCsrf(fetch));
     FakeXMLHttpRequest.statuses = [500];
 
     await expect(uploadListingImage(fileBytes, operationId, vi.fn(), vi.fn()))

@@ -1795,3 +1795,32 @@ Without CLIP_IDENTITY_TEST_IMAGE the three actual-image checks skip explicitly;
 make check still runs the public-certificate integrity check. Explicit image
 verification is required for this checkpoint. ARM64 success does not establish
 AMD64/Hybrid or deployed RDS acceptance; retain those separate evidence/approval gates.
+
+### Shared browser CSRF transport — ID-01 Step12
+
+`npm run check` runs shared transport and feature tests, types/lint and build.
+Focused: `npm test -- session-fetch.test.ts listings-api.test.ts listings-image-api.test.ts wanted-api.test.ts`.
+The focused helpers use reviewed synthetic CSRF responses; no provider/network
+access. Public auth endpoints still require the marker, protected writes require
+successful fresh CSRF, no automatic transport retry is added, and upload bytes
+use their existing separate S3 transport.
+
+Actual local TypeScript/HTTP/SQL verification:
+
+```bash
+uv run --locked pytest apps/api/tests/domains/identity/test_browser_transport.py -q -W error
+uv run --locked pytest apps/api/tests/domains/identity/test_browser_csrf_fixtures.py -q -W error
+```
+
+Requires locked Python/Node dependencies and local Docker, using only owned
+disposable PostgreSQL. The first command starts one loopback ephemeral HTTP port,
+uses the real shared app/cookie/CSRF/domain SQL and runs the actual TS adapters in
+Vitest. Only signing/mail/image metadata and browser Origin/cookie/proxy handling
+are synthetic. No public test-auth/OTP-inbox endpoint, live provider/send/secret or
+cloud target is used. It cleans its server/socket/container and redacts transient
+synthetic cookies in /tmp/clip-id-ready-csrf-http-node.log. The standalone JS HTTP
+case skips unless the Python owner supplies CLIP_IDENTITY_TRANSPORT_HTTP privately;
+never supply a real cookie or retained/hosted target. Ordinary npm checks skip it.
+This automation is not actual browser/device, deployment or full Step14 evidence.
+The second command proves normal/production runtime exposes no synthetic CSRF
+route and existing isolated local/hosted profiles retain their transport gates.

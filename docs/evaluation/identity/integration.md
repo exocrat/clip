@@ -1262,3 +1262,75 @@ and final ID-READY acceptance are still pending. Current migration review packag
 remains locally consistent/ready_for_live:false. Source/docs links/whitespace pass.
 Owned test containers/build contexts were cleaned; the local image remains for
 review. See the artifact for exact source hashes, image ID, logs and pending gates.
+
+
+## Shared browser transport result — 2026-10-25 19:00:23 UTC
+
+Aditya verified the previous local image checkpoint and authorized this described
+CSRF integration. A reserved the bounded helper/adapter/demo scope; remote main
+remained6c86060 with no open PRs at inspection. No new task-definition gap: the
+reviewed cookie/CSRF contract covers the required operations. The local audit found
+normal Identity unprefixed requests missed Vite's /api proxy, and isolated demos
+needed a reviewed CSRF response double. Both are handled without client fallback
+or private-feature imports. Suraj/Mohit retain ownership and review of their narrow
+adapter/test-fixture changes. [Decision](../../decisions/browser-session-transport.md),
+[exact source/check evidence](id-01-step-12/browser-transport-local.json).
+
+Changed implementation and its relationships:
+
+- `shared/http/sessionFetch.ts` supplies the technical HTTP layer: same-origin
+  credentials/mode, no-store, redirect refusal, safe rooted paths, ten-second
+  linked cancellation through complete JSON receipt, marker and fresh protected
+  CSRF preflight. Failed/malformed token responses prevent the write; no cache,
+  persistent storage or automatic replay. Only seven reviewed public auth writes
+  omit CSRF; a read-only parity audit matches the actual middleware's list.
+- Identity `api.ts` delegates to it, retains its validators/safe uncertainty state,
+  uses /api normally and unprefixed explicit Identity preview. The shared deadline
+  replaces its duplicate timer. Microsoft callback page/origin/build guards stay.
+- Listings `listingsApi.ts` and Search `wantedApi.ts` change only transport calls
+  and safe error mapping. Listings preserves all RequestInit header forms. Business
+  schemas, class/resource checks, component/public exports, operation keys and
+  existing owner-controlled idempotent upload retry behavior stay. S3 bytes still
+  use the separate XHR and only server-required presigned headers.
+- Shared `application.py` exposes a CSRF response double only in the already-guarded
+  dedicated synthetic Listings profile. It precedes hosted SPA fallback. Normal
+  and production profiles gain no synthetic endpoint; real Identity cannot coexist
+  with the demo caller. Existing local Listings/Search browser harnesses install
+  the test-owned `browser_csrf_fixtures.py` helper under their existing transport
+  guards. Nothing imports that helper into normal/production startup.
+- New shared/helper tests and narrow existing fixture updates separate valid CSRF
+  preflight responses from unchanged feature payload/validator assertions. Native
+  Headers/linked signals replace old representation-identity expectations, while
+  explicit cancellation/header tests verify the behavior. Existing Identity UI
+  fixture routes now match the actual normal /api prefix and valid token lengths.
+
+Actual `test_browser_transport.py` starts one owned loopback HTTP server over real
+17-migration PostgreSQL and runs the actual TS adapters via session-fetch-http.test.ts.
+Real Identity sessions/CSRF and domain services authorize regular Listings
+availability, regular Wanted create/edit and temporary Wanted create; missing
+CSRF, cross-session token race and temporary seller requests deny, and logout
+prevents the next business write at preflight. SQL confirms exactly two requests
+and one availability revision change. Signing/mail/image metadata and browser
+Origin/cookie/proxy handling are synthetic; there is no public test-auth/OTP-inbox
+route. Initial seed/assertion errors were corrected to canonical atomic publication,
+24hour upload lifetime and public ListingDetail (revision checked in SQL instead).
+No published migration, business constraint or response schema was relaxed.
+
+Checks passed:32shared transport cases;22demo/existing composition cases;
+actual TS/HTTP/SQL test; strict mypy2modules; full make check all11gates,
+Black258files,1800Python/24skipped,94data,257web/3skipped, current contracts,
+boundaries, build, real PostgreSQL lifecycle and Gitleaks. One normal web skip is
+this privately configured HTTP test, which runs and passes inside the Python gate;
+the other two are existing native Search opt-ins. Physical browser/device, live
+provider/proxy/deployment and full Step14 acceptance are not claimed. Owned server/
+socket/containers are cleaned and transient synthetic cookies are redacted in logs.
+
+Applicable checklist review: shared paths reserved, reviewed contract maintained,
+no cross-feature private import, source/data privacy and no fake default activation,
+source/command/evidence docs updated, all applicable local checks performed.
+Current app images must be rebuilt from the latest reviewed source before live
+use; the earlier ARM64 CA image is evidence for its pinned source, not this new UI.
+AMD64/Hybrid, real schema/login/URL/IAM/proxy/provider/browser/retention and human/
+peer/CI/authorized merge gates still prevent ID-READY completion. No cloud resource
+API, secret lookup, send, teammate message, push or deployment. Result awaits human
+verification; no further numbered checkpoint is started.

@@ -350,3 +350,17 @@ against the running disposable harness. Default `npm run check` skips its two
 network tests; unit/initial-render tests still run. This does not exercise React
 effects or replace human browser/device checks. See the command registry and
 `docs/evaluation/domain/se-02/frontend/README.md` for the exact review package.
+
+### Shared cookie and CSRF transport
+
+Identity, Listings and Wanted/Saved API wrappers use shared/http/sessionFetch.ts.
+Protected writes obtain a fresh session token before dispatch and carry the
+required marker/CSRF headers. Failure stops that request; the transport never
+replays it or stores a token. Feature validators and existing owner-controlled
+idempotency/retry behavior remain separate. The shared helper targets same-origin
+JSON/204 APIs only; presigned S3 byte uploads are unchanged.
+Normal Identity uses /api through the existing proxy; explicit Identity preview
+retains its unprefixed path/build guard. Existing isolated demos supply the
+reviewed CSRF response double under their own guards, not a client bypass.
+See the [decision](../../docs/decisions/browser-session-transport.md) and current
+[Identity integration evidence](../../docs/evaluation/identity/integration.md).

@@ -334,6 +334,20 @@ hostname/unknown-CA refusal; all148distribution roots remain. See
 review, AMD64/Hybrid proof and real deployed RDS checks remain pending; no apply
 or publication is authorized. Source pins must be refreshed for the final PR.
 
+### Prepared shared browser transport — 2026-10-25 19:00:23 UTC
+
+The previously identified Listings/Search browser-header gap is now corrected
+locally, outside this file's earlier source snapshot: both narrow adapters use
+shared/http/sessionFetch.ts; Identity uses the same helper and normal /api route.
+Fresh protected CSRF, marker/no-store/same-origin and no automatic transport retry;
+feature payloads/validators/operation keys/S3 bytes unchanged. Existing isolated
+demos supply only a guarded contract double, never a client-side bypass.
+[Actual TS/HTTP/SQL evidence](id-01-step-12/browser-transport-local.json) covers real
+cookie-authorized writes and missing/stale/temporary/logout denials. Suraj/Mohit
+review the bounded adapters/demo fixtures; Rahul remains the primary Identity peer.
+This closes the local transport gap, not real browser/provider/ID-READY acceptance.
+Final PR source pins must include these subsequent changes.
+
 ## 9. Evidence and requested review outcome
 
 Latest source-identical full gate: **1791Python passed,21skipped,

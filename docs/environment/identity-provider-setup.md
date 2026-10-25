@@ -120,3 +120,13 @@ bundled libpq to the installed OS CA file. See the
 [explicit local checks](commands.md#api-image-rds-root-trust--id-01-step12).
 This does not enable authentication or prove AMD64/Hybrid/deployed TLS readiness;
 real runtime configuration, permissions and browser/provider acceptance remain pending.
+
+## Browser transport integration
+
+Shared cookie/CSRF transport now connects Identity and marketplace wrappers locally;
+normal Identity uses /api, with unprefixed routing only in its explicit preview.
+Protected writes fail before dispatch when fresh preflight fails; no client demo
+bypass or automatic transport replay. See the
+[decision](../decisions/browser-session-transport.md) and
+[actual local integration result](../evaluation/identity/integration.md#shared-browser-transport-result--2026-10-25-190023-utc).
+Real provider/browser/proxy configuration and current image deployment remain gated.

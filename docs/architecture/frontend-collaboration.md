@@ -362,3 +362,17 @@ awaits human verification. No other feature private implementation is imported.
 Mohit (C) is the current writer for Search composition in `ScaffoldPages.tsx`: Wanted discovery, My Wanted Requests, Saved Listings, Wanted detail and the existing ListingDetail save-action child slot. Search public components consume reviewed HTTP contracts, including Identity `GET /me`; other feature internals, routes and shared shell are outside this reservation. Human authorized Step7; release after implementation checks.
 
 Reservation released 2026-10-25 08:26:59 UTC after local checks. Search public components now fill the reserved slots using reviewed HTTP types; no other feature internals/routes changed. Browser verification and actual-provider integration remain pending.
+
+### ID-01 Step12 shared HTTP integration — 2026-10-25
+
+Aditya(A) is the bounded integration writer for shared/http/sessionFetch.ts,
+Identity's adapter and transport-only adoption in Listings listingsApi.ts and
+Search wantedApi.ts. Suraj/Mohit keep feature ownership and review these changes;
+no page composition, public component export, UI behavior or business payload is
+reassigned. Feature validators/status text/operation keys stay local. No feature
+imports Identity-private code. Presigned upload bytes remain outside this helper.
+Normal Identity uses the existing /api proxy; only explicit Identity preview uses
+unprefixed routes. Existing isolated harnesses implement the reviewed CSRF response
+as test doubles instead of introducing a client-side fallback. See the
+[shared session transport decision](../decisions/browser-session-transport.md).
+Human browser/device and real runtime/provider checks remain separate.

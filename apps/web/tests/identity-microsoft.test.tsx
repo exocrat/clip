@@ -86,12 +86,13 @@ describe('Microsoft redirect controller with a controlled SDK port', () => {
     window.history.replaceState(null, '', '/sign-in');
     const controller = await flow();
     await controller.beginMicrosoft();
-    expect(fetch.mock.calls.map((row) => row[0])).toEqual(['/auth/microsoft/login-attempts']);
+    expect(fetch.mock.calls.map((row) => row[0])).toEqual(['/api/auth/microsoft/login-attempts']);
     expect(fetch.mock.calls[0][1]).toMatchObject({
       method: 'POST',
       credentials: 'same-origin',
-      headers: { 'X-CLIP-Request': '1' },
+      headers: expect.any(Headers),
     });
+    expect(new Headers(fetch.mock.calls[0][1].headers).get('X-CLIP-Request')).toBe('1');
     expect(mocks.configurations[0]).toMatchObject({
       auth: {
         clientId: controller.MICROSOFT_CLIENT_ID,
@@ -194,7 +195,7 @@ describe('Microsoft redirect controller with a controlled SDK port', () => {
     expect(mocks.handle).toHaveBeenCalledTimes(1);
     expect(mocks.handle).toHaveBeenCalledWith({ navigateToLoginRequestUrl: false });
     expect(fetch).toHaveBeenCalledTimes(1);
-    expect(fetch.mock.calls[0][0]).toBe('/auth/microsoft/sessions');
+    expect(fetch.mock.calls[0][0]).toBe('/api/auth/microsoft/sessions');
     expect(JSON.parse(String(fetch.mock.calls[0][1].body))).toEqual({ id_token: assertion });
     expect(mocks.clear).toHaveBeenCalledTimes(2);
     expect(sessionStorage.getItem(controller.MICROSOFT_ATTEMPT_KEY)).toBeNull();
@@ -291,7 +292,7 @@ describe('Microsoft redirect controller with a controlled SDK port', () => {
 describe('Microsoft callback UI', () => {
   it('handles StrictMode with one exchange and no displayed claims/assertions', async () => {
     marker();
-    fetcher((path) => (path === '/me' ? response({}, 401) : response(view)));
+    fetcher((path) => (path === '/api/me' ? response({}, 401) : response(view)));
     const { IdentityProvider, MicrosoftCallback } = await import('../src/features/identity');
     render(
       <StrictMode>
@@ -313,7 +314,7 @@ describe('Microsoft callback UI', () => {
     let checking = false;
     let posts = 0;
     fetcher((path) => {
-      if (path === '/me') return checking ? response(view) : response({}, 401);
+      if (path === '/api/me') return checking ? response(view) : response({}, 401);
       posts++;
       throw new Error('PRIVATE_EXCHANGE_FAILURE');
     });
@@ -402,7 +403,7 @@ describe('Microsoft recovery and cleanup failures', () => {
     await expect(controller.beginMicrosoft()).rejects.toMatchObject({ code: 'failed' });
     finish?.(sdkResult());
     await completing;
-    expect(fetch.mock.calls.map((row) => row[0])).toEqual(['/auth/microsoft/sessions']);
+    expect(fetch.mock.calls.map((row) => row[0])).toEqual(['/api/auth/microsoft/sessions']);
   });
 
   it('cannot revive a session when recovery completes after logout', async () => {

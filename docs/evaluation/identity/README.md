@@ -91,3 +91,12 @@ regressions passed; all11aggregate gates passed (1792Python/24skip,94data,
 223web/2skip). [Evidence/limits](id-01-step-12/image-trust-local.json) and
 [implementation result](integration.md#rds-image-trust-correction--2026-10-25-180039-utc).
 AMD64/Hybrid and live TLS/peer/provider/browser/retention gates remain pending.
+
+## Shared browser transport — 2026-10-25 19:00:23 UTC
+
+Local Listings/Search CSRF headers and normal Identity /api routing are integrated
+through one shared technical helper. Full11gates passed:1800Python/24skip,
+94data,257web/3skip. Real TS/HTTP/SQL writes/denials passed with synthetic upstream
+ports; no actual browser/device/provider acceptance. [Result](integration.md#shared-browser-transport-result--2026-10-25-190023-utc)
+and [exact source/check evidence](id-01-step-12/browser-transport-local.json).
+Affected-owner/human verification and current deployed/runtime/image gates remain.

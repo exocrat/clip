@@ -208,6 +208,9 @@ def create_demo_app(
         prefix = "/api"
     else:
         prefix = ""
+    from apps.api.tests.domains.identity.browser_csrf_fixtures import install_demo_csrf
+
+    install_demo_csrf(application, prefix)
     for feature_router in (router, wanted_router, saved_router):
         application.include_router(feature_router, prefix=prefix)
 

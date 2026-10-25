@@ -1,3 +1,4 @@
+import { sessionFetch, SessionFetchError } from '../../shared/http/sessionFetch';
 import type {
   ConversationStartResult,
   CreateWantedRequest,
@@ -92,7 +93,7 @@ async function request<T>(
   body?: unknown,
 ): Promise<T> {
   try {
-    const response = await fetch(`/api${path}`, {
+    const response = await sessionFetch(path, {
       method,
       signal,
       credentials: 'same-origin',
@@ -112,7 +113,7 @@ async function request<T>(
     return value as T;
   } catch (error) {
     if (signal.aborted || error instanceof WantedApiError) throw error;
-    throw new WantedApiError(0);
+    throw new WantedApiError(error instanceof SessionFetchError ? error.status : 0);
   }
 }
 /** Refuse wrong-page, duplicate and impossible lookahead data rather than mixing private pages. */
