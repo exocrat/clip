@@ -114,6 +114,46 @@ def test_capacity_failure_with_partial_database_stops_fallback(
     assert baseline["rds_capacity_unavailable_zones"] == []
 
 
+def test_exact_missing_li02_capacity_provider_is_treated_as_empty(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """AWS's exact not-found response means the dedicated runtime is not created yet."""
+    driver = load_driver()
+    monkeypatch.setattr(
+        driver,
+        "aws_json",
+        lambda *_args, **_kwargs: {
+            "capacityProviders": [],
+            "failures": [
+                {
+                    "arn": driver.CAPACITY_PROVIDER,
+                    "reason": "The specified capacity provider does not exist. Specify a valid name or ARN and try again.",
+                }
+            ],
+        },
+    )
+
+    assert driver.li02_capacity_group("surajs2") is None
+
+
+def test_unrelated_capacity_provider_failure_is_not_treated_as_empty(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """An unexpected AWS failure must stop rather than assume the runtime is absent."""
+    driver = load_driver()
+    monkeypatch.setattr(
+        driver,
+        "aws_json",
+        lambda *_args, **_kwargs: {
+            "capacityProviders": [],
+            "failures": [{"arn": driver.CAPACITY_PROVIDER, "reason": "ACCESS_DENIED"}],
+        },
+    )
+
+    with pytest.raises(driver.DemoError, match="Could not identify exactly"):
+        driver.li02_capacity_group("surajs2")
+
+
 def test_saved_plan_apply_classifies_only_explicit_rds_capacity_error(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:

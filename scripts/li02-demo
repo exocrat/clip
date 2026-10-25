@@ -379,8 +379,13 @@ def li02_capacity_group(profile: str) -> dict[str, Any] | None:
         CAPACITY_PROVIDER,
     )
     providers = result.get("capacityProviders", [])
-    if not providers and result.get("failures"):
-        if all(item.get("reason") == "MISSING" for item in result["failures"]):
+    failures = result.get("failures", [])
+    if not providers and len(failures) == 1:
+        failure = failures[0]
+        reason = str(failure.get("reason", "")).lower()
+        if failure.get("arn") == CAPACITY_PROVIDER and (
+            failure.get("reason") == "MISSING" or "does not exist" in reason
+        ):
             return None
     if len(providers) != 1:
         raise DemoError("Could not identify exactly the LI-02 ECS capacity provider.")
