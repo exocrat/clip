@@ -111,3 +111,12 @@ Offline checks and effects are registered in
 [commands](commands.md#identity-provider-offline-checks--id-01-step-2).
 Historical image/task/plan manifests and diagnostic scripts remain under
 [retained artifacts](../evaluation/identity/provider-history.md#retained-artifacts).
+
+## API image database trust
+
+The local image correction vendors the official public regional roots and directs
+bundled libpq to the installed OS CA file. See the
+[trust decision](../decisions/identity-rds-system-trust.md) and
+[explicit local checks](commands.md#api-image-rds-root-trust--id-01-step12).
+This does not enable authentication or prove AMD64/Hybrid/deployed TLS readiness;
+real runtime configuration, permissions and browser/provider acceptance remain pending.

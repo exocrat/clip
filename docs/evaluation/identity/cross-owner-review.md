@@ -320,6 +320,20 @@ by the probe, while app TLS requires system roots. See the
 Shared Dockerfile remains unchanged; reserve/review that bounded change after
 upstream integration before claiming image/runtime TLS acceptance.
 
+### Prepared shared image correction — 2026-10-25 18:00:39 UTC
+
+A subsequent local change (outside the earlier source snapshot at this file's
+header) addresses the trust finding: apps/api/Dockerfile installs pinned public
+regional roots and explicitly selects the standard OS CA file for bundled libpq.
+This affects system-root TLS clients across the ordinary image; Hybrid inherits
+only from a corrected parent. No provider/URI/hostname policy change. Four actual
+native ARM64 image checks pass, including real synthetic TLS success and wrong-
+hostname/unknown-CA refusal; all148distribution roots remain. See
+[exact source/image/check evidence](id-01-step-12/image-trust-local.json) and the
+[shared decision](../../decisions/identity-rds-system-trust.md). B/C/shared image
+review, AMD64/Hybrid proof and real deployed RDS checks remain pending; no apply
+or publication is authorized. Source pins must be refreshed for the final PR.
+
 ## 9. Evidence and requested review outcome
 
 Latest source-identical full gate: **1791Python passed,21skipped,

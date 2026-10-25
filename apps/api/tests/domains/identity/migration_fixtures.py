@@ -167,6 +167,8 @@ def tls_database(tmp_path_factory, request):
             ca=root / "ca.pem",
             image=image,
             docker=docker,
+            # Explicit image checks may share only this owned TLS network namespace.
+            container=container,
         )
     finally:
         if container:

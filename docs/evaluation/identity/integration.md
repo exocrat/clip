@@ -1203,3 +1203,62 @@ that merged implementation with accepted main and refreshes its source inventory
 current test counts and newly visible Search browser-CSRF follow-up. This metadata
 refresh changes no code and is not reviewer acceptance. Full checks cited above
 remain valid for the identical implementation. No push or PR/cloud action.
+
+
+## RDS image trust correction — 2026-10-25 18:00:39 UTC
+
+Aditya authorized this Step12 checkpoint; A reserved the shared Dockerfile scope
+and found no open PR/current shared-writer conflict (remote main6c86060 unchanged).
+No task-definition gap: this implements the existing verify-full/system runtime
+requirement, not a provider/URI/security-policy redesign. Peer/affected-owner and
+human result verification remain pending. [Shared decision](../../decisions/identity-rds-system-trust.md),
+[public roots/provenance](../../../apps/api/app/domains/identity/certificates/README.md),
+and [sanitized image/check evidence](id-01-step-12/image-trust-local.json).
+
+Changed code/configuration:
+
+- `apps/api/Dockerfile` installs three pinned official regional roots before USER,
+  preserving distribution CAs. It sets SSL_CERT_FILE to the installed standard
+  `/etc/ssl/certs/ca-certificates.crt`; verify-full/system and application startup
+  controls remain. No CA download occurs during build.
+- Identity's certificates directory contains three public self-signed CA .crt
+  files and a manifest with official HTTPS source, complete-bundle/file/DER SHA,
+  subjects and validity. No intermediate, server, synthetic certificate or private
+  key is included. Certificate README describes update/review and inheritance.
+- `test_image_trust.py` verifies cryptographic pins/purpose/expiry and the actual
+  locally selected image: exact current fingerprints, all distribution roots,
+  non-root metadata, intended CA path, real libpq TLS/hostname behavior and default
+  health/protected API. It requires an opt-in image; ordinary aggregate runs only
+  public-data integrity and explicitly skips the three image-dependent tests.
+- `migration_fixtures.py` exposes its existing owned container handle so image
+  checks share only that disposable TLS network namespace. Existing17runner tests
+  still pass; no fixture/cloud target discovery or application code change.
+
+The initial native image added roots but bundled libpq still looked for
+`/host/tmp/libpq.build/cert.pem`, while Python used Debian's store. An earlier
+process-only test trust override had hidden that difference. A stronger test using
+the actual default file failed, exposing it. The final image explicitly chooses
+the standard OS CA file, as supported by PostgreSQL's system-root semantics.
+Final TLS proof uses the shipped setting without changing it in the test. Only a
+temporary read-only container bind mount augments that same public CA file with
+the synthetic server's root; no image/system file is mutated or synthetic root
+baked in. Valid SQL verifies, unknown CA and wrong hostname both fail. No real
+RDS connection or inference about its current leaf/CA configuration was made.
+
+Final native ARM64 image73e716fe663f:151trusted roots, including all148distribution
+roots and3regional roots; UID10001. Allowlisted178-file source-only build context
+excluded credentials/caches/tests. Optional Hybrid Dockerfile is unchanged and
+inherits the correction only from a rebuilt corrected parent. AMD64/Hybrid actual
+build/verification remains pending on suitable approved hardware; no emulation,
+VM, registry publication, AWS resource API, secret retrieval, provider send or
+cloud deployment was performed. Public CA HTTPS download alone was used.
+
+Checks passed:4explicit image tests;17existing migration-runner regressions;
+full make check all11gates, Black255files,1792Python/24skipped,94data,
+223web/2skipped, real PostgreSQL18.6 combined17file lifecycle and Gitleaks. Three of
+the aggregate Python skips are opt-in image checks that passed separately. Native
+image build and certificate/TLS behavior are real; live runtime/provider/browser
+and final ID-READY acceptance are still pending. Current migration review package
+remains locally consistent/ready_for_live:false. Source/docs links/whitespace pass.
+Owned test containers/build contexts were cleaned; the local image remains for
+review. See the artifact for exact source hashes, image ID, logs and pending gates.

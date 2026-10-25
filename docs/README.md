@@ -85,3 +85,4 @@ Embedding dispatcher: [default-off existing-job processing, limits and cleanup](
 Pipeline bootstrap: [explicit target-bound status, preparation, queueing and activation](architecture/semantic-pipeline-bootstrap.md).
 
 Search load preparation: [local k6 runner and limits](../scripts/evaluation/k6/README.md), [versioned workloads](../data/evaluation/workloads/README.md).
+- [Shared API RDS system trust](decisions/identity-rds-system-trust.md)

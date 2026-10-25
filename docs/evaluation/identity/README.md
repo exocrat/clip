@@ -82,3 +82,12 @@ main `6c86060` and both autonomous local commits. Combined17migrations through
 [Current merge paths/evidence and pending gates](integration.md#accepted-main-integration--2026-10-25-170710-utc).
 Cross-owner and migration candidate metadata now reference the merged source;
 review/image/live flags remain pending. Original worktree unchanged; no push.
+
+## Local image trust fix — 2026-10-25 18:00:39 UTC
+
+Ordinary native ARM64 image now installs pinned regional RDS roots and selects
+the actual OS CA file for bundled libpq. Four actual-image checks and17runner
+regressions passed; all11aggregate gates passed (1792Python/24skip,94data,
+223web/2skip). [Evidence/limits](id-01-step-12/image-trust-local.json) and
+[implementation result](integration.md#rds-image-trust-correction--2026-10-25-180039-utc).
+AMD64/Hybrid and live TLS/peer/provider/browser/retention gates remain pending.

@@ -361,3 +361,14 @@ Retired/pending/missing requests fail404, self403, unavailable dependencies503.
 Normal public providers remain unimplemented defaults, so no successful thread
 is fabricated. Native tests use explicit C scripts; real integration and Step7
 UI remain pending. No scheduler, resource or migration was added.
+
+## RDS system trust in the shared image
+
+The ordinary image installs pinned public ap-south-1 RDS roots alongside its
+existing distribution roots and points SSL_CERT_FILE at the standard OS CA file.
+This also corrects the bundled libpq OpenSSL wheel-build default path. Identity
+continues to require verify-full/system roots; no URI or provider setting changes.
+The optional Hybrid image inherits the corrected store from its selected parent.
+See the [shared trust decision](../../docs/decisions/identity-rds-system-trust.md)
+and [local image checks](../../docs/environment/commands.md#api-image-rds-root-trust--id-01-step12).
+AMD64/Hybrid rebuild and actual deployed RDS verification remain separate gates.

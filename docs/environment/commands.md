@@ -1148,9 +1148,9 @@ Default app.main, production rejection and synthetic preview behavior are unchan
 
 This is operator-local preparation, excluded from the production API image. It
 is not a deploy route or proof of image CA trust, actual permissions or delivery.
-The shared image currently lacks the regional RDS roots; resolve that review gate
-before expecting system-root TLS validation in its runtime. See the integration
-handoff's trust-store finding.
+The corrected local image installs regional RDS roots and selects the standard
+OS CA file; AMD64/Hybrid rebuild and real deployed TLS acceptance remain gated.
+See the image-trust checks below and integration evidence.
 
 Checks: `uv run --locked pytest apps/api/tests/domains/identity/test_runtime_command.py -q -W error`
 and `uv run --locked mypy --strict scripts/identity_runtime.py`.
@@ -1750,3 +1750,48 @@ without its flag they are skipped. It creates/closes a synthetic wanted request
 and unsaves/resaves one fixture pair, leaving the preview usable. It accepts no
 arbitrary target URL. It verifies API wiring, not actual Identity/Conversations,
 React interaction, Safari/device behavior or final SE-02 acceptance.
+
+### API image RDS root trust — ID-01 Step12
+
+The ordinary API Dockerfile installs the three vendored public ap-south-1 RDS
+roots into the existing system store. No CA download occurs during build; use the
+registered allowlisted source-only build procedure above, never the legacy
+builder's unrestricted repository context. `apps/api/app/**` includes the reviewed
+public certificate files/manifest. Build for the local native platform; publication
+for ECS still requires a reviewed linux/amd64 build and separate approval.
+The optional Hybrid image must use the newly corrected ordinary API image as its
+explicit API_IMAGE input; an old parent image retains its old trust store.
+
+Public-data integrity test (no Docker/network):
+
+```bash
+uv run --locked pytest apps/api/tests/domains/identity/test_image_trust.py::test_public_regional_roots_match_pinned_manifest_and_are_current -q -W error
+```
+
+After a local native ordinary image has been built, explicitly select its tag
+(the verifier accepts `clip-api:id-ready-rds-ca-...` tags or immutable local image
+IDs and never pulls):
+
+```bash
+CLIP_IDENTITY_TEST_IMAGE=clip-api:id-ready-rds-ca-arm64-local uv run --locked pytest apps/api/tests/domains/identity/test_image_trust.py -q -W error
+```
+
+Requires locked development dependencies, a local Unix-socket Docker daemon and
+cached PostgreSQL18.6/dbmate2.36.0 images. Verifies pinned/root-only/current X.509
+metadata, exact current root fingerprints in the image, retained distribution
+roots, non-root/default production metadata and the exact shipped
+SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt setting. A read-only
+container tests the default health/protected API without external networking.
+Another uses only the fixture-owned PostgreSQL TLS network namespace. Unknown CA
+must fail; a temporary container-only copy of the default system CA file permits actual SQL;
+a wrong hostname must still fail with verify-full/system. No real database,
+credentials, SSM/provider call, schema migration or email is used. Temporary SQL
+and image-check containers are removed; the selected image remains for review.
+The synthetic root never enters the source certificates or image layers. No
+test-only SSL_CERT_FILE/SSL_CERT_DIR or PostgreSQL TLS environment override is
+used; the test exercises the image's actual configured system CA path.
+
+Without CLIP_IDENTITY_TEST_IMAGE the three actual-image checks skip explicitly;
+make check still runs the public-certificate integrity check. Explicit image
+verification is required for this checkpoint. ARM64 success does not establish
+AMD64/Hybrid or deployed RDS acceptance; retain those separate evidence/approval gates.

@@ -47,7 +47,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PD-19 | Integration owner (current branch) | done | Steps 1–9 and combined foundation handoff complete | Steps 1–9 performed | User confirms all work before PRE-00 is complete | PR #8 merged at `2cd83e7` from head `18c966e` against base `68d9da9`; [Foundation quality gates passed](https://github.com/exocrat/clip/actions/runs/39323851584) for that exact head/base; `make test` (395 Python, 63 data, 16 web), Black, contract freshness and 10 `make check` gates passed; [handoff](foundation-handoff.md) | No open PD-19 work per user confirmation. Linux AMD64/macOS results remain user-confirmed without raw outputs. PR #8 has no submitted GitHub review; independent-review completion is user-confirmed, with no separate review artifact linked. Refresh cloud snapshot before any operation. | 2026-10-19 21:09:05 UTC |
 | PRE-00 | Integration owner | done | Foundation gate audit accepted; DL-00 is unblocked | performed | verified/accepted by user | Reviewed handoff PR #8 merged to `main` at `2cd83e7`; hosted Foundation quality gates passed for head `18c966e` against base `68d9da9` (run `39323851584`); clean-checkout evidence at `0747be6`; see [PD-19 handoff](foundation-handoff.md) | None. PR #8 has no GitHub review event; independent-review completion remains user-reported without a separate artifact. | 2026-10-19 21:20:55 UTC |
 | DL-00 | Shared-core/contract coordinator; all domains review | done | Steps 1–13 and task-wide audit complete; accepted and merged | Steps 1–13 performed; accepted by user | User confirmed full acceptance and merge on 2026-10-22 05:30:49 UTC | PR #9 merged to `main` at `f5576ef`; current `main` is `44cd8ff`; Step 13 check evidence is recorded below and was not rerun for this update | None for DL-00; cleanup implementation remains separately gated; real providers/integrations and crypto/worker implementation remain downstream | 2026-10-22 05:30:49 UTC |
-| ID-01 | A | in progress | Step12 main6c86060 merged as42e9cd9; source review package refreshed; awaiting human verification | All11gates:1791Python/21skip,94data,223web/2skip; real store21pass/3optional skip;37tables/33functions/43triggers | Aditya authorized local checkpoints/commits while AFK; cloud/live sends/other-owner changes remain gated | task/id-ready-local-hardening;42e9cd9; /tmp/clip-id-ready-main-check.log | Updated-main integration; shared Dockerfile RDS-root fix/review; real schema/login/URL/IAM/proxy/provider/device/retention/peer/CI; Step14 outside scope | 2026-10-25 17:09:30 UTC |
+| ID-01 | A | in progress | Step12 local RDS-root/libpq-path correction checked; awaiting human/affected-owner verification | All11gates:1792Python/24skip,94data,223web/2skip;4actual image/17runner tests pass | Aditya authorized local checkpoints/commits while AFK; cloud/live sends/other-owner changes remain gated | task/id-ready-local-hardening; [image proof](../evaluation/identity/id-01-step-12/image-trust-local.json); local image73e716fe663f | AMD64/Hybrid image and affected-owner review; browser CSRF; real schema/login/URL/IAM/proxy/provider/device/retention/peer/CI; Step14 outside scope | 2026-10-25 18:00:39 UTC |
 | LI-01 | B | in progress | Finish the remaining Step 7 browser states and current-head Step 11 checks/reviews; prepare a progress PR without claiming LI-CORE. Steps 12–13 remain integration-gated. | Steps 1–6 and 8–10 implemented and locally checked; Step 7 partial (create/detail/edit/My Listings/gallery). | Suraj verified the multi-image edit/gallery checkpoint, seller-only selected-buyer visibility, and Step 10. No LI-01 phone-device result is claimed. | domain/listings at 6ffbe0b; focused Listings suite: 61 passed, one database-only test skipped outside the wrapper; disposable PostgreSQL workflow passed; current worktree `make check` passed 2026-10-23 (573 Python, 63 data, 42 web tests; remaining contract, type, boundary, database, safety, formatting, lint, and build checks passed). | LI-CORE not accepted. Remaining Step 7 states; Step 11 query-plan, current aggregate, and affected-owner review; native schema check; five pre-existing backend boundary findings; real Identity, Conversations, storage, and Search integration; Steps 12–13. | 2026-10-23 10:38:31 UTC |
 | LI-02 | B | in progress | Step 12 demo is tested and stopped; record final evidence, then begin intake of the Search owner's PR under the review workflow. | Steps 1–11 and 1.5 verified; Step 12 ran on ECS and was tested on desktop/mobile. Read-only app checks found the synthetic listing and its S3 image; teardown is complete. | User approved and applied teardown plan `3703bb7b23405a5a23a1ac6c39fa8870e682dddf3a1a8272183f4642f8f0db81` (0 add, 1 change to LI-02 bucket CORS, 20 LI-02 deletes). Post-stop inventory confirms disposable RDS/ALB/service/host/root volume/run S3 objects/URL parameter/log streams absent; shared RDS is stopped, shared ECS cluster remains, LI-02 ASG desired 0/no instances. Two run ECR images are retained (105,624,604 bytes total) per user direction. | `task/li-02-isolated-runtime` at `f0bf6c6`; earlier 11 focused tests, Black, Python compilation, Terraform fmt/validate, CLI help and diff checks. Start plans: infrastructure `a2b8cbeaa6cc4fc2d13ff8c8696cfa133d8134280de89f719e0d6f2b91668f55`; app start `b6a3fbd4812c965a5830780f337997d13b4b362c7eb1a73f2b3e70f5946b5bd4`. Stop-path corrections are currently uncommitted in `scripts/li02-demo`, `infra/terraform/domains/listings/test/database_tasks.tf`, both LI-02 operator guides, and this work log. `git diff --check` passed; no tests rerun. Existing untracked `data/runs/` and `database/migrations.zip` remain untouched. | Compute/ingress/disposable-database charges from the demo have ended. Retained run images add about 101 MiB of ECR storage; Step 4 bucket/IAM/log group and shared VPC/NAT/ECS/RDS remain. No manual RDS snapshot remains. | 2026-10-25 09:29:55 UTC |
 | SE-01 | Mohit (C); peer Suraj (B), Identity review | in progress | Local create-to-Keyword-and-Hybrid flow and browser walkthrough verified; formal acceptance remains pending | Test-only browser demo binds the same fixed synthetic Identity for writes/browse and can opt into the real helper, worker, pipeline bootstrap and Hybrid reader; automatic new-listing vector generation was observed | Suraj verified the local command/API/proxy flow and subsequent browser walkthrough | Search PR #11 worktree `task/search-evidence-reduction` at `864e53b`; new listing `194a32d4-64bb-491b-b4ec-68403e26f7f3` produced one title and one description vector (384 dimensions each), then matched in both modes through API and Vite proxy; session `/tmp/clip-listings-browser-v6e1f01t`; UI `http://127.0.0.1:5173/` | Formal SE-CORE/DATA-READY and final NFR/hosted-CI acceptance remain outside this merge step | 2026-10-25 14:38:24 UTC |
@@ -511,7 +511,44 @@ Local browser checks remain separate from the cloud demo. The next Listings
 handoff is a traceability progress PR after current-head checks and review
 preparation; it does not claim LI-CORE, ID-READY, or completed LI-02 Step 12.
 
+## ID-01 Step12 shared image trust reservation — 2026-10-25 17:38:34 UTC
+
+Aditya(A) explicitly authorized starting the RDS certificate correction. A is the
+current bounded writer on task/id-ready-local-hardening for apps/api/Dockerfile,
+Identity-owned public certificates/metadata/tests and local verification tooling,
+plus associated command/provider/evidence docs. Remote main remains6c86060;
+GitHub lists no open PRs. No other shared writer conflict found. Preserve base
+versions, non-root runtime, Hybrid inheritance, API configuration and verification
+modes. B/C/shared peer review remains required before merging the image change.
+Only public HTTPS download/local image build/disposable TLS tests are authorized
+here; no AWS resource API, secrets, RDS/session startup, sends, push or deployment.
+
+Local implementation/checks complete; bounded writer reservation released
+2026-10-25 18:00:39 UTC. Human/affected-owner acceptance remains pending.
+
 ## Dated history entries
+
+### ID-01 — Step12 local RDS image trust correction — 2026-10-25 18:00:39 UTC
+
+Aditya(A) authorized the shared certificate fix; A reserved the bounded Dockerfile
+scope after remote main6c86060/no-open-PR inspection. Added three pinned official
+public regional roots/manifest and offline OS installation. Stronger real image
+TLS test exposed bundled libpq's /host/tmp/libpq.build/cert.pem default; final image
+explicitly selects /etc/ssl/certs/ca-certificates.crt without changing the reviewed
+verify-full/system URI or hostname policy. Synthetic trust only uses a throwaway
+read-only mount, never a source/image layer. Shared decision and canonical command/
+provider/API/evidence docs updated. Existing owned fixture exposes only its own
+container for network-isolated image checks; no private consumer implementation edit.
+
+Native ARM64 image73e716fe663f retains all148distribution roots plus3regional roots,
+UID10001. Four actual image tests and17runner regressions pass. Final11gate aggregate
+passed:1792Python/24skip,94data,223web/2skip, Black255files, actual PostgreSQL18.6
+17file/seven-smoke lifecycle and Gitleaks. Three opt-in aggregate image skips passed
+separately. [Exact source/image evidence](../evaluation/identity/id-01-step-12/image-trust-local.json)
+records failed initial default-path proof, correction and logs. Local containers/
+contexts cleaned; image retained for review. Public HTTPS CA download only; no AWS
+resource API/secret/live SQL/send/push/deploy. Human/affected-owner verification,
+AMD64/Hybrid and actual RDS/runtime acceptance remain pending; no ID-READY claim.
 
 ### ID-01 — Step12 merged-main validation result — 2026-10-25 17:07:10 UTC
 
