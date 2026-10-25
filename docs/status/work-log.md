@@ -47,7 +47,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PD-19 | Integration owner (current branch) | done | Steps 1–9 and combined foundation handoff complete | Steps 1–9 performed | User confirms all work before PRE-00 is complete | PR #8 merged at `2cd83e7` from head `18c966e` against base `68d9da9`; [Foundation quality gates passed](https://github.com/exocrat/clip/actions/runs/39323851584) for that exact head/base; `make test` (395 Python, 63 data, 16 web), Black, contract freshness and 10 `make check` gates passed; [handoff](foundation-handoff.md) | No open PD-19 work per user confirmation. Linux AMD64/macOS results remain user-confirmed without raw outputs. PR #8 has no submitted GitHub review; independent-review completion is user-confirmed, with no separate review artifact linked. Refresh cloud snapshot before any operation. | 2026-10-19 21:09:05 UTC |
 | PRE-00 | Integration owner | done | Foundation gate audit accepted; DL-00 is unblocked | performed | verified/accepted by user | Reviewed handoff PR #8 merged to `main` at `2cd83e7`; hosted Foundation quality gates passed for head `18c966e` against base `68d9da9` (run `39323851584`); clean-checkout evidence at `0747be6`; see [PD-19 handoff](foundation-handoff.md) | None. PR #8 has no GitHub review event; independent-review completion remains user-reported without a separate artifact. | 2026-10-19 21:20:55 UTC |
 | DL-00 | Shared-core/contract coordinator; all domains review | done | Steps 1–13 and task-wide audit complete; accepted and merged | Steps 1–13 performed; accepted by user | User confirmed full acceptance and merge on 2026-10-22 05:30:49 UTC | PR #9 merged to `main` at `f5576ef`; current `main` is `44cd8ff`; Step 13 check evidence is recorded below and was not rerun for this update | None for DL-00; cleanup implementation remains separately gated; real providers/integrations and crypto/worker implementation remain downstream | 2026-10-22 05:30:49 UTC |
-| ID-01 | A | in progress | Step12 real logging probe/cleanup verified; commit authorized; shared migration review next | Actual RDS six setting/default checks passed; prior local17runner/full11gates1048Python/1skip,63data/118web unchanged | Aditya verified passed live probe/cleanup and authorized commit/continuation | `ca935b9`; [live probe evidence](../evaluation/identity/id-01-step-12/logging-probe-20261025T052229Z.json) | Shared migration/image/affected-owner review and exact DDL approval; DB login/URL/IAM/proxy/provider/device/peer/CI; Step14 outside scope | 2026-10-25 05:49:22 UTC |
+| ID-01 | A | in progress | Step12 local migration/config audit verified; awaiting accepted-main integration | Actual RDS six setting/default checks passed; prior local17runner/full11gates1048Python/1skip,63data/118web unchanged | Aditya verified preparation through commit instruction; exact-revision peer/cloud approvals remain pending | `8df97eb`; [live probe evidence](../evaluation/identity/id-01-step-12/logging-probe-20261025T052229Z.json) | Shared migration/image/affected-owner review and exact DDL approval; DB login/URL/IAM/proxy/provider/device/peer/CI; Step14 outside scope | 2026-10-25 10:00:40 UTC |
 | LI-01 | B | in progress | Finish the remaining Step 7 browser states and current-head Step 11 checks/reviews; prepare a progress PR without claiming LI-CORE. Steps 12–13 remain integration-gated. | Steps 1–6 and 8–10 implemented and locally checked; Step 7 partial (create/detail/edit/My Listings/gallery). | Suraj verified the multi-image edit/gallery checkpoint, seller-only selected-buyer visibility, and Step 10. No LI-01 phone-device result is claimed. | domain/listings at 6ffbe0b; focused Listings suite: 61 passed, one database-only test skipped outside the wrapper; disposable PostgreSQL workflow passed; current worktree `make check` passed 2026-10-23 (573 Python, 63 data, 42 web tests; remaining contract, type, boundary, database, safety, formatting, lint, and build checks passed). | LI-CORE not accepted. Remaining Step 7 states; Step 11 query-plan, current aggregate, and affected-owner review; native schema check; five pre-existing backend boundary findings; real Identity, Conversations, storage, and Search integration; Steps 12–13. | 2026-10-23 10:38:31 UTC |
 | LI-02 | B | in progress | Defer Step 3 until shared ECS use is over and its saved capacity baseline is restored; then prepare a fresh plan and review its exact hash and cost. | Steps 1–11 and 1.5 verified. The prior Step 12 public ECS browser flow and phone photo upload worked. The revised dedicated-RDS harness is committed; its prepared plan was discarded and never applied. | Suraj verified Step 11, Step 1.5, and the prior browser/mobile flow. | domain/listings at 6ffbe0b; Terraform 1.15.9 fmt/validate, Python compilation, 27 lifecycle cases, CLI help, and diff check passed before commit; current worktree `make check` passed 2026-10-23 (573 Python, 63 data, 42 web tests; remaining contract, type, boundary, database, safety, formatting, lint, and build checks passed). Plan 30112961a2479c760dfa32f91b0b57013a2a4079924abc3a5fd85dee06d6b6fd is invalid for apply. | Baseline li02-c2090c6c3294 remains images-ready. No disposable LI-02 RDS, ALB, service, or URL parameter was created by the revised plan. Prior preflight: account 335523638354, ap-south-1, MTD USD 6.14, forecast USD 21.42, USD 200 monthly cap. The previous shared-RDS test database was not queried and may remain; the new harness never touches shared RDS. Wait for an idle shared ECS baseline before restarting. | 2026-10-23 10:38:31 UTC |
 | SE-01 | C | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | SE-CORE, LI-01, LI-02, DATA-READY | — |
@@ -111,6 +111,60 @@ Update the task status row after each step and human verification. The row is th
 Add a history entry when it records a meaningful outcome, decision, changed output, check result, blocker, consequential human direction, or task/merge closeout. Group related steps when that keeps their results understandable. Do not add a separate history entry just to say that a routine step was verified and the next one may begin.
 
 Include the task and covered step(s), contributor, date/time, and the details needed to understand or verify the outcome: relevant execution/verification state, changed paths, exact checks/results, decision/evidence reference, blocker/owner, or next action as applicable. Keep entries brief, omit repeated background, and link existing artifacts rather than duplicating them. Use exact UTC date and time for new entries. Keep historical timestamp precision as recorded; never guess or backfill an unknown time. Preserve distinct decisions, evidence, and other contributors' useful history.
+
+### ID-01 — Step12 pre-merge migration/configuration audit — 2026-10-25 09:32:32 UTC
+
+Aditya(A) authorized local preparation while Suraj merges Mohit's PR; reports neither
+Suraj nor Rahul has found a conflict so far. Audited the current manifest/runner,
+role proposal/setup/runtime TLS and shared Terraform diff. All14migration hashes,
+11upstream byte comparisons and candidate SHA/closed-live-gate checks passed.
+[Audit and execution/acceptance checklist](../evaluation/identity/integration.md#pre-merge-migration-and-configuration-audit--2026-10-25-093232-utc)
+records fixed14file/head/object-count assumptions that must be revisited after main
+integration, fresh four-schema preflight, app-image CA trust, role/IAM/sender and
+Listings CSRF integration gates. No task-definition gap found; readiness is still
+pending. Updated owner handoff link; documentation links/whitespace checked. No
+fresh full test run, remote fetch, cloud/SQL/send action, commit or publication.
+Result awaits Aditya's verification; next checkpoint is actual accepted-main refresh.
+
+### ID-01 — Step12 owner feedback and technical review focus — 2026-10-25 09:05:19 UTC
+
+Aditya(A) reports Suraj found no decision-level conflict and requested confirmation
+of the handoff's migration/cloud coverage. Clarified the
+[cross-owner handoff](../evaluation/identity/cross-owner-review.md) with an ordered
+technical review: preserved upstream SQL/new Identity forwards, whole-chain shared
+apply and fresh four-namespace preflight, separate runtime privileges, AMI/SES/IAM
+differences, and shared lifecycle safety. Distinguished local checks and the rolled-back
+live logging probe from unapplied schema/login/configuration work. Suraj's reported
+feedback is not recorded as exact-revision technical approval; migration/cloud checks
+and their separate approvals remain pending. Documentation only; no cloud action.
+
+### ID-01 — Step12 cross-owner handoff — 2026-10-25 06:14:16 UTC
+
+Aditya(A) requested one file describing every cross-owner change and why, primarily
+for Suraj and Rahul. Created [cross-owner review](../evaluation/identity/cross-owner-review.md)
+from full8df97eb→defec38f source comparison: Listings adapter/test fixes, shared
+API/session/CSRF, Search capability policy, Conversations contact scope, generated
+contracts/runtime dispatch, page/proxy/dependency changes,14file migration scope,
+shared cloud/lifecycle/secret boundaries, evidence and63shared/other-owner paths.
+Explicitly identifies pending Listings browser marker/CSRF integration; no owner
+code edited. Routes requested review to Suraj/Listings and Rahul/Search cross-review
+while preserving recorded Mohit/Search and Rahul/Conversations ownership. Added
+index/handoff links. File links/path coverage, Gitleaks source scan and diff checks
+pass; no code tests rerun for documentation-only work. No messages/cloud/push/merge,
+review approval or readiness claim. Documentation uncommitted; reviews pending.
+
+### ID-01 — Step12 shared migration review candidate — 2026-10-25 05:56:34 UTC
+
+Aditya(A) verified live probe/cleanup and authorized commit/continuation; committed
+8df97eb. Fetched main remainsdefec38f; GitHub has no PR for this Identity head
+branch, so no hosted review cited. Prepared exact [review package](../evaluation/identity/integration.md#shared-migration-apply-review-package):
+manifest14files/SHA,11accepted upstream bytes unchanged,3Identity forward effects,
+tested image, safe first-apply/partial-state/postcheck/recovery/cleanup sequence.
+No source SQL edits, image-review flag change, AWS/SQL operation, push or message.
+Primary Rahul/affected-owner/image reviews unrecorded; offline approvals unknown.
+Next: obtain human review evidence, then finalize reviewed execution manifest/SHA
+and exact cloud DDL request. Candidate JSON/hash/links/whitespace verified; docs
+uncommitted. All live gates remain closed; no ID-READY acceptance.
 
 ### ID-01 — Step12 fresh same-scope retry — 2026-10-25 05:22:29 UTC
 

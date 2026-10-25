@@ -6,6 +6,7 @@ criteria and action approvals still come from their canonical sources.
 
 | Read | Contents |
 | --- | --- |
+| [Cross-owner review](cross-owner-review.md) | What changed, why, affected paths, pending integration and checks for Suraj/Rahul/Mohit. |
 | [Implementation](implementation.md) | Steps3–11 behavior, checks, corrections and source snapshots. |
 | [Provider history](provider-history.md) | Completed SES/builder/runtime investigation, delivery outcomes and development cleanup gate. |
 | [Integration handoff](integration.md) | Current Step12 result, email routing and remaining work for ID-READY. |

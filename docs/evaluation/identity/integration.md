@@ -893,3 +893,153 @@ checks pass. Source unchanged; no full-suite rerun for evidence-only changes.
 Aditya verified the live result/cleanup and authorized commit/continuation.
 Migration
 chain/affected-owner/image review and exact shared DDL approval remain separate.
+
+
+## Shared migration apply review package
+
+Prepared 2026-10-25 05:56:34 UTC; live probe/cleanup human-verified, evidence committed8df97eb.
+Fresh origin/main remainsdefec38f. GitHub CLI found no PR for task/id-01-identity
+(all states), so no PR review can be cited; offline reviews remain unknown.
+[Machine-readable review candidate](id-01-step-12/shared-migration-apply-review.json)
+pins head8df97eb, source manifest SHA
+c5259bd6b4b2427505ffffd52903931ac626d5d6c8f065a9756c3a0126f028a3,
+14files/head20261023202807 and tested dbmate digest. This is not executable
+approval: manifest image-review flag stays pending; no SQL/manifest bytes changed.
+
+Review scope, without reopening accepted unchanged baseline SQL:
+
+| Scope | Concrete behavior and check |
+|---|---|
+| 11upstream migrations, unchanged | Shared namespaces/FKs/triggers and catalogue plus accepted Listings forwards; byte equality against fetched base. First apply affects all4namespaces, so serialize shared owner/operator window. |
+| Identity20261023173439 | Profile/contact bounds, paired chronological revocation and immutable external-account binding; validates rather than scrubs existing records. |
+| Identity20261023192856 | Protected OTP fields plus4key/idempotency/send/verification tables, constraints/indexes; no key adoption or credential generation. |
+| Identity20261023202807 | Session last-seen/bounds plus3password/source/Microsoft-attempt tables; no sessions/accounts created. |
+| Runner/image | Version2.36.0, reviewed immutable digest, exact file hashes, TLS/credential handling, prefix/postcondition/cleanup behavior;17local focused tests/full11gates and real rollback logging proof already recorded. |
+
+Rahul(D) is the primary independent human peer. Affected owners confirm the
+shared first-apply scope and consuming constraints; original11accepted files do
+not require editing/reapproval as new code. Use the
+[peer review prompt](../../prompts/peer-review-prompt.md) with base/head and this
+bounded scope. Author/agent review does not substitute for human approvals.
+No review request/comment/message was sent, no PR/push created, and no approval
+inferred from task-step verification. No matching PR is not proof that offline
+review did not happen; ask Aditya for any such recorded approvals.
+
+Proposed execution, after review gates and a separate exact live DDL approval:
+
+1. Record reviewer/image decisions; update manifest image fields only from actual
+   reviewed evidence, regenerate its SHA and the final exact request. Do not
+   manufacture a reviewed flag merely to make the runner execute.
+2. Fresh one-hour/1USD original-RDS/one-sleep-task/private-tunnel window,20minute
+   startup bound, no automatic start retries. Same known class/AZ/resources and
+   cleanup as passed probe; public rates are earlier quotes, not a current bill.
+   Disclose capacity risk and fresh operator/budget constraints before the run.
+3. Verify exact current target/engine, exclusivity and actual all4namespace/tracker
+   state, owner/permissions and source hashes. Last inspection proved only absent
+   Identity/tracker; do not assume Listings/Search/Conversations namespaces absent.
+   Abort before DDL on partial/manual schemas, unexpected tracker or concurrent
+   application use. Preserve Suraj/other owners' databases and work.
+4. One approved private master-secret read for trusted connection and dbmate's
+   stdin runtime credential. Original host verified over TLS; fixed runner uses
+   the exact reviewed image/manifest, not the API image or local/LI-02 wrappers.
+5. Execute migrate --strict only. Existing per-file advisory locks retained;
+   wrapper lock/serialized operator covers this invocation. Each file commits
+   separately; no batch-atomic claim. Expected14versions/head,33tables/25functions/
+   37triggers. Only existing approved catalogue seed; no users/fixtures or live
+   mutation smoke scripts. Read-only catalog postchecks, never business row dumps.
+6. On failure, preserve applied prefix and actual safe metadata; no down/drop,
+   reset, global permission/logging repair, restore or replay. On success, record
+   sanitized versions/inventory. Close owned session/task, honor cooldown and
+   guarded host/root cleanup; stop original RDS only while the window is still
+   exclusive. Verify stopped/zero and disclose any cleanup uncertainty.
+
+Permanent Identity login/password/grants, DB-URL publication, runtime IAM,
+proxy/TLS deployment, providers/browser/device/peer/CI acceptance remain later
+gates. Current review candidate is complete as a review artifact, not as an apply
+artifact. No AWS call/change or new SQL execution in this preparation increment.
+
+Owner-facing change/reason/check handoff: [cross-owner review](cross-owner-review.md),
+covering the full Identity branch plus direct Listings/shared impacts.
+
+
+## Pre-merge migration and configuration audit — 2026-10-25 09:32:32 UTC
+
+Aditya(A) authorized local review/preparation while Suraj integrates Mohit's PR.
+Scope remains ID-READY/Step12; no live inspection, SQL, provider send, Terraform
+plan/apply, main integration or publication occurred. Source remains `8df97eb`,
+recorded local upstream `defec38f`; that local ref is not a fresh remote observation.
+Aditya reports Suraj/Rahul have found no conflicts so far. Final exact-revision
+technical/peer approval remains pending after main integration.
+
+### Audit result and dependencies
+
+No new task-definition gap was found against ID-01 Steps2–12 and the stub guide.
+The existing execution order is sound: reconcile upstream, validate source and
+schema, review exact plan, approve live window, preflight, migrate, provision the
+runtime separately, then verify real providers/UI. The following material
+operational gates must stay explicit:
+
+| Area | Local finding | Required resolution/evidence |
+|---|---|---|
+| Migration bytes | All14manifest paths/hashes match; all11SQL files from pinned main are byte-identical. Candidate manifest SHA matches. | Refresh against the actually merged main, not the old remote-tracking ref. Preserve published SQL. |
+| Runner compatibility | `migration_runner.validate_manifest` fixes14files/head20261023202807; `_baseline` fixes33tables/25functions/37triggers. | If upstream adds migrations/objects, update the owned runner, fixtures, inventory expectations, manifest and candidate together; repeat real disposable lifecycle/failure checks. Do not weaken guards or merely edit JSON to pass them. |
+| Live schema baseline | Last live metadata was not a complete four-domain inspection. Successful logging probe is rollback-only. | Fresh all-four-namespace/tracker/owner preflight in an approved exclusive window; stop on partial/manual/unknown state. No automatic adoption/reset/replay. |
+| DB privileges | Proposed SQL and `database_setup.create_identity_role` agree:14Identity tables, four append-only guards, users without DELETE, remaining nine with CRUD; tracker SELECT and schema USAGE only. Setup additionally grants explicit DB CONNECT. | Fresh inherited/PUBLIC/default grants, ownership and logging checks before separate role creation; verify actual app-role denials. Never change Listings credentials or silently revoke PUBLIC. |
+| TLS/runtime | Migration probe used an explicit regional CA; app remote URI requires verify-full with system roots. | Prove RDS certificate trust and hostname verification in the final app image. Probe success does not establish app-image trust. |
+| Cloud source | AMI pin preserves existing image; desired SES FromAddress is verify@; last inspected sender permission was still no-reply. | After main integration, review a fresh full shared-root plan with existing approved inputs preserved. No unrelated launch-template/ASG/RDS/network changes; review unexpected drift rather than apply it. |
+| Secret/runtime wiring | Keys/email references exist historically; Identity DB login/URL, task scoped reads and final deployment are pending. | Separate private role/URL/IAM/build/deploy plan. Keep admin credentials out of app runtime. Rotate the previously exposed Resend key privately. |
+| Consumer/browser readiness | Default API remains Identity-unbound; Listings web protected writes still need the shared Origin/marker/CSRF integration described in the owner handoff. | Coordinate affected-owner changes, then verify actual browser writes. Synthetic HTTP tests do not establish that the unchanged browser helper sends required headers. |
+
+These are readiness conditions, not evidence of a decision conflict. No production
+code/configuration was changed during this audit. Current image-review and live
+approval flags remain closed.
+
+### Prepared execution sequence and decision gates
+
+1. **After Suraj's merge:** fetch accepted main, identify exact base/head and inspect
+   migrations, contracts, shared API/frontend composition and Terraform deltas.
+   Integrate into this branch through the normal verified checkpoint. Resolve
+   conflicts within owned/reviewed paths. Reconcile fixed runner assumptions as
+   needed, run the full local CI-equivalent gate and refresh source evidence.
+2. **Finalize shared migration review:** record independent/affected-owner and
+   immutable image review against the integrated revision. Regenerate manifest
+   hashes/count/head/inventory and candidate SHA from actual source. Current
+   fourteen-file figures are a pre-merge snapshot, not future deployment constants.
+3. **Request exact migration window approval:** use the candidate's fixed target,
+   account335523638354/ap-south-1, original RDS, one task/host, one hour/$1 ceiling,
+   startup20minutes, no automatic starts/retries, secret-read scope and cleanup.
+   Assign one operator; confirm other owners idle. Dates and approval must be new;
+   past logging-probe authorization is not reusable.
+4. **Approved live preflight/apply:** verify target and current four-schema state,
+   image/source/TLS and logging; run only the reviewed strict migration route.
+   Record versions/head/structural invariants, not business rows. Failure preserves
+   committed prefix for reviewed forward recovery; no down/drop/reset or retry.
+   Close owned tunnel/task and verify guarded cleanup without interrupting others.
+5. **Separate runtime setup:** review/approve Identity role/password/DB-URL and
+   scoped SSM/IAM changes, sender policy if needed, trusted proxy/TLS configuration,
+   immutable image composition and deployment. Verify denied cross-domain/DDL
+   privileges and effective safe logging. Do not enable production/fake bypasses.
+6. **Real acceptance:** under separately approved identities/recipients/send caps,
+   run the matrix below and retain sanitized source-bound results. Any required
+   cloud verification follows Step13's exact approval requirements; Step14's full
+   consumer matrix remains outside ID-READY scope.
+7. **Milestone handoff:** refresh full local/hosted CI for the PR revision, obtain
+   independent and affected-owner approval using the peer-review prompt, human
+   verification and separate exact merge approval. ID-READY is not complete now.
+
+### Real runtime acceptance checklist prepared for execution
+
+| Path | Required observed result |
+|---|---|
+| Microsoft/IISc | Actual PKCE/state/nonce callback and valid signed claims create/reuse the stable account; wrong domain, replay, expiry and invalid assertions deny safely; consent/cache behavior reviewed. |
+| Temporary activation | Controlled verify@ receipt and code redemption activate once; resend/expiry/replay behavior and three verification attempts through latest OTP expiry hold; no token/code/contact output. |
+| Password/reset | Minimum8characters enforced; real sign-in/reset succeeds, reset revokes old sessions and preserves the original14day lifetime. Uniform acknowledgement and provider-failure behavior verified. |
+| Protected HTTP/UI | Real cookies, HTTPS/proxy source handling, Origin/CSRF, logout/stale/expired/revoked denial; Listings buyer/seller smoke via reviewed integration, desktop and supported phone UI. No full Step14 claim. |
+| Contacts | Own edits/deletion and selected-field disclosure use trusted scope; unrelated user/unauthorized conversation denies; contacts never appear in general profile/error/log output. Actual CN-02 journey remains with its real dependencies. |
+| Delivery routing | Resend is usable before SES production access, with controlled recipients. Verify actual loader/task permissions and bounded primary/alternate behavior. SES sandbox remains restricted; switching primary must respect the four-hour lazy refresh. |
+| Retention/operations | Approve and verify cleanup operation/schedule, deadlines and permanent guards, with no cross-domain deletion. Remove development scale-to-zero override before production; retain safe shared cleanup. |
+
+Local checks performed for this audit: manifest/file SHA equality, upstream SQL byte
+equality, candidate manifest SHA and closed-live-gate assertions passed. No code
+changed, so prior test results are referenced rather than presented as fresh runs.
+Full post-merge validation and every live acceptance item above remain pending.
