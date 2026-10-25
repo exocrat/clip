@@ -1043,3 +1043,26 @@ Local checks performed for this audit: manifest/file SHA equality, upstream SQL 
 equality, candidate manifest SHA and closed-live-gate assertions passed. No code
 changed, so prior test results are referenced rather than presented as fresh runs.
 Full post-merge validation and every live acceptance item above remain pending.
+
+### Offline review checker — 2026-10-25 11:38:34 UTC
+
+Aditya authorized autonomous local checkpoints/commits in a separate worktree,
+with decisions resolved locally where possible; cloud/sends/other-owner changes
+and publication remain separately gated. Worktree `/tmp/clip-id-ready-local-hardening`,
+branch `task/id-ready-local-hardening`, starts from85c4606. Main worktree is untouched.
+
+Added `scripts/identity_readiness.py` to turn the migration review's local checks
+into a repeatable offline command, registered in the command guide. It checks full
+immutable/integrated upstream SHA, candidate/manifest base and SHA, the actual
+runner's file/count/head rules, recorded local image, all upstream SQL bytes and
+reviewed migration/setup source. Local uncommitted edits invalidate source review;
+external Git diff/text conversion drivers cannot execute. It neither fetches nor
+loads settings/credentials, connects to SQL, starts Docker, sends mail or grants
+approval. Output always states `ready_for_live:false`, even when consistent.
+
+Twelve offline tests passed: genuine disposable Git history with changed/extra/
+missing/symlink SQL, unreviewed runner edits, advanced/unintegrated main, corrupt
+manifest hash, wrong image, invalid input and external diff driver refusal.
+Strict mypy and boundary check passed. The current actual package passes all nine
+local checks againstdefec38f. New upstream still requires main integration and
+refreshed lifecycle/full CI checks; no live-readiness acceptance is implied.

@@ -1016,3 +1016,26 @@ and checks absence/defaults through a fresh connection. Neither function retriev
 AWS secrets or grants cloud authorization. Read-only preflight is not permission
 to call these write-capable tools; exact window, SQL/role probe, metadata/secret
 access, shared-schema review and cleanup approvals remain mandatory.
+
+### Offline Identity migration review consistency — ID-01 Step12
+
+```bash
+uv run --locked python scripts/identity_readiness.py --upstream <full-accepted-main-commit-sha>
+```
+
+Reads local Git objects and current source only; no fetch, Docker, SQL connection,
+settings/credential load, provider request or file write. Requires locked Python
+setup. Use the actual accepted main revision after integrating it. Exit0 means
+manifest/reference/SHA, runner compatibility, recorded local image, preserved
+upstream SQL and reviewed migration/setup source agree. Exit1 means the review
+package is stale/invalid; inspect the safe JSON check names and reconcile source
+and evidence. Git external diff/text conversion drivers are disabled.
+
+`ready_for_live` is always false: success is not image/owner/cloud approval or a
+live-schema inspection. The runner's live-review guard is not modified. Refresh
+manifest/candidate/runner expectations after upstream schema changes and rerun
+real disposable migration tests before requesting a live apply.
+
+Focused offline regression command:
+`uv run --locked pytest apps/api/tests/domains/identity/test_readiness_audit.py -q -W error`.
+Strict types: `uv run --locked mypy --strict scripts/identity_readiness.py`.
