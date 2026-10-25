@@ -1,6 +1,6 @@
 {
-  "prepared_at_utc": "2026-10-24 22:44:26 UTC",
-  "source_revision": "9bfb6078921f5af468e6ed5420b55755ee63ef25",
+  "prepared_at_utc": "2026-10-25 17:09:30 UTC",
+  "source_revision": "42e9cd9320cff5a5e15f3ba8eb5e95a31164082a",
   "recorded_upstream_revision": "6c860603bdd81a98485e721d789b557c5d433948",
   "tool": "dbmate 2.36.0",
   "image_tag": "ghcr.io/amacneil/dbmate:2.36.0",
@@ -96,6 +96,5 @@
     }
   ],
   "locally_tested_image_digest": "ghcr.io/amacneil/dbmate@sha256:520c740c6e0ad73fde2cd1ea7e2b779aaf789d22aca8858f87a478e7094535fb",
-  "locally_tested_platform": "Linux ARM64",
-  "source_review_refresh_pending": true
+  "locally_tested_platform": "Linux ARM64"
 }

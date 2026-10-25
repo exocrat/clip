@@ -72,3 +72,13 @@ lifecycle and Gitleaks.
 the cached AMD64 base system store contains none of the3regional RDS roots.
 Shared Dockerfile correction needs writer coordination/review; live setup and
 updated-main integration remain pending. No ID-READY acceptance or deployment.
+
+## Accepted main integrated — 2026-10-25 17:09:30 UTC
+
+Latest implementation `42e9cd9` on `task/id-ready-local-hardening` contains accepted
+main `6c86060` and both autonomous local commits. Combined17migrations through
+20261025013000 checked:37tables/33functions/43triggers. Full11gates passed:
+1791Python/21skip,94data,223web/2skip; separate real store21pass/3optional skips.
+[Current merge paths/evidence and pending gates](integration.md#accepted-main-integration--2026-10-25-170710-utc).
+Cross-owner and migration candidate metadata now reference the merged source;
+review/image/live flags remain pending. Original worktree unchanged; no push.

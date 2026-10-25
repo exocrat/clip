@@ -4,8 +4,9 @@ Prepared 2026-10-25 06:07:40 UTC by Aditya (A). Purpose: one place for the peopl
 whose features use Identity to understand **what changed, why, and what to check**.
 This includes the whole ID-READY branch, not just the latest logging/migration work.
 
-**Review source:** `task/id-01-identity` at `8df97ebc38cff208594abd9917d35d2cfb730c53`.
-**Comparison base:** fetched `origin/main` at `defec38f59d4acb683f7b51950860f458aacfdd1`.
+**Review source:** `task/id-ready-local-hardening` at `42e9cd9320cff5a5e15f3ba8eb5e95a31164082a`.
+Refreshed 2026-10-25 17:09:30 UTC after accepted-main integration; earlier prepared date is retained above.
+**Comparison base:** fetched `origin/main` at `6c860603bdd81a98485e721d789b557c5d433948`.
 The pending migration-review candidate and this handoff are documentation additions;
 they do not change the implementation pinned above. Refresh this comparison if
 source or main advances before approval.
@@ -19,11 +20,11 @@ approval of an exact source revision. Those checks remain pending.
 
 For a focused review, verify these items in order:
 
-1. Compare the eleven upstream migration files with the pinned base; inspect the
+1. Compare the fourteen upstream migration files with the pinned base; inspect the
    three added Identity migrations and the manifest hashes. Confirm shared FKs,
    retirement behavior and the first-apply effect on each owner's schema.
-2. Review the proposed whole-chain apply: fourteen migrations through
-   `20261023202807`, expected inventory of 33 tables/25 functions/37 triggers.
+2. Review the proposed whole-chain apply: seventeen migrations through
+   `20261025013000`, expected inventory of 37 tables/33 functions/43 triggers.
    Local lifecycle checks passed; **the shared RDS chain has not been applied**.
    A fresh check of all four domain namespaces and the migration tracker is still
    required. The earlier Identity-only inspection cannot establish a clean shared DB.
@@ -121,6 +122,11 @@ real cookie users reach permitted endpoints; stale/expired/revoked users cannot
 mutate; hostile origins/CSRF fail; isolated Listings demos remain isolated. The
 current middleware uses the actual transport peer; trusted proxy/TLS/client-IP
 configuration remains a deployment gate, not solved by trusting forwarded headers.
+
+The accepted Search `wantedApi.ts` helper likewise sends JSON/cookies without
+X-CLIP-Request/CSRF headers. Coordinate its protected-write integration with Mohit
+alongside Listings; the new real-session read regressions do not prove browser
+writes. No private consumer helper was modified during main integration.
 
 ## 3. Eligibility and capabilities — Listings, Search and Conversations
 
@@ -254,14 +260,14 @@ No private Listings/Search/Conversations web feature implementation was edited.
 
 ## 7. Database and validation changes — all schema owners
 
-The branch preserves all11upstream migrations byte-for-byte and adds only3Identity
+The branch preserves all14upstream migrations byte-for-byte and adds only3Identity
 forwards: `20261023173439` (bounds/revocation/external identity), `20261023192856`
 (OTP state), `20261023202807` (session/login state). They alter Identity-owned
 objects, add7Identity tables and reuse shared FKs. No new reverse cross-domain
 queries/cascades were introduced by these three forwards. Their occupied down
 paths refuse unsafe security-state loss; live down/reset is not approved.
 
-A fresh environment needs the **whole14file chain**, because the Identity forwards
+A fresh environment needs the **whole17file chain**, because the Identity forwards
 need the original shared tables. It creates all4domain namespaces, so deployment
 scope is wider than the3new SQL files even though existing SQL is unchanged.
 [Manifest](id-01-step-12/shared-migration-manifest.json) pins versions/bytes;
@@ -269,7 +275,7 @@ scope is wider than the3new SQL files even though existing SQL is unchanged.
 
 [check_database.py](../../../scripts/check_database.py), [native-checks.sh](../../../database/tests/native-checks.sh)
 and Identity SQL tests now cover the combined chain, clean/repeat/upgrades,
-rollback/reapply/atomic refusal and structural inventory33tables/25functions/37triggers.
+rollback/reapply/atomic refusal and structural inventory37tables/33functions/43triggers.
 Native script edits are not evidence of a new native macOS run. Contract-generation/
 runtime-binding tests also changed to check the new generated exception.
 
@@ -307,9 +313,8 @@ NAT cost alternatives are a [deferred note](../../environment/shared-test-founda
 not an accepted network change. Shared RDS/ASG state and concurrent users must be
 rechecked before every future run; do not stop Suraj's work on stale evidence.
 
-Subsequent local preparation on `task/id-ready-local-hardening` found a concrete
-image trust-store gap; it does not alter the implementation pinned at this file's
-header. The cached AMD64 base image contains none of the regional RDS roots used
+Local preparation found a concrete image trust-store gap, still unresolved
+after accepted-main integration at the source pinned in this file's header. The cached AMD64 base image contains none of the regional RDS roots used
 by the probe, while app TLS requires system roots. See the
 [offline evidence and proposed coordinated fix](integration.md#explicit-local-runtime-preparation-and-image-trust-finding--2026-10-25-114606-utc).
 Shared Dockerfile remains unchanged; reserve/review that bounded change after
@@ -317,8 +322,8 @@ upstream integration before claiming image/runtime TLS acceptance.
 
 ## 9. Evidence and requested review outcome
 
-Latest source-identical full gate: **1048Python passed,1existing DB-only skip,
-63data,118web; all11gates passed**, Black154files, contracts/types/boundaries/build,
+Latest source-identical full gate: **1791Python passed,21skipped,
+94data,223web passed/2skipped; all11gates passed**, Black254files, contracts/types/boundaries/build,
 real PostgreSQL18.6 migration lifecycle, Gitleaks8.30.1. Runner/probe focused suite:
 17passed. Recorded results are not a new run performed to write this document.
 Local combined API/session/Listings/contact tests cover real SQL, cookies, temporary
@@ -368,8 +373,8 @@ To inspect the complete branch diff, including all Identity files and historical
 evidence/documentation, run from the clone (read-only):
 
 ```sh
-git diff --name-status defec38f59d4acb683f7b51950860f458aacfdd1 8df97ebc38cff208594abd9917d35d2cfb730c53
-git diff defec38f59d4acb683f7b51950860f458aacfdd1 8df97ebc38cff208594abd9917d35d2cfb730c53 -- PATH_TO_REVIEW
+git diff --name-status 6c860603bdd81a98485e721d789b557c5d433948 42e9cd9320cff5a5e15f3ba8eb5e95a31164082a
+git diff 6c860603bdd81a98485e721d789b557c5d433948 42e9cd9320cff5a5e15f3ba8eb5e95a31164082a -- PATH_TO_REVIEW
 ```
 
 ```text
@@ -430,6 +435,8 @@ scripts/check_boundaries.py
 scripts/check_database.py
 scripts/generate_contracts.py
 scripts/identity_cleanup.py
+scripts/identity_readiness.py
+scripts/identity_runtime.py
 scripts/identity_ui_preview.py
 tests/contracts/test_domain_declarations.py
 tests/contracts/test_generation.py
