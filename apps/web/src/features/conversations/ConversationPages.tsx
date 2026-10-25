@@ -15,11 +15,18 @@ import { openIndexedDbConversationSession, type ConversationSession } from './re
 export type ConversationPageRuntime = { userId: string; api: ConversationApi };
 const RuntimeContext = createContext<ConversationPageRuntime | null>(null);
 
-export function ConversationPageRuntimeProvider({ runtime, children }: PropsWithChildren<{ runtime: ConversationPageRuntime }>) {
+export function ConversationPageRuntimeProvider({ runtime, children }: PropsWithChildren<{ runtime: ConversationPageRuntime | null }>) {
   return <RuntimeContext.Provider value={runtime}>{children}</RuntimeContext.Provider>;
 }
 
 export function ConversationInboxPage() {
+  const runtime = useContext(RuntimeContext);
+  if (!runtime) return <p role="status">Sign in to load your conversations. The authenticated session is not connected here yet.</p>;
+  // A new account gets fresh page state before its first asynchronous read.
+  return <ConversationInboxSession key={runtime.userId} />;
+}
+
+function ConversationInboxSession() {
   const runtime = useContext(RuntimeContext);
   const navigate = useNavigate();
   const [items, setItems] = useState<ConversationInboxItem[]>([]);
@@ -88,6 +95,14 @@ export async function processProtocolControlEntry(
 type ReadyConversation = { summary: ConversationSummary; session: ConversationSession; ownKey: KeyBundle; peerId: string; peerKeyVersion: number };
 
 export function ConversationDetailPage({ conversationId }: { conversationId: string | undefined }) {
+  const runtime = useContext(RuntimeContext);
+  if (!runtime) return <p role="status">Sign in to view this conversation. The authenticated session is not connected here yet.</p>;
+  // Remount on account/thread change to discard decrypted UI state, drafts and
+  // late asynchronous updates. Session cleanup closes crypto; stored keys remain.
+  return <ConversationDetailSession key={`${runtime.userId}:${conversationId ?? ''}`} conversationId={conversationId} />;
+}
+
+function ConversationDetailSession({ conversationId }: { conversationId: string | undefined }) {
   const runtime = useContext(RuntimeContext);
   const [ready, setReady] = useState<ReadyConversation | null>(null);
   const [entries, setEntries] = useState<ConversationDisplayEntry[]>([]);
@@ -163,13 +178,19 @@ export function ConversationDetailPage({ conversationId }: { conversationId: str
 
   const refresh = useCallback(async () => {
     if (!runtime || !conversationId || !ready?.session.history || keyState.kind !== 'ready') return;
+    // A response may arrive after logout/navigation closed this session. Do not
+    // read its history or process protocol traffic after that boundary changes.
+    const token = generation.current;
+    const isCurrent = () => generation.current === token && activeSession.current === ready.session;
     const history = ready.session.history;
     const observedDecryptionFailureIds = new Set(decryptionFailureIds.current);
     let after = cursor.current;
     const visible: ConversationDisplayEntry[] = [];
     for (let pageCount = 0; pageCount < 100; pageCount++) {
       const page = await runtime.api.readEntries(conversationId, after);
+      if (!isCurrent()) return;
       const local = await history.read();
+      if (!isCurrent()) return;
       const pending = local.sent.find((item) => item.confirmation === null);
       setRecoveredPending(pending ? { operationId: pending.request.operation_id, text: pending.request.text } : null);
       for (const entry of page.items) {
@@ -179,11 +200,13 @@ export function ConversationDetailPage({ conversationId }: { conversationId: str
           // that the original sender's message was not decryptable.
           const failedEntryId = await processProtocolControlEntry(entry, runtime.userId, conversationId,
             ready.session);
+          if (!isCurrent()) return;
           if (failedEntryId) observedDecryptionFailureIds.add(failedEntryId);
           continue;
         }
         const display = await decryptEntry(entry, runtime.userId, ready, local.sent,
           (context) => ready.session.receiveText(context));
+        if (!isCurrent()) return;
         if (display) visible.push(display);
       }
       after = page.scanned_through_sequence;

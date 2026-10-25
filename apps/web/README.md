@@ -176,6 +176,20 @@ displayed. The shared route scaffold imports these controllers through the
 Conversations public `index.ts` only. Offer, selection and contact-sharing
 sections remain explicit placeholders for CN-02/Identity work.
 
+The runtime provider accepts `null` when Identity reports logout/expiry. Account
+or thread changes remount the controller, clear decrypted UI state and drafts,
+and close the previous crypto session. Late polling responses are discarded
+before reading local history or processing more protocol traffic. This leaves
+account-scoped IndexedDB keys/history intact for later login.
+
+`tests/conversations-interactions.test.ts` mounts the actual React components in
+the pinned development-only jsdom environment. It checks display-driven read
+acknowledgements (including hidden/offscreen rows and retry after failure),
+account switches, logout and late responses. IntersectionObserver events are
+controlled fixtures; these checks do not prove browser layout, IndexedDB
+durability or real Identity/API integration. Checks are validated on Node
+24.22.0/npm 11.19.1; jsdom 30.1.3 requires Node 24.15 or newer on the 24.x line.
+
 The provider is an injection point, not an authentication implementation.
 Until Identity supplies and mounts it, the production routes stay unavailable;
 do not wire a browser-provided user ID or demo identity into this boundary.

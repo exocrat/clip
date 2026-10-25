@@ -135,8 +135,10 @@ export function ConversationThread({
     if (key_state.kind !== 'ready' || !list || typeof IntersectionObserver === 'undefined') return;
     const observer = new IntersectionObserver(
       (observed) => {
+        // Intersection geometry alone does not mean the user can see a hidden tab.
+        if (document.visibilityState !== 'visible') return;
         const visibleSequences = observed
-          .filter((item) => item.isIntersecting)
+          .filter((item) => item.isIntersecting && item.intersectionRatio >= 0.25)
           .map((item) => Number((item.target as HTMLElement).dataset.sequence))
           .filter((sequence) => Number.isSafeInteger(sequence) && sequence > last_read_sequence);
         const greatestDisplayed = Math.max(0, ...visibleSequences);
