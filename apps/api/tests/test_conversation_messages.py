@@ -316,6 +316,58 @@ def test_message_retry_ordering_private_controls_and_display_read_state():
     run_scenario(scenario)
 
 
+def test_reads_and_repeated_polls_do_not_renew_participant_activity():
+    """Polling and display acknowledgements preserve the retention activity clock."""
+
+    async def scenario(pool):
+        author, responder, _request, conversation, *_ = await seed_thread(pool)
+        operations = PostgresMessageOperations(pool)
+        written = await operations.submit_message(
+            caller(author), conversation, message_request()
+        )
+
+        async def activity():
+            """Observe the persisted clock and sequence independently of read APIs."""
+            async with pool.connection() as connection:
+                cursor = await connection.execute(
+                    "SELECT last_activity_at, next_sequence "
+                    "FROM conversations.threads WHERE id = %s",
+                    (conversation,),
+                )
+                return await cursor.fetchone()
+
+        after_write = await activity()
+        for member in (author, responder):
+            for _ in range(3):
+                page = await operations.read_entries(
+                    caller(member), conversation, EntryQuery()
+                )
+                assert [entry.entry_id for entry in page.items] == [
+                    written.entry.entry_id
+                ]
+                empty = await operations.read_entries(
+                    caller(member),
+                    conversation,
+                    EntryQuery(after_sequence=written.entry.sequence),
+                )
+                assert empty.items == [] and empty.has_more is False
+                assert (
+                    await operations.read_state(caller(member), conversation)
+                ).own_last_read_sequence == 0
+                assert await activity() == after_write
+
+        for sequence in (written.entry.sequence, written.entry.sequence, 0):
+            state = await operations.acknowledge_read(
+                caller(responder),
+                conversation,
+                ReadAcknowledgement(last_read_sequence=sequence),
+            )
+            assert state.own_last_read_sequence == written.entry.sequence
+            assert await activity() == after_write
+
+    run_scenario(scenario)
+
+
 def test_v2_recovery_controls_bind_original_and_return_stored_target():
     async def scenario(pool):
         author, responder, _request, conversation, _author_key, _responder_key = (
