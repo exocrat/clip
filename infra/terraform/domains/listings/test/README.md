@@ -181,8 +181,8 @@ RDS instance and remove the temporary ALB, subnet/route, host ingress rule, ECS
 service and task definitions. It then scales only the LI-02 ASG to zero and
 waits until its EC2 host and tagged root volume are absent. It retains the empty
 LI-02 ECS cluster/capacity-provider/ASG and dedicated host SG/role for restart.
-It deletes only unreferenced LI-02 ECR image
-digests and clears LI-02 log streams. It preserves the Step 4 empty image
+It retains LI-02 ECR image digests for reproducible restart and clears LI-02 log
+streams. It preserves the Step 4 empty image
 bucket, IAM roles, empty log group, state backend, shared RDS and `clip_test`
 database, VPC, NAT, shared ECS cluster/capacity provider/ASG/host security
 group, and other domains' artifacts. It never deletes or Terraform-manages a

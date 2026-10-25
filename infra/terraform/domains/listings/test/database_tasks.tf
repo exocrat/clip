@@ -1,9 +1,11 @@
 locals {
   database_task_family_prefix = "clip-test-listings-db-${local.region}-li02"
   database_admin_username     = "clip_test_admin"
+  # Stop plans set demo_enabled=false and remove the disposable RDS instance.
+  # Keep locals valid while its counted resource is absent.
   database_task_environment = [
-    { name = "PGHOST", value = aws_db_instance.demo[0].address },
-    { name = "PGPORT", value = tostring(aws_db_instance.demo[0].port) },
+    { name = "PGHOST", value = try(aws_db_instance.demo[0].address, "") },
+    { name = "PGPORT", value = try(tostring(aws_db_instance.demo[0].port), "") },
     { name = "PGSSLMODE", value = "require" },
   ]
 }

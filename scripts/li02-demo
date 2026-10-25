@@ -232,7 +232,7 @@ def authorize_stop(baseline: dict[str, Any]) -> None:
     require_approval(
         f"This tears down LI-02 run {run_id}: it can stop the demo, drop only clip_test_listings and its dedicated login, "
         "delete this run's S3 objects and SecureString, remove its temporary ALB/subnet/route and disposable RDS/data, "
-        "delete unused images/log streams, and terminate the dedicated LI-02 EC2 host/root disk. "
+        "clear LI-02 log streams while retaining run ECR images, and terminate the dedicated LI-02 EC2 host/root disk. "
         "The empty LI-02 cluster/ASG and shared RDS, VPC/NAT, and shared ECS resources remain. "
         "The exact Terraform removal plan will still need its own hash approval.",
         f"STOP LI02 DEMO {run_id}",
@@ -946,7 +946,7 @@ def load_baseline() -> dict[str, Any]:
 
 
 def demo_service(profile: str) -> dict[str, Any] | None:
-    """Return the one LI-02 service, distinguishing an absent service from a failed lookup."""
+    """Return the active LI-02 service; an inactive service is already removed."""
     services = aws_json(
         profile,
         "ecs",
@@ -957,6 +957,8 @@ def demo_service(profile: str) -> dict[str, Any] | None:
         "clip-test-listings-demo-ap-south-1-li02",
     ).get("services", [])
     if not services:
+        return None
+    if len(services) == 1 and services[0].get("status") == "INACTIVE":
         return None
     if len(services) != 1 or services[0].get("status") != "ACTIVE":
         raise DemoError(
@@ -1409,86 +1411,6 @@ def delete_run_parameters(profile: str, baseline: dict[str, Any]) -> None:
         )
 
 
-def delete_run_images(profile: str, tags: list[str]) -> None:
-    """Delete only LI-02-tagged ECR digests unused by active task definitions."""
-    images: dict[str, set[str]] = {}
-    for tag in tags:
-        listed = aws_json(
-            profile,
-            "ecr",
-            "list-images",
-            "--repository-name",
-            "clip-shared-test-api",
-            "--filter",
-            "tagStatus=TAGGED",
-        ).get("imageIds", [])
-        image_id = next((item for item in listed if item.get("imageTag") == tag), None)
-        if image_id is None:
-            continue
-        details = aws_json(
-            profile,
-            "ecr",
-            "describe-images",
-            "--repository-name",
-            "clip-shared-test-api",
-            "--image-ids",
-            f"imageDigest={image_id['imageDigest']}",
-        ).get("imageDetails", [])
-        if len(details) != 1:
-            continue
-        digest = details[0]["imageDigest"]
-        existing_tags = set(details[0].get("imageTags", []))
-        if existing_tags - set(tags):
-            print(f"Keeping ECR digest {digest}; it also has a non-LI-02 tag.")
-            continue
-        images.setdefault(digest, set()).update(existing_tags)
-
-    if not images:
-        print("No LI-02-only ECR image digest remains to remove.")
-        return
-    definitions = aws_json(
-        profile, "ecs", "list-task-definitions", "--status", "ACTIVE"
-    ).get("taskDefinitionArns", [])
-    referenced: set[str] = set()
-    for task_arn in definitions:
-        definition = aws_json(
-            profile, "ecs", "describe-task-definition", "--task-definition", task_arn
-        )["taskDefinition"]
-        for container in definition.get("containerDefinitions", []):
-            image = container.get("image", "")
-            for digest, digest_tags in images.items():
-                if image == f"{ECR_REPO}@{digest}" or any(
-                    image == f"{ECR_REPO}:{tag}" for tag in digest_tags
-                ):
-                    referenced.add(digest)
-    for digest in images:
-        if digest in referenced:
-            print(
-                f"Keeping ECR digest {digest}; an active ECS task definition references it."
-            )
-    deletable = [digest for digest in images if digest not in referenced]
-    if not deletable:
-        print(
-            "All LI-02 ECR digests are still referenced; keeping them in the shared repository."
-        )
-        return
-    print(
-        "Unreferenced LI-02 ECR digests eligible for removal: " + ", ".join(deletable)
-    )
-    for digest in deletable:
-        aws(
-            profile,
-            "ecr",
-            "batch-delete-image",
-            "--repository-name",
-            "clip-shared-test-api",
-            "--image-ids",
-            f"imageDigest={digest}",
-            capture=False,
-        )
-        print(f"Removed unreferenced LI-02 ECR digest {digest}.")
-
-
 def delete_demo_log_streams(profile: str) -> None:
     """Delete streams in the LI-02-only log group while retaining its empty group."""
     log_group = "/ecs/clip-test-listings-ap-south-1-li02"
@@ -1633,12 +1555,12 @@ def stop(profile: str) -> None:
                 database_uri=baseline.get("database_image_uri"),
             )
         )
-    delete_run_images(profile, baseline.get("image_tags", []))
+    print("Retaining LI-02 ECR images so this run can be reproduced.")
     delete_demo_log_streams(profile)
     wait_for_li02_host_removed(profile)
     BASELINE.unlink(missing_ok=True)
     print(
-        "LI-02 public route, app, disposable RDS database, run objects, unused run images and log streams are removed. The LI-02 EC2 host and root disk are gone; shared RDS and shared ECS are untouched."
+        "LI-02 public route, app, disposable RDS database, run objects, and log streams are removed. The LI-02 EC2 host and root disk are gone; shared RDS, shared ECS, and ECR images are retained."
     )
     print(f"Restart it with: make li02-demo-start AWS_PROFILE={profile}")
 
