@@ -20,6 +20,7 @@ from app.core.auth import CallerContext
 from app.core.errors import ERRORS, FieldError, PublicError
 import app.domains.identity.public as identity_public
 import app.domains.listings.public as listings_public
+from app.domains.listings.public import ListingsPublic
 from app.domains.search.wanted_models import (
     WantedCreate,
     WantedPage,
@@ -29,6 +30,14 @@ from app.domains.search.wanted_models import (
     public_view,
 )
 from app.domains.search.wanted_store import PostgresWantedStore
+
+
+class WantedIdentity(Protocol):
+    """Account-class-neutral eligibility; local tests may inject a fixed actor."""
+
+    async def eligible(self, actor: UUID) -> bool:
+        """Return current account eligibility for this trusted actor."""
+        ...
 
 
 class WantedDependencies(Protocol):
@@ -50,23 +59,34 @@ class WantedDependencies(Protocol):
 
 
 class PublicWantedDependencies:
-    """Call only generated public modules; declaration-only calls fail closed."""
+    """Use the injected real Listings provider and the public Identity operation."""
+
+    def __init__(
+        self,
+        listings: ListingsPublic | None = None,
+        identity: WantedIdentity | None = None,
+    ) -> None:
+        """The app supplies Listings; only explicit test composition supplies Identity."""
+        self.listings = listings_public if listings is None else listings
+        self.identity = identity
 
     async def eligible(self, actor: UUID) -> bool:
         """Use the account-class-neutral eligibility operation."""
+        if self.identity is not None:
+            return await self.identity.eligible(actor)
         return (
             await identity_public.check_account_eligibility(actor, required_class=None)
         ).eligible
 
     async def active_categories(self) -> tuple[Category, ...]:
         """No local hardcoded or private-table category fallback."""
-        return await listings_public.read_active_categories()
+        return await self.listings.read_active_categories()
 
     async def category_display(
         self, codes: tuple[str, ...]
     ) -> tuple[CategoryDisplay, ...]:
         """Return current labels, including inactive historical codes."""
-        return await listings_public.read_category_display(codes)
+        return await self.listings.read_category_display(codes)
 
 
 class WantedService:

@@ -21,6 +21,7 @@ import app.domains.conversations.public as conversations_public
 from app.domains.listings.routes import router as listings_router
 from app.domains.listings.integrations import PublicListingsIdentity
 from app.domains.listings.postgres_store import PostgresListingsStore
+from app.domains.listings.search_access import ListingsSearchAccess
 from app.domains.listings.search_runtime import search_runtime, finish_search_cleanup
 from app.domains.listings.s3_storage import S3ListingsImageStorage
 from app.domains.search.wanted_routes import router as wanted_router
@@ -39,6 +40,7 @@ async def lifespan(application: FastAPI) -> AsyncIterator[None]:
     application.state.search_runtime = None
     application.state.wanted_store = None
     application.state.saved_store = None
+    application.state.listings_public = None
     if settings.database_url is None:
         application.state.listings_store = None
         application.state.listings_identity = None
@@ -83,6 +85,11 @@ async def lifespan(application: FastAPI) -> AsyncIterator[None]:
                 isolated_listing_limit=settings.isolated_listings_max_count,
                 hybrid_helper=search.helper,
                 hybrid_pool=search.pool,
+            )
+            application.state.listings_public = ListingsSearchAccess(
+                pool,
+                application.state.listings_store,
+                settings.sensitive_purchase_threshold_paise,
             )
             if settings.isolated_listings_test_caller:
                 from app.domains.listings.isolated_test import (
@@ -142,19 +149,21 @@ if settings.serve_web_app:
     app.include_router(wanted_router, prefix="/api")
     app.include_router(saved_router, prefix="/api")
 
-    @app.get("/api/demo-info", include_in_schema=False)
-    async def demo_info() -> dict[str, str | bool]:
-        """Label the unauthenticated isolated deployment as synthetic demo data."""
-        return {"mode": "isolated-listings-demo", "synthetic_data_only": True}
+    if settings.isolated_listings_test_caller:
+
+        @app.get("/api/demo-info", include_in_schema=False)
+        async def demo_info() -> dict[str, str | bool]:
+            """Label only the explicitly isolated deployment as synthetic data."""
+            return {"mode": "isolated-listings-demo", "synthetic_data_only": True}
 
     web_root = Path("/app/web")
     if not (web_root / "index.html").is_file():
-        raise RuntimeError("The isolated web app build is missing")
+        raise RuntimeError("The web app build is missing")
     app.mount("/assets", StaticFiles(directory=web_root / "assets"), name="assets")
 
     @app.get("/", include_in_schema=False)
     async def web_index() -> FileResponse:
-        """Serve the built Listings UI from the same ECS task as its API."""
+        """Serve the built UI from the same process as its authenticated API."""
         return FileResponse(web_root / "index.html")
 
     @app.get("/{web_path:path}", include_in_schema=False)

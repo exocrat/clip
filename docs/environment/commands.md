@@ -696,6 +696,14 @@ commands, not deployment or task-completion evidence.
 | `VITE_LISTINGS_ISOLATED_DEMO=true npm run dev` | Runs the same development web server on loopback 5173; exposes only labelled local Listings controls for preparing synthetic image metadata through the separate test app. Production builds ignore this development flag. | Ctrl+C stops the owned Vite process. Missing API/dependencies produce visible failures, not simulated successful saves. |
 | `CLIP_ENVIRONMENT=test CLIP_DEVELOPMENT_AUTH=true uv run --locked python apps/api/tests/domains/listings/browser_demo.py --isolated-listings-browser --inspect SESSION_PATH` | Requires the exact printed retained session path and matching container ownership label. Executes read-only SQL against that running browser database to print synthetic listing ID/title/price/status/proof values. | Fails closed on wrong owner/path/label, stopped/unavailable container or SQL failure; never inspects the shared database. |
 | `CLIP_ENVIRONMENT=test CLIP_DEVELOPMENT_AUTH=true uv run --locked python apps/api/tests/domains/listings/browser_demo.py --isolated-listings-browser --resume SESSION_PATH` | Validates the recorded private session/container label, starts that same database without resetting rows, reapplies only pending migrations, and serves the isolated API again. | Ctrl+C retains rows. Does not remove containers/volumes/session files. Cleanup requires a separate targeted action. |
+| `CLIP_ENVIRONMENT=test CLIP_DEVELOPMENT_AUTH=true uv run --locked python apps/api/tests/domains/listings/browser_demo.py --isolated-listings-browser --hybrid-search --resume SESSION_PATH` | Resumes that same local database and enables the real pinned helper, worker and Hybrid reader. Requires the repo-local CPython 3.13 helper and model under `.tools/semantic/`. Before serving, verifies the worker pool reaches `clip_listings_browser` over its private Unix socket, prepares existing rows, waits for complete vectors and activates the pinned pipeline. New listing creates/edits then use the database trigger and worker automatically; no copied vectors. | Refuses a mismatched database, unavailable helper/worker, failed vector job or incomplete five-minute bootstrap. Ctrl+C retains the labelled local database. No shared database or cloud target. |
+
+The browser harness also mounts real Wanted Request and Saved Listings routes
+on this same database. Categories, draft matches, save eligibility and saved
+summaries use the real Listings provider used by `app.main`; no scripted Listings
+responses are installed. `/me` and eligibility use only the fixed local synthetic
+account. Conversations remain unavailable. The image UI mode supports direct
+refreshes at `/saved` and `/wanted/{request_id}` as well as the Listings routes.
 
 ## SE-01 Step 9 — isolated evaluator preparation
 
@@ -710,6 +718,18 @@ need no database, Docker, cloud access, credentials or additional dependencies.
 
 Final dataset validation, human-reviewed labels and real retrieval integration
 remain pending; see [tooling limits](../../scripts/evaluation/README.md).
+
+## Listings/Search merge — deployment preparation
+
+The [combined deployment handoff](../architecture/listings-search-deployment.md)
+registers the ordinary API build and optional `apps/api/Dockerfile.hybrid` build,
+including explicit Python/wheel/model artifact contexts. Both are local builds
+and publish nothing. The optional image's helper install and real inference
+self-check run with networking disabled; model/wheel hashes are verified. Use
+Linux AMD64 artifacts, not the earlier Mac helper environment. The image includes
+`python scripts/search_pipeline.py --help` and the existing target-bound bootstrap
+operations for later deployment initialization. Normal `CLIP_SERVE_WEB_APP=true`
+serves the UI and `/api` routes independently of the isolated test identity.
 
 ## SE-01 hybrid checkpoint 4 — repository-local semantic probe
 

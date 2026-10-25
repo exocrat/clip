@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { Button } from '../../shared/ui';
-import { type DiscoveryApiError, discoveryPrice, discoveryPreviewBackend,
+import { type DiscoveryApiError, discoveryPreviewBackend,
   type CatalogueView, type PageResultListingSummary } from './discoveryApi';
 import { applyDiscoveryForm, DEFAULT_QUERY, discoveryForm, discoveryParams,
   parseDiscoveryQuery, switchDiscoveryMode, type DiscoveryForm, type DiscoveryQuery } from './discoveryQuery';
 import { startDiscoveryRequest } from './discoveryRequest';
+import { SaleListingCard } from './SaleListingCard';
 import './discovery.css';
 
 type ResultState = { kind: 'loading' } | { kind: 'ready'; page: PageResultListingSummary }
@@ -184,16 +185,7 @@ export function SaleDiscovery() {
           <p className="discovery-results-heading">Page {ready.page} · {ready.items.length} {ready.items.length === 1 ? 'listing' : 'listings'} on this page</p>
           {ready.items.length === 0 ? <div className="discovery-state"><h2>No listings found</h2><p>Try fewer filters or different search words.</p><Button variant="secondary" onClick={() => { setDraft(discoveryForm(DEFAULT_QUERY)); setFormError(''); navigate(DEFAULT_QUERY); }}>Clear filters</Button></div> : (
             <ul className="discovery-grid">
-              {ready.items.map((listing) => <li key={listing.listing_id}><article className="discovery-card">
-                <p className="discovery-category">{listing.category_label}</p>
-                <h2><Link to={`/listings/${listing.listing_id}`}>{listing.title}</Link></h2>
-                <p className="discovery-price">{listing.asking_price_paise === 0 ? 'Free' : discoveryPrice(listing.asking_price_paise)}</p>
-                <p className="discovery-description">{listing.description}</p>
-                <p className="discovery-card-meta">{listing.condition_label} · {listing.negotiable ? 'Negotiable' : 'Fixed price'}</p>
-                {listing.pickup_area && <p className="discovery-card-meta">Pickup: {listing.pickup_area}</p>}
-                {listing.sensitive_purchase && <p className="discovery-sensitive">Sensitive purchase</p>}
-                <Link className="discovery-detail" aria-label={`View ${listing.title}`} to={`/listings/${listing.listing_id}`}>View listing <span aria-hidden="true">→</span></Link>
-              </article></li>)}
+              {ready.items.map((listing) => <li key={listing.listing_id}><SaleListingCard listing={listing} /></li>)}
             </ul>
           )}
           <nav className="discovery-pagination" aria-label="Listing result pages">

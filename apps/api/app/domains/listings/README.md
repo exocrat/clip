@@ -30,9 +30,15 @@ Saved-item retrieval is separate: SE-02 consumes the reviewed public
 `read_saved_listing_summaries` operation for caller-owned save-page IDs; it must
 not reuse discovery or infer new-save eligibility from a displayed summary.
 Non-retired unavailable items retain their approved saved summary; retired
-references are content-free. Those public providers and the actual saved API
-remain unimplemented. Search-owned fixture tests record this contract only;
-they do not prove saved storage, ownership/privacy or real transition integration.
+references are content-free. `search_access.py` now supplies all five reviewed
+Listings calls to Search: the existing browse query and active catalogue,
+historical category labels, current save eligibility and safe saved summaries.
+Normal app startup and the isolated browser harness inject this same real
+provider. Saved summaries use the discovery-safe SQL projection, retain
+unavailable records, and expose no retired content; pending retirement fails
+closed. Search keeps its own saved rows and never queries Listings tables.
+The disposable database runner covers these connections with synthetic Identity;
+real Identity and complete domain acceptance remain pending.
 
 Step 4 adds plain-text `q` matching through
 `search_vector @@ plainto_tsquery('pg_catalog.english', q)`. The service trims

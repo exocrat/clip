@@ -74,7 +74,13 @@ def wanted_service(request: Request) -> WantedService:
     store = getattr(request.app.state, "wanted_store", None)
     if store is None:
         raise PublicError(ERRORS[503])
-    return WantedService(store, PublicWantedDependencies())
+    return WantedService(
+        store,
+        PublicWantedDependencies(
+            getattr(request.app.state, "listings_public", None),
+            getattr(request.app.state, "search_identity", None),
+        ),
+    )
 
 
 Caller = Annotated[CallerContext, Depends(require_caller)]
@@ -82,9 +88,13 @@ Service = Annotated[WantedService, Depends(wanted_service)]
 Paging = Annotated[WantedPage, Query()]
 
 
-def draft_match_service() -> DraftMatchService:
-    """No Search store needed; use only real public query/eligibility defaults."""
-    return DraftMatchService()
+def draft_match_service(request: Request) -> DraftMatchService:
+    """Borrow the same Listings provider as other Search operations."""
+    listings = getattr(request.app.state, "listings_public", None)
+    identity = getattr(request.app.state, "search_identity", None)
+    if listings is None:
+        return DraftMatchService(identity=identity)
+    return DraftMatchService(listings, identity)
 
 
 @router.post(

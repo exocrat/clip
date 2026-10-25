@@ -186,10 +186,8 @@ class Settings(BaseSettings):
             raise ValueError(
                 "The isolated Listings limit requires the isolated test caller"
             )
-        if self.serve_web_app and not self.isolated_listings_test_caller:
-            raise ValueError(
-                "The ECS web app mode requires the isolated Listings test caller"
-            )
+        # Hosting the built UI is independent of authentication. Only the explicit
+        # isolated caller flag may activate the guarded Listings demo identity.
         return self
 
 

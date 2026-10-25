@@ -33,6 +33,13 @@ Development relevance judgments remain unreviewed and are not copied into final 
 
 See result.json and changed-files.json for exact time, base and file fingerprints.
 
+The handoff result and file-fingerprint list preserve the original
+pre-consolidation local check package. After that run, the 12 identical schema
+inventory text captures were consolidated to the one canonical copy listed
+in the SE-01 ledger. The historical manifest may therefore name the 11
+removed copies. No application or test source changed in this documentation
+cleanup, and the handoff checks were not rerun.
+
 - Root Python:1270passed,20skipped in64.63s; root testpaths do not include data/tests.
 - Data:94passed in0.78s.
 - Web:lint63files;144passed,2explicit opt-in HTTP tests skipped; types/build pass.

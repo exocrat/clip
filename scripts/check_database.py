@@ -324,6 +324,7 @@ def main():
                     "apps/api/tests/domains/listings/test_embedding_worker_postgres.py",
                     "apps/api/tests/domains/listings/test_hybrid_read_postgres.py",
                     "tests/evaluation/test_search_calibration_postgres.py",
+                    "apps/api/tests/domains/listings/test_search_access_postgres.py",
                     # Large committed pagination fixture follows bounded math checks.
                     "apps/api/tests/domains/search/test_saved_postgres.py",
                     "-q",

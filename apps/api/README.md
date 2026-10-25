@@ -140,6 +140,13 @@ marketplace feature is enabled.
 
 ## Normal API Hybrid read lifecycle (SE-01)
 
+The combined merge now supplies an optional Linux AMD64 container extension with
+the pinned helper, model and operator CLI. Normal `CLIP_SERVE_WEB_APP=true` may
+serve the built UI without enabling the isolated test caller. See the
+[Listings/Search deployment handoff](../../docs/architecture/listings-search-deployment.md)
+for builds, runtime settings, pipeline initialization and the remaining
+Identity/Conversations bindings.
+
 Normal startup can now explicitly own the real helper and a separate min1/max2
 idle-autocommit read pool. The existing Listings command/Keyword pool keeps its
 transactional behavior. Invalid/partial configuration fails safely; an enabled
@@ -147,7 +154,7 @@ helper/read-pool startup failure closes partial resources and leaves Keyword
 available, with nonblank Hybrid503. Shutdown/cancellation cleans helper/pools;
 cleanup failures remain failures. No test caller, pipeline registration, serving
 switch, worker or backfill is enabled by this setting. Real Identity eligibility,
-serving-space/vector coverage, Linux packaging/resources and deployment gates
+serving-space/vector coverage, resource sizing and deployment gates
 still apply. See [the lifecycle contract](../../docs/architecture/normal-api-search-runtime.md)
 and the registered guarded native probe. Do not run the normal API against an
 existing/shared database merely to test these settings.

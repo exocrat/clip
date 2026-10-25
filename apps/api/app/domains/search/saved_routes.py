@@ -25,7 +25,11 @@ def saved_service(request: Request) -> SavedService:
     store = getattr(request.app.state, "saved_store", None)
     if store is None:
         raise PublicError(ERRORS[503])
-    return SavedService(store)
+    listings = getattr(request.app.state, "listings_public", None)
+    identity = getattr(request.app.state, "search_identity", None)
+    if listings is None:
+        return SavedService(store, identity=identity)
+    return SavedService(store, listings, identity)
 
 
 Caller = Annotated[CallerContext, Depends(require_caller)]

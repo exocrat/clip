@@ -14,6 +14,17 @@ non-matching cases plus those reviewed stable orders. No relevance-score sort
 or different search semantics is introduced. Human-reviewed labels and
 Success@5 remain Steps 9/11; fixture judgments do not substitute for them.
 
+## Shared database-schema inventory
+
+The 12 first/second inventory captures across the six SE-01 evidence folders
+were byte-for-byte identical (SHA-256
+`27b17765c9eeeab4bc058093ba486895a4c1da4ea78924cd64f860fcbd70b110`). The
+canonical copy is [calibration/inventory-first.txt](calibration/inventory-first.txt);
+each relevant `result.json` records the same digest. The native check still
+creates and compares its first and second inventories with
+`database/tests/native-checks.sh`; the repeated archived text copies added no
+distinct schema evidence.
+
 ## Coverage and evidence limits
 
 | Requirement/check | Test home | Evidence limit |

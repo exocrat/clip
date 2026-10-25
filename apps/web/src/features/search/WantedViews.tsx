@@ -7,7 +7,8 @@ import type {
   PageResultWantedRequestPublic,
 } from '../../../../../contracts/generated/types.gen';
 import { Button } from '../../shared/ui';
-import { discoveryPrice, readDiscoveryCatalogue } from './discoveryApi';
+import { discoveryPrice, readDiscoveryCatalogue, type ListingSummary } from './discoveryApi';
+import { SaleListingCard } from './SaleListingCard';
 import {
   browseWanted,
   budgetPaise,
@@ -16,6 +17,7 @@ import {
   createWanted,
   draftMatches,
   editWanted,
+  isListingSaved,
   ownWanted,
   readSaved,
   readSearchSession,
@@ -25,6 +27,7 @@ import {
   unsaveListing,
   validSearchId,
   wantedPreviewActive,
+  WantedApiError,
   type WantedRequestOwnerView,
   type WantedRequestPublic,
 } from './wantedApi';
@@ -93,18 +96,19 @@ function Pages({
     </nav>
   );
 }
-/** Render only the reviewed public request projection and its existing detail link. */
-function RequestCard({ item }: { item: WantedRequestPublic }) {
+/** Render the public request fields and optional owner actions in one card. */
+function RequestCard({ item, children }: { item: WantedRequestPublic; children?: ReactNode }) {
   return (
     <article className="wanted-card">
-      <h3>
-        <Link to={`/wanted/${item.request_id}`}>{item.title}</Link>
-      </h3>
+      <div className="wanted-card__head">
+        <span className="wanted-card__category">Wanted · {item.category_label}</span>
+        <span className="wanted-card__budget">
+          {item.budget_paise == null ? 'Budget not stated' : discoveryPrice(item.budget_paise)}
+        </span>
+      </div>
+      <h3><Link to={`/wanted/${item.request_id}`}>{item.title}</Link></h3>
       <p className="wanted-description">{item.description}</p>
-      <p>
-        {item.category_label} ·{' '}
-        {item.budget_paise == null ? 'Budget not stated' : `Budget ${discoveryPrice(item.budget_paise)}`}
-      </p>
+      {children}
     </article>
   );
 }
@@ -126,9 +130,11 @@ export function WantedBrowse() {
         {result.data && (
           <>
             {!result.data.items.length && <p>No open wanted requests.</p>}
-            {result.data.items.map((item) => (
-              <RequestCard key={item.request_id} item={item} />
-            ))}
+            {!!result.data.items.length && <ul className="wanted-grid">
+              {result.data.items.map((item) => (
+                <li key={item.request_id}><RequestCard item={item} /></li>
+              ))}
+            </ul>}
             <Pages number={number} hasNext={result.data.has_next} onChange={setNumber} />
           </>
         )}
@@ -372,14 +378,19 @@ export function MyWantedRequests() {
             {result.data && (
               <>
                 {!result.data.items.length && <p>You have no wanted requests.</p>}
-                {result.data.items.map((item) => (
-                  <article key={`${item.request_id}:${item.revision}`} className="wanted-card">
-                    <RequestCard item={item} />
-                    <p>Status: {item.state === 'open' ? 'Open' : 'Unavailable'}</p>
-                    <Button onClick={() => setEditing(item)}>Edit {item.title}</Button>
-                    <Availability item={item} onChanged={() => setVersion((v) => v + 1)} />
-                  </article>
-                ))}
+                {!!result.data.items.length && <ul className="wanted-grid wanted-grid--owner">
+                  {result.data.items.map((item) => (
+                    <li key={`${item.request_id}:${item.revision}`}>
+                      <RequestCard item={item}>
+                        <p className="wanted-card__status">Status: {item.state === 'open' ? 'Open' : 'Unavailable'}</p>
+                        <div className="wanted-card__actions">
+                          <Button aria-label={`Edit ${item.title}`} onClick={() => setEditing(item)}>Edit request</Button>
+                          <Availability item={item} onChanged={() => setVersion((v) => v + 1)} />
+                        </div>
+                      </RequestCard>
+                    </li>
+                  ))}
+                </ul>}
                 <Pages number={number} hasNext={result.data.has_next} onChange={setNumber} />
               </>
             )}
@@ -523,36 +534,68 @@ export function SaveListingAction({ listingId }: { listingId?: string }) {
 function SaveAction({ listingId }: { listingId: string }) {
   const intent = useRef(new SearchIntent());
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
+  const [alreadySaved, setAlreadySaved] = useState(false);
+  const [checkingSaved, setCheckingSaved] = useState(true);
+  const [unavailable, setUnavailable] = useState(false);
   const active = useRef<AbortController | null>(null);
-  useEffect(() => () => active.current?.abort(), []);
+  useEffect(() => {
+    const controller = new AbortController();
+    active.current = controller;
+    isListingSaved(listingId, controller.signal).then((exists) => {
+      if (!controller.signal.aborted) {
+        setSaved(exists);
+        setAlreadySaved(exists);
+      }
+    }).catch(() => {
+      if (!controller.signal.aborted)
+        setError('We couldn’t check your saved listings. You can retry Save safely.');
+    }).finally(() => {
+      if (!controller.signal.aborted) setCheckingSaved(false);
+    });
+    return () => controller.abort();
+  }, [listingId]);
   async function save() {
-    if (busy) return;
+    if (busy || checkingSaved || saved || unavailable) return;
     const controller = new AbortController();
     active.current = controller;
     setBusy(true);
-    setMessage('');
+    setError('');
     try {
       await saveListing(listingId, intent.current.key({ listingId }), controller.signal);
       if (!controller.signal.aborted) {
         setSaved(true);
-        setMessage('Saved to your private saved listings.');
       }
     } catch (failure) {
-      if (!controller.signal.aborted) setMessage((failure as Error).message);
+      if (!controller.signal.aborted) {
+        if (failure instanceof WantedApiError && failure.status === 404) {
+          setUnavailable(true);
+          setError('This listing can’t be saved because it is no longer available. Check Discover for current listings.');
+        } else {
+          setError((failure as Error).message);
+        }
+      }
     } finally {
       if (!controller.signal.aborted) setBusy(false);
     }
   }
   return (
-    <div>
-      <Button disabled={busy || saved} onClick={save}>
-        {saved ? 'Saved' : busy ? 'Saving…' : 'Save listing'}
-      </Button>
-      {message && <p role="status">{message}</p>}
-      <Link to="/saved">Manage saved listings</Link>
-    </div>
+    <section className="wanted-save-card" aria-label="Save this listing">
+      <div>
+        <h3>Want to come back to this?</h3>
+        <p>Save it privately and find it later in your saved listings.</p>
+      </div>
+      <div className="wanted-save-card__actions">
+        <Button disabled={checkingSaved || busy || saved || unavailable} onClick={save}>
+          {checkingSaved ? 'Checking saved status…' : saved ? 'Already saved' : unavailable ? 'Unavailable to save' : busy ? 'Saving…' : error ? 'Try saving again' : 'Save listing'}
+        </Button>
+        <Link className="ui-button ui-button--secondary wanted-save-card__link" to="/saved">Manage saved listings</Link>
+      </div>
+      {alreadySaved && <p className="wanted-save-card__success" role="status">This listing is already in your saved listings.</p>}
+      {saved && !alreadySaved && <p className="wanted-save-card__success" role="status">Saved to your private saved listings.</p>}
+      {error && <p className="wanted-save-card__error" role="alert">{error}</p>}
+    </section>
   );
 }
 
@@ -575,37 +618,39 @@ export function SavedListings() {
                 No saved listings on this page. <Link to="/">Discover listings</Link>.
               </p>
             )}
-            {result.data.items.map((item) => (
-              <article className="wanted-card" key={item.listing_id}>
-                {item.retired || !item.listing ? (
-                  <h3>Retired listing — details removed</h3>
-                ) : (
-                  <>
-                    <h3>
-                      <Link to={`/listings/${item.listing_id}`}>{item.listing.title}</Link>
-                    </h3>
-                    <p>{discoveryPrice(item.listing.asking_price_paise)}</p>
-                    <p>
-                      {item.listing.availability === 'unavailable'
-                        ? 'Seller marked unavailable'
-                        : Date.parse(item.listing.available_from) > Date.now()
-                          ? 'Availability has not started'
-                          : item.listing.available_until &&
-                              Date.parse(item.listing.available_until) <= Date.now()
-                            ? 'Availability has ended'
-                            : 'Seller marked available'}
-                    </p>
-                  </>
-                )}
-                <RemoveSaved listingId={item.listing_id} onRemoved={() => setVersion((v) => v + 1)} />
-              </article>
-            ))}
+            {!!result.data.items.length && <ul className="discovery-grid saved-listings-grid">
+              {result.data.items.map((item) => (
+                <li key={item.listing_id}>
+                  {item.retired || !item.listing ? (
+                    <article className="wanted-card"><h3>Retired listing — details removed</h3>
+                      <RemoveSaved listingId={item.listing_id} onRemoved={() => setVersion((v) => v + 1)} />
+                    </article>
+                  ) : (
+                    <SaleListingCard
+                      listing={item.listing}
+                      availabilityLabel={savedAvailability(item.listing)}
+                    >
+                      <RemoveSaved listingId={item.listing_id} onRemoved={() => setVersion((v) => v + 1)} />
+                    </SaleListingCard>
+                  )}
+                </li>
+              ))}
+            </ul>}
             <Pages number={number} hasNext={result.data.has_next} onChange={setNumber} />
           </>
         )}
       </ReadState>
     </section>
   );
+}
+
+/** Explain why an owned saved reference may no longer appear in Discover. */
+function savedAvailability(listing: ListingSummary): string {
+  if (listing.availability === 'unavailable') return 'Seller marked unavailable';
+  if (Date.parse(listing.available_from) > Date.now()) return 'Availability has not started';
+  if (listing.available_until && Date.parse(listing.available_until) <= Date.now())
+    return 'Availability has ended';
+  return 'Seller marked available';
 }
 /** Idempotent removal refreshes private results only after a confirmed response. */
 function RemoveSaved({ listingId, onRemoved }: { listingId: string; onRemoved: () => void }) {

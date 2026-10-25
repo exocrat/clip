@@ -33,6 +33,8 @@ COMPOSITION_IMPORTS: dict[str, frozenset[str]] = {
             "app.domains.listings.integrations.PublicListingsIdentity",
             "app.domains.listings.postgres_store",
             "app.domains.listings.postgres_store.PostgresListingsStore",
+            "app.domains.listings.search_access",
+            "app.domains.listings.search_access.ListingsSearchAccess",
             "app.domains.listings.search_runtime",
             "app.domains.listings.search_runtime.search_runtime",
             "app.domains.listings.search_runtime.finish_search_cleanup",

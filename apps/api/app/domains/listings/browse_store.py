@@ -15,7 +15,7 @@ from app.domains.listings.vocabulary import load_vocabulary
 # Project only the reviewed public summary. Ownership, selection, revision,
 # operational timestamps, upload metadata and object keys never enter this read.
 # The image subquery returns references only, without transferring image bodies.
-_BROWSE_SELECT_SQL = """
+_SUMMARY_SELECT_SQL = """
 SELECT listing.id AS listing_id, listing.title, listing.description,
     category.code AS category_code, category.label AS category_label,
     listing_condition.code AS condition_code, listing_condition.label AS condition_label,
@@ -29,6 +29,11 @@ SELECT listing.id AS listing_id, listing.title, listing.description,
 FROM listings.sale_listings AS listing
 JOIN listings.categories AS category ON category.id = listing.category_id
 JOIN listings.conditions AS listing_condition ON listing_condition.code = listing.condition_code
+"""
+
+# Saved-item reads reuse exactly this public projection with their own visibility
+# rules. Discovery additionally excludes unavailable and out-of-window rows.
+_BROWSE_SELECT_SQL = _SUMMARY_SELECT_SQL + """
 WHERE listing.retired_at IS NULL
     AND listing.retirement_pending_operation_id IS NULL
     AND listing.availability = 'available'

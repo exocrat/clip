@@ -116,16 +116,21 @@ async function request<T>(
   }
 }
 /** Refuse wrong-page, duplicate and impossible lookahead data rather than mixing private pages. */
-const page = (number: number, item: (v: unknown) => boolean, idField: string) => (v: unknown) =>
+const page = (
+  number: number,
+  item: (v: unknown) => boolean,
+  idField: string,
+  pageSize = 20,
+) => (v: unknown) =>
   object(v) &&
   exact(v, ['items', 'has_next', 'page', 'page_size']) &&
   Array.isArray(v.items) &&
   v.items.every(item) &&
   typeof v.has_next === 'boolean' &&
   v.page === number &&
-  v.page_size === 20 &&
-  v.items.length <= 20 &&
-  (!v.has_next || v.items.length === 20) &&
+  v.page_size === pageSize &&
+  v.items.length <= pageSize &&
+  (!v.has_next || v.items.length === pageSize) &&
   new Set(v.items.map((entry) => (object(entry) ? entry[idField] : null))).size === v.items.length;
 export const readWanted = (id: string, signal: AbortSignal) =>
   request<WantedRequestPublic | WantedRequestOwnerView>(
@@ -239,9 +244,9 @@ export const draftMatches = (title: string, signal: AbortSignal) =>
     'POST',
     { draft_title: title },
   );
-export const readSaved = (number: number, signal: AbortSignal) =>
+const readSavedPage = (number: number, pageSize: 20 | 100, signal: AbortSignal) =>
   request<PageResultSavedListingView>(
-    `/me/saved-listings?page=${number}&page_size=20`,
+    `/me/saved-listings?page=${number}&page_size=${pageSize}`,
     signal,
     page(
       number,
@@ -255,8 +260,20 @@ export const readSaved = (number: number, signal: AbortSignal) =>
           ? v.listing === null
           : isSearchListing(v.listing) && object(v.listing) && v.listing.listing_id === v.listing_id),
       'listing_id',
+      pageSize,
     ),
   );
+export const readSaved = (number: number, signal: AbortSignal) =>
+  readSavedPage(number, 20, signal);
+
+/** Search only the caller's current private saved pages; stop as soon as found. */
+export async function isListingSaved(listingId: string, signal: AbortSignal): Promise<boolean> {
+  for (let number = 1; ; number += 1) {
+    const result = await readSavedPage(number, 100, signal);
+    if (result.items.some((item) => item.listing_id === listingId)) return true;
+    if (!result.has_next) return false;
+  }
+}
 export const saveListing = (id: string, operationId: string, signal: AbortSignal) =>
   request<SavedListingAck>(
     `/me/saved-listings/${id}`,

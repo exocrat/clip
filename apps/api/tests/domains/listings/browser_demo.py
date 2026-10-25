@@ -8,6 +8,7 @@ retained on shutdown; --resume reopens only the recorded, labelled container.
 from __future__ import annotations
 
 import argparse
+import asyncio
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime, timedelta
 import json
@@ -33,12 +34,22 @@ from psycopg.rows import dict_row  # noqa: E402
 from psycopg_pool import AsyncConnectionPool  # noqa: E402
 import uvicorn  # noqa: E402
 
-from app.contracts.domain_types import ConfirmedImage  # noqa: E402
+from app.contracts.domain_types import ConfirmedImage, SessionView  # noqa: E402
 from app.core.auth import CallerContext, require_caller  # noqa: E402
 from app.core.config import Settings, load_settings  # noqa: E402
 from app.core.errors import ERRORS, error_response, install_error_handlers  # noqa: E402
+from app.domains.listings.embedding_bootstrap import EmbeddingBootstrap  # noqa: E402
 from app.domains.listings.postgres_store import PostgresListingsStore  # noqa: E402
+from app.domains.listings.search_access import ListingsSearchAccess  # noqa: E402
 from app.domains.listings.routes import router  # noqa: E402
+from app.domains.search.saved_routes import router as saved_router  # noqa: E402
+from app.domains.search.saved_store import PostgresSavedStore  # noqa: E402
+from app.domains.search.wanted_routes import router as wanted_router  # noqa: E402
+from app.domains.search.wanted_store import PostgresWantedStore  # noqa: E402
+from app.domains.listings.search_runtime import (
+    SearchRuntime,
+    search_runtime,
+)  # noqa: E402
 
 OWNER_ID = UUID("10000000-0000-4000-8000-000000000001")
 POSTGRES_IMAGE = "postgres:18.6-bookworm"
@@ -54,6 +65,10 @@ class SyntheticIdentity:
     async def account_is_eligible(self, user_id: UUID) -> bool:
         return user_id == OWNER_ID
 
+    async def eligible(self, user_id: UUID) -> bool:
+        """Use the same fixed synthetic account for Search's eligibility boundary."""
+        return await self.account_is_eligible(user_id)
+
 
 def require_demo_settings(settings: Settings) -> None:
     """Reject production/local/default startup and caller-selected databases."""
@@ -67,8 +82,41 @@ def require_demo_settings(settings: Settings) -> None:
         )
 
 
+async def prepare_hybrid_demo(search: SearchRuntime) -> None:
+    """Prepare existing rows and activate the real pinned pipeline in this DB only."""
+    if search.pool is None or search.dispatcher is None:
+        raise RuntimeError("The local Hybrid helper or worker is unavailable.")
+    async with search.pool.connection() as connection:
+        target = await connection.execute(
+            "SELECT current_database() AS name, inet_server_addr() IS NULL AS socket"
+        )
+        if await target.fetchone() != {"name": DATABASE, "socket": True}:
+            raise RuntimeError("Hybrid setup refused a non-demo database.")
+        bootstrap = EmbeddingBootstrap(connection)
+        await bootstrap.prepare()
+        while await bootstrap.queue(1000) == 1000:
+            pass
+        deadline = asyncio.get_running_loop().time() + 300
+        while True:
+            coverage = await bootstrap.status()
+            if coverage.failed:
+                raise RuntimeError("Local Hybrid vector generation failed.")
+            if coverage.complete:
+                await bootstrap.activate()
+                return
+            if asyncio.get_running_loop().time() >= deadline:
+                raise RuntimeError(
+                    "Local Hybrid setup did not finish within five minutes."
+                )
+            await asyncio.sleep(0.25)
+
+
 def create_demo_app(
-    conninfo: str, settings: Settings, *, image_ui_preview: bool = False
+    conninfo: str,
+    settings: Settings,
+    *,
+    image_ui_preview: bool = False,
+    hybrid_search: bool = False,
 ) -> FastAPI:
     """Bind the real store only to the launcher-owned database and fake caller.
 
@@ -76,6 +124,17 @@ def create_demo_app(
     never imports this module or installs its dependency overrides/routes.
     """
     require_demo_settings(settings)
+    runtime_settings = settings
+    if hybrid_search:
+        values = settings.model_dump(mode="python")
+        values.update(
+            database_url=conninfo,
+            hybrid_search_enabled=True,
+            hybrid_worker_enabled=True,
+            hybrid_search_interpreter=ROOT / ".tools/semantic/venv/bin/python",
+            hybrid_search_model_dir=ROOT / ".tools/semantic/model",
+        )
+        runtime_settings = Settings.model_validate(values)
 
     @asynccontextmanager
     async def lifespan(application: FastAPI):
@@ -102,12 +161,35 @@ def create_demo_app(
                     (OWNER_ID,),
                 )
             application.state.demo_pool = pool
-            application.state.listings_store = PostgresListingsStore(
-                pool, settings.sensitive_purchase_threshold_paise
-            )
-            application.state.listings_identity = SyntheticIdentity()
+            synthetic_identity = SyntheticIdentity()
+            application.state.listings_identity = synthetic_identity
+            # Browse has its own Identity boundary; use the same fixed local seller.
+            application.state.listings_browse_identity = synthetic_identity
             application.state.listings_conversations = None
-            yield
+            async with search_runtime(runtime_settings) as search:
+                if hybrid_search and search.state != "ready":
+                    raise RuntimeError("The local Hybrid helper could not start.")
+                application.state.search_runtime = search
+                application.state.listings_store = PostgresListingsStore(
+                    pool,
+                    settings.sensitive_purchase_threshold_paise,
+                    hybrid_helper=search.helper,
+                    hybrid_pool=search.pool,
+                )
+                # Only Identity is synthetic: every Listings operation and both
+                # Search stores read/write this same launcher-owned database.
+                application.state.listings_public = ListingsSearchAccess(
+                    pool,
+                    application.state.listings_store,
+                    settings.sensitive_purchase_threshold_paise,
+                    synthetic_identity,
+                )
+                application.state.search_identity = synthetic_identity
+                application.state.wanted_store = PostgresWantedStore(pool)
+                application.state.saved_store = PostgresSavedStore(pool)
+                if hybrid_search:
+                    await prepare_hybrid_demo(search)
+                yield
         finally:
             await pool.close()
 
@@ -123,9 +205,11 @@ def create_demo_app(
         # Register the browser's exact SPA paths before the API's dynamic
         # /listings/{listing_id} path so names such as /listings/new reach React.
         install_image_preview(application, settings, ROOT / "apps/web/dist")
-        application.include_router(router, prefix="/api")
+        prefix = "/api"
     else:
-        application.include_router(router)
+        prefix = ""
+    for feature_router in (router, wanted_router, saved_router):
+        application.include_router(feature_router, prefix=prefix)
 
     @application.middleware("http")
     async def local_requests_only(request: Request, call_next):
@@ -151,6 +235,17 @@ def create_demo_app(
         )
 
     application.dependency_overrides[require_caller] = synthetic_caller
+
+    @application.get(prefix + "/me", response_model=SessionView)
+    async def synthetic_session() -> SessionView:
+        """Expose only the existing session shape for the fixed local test actor."""
+        caller = await synthetic_caller()
+        return SessionView(
+            user_id=caller.user_id,
+            account_class="regular",
+            valid_until=caller.valid_until,
+            display_name="Synthetic Listings/Search browser user",
+        )
 
     @application.post("/__listings_demo/image", response_model=ConfirmedImage)
     async def prepare_image(
@@ -249,6 +344,11 @@ def main() -> None:
         "--image-ui-preview",
         action="store_true",
         help="Serve the built UI and temporary local image storage on loopback 5174",
+    )
+    parser.add_argument(
+        "--hybrid-search",
+        action="store_true",
+        help="Enable the real local Hybrid helper, worker, and isolated DB bootstrap",
     )
     action = parser.add_mutually_exclusive_group()
     action.add_argument("--resume", type=Path)
@@ -427,7 +527,12 @@ def main() -> None:
         )
         conninfo = f"postgresql://{DB_USER}@/{DATABASE}?host={socket_directory}&sslmode=disable"
         uvicorn.run(
-            create_demo_app(conninfo, settings, image_ui_preview=args.image_ui_preview),
+            create_demo_app(
+                conninfo,
+                settings,
+                image_ui_preview=args.image_ui_preview,
+                hybrid_search=args.hybrid_search,
+            ),
             host="127.0.0.1",
             port=port,
             access_log=False,

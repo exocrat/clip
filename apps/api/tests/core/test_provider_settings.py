@@ -55,6 +55,16 @@ def test_production_settings_reject_test_controls(variable, value, monkeypatch):
     assert variable in str(captured.value)
 
 
+def test_normal_hosted_ui_does_not_require_a_synthetic_caller(monkeypatch):
+    """Production may serve the built website with normal trusted authentication."""
+    monkeypatch.setenv("CLIP_ENVIRONMENT", "production")
+    monkeypatch.setenv("CLIP_SERVE_WEB_APP", "true")
+    settings = load_settings()
+    assert settings.serve_web_app
+    assert not settings.isolated_listings_test_caller
+    assert not settings.development_auth
+
+
 def _set_isolated_test_profile(monkeypatch, **overrides):
     """Build one valid test profile, then apply a single adversarial setting."""
     values = {

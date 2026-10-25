@@ -180,6 +180,7 @@ if [[ "$run_listings" == true ]]; then
     "$root/apps/api/tests/domains/listings/test_embedding_worker_postgres.py" \
     "$root/apps/api/tests/domains/listings/test_hybrid_read_postgres.py" \
     "$root/tests/evaluation/test_search_calibration_postgres.py" \
+    "$root/apps/api/tests/domains/listings/test_search_access_postgres.py" \
     "$root/apps/api/tests/domains/search/test_saved_postgres.py" \
     -q -W error > "$evidence/listings-tests.log" 2>&1
   cat "$evidence/listings-tests.log"

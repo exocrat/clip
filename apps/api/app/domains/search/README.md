@@ -14,6 +14,14 @@ not the available-only discovery operation or stale cached listing content.
 An unavailable non-retired summary can remain visible; retired content cannot.
 New saves use the separate current `read_save_target` check.
 
+Application startup now injects the real Listings provider into Wanted Request
+category reads, draft matching and saved-item operations. Search route factories
+borrow it from app state; generated declarations are not modified. All stores
+share the app's database pool. The loopback Listings browser harness uses these
+same real operations and Search stores, with only Identity supplied by its fixed
+test caller. It mounts Wanted and Saved routes as well as Listings; this is local
+integration evidence, not real Identity, Conversations or cloud acceptance.
+
 SE-01 Step 6's test double and contract tests cover explicit unavailable/future/
 ended snapshots, content-free retired markers, denied/unavailable dependencies,
 expiry and bounded batches. They neither implement saved behavior nor prove

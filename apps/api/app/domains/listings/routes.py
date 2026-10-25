@@ -1,8 +1,10 @@
 """HTTP handlers for the implemented Listings lifecycle commands."""
 
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any
+import re
 
 from fastapi import APIRouter, Depends, Query, Request, Response, status
+from pydantic import field_validator, model_validator
 
 from app.core.auth import CallerContext, require_caller
 from app.core.errors import ERRORS, PublicError
@@ -34,6 +36,31 @@ from app.domains.listings.browse_routes import router as browse_router
 
 router = APIRouter()
 router.include_router(browse_router)
+
+
+class ListingManagementPage(PageQuery):
+    """Parse browser query strings strictly before applying the page contract."""
+
+    @field_validator("page", "page_size", mode="before")
+    @classmethod
+    def exact_integer(cls, value: Any) -> Any:
+        """Accept decimal query strings while rejecting floats and booleans."""
+        if isinstance(value, str) and re.fullmatch(r"[+-]?[0-9]+", value):
+            try:
+                return int(value)
+            except ValueError:
+                pass
+        if type(value) is not int:
+            raise ValueError("Integer page value required")
+        return value
+
+    @model_validator(mode="after")
+    def bounded_offset(self) -> "ListingManagementPage":
+        """Keep pagination offsets in PostgreSQL's bigint range."""
+        if (self.page - 1) * self.page_size > 2**63 - 1:
+            raise ValueError("Page outside supported range")
+        return self
+
 
 _ERROR_RESPONSES: dict[int | str, dict[str, Any]] = {
     400: {"model": ErrorEnvelope, "description": "Bad Request"},
@@ -188,11 +215,10 @@ async def read_listing_detail(
 async def list_my_listings(
     caller: Annotated[CallerContext, Depends(require_caller)],
     service: Annotated[ListingsService, Depends(_service)],
-    page: Annotated[int, Query(ge=1)] = 1,
-    page_size: Annotated[Literal[20, 50, 100], Query()] = 20,
+    query: Annotated[ListingManagementPage, Query()],
 ) -> PageResult[ListingManagementView]:
     """List only the authenticated seller's management details."""
-    return await service.list_mine(caller, PageQuery(page=page, page_size=page_size))
+    return await service.list_mine(caller, query)
 
 
 @router.put(

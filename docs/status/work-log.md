@@ -50,8 +50,9 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | ID-01 | A | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | ID-READY, LI-01, LI-02, SE-CORE, SE-02, CN-CORE, CN-02 | — |
 | LI-01 | B | in progress | Finish the remaining Step 7 browser states and current-head Step 11 checks/reviews; prepare a progress PR without claiming LI-CORE. Steps 12–13 remain integration-gated. | Steps 1–6 and 8–10 implemented and locally checked; Step 7 partial (create/detail/edit/My Listings/gallery). | Suraj verified the multi-image edit/gallery checkpoint, seller-only selected-buyer visibility, and Step 10. No LI-01 phone-device result is claimed. | domain/listings at 6ffbe0b; focused Listings suite: 61 passed, one database-only test skipped outside the wrapper; disposable PostgreSQL workflow passed; current worktree `make check` passed 2026-10-23 (573 Python, 63 data, 42 web tests; remaining contract, type, boundary, database, safety, formatting, lint, and build checks passed). | LI-CORE not accepted. Remaining Step 7 states; Step 11 query-plan, current aggregate, and affected-owner review; native schema check; five pre-existing backend boundary findings; real Identity, Conversations, storage, and Search integration; Steps 12–13. | 2026-10-23 10:38:31 UTC |
 | LI-02 | B | in progress | Step 12 demo is tested and stopped; record final evidence, then begin intake of the Search owner's PR under the review workflow. | Steps 1–11 and 1.5 verified; Step 12 ran on ECS and was tested on desktop/mobile. Read-only app checks found the synthetic listing and its S3 image; teardown is complete. | User approved and applied teardown plan `3703bb7b23405a5a23a1ac6c39fa8870e682dddf3a1a8272183f4642f8f0db81` (0 add, 1 change to LI-02 bucket CORS, 20 LI-02 deletes). Post-stop inventory confirms disposable RDS/ALB/service/host/root volume/run S3 objects/URL parameter/log streams absent; shared RDS is stopped, shared ECS cluster remains, LI-02 ASG desired 0/no instances. Two run ECR images are retained (105,624,604 bytes total) per user direction. | `task/li-02-isolated-runtime` at `f0bf6c6`; earlier 11 focused tests, Black, Python compilation, Terraform fmt/validate, CLI help and diff checks. Start plans: infrastructure `a2b8cbeaa6cc4fc2d13ff8c8696cfa133d8134280de89f719e0d6f2b91668f55`; app start `b6a3fbd4812c965a5830780f337997d13b4b362c7eb1a73f2b3e70f5946b5bd4`. Stop-path corrections are currently uncommitted in `scripts/li02-demo`, `infra/terraform/domains/listings/test/database_tasks.tf`, both LI-02 operator guides, and this work log. `git diff --check` passed; no tests rerun. Existing untracked `data/runs/` and `database/migrations.zip` remain untouched. | Compute/ingress/disposable-database charges from the demo have ended. Retained run images add about 101 MiB of ECR storage; Step 4 bucket/IAM/log group and shared VPC/NAT/ECS/RDS remain. No manual RDS snapshot remains. | 2026-10-25 09:29:55 UTC |
-| SE-01 | Mohit (C); peer Suraj (B), Identity review | in progress | Combined local handoff human-verified; real acceptance gates pending | Local functional/evaluation-tool preparation checked; final task/readiness pending | Mohit verified local handoff; final real acceptance pending | [Search handoff](../evaluation/domain/search-handoff/result.json): Python1270/data94/web144,Black183,native20/3skip,wrapper35,contracts8,boundaries0/parity11/types/build pass | Real providers/readiness, final data/20human labels/final evaluator binding, NFR target/measurements, Docker-secret/CI/peer gates remain | 2026-10-25 08:50:43 UTC |
+| SE-01 | Mohit (C); peer Suraj (B), Identity review | in progress | Local create-to-Keyword-and-Hybrid flow and browser walkthrough verified; formal acceptance remains pending | Test-only browser demo binds the same fixed synthetic Identity for writes/browse and can opt into the real helper, worker, pipeline bootstrap and Hybrid reader; automatic new-listing vector generation was observed | Suraj verified the local command/API/proxy flow and subsequent browser walkthrough | Search PR #11 worktree `task/search-evidence-reduction` at `864e53b`; new listing `194a32d4-64bb-491b-b4ec-68403e26f7f3` produced one title and one description vector (384 dimensions each), then matched in both modes through API and Vite proxy; session `/tmp/clip-listings-browser-v6e1f01t`; UI `http://127.0.0.1:5173/` | Formal SE-CORE/DATA-READY and final NFR/hosted-CI acceptance remain outside this merge step | 2026-10-25 14:38:24 UTC |
 | SE-02 | Mohit (C); peer Suraj (B), Identity/Conversations review | in progress | Step8 real integration gated; local handoff human-verified | Steps1–7 isolated result verified; Step8 audit performed | Mohit verified isolated UI and combined local handoff | [Search handoff](../evaluation/domain/search-handoff/result.json): Python1270/data94/web144,Black183,native20/3skip,wrapper35/contracts8/boundaries/parity/type/build pass | Await actual ID-READY/LI-CORE/SE-CORE/C adapters; Step9 final acceptance, pinned secrets/hosted CI and independent review pending | 2026-10-25 08:50:43 UTC |
+| MERGE-LI-SE | Suraj (integration); Listings/Search affected owners | in progress | Step 8 verified; explain Step 9 publication, hosted checks and exact approval gate before execution | Steps 1–8 performed; Search branch reconciled with current main, secrets-scan false positives resolved narrowly, and local checks passed | Steps 3–8 verified by Suraj | Local merge commit `29eb6fb`; fallback branch `safety/search-pr11-pre-main-reconciliation-20261025`; original working changes retained in stash `af9d7f5`; 1,288 Python, 94 data, 147 web, 21 disposable-PostgreSQL adapter tests pass; secret scan passes | No push, cloud operation or PR merge yet. Hosted CI must rerun after publication; Identity/Conversations and cloud workload/NFR checks remain later work. Known-vocabulary typo matching does not promise arbitrary kettle misspellings. | 2026-10-25 14:42:27 UTC |
 | CN-01 | D | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | Isolated development: PRE-00, then DL-00 and a reviewed contract/stub. Later real gates: CN-CORE; SE-02's real request interfaces for request-response integration; CN-03's producer path for final NFR-05 acceptance. | — |
 | CN-02 | D; A/B interface review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | Isolated development: PRE-00, then DL-00 and a reviewed contract/stub. Later real gates: CN-CORE, ID-READY, and LI-CORE for listing-origin behavior; SE-02 plus CN-01's real request path for request-response inbox integration. | — |
 | CN-03 | A; D producer review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | CN-CORE, ID-READY | — |
@@ -511,6 +512,252 @@ handoff is a traceability progress PR after current-head checks and review
 preparation; it does not claim LI-CORE, ID-READY, or completed LI-02 Step 12.
 
 ## Dated history entries
+
+### Search–Listings merge Steps 1–3 — 2026-10-25 13:28:31 UTC
+
+Suraj verified the separate merge plan and Steps 1–2, then explicitly directed
+that every Listings–Search operation use real implementations; only absent
+Identity/Conversations may remain test dependencies. The Search task procedure
+was not changed. Audit: PR #11 head `864e53b` is one commit ahead/five behind
+current main `9a628e1`, GitHub reports conflicts, and the prior CI failed only
+its secrets scan. Existing evidence reductions and browser work were preserved.
+
+Step 3 adds Listings-owned `ListingsSearchAccess` for all five reviewed calls:
+real browse, active/historical categories, save-target visibility and bounded
+saved summaries. Saved reads reuse the public SQL projection, retain unavailable
+items, exclude private fields, emit content-free retired markers and fail closed
+on missing/pending origins. App startup injects this provider into Search route
+factories using the existing database pool; Search accesses only its own tables.
+The loopback browser harness mounts real Wanted/Saved routes/stores and `/me`
+with only a fixed synthetic Identity; image-preview refresh routes now include
+Saved and Wanted detail. Normal startup imports no test provider.
+
+Checks: focused service/route/authorization tests 167 passed; wider Search,
+health/provider and boundary tests 235 passed/9 prerequisite skips; disposable
+PostgreSQL runner 21 passed/3 optional-model skips plus clean/repeat/rollback/
+reapply and four SQL smokes. The added check uses actual `app.main` startup and
+only replaces Identity, covering category assignment/display, draft matching,
+save retries, cross-user isolation, unavailable/retired visibility, expiry and
+pending-origin denial. Initial runner fixture-order failure hit an older
+`<30` corpus assertion; moved this test after bounded math fixtures, preserving
+both tests, and reruns passed. App typing (5 files), contract-double typing,
+8 generated artifacts, boundary scan (0), CI parity, formatting, shell syntax,
+and whitespace passed. Contract check initially lacked Node on PATH; reran
+successfully with the already-recorded Linux Node installation. No cloud,
+frontend styling, main reconciliation, commit or PR mutation. Step 3 awaits
+human verification; Step 4 fresh command walkthrough follows. Human browser
+verification remains Step 6; high-reasoning reminder remains before Step 7.
+
+### Search–Listings merge Step 4 local command walkthrough — 2026-10-25 13:37:42 UTC
+
+Step 3 result verified by Suraj. Started the updated harness on separate loopback
+port 5174 because ports 8000/5173 were already occupied by processes outside this
+shell; did not stop or replace them. Built the existing web app and served its
+normal UI with the local-only banner, isolated PostgreSQL and temporary image
+storage. Created a fresh Appliances kettle and Bicycles bicycle through the real
+image upload, confirmation and Listings create APIs. Both appeared in browse;
+the worker made one title vector and one description vector for each, all 384
+dimensions, and both generations reached ready. Keyword search found the kettle;
+Hybrid found it by “hot water boiler” and the bicycle by “pedal-powered transport”.
+Replacing a listing also triggered fresh vectors and Hybrid found its changed
+description. Real category catalogue/display, category/price/condition/negotiable
+filters, price and relevance ordering, draft match, Wanted create/read/open list/
+owner list/edit/close/reopen, Save/list/retry, unavailable listing exclusion,
+saved current-unavailable summary, restore and repeat-safe Unsave passed through
+HTTP. Wanted conversation response correctly returned 503 because Conversations
+is absent, rather than inventing a result.
+
+One Listings owner-page query defect surfaced: `/api/me/listings` works with its
+default page size, but explicitly supplying `page_size=20` (or 50/100) returns a
+generic 422. No code was changed during this test step; fix or scope this before
+final closeout. The build and API run used this worktree's current source. Step 4
+awaits human verification; no cloud, Git or PR action was taken.
+
+Step 5 scope clarification from Suraj (2026-10-25 13:44:02 UTC): the seller
+page-size parameter is not selectable in the visible UI and the default request
+works, so assess its relevance rather than treating it as a create/search-flow
+blocker. Add Discover listing photos, make Wanted Request cards visually
+consistent with sale listing cards, and polish Save-area controls/messages as
+the Step 5 presentation work. Suraj verified Step 4 at 13:44 UTC.
+
+### Search–Listings merge Step 5 presentation and pagination correction — 2026-10-25 13:52:33 UTC
+
+Step 4 and Step 5 scope were verified by Suraj. Fixed seller-list pagination by
+parsing page/page-size as exact query integers before applying the existing
+20/50/100 contract; unsupported sizes and malformed decimals remain rejected.
+Added a focused actual-router test for all accepted sizes and invalid inputs.
+Search Discover now renders the first real image from each Listings summary via
+the public Listings `ListingImagePreview`, which obtains authorized expiring
+image delivery; no image bytes or credentials are copied into Search. Cards show
+a clear empty state when no image is attached. Wanted cards now use one shared
+semantic card (no nested card borders), show category and budget clearly, and
+use the same responsive three/two/one-column layout as sale cards. Owner actions
+stay inside that card. Save controls now sit in a styled panel with matching
+button/link treatment, clear confirmed success, specific unavailable feedback,
+and a disabled Save action after a definitive 404; transient errors remain
+retryable with the same operation key.
+
+Changed code files: `apps/api/app/domains/listings/routes.py` (strict owner-page
+query parsing); new `apps/api/tests/domains/listings/test_routes.py` (route
+regression checks); `apps/web/src/features/listings/index.ts` (public image
+component export); `ListingImagePreview.tsx` (ensures its Listings styles are
+loaded); `SaleDiscovery.tsx` and `discovery.css` (authorized sale-photo cards);
+`WantedViews.tsx` and `wanted.css` (Wanted card structure and Save feedback).
+`docs/architecture/frontend-collaboration.md` now records the public Listings
+photo-display connection used by Search Discover.
+
+Checks: web lint, 144 web tests (2 skipped), TypeScript checks and production
+build passed; backend route/browse tests 78 passed; Black, route mypy and Python
+boundary scan passed (0 violations); `git diff --check` passed. A fresh local
+PNG listing appeared in the actual Discover API with an attached photo ID; the
+Listings delivery endpoint returned the uploaded PNG bytes. The updated local
+UI/API is running at `http://127.0.0.1:5174/` with the isolated local database.
+The fresh PNG listing's generation also reached ready with one title and one
+description vector, 384 dimensions each. Visual browser review is still pending
+for Step 6. No cloud, merge, commit, or PR action was taken.
+
+### Search–Listings merge Step 5 saved-card and repeat-save follow-up — 2026-10-25 14:02:13 UTC
+
+Suraj pointed out that Saved sale cards differed from Discover and that the
+detail page still offered Save after a prior save. Extracted Search's
+`SaleListingCard` and now use it for both Discover and Saved. The saved card
+retains its current availability, Remove control, and content-free retired
+state while showing the same photo, title, price, description and listing facts
+as Discover. `ListingImagePreview` remains the shared Listings-owned image
+delivery path.
+
+The detail Save action now checks the authenticated caller's existing private
+saved-list pages (100 per request, continuing only when `has_next` is true),
+shows a disabled “Already saved” state on a match, and otherwise offers Save.
+The save API's existing pair uniqueness remains the retry/race fallback. Added
+three web tests for found-on-first-page, found-on-later-page and absent cases;
+the Saved endpoint was also exercised against the real local API with a saved
+photo listing. The architecture map now records the shared card, image and
+saved-state connections. `npm run check` passed lint, 147 web tests (2 skips),
+TypeScript and build. No cloud or Git publication action was taken.
+
+### Search–Listings merge Steps 5–6 human verification — 2026-10-25 14:04:15 UTC
+
+Suraj reports Step 5 verified and confirms the browser walkthrough was completed;
+that walkthrough found the Saved-card mismatch and repeat-Save behavior, which
+were corrected in the Step 5 follow-up above. Steps 5 and 6 are recorded as
+verified/performed. Before Step 7, remind Suraj to switch to a high-reasoning
+model; the deployment-wiring audit has not started.
+
+### Search–Listings merge Step 7 deployment wiring — 2026-10-25 14:14:33 UTC
+
+Suraj authorized Step 7 after the requested high-reasoning reminder. Traced
+normal app startup, all five Listings operations consumed by Search, the shared
+database, real S3 delivery, update/invalidation/worker path, Identity and
+Conversations public calls, migrations, image packaging and existing shared/
+isolated deployment definitions. No additional missing Listings–Search call
+was found. Identified and corrected two current packaging/configuration gaps:
+normal bundled website serving was tied to the isolated caller, and the base
+API image contained no semantic interpreter/model or pipeline operator.
+
+`app/core/config.py` now allows `serve_web_app` independently of the isolated
+caller; production still rejects fake/development auth. `app/main.py` emits
+demo-info only for the explicit isolated profile. The existing isolated profile
+and its Terraform/build remain unchanged. A settings regression checks normal
+production hosted UI with no synthetic caller. `.env.example` documents the
+independent UI setting.
+
+Added optional `apps/api/Dockerfile.hybrid` plus its narrow Docker ignore file.
+It extends the ordinary API image using explicit standalone CPython 3.13.12,
+wheel and model build contexts. A compact Linux x86_64 lock records the same
+24 already-verified package versions with selected wheel hashes. Install and
+real inference build steps run without networking; the runtime retains UID
+10001, exact model/runtime checks, the existing helper/worker and packaged
+`scripts/search_pipeline.py`. The ordinary image stays Keyword-capable by
+default. No model, wheel or interpreter binaries enter Git.
+
+The deployment handoff in `docs/architecture/listings-search-deployment.md`
+records build inputs/commands, same-database connections, S3 and UI settings,
+explicit initial prepare/queue/status/activate jobs, automatic later vector
+updates, connection/process budgets and exact later Identity/Conversations
+bindings. Linked it from API/docs READMEs, lifecycle docs and command registry.
+The shared foundation Terraform still needs the selected integrated release's
+secret/S3/routing/resource settings when that later deployment is approved;
+the existing isolated demo is not repurposed.
+
+Checks: ordinary Linux AMD64 image built at local digest `bc5f5376a1939f2043ef68690ce3fd63616d5215973323c65f47f0ab8f98eceb`;
+optional Hybrid image built at `cd604b617e64ca197bcb7c6139b9d6c433dcce73863a01f2a65e8c10c20c517a`.
+Hybrid build verified all pins and ran real offline 384-dimensional inference
+as the runtime user. Packaged operator CLI help runs offline. Ordinary container
+hosted UI smoke (read-only filesystem, no network except its own loopback): root
+and saved/wanted SPA paths 200, protected Listings/Wanted/Saved APIs 401, demo-info
+and unknown API 404. Settings/runtime/isolation/browser-harness checks 67 passed;
+Black, mypy (2 files), boundary scan (0) and whitespace passed. Initial Docker
+build was sandbox-blocked from its home-directory builder metadata; approved
+escalated local builds passed. No registry push, AWS action, cloud test, commit,
+main reconciliation or PR mutation. Step 7 result awaits human verification.
+
+### Search–Listings merge Step 7.5 completeness audit — 2026-10-25 14:22:33 UTC
+
+Compared the approved merge-stage scope with SE-01/SE-02 requirements, reviewed
+Listings/Search contracts, current app wiring, UI entry points, tests, prior local
+HTTP/PostgreSQL evidence, and the Step 7 deployment handoff. No missing
+Listings–Search implementation or call was found. The five Search-to-Listings
+operations use real Listings code and the shared database; the recorded fresh
+create/edit flow generated vectors automatically and matched in Keyword and
+Hybrid. Wanted create/read/edit/close, draft matching, private save/unsave,
+unavailable-item behavior, image delivery and the browser-reported card/save
+corrections are present. Existing route/database/browser tests and build checks
+cover these paths; this read-only audit did not rerun them.
+
+Identity's local caller remains synthetic and Conversations-dependent actions
+fail safely while that domain is absent, as explicitly allowed for this stage.
+The deployment handoff and both local Linux images are prepared/tested, without
+cloud or Terraform changes. The typo matcher is deliberately vocabulary-limited;
+the approved vocabulary does not contain kettle, so `ketle` is not promised even
+though the tested bicycle/vehicle and semantic paraphrase searches work. This is
+a search-vocabulary limitation, not a missing Listings connection. The formal
+LI-CORE gate, final dataset, NFR evaluation and cloud tests were excluded from
+this audit. Current-main conflict resolution and the prior CI secrets-scan
+failure remain Step 8 work. No source/test/configuration code or external
+resources were changed. Step 7.5 awaits result verification.
+
+### Search–Listings merge Step 8 current-main reconciliation and checks — 2026-10-25 14:38:24 UTC
+
+Fetched current `origin/main` (`9a628e1`) and PR head (`864e53b`); GitHub still
+reports PR #11 conflicting until its head is updated. Preserved the original
+Search commit in `safety/search-pr11-pre-main-reconciliation-20261025` and the
+uncommitted approved work in stash `af9d7f5`. Reconciled current main locally
+with merge commit `29eb6fb`; the LI-02 runtime, Terraform, operator and driver
+test changes from PR #12 are present. Resolved the upload-test conflict by
+keeping main's fixed future synthetic caller expiry. Resolved the work-log table
+by retaining main's completed LI-02 status and Search's SE-01/SE-02 status.
+The local LI-02 driver/upload regression set passes; no cloud action occurred.
+
+The original CI failure was eight `generic-api-key` matches, each a 64-character
+hex SHA-256 fingerprint: the model tokenizer checksum and source-file checksums
+stored in historical evaluation result files. They are integrity hashes, not
+API credentials; two recorded source hashes no longer match current files because
+the evidence predates later edits. Added a Gitleaks exception restricted to the
+specific manifest paths and JSON hash-field lines; all other default rules stay
+enabled. The pinned source-snapshot scan passes on the reconciled combined tree.
+No candidate hash values were copied into this log.
+
+Final local checks: CI parity; Black (187 files unchanged); Python 1,288 passed /
+21 skipped; data 94 passed; web lint, 147 passed / 2 skipped, TypeScript and
+production build; boundary scan (0); eight generated contract artifacts current;
+consumer-double mypy and eight changed API-file mypy checks; database wrapper
+safety (35 cases); disposable PostgreSQL adapter workflow (21 passed / 3 optional
+model skips) plus clean/repeat migrations, four smokes, rollback and reapply;
+isolated LI-02/browser regression set (52 passed); Terraform format; Gitleaks.
+The first Python run lacked the recorded Node 24 path and 21 Node-dependent cases
+failed; rerunning with that path passed the complete suite. The ordinary DB-only
+runner also passed.
+
+After the approved duplicate-file reduction, the complete working-tree diff
+against current main is 61,555 added / 156 deleted lines across 458 files,
+including nine new text files that Git's ordinary diff summary omits. Of the
+additions, evaluation evidence/handoff is 26,486 lines across 242 files, API
+application code 6,093 across 38 files, API tests/harnesses 12,956 across 52
+files, web source/tests 2,253 across 23 files, other documentation 6,422 across
+28 files, and scripts/database code 4,211 across 34 files. No tests or further
+evidence were removed during this step. No push, hosted CI rerun, PR merge, cloud
+deployment or NFR claim was made. Step 8 awaits human result verification.
 
 ### SE-01/SE-02 combined local handoff audit — 2026-10-25 08:49:53 UTC
 
@@ -4520,3 +4767,29 @@ These records preserve execution mode, isolated results and the resolved real-ch
 Writer: Mohit (C), `search-domain`; started 2026-10-25 08:13:02 UTC. Human verified Step6 and authorized Step7. Reserve Search feature files/tests, public Search index, `apps/web/src/pages/ScaffoldPages.tsx` Search-owned slots only, frontend map, evidence and log. Existing routes and other features remain owned by their maintainers. Public HTTP `GET /me` provides session eligibility; no private Identity/Listings/Conversations imports or invented provider success.
 
 Step7 frontend reservation released after checks: 2026-10-25 08:26:59 UTC. Browser verification pending; reacquire a bounded reservation before any shared-page correction.
+
+### Search evaluation inventory consolidation — 2026-10-25 11:22:46 UTC
+
+The read-only scope audit found 12 archived SE-01 schema inventory captures with identical SHA-256 `27b17765c9eeeab4bc058093ba486895a4c1da4ea78924cd64f860fcbd70b110` and identical 1,593-line contents. Kept `calibration/inventory-first.txt`, removed the other 11 copies (17,523 repeated lines), and documented that the handoff result/fingerprint files describe the earlier check package. No app or test code changed and no tests were run for this documentation-only cleanup. Human verification is pending; next is the integration-readiness audit, followed by the local create-listing-to-Search flow.
+
+### SE-01/SE-02 local integration-readiness audit — 2026-10-25 11:34:31 UTC
+
+Read-only inspection confirmed that `app.main` mounts the Listings browse, wanted and saved routers on the existing bounded PostgreSQL pool. Basic keyword browse uses the existing database; Hybrid helper/worker settings default off. Identity public operations remain declarations that raise `NotImplementedError`, so normal create/browse calls fail closed with 503.
+
+The Listings browser demo uses its own `clip_listings_browser` database and a synthetic seller identity, but does not bind `listings_browse_identity`; its browse route therefore falls through to the unimplemented public Identity declaration. The Search native preview uses a separate database, mounts only the browse router and seeds three synthetic listings; it has no listing-create route. Neither existing demo can show create-then-search as-is. The expected narrow path is a test-only harness that mounts the full Listings router, shares one disposable database and injects the same fixed synthetic identity for create and browse; no product runtime edit is currently identified.
+
+The same API and PostgreSQL arrangement can host basic browse without a new Search service or cluster; migrations still run as a separate database task. Real Identity wiring remains necessary for non-test create/browse, and real Conversations is needed for response flows, not the create-to-browse check. No tests, database, cloud actions or source changes were performed in this audit. The local flow is the next step after human verification.
+
+### SE-01 local create-to-search flow — 2026-10-25 11:47:33 UTC
+
+Added a test-only Identity binding in `apps/api/tests/domains/listings/browser_demo.py`: the same fixed synthetic seller now satisfies both the Listings write boundary and the separate browse eligibility boundary. No product runtime code changed. The existing launcher created its labelled local PostgreSQL 18.6 container, applied the branch migrations and served the API on loopback; no shared or cloud database was used.
+
+Using HTTP commands, read the catalogue, obtained synthetic image-confirmation metadata, created listing `df289699-1d9a-464d-b199-3c65d82ddb60` titled `Local Search Flow Brass Kettle 2026-10-25`, then queried `GET /listings?q=Brass Kettle`; the returned row had the same ID and title. Started the Search/Listings Vite development UI with `VITE_LISTINGS_ISOLATED_DEMO=true` and without the Search fixture-preview flag; the Search route and API proxy returned HTTP 200 and the same row. Session is `/tmp/clip-listings-browser-v6e1f01t`; API is `http://127.0.0.1:8000` and UI is `http://127.0.0.1:5173/`, both loopback-only and left running for Mohit's browser verification. Full test suites were not run. The isolated listing uses synthetic image metadata, not an uploaded image.
+
+### SE-01 local create-to-Hybrid flow — 2026-10-25 12:15:58 UTC
+
+Added an opt-in `--hybrid-search` mode to the test-only `browser_demo.py`. It starts the existing real `search_runtime` and dispatcher, verifies their read/worker pool targets the same `clip_listings_browser` private Unix-socket database, then uses the real `EmbeddingBootstrap` to prepare, queue existing rows, wait for complete vectors and activate the pinned pipeline. `PostgresListingsStore` receives the real helper/read pool; no product runtime module or vector data was copied. The normal demo remains Keyword-only unless this flag is supplied.
+
+For this Linux/WSL run, installed CPython 3.13.12 and the same 24 package versions as the existing helper lock using Linux wheels; PyPI metadata reported no advisories, and the two model artifacts matched the checked manifest hashes. These files and the generated Linux lock remain under ignored `.tools/semantic/`. Real helper inference returned a 384-dimensional query vector and separate title/description vectors. Resumed the retained local demo database, then created `Local Hybrid Auto Kettle 352439ce` (`194a32d4-64bb-491b-b4ec-68403e26f7f3`). Without calling the queue/bootstrap after creation, the database trigger created its generation and the real dispatcher published one title and one description vector (384 dimensions each). `GET /listings?q=kettle` returned that ID in both Keyword and Hybrid modes; the Vite `/api` proxy returned it in both modes as well.
+
+Python compilation, CLI help, Black formatting, and `git diff --check` passed; no full test suite was run. API and Vite remain on loopback ports 8000 and 5173 with session `/tmp/clip-listings-browser-v6e1f01t` for human browser verification. The listing uses synthetic image metadata. No shared database, cloud resource or product runtime code was touched.

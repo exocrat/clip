@@ -22,6 +22,7 @@ The root [README](../README.md) describes the project. Agents start from [AGENTS
 - [Private single-snapshot hybrid read](architecture/hybrid-listing-read.md)
 - [Private keyword relevance](architecture/keyword-listing-relevance.md)
 - [Draft public Keyword/Hybrid contract and both-mode relevance](../contracts/search-mode-proposal.md)
+- [Combined Listings/Search deployment wiring and optional Hybrid image](architecture/listings-search-deployment.md)
 - [Frontend page inventory and collaboration map](architecture/frontend-collaboration.md)
 - [Human browser, mobile layout and camera verification](environment/browser-verification.md)
 - [Responsive UI and camera verification decision](decisions/responsive-ui-and-camera-verification.md)

@@ -1,5 +1,10 @@
 # Normal API Hybrid read lifecycle
 
+Merge follow-up: [the combined deployment handoff](listings-search-deployment.md)
+now provides and locally verifies an optional Linux AMD64 Hybrid image and normal
+website-serving configuration. The original checkpoint evidence below remains
+historical; integrated cloud workload/resource acceptance is still separate.
+
 **Origin:** SE-01 hybrid amendment checkpoint5, Mohit-verified implementation plan.
 **State:** Implemented and locally checked; result awaits human verification.
 Linux/deployment/resource acceptance and actual upstream identity/images remain
