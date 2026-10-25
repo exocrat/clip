@@ -49,7 +49,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | DL-00 | Shared-core/contract coordinator; all domains review | in progress | Steps 1–13 local work complete; independent review and exact merge gate next | Steps 1–13 performed | User reports affected domain owners reviewed and approved the contract documents; four declarations derive from those reviewed signatures | `task/pre-00-dl-00-foundation`; 50 HTTP operations, 19 internal callables, eight generated artifacts; `make check` passed (421 Python, 63 data, 16 web tests; Black 71 files; boundary/contract/mypy/web/database/safety/secrets checks) | Independent peer review and exact-revision merge remain; cleanup implementation still needs its separate approval; real providers/integrations and crypto/worker implementation remain downstream | 2026-10-20 05:17:32 UTC |
 | ID-01 | A | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | ID-READY, LI-01, LI-02, SE-CORE, SE-02, CN-CORE, CN-02 | — |
 | LI-01 | B | in progress | Finish the remaining Step 7 browser states and current-head Step 11 checks/reviews; prepare a progress PR without claiming LI-CORE. Steps 12–13 remain integration-gated. | Steps 1–6 and 8–10 implemented and locally checked; Step 7 partial (create/detail/edit/My Listings/gallery). | Suraj verified the multi-image edit/gallery checkpoint, seller-only selected-buyer visibility, and Step 10. No LI-01 phone-device result is claimed. | domain/listings at 6ffbe0b; focused Listings suite: 61 passed, one database-only test skipped outside the wrapper; disposable PostgreSQL workflow passed; current worktree `make check` passed 2026-10-23 (573 Python, 63 data, 42 web tests; remaining contract, type, boundary, database, safety, formatting, lint, and build checks passed). | LI-CORE not accepted. Remaining Step 7 states; Step 11 query-plan, current aggregate, and affected-owner review; native schema check; five pre-existing backend boundary findings; real Identity, Conversations, storage, and Search integration; Steps 12–13. | 2026-10-23 10:38:31 UTC |
-| LI-02 | B | in progress | Defer Step 3 until shared ECS use is over and its saved capacity baseline is restored; then prepare a fresh plan and review its exact hash and cost. | Steps 1–11 and 1.5 verified. The prior Step 12 public ECS browser flow and phone photo upload worked. The revised dedicated-RDS harness is committed; its prepared plan was discarded and never applied. | Suraj verified Step 11, Step 1.5, and the prior browser/mobile flow. | domain/listings at 6ffbe0b; Terraform 1.15.9 fmt/validate, Python compilation, 27 lifecycle cases, CLI help, and diff check passed before commit; current worktree `make check` passed 2026-10-23 (573 Python, 63 data, 42 web tests; remaining contract, type, boundary, database, safety, formatting, lint, and build checks passed). Plan 30112961a2479c760dfa32f91b0b57013a2a4079924abc3a5fd85dee06d6b6fd is invalid for apply. | Baseline li02-c2090c6c3294 remains images-ready. No disposable LI-02 RDS, ALB, service, or URL parameter was created by the revised plan. Prior preflight: account 335523638354, ap-south-1, MTD USD 6.14, forecast USD 21.42, USD 200 monthly cap. The previous shared-RDS test database was not queried and may remain; the new harness never touches shared RDS. Wait for an idle shared ECS baseline before restarting. | 2026-10-23 10:38:31 UTC |
+| LI-02 | B | in progress | Step 12 demo is tested and stopped; record final evidence, then begin intake of the Search owner's PR under the review workflow. | Steps 1–11 and 1.5 verified; Step 12 ran on ECS and was tested on desktop/mobile. Read-only app checks found the synthetic listing and its S3 image; teardown is complete. | User approved and applied teardown plan `3703bb7b23405a5a23a1ac6c39fa8870e682dddf3a1a8272183f4642f8f0db81` (0 add, 1 change to LI-02 bucket CORS, 20 LI-02 deletes). Post-stop inventory confirms disposable RDS/ALB/service/host/root volume/run S3 objects/URL parameter/log streams absent; shared RDS is stopped, shared ECS cluster remains, LI-02 ASG desired 0/no instances. Two run ECR images are retained (105,624,604 bytes total) per user direction. | `task/li-02-isolated-runtime` at `f0bf6c6`; earlier 11 focused tests, Black, Python compilation, Terraform fmt/validate, CLI help and diff checks. Start plans: infrastructure `a2b8cbeaa6cc4fc2d13ff8c8696cfa133d8134280de89f719e0d6f2b91668f55`; app start `b6a3fbd4812c965a5830780f337997d13b4b362c7eb1a73f2b3e70f5946b5bd4`. Stop-path corrections are currently uncommitted in `scripts/li02-demo`, `infra/terraform/domains/listings/test/database_tasks.tf`, both LI-02 operator guides, and this work log. `git diff --check` passed; no tests rerun. Existing untracked `data/runs/` and `database/migrations.zip` remain untouched. | Compute/ingress/disposable-database charges from the demo have ended. Retained run images add about 101 MiB of ECR storage; Step 4 bucket/IAM/log group and shared VPC/NAT/ECS/RDS remain. No manual RDS snapshot remains. | 2026-10-25 09:29:55 UTC |
 | SE-01 | C | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | SE-CORE, LI-01, LI-02, DATA-READY | — |
 | SE-02 | C | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | SE-CORE, ID-READY, LI-CORE | — |
 | CN-01 | D | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | Isolated development: PRE-00, then DL-00 and a reviewed contract/stub. Later real gates: CN-CORE; SE-02's real request interfaces for request-response integration; CN-03's producer path for final NFR-05 acceptance. | — |
@@ -1636,6 +1636,185 @@ type checks, boundaries, web build, database, safety, and secrets checks passed.
 The run also corrected an expired synthetic caller in the Listings
 authorization test fixture; Black reformatted three existing API files. No
 cloud action or Git publication occurred.
+
+### LI-02 Step 2 — isolated ECS target and RDS AZ fallback selected — 2026-10-25 07:02:45 UTC
+
+Suraj selected a dedicated LI-02 ECS cluster, capacity provider, and ASG-backed
+EC2 host in the shared VPC, leaving the shared ECS cluster/provider/ASG
+unchanged. Stop will scale the LI-02 ASG to zero, terminate the host, and remove
+its root volume while retaining the empty LI-02 cluster/provider/ASG for quick
+restart. The disposable RDS attempt will use `ap-south-1b` first and allow an
+`ap-south-1a` fallback only after an explicit insufficient-capacity result;
+each changed exact plan needs its own approval. Recorded in DEC-13, the LI-02
+resource design, and Step 12. Existing Terraform and lifecycle code are not yet
+updated; do not run the old lifecycle. No plan or AWS resource change occurred.
+
+### LI-02 Step 12 — isolated ECS runtime and RDS AZ fallback implementation — 2026-10-25 07:22:50 UTC
+
+Implemented a dedicated LI-02 ECS cluster, capacity provider, zero-to-one
+private ASG host, host security group/instance role, and task metadata firewall;
+the shared ECS cluster/provider/ASG are no longer targets. Stop retains the
+empty LI-02 control resources but removes its EC2 instance and verifies its
+tagged root volume is gone. Startup tries RDS `ap-south-1b`, then prepares a
+separately hash-gated `ap-south-1a` plan only after a single explicit
+`InsufficientDBInstanceCapacity` apply error and checks that neither state nor
+AWS contains the disposable instance. Consolidated start/stop to one typed
+run-scoped confirmation each; exact plan hashes remain separate and fallback
+plans still need their own approval. Added driver regression tests and updated
+the lifecycle/command docs. Tests: 9 passed; Black, Python compilation,
+Terraform fmt and offline validate passed. `terraform init -backend=false`
+could not refresh the expired `surajs2` session; no AWS plan/apply occurred.
+Step 12 implementation awaits Suraj's verification. Reauthenticate and refresh
+identity, budget, inventory and costs before any exact cloud plan. Human mobile
+website/image-flow verification remains after deployment in Step 12.
+
+### LI-02 Step 12 — verified cloud preflight and stale baseline cleanup — 2026-10-25 07:36:28 UTC
+
+Suraj reauthenticated `surajs2`; read-only STS confirmed IAM user
+`surajs2` in account `335523638354`. Current LI-02 Terraform state contains
+only its persistent image bucket, IAM, and log resources; there is no LI-02
+cluster/provider/host, demo ALB, disposable RDS, URL parameter, or run-prefix
+object. The shared ECS service and host ASG are at desired/running zero, shared
+RDS is stopped, and the shared NAT gateway/EIP plus three automated shared-RDS
+backups remain. No EC2 instance or EBS volume is present. The saved local run
+baseline was from 2026-10-23 (`images-ready`, commit `038bb28`), carried the old
+shared-ECS capacity snapshot, and had no database, URL-parameter, or demo
+infrastructure flag. Its immutable API images predate current API changes in
+`config.py`, `postgres_store.py`, and `main.py`, so resuming would not test the
+current source. After verifying the run was absent in AWS, removed only that
+local `.demo-baseline.json`; retained both ECR images as directed. No AWS
+resource changed.
+
+Cost Explorer estimated account-wide October 1–24 unblended cost excluding
+credits at USD 9.42 and USD 16.63 for the remaining October interval (about
+USD 26.05 total, subject to reporting delay); NAT gateway hours were USD 7.45,
+public IPv4 USD 0.68, and RDS USD 0.59 for the month-to-date period. The AWS
+USD 200 budget is a custom annual period (2026-10-17 through 2027-10-17), not a
+monthly AWS alert. Suraj directed that the demo's own start guard treat USD
+200 as a monthly threshold; the AWS budget was not modified. The first plan was
+later approved and applied; see the next entry for the live task failure.
+
+### LI-02 Step 12 — fresh-start preflight correction — 2026-10-25 07:41:03 UTC
+
+The approved fresh-start command passed identity/budget checks and initialized
+the Terraform backend, then stopped before any cloud write. AWS's
+`DescribeCapacityProviders` reports a missing provider with a human-readable
+“does not exist” reason, not only the `MISSING` code the lifecycle helper
+recognized. Updated the helper to accept only that exact provider's not-found
+response and to continue failing closed for unrelated errors; added both
+regression cases. Focused lifecycle tests: 11 passed; Black, Python compilation,
+and `git diff --check` passed. The correction is not committed yet; retrying
+startup still needs a clean committed source revision. No image, secret,
+database, Terraform plan, or cloud resource was written.
+
+### LI-02 Step 12 — fresh run publication and first Terraform plan — 2026-10-25 07:48:19 UTC
+
+After the provider-not-found fix was committed as `f0bf6c6`, the approved
+`make li02-demo-start AWS_PROFILE=surajs2` retry passed the account/monthly
+cost gate and initialized the remote backend. Suraj entered the run-specific
+start confirmation for `li02-dc81f9c5d7fe`. The driver built and pushed API
+and database images from `f0bf6c6` to the existing ECR repository under tags
+`li02-f0bf6c6c23d5-20261025074312-623cdd` and
+`li02-f0bf6c6c23d5-20261025074312-623cdd-database`.
+
+Prepared saved Terraform plan SHA-256
+`a2b8cbeaa6cc4fc2d13ff8c8696cfa133d8134280de89f719e0d6f2b91668f55`:
+29 creates, 8 in-place changes, no destroys. It creates the dedicated LI-02
+cluster/capacity provider/zero-capacity ASG and host definition, temporary
+public HTTP ALB/routing, private encrypted 20-GiB PostgreSQL 18.6
+`db.t4g.micro` in `ap-south-1b`, and fixed database/app task definitions; the
+service and host ASG remain at zero. The in-place changes update only LI-02
+expiry tags, scope the task image role and S3 create-only policy to this run,
+and change bucket CORS from localhost to the generated ALB origin. No shared
+ECS/RDS resource is changed. Suraj approved the exact hash and applied this
+plan; the resulting task state is recorded in the next entry.
+An explicit RDS capacity error in `1b` may produce a separate hash-gated `1a`
+plan. Phone verification and teardown remain after deployment.
+
+### LI-02 Step 12 — first apply and ECS host registration blocker — 2026-10-25 08:12:49 UTC
+
+Suraj approved and applied the exact saved plan above. Terraform created the
+isolated ALB/network, dedicated ECS cluster/capacity provider and task
+definitions, and disposable PostgreSQL 18.6 in `ap-south-1b`; the database URL
+SecureString was created. The service remains at desired count zero. Before
+bootstrap or migration, the driver's fixed owner-check cleanup task stayed in
+`PROVISIONING` until the ECS `tasks-stopped` waiter exhausted its attempts.
+The task has no containers and no start time, so the database cleanup/bootstrap,
+migrations, and seed did not run.
+
+Read-only checks found the dedicated ASG had launched one healthy EC2 host in
+`ap-south-1a`, but the LI-02 cluster still reported zero registered container
+instances and one pending task. The shared `clip-shared-test` ECS cluster still
+had no container instances. The host uses the expected ECS-optimized AL2023 AMI,
+has the EC2 ECS agent role/policy and correct trust, and its private subnet has
+working DNS settings plus the existing NAT default route. This narrows the
+blocker to host-agent startup/registration; the exact failure has not yet been
+identified. The run state and billable LI-02 resources are preserved for
+diagnosis; no teardown or additional apply occurred. Phone verification and
+teardown remain pending.
+
+### LI-02 Step 12 — ECS recovery, database setup, and app-start plan — 2026-10-25 08:20:34 UTC
+
+Rebooted only the dedicated LI-02 EC2 host after confirming no task container
+had started and the shared ECS cluster remained empty. The host then registered
+as ACTIVE and connected to the isolated LI-02 cluster. Its pending fixed cleanup
+task passed; rerunning the start command safely repeated cleanup and then passed
+bootstrap, checked-in migrations, and the synthetic seller seed. Database setup
+is recorded complete and the app service remains at desired count zero. The
+specific transient cause of the initial ECS registration delay is not proven.
+
+The script prepared and is paused at exact app-start plan
+`b6a3fbd4812c965a5830780f337997d13b4b362c7eb1a73f2b3e70f5946b5bd4`:
+0 add, 1 in-place change, 0 destroy; the only change is the LI-02 ECS service
+desired count 0→1. The saved plan hash was independently rechecked. No app-start
+apply has occurred. Shared ECS and shared RDS are unchanged; the public ALB,
+disposable RDS, and dedicated host remain billable until teardown. Next is
+Suraj's exact-hash approval, then desktop/phone verification and stop.
+
+### LI-02 Step 12 — app live and HTTP reachability check — 2026-10-25 08:23:34 UTC
+
+Suraj approved the app-start plan, which changed only the isolated ECS service
+desired count from 0 to 1. The start script reported the API/site healthy at
+`http://clip-li02-demo-605616814.ap-south-1.elb.amazonaws.com`. Read-only HTTP
+checks returned 200 for `/`, `/health`, and the built JavaScript and CSS assets.
+This confirms desktop-network reachability and static page delivery; it does not
+replace Suraj's phone browser/image-flow check. The public ALB, disposable RDS,
+and dedicated host remain on until the approved stop workflow completes; shared
+ECS and shared RDS remain unchanged.
+
+### LI-02 Step 12 — read-only listing and image check — 2026-10-25 08:36:35 UTC
+
+Used the running app's read-only owner-listing and listing-detail GET endpoints,
+which read through to the private RDS database. They returned one available
+listing (`428bcc3f-3c5c-4eac-a056-ea346c3bf852`, title `sample test 25/10`) with
+one image ID. The authorized image-delivery endpoint resolved that image to the
+run-scoped S3 object `listings/test/li02-dc81f9c5d7fe/2359dc74-2b84-4577-815b-107b4108282b`,
+which exists in the LI-02 bucket at 4,064,865 bytes. This verifies the listing
+and photo are associated in the app's data path without exposing the signed
+image URL or database credentials. Raw table access remains available only from
+inside the VPC; the RDS console lists the instance, not its SQL rows.
+
+### LI-02 Step 12 — demo verification and teardown — 2026-10-25 09:29:55 UTC
+
+Suraj confirmed the demo test was complete. The stop command owner-checked and
+removed only `clip_test_listings` and its login, the run's S3 prefix and URL
+parameter, then applied exact Terraform plan
+`3703bb7b23405a5a23a1ac6c39fa8870e682dddf3a1a8272183f4642f8f0db81` in
+account `335523638354`, `ap-south-1` (0 add, 1 LI-02 bucket CORS update, 20
+LI-02 resource deletes). A first idle check reported remaining PostgreSQL
+clients after the owned database had been dropped; the disposable private RDS
+was dedicated to this run. A retry prepared the exact reviewed plan. The stop
+script then treated the deleted ECS service's `INACTIVE` response as already
+removed and finished scaling down the LI-02 ASG. No manual RDS snapshot was
+created. Read-only checks confirmed the disposable RDS and ALB are absent, the
+LI-02 ASG is desired zero with no host or root volume, no run S3 objects, URL
+parameter, ECS tasks or log streams remain, and both run ECR image tags remain.
+The shared RDS is still stopped and the shared ECS cluster remains present.
+Stop-path corrections make Terraform locals safe with the disposable RDS count
+at zero and make teardown retries accept one inactive ECS service; the script
+and operator docs now retain ECR artifacts as requested. `git diff --check`
+passed; tests were not rerun. Next: intake the Search owner's PR following its
+review and ownership workflow.
 
 ## Pending integration ledger
 

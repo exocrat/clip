@@ -33,25 +33,31 @@ An absent command assigned to the selected creation step is an expected output; 
 
 Run from the repository root with Python 3, AWS CLI, Terraform 1.15.9, Docker
 Buildx and an explicitly approved AWS profile. The command fixes the target to
-account `335523638354`, Region `ap-south-1`, shared cluster `clip-shared-test`,
-RDS `clip-shared-test-postgres`, and the existing shared API ECR repository.
-Start refuses modified LI-02 build inputs and requires a committed source
-revision. No credentials, URL values, or database passwords are printed or
-written to Terraform state. Local baseline metadata is ignored by Git and
-contains only resource IDs/status, run ID and image digests.
+account `335523638354`, Region `ap-south-1`, the dedicated LI-02 ECS cluster and
+ASG, disposable LI-02 RDS, and existing shared API ECR repository. The VPC,
+private workload subnet and NAT are shared dependencies; the shared ECS cluster,
+capacity provider, ASG and host security group are neither queried for workload
+state nor changed. Start refuses modified LI-02 build inputs and requires a
+committed source revision. No credentials, URL values, or database passwords
+are printed or written to Terraform state. Local baseline metadata is ignored
+by Git and contains only resource IDs/status, run ID and image digests.
 
 | Exact command | Effects and gates | Expected result / recovery |
 |---|---|---|
 | `.venv/bin/pytest apps/api/tests/domains/listings/test_demo_database_lifecycle.py -q` | Runs the actual Listings lifecycle shell script with a controlled local psql process. Checks metadata capture, empty/existing/owned/mismatched states, invalid/failed queries, idle clients, private diagnostics and bounded client settings. No AWS, database or Docker access. | 27 passing regression cases, including the URL-only seed secret contract and admin-secret/invalid-URL rejection; these do not prove real PostgreSQL bootstrap, migrations or cleanup. |
-| `make li02-demo-start AWS_PROFILE=<approved-profile>` | Checks caller account, current budget, shared ECS task use, capacity-provider/ASG baseline, master-parameter metadata, and state target. Builds UI/API and fixed dbmate/database-task images from clean committed source and pushes unique tags to the existing shared test API ECR repo. Creates `/clip/test/listings-database-url` as one Standard SecureString using a generated app password and a mode-0600 temporary JSON file. The first exact saved Terraform plan creates the private, encrypted, single-AZ, 20-GiB `db.t4g.micro` PostgreSQL 18.6 disposable instance in `ap-south-1`, matching the shared test foundation's engine version, its narrowly scoped SG/subnet group, the ALB, and fixed task definitions with app desired count zero; the approved test master secret reaches this instance only through an ephemeral Terraform variable and its write-only password field. The shared RDS is never started, connected to, or modified; the CLI reads RDS inventory metadata only to detect a stray LI-02 instance. After separate approval, start owner-checks/resets only `clip_test_listings`, applies pinned migrations, seeds one synthetic seller, then separately plans/applies the one-task service. Rerunning start continues recorded partial phases and reuses saved immutable image digests. | Exit 0 prints the generated HTTP URL. If a phase fails, `.demo-baseline.json` remains; rerun `start` to continue or run `stop` to tear down. Owner mismatch, missing cleanup task, and ambiguous legacy state fail closed without erasing the baseline. Never delete the baseline file to bypass cleanup. No HTTPS/domain is configured. |
-| `make li02-demo-stop AWS_PROFILE=<approved-profile>` | Sets only the LI-02 service to zero. If the saved phase says the isolated database may contain data, verifies the exact cleanup task, owner-checks removal of only `clip_test_listings` and its dedicated login, then confirms the disposable database is idle. Deletes the exact run-scoped S3 prefix and owned URL parameter. Its exact saved Terraform plan deletes the LI-02 disposable RDS instance and data (without a final snapshot), and removes the temporary ALB/subnet/route/SG ingress/service/task definitions. It removes only unreferenced LI-02 ECR digests, clears LI-02 log streams, and waits for the recorded ECS capacity baseline. Shared RDS is never started, stopped, connected to, or changed. | Exit 0 means demo-owned route, app, disposable database/data, run objects, unused LI-02 images and log streams are removed. The Step 4 bucket, IAM roles, empty log group, state backend, shared `clip_test` database, shared RDS instance, VPC/NAT/ECS cluster/capacity provider remain. If cleanup is incomplete, the baseline stays for a safe retry. |
+| `.venv/bin/pytest apps/api/tests/domains/listings/test_li02_demo_driver.py -q` | Exercises the cloud driver's AZ retry decision, partial-RDS refusal, exact AWS capacity-error classification, absent-provider handling, dedicated cluster/task target, ASG/root-volume teardown target, durable bridge-task metadata block, and single run-level authorization persistence. It does not call AWS, Terraform plans/applies, Docker, or a database. | 11 passing local lifecycle-driver cases; these do not prove a real EC2 boot, AWS capacity response, or cloud cleanup. |
+| `make li02-demo-start AWS_PROFILE=<approved-profile>` | One command checks account/budget/state, builds and pushes immutable UI/API and database images, creates the run URL SecureString, owner-checks/resets only `clip_test_listings`, migrates/seeds it, creates the private LI-02 ECS cluster/ASG/host plus temporary public ALB and disposable encrypted RDS, then starts one app task. It asks once for `START LI02 DEMO <run-id>` before run writes. Every Terraform plan still displays its saved plan and requires that exact SHA-256; if AWS explicitly returns `InsufficientDBInstanceCapacity` for `ap-south-1b`, the driver confirms no partial RDS remains and prepares a separate hash-gated plan for `ap-south-1a`. Shared RDS and shared ECS resources are untouched. | Exit 0 prints the generated HTTP URL for desktop and phone checks. On failure, retain `.demo-baseline.json` and rerun start to continue or stop to clean up. No HTTPS/domain is configured. |
+| `make li02-demo-stop AWS_PROFILE=<approved-profile>` | One `STOP LI02 DEMO <run-id>` confirmation authorizes stop of the app, owner-checked deletion of only `clip_test_listings`/its login, removal of this run's S3 prefix and URL parameter, temporary ALB/subnet/route/service/tasks/disposable RDS, log streams, and termination of the dedicated EC2 host/root volume. Run ECR images are retained for reproducible restart. The Terraform removal plan still needs its own exact hash approval. | Exit 0 leaves the empty LI-02 cluster/provider/ASG and host IAM/SG, Step 4 bucket/IAM/log group/state backend, shared RDS/database, VPC/NAT and shared ECS resources intact. The baseline remains if cleanup fails, so retry the same command. |
 
 The disposable RDS adds about USD 0.021 per available hour for compute in
 `ap-south-1`, plus 20 GiB of gp3 storage while it exists; RDS bills in one-second
 increments with a 10-minute minimum. The exact run cost also includes the
-temporary ALB and shared ECS capacity and must be checked against current
-billing data before apply. Stop deletes only the disposable LI-02 RDS. This
-driver has not yet completed an AWS run with the separate database. Refresh the
+temporary ALB, one `c7i-flex.large` private LI-02 EC2 host, its 30-GiB gp3
+root disk, and shared NAT data transfer; check current billing data before
+apply. Stop removes the host and root disk as well as disposable LI-02 RDS.
+The empty LI-02 ECS/ASG control resources remain but have no running compute.
+This driver has not yet completed an AWS run with the separate cluster and
+database. Refresh the
 current account inventory before using it. If interrupted, keep the local
 baseline file, then rerun `start` to continue or
 `stop` to clean up; the script refuses to guess an account, resource, or
