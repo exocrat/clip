@@ -47,7 +47,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PD-19 | Integration owner (current branch) | done | Steps 1–9 and combined foundation handoff complete | Steps 1–9 performed | User confirms all work before PRE-00 is complete | PR #8 merged at `2cd83e7` from head `18c966e` against base `68d9da9`; [Foundation quality gates passed](https://github.com/exocrat/clip/actions/runs/39323851584) for that exact head/base; `make test` (395 Python, 63 data, 16 web), Black, contract freshness and 10 `make check` gates passed; [handoff](foundation-handoff.md) | No open PD-19 work per user confirmation. Linux AMD64/macOS results remain user-confirmed without raw outputs. PR #8 has no submitted GitHub review; independent-review completion is user-confirmed, with no separate review artifact linked. Refresh cloud snapshot before any operation. | 2026-10-19 21:09:05 UTC |
 | PRE-00 | Integration owner | done | Foundation gate audit accepted; DL-00 is unblocked | performed | verified/accepted by user | Reviewed handoff PR #8 merged to `main` at `2cd83e7`; hosted Foundation quality gates passed for head `18c966e` against base `68d9da9` (run `39323851584`); clean-checkout evidence at `0747be6`; see [PD-19 handoff](foundation-handoff.md) | None. PR #8 has no GitHub review event; independent-review completion remains user-reported without a separate artifact. | 2026-10-19 21:20:55 UTC |
 | DL-00 | Shared-core/contract coordinator; all domains review | done | Steps 1–13 and task-wide audit complete; accepted and merged | Steps 1–13 performed; accepted by user | User confirmed full acceptance and merge on 2026-10-22 05:30:49 UTC | PR #9 merged to `main` at `f5576ef`; current `main` is `44cd8ff`; Step 13 check evidence is recorded below and was not rerun for this update | None for DL-00; cleanup implementation remains separately gated; real providers/integrations and crypto/worker implementation remain downstream | 2026-10-22 05:30:49 UTC |
-| ID-01 | A | in progress | Step12 safe metadata collector verified/approved; commit then renewed live plan | Explicit key/DB bootstrap, read-only startup audit, separate role proposal; all11gates passed:1031Python/1existing skip,63data/118web;9collector-focused;strict collector types | Aditya verified and approved the local collector | `4628904`; [runtime evidence](../evaluation/identity/integration.md#secure-runtime-preparation); offline SSM and real disposable PostgreSQL only | Identity DB login/URL, runtime IAM/proxy/TLS/provider/device/peer/CI and production enablement pending; SES transition pending; Step14 outside scope | 2026-10-24 22:08:21 UTC |
+| ID-01 | A | in progress | Step12 local migration runner/probe verified; commit authorized; live image/schema review next | Explicit key/DB bootstrap, read-only startup audit, separate role proposal; all11gates passed:1048Python/1existing skip,63data/118web;17runner-focused;strict runner types | Aditya verified runner/probe implementation and authorized commit/continuation | `9bfb607`; [runtime evidence](../evaluation/identity/integration.md#secure-runtime-preparation); offline SSM and real disposable PostgreSQL only | Identity DB login/URL, runtime IAM/proxy/TLS/provider/device/peer/CI and production enablement pending; SES transition pending; Step14 outside scope | 2026-10-25 01:42:18 UTC |
 | LI-01 | B | in progress | Finish the remaining Step 7 browser states and current-head Step 11 checks/reviews; prepare a progress PR without claiming LI-CORE. Steps 12–13 remain integration-gated. | Steps 1–6 and 8–10 implemented and locally checked; Step 7 partial (create/detail/edit/My Listings/gallery). | Suraj verified the multi-image edit/gallery checkpoint, seller-only selected-buyer visibility, and Step 10. No LI-01 phone-device result is claimed. | domain/listings at 6ffbe0b; focused Listings suite: 61 passed, one database-only test skipped outside the wrapper; disposable PostgreSQL workflow passed; current worktree `make check` passed 2026-10-23 (573 Python, 63 data, 42 web tests; remaining contract, type, boundary, database, safety, formatting, lint, and build checks passed). | LI-CORE not accepted. Remaining Step 7 states; Step 11 query-plan, current aggregate, and affected-owner review; native schema check; five pre-existing backend boundary findings; real Identity, Conversations, storage, and Search integration; Steps 12–13. | 2026-10-23 10:38:31 UTC |
 | LI-02 | B | in progress | Defer Step 3 until shared ECS use is over and its saved capacity baseline is restored; then prepare a fresh plan and review its exact hash and cost. | Steps 1–11 and 1.5 verified. The prior Step 12 public ECS browser flow and phone photo upload worked. The revised dedicated-RDS harness is committed; its prepared plan was discarded and never applied. | Suraj verified Step 11, Step 1.5, and the prior browser/mobile flow. | domain/listings at 6ffbe0b; Terraform 1.15.9 fmt/validate, Python compilation, 27 lifecycle cases, CLI help, and diff check passed before commit; current worktree `make check` passed 2026-10-23 (573 Python, 63 data, 42 web tests; remaining contract, type, boundary, database, safety, formatting, lint, and build checks passed). Plan 30112961a2479c760dfa32f91b0b57013a2a4079924abc3a5fd85dee06d6b6fd is invalid for apply. | Baseline li02-c2090c6c3294 remains images-ready. No disposable LI-02 RDS, ALB, service, or URL parameter was created by the revised plan. Prior preflight: account 335523638354, ap-south-1, MTD USD 6.14, forecast USD 21.42, USD 200 monthly cap. The previous shared-RDS test database was not queried and may remain; the new harness never touches shared RDS. Wait for an idle shared ECS baseline before restarting. | 2026-10-23 10:38:31 UTC |
 | SE-01 | C | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | SE-CORE, LI-01, LI-02, DATA-READY | — |
@@ -111,6 +111,69 @@ Update the task status row after each step and human verification. The row is th
 Add a history entry when it records a meaningful outcome, decision, changed output, check result, blocker, consequential human direction, or task/merge closeout. Group related steps when that keeps their results understandable. Do not add a separate history entry just to say that a routine step was verified and the next one may begin.
 
 Include the task and covered step(s), contributor, date/time, and the details needed to understand or verify the outcome: relevant execution/verification state, changed paths, exact checks/results, decision/evidence reference, blocker/owner, or next action as applicable. Keep entries brief, omit repeated background, and link existing artifacts rather than duplicating them. Use exact UTC date and time for new entries. Keep historical timestamp precision as recorded; never guess or backfill an unknown time. Preserve distinct decisions, evidence, and other contributors' useful history.
+
+### ID-01 — Step12 local migration runner/probe — 2026-10-24 23:02:01 UTC
+
+Aditya(A) verified plan; implemented operator-only migration_runner.py, owned TLS
+migration_fixtures.py and test_migration_runner.py. Actual dbmate14file clean/
+repeat/TLS, Docker credential absence, manifest/target/manual/prefix refusals,
+partial failure preservation, structural postconditions, timeout container cleanup
+and rollback-only logging checks:17passed; strict mypy passes. A timeout cleanup
+gap found in local review was corrected and covered before final gates. Registered
+local commands; current manifest still blocks unreviewed live use. No migration
+SQL edits, AWS/shared DB/secret read, deploy or provider action. [Evidence](../evaluation/identity/integration.md#local-migration-runner-and-rollback-logging-probe).
+Final full gates exited0/all11checks at 2026-10-24 23:07:15 UTC:1048Python/1existing
+DB-only skip,63data/118web, Black154files,35wrapper cases, actual PostgreSQL18.6
+lifecycle and Gitleaks8.30.1. Source/migration hashes, JSON/links/whitespace pass;
+no runner containers remain. Logs:`/tmp/clip-id12-migration-runner-final-check.log`,
+`/tmp/clip-id12-migration-runner-focused-complete.log`; initial gate superseded
+because cleanup code changed. Aditya verified this result and authorized
+commit/continuation; live approvals and affected-owner/image review remain pending.
+
+### ID-01 — Step12 migration/logging plan — 2026-10-24 22:44:26 UTC
+
+Aditya(A) requested next checkpoint. Read repository migration/wrapper/ownership/
+recovery records and primary dbmate/PostgreSQL/RDS sources; no AWS query/mutation.
+[Plan](../evaluation/identity/integration.md#migration-and-safe-logging-plan)
+resolves14file-baseline dependency, missing migration tool/source in old API image,
+and unverified other-domain namespace state. Added SHA-pinned14file manifest;
+no SQL edits. Proposes locally tested fixed runner with verify-full container-only
+hostname mapping and stdin runtime credentials, plus rollback-only NOLOGIN logging
+probe. Not a live apply plan yet: exact image, accepted upstream/affected-owner
+review,4namespace preflight and fresh cloud/SQL/secret/cleanup approvals remain.
+Next: human verifies plan, then local-only runner/probe implementation/tests.
+Prior metadata/cleanup evidence verified but uncommitted; no commit approval.
+
+### ID-01 — Step12 renewed metadata execution — 2026-10-24 22:13:36 UTC
+
+Aditya(A) explicitly approved renewed window. Fresh guards confirm exact expected
+account/operator, original stopped RDS, no tasks/active sessions, sole API service
+desired/running/pending0 and ASGmin0/max1/desired0/empty. Window anchor22:13:36 UTC,
+deadline2026-10-24 23:13:36 UTC,1USD operating ceiling; same approved targets,
+one sleep-only task, one private master-secret read and safe read-only collector
+at9bfb607. [Exact scope](../evaluation/identity/integration.md#renewed-metadata-window--approval-request).
+Observed2026-10-24 22:21:47 UTC: collector completed through private verify-full
+TLS; confirmed absent public.schema_migrations, all14Identity tables and target
+login absent. PUBLIC grant counts0; one logging mismatch, catalog SET flagsfalse
+(not an actual SET test). No data/schema/logging/role writes or key/email-secret
+read. [Sanitized report](../evaluation/identity/id-01-step-12/database-preflight-followup-result.json).
+Cleanup verified 2026-10-24 22:27:20 UTC: original RDS stopped, ASG0/empty, cluster
+hosts/tasks0, API desired/running/pending0, no active SSM sessions, owned host/root
+removed. Guarded scale-in accepted with cooldown honored. Gitleaks8.30.1 source
+snapshot, JSON/relative links and diff checks pass; no code changes or repeat
+full-suite run. Aditya verified the findings and cleanup; documentation uncommitted.
+Next after result verification: exact combined migration/logging plan before
+login/URL setup; do not blindly repair PUBLIC or infer other-domain schema state.
+
+### ID-01 — Step12 renewed metadata window request — 2026-10-24 22:08:21 UTC
+
+Aditya(A) verified/approved the collector; committed9bfb607. Prepared a
+[renewed exact window](../evaluation/identity/integration.md#renewed-metadata-window--approval-request):
+same original targets, one sleep-only task/host,1hour/1USD operating ceiling,
+private verified-TLS tunnel, one new master-secret read and safe read-only
+collector; guarded cleanup to stopped/zero. No repairs/writes or scope expansion;
+closed prior approval not reused. No AWS call or mutation in this increment.
+Exact cloud/secret-read/cleanup approval pending; request docs uncommitted.
 
 ### ID-01 — Step12 safe metadata collector — 2026-10-24 22:02:42 UTC
 

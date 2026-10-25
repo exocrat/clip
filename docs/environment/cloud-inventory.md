@@ -304,3 +304,21 @@ vol-0161f12c2748b1dc7 deleted; no active SSM sessions. Guarded early scale-in in
 rejected ScalingActivityInProgress, later accepted with honor-cooldown and fresh
 idle checks. NAT/data/SSM/IAM/task definitions/state retained; ongoing retained
 costs continue. No network or shared-policy change. [Sanitized record](../evaluation/identity/id-01-step-12/database-preflight-result.json).
+
+
+### ID-01 renewed metadata and cleanup — 2026-10-24 22:27:20 UTC
+
+Approved one-hour window22:13:36→23:13:36 UTC, account335523638354/ap-south-1,
+collector9bfb607. Verified private tunnel/TLS and completed read-only catalog
+inspection: public.schema_migrations absent, all14expected Identity tables absent,
+Identity login absent; PUBLIC ACL counts0. One effective logging mismatch and
+catalog SET flagsfalse require review, not automatic grants/global changes.
+One approved private master-secret read; no role/schema/grant/logging/data writes,
+key/email-secret read, send, deployment, network or IAM change.
+
+Cleanup verified within window: original RDS resource db-PYRRZJPVKPGHIXDAHUWATXGH7A
+stopped; sleep task1f26b751601944c4a0fcf7d88e179f32 stopped; SSM session closed;
+ASG0/empty; cluster hosts/tasks0; API desired/running/pending0. Owned host
+i-09708de46c0fa931a terminated and rootvol-00c3b7f86b1613fed deleted. Guarded
+scale-in accepted with cooldown honored. NAT/data/parameters/state/IAM/task
+retention unchanged; existing retained costs continue. [Sanitized report](../evaluation/identity/id-01-step-12/database-preflight-followup-result.json).

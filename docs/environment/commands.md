@@ -989,3 +989,30 @@ required-version and inventory/logging/ACL fields; missing objects remain blocke
 It has no live CLI, secret retrieval, provider, writes, repair or retries. Live
 callers still require exact endpoint/account/TLS checks, process/connection bounds,
 a separately approved secret read/window and sanitized report handling.
+
+
+### Identity migration runner and logging probe — ID-01 Step12 local checks
+
+`uv run --locked pytest apps/api/tests/domains/identity/test_migration_runner.py -q -W error`
+requires locked setup, Linux Docker on a local Unix socket, cached/retrievable
+PostgreSQL18.6/dbmate2.36 images. Creates only owned disposable PostgreSQL containers
+with tmpfs data, an ephemeral loopback-published TLS port and synthetic short-lived
+certificates/passwords. Unlike the networkless socket fixtures, this fixture uses
+Docker bridge plus loopback publication to test real TLS. Deletes its own container
+and synthetic private key afterward; no AWS/shared URL or real credential is used.
+
+Expected: full14file clean/repeat, real TLS hostname mismatch rejection, no secret
+in Docker config/args, hash/image/namespace/prefix/target refusals, real partial-DDL
+preservation and no replay, client-success structural postconditions, timed-out
+version-client cleanup, and rollback-only logging role/default checks. Full
+`make check` includes the tests. Strict types:
+`uv run --locked mypy --strict apps/api/app/domains/identity/migration_runner.py`.
+
+The operator functions have no live CLI or startup binding. `run_migrations`
+requires the reviewed manifest/image, fixed target and trusted private connection;
+live use rejects the current image-review-pending manifest. `probe_logging`
+creates only a passwordless NOLOGIN probe role inside a rolled-back transaction
+and checks absence/defaults through a fresh connection. Neither function retrieves
+AWS secrets or grants cloud authorization. Read-only preflight is not permission
+to call these write-capable tools; exact window, SQL/role probe, metadata/secret
+access, shared-schema review and cleanup approvals remain mandatory.

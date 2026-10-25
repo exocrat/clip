@@ -530,3 +530,223 @@ Final collector checks — 2026-10-24 22:06:46 UTC: `make check` exited0/all11ga
 violations, current contracts, types/lint/build,35wrapper safety cases, actual
 PostgreSQL18.6 lifecycle and Gitleaks8.30.1 source scan.9focused cases, strict mypy,
 source hashes, relative file links and diff whitespace pass. Aditya verified and approved the local result; no new live checks or readiness claim.
+
+
+### Renewed metadata window — approval request
+
+Prepared2026-10-24 22:08:21 UTC after Aditya verified/approved the local collector,
+committed9bfb607. This is a new run, not an extension of the closed21:40:05 window.
+Use the exact targets, private network, task:1/digest/sleep-only overrides,
+SSM prerequisites, rate references, one-hour total/1USD operating ceiling and
+owned guarded cleanup in the earlier private-window plan. Account335523638354,
+region ap-south-1, profile adityalaxmi1; original RDS
+clip-shared-test-postgres/db-PYRRZJPVKPGHIXDAHUWATXGH7A; clusterclip-shared-test,
+capacity providerclip-shared-test-capacity and ASGclip-shared-test-ecs-host.
+Fresh account/idle-resource/session checks and an exact UTC deadline are required
+before any start. No resource names, configuration or privilege expansion.
+
+Only changed inspection behavior: run the source-pinned `collect_database_metadata`
+from9bfb607 after verify-full TLS to the original RDS hostname. Authorize one new
+private in-memory master-secret read from `/clip/test/database-master-password`;
+no other decrypted parameters. Safe results now include tracker existence/type/
+column and required-version flags, Identity inventory, role collision, logging/
+parameter permissions and PUBLIC ACL counts. Preserve partial findings with a
+fixed phase when incomplete; a missing tracker is reported rather than queried.
+No business/key-binding rows, credential hashes or raw diagnostics. A complete
+metadata report does not authorize setup or establish runtime readiness.
+
+No DB writes/migrations/roles/grants/URL provisioning, emails, deployment, IAM,
+network changes or NAT cost work. Stop after findings and restore the approved
+stopped/zero baseline; no automatic repair. Existing forecast mismatch and
+unverified credits/reserve remain disclosed; renewed approval must cover the
+bounded cloud starts, one sleep task/tunnel, one master-secret read, read-only SQL
+and guarded cleanup. Previous window's approval is spent; no new mutation yet.
+
+
+### Renewed live findings — 2026-10-24 22:21:47 UTC
+
+Approved renewed window uses collector9bfb607. Exact private host/task/network
+and SSM agent3.3.5390.0 verified; private tunnel and verify-full TLS succeeded.
+One private master-secret read requested in memory; no key/email-secret access.
+Safe metadata collection completed, target matched, no failed phase:
+
+- public.schema_migrations does not exist; no migration versions can be verified.
+- All14expected Identity tables are absent and clip_test_identity_app is absent.
+- PUBLIC database/schema-create/relation/default-relation grant counts are all0;
+  do not repeat shared PUBLIC revocations.
+- Five of six effective logging checks match; log_min_error_statement does not.
+  Catalog SET permission flags are false for all six parameters; this is not an
+  attempted SET/ALTER test or proof of all RDS special-administrator behavior.
+  Audit/auto-explain checks match the disabled requirement.
+
+[Sanitized report](id-01-step-12/database-preflight-followup-result.json) preserves
+these completed observations. No setup readiness: first prepare an exact,
+affected-owner-reviewed migration plan for the already tested combined chain and
+review safe logging/permission handling before login/URL provisioning. Tracker
+absence is confirmed; do not infer other domains' entire schema state from the
+Identity-only inventory. No automatic schema/role/grant/default/logging repair.
+Final cleanup verified 2026-10-24 22:27:20 UTC: original RDS stopped, owned task/tunnel
+closed, ASG0/empty, cluster hosts/running/pending0, API desired/running/pending0,
+no active sessions, owned host terminated and root volume deleted. Guarded scale-in
+accepted with cooldown honored; all work finished before23:13:36 UTC deadline.
+No IAM/network/NAT/provider changes; persistent data/secrets/state retained.
+
+Gitleaks8.30.1 source snapshot, sanitized JSON, relative file links and diff
+whitespace pass. Prior1031Python/63data/118web/full11gate collector checks remain
+source-identical; not rerun for this evidence-only increment. Aditya verified the execution findings and cleanup; evidence/documentation
+uncommitted. ID-READY remains incomplete.
+
+
+## Migration and safe-logging plan
+
+Planning checkpoint2026-10-24 22:44:26 UTC, Aditya(A). Last live result is verified:
+original RDS stopped, shared host/task/session capacity0; public tracker and all
+Identity tables absent. No AWS account queries or mutations in this planning
+increment. Existing local combined migration checks passed at9bfb607; this is
+not permission to apply to shared RDS.
+
+Audit of execution order found two material gaps in an Identity-only apply:
+its3forward migrations depend on the earlier shared baseline, and the old API
+image includes neither dbmate nor migration files. Public tracker absence alone
+also does not prove every other domain namespace is absent. The plan therefore
+uses the existing14file combined chain, preserves every SQL file unchanged, and
+requires metadata checks for all4namespaces before any live migration. The
+existing local wrapper targets clip_local; the Listings lifecycle script targets
+its isolated rehearsal. Neither may be reused against shared RDS by overriding
+its target checks. No canonical task-step waiver, new migration or fake schema.
+
+### Ordered checkpoints and gates
+
+| Order | Work and output | Dependency/check/gate |
+|---|---|---|
+| 1 | Implement an Identity-owned fixed-target migration runner and rollback-only logging probe locally; register commands. | Human verifies this plan first. Local disposable PostgreSQL/TLS only; no cloud. Keep app startup, existing wrappers, migrations and Suraj's code unchanged. |
+| 2 | Test real14file dbmate clean/repeat plus TLS hostname rejection, input/hash/target/collision refusals and safe logging rollback; preserve sanitized evidence. | Actual local PostgreSQL/dbmate, not a schema double; strict types/format/full applicable checks and result verification. |
+| 3 | Review exact manifest/image and affected-owner scope; refresh accepted upstream before a live request. | Shared-schema/migration integrator and affected B/C/D owners review the14file scope; do not infer peer approval from local tests or this plan. [Manifest](id-01-step-12/shared-migration-manifest.json) pins current source; digest/remote-currentness remain gates. |
+| 4 | Prepare fresh bounded private execution window using the established sleep task/tunnel; inspect all4namespace names, tables/tracker, owner and migration state. | Separate exact cloud/secret-read/cleanup approval. Stop on any existing project namespace/manual/partial state or active writer. No unreviewed adoption, reset, down or drop. |
+| 5 | Run the separately approved rollback-only logging permission probe, reconnect and verify no role/default persisted. | No password/application-data operation; static probe SQL only. Stop on any failure; catalog SET flags are not substituted for an actual RDS permission test. |
+| 6 | Apply the pinned14file chain using dbmate migrate --strict; inspect exact versions/head and structural invariants read-only. | Separate explicit shared-schema DDL approval for exact source/head/manifest and baseline. No create/drop database command or synthetic users; only the existing catalogue migration's approved categories/conditions. |
+| 7 | Record prefix/head, results and recovery state; restore owned stopped/zero baseline. | No automatic retry, down or namespace deletion on failure. Human verifies result; role/password/URL provisioning remains a later exact action. |
+
+### Local runner transport and credential design
+
+Proposed runner targets only the original RDS endpoint/clip_test/clip_test_admin
+and the approved loopback tunnel; local tests have a separate explicit disposable
+route. Use dbmate2.36.0 with reviewed image digest (tag alone is not the live pin),
+read-only migration/CA mounts, --env-file /dev/null, --no-dump-schema,
+--migrations-dir /db/migrations, migrate --strict. No implicit .env, glob-selected
+extra migrations, bootstrap SQL splitting, custom replacement migration engine,
+or rewriting published SQL. Inspect file count/version/SHA before and after.
+
+On this verified Linux host, use a local Docker container with host networking
+and container-only `--add-host original-rds-hostname:127.0.0.1`, connecting to15432
+with sslmode=verify-full and the public regional CA bundle. This preserves the
+original hostname for certificate verification without global /etc/hosts changes
+or disabling TLS. Other platforms are unsupported until separately verified.
+Mount source/public CA read-only, drop capabilities, no-new-privileges, read-only
+root, bounded tmpfs if required, unique owned container/name and --log-driver=none.
+No shared host mount or private Docker socket inside it.
+
+Keep DATABASE_URL non-secret, with explicit host/user/database/TLS and bounded
+connection/SQL settings. Pass the privately retrieved credential over stdin to a
+fixed shell that reads it, exports PGPASSWORD only inside the running process and
+execs dbmate. Never pass PGPASSWORD as a Docker --env/config value, embed it in
+URL/argv, write a passfile or expose raw client output. Reject newline/NUL or
+unsupported credential encoding before submission. No shell interpolation of
+secrets. Capture/suppress raw output in operator process memory; emit only fixed
+phases/results and independently collected safe metadata. Docker process memory
+is private to this approved operator route; remove the owned container on exit.
+Local tests must prove credential absence from Docker inspect configuration and
+sanitized output. No AWS permission or secret-manager access inside the container.
+
+One named operator serializes the entire CLI run. Existing migrations retain
+transaction advisory key(1129072976,8)/10s lock wait; dbmate2.36 has no global
+--migration-lock flag. Bound connection3s, statements30s, process5minutes and
+finite lock waits; treat tool/network/commit uncertainty as a stop, not a replay.
+Each migration commits separately: a failure can leave an applied prefix and an
+empty/partial tracker. Preserve it, record versions without private rows, inspect
+before a forward-recovery plan; never claim the whole batch rolls back atomically.
+Do not restore an entire shared instance or drop other domains as a convenience.
+
+### Safe logging probe design
+
+Prior PD-16 recorded successful transaction-local logging guards on this same
+RDS; the new collector's false has_parameter_privilege flags are not a definitive
+runtime denial. PostgreSQL/RDS settings and ALTER ROLE restrictions still require
+actual checks. Proposed probe: bounded transaction; verify target/idle baseline
+and absent fixed `clip_test_identity_logging_probe`; attempt the exact approved
+session-local logging settings; create only that NOLOGIN, non-elevated probe role,
+apply the six proposed per-role logging defaults, inspect their names/values and
+always ROLLBACK. No password, SCRAM verifier, membership or data grants. Verify
+absence of the role and unchanged session/default baseline after rollback through
+a fresh connection. Role-name collision or insufficient privileges stops the
+probe; no overwrite, grants to rds_superuser, global parameter change or fallback.
+The live probe is catalog-writing SQL inside a rolled-back transaction and needs
+explicit approval; planning/local tests authorize no such live SQL.
+
+If the probe fails, review its fixed phase and RDS-supported alternatives before
+migration/app login setup. No blanket logging weakening or parameter-group apply.
+Sources: [RDS parameters](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.PostgreSQL.CommonDBATasks.Parameters.html),
+[PostgreSQL18 ALTER ROLE](https://www.postgresql.org/docs/18/sql-alterrole.html),
+[pinned dbmate dependency source](https://github.com/amacneil/dbmate/blob/v2.36.0/go.mod),
+[driver hostname verification](https://github.com/lib/pq/blob/v1.12.3/ssl.go).
+
+### Scope and immediate next action
+
+No live run is approved by this document. Next is only checkpoint1/2 local
+implementation and tests after human plan verification. Reserve A-owned Identity
+runner/tests/command/evidence paths; no migration edits or shared Terraform/file
+writes. Any unexpected baseline, unclear recovery, owner objection, unsupported
+TLS/tool behavior or changed scope stops for a targeted decision. Public/cost/NAT
+redesign remains deferred. Login/password/grant/URL provisioning, runtime IAM,
+proxy/TLS deployment and real provider/browser acceptance remain later gates.
+
+
+### Local migration runner and rollback logging probe
+
+Aditya verified the migration/logging plan. Implemented `migration_runner.py`
+(operator-only; no AWS retrieval, live CLI or API startup import). Fixed live target
+or explicit disposable target,14file manifest/SHA checks and immutable image/tool
+version gate precede credential submission. The current manifest still rejects
+live use pending image review. A session advisory lock serializes this wrapper;
+existing per-file locks remain unchanged. Fresh run requires all4project namespaces
+absent; repeat requires exact14versions and33tables/25functions/37triggers. Partial,
+manual, unknown or inconsistent state refuses without automatic adoption/replay.
+
+Local dbmate transport uses verify-full TLS, read-only public CA/migration mounts,
+container-only hostname mapping and Linux host networking. Credential enters stdin
+and is exported only inside the running shell process, absent from URL/args/Docker
+Config.Env. The container runs as the operator UID/GID with read-only root, dropped
+capabilities, no-new-privileges and logging disabled. Connection/process/SQL/lock
+bounds apply; raw subprocess errors/output stay suppressed. Zero client exit is
+insufficient without the full postcondition. Failures preserve committed prefixes;
+no down/reset. Named cleanup covers both version and migration containers, including
+a timed-out CLI; cleanup uncertainty emits a fixed failure instead of claiming done.
+
+Logging probe applies only transaction-local settings and6defaults to the fixed
+passwordless NOLOGIN role, always rolls back and verifies role absence/unchanged
+baseline through a fresh connection. Existing-role collisions refuse; a late SQL
+failure rolls back. No global defaults, memberships, real passwords or data grants.
+Local success is not proof of RDS administrator permissions.
+
+`migration_fixtures.py` supplies owned loopback TLS PostgreSQL with ephemeral
+synthetic CA/server material; no real/private environment input. `test_migration_runner.py`
+exercises actual dbmate/TLS/SQL plus controlled failures and actual Docker config
+inspection. Focused final cases/types and full gates recorded below after completion.
+Local tested image: dbmate@sha256:520c740c6e0ad73fde2cd1ea7e2b779aaf789d22aca8858f87a478e7094535fb,
+Linux ARM64; live image review remains pending. No migration SQL, deployed image,
+AWS/IAM/network/provider or shared-database change. No native macOS/AMD64 claim.
+
+[Runner/probe source snapshot](id-01-step-12/migration-runner-source-hashes.json).
+
+Final local runner/probe result — 2026-10-24 23:07:15 UTC:17focused tests pass
+(`/tmp/clip-id12-migration-runner-focused-complete.log`), strict mypy passes the
+implementation (`/tmp/clip-id12-migration-runner-types-final.log`). Final
+`make check` exited0/all11gates:1048Python passed/1existing DB-only skip,
+63data/118web, Black154files, zero boundary violations, current contracts,
+types/lint/build,35wrapper safety cases, actual PostgreSQL18.6 lifecycle and
+Gitleaks8.30.1. Final log `/tmp/clip-id12-migration-runner-final-check.log`;
+earlier gate log retained but superseded after the timeout-cleanup correction.
+Source/migration hashes, JSON, relative file links and diff whitespace pass.
+No runner-owned containers remain. No AWS/shared writes, provider calls or secret
+retrieval in this increment. Aditya verified the implementation and authorized commit/continuation; real RDS
+probe/migrations and affected-owner/image review remain separately gated.
