@@ -1,38 +1,57 @@
-# Draft title
+# Search and Listings integration — PR #11
 
-Implement Search discovery, wanted requests and private saved listings in isolated mode
+PR: <https://github.com/exocrat/clip/pull/11>
 
-# Draft description
+This change connects Search's sale discovery, wanted requests, and saved-listing
+flows to the real Listings implementation for the local integrated application.
+Listings remains responsible for listing records and listing SQL; Search calls
+Listings through its public provider and both use the configured PostgreSQL
+database.
 
-Adds keyword/hybrid listing discovery with filters, stable pagination, relevance
-sorting and bounded known-vocabulary typo tolerance. Adds wanted-request author
-management, public browse/detail, advisory draft matches, private saved-listing
-management and regular-member response initiation through reviewed contracts.
+## What is included
 
-The implementation includes native PostgreSQL migrations/locking/retry/privacy
-checks, responsive Search UI composition, local semantic/load tooling and explicit
-failure states. Retired origins retain only approved minimal references; unavailable
-saved listings remain visible. Missing real providers fail safely unavailable.
+- Search can browse available sale listings, use Listings' categories and
+  current listing summaries, check save eligibility, and show saved listings.
+- Creating or editing a listing follows the existing Listings workflow. The
+  database trigger and worker create its search vectors automatically; Keyword
+  and Hybrid search read those vectors and the current listing rows. No test
+  copies vectors directly into the database.
+- The local browser application uses real Listings, Wanted Request, and Saved
+  routes/stores. Its caller is a fixed local test Identity. Conversations is
+  not implemented here, so conversation-dependent actions fail safely.
+- Discover shows listing photos, Discover and Saved share the same sale card,
+  and an already-saved listing cannot be saved again. Wanted cards/save controls
+  and seller page-size parsing were corrected.
+- A locally buildable optional Linux AMD64 Hybrid image and deployment notes
+  are included for later integrated deployment. This PR made no cloud changes.
+- Eleven identical evidence files (17,523 repeated lines) were removed; the
+  distinct test and evaluation records remain. The Gitleaks exception only
+  covers verified SHA-256 fingerprint fields in named evidence files; other
+  secret checks remain enabled.
 
-This is an implementation-only handoff. ID-READY, LI-CORE, SE-CORE and DATA-READY
-are not accepted. Real Identity/Listings/Conversations integration, final dataset
-and human query labels, final evaluator binding, device coverage and all final
-NFR measurements remain pending. The preview does not establish real auth or
-conversation creation. Neither SE-01 nor SE-02 is complete.
+## Checks run
 
-Local validation:1270Python tests,94data tests,144web tests, Black183files,
-contracts8current, boundaries0, CI parity11, double-typecheck1file and
-35database-wrapper safety cases pass. Fresh native PostgreSQL14migration down/up/
-repeat/schema checks and20tests pass;3optional model checks skipped. Web's2opt-in
-HTTP tests are skipped by default and previously passed separately at Step7.
-Actual Docker/secret scanning and exact-head hosted CI are still pending.
+- Python: 1,288 passed, 21 skipped; data: 94 passed.
+- Web: 147 passed, 2 skipped; lint, TypeScript checks, and production build
+  passed.
+- Database wrapper safety: 35 cases. Disposable PostgreSQL integration: 21
+  passed, 3 optional model checks skipped; migration, smoke, rollback, and
+  reapply checks passed.
+- Isolated Listings/browser regressions: 52 passed. API mypy: 8 files.
+- Contract checks, boundary scan, formatting, Terraform formatting, and local
+  Gitleaks scan passed.
+- Hosted CI passed for the first published revision. Before approval, use
+  GitHub's checks on the current PR head as the exact-revision result.
 
-Review the complete changed-file inventory, canonical decisions and
-integration-checklist.md. Listings/Identity reviewers and Conversations review
-are required where affected. Arrange an independent human review using
-`docs/prompts/peer-review-prompt.md`; AI findings are not human approval.
+## What this does not claim
 
-Publication state: draft text only. No commit/head/PR URL exists for this handoff.
-Before publication, inspect the exact staged diff, settle coherent PR scope,
-run the missing checks, obtain explicit commit/push approval, and bind results to
-the committed revision. Merge requires separate authorization of the exact PR head.
+The local caller is synthetic; real Identity and Conversations remain later
+work. The final Search dataset, 20 human-reviewed search queries, formal
+LI-CORE/SE-CORE/DATA-READY acceptance, NFR measurements, cloud deployment, and
+cloud testing are outside this PR. Hybrid search was exercised locally on fresh
+listings; this is not a search-quality or performance result. Typo matching is
+limited to its reviewed vocabulary.
+
+See the [integration and deployment notes](../../../architecture/listings-search-deployment.md),
+the [integration checklist](integration-checklist.md), and the
+[handoff overview](README.md).
