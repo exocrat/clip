@@ -4,8 +4,8 @@ Prepared 2026-10-25 06:07:40 UTC by Aditya (A). Purpose: one place for the peopl
 whose features use Identity to understand **what changed, why, and what to check**.
 This includes the whole ID-READY branch, not just the latest logging/migration work.
 
-**Review source:** `task/id-ready-local-hardening` at `42e9cd9320cff5a5e15f3ba8eb5e95a31164082a`.
-Refreshed 2026-10-25 17:09:30 UTC after accepted-main integration; earlier prepared date is retained above.
+**Review source:** `task/id-ready-local-hardening` at `7bc5b6083caac673ce264b6daa6675d5ddf3a20f`.
+Refreshed 2026-10-25 19:07:04 UTC after local image and browser-transport corrections; original prepared date retained above.
 **Comparison base:** fetched `origin/main` at `6c860603bdd81a98485e721d789b557c5d433948`.
 The pending migration-review candidate and this handoff are documentation additions;
 they do not change the implementation pinned above. Refresh this comparison if
@@ -80,8 +80,9 @@ a merge authorization, or permission to apply cloud/database changes.
 | [Listings Terraform README](../../../infra/terraform/domains/listings/test/README.md) | Corrects one relative link to the shared password-logging decision. | Documentation-only; no Listings Terraform resource or lifecycle script change. |
 
 Aditya explicitly authorized the narrow adapter/test corrections; Suraj's affected-owner
-review is still needed. Listings service/store/routes/storage implementation and its
-web feature files are unchanged relative to the base. In particular, `_require_regular_eligible`
+review is still needed. Listings service/store/routes/storage implementation is
+unchanged relative to the base; its web request adapter now adopts only shared
+session transport. In particular, `_require_regular_eligible`
 still rejects a temporary seller. The adapter signature did not change.
 
 ## 2. One shared API, real request authentication — all owners
@@ -94,8 +95,9 @@ still rejects a temporary seller. The adapter signature did not change.
   `app.main` preserves its established `settings`, `app` and factory exports.
 - Explicit `IdentityHttpDependencies` can install the real Identity middleware/routes
   into the same app that already owns Listings routes, state and pool lifespan.
-  Health and pool shutdown remain in the shared composition. The import allowlist
-  moved to this exact composition file and adds only the reviewed Identity imports.
+  Accepted Search/Wanted/Saved/Hybrid wiring and cancellation-safe pool cleanup
+  remain. main.lifespan/probe hooks delegate to the same lifecycle. The import
+  allowlist names only exact composition/facade imports.
 - Fresh session authentication supplies `scope["clip.caller"]` and `scope["clip.session"]`.
   Incoming/ambient caller facts are cleared. Domain code still uses trusted core
   caller handling and owning-domain authorization; browser actor IDs/classes are not authority.
@@ -109,13 +111,15 @@ still rejects a temporary seller. The adapter signature did not change.
   production, development-auth, isolated fixed-caller and hosted-demo combinations;
   a missing DB/dependency bundle fails closed. Nothing silently enables fake auth.
 
-**Concrete pending frontend integration:** [listingsApi.ts](../../../apps/web/src/features/listings/listingsApi.ts)
-currently supplies JSON headers and same-origin cookies, but its normal helper does
-not add the Identity marker/CSRF headers. Its future protected writes will need a
-coordinated public transport/helper boundary when real Identity is enabled.
-The Identity-private `api.ts` is not an approved cross-feature import. This handoff
-reports the dependency; it does not edit Suraj's client or claim the live UI is integrated.
-Also settle normal same-origin routing/proxy behavior for all features before deployment.
+**Local browser transport integrated:** Listings listingsApi.ts and Search
+wantedApi.ts now call shared/http/sessionFetch.ts. Protected requests fetch a fresh
+token and carry both headers; token failure prevents that request, with no cache or
+automatic transport replay. Identity uses the same helper and /api prefix normally;
+explicit Identity preview keeps its existing unprefixed route/build guard. Each
+feature retains payload validators, safe errors and operation IDs. No feature imports
+Identity-private code; presigned S3 bytes retain their separate transport. Review
+Suraj/Mohit's narrow adapter/test-fixture diffs. Real TS/HTTP/SQL writes/denials pass;
+physical browser, trusted proxy and deployed provider acceptance remain pending.
 
 **Review:** existing Listings lifespans/routes survive; public reads stay usable;
 real cookie users reach permitted endpoints; stale/expired/revoked users cannot
@@ -123,10 +127,10 @@ mutate; hostile origins/CSRF fail; isolated Listings demos remain isolated. The
 current middleware uses the actual transport peer; trusted proxy/TLS/client-IP
 configuration remains a deployment gate, not solved by trusting forwarded headers.
 
-The accepted Search `wantedApi.ts` helper likewise sends JSON/cookies without
-X-CLIP-Request/CSRF headers. Coordinate its protected-write integration with Mohit
-alongside Listings; the new real-session read regressions do not prove browser
-writes. No private consumer helper was modified during main integration.
+Existing isolated demos now expose only the reviewed CSRF response double under
+their existing profile/origin gates. The shared app installs it only in the guarded
+synthetic Listings profile before SPA fallback; default/production startup has no
+synthetic route. This supports demos and is not proof of real CSRF protection.
 
 ## 3. Eligibility and capabilities — Listings, Search and Conversations
 
@@ -256,7 +260,8 @@ Use only `features/identity/index.ts` public exports, including `useIdentity`.
 **Review:** Listings/public pages still render if auth is unavailable; previews cannot
 be built/deployed; stale reads do not resurrect a logged-out UI; marketplace state
 refresh/invalidation is coordinated; frontend summaries never authorize an API call.
-No private Listings/Search/Conversations web feature implementation was edited.
+Only the narrow Listings/Search transport adapters were edited; their business
+logic and all Conversations feature implementation remain unchanged.
 
 ## 7. Database and validation changes — all schema owners
 
@@ -317,13 +322,12 @@ Local preparation found a concrete image trust-store gap, still unresolved
 after accepted-main integration at the source pinned in this file's header. The cached AMD64 base image contains none of the regional RDS roots used
 by the probe, while app TLS requires system roots. See the
 [offline evidence and proposed coordinated fix](integration.md#explicit-local-runtime-preparation-and-image-trust-finding--2026-10-25-114606-utc).
-Shared Dockerfile remains unchanged; reserve/review that bounded change after
-upstream integration before claiming image/runtime TLS acceptance.
+Shared Dockerfile now installs these roots and points bundled libpq at the OS
+CA file. The stronger native TLS proof and remaining platform/runtime gates are below.
 
 ### Prepared shared image correction — 2026-10-25 18:00:39 UTC
 
-A subsequent local change (outside the earlier source snapshot at this file's
-header) addresses the trust finding: apps/api/Dockerfile installs pinned public
+The current pinned source addresses the trust finding: apps/api/Dockerfile installs pinned public
 regional roots and explicitly selects the standard OS CA file for bundled libpq.
 This affects system-root TLS clients across the ordinary image; Hybrid inherits
 only from a corrected parent. No provider/URI/hostname policy change. Four actual
@@ -332,12 +336,12 @@ hostname/unknown-CA refusal; all148distribution roots remain. See
 [exact source/image/check evidence](id-01-step-12/image-trust-local.json) and the
 [shared decision](../../decisions/identity-rds-system-trust.md). B/C/shared image
 review, AMD64/Hybrid proof and real deployed RDS checks remain pending; no apply
-or publication is authorized. Source pins must be refreshed for the final PR.
+or publication is authorized. Refresh pins if source/main advances before review.
 
 ### Prepared shared browser transport — 2026-10-25 19:00:23 UTC
 
 The previously identified Listings/Search browser-header gap is now corrected
-locally, outside this file's earlier source snapshot: both narrow adapters use
+locally in the current pinned source: both narrow adapters use
 shared/http/sessionFetch.ts; Identity uses the same helper and normal /api route.
 Fresh protected CSRF, marker/no-store/same-origin and no automatic transport retry;
 feature payloads/validators/operation keys/S3 bytes unchanged. Existing isolated
@@ -346,12 +350,12 @@ demos supply only a guarded contract double, never a client-side bypass.
 cookie-authorized writes and missing/stale/temporary/logout denials. Suraj/Mohit
 review the bounded adapters/demo fixtures; Rahul remains the primary Identity peer.
 This closes the local transport gap, not real browser/provider/ID-READY acceptance.
-Final PR source pins must include these subsequent changes.
+The current source pin includes these changes; acceptance still requires review.
 
 ## 9. Evidence and requested review outcome
 
-Latest source-identical full gate: **1791Python passed,21skipped,
-94data,223web passed/2skipped; all11gates passed**, Black254files, contracts/types/boundaries/build,
+Latest source-identical full gate: **1800Python passed,24skipped,
+94data,257web passed/3skipped; all11gates passed**, Black258files, contracts/types/boundaries/build,
 real PostgreSQL18.6 migration lifecycle, Gitleaks8.30.1. Runner/probe focused suite:
 17passed. Recorded results are not a new run performed to write this document.
 Local combined API/session/Listings/contact tests cover real SQL, cookies, temporary
@@ -401,14 +405,15 @@ To inspect the complete branch diff, including all Identity files and historical
 evidence/documentation, run from the clone (read-only):
 
 ```sh
-git diff --name-status 6c860603bdd81a98485e721d789b557c5d433948 42e9cd9320cff5a5e15f3ba8eb5e95a31164082a
-git diff 6c860603bdd81a98485e721d789b557c5d433948 42e9cd9320cff5a5e15f3ba8eb5e95a31164082a -- PATH_TO_REVIEW
+git diff --name-status 6c860603bdd81a98485e721d789b557c5d433948 7bc5b6083caac673ce264b6daa6675d5ddf3a20f
+git diff 6c860603bdd81a98485e721d789b557c5d433948 7bc5b6083caac673ce264b6daa6675d5ddf3a20f -- PATH_TO_REVIEW
 ```
 
 ```text
 .env.example
 .gitleaks.toml
 README.md
+apps/api/Dockerfile
 apps/api/README.md
 apps/api/app/application.py
 apps/api/app/contracts/domain_types.py
@@ -418,13 +423,24 @@ apps/api/app/core/runtime_bindings.py
 apps/api/app/domains/listings/integrations.py
 apps/api/app/main.py
 apps/api/tests/core/test_runtime_bindings.py
+apps/api/tests/domains/listings/browser_demo.py
 apps/api/tests/domains/listings/test_image_upload_service.py
 apps/api/tests/domains/listings/test_offer_boundary.py
+apps/api/tests/domains/search/wanted_ui_preview.py
 apps/web/README.md
 apps/web/index.html
 apps/web/src/App.tsx
 apps/web/src/app/AppShell.tsx
+apps/web/src/features/listings/listingsApi.ts
+apps/web/src/features/search/wantedApi.ts
 apps/web/src/pages/ScaffoldPages.tsx
+apps/web/src/shared/http/sessionFetch.ts
+apps/web/tests/helpers/csrf.ts
+apps/web/tests/listings-api.test.ts
+apps/web/tests/listings-image-api.test.ts
+apps/web/tests/session-fetch-http.test.ts
+apps/web/tests/session-fetch.test.ts
+apps/web/tests/wanted-api.test.ts
 apps/web/vite.config.ts
 apps/web/vitest.config.ts
 contracts/README.md
