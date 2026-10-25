@@ -750,3 +750,146 @@ Source/migration hashes, JSON, relative file links and diff whitespace pass.
 No runner-owned containers remain. No AWS/shared writes, provider calls or secret
 retrieval in this increment. Aditya verified the implementation and authorized commit/continuation; real RDS
 probe/migrations and affected-owner/image review remain separately gated.
+
+
+## Source review and live logging-probe gate
+
+Prepared 2026-10-25 01:44:19 UTC. Aditya verified the local runner/probe and authorized
+commit/continuation; implementation/evidence committed
+ca935b950a173a33f34641ea3cf80012f7f93f03. Fresh `git fetch origin main` confirms
+upstreamdefec38f59d4acb683f7b51950860f458aacfdd1 unchanged. Its11migration files
+are byte-unchanged; this branch adds only the3Identity forwards, producing the
+manifest's14file chain/head20261023202807. No new source edit or AWS call here.
+
+Bounded independent review package: branch task/id-01-identity, headca935b9,
+baseorigin/main@defec38f, [manifest](id-01-step-12/shared-migration-manifest.json),
+[runner source hashes](id-01-step-12/migration-runner-source-hashes.json),
+[17case/full-gate result](#local-migration-runner-and-rollback-logging-probe).
+Rahul(D) is Aditya's primary human peer; affected B/C/D schema owners review their
+shared surfaces using the [peer review prompt](../../prompts/peer-review-prompt.md).
+Review source/current tests, unchanged11baseline files plus3new forwards, TLS and
+stdin credential boundary, no-op/prefix/timeout guards, logging rollback and
+shared target/recovery assumptions. No independent approval is recorded or
+inferred. This is a local review package, not a published PR/push or merge request.
+Image digest review and shared DDL approval remain pending; current manifest
+still refuses live migration execution.
+
+### Proposed next window: logging probe only
+
+This can resolve RDS permission uncertainty without applying the shared migration
+chain. Exact proposed scope, awaiting explicit fresh approval:
+
+- Account335523638354/ap-south-1, profileadityalaxmi1; original RDS
+  clip-shared-test-postgres/resource db-PYRRZJPVKPGHIXDAHUWATXGH7A. Recheck account,
+  exact stopped target, idle API/services/tasks/ASG/sessions and serialized operator
+  window before mutation; record a new UTC anchor/deadline.
+- Same bounded infrastructure as the completed preflights: start only that RDS;
+  one existing task clip-test-identity-email-ap-south-1-id01:1, exact unchanged
+  [sleep1800 overrides](id-01-step-12/database-preflight-task-overrides.json),
+  digest3ef8b13d3b102dc97e67d79d91e43eb8d4b2cc02fbabb45cf6001c8a93eddd1d,
+  capacity providerclip-shared-test-capacity and ASGclip-shared-test-ecs-host min0/
+  max1. Verify sole actual private host/VPC/SG/SSM before the same ten-minute
+  endpoint-only tunnel. No API service enablement/new task registration/build/push.
+- Authorize one private in-memory decrypted read of
+  /clip/test/database-master-password. Verify original endpoint hostname through
+  CA-backed verify-full TLS and loopback15432; connect timeout3s, SQL5s, locks3s,
+  total probe process120s. No auth-key/email-secret/DB-URL parameter reads.
+- Invoke only committed `probe_logging`, expected databaseclip_test and admin
+  clip_test_admin. It checks absent clip_test_identity_logging_probe, sets only
+  this transaction's6logging settings, creates only that fixed NOLOGIN restricted
+  role, tries its6logging defaults, verifies them and always ROLLBACKs. No password,
+  membership, grants or application-data SQL. A fresh connection verifies role
+  absence and unchanged effective baseline. This is explicitly SQL-writing inside
+  a rolled-back transaction, not a read-only operation. No global parameter group
+  or persistent role/default change is approved by the request.
+- Emit only the code-owned completed/rollback_verified/failed_phase fields and
+  sanitized execution metadata. Stop if collision/permission/default verification
+  fails; no automatic repair, new grant, schema apply or replay. A complete probe
+  requires both completed=true and rollback_verified=true; cleanup is independent.
+- Close owned session, stop owned task, and guarded desired0 only after STOPPED,
+  empty tasks/services/sessions and sole-owned-host/min0/max1 checks. Honor cooldown;
+  preserve normal draining/managed scale-in on concurrent work or unsafe cleanup.
+  Stop original RDS only while still the serialized operator; verify stopped,
+  cluster/ASG0, no sessions and owned host/root deletion. Retain all persistent
+  secrets/data/state/IAM/task definitions/NAT. No unrelated cleanup or topology change.
+- One-hour total window including startup/cleanup, one host/task maximum,1USD
+  operating ceiling, not an AWS-enforced cap. Use previously quoted compute rates
+  (0.08479USD/hour host+0.021RDS) as estimates, plus root/NAT/control-plane/log
+  traffic; existing retained costs continue separately. Prior disclosed project
+  forecast382.855USD versus200USD budget and unverified credits/reserve remain
+  unresolved; no new budget query or change here. Human acceptance covers only
+  this bounded window, not general future spend. Stop for unexpected targets,
+  additional cost/permission/infrastructure needs or concurrent users.
+
+Successful probe does not authorize migrations, permanent login/password/grants,
+URL provisioning, deployment, provider sends or merge. After human verifies the
+probe/cleanup result, return to the earliest actual schema gate with affected-owner
+review and a separate exact manifest/image/DDL approval. No new live action yet.
+
+Logging-only gate status — 2026-10-25 04:02:48 UTC: Aditya approved the exact scope;
+AWS login expired before final metadata guards could authenticate. No mutation or
+secret read, and no one-hour clock started. Await human sign-in, then recheck all
+target/idle guards under the existing approval; do not infer fresh resource state.
+
+Logging-only attempt — 2026-10-25 04:06:31 UTC: authentication recovered, all exact
+account/idle guards passed. Recorded anchor04:05:35/deadline05:05:35 UTC, then one
+RDS start request was rejected with InsufficientDBInstanceCapacity (db.t4g.micro,
+ap-south-1a). Original RDS confirmed still stopped. No task/tunnel/secret read,
+probe SQL or resource creation; no cleanup required. No automatic retry or class/
+AZ change. [Sanitized result](id-01-step-12/logging-probe-start-result.json).
+Probe remains unexecuted; current source is unchanged and readiness incomplete.
+
+Logging-only retry state — 2026-10-25 04:37:19 UTC: Aditya explicitly requested retry.
+Fresh idle guards passed; original start accepted, recovery event04:16:15.760UTC.
+Readiness did not arrive within20minutes. Probe remains unexecuted, no host/task/
+tunnel/secret read. Asked whether to extend readiness wait to35minutes inside the
+same overall05:05:35UTC/1USD limits; unanswered, no consent inferred. Approved
+cleanup stop attempted after fresh idle checks, rejected InvalidDBInstanceState
+because RDS is still starting. Monitoring only for stoppable state; no class/AZ
+or alternative infrastructure change. [Sanitized retry record](id-01-step-12/logging-probe-retry-result.json).
+Cleanup is not complete; subsequent status must supersede this snapshot explicitly.
+
+Recovery failure confirmed — 2026-10-25 04:42:09 UTC: original instance now stopping.
+AWS event04:37:55.153UTC explicitly reports insufficient db.t4g.micro capacity in
+ap-south-1a and putting the database into stopping. This explains the transition;
+our earlier StopDBInstance was rejected, not accepted. No probe/secret read/host
+launch. Wait-extension question is moot and no consent inferred. Await stopped
+confirmation before claiming cleanup complete.
+
+Logging-only retry closeout — 2026-10-25 04:53:05 UTC: original RDS stopped;
+cluster hosts/running/pending0, API desired/running/pending0, ASG0/empty and active
+sessions0 verified. No task/host/tunnel or credential read was started, no SQL
+probe/migration/permanent role change. Cleanup completed inside the original
+05:05:35UTC deadline. AWS capacity recovery failed; actual logging permissions
+remain untested. Wait-extension question is moot, not an approval or pending
+requirement. Source unchanged; Gitleaks8.30.1 snapshot, JSON/links/whitespace pass.
+[Final retry evidence](id-01-step-12/logging-probe-retry-result.json). Human result
+verification pending; docs uncommitted; ID-READY remains incomplete.
+
+
+### Live logging probe passed — 2026-10-25 05:33:26 UTC
+
+Aditya explicitly requested another same-scope retry after the prior stopped
+closeout. New window05:22:29→06:22:29UTC/1USD; fresh account/idle checks passed,
+original class/AZ/private endpoint matched. RDS reached available; one exact
+sleep-only task/host and private SSM tunnel established. Committed ca935b9 source
+hashes verified before import, one private in-memory master-secret read, actual
+verify-full TLS to original hostname/public regional CA.
+
+`probe_logging` returned completed=true, rollback_verified=true, failed_phase=null.
+All6transaction-local settings and the passwordless NOLOGIN probe-role defaults
+were accepted. Role absence and unchanged original settings were verified through
+a fresh connection. This resolves the earlier RDS-specific setting/default
+permission uncertainty despite false catalog SET flags. No global parameter change,
+permanent role/password/grant, data/migration/provider operation, or key/email-secret
+read. [Sanitized result](id-01-step-12/logging-probe-20261025T052229Z.json).
+
+Owned tunnel/task stopped, host terminated/ASG0 and root deletion confirmed;
+original RDS stop accepted and confirmed stopped by 2026-10-25 05:41:05 UTC. Final
+cluster hosts/running/pending0, API desired/running/pending0, ASG0/empty and active
+sessions0; owned host/root removed, cooldown honored. Cleanup complete inside the
+06:22:29UTC deadline. Gitleaks8.30.1 source snapshot, JSON/source hashes/links/diff
+checks pass. Source unchanged; no full-suite rerun for evidence-only changes.
+Aditya verified the live result/cleanup and authorized commit/continuation.
+Migration
+chain/affected-owner/image review and exact shared DDL approval remain separate.

@@ -47,7 +47,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PD-19 | Integration owner (current branch) | done | Steps 1–9 and combined foundation handoff complete | Steps 1–9 performed | User confirms all work before PRE-00 is complete | PR #8 merged at `2cd83e7` from head `18c966e` against base `68d9da9`; [Foundation quality gates passed](https://github.com/exocrat/clip/actions/runs/39323851584) for that exact head/base; `make test` (395 Python, 63 data, 16 web), Black, contract freshness and 10 `make check` gates passed; [handoff](foundation-handoff.md) | No open PD-19 work per user confirmation. Linux AMD64/macOS results remain user-confirmed without raw outputs. PR #8 has no submitted GitHub review; independent-review completion is user-confirmed, with no separate review artifact linked. Refresh cloud snapshot before any operation. | 2026-10-19 21:09:05 UTC |
 | PRE-00 | Integration owner | done | Foundation gate audit accepted; DL-00 is unblocked | performed | verified/accepted by user | Reviewed handoff PR #8 merged to `main` at `2cd83e7`; hosted Foundation quality gates passed for head `18c966e` against base `68d9da9` (run `39323851584`); clean-checkout evidence at `0747be6`; see [PD-19 handoff](foundation-handoff.md) | None. PR #8 has no GitHub review event; independent-review completion remains user-reported without a separate artifact. | 2026-10-19 21:20:55 UTC |
 | DL-00 | Shared-core/contract coordinator; all domains review | done | Steps 1–13 and task-wide audit complete; accepted and merged | Steps 1–13 performed; accepted by user | User confirmed full acceptance and merge on 2026-10-22 05:30:49 UTC | PR #9 merged to `main` at `f5576ef`; current `main` is `44cd8ff`; Step 13 check evidence is recorded below and was not rerun for this update | None for DL-00; cleanup implementation remains separately gated; real providers/integrations and crypto/worker implementation remain downstream | 2026-10-22 05:30:49 UTC |
-| ID-01 | A | in progress | Step12 local migration runner/probe verified; commit authorized; live image/schema review next | Explicit key/DB bootstrap, read-only startup audit, separate role proposal; all11gates passed:1048Python/1existing skip,63data/118web;17runner-focused;strict runner types | Aditya verified runner/probe implementation and authorized commit/continuation | `9bfb607`; [runtime evidence](../evaluation/identity/integration.md#secure-runtime-preparation); offline SSM and real disposable PostgreSQL only | Identity DB login/URL, runtime IAM/proxy/TLS/provider/device/peer/CI and production enablement pending; SES transition pending; Step14 outside scope | 2026-10-25 01:42:18 UTC |
+| ID-01 | A | in progress | Step12 real logging probe/cleanup verified; commit authorized; shared migration review next | Actual RDS six setting/default checks passed; prior local17runner/full11gates1048Python/1skip,63data/118web unchanged | Aditya verified passed live probe/cleanup and authorized commit/continuation | `ca935b9`; [live probe evidence](../evaluation/identity/id-01-step-12/logging-probe-20261025T052229Z.json) | Shared migration/image/affected-owner review and exact DDL approval; DB login/URL/IAM/proxy/provider/device/peer/CI; Step14 outside scope | 2026-10-25 05:49:22 UTC |
 | LI-01 | B | in progress | Finish the remaining Step 7 browser states and current-head Step 11 checks/reviews; prepare a progress PR without claiming LI-CORE. Steps 12–13 remain integration-gated. | Steps 1–6 and 8–10 implemented and locally checked; Step 7 partial (create/detail/edit/My Listings/gallery). | Suraj verified the multi-image edit/gallery checkpoint, seller-only selected-buyer visibility, and Step 10. No LI-01 phone-device result is claimed. | domain/listings at 6ffbe0b; focused Listings suite: 61 passed, one database-only test skipped outside the wrapper; disposable PostgreSQL workflow passed; current worktree `make check` passed 2026-10-23 (573 Python, 63 data, 42 web tests; remaining contract, type, boundary, database, safety, formatting, lint, and build checks passed). | LI-CORE not accepted. Remaining Step 7 states; Step 11 query-plan, current aggregate, and affected-owner review; native schema check; five pre-existing backend boundary findings; real Identity, Conversations, storage, and Search integration; Steps 12–13. | 2026-10-23 10:38:31 UTC |
 | LI-02 | B | in progress | Defer Step 3 until shared ECS use is over and its saved capacity baseline is restored; then prepare a fresh plan and review its exact hash and cost. | Steps 1–11 and 1.5 verified. The prior Step 12 public ECS browser flow and phone photo upload worked. The revised dedicated-RDS harness is committed; its prepared plan was discarded and never applied. | Suraj verified Step 11, Step 1.5, and the prior browser/mobile flow. | domain/listings at 6ffbe0b; Terraform 1.15.9 fmt/validate, Python compilation, 27 lifecycle cases, CLI help, and diff check passed before commit; current worktree `make check` passed 2026-10-23 (573 Python, 63 data, 42 web tests; remaining contract, type, boundary, database, safety, formatting, lint, and build checks passed). Plan 30112961a2479c760dfa32f91b0b57013a2a4079924abc3a5fd85dee06d6b6fd is invalid for apply. | Baseline li02-c2090c6c3294 remains images-ready. No disposable LI-02 RDS, ALB, service, or URL parameter was created by the revised plan. Prior preflight: account 335523638354, ap-south-1, MTD USD 6.14, forecast USD 21.42, USD 200 monthly cap. The previous shared-RDS test database was not queried and may remain; the new harness never touches shared RDS. Wait for an idle shared ECS baseline before restarting. | 2026-10-23 10:38:31 UTC |
 | SE-01 | C | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | SE-CORE, LI-01, LI-02, DATA-READY | — |
@@ -111,6 +111,85 @@ Update the task status row after each step and human verification. The row is th
 Add a history entry when it records a meaningful outcome, decision, changed output, check result, blocker, consequential human direction, or task/merge closeout. Group related steps when that keeps their results understandable. Do not add a separate history entry just to say that a routine step was verified and the next one may begin.
 
 Include the task and covered step(s), contributor, date/time, and the details needed to understand or verify the outcome: relevant execution/verification state, changed paths, exact checks/results, decision/evidence reference, blocker/owner, or next action as applicable. Keep entries brief, omit repeated background, and link existing artifacts rather than duplicating them. Use exact UTC date and time for new entries. Keep historical timestamp precision as recorded; never guess or backfill an unknown time. Preserve distinct decisions, evidence, and other contributors' useful history.
+
+### ID-01 — Step12 fresh same-scope retry — 2026-10-25 05:22:29 UTC
+
+Aditya(A) explicitly requested another retry after the previous stopped/zero
+closeout. Fresh exact account/operator/resource guards pass: original RDS stopped,
+only API service desired/running/pending0, no tasks/hosts/sessions, ASGmin0/max1/
+desired0/empty. Probe source hashes matchca935b9. Same approved target/class/AZ,
+logging-only probe and cleanup; no scope expansion. New one-hour window anchored
+05:22:29 UTC, deadline2026-10-25 06:22:29 UTC,1USD operating ceiling;20minute
+startup limit unchanged. Prior wait-extension question remains moot/unapproved.
+No migration or permanent role/grant/default change. Execute only this explicitly
+requested retry, not an automatic retry loop. Actual probe05:33:26UTC completed
+and rollback_verified=true, failed_phase=null; original TLS target matched. All6
+transaction-local settings and NOLOGIN role defaults accepted, then role absent/
+original baseline verified through fresh connection. One private master-secret
+read; no migrations or persistent role/data writes. [Sanitized probe result](../evaluation/identity/id-01-step-12/logging-probe-20261025T052229Z.json).
+Owned task/tunnel closed, host terminated/ASG0, root deletion confirmed; original
+RDS stop accepted and still stopping at05:38:07UTC. Final cleanup verified
+2026-10-25 05:41:05 UTC: original RDS stopped, cluster hosts/tasks0, API desired/running/
+pending0, ASG0/empty, no sessions, owned host/root removed; cooldown honored.
+Completed within06:22:29UTC deadline. Gitleaks8.30.1, JSON/source hashes/relative
+links/diff checks pass. Source unchanged; no repeat full-suite run. Aditya
+verified live result/cleanup and authorized commit/continuation; shared schema/
+image reviews and exact DDL remain gated.
+
+### ID-01 — Step12 logging-only probe execution — 2026-10-25 04:05:35 UTC
+
+Aditya(A) requested retry after expired login; authentication now succeeds for
+expected account335523638354/useradityalaxmi1. Fresh exact-resource/idle checks pass:
+original RDS stopped, tasks/sessions empty, only API service desired/running/pending0,
+ASGmin0/max1/desired0/empty. Existing explicit logging-only approval remains valid.
+Window anchor04:05:35 UTC, deadline2026-10-25 05:05:35 UTC,1USD operating ceiling.
+One sleep-only task/private tunnel/master-secret read and committed rollback-only
+probe plus guarded cleanup; no migration or permanent role/grant/default changes.
+[Exact scope](../evaluation/identity/integration.md#proposed-next-window-logging-probe-only).
+Start rejected by AWS InsufficientDBInstanceCapacity for db.t4g.micro in
+ap-south-1a. Original resource rechecked stopped at 2026-10-25 04:06:31 UTC. No task,
+tunnel, secret read, probe SQL or new resource; no cleanup action required. No
+automatic retry or class/AZ/network modification. Aditya subsequently requested
+a retry; fresh guards passed and the same start was accepted (starting) within
+the original window; no deadline extension. [Sanitized start result](../evaluation/identity/id-01-step-12/logging-probe-start-result.json).
+Retry follow-up observed 2026-10-25 04:37:19 UTC: RDS recovery did not reach available
+within20minutes. No host/task/tunnel/secret read/probe SQL. Proposed wait-only
+extension remains unanswered; not treated as consent. Fresh idle checks pass;
+approved original-RDS stop rejected InvalidDBInstanceState (not available).
+Cleanup pending; monitor only for stoppable state unless human explicitly extends
+probe readiness wait. Original05:05:35UTC overall deadline and1USD ceiling remain.
+[Retry record](../evaluation/identity/id-01-step-12/logging-probe-retry-result.json).
+AWS event04:37:55.153UTC confirms insufficient db.t4g.micro capacity in
+ap-south-1a during recovery; AWS put original DB into stopping, observed at
+2026-10-25 04:42:09 UTC. Wait-extension question moot; no consent inferred or extra work.
+Logging-permission question unresolved; no class/AZ/IAM/network or schema change.
+Final cleanup verified 2026-10-25 04:53:05 UTC: original RDS stopped, cluster hosts/tasks0,
+API desired/running/pending0, ASG0/empty and no active sessions. No child resources
+were launched. Gitleaks8.30.1 source snapshot, sanitized JSON/relative links and
+diff checks pass; no code changes/full-suite rerun. Result verification pending;
+logging probe remains unexecuted and no integration/readiness accepted.
+
+### ID-01 — Step12 logging probe authentication blocker — 2026-10-25 04:02:48 UTC
+
+Aditya(A) explicitly approved the exact logging-only window. Final read-only
+account/resource/session guards all failed before authentication: AWS CLI reports
+expired adityalaxmi1 login. No resource start, session, SQL/secret read or mutation;
+no window anchor/deadline set. Last verified stopped/zero baseline remains the
+previous observation, not a fresh current-state claim. Human AWS sign-in required;
+then repeat guards and execute the already-approved scope if targets remain valid.
+No renewed approval needed solely for login expiry; changed scope/state still stops.
+
+### ID-01 — Step12 source review/logging-only window proposal — 2026-10-25 01:44:19 UTC
+
+Aditya(A) verified runner/probe and authorized commit/continuation; committed
+ca935b9. Refreshed origin/main: unchangeddefec38f;11baseline SQL files unchanged,
+3Identity additions only. Prepared exact local reviewer package and independent
+Rahul/affected B/C/D review scope, no approval inferred. [Next approval request](../evaluation/identity/integration.md#source-review-and-live-logging-probe-gate)
+is only a fresh1hour/1USD original-RDS/one-task/private-tunnel/master-secret-read
+window running the committed NOLOGIN rollback-only logging probe, plus guarded
+cleanup. No migration apply or persistent role/grant/logging change; manifest's
+live image/schema gates remain closed. No AWS call in this preparation increment;
+exact cloud/SQL-probe/secret/cleanup approval pending. Docs uncommitted.
 
 ### ID-01 — Step12 local migration runner/probe — 2026-10-24 23:02:01 UTC
 

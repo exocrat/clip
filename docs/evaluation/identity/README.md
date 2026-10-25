@@ -27,6 +27,10 @@ criteria and action approvals still come from their canonical sources.
 - Normal application composition still lacks real Identity runtime wiring.
   Microsoft sign-in is disabled. ID-READY is not accepted; no final FR03 claim.
 
+- Real RDS logging/default probe passed with rollback and stopped/zero cleanup
+  verified on2026-10-25; [live evidence](integration.md#live-logging-probe-passed--2026-10-25-053326-utc).
+  Shared migration apply and Identity login/URL provisioning remain pending.
+
 ## Canonical sources
 
 [Task and acceptance checks](../../tasks/domain-task-list.md#id-01--implement-identity-eligibility-and-temporary-accounts),

@@ -322,3 +322,55 @@ ASG0/empty; cluster hosts/tasks0; API desired/running/pending0. Owned host
 i-09708de46c0fa931a terminated and rootvol-00c3b7f86b1613fed deleted. Guarded
 scale-in accepted with cooldown honored. NAT/data/parameters/state/IAM/task
 retention unchanged; existing retained costs continue. [Sanitized report](../evaluation/identity/id-01-step-12/database-preflight-followup-result.json).
+
+
+### Logging probe start rejected — 2026-10-25 04:06:31 UTC
+
+Authenticated operator/idle guards passed under explicit logging-only approval.
+Original RDS start rejected: InsufficientDBInstanceCapacity for db.t4g.micro in
+ap-south-1a. Resource db-PYRRZJPVKPGHIXDAHUWATXGH7A rechecked stopped. No task,
+host, session or secret read was started; no SQL, IAM/network/class/AZ change or
+cleanup operation. Existing retained NAT/storage/etc. remain unchanged. [Result](../evaluation/identity/id-01-step-12/logging-probe-start-result.json).
+
+
+### Logging retry startup/cleanup pending — 2026-10-25 04:37:19 UTC
+
+Supersedes the preceding stopped observation: Aditya explicitly requested retry,
+original RDS start accepted with recovery event04:16:15.760UTC. Resource
+ db-PYRRZJPVKPGHIXDAHUWATXGH7A remains starting after20minute readiness bound.
+No host/task/tunnel/secret read/probe SQL. Approved stop request rejected
+InvalidDBInstanceState (requires available); cleanup pending. Shared API/ASG/tasks/
+sessions rechecked zero/empty. No class/AZ/role/grant/IAM/network/schema change;
+no automatic retry or unapproved wait extension. Original window ends05:05:35UTC.
+[Retry record](../evaluation/identity/id-01-step-12/logging-probe-retry-result.json).
+
+
+### Logging-only retry stopped baseline restored — 2026-10-25 04:53:05 UTC
+
+Supersedes prior startup/stopping observations. AWS accepted the explicit retry,
+then aborted recovery for insufficient db.t4g.micro capacity in ap-south-1a
+(event04:37:55.153UTC) and put the original RDS into stopping. Our cleanup stop
+call had been rejected InvalidDBInstanceState; do not attribute shutdown to it.
+Original resource db-PYRRZJPVKPGHIXDAHUWATXGH7A now confirmed stopped. Cluster
+hosts/tasks0, API desired/running/pending0, ASG0/empty and active sessions0. No
+child resources launched, credential retrieved, SQL probe/data/schema/role write,
+class/AZ/IAM/network change or alternative infrastructure. Retained NAT/storage/
+parameters/state unchanged; their ongoing costs remain. [Final record](../evaluation/identity/id-01-step-12/logging-probe-retry-result.json).
+
+
+### Live logging probe passed; stopped baseline restored — 2026-10-25 05:41:05 UTC
+
+Aditya explicitly requested same-scope retry; new05:22:29→06:22:29UTC/1USD window.
+Original class/AZ/private target and idle guards matched. RDS available, one exact
+sleep-only task, verified private host/SSM and verify-full TLS. Committed ca935b9
+logging probe returned completed/rollback_verified true, no failure phase;6local
+settings and6NOLOGIN defaults accepted, then role absent/original baseline verified.
+One private master-secret read; no permanent role/data/default changes, migrations,
+auth-key/email-secret reads or provider operation. No class/AZ/IAM/network changes.
+
+Cleanup verified: original RDS resource db-PYRRZJPVKPGHIXDAHUWATXGH7A stopped;
+owned task8d71d4f672504d10b94c713c647b0fce stopped, tunnel closed; cluster hosts/tasks0,
+API desired/running/pending0, ASG0/empty, no active sessions. Owned host
+i-0be3743fe59a127bf terminated and rootvol-0806db641df31317b deleted. Guarded
+scale-in accepted with honor-cooldown. NAT/data/parameters/state retained; baseline
+retention costs continue. [Successful probe record](../evaluation/identity/id-01-step-12/logging-probe-20261025T052229Z.json).
