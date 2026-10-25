@@ -1341,3 +1341,44 @@ now includes the current image fix and browser adapters, removes superseded loca
 header-gap claims, and regenerates its complete shared/other-owner path inventory.
 No code changed during this metadata refresh; all recorded local checks remain
 valid, owner/human verification and live gates remain pending.
+
+## Morning user acceptance run — preparation only
+
+This checklist prepares the user-controlled browser checks after the separately
+approved schema, runtime, HTTPS/proxy, provider, and deployment work is complete.
+It is not approval to query AWS, read secrets, migrate, deploy, or send mail; it is
+not evidence that ID-READY has passed. Use the exact deployed revision and the
+approved application origin (expected `https://clip-iisc.site`). Stop if the sign-in
+page is not served by that revision or the HTTPS/API origin is unexpected.
+
+1. Open `/sign-in` in a clean browser session. Confirm the Microsoft button is
+   enabled only on the intended HTTPS app origin. Sign in with the user's IISc
+   account through Microsoft's normal consent flow. Expect return to the app with
+   a regular account session. Refresh once and confirm the session remains valid;
+   then sign out and confirm a fresh visit no longer shows the signed-in state.
+   Do not copy authorization codes, ID/access tokens, cookies, or browser storage.
+2. Start temporary registration with the user's approved Gmail-controlled address.
+   Expect the generic acknowledgement, then a six-digit message from
+   `verify@clip-iisc.site`; check inbox and spam. Use the newest valid code and a
+   password of at least eight characters. Expect an authenticated temporary
+   account whose UI states the 14-day lifetime. Refresh once and confirm it remains
+   signed in. Do not request duplicate codes unless the UI cooldown permits it.
+3. Sign out, use “Forgot password” for that same temporary account, and verify a
+   reset message arrives. Use the latest valid code and a new password, then sign
+   in with the new password. Expect the temporary account class and original
+   expiry to remain unchanged. Do not deliberately submit incorrect codes or
+   passwords during this smoke check.
+4. Record only the deployed revision, UTC time, browser/device, pass/fail per flow,
+   observed account class and temporary expiry, and whether each expected message
+   reached inbox or spam. Never record email addresses, OTPs, passwords, cookies,
+   tokens, contact values, or provider credentials in repository evidence. Report
+   failures with a sanitized screenshot or exact UI message and stop repeated
+   sends after an unexpected result.
+
+The run depends on the morning gates: current reviewed AMD64 image; exact shared
+schema and separate Identity login/URL; scoped task-role permissions and persistent
+keys; current sender/provider configuration with the approved controlled-recipient
+allowlist; HTTPS/proxy/API routing; and the intended frontend flag/revision. The
+user performs the Microsoft account and inbox actions. Physical-phone verification,
+affected-owner review, hosted CI, and the full Step14 consumer matrix remain
+separate checks; Step14 is outside current ID-READY scope.
