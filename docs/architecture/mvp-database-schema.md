@@ -8,10 +8,22 @@
 
 This document proposes the complete MVP data inventory and its relational boundaries. It creates no tables or domain behavior. Names, types, constraints and indexes below are proposals unless identified as already approved. The review gates at the end must be resolved before dependent initial migrations. After approval, versioned migrations in `database/migrations/` become the executable schema source; this document explains their intent and must stay consistent with them.
 
-**Step 3 continuation, authorized by Mohit:** Mohit explicitly directed proceeding before remaining affected-owner review, allowing later corrections while staying within Stream 3 paths. Migrations live in [database/migrations](../../database/migrations/), with combined expected dbmate head `20261023202807`; [database/README.md](../../database/README.md) records the files and verification provenance. The additive LI-01 migrations add seller-command results, create-retry receipts, the selected-conversation reference and verified-image metadata. Migration `20261020142319` adds retirement retry/marker storage and removes cross-domain business-table access from the named triggers. The selected-conversation reference and retirement interface still require affected-owner review; image metadata awaits LI-02 verification-flow implementation. The sequencing exception did not waive required checks. The user later confirmed the carried PD-08 checks and owner acceptance complete. Historical platform evidence and its limits are recorded in the work log. This does not accept future domain contracts, cryptographic implementation, or cloud action.
+**Step 3 continuation, authorized by Mohit:** Mohit explicitly directed proceeding before remaining affected-owner review, allowing later corrections while staying within Stream 3 paths. Migrations live in [database/migrations](../../database/migrations/), with combined expected dbmate head `20261025013000`; [database/README.md](../../database/README.md) records the files and verification provenance. The additive LI-01 migrations add seller-command results, create-retry receipts, the selected-conversation reference and verified-image metadata. Migration `20261020142319` adds retirement retry/marker storage and removes cross-domain business-table access from the named triggers. The selected-conversation reference and retirement interface still require affected-owner review; image metadata awaits LI-02 verification-flow implementation. The sequencing exception did not waive required checks. The user later confirmed the carried PD-08 checks and owner acceptance complete. Historical platform evidence and its limits are recorded in the work log. This does not accept future domain contracts, cryptographic implementation, or cloud action.
 
 Identity migrations additionally implement reviewed profile/contact bounds, OTP
 transactions and session/login state; original migration histories are retained.
+
+## SE-01 hybrid embedding addition — prepared migration
+
+The [Listings-owned semantic storage/write plan](semantic-listing-storage.md)
+proposes pipeline/generation/chunk tables, own-schema invalidation/completeness
+triggers, deterministic source hashing and exact native-array scoring. Its
+migration is now prepared at `20261024153316`, following Mohit's explicit plan/
+derived-content implementation approval. Its scoped native migration/adapter
+checkpoint subsequently passed on fresh private test databases; existing/shared/
+production data remain untouched and exact-code review/final integration remain
+pending. This annotation changes no existing
+migration and does not mark the new objects installed or accepted.
 
 ## Sources and approved boundaries
 
@@ -158,10 +170,15 @@ Reviewer-approved **item category** means the kind of item, represented by the e
 
 ## Wanted Requests and saved listings — FR-08–09
 
+[Approved category-reference correction](../decisions/wanted-category-code-reference.md)
+aligns wanted storage with the code-based public catalogue. Existing sale-listing
+UUID references are unchanged.
+
 | Table / primary key | Columns | Constraints and access indexes |
 |---|---|---|
-| `search.wanted_requests` / `id uuid` | `author_id uuid`, `title text?`, `description text?`, `category_id uuid?`, `budget_paise money?`, `status text`, `created_at instant`, `updated_at instant`, `closed_at instant?`, `retirement_pending_operation_id uuid?`, `retirement_pending_cutoff_utc instant?`, `retired_at instant?`, `revision bigint` | FKs user/catalogue; open/unavailable status. Named live-row check requires title/description/category while non-retired; budget stays optional. Closing sets `closed_at`; reopening same ID clears it, preserves thread uniqueness and starts any later closure clock afresh. Search's pending operation ID and cutoff are paired so an unknown result can be retried with the exact request. Its API blocks conflicting edits, new response conversations and discovery while pending. Retired rows are unavailable and clear content/budget/category; cannot reopen. Index status/creation/ID, author/creation/ID, category FK and closure time. |
+| `search.wanted_requests` / `id uuid` | `author_id uuid`, `title text?`, `description text?`, `category_code text?`, `budget_paise money?`, `status text`, `created_at instant`, `updated_at instant`, `closed_at instant?`, `retirement_pending_operation_id uuid?`, `retirement_pending_cutoff_utc instant?`, `retired_at instant?`, `revision bigint` | FK author/user and restrictive category_code → Listings unique immutable code; validate through the public catalogue interface, never a private UUID lookup; open/unavailable status. Named live-row check requires title/description/category while non-retired; budget stays optional. Closing sets `closed_at`; reopening same ID clears it, preserves thread uniqueness and starts any later closure clock afresh. Search's pending operation ID and cutoff are paired so an unknown result can be retried with the exact request. Its API blocks conflicting edits, new response conversations and discovery while pending. Retired rows are unavailable and clear content/budget/category; cannot reopen. Index status/creation/ID, author/creation/ID, category FK and closure time. |
 | `search.saved_listings` / `(user_id uuid, listing_id uuid)` | `created_at instant` | FKs user/listing; pair PK makes duplicate saves idempotent. Index `(user_id, created_at DESC, listing_id DESC)` for stable own saves; reverse listing FK index for maintenance. Availability changes do not delete saves. |
+| `search.wanted_command_results` / `(author_id, scope_id, command_kind, operation_id)` | author/request UUID FKs, scope UUID, create/edit/state kind, paired nullable request/result JSON | Create scope is author; edit/state scope is request. Original outcomes are immutable except paired payload clearing. Only the matching author may own receipts; retired origins cannot retain receipt content. Retirement rejects remaining payloads; the separately approved internal cleanup clears receipt payloads before request content atomically, with real Conversations integration pending. Request FK index; restrictive references; populated migration rollback refused. |
 
 Mohit confirmed that buyer budget is optional. A blank/omitted create-time budget is SQL NULL and means no amount was stated; do not coerce it to zero. An explicit zero budget means seeking a free item. Zero offers are also allowed. Update-time omitted/null semantics must be specified by DL-00/SE-02; these rules do not imply that wanted budgets automatically filter or rank draft matches.
 

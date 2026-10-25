@@ -27,6 +27,8 @@ from app.contracts.domain_types import (
     ListingDetail,
     ListingId,
     ListingManagementView,
+    ListingSummary,
+    ListingQuery,
     ListingReplacement,
     NewListingImage,
     PageQuery,
@@ -40,6 +42,13 @@ from app.domains.listings.service import (
     PendingListingRetirement,
     RetiredListingImage,
 )
+from app.domains.listings.browse_store import (
+    read_browse_page,
+    validate_catalogue_filters,
+)
+from app.domains.listings.browse_validation import normalize_query
+from app.domains.listings.embedding_client import SemanticHelper
+from app.domains.listings.hybrid_read import search_hybrid_page
 
 # This projection keeps list/detail reads to one SQL query per request. The
 # threshold is injected from typed API settings so every read uses the same
@@ -129,6 +138,9 @@ class PostgresListingsStore:
         pool: AsyncConnectionPool[AsyncConnection[dict[str, Any]]],
         sensitive_price_threshold_paise: int,
         isolated_listing_limit: int | None = None,
+        *,
+        hybrid_helper: SemanticHelper | None = None,
+        hybrid_pool: AsyncConnectionPool[AsyncConnection[dict[str, Any]]] | None = None,
     ) -> None:
         """Bind the pool, price threshold, and optional isolated-demo limit."""
         if (
@@ -137,6 +149,11 @@ class PostgresListingsStore:
             or sensitive_price_threshold_paise % 100 != 0
         ):
             raise ValueError("The sensitive-purchase threshold must be whole rupees")
+        # Explicit injection only: construction never starts a helper. Hybrid
+        # also requires an idle autocommit pool connection; its reader fails
+        # closed rather than changing a caller-owned transaction configuration.
+        self._hybrid_helper = hybrid_helper
+        self._hybrid_pool = hybrid_pool
         self._pool = pool
         self._threshold = sensitive_price_threshold_paise
         if isolated_listing_limit is not None and (
@@ -144,6 +161,49 @@ class PostgresListingsStore:
         ):
             raise ValueError("The isolated listing limit must be a positive integer")
         self._isolated_listing_limit = isolated_listing_limit
+
+    async def browse_available_listings(
+        self, request: ListingQuery, now: datetime
+    ) -> Page[ListingSummary]:
+        """Dispatch validated modes after the service authorizes the caller.
+
+        Blank text always browses without semantic dependencies. Nonblank Hybrid
+        needs an explicitly managed helper and idle autocommit connection; absent
+        capability returns503 without falling back. Keyword never uses the helper.
+        """
+        request = normalize_query(request)
+        hybrid = request.search_mode == "hybrid" and request.q is not None
+        if hybrid and self._hybrid_helper is None:
+            if request.category_code is not None or request.condition_code is not None:
+                async with self._connection() as connection:
+                    await validate_catalogue_filters(connection, request)
+            raise PublicError(ERRORS[503])
+        # Only Hybrid borrows the lifecycle-owned autocommit pool. Keyword and
+        # commands retain their original pool and transaction configuration.
+        connections = (
+            self._connection(self._hybrid_pool)
+            if hybrid and self._hybrid_pool is not None
+            else self._connection()
+        )
+        async with connections as connection:
+            if hybrid:
+                assert self._hybrid_helper is not None
+                return await search_hybrid_page(
+                    connection,
+                    self._hybrid_helper,
+                    request,
+                    now,
+                    self._threshold,
+                    relevance=request.sort == "relevance",
+                )
+            return await read_browse_page(
+                connection,
+                request,
+                now,
+                self._threshold,
+                expanded_search=True,
+                keyword_relevance=request.sort == "relevance",
+            )
 
     async def read_catalogue(self) -> CatalogueView:
         """Read active form choices from Listings tables in one ordered query."""
@@ -1278,10 +1338,15 @@ class PostgresListingsStore:
         return _management_view(row) if row is not None else None
 
     @asynccontextmanager
-    async def _connection(self) -> AsyncIterator[AsyncConnection[dict[str, Any]]]:
+    async def _connection(
+        self,
+        pool: AsyncConnectionPool[AsyncConnection[dict[str, Any]]] | None = None,
+    ) -> AsyncIterator[AsyncConnection[dict[str, Any]]]:
         """Map pool/connectivity failures to a safe dependency-unavailable error."""
         try:
-            async with self._pool.connection() as connection:
+            async with (
+                self._pool if pool is None else pool
+            ).connection() as connection:
                 yield connection
         except OperationalError, PoolTimeout, TimeoutError:
             raise PublicError(ERRORS[503]) from None

@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "id": "keyword-nfr-draft-v1",
+  "purpose": "nfr-draft",
+  "rate": 10,
+  "warmup_seconds": 30,
+  "measured_seconds": 300,
+  "max_vus": 60,
+  "timeout_seconds": 3,
+  "cases": [
+    {
+      "id": "keyword",
+      "query": {
+        "q": "cycle",
+        "search_mode": "keyword"
+      },
+      "expected_ids": null
+    }
+  ]
+}

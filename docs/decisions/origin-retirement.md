@@ -103,3 +103,25 @@ Mohit (C), explicit approval of the consolidated remaining package. The user lat
 
 ## Supersedes
 None; refines the previously open origin/metadata retirement policy.
+
+## Approved Search-owned request/receipt cleanup — 2026-10-25
+
+Mohit verified the SE-02 wanted API checkpoint and approved the concrete local
+order in [wanted-request retirement](../architecture/wanted-request-retirement.md):
+persist/reuse the server-owned pending operation/cutoff, use Conversations public
+preflight plus authoritative all-or-none marker, then lock/recheck the exact
+request/pair and 180-day eligibility. In one Search transaction first clear both
+JSON payloads in every wanted-command receipt, then clear request title,
+description, category and budget, mark retired/unavailable, clear the pending
+pair and advance revision/update time. Keep content-free request/author and
+retry-key references plus existing lifecycle timestamps. A local failure rolls
+back both scrub stages; unknown marker results keep the original pending pair.
+
+Blocked-recent-activity clears only the matching pair and removes no content.
+An older attempt cannot clear a newer pair. Reads hide retired content, late
+retained-key retries conflict, and no request can reopen after retirement.
+No other domain row, saved reference or storage object is modified/deleted.
+The internal operation processes one server-selected request per explicit call;
+no browser route, startup cleanup, worker/scheduler or shared/live-data run is
+approved. Isolated implementation/tests now exist; actual Conversations
+provider/race integration remains a required real acceptance gate.

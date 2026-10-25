@@ -1,5 +1,67 @@
 # Development Workstation Record
 
+## Mohit's repository-local native SQL setup — SE-01, 2026-10-24
+
+PostgreSQL 18.6 was built with existing Clang 14/make and installed only under
+`.tools/native-db/pgsql`; dbmate 2.36.0's checksum-verified ARM64 binary is under
+`.tools/native-db/downloads/`. Source/build/download logs occupy about 300 MiB.
+The earlier `/tmp/clip-pd08-native.pKC5jz` tools were gone. No global/Homebrew
+service, Docker, PATH/system Python edit or cloud action. The native harness's
+fresh TCP-disabled private clusters were stopped; logs/data remain under printed
+`/tmp/clip-pd08-native-check.*` directories. Four real database cases, three pre-connect guards and the
+schema round trip passed; [evidence](../evaluation/domain/se-01/native-postgres/result.json).
+This is Mac UTF-8/C/no-ICU scope, not production/Linux/TLS/resource equivalence.
+
+
+## Mohit's semantic-runtime feasibility check — 2026-10-24
+
+Read-only `sw_vers` confirms macOS 13.7.8 (build 22H730), ARM64; local project
+Python remains 3.14.3. Published ONNX Python 3.14 ARM64 wheels target macOS 14.
+Mohit subsequently verified the separate project-local helper probe. Python
+3.13.12, its isolated environment, 24 locked packages and verified model files
+are now under `.tools/semantic/` (about 528 MiB including caches). The API retains
+Python 3.14.3/root lock; no global links, OS changes or system Python edits.
+The [feasibility plan/result](../architecture/semantic-search-feasibility.md)
+records successful local inference and the remaining production/Linux/native gates.
+
+
+## Mohit's repository-local Node setup — SE-01, 2026-10-24
+
+Node 24.22.0 and its bundled npm 11.19.1 are under `.tools/node/` on this macOS
+ARM64 checkout. The archive SHA-256 matched the official v24.22.0 checksum list:
+`6a9724d9b50a5f22b4816cded441b5a8d9ddae546191a5e5b7efa5a5e2ee26d5`.
+Root `npm ci --no-audit --no-fund` installed the committed lockfile with cache
+at `.tools/npm-cache/`; no manifest/lockfile or global PATH/system tool changed.
+Commands set process-local PATH and disable user npm configuration explicitly:
+
+```bash
+PATH="$PWD/.tools/node/bin:$PATH" NPM_CONFIG_CACHE="$PWD/.tools/npm-cache" NPM_CONFIG_USERCONFIG=/dev/null .tools/node/bin/npm run check
+```
+
+The same prefix runs `npm ci`, `npm run dev`, or the registered checks. No
+Docker install was performed. See the web guide for the labelled UI-only
+preview and pending real backend/browser checks.
+
+## Mohit's repository-local Python setup — SE-01, 2026-10-24
+
+This macOS ARM64 checkout uses uv 0.10.7 at `.tools/uv/uv` and Python
+3.14.3 under `.tools/python/`, with project packages in `.venv/` and the uv
+cache in `.tools/cache/`. These directories are Git-ignored. Python was
+installed with `--no-bin`: no global executable links, PATH edits, or system
+Python replacement. The prior broken `.venv` was preserved at
+`.tools/venv-before-se01/`; its interpreter had pointed into a deleted `/tmp`
+directory. The interrupted Homebrew attempt left no installed uv formula.
+
+From the repository root, keep subsequent Python downloads/cache local:
+
+```bash
+UV_PYTHON_INSTALL_DIR="$PWD/.tools/python" UV_CACHE_DIR="$PWD/.tools/cache" .tools/uv/uv sync --locked --python 3.14.3
+```
+
+After synchronization, `.venv/bin/python` runs the local interpreter directly.
+Docker and Node/npm are not installed by this setup; database, browser and
+aggregate checks remain pending until their real prerequisites are available.
+
 **Observed:** 2026-10-14 · **Recorded for:** BOOT-00 step 5
 
 This records the existing Linux WSL environment used for the documentation bootstrap. It contains no credentials and is not evidence of application, CI, cloud, or NFR execution.

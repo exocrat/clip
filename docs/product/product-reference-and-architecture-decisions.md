@@ -132,7 +132,7 @@ The targets and measurement intents above were checked against the submitted PRD
 - **Frontend:** responsive React + TypeScript web client across all domain surfaces. The [browser verification decision](../decisions/responsive-ui-and-camera-verification.md) makes desktop/phone human checks explicit and adds supported-phone camera/gallery selection to LI-02, retaining desktop file selection and existing image limits. This is a team clarification; the submitted PRD remains unchanged.
 - **API:** Python + FastAPI REST service.
 - **Authoritative state:** managed PostgreSQL for users, listings, wanted requests, conversations, offers, and related state.
-- **Search:** PostgreSQL native indexed full-text search for MVP.
+- **Search:** PostgreSQL native indexed full-text search for MVP. Mohit selected a gated [hybrid listing-search amendment](../decisions/hybrid-listing-search.md) combining curated vocabulary and local semantic matching. Its documentation checkpoint does not replace the required baseline, change the submitted PRD, activate a model/service or accept new runtime behavior; affected-owner review, feasibility, integration and original evaluation gates remain pending.
 - **Images:** S3 object storage, with short-lived authorized upload URLs where practical; listing records remain authoritative for image references.
 - **Baseline API runtime:** ECS containers. Lambda is available for asynchronous work and for the defined read-heavy experiment.
 - **Experiment:** compare ECS-only against mixed ECS+Lambda for preselected read-heavy browse, listing-detail, and search/filter routes. State-changing operations stay on ECS in both configurations. PostgreSQL remains authoritative in both.

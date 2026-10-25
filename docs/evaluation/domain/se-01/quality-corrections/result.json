@@ -1,0 +1,50 @@
+{
+  "recorded_at": "2026-10-25 01:02:43 UTC",
+  "checkpoint": "SE-01 Step10 verified Search quality corrections",
+  "human_result_verification": "pending",
+  "findings_addressed": [
+    "SEARCH-01: safely clamp SQL policy threshold to largest representable whole-rupee price in both query builders, preserving strict greater-than semantics",
+    "SEARCH-02: trim evaluator query before generated length validation without mutating input",
+    "TYPES-01 helper portion: typed functions/ranges and dedicated Python3.13 check; pinned ONNX import only has import-untyped exception",
+    "DOCS-01: current store/reader lifecycle comments"
+  ],
+  "checks": {
+    "focused": "275 passed, 1 optional native skip",
+    "initial_regressions": "64 passed including seven new parameterized cases",
+    "native": "12 passed, 2 optional skipped; migration rollback/reapply and inventory passed",
+    "native_evidence": "/tmp/clip-pd08-native-check.hUP0f3",
+    "helper_mypy": "1 file passed against actual helper Python3.13 environment",
+    "query_and_evaluator_mypy": "3 files passed",
+    "black": "8 changed Python files unchanged",
+    "boundaries": "0 violations",
+    "contracts": "8 artifacts current with project-local Node PATH",
+    "whitespace": "git diff --check passed"
+  },
+  "remaining": [
+    "12 fixed-date image-upload failures from preceding full audit unchanged",
+    "6 infrastructure timeout failures unresolved, unchanged",
+    "shared core type errors unchanged; no claim of clean full application mypy",
+    "Docker database/secret checks and hosted CI pending",
+    "real dependencies, final data/labels, target and NFR acceptance pending"
+  ],
+  "source_sha256": {
+    "apps/api/app/domains/listings/hybrid_read.py": "77df2605f4ff37e9fee0dff14f885d1bdb645eaae43ab1d9a6bd8d0c4f745127",
+    "apps/api/app/domains/listings/browse_store.py": "43b79944b928d70f46f97864eff0c459438ffd128e003a0a437de4c110928b37",
+    "apps/api/app/domains/listings/embedding_store.py": "7e5c2b811acfda99a14a0786a508d812d97955b80e848a247a0c106272bf1f48",
+    "apps/api/app/domains/listings/embedding_helper.py": "db4dba85fb1bfe4726ce005e7840a8ebed1282cf66af6f08590eef87714cabf1",
+    "scripts/evaluation/search.py": "4c0fe6ebe7e6ca710b950fafe97f41be105f07c156741a7a9e5f134d3a0e1477",
+    "apps/api/tests/domains/listings/test_hybrid_read.py": "64b982e047a5e6c3084949b716584eef203e9df3599a9612387b828b39b932f5",
+    "apps/api/tests/domains/listings/test_hybrid_read_postgres.py": "7aafc92fea44d590a97fe509edb6ba8c09a0be94dcee74a7093e7c18f5e06977",
+    "tests/evaluation/test_search.py": "89db6418a5c106bd13ebcdbccf25a54dad9a87d4329a8fb8325fc0794fbcda33",
+    "docs/environment/commands.md": "af3bca6e250e705547d7b5ebeb82e03a142bda1191c2c5fcae2d8bb92495220f",
+    "docs/architecture/semantic-helper-protocol.md": "e62beee474f1c915ecbe1ae55cac7cb3c0515e2f1a1e37d765001d161dce4bf8"
+  },
+  "log_sha256": {
+    "types.log": "8228fcc5ce46d42d01caf3cd941f4e9c5f2bcc372bb5b147a2f0572d2dd675a8",
+    "native.log": "823320c3c268072460f5e8f63c14a1f91a94cadb20b96d3e6deded09d481a469",
+    "helper-types.log": "5d4b6d285b77932e3d08212c3b4974d0a803f98ec60408ac6ccf6a063fa6c19e",
+    "focused.log": "9c4b6964d5a51e1d6326dbeb745ef86f1ed30fffd47fb62087df8afc4f5b634d"
+  },
+  "installed_tools": false,
+  "committed_pushed_merged_deployed": false
+}

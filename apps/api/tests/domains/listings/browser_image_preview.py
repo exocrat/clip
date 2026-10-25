@@ -136,3 +136,5 @@ def install_image_preview(
     )
     application.add_api_route("/listings/{listing_id}", preview_page, methods=["GET"])
     application.add_api_route("/my/listings", preview_page, methods=["GET"])
+    application.add_api_route("/saved", preview_page, methods=["GET"])
+    application.add_api_route("/wanted/{request_id}", preview_page, methods=["GET"])

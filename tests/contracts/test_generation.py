@@ -229,7 +229,7 @@ async def asgi_get(app, path):
 
 
 def test_actual_api_schema_matches_generated_contract():
-    """The real API schema matches health and the implemented Listings subset."""
+    """Real API wire schemas match the implemented health/Listings/wanted subset."""
     from app.main import app
 
     actual = app.openapi()
@@ -237,6 +237,14 @@ def test_actual_api_schema_matches_generated_contract():
     assert declared["x-clip-generator-format"] == 2
     assert actual["info"] == declared["info"]
     implemented_paths = {
+        "/me/saved-listings",
+        "/me/saved-listings/{listing_id}",
+        "/wanted-requests",
+        "/wanted-requests/draft-matches",
+        "/me/wanted-requests",
+        "/wanted-requests/{request_id}",
+        "/wanted-requests/{request_id}/availability",
+        "/wanted-requests/{request_id}/conversations",
         "/health",
         "/catalogue",
         "/listings",
@@ -252,10 +260,24 @@ def test_actual_api_schema_matches_generated_contract():
         "/images/{image_id}/delivery",
     }
     assert set(actual["paths"]) == implemented_paths
+    # Runtime subclasses add validation without changing the reviewed body
+    # shape. Verify all constraints before normalizing only their local ref names.
+    body_aliases = {
+        "WantedCreate": "CreateWantedRequest",
+        "DraftTitle": "DraftMatchRequest",
+        "WantedPatch": "WantedRequestPatch",
+        "WantedState": "WantedRequestStateChange",
+    }
+    for runtime, canonical in body_aliases.items():
+        runtime_schema = deepcopy(actual["components"]["schemas"][runtime])
+        canonical_schema = deepcopy(declared["components"]["schemas"][canonical])
+        for schema in (runtime_schema, canonical_schema):
+            schema.pop("title", None)
+            schema.pop("description", None)
+        assert runtime_schema == canonical_schema
     for path in implemented_paths:
-        # A contract URL can declare operations that are not implemented yet
-        # (for example, GET /listings). Verify every live operation against its
-        # declaration without requiring those future operations to be mounted.
+        # Other declared operations remain unmounted. Compare every live
+        # operation while retaining exact operation IDs and wire metadata.
         for method, operation in actual["paths"][path].items():
             if method in {"get", "put", "post", "delete", "patch", "options", "head"}:
                 declared_operation = deepcopy(declared["paths"][path][method])
@@ -265,6 +287,13 @@ def test_actual_api_schema_matches_generated_contract():
                 for metadata in (declared_operation, actual_operation):
                     metadata.pop("description", None)
                     metadata.pop("tags", None)
+                if "requestBody" in actual_operation:
+                    schema = actual_operation["requestBody"]["content"][
+                        "application/json"
+                    ]["schema"]
+                    for runtime, canonical in body_aliases.items():
+                        if schema.get("$ref") == "#/components/schemas/" + runtime:
+                            schema["$ref"] = "#/components/schemas/" + canonical
                 assert declared_operation == actual_operation
     assert (
         actual["components"]["schemas"]["HealthResponse"]
@@ -344,7 +373,12 @@ def test_generated_types_accept_valid_consumer_reject_wrong_status(tmp_path):
     sample = ROOT / "tests/contracts/health_consumer.ts"
     env = {"PATH": os.environ["PATH"], "HOME": str(tmp_path)}
     valid = subprocess.run(
-        command + [str(sample)], env=env, capture_output=True, text=True, timeout=30
+        command
+        + [str(sample), str(ROOT / "tests/contracts/search_response_consumer.ts")],
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=30,
     )
     assert valid.returncode == 0
     invalid = tmp_path / "invalid.ts"

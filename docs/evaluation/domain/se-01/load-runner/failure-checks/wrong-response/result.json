@@ -1,0 +1,81 @@
+{
+  "preview_only": true,
+  "nfr_accepted": false,
+  "finished": true,
+  "k6_exit": 0,
+  "profile_id": "fault-wrong-response",
+  "measured": {
+    "scheduled": 4,
+    "issued": 4,
+    "actual_http_requests": 4,
+    "completed_samples": 4,
+    "uncompleted": 0,
+    "generator_drops": 0,
+    "boundary_iterations_without_http": 1,
+    "generator_shortfall": 0,
+    "outcomes": {
+      "invalid": 4
+    },
+    "clock_invalid": 0,
+    "offered_rps": 2.0,
+    "issued_rps": 2.0,
+    "successful_rps": 0.0,
+    "all_completed_latency": {
+      "samples": 4,
+      "p50_ms": 1.5,
+      "p95_ms": 2.0,
+      "p99_ms": 2.0
+    },
+    "successful_latency": {
+      "samples": 0,
+      "p50_ms": null,
+      "p95_ms": null,
+      "p99_ms": null
+    },
+    "expected_result_within_1s": 0,
+    "within_1s_fraction_of_issued": 0.0,
+    "case_outcomes": {
+      "browse": {
+        "invalid": 4
+      }
+    },
+    "valid": false
+  },
+  "warmup": {
+    "scheduled": 0,
+    "issued": 0,
+    "actual_http_requests": 0,
+    "completed_samples": 0,
+    "uncompleted": 0,
+    "generator_drops": 0,
+    "boundary_iterations_without_http": 0,
+    "generator_shortfall": 0,
+    "outcomes": {},
+    "clock_invalid": 0,
+    "offered_rps": 0,
+    "issued_rps": 0,
+    "successful_rps": 0,
+    "all_completed_latency": {
+      "samples": 0,
+      "p50_ms": null,
+      "p95_ms": null,
+      "p99_ms": null
+    },
+    "successful_latency": {
+      "samples": 0,
+      "p50_ms": null,
+      "p95_ms": null,
+      "p99_ms": null
+    },
+    "expected_result_within_1s": 0,
+    "within_1s_fraction_of_issued": null,
+    "case_outcomes": {},
+    "valid": false
+  },
+  "valid_preparation_run": false,
+  "latency_boundary": "Date.now around one synchronous HTTP call through full response body; negative elapsed clock samples invalidate run",
+  "quantile_method": "R7 linear interpolation",
+  "throughput_boundary": "arrival cohort completions / scheduled cohort seconds; bounded completion drain retained",
+  "acceptance": "No local/stub result accepts SE-CORE, DATA-READY or NFRs",
+  "target_kind": "fault-fixtures"
+}

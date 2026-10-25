@@ -74,6 +74,18 @@ method and order. Keep the pending listing out of public read/discovery,
 edit/reopen, selection and offer paths while its outcome is unresolved; keep a
 content-retained pending listing visible in the owner's management list.
 
+## Search query amendment — SE-01 public API checkpoint
+
+`ListingQuery` / `AvailableListingQuery` now register `search_mode=keyword|hybrid`
+(default Keyword) and `sort=relevance` alongside existing recency/price sorts.
+See [Search](search.md#sale-listing-browse-search-and-detail) and the
+[mode specification](search-mode-proposal.md). Inputs, generated declarations and
+owned dispatch agree; no response changes. Keyword enables reviewed expansion/
+typo matching; both modes support their prepared relevance rule. Blank relevance
+is422. Nonblank Hybrid without managed capability/coverage is503, never a
+keyword fallback. Existing auth/availability/filter/page/privacy rules remain.
+App helper lifecycle, UI and original integration/acceptance gates remain pending.
+
 ## Availability, discovery and read models
 
 A sale listing is discovery-eligible only when it is not retired, seller status
@@ -106,6 +118,27 @@ queries authorize and apply filters before pagination, use the shared page
 envelope, and provide deterministic query order with a unique ID tie-breaker.
 The availability predicate is evaluated against the request-time clock, not a
 stale client flag or cache.
+
+The [hybrid-search amendment](../docs/decisions/hybrid-listing-search.md)
+proposes Listings-owned vocabulary expansion and derived title/description
+embeddings behind this same boundary. Mohit confirms Suraj approved the amendment. Native activation checks and the
+concrete storage/write/freshness/retirement plan
+and reviewed public signature generation remain pending before integration.
+No extra index, embedding storage, new runtime field or projection is established
+by this paragraph.
+
+The [concrete derived-embedding plan](../docs/architecture/semantic-listing-storage.md)
+now specifies proposed own-schema storage/transaction boundaries and native
+acceptance cases. Suraj's approval of the overall hybrid amendment is recorded
+from Mohit's confirmation; approval of this newly prepared schema/write plan is
+not inferred. Mohit explicitly approved the proposed derived-content deletion
+implementation after its explanation; prepared code/schema still require their
+normal independent review and native checks. Migration `20261024153316` and the
+inactive store have passed the fresh native test checkpoint; they remain
+unapplied/unbound to existing/shared/production data and application startup.
+No new public fields, query activation or existing-data cleanup is authorized.
+The native result covers four actual database cases plus three target guards,
+not final real-provider/data/NFR acceptance.
 
 Search's private save operation first uses a Listings-owned save-target check
 to confirm that the caller can currently discover the requested listing, then
@@ -228,3 +261,22 @@ automatic write retry.
 
 No payment, reservation, transaction verification, item-quality verification,
 collection, delivery or handover capability is implied.
+
+## Private hybrid-read checkpoint status
+
+The [private single-snapshot reader](../docs/architecture/hybrid-listing-read.md)
+now implements the human-selected v1 match/order/coverage behavior over owned
+records and real helper vectors. It uses existing ListingSummary/page and shared
+dependency_unavailable503, but adds no registered public query field or route.
+Caller eligibility remains an upstream service precondition. Internal native/
+model evidence is not public API/UI activation or real milestone acceptance;
+public signatures still require affected-owner review/registration/generation.
+
+## Public search-mode proposal — pending exact review
+
+The [shared query proposal](search-mode-proposal.md) adds Keyword(default)/Hybrid
+and Relevance in both modes through the existing ListingQuery/AvailableListingQuery
+boundary, preserving summary/page shapes. It defines model-independent keyword
+rank and explicit mode-switch/error behavior. Mohit selected these user choices;
+exact affected-owner review, source registration/generation and actual dispatch/
+validation remain pending. No public type or endpoint behavior changes here.

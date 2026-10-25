@@ -1,0 +1,126 @@
+{
+  "recorded_at": "2026-10-25 00:56:55 UTC",
+  "branch": "task/se-01-search",
+  "base": "defec38f59d4acb683f7b51950860f458aacfdd1",
+  "scope": "Local Step10 review; targeted audit and broad checks, not exhaustive independent review",
+  "implementation_changed": false,
+  "accepted": false,
+  "findings": [
+    {
+      "id": "SEARCH-01",
+      "priority": "P2",
+      "summary": "Accepted nonnegative whole-rupee threshold 10**30 works in Keyword SQL builder but Hybrid builder rejects it; default threshold unaffected.",
+      "paths": [
+        "apps/api/app/core/config.py",
+        "apps/api/app/domains/listings/hybrid_read.py"
+      ]
+    },
+    {
+      "id": "SEARCH-02",
+      "priority": "P2",
+      "summary": "Evaluator context rejects space-padded 120-character query accepted after trimming by HTTP BrowseQuery.",
+      "paths": [
+        "scripts/evaluation/search.py",
+        "apps/api/app/domains/listings/browse_validation.py"
+      ]
+    },
+    {
+      "id": "TYPES-01",
+      "summary": "Additional full application mypy reports 31 errors across semantic helper and unchanged core/errors.py and core/logging.py. Helper uses isolated Python3.13 imports/dependencies; root environment is3.14. Requires appropriate explicit type-check scope, not blanket ignores."
+    },
+    {
+      "id": "BASELINE-01",
+      "summary": "12 unchanged image-upload tests use fixed Oct22 caller eligibility expiring Oct23; now fail auth before intended assertions."
+    },
+    {
+      "id": "BASELINE-02",
+      "summary": "Six unchanged DB task timeout tests fail, including outside sandbox and idle rerun. Controlled manual same-stand-in probe succeeds; root cause unresolved."
+    },
+    {
+      "id": "DOCS-01",
+      "summary": "Embedding store and browse store introductory comments describe inactive/private-only behavior despite implemented opt-in public lifecycle."
+    }
+  ],
+  "checks": {
+    "python": {
+      "passed": 1132,
+      "failed": 18,
+      "skipped": 11
+    },
+    "data": {
+      "passed": 94
+    },
+    "web": {
+      "passed": 105,
+      "lint_files": 57,
+      "types_build": "passed"
+    },
+    "native_database": {
+      "passed": 12,
+      "skipped": 2,
+      "migration_down_reapply": "passed"
+    },
+    "application_mypy": {
+      "errors": 31,
+      "files_with_errors": 3,
+      "checked_files": 41
+    },
+    "contract_consumer_mypy": "passed",
+    "black": "156 files unchanged",
+    "boundaries": "0 violations",
+    "generated_contracts": "8 current",
+    "ci_parity": "11 ordered checks passed",
+    "simulated_database_wrapper": "35 passed outside sandbox"
+  },
+  "unavailable": [
+    "Docker database acceptance",
+    "Docker secret scan",
+    "hosted CI",
+    "real Identity/accepted readiness milestones/final dataset and labels",
+    "approved deployed target and final NFR measurements"
+  ],
+  "logs": {
+    "python.log": {
+      "sha256": "1ae87550d7004786a95652aea34ba802dfd149a0518da3ee9ea0c77cec7abea3"
+    },
+    "application-types.log": {
+      "sha256": "d0eba4fda71be522eb759028ffb41309edbc2ac803ad71961a89a6323a3abc74"
+    },
+    "data.log": {
+      "sha256": "a2d63b2969a80edded9fd4d19bca354c9b9a4ac5edac4ad7de4327a91e408384"
+    },
+    "web.log": {
+      "sha256": "46824b72c32d8e9a9172d64a47c57d5bd20a3be948cf97d2515cf2c857d1d559"
+    },
+    "native.log": {
+      "sha256": "e0a40890fb09a5e0ca6a5cbe5f3f67778bebde4b364ea4cdf51ab8f86bddc0c3"
+    },
+    "black.log": {
+      "sha256": "e582db73be7e97100cbfa22e72a0c2d0ec9511f5802ea4f824f3dbd2803eb929"
+    },
+    "boundaries.log": {
+      "sha256": "d8fb8e258807117d692fc1c79dd9792432e470b45c36322505c1da1721e47db5"
+    },
+    "contracts.log": {
+      "sha256": "958e1dd88ccde438f0105b94e472bb13e17abc7db333352841fa5569a05aaa95"
+    },
+    "types.log": {
+      "sha256": "5d4b6d285b77932e3d08212c3b4974d0a803f98ec60408ac6ccf6a063fa6c19e"
+    },
+    "static.log": {
+      "sha256": "ed82ee63c1807f615ef4bf5157f3b8004f3184287dd3e80d30a2b381d2201858"
+    },
+    "database-safety-rerun.log": {
+      "sha256": "435e7127b522f554db5888fbff76480bfeb93b3bc567465e009cd7dc3fc58d64"
+    },
+    "infrastructure-idle-rerun.log": {
+      "sha256": "d8aa23bf4c6565b9ed4fb6a4971923c4ceaac51874434a6c97ad959bdab7fad3"
+    },
+    "secrets.log": {
+      "sha256": "003297f974ae0031ac778d8c6b7a9fe39ed2f76276c1ade1bc91808940fbb913"
+    },
+    "docker-database.log": {
+      "sha256": "00d7bd0bdb9cd262034fdf1ce838205a8b6da5159ac9962487feb7b3ea8d849a"
+    }
+  }
+}

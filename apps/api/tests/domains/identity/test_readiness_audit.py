@@ -45,7 +45,9 @@ def package(tmp_path):
     manifest = json.loads(
         (ROOT / readiness.EVIDENCE / "shared-migration-manifest.json").read_text()
     )
-    for record in manifest["migrations"][:11]:
+    for record in manifest["migrations"]:
+        if record["version"] in {"20261023173439", "20261023192856", "20261023202807"}:
+            continue
         path = root / record["path"]
         path.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(ROOT / record["path"], path)

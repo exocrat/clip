@@ -6354,6 +6354,20 @@
           },
           {
             "in": "query",
+            "name": "search_mode",
+            "required": false,
+            "schema": {
+              "default": "keyword",
+              "enum": [
+                "keyword",
+                "hybrid"
+              ],
+              "title": "Search Mode",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
             "name": "sort",
             "required": false,
             "schema": {
@@ -6361,7 +6375,8 @@
               "enum": [
                 "created_desc",
                 "price_asc",
-                "price_desc"
+                "price_desc",
+                "relevance"
               ],
               "title": "Sort",
               "type": "string"
@@ -9764,6 +9779,13 @@
         },
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationStartResult"
+                }
+              }
+            },
             "description": "OK"
           },
           "201": {

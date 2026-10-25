@@ -1,12 +1,12 @@
 {
   "prepared_at_utc": "2026-10-24 22:44:26 UTC",
   "source_revision": "9bfb6078921f5af468e6ed5420b55755ee63ef25",
-  "recorded_upstream_revision": "defec38f59d4acb683f7b51950860f458aacfdd1",
+  "recorded_upstream_revision": "6c860603bdd81a98485e721d789b557c5d433948",
   "tool": "dbmate 2.36.0",
   "image_tag": "ghcr.io/amacneil/dbmate:2.36.0",
   "image_digest_review_pending": true,
-  "migration_count": 14,
-  "head": "20261023202807",
+  "migration_count": 17,
+  "head": "20261025013000",
   "live_apply_authorized": false,
   "migrations": [
     {
@@ -78,8 +78,24 @@
       "path": "database/migrations/20261023202807_identity_sessions_and_login.sql",
       "version": "20261023202807",
       "sha256": "11fca117f8204edc4f1b3283bc8132ea211d786401be1e65e01d7dd087406c4c"
+    },
+    {
+      "path": "database/migrations/20261024153316_listing_embedding_generations.sql",
+      "version": "20261024153316",
+      "sha256": "e85b87f2cbe8eb05a4af4c958a7d344f37ba6b7dbd99226d3e9093d6d073a0db"
+    },
+    {
+      "path": "database/migrations/20261025012200_wanted_category_code_reference.sql",
+      "version": "20261025012200",
+      "sha256": "f6940e5eddb5360c8fd1d9d5253876289f4e38edcd3fcfefe0d6415825e642f6"
+    },
+    {
+      "path": "database/migrations/20261025013000_wanted_command_results.sql",
+      "version": "20261025013000",
+      "sha256": "c23984cd903e6fce17106d235cc4e40de7c68c1a7521fe0dd896b98912224955"
     }
   ],
   "locally_tested_image_digest": "ghcr.io/amacneil/dbmate@sha256:520c740c6e0ad73fde2cd1ea7e2b779aaf789d22aca8858f87a478e7094535fb",
-  "locally_tested_platform": "Linux ARM64"
+  "locally_tested_platform": "Linux ARM64",
+  "source_review_refresh_pending": true
 }

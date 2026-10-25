@@ -1,0 +1,103 @@
+{
+  "recorded_at": "2026-10-25 06:42:07 UTC",
+  "branch": "search-domain",
+  "step": "SE-02 Step6 coverage audit and runnable test additions",
+  "status": "partial; missing local response API and schema correction require verified correction checkpoint",
+  "human_scope_verification": "Step5 verified; Step6 audit/additional test scope approved",
+  "human_result_verification": "pending",
+  "added_cases": [
+    "Trimmed description5000Unicode code points including multibyte data, blank/overlimit rejection",
+    "Saved future/ended current summaries retained outside discovery window",
+    "Real wanted API regular/temporary owner management and nonowner denial",
+    "Create budget omitted/null/zero, normalized omitted-vs-null retry and edit omission preservation",
+    "Expired context rejects all six wanted operations without request/receipt mutations",
+    "Tied owner/public wanted pages with unavailable rows filtered before slicing"
+  ],
+  "observations": {
+    "registered_search_operations": [
+      "search_change_wanted_request_state",
+      "search_create_wanted_request",
+      "search_list_my_wanted_requests",
+      "search_list_open_wanted_requests",
+      "search_list_saved_listings",
+      "search_match_draft_title",
+      "search_read_wanted_request",
+      "search_save_listing",
+      "search_start_wanted_response",
+      "search_unsave_listing",
+      "search_update_wanted_request"
+    ],
+    "mounted_search_operations": [
+      "search_change_wanted_request_state",
+      "search_create_wanted_request",
+      "search_list_my_wanted_requests",
+      "search_list_open_wanted_requests",
+      "search_list_saved_listings",
+      "search_match_draft_title",
+      "search_read_wanted_request",
+      "search_save_listing",
+      "search_unsave_listing",
+      "search_update_wanted_request"
+    ],
+    "declared_not_mounted": [
+      "search_start_wanted_response"
+    ],
+    "response_200": {
+      "description": "OK"
+    },
+    "response_201": {
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "#/components/schemas/ConversationStartResult"
+          }
+        }
+      },
+      "description": "Successful Response"
+    },
+    "documented_result": "ConversationStartResult for201/200 in contracts/combined.md and contracts/search.md"
+  },
+  "coverage_inventory": "apps/api/tests/domains/search/README.md",
+  "correction_proposal": "docs/architecture/wanted-response-integration.md",
+  "checks": {
+    "focused": "50passed in0.24s",
+    "full_root_python": "1249passed,19skipped in71.11s (-W error)",
+    "native": "19passed,3optional skipped in3.48s; four smokes twice,14downs/reapply/inventory,owned cluster stopped",
+    "black": "177files unchanged",
+    "wrapper_safety": "35simulated cases pass",
+    "ci_parity": "11ordered checks pass",
+    "boundaries": "0violations",
+    "contracts": "8artifacts current; freshness does not resolve the discovered200declaration mismatch",
+    "shell_syntax": "passed",
+    "whitespace": "passed"
+  },
+  "source_sha256": {
+    "apps/api/tests/domains/search/test_wanted.py": "7dd59317274cb0c41e3ddec63ba10bc8c40d112980cdc27619526d50d2251b92",
+    "apps/api/tests/domains/search/test_saved.py": "6707395deaad2701fa20700c9ec8cc50cd26311a0264d97771bc3d6dd43d4d63",
+    "apps/api/tests/domains/search/test_step6_postgres.py": "7a6e52ec5a316f42bc97535141c5265c4ce2cef42c4029515a7684f4ec0269e7",
+    "database/tests/native-checks.sh": "3fef976ef66f8b2f50d21f10286aa85f5482ac9e7a26023ef45d566f88ee013e",
+    "scripts/check_database.py": "5fa61dcde2bc58c691f5ca382dab2434f6d6496f438b8b352c9cd0ece37eada0",
+    "apps/api/tests/domains/search/README.md": "82adaefc6e3072ba3a176a909b981b6a9662ccffa385ad0ec1a41c1436c6f9c5",
+    "docs/architecture/wanted-response-integration.md": "f7cfbed41f71a468c00d0df1f82d7e6c6b25ecf484e5958ad6e225da32e4ab06",
+    "docs/environment/commands.md": "6dbe8f80edd913dc7fe94860fad4286e6a1032a71471a2b350c809d8146d35ae"
+  },
+  "log_sha256": {
+    "wrapper-safety.log": "435e7127b522f554db5888fbff76480bfeb93b3bc567465e009cd7dc3fc58d64",
+    "native.log": "1cd277a536d96950ad2103c9933b6e1ca0bfa39698c6d474085d123da0f7513b",
+    "black.log": "4cda2c42138b59071be74287f5de099fb3d96ccb74666845c4953df193519a01",
+    "native-tests.log": "1c18c8cf13b717d7fe289213b0cde30ef59291ebd13043f85a41c481a71528bd",
+    "stop.log": "ca19178a35ab4153b75b494963b66ce8243e1b94c173107c87b44d09db23652d",
+    "python.log": "804a350ff62c7ab5e73c22febb9b3b257732c2359240900a4daee6349e5a1a50",
+    "focused.log": "ed162b8929c3b76dccb82261c0477a3bf43bf2d219a85007018e2bcb288a90cd"
+  },
+  "inventory_sha256": "a7ac890f201d9eae7bb68559fe37e2b29ee6e69258c0d74f0c000be4522e8e32",
+  "pending": [
+    "Implement reviewed Search response handler and correct declared200model after plan verification",
+    "Then functional regular/temp/self/closed/pending/retired response and real Search close-vs-response lock tests",
+    "Actual Identity/Listings/Conversations providers, per-thread activity and offer/membership enforcement integration",
+    "Step7UI,Step8real integration,Step9final acceptance; Docker/secret scan/hosted CI and independent review",
+    "SE-01 final readiness/data/labels/NFR gates"
+  ],
+  "application_feature_code_changed": false,
+  "install_commit_push_merge_cloud_actions": false
+}

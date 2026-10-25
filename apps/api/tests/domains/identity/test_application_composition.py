@@ -296,3 +296,30 @@ def test_incomplete_dependency_bundle_rejected(identity_runtime, signed_tokens):
             signed_tokens.validator(),
             lambda: state.clock[0],
         )
+
+
+@pytest.mark.parametrize("account_class", ["regular", "temporary"])
+def test_real_session_reaches_accepted_search_routes(
+    identity_runtime, signed_tokens, account_class
+):
+    """Merge regression: actual shared stores/routes use the current Identity cookie.
+
+    These empty-page reads verify composition only, not Step14's complete matrix,
+    Search readiness or real Microsoft/mail delivery. No consumer fake is installed.
+    """
+    state = identity_runtime
+    application, _, _ = compose(state, signed_tokens)
+    with TestClient(
+        application, base_url=ORIGIN, client=("192.0.2.27", 50000)
+    ) as browser:
+        if account_class == "regular":
+            regular(browser, signed_tokens)
+        else:
+            temporary(browser, state)
+        for path in ("/wanted-requests", "/me/wanted-requests", "/me/saved-listings"):
+            result = browser.get(path)
+            assert result.status_code == 200, path
+            assert result.json()["items"] == []
+            assert "no-store" in result.headers["cache-control"]
+        # Bindings are app-specific; unconfigured default remains unavailable.
+        assert browser.get("/me").json()["account_class"] == account_class

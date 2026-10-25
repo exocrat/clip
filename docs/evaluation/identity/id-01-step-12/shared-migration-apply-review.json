@@ -1,15 +1,15 @@
 {
   "prepared_at_utc": "2026-10-25 05:56:34 UTC",
-  "state": "review_candidate_not_executable",
+  "state": "review_candidate_source_refresh_pending",
   "source_head": "8df97ebc38cff208594abd9917d35d2cfb730c53",
   "runner_source_commit": "ca935b950a173a33f34641ea3cf80012f7f93f03",
-  "upstream_base": "defec38f59d4acb683f7b51950860f458aacfdd1",
+  "upstream_base": "6c860603bdd81a98485e721d789b557c5d433948",
   "manifest_path": "docs/evaluation/identity/id-01-step-12/shared-migration-manifest.json",
-  "manifest_sha256": "c5259bd6b4b2427505ffffd52903931ac626d5d6c8f065a9756c3a0126f028a3",
-  "migration_count": 14,
-  "head": "20261023202807",
+  "manifest_sha256": "6bf03048a21516cfeaf8e964881c7e3d1e41c1fc315dd3953ca560b0e7e6539d",
+  "migration_count": 17,
+  "head": "20261025013000",
   "image_to_review": "ghcr.io/amacneil/dbmate@sha256:520c740c6e0ad73fde2cd1ea7e2b779aaf789d22aca8858f87a478e7094535fb",
-  "upstream_migrations_unchanged": 11,
+  "upstream_migrations_unchanged": 14,
   "new_identity_migrations": 3,
   "review_gates": {
     "independent_human": "not_recorded",
@@ -50,11 +50,11 @@
     "public AWS CA and verify-full TLS; one approved private master-secret read"
   ],
   "expected_postconditions": {
-    "versions": 14,
-    "head": "20261023202807",
-    "domain_tables": 33,
-    "domain_functions": 25,
-    "domain_triggers": 37
+    "versions": 17,
+    "head": "20261025013000",
+    "domain_tables": 37,
+    "domain_functions": 33,
+    "domain_triggers": 43
   },
   "recovery": "preserve committed prefix; no automatic down/drop/reset/restore or retry; inspect and obtain a forward-recovery plan",
   "cleanup": "only owned task/session/host/root; guarded zero capacity, original RDS stopped when operator window remains exclusive",

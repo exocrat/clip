@@ -17,17 +17,36 @@ DOMAINS = frozenset({"identity", "listings", "search", "conversations"})
 # The ASGI composition root wires reviewed Identity HTTP bindings, Listings
 # implementation modules and Conversations public declarations. Keep imports exact.
 COMPOSITION_IMPORTS: dict[str, frozenset[str]] = {
+    "apps/api/app/main.py": frozenset(
+        {
+            "app.domains.listings.s3_storage",
+            "app.domains.listings.s3_storage.S3ListingsImageStorage",
+        }
+    ),
     "apps/api/app/application.py": frozenset(
         {
             "app.domains.identity.http",
             "app.domains.identity.http.IdentityHttpDependencies",
             "app.domains.identity.http.install_identity_http",
+            "app.domains.search.saved_routes",
+            "app.domains.search.saved_routes.router",
+            "app.domains.search.saved_store",
+            "app.domains.search.saved_store.PostgresSavedStore",
+            "app.domains.search.wanted_routes",
+            "app.domains.search.wanted_routes.router",
+            "app.domains.search.wanted_store",
+            "app.domains.search.wanted_store.PostgresWantedStore",
             "app.domains.listings.routes",
             "app.domains.listings.routes.router",
             "app.domains.listings.integrations",
             "app.domains.listings.integrations.PublicListingsIdentity",
             "app.domains.listings.postgres_store",
             "app.domains.listings.postgres_store.PostgresListingsStore",
+            "app.domains.listings.search_access",
+            "app.domains.listings.search_access.ListingsSearchAccess",
+            "app.domains.listings.search_runtime",
+            "app.domains.listings.search_runtime.search_runtime",
+            "app.domains.listings.search_runtime.finish_search_cleanup",
             "app.domains.listings.s3_storage",
             "app.domains.listings.s3_storage.S3ListingsImageStorage",
             "app.domains.listings.isolated_test",

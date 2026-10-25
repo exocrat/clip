@@ -54,9 +54,9 @@ BEGIN
         (id, listing_id, upload_id, object_key, position, media_type, size_bytes)
         VALUES (image, item, upload, 'test/retirement/' || image::text, 0, 'image/png', 1);
     INSERT INTO search.wanted_requests
-        (id, author_id, title, description, category_id, status, created_at)
+        (id, author_id, title, description, category_code, status, created_at)
         SELECT request, seller, 'Synthetic old request', 'Synthetic retirement fixture',
-            id, 'open', CURRENT_TIMESTAMP - INTERVAL '200 days'
+            code, 'open', CURRENT_TIMESTAMP - INTERVAL '200 days'
         FROM listings.categories WHERE code = 'books';
     INSERT INTO conversations.threads
         (id, listing_id, wanted_request_id, initiator_id, counterparty_id,
@@ -135,7 +135,7 @@ BEGIN
         proof_available = NULL, selected_buyer_id = NULL WHERE id = item;
     UPDATE listings.images SET retired_at = statement_timestamp() WHERE id = image;
     UPDATE search.wanted_requests SET retired_at = statement_timestamp(),
-        title = NULL, description = NULL, category_id = NULL, budget_paise = NULL
+        title = NULL, description = NULL, category_code = NULL, budget_paise = NULL
         WHERE id = request;
     SET CONSTRAINTS ALL IMMEDIATE;
     SET CONSTRAINTS ALL DEFERRED;

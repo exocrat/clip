@@ -4,7 +4,8 @@ import { ConversationsPlaceholder } from '../features/conversations';
 import { MicrosoftCallback, ContactsEditor, SignIn, IdentityPlaceholder as IdentityFeaturePlaceholder } from '../features/identity';
 import { ListingsPlaceholder as ListingsFeaturePlaceholder } from '../features/listings';
 import { CreateListing, ListingDetail, ListingEdit, MyListings } from '../features/listings';
-import { SearchPlaceholder as SearchFeaturePlaceholder } from '../features/search';
+import { WantedBrowse, MyWantedRequests, WantedDetail, SavedListings, SaveListingAction } from '../features/search';
+import { SaleDiscovery } from '../features/search';
 import { PageFrame, SegmentedControl } from '../shared/ui';
 
 type View = 'sales' | 'wanted';
@@ -57,11 +58,9 @@ export function DiscoveryPage() {
         onValueChange={setView}
       />
       {view === 'sales' ? (
-        <SearchFeaturePlaceholder title="Search and browse sale listings">
-          <ListingsFeaturePlaceholder title="Sale listing summaries" />
-        </SearchFeaturePlaceholder>
+        <SaleDiscovery />
       ) : (
-        <SearchFeaturePlaceholder title="Browse public wanted requests" />
+        <WantedBrowse />
       )}
     </RoutePage>
   );
@@ -82,7 +81,7 @@ export function ListingDetailPage() {
   return (
     <RoutePage title="Sale listing detail">
       <ListingDetail listingId={listingId}>
-        <SearchFeaturePlaceholder title="Save listing action" />
+        <SaveListingAction listingId={listingId} />
         <ConversationsPlaceholder title="Start or reopen a conversation" />
       </ListingDetail>
     </RoutePage>
@@ -114,9 +113,7 @@ export function MyListingsPage() {
       {view === 'sales' ? (
         <MyListings />
       ) : (
-        <SearchFeaturePlaceholder title="My wanted requests and their status">
-          <ListingsFeaturePlaceholder title="Possible sale matches" />
-        </SearchFeaturePlaceholder>
+        <MyWantedRequests />
       )}
     </RoutePage>
   );
@@ -125,9 +122,7 @@ export function MyListingsPage() {
 export function SavedListingsPage() {
   return (
     <RoutePage title="Saved sale listings">
-      <SearchFeaturePlaceholder title="Saved listings">
-        <ListingsFeaturePlaceholder title="Saved listing summaries and availability" />
-      </SearchFeaturePlaceholder>
+      <SavedListings />
     </RoutePage>
   );
 }
@@ -167,11 +162,7 @@ export function WantedRequestPage() {
   const { requestId } = useParams();
   return (
     <RoutePage title="Wanted request">
-      <RouteValue name="requestId" value={requestId} />
-      <SearchFeaturePlaceholder title="Public wanted request details">
-        <IdentityFeaturePlaceholder title="Regular-member response eligibility" />
-        <ConversationsPlaceholder title="Contact requester" />
-      </SearchFeaturePlaceholder>
+      <WantedDetail requestId={requestId} />
     </RoutePage>
   );
 }

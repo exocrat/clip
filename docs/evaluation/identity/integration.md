@@ -1127,3 +1127,68 @@ accepted-main integration/current hosted CI, independent/affected-owner approval
 image trust fix, real schema/login/IAM/proxy/provider/browser/device/retention
 acceptance and exact authorized merge are still required. Stop at the shared-image
 coordination/live approval boundary; no background/cloud work is scheduled.
+
+
+## Accepted main integration — 2026-10-25 17:07:10 UTC
+
+Aditya authorized merging accepted main after Suraj's PR integration. Target branch
+is `task/id-ready-local-hardening` in `/tmp/clip-id-ready-local-hardening`, retaining
+the two autonomous local commits. Accepted base is
+`6c860603bdd81a98485e721d789b557c5d433948` (PR11Search and PR12Listings). Original
+worktree remains on task/id-01-identity at85c4606; no push/cloud/deploy/send action.
+
+Resolved14conflicts preserving both domains' settings, narrow scanner exceptions,
+documentation and evidence. Regenerated-contract check confirms all8artifacts are
+current. All14accepted upstream migration files and raw evidence logs remain
+byte-identical. Exact-UTC histories were interleaved without deleting entry bodies;
+untimed entries retain their relative barriers and no time was invented.
+
+Changed integration code:
+
+- `apps/api/app/application.py` now composes accepted Search/Wanted/Saved stores,
+  routes, public Listings resolver and optional Hybrid lifecycle alongside the
+  existing explicit Identity bindings. Shared application_lifespan retains the
+  accepted startup/cancellation cleanup, while configured factories keep independent
+  settings and Identity's production/demo safeguards.
+- `apps/api/app/main.py` delegates to that lifecycle and retains accepted
+  main.settings/main.lifespan/pool/storage probe hooks; no duplicated private-domain
+  implementation. `scripts/check_boundaries.py` allows only these exact composition
+  imports, including the narrow compatibility facade.
+- `apps/api/app/domains/identity/migration_runner.py` and its tests now require
+  17files/head20261025013000,37tables/33functions/43triggers. Reviewed-image and
+  target/partial-schema/prefix/TLS protections remain; live flags stay closed.
+- `scripts/check_database.py` and `database/tests/native-checks.sh` retain both sets
+  of seven smokes, combined inventory and full rollback/reapply. The disposable
+  checker removes later Search forwards before historical Identity upgrade tests;
+  only matching Identity checks run at those historical heads. Current Search SQL
+  requires category_code and runs at the full head. A transient overbroad count
+  edit affected a synthetic digest expectation; restored its original33value and
+  reran the full real lifecycle. Published SQL was never edited.
+- Identity's application composition tests now verify real regular/temporary
+  cookies reach actual Wanted and Saved empty-page reads, without consumer doubles.
+  The offline review-checker's fixture now builds all14upstream migrations rather
+  than assuming the first11files are the full accepted base.
+
+Validation passed:70initial focused tests,10final composition tests; strict mypy
+for5reconciled modules; full make check all11gates, Black254files,
+1791Python/21skipped,94data,223web/2skipped. Separate registered disposable store
+workflow passed21tests/3optional model-dependent skips, and actual PostgreSQL18.6
+17file clean/head/repeat, seven smokes, Identity upgrade/atomicity/down/reapply and
+retirement rollback guards passed. Native harness syntax passed; no new macOS or
+live/cloud check is claimed. Logs: /tmp/clip-id-ready-main-focused.log,
+/tmp/clip-id-ready-main-types.log, /tmp/clip-id-ready-main-check.log,
+/tmp/clip-id-ready-main-database.log, /tmp/clip-id-ready-main-stores.log.
+
+Source/docs whitespace passes excluding accepted raw .log transcripts, which
+retain their original trailing whitespace byte-for-byte. Pinned Gitleaks passed.
+Manifest/candidate now record17files and the accepted base; exact source revision
+will be refreshed from the merge commit, without approving image/live execution.
+
+Newly visible consumer follow-up: accepted Search wantedApi.ts, like Listings'
+request helper, sends cookies/JSON but no X-CLIP-Request/CSRF headers. Protected
+browser writes need coordinated public/shared request integration before real
+Identity enablement; no private consumer source was changed to hide the gap.
+The existing image RDS-root trust gap also remains. Neither prevents this local
+main integration; both remain real runtime/browser readiness gates. Current peer/
+CI/real schema/role/URL/IAM/proxy/provider/device/retention checks remain pending;
+no ID-READY/Step14 acceptance or authorization for a remote merge is inferred.

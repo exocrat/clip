@@ -1,0 +1,167 @@
+{
+  "preview_only": true,
+  "nfr_accepted": false,
+  "failure_checks_passed": true,
+  "cases": [
+    {
+      "fixture": "wrong-response",
+      "detected": true,
+      "measured": {
+        "scheduled": 4,
+        "issued": 5,
+        "actual_http_requests": 5,
+        "completed_samples": 5,
+        "uncompleted": 0,
+        "generator_drops": 0,
+        "generator_shortfall": 0,
+        "outcomes": {
+          "invalid": 5
+        },
+        "clock_invalid": 0,
+        "offered_rps": 2.0,
+        "issued_rps": 2.5,
+        "successful_rps": 0.0,
+        "all_completed_latency": {
+          "samples": 5,
+          "p50_ms": 3.0,
+          "p95_ms": 3.0,
+          "p99_ms": 3.0
+        },
+        "successful_latency": {
+          "samples": 0,
+          "p50_ms": null,
+          "p95_ms": null,
+          "p99_ms": null
+        },
+        "expected_result_within_1s": 0,
+        "within_1s_fraction_of_issued": 0.0,
+        "case_outcomes": {
+          "browse": {
+            "invalid": 5
+          }
+        },
+        "valid": false
+      }
+    },
+    {
+      "fixture": "unauthorized",
+      "detected": true,
+      "measured": {
+        "scheduled": 4,
+        "issued": 5,
+        "actual_http_requests": 5,
+        "completed_samples": 5,
+        "uncompleted": 0,
+        "generator_drops": 0,
+        "generator_shortfall": 0,
+        "outcomes": {
+          "unauthorized": 5
+        },
+        "clock_invalid": 0,
+        "offered_rps": 2.0,
+        "issued_rps": 2.5,
+        "successful_rps": 0.0,
+        "all_completed_latency": {
+          "samples": 5,
+          "p50_ms": 2.0,
+          "p95_ms": 2.8,
+          "p99_ms": 2.96
+        },
+        "successful_latency": {
+          "samples": 0,
+          "p50_ms": null,
+          "p95_ms": null,
+          "p99_ms": null
+        },
+        "expected_result_within_1s": 0,
+        "within_1s_fraction_of_issued": 0.0,
+        "case_outcomes": {
+          "browse": {
+            "unauthorized": 5
+          }
+        },
+        "valid": false
+      }
+    },
+    {
+      "fixture": "timeout",
+      "detected": true,
+      "measured": {
+        "scheduled": 4,
+        "issued": 5,
+        "actual_http_requests": 4,
+        "completed_samples": 4,
+        "uncompleted": 1,
+        "generator_drops": 0,
+        "generator_shortfall": 0,
+        "outcomes": {
+          "timeout": 4
+        },
+        "clock_invalid": 0,
+        "offered_rps": 2.0,
+        "issued_rps": 2.5,
+        "successful_rps": 0.0,
+        "all_completed_latency": {
+          "samples": 4,
+          "p50_ms": 251.0,
+          "p95_ms": 251.0,
+          "p99_ms": 251.0
+        },
+        "successful_latency": {
+          "samples": 0,
+          "p50_ms": null,
+          "p95_ms": null,
+          "p99_ms": null
+        },
+        "expected_result_within_1s": 0,
+        "within_1s_fraction_of_issued": 0.0,
+        "case_outcomes": {
+          "browse": {
+            "timeout": 4
+          }
+        },
+        "valid": false
+      }
+    },
+    {
+      "fixture": "shortfall",
+      "detected": true,
+      "measured": {
+        "scheduled": 4,
+        "issued": 2,
+        "actual_http_requests": 2,
+        "completed_samples": 2,
+        "uncompleted": 0,
+        "generator_drops": 3,
+        "generator_shortfall": 2,
+        "outcomes": {
+          "ok": 2
+        },
+        "clock_invalid": 0,
+        "offered_rps": 2.0,
+        "issued_rps": 1.0,
+        "successful_rps": 1.0,
+        "all_completed_latency": {
+          "samples": 2,
+          "p50_ms": 1108.5,
+          "p95_ms": 1108.95,
+          "p99_ms": 1108.99
+        },
+        "successful_latency": {
+          "samples": 2,
+          "p50_ms": 1108.5,
+          "p95_ms": 1108.95,
+          "p99_ms": 1108.99
+        },
+        "expected_result_within_1s": 0,
+        "within_1s_fraction_of_issued": 0.0,
+        "case_outcomes": {
+          "browse": {
+            "ok": 2
+          }
+        },
+        "valid": false
+      }
+    }
+  ]
+}

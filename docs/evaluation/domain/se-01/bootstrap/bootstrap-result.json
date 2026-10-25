@@ -1,0 +1,36 @@
+{
+  "observations": [
+    {
+      "case": "prepare_queue_refusals",
+      "full_live_scope": 3,
+      "unavailable_included": true,
+      "bounded_batches": [
+        1,
+        2,
+        0
+      ],
+      "resume_preserved_generations": true,
+      "missing_pending_failed_leased_blocked": true,
+      "failed_not_reset": true,
+      "conflicting_serving_refused": true
+    },
+    {
+      "case": "real_worker_activation_and_concurrent_edit",
+      "initial_ready": 3,
+      "building_hybrid": 503,
+      "activation_old_snapshot": true,
+      "later_committed_edit_status_incomplete": true,
+      "later_edit_hybrid": 503,
+      "keyword": 200,
+      "current_recovery": true,
+      "repeat_preserves_serving": true,
+      "final_hybrid": 200
+    }
+  ],
+  "peak_api_helper_rss_bytes": 345292800,
+  "max_simultaneous_helpers": 1,
+  "windows": 11,
+  "all_helpers_reaped": true,
+  "faults": [],
+  "elapsed_seconds": 4.53467599999567
+}

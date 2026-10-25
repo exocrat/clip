@@ -73,8 +73,8 @@ def validate_manifest(
     row = json.loads(manifest.read_text())
     if (
         row["tool"] != "dbmate 2.36.0"
-        or row["head"] != "20261023202807"
-        or row["migration_count"] != 14
+        or row["head"] != "20261025013000"
+        or row["migration_count"] != 17
     ):
         raise ValueError
     if not target.isolated and (
@@ -84,7 +84,7 @@ def validate_manifest(
         raise ValueError
     files = sorted(directory.glob("*.sql"))
     expected = row["migrations"]
-    if len(files) != 14 or len(expected) != 14 or any(p.is_symlink() for p in files):
+    if len(files) != 17 or len(expected) != 17 or any(p.is_symlink() for p in files):
         raise ValueError
     versions = []
     for path, item in zip(files, expected, strict=True):
@@ -144,7 +144,7 @@ def _baseline(c: Database, target: MigrationTarget, versions: list[str]) -> None
                 (list(SCHEMAS),),
             ).fetchone(),
         )
-        if inventory != ((33,), (25,), (37,)):
+        if inventory != ((37,), (33,), (43,)):
             raise ValueError
     else:
         raise ValueError

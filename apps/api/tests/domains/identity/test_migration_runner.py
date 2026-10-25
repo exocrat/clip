@@ -86,7 +86,7 @@ def test_real_clean_repeat_and_private_docker_config(migration_case, monkeypatch
     with migration_case.connect() as c:
         assert c.execute(
             "SELECT count(*) FROM public.schema_migrations"
-        ).fetchone() == (14,)
+        ).fetchone() == (17,)
         assert c.execute("SELECT count(*) FROM identity.users").fetchone() == (0,)
         assert c.execute("SELECT count(*) FROM listings.categories").fetchone() == (8,)
 

@@ -81,7 +81,7 @@ HTTP_OPERATIONS = (
         "body": StartWantedResponse,
         "response": ConversationStartResult,
         "status_code": 201,
-        "responses": {200: None},
+        "responses": {200: ConversationStartResult},
     },
     {
         "method": "GET",

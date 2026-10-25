@@ -1,0 +1,28 @@
+Applying: 20261018094330_mvp_tables.sql
+Applied: 20261018094330_mvp_tables.sql in 47.209417ms
+Applying: 20261018094331_mvp_integrity.sql
+Applied: 20261018094331_mvp_integrity.sql in 5.132667ms
+Applying: 20261018094332_initial_catalogue.sql
+Applied: 20261018094332_initial_catalogue.sql in 864.25µs
+Applying: 20261018152702_reject_retired_origin_entries.sql
+Applied: 20261018152702_reject_retired_origin_entries.sql in 723µs
+Applying: 20261020102224_listing_owner_command_results.sql
+Applied: 20261020102224_listing_owner_command_results.sql in 1.46325ms
+Applying: 20261020111741_listing_create_command_results.sql
+Applied: 20261020111741_listing_create_command_results.sql in 1.808959ms
+Applying: 20261020113531_listing_selection_and_confirmed_image_metadata.sql
+Applied: 20261020113531_listing_selection_and_confirmed_image_metadata.sql in 5.228458ms
+Applying: 20261020142319_api_owned_retirement_and_trigger_boundaries.sql
+Applied: 20261020142319_api_owned_retirement_and_trigger_boundaries.sql in 3.309416ms
+Applying: 20261021105546_optional_listing_pickup_area.sql
+Applied: 20261021105546_optional_listing_pickup_area.sql in 589.292µs
+Applying: 20261022050000_listing_image_upload_intents.sql
+Applied: 20261022050000_listing_image_upload_intents.sql in 1.077208ms
+Applying: 20261022062357_listing_image_cleanup_retries.sql
+Applied: 20261022062357_listing_image_cleanup_retries.sql in 811.834µs
+Applying: 20261024153316_listing_embedding_generations.sql
+Applied: 20261024153316_listing_embedding_generations.sql in 6.025833ms
+Applying: 20261025012200_wanted_category_code_reference.sql
+Applied: 20261025012200_wanted_category_code_reference.sql in 4.107792ms
+Applying: 20261025013000_wanted_command_results.sql
+Applied: 20261025013000_wanted_command_results.sql in 2.147083ms

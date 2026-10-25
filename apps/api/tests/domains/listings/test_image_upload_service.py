@@ -24,6 +24,7 @@ from app.domains.listings.service import (
 )
 
 NOW = datetime(2026, 10, 22, 12, tzinfo=UTC)
+TEST_CALLER_VALID_UNTIL = datetime(2100, 1, 1, tzinfo=UTC)
 OWNER_ID = UUID("10000000-0000-4000-8000-000000000001")
 OTHER_ID = UUID("20000000-0000-4000-8000-000000000002")
 IMAGE = b"\x89PNG\r\n\x1a\n" + b"IHDR" + b"synthetic-bytes"
@@ -233,7 +234,7 @@ class _Fixture:
         )
 
     def caller(self, user_id: UUID = OWNER_ID, account_class: str = "regular"):
-        return CallerContext(user_id, account_class, NOW + timedelta(days=1))
+        return CallerContext(user_id, account_class, TEST_CALLER_VALID_UNTIL)
 
     def request(self, **updates) -> ImageUploadRequest:
         values = {

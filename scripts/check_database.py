@@ -255,7 +255,7 @@ def main():
         actual = sql(
             "SELECT version FROM public.schema_migrations ORDER BY version"
         ).splitlines()
-        if not expected or actual != expected or actual[-1] != IDENTITY_HEAD:
+        if not expected or actual != expected or actual[-1] != "20261025013000":
             raise RuntimeError("Migration history differs from the expected head")
         migrate()
         for filename in (
@@ -264,15 +264,17 @@ def main():
             "identity-schema-smoke.sql",
             "identity-otp-smoke.sql",
             "identity-session-smoke.sql",
+            "embedding-smoke.sql",
+            "search-storage-smoke.sql",
         ):
             sql((ROOT / "database/tests" / filename).read_text())
         if (
             sql(
                 "SELECT count(*) FROM pg_tables WHERE schemaname IN ('identity','listings','search','conversations')"
             )
-            != "33"
+            != "37"
         ):
-            raise RuntimeError("Expected 33 domain tables")
+            raise RuntimeError("Expected 37 domain tables")
         # Keep the native harness's merged schema inventory tied to actual SQL,
         # rather than treating textual conflict resolution as platform evidence.
         functions = sql(
@@ -284,7 +286,7 @@ def main():
             "JOIN pg_namespace n ON n.oid=c.relnamespace WHERE NOT t.tgisinternal "
             "AND n.nspname IN ('identity','listings','search','conversations')"
         )
-        if (functions, triggers) != ("25", "37"):
+        if (functions, triggers) != ("33", "43"):
             raise RuntimeError(
                 f"Combined runtime inventory differs: functions={functions}, triggers={triggers}"
             )
@@ -293,6 +295,10 @@ def main():
         # upgrade/down/reapply preserve every fixture value and original guard.
         # Empty OTP rollback preserves all older data; occupied rollback is
         # separately checked by the actual transactional service suite.
+        # Remove accepted later domain forwards before exercising Identity upgrades.
+        for version in reversed(expected):
+            if version > IDENTITY_HEAD:
+                migrate(rollback=True)
         migrate(rollback=True)
         if sql("SELECT max(version) FROM public.schema_migrations") != OTP_HEAD:
             raise RuntimeError("Session rollback did not restore OTP head")
@@ -363,12 +369,10 @@ def main():
         migrate_guard()
         migrate_guard()
         sql((ROOT / "database/tests/identity-upgrade-check.sql").read_text())
-        for filename in (
-            "schema-smoke.sql",
-            "retired-origin-smoke.sql",
-            "identity-schema-smoke.sql",
-        ):
-            sql((ROOT / "database/tests" / filename).read_text())
+        # Current cross-domain smokes require later Search category-code SQL.
+        # At this historical Identity head, run only its matching storage checks;
+        # all seven current smokes run at the complete head before/after rollback.
+        sql((ROOT / "database/tests/identity-schema-smoke.sql").read_text())
         # Legacy verifier rows survive both OTP directions without invented
         # encryption/key references; the new service fails closed on adoption.
         sql(
@@ -401,7 +405,7 @@ def main():
             "('e2700000-0000-4000-8000-000000000099','e2300000-0000-4000-8000-000000000001',"
             "decode('33','hex'),CURRENT_TIMESTAMP+INTERVAL '8 days')"
         )
-        migrate()
+        migrate_guard(IDENTITY_HEAD)
         if (
             sql(
                 "SELECT last_seen_at IS NULL FROM identity.sessions WHERE id='e2700000-0000-4000-8000-000000000099'"
@@ -472,6 +476,8 @@ def main():
             "identity-schema-smoke.sql",
             "identity-otp-smoke.sql",
             "identity-session-smoke.sql",
+            "embedding-smoke.sql",
+            "search-storage-smoke.sql",
         ):
             sql((ROOT / "database/tests" / filename).read_text())
         if arguments.listings_store:
@@ -486,7 +492,21 @@ def main():
                     sys.executable,
                     "-m",
                     "pytest",
+                    "apps/api/tests/domains/search/test_draft_matches_postgres.py",
+                    "apps/api/tests/domains/search/test_wanted_retirement_postgres.py",
+                    "apps/api/tests/domains/search/test_wanted_postgres.py",
+                    "apps/api/tests/domains/search/test_step6_postgres.py",
+                    "apps/api/tests/domains/search/test_wanted_response_postgres.py",
+                    "apps/api/tests/domains/search/test_category_migration_postgres.py",
                     "apps/api/tests/domains/listings/test_postgres_store.py",
+                    "apps/api/tests/domains/listings/test_browse_postgres.py",
+                    "apps/api/tests/domains/listings/test_embedding_postgres.py",
+                    "apps/api/tests/domains/listings/test_embedding_worker_postgres.py",
+                    "apps/api/tests/domains/listings/test_hybrid_read_postgres.py",
+                    "tests/evaluation/test_search_calibration_postgres.py",
+                    "apps/api/tests/domains/listings/test_search_access_postgres.py",
+                    # Large committed pagination fixture follows bounded math checks.
+                    "apps/api/tests/domains/search/test_saved_postgres.py",
                     "-q",
                     "-W",
                     "error",
@@ -531,7 +551,7 @@ def main():
                 )
             print(f"POSTGRES_LISTING_SAMPLE_ROW {sample}")
         print(
-            "PASS: PostgreSQL 18.6; combined clean/head/repeat, five smokes, Identity upgrade/atomicity/rollback, protected retirement rollback and full clean reapply"
+            "PASS: PostgreSQL 18.6; combined clean/head/repeat, seven smokes, Identity upgrade/atomicity/rollback, protected retirement rollback and full clean reapply"
         )
     except (subprocess.TimeoutExpired, OSError, ValueError) as error:
         raise RuntimeError(

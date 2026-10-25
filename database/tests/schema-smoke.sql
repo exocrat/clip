@@ -219,9 +219,9 @@ BEGIN
     SET CONSTRAINTS ALL DEFERRED;
     IF NOT rejected THEN RAISE EXCEPTION 'Last usable image removal was accepted'; END IF;
 
-    INSERT INTO search.wanted_requests (id, author_id, title, description, category_id, budget_paise, status)
-        VALUES (gen_random_uuid(), buyer, 'Synthetic wanted books', 'Controlled request fixture', category, NULL, 'open'),
-            (gen_random_uuid(), buyer, 'Synthetic free books', 'Controlled free request fixture', category, 0, 'open');
+    INSERT INTO search.wanted_requests (id, author_id, title, description, category_code, budget_paise, status)
+        VALUES (gen_random_uuid(), buyer, 'Synthetic wanted books', 'Controlled request fixture', 'books', NULL, 'open'),
+            (gen_random_uuid(), buyer, 'Synthetic free books', 'Controlled free request fixture', 'books', 0, 'open');
     INSERT INTO search.saved_listings (user_id, listing_id) VALUES (buyer, item);
     rejected := false;
     BEGIN
