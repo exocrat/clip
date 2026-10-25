@@ -1382,3 +1382,33 @@ allowlist; HTTPS/proxy/API routing; and the intended frontend flag/revision. The
 user performs the Microsoft account and inbox actions. Physical-phone verification,
 affected-owner review, hosted CI, and the full Step14 consumer matrix remain
 separate checks; Step14 is outside current ID-READY scope.
+
+### Additional runtime activation and ingress gate — offline source audit
+
+The image is not the only remaining implementation prerequisite. Current source
+and Terraform show:
+
+- `apps/api/app/main.py` constructs `create_app(settings)` without Identity
+  dependencies. `application.py` deliberately keeps default startup unbound;
+  `create_app` rejects Identity composition in production and hosted-web mode.
+- `identity_runtime.py`/`prepare_local_identity` is an explicit local/test
+  operator command. It reads fixed Identity SSM references only when invoked and
+  refuses `serve_web_app`; it is not a hosted ASGI startup path.
+- The shared ECS task currently sets only `CLIP_ENVIRONMENT=production` and
+  `CLIP_DEBUG=false`. It has no Identity selector/runtime flag, database URL
+  injection, or Identity parameter access. The Identity database URL parameter
+  is not provisioned; the separate Listings URL is also not in this task definition.
+- The shared API task uses private bridge networking and the Terraform service
+  module declares no public listener or inbound rule. No source record currently
+  binds the public app origin to this service or defines a trusted HTTPS proxy
+  hop. Identity's browser middleware requires HTTPS and rejects untrusted Origins;
+  enabling arbitrary forwarded-header trust would be unsafe.
+
+Therefore do not treat the production frontend build or image as enough to run
+the morning account checks. Before code activation/deployment, inspect the current
+domain/DNS/hosting route and shared ingress, select the exact same-origin HTTPS
+path, and review how the application will trust that proxy and receive its
+separate DB/SSM configuration. The likely low-complexity shape is the existing
+API image serving the UI and `/api` on one HTTPS origin, but that remains an
+inference until the actual listener/host is identified. Do not implement or apply
+that wiring based on this note alone. No AWS state was queried for this audit.
