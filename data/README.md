@@ -1,5 +1,48 @@
 # Deterministic synthetic-data tooling
 
+## SE-01 isolated schema-shaped corpus
+
+`data.generators.search_preview` reuses PD-09 IDs, hashing and private named-run
+IO for the reviewed user/listing fields. Existing PD-09 commands and their
+load refusal are unchanged. See [the Search preview format](formats/search-preview.md).
+
+With locked dependencies installed, run from the repository root:
+
+```bash
+uv run --locked python -m data.generators.search_preview generate --name search-preview-42 --seed 42 --users 5000 --listings 1000 --logical-time 2026-10-24T09:00:00.000000Z
+uv run --locked python -m data.generators.search_preview validate --name search-preview-42
+```
+
+On Mohit's checkout, `.venv/bin/python` can replace `uv run --locked python`
+after repository-local locked setup. Logical time is explicit fixture input,
+not the machine clock; reuse it for repeat generation. Choose a fresh run name;
+there is no overwrite. Datasets are ignored; manifests can be retained.
+
+The implemented PostgreSQL loader has not been exercised against PostgreSQL in
+this checkout. It requires an independently prepared empty local database named
+`clip_test_search_preview`, with role `clip_search_preview` owning the fixture
+tables and every current repository migration/catalogue applied. Local database
+setup/ordered migration execution remain pending until a PostgreSQL runtime is
+available. Then supply its real canonical Unix-socket directory:
+
+```bash
+CLIP_ENVIRONMENT=test uv run --locked python -m data.generators.search_loader --name search-preview-42 --socket-dir /absolute/local/socket/directory --isolated-preview
+```
+
+The socket path must not traverse symlinks (use `/private/tmp` on macOS rather
+than `/tmp`). Unset ambient `CLIP_DATABASE_URL`, `DATABASE_URL` and `PG*`
+overrides; never supply application credentials to this fixture route. The
+loader verifies fixed database/role/Unix transport, migration versions and active
+catalogue, locks/checks empty tables, and inserts in one transaction. Deferred
+constraints/counts must pass before commit. It creates no credentials or auth
+bypass and performs no storage/provider calls.
+
+There is **no reset command**: nonempty targets are refused. Destructive cleanup
+requires separate exact-target review and approval. Synthetic image metadata
+has no backing objects; it cannot validate LI-02 or support cloud measurement.
+Real loading/FKs/indexes/images and final DATA-READY remain pending at SE-01
+steps 2/4/9. Local fixture tests do not establish PostgreSQL ranking or NFRs.
+
 PD-09 supplies **preview-only** records/manifests, not final domain data or a
 database loader. [Prerequisites](prerequisites.md) assign real adapters/loading,
 population/integrity/index validation and human relevance judgments to

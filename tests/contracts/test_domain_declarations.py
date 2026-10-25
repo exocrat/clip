@@ -140,8 +140,8 @@ def test_generated_modules_are_byte_for_byte_source_derivatives():
         assert generated.partition("\n")[2].lstrip("\n") == expected
 
 
-def test_only_implemented_listings_http_routes_are_installed():
-    """Mount the implemented Listings subset without installing other declarations."""
+def test_only_implemented_domain_http_routes_are_installed():
+    """Mount only implemented Listings/wanted routes, leaving future declarations out."""
     from app.main import app
 
     # Inspect the public schema instead of FastAPI's internal router objects.
@@ -149,6 +149,14 @@ def test_only_implemented_listings_http_routes_are_installed():
     # object, while OpenAPI still shows the actual installed endpoints.
     paths = set(app.openapi()["paths"])
     assert paths == {
+        "/me/saved-listings",
+        "/me/saved-listings/{listing_id}",
+        "/wanted-requests",
+        "/wanted-requests/draft-matches",
+        "/me/wanted-requests",
+        "/wanted-requests/{request_id}",
+        "/wanted-requests/{request_id}/availability",
+        "/wanted-requests/{request_id}/conversations",
         "/health",
         "/catalogue",
         "/listings",

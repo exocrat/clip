@@ -1,0 +1,8 @@
+# Artifact contexts are supplied separately and explicitly. The root context
+# contains only the reviewed dependency lock and operator entry point.
+**
+!scripts/
+!scripts/evaluation/
+!scripts/evaluation/semantic/
+!scripts/evaluation/semantic/requirements-linux-x86_64.txt
+!scripts/search_pipeline.py

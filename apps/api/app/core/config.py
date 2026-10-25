@@ -1,6 +1,7 @@
 """Shared typed, redacted process-environment configuration for the API."""
 
 import re
+from pathlib import Path
 from typing import Literal, Self
 from urllib.parse import urlsplit
 
@@ -55,10 +56,60 @@ class Settings(BaseSettings):
     serve_web_app: bool = False
     # SecretStr prevents accidental repr/log output of embedded credentials.
     database_url: SecretStr | None = None
+    # Hybrid is opt-in; explicit paths never download/discover a model or interpreter.
+    hybrid_search_enabled: bool = False
+    hybrid_worker_enabled: bool = False
+    hybrid_search_interpreter: Path | None = Field(default=None, repr=False)
+    hybrid_search_model_dir: Path | None = Field(
+        default=None, repr=False, validate_default=True
+    )
     # Listings compares prices against this configurable whole-rupee threshold.
     sensitive_purchase_threshold_paise: int = Field(
         default=500_000, ge=0, multiple_of=100
     )
+
+    @field_validator("hybrid_worker_enabled")
+    @classmethod
+    def worker_requires_hybrid(cls, value: bool, info: ValidationInfo) -> bool:
+        """No standalone/default worker can start without the explicitly owned helper."""
+        if value and not info.data.get("hybrid_search_enabled", False):
+            raise ValueError("Hybrid worker requires hybrid_search_enabled")
+        return value
+
+    @field_validator("hybrid_search_interpreter", "hybrid_search_model_dir")
+    @classmethod
+    def absolute_hybrid_path(cls, value: Path | None) -> Path | None:
+        """Require explicit absolute local paths; preserve interpreter venv symlinks.
+
+        Files/artifact pins are checked by the real helper at startup, not by
+        reading files during configuration parsing. No shell/path expansion.
+        """
+        if value is not None and (not value.is_absolute() or "\x00" in str(value)):
+            raise ValueError("Hybrid paths must be absolute local paths")
+        return value
+
+    @field_validator("hybrid_search_model_dir")
+    @classmethod
+    def paired_hybrid_settings(
+        cls, value: Path | None, info: ValidationInfo
+    ) -> Path | None:
+        """Reject partial/ignored Hybrid settings before any runtime side effect.
+
+        This field validates its default too and follows the enable/interpreter/
+        database fields, so missing paired inputs still produce a redacted named
+        configuration error. No existing target is contacted here.
+        """
+        enabled = info.data.get("hybrid_search_enabled", False)
+        interpreter = info.data.get("hybrid_search_interpreter")
+        if enabled and (
+            interpreter is None
+            or value is None
+            or info.data.get("database_url") is None
+        ):
+            raise ValueError("Hybrid requires database_url, interpreter and model_dir")
+        if not enabled and (interpreter is not None or value is not None):
+            raise ValueError("Hybrid paths require hybrid_search_enabled")
+        return value
 
     @field_validator("database_url")
     @classmethod
@@ -135,10 +186,8 @@ class Settings(BaseSettings):
             raise ValueError(
                 "The isolated Listings limit requires the isolated test caller"
             )
-        if self.serve_web_app and not self.isolated_listings_test_caller:
-            raise ValueError(
-                "The ECS web app mode requires the isolated Listings test caller"
-            )
+        # Hosting the built UI is independent of authentication. Only the explicit
+        # isolated caller flag may activate the guarded Listings demo identity.
         return self
 
 

@@ -1,5 +1,69 @@
 # Runtime Command Registry
 
+## SE-01 Step 8 — functional contract checks
+
+| Command | Coverage/evidence limit |
+|---|---|
+| `uv run --locked pytest apps/api/tests/domains/listings/test_browse.py apps/api/tests/domains/listings/test_browse_contract.py apps/api/tests/domains/listings/test_browse_postgres.py apps/api/tests/domains/search data/tests tests/contracts -q -W error` | Current isolated browse/validation/transport, reviewed OpenAPI/source response conformance, Search fixtures/data and existing contract tests. Node/npm must be on process PATH for contract tooling. Real SQL remains skipped without the disposable runner. |
+| `npm run check` | Includes `discovery-contract.test.ts`: generated request/response typing, reviewed OpenAPI public property sets and handwritten reader compatibility, plus existing lint/types/build/behavior tests. No Python subprocess added to web-only checks. |
+
+Use repository-local Node/uv PATH/cache prefixes from the workstation guide
+where appropriate. See the [functional coverage ledger](../evaluation/domain/se-01/README.md)
+for every pending real check. Test fixtures and metadata conformance do not
+accept ranking, SQL/auth, NFRs or readiness. No generated file is hand-edited.
+
+## SE-01 Step 7 — initial discovery UI preview
+
+Creator/current scoped writer: Mohit (C). Uses the existing root package lock;
+no new dependency or product route. [Web checkpoint](../../apps/web/README.md#se-01-step-7--first-discovery-ui-checkpoint).
+
+| Command | Target/effect and evidence limit |
+|---|---|
+| `CLIP_ENVIRONMENT=test CLIP_DEVELOPMENT_AUTH=true .venv/bin/python apps/api/tests/domains/search/browser_preview.py --isolated-search-ui` | Foreground fixed loopback 8000, explicit synthetic read-only UI scripts, no DB/auth/storage. Rejects default/production/ambient DB/AWS and non-opt-in/cross-origin clients; Ctrl+C stops it. Never a real provider or NFR check. |
+| `PATH="$PWD/.tools/node/bin:$PATH" NPM_CONFIG_CACHE="$PWD/.tools/npm-cache" NPM_CONFIG_USERCONFIG=/dev/null VITE_SEARCH_UI_PREVIEW=true .tools/node/bin/npm run dev` | Existing loopback 5173 Vite server with explicit development fixture disclosure/header. Open `http://127.0.0.1:5173/`; Ctrl+C stops it. No global PATH edits or public exposure. Production builds omit the preview branch. |
+| `PATH="$PWD/.tools/node/bin:$PATH" NPM_CONFIG_CACHE="$PWD/.tools/npm-cache" NPM_CONFIG_USERCONFIG=/dev/null .tools/node/bin/npm run check` | Registered lint/Vitest/type/build suite using repo-local Node/npm; replaces ignored dist only. Does not complete human desktop/phone/browser or real SQL/auth integration checks. |
+
+Pause at the first usable screen for human observations/version/viewports per
+the browser procedure. Future visible increments need renewed checks. The normal
+app still calls the real API when the development fixture flag is absent.
+
+## SE-01 Steps 3–6 — browse/search checks
+
+| Command | Behavior and evidence limit |
+|---|---|
+| `uv run --locked pytest apps/api/tests/domains/listings/test_browse.py apps/api/tests/domains/search data/tests -q -W error` | Isolated HTTP/auth/privacy, current-read/cache-header behavior, strict query/filter checks, Search-owned saved boundary fixtures, SQL parameterization, corpus and loader refusals. Scripted pages/states do not prove SQL or real saved behavior. |
+| `uv run --locked python scripts/check_database.py --listings-store` | Existing pinned Docker/PostgreSQL runner executes `test_browse_postgres.py`: real availability/time/retirement predicates and state transitions, title/description/stemming/plain-text search, generated-vector updates, GIN eligibility, filters/catalogue and stable paging. Fixtures force rollback. Planner diagnostic is not performance evidence; no real saved API is supplied. Requires Docker; not run successfully here. |
+| `uv run --locked pytest apps/api/tests/domains/listings/test_browse_postgres.py -q -W error` | Skips explicitly without the runner's `LISTINGS_TEST_DATABASE_URL`; a skip is not SQL acceptance. Do not supply a shared/cloud/application database. |
+
+Runtime entry: reviewed Listings-owned `GET /listings`; Step 4 adds plain-text
+`q` through native English full-text matching. Step 5 adds the reviewed filters
+and recency/price sorts with UUID ties. Invalid ranges/types/bounds/codes use
+shared 422 errors. No new monetary cap or request-rate quota is invented.
+Existing vector/GIN definitions are reused, with no new migration or search service. Real
+Identity/SQL/index checks and affected-owner review remain pending. Step 6 sets
+discovery responses to `private, no-store`; current eligibility/storage is
+rechecked. Retained unavailable saved summaries/content-free retired markers are
+distinct SE-02 behavior, still awaiting actual providers, API and privacy checks.
+
+## SE-01 Step 2 — isolated schema-shaped data
+
+Creator/current writer for this bounded registry addition: Mohit (C),
+`task/se-01-search`. Existing Make/PD-09 commands remain unchanged. With locked
+dependencies installed, `.venv/bin/python` may replace `uv run --locked python`
+on the repository-local setup. [Format](../../data/formats/search-preview.md)
+and [local prerequisites](../../data/README.md#se-01-isolated-schema-shaped-corpus).
+
+| Command | Target/effect | Success/failure |
+|---|---|---|
+| `uv run --locked python -m data.generators.search_preview generate --name <fresh-name> --seed 42 --users 5000 --listings 1000 --logical-time 2026-10-24T09:00:00.000000Z` | Creates only `data/runs/<fresh-name>/dataset.json` and `manifest.json`; schema-shaped preview with explicit logical clock. | Prints fingerprint, exit 0; exit 2 on invalid/unsafe/existing targets. No overwrite or database writes. |
+| `uv run --locked python -m data.generators.search_preview validate --name <name>` | Verifies closed schema, current source binding, counts, fingerprint and retained manifest. | Prints fingerprint, exit 0; altered/stale/unsafe data exits 2. |
+| `CLIP_ENVIRONMENT=test uv run --locked python -m data.generators.search_loader --name <name> --socket-dir <canonical-local-directory> --isolated-preview` | Fixed Unix-socket `clip_test_search_preview` database / `clip_search_preview` role, empty migrated fixture tables only; atomic user/listing/image-metadata insertion. No provisioning, credentials, storage calls or deletes. | Exit 0 only after SQL constraints/counts/commit; otherwise safe exit 2. Real PostgreSQL execution remains unverified. Refuses ambient DB/libpq overrides and nonempty/mismatched targets. |
+| `uv run --locked pytest data/tests -q -W error` | Existing plus schema-shaped corpus/contract and loader refusal tests; local synthetic data only. | Passing tests are isolated evidence, not SQL/FK/index/image integration. |
+
+Reset is intentionally unsupported. Use no truncate/drop/reset workaround;
+destructive cleanup requires a separately approved exact target. Final real
+schema/count/FK/image/index checks and human labels remain SE-01 steps 2/4/9.
+
 **Canonical path:** `docs/environment/commands.md`
 
 This registry contains implemented commands and planned outputs, distinguished in the table below. Each command-creating task populates exact spellings/arguments/script paths and verifies safe behavior; a planned row is not proof of implementation. The normal front door is root Makefile, unless PD-02 explicitly approves an equivalent and records actual mappings. Root README/CONTRIBUTING/CI must match this registry after PRE-00.
@@ -632,3 +696,598 @@ commands, not deployment or task-completion evidence.
 | `VITE_LISTINGS_ISOLATED_DEMO=true npm run dev` | Runs the same development web server on loopback 5173; exposes only labelled local Listings controls for preparing synthetic image metadata through the separate test app. Production builds ignore this development flag. | Ctrl+C stops the owned Vite process. Missing API/dependencies produce visible failures, not simulated successful saves. |
 | `CLIP_ENVIRONMENT=test CLIP_DEVELOPMENT_AUTH=true uv run --locked python apps/api/tests/domains/listings/browser_demo.py --isolated-listings-browser --inspect SESSION_PATH` | Requires the exact printed retained session path and matching container ownership label. Executes read-only SQL against that running browser database to print synthetic listing ID/title/price/status/proof values. | Fails closed on wrong owner/path/label, stopped/unavailable container or SQL failure; never inspects the shared database. |
 | `CLIP_ENVIRONMENT=test CLIP_DEVELOPMENT_AUTH=true uv run --locked python apps/api/tests/domains/listings/browser_demo.py --isolated-listings-browser --resume SESSION_PATH` | Validates the recorded private session/container label, starts that same database without resetting rows, reapplies only pending migrations, and serves the isolated API again. | Ctrl+C retains rows. Does not remove containers/volumes/session files. Cleanup requires a separate targeted action. |
+| `CLIP_ENVIRONMENT=test CLIP_DEVELOPMENT_AUTH=true uv run --locked python apps/api/tests/domains/listings/browser_demo.py --isolated-listings-browser --hybrid-search --resume SESSION_PATH` | Resumes that same local database and enables the real pinned helper, worker and Hybrid reader. Requires the repo-local CPython 3.13 helper and model under `.tools/semantic/`. Before serving, verifies the worker pool reaches `clip_listings_browser` over its private Unix socket, prepares existing rows, waits for complete vectors and activates the pinned pipeline. New listing creates/edits then use the database trigger and worker automatically; no copied vectors. | Refuses a mismatched database, unavailable helper/worker, failed vector job or incomplete five-minute bootstrap. Ctrl+C retains the labelled local database. No shared database or cloud target. |
+
+The browser harness also mounts real Wanted Request and Saved Listings routes
+on this same database. Categories, draft matches, save eligibility and saved
+summaries use the real Listings provider used by `app.main`; no scripted Listings
+responses are installed. `/me` and eligibility use only the fixed local synthetic
+account. Conversations remain unavailable. The image UI mode supports direct
+refreshes at `/saved` and `/wanted/{request_id}` as well as the Listings routes.
+
+## SE-01 Step 9 — isolated evaluator preparation
+
+Run at repository root with the locked project Python environment. These commands
+need no database, Docker, cloud access, credentials or additional dependencies.
+
+| Exact command | Target/effects and success | Stop/failure behavior |
+|---|---|---|
+| `uv run --locked python -m scripts.evaluation.search validate-labels --labels data/evaluation/query-labels.template.json` | Read-only canonical draft-format validation; prints fingerprints, format validity and `scoring_allowed: false`. | Exit 2 for malformed/unsafe input or missing final binding; no content echoed and no review inferred. |
+| `uv run --locked python -m scripts.evaluation.search self-check` | Synthetic Success@5 arithmetic only: four included cases, one hit (0.25); always preview-only with NFR acceptance false. No files written. | Nonzero if arithmetic/input checks fail; never falls back to real retrieval. |
+| `uv run --locked python -m pytest tests/evaluation -q` | Temporary synthetic label/binding and calculator checks; no canonical labels created. | Nonzero on regression; no final corpus/readiness result. |
+
+Final dataset validation, human-reviewed labels and real retrieval integration
+remain pending; see [tooling limits](../../scripts/evaluation/README.md).
+
+## Listings/Search merge — deployment preparation
+
+The [combined deployment handoff](../architecture/listings-search-deployment.md)
+registers the ordinary API build and optional `apps/api/Dockerfile.hybrid` build,
+including explicit Python/wheel/model artifact contexts. Both are local builds
+and publish nothing. The optional image's helper install and real inference
+self-check run with networking disabled; model/wheel hashes are verified. Use
+Linux AMD64 artifacts, not the earlier Mac helper environment. The image includes
+`python scripts/search_pipeline.py --help` and the existing target-bound bootstrap
+operations for later deployment initialization. Normal `CLIP_SERVE_WEB_APP=true`
+serves the UI and `/api` routes independently of the isolated test identity.
+
+## SE-01 hybrid checkpoint 4 — repository-local semantic probe
+
+Fixed Mac-only feasibility scope and [limits/results](../architecture/semantic-search-feasibility.md).
+Root API Python remains 3.14; the isolated probe uses Python 3.13.12. For every uv
+command below set process-local `UV_PYTHON_INSTALL_DIR="$PWD/.tools/semantic/python"`
+and `UV_CACHE_DIR="$PWD/.tools/semantic/cache"`. No global links/PATH changes.
+First create `.tools/semantic/` and copy the reviewed committed helper lock to
+`.tools/semantic/resolved-mac.txt`; no automatic dependency re-resolution.
+
+| Exact command (repository root) | Target/effects and success | Stop/failure behavior |
+|---|---|---|
+| `.venv/bin/python scripts/evaluation/semantic/preflight.py` | Read official PyPI/model/release metadata; select compatible pinned Mac wheels, record license/advisory/size data under `.tools/semantic/preflight.json`. | Nonzero on advisory, missing wheel, hash binding or budget failure; no model weights/install. Network sandbox needs normal escalation. |
+| `.tools/uv/uv python install 3.13.12 --no-bin` | With the explicit local uv variables above, download the fixed managed interpreter only into `.tools/semantic/python/`. | Nonzero on retrieval failure; no global executable links or root environment edits. |
+| `.tools/uv/uv venv .tools/semantic/venv --python .tools/semantic/python/cpython-3.13.12-macos-aarch64-none/bin/python3.13 --no-python-downloads` | Create only the separate helper environment. | Root-project 3.14 incompatibility warning is expected for this isolated helper; root `.venv` is not the target. |
+| `.venv/bin/python scripts/evaluation/semantic/fetch.py` | Download preflight-bound wheels/model to ignored paths; validate sizes/hashes and retained artifact manifest. | Refuse unknown paths/hosts, changed bindings, size/hash/deadline violations; preserve failed partials, no arbitrary deletion. |
+| `.tools/uv/uv pip sync .tools/semantic/resolved-mac.txt --python .tools/semantic/venv/bin/python --require-hashes --no-index --find-links .tools/semantic/wheels --only-binary :all: --offline --link-mode copy` | Install the frozen 24 packages only into the helper venv, from verified local wheels. | No source builds, network resolution or root installation; dependency/hash failures block. |
+| `.venv/bin/python scripts/evaluation/semantic/supervise.py --preview-api-pid PID` | Replace PID with the verified running isolated preview API PID; supervise the fixed offline helper under memory/deadline bounds and retain a unique safe run. | Fails if process memory cannot be verified; kills only owned helper on limit/failure; never signals the API. `ps` needs process-read escalation on this Mac. |
+| `.venv/bin/python -m pytest tests/evaluation/test_semantic_probe.py -q -W error` | Portable chunk/integrity checks without isolated ML packages or real model calls. | Nonzero on regression; no inference/NFR acceptance. |
+
+Initial hash-lock generation (performed once, not a frozen replay command):
+`.tools/uv/uv pip compile scripts/evaluation/semantic/requirements.in --generate-hashes --only-binary :all: --python-version 3.13 --python-platform aarch64-apple-darwin --no-python-downloads --output-file .tools/semantic/resolved-mac.txt --quiet`.
+Keep the same explicit local uv variables. New resolution requires review of the
+new pins, platform/size/license/advisory metadata and updated evidence.
+
+## SE-01 embedding storage preparation — no database run
+
+The existing `uv run --locked python scripts/check_database.py --listings-store`
+now includes native embedding integrity/rollback/two-connection race tests and
+three smoke scripts. It still creates only its own disposable PostgreSQL 18.6
+container/socket database; no target URL, shared data or ambient PG settings is
+accepted. Expected head is `20261024153316` (12 migrations/29 domain tables).
+This new native check has **not run** on this Mac; Docker/PostgreSQL is absent.
+Do not infer apply, trigger, concurrency or rollback success from portable tests.
+The existing macOS native wrapper also expects 30 functions/40 triggers and all
+12 rollbacks; actual catalogue verification is pending.
+
+Portable check, using the root locked environment:
+`uv run --locked python -m pytest apps/api/tests/domains/listings/test_embedding_store.py apps/api/tests/domains/listings/test_embedding_postgres.py -q -W error`.
+It runs validation/transport and pre-connect refusal tests; two real native tests
+skip without the runner. No database target or background worker is created by
+this portable command. [Protocol and exact implementation limits](../architecture/semantic-listing-storage.md).
+
+## SE-01 checkpoint C — repository-local native PostgreSQL route
+
+User verified storage increment B and requested native testing. The existing
+native harness now accepts optional `--listings-store`. Exact invocation from
+this clone after verifying the pinned local tools:
+
+```sh
+LC_ALL=C bash database/tests/native-checks.sh "$PWD/.tools/native-db/pgsql" "$PWD/.tools/native-db/downloads/dbmate-macos-arm64" --listings-store
+```
+
+The tool prefixes are inputs, never an existing DB target. The harness creates a
+new private `/tmp/clip-pd08-native-check.*` cluster with UTF-8/C locale, TCP disabled,
+owner-only Unix sockets and rejected host authentication. It applies/smokes/
+rolls back/reapplies only `clip_test_native`, compares source-expected catalogues,
+then creates a SECOND fresh `clip_test_ci` database and `clip_ci` role in that
+same owned cluster for the actual Listings/browse/embedding adapter tests. A
+separate owner-private `/tmp/clip-listings-test-*/pgsocket` exposes only the Unix
+socket at native port 55438. No global/Homebrew service, Docker, shared database,
+cloud target or provider credentials are used. On exit it stops only this cluster
+and retains logs/data; failed runs are not automatically deleted. The new native
+adapter mode's execution result is recorded separately after the run.
+
+Tools rebuilt under ignored `.tools/native-db/` because earlier `/tmp` tools were
+gone: official PostgreSQL 18.6 source archive SHA-256
+`555610c24d53e4316da5b7d3fc25c279d96856d5e0e23ee308c328c5fa881d9f`,
+22,632,314 bytes; official dbmate 2.36.0 macOS ARM64 binary SHA-256
+`86f799b694710a8cc330eb5763a5d13d3c4b19e5e895822734b9fb44e1c35891`,
+31,639,010 bytes. Build uses existing Clang/make, two jobs, local install prefix
+and historical `--without-icu --without-readline --without-zlib` flags. It does
+not establish production locale/ICU/TLS/cgroup/CPU equivalence. Download/tool/build
+logs and manifest stay under `.tools/native-db/`; no global executable/PATH edit.
+
+Native execution result: final fresh run `/tmp/clip-pd08-native-check.oLISmK`
+passed the schema round trip and seven adapter-suite checks (four actual DB
+cases, three pre-connect guards); cluster stop succeeded. [Retained evidence](../evaluation/domain/se-01/native-postgres/result.json).
+Two earlier failed runs remain for the corrected GIN diagnostic, fixture
+retirement publication/age and browse marker ordering. Production constraints
+were preserved. These native tool/configuration results do not accept real
+providers, final corpus/labels, full pipeline-switch coverage or FR/NFR gates.
+
+The same native command subsequently passed the expanded bootstrap/switch matrix:
+`/tmp/clip-pd08-native-check.4FB6Mb`, eight adapter checks (five DB/three guards),
+schema round trip and successful cluster stop. [Expanded evidence](../evaluation/domain/se-01/native-pipeline-switch/result.json).
+No new command/dependency/service is introduced; all mathematical fixture state
+changes remain inside the fresh disposable runner database.
+
+## SE-01 private real helper IPC checkpoint
+
+From repository root with the existing local model/helper interpreter (no new
+install/download), identify the already-running isolated preview API PID:
+
+` .venv/bin/python scripts/evaluation/semantic/ipc_probe.py --isolated-helper-probe --preview-api-pid PID `
+
+Replace PID explicitly; do not guess or use a cloud process. The fixed probe starts
+only owned helper children, sends <=30 model windows under ten minutes, samples
+host/helper/identified preview RSS with a512MiB stop bound, tests an owned-child
+SIGKILL/restart and reaps all its helpers. `ps` memory reads require the usual Mac
+sandbox escalation. Results go to a new `.tools/semantic/ipc-probes/<UTC>/` folder;
+no body/vector text, process arguments or environment is recorded. The existing
+preview API is only observed, never signalled. No DB/public worker/cloud action.
+
+Portable protocol/lifecycle checks:
+`uv run --locked python -m pytest apps/api/tests/domains/listings/test_embedding_client.py -q -W error`.
+Fault helpers are selected only by a test subclass, never an app/env flag; they
+prove failures/lifecycle, not model inference. [Private protocol and limits](../architecture/semantic-helper-protocol.md).
+The helper/shared files additionally compile with the isolated Python3.13:
+`.tools/semantic/venv/bin/python -m py_compile apps/api/app/domains/listings/embedding_types.py apps/api/app/domains/listings/embedding_protocol.py apps/api/app/domains/listings/embedding_helper.py`.
+
+## SE-01 private DB/helper bridge checkpoint
+
+Portable orchestration/store/client checks, no database/model invocation:
+
+```bash
+uv run --locked python -m pytest apps/api/tests/domains/listings/test_embedding_worker.py apps/api/tests/domains/listings/test_embedding_store.py apps/api/tests/domains/listings/test_embedding_client.py -q -W error
+```
+
+Actual disposable PostgreSQL plus the **existing** repository-local model/helper,
+macOS only, no install/download or existing DB target:
+
+```bash
+LC_ALL=C bash database/tests/native-checks.sh "$PWD/.tools/native-db/pgsql" "$PWD/.tools/native-db/downloads/dbmate-macos-arm64" --embedding-worker
+```
+
+This opts into the same fresh-cluster/schema round trip and adapter suite as
+`--listings-store`, additionally setting test-only
+`LISTINGS_TEST_EMBEDDING_WORKER_MODEL=1` for the actual model bridge case. It is
+not an application flag. Existing target guards run before fixture writes;
+only clip_test_native and a second fresh clip_test_ci are accepted. Standard
+`--listings-store` native/Docker checks include SQL/fault-pipe bridge tests and
+skip the actual model; they do not install its optional packages.
+
+Model check caps: one explicit worker, one live helper, <=30 windows, <=10min and
+512MiB sampled test-host/helper RSS. Reads only declared PIDs/PPIDs/RSS; fails if
+host measurement is missing. Existing helper pins/offline process restrictions
+apply. Real source/lease/generation checks use the database, not coordinate
+ranking. The real test intentionally kills only its owned helper for crash/
+recovery. Exit stops the owned cluster/helpers, retains private logs/data and
+writes safe model metrics under `.tools/semantic/worker-probes/<UTC>/result.json`.
+On this Mac process/shared-memory access requires sandbox escalation. A failed or
+skipped model check cannot be called a real-model pass. Public serving, app
+startup, existing/shared DB jobs, cloud, hosting and global configuration are
+outside this command. [Protocol/evidence](../architecture/semantic-embedding-worker.md).
+
+## SE-01 development-only hybrid calibration
+
+With the existing local model/helper and native tools, run only a newly-created
+private database (no existing target accepted):
+
+```bash
+LC_ALL=C bash database/tests/native-checks.sh "$PWD/.tools/native-db/pgsql" "$PWD/.tools/native-db/downloads/dbmate-macos-arm64" --search-calibration
+```
+
+This selects `LISTINGS_TEST_SEARCH_CALIBRATION=1` only for the native test. It
+runs the ordinary adapter/fault suite plus `test_search_calibration_postgres.py`;
+the separate actual worker-model case is intentionally not selected. Default
+native/Docker adapter runs include the calibration case but skip model work
+without this flag. No model package is installed by either runner. Actual reads
+use only the fixed8synthetic development listings/11queries in session-temporary
+tables. Cap30actual model windows/one live helper/10min/512MiB sampled host+helper;
+3s SQL statement/1s lock bounds. Existing PID/RSS supervision and private Unix
+socket guards apply. The test also verifies base counts, cleanup and preservation
+of a pre-existing temporary-table sentinel. Only the owned helpers/cluster stop;
+logs/data and unique `.tools/semantic/calibration-probes/<UTC>/` results remain.
+Shared/production DBs, public routes, final data/labels, installs/cloud/hosting and
+policy activation are not targets. Native process/shared-memory access on this
+Mac requires sandbox escalation.
+
+Reanalyze a captured matrix without SQL/model/network work:
+
+```bash
+uv run --locked python scripts/evaluation/semantic/calibration.py --analyze .tools/semantic/calibration-probes/RUN/matrix.json
+```
+
+Replace RUN with a retained run directory. The tool requires exact fixture/model/
+vocabulary bindings and every finite query/listing score pair; it compares the
+predeclared90settings and writes a new ignored calibration-analysis/<UTC>/ folder.
+It never overwrites a report, selects a production winner or marks human review/
+NFR acceptance. Reading valid bindings alone does not attest measurement origin;
+retain the native source/evidence manifest. Portable arithmetic/input/guard checks:
+
+```bash
+uv run --locked python -m pytest tests/evaluation/test_search_calibration.py -q -W error
+```
+
+See the [provisional proposal and known failure](../architecture/hybrid-search-calibration.md).
+
+## SE-01 known-vocabulary typo checkpoint
+
+Portable spelling/compiler/vocabulary checks, no model/database/install:
+
+```bash
+uv run --locked python -m pytest apps/api/tests/domains/listings/test_typo_tolerance.py apps/api/tests/domains/listings/test_lexical_expansion.py apps/api/tests/domains/listings/test_vocabulary.py -q -W error
+```
+
+Real native matching/filters/pages/index eligibility use the existing fresh private
+runner command (no existing database target):
+
+```bash
+LC_ALL=C bash database/tests/native-checks.sh "$PWD/.tools/native-db/pgsql" "$PWD/.tools/native-db/downloads/dbmate-macos-arm64" --listings-store
+```
+
+The expanded browse matrix now includes spelling rules; no additional runner flag,
+package, extension, model download/inference or public startup switch is introduced.
+The separate optional worker-model and calibration-model cases are intentionally
+skipped in this mode. Existing PostgreSQL18.6/dbmate2.36/private Unix sockets,
+owned cluster stop and retained logs/data rules apply. On this Mac native process/
+shared-memory access requires sandbox escalation. The ordinary Docker adapter
+command also includes these actual browse assertions where Docker is available.
+[Limits, failure/collision cases and evidence](../architecture/search-typo-tolerance.md).
+
+## SE-01 private hybrid-read checkpoint
+
+Portable private-reader/binding/HTTP error checks (no model or database target):
+
+```bash
+uv run --locked python -m pytest apps/api/tests/domains/listings/test_hybrid_read.py -q -W error
+```
+
+Actual new private PostgreSQL cluster, snapshot/math checks and the already-local
+pinned helper through the real worker/read path:
+
+```bash
+LC_ALL=C bash database/tests/native-checks.sh "$PWD/.tools/native-db/pgsql" "$PWD/.tools/native-db/downloads/dbmate-macos-arm64" --hybrid-read
+```
+
+The flag sets only test `LISTINGS_TEST_HYBRID_MODEL=1`; it is not an application
+mode. The existing fresh-cluster/migration/smoke/down/reapply and adapter suite
+runs plus hybrid math/snapshot/actual-model cases. Separate worker-model and
+calibration-model cases are deliberately unselected. Default native/Docker
+adapter runs include the two hybrid SQL cases and skip only the optional hybrid
+model case; neither installs model packages. Tools/targets remain fixed as in the
+prior native command: no existing/shared DB URL, global service or Docker install.
+
+Model bound: <=30windows/10min/one live helper/512MiB sampled test-host/helper,
+with owned-process reaping. Mathematical fixtures use <=150bounded publications
+per drain and65same-source coordinate clones solely for pagination; no model
+relevance is claimed from those. Test-only advisory-lock gate31 proves the real
+statement overlapped a committed edit. No such lock/flag enters production code.
+Only owned synthetic fixtures are retired and prior pipeline states restored in
+committed cases; math fixtures roll back. Owned cluster stops, logs/data retained;
+safe actual metrics go to `.tools/semantic/hybrid-read-probes/<UTC>/result.json`.
+Process/shared-memory access on this Mac requires sandbox escalation. A failed/
+skipped required check does not pass. [Contract/evidence](../architecture/hybrid-listing-read.md).
+
+## SE-01 private keyword relevance
+
+Portable construction/guard/regression checks:
+
+```bash
+uv run --locked python -m pytest apps/api/tests/domains/listings/test_keyword_relevance.py apps/api/tests/domains/listings/test_lexical_expansion.py -q -W error
+```
+
+Actual native ranking/filters/pages/model-state independence use the existing
+fresh private database runner, with no model/download/install:
+
+```bash
+LC_ALL=C bash database/tests/native-checks.sh "$PWD/.tools/native-db/pgsql" "$PWD/.tools/native-db/downloads/dbmate-macos-arm64" --listings-store
+```
+
+No new flag/target is introduced. The expanded browse native case includes
+keyword relevance and a nested rollback-only failed-pipeline/job fixture. All
+source/index/rank behavior executes on actual PostgreSQL; optional actual-model
+probes are deliberately unselected. Existing tool pins/private Unix sockets,
+owned cluster stop and evidence retention apply. Native process/shared-memory
+access on this Mac requires sandbox escalation. No existing/shared DB, production
+API/UI mode or model process is activated. [Policy/evidence](../architecture/keyword-listing-relevance.md).
+
+
+## SE-01 registered search mode/API checkpoint
+
+Use repository-local Python/Node and the existing generation/native commands.
+`PATH="$PWD/.tools/node/bin:$PATH" .venv/bin/python scripts/generate_contracts.py generate`
+regenerates registered artifacts from editable source; `check` verifies freshness.
+`.venv/bin/python -m pytest apps/api/tests/domains/listings/test_search_modes.py -q -W error`
+checks mode/text/sort validation/dispatch, safe transport errors, auth ordering and
+missing-capability behavior using explicit scripted dependencies; no model/DB is
+started. The existing `--listings-store` native runner additionally checks the
+public adapter over rollback-only native fixtures. No runner flag or install was
+added. Normal app construction has no helper: nonblank Hybrid is503 until a later
+verified lifecycle/configuration checkpoint. Existing web controls omit the new
+mode field and therefore select Keyword until their own checkpoint.
+
+
+## SE-01 frontend mode/relevance verification
+
+Existing `npm run check` now includes URL/mode/form, request cancellation/late
+completion/retry, static control rendering and generated-contract compatibility
+checks. No package or command is added. Existing loopback preview commands above
+remain unchanged. Refresh the page at `http://127.0.0.1:5173/`; `hybrid-down` with
+Hybrid scripts503, and explicit Use Keyword recovers; `slow` scripts delay and
+`retry` scripts one failure per fixture-app instance. All are transport fixtures,
+not real auth/SQL/semantic ranking. Human checks in
+[the evidence](../evaluation/domain/se-01/frontend-modes/result.json) remain pending.
+
+
+## SE-01 actual native HTTP/model preview
+
+Run from the repo root with existing tools/model; no install or Docker required.
+
+| Command | Effects, bounds and expected result |
+|---|---|
+| `CLIP_ENVIRONMENT=test CLIP_DEVELOPMENT_AUTH=true .venv/bin/python apps/api/tests/domains/search/native_preview.py --isolated-native-search --check-only` | New private0700 `/tmp/clip-listings-test-*` native PG18.6 cluster, no TCP database; fixed `clip_test_ci`/`clip_ci`,12migrations,3synthetic listings with image metadata, real worker/model/HTTP query checks; closes/reaps helper/pool and stops owned cluster; retains logs/data/result.json. Headless failures remain failures. Rejects missing explicit opt-in and ambient DB/AWS; accepts no existing target. |
+| Same command without `--check-only` | Same real bootstrap/checks; requires free loopback8000, then serves actual read-only browse/catalogue until Ctrl+C or30min. Existing Vite5173 proxies it; refresh UI and confirm Real search/local test data banner. One helper/100total windows, sampled512MiB API+helper watchdog; pool4autocommit connections, SQL5s/lock1s. PG shared_buffers16MiB/max_connections10; PG/Vite RSS not included in app/helper cap. Query budget exhaustion returns Hybrid503; Keyword independent. Stops owned processes, retains database; no resets/deletes/shared/cloud target. |
+| `.venv/bin/python -m pytest apps/api/tests/domains/search/test_native_preview.py -q -W error` | Target/transport/expiry/inference-reservation guards with explicit doubles; no inference or PostgreSQL. Actual-model evidence comes only from CLI runs above. |
+
+Use the existing development fixture-opt-in Vite command: the header gates both
+isolated backends; UI disclosure reads X-Clip-Preview, never assumes the flag means
+semantic integration. Native mode uses actual query inputs, so fixture words slow,
+retry and hybrid-down have no scripted behavior. Identity/images/data remain
+synthetic; production app, Linux/deployment/resources and real upstream readiness
+remain pending. The native harness is never imported by normal app startup.
+
+
+## SE-01 normal API read-helper lifecycle
+
+Normal API startup/stop spelling stays unchanged. CLIP_HYBRID_SEARCH_ENABLED is
+false by default. True requires the existing database secret setting plus explicit
+absolute CLIP_HYBRID_SEARCH_INTERPRETER and CLIP_HYBRID_SEARCH_MODEL_DIR. No .env
+loading, interpreter/model discovery/download, worker/backfill or serving switch.
+See [the configuration/lifecycle contract](../architecture/normal-api-search-runtime.md).
+Do not supply a shared target for an unapproved local test.
+
+| Exact command | Inputs/effects and expected result |
+|---|---|
+| `CLIP_ENVIRONMENT=test CLIP_DEVELOPMENT_AUTH=true .venv/bin/python apps/api/tests/domains/search/normal_runtime_probe.py --isolated-normal-search` | Requires existing repo-local native PG18.6/dbmate2.36/helper/model. Creates new private0700 Unix-socket DB only; no existing target argument or ambient DB/AWS. Explicit test bootstrap publishes3controlled sources, closes its helper, then actual app.main lifespan verifies disabled/ready/unavailable settings, real HTTP queries, separate transactional/autocommit pools, Keyword independence and cleanup. Synthetic identity is confined to this process. <=6min/40windows,1simultaneous helper, sampled512MiB API/helper; no listener, production activation or cloud. Stops owned cluster/helper/pools and retains normal-runtime-result.json/logs in printed /tmp directory. No OS memory reservation/deployment equivalence is claimed. |
+| `.venv/bin/python -m pytest apps/api/tests/domains/listings/test_search_runtime.py apps/api/tests/test_config.py -q -W error` | Settings and lifecycle/composition/cancellation/cleanup cases use explicit scripted resources; no model or DB starts. These prove lifecycle contracts, not actual model results; the native probe above proves the latter. |
+
+Enabled startup adds at most2read connections per API process to the existing
+max10command connections. Deployment process count/DB capacity, Linux packaging,
+serving pipeline/bootstrap and worker dispatch remain separately reviewed work.
+
+
+## SE-01 bounded existing-job dispatcher
+
+CLIP_HYBRID_WORKER_ENABLED defaults false and requires Hybrid enabled/configured.
+Normal start/stop commands are unchanged. It adds1max worker connection and no
+model process; max combined connections13/API process. Startup processes only
+existing due jobs, never registering/reconciling/backfilling/activating a pipeline.
+
+| Exact command | Effects/bounds/expected result |
+|---|---|
+| `CLIP_ENVIRONMENT=test CLIP_DEVELOPMENT_AUTH=true .venv/bin/python apps/api/tests/domains/search/worker_dispatch_probe.py --isolated-worker-dispatch` | Existing native PG18.6/dbmate2.36/model/helper only. Fresh private0700Unix-socket DB; no existing target/ambient DB/AWS. Actual app.main idle without registry, then explicit fixture bootstrap; edit invalidation, pending Hybrid503/Keyword200, due-worker current generation publication/Hybrid recovery, worker-pool-failure independence and full owned cleanup. <=6min/40windows,1simultaneous model child, sampled512MiB API/helper excluding native PG; no listener/cloud. Retains worker-dispatch-result.json/migration/stop logs at printed /tmp path. |
+| `.venv/bin/python -m pytest apps/api/tests/domains/listings/test_embedding_dispatch.py apps/api/tests/domains/listings/test_search_runtime.py apps/api/tests/test_config.py -q -W error` | Explicit scripted job/lifecycle/config guards; serial pacing, errors, cancellation and ownership. No actual SQL/model starts; use native probe for that evidence. |
+
+The probe's retry_after gate is controlled fixture setup, not a product retry
+policy. Worker scheduling leaves bootstrap/serving activation as a separate
+operator checkpoint. Failed jobs still require their existing explicit retry.
+See [dispatcher limits/remaining gates](../architecture/semantic-embedding-dispatcher.md).
+
+
+## SE-01 explicit pipeline status/bootstrap/activation
+
+The following operator forms require an approved CLIP_DATABASE_URL process secret
+and exact non-secret target/pipeline bindings. Do not put credentials in arguments,
+chat/logs or files. The --execute flag is not target/action approval. No shared
+or cloud target has been selected or mutated by this checkpoint.
+
+| Command/form | Effects and expected result |
+|---|---|
+| `.venv/bin/python scripts/search_pipeline.py status --expected-host <approved-host> --expected-port <port> --expected-database <database> --expected-role <login-role> --pipeline-id <pinned-hex>` | Template, not an executed shared command. Exact URL and actual server binding before read-only aggregate status; absent registry stays absent. No inference/model startup. |
+| Same bindings with `prepare --execute` | Explicit registration/planned->building, resumable without demotion/reset. Refuses retired/mismatch. No queue/inference/activation. |
+| Same bindings with `queue --execute --batch-size <1..1000>` | One bounded reconciliation batch, current jobs preserved including failed; emits queued count plus aggregate status. Zero queue is not proof of completeness. |
+| Same bindings with `activate --execute` | Separate full-current-coverage and conflict checks; initial transition or idempotent serving check, never replaces another space. Incomplete/failed/leased/current-edit gaps refused. Concurrent future writes still invalidate readiness; request guard remains. |
+| `CLIP_ENVIRONMENT=test CLIP_DEVELOPMENT_AUTH=true .venv/bin/python apps/api/tests/domains/search/bootstrap_probe.py --isolated-bootstrap` | Verified private reproduction only: new0700Unix-socket native PG18.6/dbmate2.36,3controlled sources including1unavailable, actual operator subprocesses, worker/model, concurrency/status/refusals/resume and Hybrid/Keyword checks. <=10min/40windows,1simultaneous helper, sampled512MiB API/helper (PG/operator child RSS excluded). Stops owned resources/retains bootstrap-result.json/migration/stop logs; no listener/existing target/ambient DB/AWS accepted. |
+| `.venv/bin/python -m pytest apps/api/tests/domains/listings/test_embedding_bootstrap.py tests/evaluation/test_search_pipeline_cli.py -q -W error` | Read-only/transition/refusal/binding/limits/error-redaction transport tests, no real DB/model. Real evidence is the guarded probe above. |
+
+Operator operation deadline10s, connect<=5s, SQL5s/lock1s. CLI requires explicit
+host/port/db/user in the URL; ambient PG/service/options/multitarget indirection
+is refused. It accepts only the current pinned pipeline. Read/worker settings do
+not invoke any of these operations. [Full scope/remaining gates](../architecture/semantic-pipeline-bootstrap.md).
+
+
+## SE-01 Step10 isolated k6 preparation
+
+All k6 binary/cache/config/raw output stays under ignored .tools/k6. No global
+installation, Docker, PATH change, remote metric output or usage reporting. The
+pinned installer targets this macOS ARM64 machine only; Linux remains unverified.
+
+| Exact command | Target/effects/expected result |
+|---|---|
+| `.venv/bin/python -m scripts.evaluation.k6.install` | Official k6v2.3.0ARM64 archive (~30MB) and checksum file; pinned SHA256/binary version/Mach-O minimum OS before execute. Installs .tools/k6/v2.3.0/k6, no global links; refuses incompatible/checksum/symlink/mismatched cache. Public download needs network approval. |
+| `PATH="$PWD/.tools/node/bin:$PATH" .tools/node/bin/node --test scripts/evaluation/k6/core.test.mjs` | Pure JS profile/response/generated-contract parity and pacing tests; no network/model. Also invoked by Python evaluation suite for existing CI coverage. |
+| `.venv/bin/python -m pytest tests/evaluation -q -W error` | Evaluator/calibration/CLI plus load accounting/caps/installer metadata and Node tests; native calibration check skips unless its guarded fixture target is present. |
+| `.venv/bin/python -m scripts.evaluation.k6.fault_probe` | Four short owned ephemeral loopback HTTP fixtures; wrong result/401/timeout/generator shortfall must stay invalid. <=2rps/2s,max2clients,timeout<=2s. Stops servers, retains raw/manifest/report under printed .tools/k6/fault-checks path. No DB/model/auth/provider. |
+| `.venv/bin/python -m scripts.evaluation.k6.runner --profile data/evaluation/workloads/local-search-pilot-v1.json --port 8000 --output .tools/k6/pilots/UNUSED_RUN_NAME --isolated-local-pilot` | Requires explicitly owned native API already running. Strict loopback only,2rps,5s warm-up+10s measured,max2HTTPconcurrency,3s timeout,30request cap, bounded nonoverlapping drains. New ignored output dir, frozen manifest, local raw metrics, report; exit2oninvalid/missing/dropped/wrong/unauthorized/timeout outcomes. Stops/reaps owned k6; caller separately stops owned native API. Never a cloud/full-rate/real-auth/NFR command. |
+
+Profiles under data/evaluation/workloads include draft browse20rps/search10rps,
+300s proposals with unresolved final oracles. Runner refuses nfr-draft profiles.
+Draft NFR01/02manifest templates keep actual target/auth/data/caps/repetition/
+telemetry approval values null. See [full measurement definitions/remaining gates](../../scripts/evaluation/k6/README.md).
+
+### SE-01 isolated semantic-helper typing correction
+
+From the repository root, use the existing root mypy executable with the helper's
+separate Python3.13 environment and fixed sibling-module search path:
+
+```sh
+MYPYPATH=apps/api/app/domains/listings .venv/bin/mypy --no-incremental --python-version 3.13 --python-executable .tools/semantic/venv/bin/python apps/api/app/domains/listings/embedding_helper.py
+```
+
+This command installs nothing and changes no global environment. It checks the
+helper against its actual NumPy/tokenizers packages; ONNX Runtime's untyped import
+has one explicit `import-untyped` exception because the pinned wheel supplies no
+`py.typed` marker. Tensor shape/finiteness remain runtime-validated. No blanket
+missing-import or untyped-function exceptions apply. Root application mypy with
+only API Python3.14 dependencies is not a substitute for this helper check.
+This supplementary check does not replace registered CI checks, real inference
+tests, or pending Linux compatibility acceptance.
+
+### SE-02 Step2 existing wanted/saved storage
+
+The existing native command (no new tools) now runs `search-storage-smoke.sql`
+as a fourth transactional smoke before and after migration rollback/reapply:
+
+```sh
+bash database/tests/native-checks.sh .tools/native-db/pgsql .tools/native-db/downloads/dbmate-macos-arm64 --listings-store
+```
+
+It creates and stops only its own new socket-only cluster and retains its logs.
+The Docker command `uv run --locked python scripts/check_database.py` registers
+the same fourth smoke but remains unverified here because Docker is absent.
+Native evidence supplements, rather than replaces, that required acceptance.
+No new schema migration is necessary for the existing wanted/saved fields,
+closure/pending state, reference uniqueness and FKs.
+
+The subsequent approved SE-02 category correction adds migration13/head
+`20261025012200` and a populated category rollback/reapply test to both wrappers'
+optional adapter suite. This supersedes the Step2 no-new-migration conclusion for
+the wanted category reference only. The existing native `--listings-store` command
+checks four smokes twice, all13downs/reapply, schema identity and the new fixture
+test; no existing target is accepted. Docker acceptance remains pending.
+
+### SE-02 Step3 wanted API checks
+
+```sh
+.venv/bin/pytest -q -W error apps/api/tests/domains/search/test_wanted.py
+.venv/bin/mypy --no-incremental apps/api/app/domains/search/wanted_models.py apps/api/app/domains/search/wanted_store.py apps/api/app/domains/search/wanted.py apps/api/app/domains/search/wanted_routes.py
+bash database/tests/native-checks.sh .tools/native-db/pgsql .tools/native-db/downloads/dbmate-macos-arm64 --listings-store
+```
+
+The existing native wrapper adds real wanted HTTP/concurrency/receipt checks,
+creates only its own socket-only cluster, applies14migrations to20261025013000,
+runs four smokes twice, all14downs/reapply/inventory, then stops its cluster.
+Synthetic origin references remain retained in that disposable database; fixture
+teardown never bypasses immutable-reference guards. Docker adapter registration
+includes the same test, but Docker execution remains unavailable here. These
+commands install nothing. No cleanup service, cloud/scheduler or real auth
+provider acceptance is implied.
+
+### SE-02 Step3 approved retirement checks
+
+```sh
+.venv/bin/pytest -q -W error apps/api/tests/domains/search/test_wanted_retirement.py
+bash database/tests/native-checks.sh .tools/native-db/pgsql .tools/native-db/downloads/dbmate-macos-arm64 --listings-store
+```
+
+The native adapter suite adds `test_wanted_retirement_postgres.py`; its private
+fixture-only SQL failure trigger is dropped after testing transaction rollback.
+All controlled origins remain in the stopped owned database. The coordinator
+processes one server-selected origin per explicit internal call and has no HTTP
+route/CLI job/scheduler/startup invocation. Test approval does not authorize
+cleanup against existing/shared/live data or deployment. No new migration or
+tool installation is needed. Real Conversations calls remain an integration gate.
+
+### SE-02 Step4 draft matching
+
+```sh
+.venv/bin/pytest -q -W error apps/api/tests/domains/search/test_draft_matches.py apps/api/tests/domains/search/test_wanted.py
+.venv/bin/mypy --no-incremental apps/api/app/domains/search/draft_matches.py apps/api/app/domains/search/wanted_models.py apps/api/app/domains/search/wanted_routes.py
+bash database/tests/native-checks.sh .tools/native-db/pgsql .tools/native-db/downloads/dbmate-macos-arm64 --listings-store
+```
+
+The native adapter suite adds the real-Listings draft-query HTTP check. It still
+creates and stops only its own new database cluster; no new tool or migration.
+Docker registration includes the same test, but Docker execution remains pending
+here. Draft matching has no storage/worker/history side effect or UI activation.
+
+### SE-02 Step5 saved-listing checks
+
+```sh
+PATH="$PWD/.tools/node/bin:$PATH" .venv/bin/pytest -q -W error apps/api/tests/domains/search/test_saved.py tests/contracts
+.venv/bin/mypy --no-incremental apps/api/app/domains/search/saved.py apps/api/app/domains/search/saved_store.py apps/api/app/domains/search/saved_routes.py
+bash database/tests/native-checks.sh .tools/native-db/pgsql .tools/native-db/downloads/dbmate-macos-arm64 --listings-store
+```
+
+Node is exposed only to that test process; nothing is installed or changed
+globally. The native/Docker adapter list runs `test_saved_postgres.py` last so its
+larger committed pagination fixture follows bounded math/bootstrap checks. It
+uses only the fresh owned database and stops the cluster. Public Listings saved
+providers are reviewed explicit scripts; actual provider integration remains
+pending. No new migration, pool, job or cloud resource is needed.
+
+### SE-02 Step6 coverage additions
+
+```sh
+PATH="$PWD/.tools/node/bin:$PATH" .venv/bin/pytest -q -W error apps/api/tests/domains/search/test_wanted.py apps/api/tests/domains/search/test_saved.py
+bash database/tests/native-checks.sh .tools/native-db/pgsql .tools/native-db/downloads/dbmate-macos-arm64 --listings-store
+```
+
+The native adapter list adds `test_step6_postgres.py` for regular/temporary own
+management, budget creation variants, context expiry across wanted operations,
+and tied pagination with unavailable exclusion before slicing. It closes only
+its own synthetic public requests after checking them. The coverage inventory
+in `apps/api/tests/domains/search/README.md` explicitly leaves response initiation
+and its races pending because that declared local handler is not implemented.
+No skipped/missing response path is represented as a functional pass.
+
+### SE-02 Step6 response correction verification
+
+```sh
+PATH="$PWD/.tools/node/bin:$PATH" .venv/bin/python scripts/generate_contracts.py check
+PATH="$PWD/.tools/node/bin:$PATH" .venv/bin/pytest -q -W error apps/api/tests/domains/search/test_wanted_response.py tests/contracts
+bash database/tests/native-checks.sh .tools/native-db/pgsql .tools/native-db/downloads/dbmate-macos-arm64 --listings-store
+PATH="$PWD/.tools/node/bin:$PATH" npm run check
+```
+
+The root package owns web scripts (there is no apps/web npm workspace). Contract
+tests compile the created/repeated TypeScript response consumer, and native tests
+add real Search close/response locking plus a schema-only separate C FK fixture.
+The response capability/thread provider remains an explicit C contract double.
+No new installation/migration/pool or real provider acceptance is implied.
+
+## SE-02 Step7 disposable wanted/saved UI preview
+
+Mohit's existing repository-local Python/native PostgreSQL/Node tools only. No
+installation, Docker, cloud, existing database target, scheduler or real account.
+From repository root, with no database/AWS environment variables:
+
+```sh
+CLIP_ENVIRONMENT=test CLIP_DEVELOPMENT_AUTH=true .venv/bin/python apps/api/tests/domains/search/wanted_ui_preview.py --isolated-wanted-ui
+```
+
+This test-only CLI refuses missing opt-in/test settings and ambient database/AWS
+configuration. It creates a fresh0700 cluster through the existing guarded native
+runner, migrates it and serves only127.0.0.1:8000 with host/origin checks. Search
+wanted/saved writes and Listings draft queries are real; Identity and saved-state
+providers are explicit synthetic fixtures. Conversations/image delivery remain
+unavailable. No successful conversation is simulated. Session/API runtime is capped
+at30minutes; Ctrl+C also closes the pool and stops only its own cluster, retaining
+its `/tmp/clip-listings-test-*` directory. Restart creates a new synthetic dataset.
+
+Use the existing root `npm run dev` frontend on127.0.0.1:5173 (reuse a running
+instance; strictPort refuses collisions). Open `http://127.0.0.1:5173`; the Search
+views disclose their isolated backend after its first response. The localhost
+address is a desktop-only target, not a phone URL. No bind/exposure change is
+included. The built production app does not enable this test harness.
+
+```sh
+PATH="$PWD/.tools/node/bin:$PATH" npm run check
+PATH="$PWD/.tools/node/bin:$PATH" CLIP_WANTED_UI_HTTP=true npm test -- wanted-native-http.test.ts
+.venv/bin/pytest -q -W error apps/api/tests/domains/search/test_wanted_ui_preview.py apps/api/tests/domains/search/test_native_preview.py apps/api/tests/domains/search/test_browser_preview.py
+```
+
+The second command opts into two fixed-loopback TS-client/real-Search HTTP tests;
+without its flag they are skipped. It creates/closes a synthetic wanted request
+and unsaves/resaves one fixture pair, leaving the preview usable. It accepts no
+arbitrary target URL. It verifies API wiring, not actual Identity/Conversations,
+React interaction, Safari/device behavior or final SE-02 acceptance.

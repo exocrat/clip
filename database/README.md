@@ -448,9 +448,9 @@ was corrected and final state/aborted-sequence rollback checked on the rerun.
 `uv run --locked python scripts/check_database.py` uses the same PostgreSQL
 18.6 image and dbmate 2.36.0 as local development, with a new `clip_test_ci`
 database, no published port and temporary memory-backed storage. The current
-checker requires clean apply/exact branch head (`20261022062357`), repeated
-application, both SQL smoke suites, the 26-table inventory, rollback of all
-nine migrations and a clean reapply, then removes only its own container. The
+checker now expects clean apply/exact branch head (`20261024153316`), repeated
+application, three SQL smoke suites, the 29-table inventory, rollback of all
+twelve migrations and a clean reapply, then removes only its own container. The
 `--listings-store` option additionally mounts one private temporary Unix-socket
 directory and runs the focused Listings adapter workflow against that same
 disposable database. It uses synthetic test rows and Identity/Conversations test
@@ -459,10 +459,170 @@ The checker prints a compact SQL-selected sample listing row before removing
 the disposable container.
 earlier head `20261020111741` passed locally at
 2026-10-20 11:22:17 UTC. Head `20261020113531` passed the disposable check,
-including seven rollbacks and clean reapply. The API-owned retirement migration
-is now the expected head. Its disposable check passed clean apply, exact head,
+including seven rollbacks and clean reapply. At that historical checkpoint, the API-owned retirement migration
+was the expected head. Its disposable check passed clean apply, exact head,
 repeat apply, both smoke suites, refusal to roll back while a synthetic
 retirement result exists, full empty-state rollback, and clean reapply. The
 shared Compose database remains untouched. This is local evidence, not hosted
 CI. The macOS native schema-inventory run, other platform rows and affected-owner
 acceptance remain pending. See the [command registry](../docs/environment/commands.md).
+
+## SE-01 semantic storage migration — prepared, unapplied
+
+[Migration 20261024153316](migrations/20261024153316_listing_embedding_generations.sql)
+implements the [reviewed storage plan](../docs/architecture/semantic-listing-storage.md):
+three private Listings-owned tables, source hashing, vector validation/exact cosine,
+registry limits, atomic source/retirement invalidation and deferred complete-vector
+publication guards. Registry starts empty; no automatic backfill or worker.
+Existing migrations/base tables/GIN are preserved. Down refuses populated derived
+storage and removes only new empty objects under locks. Mohit approved preparing
+the exact derived-content deletion mechanism; no database apply/cleanup run occurred.
+
+Expected source inventory: 12 migrations, 29 domain tables, 30 functions and 40
+triggers. Native wrapper counts/rollback loop were updated from stale values;
+these are expected values, not a native-run result. The registered container
+checker includes `embedding-smoke.sql` in both clean cycles and
+`test_embedding_postgres.py` with `--listings-store`. The test file has real
+integrity/rollback/race assertions and portable pre-connect refusals; native tests
+skip when the disposable runner URL is absent. No alternate external DB target or
+ambient PG settings are accepted. PostgreSQL/Docker remains absent here, so this
+migration's broader production checks remain pending. The subsequent native
+checkpoint below provides scoped disposable SQL evidence.
+
+## SE-01 native macOS checkpoint C — passed, isolated scope
+
+`tests/native-checks.sh` now supports `--listings-store`. It first runs the existing
+fresh `clip_test_native` schema round trip, then creates a second new `clip_test_ci`
+database/clip_ci role inside the same owned cluster and runs the actual Listings,
+browse/vocabulary and embedding adapter files through another private Unix socket.
+The embedding test target gate permits the fixed native port 55438 as well as
+the disposable container's 5432; it still refuses other names/paths/ambient PG
+settings before connecting. No existing data directory/DB URL is accepted.
+
+Tools are under `.tools/native-db/` (about 300 MiB), rebuilt from checksum-verified
+PostgreSQL 18.6 source with the historical no-ICU/readline/zlib flags and the
+checksum-verified dbmate 2.36.0 ARM64 release binary. No global/Homebrew service,
+Docker installation, system/Python edit or cloud access.
+
+Final run `/tmp/clip-pd08-native-check.oLISmK` passed: 12 migrations to
+`20261024153316`, repeated apply, three smokes twice, all 12 downs and reapply;
+29 tables/30 functions/40 triggers; identical inventories; seven adapter checks (four native database cases and three pre-connect
+guards). The cluster stopped successfully and logs/data remain.
+[Retained result](../docs/evaluation/domain/se-01/native-postgres/result.json)
+and raw migration/adapter/stop logs identify the exact uncommitted source.
+Failed runs `Wqe42G` and `6HqtAw` are retained for fixture/diagnostic corrections.
+No production schema, Identity/Conversations integration, full data/image check,
+Linux/TLS/locale equivalence, model fusion or FR/NFR/readiness acceptance follows.
+
+## SE-02 Step2 wanted/saved storage verification
+
+The existing MVP migration already supplies `search.wanted_requests` and
+`search.saved_listings`, their content/budget/state constraints, restrictive
+foreign keys and access indexes. The API-owned retirement migration supplies
+paired pending fields; `closed_at` is the request's continuous-unavailability
+anchor. Step2 reuses these migrations without another schema version.
+
+`tests/search-storage-smoke.sql` tests null/zero budget, field/FK rejection,
+closure preservation and reset, immutable authors, paired pending state, duplicate
+save timestamps, reference survival after unavailability, restrictive save FKs
+and indexes. Every fixture rolls back; the target must be named `clip_test_*`.
+Both native and Docker runners invoke this fourth smoke before and after their
+full migration down/reapply. Existing retirement smoke covers retired-content
+constraints. This proves storage only, not API privacy/auth or real providers.
+
+Native Step2 checks passed at `/tmp/clip-pd08-native-check.UQB7Op`, with all12
+migrations, four smokes twice, identical schema inventory and successful stop;
+optional adapter suite11passed/3skipped. [Evidence](../docs/evaluation/domain/se-02/storage/result.json).
+Docker/hosted acceptance remains pending. Request command/idempotency persistence
+is developed with Step3; no command, cleanup or UI behavior is activated here.
+
+## SE-02 category-reference correction
+
+Migration13, `20261025012200_wanted_category_code_reference.sql`, corrects the
+previous storage-only audit: wanted categories now reference Listings' unique
+immutable code, matching the reviewed public catalogue interface. The migration
+converts existing assignments without firing request-update triggers, preserves
+NULL retired references, FK protection, the live/retired check and category index,
+and reverses populated data back to UUIDs on rollback. Sale categories are unchanged.
+
+The native runner now rolls back all13 revisions. The optional adapter check
+includes `test_category_migration_postgres.py`, whose rollback-only fixtures prove
+open/unavailable/pending/retired data, revisions, timestamps and inactive category
+assignments survive down/up. Conversion functions leave no runtime objects.
+[Decision](../docs/decisions/wanted-category-code-reference.md);
+[evidence](../docs/evaluation/domain/se-02/category-reference/result.json).
+No existing/shared database or deployment was migrated.
+
+## SE-02 Step3 wanted command retry storage
+
+Head `20261025013000` adds private wanted-command receipts (14migrations,
+30tables/32functions/42triggers). Author/request-scoped keys and normalized intent
+protect retries; immutable original responses are committed with request writes.
+Local triggers prevent other-author receipts, rewritten key/outcome data, retired
+receipt content and origin retirement with remaining payloads. They delete nothing.
+Rollback refuses populated receipt storage rather than discarding retry identity.
+Concrete request cleanup is [approved separately](../docs/architecture/wanted-request-retirement.md)
+and now implemented as explicit internal transactions; it is not scheduled.
+
+`test_wanted_postgres.py` uses real HTTP/service/SQL/locking in the owned native
+database, with explicit upstream eligibility/catalogue doubles. Committed synthetic
+origins remain in the stopped disposable database because immutable reference
+guards correctly prohibit physical deletion. Do not disable guards for teardown.
+[Evidence](../docs/evaluation/domain/se-02/wanted-api/result.json). Docker and real
+upstream/retirement integration remain pending. No shared/live migration was run.
+
+### SE-02 Step3 approved local retirement checks
+
+No new migration is needed. The native/Docker optional adapter suite now includes
+`test_wanted_retirement_postgres.py`: exact180day eligibility/reset/pair fences,
+unknown marker replay, recent-activity preservation, content-free retained keys,
+retired visibility, forced SQL failure after receipt clearing (full rollback)
+and competing attempts with blocked owner edits. Conversations is a reviewed
+explicit test double. One server-selected origin is processed per internal call;
+there is no external target selector, cleanup HTTP route or automatic job.
+[Retained evidence](../docs/evaluation/domain/se-02/wanted-retirement/result.json).
+
+### SE-02 Step4 real draft-query verification
+
+The optional adapter suite includes `test_draft_matches_postgres.py`. It runs real
+Listings availability/native query/order/pagination behind the public signature,
+checks Search table counts before/after draft matching and outages, then verifies
+wanted submission remains independent. Fixtures include21 tied-time available
+items plus unavailable/future/ended/pending/retired cases. Only this fixture's
+retired test image/upload metadata is removed after the check (no storage object
+was created); immutable parent/user references stay in the owned disposable DB.
+This avoids contaminating unrelated cleanup tests without weakening their checks.
+No migration, new database resource or private-table read in Search application
+code is added. [Evidence](../docs/evaluation/domain/se-02/draft-matches/result.json).
+
+### SE-02 Step5 saved pair persistence
+
+No migration is required: `search.saved_listings` already has the unique pair,
+restrictive foreign keys and own-list recency index. Search's new saved store
+uses only that table, with actor scope and pair advisory-lock serialization for
+save/unsave. It stores no listing title/description/image state.
+
+`test_saved_postgres.py` runs real Search SQL/HTTP with explicit public Listings
+fixture scripts. Controlled source changes and real parent retirement validate
+reference retention; returned summary states are scripts, not an implemented
+upstream resolver. Native tests prove duplicate timestamps, private multi-user
+rows, tied pagination/own-page-only batch IDs, unavailable/retired views, outage
+behavior and the allowed change-after-target-check race. Only its retired fixture
+image/upload metadata is removed; no real object existed and parent refs remain.
+
+Both wrappers run the large committed saved-pagination fixture **last**, after the
+earlier mathematical bootstrap test's intentionally small corpus/batch budget.
+Keep that guard and bound intact. [Evidence](../docs/evaluation/domain/se-02/saved-listings/result.json).
+Real providers, Docker/hosted and final acceptance remain pending.
+
+### SE-02 Step6 response origin lock
+
+No migration is required. `test_wanted_response_postgres.py` verifies response
+capability/privacy and exact pair retry through real Search HTTP/SQL. Its real
+row-lock race observes owner closure waiting and then completing after response;
+closure-first can only look up existing state. The observer refreshes activity
+snapshots before each poll. An independent schema-only C thread/member fixture
+commits under the origin guard, proving FOR NO KEY UPDATE allows its parent FK
+check. C public-service behavior still uses a reviewed explicit double. Retain
+immutable metadata and close only owned public wanted fixtures after testing.
+[Evidence](../docs/evaluation/domain/se-02/wanted-response/result.json).

@@ -50,8 +50,9 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | ID-01 | A | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | ID-READY, LI-01, LI-02, SE-CORE, SE-02, CN-CORE, CN-02 | — |
 | LI-01 | B | in progress | Finish the remaining Step 7 browser states and current-head Step 11 checks/reviews; prepare a progress PR without claiming LI-CORE. Steps 12–13 remain integration-gated. | Steps 1–6 and 8–10 implemented and locally checked; Step 7 partial (create/detail/edit/My Listings/gallery). | Suraj verified the multi-image edit/gallery checkpoint, seller-only selected-buyer visibility, and Step 10. No LI-01 phone-device result is claimed. | domain/listings at 6ffbe0b; focused Listings suite: 61 passed, one database-only test skipped outside the wrapper; disposable PostgreSQL workflow passed; current worktree `make check` passed 2026-10-23 (573 Python, 63 data, 42 web tests; remaining contract, type, boundary, database, safety, formatting, lint, and build checks passed). | LI-CORE not accepted. Remaining Step 7 states; Step 11 query-plan, current aggregate, and affected-owner review; native schema check; five pre-existing backend boundary findings; real Identity, Conversations, storage, and Search integration; Steps 12–13. | 2026-10-23 10:38:31 UTC |
 | LI-02 | B | in progress | Step 12 demo is tested and stopped; record final evidence, then begin intake of the Search owner's PR under the review workflow. | Steps 1–11 and 1.5 verified; Step 12 ran on ECS and was tested on desktop/mobile. Read-only app checks found the synthetic listing and its S3 image; teardown is complete. | User approved and applied teardown plan `3703bb7b23405a5a23a1ac6c39fa8870e682dddf3a1a8272183f4642f8f0db81` (0 add, 1 change to LI-02 bucket CORS, 20 LI-02 deletes). Post-stop inventory confirms disposable RDS/ALB/service/host/root volume/run S3 objects/URL parameter/log streams absent; shared RDS is stopped, shared ECS cluster remains, LI-02 ASG desired 0/no instances. Two run ECR images are retained (105,624,604 bytes total) per user direction. | `task/li-02-isolated-runtime` at `f0bf6c6`; earlier 11 focused tests, Black, Python compilation, Terraform fmt/validate, CLI help and diff checks. Start plans: infrastructure `a2b8cbeaa6cc4fc2d13ff8c8696cfa133d8134280de89f719e0d6f2b91668f55`; app start `b6a3fbd4812c965a5830780f337997d13b4b362c7eb1a73f2b3e70f5946b5bd4`. Stop-path corrections are currently uncommitted in `scripts/li02-demo`, `infra/terraform/domains/listings/test/database_tasks.tf`, both LI-02 operator guides, and this work log. `git diff --check` passed; no tests rerun. Existing untracked `data/runs/` and `database/migrations.zip` remain untouched. | Compute/ingress/disposable-database charges from the demo have ended. Retained run images add about 101 MiB of ECR storage; Step 4 bucket/IAM/log group and shared VPC/NAT/ECS/RDS remain. No manual RDS snapshot remains. | 2026-10-25 09:29:55 UTC |
-| SE-01 | C | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | SE-CORE, LI-01, LI-02, DATA-READY | — |
-| SE-02 | C | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | SE-CORE, ID-READY, LI-CORE | — |
+| SE-01 | Mohit (C); peer Suraj (B), Identity review | in progress | Local create-to-Keyword-and-Hybrid flow and browser walkthrough verified; formal acceptance remains pending | Test-only browser demo binds the same fixed synthetic Identity for writes/browse and can opt into the real helper, worker, pipeline bootstrap and Hybrid reader; automatic new-listing vector generation was observed | Suraj verified the local command/API/proxy flow and subsequent browser walkthrough | Search PR #11 worktree `task/search-evidence-reduction` at `864e53b`; new listing `194a32d4-64bb-491b-b4ec-68403e26f7f3` produced one title and one description vector (384 dimensions each), then matched in both modes through API and Vite proxy; session `/tmp/clip-listings-browser-v6e1f01t`; UI `http://127.0.0.1:5173/` | Formal SE-CORE/DATA-READY and final NFR/hosted-CI acceptance remain outside this merge step | 2026-10-25 14:38:24 UTC |
+| SE-02 | Mohit (C); peer Suraj (B), Identity/Conversations review | in progress | Step8 real integration gated; local handoff human-verified | Steps1–7 isolated result verified; Step8 audit performed | Mohit verified isolated UI and combined local handoff | [Search handoff](../evaluation/domain/search-handoff/result.json): Python1270/data94/web144,Black183,native20/3skip,wrapper35/contracts8/boundaries/parity/type/build pass | Await actual ID-READY/LI-CORE/SE-CORE/C adapters; Step9 final acceptance, pinned secrets/hosted CI and independent review pending | 2026-10-25 08:50:43 UTC |
+| MERGE-LI-SE | Suraj (integration); Listings/Search affected owners | in progress | Step 9: ask the user to approve the exact current PR revision after confirming its GitHub checks are green | Steps 1–9 published; real Listings integration and handoff are in PR #11; hosted CI run `40204284165` passed on code/handoff revision `9096df3`; the current log records the exact-revision approval gate | Steps 3–8 verified by Suraj; final PR revision awaits user's explicit approval | PR #11 `https://github.com/exocrat/clip/pull/11`; code/handoff revision `9096df3` passed exact-head CI run `40204284165`; implementation commit `5ada5e5`; local merge commit `29eb6fb`; fallback branch `safety/search-pr11-pre-main-reconciliation-20261025`; stash `af9d7f5`; local checks recorded below | Do not merge until the user approves the exact final head. Cloud, formal NFR, final dataset, and real Identity/Conversations claims remain outside this merge step. | 2026-10-25 14:56:33 UTC |
 | CN-01 | D | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | Isolated development: PRE-00, then DL-00 and a reviewed contract/stub. Later real gates: CN-CORE; SE-02's real request interfaces for request-response integration; CN-03's producer path for final NFR-05 acceptance. | — |
 | CN-02 | D; A/B interface review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | Isolated development: PRE-00, then DL-00 and a reviewed contract/stub. Later real gates: CN-CORE, ID-READY, and LI-CORE for listing-origin behavior; SE-02 plus CN-01's real request path for request-response inbox integration. | — |
 | CN-03 | A; D producer review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | CN-CORE, ID-READY | — |
@@ -80,6 +81,412 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | CN-CORE | not accepted | CN-01 step 10 | — | pending |
 | OPTIONAL-OK | not approved | Each optional task's selection/priority plan | — | pending |
 
+## SE-02 Step6 response correction reservation (released after checks)
+
+Writer: Mohit (C), `search-domain`. Human verified Step6 findings and exact
+`docs/architecture/wanted-response-integration.md` correction plan. Owned: response
+service/route/store guard, contract fixtures and native/unit tests. Shared: Search
+contract source and regenerated artifacts, installed-schema and TS consumer tests,
+native/Docker registrations, docs/log. Keep current contract version for correction
+of documented pre-implementation200body. No other-domain contract, migration/UI,
+real C implementation, deployment/publication or cloud action in scope.
+Released 2026-10-25 08:06:29 UTC.
+Started 2026-10-25 06:46:34 UTC.
+
+## SE-02 Step6 coverage reservation (released after tests/audit)
+
+Writer: Mohit (C), `search-domain`. Step5 result and Step6 coverage audit/fill scope
+verified. Owned: test additions, coverage inventory and docs. Shared: existing
+native/Docker test registration/log. No feature implementation in this checkpoint.
+Audit found declared request-response API absent; response capability/race cases
+remain pending a separately verified backend correction. Real provider gates stay.
+Released 2026-10-25 06:42:07 UTC.
+Started 2026-10-25 06:30:35 UTC.
+
+## SE-02 Step5 saved-listings reservation (released after checks)
+
+Writer: Mohit (C), `search-domain`. Human verified Step4 and Step5 private saved
+scope. Owned: saved store/service/routes and isolated contract/native tests.
+Shared: main composition/exact boundary allowlist, two installed-schema assertions,
+native/Docker adapter registrations and docs/log. Existing saved pair schema;
+reviewed public Listings target/current-summary fixtures where providers are
+missing. No private upstream application SQL, UI, migration or deployment.
+Released 2026-10-25 06:18:42 UTC.
+Started 2026-10-25 05:42:21 UTC.
+
+## SE-02 Step4 draft-matching reservation (released after checks)
+
+Writer: Mohit (C), `search-domain`. Human verified isolated Step3 and Step4 title-
+only matching scope. Owned: Search match validation/service/route and tests.
+Shared: two exact installed-contract assertions and native/Docker adapter test
+registrations, docs/log. Released 2026-10-25 05:22:55 UTC.
+Public Listings query contract only; no application
+private-table access or draft/search persistence. No frontend or migration work.
+Started 2026-10-25 05:12:35 UTC.
+
+## SE-02 Step3 approved retirement reservation (released after checks)
+
+Writer: Mohit (C), `search-domain`. Human verified wanted API result and approved
+`docs/architecture/wanted-request-retirement.md` exact local cleanup order.
+Owned scope: internal coordinator/store retirement methods and isolated unit/native
+checks. Shared: existing native/Docker adapter registrations, canonical retirement
+approval/documentation/evidence/log. No new migration, route, worker/scheduler,
+existing/shared-data cleanup, deployment or external action. Real Conversations
+activity/marker integration remains pending under the reviewed public interface.
+Released 2026-10-25 05:08:48 UTC.
+Started 2026-10-25 04:59:29 UTC.
+
+## SE-02 Step3 wanted API reservation (released after checks)
+
+Writer: Mohit (C), `search-domain`; correction result and Step3 actions verified.
+Owned: Search wanted validation/service/store/routes and isolated tests. Shared:
+one retry-storage migration, main composition, exact boundary allowlist, database
+wrapper head/count/adapter registrations, the two shared contract route/schema
+assertion files, docs/log. Reviewers: Listings/Identity,
+database maintainer and independent peer under normal PR workflow. No frontend
+or destructive cleanup implementation. Retirement must refuse retained receipt
+content; actual cleanup approval and real provider integration stay pending.
+Released 2026-10-25 04:55:37 UTC.
+Started 2026-10-25 01:29:15 UTC.
+
+## SE-02 category-reference correction reservation (released after checks)
+
+Writer: Mohit (C), `search-domain`; human approved category-code FK correction.
+Shared scope: one additive reversible migration, its affected smoke fixtures,
+`database/tests/native-checks.sh`, `scripts/check_database.py`, schema/contract
+storage notes and this log; Search native migration test. No application private
+Listings reads, public wire changes, request actions or cleanup implementation.
+Preserve current records and metadata; verify populated down/up and full roundtrip.
+Released 2026-10-25 01:25:45 UTC.
+Started 2026-10-25 01:22:35 UTC.
+
+## SE-02 Step2 storage verification reservation (released after checks)
+
+Writer: Mohit (C), `search-domain`; reviewers: database maintainer and affected
+Listings/Identity owners in normal PR review. Human verified Step1 and Step2.
+Bounded shared paths: `database/tests/search-storage-smoke.sql`,
+`database/tests/native-checks.sh`, `scripts/check_database.py`, database/command
+documentation and this log. Reuse existing schema; no migrations or application
+behavior unless a real missing invariant is found and reported. Step3 request
+commands/retry storage, cleanup approval and final integrations remain separate.
+Released 2026-10-25 01:18:58 UTC.
+Started 2026-10-25 01:16:42 UTC.
+
+## SE-01 Step10 Search corrections reservation (released after checks)
+
+Writer: Mohit (C), `task/se-01-search`. Human verified audit result and scoped
+Search corrections: thresholds, evaluator trim, helper typing, stale comments,
+focused checks/evidence. Infrastructure/shared-core failures remain separate.
+Released 2026-10-25 01:02:43 UTC.
+Started 2026-10-25 00:59:26 UTC. No commit/push/merge/cloud actions.
+
+## SE-01 Step10 local quality audit reservation (released after review)
+
+Writer: Mohit (C), `task/se-01-search`. Load preparation verified; local audit/
+check/review-package plan verified. Review only; no code changes/fixes, commits,
+push/merge/cloud/install. Preserve findings and unavailable gates.
+Started 2026-10-25 00:44:53 UTC. Released 2026-10-25 00:56:55 UTC.
+
+## SE-01 Step10 load-runner reservation (released after checks)
+
+Writer: Mohit (C), `task/se-01-search`. Bootstrap result and isolated k6 runner/
+profiles/failure checks/local pilot plan verified. Pin/check repo-local k6 only;
+no Docker/global install/cloud/real NFR acceptance. Pilot2rps,5s warm-up+10s
+measured,max2concurrency,3s timeout. No final labels/real auth invented.
+Started 2026-10-25 00:19:18 UTC.
+
+Scoped preparation/pilot checks complete; writer reservation released. Result
+awaits Mohit verification; real Step10/SE-CORE/NFR/target approval still pending.
+
+## SE-01 controlled bootstrap reservation (released after checks)
+
+Writer: Mohit (C), `task/se-01-search`. Dispatcher result and explicit status/
+prepare/bounded queue/guarded activation plan verified. Scope: Listings operator
+bootstrap/CLI, owned tests/probe and docs/evidence. No automatic startup changes,
+existing/shared target, downloads/cloud/Git publication. Fresh private native
+SQL/model checks only; actual target use retains separate approval.
+Started 2026-10-25 00:03:56 UTC.
+
+Scoped operator/coverage/CLI/native checks complete; writer reservation released.
+Result awaits Mohit verification; no existing/shared target approval inferred.
+
+## SE-01 embedding dispatcher reservation (released after checks)
+
+Writer: Mohit (C), `task/se-01-search`. Lifecycle result and default-off bounded
+worker plan verified. Scope: Listings dispatcher/runtime, core setting/example,
+owned tests/probe and docs/evidence. One dedicated autocommit connection, shared
+helper, serial existing jobs, no registration/backfill/serving transition. Fresh
+private native tests only; no packages/cloud/shared DB/Git publication.
+Started 2026-10-24 23:51:31 UTC.
+
+Scoped implementation/checks complete; writer reservation released. Result awaits
+Mohit verification; controlled bootstrap and shared activation remain separate.
+
+## SE-01 normal API lifecycle reservation (released after checks)
+
+Writer: Mohit (C), `task/se-01-search`. Verified explicit/default-off settings,
+normal API-owned real helper/autocommit resources, safe startup degradation,
+cleanup/cancellation/Keyword independence tests/docs. Shared main.py, core/config.py
+and exact boundary allowlist reserved with Listings runtime/store/tests. No
+backfill/serving activation, worker dispatch, packages/cloud/Git publication.
+Started 2026-10-24 21:42:54 UTC.
+
+Scoped lifecycle/configuration/composition checks complete; writer reservation
+released. Result awaits Mohit verification; activation remains separate.
+
+## SE-01 native HTTP/model integration reservation (released after checks)
+
+Writer: Mohit (C), `task/se-01-search`. Frontend verified as UI-only; native
+HTTP/model lifecycle checkpoint verified. Scope: test-only native harness, tests,
+Search preview disclosure, evidence/commands/status. Fresh private cluster only;
+one offline helper,512MiB API/helper sampled ceiling,100windows,30minutes; owned
+shutdown/retention. No packages/global settings/cloud/production activation/Git
+publication. Started 2026-10-24 21:23:37 UTC.
+
+Scoped implementation/checks complete; writer reservation released.
+Human real-backend browser check and live-session shutdown evidence remain pending.
+
+## SE-01 frontend mode/relevance reservation (released after automated checks)
+
+Writer: Mohit (C), `task/se-01-search`. API result and frontend plan verified.
+Scope: Search feature/query/request/CSS, owned tests and explicit UI fixture harness,
+plus task docs/status. No shared page/composition edit, new package, real helper
+lifecycle, model, cloud or Git publication. Started 2026-10-24 21:12:09 UTC.
+
+Scoped UI implementation/automated checks complete; writer reservation released.
+Human browser verification remains pending.
+
+## SE-01 public API checkpoint reservation (released after checks)
+
+Writer: Mohit (C), `task/se-01-search`. Verified source/generation, browse validation,
+owned store dispatch and transport/consumer tests. Shared source/generated artifacts
+and Listings browse adapter reserved for this checkpoint. No app lifecycle, worker,
+model startup, frontend, cloud or Git publication changes. Keyword result and this
+plan verified by Mohit; implementation begins 2026-10-24 20:54:15 UTC.
+
+Scoped API implementation/checks complete; writer reservation released.
+
+## SE-01 private keyword-relevance reservation (released after checks)
+
+Writer: Mohit (C), `task/se-01-search`. Verified private browse relevance option,
+original-before-expanded native text rank/UUID ties, existing filters/window,
+unit/native/independence evidence and protocol/docs/status corrections. No model
+calls/new packages/migration, public query/type/frontend/startup activation,
+existing/shared DB, hosting/cloud/Git mutation. Fresh private native PostgreSQL
+only. Search ownership stays Mohit's; shared compatibility and independent peer
+review follow the normal PR process rather than a separate implementation gate.
+Scoped implementation/native checks complete; writer reservation released.
+
+## SE-01 public contract-proposal reservation (released after documentation checks)
+
+Writer: Mohit (C), `task/se-01-search`. Verified documentation-only proposal:
+Keyword default, selectable Hybrid/Keyword with short help, relevance in both
+modes, exact keyword-rank/blank/error/switch rules and review/registration plan.
+No editable contract Python, generated artifacts, API dispatch, frontend source,
+worker/model/schema/dependency/DB/cloud/hosting/Git mutation in this checkpoint.
+Shared public signatures still require affected-owner review before registration.
+Proposal prepared and checked; documentation writer reservation released.
+
+## SE-01 private hybrid-reader reservation (released after checks)
+
+Writer: Mohit (C), `task/se-01-search`. Verified private reader contract, selected
+v1 scoring/threshold/tiers/no semantic cap, one-statement eligible coverage/
+matching/order/page SQL, unit/native/math/snapshot and bounded real-model checks,
+runner registration and documentation/evidence/status. Reuse existing local
+PostgreSQL/model only; new private disposable DBs, <=30 real model windows/10min/
+512MiB sampled host/helper. No public fields/routes/UI/app startup/dispatch or
+existing/shared DB/model/schema/dependency/cloud/hosting/Git mutation. Caller
+eligibility remains a required upstream precondition, not accepted by fixtures.
+Scoped reader/contract/native/model checks complete; writer reservation released.
+
+## SE-01 known-vocabulary typo reservation (released after checks)
+
+Writer: Mohit (C), `task/se-01-search`. Verified vocabulary-only typo scope:
+bounded owned spelling helper, existing private expansion compiler, unit/native
+checks and protocol/decision/commands/evidence/status docs. Existing local tools,
+new private disposable PostgreSQL only; no new dependencies/extensions, model
+calls/config changes, public mode/UI/startup activation, final labels, existing/
+shared DB, hosting/cloud, commit/push/merge. Mohit accepts the telescope semantic
+miss as a limitation; no extra long-description work is assumed required now.
+Scoped implementation/native evidence complete; writer reservation released.
+
+## SE-01 development-calibration reservation (released after checks)
+
+Writer: Mohit (C), `task/se-01-search`. Verified scope: separate synthetic
+8-listing/11-query development fixtures, reproducible score-comparison tool,
+owned tests, optional native runner mode and evidence/commands/policy proposal.
+Reuse existing local model/helper/PostgreSQL; <=30 model windows,10min,512MiB
+sampled host/helper, one live helper. Only new private disposable runner DBs and
+owned temporary calibration tables. No final labels, production ranking/public
+wire/UI/startup/backfill, existing/shared DB, install/cloud/hosting/Git mutation.
+Scoped fixture/tool/native evidence complete; policy remains unfrozen, writer released.
+
+## SE-01 DB/helper bridge reservation (released after scoped checks)
+
+Writer: Mohit (C), `task/se-01-search`. Verified scope: inactive single-job
+orchestrator, Listings-owned job timeout/defer guards, owned unit/native/model
+bridge tests, disposable runner option and command/protocol/evidence/status docs.
+Reuse existing local Python/model/PostgreSQL only; no installs, existing/shared
+DB targets, public routes, app startup, cloud, hosting, commit, push or merge.
+Scope completed with disposable native/model evidence; writer reservation released.
+
+## SE-01 real helper-boundary reservation (released after verification work)
+
+Recorded writer: Mohit (C), `task/se-01-search`, for private pure-Python IPC protocol,
+local CPU helper, inactive async client, owned fault/real tests and bounded evidence/
+commands/protocol/status records. User verified the pipeline matrix and requested
+real-helper integration. Reuse existing `.tools/semantic` interpreter/model only;
+no dependency install, model download, DB worker/backfill/write, public route/core
+wire change, hosting/cloud/global setting or production activation reserved.
+Bounded reservation released after the helper IPC checks.
+
+## SE-01 native pipeline-matrix reservation (released after checks)
+
+Recorded writer: Mohit (C), `task/se-01-search`, for remaining native bootstrap/
+pipeline-switch cases in the existing embedding test module, approved-step fixes
+if real tests identify a defect, and bounded evidence/protocol/status updates.
+User verified the scoped native checkpoint and requested continuation. Reuse the
+pinned repository-local tools; only new private TCP-disabled test clusters, no
+existing/shared target, model/runtime/public activation, cloud or dependency change.
+Synthetic pipeline metadata/coordinate vectors test persistence only, not inference.
+Bounded reservation released after the expanded native matrix.
+
+## SE-01 native checkpoint C reservation (released after scoped checks)
+
+Recorded writer: Mohit (C), `task/se-01-search`, for rebuilding exact native tools
+under ignored `.tools/native-db/`, an optional native adapter-test harness mode,
+matching isolated target checks, approved-step fixes found by real native runs,
+and bounded evidence/commands/status updates. User verified storage increment B
+and requested native testing. Only a newly created private Unix-socket cluster/
+disposable test databases are authorized; no existing DB target, Docker/global
+install, cloud resource or production activation. Stop only the owned cluster;
+retain logs/data. Scope includes no automatic removal of retained test data.
+Bounded reservation released after scoped native verification.
+
+## SE-01 hybrid storage implementation reservation (released after preparation)
+
+Recorded writer: Mohit (C), `task/se-01-search`, for new migration
+`20261024153316_listing_embedding_generations.sql`, Listings-owned embedding
+store/types/validation, matching unit/native tests, database runner/head inventory
+and bounded documentation/evidence. User explicitly approved all presented plan
+and derived-content deletion implementation gates; no DB apply/cleanup run is
+authorized. Main migration listing ends at `20261022062357`, no open PR found.
+No existing migration, core/generated wire type, public route, worker startup,
+cloud role/resource or production activation change reserved. Independent code/
+PR review remains separate; no peer approval of new code inferred.
+Bounded reservation released after preparation.
+
+## SE-01 hybrid checkpoint 4 storage-plan reservation (released after planning)
+
+Recorded writer: Mohit (C), `task/se-01-search`, for storage/write/retirement plan
+and bounded contract/schema/decision/evidence/log annotations only. User verified
+the isolated Mac probe and requested this planning checkpoint. Read-only GitHub
+check found no open PR. No executable migration, runtime code, DB/role change,
+worker/backfill, model download or production activation reserved.
+Documentation reservation released after preparation.
+
+## SE-01 hybrid checkpoint 4 helper-probe reservation (released after probe)
+
+Recorded writer: Mohit (C), `task/se-01-search`, for isolated helper requirements/
+locks, model manifest, bounded probe scripts/tests and feasibility/evidence/log
+updates. User verified the separate project-local Python 3.13 helper approach.
+Downloads/installs remain under `.tools/semantic/`; preserve root Python 3.14,
+`.venv`, root manifests/locks and system setup. No production activation,
+migration, cloud resource or cleanup implementation reserved.
+Bounded reservation released after the local probe.
+
+## SE-01 hybrid lexical checkpoint 3 reservation (released after implementation)
+
+Recorded writer: Mohit (C), `task/se-01-search`, for Listings-owned compiler,
+explicit native-test opt-in, SQL-construction/planning tests, bounded contract/
+vocabulary/evidence records. Mohit confirms Suraj reviewed and approved the
+hybrid amendment; this is user-reported review, without a separate artifact.
+Native checks remain an activation gate; no production activation, model,
+installation, migration, public fields or shared page changes reserved.
+Bounded reservation released after preparation.
+
+## SE-01 hybrid vocabulary checkpoint 2 reservation (released after implementation)
+
+Recorded writer: Mohit (C), `task/se-01-search`, for new Listings-owned vocabulary
+JSON/validator/tests and bounded decision/README/evidence updates. No route,
+query execution, generated signature, category catalogue, migration or model
+change reserved. Read-only GitHub check found no open PR. Step 1 verified by
+user direction to proceed; affected-owner runtime review remains pending.
+Bounded reservation released after implementation.
+
+## SE-01 Step 9 evaluator reservation (released after implementation)
+
+Recorded writer: Mohit (C), `task/se-01-search`, for `scripts/evaluation/`, owned
+label-format validation tests and bounded data/evidence/command guidance. No
+final labels, relevance judgments, real dataset, NFR run, schema or provider
+implementation reserved. Remote main `defec38`/Listings `2302836` unchanged; no
+open PR. Final data/20+ human judgments remain missing; only the explicitly
+permitted isolated evaluator/validation preparation performed; reservation released.
+
+## SE-01 Step 8 test reservation (released after implementation)
+
+Recorded writer: Mohit (C), `task/se-01-search`, for owned runtime/OpenAPI
+conformance tests, deterministic Listings SQL fixtures, frontend generated-type
+parity tests and bounded command/evidence records. No product/UI behavior,
+shared page, migration or generated source edits reserved. Main `defec38` and
+Listings `2302836` unchanged; no open PR. Step 7's reported desktop/resizing/
+portrait verification and explicit direction to advance are accepted for this
+staged continuation; exact portrait/narrow-landscape evidence is not inferred.
+
+## SE-01 Step 7 frontend reservation (released for Step 8 test work)
+
+Recorded writer: Mohit (C), `task/se-01-search`, for owned Search feature files,
+`apps/web/src/pages/ScaffoldPages.tsx` **DiscoveryPage sale-view only**, public
+Search exports and the corresponding frontend-map/command records. Other page
+bodies and all Identity/Listings/Conversations private UI stay outside this edit.
+Discovery composition matches the approved map; no competing PR/writer found
+(remote main `defec38`, Listings `2302836`). C renders reviewed public summary
+fields and links to B's existing detail route; no private B import or changed
+B prop contract. B's real image/detail/provider review stays pending. The first
+usable UI is a human browser checkpoint inside Step 7; do not advance beyond it
+without observations. Preview uses an explicitly labelled local test-only HTTP
+fixture harness, not PostgreSQL/authentication/NFR evidence.
+
+## SE-01 Step 6 file reservation (released after implementation)
+
+Recorded writer: Mohit (C), `task/se-01-search`, for discovery response cache
+policy, focused freshness/native-transition tests, Search-owned Listings double
+and its contract tests, plus bounded API/command documentation. No save API,
+Search storage, migrations, generated sources, lifecycle implementation or UI
+reserved. Remote main `defec38` and Listings `2302836` unchanged; no open PR.
+Suraj/Identity review remains pending. Release after implementation/report.
+
+## SE-01 Step 5 file reservation (released after implementation)
+
+Recorded writer: Mohit (C), `task/se-01-search`, for browse filter/sort/validation
+modules, the store/HTTP wiring, focused tests and bounded API/command guidance.
+No lifecycle writes, shared pages, migrations or generated sources reserved.
+Remote main `defec38` and Listings `2302836` unchanged; no open PR found.
+Suraj/Identity affected-owner review remains pending. Release after this step's
+implementation/report; do not infer peer approval or integration acceptance.
+
+## SE-01 Step 4 file reservation (released after implementation)
+
+Recorded writer: Mohit (C), `task/se-01-search`, for text-query additions in
+Listings' browse service/store, the store's method signature, focused tests and
+bounded API/command documentation. No migrations, generated declarations,
+lifecycle writes or UI/shared pages are reserved. Remote main `defec38` and
+Listings `2302836` are unchanged and no open PR was found. Suraj remains
+maintainer/peer; affected-owner review remains pending. Release this reservation
+after the step report; do not claim downstream approval from this reservation.
+
+## SE-01 Step 3 file reservation (released after implementation)
+
+Recorded writer: Mohit (C), `task/se-01-search`, scoped to browse query additions
+inside `apps/api/app/domains/listings/`, their focused tests, and the bounded
+runtime-test/command registration. Existing `routes.py` and `postgres_store.py`
+receive only browse wiring; no lifecycle writes, generated declarations, shared
+pages or migrations are changed. Suraj remains Listings maintainer/primary peer;
+affected-owner review is pending, not claimed. Remote check found no open PR and
+unchanged `domain/listings` head `2302836`, main `defec38`. This implements the
+user-confirmed SE-01 assignment, not a reassignment to Suraj. Release this scoped
+reservation after the step report; later edits require a fresh collision check.
+
 ## Listings preparation checkpoint
 
 Suraj (B) owns LI-01 and LI-02 on branch domain/listings, currently at
@@ -105,6 +512,2499 @@ handoff is a traceability progress PR after current-head checks and review
 preparation; it does not claim LI-CORE, ID-READY, or completed LI-02 Step 12.
 
 ## Dated history entries
+
+### Search–Listings merge Steps 1–3 — 2026-10-25 13:28:31 UTC
+
+Suraj verified the separate merge plan and Steps 1–2, then explicitly directed
+that every Listings–Search operation use real implementations; only absent
+Identity/Conversations may remain test dependencies. The Search task procedure
+was not changed. Audit: PR #11 head `864e53b` is one commit ahead/five behind
+current main `9a628e1`, GitHub reports conflicts, and the prior CI failed only
+its secrets scan. Existing evidence reductions and browser work were preserved.
+
+Step 3 adds Listings-owned `ListingsSearchAccess` for all five reviewed calls:
+real browse, active/historical categories, save-target visibility and bounded
+saved summaries. Saved reads reuse the public SQL projection, retain unavailable
+items, exclude private fields, emit content-free retired markers and fail closed
+on missing/pending origins. App startup injects this provider into Search route
+factories using the existing database pool; Search accesses only its own tables.
+The loopback browser harness mounts real Wanted/Saved routes/stores and `/me`
+with only a fixed synthetic Identity; image-preview refresh routes now include
+Saved and Wanted detail. Normal startup imports no test provider.
+
+Checks: focused service/route/authorization tests 167 passed; wider Search,
+health/provider and boundary tests 235 passed/9 prerequisite skips; disposable
+PostgreSQL runner 21 passed/3 optional-model skips plus clean/repeat/rollback/
+reapply and four SQL smokes. The added check uses actual `app.main` startup and
+only replaces Identity, covering category assignment/display, draft matching,
+save retries, cross-user isolation, unavailable/retired visibility, expiry and
+pending-origin denial. Initial runner fixture-order failure hit an older
+`<30` corpus assertion; moved this test after bounded math fixtures, preserving
+both tests, and reruns passed. App typing (5 files), contract-double typing,
+8 generated artifacts, boundary scan (0), CI parity, formatting, shell syntax,
+and whitespace passed. Contract check initially lacked Node on PATH; reran
+successfully with the already-recorded Linux Node installation. No cloud,
+frontend styling, main reconciliation, commit or PR mutation. Step 3 awaits
+human verification; Step 4 fresh command walkthrough follows. Human browser
+verification remains Step 6; high-reasoning reminder remains before Step 7.
+
+### Search–Listings merge Step 4 local command walkthrough — 2026-10-25 13:37:42 UTC
+
+Step 3 result verified by Suraj. Started the updated harness on separate loopback
+port 5174 because ports 8000/5173 were already occupied by processes outside this
+shell; did not stop or replace them. Built the existing web app and served its
+normal UI with the local-only banner, isolated PostgreSQL and temporary image
+storage. Created a fresh Appliances kettle and Bicycles bicycle through the real
+image upload, confirmation and Listings create APIs. Both appeared in browse;
+the worker made one title vector and one description vector for each, all 384
+dimensions, and both generations reached ready. Keyword search found the kettle;
+Hybrid found it by “hot water boiler” and the bicycle by “pedal-powered transport”.
+Replacing a listing also triggered fresh vectors and Hybrid found its changed
+description. Real category catalogue/display, category/price/condition/negotiable
+filters, price and relevance ordering, draft match, Wanted create/read/open list/
+owner list/edit/close/reopen, Save/list/retry, unavailable listing exclusion,
+saved current-unavailable summary, restore and repeat-safe Unsave passed through
+HTTP. Wanted conversation response correctly returned 503 because Conversations
+is absent, rather than inventing a result.
+
+One Listings owner-page query defect surfaced: `/api/me/listings` works with its
+default page size, but explicitly supplying `page_size=20` (or 50/100) returns a
+generic 422. No code was changed during this test step; fix or scope this before
+final closeout. The build and API run used this worktree's current source. Step 4
+awaits human verification; no cloud, Git or PR action was taken.
+
+Step 5 scope clarification from Suraj (2026-10-25 13:44:02 UTC): the seller
+page-size parameter is not selectable in the visible UI and the default request
+works, so assess its relevance rather than treating it as a create/search-flow
+blocker. Add Discover listing photos, make Wanted Request cards visually
+consistent with sale listing cards, and polish Save-area controls/messages as
+the Step 5 presentation work. Suraj verified Step 4 at 13:44 UTC.
+
+### Search–Listings merge Step 5 presentation and pagination correction — 2026-10-25 13:52:33 UTC
+
+Step 4 and Step 5 scope were verified by Suraj. Fixed seller-list pagination by
+parsing page/page-size as exact query integers before applying the existing
+20/50/100 contract; unsupported sizes and malformed decimals remain rejected.
+Added a focused actual-router test for all accepted sizes and invalid inputs.
+Search Discover now renders the first real image from each Listings summary via
+the public Listings `ListingImagePreview`, which obtains authorized expiring
+image delivery; no image bytes or credentials are copied into Search. Cards show
+a clear empty state when no image is attached. Wanted cards now use one shared
+semantic card (no nested card borders), show category and budget clearly, and
+use the same responsive three/two/one-column layout as sale cards. Owner actions
+stay inside that card. Save controls now sit in a styled panel with matching
+button/link treatment, clear confirmed success, specific unavailable feedback,
+and a disabled Save action after a definitive 404; transient errors remain
+retryable with the same operation key.
+
+Changed code files: `apps/api/app/domains/listings/routes.py` (strict owner-page
+query parsing); new `apps/api/tests/domains/listings/test_routes.py` (route
+regression checks); `apps/web/src/features/listings/index.ts` (public image
+component export); `ListingImagePreview.tsx` (ensures its Listings styles are
+loaded); `SaleDiscovery.tsx` and `discovery.css` (authorized sale-photo cards);
+`WantedViews.tsx` and `wanted.css` (Wanted card structure and Save feedback).
+`docs/architecture/frontend-collaboration.md` now records the public Listings
+photo-display connection used by Search Discover.
+
+Checks: web lint, 144 web tests (2 skipped), TypeScript checks and production
+build passed; backend route/browse tests 78 passed; Black, route mypy and Python
+boundary scan passed (0 violations); `git diff --check` passed. A fresh local
+PNG listing appeared in the actual Discover API with an attached photo ID; the
+Listings delivery endpoint returned the uploaded PNG bytes. The updated local
+UI/API is running at `http://127.0.0.1:5174/` with the isolated local database.
+The fresh PNG listing's generation also reached ready with one title and one
+description vector, 384 dimensions each. Visual browser review is still pending
+for Step 6. No cloud, merge, commit, or PR action was taken.
+
+### Search–Listings merge Step 5 saved-card and repeat-save follow-up — 2026-10-25 14:02:13 UTC
+
+Suraj pointed out that Saved sale cards differed from Discover and that the
+detail page still offered Save after a prior save. Extracted Search's
+`SaleListingCard` and now use it for both Discover and Saved. The saved card
+retains its current availability, Remove control, and content-free retired
+state while showing the same photo, title, price, description and listing facts
+as Discover. `ListingImagePreview` remains the shared Listings-owned image
+delivery path.
+
+The detail Save action now checks the authenticated caller's existing private
+saved-list pages (100 per request, continuing only when `has_next` is true),
+shows a disabled “Already saved” state on a match, and otherwise offers Save.
+The save API's existing pair uniqueness remains the retry/race fallback. Added
+three web tests for found-on-first-page, found-on-later-page and absent cases;
+the Saved endpoint was also exercised against the real local API with a saved
+photo listing. The architecture map now records the shared card, image and
+saved-state connections. `npm run check` passed lint, 147 web tests (2 skips),
+TypeScript and build. No cloud or Git publication action was taken.
+
+### Search–Listings merge Steps 5–6 human verification — 2026-10-25 14:04:15 UTC
+
+Suraj reports Step 5 verified and confirms the browser walkthrough was completed;
+that walkthrough found the Saved-card mismatch and repeat-Save behavior, which
+were corrected in the Step 5 follow-up above. Steps 5 and 6 are recorded as
+verified/performed. Before Step 7, remind Suraj to switch to a high-reasoning
+model; the deployment-wiring audit has not started.
+
+### Search–Listings merge Step 7 deployment wiring — 2026-10-25 14:14:33 UTC
+
+Suraj authorized Step 7 after the requested high-reasoning reminder. Traced
+normal app startup, all five Listings operations consumed by Search, the shared
+database, real S3 delivery, update/invalidation/worker path, Identity and
+Conversations public calls, migrations, image packaging and existing shared/
+isolated deployment definitions. No additional missing Listings–Search call
+was found. Identified and corrected two current packaging/configuration gaps:
+normal bundled website serving was tied to the isolated caller, and the base
+API image contained no semantic interpreter/model or pipeline operator.
+
+`app/core/config.py` now allows `serve_web_app` independently of the isolated
+caller; production still rejects fake/development auth. `app/main.py` emits
+demo-info only for the explicit isolated profile. The existing isolated profile
+and its Terraform/build remain unchanged. A settings regression checks normal
+production hosted UI with no synthetic caller. `.env.example` documents the
+independent UI setting.
+
+Added optional `apps/api/Dockerfile.hybrid` plus its narrow Docker ignore file.
+It extends the ordinary API image using explicit standalone CPython 3.13.12,
+wheel and model build contexts. A compact Linux x86_64 lock records the same
+24 already-verified package versions with selected wheel hashes. Install and
+real inference build steps run without networking; the runtime retains UID
+10001, exact model/runtime checks, the existing helper/worker and packaged
+`scripts/search_pipeline.py`. The ordinary image stays Keyword-capable by
+default. No model, wheel or interpreter binaries enter Git.
+
+The deployment handoff in `docs/architecture/listings-search-deployment.md`
+records build inputs/commands, same-database connections, S3 and UI settings,
+explicit initial prepare/queue/status/activate jobs, automatic later vector
+updates, connection/process budgets and exact later Identity/Conversations
+bindings. Linked it from API/docs READMEs, lifecycle docs and command registry.
+The shared foundation Terraform still needs the selected integrated release's
+secret/S3/routing/resource settings when that later deployment is approved;
+the existing isolated demo is not repurposed.
+
+Checks: ordinary Linux AMD64 image built at local digest `bc5f5376a1939f2043ef68690ce3fd63616d5215973323c65f47f0ab8f98eceb`;
+optional Hybrid image built at `cd604b617e64ca197bcb7c6139b9d6c433dcce73863a01f2a65e8c10c20c517a`.
+Hybrid build verified all pins and ran real offline 384-dimensional inference
+as the runtime user. Packaged operator CLI help runs offline. Ordinary container
+hosted UI smoke (read-only filesystem, no network except its own loopback): root
+and saved/wanted SPA paths 200, protected Listings/Wanted/Saved APIs 401, demo-info
+and unknown API 404. Settings/runtime/isolation/browser-harness checks 67 passed;
+Black, mypy (2 files), boundary scan (0) and whitespace passed. Initial Docker
+build was sandbox-blocked from its home-directory builder metadata; approved
+escalated local builds passed. No registry push, AWS action, cloud test, commit,
+main reconciliation or PR mutation. Step 7 result awaits human verification.
+
+### Search–Listings merge Step 7.5 completeness audit — 2026-10-25 14:22:33 UTC
+
+Compared the approved merge-stage scope with SE-01/SE-02 requirements, reviewed
+Listings/Search contracts, current app wiring, UI entry points, tests, prior local
+HTTP/PostgreSQL evidence, and the Step 7 deployment handoff. No missing
+Listings–Search implementation or call was found. The five Search-to-Listings
+operations use real Listings code and the shared database; the recorded fresh
+create/edit flow generated vectors automatically and matched in Keyword and
+Hybrid. Wanted create/read/edit/close, draft matching, private save/unsave,
+unavailable-item behavior, image delivery and the browser-reported card/save
+corrections are present. Existing route/database/browser tests and build checks
+cover these paths; this read-only audit did not rerun them.
+
+Identity's local caller remains synthetic and Conversations-dependent actions
+fail safely while that domain is absent, as explicitly allowed for this stage.
+The deployment handoff and both local Linux images are prepared/tested, without
+cloud or Terraform changes. The typo matcher is deliberately vocabulary-limited;
+the approved vocabulary does not contain kettle, so `ketle` is not promised even
+though the tested bicycle/vehicle and semantic paraphrase searches work. This is
+a search-vocabulary limitation, not a missing Listings connection. The formal
+LI-CORE gate, final dataset, NFR evaluation and cloud tests were excluded from
+this audit. Current-main conflict resolution and the prior CI secrets-scan
+failure remain Step 8 work. No source/test/configuration code or external
+resources were changed. Step 7.5 awaits result verification.
+
+### Search–Listings merge Step 8 current-main reconciliation and checks — 2026-10-25 14:38:24 UTC
+
+Fetched current `origin/main` (`9a628e1`) and PR head (`864e53b`); GitHub still
+reports PR #11 conflicting until its head is updated. Preserved the original
+Search commit in `safety/search-pr11-pre-main-reconciliation-20261025` and the
+uncommitted approved work in stash `af9d7f5`. Reconciled current main locally
+with merge commit `29eb6fb`; the LI-02 runtime, Terraform, operator and driver
+test changes from PR #12 are present. Resolved the upload-test conflict by
+keeping main's fixed future synthetic caller expiry. Resolved the work-log table
+by retaining main's completed LI-02 status and Search's SE-01/SE-02 status.
+The local LI-02 driver/upload regression set passes; no cloud action occurred.
+
+The original CI failure was eight `generic-api-key` matches, each a 64-character
+hex SHA-256 fingerprint: the model tokenizer checksum and source-file checksums
+stored in historical evaluation result files. They are integrity hashes, not
+API credentials; two recorded source hashes no longer match current files because
+the evidence predates later edits. Added a Gitleaks exception restricted to the
+specific manifest paths and JSON hash-field lines; all other default rules stay
+enabled. The pinned source-snapshot scan passes on the reconciled combined tree.
+No candidate hash values were copied into this log.
+
+Final local checks: CI parity; Black (187 files unchanged); Python 1,288 passed /
+21 skipped; data 94 passed; web lint, 147 passed / 2 skipped, TypeScript and
+production build; boundary scan (0); eight generated contract artifacts current;
+consumer-double mypy and eight changed API-file mypy checks; database wrapper
+safety (35 cases); disposable PostgreSQL adapter workflow (21 passed / 3 optional
+model skips) plus clean/repeat migrations, four smokes, rollback and reapply;
+isolated LI-02/browser regression set (52 passed); Terraform format; Gitleaks.
+The first Python run lacked the recorded Node 24 path and 21 Node-dependent cases
+failed; rerunning with that path passed the complete suite. The ordinary DB-only
+runner also passed.
+
+After the approved duplicate-file reduction, the complete working-tree diff
+against current main is 61,555 added / 156 deleted lines across 458 files,
+including nine new text files that Git's ordinary diff summary omits. Of the
+additions, evaluation evidence/handoff is 26,486 lines across 242 files, API
+application code 6,093 across 38 files, API tests/harnesses 12,956 across 52
+files, web source/tests 2,253 across 23 files, other documentation 6,422 across
+28 files, and scripts/database code 4,211 across 34 files. No tests or further
+evidence were removed during this step. No push, hosted CI rerun, PR merge, cloud
+deployment or NFR claim was made. Step 8 awaits human result verification.
+
+### Search–Listings merge Step 9 publication and handoff correction — 2026-10-25 14:51:41 UTC
+
+Published implementation commit `5ada5e5` to PR #11 with a normal fast-forward
+push. Hosted CI run `40203616261` passed, and GitHub reported that revision
+mergeable with no failing required checks. Updated the PR title/body because the
+old text still described Search as isolated and listed already-completed checks
+as pending. Replaced the checked-in draft PR description with the integrated
+scope, actual local checks, and honest remaining limits. The handoff/work-log
+follow-up still needs a normal push and exact-head CI; no approval or merge was
+requested or performed yet. No cloud action occurred.
+
+### Search–Listings merge Step 9 final handoff CI — 2026-10-25 14:56:33 UTC
+
+The follow-up documentation commit `9096df3` was pushed to PR #11. Hosted CI
+run `40204284165` passed for that exact head; GitHub reports the PR clean and
+mergeable. Updated the PR description to link this final handoff check. The
+remaining gate is the user's explicit approval of the exact current revision;
+no merge or cloud action has occurred.
+
+### SE-01/SE-02 combined local handoff audit — 2026-10-25 08:49:53 UTC
+
+Mohit authorized prerequisite-independent Search audit/corrections, local checks
+and review preparation after Step8 was found gated. Audited canonical ordered
+steps, relevant checklists/contracts, current evidence and available tooling.
+No new functional code correction identified by this audit; this is not an
+independent full-diff review. Prepared requirements matrix, integration queue,
+unpublished PR-description draft and working-tree file fingerprints in
+[Search handoff](../evaluation/domain/search-handoff/README.md). Final canonical
+query-label file is absent;20+human-reviewed labels, final dataset and evaluator
+binding remain explicit prerequisites; development judgments are not promoted.
+
+Current checks: root Python1270pass/20skip(64.63s), data94pass, web144pass/2opt-in
+skip with lint63/types/build pass; Black183files unchanged; native20pass/3optional
+model skips and14migration down/up/repeat/identical schema pass, owned cluster
+stopped at /tmp/clip-pd08-native-check.t4do7b. Wrapper35simulated cases pass after
+sandbox /dev/fd denial/escalated rerun. Boundary0, contracts8current, required
+double mypy1file and CI parity11 pass. Whitespace pass. No repeated model or
+expired-preview HTTP run claimed. Docker and Gitleaks absent, so full make check/
+pinned secret scanning and actual Docker gate remain unavailable; no installs.
+
+Source/config unchanged in this increment; historical artifacts preserved.
+Step8 real-provider checks and final acceptance remain pending; no Step9 bypass.
+Independent human peer/affected-owner review using the peer-review prompt and
+exact-head CI still required. No staging, commit, push, PR creation, merge, cloud
+or deployment. Human verification of this local handoff package is next.
+
+Staged-scope correction (2026-10-25 08:53:37 UTC): earlier unstaged whitespace check omitted
+new untracked files. Staging exposed raw diagnostic-log trailing whitespace,
+retained verbatim, and one architecture-document EOF blank, normalized. Source/
+documentation staged check excludes raw .log transcripts explicitly; no code
+behavior changed. Local commit explicitly authorized by Mohit; secret-scan gate
+remains pending. Handoff evidence corrected rather than claiming all-file pass.
+
+### SE-02 Step8 prerequisite/runtime audit — 2026-10-25 08:30:58 UTC
+
+Mohit verified the Step7 isolated UI result and then authorized Step8 audit.
+Read-only remote check (sandbox DNS failed; escalated check passed) confirms main
+defec38 and Listings23028365 unchanged, both tree6eeae6c5. Suraj's published work
+is in the current base; no unpublished readiness is inferred. No fetch/merge.
+ID-READY/LI-CORE/SE-CORE remain unaccepted. Real Identity session/eligibility and
+Listings query/category/saved public adapters are absent/declaration-only; C
+wanted create/existing/activity/retirement declarations also lack providers.
+Step8 cannot substitute preview fixtures under the stub guide. Required real
+auth/expiry/match/saved/privacy and conversation-race checks remain unrun.
+
+Source inspection: wanted/saved stores share existing API PostgreSQL pool10;
+14local migrations already have historical isolated evidence. No additional
+SE-02-specific Terraform resource need found; actual shared runtime/schema/
+capacity/deployed revision unverified. Search Terraform roots remain reserved.
+[Audit evidence](../evaluation/domain/se-02/integration-readiness/result.json)
+records exact refs/hashes and resume requirements. Metadata/docs only; whitespace
+pass, no redundant test rerun or code/config change. No cloud or publication.
+Step8 and SE-02 remain incomplete; await actual providers/accepted revisions,
+then resume this checkpoint. Step9 final gates are not bypassed.
+
+### SE-02 Step7 wanted/saved frontend increment — 2026-10-25 08:26:59 UTC
+
+Mohit verified Step6 and authorized Step7. Audited the selected UI step against
+canonical contracts, ownership and acceptance requirements; no new definition gap.
+Reviewed Identity GET /me supplies eligibility without inventing a feature prop.
+Reserved only Search slots in ScaffoldPages and the public Search index. Added
+wantedApi transport/strict projections/exact budgets/retry intents, WantedViews
+responsive forms/public/detail/private saved flows and wanted.css. Owner revision
+checks, stale async cancellation, title-only advisory matches, safe unavailable/
+retired states and regular-only response controls are explicit. Only a confirmed
+reviewed response can navigate; actual providers still fail safely unavailable.
+
+Added wanted-api/control/native-http web tests and a test-only guarded
+wanted_ui_preview plus transport safety tests. Newly owned PostgreSQL14migrations;
+real Search wanted/saved SQL and real Listings draft query. Explicit synthetic
+Identity and fixed saved snapshots; Conversations/image delivery unavailable.
+No fake conversation success or normal startup change. Final preview on loopback
+8000, existing Vite5173 reused; new runner caps runtime30minutes and stops only its
+cluster. Prior cluster w1i6ul82 stopped cleanly, final gsr2jhwc retained for review.
+
+Checks: root npm check lint63files,144tests pass/2opt-in skip, TypeScript/build pass;
+separate final fixed-loopback TS/real HTTP2pass; Python preview guards23pass;
+Black2files, boundary0,8generated artifacts current and diff whitespace pass.
+Sandbox init/loopback failures passed after required escalation; contract check
+passed after restoring project Node PATH. Unsupported formatter options caused no
+file changes; temporary formatter config then formatted five new TS files only.
+No new full root Python/native aggregate, hosted CI or secret-scan acceptance
+claimed. [Evidence](../evaluation/domain/se-02/frontend/result.json) includes hashes
+and [browser review actions](../evaluation/domain/se-02/frontend/README.md).
+Shared-file reservation released after checks; human browser/layout/keyboard
+verification pending. Step7 and SE-02 remain incomplete. Step8 waits for accepted
+ID-READY/LI-CORE/SE-CORE and actual providers; C integration remains pending.
+No installs/global changes, staging/commit/push/merge/cloud or deployment.
+
+### SE-02 Step6 approved response backend/200contract correction — 2026-10-25 08:06:29 UTC
+
+Mohit verified the exact response correction plan before contract/feature changes.
+Search alternate200now declares ConversationStartResult, matching documented201/
+200semantics; regenerated Search public metadata/OpenAPI/TypeScript via registry.
+HTTP0.1.0 retained as approved pre-implementation documented-semantic correction;
+other domain declarations unchanged. Added strict TS created/existing/missing-ID
+consumer. Added wanted_response service, owned store origin guard and HTTP handler.
+Current regular eligibility; temporary/expired/denied before origin/C access;
+self403; missing/retired/pending404. Server-resolved author only. Open public
+create-or-existing; closed exact caller/request read-only lookup or404, never
+fallback create. Validated201/200bodies contain only ID/created. Bounded2s calls;
+unknown/lost/cancelled outcomes recover by existing public pair uniqueness, no
+invented C operation field, local thread storage or normal/browser fake success.
+
+Origin FOR NO KEY UPDATE serializes owner writes/retirement while permitting
+separate C FK key-share. Native `/tmp/clip-pd08-native-check.1u1lXf`:20passed/3optional
+skipped, actual HTTP/state/auth/closed/lost-result cases; independent C schema-only
+thread/member fixture commits under guard; close-first performs no create;
+response-first observes actual PostgreSQL owner lock wait then closes. C outcome
+fixture is not real service/membership/unique-thread integration. Four SQL smokes
+twice/14downs/reapply/identical inventory; owned cluster stopped. No migration.
+
+Full root1265passed/20skipped in61.63s; contract/wanted79passed; response/wanted46;
+web lint57/tests105in10files/types/build; mypy3/Black181/wrapper35/parity11/
+boundaries0/generation8/shell/whitespace pass. Initial optional-result inference
+needed annotation; fixed. Initial native observer cached activity snapshot;
+refresh per poll fixed observation with unchanged application locks, rerun passes.
+First web command assumed a workspace; corrected registered root npm run check
+passes, no install/global change. [Source hashes, resolved11/11operation/200body
+inventory and raw logs](../evaluation/domain/se-02/wanted-response/result.json).
+
+Updated approval decision, coverage inventory, contract/docs and wrapper test
+registration. Earlier local missing-handler/200body gap is resolved; Step6
+isolated performed, human result verification pending. Real Identity/Listings/C
+providers, actual independent membership/unique-thread/activity/offer enforcement
+and races remain Step8/INT-01, not inferred from fixture passes. Step7UI/API
+composition and browser checks follow verification; Step9Docker/secret scan/hosted
+CI/independent review pending. No new pool/resource/install/commit/push/merge/cloud
+or live-data action. SE-01 and SE-02 remain incomplete.
+
+
+### SE-02 Step6 coverage audit and material response gaps — 2026-10-25 06:42:07 UTC
+
+Mohit verified Step5 and authorized Step6 coverage audit/runnable case additions.
+Mapped canonical cases in `apps/api/tests/domains/search/README.md`, distinguishing
+isolated proofs, actual provider gates and locally missing functionality. Added
+Unicode description bounds, saved future/ended-window retention, and real wanted
+HTTP/SQL regular/temporary own management/nonowner denial, omitted/null/zero
+creation/normalized retries/edit omission, context expiry across all six wanted
+operations with unchanged rows/receipts, tied owner/public pages and unavailable
+exclusion before slicing. Fixture teardown closes only its owned open requests,
+retaining immutable origins/receipts and avoiding later discovery contamination.
+Registered native test in existing wrappers; no production feature changes.
+
+Material gaps: Search declares11operations but mounts10; the request-to-conversation
+operation is absent. Regular/temp response capabilities, close/create serialization
+and retired new-response cases are not functional passes. Source Search alternate
+200isNone, generated200hasno body, while combined/Search docs require conversation
+result on201/200. Prepare [exact response correction plan](../architecture/wanted-response-integration.md)
+for human verification: correct Search200body and regenerated consumers, implement
+regular-only trusted-context/locked-origin delegation, open create-or-existing,
+closed read-only same-pair lookup, safe hidden/self/expired failures, bounded calls/
+ambiguous retry and actual Search row-lock race tests with reviewed C double.
+No contract/handler change performed before approval. Offers/all-thread marker
+locking remain real Conversations integration obligations, not inferred locally.
+
+Checks: focused50passed; full root1249passed/19skipped in71.11s. Native
+`/tmp/clip-pd08-native-check.VHwHjm`19passed/3optional skipped; four SQL smokes twice,
+14downs/reapply/identical inventory and owned cluster stopped. Black177/wrapper35/
+parity11/boundaries0/contracts8/shell/whitespace pass. Fresh generated artifacts
+still contain the observed declaration defect; freshness is not semantic approval.
+[Source hashes, mounted-operation/200inventory and raw logs](../evaluation/domain/se-02/test-coverage/result.json).
+
+Step6 remains partial pending correction-plan/result verification and missing local
+response checks. Real Identity/Listings/Conversations providers, actual per-thread/
+offer/retirement integration, Step7UI/Step8real/Step9final, Docker/secret scan/hosted
+CI and independent review remain pending. No install/commit/push/merge/cloud action;
+SE-01 and SE-02 incomplete.
+
+
+### SE-02 Step5 private saved listings — 2026-10-25 06:18:42 UTC
+
+Mohit verified Step4 and authorized Step5. Added saved_store actor-scoped SQL,
+saved service current eligibility/target/summary logic and three saved routes;
+main mounts both normal/API-prefix paths with a saved store on the existing pool.
+No migration/new pool/resource or content cache. Save/unsave serialize the same
+pair; duplicates retain first timestamp, absent unsaves204, other user rows remain
+untouched. Existing own pair acknowledgement is content-free and needs no target
+recheck; new saves require current public discoverability. Own pages filter before
+stable save-time/UUID-desc pagination; only page IDs reach current public resolver.
+Strict complete state validation preserves unavailable details, returns content-
+free retired markers and rejects missing/foreign/duplicate/inconsistent results
+rather than leaking or serving stale data. No private upstream application SQL.
+
+Explicit Listings target/current-summary fixtures use reviewed contracts because
+real providers remain declaration-only. Native tests run real Search HTTP/SQL/
+locks/FKs and controlled parent changes/retirement; fixture snapshots are setup,
+not a shadow resolver or real integration acceptance. Concurrent duplicate saves,
+regular/temp isolation, missing/invalid targets, outage/duplicate/unsave behavior,
+21row tied pages/reversed results/own batch IDs, change-after-target-check race,
+reference retention and retired placeholder/unsave pass. Updated exact main
+boundary imports, two installed-contract checks and existing adapter registrations.
+Large saved pagination fixture runs last after bounded math/bootstrap corpus;
+no checks removed/weakened. Only owned retired image/upload fixture metadata is
+removed (no actual object existed), keeping immutable parent refs.
+
+Full root1242passed/18skipped in57.47s; focused67passed, saved unit18passed;
+native `/tmp/clip-pd08-native-check.6714ZH`18passed/3optional skipped, four smokes
+twice/14downs/reapply/identical inventory, cluster stopped. Mypy3/Black176/
+wrapper35/parity11/boundaries0/contracts8/shell/whitespace pass.
+[Source hashes/raw logs](../evaluation/domain/se-02/saved-listings/result.json).
+Initial focused20fail/47pass was missing project-local Node on PATH; corrected
+invocation67pass, no install/global change. Initial native prior bootstrap corpus
+cap rejected50live fixtures after saved setup; preserved its cap/loop and staged
+saved last in both wrappers, then all18native checks pass. Diagnostics retained.
+
+Step5 isolated result awaits verification. Actual ID-READY/LI-CORE/SE-CORE saved
+providers and real current-state/privacy checks remain Step8; UI Step7. No
+install/commit/push/merge/cloud action. Docker/secret scan/hosted CI and independent
+review remain pending; SE-01 and SE-02 incomplete. Next preview Step6 audits
+canonical test coverage and fills material missing cases without duplicating
+already proven behavior.
+
+
+### SE-02 Step4 transient draft-title matching — 2026-10-25 05:22:55 UTC
+
+Mohit verified isolated Step3 and the Step4 title-only scope. Added draft_matches
+consumer with current regular/temporary eligibility, bounded public Listings
+query, explicit Keyword/created_desc/page1/size20 and no inferred category/budget/
+price/condition/negotiable filters. DraftTitle trims before1–120codepoint bounds;
+HTTP operation already declared in the reviewed contract is now mounted with
+private/no-store shared safe errors. Matching requires no Search store and writes
+no draft/history/request. Empty results are valid; required dependency failure503
+is not fabricated empty success. Submission remains a separate operation.
+Validate provider page shape/IDs/bounds/public summary/current available state;
+malformed output fails503. No migration, UI or new normal-provider fallback.
+
+Tests: focused45passed; full root1224passed/17skipped in53.90s. Native
+`/tmp/clip-pd08-native-check.ffvwOn`17passed/3optional skipped with actual Listings
+browse/store/native SQL:21 tied-time matching sources, description-only/empty,
+20limit/UUID-desc ties/has_more, unavailable/future/ended/pending/retired exclusions,
+unchanged Search counts across matches/outage, independent wanted submit after
+matching failure. Draft query uses synthetic Identity only; submit proof explicitly
+uses prior eligibility/catalogue fixture. Four SQL smokes twice,14downs/reapply/
+identical inventory; cluster stopped. Mypy3/Black170/wrapper35/parity11/boundaries0/
+contracts8/shell/whitespace pass. [Hashes/raw logs](../evaluation/domain/se-02/draft-matches/result.json).
+
+Diagnostics preserved: initial malformed None provider items raised TypeError;
+explicit shape check fixes safe503. Initial native fixture left its retired image
+in another test's cleanup queue, so that Listings expectation failed; remove only
+owned retired test image/upload metadata (no object existed), preserve origin/
+guards and rerun successfully. Registered actual new paths/body alias in exact
+contract tests and native/Docker adapter wrappers; updated docs/log. No installs,
+commit/push/merge/cloud actions. Step4 isolated result awaits verification; actual
+providers/Step8 and UI/Step7 remain pending. SE-01 and SE-02 incomplete; next Step5
+private idempotent saves with current unavailable/retired visibility.
+
+
+### SE-02 Step3 approved local request/receipt retirement — 2026-10-25 05:08:48 UTC
+
+Mohit verified the wanted API result and approved the exact local cleanup order
+before implementation. Added internal `wanted_retirement.py` coordinator and
+Search store begin/clear/finalize methods. One server-selected origin per call;
+no route, scheduler/worker, startup invocation, target selector or live cleanup.
+Lock/recheck180day closed_at anchor, commit/reuse UUID and90day cutoff before
+bounded public Conversations calls. Preflight is not permission to scrub: only
+validated authoritative marked/already-marked results allow local cleanup.
+Unknown/error/cancelled results keep the pair; clock regression fails closed;
+blocked clears only the exact pair. One fenced local transaction clears all
+receipt request/result payloads first, then origin title/description/category/
+budget and pending pair, marks retired, advances revision/time, and retains
+content-free keys/IDs and lifecycle anchors. A failure rolls back both stages.
+No private upstream tables/sessions or other-domain/object deletion.
+
+Explicit reviewed Conversations double scripts content-free metadata/stable
+outcomes only; it does not establish real C locks/races. Unit22passed includes
+90day boundaries, incomplete/error/timeout/cancelled dependencies, unknown result
+replay, both successful outcomes and regressed clock. Native
+`/tmp/clip-pd08-native-check.8AFtud`16passed/3optional skipped:180day/microsecond and
+reset checks, wrong pair fencing, blocked/retry/new-ID, lost committed marker,
+all3receipt kinds scrubbed, retired/late-key visibility, actual SQL failure after
+receipt clear proves rollback, and competing marked attempts finalize once while
+owner reopen fails409. Four SQL smokes twice,14downs/reapply/identical inventory;
+owned cluster stopped. No new migration. Full root1204passed/16skipped in58.47s;
+mypy5/Black167/wrapper35/parity11/boundaries0/contracts8/shell/whitespace pass.
+[Approval, source hashes and raw logs](../evaluation/domain/se-02/wanted-retirement/result.json).
+
+Registered new native checks in existing wrappers; updated canonical retirement
+approval, contract/storage notes and command docs. Shared reservation released.
+Isolated Step3 now performed, result awaiting verification; actual Identity/
+Listings/Conversations providers, real no-new-response/activity races and later
+Steps4–9 acceptance remain pending. No install/commit/push/merge/cloud/existing-
+data cleanup. Docker/secret scan/hosted CI and independent review remain gates;
+SE-01 and SE-02 incomplete. Next preview is Step4 transient title-only matching
+through reviewed available Listings query, first20/newest, no draft persistence.
+
+
+### SE-02 Step3 wanted author/read API and exact retries — 2026-10-25 04:55:37 UTC
+
+Mohit verified the category correction and authorized Step3, then directed the
+ongoing implementation to continue. Added owned wanted_models validation/projection,
+wanted service with public Identity/catalogue dependencies, transactional wanted
+store, six wanted routes and real main composition using the existing10-connection
+pool. No new auth bypass, pool, frontend, worker or cleanup. Normal upstream public
+declarations fail closed503; tests explicitly inject reviewed eligibility/catalogue
+doubles. Request rows/reads are real PostgreSQL with filters before stable pages,
+current regular/temporary authorization, owner unavailable read, safe404 visibility,
+revision conflict/serialized writes, trimmed exact input and budget omission/null/
+zero/bigint handling. Responses expose no author/contact/pending metadata and
+use private/no-store headers.
+
+Migration14/head20261025013000 adds Search-owned command results: create actor/key,
+edit/state request/kind/key; same normalized intent replays original response,
+changed intent conflicts, retired/pending checks precede replay. Guards enforce
+matching author, immutable identity/outcomes, no retained content on retired
+origins, and refuse retirement while receipt payloads remain. They delete nothing.
+Rollback refuses populated receipt keys. Updated exact main import allowlist,
+wrapper head/count/adapter registration, two shared contract expectations with
+structural subtype checks and docs. [Concrete local cleanup proposal](../architecture/wanted-request-retirement.md)
+is prepared for the separate approval explicitly required by SE-02 Step3; no
+retirement service/scheduler/destructive feature implemented. Step3 stays partial.
+
+Checks: full root1182passed/13skipped in73.56s; focused25passed and frozen wire
+comparison; native `/tmp/clip-pd08-native-check.t4SPkT`13passed/3optional skipped,
+four SQL smokes twice,14downs/clean reapply/identical inventory, owned cluster
+stopped. Native checks cover real HTTP/SQL/retries/concurrent creates and stale
+edits, privacy/temp capabilities, pending/retired/late keys, guard-specific receipt
+privacy/immutability and populated migration rollback refusal. Black163/mypy4/
+wrapper35/parity11/boundaries0/contracts8/shell/whitespace pass.
+
+Retain diagnostics: initial fixture cleanup tried physical wanted deletion and
+the existing immutable-reference guard refused; fixtures now stay in owned
+stopped DB. Additional fixture clock_timestamp exceeded statement snapshot;
+use statement_timestamp and assert the intended receipt guard. Initial root run
+2old subset/schema expectation failures resolved by explicitly adding live paths
+and verifying body alias structure, never weakening wire constraints.
+[Hashes and raw logs](../evaluation/domain/se-02/wanted-api/result.json).
+
+Await human API result verification and concrete cleanup-order approval. Actual
+Identity/Listings/Conversations readiness, real retirement race checks, later
+SE-02 steps, Docker/secret scan/hosted CI and independent affected-owner review
+remain pending. No install/commit/push/merge/cloud action. Both selected tasks
+remain incomplete.
+
+
+### SE-02 approved category reference migration — 2026-10-25 01:25:45 UTC
+
+Mohit approved code-based Search category storage. Added reversible migration
+`20261025012200_wanted_category_code_reference.sql`: map old UUIDs to Listings'
+unique immutable codes inside the migration, preserve live/retired checks,
+nullable retired references and existing wanted_category index, add restrictive
+code FK. ALTER TYPE avoids request-update triggers; transient conversion functions
+are dropped before commit. Down restores UUID references with existing mappings.
+Listings sale references and public wire types stay unchanged by this increment.
+Updated current smoke fixtures, native/Docker head and adapter registration,
+canonical schema/task/Search contract notes and decision record. Shared reservation
+released. Prior Step2 no-category-gap conclusion is explicitly superseded.
+
+New disposable populated test checks open/unavailable/pending/retired rows plus
+inactive category: down/up preserves exact content, revisions, timestamps and
+pending metadata, and leaves no migration helper functions. Native
+`/tmp/clip-pd08-native-check.ixCDpg`:12passed/3optional skipped, four SQL smokes twice,
+all13downs/clean reapply/identical inventory, cluster stopped. Initial `0Qlz8N`
+correctly failed after only12downs; fixed stale runner loop to13 and reran. Retain
+that diagnostic, no false pass. Architecture/contracts117passed; wrapper35;
+Black2/shell/parity11/boundaries0/generated8/whitespace pass.
+[Source hashes/logs](../evaluation/domain/se-02/category-reference/result.json).
+
+No shared/existing database was migrated, no install/commit/push/merge/cloud action.
+Normal affected-owner/independent review, Docker/hosted acceptance and real
+readiness/integration gates remain pending. Correction awaits human verification;
+Step3 actions/retries not yet implemented, concrete destructive cleanup still
+needs its own approved mechanism/order. SE-01/SE-02 incomplete.
+
+
+### SE-02 Step3 category assignment contract/schema gap — 2026-10-25 01:20:49 UTC
+
+Mohit verified Step2 and authorized Step3 wanted actions/retries. During
+pre-implementation inspection, identified a material gap missed by the earlier
+Step1/2 audit: `search.wanted_requests.category_id` references Listings category
+UUID, but public `Category`/`CategoryDisplay` and read_active_categories/
+read_category_display expose only code/label, with active flag on display.
+Search inputs use category_code. No reviewed public UUID lookup exists. Reading
+Listings categories from Search application SQL or hardcoding seed UUID mappings
+would violate the reviewed boundary. Step2 native checks prove storage invariants
+only; prior claim of no integration gap is corrected. No Step3 feature changes.
+
+Recommended decision: migrate Search-owned request reference to category_code
+with restrictive FK to existing unique immutable `listings.categories.code`;
+backfill current references in migration only, preserve null-retired behavior,
+recreate equivalent live/retired checks/index, and verify rollback/reapply.
+Public inputs/outputs and catalogue interface remain unchanged. Alternative:
+review a new internal Listings UUID resolution interface; do not invent it in
+an implementation/test double. Follow reusable prompt's missing/unclear-contract
+stop rule and SE-02 stop-and-ask clause. Await human decision before code/schema
+or canonical design correction. Step3 incomplete; real readiness, destructive
+cleanup approval and final acceptance gates remain pending. No install/Git/cloud
+action. Shared affected-owner review remains part of the normal handoff.
+
+
+### SE-02 Step2 existing wanted/saved storage and checks — 2026-10-25 01:18:58 UTC
+
+Mohit verified Step1 and Step2 storage scope. Read-only remote heads remain main
+`defec38` and Listings`2302836`; no upstream readiness acceptance inferred.
+Audited baseline tables and API-only retirement migration: every Step2 field,
+closed_at continuous anchor/reset, pending pair, uniqueness, FK/deletion rule and
+access index already exists. Reuse them; no new migration/schema mutation or
+application feature code. Request-command/idempotency persistence accompanies
+Step3 actions and cannot be inferred from this storage proof.
+
+Added rollback-only `database/tests/search-storage-smoke.sql` with disposable-name
+guard and controlled wanted/save/upstream fixtures: budget distinctions, invalid
+content/money/FKs, closure preservation/reopen/reclose, author immutability,
+pending-pair constraint, duplicate save original time, unavailable-reference
+preservation, restrictive FKs and indexes. Existing retired-origin smoke covers
+retired-content invariants. Registered fourth smoke in both native and Docker
+wrappers before/after full migration rollback/reapply; updated database, command
+and Search boundary docs. Shared writer reservation released after checks.
+
+Native `/tmp/clip-pd08-native-check.UQB7Op`: four SQL smokes twice, all12downs/
+clean reapply/identical inventory,11adapter passed/3optional skipped, owned
+cluster stopped. Wrapper safety35pass; Black1/shell syntax/CI parity11/boundaries0/
+contracts8/whitespace pass. [Source hashes/raw evidence](../evaluation/domain/se-02/storage/result.json).
+No Docker acceptance or hosted CI claimed; no installs/commit/push/merge/cloud.
+Step2 awaits human verification; actual upstream/FK integration, Step3 actions,
+concrete destructive cleanup approval and final FR/privacy/integration gates
+remain pending. SE-01 and SE-02 incomplete.
+
+
+### SE-02 Step1 contract review and branch scope — 2026-10-25 01:15:06 UTC
+
+Mohit verified the full Python result and authorized renaming the current local
+branch from `task/se-01-search` to `search-domain`, then proceeding with SE-02.
+Rename performed; working changes preserved, no remote branch changes/publication.
+Initial sandbox Git metadata write was denied; approved escalation succeeded.
+SE-01 remains incomplete for real readiness/final data/labels/target/NFR gates.
+
+Re-read Search wanted/saved/draft contracts, generated declarations/source types,
+Identity account capabilities, Listings save-target/current saved-summary and
+available-query boundaries, Conversations request-response/retirement rules,
+wanted discovery/retirement decisions and existing schema. Step1 performed;
+no new material task-definition gap. Prior verified nine-step plan remains:
+1contracts;2storage/migrations;3wanted CRUD/lifecycle;4draft matches;5private saves;
+6behavior/privacy/retirement tests;7responsive UI;8real integration;9quality/evidence.
+Each increment still needs verification; concrete destructive request cleanup
+method/order must be approved before implementation under Step3.
+
+Regular and temporary eligible callers can manage requests and saves and browse;
+request-response initiation remains regular-only. Owners may read unavailable
+non-retired requests, others404; retired content is unreadable. Budget omission/
+null/zero retain distinct meanings. Draft matching uses only title with current
+available Listings results, no persisted draft. Saved views resolve current
+Listings state; unavailable content remains visible and retired entries are
+content-free. Operations use trusted caller identity, stable pagination and
+public boundaries, never private cross-domain joins or sessions.
+
+Existing `search.wanted_requests`/`search.saved_listings` and indexes/FKs exist in
+`20261018094330_mvp_tables.sql`; API-only pending retirement fields are already
+in `20261020142319_api_owned_retirement_and_trigger_boundaries.sql`. Reuse these
+in Step2; audit constraints/anchors/idempotency support before adding migrations,
+never create duplicate tables. ID-READY/LI-CORE/SE-CORE remain not accepted;
+isolated1–7 permitted against reviewed contracts, final8–9 acceptance pending.
+Conversations declarations do not prove live providers. No feature code changed
+or additional tests needed for this contract-only step. Await Step1 result and
+Step2 storage-scope verification. No install/commit/push/merge/cloud actions.
+
+
+### SE-01 Step10 expired image-upload caller correction and full Python recheck — 2026-10-25 01:10:42 UTC
+
+Mohit verified the timeout correction and explicitly authorized immediate repair
+of the expired image-upload test caller. Only
+`apps/api/tests/domains/listings/test_image_upload_service.py` changed: caller
+expiry now uses actual UTC plus one day because authentication checks real UTC;
+the fixed upload clock and expiry assertions stay intact. Production auth/service
+unchanged. Focused22passed in0.07s; full root `pytest -q -W error` with project-local
+Node PATH:1157passed,11skipped in70.08s. All18 preceding full-suite failures are
+resolved; seven added query/threshold regression cases explain the total increase.
+Black1file and diff whitespace pass. [Evidence/logs/hash](../evaluation/domain/se-01/upload-fixture-correction/result.json).
+No install/commit/push/merge/cloud actions. Skips and Docker/secret scan/hosted CI,
+shared-core typing, real readiness/integration, final data/labels, target/NFR and
+peer gates remain pending; this is not full-task acceptance. Await human result
+verification; SE-01 incomplete, SE-02 unstarted.
+
+
+### SE-01 Step10 test-only timeout correction — 2026-10-25 01:06:54 UTC
+
+Mohit verified the diagnosis and proposed correction. Changed only
+`tests/architecture/test_db_task_timeouts.py`: synthetic client deadline0.2s→2s,
+outer watchdog4s→6s, with explanatory startup comment. Preserve0.1s forced-kill
+grace,10s hanging client, production60s+5s argument assertion, privacy assertions,
+and missing-tool cases. Production scripts unchanged, verified against diagnosis
+SHA256 records. Focused `pytest -q -W error`:8passed in9.38s; Black1file and
+whitespace pass. [Check log/source hashes](../evaluation/domain/se-01/timeout-correction/result.json).
+No full-suite clean result claimed; prior12expired image fixtures, shared-core
+mypy and real integration/NFR/Docker/CI/peer gates remain. No installations,
+commit/push/merge/cloud actions. Await result verification; SE-01 incomplete.
+
+
+### SE-01 Step10 timeout-test diagnosis — 2026-10-25 01:05:53 UTC
+
+Mohit verified Search quality corrections and the diagnosis-only checkpoint.
+Reproduced all six original timeout-test failures. Controlled comparison ran
+all original assertions for both scripts and success/fail/hang modes: fresh
+stand-ins with0.2s deadline fail6/6; explicitly warmed stand-ins with the same
+0.2s deadline pass6/6; fresh stand-ins with2s deadline pass6/6. First execution
+of newly written Python executables takes longer than the artificial deadline
+on this machine (warmup0.68–1.33s), while later direct launches measured about
+0.02s. This explains previous cold pytest failures versus successful manual
+reruns. The OS-level source of first-execution overhead was not established;
+no production script defect demonstrated by these six failures.
+
+Only temporary controlled fixtures changed during experiments; repository code,
+tests and scripts are unchanged. [18-case comparison, original failure log and
+source hashes](../evaluation/domain/se-01/timeout-diagnosis/result.json).
+Proposed next correction is test-only2s deadline with0.1s forced-kill grace,
+10s hanging stand-in and6s outer watchdog; production60s+5s remains unchanged.
+Await human result/scope verification before editing. Other full-suite and real
+integration/NFR gates remain pending; SE-01 incomplete. No install/Git/cloud action.
+
+
+### SE-01 Step10 scoped Search quality corrections — 2026-10-25 01:02:43 UTC
+
+Mohit verified the audit and correction scope. Both SQL builders now clamp an
+accepted policy threshold above the largest stored whole-rupee bigint price,
+preserving sensitivity comparison semantics without rejecting Hybrid or binding
+an oversized SQL integer. Evaluator trims before query length validation and
+preserves input context. Helper functions/ranges are annotated; its dedicated
+Python3.13 mypy check uses the installed semantic environment, with one narrow
+exception for the pinned ONNX wheel's missing typing marker. Store/reader lifecycle
+comments now describe the opt-in public runtime. Command registry/protocol document
+the typing check. No dependency installation or global changes occurred.
+
+Checks: focused275passed/1optional native skip; initial query/evaluation regression
+suite64passed; native12passed/2optional skips with real SQL large-threshold coverage,
+actual model, migration down/reapply and inventory; helper mypy1file and query/
+evaluator mypy3files pass; Black8/boundaries0/contracts8current/whitespace pass.
+Contract command initially omitted its required mode, then lacked project-local
+Node on PATH; corrected invocation passed. Initial sandbox native startup failed;
+approved outside-sandbox disposable run passed and stopped its cluster.
+[Source hashes and raw check evidence](../evaluation/domain/se-01/quality-corrections/result.json).
+
+No full-suite clean result is claimed: preceding12expired-fixture and6infra timeout
+failures, shared-core typing, Docker/CI and real integration/data/labels/target/NFR
+gates remain unresolved. No commit/push/merge/cloud action. SE-01 incomplete;
+await human result verification before another checkpoint.
+
+
+### SE-01 Step10 local quality audit — 2026-10-25 00:56:55 UTC
+
+Mohit verified the isolated load preparation result and local audit plan. Review
+made no implementation changes. Broad Python: 1,132 passed, 18 failed, 11
+skipped. Twelve failures are fixed-date expiry in unchanged image-upload tests;
+six unchanged timeout-wrapper tests also fail outside sandbox, cause unresolved.
+Additional full-application mypy: 31 errors in semantic helper and unchanged core
+errors/logging files; registered contract consumer typing passes. Data94,
+web105 plus lint/types/build, native12/2optional skips with migration rollback/
+reapply, wrapper safety35, Black156, boundaries, generated contracts and CI parity
+pass. Docker database/secret scan and hosted CI remain unavailable.
+
+Confirmed two Search corrections: accepted very large threshold diverges between
+Keyword and Hybrid (default unaffected), and evaluator context rejects padded
+120-character input accepted by HTTP trimming. Also noted stale inactive/private
+comments. Preserve findings for a separately verified correction checkpoint;
+review is targeted and does not replace independent peer approval. [Evidence and
+hashed logs](../evaluation/domain/se-01/quality-audit/result.json). Real readiness,
+final data/labels, approved target, NFR and integration gates remain pending;
+SE-01 stays incomplete. Await human verification; no commit/push/merge/cloud action.
+
+
+### SE-01 — Step10 isolated k6/load-runner preparation — 2026-10-25 00:40:28 UTC
+
+Mohit verified bootstrap result and capped local load plan. Installed official
+k6v2.3.0 only at .tools/k6/v2.3.0/k6 after pinned GitHub metadata/archive/checksum
+verification and Mach-O minOS12.0inspection on this13.7.8ARM64Mac; version run passed.
+No global link/PATH/package manager/Docker/root Python/lock change. Added k6
+installer/pure profile+public-response validator/test/one-request workload script,
+local wrapper/raw metric reporter and owned fault fixtures; versioned local and
+browse/keyword/hybrid full-rate draft profiles plus unapproved NFR01/02manifest
+templates. Final run inputs remain null/unapproved, and runner refuses full-rate/
+external/draft execution. No final labels generated. pytest invokes Node contracts
+so existing CI test discovery covers them; actual full CI is still pending.
+
+Failure checks catch valid-shaped wrong200result,401, request timeout and valid
+responses with generator shortfall. Initial2s checks exposed5requests for4planned
+at k6's exact end boundary; before native pilot added hard phase HTTP cap plus
+separate no-HTTP boundary counter, retained raw diagnostics and reran faults.
+Drops are never erased. Actual native SQL/model pilot:2rps,5s warm-up+10s measured,
+max2active client requests,3s timeout,30HTTP requests:10warm+20measured correct,
+no measured failures/timeouts/drops/shortfall. Warm-up1boundary iteration made no
+HTTP call. Measured p50/p95/p99=17.5/38.15/40.43ms, tiny local fixture only, not
+NFR evidence. Manifests freeze tool/profile/source/target/caps before execution;
+raw points preserve separate cohorts, actual HTTP/issued/outcome/clock/dropped/
+shortfall counts, R7quantiles and explicit denominators. Every result refuses NFR
+acceptance. No remote modules/metrics/usage reporting or credential input.
+
+Checks:120evaluation Python tests pass,1optional native calibration skipped;
+Node10checks pass standalone/through pytest; Black156,boundaries0,8generated
+artifacts current, CLI/py_compile/diff pass. Stopped owned native API42566/session
+47890; helper1started/21windows,344768512bytes sampled peak API/helper (PG/k6
+excluded), all helpers reaped and private DB stopped/retained. [Source hashes,
+manifest/raw/failure/pilot/cleanup evidence](../evaluation/domain/se-01/load-runner/result.json).
+Task/real Step10/SE-CORE remain incomplete: actual upstream/auth/images/final
+counts/20+human labels, Linux/deployed/generator capacity, exact full-run approvals,
+NFR01/02/04/full CI/Docker secret scan/independent review still pending. Result
+awaits verification; SE-02unstarted. No cloud/provider spend/shared data/Git action.
+
+
+### SE-01 — Controlled explicit pipeline bootstrap and activation — 2026-10-25 00:15:20 UTC
+
+Mohit verified the dispatcher result and bootstrap plan. New Listings
+embedding_bootstrap.py provides read-only aggregate status, absent/planned->
+building preparation, bounded1..1000queue reconciliation and separate guarded
+activation. It preserves current pending/leased/failed generations and serving
+state, refuses retired/mismatched/unprepared/incomplete/conflicting-serving cases,
+and counts full live scope including unavailable sources with current complete
+parts. Registry lock21/existing SQL/store guards remain; no model or startup
+invocation. New scripts/search_pipeline.py binds explicit URL+actual host/port/
+db/login/pipeline, reads only the process DB secret, refuses libpq indirection,
+requires --execute per mutation/batch bound, and emits safe aggregate/refusal
+JSON. The flag is not exact shared/cloud target approval. Added scoped tests and
+new isolated bootstrap_probe; normal app/schema/model behavior unchanged.
+
+Checks:453focused Python and43bootstrap/CLI cases pass; mypy1new application file,
+Black151files, boundaries0,8generated artifacts current, help/py_compile/diff pass.
+First native probe passed using real operator subprocesses/app.main/SQL/worker/
+model over3controlled sources incl1unavailable: conflict/missing/pending/failed/
+leased refusal;1/2/0batch progress; preserved generations/no failed reset; full
+real publication; building remainsHybrid503. Activation during an uncommitted edit
+sees prior complete state; later writer commit makes status incomplete/Hybrid503,
+Keyword200 and activation gap refusal. Actual worker recovery permits idempotent
+activation/prepare and Hybrid200/current text. One simultaneous helper,11windows,
+345292800bytes sampled API/helper peak; all owned tasks/pools/helper and native
+DB stopped, logs/data retained. [Source hashes/observations/cleanup](../evaluation/domain/se-01/bootstrap/result.json).
+Alternative empty metadata/retry/defer controls are test setup, no fake vectors
+or production recovery policy. No package/global setup/migration/cloud/existing DB
+or Git publication. Result awaits verification; actual upstream/platform/capacity,
+final data20+human labels/NFR/full CI/secret scan/peer/FR gates remain. SE-01
+incomplete and SE-02unstarted; next reconcile original remaining obligations.
+
+
+### SE-01 — Bounded existing-job embedding dispatcher — 2026-10-24 23:59:13 UTC
+
+Mohit verified the normal lifecycle result and worker checkpoint. Added default-
+off CLIP_HYBRID_WORKER_ENABLED requiring explicit Hybrid capability. New Listings
+embedding_dispatch owns one serial task/max1autocommit pool, borrowing the same
+helper; bounded10job bursts yield1s, idle2s, failure/capacity5s. Existing worker/
+store retain20s work/30s leases, durable retries, source/token/retirement fences
+and publication validation. search_runtime starts it only on opt-in with a ready
+helper, cancels/awaits/closes it before helper/read-pool cleanup, and attempts all
+resources through errors. Unexpected task failures are visible/preserved. No
+pipeline register/reconciliation/backfill/serving transition or test identity
+added. Config/example, dispatcher/lifecycle/config tests and a guarded native
+worker_dispatch_probe added; no change to existing one-job bridge or model rule.
+
+Checks:410focused Python/62narrow dispatch-lifecycle-config passed; mypy4files,
+Black146files, boundaries0,8generated artifacts current, CLI/py_compile/diff pass.
+Initial native probe failed because its chunk subquery counted other listings;
+fixed generation correlation plus independent old-chunk absence assertion, not
+production code. Failed run cleanup confirmed and report retained as failure.
+Final fresh actual app.main/SQL/model probe: empty registry idle/unchanged; edit
+invalidates/replaces generation and removes old vectors; controlled future due
+job gives Hybrid503/Keyword200; released due job is published/current, restoring
+Hybrid200. Closing only worker pool leaves Keyword and complete Hybrid200.
+One simultaneous helper,11windows,366133248bytes sampled API/helper peak; helper/
+pools/task and owned private DB closed. [Source-bound success/failure/stop evidence](../evaluation/domain/se-01/worker-dispatch/result.json).
+Test-only bootstrap and due-time gate do not implement production bootstrap or
+change retries. No package/global setup/migration/cloud/shared DB/publication.
+Controlled bootstrap is next after verification; original upstream/platform/
+capacity/data20+human labels/CI/secret scan/peer/FR/NFR gates remain. Result awaits
+Mohit verification; SE-01 incomplete and SE-02unstarted.
+
+
+### SE-01 — Normal API read-helper lifecycle and configuration — 2026-10-24 23:47:46 UTC
+
+Mohit verified this checkpoint and directed continuation during work. Added
+explicit default-off Hybrid settings/absolute interpreter-model paths and paired
+DB validation in core/config.py plus .env.example documentation. New Listings
+search_runtime owns1real helper and a dedicated max2autocommit pool; expected
+startup failure closes partial resources and leaves Keyword available with Hybrid
+503. Main lifespan injects these into PostgresListingsStore; only nonblank Hybrid
+uses the extra pool. Existing transactional command/Keyword pool is unchanged.
+Cancellation-safe cleanup handles startup cancellation, late cancellation and
+later adapter-construction failure, preserving close failures. Exact3boundary
+allowlist entries admit the lifecycle import; helper module docstring updated.
+No pipeline DML, job dispatch, backfill, test caller or deployment added to normal
+startup. Settings do not discover/read/download artifacts; helper verifies pins.
+
+Checks:367focused Python pass including configuration/health/security, lifecycle,
+public modes/browse/keyword/hybrid/helper, Search and contracts. Mypy4files,
+Black143files, boundaries0,8generated artifacts current, CLI help/diff pass.
+Fresh guarded normal_runtime_probe.py used actual app.main/pools/model over3
+controlled sources, with test-only caller/eligibility:13HTTP requests across
+disabled/ready/unavailable states prove Keyword200 and blank Hybrid200 throughout,
+nonblank Hybrid503 while disabled/missing interpreter, and actual cycle/bicyle/
+vehicle/wheeled vehicle/keep food cold hits when ready. Verified pool transaction
+modes,1simultaneous helper,11windows,342491136bytes sampled peak API/helper, all
+helpers reaped and owned DB stopped. [Source hashes/run/resource/stop evidence](../evaluation/domain/se-01/normal-api-lifecycle/result.json).
+The explicit fixture bootstrap preceded normal startup; it does not implement
+production bootstrap/dispatch. No new package/global setup/cloud/existing DB or
+Git publication. Linux/deployment resource/capacity, actual upstream/readiness,
+final data20+human labels/NFR/full CI/secret scan/independent review remain. Result
+awaits verification; SE-01 incomplete and SE-02unstarted. Next explain bounded
+worker dispatch/controlled bootstrap checkpoint after verification.
+
+
+### SE-01 — Browser verification and cancellation-safe native cleanup — 2026-10-24 21:37:08 UTC
+
+Mohit reported “It works,” verifying the real local search/browser checkpoint;
+no extra viewport/keyboard/scenario facts inferred. Stopped the owned browser
+session51734/API36900. API and DB stopped, but Uvicorn replayed SIGINT at the
+first async cleanup await, interrupting helper-close/report writing (exit130).
+Exact repository helper-command inspection found no surviving helper; original
+session cannot claim a reap report. Corrected native_preview.py with shielded
+complete_cleanup, which finishes owned resources/report through late cancellation
+and preserves cleanup failures. test_native_preview.py adds the reproducing
+cancellation/failure regression. No search/UI algorithm changed.
+
+76focused Python tests pass. Fresh native session91193/API39337 reran the real
+query matrix, then actual Ctrl+C exited0 with complete report:12windows,
+334528512bytes peak API/helper,1helper started, no faults, all helpers reaped;
+DB stop confirmed. Final corrected directory /tmp/clip-listings-test-2742p4oq,
+original browser directory /tmp/clip-listings-test-vh82oo1d; both retained, no
+reset/delete. [Versioned source hashes and cleanup evidence](../evaluation/domain/se-01/native-http-model/result.json).
+Local checkpoint verified; task remains incomplete pending original upstream,
+production lifecycle/platform/data/labels/CI/review/FR/NFR gates. No new task/step,
+package/global setup/cloud/hosting/Git publication started.
+
+
+### SE-01 — Real native HTTP/model backend and browser handoff — 2026-10-24 21:32:11 UTC
+
+Mohit clarified the frontend itself is fine and verified it as UI-only. The earlier
+scripted preview was never the real search engine; presenting its lack of query
+behavior as a new replacement checkpoint was misleading. Connecting the backend
+was already required by the existing plan. Mohit verified the concrete native
+integration checkpoint. Added test-only native_preview.py: fixed repo tools/new
+private0700Unix-socket cluster,12migrations,3controlled real listings/image metadata,
+real generation worker/offline helper, serving only after full publication, actual
+browse router/service/store, explicit synthetic caller, idle autocommit pool and
+owned lifecycle/watchdog. No normal app startup/cloud/global setup changed.
+
+Initial empty-cluster bootstrap failed on dbmate option ordering; corrected
+migrate --strict, retained logs and confirmed owned shutdown. Final fresh headless
+run passed10actual ASGI query checks plus validation/header guards, building-
+pipeline503/Keyword200, closed-helper503/Keyword200; helper reaped/database stopped.
+Both modes find bicycle for cycle/bicyle/vehicle. Keyword returns empty for
+wheeled vehicle/keep food cold; Hybrid finds bicycle/refrigerator respectively.
+These controlled checks are not final human-labelled relevance acceptance.
+
+Replaced only owned fixture36173/session88369 with native API36900/session51734;
+existing Vite5688 retained. Ten live proxy queries match headless results; API
+headers prove native backend/private,no-store; UI200. The banner now identifies
+actual backend response metadata, distinguishing real local SQL/model from scripted
+fixtures and unknown backend; metadata never controls auth/routing. Preview-only
+guard and disclosure tests added. Python75/web105, lint57/types/build, Black140,
+boundaries0,8artifacts current, CLI/py_compile/diff pass. [Source hashes, native
+resource/cleanup and live-proxy evidence](../evaluation/domain/se-01/native-http-model/result.json).
+One helper/100windows, sampled512MiB API+helper ceiling,30min, DB query5s/lock1s.
+Fresh live cluster /tmp/clip-listings-test-vh82oo1d retained after owned stop;
+final live cleanup awaits stop, while headless cleanup is proven. Human browser
+verification pending; actual Identity/images/upstream, production lifecycle/Linux,
+full data/labels/NFR/CI/secret scan/independent review remain. SE-01 incomplete,
+SE-02unstarted; no package/install/cloud/Git publication.
+
+
+### SE-01 — Frontend Keyword/Hybrid and relevance controls — 2026-10-24 21:15:48 UTC
+
+Mohit verified the API result and frontend checkpoint. Search-owned SaleDiscovery
+adds immediate mode controls outside the form with visible associated help,
+Relevance in both modes, explicit Hybrid503 Retry/Use Keyword recovery, applied
+input/page preservation and mode-only draft preservation. URL/parser/form logic
+omits defaults, restores Hybrid/relevance bookmarks, rejects invalid modes/blank
+relevance and resets cleared relevance forms to Newest. New request coordinator
+aborts/ignores late results; keyed request state hides stale content immediately.
+Feature CSS, query/request/static-render/contract tests and labelled loopback
+fixture scripts updated. No shared page or other feature private code changed.
+
+Checks:102web tests/10files, lint57files, both TypeScript checks and production
+build;68focused Python tests; Black138files, boundaries0,8generated artifacts
+current and diff check passed. New test fixture's widened page_size and type-only
+import warning corrected before final pass. Five live loopback UI/proxy probes
+passed (UI200, scripted Hybrid503, Keyword200, blank Hybrid200, blank relevance422;
+API private,no-store). Restarted only owned fixture session46689/PID5666 as
+session88369/PID36173; retained Vite5688. Sandbox blocked initial process/probe
+reads; scoped escalated reads passed. No model, SQL, install, global setup,
+worker/app lifecycle, cloud or Git publication action. [Source-bound evidence and
+human verification cases](../evaluation/domain/se-01/frontend-modes/result.json).
+Automated static rendering/transport checks do not prove browser interactions.
+Safari desktop/narrow portrait/landscape, drafts, history, stale/error/recovery and
+keyboard checks await Mohit. Original real integration/data/platform/CI/peer/
+FR/NFR gates remain; SE-01 incomplete and SE-02unstarted.
+
+
+### SE-01 — Registered public search mode/relevance API — 2026-10-24 21:09:36 UTC
+
+Mohit verified private keyword relevance and this API plan. Source/generated
+ListingQuery adds keyword(default)/hybrid and relevance; runtime rejects invalid
+enums/blank relevance before dispatch. PostgresListingsStore enables vocabulary/
+typo matching for Keyword and explicitly injects Hybrid capability without startup
+or fallback; blank Hybrid browses normally. Extracted catalogue validation keeps
+invalid filters422 before missing-helper503. Owned browse route applies common
+safe handlers plus private,no-store to success/auth/validation/dependency failures.
+No shared core errors or response fields changed. Source/generated artifacts,
+store/validation/route/helper docstring, mode/native adapter tests and the existing
+web contract compatibility assertion changed; UI implementation remains next.
+
+Checks:408focused Python passed, including42new mode cases; native11passed/
+3unselected model probes with complete12migration rollback/reapply and unchanged
+inventory; web84passed plus lint/types/build; mypy4files, Black138files,
+boundaries0,8generated artifacts current and diff check passed. Initial new-test
+class-equality assertions, generation freshness after source formatting, a wrapper
+type annotation and the web test's all-fields assumption were corrected; final
+checks pass. No actual model inference/install or worker/app startup performed.
+[Source hashes/native evidence](../evaluation/domain/se-01/public-api/result.json).
+Normal app still has no helper; actual configured HTTP/model lifecycle, real
+upstream and final data/labels/platform/browser/full CI/Docker secret-scan/peer/
+FR/NFR gates remain pending. Result awaits Mohit verification; SE-01 incomplete,
+SE-02unstarted. No commit, push, merge, hosting or cloud action.
+
+
+### SE-01 — Private model-independent keyword relevance — 2026-10-24 20:39:39 UTC
+
+Mohit verified the public proposal/private keyword step and clarified search is
+his domain. The prior separate Suraj-permission gate before search/public-contract
+implementation was overstated. Corrected the current proposal/decision wording:
+Mohit verifies search choices and steps; shared-interface compatibility and
+independent peer review remain normal PR responsibilities, with separate exact
+merge approval. No peer review was waived/inferred, no external message sent.
+Older entries retain the earlier interpretation as history, superseded by this
+clarification; public API/UI sequencing and real acceptance gates still apply.
+
+Changed `browse_store.py`: private keyword_relevance=False option on builder/
+reader, version keyword-relevance-v1. True requires nonblank text and a compiled
+query bound to the original/vocabulary, implies existing bounded vocabulary/typo
+expansion, preserves all original/expanded membership and filters. Original-query
+matches rank ahead of expanded/typo-only, then ts_rank_cd with the matching query,
+existing positional vector/default weights/normalization0, then ascending UUID.
+No rank cutoff, candidate cap/per-page rerank or score/tier in the summary. Old
+False/default/recency/price behavior is unchanged. No model client/artifact/
+configuration/readiness or embedding table is consulted by the keyword path.
+Public enums/fields/dispatch remain unmodified; this is an owned private argument.
+
+Added `test_keyword_relevance.py`15construction/binding/blank/flag/transport/
+parameter/default/model-construction guards. Extended `test_browse_postgres.py`
+with the last rollback-only fixture matrix: a25-occurrence expanded source has
+higher raw native rank but stays below an original single occurrence; repeated
+original terms/proximity order, original misspelling, identical membership,
+hidden visibility, selective price/negotiability/condition/category, invalid/blank/
+zero-lexeme/unmatched/late-empty cases,65equal-rank rows/UUID-ascending pages at
+20/50/100and current rows with no serving pipeline/65failed jobs. Native ranking
+is real PostgreSQL, never a Python scorer. Failed semantic metadata setup is
+itself rolled back; no model inference occurs. Zero-rank filtering is excluded
+by membership construction, not a fabricated stripped generated-vector fixture.
+
+Checks:501focused tests pass/10native cases skip outside the separate harness;
+15keyword unit and38keyword+existing compiler cases pass; strict mypy1file,
+Black137files, boundary0,8registered artifacts current, compile/diff checks pass.
+First/final fresh native PostgreSQL18.6/dbmate2.36 run
+`/tmp/clip-pd08-native-check.QQppMa` passed11adapter cases (8DB/3preconnect guards),
+with3actual-model probes intentionally unselected. Clean apply/repeat/three smoke
+suites/12downs/reapply inventory unchanged SHA
+27b17765c9eeeab4bc058093ba486895a4c1da4ea78924cd64f860fcbd70b110.
+Owned cluster stopped, private logs/data retained. No failed native keyword run,
+new dependency/extension/index/migration, model call, existing/shared DB or global
+interpreter change. Root lockSHA1eba235e85c4fdfefcde9ed8ef216f12698207098cd44719935b7604d935a5cf
+unchanged. [Source/native/unit evidence](../evaluation/domain/se-01/keyword-relevance/result.json)
+and [private policy](../architecture/keyword-listing-relevance.md) identify exact
+version/code and scope. Current proposal, DEC-13, Listings/commands/evaluation/docs
+index reflect implemented-private state and normal review requirements.
+
+Documentation closeout correction — 2026-10-24 20:49:05 UTC: final link checks caught a reused
+working string overwriting the Listings README, command registry and SE-01ledger
+while appending notes. Reconstructed their preceding315/952/214-line contents
+from the tracked baseline and recorded earlier documentation writes in a memory-
+only replay, then restored those prefixes and appended only the intended new
+sections. Recovery prefix/final hashes retained in the keyword evidence manifest;
+163relative links/original headings/earlier sections and all13code fingerprints
+verified. Implementation/test files were unaffected, so passing native/501focused
+results remain applicable; no unrelated code rerun was needed. This correction
+supersedes the intermediate failed documentation-link check.
+
+Scoped checklist review covers query/SQL bounds, authoritative native ranking,
+original/phrase/filter/page preservation, no model coupling/private score output,
+default compatibility, cleanup, docs and honest evidence separation. Result awaits
+Mohit's verification. SE-01incomplete, SE-02unstarted. Next proposed checkpoint is
+registered public query source/generation/validation/dispatch, then feature UI/
+lifecycle under the verified proposal; normal PR review remains before merge.
+Actual upstream/full corpus/images/20+reviewed labels/Linux/resources/browser/
+full CI/secrets/independent exact-code and original FR/NFR/readiness gates remain.
+Known12expired-context image tests not rerun/repaired. No public activation,
+commit/push/merge/cloud/hosting performed.
+
+### SE-01 — Public search-mode and both-mode relevance proposal — 2026-10-24 20:12:59 UTC
+
+Mohit verified the private reader, selected Keyword as initial/default mode with
+an explicit reversible Hybrid/Keyword switch and short per-mode explanations,
+and accepted Relevance in both modes. The earlier hybrid-only-relevance suggestion
+was not selected. Prepared [contracts/search-mode-proposal.md](../../contracts/search-mode-proposal.md)
+with exact ListingQuery/AvailableListingQuery additions, mode/text/sort matrix,
+blank/zero-lexeme distinctions, default Newest ordering, existing page/summary/
+auth/privacy/error boundaries, future examples and review/implementation gates.
+
+Keyword-relevance-v1 is a **proposed unimplemented** native rule: original-query
+matches before expanded/typo-only, within-tier ts_rank_cd using the matching
+original/expanded query and existing positional vector/default weights/normalization0,
+then ascending UUID. No semantic dependency, keyword rank cutoff, new index or
+per-page rerank is selected. Native keyword-rank work is the next proposed
+checkpoint, not a passed check. Hybrid keeps the verified35/65blend0.35private
+reference. Scores remain internal; no new response fields. Shape defaults remain
+compatible while enabling vocabulary/typos intentionally broadens keyword results.
+
+The proposal defines visible/accessibly associated mode descriptions, immediate
+switching of the applied query with page1reset, preservation of filters/sort/size
+and unsaved drafts, URL/back/forward behavior, cancellation/late-response handling,
+blank-text relevance validation and explicit503Retry/Use Keyword behavior.
+No silent fallback or stale page relabelled as new-mode success. General backend
+failure may affect both modes; keyword independence refers to semantic capability.
+No user-facing model/embedding internals. The packet includes downstream source/
+generation/consumer/UI/native/browser checks and affected-owner review requirements.
+
+Audit found two ordering dependencies: keyword SQL currently lacks relevance,
+and generated query widening immediately affects the inherited HTTP validator.
+Proposal therefore keeps editable Python/generated/runtime/UI untouched; private
+keyword preparation may precede exact shared-signature review, but registration
+requires that review and matching validation/dispatch/guards together. Suraj's
+prior conceptual approval is not counted as exact contract/peer approval. No
+external message was sent. Root CONTRIBUTING/public-interface ownership and
+frontend feature boundaries remain applicable.
+
+Updated contracts/search.md, listings.md, contracts/README.md, DEC-13 and docs
+index to link this draft distinctly from current runtime. Documentation checks:
+98relative links resolve, request/rank/failure/UX clauses checked, diff whitespace
+clean; existing generator freshness passes for8registered artifacts. Before/after
+SHA snapshots prove41contract source/generated/API/Listings/frontend source files
+unchanged. Official PostgreSQL18ranking documentation checked for the proposed
+native rank; this is not local SQL/model/NFR evidence. No new executable code or
+configuration; no behavioral/Black/native/browser rerun warranted for docs-only
+work. Prior486focused/native12private-reader evidence remains historical/current
+for unchanged code, not proof of newly proposed keyword relevance.
+
+Exact proposal result awaits Mohit's verification. Keyword-rank implementation/
+native checks, affected-owner public review, registered source/types/dispatch,
+UI/browser/lifecycle and all original upstream/data/images/20+human labels/Linux/
+resources/full CI/secrets/independent review/FR/NFR/readiness gates remain. SE-01
+incomplete, SE-02unstarted. No model/data/DB/install/cloud/hosting/commit/push/merge
+or public activation performed.
+
+### SE-01 — Private one-snapshot hybrid reader and selected v1 policy — 2026-10-24 19:54:00 UTC
+
+Mohit verified the explained35/65title/max-description blend,0.35semantic cutoff,
+original>expanded/typo>semantic tiers/score-desc/UUID-asc relevance ties, no semantic
+candidate cap and controlled503 plan. He explicitly confirmed503should be a
+normal error response rather than a website crash. The selected implementation
+reference is hybrid-blend-v1; no final relevance/NFR or public activation inferred.
+
+Added Listings-owned `hybrid_read.py`: bind exact original trimmed query/model/
+finite-unit vector without retaining query text in repr; validate existing query,
+server instant, threshold and compiled vocabulary binding; one native result
+statement covers catalogue flags, visibility/filters, exact supported serving
+space, full current source/generation/chunk coverage, native cosine blend and
+lexical/typo union, whole-corpus order/dedup and size+1window. Explicit summary JSON
+whitelist/image references excludes all private vectors/hashes/generation/owner/
+selection metadata; integer money remains exact. Existing recency/price orders
+remain over the same matching set. Nonmatching eligible gaps still cause503;
+ineligible gaps do not. Empty eligible set succeeds only with supported serving
+capability. Invalid catalogue retains422 priority. Driver/helper/capacity/binding/
+coverage failure maps existing dependency_unavailable503, not a new wire code.
+
+Private `search_hybrid_page` borrows an explicit real helper/idle autocommit
+connection, with20swork and local3sstatement/1slock limits; no model work under
+caller-held DB transactions, cache, implicit worker/bootstrap or keyword fallback.
+Actual caller eligibility remains the upstream precondition, not a fixture claim.
+No public route, app startup, generated field/enum or frontend is changed.
+
+Added `test_hybrid_read.py`22unit/driver/HTTP cases and
+`test_hybrid_read_postgres.py` three actual DB cases: mathematical scoring and
+69-row stable pages for4orders/20-50-100sizes, all coverage/freshness/filter/model/
+price/empty guards; server-observed advisory-lock snapshot overlap with committed
+edit, next-request503and fenced recovery; and explicit real helper/worker/query
+read, typo/semantic results, missing-coverage503then filtered recovery, closed-
+helper503and independent keyword success. Coordinate fixtures do not prove model
+quality. `test_embedding_postgres.py` seed helper accepts an optional fixed INSERT
+clock; existing callers/default behavior unchanged. Native-checks.sh adds only
+explicit --hybrid-read model opt-in; check_database.py includes the two SQL cases
+and skips optional model work without installing packages.
+
+Checks:486focused tests pass/10native skips outside separate harness;22reader unit,
+strict mypy1file, Black136files, boundaries0,8generated artifacts current, shell/
+compile/diff checks pass. Final private PostgreSQL18.6/dbmate2.36 run
+`/tmp/clip-pd08-native-check.Vam9tG` passed12adapter cases (9DB/3preconnect guards),
+with2separate worker-model/calibration-model cases intentionally unselected.
+Clean apply/repeat/three smoke suites/12downs/reapply inventory unchanged SHA
+27b17765c9eeeab4bc058093ba486895a4c1da4ea78924cd64f860fcbd70b110.
+Cluster stopped; logs/data retained. Actual helper/read path used11windows,
+one live helper/one start, sampled host/helper peak347193344bytes under512MiB;
+all owned helpers reaped. Controlled HTTP503test confirms a subsequent request
+in the same app succeeds; actual model test separately confirms filter recovery
+and keyword independence. This is not yet a public website/browser acceptance.
+
+First native dcujLe9pass/3fail/2skip caught a fixture attempt to rewrite immutable
+created_at before read checks; fixed creation instant at INSERT rather than
+weakening origin guards. HODgK2passed12/2skip before final retired/incomplete-chunk
+assertions. All three clusters stopped and failures retained.
+[Source/model/native evidence](../evaluation/domain/se-01/hybrid-read/result.json)
+and [private contract](../architecture/hybrid-listing-read.md) bind exact source,
+policy, model/typo/vocabulary, bounds and commands. DEC-13/calibration/storage/
+Listings/evaluation/command docs record current selected/private state while
+preserving historical measurements. Shared503label aligned to canonical existing
+error code. Root Python/lockSHA1eba235e85c4fdfefcde9ed8ef216f12698207098cd44719935b7604d935a5cf
+unchanged; no install/extension/new schema/public configuration/cloud action.
+
+Scoped checklist review covers ownership/parameters, private projection,
+source/model coverage/failure/cancellation, exact money/pagination, actual native
+snapshot and real-model separation, retained failure/cleanup and documentation.
+SE-01remains incomplete; SE-02unstarted. Result awaits human verification.
+Public mode/relevance signatures/affected-owner registration/generated/UI/retry-
+keyword behavior, real upstream/final corpus/images/20+human labels, dispatch/
+Linux/resources/full-corpus plans/performance/browser/full CI/secrets/independent
+exact-code review and original FR/NFR/readiness gates remain. Known12expired-
+context image tests not rerun/repaired. No commit/push/merge/hosting or external
+message performed; those retain their separate approvals.
+
+### SE-01 — Bounded known-vocabulary typo alternatives — 2026-10-24 19:24:52 UTC
+
+Mohit explicitly selected vocabulary-only typo tolerance after its scope was
+explained. He accepts the earlier vague telescope/stargazing semantic miss as a
+nonblocking limitation, so no extra long-description encoding work is assumed
+required. This direction does not freeze the provisional scoring policy, accept
+final labels/NFRs or activate public search. SE-02 remains unstarted.
+
+Added Listings-owned `typo_tolerance.py`: version known-vocabulary-typos-v1,
+bounded insertion/deletion/substitution/adjacent-swap distance, one changed word
+per phrase, input>=5/target>=4/same initial/<=32characters; one edit or two when
+both words>=7. Longest unique closest concept owner only; equal-owner aliases
+agree, competing owners stay literal. Literal-only names never become targets.
+At most2corrected groups/512phrase comparisons per query. `lexical_expansion.py`
+tries exact PostgreSQL-normalized phrases first, then this spelling helper,
+retaining whole original query OR, independent AND groups, added-alias phrase
+semantics, one-way taxonomy and existing12/16/48expansion budgets. Overflow uses
+whole original fallback. Fixed typo_expanded/typo_budget metadata, no raw query
+logging or generated SQL from input. No general dictionary/listing scan, source
+rewrite, extra SQL lookup, package/extension/schema/model/config change.
+
+Added `test_typo_tolerance.py` (40cases) and expanded real
+`test_browse_postgres.py` fixtures/assertions: bicyle/bycicle/vehicel/boook,
+mobile-phnoe/notbook-computer/washing-machnie, short/ambiguous controls with actual
+table/tablet rows, exact inflection precedence, original misspelled/nonadjacent
+source matches, visibility, selective price/negotiability, stable20/50/100pages
+and compiled GIN eligibility. Unknown real chain can add chair; native test
+preserves both the original chain and added chair matches rather than pretending
+spelling distance detects intent. Initial-letter/short/unfamiliar arbitrary word
+correction is deliberately not promised. Public PostgresListingsStore still
+never enables the existing private expansion opt-in.
+
+Checks:40typo unit cases and63typo+existing compiler cases pass;464focused tests
+pass/7native cases skip outside separate harness; strict mypy2files, Black133files,
+boundaries0,8generated artifacts current, compile/diff checks pass. Final native
+PostgreSQL18.6/dbmate2.36 run `/tmp/clip-pd08-native-check.Nttx9c` passed9adapter
+cases (6DB/3preconnect guards),2separate optional actual-model cases intentionally
+skipped; no model inference performed here. Clean apply/repeat/three smoke suites/
+12downs/reapply inventory is unchanged SHA
+27b17765c9eeeab4bc058093ba486895a4c1da4ea78924cd64f860fcbd70b110.
+Owned cluster stopped; all logs/data retained. First native run3OmGkz8pass/1fail/
+2skip exposed fixture price/negotiability state leaking into subsequent all-row
+pagination; reset those fields before that matrix, preserving product behavior
+and expected rows. 4atWFg9pass/2skip preceded final table/tablet/chain controls.
+All three owned clusters stopped, no existing/shared DB touched.
+
+[Source-bound evidence](../evaluation/domain/se-01/typo-tolerance/result.json),
+[spelling policy](../architecture/search-typo-tolerance.md), DEC-13, SE-01 Step4,
+Listings/vocabulary/calibration/evaluation docs and command registry now record
+scope, outcomes, limits and consequential human direction. Root Python and lock
+SHA1eba235e85c4fdfefcde9ed8ef216f12698207098cd44719935b7604d935a5cf
+unchanged; no install/download/global setting or external action. Prior calibration
+results remain historical/source-bound, not silently updated to claim typo tests.
+
+Scoped checklist review covers reviewed ownership/taxonomy, bounded input/work,
+SQL parameters, original/phrase/filter/page preservation, no private source logs,
+actual native checks and retained failures. Result awaits human verification.
+Task-wide closeout remains open: scoring policy/public mode/relevance/coverage/
+read/fusion/UI/dispatch integration, actual upstream/final corpus/images/20+
+human-reviewed labels, Linux/resources/browser, full Docker CI/secret scan and
+independent exact-code/peer/FR/NFR gates remain. Known12expired-context image tests
+were not rerun/repaired. No commit/push/merge/cloud/hosting/new messages performed.
+
+### SE-01 — Development-only hybrid relevance calibration — 2026-10-24 19:03:31 UTC
+
+Mohit verified the private bridge result and the explained calibration checkpoint.
+Added `data/evaluation/development/hybrid-search-v1.json`:8controlled synthetic
+listings/11queries,10intended positives and1intended empty result, explicitly
+fixture-author intent/unreviewed and separate from final labels. No final labels
+were invented/generated. Added `scripts/evaluation/semantic/calibration.py`:
+strict bounded fixture/matrix bindings and finite full-pair validation, stable
+UUIDs, actual pinned helper encoding and native English/expanded-query/cosine
+measurements on fresh session-temporary fixture tables;90predeclared comparisons
+(title/max/35-65blend ×5thresholds ×2fusion rules ×3semantic caps). Baseline
+membership and original keyword candidates are preserved. Python compares the
+measured score matrix only; it is not production retrieval or fake-model evidence.
+CLI reanalysis requires bound captured input and never invokes SQL/model work.
+
+Added portable `test_search_calibration.py` and explicitly opted-in
+`test_search_calibration_postgres.py`; `native-checks.sh --search-calibration`
+passes only the test flag, and native/Docker adapter lists include the optional
+case without installing optional packages. Guards reject unsafe connections
+before SQL/model work; real SQL also verifies cleanup and preservation of an
+existing temp-table sentinel. Base listing/user/job counts remain unchanged;
+no base data/pipeline/model/schema/public contract/UI/startup/dispatcher altered.
+
+Checks:42calibration unit tests pass;424focused tests pass/7native skips outside
+harness; strict mypy1file, Black131files, boundaries0,8generated artifacts current,
+shell syntax and diff whitespace pass. Native PostgreSQL18.6/dbmate2.36 run
+`/tmp/clip-pd08-native-check.s1a9iF` passed10adapter cases (7DB/3preconnect guards)
+with1separate worker-model case intentionally not selected. Its previously
+verified worker evidence remains separate. Clean apply/repeat/three smoke suites/
+12downs/reapply produced identical schema inventorySHA
+27b17765c9eeeab4bc058093ba486895a4c1da4ea78924cd64f860fcbd70b110.
+Owned cluster stopped; logs/data retained. The real calibration used30windows,
+one live helper/one start, sampled host/helper peak344686592bytes under512MiB,
+all owned helpers reaped and temporary tables removed. First successful run
+22Q71T retained (10pass/1skip) before final collision regression; both native/model
+matrices are exactly equal. Two analysis-only CLI runs also produced identical
+report bytes. Root Python/lock unchanged; no new install/download/global action.
+
+[Native/model/score/comparison/source-bound evidence](../evaluation/domain/se-01/calibration/result.json)
+and [provisional proposal](../architecture/hybrid-search-calibration.md): literal
+keywords find3/10intended positives, expansion6/10,35/65blend at0.35 finds9/10,
+with the intended empty guitar query empty. All11cases remain in reports; the
+comparison has9hits/11total, not a final NFR claim. Candidate precision9/11;
+unwanted pairs vehicle→poster and bicycle-poster→cycle remain. Tiered versus
+boosted and capnone/3/5 yield identical rankings on this tiny set, so superiority/
+capacity is not inferred. Fridge score0.3526915098 is barely above0.35. Stargazing
+still misses the telescope despite full903-token/four-chunk coverage; literal
+telescope succeeds through FTS. Raising/lowering a threshold alone does not
+establish robust quality. Policy is **not frozen/activated**. Proposed blend/
+threshold/keyword tiers/no semantic cap are development reference only; recommend
+separately verified long-source encoding investigation and broader development
+cases before production freeze, without editing the current pipeline or labels.
+
+Scoped checklist review covers explicit target/process/resource bounds,
+no customer source/vector output, deterministic bindings/repeat, safe cleanup,
+actual model/native separation and docs/commands. Full task-wide closeout is not
+due: real upstream/full corpus/images/20+reviewed final labels, public one-statement
+coverage/filter/read/fusion/page behavior, Linux/deployment/resources/browser,
+Docker/full CI/secret scan and independent exact-code review remain pending.
+Previously observed12expired-context image tests were not rerun/repaired. SE-01
+incomplete; SE-02 unstarted. Current result/proposal awaits human verification.
+No commit, push, merge, external message, hosting or cloud action performed.
+
+### SE-01 — Private one-job DB/helper bridge and real integration — 2026-10-24 18:04:35 UTC
+
+Mohit verified the helper boundary and the explained bridge plan. Added inactive
+`embedding_worker.py`: one process-wide nonwaiting slot; exact helper-space claim;
+idle dedicated autocommit connection required; committed receipt before inference;
+overall20s claim/queue/start/compute/publication budget, separate<=5s helper reap
+and<=3s failure recording. Full ranges/parts validate before existing atomic
+publication. Cancellation propagates and leaves a reclaimable committed lease;
+uncertain DB errors become fixed WorkerUnavailable without raw driver/source
+messages or immediate replay. No dispatcher, app/startup/public binding or real
+corpus bootstrap was enabled.
+
+`embedding_store.py` adds an optional exact-spec claim filter (workers always use
+it), unsafe-transaction guard, transaction-local3s statement/1s lock bounds and
+fenced5s helper-capacity deferral refunding the claim attempt exactly once.
+Other pipeline jobs remain pending/untouched rather than failing under the wrong
+model. No schema/base migration or dependency/interpreter/lock change. Added
+`test_embedding_worker.py` and `test_embedding_worker_postgres.py`; transport
+assertions in `test_embedding_store.py` now check absence of chunk writes rather
+than absence of a timeout-setting cursor. `native-checks.sh --embedding-worker`
+opts into the fixed real model; the ordinary native/Docker adapter lists include
+fault/SQL bridge checks and skip only that optional model case. `check_database.py`
+includes the new portable native file without installing model packages.
+
+Checks:114 helper/worker/store unit tests pass;382 focused tests pass/6 native
+cases skip outside the separate harness; strict mypy5files, Black128files,
+boundaries0,8generated artifacts current, helper3.13 compile, shell syntax and
+diff whitespace pass. Final private PostgreSQL18.6/dbmate2.36 run
+`/tmp/clip-pd08-native-check.OkUlxN` passed10adapter cases (7real DB/3preconnect
+guards), clean apply/repeat/three smoke suites/twelve downs/reapply and identical
+inventory SHA27b17765c9eeeab4bc058093ba486895a4c1da4ea78924cd64f860fcbd70b110.
+Its owned cluster stopped; logs/data retained. Actual fixed-model bridge processed
+16windows,903-token/four-chunk description, two owned helper starts, peak sampled
+host/helper349323264bytes under512MiB; all helpers reaped. Verified committed
+claim/no held listing lock, persisted real vectors, actual owned-helper crash/
+retry/restart, source ABA rejection/recovery, price-only change and final retirement
+fencing. Fault pipes separately verify timeouts/invalid coverage/crash, capacity
+without attempt exhaustion, cancellation and expiry reclaim; no fake relevance.
+
+Earlier native runs retained:SBq2BU9pass/1modelskip (CLIP_ opt-in removed by API
+fixture; fixed test-only LISTINGS_TEST_ flag without weakening isolation);
+D1WjDr8pass/2fixturefail (lease expiry touched unleased second-pipeline row; price
+123was not whole-rupee; corrected inputs, constraints preserved); myGsJz10pass
+before crash case;7Ezzdi10pass before fail-closed missing-host-RSS assertion.
+Initial unit fixture omitted a spec for assert_idle, corrected; no production
+behavior inferred from that failure. [Result/model metrics/source fingerprints](../evaluation/domain/se-01/worker-bridge/result.json)
+and [private bridge contract](../architecture/semantic-embedding-worker.md)
+retain source-bound evidence, limits and commands. Root lock SHA remains
+1eba235e85c4fdfefcde9ed8ef216f12698207098cd44719935b7604d935a5cf.
+
+Scoped checklist review covers boundaries, no plaintext/vector diagnostic output,
+explicit targets, bounded cleanup/recovery, tests and documentation. Full Docker
+CI/secret scanner and previously observed12expired-context image tests are not
+claimed passed/rerun. Independent exact-code/schema review remains pending.
+SE-01 stays incomplete: real upstream/corpus/images/human20+labels, public
+single-snapshot coverage/read/fusion, dispatcher/bootstrap/deployment/Linux/
+resource/browser/FR/NFR/readiness gates remain. SE-02 not started. Current bridge
+result awaits human verification; preview next checkpoint is private hybrid
+read/scoring/coverage preparation, with public contract/activation gates separate.
+No cloud/hosting/global install/commit/push/merge performed.
+
+### SE-01 — Real private helper IPC/lifecycle implementation and model probe — 2026-10-24 17:39:35 UTC
+
+User verified the native pipeline/bootstrap matrix and requested real-helper
+integration. Added private `embedding_protocol.py`, `embedding_helper.py` and
+`embedding_client.py`. Stdlib JSONL protocolv1 binds exact request/pipeline/owned
+PID/runtime, rejects malformed/duplicate/oversized/misbinding/extra/nonfinite/
+coerced metadata, enforces64KiB input/2MiB output and full typed token ranges.
+Helper verifies actual model/tokenizer SHA/runtime pins, runs one CPU inference
+thread, mean-pools/L2-normalizes every title/description window, blocks Python
+network/child audit events and emits no raw source/error traces. No Hub loading,
+credentials, actor/DB targets or public response fields enter the protocol.
+
+Client uses one process-wide controller/owned child, one serial exchange/eight
+waiters, optional30s prewarm,5s inference/read,20s request including queue/lazy
+startup, separate<=5s reap and1s restart cooldown. Cancellation/close/crash/bad
+output destroys/reaps that stream; waiting cancellation does not kill another
+call. Spawn cancellation retains ownership; uncertain cleanup latches failure,
+no overlapping replacement. Inherited controllers refuse to signal a parent's
+helper. No failed-request replay/fake fallback. Fixed timeout/unavailable/invalid-
+vectors classification is preserved for future job handling. Refactored existing
+`embedding_types.py` vector validation for both private query/listing results;
+source/vectors remain absent from diagnostic repr. No app/startup/route/pool or
+automatic DB-generation worker binding, root dependency/lock/Python change.
+
+Added owned `test_embedding_client.py`/fault double and
+`scripts/evaluation/semantic/ipc_probe.py`. Fault fixtures use coordinate vectors
+only, never model relevance. Tests cover protocol/schema/bindings, byte/coverage/
+window caps, queue overflow, wrong/failed/hung startup, active/waiting/startup/
+spawn cancellation, close, crash/restart, competing owners, venv/environment
+isolation and fixed failure codes. Initial helper3.13 compile caught Black's3.14-
+only unparenthesized multi-except syntax; compatible exception handling and explicit
+3.13 compile check retained without changing global formatter settings. Initial
+actual model smoke found a client bug: resolving the venv interpreter symlink
+bypassed pyvenv.cfg/dependencies. Preserve absolute invocation path instead;
+launch regression covers it. The failed smoke reaped its child; no production
+constraint/offline guard was relaxed to make checks pass.
+
+Actual final IPC probe `.tools/semantic/ipc-probes/20261024T172305482399Z` passed18
+real model windows, two starts for intentional owned-child SIGKILL/restart, maximum
+one live owned helper, exact repeated/restarted vectors and all helpers reaped.
+Three controlled semantic cases ranked intended fixtures first; a903-token long
+description covered four windows. Query pipe round trips ~2.9–3.8ms; sampled
+probe-host/helper/previewAPI peak294,010,880 bytes (~280MiB), below512MiB; elapsed
+~1.83s. These short local observations are not HTTP/deployed p95, cgroup/Linux,
+full-input/relevance or human-label/NFR acceptance. Python audit guard is not an
+OS sandbox; combined memory is independently sampled for this probe, not a new
+production cgroup enforcement claim. Earlier successful IPC runs retained too.
+
+Retained safe result/exact source fingerprints under existing
+`docs/evaluation/domain/se-01/helper-ipc/`; documented private protocol, tools,
+API/storage/feasibility/evidence and command registry. 88 helper/storage checks
+passed; combined focused356 passed/4 native cases skipped outside their separate
+harness. Mypy3 new/shared modules passed; helper/shared3.13 compile passed; boundary
+check0; Black125 files unchanged; eight contract artifacts current; links/evidence/
+source hashes/root lock/diff checks passed. No DB opened/written or native test
+rerun this helper-only increment. Native SQL evidence remains at its recorded
+source/checkpoint; actual model-to-store publication remains next, not inferred.
+
+Remaining: real DB claim/lease/overall20s compute/publication bridge (helper-request
+20s does not include DB orchestration), public coverage/503/read/fusion and new
+wire/UI activation, Linux/support/resources/deployment, actual upstream providers,
+final corpus/images/20+ reviewed labels/browser/full CI/secret/independent review
+and original FR/NFR/readiness gates. Reservation released; await human verification.
+No install/model download, global setting, cloud/hosting, commit/push/PR/merge.
+
+### SE-01 — Native resumable bootstrap and atomic pipeline-switch mutation matrix — 2026-10-24 16:40:24 UTC
+
+User verified the scoped native checkpoint and requested continuation. Completed
+the remaining native bootstrap/switch matrix within the existing disposable
+harness; no production/API/store/migration/dependency behavior changed. Added
+native helpers and case in `test_embedding_postgres.py`: explicitly mathematical
+pipeline spaces (synthetic runtime tags0.0.94011/12/13 never installed), <=30-row
+private corpus and <=60 coordinate-vector jobs. Temporarily retires prior fixture
+spaces, retires/removes only its own mathematical fixtures and restores prior
+registry states. All operations stay in the fresh validated runner database.
+No real model inference, worker startup or public serving feature activated.
+
+Actual two-connection scenarios: a source INSERT observes planned state, another
+connection enables building/reconciles while that INSERT is uncommitted, then
+resume finds the missing committed source. Incomplete promotion refuses; bounded
+limit-one reconciliation converges, repeated calls preserve generation IDs, and
+coordinate-vector publication fills actual SQL coverage. Two-active and one-
+serving constraints reject invalid transitions without losing old serving state.
+The old/new switch is atomic to the observer while a source edit is held
+uncommitted. After edit commit, old vectors in both spaces are absent and new
+serving coverage is incomplete until active-space work finishes. This validates
+why future public reads must independently check current coverage in their own
+statement; serving enum does not imply perpetual ready coverage. No public503
+implementation or final relevance acceptance is inferred from the test helper.
+
+First new native run `/tmp/clip-pd08-native-check.Mxq5GE` was7 pass/1 fail from
+missing test-factory import before matrix setup. Corrected it; added a portable
+fixture-key isolation regression in `test_embedding_store.py` that calls the
+factory without DB/model access, verifies three distinct IDs and no alias of
+actual candidate. Failed run retained. Fresh final run `4FB6Mb` passed8 adapter
+checks (five actual DB cases/three pre-connect guards), full12-migration clean
+apply/repeat/three smokes/twelve downs/reapply and identical inventory hash as
+prior checkpoint. Both clusters stopped and postmaster PID files absent.
+
+Retained result/source hashes/apply/adapter/stop evidence under
+`docs/evaluation/domain/se-01/native-pipeline-switch/`, updated storage/feasibility/
+API/commands/coverage guidance. Portable focused suite312 passed/4 SQL tests
+skipped outside native harness; those native cases executed in the separate
+successful run. Boundaries0, Black119 unchanged, evidence JSON/links/diff checks
+passed. No production code fix needed. Original helper/IPC/queue/generation
+supervisor/public read/real provider/Linux/resource/final data/images/20+ human
+labels/fusion/browser/full-CI/independent review/NFR/readiness gates remain.
+Reservation released; await verification before real-helper integration. No
+existing/shared DB, cloud/hosting change, install, commit, push, PR or merge.
+
+### SE-01 — Native checkpoint C real PostgreSQL migration/query/storage verification — 2026-10-24 16:27:44 UTC
+
+User verified storage increment B and requested native testing. Read-only check
+found old `/tmp/clip-pd08-native.pKC5jz` tools gone and no postgres/psql/dbmate/
+Docker on PATH; existing Clang14/make/Bison2.3/Flex and Go were inspected only.
+No open PR found. Rebuilt official PostgreSQL18.6 under `.tools/native-db/pgsql`
+using no-ICU/readline/zlib historical flags/two jobs; downloaded exact dbmate2.36.0
+ARM64 binary. Both artifacts checked against official SHA-256, total 54,271,324
+bytes (~52 MiB), source/build/install tree ~300 MiB. No global/Homebrew install,
+service/PATH/system Python edit or Docker/cloud action. Logs/tool manifest retained.
+
+Extended `database/tests/native-checks.sh` with optional `--listings-store`:
+existing fresh private UTF-8/C `clip_test_native` schema round trip, then SECOND
+fresh `clip_test_ci`/clip_ci role in the same owned TCP-disabled cluster through
+another owner-private Unix socket. Clean child environments prevent ambient PG/
+provider redirection. Updated embedding target gate for fixed native port55438
+alongside runner5432; no arbitrary target accepted. The default native migration
+route remains available. The harness stops only its owned cluster and retains
+logs/data. No existing/shared database was opened or migrated.
+
+First actual run `/tmp/clip-pd08-native-check.Wqe42G` passed migration/smoke/
+rollback/reapply/inventory but adapter output was 3 failed/4 passed: broad browse
+planner selected a valid recency index rather than GIN; retirement test had
+forced parent/image constraints immediate; old-created unavailable fixture did
+not establish 180-day eligibility without an ended window. Corrected test-only
+GIN diagnostic to use the actual compiled text predicate without full browse
+ORDER/LIMIT competition; restored only original deferred publication checks in
+retirement helper; seeded availability ending199 days ago. Production code/
+constraints/retirement eligibility were not weakened. Race helper now cancels/
+drains its owned publishing task on failure. Second fresh run `6HqtAw` was
+1 failed/6 passed because expansion's fixture marker overwrote the subsequent
+filter-matrix marker. Moved expansion to the final matrix and gave it independent
+price/negotiability setup. Both failed runs and successful stop logs retained.
+
+Final fresh run `/tmp/clip-pd08-native-check.oLISmK`: clean12 migrations to
+20261024153316/repeat, three smoke scripts twice, all12 down and clean reapply;
+29 domain tables/30 functions/40 triggers; identical inventory SHA-256
+`27b17765c9eeeab4bc058093ba486895a4c1da4ea78924cd64f860fcbd70b110`.
+Adapter suite 7 passed: four actual PostgreSQL cases (existing Listings adapter,
+browse/vocabulary matrix, embedding integrity/recovery/guarded-down, two-connection
+edit/retirement races) plus three portable pre-connect guards. Real native text
+normalization/directional expansion/filter/page/visibility/update/index-eligibility
+and scoped vector/trigger/lease/retry/rollback/race assertions now have executed
+evidence. Coordinate vectors test persistence/math, not model relevance. All
+three owned clusters stopped and postmaster PID files absent; data/logs retained.
+No automatic cleanup of retained fixture clusters or socket directories.
+
+Retained safe result/tool/source fingerprints and raw apply/status/adapter/stop
+logs under `docs/evaluation/domain/se-01/native-postgres/`; full inventories/schema
+remain at private raw paths with hashes/equality recorded. Updated commands,
+workstation/database/API/schema/vocabulary/storage/feasibility/decision/contract
+annotations and coverage ledger. Portable focused suite311 passed/3 native cases
+skipped outside the native harness (those corresponding DB cases passed in the
+separate native run). Strict mypy2 files, boundaries0, Black119 files, native shell
+syntax, eight generated artifacts, evidence JSON/links and diff checks passed.
+
+Limits: native UTF-8/C/no-ICU/TLS is not production/Linux/cgroup/auth equivalence.
+Pipeline bootstrap/switch under mutation, real helper lifecycle/20-second generation
+orchestration, single-snapshot hybrid read/fusion/public activation, real upstream
+providers, final corpus/images/20+ human labels, browser gaps, full CI/secret/
+independent review and original FR/NFR/readiness remain pending. Earlier fixed-
+clock image unit failures are not discharged by this scoped native success. No
+SE-CORE/DATA-READY/task acceptance inferred; next increment waits for verification.
+Reservation released; no commit, push, PR, merge, hosting or existing-data cleanup.
+
+### SE-01 — Approved derived-embedding storage/deletion implementation preparation — 2026-10-24 16:03:02 UTC
+
+Mohit explicitly approved all presented plan and derived-content deletion
+implementation gates after the text-edit/final-retirement mechanism was explained.
+Authorization is for preparing implementation/tests, not a migration apply or DB
+cleanup run. Exact-code/schema independent review and exact merge remain separate;
+no peer approval of newly written code is inferred. Read-only GitHub check found
+main migration names through `20261022062357` and no open PR. Reserved fresh UTC
+ID `20261024153316`; existing migrations unchanged.
+
+Added migration `20261024153316_listing_embedding_generations.sql`: three private
+Listings tables; six source-hash/vector/cosine/pipeline/invalidation/completeness
+functions; four own-schema triggers. Registry starts empty; no worker/backfill/
+serving seed. Actual text edits/final retirement delete all derived generation
+spaces (chunk FK cascade) in the Listing transaction; identical/nontext changes
+preserve current work. Deferred guards enforce complete ready vectors and inspect
+both old/new generation IDs on moves. Down locks relevant tables and refuses
+populated generations/chunks before removing only new empty objects. No extension,
+old migration, public fields, primary listing/image/conversation cleanup, eligibility
+rule or original full-text GIN change. SQL syntax/up/down/constraints are unexecuted.
+
+Added `embedding_pipeline.json` with actual probe pins and `embedding_types.py`
+with canonical encoding hashes, private repr-safe work/parts and finite/shape/
+unit/count validation. `embedding_store.py` uses injected connections only:
+planned registration, registry advisory-before-row locking, explicit state change,
+bounded reconciliation, listing-first 30-second lease claims, fresh due/source/
+config recheck, generation/source/lease/retirement-fenced atomic publication,
+5/30/120/300-second bounded retries/fifth-attempt failure and explicit single-row
+failed retry using a fresh generation ID. No app/pool/HTTP/worker binding or
+production helper/20-second orchestration deadline implemented. Late/ABA receipts
+cannot publish/clear replacement work. Registration/claim reject hash-mismatched
+encoding. Pipeline/context/data values remain bound parameters, never raw SQL.
+
+Added `test_embedding_store.py`: 43 output/configuration/SQL-transport/refusal/
+retry tests. `test_embedding_postgres.py` adds three portable pre-connect refusal
+checks and two genuine native tests (skipped) for fingerprints, vector constraints,
+deferred publication/rollback, guarded down, edit/ABA/lease/retry/retirement and
+server-observed two-connection lock races. Native targets require the runner's
+`clip_test_ci`/clip_ci/private Unix socket and no ambient PG settings before
+connecting, then server identity validation before writes. Coordinate vectors
+exercise persistence/math only, never fake model relevance. Concurrency needs
+committed synthetic fixtures retained solely in the disposable runner container;
+no whole-DB reset or existing target cleanup. Added read-only `embedding-smoke.sql`.
+
+Updated database checker/native wrapper for new test/smoke and expected head,
+12 rollbacks, 29 tables/30 functions/40 triggers. The old native wrapper's nine-
+migration count/loop and inventory were stale before this change; now aligned
+with source, not claimed as measured catalogue. Updated API README, database/
+schema/storage/feasibility/decision/contract annotations, evidence ledger and
+command registry. Earlier source-bound preview manifests remain historical;
+regenerate/revalidate at the original final real-data checkpoint.
+
+Checks: 311 focused tests passed/three native skips (two new, existing browse);
+strict mypy passed for both new implementation files; boundaries zero; Black
+119 files unchanged; native shell syntax, command help, eight contract artifacts,
+new links/config JSON and diff checks passed. No native database was installed,
+connected, migrated, backfilled or cleaned. Known older expired image-fixture
+failures and full CI/secret/native/real provider/browser/independent review gates
+remain; focused tests are not an all-suite pass. Reserved scope released; await
+verification before native-check checkpoint C. Task/milestones remain incomplete;
+no root dependency/Python change, model install, cloud/hosting action, commit,
+push, PR or merge.
+
+### SE-01 — Hybrid checkpoint 4 concrete storage/write/retirement plan — 2026-10-24 14:13:48 UTC
+
+Mohit verified the reported isolated Mac probe and requested the next storage/
+write-path planning checkpoint. Read-only source audit identified actual Listings
+create/replace/begin/finalize-retirement transactions, existing guards and local
+dbmate head `20261022062357`. GitHub read-only overlap check found no open PR;
+no claim that local head equals freshly fetched remote. No migration ID allocated.
+
+Added `docs/architecture/semantic-listing-storage.md`: proposed native real-array
+pipeline/generation/chunk objects, explicit vector/count/shape/finite guards,
+deferred completeness constraints, deterministic built-in SHA-256 source function,
+own-schema invalidation/retirement triggers, ordered exact cosine and due-job
+indexes. Preserves existing generated text vector/GIN and public boundary.
+Create retries/nontext edits retain valid work; source edits invalidate all
+pipeline generations and queue only building/serving versions atomically.
+Listing→generation→chunk lock order and generation/lease/fingerprint/config fences
+reject stale/ABA/late completion. Proposed 30-second leases/20-second generation
+deadline, bounded retry ladder/failure state and durable crash recovery. Actual
+DB-role grants remain unverified; no invented elevated functions/permissions.
+
+Specified one-statement eligible/coverage/score/page snapshot; missing eligible
+vectors produce no partial hybrid success. Semantic fusion/thresholds remain
+unselected because the long-description probe showed weak similarity. Bootstrap/
+pipeline-switch reconciliation and native concurrency tests are explicit gates.
+Detailed exact retirement deletion order inside existing Listing finalization:
+listing/pending lock → existing image retirement → existing content scrub →
+all-generation deletion with derived chunk cascade → transaction commit. No S3,
+saved/conversation deletion or retirement-eligibility change. This is a concrete
+approval proposal only, not authorization to implement/run cleanup. Suraj's
+previous concept review does not attest review of this newly prepared schema.
+
+Plan lists preparation/native/targeted-backfill/public-integration increments,
+<=1 worker/1,000 listings per reviewed run/ten-minute cap, guarded down migration
+that refuses populated stores, and a native correctness/concurrency/rollback/
+privacy/performance matrix. Updated schema explanation, database README, Listings
+contract annotation, feasibility/DEC-13 and existing evidence ledger. All changes
+in this increment are documentation; file links/source anchors/current local
+migration head and diff checks passed. No new code tests were needed; earlier
+results are retained, not rerun/claimed as native storage acceptance. Reservation
+released. Await plan verification, new affected-owner schema review and separate
+exact derived-content deletion approval before implementation; no SQL apply,
+backfill/worker, model install, cloud/hosting action, commit, push or merge.
+
+### SE-01 — Hybrid checkpoint 4 isolated helper installation and real Mac probe — 2026-10-24 14:02:11 UTC
+
+Mohit verified the proposed repository-local helper approach and requested the
+bounded probe. Installed Python 3.13.12 with `--no-bin` only under
+`.tools/semantic/python`, a separate helper venv and 24 hash-locked packages using
+offline local wheels. Root API stays Python 3.14.3; root uv.lock SHA-256 remains
+`1eba235e85c4fdfefcde9ed8ef216f12698207098cd44719935b7604d935a5cf`.
+No global links/system Python/PATH/OS change. Root-project incompatibility warning
+from uv venv is expected for the explicit separate 3.13 helper, not an API change.
+Official release metadata says 3.13.12 is superseded by 3.13.17; this exact probe
+pin is not a production security/patch support decision. Revisit before release.
+
+Added `scripts/evaluation/semantic/requirements.in`, Mac ARM64 hash lock and
+model-manifest.json. `preflight.py` checks official compatible binary metadata,
+license/advisory/size bindings; `fetch.py` verifies fixed model/wheel artifacts;
+`probe.py` performs actual CPU tokenization/windowing/masked pooling/normalization
+with network/child creation blocked; `supervise.py` monitors the owned child and
+known preview API PID 5666 under RSS and timing limits. Downloads/cache/model/
+venv stay under the ignored tree. PyPI-reported advisories were empty for the
+resolved pins, not a comprehensive security audit; inspected incomplete Protobuf
+and tqdm license metadata directly in wheel licenses. 31 model/wheel artifacts
+(136,436,874 bytes) verified; including interpreter archive, artifact envelope
+154,116,880 bytes (~147 MiB) below 300 MiB. Local tree ~528 MiB below 1 GiB.
+Interpreter retrieval used uv; model/wheel hash checks do not claim an independent
+rehash of a retained interpreter archive. Helper dependency check passed.
+
+Successful run `20261024T135651961346Z`: 14 real CPU calls, 384 finite components
+with unit norm, repeat delta 0, padding delta 5.96e-8; no network/child attempts.
+After-import/warm-filesystem startup 0.123 s, first inference 5.3 ms, warm median
+4.1 ms, max 72.7 ms. Helper peak RSS 273,612,800 bytes; sampled helper+isolated
+preview API peak 288,473,088 bytes (~275 MiB), below 512 MiB. The preview API's
+14,860,288-byte RSS baseline is not production capacity evidence. No HTTP p95,
+load/NFR, Linux/cgroup fit or full PyTorch-output parity claimed. Three controlled
+paraphrase scenarios ranked intended fixtures first, not human evaluation labels.
+4,822-character/903-token long description covered four windows; final window
+best but telescope similarity remained negative (-0.0243), so no long-relevance
+threshold accepted. Tokenizer-only 5,000 CJK character coverage: 5,000 tokens/23
+windows; full allowed-input exhaustion and inference on every such chunk unproven.
+
+Two failed probe logs retained under `.tools/semantic/probes/`: first oversized
+fixture (`20261024T135427437998Z`), then platform.platform attempting a forbidden
+uname child (`20261024T135622957734Z`). Corrected the fixture and used non-spawning
+OS metadata; did not weaken the offline/child guard. Added 13 portable regression
+tests in `tests/evaluation/test_semantic_probe.py` for coverage/budgets/fixture and
+artifact corruption. Combined focused suite: 171 passed/one native skip; boundary
+check zero; Black 115 files unchanged; links/evidence JSON and diff checks passed.
+Retained safe result/supervisor/preflight/source fingerprints under existing SE-01
+evidence; updated plan, workstation, decision, tooling README and command registry.
+Full native SQL, actual storage/write/retirement implementation, production helper
+IPC/queue/restart, Linux/resource checks, final corpus/human labels and original
+NFR gates remain open. Reservation released; await human verification before the
+concrete storage/write-plan checkpoint. No DB/cloud/hosting change, root dependency
+change, commit, push, PR or merge performed.
+
+### SE-01 — Hybrid checkpoint 4 runtime/storage feasibility investigation — 2026-10-24 13:44:40 UTC
+
+User verified checkpoint 3's reported isolated compiler preparation and authorized
+checkpoint 4 investigation; native PostgreSQL activation remains pending. Actual
+read-only `sw_vers`/architecture/interpreter evidence confirms macOS 13.7.8/ARM64
+and repository-local Python 3.14.3. PyPI metadata inspection found published
+Python 3.14 ARM64 ONNX wheels (1.24.1–1.31.0) target macOS 14; latest inspected
+PyTorch wheel also targets macOS 14. Do not install incompatible wheels, change
+system/project Python or assume a source build. This is package metadata evidence,
+not a model import/runtime test. Network sandbox failures were retried through
+approved escalation. uv's first list attempt was blocked initializing its default
+cache; rerun used explicit repository-local install/cache paths. No global install
+or Python link was created.
+
+Prepared `docs/architecture/semantic-search-feasibility.md`: proposed separate
+repository-local Python 3.13.12 helper with ONNX Runtime 1.23.2, NumPy 2.5.4 and
+Tokenizers 0.23.3. Actual metadata includes cp313/macOS 13 ARM64 and Linux AMD64
+ONNX wheels; direct candidate hashes/sizes retained. uv lists a 3.13.12 managed
+build, not an installed interpreter or newest-security-patch assertion. Full
+transitive resolution/license/security checks remain before install. Model
+revision `1110a243fdf4706b3f48f1d95db1a4f5529b4d41`, FP32 ONNX 90,405,214 bytes
+and upstream SHA-256 retained; no weights downloaded. Mac direct wheels+model
+lower bound 122,712,758 bytes excludes interpreter/transitives/unpacking. Proposed
+probe caps 300 MiB downloads/1 GiB added disk/30 synthetic queries/10 minutes and
+512 MiB combined helper/API RSS; deadlines/queue/thread bounds are proposed,
+not implemented controls. Existing 256 CPU/512 MiB source settings are not live
+cloud evidence or proof of feasibility.
+
+Compared native real-array exact scoring versus pgvector; proposed arrays for
+bounded feasibility only, without claiming production latency or extension support.
+Recorded tokenizer-aligned full-description chunking/pooling/versioning, durable
+pending-generation/lease/fingerprint publication and retirement plan, each pending
+concrete verification/cleanup gates. No migration/schema/worker implemented.
+Updated DEC-13, workstation record and evidence ledger. Changed relative file
+links and `git diff --check` passed; documentation-only increment needed no new
+code tests. Actual imports/inference/quality/RSS/installed sizes/Linux runs and
+native storage/query/write correctness remain untested. Await verification of
+the proposed helper alternative before installation/probe; no dependencies/model
+installed, root lock/interpreter changed, cloud action, commit, push or merge.
+
+### SE-01 — Hybrid checkpoint 3 lexical compiler preparation — 2026-10-24 13:28:28 UTC
+
+Mohit confirms Suraj reviewed and approved the hybrid amendment. Recorded this as
+user-reported affected-owner review, without inventing a review artifact/time;
+code/PR peer approval remains separate. Proceeded with explicit unactivated native
+integration preparation; no Docker/PostgreSQL installation or database run.
+
+Added `lexical_expansion.py`: immutable SQL/parameter/outcome/fingerprint result;
+one bound PostgreSQL English normalization lookup; longest normalized phrase
+planning; direct one-way aliases/narrower expansion; bounded AND/OR expressions
+with original-query preservation. Added alternatives use phrase queries; unknown
+terms remain independent groups, empty stop words add no constraints. Missing/
+colliding normalization fails. Parser-sensitive/non-ASCII/digit/punctuation input
+conservatively retains the complete original plain query, as do expansion-budget
+limits. No Python stemmer, fake retrieval or semantic inference introduced.
+
+Changed `browse_store.py` to accept an owned compiled predicate through the
+explicit `read_browse_page(..., expanded_search=True)` native-test-only opt-in.
+Existing production store calls keep its default false; no route/config/model/
+schema/public field activation. Filters/current visibility and stable sorts/
+lookahead/offset stay in the same authoritative statement. Added
+`test_lexical_expansion.py` (23 compiler/transport/budget/failure and default-off
+checks over explicitly scripted normalization). Extended rollback-only
+`test_browse_postgres.py` with real English normalization, directionality, phrase/
+unknown/ambiguous matching, immediate description edits, hidden exclusion, all
+page sizes with filters and GIN-eligibility diagnostics. Actual native assertions
+are skipped, never reported passed; forced index diagnostics are not latency.
+
+Checks: 158 focused Python/evaluator tests passed, one native suite skipped;
+strict mypy passed for both changed implementation files; boundaries zero;
+Black 110 files unchanged (final added test separately formatted); changed
+guidance relative targets and `git diff --check` passed. Updated vocabulary guide,
+DEC-13, Listings README, Search/Listings contract annotations and evidence ledger.
+No generated signatures changed; the public baseline remains unchanged. Native
+PostgreSQL matching/plan/availability/pagination checks still gate activation.
+Original real integration/final corpus/human-label/NFR obligations remain open.
+Step 3 is partial, awaiting human verification of preparation; checkpoint 4 model
+feasibility is not started. Reservation released; no dependencies installed,
+commit, push, merge, cloud or hosting action performed.
+
+### SE-01 — Hybrid checkpoint 3 prerequisite gate — 2026-10-24 13:21:46 UTC
+
+Mohit verified checkpoint 2 vocabulary/rules and requested checkpoint 3. Read-only
+inspection confirms the browse store still uses original native plain-text
+matching; the vocabulary is not active. The reviewed amendment/vocabulary guide
+explicitly requires affected Listings-owner review and native PostgreSQL checks
+before activation. No Suraj review of this new amendment is recorded. Native
+psql/postgres/docker executables are absent; the user's earlier decision to skip
+Docker installation remains effective. No application/query changes or dependency
+installation performed; stopped at this explicit prerequisite gate rather than
+activating an unreviewed or untested behavior. `git diff --check` passed before
+this documentation update. Vocabulary approval is now reflected in current
+status; original real integration and final-label/NFR obligations remain open.
+
+### SE-01 — Hybrid amendment checkpoint 2 vocabulary preparation — 2026-10-24 13:20:32 UTC
+
+Mohit verified documentation checkpoint 1 and authorized vocabulary preparation.
+Added Listings-owned `search_vocabulary.json` version 1.0.0 with 22 concepts
+across vehicles/books/furniture/electronics/appliances. Aliases and direct narrower
+relations are distinct: vehicle broadens to bicycle/motorcycle/car/scooter;
+bicycle does not broaden to every vehicle; book includes textbook, not the
+reverse. Proposed ambiguous bike/notebook/display remain literal, while notebook
+computer identifies laptop. Human verification of this vocabulary remains pending.
+No existing item-category catalogue, seller label or evaluation judgment changed.
+
+Added `vocabulary.py`: immutable Concept/Vocabulary records, exact configuration
+validation, unique alias ownership, known acyclic directional edges, bounded
+phrases/groups and canonical content fingerprint; adjacent-artifact loader only.
+No request-handling import or query compilation was added. Added
+`test_vocabulary.py`: 18 configuration/phrase-alias/direction/fingerprint and
+corruption tests passed. Combined with existing browse/HTTP contract regression
+checks, 100 tests passed with warnings treated as errors. Strict mypy passed;
+boundaries zero; Black checked 108 files unchanged; new documentation file links
+and `git diff --check` passed. GitHub read-only check found no open PR; no remote
+main freshness claim beyond previous observations.
+
+Added `docs/architecture/search-vocabulary.md` with token/phrase/AND-OR rules,
+nonrecursive expansion, original-term preservation and complete-query fallback
+when exceeding 12 groups/16 alternatives per group/48 total. These bounds do not
+reject previously valid plain-text queries. Multiword/inflection/ambiguity and
+unknown/operator-input acceptance cases are specified for checkpoint 3, not
+claimed as executed planner/native SQL tests. Updated DEC-13 and Listings README.
+No new dependencies, model downloads, SQL/schema, public fields or production
+behavior changes. Native matching and reviewed runtime semantics remain pending;
+no claim that curated expansion is semantic inference. Original real data/auth/
+provider/label/NFR obligations remain. Scoped writer reservation released. Await
+human verification before checkpoint 3; no commit/push/PR/merge/cloud action.
+
+### SE-01 — Hybrid-search amendment checkpoint 1 documentation — 2026-10-24 13:16:17 UTC
+
+Mohit requested common curated item concepts combined with semantic description
+matching, clarified that vehicle/bicycle is an example across item types, and
+verified the six-checkpoint design. Authorized and executed documentation only;
+original Step 10 was not started. Added DEC-13 `hybrid-listing-search.md` and linked
+it from Search/Listings contracts, SE-01 Step 4, maintained product reference and
+document index. Mohit held/released this bounded documentation writer scope;
+Suraj's affected-owner approval and independent peer review are not inferred.
+
+Material baseline gap is explicit: current PostgreSQL title/description matching
+and recency/price sorts lack conceptual matching and relevance order. The amendment
+preserves that baseline while proposing curated directional expansion, local
+embeddings and explicit mode/relevance inputs. Those inputs are documentation
+proposals only; generated/runtime contracts are unchanged. Filtering/current
+visibility precede candidate limits/paging; stale embeddings cannot contribute;
+retirement must clear derived content under approved cleanup. Runtime/platform,
+model pins/chunking, storage and transactional write protocol, vocabulary bounds,
+fusion/threshold/candidate caps remain named gates, not invented final decisions.
+Current 256 CPU/512 MiB test definitions are not proof a model fits. Python 3.14/
+macOS ARM64/Linux AMD64 feasibility, resource and cost gates remain pending.
+
+Checks: guidance relative file targets resolved; new links introduce no heading
+fragments; decision ID unique among decision records; `git diff --check` passed.
+No application code/configuration, generated artifact, dependency lock, model,
+installation, database, cloud or hosting change. No tests needed for documentation
+only; earlier test results are retained without claiming a new runtime check.
+Remote state was not refreshed for this documentation increment; previous remote
+observations remain historical. Final dataset and human judgments are still
+required independently of curated concepts/model output. Step 9 remains partial;
+no SE-CORE/DATA-READY/NFR acceptance, commit, push, PR or merge. Await human
+verification before amendment checkpoint 2 vocabulary work.
+
+### SE-01 — Step 9 isolated evaluator and label-validation preparation — 2026-10-24 13:03:54 UTC
+
+User verified Step 8's reported isolated checkpoint and authorized Step 9.
+Implemented `scripts/evaluation/search.py` and its package entry point with
+strict canonical label/context/provenance/reference validation and preview-only
+Success@5 arithmetic. Reviewed input requires a separately trusted non-preview
+binding, matching data/contract revisions, present manifest, eligible actual IDs,
+completed review metadata and at least 20 included queries. Syntactic metadata
+never attests human review; the CLI cannot create a final binding or perform
+final scoring. Failed/missing/invalid retrieval and empty relevant sets stay in
+the denominator; explicit exclusions require reasons. Every synthetic score
+retains preview-only and NFR/human-review acceptance false.
+
+Added 35 synthetic evaluator checks in `tests/evaluation/test_search.py`; the
+combined evaluator/data run passed 129 tests. Strict mypy passed for the evaluator,
+Python boundaries reported zero violations, Black checked 106 files unchanged,
+and `git diff --check` passed. Both registered CLI commands passed: the unchanged
+empty template is valid with scoring forbidden; synthetic self-check reports
+one hit/four included (0.25), one timeout and one exclusion. This is arithmetic
+verification, never real retrieval usefulness. No dependencies installed.
+
+Updated evaluator guide, canonical label-format checkpoint, command registry and
+SE-01 coverage ledger. Final `data/evaluation/query-labels.json` was not created;
+no human judgments or review identity/time invented. Final corpus/integrity/
+indexes/images, real schema/provider checks, reviewed selection/context/inclusion
+policy and 20+ human-reviewed labels remain pending. Step 9 stays partial; no
+DATA-READY, SE-CORE, NFR-04 or full task completion. Prior expired image fixtures,
+browser coverage details and independent review obligations remain. Bounded
+writer reservation released. Await human verification before Step 10; no commit,
+push, merge, cloud action or deployment performed.
+
+### SE-01 — Step 8 functional contract verification and correction — 2026-10-24 12:48:39 UTC
+
+Mohit reports portrait verification by resizing Safari 16.6/macOS and explicitly
+requests the next step. Continued Step 8's independent staged test work; exact
+portrait dimensions and a narrow-landscape result remain unreported and are not
+counted as verified. No new UI increment. Remote main `defec38`/Listings `2302836`
+unchanged, no open PR; scoped test reservation released after implementation.
+
+Task-definition audit: existing reviewed Search semantics resolve “ranking” as
+all-term English matching versus non-matches and the explicit recency/price UUID
+orders. No new score sort or source-policy change. Step 9/11 labels/usefulness
+remain distinct human-reviewed final-data obligations.
+
+Changes:
+
+- `test_browse_contract.py` compares the real HTTP router's exact query fields
+  and complete resolved success/error schemas with reviewed OpenAPI; actual
+  ASGI success/error wire responses validate against editable-source models.
+  Typed scripted store pages isolate transport only, not SQL/auth functionality.
+- `test_browse_postgres.py` now derives repeatable synthetic UUIDs through the
+  existing PD-09 helper (separate test-only owner/listing/upload/operation seed
+  namespaces). Existing native match/non-match/filter/price/tie/page/visibility
+  matrices remain intact; load/guard clock values stay explicitly relative.
+- `apps/web/tests/discovery-contract.test.ts` compiles against generated query/
+  response types, compares actual OpenAPI public field sets, verifies full query
+  vocabulary and validates a reviewed wire sample through the handwritten reader.
+  No generated client or Python dependency is added to web-only checks.
+- The broader existing contract suite caught a real mismatch: new browse route
+  metadata declared only four error codes instead of the frozen nine-code shared
+  vocabulary. `browse_routes.py` now declares the exact standard descriptions/
+  schemas; regression assertion requires the full set. No error/rate behavior
+  or generated source changed. Initial run: **1 failed, 247 passed, 1 skipped**.
+  Failure excerpt retained at `.tools/checks/se01-step8-initial-contract-failure.txt`
+  (full original output in tool history); this was not reclassified as tooling.
+- Added [functional coverage/evidence limits](../evaluation/domain/se-01/README.md)
+  and registered the combined checks in `docs/environment/commands.md`.
+
+Final checks: combined browse/native/Search/data/existing-contract suite
+**248 passed, 1 skipped**; web `npm run check` **84 tests passed**, lint clean,
+TypeScript checks/production build passed. Strict mypy on changed route passed;
+Black **103 files unchanged**; Python boundary check **0 violations**; contract
+freshness **8 artifacts current**; new documentation relative targets and
+`git diff --check` passed. No further UI/browser behavior changed after review.
+
+The skipped native PostgreSQL matrix does not prove relevant/non-relevant SQL
+matching, filtering, index plans or pagination. Original real load/schema/FK/
+field/query/index/provider/image obligations remain pending. Final labels and
+DATA-READY, NFR-04 and cloud NFRs remain unaccepted. Earlier full Listings
+image-fixture failures (12) remain unresolved and were not included in this
+passing focused suite. Independent review/full aggregate/secret/native gates
+still pending. No commit, push, cloud action or merge. Next preview only: Step 9
+evaluator/label preparation, after verification; no human relevance labels will
+be invented or final evaluation claimed without final data and review.
+
+### SE-01 — Step 7 desktop/resized-window evidence — 2026-10-24 11:01:31 UTC
+
+Mohit reports Safari 16.6/macOS default size approximately **1440×900** (uncertain
+reported window/display dimensions, not a verified CSS viewport), and successful
+window resizing. Asked how to switch to portrait. Safari responsive-mode guidance
+provided; narrow portrait/landscape dimensions and outcomes remain pending. No
+actual phone or unreported interaction result inferred; Step 8 not started.
+
+### SE-01 — Step 7 Safari browser observation — 2026-10-24 10:59:30 UTC
+
+Mohit reports testing the isolated discovery preview in **Safari 16.6 on macOS**
+and says it seems to be working; requested continuation. Browser/version/OS and
+positive reported result recorded. Exact viewport dimensions and narrow portrait/
+landscape coverage were not supplied; a targeted clarification asks for those
+and any untried display states. No actual phone, individual action coverage or
+viewport size is inferred. Step 7 remains at its required browser checkpoint;
+Step 8 has not started. No application/configuration changes, commit or push.
+
+### SE-01 — Step 7 first discovery UI increment; human browser gate — 2026-10-24 10:55:49 UTC
+
+Mohit verified Step 6's partial result and authorized Step 7. First usable screen
+implemented and services started; **stop at this browser checkpoint**. No human
+visual/desktop/phone observations or acceptance have yet been received. Local
+writer reservation remains Mohit for the DiscoveryPage sale slot/Search root
+while this checkpoint awaits review; no conflicting open PR/remote advance was
+found (main `defec38`, Listings `2302836`).
+
+Changed implementation:
+
+- `apps/web/src/features/search/SaleDiscovery.tsx`: responsive controlled search/
+  filter/sort/page-size form, URL-backed applied state, reset-to-page-1 behavior,
+  cancellable current reads, loading/empty/invalid/denied/unavailable/retry states,
+  public text summaries and approved listing-detail links. Old pages disappear
+  while loading; no stale response/cache or inferred client availability.
+- `discoveryQuery.ts`: whitelisted URL fields, exact whole-rupee/paise conversion
+  with BigInt text, zero/false preservation, code-point bounds and safe paging.
+  `discoveryApi.ts`: generated public types plus runtime field/page/catalogue
+  checks, same-origin no-store/cancelled reads, fixed safe error text, no actor
+  selection or image-body requests. Unsafe JSON money/page numbers are refused,
+  not rounded; this client representation limit is not a product monetary cap.
+- `discovery.css`: owned responsive layout using existing shared tokens/buttons.
+  `index.ts` exports `SaleDiscovery`; `ScaffoldPages.tsx` replaces only the sale
+  discovery slot through that export. Other page bodies/feature internals stay
+  unchanged. Removed only Search's `.gitkeep`; preserved existing placeholder
+  exports and Wanted view. Updated the frontend map to match this composition.
+- `apps/web/tests/discovery-query.test.ts` and `discovery-api.test.ts`: URL/money/
+  filter/cancellation/privacy/response-shape/error/preview-opt-in tests.
+- `apps/api/tests/domains/search/browser_preview.py`: explicit loopback read-only
+  HTTP UI fixtures, no real SQL/auth/storage. Named query scripts and fixture
+  selection/sort support display inspection only; never PostgreSQL search or
+  acceptance evidence. Requires test settings, no ambient DB/AWS, dev preview
+  header and local origin; default/production clients cannot consume fake data.
+  `test_browser_preview.py` checks activation/transport refusals and typed scripts.
+
+Setup: repository-local Node **24.22.0**/bundled npm **11.19.1** under `.tools/node`,
+official archive checksum matched
+`6a9724d9b50a5f22b4816cded441b5a8d9ddae546191a5e5b7efa5a5e2ee26d5`.
+Locked `npm ci` used `.tools/npm-cache` and user config disabled. No global PATH,
+system tools, package manifest/lockfile, dependency versions or Docker install
+changed. Added setup/preview commands and behavior in the workstation/web guides
+and command registry; no product route, deployment or public exposure added.
+
+Checks: `npm run check` using repository-local PATH/cache **passed**: lint clean,
+**81 web tests**, TypeScript app/test checks and Vite production build. Focused
+Python browse/native/Search/data suite **189 passed, 1 skipped** (real SQL).
+Strict mypy on the new harness passed after adding annotations; Black full check
+**102 files unchanged**; Python boundaries **0 violations**; contract freshness
+**8 artifacts current**; relative documentation link targets/diff checks passed.
+Production JS was inspected: preview header/fixture opt-in/disclosure branch are
+absent. Full aggregate/secret/real SQL/browser gates are not claimed. Earlier
+12 expired image-fixture failures remain unresolved, not rerun or weakened.
+
+Running for the human: **http://127.0.0.1:5173/**, synthetic fixture data only.
+API command in web guide: test/development-auth flags plus `--isolated-search-ui`,
+loopback 8000 (managed session 46689). Vite uses process-local Node PATH and
+`VITE_SEARCH_UI_PREVIEW=true`, loopback 5173 (session 91751). Read-only HTTP
+smoke confirmed HTML, catalogue, 20-item/has-next page, no-store headers and
+normal-client 403 through Vite's API proxy; initial sandbox socket denial was
+rerun with permission. No actual browser rendering/human check inferred.
+
+Human checks requested: desktop and narrow portrait/landscape/tablet layouts;
+search/filter/sort/size, Previous/Next and Back/refresh, invalid/reversed/fractional
+prices, empty/slow/retry/denied/expired/unavailable display states. Record actual
+browser/version/viewports and observations. `retry` fails once on its first
+request; detail/auth/save integration is not supplied by the harness. No physical
+phone or keyboard evidence inferred from responsive emulation. Do not advance
+Step 7 or Step 8 while the required browser response is pending. Real ID-READY/
+LI-CORE, SQL, images, saved behavior and original data/index/label checks remain
+pending at their original steps. No FR/NFR/readiness/task completion, commit,
+push or merge.
+
+### SE-01 — Step 6 discovery freshness and separate saved visibility — 2026-10-24 10:21:09 UTC
+
+Mohit verified Step 5's partial result and authorized Step 6. Isolated checkpoint
+performed; result awaits verification. No task-definition gap found: available-
+only discovery and retained unavailable saved summaries are distinct reviewed
+operations. Remote main `defec38`/Listings `2302836` unchanged, no open PR;
+scoped writer reservation released. Suraj/Identity review remains pending.
+
+`browse_routes.py` now sends `Cache-Control: private, no-store` on successful
+discovery pages. Existing runtime queries already recheck eligibility and current
+availability/windows; no cache/projection or saved state was introduced.
+`test_browse.py` verifies repeated browse/search reads consume changed scripted
+pages, recheck eligibility, preserve dependency failures instead of stale success
+and set cache policy. These scripts do not prove SQL filtering or real auth.
+`test_browse_postgres.py` adds real same-ID available/unavailable/reopen and
+start/end-boundary transitions for browse and text paths in its rollback-only
+fixture transaction. Native execution remains skipped here.
+
+The Search-owned `doubles/listings.py` now accepts explicit independent save-
+target decisions and retained saved snapshots/failures; it never derives new-
+save eligibility from a displayed summary. Inconsistent IDs or retired content
+are refused. `test_listings_double.py` checks unavailable/future/ended saved
+fixtures, content-free retired markers, safe target failures, whole-page saved
+resolution failure, expiry and batch bounds. These are reviewed contract fixtures,
+not implementations of saved retrieval, privacy or current authoritative state.
+The actual public save-target/saved-summary functions remain declaration-only;
+SE-02 still owns save rows, private pages, new-save checks and actual integration.
+No saved HTTP route, Search-table logic, retention cleanup or cross-domain SQL
+was added. Updated API/Listing/Search guides and command registry accordingly.
+
+Checks: focused browse/native/Search-double/data suite **182 passed, 1 skipped**;
+strict mypy for changed browse route and Search Listings double passed; pinned
+Black **100 files unchanged**; Python boundaries **0 violations**; changed
+documentation relative-link targets and `git diff --check` passed. No browser
+check applies to this backend/fixture increment.
+
+Carry original Step 2 real loading/schema/FK/count/field checks, Steps 3–6 actual
+SQL query/page/filter/index/transition execution and real Identity/Listings
+provider parity, Step 9 final data/human labels and LI-02 object reconciliation.
+Saved row persistence/ownership/unavailable visibility/retired privacy need real
+SE-02/provider integration; fixtures do not satisfy them. Previous 12 expired
+image-fixture failures remain unresolved (raw output at
+`.tools/checks/se01-step3-listings.txt`); broad suite not rerun/declared passing.
+No tool install, UI, cloud action, commit, push or merge. No FR/NFR, DATA-READY,
+SE-CORE or full-task acceptance. Next preview only: Step 7 responsive discovery
+UI after verification, with Node/npm and a suitable runtime/browser checkpoint
+still needed.
+
+### SE-01 — Step 5 filters, stable sorts and runtime validation — 2026-10-24 10:08:59 UTC
+
+Mohit verified Step 4's partial checkpoint and authorized Step 5. Implementation
+and isolated checks performed; result awaits verification. Remote main `defec38`
+and Listings `2302836` unchanged, no open PR; bounded writer reservation released
+after implementation. Suraj/Identity affected-owner review remains pending.
+
+- `browse_validation.py` adds a runtime subclass of the frozen generated query
+  declaration: strict integer money/pages, shared whole-rupee validation, trimmed
+  120-code-point query, supported page sizes, ordered inclusive ranges and safe
+  PostgreSQL offset representability. Errors use fixed shared 422 metadata.
+  Listings uses this private model; other domains keep public generated types
+  and validate raw inputs at their own boundary. No generated source changes.
+- `browse.py` passes the complete normalized query after eligibility checks;
+  `browse_routes.py` uses runtime validation at HTTP input. `postgres_store.py`
+  forwards the full query through the existing owned connection/error path.
+- `browse_store.py` applies category, condition, inclusive min/max price and
+  negotiability predicates before paging; false/zero are preserved. Active code
+  validation reads current Listings catalogues on the same connection before
+  the result query. Unknown/inactive values return safe 422. Code-owned recency/
+  price order fragments have the reviewed UUID tie directions. All filter/text
+  values remain bound SQL parameters. No cache/projection or fake SQL behavior.
+- No product monetary cap is selected: a minimum beyond the largest whole-rupee
+  bigint yields no rows and an excessive maximum imposes no restriction, without
+  binding an overflowing number. Existing query/page bounds are enforced; no
+  unapproved request-rate quota/throttle was introduced. Shared 429 conventions
+  define the error envelope but no numeric quota in the reviewed sources.
+- `test_browse.py` covers strict types/ranges/bounds, complete filter forwarding,
+  zero/false, generated-schema parity, safe catalogue refusals, parameterization
+  and large-price semantics. `test_browse_postgres.py` prepares real combined
+  filter/price/tie/sort/pagination and catalogue-deactivation tests in the existing
+  rollback-only fixture transaction. SQL tests are still skipped here.
+- Updated API/Listing guides and command registry. No UI, migration, lifecycle
+  write, generated declaration or external deployment changed.
+
+Checks: focused browse/PostgreSQL/data suite **162 passed, 1 skipped**; strict
+mypy on browse service/validator/store/routes and existing PostgreSQL store
+passed; pinned Black full check **100 files unchanged** (last docstring edit
+also checked); Python boundaries **0 violations**; relative documentation link
+targets and `git diff --check` passed. The only skipped focused check is real
+PostgreSQL, including the expanded filter/sort matrix; no actual SQL correctness,
+index plan, rate enforcement, NFR or readiness acceptance is claimed.
+
+Carry Step 2 actual load/schema/FK/count/field checks; Steps 3–5 native query/
+page/filter/sort/index execution; real ID-READY/LI-CORE integration and review;
+Step 9 final corpus/human labels; LI-02 object reconciliation. Previous broad
+Listings evidence remains **12 failed, 154 passed, 2 skipped**, not rerun or
+resolved by this increment; expired image-fixture output remains at
+`.tools/checks/se01-step3-listings.txt`. No new tool install, cloud action,
+commit, push or merge. Task/milestone closeout remains incomplete. Next preview
+only: Step 6 discovery versus saved-unavailable semantics, after verification.
+
+### SE-01 — Step 4 native full-text query implementation — 2026-10-24 09:53:48 UTC
+
+Mohit verified Step 3's partial checkpoint and authorized Step 4. Implementation
+and isolated checks performed; real SQL/index execution remains pending and the
+result awaits verification. Remote main `defec38` and Listings `2302836` are
+unchanged; no open PR found. Mohit held/released the bounded file reservation;
+Suraj/Identity affected-owner review is still pending.
+
+`browse.py` now trims/forwards nonempty plain text and treats blank as browse,
+while retaining eligibility and the fail-closed Step 5 filter/sort gate.
+`browse_store.py` builds a parameterized predicate over Listings' existing
+stored title/description vector using `plainto_tsquery('pg_catalog.english', q)`,
+then applies the same recency/UUID page order. No tsquery syntax evaluation,
+score ordering, client-side matching, projection or separate service.
+`postgres_store.py` forwards optional text through its existing connection path.
+The reviewed baseline migration already defines the stored English vector and
+`listings.sale_full_text` GIN index; no duplicate migration/index was introduced.
+
+`test_browse.py` adds normalization, HTTP forwarding and SQL-injection-shaped
+parameterization checks; scripted results are not text-search acceptance.
+`test_browse_postgres.py` adds actual title/description/all-term/stemming checks,
+plain operator characters, stop-word/no-term/no-match cases, search page ties,
+availability exclusion and generated-vector updates. It inspects the stored
+expression and GIN validity/readiness, and checks index eligibility using a
+transaction-local planner diagnostic. This is not a natural-plan or NFR claim.
+Native tests remain in the registered disposable migrated runner and force
+rollback; none executed here. Updated API/Listing guides and command registry.
+
+Checks: focused browse/PostgreSQL/data invocation **129 passed, 1 skipped**;
+strict mypy on browse service/store/routes and existing PostgreSQL store passed;
+Black full check **99 files unchanged** (outside sandbox for its local socket);
+Python boundaries **0 violations**; changed documentation relative-link targets
+and `git diff --check` passed. No change to frozen contract/generated sources.
+
+Carry original pending obligations: Step 2 real loading/schema/count/FK/field
+validation; Step 3 actual SQL page/visibility behavior and ID-READY/LI-CORE
+parity; Step 4 native matching/index/migration/query-plan execution; Step 9 final
+corpus and human labels; LI-02 object reconciliation before cloud use. The
+previous broad Listings run's 12 expired image-fixture failures remain unresolved
+at `.tools/checks/se01-step3-listings.txt`; it was not rerun or declared passing.
+No PostgreSQL/Docker/Node install, cloud operation, UI, commit, push or merge.
+DATA-READY/SE-CORE/FR/NFR/task acceptance remains pending. Next preview only:
+Step 5 filters/price/recency sorting and bounded validation, after verification.
+
+### SE-01 — Step 3 browse implementation and pending real SQL checks — 2026-10-24 09:44:10 UTC
+
+Mohit verified isolated Step 2 and authorized Step 3. Implemented the reviewed
+Listings-owned `GET /listings` basic browse operation; result awaits verification.
+No task-definition change; Steps 4–5 remain text/filter/sort implementation.
+Remote main `defec38` and Listings `2302836` unchanged; no open PR or competing
+reservation found. Mohit held the recorded bounded writer reservation; it is
+released after implementation. Suraj/Identity review is pending, not claimed.
+
+Changed code and behavior:
+
+- `apps/api/app/domains/listings/browse.py`: current trusted caller and public
+  Identity eligibility checks for either regular/temporary class, then narrow
+  owned-store query. No seller-only eligibility substitution. Requested text,
+  filters and non-recency sorts fail safe 503 until their implementation steps;
+  trimmed-empty text remains browse. Reject SQL-offset overflow safely.
+- `browse_store.py`: actual parameterized PostgreSQL statement selects only
+  public summaries/image references, excludes retired/pending/unavailable/
+  future/ended rows before paging, sorts creation/UUID descending, and uses
+  shared size+1 page construction. No projection/cache or in-memory query.
+- `browse_routes.py`, existing `routes.py` and `postgres_store.py`: compose the
+  contract operation/response and reuse the configured store's pool/error map.
+  Normal Identity remains declaration-only and fails closed; explicit test
+  bindings are never selected as a production fallback.
+- `test_browse.py`: scripted-page HTTP/auth/privacy/query-validation checks,
+  including no seller-fake fallback. `test_browse_postgres.py`: real SQL test
+  for fixed-state paging, UUID ties, sizes 20/50/100, time/retirement visibility
+  and no skips/duplicates; controlled fixture writes force rollback. Registered
+  with `scripts/check_database.py --listings-store`; not actually run here.
+- Corrected Step 2 `data/generators/search_loader.py`: upload confirmation uses
+  load-time UTC instead of historical listing creation, avoiding expired upload
+  attachment. Regression in `data/tests/test_search_preview.py` checks recorded
+  timestamp parameters; no real SQL success is inferred. Documented this audit
+  metadata in `data/formats/search-preview.md`; logical fingerprints unchanged.
+- Updated `apps/api/README.md`, Listings README and command registry with the
+  partial browse scope and exact real-test command. No UI/migrations/generated
+  declarations or existing seller/upload runtime logic changed.
+
+Checks: focused browse/PostgreSQL/data invocation: **124 passed, 1 skipped**.
+The skipped check is real PostgreSQL browse, not accepted pagination evidence.
+Strict mypy on the three browse modules, existing PostgreSQL store and corrected
+loader: passed. Pinned Black full check: **99 files unchanged**; final added test
+was also formatted. Python boundary check: **0 violations**, after correcting
+the initial import to use Identity's exact public module. Changed documentation
+relative link targets and `git diff --check`: passed.
+
+Broader Listings suite: **12 failed, 154 passed, 2 skipped**. All failures are in
+unchanged `test_image_upload_service.py`: `NOW = 2026-10-22 12:00 UTC` plus one
+day creates caller expiry `2026-10-23 12:00 UTC`; unchanged auth correctly
+rejects these contexts on Oct 24. Auth, lifecycle service and that test file have
+no diff from HEAD. No clock weakening or unrelated fixture patch was applied.
+Raw failure output retained at `.tools/checks/se01-step3-listings.txt`. Full
+Listings verification remains failed, not relabeled as tooling or passed.
+
+Pending original checkpoints: Step 2 real local load/schema/FK/field checks;
+Step 3 real PostgreSQL page/availability checks and actual ID-READY/LI-CORE
+provider parity; Step 4 index checks; Step 9 final data/human labels. Full
+CI/contract-generation/web/secret gates remain unavailable without their tools.
+No DATA-READY/SE-CORE/FR/NFR/task completion, commit, push, deployment or merge.
+Next preview only: Step 4 PostgreSQL full-text query/index work after human
+verification of this partial result; real checks remain pending at original IDs.
+
+### SE-01 — Step 2 isolated schema-shaped corpus and loader — 2026-10-24 09:16:24 UTC
+
+Mohit verified Step 1 and authorized Step 2. Isolated implementation performed;
+result awaiting human verification. `task/se-01-search`, based on `defec38`.
+Mohit is the sole writer for this bounded data-tool command-registry addition;
+no application, Listings-owned or page-composition files changed.
+
+Implemented `data/generators/search_preview.py`: reuses PD-09 deterministic IDs,
+canonical hashing and safe named-run IO; generates regular synthetic users and
+reviewed listing fields with category/condition/price/negotiability variation,
+explicit logical UTC time and available/unavailable/future/ended fixtures.
+Versioned source-bound manifests and reconstructive validation reject altered
+content/types, unsafe references and stale migration/contract inputs.
+`search_loader.py` implements opt-in fixed local Unix-socket PostgreSQL loading:
+checks test mode, fixed server database/role, exact migration set, active
+catalogue and empty locked tables; uses parameterized inserts, a transaction,
+forced deferred constraints and count checks. No reset/delete/upsert, cloud
+access, credentials/auth bypass, or production loading path. Metadata-only
+image references are explicitly unverified and must be reconciled with LI-02.
+
+`data/tests/test_search_preview.py` covers deterministic reference-sized counts,
+cross-process repeatability, generated CreateListingRequest compatibility,
+availability/ties, malformed input, tampering, private file IO and loader refusal
+for wrong targets, nonempty databases, stale migrations and ambient libpq
+redirects. Mock refusal checks do not establish SQL execution or rollback.
+Documented format, exact generate/validate/load commands, lack of reset, and
+pending integration in `data/formats/search-preview.md`, `data/README.md`,
+`data/prerequisites.md` and `docs/environment/commands.md`.
+
+Checks/evidence:
+
+- `.venv/bin/python -m pytest data/tests -q -W error`: 93 passed (63 existing,
+  30 new). `.venv/bin/python -m mypy --no-incremental
+  data/generators/search_preview.py data/generators/search_loader.py`: passed
+  after correcting initial strict-typing findings.
+- `.venv/bin/python -m black --check --diff .`: 94 files unchanged, passed after
+  rerunning outside the sandbox because its multiprocessing socket was denied.
+  The final full check also passed after annotation edits. Scoped checks likewise
+  required the socket, including with one worker.
+  `.venv/bin/python scripts/check_boundaries.py`: zero violations.
+  Changed data/command documentation relative-link targets exist.
+- Generated and validated two file runs with seed 42, 5,000 users/1,000 listings
+  and logical time `2026-10-24T09:00:00.000000Z`. Named runs
+  `se01-schema-42-a` and `se01-schema-42-b` have byte-equivalent logical records
+  and fingerprint
+  `sha256:4c2f66f23bb88b3b46ffb8c49cff50425ad7a0ea6891552593121e921229df11`.
+  Retained [first manifest](../../data/runs/se01-schema-42-a/manifest.json) and
+  [second manifest](../../data/runs/se01-schema-42-b/manifest.json); dataset
+  payloads remain ignored. CLI help passed; `git diff --check` passed.
+- No real PostgreSQL load, migration/FK/field validation, index/ranking check,
+  browser check, Docker secret scan, aggregate CI or cloud run was possible.
+  PostgreSQL/Docker and Node/npm remain absent; no new installation attempted.
+
+Pending original obligations: Step 2 real schema/count/FK/loading/availability
+validation after ID-READY/LI-CORE and a local PostgreSQL runtime; Step 4 actual
+index validation; Step 9 frozen final corpus and at least 20 human-reviewed
+labels; LI-02 real object reconciliation before cloud measurement. Return to
+these checkpoints when dependencies arrive. This preview does not accept
+DATA-READY, SE-CORE, FR/NFRs or SE-01 completion. Next preview only: Step 3
+browse implementation through Listings' reviewed boundary, after verification
+of this isolated checkpoint and the required Listings/shared-file coordination.
+
+### SE-01 — Step 1 preview verification and local Python recovery — 2026-10-24 09:03:52 UTC
+
+Mohit approved the preceding partial inventory and repository-local Python-only
+setup; completed Step 1 result awaits verification. Installed uv 0.10.7 under
+`.tools/uv/` and Python 3.14.3 under `.tools/python/` with `--no-bin`. Kept uv
+cache in `.tools/cache/`; preserved the broken environment at
+`.tools/venv-before-se01/` and recreated `.venv/` via the locked sync. No global
+PATH or system Python changes; Homebrew inspection found no installed uv formula
+after the interrupted attempt. Added `/.tools/` to `.gitignore` and documented
+local commands in `docs/environment/development-workstation.md`.
+
+Checks performed:
+
+- `UV_PYTHON_INSTALL_DIR="$PWD/.tools/python" UV_CACHE_DIR="$PWD/.tools/cache"
+  .tools/uv/uv sync --locked --python 3.14.3`: passed, 51 packages installed.
+- `.venv/bin/python -m pytest data/tests/test_tooling.py -q -W error`: 63 passed.
+- `.venv/bin/python -m data.generators --seed 42 --users 3 --listings 2`:
+  emitted three user and two listing placeholders; parsed counts matched.
+- Existing `build_bundle`/`validate_bundle` invoked twice per count set, seed 42,
+  using distinct aware audit timestamps: records and fingerprints identical,
+  validation passed, requested/observed counts matched. For 3 users/2 listings:
+  `sha256:85ef55c26bc440ca8fa687b0c6b048203092053ecf145088e6b4211f87d69a33`.
+  For 5,000 users/1,000 listings:
+  `sha256:bf7b0b316f8b2b9aecf3a812028ac685f4c4e3090fef038d33cf26390f2f1b37`.
+  These are schema-independent preview placeholders, not database population,
+  final reference data, relevance labels, DATA-READY or NFR evidence.
+- `git check-ignore` confirmed uv/Python/.venv are ignored; `git diff --check`
+  passed. `.venv/bin/python scripts/check_secrets.py` could not complete: the
+  registered scanner invokes Docker, which is absent. No secret-scan pass or
+  aggregate/database/browser gate is claimed.
+
+Step 1 runtime-tool blocker is resolved; the earlier entry preserves its original
+partial state. No Step 2 adapter or loader implemented. Next: human verification
+of Step 1, then explain/verify Step 2's isolated scope with real PostgreSQL/FK
+validation left pending under its original checkpoint.
+
+### SE-01 — Step 1 inventory and approved scope — 2026-10-24 08:57:32 UTC
+
+Mohit (C), `task/se-01-search` based on `defec38`; plan verified, Step 1
+partially executed and result awaiting verification. Remote inspection found no
+open PR or Search branch; PRE-00 is accepted at `2cd83e7`, DL-00 contracts are
+merged at `f5576ef` although their status row still predates merge.
+
+Reusable inventory:
+
+- `contracts/search.md`, `contracts/listings.md`, `contracts/source/types.py`,
+  `contracts/generated/openapi.json`, `contracts/generated/types.gen.ts`, and
+  `apps/api/app/domains/listings/public.py` define the public query boundary.
+  Use `GET /listings` and `ListingsPublic.query_available_listings`; the latter
+  remains declaration-only and no runtime browse provider was found in
+  `routes.py`, `service.py`, or `postgres_store.py`.
+- Query semantics: English plain-text title/description matching; available
+  non-retired listings within their time window; category, condition,
+  negotiability and inclusive whole-rupee paise filters; recency/price sorts
+  with UUID ties; numbered pages of 20/50/100 and maximum 120-code-point query.
+- `database/migrations/20261018094330_mvp_tables.sql` already defines
+  `search_vector`, `sale_full_text` GIN, recency/price/category/condition
+  indexes, `search.wanted_requests`, and `search.saved_listings`. Inspect all
+  subsequent migrations before changing these; do not recreate baseline tables.
+- Reuse `data/generators/preview.py` (explicit seed/counts and stable test UUIDs),
+  `manifest.py` (canonical SHA-256 excluding audit time), `files.py` (safe named
+  runs), `data/tests/test_tooling.py`, and `data/prerequisites.md`. These supply
+  preview placeholders only, not schema-shaped loaders or DATA-READY evidence.
+  Registered commands remain in `data/README.md` and the command registry.
+- `data/evaluation/query-labels.template.json` is empty/draft with null dataset
+  and review fingerprints; `data/formats/query-labels.md` supplies review rules.
+  Final `query-labels.json`, evaluation runners and workload profiles were not
+  found. Their creation remains steps 9–10; no labels or final corpus invented.
+- Frontend entry is `apps/web/src/features/search/index.ts`; implementation is
+  still a placeholder. Use the frontend collaboration map for discovery, wanted,
+  saved and shared page connections. Shared page edits need a current writer.
+
+Mohit clarified that SE-01 includes implementing queries in steps 3–5 through
+the Listings boundary; this is not reassigned to Suraj. Listings/shared edits
+still require coordination. Updated the task clarification. Mohit also approved
+owner access to unavailable non-retired Wanted Request detail; updated
+`contracts/search.md` and the existing discovery decision. Other callers get
+404; retired content stays unreadable. No generated declarations changed.
+
+Checks: Git clean before this increment; inspected contract/schema/provider,
+generator and label sources. Runtime repeat-generation/count/fingerprint checks
+are unavailable: uv/Node/npm/Docker are absent and `.venv/bin/python` points to
+a deleted `/tmp` Python 3.14 interpreter. System Python 3.12 cannot execute the
+project's Python 3.14 syntax. No runtime tests, SQL/index plans, corpus counts
+or final fingerprints are claimed. ID-READY/LI-CORE remain missing; reviewed
+fixtures permit isolated SE-01 steps 1–10 and SE-02 steps 1–7 but cannot accept
+DATA-READY/SE-CORE or final tasks. Next: verify this partial inventory and resolve
+the Python tool prerequisite before completing Step 1 runtime checks/Step 2.
 
 Update the task status row after each step and human verification. The row is the detailed live checkpoint; for active work, put the immediate next action in the checkpoint. For not-started work, state what blocks its next permitted checkpoint. If a task allows isolated development with reviewed contracts/test doubles, distinguish those early-start prerequisites from later real-integration or final-acceptance gates; do not present a later gate as preventing the isolated work. The dated history is a concise record of durable progress, not a transcript of every interaction.
 
@@ -1830,6 +4730,43 @@ review and ownership workflow.
 
 | LI-01 Step 7 pickup-area correction | Nullable pickup contract/model and disposable/browser PostgreSQL | Affected consumers/schema owners and native/shared migration check | Before shared integration of migration 20261021105546 | Verify omitted/null create, explicit-null replacement, nullable reads, preserved existing values, and safe rollback without inventing data | Local SQL/API/UI checks passed and Suraj verified the browser behavior; consumer review and native/shared migration checks remain pending. |
 
+### SE-02 pending integration checkpoints
+
+| Task/step | Mode, source/version, double and scenarios | Required real dependency | Owner roles | Trigger | Real checks and expected result | Current evidence/state |
+|---|---|---|---|---|---|---|
+| SE-02 Step3 wanted API/retries | Isolated HTTP/contract format2; real PostgreSQL14migrations; `test_wanted_postgres.py:Dependencies` supplies only eligible IDs and active/historical catalogue codes | Actual ID-READY/LI-CORE/SE-CORE providers and reviewed Conversations operations | Search C; Identity A; Listings B; Conversations D | Accepted providers and SE-02 Step8 | Real auth/revocation/temp permissions, category assignment/display, close/first-response serialization and retirement activity races; preserve owner/privacy/retry behavior | Local API/native checks pass; real integration pending; normal declaration-only defaults fail503 |
+| SE-02 Step3 retirement remainder | Existing pending fields and defensive receipt guards; concrete cleanup proposal only, no scrubber/scheduler | Mohit approval of exact local method/order; reviewed actual Conversations before real acceptance | Search C; Conversations D | Cleanup approval, then isolated implementation; final integration at Step8/INT-01 |180/90day boundaries/reset, unknown/blocked marker results, transaction rollback, receipt/origin scrub and content-free late-key/no-reopen checks | Pending proposal approval; author API checkpoint does not complete Step3 |
+
+### SE-02 approved retirement checkpoint: updated real gate
+
+| Task/step | Mode, source/version, double and scenarios | Required real dependency | Owner roles | Trigger | Real checks and expected result | Current evidence/state |
+|---|---|---|---|---|---|---|
+| SE-02 Step3 retirement (updates earlier proposal-pending checkpoint) | Concrete local order approved; internal coordinator/atomic SQL implemented; explicit typed Conversations double, real native transaction/failure/race checks | Accepted actual Conversations activity/marker and Search request-response integration; Identity/Listings readiness | Search C; Conversations D; affected owners | Actual providers available and Step8/INT-01 | Validate real pending/close/response serialization, all-thread activity/no-write marker races and atomic local scrub; preserve unknown result identity | Local isolated checks pass; prior local approval/implementation gate satisfied, real integration remains pending |
+
+### SE-02 draft-matching pending real integration
+
+| Task/step | Mode, source/version, double and scenarios | Required real dependency | Owner roles | Trigger | Real checks and expected result | Current evidence/state |
+|---|---|---|---|---|---|---|
+| SE-02 Step4 draft matches | Reviewed public query format2; actual Listings native SQL via test composition, synthetic Identity; no fake ranking; independent wanted submit probe has explicit catalogue fixture | Accepted actual ID-READY/LI-CORE/SE-CORE provider composition and Step8 | Search C; Listings B; Identity A | Real providers available/Step8 | Real session/revocation/temp capabilities, available-only title/description match ordering/bounds, no draft persistence and nonblocking UI/submit behavior | Isolated native/HTTP checks pass; normal declaration-only defaults fail503; real integration pending |
+
+### SE-02 saved-listing pending real integration
+
+| Task/step | Mode, source/version, double and scenarios | Required real dependency | Owner roles | Trigger | Real checks and expected result | Current evidence/state |
+|---|---|---|---|---|---|---|
+| SE-02 Step5 saved behavior | Reviewed format2 target/current-summary contracts; SavedListingsDouble scripts; actual Search SQL/HTTP/concurrency/FKs with controlled upstream fixtures | Accepted actual Identity and Listings read_save_target/read_saved_listing_summaries providers, LI-CORE/SE-CORE | Search C; Listings B; Identity A | Actual providers available/Step8 | Real auth/revocation/temp scope, current target checks, unavailable/window transitions, retired content-free pages, own-page-only lookup, cross-user privacy and provider outage behavior | Isolated checks pass; no upstream provider implementation inferred, normal required declarations fail503; real integration pending |
+
+### SE-02 Step6 local response gap and real coverage gates
+
+| Task/step | Mode, source/version, double and scenarios | Required dependency/correction | Owner roles | Trigger | Checks and expected result | Current evidence/state |
+|---|---|---|---|---|---|---|
+| SE-02 Step6 response capability/races | Inventory of actual routers vs reviewed declarations; no synthetic pass for absent handler | Human-verified local response/200schema correction, then actual C provider | Search C; Conversations D; Identity A | Approve proposed corrective checkpoint; real provider integration later | Regular-only initiation, no self/hidden/retired create, closed exact-pair retry, ambiguous result recovery, Search row-lock serialization; real C uniqueness/membership separately | Local API absent; generated200body missing vs docs; Step6 partial and proposed correction not yet implemented |
+
+### SE-02 response correction: local gap resolved, real integration pending
+
+| Task/step | Mode, source/version, double and scenarios | Required real dependency | Owner roles | Trigger | Checks and expected result | Current evidence/state |
+|---|---|---|---|---|---|---|
+| SE-02 Step6 response (updates missing-handler/200body checkpoint) | Approved correction implemented; current contract0.1.0/format2; all11Search routes mounted,201/200typed; actual Search SQL/row locks and schema FK probe, explicit C pair-result script | Actual Identity/C create/existing lookup providers with independent capability/membership/unique thread and close/retirement enforcement | Search C; Conversations D; Identity A | Actual providers ready/Step8/INT-01 | Repeat positive/denied/closed/retired and ambiguous retry/race cases with real C transactions, member/privacy assertions and current auth | Local gap resolved; native/consumer tests pass, real provider acceptance still pending |
+
 ## Resolved integration evidence
 
 The entries below preserve the original integration checkpoints and their evidence. The user confirmed the previously pending PD-08/09 gates complete on 2026-10-19; no PR status was examined. These records are retained for provenance and are not current blockers. Future real domain checks remain with their named tasks; no FR/NFR completion is implied.
@@ -1843,3 +4780,35 @@ The entries below preserve the original integration checkpoints and their eviden
 | PD-09 final upstream/review/command handoff | Real local schema-independent tooling; no domain stubs | Human-verified local PD-09 source based on published PD-08 `b6bade4`; accepted upstream confirmed by user | PD-08/PD-06 handoff and appropriate upstream; normal independent review/CI integration | Mohit, Suraj (independent peer); integration owns PD-08 continuation and PD-12/13 commands | Completed; user confirmed final acceptance | Resolve upstream/review findings, retain implemented data-test/front-door wiring, rerun affected exact local/hosted CI gates and obtain human acceptance | All six local steps/audit verified; 63 local data/361 combined Python tests and Black passed; PR #5/main handoff merged at `e4d7551`; user confirms upstream, review and current hosted acceptance complete (2026-10-19); DATA-READY/domain loading/labels stay SE-01 obligations |
 
 These records preserve execution mode, isolated results and the resolved real-check state; future domain-specific behavior/performance work remains assigned to its later tasks. BOOT-00/PD-02 also record the actual WSL root/agent/tool facts in `docs/environment/development-workstation.md`; that file is an expected execution output, not an absent source document.
+
+## SE-02 Step7 frontend reservation
+
+Writer: Mohit (C), `search-domain`; started 2026-10-25 08:13:02 UTC. Human verified Step6 and authorized Step7. Reserve Search feature files/tests, public Search index, `apps/web/src/pages/ScaffoldPages.tsx` Search-owned slots only, frontend map, evidence and log. Existing routes and other features remain owned by their maintainers. Public HTTP `GET /me` provides session eligibility; no private Identity/Listings/Conversations imports or invented provider success.
+
+Step7 frontend reservation released after checks: 2026-10-25 08:26:59 UTC. Browser verification pending; reacquire a bounded reservation before any shared-page correction.
+
+### Search evaluation inventory consolidation — 2026-10-25 11:22:46 UTC
+
+The read-only scope audit found 12 archived SE-01 schema inventory captures with identical SHA-256 `27b17765c9eeeab4bc058093ba486895a4c1da4ea78924cd64f860fcbd70b110` and identical 1,593-line contents. Kept `calibration/inventory-first.txt`, removed the other 11 copies (17,523 repeated lines), and documented that the handoff result/fingerprint files describe the earlier check package. No app or test code changed and no tests were run for this documentation-only cleanup. Human verification is pending; next is the integration-readiness audit, followed by the local create-listing-to-Search flow.
+
+### SE-01/SE-02 local integration-readiness audit — 2026-10-25 11:34:31 UTC
+
+Read-only inspection confirmed that `app.main` mounts the Listings browse, wanted and saved routers on the existing bounded PostgreSQL pool. Basic keyword browse uses the existing database; Hybrid helper/worker settings default off. Identity public operations remain declarations that raise `NotImplementedError`, so normal create/browse calls fail closed with 503.
+
+The Listings browser demo uses its own `clip_listings_browser` database and a synthetic seller identity, but does not bind `listings_browse_identity`; its browse route therefore falls through to the unimplemented public Identity declaration. The Search native preview uses a separate database, mounts only the browse router and seeds three synthetic listings; it has no listing-create route. Neither existing demo can show create-then-search as-is. The expected narrow path is a test-only harness that mounts the full Listings router, shares one disposable database and injects the same fixed synthetic identity for create and browse; no product runtime edit is currently identified.
+
+The same API and PostgreSQL arrangement can host basic browse without a new Search service or cluster; migrations still run as a separate database task. Real Identity wiring remains necessary for non-test create/browse, and real Conversations is needed for response flows, not the create-to-browse check. No tests, database, cloud actions or source changes were performed in this audit. The local flow is the next step after human verification.
+
+### SE-01 local create-to-search flow — 2026-10-25 11:47:33 UTC
+
+Added a test-only Identity binding in `apps/api/tests/domains/listings/browser_demo.py`: the same fixed synthetic seller now satisfies both the Listings write boundary and the separate browse eligibility boundary. No product runtime code changed. The existing launcher created its labelled local PostgreSQL 18.6 container, applied the branch migrations and served the API on loopback; no shared or cloud database was used.
+
+Using HTTP commands, read the catalogue, obtained synthetic image-confirmation metadata, created listing `df289699-1d9a-464d-b199-3c65d82ddb60` titled `Local Search Flow Brass Kettle 2026-10-25`, then queried `GET /listings?q=Brass Kettle`; the returned row had the same ID and title. Started the Search/Listings Vite development UI with `VITE_LISTINGS_ISOLATED_DEMO=true` and without the Search fixture-preview flag; the Search route and API proxy returned HTTP 200 and the same row. Session is `/tmp/clip-listings-browser-v6e1f01t`; API is `http://127.0.0.1:8000` and UI is `http://127.0.0.1:5173/`, both loopback-only and left running for Mohit's browser verification. Full test suites were not run. The isolated listing uses synthetic image metadata, not an uploaded image.
+
+### SE-01 local create-to-Hybrid flow — 2026-10-25 12:15:58 UTC
+
+Added an opt-in `--hybrid-search` mode to the test-only `browser_demo.py`. It starts the existing real `search_runtime` and dispatcher, verifies their read/worker pool targets the same `clip_listings_browser` private Unix-socket database, then uses the real `EmbeddingBootstrap` to prepare, queue existing rows, wait for complete vectors and activate the pinned pipeline. `PostgresListingsStore` receives the real helper/read pool; no product runtime module or vector data was copied. The normal demo remains Keyword-only unless this flag is supplied.
+
+For this Linux/WSL run, installed CPython 3.13.12 and the same 24 package versions as the existing helper lock using Linux wheels; PyPI metadata reported no advisories, and the two model artifacts matched the checked manifest hashes. These files and the generated Linux lock remain under ignored `.tools/semantic/`. Real helper inference returned a 384-dimensional query vector and separate title/description vectors. Resumed the retained local demo database, then created `Local Hybrid Auto Kettle 352439ce` (`194a32d4-64bb-491b-b4ec-68403e26f7f3`). Without calling the queue/bootstrap after creation, the database trigger created its generation and the real dispatcher published one title and one description vector (384 dimensions each). `GET /listings?q=kettle` returned that ID in both Keyword and Hybrid modes; the Vite `/api` proxy returned it in both modes as well.
+
+Python compilation, CLI help, Black formatting, and `git diff --check` passed; no full test suite was run. API and Vite remain on loopback ports 8000 and 5173 with session `/tmp/clip-listings-browser-v6e1f01t` for human browser verification. The listing uses synthetic image metadata. No shared database, cloud resource or product runtime code was touched.

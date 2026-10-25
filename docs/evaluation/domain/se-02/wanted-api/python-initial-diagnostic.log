@@ -1,0 +1,93 @@
+........................................................................ [  6%]
+........................................................................ [ 12%]
+........................................................................ [ 18%]
+........................................................................ [ 24%]
+............................................s........................... [ 30%]
+........................................................................ [ 36%]
+.................................ss...s................................. [ 42%]
+.....................................ss..........................sss.... [ 48%]
+........................................................................ [ 54%]
+..........s............................................................. [ 60%]
+........................................................................ [ 66%]
+......................s................................................. [ 72%]
+s....................................................................... [ 78%]
+..................................F.........................F........... [ 84%]
+........................................................................ [ 90%]
+...........................s............................................ [ 96%]
+...........................................                              [100%]
+=================================== FAILURES ===================================
+___________ test_only_implemented_listings_http_routes_are_installed ___________
+
+    def test_only_implemented_listings_http_routes_are_installed():
+        """Mount the implemented Listings subset without installing other declarations."""
+        from app.main import app
+    
+        # Inspect the public schema instead of FastAPI's internal router objects.
+        # Newer FastAPI versions can keep included routers as a single internal
+        # object, while OpenAPI still shows the actual installed endpoints.
+        paths = set(app.openapi()["paths"])
+>       assert paths == {
+            "/health",
+            "/catalogue",
+            "/listings",
+            "/listings/{listing_id}",
+            "/me/listings",
+            "/listings/{listing_id}/availability",
+            "/listings/{listing_id}/selection",
+            "/listings/{listing_id}/conversations/{conversation_id}/offer",
+            "/listings/{listing_id}/conversations/{conversation_id}/offer-withdrawals",
+            "/image-uploads",
+            "/image-uploads/{upload_id}/confirm",
+            "/image-uploads/{upload_id}",
+            "/images/{image_id}/delivery",
+        }
+E       AssertionError: assert {'/catalogue'...elivery', ...} == {'/catalogue'...elivery', ...}
+E         
+E         Extra items in the left set:
+E         '/wanted-requests/{request_id}'
+E         '/wanted-requests/{request_id}/availability'
+E         '/me/wanted-requests'
+E         '/wanted-requests'
+E         Use -v to get more diff
+
+tests/contracts/test_domain_declarations.py:151: AssertionError
+______________ test_actual_api_schema_matches_generated_contract _______________
+
+    def test_actual_api_schema_matches_generated_contract():
+        """The real API schema matches health and the implemented Listings subset."""
+        from app.main import app
+    
+        actual = app.openapi()
+        declared = json.loads((ROOT / "contracts/generated/openapi.json").read_text())
+        assert declared["x-clip-generator-format"] == 2
+        assert actual["info"] == declared["info"]
+        implemented_paths = {
+            "/health",
+            "/catalogue",
+            "/listings",
+            "/listings/{listing_id}",
+            "/me/listings",
+            "/listings/{listing_id}/availability",
+            "/listings/{listing_id}/selection",
+            "/listings/{listing_id}/conversations/{conversation_id}/offer",
+            "/listings/{listing_id}/conversations/{conversation_id}/offer-withdrawals",
+            "/image-uploads",
+            "/image-uploads/{upload_id}/confirm",
+            "/image-uploads/{upload_id}",
+            "/images/{image_id}/delivery",
+        }
+>       assert set(actual["paths"]) == implemented_paths
+E       AssertionError: assert {'/catalogue'...elivery', ...} == {'/catalogue'...elivery', ...}
+E         
+E         Extra items in the left set:
+E         '/wanted-requests/{request_id}'
+E         '/wanted-requests/{request_id}/availability'
+E         '/me/wanted-requests'
+E         '/wanted-requests'
+E         Use -v to get more diff
+
+tests/contracts/test_generation.py:254: AssertionError
+=========================== short test summary info ============================
+FAILED tests/contracts/test_domain_declarations.py::test_only_implemented_listings_http_routes_are_installed
+FAILED tests/contracts/test_generation.py::test_actual_api_schema_matches_generated_contract
+2 failed, 1180 passed, 13 skipped in 63.59s (0:01:03)

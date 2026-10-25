@@ -199,3 +199,20 @@ For every shared contract change:
    owners' and independent human approval and explicit authorization for the
    exact merge revision. Record accepted main SHA and refresh consumers afterward.
    Changed reviewed semantics require renewed review; merge never deploys cloud.
+
+## SE-01 draft public search query amendment
+
+[Keyword/Hybrid and both-mode relevance proposal](search-mode-proposal.md) is a
+review packet, not registered schema. It names the existing query/response boundary,
+exact validation/ranking/switching rules and downstream review/test gates. Current
+source/generated/runtime declarations remain unchanged in this checkpoint.
+
+## SE-02 wanted-response200 correction
+
+Mohit verified the [pre-implementation Search correction](../docs/decisions/wanted-response-contract-correction.md).
+Only Search's alternate200 response now has the already documented
+ConversationStartResult body;201/path/input/capability stay unchanged. HTTP0.1.0
+is retained for this documented-semantic correction. Registered outputs are
+regenerated; `tests/contracts/search_response_consumer.ts` compiles both success
+statuses and requires the conversation ID. Normal independent/affected-owner
+review and publication/merge gates remain; no other domain response was changed.

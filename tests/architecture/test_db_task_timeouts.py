@@ -23,12 +23,15 @@ def tools(tmp_path):
     real_timeout = shutil.which("timeout")
     if not real_timeout:
         pytest.skip("GNU timeout is required for this Linux-container regression")
+    # New executable stand-ins can take more than 0.2s to start on macOS.
+    # Allow startup while still killing the 10s hanging client well before the
+    # outer 6s watchdog. The production 60s/5s arguments remain asserted below.
     (tmp_path / "timeout").write_text(
         f"#!{sys.executable}\n"
         "import os, sys\n"
         "assert sys.argv[1:4] == ['--signal=TERM', '--kill-after=5s', '60s']\n"
         f"os.execv({real_timeout!r}, ['timeout', '--signal=TERM', "
-        "'--kill-after=0.1s', '0.2s', *sys.argv[4:]])\n"
+        "'--kill-after=0.1s', '2s', *sys.argv[4:]])\n"
     )
     (tmp_path / "psql").write_text(
         f"#!{sys.executable}\n"
@@ -72,7 +75,7 @@ def test_database_tasks_bound_psql_and_hide_private_output(tools, script, mode):
         },
         capture_output=True,
         text=True,
-        timeout=4,
+        timeout=6,
     )
     assert (result.returncode == 0) == (mode == "success")
     assert "controlled-private-diagnostic" not in result.stdout + result.stderr

@@ -1,0 +1,99 @@
+{
+  "preview_only": true,
+  "nfr_accepted": false,
+  "finished": true,
+  "k6_exit": 0,
+  "profile_id": "local-search-pilot-v1",
+  "measured": {
+    "scheduled": 20,
+    "issued": 20,
+    "actual_http_requests": 20,
+    "completed_samples": 20,
+    "uncompleted": 0,
+    "generator_drops": 0,
+    "boundary_iterations_without_http": 0,
+    "generator_shortfall": 0,
+    "outcomes": {
+      "ok": 20
+    },
+    "clock_invalid": 0,
+    "offered_rps": 2.0,
+    "issued_rps": 2.0,
+    "successful_rps": 2.0,
+    "all_completed_latency": {
+      "samples": 20,
+      "p50_ms": 17.5,
+      "p95_ms": 38.150000000000006,
+      "p99_ms": 40.42999999999999
+    },
+    "successful_latency": {
+      "samples": 20,
+      "p50_ms": 17.5,
+      "p95_ms": 38.150000000000006,
+      "p99_ms": 40.42999999999999
+    },
+    "expected_result_within_1s": 20,
+    "within_1s_fraction_of_issued": 1.0,
+    "case_outcomes": {
+      "browse": {
+        "ok": 7
+      },
+      "hybrid-vehicle": {
+        "ok": 6
+      },
+      "keyword-cycle": {
+        "ok": 7
+      }
+    },
+    "valid": true
+  },
+  "warmup": {
+    "scheduled": 10,
+    "issued": 10,
+    "actual_http_requests": 10,
+    "completed_samples": 10,
+    "uncompleted": 0,
+    "generator_drops": 0,
+    "boundary_iterations_without_http": 1,
+    "generator_shortfall": 0,
+    "outcomes": {
+      "ok": 10
+    },
+    "clock_invalid": 0,
+    "offered_rps": 2.0,
+    "issued_rps": 2.0,
+    "successful_rps": 2.0,
+    "all_completed_latency": {
+      "samples": 10,
+      "p50_ms": 13.0,
+      "p95_ms": 34.74999999999999,
+      "p99_ms": 36.55
+    },
+    "successful_latency": {
+      "samples": 10,
+      "p50_ms": 13.0,
+      "p95_ms": 34.74999999999999,
+      "p99_ms": 36.55
+    },
+    "expected_result_within_1s": 10,
+    "within_1s_fraction_of_issued": 1.0,
+    "case_outcomes": {
+      "browse": {
+        "ok": 4
+      },
+      "hybrid-vehicle": {
+        "ok": 3
+      },
+      "keyword-cycle": {
+        "ok": 3
+      }
+    },
+    "valid": true
+  },
+  "valid_preparation_run": true,
+  "latency_boundary": "Date.now around one synchronous HTTP call through full response body; negative elapsed clock samples invalidate run",
+  "quantile_method": "R7 linear interpolation",
+  "throughput_boundary": "arrival cohort completions / scheduled cohort seconds; bounded completion drain retained",
+  "acceptance": "No local/stub result accepts SE-CORE, DATA-READY or NFRs",
+  "target_kind": "native"
+}

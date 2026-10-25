@@ -1,9 +1,59 @@
 # Web application guide
 
-The web app has the approved routes, shared shell, and domain-owned surfaces.
-LI-01 Step 7's first increment implements create → saved listing detail through
-the Listings API. Edit/My Listings and other domains are still placeholders.
-Real Identity, photo upload/delivery, Search and Conversations are pending.
+## SE-01 Step 7 — first discovery UI checkpoint
+
+`features/search/SaleDiscovery.tsx` supplies responsive sale discovery through
+the public Search export. Only DiscoveryPage's sale slot is replaced. Wanted,
+saved and other feature actions remain at their original checkpoints. The UI
+uses the generated public summary/page/catalogue types, strict response guards,
+same-origin uncached reads, URL-backed applied filters, exact whole-rupee input,
+stable numbered paging, cancellation and explicit retry. Changing controls and
+applying them resets page 1. No query response or previous availability is used
+as a fallback after a failure. Image bodies are not fetched by discovery cards.
+
+With real API/Identity/PostgreSQL dependencies available, normal `npm run dev`
+uses `/api` through the existing loopback proxy. This checkout lacks those real
+providers. For the initial **UI-only** human checkpoint the agent starts:
+
+```bash
+CLIP_ENVIRONMENT=test CLIP_DEVELOPMENT_AUTH=true .venv/bin/python apps/api/tests/domains/search/browser_preview.py --isolated-search-ui
+PATH="$PWD/.tools/node/bin:$PATH" NPM_CONFIG_CACHE="$PWD/.tools/npm-cache" NPM_CONFIG_USERCONFIG=/dev/null VITE_SEARCH_UI_PREVIEW=true .tools/node/bin/npm run dev
+```
+
+Open **http://127.0.0.1:5173/**. The banner identifies synthetic fixture responses,
+not a database-backed marketplace. The test server binds only loopback 8000,
+requires explicit test settings, rejects ambient database/AWS configuration,
+and requires the development client's preview header/local origin. Normal or
+production clients cannot silently consume it. No test server is imported by
+normal API startup. Vite's production build excludes the preview header/banner
+branch. The flag labels/selects test transport opt-in only; it adds no real auth.
+
+The harness offers 42 synthetic summaries and named query scripts: `bicycle`,
+`books`, `desk`, `empty`, `slow`, `retry` (fails once, then succeeds),
+`unavailable`, `denied`, `expired`, and `malformed`. Fixture selection/sorting
+exists only to inspect UI interactions; it is not PostgreSQL search/ranking or
+acceptance evidence. Detail links use the real approved route, but detail/auth/
+save integration is not supplied by this preview. There are no writes/providers.
+
+Human checkpoint: inspect desktop, narrow portrait/landscape and tablet layouts;
+try search, filters/sorts/sizes, Previous/Next, Back/refresh, reversed/fractional
+prices, empty/loading/error/retry and sign-in-required display states. Record
+actual browser/version and viewport sizes. Stop here for verification before
+further visible increments. Real auth/SQL/filter/image/browser integration and
+required physical-device checks remain pending. Ctrl+C in each agent-owned
+server session stops only that service; no database cleanup is involved.
+
+Client price inputs use decimal text/BigInt so large whole-rupee filters are not
+rounded. JSON money/page numbers that JavaScript cannot represent safely are
+rejected rather than displayed approximately; this is a client representation
+limit, not a new product price cap. Live high-value schema/transport compatibility
+remains subject to real integration review.
+
+The web app retains the approved routes, shared shell and domain-owned surfaces.
+Listings supplies create/detail/edit/My Listings components; the SE-01 sale
+discovery increment is described above. Real Identity, fully integrated image
+behavior, wanted/saved flows and Conversations remain at their owning tasks'
+pending checkpoints. Component presence does not establish domain acceptance.
 
 Use Node.js 24 LTS and npm 11, as recorded in the
 [workstation guide](../../docs/environment/development-workstation.md). Run
@@ -126,3 +176,59 @@ Step 7 is partial until edit/My Listings and the remaining UI states pass their
 browser checkpoints. Real sign-in/authorization integration, photo selection and
 uploads (LI-02), Search/discovery, save and chat remain pending. See the work log
 for original Step 5/8–13 checks and affected-owner review gates.
+
+
+### Search modes/relevance checkpoint
+
+Search starts in Keyword/Newest unless a valid URL selects other inputs. The
+immediate mode selector retains applied filters/sort/page size, resets page1,
+and preserves unsaved form edits. Apply uses the current mode and drafts; a
+cleared relevance query becomes Newest. History navigation reloads URL inputs.
+Visible associated help explains both modes/relevance. Hybrid503 offers explicit
+Retry or Use Keyword; no automatic fallback or stale page. Request cleanup aborts
+and ignores late callbacks, and rendered result state is keyed to query/retry.
+The preview's `hybrid-down` query fails only in Hybrid so recovery can be inspected;
+`slow` and `retry` retain their labelled scripts. Fixture results never prove
+semantic matching/rank/auth. Human browser verification remains separate.
+
+
+### Real local search backend
+
+The native Search preview command in the registry connects actual SQL/vocabulary/
+typo/relevance and offline embeddings on3synthetic listings. The development banner
+identifies the responding backend via X-Clip-Preview: real local SQL/model,
+scripted UI fixtures, or unknown. The metadata changes disclosure only, never
+routing/auth. Native mode accepts real queries; old scripted words are ordinary
+text. Real sign-in/image delivery and final corpus/evaluation remain pending.
+
+### SE-02 wanted/saved UI checkpoint
+
+Search's public `WantedBrowse`, `MyWantedRequests`, `WantedDetail`,
+`SavedListings` and `SaveListingAction` compose into the existing approved routes
+in `ScaffoldPages.tsx`. No other feature's private files are imported.
+
+`wantedApi.ts` uses generated contract types, same-origin credentials and no-store
+reads/writes. It validates public/private projections, pages and money before
+rendering. `budgetPaise` parses whole rupees exactly: blank clears/omits a budget,
+zero means free; unsafe JS integers and decimal inputs are refused. `SearchIntent`
+retains a UUID for identical uncertain retries and changes it when intent changes;
+no private drafts, saved state or operation keys are placed in browser storage.
+
+`WantedViews.tsx` keeps request results keyed to current inputs and aborts old
+requests. `useRead` hides stale results immediately; `DraftSuggestions` debounces
+title-only matches, ignores late replies and never blocks publication. The owner
+editor submits a revision for edits; availability changes use the same protection.
+After a stale-revision error, cancel editing and refresh requests before retrying.
+The private list supplies edit controls; public responses carry no author identity.
+Detail eligibility comes from reviewed Identity `GET /me`, including expiry;
+Conversations still authorizes independently. Only a validated successful response
+can navigate to the existing conversation route. A 503 stays on the request page.
+Saved lists retain current unavailable details; retired rows render no content.
+Save/unsave acknowledge confirmed server results and have explicit retry actions.
+`wanted.css` scopes responsive inputs/cards to Search without changing the shell.
+
+The opt-in native UI/API test uses the same TS transport as these components
+against the running disposable harness. Default `npm run check` skips its two
+network tests; unit/initial-render tests still run. This does not exercise React
+effects or replace human browser/device checks. See the command registry and
+`docs/evaluation/domain/se-02/frontend/README.md` for the exact review package.

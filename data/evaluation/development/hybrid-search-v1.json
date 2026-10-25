@@ -1,0 +1,126 @@
+{
+  "format_version": 1,
+  "purpose": "development_calibration",
+  "synthetic": true,
+  "human_review_verified": false,
+  "judgment_origin": "fixture_author_intent",
+  "listings": [
+    {
+      "key": "cycle",
+      "title": "Campus bicycle",
+      "description": "A pedal powered bicycle for commuting around campus. Includes working brakes and lights."
+    },
+    {
+      "key": "textbook",
+      "title": "Calculus textbook",
+      "description": "University mathematics textbook with worked exercises and solutions for calculus students."
+    },
+    {
+      "key": "desk",
+      "title": "Wooden study desk",
+      "description": "Wooden furniture with a flat surface and drawers, suitable for writing and studying in a room."
+    },
+    {
+      "key": "phone",
+      "title": "Pocket smartphone",
+      "description": "A touchscreen mobile handset with a camera and charger, used for calls and messages."
+    },
+    {
+      "key": "fridge",
+      "title": "Compact refrigerator",
+      "description": "Small kitchen appliance for storing milk, vegetables and groceries at a low temperature."
+    },
+    {
+      "key": "telescope_bundle",
+      "title": "Assorted room bundle",
+      "description": "ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler ordinary filler  collectible telescope"
+    },
+    {
+      "key": "poster",
+      "title": "Bicycle wall poster",
+      "description": "Printed paper image of a bicycle for room decoration. It is a poster, not a rideable bicycle."
+    },
+    {
+      "key": "plant",
+      "title": "Potted basil",
+      "description": "Living green herb in a ceramic pot. Needs sunlight and water."
+    }
+  ],
+  "queries": [
+    {
+      "key": "vehicle",
+      "text": "vehicle",
+      "relevant_keys": [
+        "cycle"
+      ]
+    },
+    {
+      "key": "book",
+      "text": "book",
+      "relevant_keys": [
+        "textbook"
+      ]
+    },
+    {
+      "key": "furniture",
+      "text": "furniture",
+      "relevant_keys": [
+        "desk"
+      ]
+    },
+    {
+      "key": "commute",
+      "text": "something to ride to campus",
+      "relevant_keys": [
+        "cycle"
+      ]
+    },
+    {
+      "key": "calculus_study",
+      "text": "study material for calculus",
+      "relevant_keys": [
+        "textbook"
+      ]
+    },
+    {
+      "key": "cold_food",
+      "text": "keep food cold",
+      "relevant_keys": [
+        "fridge"
+      ]
+    },
+    {
+      "key": "mobile_phone",
+      "text": "mobile phone",
+      "relevant_keys": [
+        "phone"
+      ]
+    },
+    {
+      "key": "stargazing",
+      "text": "watch stars at night",
+      "relevant_keys": [
+        "telescope_bundle"
+      ]
+    },
+    {
+      "key": "absent_guitar",
+      "text": "guitar",
+      "relevant_keys": []
+    },
+    {
+      "key": "bicycle_poster",
+      "text": "bicycle poster",
+      "relevant_keys": [
+        "poster"
+      ]
+    },
+    {
+      "key": "literal_telescope",
+      "text": "telescope",
+      "relevant_keys": [
+        "telescope_bundle"
+      ]
+    }
+  ]
+}

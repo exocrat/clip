@@ -1,0 +1,173 @@
+{
+  "format_version": 1,
+  "vocabulary_version": "1.0.0",
+  "limits": {
+    "max_concepts_per_query": 12,
+    "max_alternatives_per_concept": 16,
+    "max_total_alternatives": 48,
+    "max_phrase_words": 3
+  },
+  "literal_only": [
+    "bike",
+    "notebook",
+    "display"
+  ],
+  "concepts": [
+    {
+      "term": "vehicle",
+      "aliases": [],
+      "narrower": [
+        "bicycle",
+        "motorcycle",
+        "car",
+        "scooter"
+      ]
+    },
+    {
+      "term": "bicycle",
+      "aliases": [
+        "cycle"
+      ],
+      "narrower": []
+    },
+    {
+      "term": "motorcycle",
+      "aliases": [
+        "motorbike"
+      ],
+      "narrower": []
+    },
+    {
+      "term": "car",
+      "aliases": [
+        "automobile"
+      ],
+      "narrower": []
+    },
+    {
+      "term": "scooter",
+      "aliases": [],
+      "narrower": []
+    },
+    {
+      "term": "book",
+      "aliases": [],
+      "narrower": [
+        "textbook"
+      ]
+    },
+    {
+      "term": "textbook",
+      "aliases": [
+        "text book"
+      ],
+      "narrower": []
+    },
+    {
+      "term": "furniture",
+      "aliases": [],
+      "narrower": [
+        "chair",
+        "table",
+        "desk",
+        "bed",
+        "wardrobe"
+      ]
+    },
+    {
+      "term": "chair",
+      "aliases": [],
+      "narrower": []
+    },
+    {
+      "term": "table",
+      "aliases": [
+        "dining table"
+      ],
+      "narrower": []
+    },
+    {
+      "term": "desk",
+      "aliases": [
+        "study desk"
+      ],
+      "narrower": []
+    },
+    {
+      "term": "bed",
+      "aliases": [],
+      "narrower": []
+    },
+    {
+      "term": "wardrobe",
+      "aliases": [],
+      "narrower": []
+    },
+    {
+      "term": "electronics",
+      "aliases": [],
+      "narrower": [
+        "phone",
+        "laptop",
+        "tablet",
+        "monitor"
+      ]
+    },
+    {
+      "term": "phone",
+      "aliases": [
+        "mobile phone",
+        "cellphone",
+        "smartphone"
+      ],
+      "narrower": []
+    },
+    {
+      "term": "laptop",
+      "aliases": [
+        "notebook computer"
+      ],
+      "narrower": []
+    },
+    {
+      "term": "tablet",
+      "aliases": [],
+      "narrower": []
+    },
+    {
+      "term": "monitor",
+      "aliases": [
+        "computer monitor"
+      ],
+      "narrower": []
+    },
+    {
+      "term": "appliance",
+      "aliases": [],
+      "narrower": [
+        "refrigerator",
+        "washing machine",
+        "microwave"
+      ]
+    },
+    {
+      "term": "refrigerator",
+      "aliases": [
+        "fridge"
+      ],
+      "narrower": []
+    },
+    {
+      "term": "washing machine",
+      "aliases": [],
+      "narrower": []
+    },
+    {
+      "term": "microwave",
+      "aliases": [
+        "microwave oven"
+      ],
+      "narrower": []
+    }
+  ]
+}

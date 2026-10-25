@@ -1,0 +1,46 @@
+......F..........s..ss.                                                  [100%]
+=================================== FAILURES ===================================
+______ test_native_wanted_response_auth_retry_closure_and_origin_locking _______
+
+    def test_native_wanted_response_auth_retry_closure_and_origin_locking():
+>       asyncio.run(exercise())
+
+apps/api/tests/domains/search/test_wanted_response_postgres.py:32: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.tools/python/cpython-3.14.3-macos-aarch64-none/lib/python3.14/asyncio/runners.py:204: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+.tools/python/cpython-3.14.3-macos-aarch64-none/lib/python3.14/asyncio/runners.py:127: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.tools/python/cpython-3.14.3-macos-aarch64-none/lib/python3.14/asyncio/base_events.py:719: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+apps/api/tests/domains/search/test_wanted_response_postgres.py:246: in exercise
+    await asyncio.wait_for(wait_for_owner_lock(), timeout=0.75)
+.tools/python/cpython-3.14.3-macos-aarch64-none/lib/python3.14/asyncio/tasks.py:488: in wait_for
+    return await fut
+           ^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def wait_for_owner_lock():
+        """Inspect actual server wait state, not a timing-only assertion."""
+        async with h.pool.connection() as observer:
+            for _ in range(50):
+                row = await (
+                    await observer.execute(
+                        "SELECT count(*) AS total FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock' AND query LIKE '%search.wanted_requests%FOR UPDATE%'"
+                    )
+                ).fetchone()
+                if row["total"] > 0:
+                    return
+                await asyncio.sleep(0.01)
+>       raise AssertionError(
+            "Owner close never waited for response origin lock"
+        )
+E       AssertionError: Owner close never waited for response origin lock
+
+apps/api/tests/domains/search/test_wanted_response_postgres.py:242: AssertionError
+=========================== short test summary info ============================
+FAILED apps/api/tests/domains/search/test_wanted_response_postgres.py::test_native_wanted_response_auth_retry_closure_and_origin_locking
+1 failed, 19 passed, 3 skipped in 4.12s

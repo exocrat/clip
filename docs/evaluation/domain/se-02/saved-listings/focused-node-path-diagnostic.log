@@ -1,0 +1,459 @@
+..........................FFFFFFFFFFFFFFFFF............FFF.........      [100%]
+=================================== FAILURES ===================================
+________________________ test_generation_repeatability _________________________
+
+tree = PosixPath('/private/var/folders/f9/mf22ccnn3wl078szdw8gykpr0000gn/T/pytest-of-mohitmahapatra/pytest-82/test_generation_repeatability0/project')
+
+    def test_generation_repeatability(tree):
+        """Two fresh renders reproduce the committed bytes and check-only writes none."""
+        original = bytes_of_outputs(tree)
+        for _ in range(2):
+>           assert run_generator(tree, "generate").returncode == 0
+E           AssertionError: assert 1 == 0
+E            +  where 1 = CompletedProcess(args=['/Users/mohitmahapatra/Desktop/brancher/clip/.venv/bin/python3', '-B', '/private/var/folders/f9...rr='Contract generation failed: check reviewed source, Node 24 and pinned tools; run npm ci after lockfile updates.\n').returncode
+E            +    where CompletedProcess(args=['/Users/mohitmahapatra/Desktop/brancher/clip/.venv/bin/python3', '-B', '/private/var/folders/f9...rr='Contract generation failed: check reviewed source, Node 24 and pinned tools; run npm ci after lockfile updates.\n') = run_generator(PosixPath('/private/var/folders/f9/mf22ccnn3wl078szdw8gykpr0000gn/T/pytest-of-mohitmahapatra/pytest-82/test_generation_repeatability0/project'), 'generate')
+
+tests/contracts/test_generation.py:105: AssertionError
+_ test_stale_or_missing_artifact_fails_without_writes[False-apps/api/app/contracts/health.py] _
+
+tree = PosixPath('/private/var/folders/f9/mf22ccnn3wl078szdw8gykpr0000gn/T/pytest-of-mohitmahapatra/pytest-82/test_stale_or_missing_artifact0/project')
+relative = 'apps/api/app/contracts/health.py', missing = False
+
+    @pytest.mark.parametrize("relative", OUTPUTS)
+    @pytest.mark.parametrize("missing", [False, True])
+    def test_stale_or_missing_artifact_fails_without_writes(tree, relative, missing):
+        """Reject stale/missing Python, JSON and TS artifacts and recover by generation."""
+        path = tree / relative
+        if missing:
+            path.unlink()
+        else:
+            path.write_bytes(path.read_bytes() + b"\nsynthetic-drift\n")
+        before = bytes_of_outputs(tree)
+        result = run_generator(tree, "check")
+        assert result.returncode == 1
+>       assert relative in result.stdout
+E       AssertionError: assert 'apps/api/app/contracts/health.py' in ''
+E        +  where '' = CompletedProcess(args=['/Users/mohitmahapatra/Desktop/brancher/clip/.venv/bin/python3', '-B', '/private/var/folders/f9...rr='Contract generation failed: check reviewed source, Node 24 and pinned tools; run npm ci after lockfile updates.\n').stdout
+
+tests/contracts/test_generation.py:123: AssertionError
+_ test_stale_or_missing_artifact_fails_without_writes[False-apps/api/app/contracts/domain_types.py] _
+
+tree = PosixPath('/private/var/folders/f9/mf22ccnn3wl078szdw8gykpr0000gn/T/pytest-of-mohitmahapatra/pytest-82/test_stale_or_missing_artifact1/project')
+relative = 'apps/api/app/contracts/domain_types.py', missing = False
+
+    @pytest.mark.parametrize("relative", OUTPUTS)
+    @pytest.mark.parametrize("missing", [False, True])
+    def test_stale_or_missing_artifact_fails_without_writes(tree, relative, missing):
+        """Reject stale/missing Python, JSON and TS artifacts and recover by generation."""
+        path = tree / relative
+        if missing:
+            path.unlink()
+        else:
+            path.write_bytes(path.read_bytes() + b"\nsynthetic-drift\n")
+        before = bytes_of_outputs(tree)
+        result = run_generator(tree, "check")
+        assert result.returncode == 1
+>       assert relative in result.stdout
+E       AssertionError: assert 'apps/api/app/contracts/domain_types.py' in ''
+E        +  where '' = CompletedProcess(args=['/Users/mohitmahapatra/Desktop/brancher/clip/.venv/bin/python3', '-B', '/private/var/folders/f9...rr='Contract generation failed: check reviewed source, Node 24 and pinned tools; run npm ci after lockfile updates.\n').stdout
+
+tests/contracts/test_generation.py:123: AssertionError
+_ test_stale_or_missing_artifact_fails_without_writes[False-apps/api/app/domains/identity/public.py] _
+
+tree = PosixPath('/private/var/folders/f9/mf22ccnn3wl078szdw8gykpr0000gn/T/pytest-of-mohitmahapatra/pytest-82/test_stale_or_missing_artifact2/project')
+relative = 'apps/api/app/domains/identity/public.py', missing = False
+
+    @pytest.mark.parametrize("relative", OUTPUTS)
+    @pytest.mark.parametrize("missing", [False, True])
+    def test_stale_or_missing_artifact_fails_without_writes(tree, relative, missing):
+        """Reject stale/missing Python, JSON and TS artifacts and recover by generation."""
+        path = tree / relative
+        if missing:
+            path.unlink()
+        else:
+            path.write_bytes(path.read_bytes() + b"\nsynthetic-drift\n")
+        before = bytes_of_outputs(tree)
+        result = run_generator(tree, "check")
+        assert result.returncode == 1
+>       assert relative in result.stdout
+E       AssertionError: assert 'apps/api/app/domains/identity/public.py' in ''
+E        +  where '' = CompletedProcess(args=['/Users/mohitmahapatra/Desktop/brancher/clip/.venv/bin/python3', '-B', '/private/var/folders/f9...rr='Contract generation failed: check reviewed source, Node 24 and pinned tools; run npm ci after lockfile updates.\n').stdout
+
+tests/contracts/test_generation.py:123: AssertionError
+_ test_stale_or_missing_artifact_fails_without_writes[False-apps/api/app/domains/listings/public.py] _
+
+tree = PosixPath('/private/var/folders/f9/mf22ccnn3wl078szdw8gykpr0000gn/T/pytest-of-mohitmahapatra/pytest-82/test_stale_or_missing_artifact3/project')
+relative = 'apps/api/app/domains/listings/public.py', missing = False
+
+    @pytest.mark.parametrize("relative", OUTPUTS)
+    @pytest.mark.parametrize("missing", [False, True])
+    def test_stale_or_missing_artifact_fails_without_writes(tree, relative, missing):
+        """Reject stale/missing Python, JSON and TS artifacts and recover by generation."""
+        path = tree / relative
+        if missing:
+            path.unlink()
+        else:
+            path.write_bytes(path.read_bytes() + b"\nsynthetic-drift\n")
+        before = bytes_of_outputs(tree)
+        result = run_generator(tree, "check")
+        assert result.returncode == 1
+>       assert relative in result.stdout
+E       AssertionError: assert 'apps/api/app/domains/listings/public.py' in ''
+E        +  where '' = CompletedProcess(args=['/Users/mohitmahapatra/Desktop/brancher/clip/.venv/bin/python3', '-B', '/private/var/folders/f9...rr='Contract generation failed: check reviewed source, Node 24 and pinned tools; run npm ci after lockfile updates.\n').stdout
+
+tests/contracts/test_generation.py:123: AssertionError
+_ test_stale_or_missing_artifact_fails_without_writes[False-apps/api/app/domains/search/public.py] _
+
+tree = PosixPath('/private/var/folders/f9/mf22ccnn3wl078szdw8gykpr0000gn/T/pytest-of-mohitmahapatra/pytest-82/test_stale_or_missing_artifact4/project')
+relative = 'apps/api/app/domains/search/public.py', missing = False
+
+    @pytest.mark.parametrize("relative", OUTPUTS)
+    @pytest.mark.parametrize("missing", [False, True])
+    def test_stale_or_missing_artifact_fails_without_writes(tree, relative, missing):
+        """Reject stale/missing Python, JSON and TS artifacts and recover by generation."""
+        path = tree / relative
+        if missing:
+            path.unlink()
+        else:
+            path.write_bytes(path.read_bytes() + b"\nsynthetic-drift\n")
+        before = bytes_of_outputs(tree)
+        result = run_generator(tree, "check")
+        assert result.returncode == 1
+>       assert relative in result.stdout
+E       AssertionError: assert 'apps/api/app/domains/search/public.py' in ''
+E        +  where '' = CompletedProcess(args=['/Users/mohitmahapatra/Desktop/brancher/clip/.venv/bin/python3', '-B', '/private/var/folders/f9...rr='Contract generation failed: check reviewed source, Node 24 and pinned tools; run npm ci after lockfile updates.\n').stdout
+
+tests/contracts/test_generation.py:123: AssertionError
+_ test_stale_or_missing_artifact_fails_without_writes[False-apps/api/app/domains/conversations/public.py] _
+
+tree = PosixPath('/private/var/folders/f9/mf22ccnn3wl078szdw8gykpr0000gn/T/pytest-of-mohitmahapatra/pytest-82/test_stale_or_missing_artifact5/project')
+relative = 'apps/api/app/domains/conversations/public.py', missing = False
+
+    @pytest.mark.parametrize("relative", OUTPUTS)
+    @pytest.mark.parametrize("missing", [False, True])
+    def test_stale_or_missing_artifact_fails_without_writes(tree, relative, missing):
+        """Reject stale/missing Python, JSON and TS artifacts and recover by generation."""
+        path = tree / relative
+        if missing:
+            path.unlink()
+        else:
+            path.write_bytes(path.read_bytes() + b"\nsynthetic-drift\n")
+        before = bytes_of_outputs(tree)
+        result = run_generator(tree, "check")
+        assert result.returncode == 1
+>       assert relative in result.stdout
+E       AssertionError: assert 'apps/api/app/domains/conversations/public.py' in ''
+E        +  where '' = CompletedProcess(args=['/Users/mohitmahapatra/Desktop/brancher/clip/.venv/bin/python3', '-B', '/private/var/folders/f9...rr='Contract generation failed: check reviewed source, Node 24 and pinned tools; run npm ci after lockfile updates.\n').stdout
+
+tests/contracts/test_generation.py:123: AssertionError
+_ test_stale_or_missing_artifact_fails_without_writes[False-contracts/generated/openapi.json] _
+
+tree = PosixPath('/private/var/folders/f9/mf22ccnn3wl078szdw8gykpr0000gn/T/pytest-of-mohitmahapatra/pytest-82/test_stale_or_missing_artifact6/project')
+relative = 'contracts/generated/openapi.json', missing = False
+
+    @pytest.mark.parametrize("relative", OUTPUTS)
+    @pytest.mark.parametrize("missing", [False, True])
+    def test_stale_or_missing_artifact_fails_without_writes(tree, relative, missing):
+        """Reject stale/missing Python, JSON and TS artifacts and recover by generation."""
+        path = tree / relative
+        if missing:
+            path.unlink()
+        else:
+            path.write_bytes(path.read_bytes() + b"\nsynthetic-drift\n")
+        before = bytes_of_outputs(tree)
+        result = run_generator(tree, "check")
+        assert result.returncode == 1
+>       assert relative in result.stdout
+E       AssertionError: assert 'contracts/generated/openapi.json' in ''
+E        +  where '' = CompletedProcess(args=['/Users/mohitmahapatra/Desktop/brancher/clip/.venv/bin/python3', '-B', '/private/var/folders/f9...rr='Contract generation failed: check reviewed source, Node 24 and pinned tools; run npm ci after lockfile updates.\n').stdout
+
+tests/contracts/test_generation.py:123: AssertionError
+_ test_stale_or_missing_artifact_fails_without_writes[False-contracts/generated/types.gen.ts] _
+
+tree = PosixPath('/private/var/folders/f9/mf22ccnn3wl078szdw8gykpr0000gn/T/pytest-of-mohitmahapatra/pytest-82/test_stale_or_missing_artifact7/project')
+relative = 'contracts/generated/types.gen.ts', missing = False
+
+    @pytest.mark.parametrize("relative", OUTPUTS)
+    @pytest.mark.parametrize("missing", [False, True])
+    def test_stale_or_missing_artifact_fails_without_writes(tree, relative, missing):
+        """Reject stale/missing Python, JSON and TS artifacts and recover by generation."""
+        path = tree / relative
+        if missing:
+            path.unlink()
+        else:
+            path.write_bytes(path.read_bytes() + b"\nsynthetic-drift\n")
+        before = bytes_of_outputs(tree)
+        result = run_generator(tree, "check")
+        assert result.returncode == 1
+>       assert relative in result.stdout
+E       AssertionError: assert 'contracts/generated/types.gen.ts' in ''
+E        +  where '' = CompletedProcess(args=['/Users/mohitmahapatra/Desktop/brancher/clip/.venv/bin/python3', '-B', '/private/var/folders/f9...rr='Contract generation failed: check reviewed source, Node 24 and pinned tools; run npm ci after lockfile updates.\n').stdout
+
+tests/contracts/test_generation.py:123: AssertionError
+_ test_stale_or_missing_artifact_fails_without_writes[True-apps/api/app/contracts/health.py] _
+
+tree = PosixPath('/private/var/folders/f9/mf22ccnn3wl078szdw8gykpr0000gn/T/pytest-of-mohitmahapatra/pytest-82/test_stale_or_missing_artifact8/project')
+relative = 'apps/api/app/contracts/health.py', missing = True
+
+    @pytest.mark.parametrize("relative", OUTPUTS)
+    @pytest.mark.parametrize("missing", [False, True])
+    def test_stale_or_missing_artifact_fails_without_writes(tree, relative, missing):
+        """Reject stale/missing Python, JSON and TS artifacts and recover by generation."""
+        path = tree / relative
+        if missing:
+            path.unlink()
+        else:
+            path.write_bytes(path.read_bytes() + b"\nsynthetic-drift\n")
+        before = bytes_of_outputs(tree)
+        result = run_generator(tree, "check")
+        assert result.returncode == 1
+>       assert relative in result.stdout
+E       AssertionError: assert 'apps/api/app/contracts/health.py' in ''
+E        +  where '' = CompletedProcess(args=['/Users/mohitmahapatra/Desktop/brancher/clip/.venv/bin/python3', '-B', '/private/var/folders/f9...rr='Contract generation failed: check reviewed source, Node 24 and pinned tools; run npm ci after lockfile updates.\n').stdout
+
+tests/contracts/test_generation.py:123: AssertionError
+_ test_stale_or_missing_artifact_fails_without_writes[True-apps/api/app/contracts/domain_types.py] _
+
+tree = PosixPath('/private/var/folders/f9/mf22ccnn3wl078szdw8gykpr0000gn/T/pytest-of-mohitmahapatra/pytest-82/test_stale_or_missing_artifact9/project')
+relative = 'apps/api/app/contracts/domain_types.py', missing = True
+
+    @pytest.mark.parametrize("relative", OUTPUTS)
+    @pytest.mark.parametrize("missing", [False, True])
+    def test_stale_or_missing_artifact_fails_without_writes(tree, relative, missing):
+        """Reject stale/missing Python, JSON and TS artifacts and recover by generation."""
+        path = tree / relative
+        if missing:
+            path.unlink()
+        else:
+            path.write_bytes(path.read_bytes() + b"\nsynthetic-drift\n")
+        before = bytes_of_outputs(tree)
+        result = run_generator(tree, "check")
+        assert result.returncode == 1
+>       assert relative in result.stdout
+E       AssertionError: assert 'apps/api/app/contracts/domain_types.py' in ''
+E        +  where '' = CompletedProcess(args=['/Users/mohitmahapatra/Desktop/brancher/clip/.venv/bin/python3', '-B', '/private/var/folders/f9...rr='Contract generation failed: check reviewed source, Node 24 and pinned tools; run npm ci after lockfile updates.\n').stdout
+
+tests/contracts/test_generation.py:123: AssertionError
+_ test_stale_or_missing_artifact_fails_without_writes[True-apps/api/app/domains/identity/public.py] _
+
+tree = PosixPath('/private/var/folders/f9/mf22ccnn3wl078szdw8gykpr0000gn/T/pytest-of-mohitmahapatra/pytest-82/test_stale_or_missing_artifact10/project')
+relative = 'apps/api/app/domains/identity/public.py', missing = True
+
+    @pytest.mark.parametrize("relative", OUTPUTS)
+    @pytest.mark.parametrize("missing", [False, True])
+    def test_stale_or_missing_artifact_fails_without_writes(tree, relative, missing):
+        """Reject stale/missing Python, JSON and TS artifacts and recover by generation."""
+        path = tree / relative
+        if missing:
+            path.unlink()
+        else:
+            path.write_bytes(path.read_bytes() + b"\nsynthetic-drift\n")
+        before = bytes_of_outputs(tree)
+        result = run_generator(tree, "check")
+        assert result.returncode == 1
+>       assert relative in result.stdout
+E       AssertionError: assert 'apps/api/app/domains/identity/public.py' in ''
+E        +  where '' = CompletedProcess(args=['/Users/mohitmahapatra/Desktop/brancher/clip/.venv/bin/python3', '-B', '/private/var/folders/f9...rr='Contract generation failed: check reviewed source, Node 24 and pinned tools; run npm ci after lockfile updates.\n').stdout
+
+tests/contracts/test_generation.py:123: AssertionError
+_ test_stale_or_missing_artifact_fails_without_writes[True-apps/api/app/domains/listings/public.py] _
+
+tree = PosixPath('/private/var/folders/f9/mf22ccnn3wl078szdw8gykpr0000gn/T/pytest-of-mohitmahapatra/pytest-82/test_stale_or_missing_artifact11/project')
+relative = 'apps/api/app/domains/listings/public.py', missing = True
+
+    @pytest.mark.parametrize("relative", OUTPUTS)
+    @pytest.mark.parametrize("missing", [False, True])
+    def test_stale_or_missing_artifact_fails_without_writes(tree, relative, missing):
+        """Reject stale/missing Python, JSON and TS artifacts and recover by generation."""
+        path = tree / relative
+        if missing:
+            path.unlink()
+        else:
+            path.write_bytes(path.read_bytes() + b"\nsynthetic-drift\n")
+        before = bytes_of_outputs(tree)
+        result = run_generator(tree, "check")
+        assert result.returncode == 1
+>       assert relative in result.stdout
+E       AssertionError: assert 'apps/api/app/domains/listings/public.py' in ''
+E        +  where '' = CompletedProcess(args=['/Users/mohitmahapatra/Desktop/brancher/clip/.venv/bin/python3', '-B', '/private/var/folders/f9...rr='Contract generation failed: check reviewed source, Node 24 and pinned tools; run npm ci after lockfile updates.\n').stdout
+
+tests/contracts/test_generation.py:123: AssertionError
+_ test_stale_or_missing_artifact_fails_without_writes[True-apps/api/app/domains/search/public.py] _
+
+tree = PosixPath('/private/var/folders/f9/mf22ccnn3wl078szdw8gykpr0000gn/T/pytest-of-mohitmahapatra/pytest-82/test_stale_or_missing_artifact12/project')
+relative = 'apps/api/app/domains/search/public.py', missing = True
+
+    @pytest.mark.parametrize("relative", OUTPUTS)
+    @pytest.mark.parametrize("missing", [False, True])
+    def test_stale_or_missing_artifact_fails_without_writes(tree, relative, missing):
+        """Reject stale/missing Python, JSON and TS artifacts and recover by generation."""
+        path = tree / relative
+        if missing:
+            path.unlink()
+        else:
+            path.write_bytes(path.read_bytes() + b"\nsynthetic-drift\n")
+        before = bytes_of_outputs(tree)
+        result = run_generator(tree, "check")
+        assert result.returncode == 1
+>       assert relative in result.stdout
+E       AssertionError: assert 'apps/api/app/domains/search/public.py' in ''
+E        +  where '' = CompletedProcess(args=['/Users/mohitmahapatra/Desktop/brancher/clip/.venv/bin/python3', '-B', '/private/var/folders/f9...rr='Contract generation failed: check reviewed source, Node 24 and pinned tools; run npm ci after lockfile updates.\n').stdout
+
+tests/contracts/test_generation.py:123: AssertionError
+_ test_stale_or_missing_artifact_fails_without_writes[True-apps/api/app/domains/conversations/public.py] _
+
+tree = PosixPath('/private/var/folders/f9/mf22ccnn3wl078szdw8gykpr0000gn/T/pytest-of-mohitmahapatra/pytest-82/test_stale_or_missing_artifact13/project')
+relative = 'apps/api/app/domains/conversations/public.py', missing = True
+
+    @pytest.mark.parametrize("relative", OUTPUTS)
+    @pytest.mark.parametrize("missing", [False, True])
+    def test_stale_or_missing_artifact_fails_without_writes(tree, relative, missing):
+        """Reject stale/missing Python, JSON and TS artifacts and recover by generation."""
+        path = tree / relative
+        if missing:
+            path.unlink()
+        else:
+            path.write_bytes(path.read_bytes() + b"\nsynthetic-drift\n")
+        before = bytes_of_outputs(tree)
+        result = run_generator(tree, "check")
+        assert result.returncode == 1
+>       assert relative in result.stdout
+E       AssertionError: assert 'apps/api/app/domains/conversations/public.py' in ''
+E        +  where '' = CompletedProcess(args=['/Users/mohitmahapatra/Desktop/brancher/clip/.venv/bin/python3', '-B', '/private/var/folders/f9...rr='Contract generation failed: check reviewed source, Node 24 and pinned tools; run npm ci after lockfile updates.\n').stdout
+
+tests/contracts/test_generation.py:123: AssertionError
+_ test_stale_or_missing_artifact_fails_without_writes[True-contracts/generated/openapi.json] _
+
+tree = PosixPath('/private/var/folders/f9/mf22ccnn3wl078szdw8gykpr0000gn/T/pytest-of-mohitmahapatra/pytest-82/test_stale_or_missing_artifact14/project')
+relative = 'contracts/generated/openapi.json', missing = True
+
+    @pytest.mark.parametrize("relative", OUTPUTS)
+    @pytest.mark.parametrize("missing", [False, True])
+    def test_stale_or_missing_artifact_fails_without_writes(tree, relative, missing):
+        """Reject stale/missing Python, JSON and TS artifacts and recover by generation."""
+        path = tree / relative
+        if missing:
+            path.unlink()
+        else:
+            path.write_bytes(path.read_bytes() + b"\nsynthetic-drift\n")
+        before = bytes_of_outputs(tree)
+        result = run_generator(tree, "check")
+        assert result.returncode == 1
+>       assert relative in result.stdout
+E       AssertionError: assert 'contracts/generated/openapi.json' in ''
+E        +  where '' = CompletedProcess(args=['/Users/mohitmahapatra/Desktop/brancher/clip/.venv/bin/python3', '-B', '/private/var/folders/f9...rr='Contract generation failed: check reviewed source, Node 24 and pinned tools; run npm ci after lockfile updates.\n').stdout
+
+tests/contracts/test_generation.py:123: AssertionError
+_ test_stale_or_missing_artifact_fails_without_writes[True-contracts/generated/types.gen.ts] _
+
+tree = PosixPath('/private/var/folders/f9/mf22ccnn3wl078szdw8gykpr0000gn/T/pytest-of-mohitmahapatra/pytest-82/test_stale_or_missing_artifact15/project')
+relative = 'contracts/generated/types.gen.ts', missing = True
+
+    @pytest.mark.parametrize("relative", OUTPUTS)
+    @pytest.mark.parametrize("missing", [False, True])
+    def test_stale_or_missing_artifact_fails_without_writes(tree, relative, missing):
+        """Reject stale/missing Python, JSON and TS artifacts and recover by generation."""
+        path = tree / relative
+        if missing:
+            path.unlink()
+        else:
+            path.write_bytes(path.read_bytes() + b"\nsynthetic-drift\n")
+        before = bytes_of_outputs(tree)
+        result = run_generator(tree, "check")
+        assert result.returncode == 1
+>       assert relative in result.stdout
+E       AssertionError: assert 'contracts/generated/types.gen.ts' in ''
+E        +  where '' = CompletedProcess(args=['/Users/mohitmahapatra/Desktop/brancher/clip/.venv/bin/python3', '-B', '/private/var/folders/f9...rr='Contract generation failed: check reviewed source, Node 24 and pinned tools; run npm ci after lockfile updates.\n').stdout
+
+tests/contracts/test_generation.py:123: AssertionError
+________ test_generated_types_accept_valid_consumer_reject_wrong_status ________
+
+tmp_path = PosixPath('/private/var/folders/f9/mf22ccnn3wl078szdw8gykpr0000gn/T/pytest-of-mohitmahapatra/pytest-82/test_generated_types_accept_va0')
+
+    def test_generated_types_accept_valid_consumer_reject_wrong_status(tmp_path):
+        """Use the pinned compiler for valid consumer code and a wrong-literal control."""
+        node = shutil.which("node")
+>       assert node
+E       assert None
+
+tests/contracts/test_generation.py:352: AssertionError
+_ test_types_helper_rejects_external_references[https://synthetic.invalid/schema] _
+
+tmp_path = PosixPath('/private/var/folders/f9/mf22ccnn3wl078szdw8gykpr0000gn/T/pytest-of-mohitmahapatra/pytest-82/test_types_helper_rejects_exte0')
+reference = 'https://synthetic.invalid/schema'
+
+    @pytest.mark.parametrize(
+        "reference",
+        ["https://synthetic.invalid/schema", "file:///synthetic-private-schema"],
+    )
+    def test_types_helper_rejects_external_references(tmp_path, reference):
+        """Reject remote/file refs before resolution, without echoing their values."""
+        work = tmp_path / "clip-contracts-negative"
+        work.mkdir()
+        source = work / "openapi.json"
+        source.write_text(
+            json.dumps(
+                {
+                    "openapi": "3.1.0",
+                    "info": {"title": "Synthetic", "version": "1"},
+                    "paths": {},
+                    "components": {"schemas": {"Bad": {"$ref": reference}}},
+                }
+            )
+        )
+        node = shutil.which("node")
+>       assert node
+E       assert None
+
+tests/contracts/test_generation.py:405: AssertionError
+_ test_types_helper_rejects_external_references[file:///synthetic-private-schema] _
+
+tmp_path = PosixPath('/private/var/folders/f9/mf22ccnn3wl078szdw8gykpr0000gn/T/pytest-of-mohitmahapatra/pytest-82/test_types_helper_rejects_exte1')
+reference = 'file:///synthetic-private-schema'
+
+    @pytest.mark.parametrize(
+        "reference",
+        ["https://synthetic.invalid/schema", "file:///synthetic-private-schema"],
+    )
+    def test_types_helper_rejects_external_references(tmp_path, reference):
+        """Reject remote/file refs before resolution, without echoing their values."""
+        work = tmp_path / "clip-contracts-negative"
+        work.mkdir()
+        source = work / "openapi.json"
+        source.write_text(
+            json.dumps(
+                {
+                    "openapi": "3.1.0",
+                    "info": {"title": "Synthetic", "version": "1"},
+                    "paths": {},
+                    "components": {"schemas": {"Bad": {"$ref": reference}}},
+                }
+            )
+        )
+        node = shutil.which("node")
+>       assert node
+E       assert None
+
+tests/contracts/test_generation.py:405: AssertionError
+=========================== short test summary info ============================
+FAILED tests/contracts/test_generation.py::test_generation_repeatability - As...
+FAILED tests/contracts/test_generation.py::test_stale_or_missing_artifact_fails_without_writes[False-apps/api/app/contracts/health.py]
+FAILED tests/contracts/test_generation.py::test_stale_or_missing_artifact_fails_without_writes[False-apps/api/app/contracts/domain_types.py]
+FAILED tests/contracts/test_generation.py::test_stale_or_missing_artifact_fails_without_writes[False-apps/api/app/domains/identity/public.py]
+FAILED tests/contracts/test_generation.py::test_stale_or_missing_artifact_fails_without_writes[False-apps/api/app/domains/listings/public.py]
+FAILED tests/contracts/test_generation.py::test_stale_or_missing_artifact_fails_without_writes[False-apps/api/app/domains/search/public.py]
+FAILED tests/contracts/test_generation.py::test_stale_or_missing_artifact_fails_without_writes[False-apps/api/app/domains/conversations/public.py]
+FAILED tests/contracts/test_generation.py::test_stale_or_missing_artifact_fails_without_writes[False-contracts/generated/openapi.json]
+FAILED tests/contracts/test_generation.py::test_stale_or_missing_artifact_fails_without_writes[False-contracts/generated/types.gen.ts]
+FAILED tests/contracts/test_generation.py::test_stale_or_missing_artifact_fails_without_writes[True-apps/api/app/contracts/health.py]
+FAILED tests/contracts/test_generation.py::test_stale_or_missing_artifact_fails_without_writes[True-apps/api/app/contracts/domain_types.py]
+FAILED tests/contracts/test_generation.py::test_stale_or_missing_artifact_fails_without_writes[True-apps/api/app/domains/identity/public.py]
+FAILED tests/contracts/test_generation.py::test_stale_or_missing_artifact_fails_without_writes[True-apps/api/app/domains/listings/public.py]
+FAILED tests/contracts/test_generation.py::test_stale_or_missing_artifact_fails_without_writes[True-apps/api/app/domains/search/public.py]
+FAILED tests/contracts/test_generation.py::test_stale_or_missing_artifact_fails_without_writes[True-apps/api/app/domains/conversations/public.py]
+FAILED tests/contracts/test_generation.py::test_stale_or_missing_artifact_fails_without_writes[True-contracts/generated/openapi.json]
+FAILED tests/contracts/test_generation.py::test_stale_or_missing_artifact_fails_without_writes[True-contracts/generated/types.gen.ts]
+FAILED tests/contracts/test_generation.py::test_generated_types_accept_valid_consumer_reject_wrong_status
+FAILED tests/contracts/test_generation.py::test_types_helper_rejects_external_references[https://synthetic.invalid/schema]
+FAILED tests/contracts/test_generation.py::test_types_helper_rejects_external_references[file:///synthetic-private-schema]
+20 failed, 47 passed in 8.60s

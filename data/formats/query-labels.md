@@ -78,5 +78,13 @@ It must not infer review from a syntactically valid file.
 Keep the completed labels, final manifest/source inputs and evaluator evidence
 in Git or the approved retained evidence location. The payload-only ignore rule
 does not hide this template or final labels. Do not include secrets, private
-payloads or real contacts in labels/evidence. No evaluator/label-loading command
-or DATA-READY/NFR-04 result is implemented or claimed by this preparation step.
+payloads or real contacts in labels/evidence. The original PD-09 preparation supplies no evaluator or DATA-READY/NFR-04
+result; the later isolated tooling checkpoint below retains those final gates.
+
+## SE-01 isolated tooling checkpoint
+
+[Evaluator preparation](../../scripts/evaluation/README.md) now validates this
+format and exposes template validation and synthetic arithmetic checks only.
+It cannot attest human review or perform final scoring. The actual final corpus,
+human labels and real binding/retrieval integration remain pending; the template
+is unchanged and no final label set has been created.

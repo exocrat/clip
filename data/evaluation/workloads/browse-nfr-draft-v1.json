@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "id": "browse-nfr-draft-v1",
+  "purpose": "nfr-draft",
+  "rate": 20,
+  "warmup_seconds": 30,
+  "measured_seconds": 300,
+  "max_vus": 60,
+  "timeout_seconds": 3,
+  "cases": [
+    {
+      "id": "browse",
+      "query": {},
+      "expected_ids": null
+    }
+  ]
+}

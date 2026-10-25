@@ -1,0 +1,1 @@
+PASS: make check and CI share 11 ordered checks, including npm run check

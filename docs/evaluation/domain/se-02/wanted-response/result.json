@@ -1,0 +1,162 @@
+{
+  "recorded_at": "2026-10-25 08:06:29 UTC",
+  "branch": "search-domain",
+  "scope": "Human-verified SE-02 Step6 response backend and200contract correction",
+  "human_result_verification": "pending",
+  "contract_compatibility": "HTTP0.1.0 retained for pre-implementation correction of already documented201/200result semantics; only Search alternate200 changed. Generated consumers refreshed, independent affected-owner review pending.",
+  "behavior": [
+    "Regular-only trusted caller/live eligibility, temp/expired/denied before origin/C; self403",
+    "Server author resolved under Search-owned FOR NO KEY UPDATE; missing/retired/pending404",
+    "Open public create-or-existing, closed only exact responder read-only lookup, missing pair404",
+    "Both201created and200existing have validated conversation ID/created; no contact/author payload",
+    "Public C call bounded2s; unknown/lost/cancelled results use stable request/responder retry, including after closure",
+    "Origin lock serializes ordinary close/retirement without blocking separate thread FK key-share; no shared DB session, fake normal result or local thread storage"
+  ],
+  "operation_inventory": {
+    "declared_search_operations": [
+      "search_change_wanted_request_state",
+      "search_create_wanted_request",
+      "search_list_my_wanted_requests",
+      "search_list_open_wanted_requests",
+      "search_list_saved_listings",
+      "search_match_draft_title",
+      "search_read_wanted_request",
+      "search_save_listing",
+      "search_start_wanted_response",
+      "search_unsave_listing",
+      "search_update_wanted_request"
+    ],
+    "mounted_search_operations": [
+      "search_change_wanted_request_state",
+      "search_create_wanted_request",
+      "search_list_my_wanted_requests",
+      "search_list_open_wanted_requests",
+      "search_list_saved_listings",
+      "search_match_draft_title",
+      "search_read_wanted_request",
+      "search_save_listing",
+      "search_start_wanted_response",
+      "search_unsave_listing",
+      "search_update_wanted_request"
+    ],
+    "declared_not_mounted": [],
+    "actual_success_responses": {
+      "200": {
+        "description": "OK",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ConversationStartResult"
+            }
+          }
+        }
+      },
+      "201": {
+        "description": "Successful Response",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ConversationStartResult"
+            }
+          }
+        }
+      }
+    },
+    "generated_success_responses": {
+      "200": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ConversationStartResult"
+            }
+          }
+        },
+        "description": "OK"
+      },
+      "201": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ConversationStartResult"
+            }
+          }
+        },
+        "description": "Successful Response"
+      }
+    }
+  },
+  "checks": {
+    "contracts_and_wanted_models": "79passed in27.81s; both success TS consumers and missing-ID compile control",
+    "response_and_wanted_unit": "46passed in0.21s (16response plus30existing wanted)",
+    "full_root_python": "1265passed,20skipped in61.63s (-W error)",
+    "native": "20passed,3optional skipped in3.37s; four smokes twice,14downs/reapply/inventory,owned cluster stopped",
+    "native_cases": [
+      "Real Search HTTP capability/hidden/self/revoked/temp/expired cases; exact body/status and author from row",
+      "Lost result then closure uses only existing-pair lookup; no extra create effect",
+      "Independent schema-only C thread/member FK transaction commits under origin guard",
+      "Close-first no create; response-first observes actual owner SQL lock wait and then completes closure"
+    ],
+    "web": "lint57files;105tests/10files;TypeScript/app-tests/build pass",
+    "mypy": "3changed application modules pass",
+    "black": "181files unchanged",
+    "wrapper_safety": "35simulated cases passed",
+    "ci_parity": "11ordered checks pass",
+    "boundaries": "0violations",
+    "contracts": "8registered artifacts current",
+    "shell_syntax": "passed",
+    "whitespace": "passed"
+  },
+  "fixture_limits": "Explicit Conversations double models only typed pair outcomes, not real service membership/uniqueness. Separate C FK metadata fixture is an integrity/lock probe, not a shadow provider. Immutable fixtures retained; only owned open wanted corpus closed after tests.",
+  "diagnostics": [
+    "Initial mypy required explicit optional result annotation for closed lookup; corrected and3module typing pass.",
+    "First native observer reused activity snapshot and failed to see wait; refresh pg_stat_clear_snapshot per poll, unchanged application locking, full native rerun20pass.",
+    "First web invocation assumed apps/web npm workspace; corrected registered root npm run check passes. Nothing installed or written globally by that failed command."
+  ],
+  "source_sha256": {
+    "contracts/source/search.py": "4aa6b570a7321514297af160b6845a6127d3e0cd2d87a2091a30e3f7ae6f18cd",
+    "apps/api/app/domains/search/public.py": "3262d7ced833894d5608fefa2cb478c570ab592d1f21c53c176eeaf6922fa734",
+    "contracts/generated/openapi.json": "0583b1f5d71c14f260b7d984bbe8b116854b1e8d44d7635428a65a2273631aa9",
+    "contracts/generated/types.gen.ts": "9c8c40cbd77829b446738ec54fa251b20b77f2b2db1e3a5089638092e623a6c5",
+    "apps/api/app/domains/search/wanted_response.py": "2ffdfa37fb1ecb74d290847c702f26f7b9451dbad1f13cb72d55ab82b8ec06d8",
+    "apps/api/app/domains/search/wanted_store.py": "4e2153bc64ae321379b201790af7625735952bc70d0ece6a1f91d44478245729",
+    "apps/api/app/domains/search/wanted_routes.py": "b91569aba0fe9cf3a7cc1e6c583572baed580de709656fbe40f06227c3bb42d8",
+    "apps/api/tests/domains/search/doubles/wanted_response.py": "7be7ee36814e7d123bfbe02b132fbdf624baec52a19180c2379e564b589f8164",
+    "apps/api/tests/domains/search/test_wanted_response.py": "bb6dbe546e9b865bada0e16bc8d52656133cdc2dd7dd8a365cfc9ab5b5b32742",
+    "apps/api/tests/domains/search/test_wanted_response_postgres.py": "886892a07d36082d0a4d0c8f592f39d1dc85cc0598865794dbe1efd1322128cc",
+    "tests/contracts/search_response_consumer.ts": "a85b3474d5a6bee7c8eda57b83706341945a9d048a31bb423d2f3db4d114d62c",
+    "tests/contracts/test_generation.py": "7479fe92c42192583931c6c4b616a5432daa2d03de900603bb49af87e8096615",
+    "tests/contracts/test_domain_declarations.py": "b7402c982574047eb8ecf1238cd4192f452d012b53eb4a9d968977ff85dbe896",
+    "database/tests/native-checks.sh": "265e63c27389212d2266fe7d6cdaf7040f8130ae134a60918af2bb5de45e691a",
+    "scripts/check_database.py": "0b5988d2a62cf00a5c63c860e4f1d5c5946a71c8ac091513e20219381d3c7da2",
+    "docs/architecture/wanted-response-integration.md": "1924a829ffaf86142ddc6f7623fe6cbbabddecc9f86869253f46eea39bef6e15",
+    "docs/decisions/wanted-response-contract-correction.md": "7c5cb74636bffc4b83528bc51a562a49945053efa89ace71556fb58cb509a455",
+    "contracts/README.md": "3370fa622a8a7836ab30639cd04f81db97ca0542809f682f9efa55251bff41c3",
+    "contracts/search.md": "e9fce24612058b23b85f1ddcb8dad0879700fd365bb1c6df6867d58808938a76",
+    "apps/api/tests/domains/search/README.md": "ba179db285623515ef2a893d2c6ceb96c2158584a8291ede6911a982855a49eb",
+    "apps/api/app/domains/search/README.md": "bfb269ec14eab22b65ab98645cf24454f4bcb60f43b6aeeb60bfe1560a3a768e",
+    "database/README.md": "96101d0b68d6b3c80286e8630c4ecc5859b1515a062dd03bbd7d55a522d34aab",
+    "apps/api/README.md": "3324882e46c61a07c3a219e88ad9f82150a3f6da5bd54f37f6c31f160a7f6003",
+    "docs/environment/commands.md": "b1ae9e6b616f718526ed4a61ea861e660ad41233f1d327a7afaeaad9225acb41"
+  },
+  "log_sha256": {
+    "types.log": "8228fcc5ce46d42d01caf3cd941f4e9c5f2bcc372bb5b147a2f0572d2dd675a8",
+    "native-observer-diagnostic.log": "38ebd1823d0f522d23ce3e2a90d7d2f99fc9247ce438c2fb7553e6d47318b762",
+    "contracts.log": "3c869c3c9d13dd05356f6c1293bb308d5d4b540792e561b6b60fe0f380d0ccc8",
+    "wrapper-safety.log": "435e7127b522f554db5888fbff76480bfeb93b3bc567465e009cd7dc3fc58d64",
+    "web.log": "bf7059059ddb8e7ee5fa6c5ef745541360aa021ac12c106ee4d23b7514e85988",
+    "native.log": "8fd5ebb89c19108c1c96978443d6d4069d2ff228b57ad34ea7e873709e8b4356",
+    "black.log": "c04af524063608f7cf4f434c814d29c2357589100315a946772b5756e797448f",
+    "unit.log": "78d55ae7d79bb154b8f49a25d2303c1661e8a110e1d7c3bdd80a3bceeb5efdff",
+    "native-tests.log": "8872250b37bc9908ce0efb794997918957ee80029a71dd8a946740a632d8c694",
+    "stop.log": "ca19178a35ab4153b75b494963b66ce8243e1b94c173107c87b44d09db23652d",
+    "python.log": "6d694d70c6e9e5d08bb7acb4632267f6b9a62e3bb6d70a482b9fa804f45bac17"
+  },
+  "inventory_sha256": "a7ac890f201d9eae7bb68559fe37e2b29ee6e69258c0d74f0c000be4522e8e32",
+  "remaining": [
+    "Human Step6 isolated result verification before Step7UI",
+    "Actual Identity/Listings/Conversations providers and independent regular/temp/membership/unique-thread/activity/offer enforcement/races at Step8/INT-01",
+    "Step7responsive UI/browser verification,Step9final acceptance;Docker database/secret scan/hosted CI/independent review",
+    "SE-01 final dataset/labels/readiness/NFR gates"
+  ],
+  "schema_pool_install_commit_push_merge_cloud_actions": false
+}

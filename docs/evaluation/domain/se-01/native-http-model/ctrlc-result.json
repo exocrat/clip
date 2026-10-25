@@ -1,0 +1,87 @@
+{
+  "http_checks": [
+    {
+      "mode": "keyword",
+      "query": "cycle",
+      "status": 200,
+      "titles": [
+        "Campus bicycle"
+      ]
+    },
+    {
+      "mode": "keyword",
+      "query": "bicyle",
+      "status": 200,
+      "titles": [
+        "Campus bicycle"
+      ]
+    },
+    {
+      "mode": "keyword",
+      "query": "vehicle",
+      "status": 200,
+      "titles": [
+        "Campus bicycle"
+      ]
+    },
+    {
+      "mode": "keyword",
+      "query": "wheeled vehicle",
+      "status": 200,
+      "titles": []
+    },
+    {
+      "mode": "keyword",
+      "query": "keep food cold",
+      "status": 200,
+      "titles": []
+    },
+    {
+      "mode": "hybrid",
+      "query": "cycle",
+      "status": 200,
+      "titles": [
+        "Campus bicycle"
+      ]
+    },
+    {
+      "mode": "hybrid",
+      "query": "bicyle",
+      "status": 200,
+      "titles": [
+        "Campus bicycle"
+      ]
+    },
+    {
+      "mode": "hybrid",
+      "query": "vehicle",
+      "status": 200,
+      "titles": [
+        "Campus bicycle"
+      ]
+    },
+    {
+      "mode": "hybrid",
+      "query": "wheeled vehicle",
+      "status": 200,
+      "titles": [
+        "Campus bicycle"
+      ]
+    },
+    {
+      "mode": "hybrid",
+      "query": "keep food cold",
+      "status": 200,
+      "titles": [
+        "Compact refrigerator"
+      ]
+    }
+  ],
+  "peak_api_helper_rss_bytes": 334528512,
+  "helper_starts": 1,
+  "windows": 12,
+  "faults": [],
+  "stop_reason": "completed_or_user_stop",
+  "all_helpers_reaped": true,
+  "elapsed_seconds": 13.05592258300021
+}

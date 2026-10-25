@@ -1,0 +1,88 @@
+{
+  "recorded_at": "2026-10-25 06:18:42 UTC",
+  "branch": "search-domain",
+  "step": "SE-02 Step5 private saved persistence/API, isolated mode",
+  "human_scope_verification": "Step4 result and Step5 scope verified",
+  "human_result_verification": "pending",
+  "operations": [
+    "GET /me/saved-listings",
+    "PUT /me/saved-listings/{listing_id}",
+    "DELETE /me/saved-listings/{listing_id}"
+  ],
+  "behavior": [
+    "Live regular/temporary trusted caller eligibility before persistence; no actor selectors",
+    "Existing pair ack preserves saved_at and needs no Listing lookup, including unavailable/retired references",
+    "New saves require exact discoverable save-target result; false/missing safe404, required outage503/no write",
+    "Pair-level transaction serialization and uniqueness make save/unsave retry-safe; absent unsave204; other user rows untouched",
+    "Stable caller-filtered saved_at/UUID-desc pages resolve only their own IDs (max100) through public Listings",
+    "Complete current-state mapping keeps unavailable details, retired ID/time/flag/null-listing placeholders, rejects missing/duplicate/foreign/inconsistent states503",
+    "No cached listing content or private cross-domain application SQL; shared existing pool, schema/migrations unchanged"
+  ],
+  "test_boundary": "Actual Search HTTP/SQL/locks/FKs and controlled source retirement; Listings save-target/current-summary operations are explicit fixtures against reviewed contracts, not actual provider implementations. Snapshot preparation is owned test setup only. Real upstream integration remains pending.",
+  "checks": {
+    "unit": "18passed in0.13s",
+    "focused": "67passed in27.63s with project-local Node PATH",
+    "full_root_python": "1242passed,18skipped in57.47s (-W error)",
+    "native": "18passed,3optional skipped in3.36s; four SQL smokes twice,14downs/reapply,identical inventory,owned cluster stopped",
+    "native_cases": [
+      "Concurrent duplicate pair retains one timestamp; regular/temporary own scopes and other row untouched by unsave",
+      "Current unavailable scripted view, duplicate ack during provider outage, no stale page, absent/retired unsave204",
+      "Tied save timestamps and reversed provider responses preserve exact own-page order and batch IDs",
+      "Current target snapshot followed by controlled source unavailability before save remains valid",
+      "Historical saved reference survives real parent retirement; current resolver fixture returns content-free placeholder"
+    ],
+    "mypy": "3new application modules pass",
+    "black": "176files unchanged",
+    "wrapper_safety": "35simulated cases pass",
+    "ci_parity": "11ordered checks pass",
+    "boundaries": "0violations",
+    "contracts": "8artifacts current and actual installed shapes match declaration",
+    "shell_syntax": "passed",
+    "whitespace": "passed"
+  },
+  "diagnostics": [
+    "Initial focused contract command omitted local Node PATH:20fail/47pass; corrected command67pass. No installation/global changes.",
+    "Initial native saved pagination increased committed corpus to50 and hit earlier math bootstrap cap30; preserve cap/loop and stage large saved fixture last in both wrapper adapter lists. All18native checks then pass; none removed or weakened."
+  ],
+  "source_sha256": {
+    "apps/api/app/domains/search/saved_store.py": "29b9c4b788afab62991ecfeb6c383ecace4761ea5c926aac804434a809ef880e",
+    "apps/api/app/domains/search/saved.py": "14f7e0fb46fa115c79604edd437e66589dbe821cf6472f86ecadeb1b413f68d0",
+    "apps/api/app/domains/search/saved_routes.py": "ca850a120d6108cef2f8a2b5cf7dcbbbc884586b3e953517da1b1fe59c6f5107",
+    "apps/api/app/main.py": "175f05b945d933daa2ca7470d800f43eaa26524c62ef36160aa9b8edb532072f",
+    "scripts/check_boundaries.py": "75e8af5542d15f53b2ef0d48877e4b8376ae2e6e4e436cdd3c2ea38db5487acf",
+    "apps/api/tests/domains/search/doubles/saved_listings.py": "891b19b47e02694f043686db4e50dab752a1c2d1adbe0593d0a9b0e6333dad8f",
+    "apps/api/tests/domains/search/test_saved.py": "a0f0ddb8ea1776c4fb980437e9cfaff3652ad969b9a6d475ddb9899c81150677",
+    "apps/api/tests/domains/search/test_saved_postgres.py": "62e470b1d7d779dd4968ca2cb5732b0872098657f0b75c974687b3c9da1276ee",
+    "tests/contracts/test_domain_declarations.py": "60464b556e8e77205b6f7666c081cc9a23170715de3193b9967d81c481d27ea1",
+    "tests/contracts/test_generation.py": "a75be80255d2625f4a299515ebbf7daf21abfaeae0f05ff4b4c804911fa70677",
+    "database/tests/native-checks.sh": "e22175de10fd8678adb7acf495786980fd9982a5cfd2fcb44dc446393425cccd",
+    "scripts/check_database.py": "1be956693664109e0cbd2f74873e4acc8a490a9cc83720c4af071c8a7a92dbcd",
+    "apps/api/app/domains/search/README.md": "694a7d0617f91cbe395ecc99e60df57d4ba879c17e21b9696ad0bbb22f9c16bf",
+    "apps/api/README.md": "75f74f7061118e151e57c9cae331ed914971efd9fd393dddbe198a6b3c36c4f9",
+    "contracts/search.md": "6f8360806b78ee60a88b248907706b3077bc77c8a4ceec149535b044bef0a794",
+    "database/README.md": "9a0c1940cd03b2974bd1fae23f239e71ff8c944d2eefe7ede9988bee0e83004b",
+    "docs/environment/commands.md": "3b7e702eb53eb0109fe34106e32977f4ff70a30ba024dd11910743a4e1c78af3"
+  },
+  "log_sha256": {
+    "types.log": "8228fcc5ce46d42d01caf3cd941f4e9c5f2bcc372bb5b147a2f0572d2dd675a8",
+    "wrapper-safety.log": "435e7127b522f554db5888fbff76480bfeb93b3bc567465e009cd7dc3fc58d64",
+    "native-corpus-diagnostic.log": "bb370989185425c915a9dfb526d0e62139717efa39bace78f1c5af4250c6a115",
+    "native.log": "4cdbf60be19d89a297a92228f439f521ddcd65b59c733a96a1c4e7f2485d8400",
+    "black.log": "ca89593754c0a234c5fbe16799ce429fe9d38f0540295c1bb47e14915ea67007",
+    "unit.log": "bc9e834f0fda282dfcefd5f0cb12ae119bf181a0a982896087a51a265df53d17",
+    "focused-node-path-diagnostic.log": "ee64b7eda0026b8bc22253ddd17c070a559d84a7eaf5f12b49200e1dafa94717",
+    "native-tests.log": "0c890779ecbd150adf95a6d2896fe04cb0d56f057e767070b16bd4fd592217ae",
+    "stop.log": "ca19178a35ab4153b75b494963b66ce8243e1b94c173107c87b44d09db23652d",
+    "python.log": "3b295c7e52c50d2c87c50360e3e3bd563bad51bf3d9d60b72287b6e5714e4188",
+    "focused.log": "28b55c9ab85e6739207b102de5be4414776fb69eacda3c686c5b417bb473c054"
+  },
+  "inventory_sha256": "a7ac890f201d9eae7bb68559fe37e2b29ee6e69258c0d74f0c000be4522e8e32",
+  "pending": [
+    "Human Step5 result verification",
+    "Actual Identity/Listings save-target/saved-summary provider integration and real availability/privacy transitions at Step8",
+    "Step6coverage review,Step7responsive UI/request-response integration,Step8real integration,Step9final checks/review",
+    "Docker database/secret scan/hosted CI and independent affected-owner review; SE-01 real final data/labels/NFR gates"
+  ],
+  "schema_pool_resource_changed": false,
+  "install_commit_push_merge_cloud_actions": false
+}

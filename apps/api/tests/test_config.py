@@ -146,3 +146,85 @@ def test_invalid_configuration_prevents_app_startup(overrides):
     assert "ConfigurationError: Invalid API configuration" in result.stderr
     assert "synthetic-invalid-value" not in result.stderr
     assert "input_value" not in result.stderr
+
+
+def test_hybrid_defaults_disabled_without_paths_or_side_effects():
+    settings = load_settings()
+    assert not settings.hybrid_search_enabled
+    assert settings.hybrid_search_interpreter is None
+    assert settings.hybrid_search_model_dir is None
+
+
+@pytest.mark.parametrize(
+    "values",
+    [
+        {"CLIP_HYBRID_SEARCH_ENABLED": "true"},
+        {"CLIP_HYBRID_SEARCH_INTERPRETER": "/synthetic/python"},
+        {"CLIP_HYBRID_SEARCH_MODEL_DIR": "/synthetic/model"},
+        {
+            "CLIP_HYBRID_SEARCH_ENABLED": "true",
+            "CLIP_HYBRID_SEARCH_INTERPRETER": "/synthetic/python",
+            "CLIP_HYBRID_SEARCH_MODEL_DIR": "/synthetic/model",
+        },
+        {"CLIP_HYBRID_SEARCH_ENABLED": "maybe"},
+        {
+            "CLIP_HYBRID_SEARCH_ENABLED": "true",
+            "CLIP_DATABASE_URL": "postgres://synthetic/db",
+            "CLIP_HYBRID_SEARCH_INTERPRETER": "relative/python",
+            "CLIP_HYBRID_SEARCH_MODEL_DIR": "/synthetic/model",
+        },
+        {
+            "CLIP_HYBRID_SEARCH_ENABLED": "true",
+            "CLIP_DATABASE_URL": "postgres://synthetic/db",
+            "CLIP_HYBRID_SEARCH_INTERPRETER": "/synthetic/python",
+            "CLIP_HYBRID_SEARCH_MODEL_DIR": "relative/model",
+        },
+    ],
+)
+def test_partial_or_invalid_hybrid_settings_fail_redacted(monkeypatch, values):
+    """No ignored path, implicit interpreter/model discovery or missing DB target."""
+    for key, value in values.items():
+        monkeypatch.setenv(key, value)
+    with pytest.raises(ConfigurationError) as error:
+        load_settings()
+    assert "CLIP_HYBRID_SEARCH" in str(error.value)
+    assert "synthetic" not in str(error.value)
+    assert "relative" not in str(error.value)
+
+
+@pytest.mark.parametrize("environment", ["local", "test", "production"])
+def test_hybrid_paths_explicit_and_not_resolved_or_echoed(monkeypatch, environment):
+    """A deployable setting is not a test-auth flag; enablement is no deployment approval."""
+    for key, value in {
+        "CLIP_ENVIRONMENT": environment,
+        "CLIP_DATABASE_URL": "postgres://synthetic/db",
+        "CLIP_HYBRID_SEARCH_ENABLED": "true",
+        "CLIP_HYBRID_SEARCH_INTERPRETER": "/synthetic/venv/bin/python",
+        "CLIP_HYBRID_SEARCH_MODEL_DIR": "/synthetic/model",
+    }.items():
+        monkeypatch.setenv(key, value)
+    settings = load_settings()
+    assert settings.hybrid_search_enabled
+    assert str(settings.hybrid_search_interpreter) == "/synthetic/venv/bin/python"
+    assert "/synthetic/venv" not in repr(settings)
+    assert "/synthetic/model" not in repr(settings)
+
+
+def test_worker_disabled_by_default_and_requires_explicit_hybrid(monkeypatch):
+    assert not load_settings().hybrid_worker_enabled
+    monkeypatch.setenv("CLIP_HYBRID_WORKER_ENABLED", "true")
+    with pytest.raises(ConfigurationError) as error:
+        load_settings()
+    assert "CLIP_HYBRID_WORKER_ENABLED" in str(error.value)
+
+
+def test_worker_opt_in_keeps_all_hybrid_prerequisites(monkeypatch):
+    for key, value in {
+        "CLIP_HYBRID_WORKER_ENABLED": "true",
+        "CLIP_HYBRID_SEARCH_ENABLED": "true",
+        "CLIP_DATABASE_URL": "postgres://synthetic/db",
+        "CLIP_HYBRID_SEARCH_INTERPRETER": "/synthetic/python",
+        "CLIP_HYBRID_SEARCH_MODEL_DIR": "/synthetic/model",
+    }.items():
+        monkeypatch.setenv(key, value)
+    assert load_settings().hybrid_worker_enabled

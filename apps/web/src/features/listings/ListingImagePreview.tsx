@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Button } from '../../shared/ui';
 import { readImageDelivery } from './listingsApi';
 import { ListingPhotoPlaceholder } from './ListingPhotoPlaceholder';
+import './listings.css';
 
 /** Resolve an authorized short-lived image link and recover when it expires. */
 export function ListingImagePreview({
