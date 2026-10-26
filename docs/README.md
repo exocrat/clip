@@ -70,6 +70,15 @@ Code, scripts, manifests, generated contracts, migrations, actual provider/envir
 
 Both checklists are present in this bundle and apply from BOOT-00. Workstation facts are produced at `docs/environment/development-workstation.md` during BOOT-00/PD-02; do not fabricate them in planning.
 
+- [Identity evidence and current integration handoff](evaluation/identity/README.md)
+- [Identity provider setup and pending real checks](environment/identity-provider-setup.md)
+- [Identity provider setup decision](decisions/identity-provider-setup.md)
+- [Identity dual-provider email routing and four-hour refresh](decisions/identity-email-routing.md)
+- [Identity test-runtime activation](decisions/identity-test-runtime-activation.md)
+- [Identity contact sharing and source-data cleanup](decisions/identity-contact-sharing-and-cleanup.md)
+
+- [Shared test ECS image pin](decisions/shared-test-ecs-image-pin.md)
+
 Normal API Search runtime: [opt-in helper/read-pool lifecycle and pending gates](architecture/normal-api-search-runtime.md).
 
 Embedding dispatcher: [default-off existing-job processing, limits and cleanup](architecture/semantic-embedding-dispatcher.md).
@@ -77,3 +86,5 @@ Embedding dispatcher: [default-off existing-job processing, limits and cleanup](
 Pipeline bootstrap: [explicit target-bound status, preparation, queueing and activation](architecture/semantic-pipeline-bootstrap.md).
 
 Search load preparation: [local k6 runner and limits](../scripts/evaluation/k6/README.md), [versioned workloads](../data/evaluation/workloads/README.md).
+- [Shared API RDS system trust](decisions/identity-rds-system-trust.md)
+- [Shared browser cookie/CSRF transport](decisions/browser-session-transport.md)

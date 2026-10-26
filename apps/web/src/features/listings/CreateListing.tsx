@@ -41,6 +41,15 @@ export function CreateListing({ children }: PropsWithChildren) {
   // Preserve the exact key/intent across a manual retry after a lost response.
   const attempt = useRef<{ intent: string; operationId: string } | null>(null);
 
+  // A save can finish after logout/account change unmounts this form. Preserve
+  // its server outcome, but never navigate or update a replacement actor's UI.
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
+
+
   useEffect(() => {
     const controller = new AbortController();
     setCatalogue(null);
@@ -76,10 +85,11 @@ export function CreateListing({ children }: PropsWithChildren) {
     setSaving(true);
     try {
       const listing = await createListing({ ...result.intent, operation_id: attempt.current.operationId });
+      if (!mounted.current) return;
       navigate(`/listings/${listing.listing_id}`, { state: { listingCreated: true } });
     } catch (error) {
-      setSaveError((error as Error).message);
-    } finally { setSaving(false); }
+      if (mounted.current) setSaveError((error as Error).message);
+    } finally { if (mounted.current) setSaving(false); }
   }
 
   const invalid = (field: keyof ListingFormErrors) => ({

@@ -385,6 +385,18 @@ export type CreateWantedRequest = {
 };
 
 /**
+ * CsrfToken
+ *
+ * Session-bound request protection token; never a session credential.
+ */
+export type CsrfToken = {
+    /**
+     * Csrf Token
+     */
+    csrf_token: string;
+};
+
+/**
  * CurrentOfferSummary
  *
  * Current offer only; historical revisions remain private to participants.
@@ -1016,6 +1028,22 @@ export type MessageRequest = {
      * Operation Id
      */
     operation_id: string;
+};
+
+/**
+ * MicrosoftLoginAttempt
+ *
+ * Public nonce paired with a private server-bound HttpOnly attempt cookie.
+ */
+export type MicrosoftLoginAttempt = {
+    /**
+     * Expires At
+     */
+    expires_at: string;
+    /**
+     * Nonce
+     */
+    nonce: string;
 };
 
 /**
@@ -1790,6 +1818,120 @@ export type TemporarySessionRequestWritable = {
      */
     password: string;
 };
+
+export type IdentityReadCsrfTokenData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/auth/csrf';
+};
+
+export type IdentityReadCsrfTokenErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorEnvelope;
+    /**
+     * Unauthorized
+     */
+    401: ErrorEnvelope;
+    /**
+     * Forbidden
+     */
+    403: ErrorEnvelope;
+    /**
+     * Not Found
+     */
+    404: ErrorEnvelope;
+    /**
+     * Conflict
+     */
+    409: ErrorEnvelope;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorEnvelope;
+    /**
+     * Too Many Requests
+     */
+    429: ErrorEnvelope;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorEnvelope;
+    /**
+     * Service Unavailable
+     */
+    503: ErrorEnvelope;
+};
+
+export type IdentityReadCsrfTokenError = IdentityReadCsrfTokenErrors[keyof IdentityReadCsrfTokenErrors];
+
+export type IdentityReadCsrfTokenResponses = {
+    /**
+     * Successful Response
+     */
+    200: CsrfToken;
+};
+
+export type IdentityReadCsrfTokenResponse = IdentityReadCsrfTokenResponses[keyof IdentityReadCsrfTokenResponses];
+
+export type IdentityStartMicrosoftLoginAttemptData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/auth/microsoft/login-attempts';
+};
+
+export type IdentityStartMicrosoftLoginAttemptErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorEnvelope;
+    /**
+     * Unauthorized
+     */
+    401: ErrorEnvelope;
+    /**
+     * Forbidden
+     */
+    403: ErrorEnvelope;
+    /**
+     * Not Found
+     */
+    404: ErrorEnvelope;
+    /**
+     * Conflict
+     */
+    409: ErrorEnvelope;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorEnvelope;
+    /**
+     * Too Many Requests
+     */
+    429: ErrorEnvelope;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorEnvelope;
+    /**
+     * Service Unavailable
+     */
+    503: ErrorEnvelope;
+};
+
+export type IdentityStartMicrosoftLoginAttemptError = IdentityStartMicrosoftLoginAttemptErrors[keyof IdentityStartMicrosoftLoginAttemptErrors];
+
+export type IdentityStartMicrosoftLoginAttemptResponses = {
+    /**
+     * Successful Response
+     */
+    201: MicrosoftLoginAttempt;
+};
+
+export type IdentityStartMicrosoftLoginAttemptResponse = IdentityStartMicrosoftLoginAttemptResponses[keyof IdentityStartMicrosoftLoginAttemptResponses];
 
 export type IdentityCreateMicrosoftSessionData = {
     body: MicrosoftSessionRequest;

@@ -1,11 +1,5 @@
 # The base phase creates reusable private infrastructure but no ECS task
 # definition or service. The exact plan remains a separately approved action.
-data "aws_ssm_parameter" "ecs_optimized_ami" {
-  count = local.base_enabled ? 1 : 0
-
-  name = "/aws/service/ecs/optimized-ami/amazon-linux-2023/recommended/image_id"
-}
-
 resource "aws_ecr_repository" "api" {
   count = local.base_enabled ? 1 : 0
 
@@ -264,8 +258,9 @@ resource "aws_iam_role" "db_probe_task" {
 resource "aws_launch_template" "ecs_host" {
   count = local.base_enabled ? 1 : 0
 
-  name_prefix   = "${local.prefix}-"
-  image_id      = data.aws_ssm_parameter.ecs_optimized_ami[0].value
+  name_prefix = "${local.prefix}-"
+  # Retain the old SSM-derived sensitivity marker as well as the deployed value.
+  image_id      = sensitive(local.ecs_ami_id)
   instance_type = var.ecs_instance_type
   user_data = base64encode(<<-EOT
     #!/bin/bash

@@ -1,5 +1,11 @@
 # Coordinated database migrations
 
+**Current ID-01 Step12 combined checkout:**17published migrations, head
+`20261025013000`,37domain tables,33functions and43triggers. Older isolated
+Identity/Listings sections below retain their historical checkpoints; their
+former PR10 deferral/counts do not describe this combined checkout. See the
+[merge evidence](../docs/evaluation/identity/integration.md#main-reconciliation).
+
 PD-08 Step 3 created SQL migrations from the
 [schema](../docs/architecture/mvp-database-schema.md) under the approved
 sequencing exception. The carried PD-08 gates are user-confirmed complete; the
@@ -44,11 +50,18 @@ was changed. [Tool rationale](../docs/decisions/database-migration-tool.md).
 | `20261022050000_listing_image_upload_intents.sql` | Persist owner-scoped upload operation keys and declared metadata so image-upload intents can be retried safely before confirmation. |
 | `20261022062357_listing_image_cleanup_retries.sql` | Add bounded cleanup retry timestamps and indexes for retired images and abandoned uploads. |
 
+| `20261023173439_identity_account_profile_integrity.sql` | Identity-only forward guards: contract profile/contact length bounds, paired chronological revocation event and immutable provider/account mapping. Down removes only its own checks/trigger/function, preserving data. |
+| `20261023192856_identity_otp_transactions.sql` | Protected OTP metadata plus key commitments, minimal operation acknowledgements, send reservations and shared verification windows. Empty-state down preserves legacy rows; occupied down fails closed. |
+| `20261023202807_identity_sessions_and_login.sql` | Nullable legacy-safe last-seen session time, bounded password failure windows/source events and server Microsoft attempt digests. Occupied down refuses security-state loss. |
+| `20261024153316_listing_embedding_generations.sql` | Accepted Listings semantic pipeline/generation/vector storage and invalidation guards; no automatic backfill or worker activation. |
+| `20261025012200_wanted_category_code_reference.sql` | Accepted Search wanted category UUID-to-immutable-code FK migration, preserving request content/lifecycle. |
+| `20261025013000_wanted_command_results.sql` | Accepted Search private idempotency receipts and guards for wanted commands. |
+
 The optional-pickup forward migration is under Listings writer scope; affected
 consumer/schema review and exact shared-database apply remain pending. Local
 isolated checks do not authorize shared/Compose/cloud migration.
 
-Expected current migration version: **20261022062357**. One integrator allocates
+Expected combined migration version: **20261025013000**. One integrator allocates
 later timestamp identifiers; no parallel heads or uncoordinated edits to initial
 DDL. Published/applied migrations are corrected forward, not rewritten.
 
@@ -448,16 +461,16 @@ was corrected and final state/aborted-sequence rollback checked on the rerun.
 `uv run --locked python scripts/check_database.py` uses the same PostgreSQL
 18.6 image and dbmate 2.36.0 as local development, with a new `clip_test_ci`
 database, no published port and temporary memory-backed storage. The current
-checker now expects clean apply/exact branch head (`20261024153316`), repeated
-application, three SQL smoke suites, the 29-table inventory, rollback of all
-twelve migrations and a clean reapply, then removes only its own container. The
+checker requires clean apply/exact combined head (`20261025013000`), repeated
+application, seven SQL smoke suites, the37-table inventory, preserved Identity
+upgrades/rollback and full rollback of all17migrations with a clean reapply, then removes only its own container. The
 `--listings-store` option additionally mounts one private temporary Unix-socket
 directory and runs the focused Listings adapter workflow against that same
 disposable database. It uses synthetic test rows and Identity/Conversations test
 doubles; it does not call object storage or touch the shared Compose database.
 The checker prints a compact SQL-selected sample listing row before removing
 the disposable container.
-earlier head `20261020111741` passed locally at
+Historical checkpoint: earlier head `20261020111741` passed locally at
 2026-10-20 11:22:17 UTC. Head `20261020113531` passed the disposable check,
 including seven rollbacks and clean reapply. At that historical checkpoint, the API-owned retirement migration
 was the expected head. Its disposable check passed clean apply, exact head,
@@ -466,6 +479,87 @@ retirement result exists, full empty-state rollback, and clean reapply. The
 shared Compose database remains untouched. This is local evidence, not hosted
 CI. The macOS native schema-inventory run, other platform rows and affected-owner
 acceptance remain pending. See the [command registry](../docs/environment/commands.md).
+
+## ID-01 Step3 isolated Identity schema
+
+Aditya is the current writer for migration20261023173439 and its Identity storage
+checks on task/id-01-identity. This branch contains the four foundation migrations
+plus this forward correction. PR10's seven additional accepted migrations are
+explicitly deferred by Aditya; a higher branch version is not proof those ran.
+Before ID-READY review/merge, incorporate current main and verify the entire
+ordered chain and affected-domain checks. Do not apply this isolated chain to a
+retained/shared environment ahead of that integration: strict dbmate would reject
+later introducing earlier timestamped migrations. No persistent database was
+migrated by this step.
+
+Run `uv run --locked python scripts/check_database.py`. Its fresh network-isolated
+PostgreSQL18.6/dbmate2.36.0 test checks clean/repeat apply, three rollback-only
+smokes and unchanged23 domain tables. It then rolls back only the new guards,
+seeds synthetic regular/temporary/provider/contact rows at the old head, verifies
+a failed incompatible-data upgrade leaves no version/partial constraints/data
+rewrite, and exercises successful upgrade/down/reapply with fixture preservation.
+The runner accepts no database target and removes only its own disposable container.
+The seeded rows exist only in that new tmpfs database; they are not user data.
+
+Existing Identity UUID/provider-tuple/expiry indexes remain; no duplicate index,
+new table, raw credential storage or authentication behavior is introduced.
+The migration validates existing rows and fails atomically if they violate the
+new limits/revocation pairing; it does not truncate data or infer timestamps.
+The native macOS harness is wired to the fifth migration,21 functions/33 triggers
+and new smoke. Bash syntax is checked here; execution of this revised native
+harness is not claimed on this Linux ARM64 machine. Historical macOS evidence
+above remains evidence only for its original revision.
+
+## ID-01 Step5 isolated OTP transactions
+
+Migration20261023192856 adds four Identity-owned tables (27 domain tables total)
+and nullable protected fields to the existing OTP table. Legacy rows remain
+unchanged and cannot be verified by the new service. Minimal operation markers
+contain a keyed request digest, key version, public challenge ID and expiry;
+they contain no target/IP digest, email, code or verifier. Aditya approved
+service-lifetime marker retention; the canonical private-data retention decision
+records the exception. The migration implements no cleanup job; other private
+state retains its separate windows and cleanup-design gate.
+
+`otp_send_reservations` stores protected target/source identifiers for send
+limits, including suppressed requests. `otp_verification_windows` holds three
+failed verifications per target/purpose through the latest code's expiry.
+`otp_key_binding` stores only SHA-256 commitments to three high-entropy keys;
+the service rejects accidental key/version changes or unreviewed legacy-state
+adoption. Keys themselves are never stored here.
+
+Down takes exclusive locks and refuses occupied security state instead of
+silently deleting deduplication/attempt/key guards. A deployed rollback with
+state needs a reviewed migration/reset plan. Empty OTP down/up and legacy-row
+preservation are exercised by `scripts/check_database.py`, which pins Step3's
+older round trip separately so that adding this migration cannot invalidate its
+original proof. Four SQL smoke suites now run. The native harness source expects
+six migrations,27 tables,21 functions/33 triggers; only Bash syntax is checked
+on this contributor's Linux ARM64 environment. PR10/current-main integration
+and affected-owner review remain pending before ID-READY/shared application.
+
+## ID-01 Step7 sessions, sign-in and cleanup state
+
+Forward migration20261023202807 adds `last_seen_at` to sessions without inventing
+legacy activity; unbound legacy sessions cannot silently authenticate. Three
+Identity tables add password target windows (five failures), protected auth
+source events and ten-minute single-use Microsoft attempts.30 domain tables and
+seven migrations on this isolated branch. Down locks and refuses occupied state.
+Existing Step3/5 round trips remain pinned to their historical heads; the
+checker now tests five SQL smokes and session empty down/up. Native source
+expects seven migrations/30 tables with unchanged21 functions/33 triggers; only
+Bash syntax is checked here, no new native macOS evidence.
+
+Identity cleanup operates only on OTP/session/credential and obsolete rate/
+attempt state under the approved decision, preserving enrollment/operation/key
+markers. CLI defaults to dry-run and requires actual database name matching its
+explicit --expected-database; DSN is environment-only and errors/counts exclude
+credentials and identifiers. Apply is bounded, per-item transactional and safe
+to rerun after partial failure; it is not a blanket cascade or scheduled job.
+No retained/shared database apply or cleanup occurred. PR10/current-main ordered
+migration reconciliation and affected-owner review remain mandatory before
+shared deployment/readiness. A higher branch head does not prove earlier main
+migrations were installed.
 
 ## SE-01 semantic storage migration — prepared, unapplied
 

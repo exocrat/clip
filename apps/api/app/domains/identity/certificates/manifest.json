@@ -1,0 +1,33 @@
+{
+  "source_url": "https://truststore.pki.rds.amazonaws.com/ap-south-1/ap-south-1-bundle.pem",
+  "source_documentation": "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.SSL.html",
+  "retrieved_at_utc": "2026-10-25 17:38:34 UTC",
+  "bundle_sha256": "ca4a9dc14e06c3f84274eff3ffed0e5d4d3463141593e1159eb4a0904df6cd74",
+  "region": "ap-south-1",
+  "certificates": [
+    {
+      "file": "rds-ap-south-1-ecc384-g1.crt",
+      "sha256": "e5573405b7769511b587edd9f397e8f1c7a9aeb5c7c4f5600e6fe029dcde0b70",
+      "certificate_sha256": "333de57f904b25d90b1ea19730ab91c495adbaf1480b0f2bbaf17d2e21af52bf",
+      "subject": "L=Seattle,CN=Amazon RDS ap-south-1 Root CA ECC384 G1,ST=WA,OU=Amazon RDS,O=Amazon Web Services\\, Inc.,C=US",
+      "not_before_utc": "2021-05-19T17:50:59+00:00",
+      "not_after_utc": "2121-05-19T18:50:59+00:00"
+    },
+    {
+      "file": "rds-ap-south-1-rsa2048-g1.crt",
+      "sha256": "01089c5776c43f27d6257d3de3ae443ed25a68a401003299fad227b61ed902ba",
+      "certificate_sha256": "ff6a599c9e966b146a57725e1d9a19c72f5f08407f0a2d3350aa9ae9212339b8",
+      "subject": "L=Seattle,CN=Amazon RDS ap-south-1 Root CA RSA2048 G1,ST=WA,OU=Amazon RDS,O=Amazon Web Services\\, Inc.,C=US",
+      "not_before_utc": "2021-05-19T17:40:34+00:00",
+      "not_after_utc": "2061-05-19T18:40:34+00:00"
+    },
+    {
+      "file": "rds-ap-south-1-rsa4096-g1.crt",
+      "sha256": "0cd60badf1d3ea55d2361d55c218b420502707810fc214f30c04f7865d0af90d",
+      "certificate_sha256": "27111555461f373d983c7911a3406cf532e0b5d3929b9175a54e400e442ef557",
+      "subject": "L=Seattle,CN=Amazon RDS ap-south-1 Root CA RSA4096 G1,ST=WA,OU=Amazon RDS,O=Amazon Web Services\\, Inc.,C=US",
+      "not_before_utc": "2021-05-19T17:45:20+00:00",
+      "not_after_utc": "2121-05-19T18:45:20+00:00"
+    }
+  ]
+}

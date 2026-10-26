@@ -1,0 +1,14 @@
+[
+  {
+    "path": "apps/api/app/domains/identity/migration_runner.py",
+    "sha256": "22fcdb7e78d11f172f15683d043a602bee5e37b780239b3c427cb61b448cca49"
+  },
+  {
+    "path": "apps/api/tests/domains/identity/migration_fixtures.py",
+    "sha256": "21a67e43506abbc30290bba1c285e1722366db6755419e2f40439974d5427134"
+  },
+  {
+    "path": "apps/api/tests/domains/identity/test_migration_runner.py",
+    "sha256": "3cbc9508b10abf52d7b107b7c5e32d86adedbb3ae93e2aa846aa840c9cd41739"
+  }
+]

@@ -1,7 +1,7 @@
 import { useState, type PropsWithChildren } from 'react';
 import { useParams } from 'react-router';
 import { ConversationsPlaceholder } from '../features/conversations';
-import { IdentityPlaceholder as IdentityFeaturePlaceholder } from '../features/identity';
+import { MicrosoftCallback, ContactsEditor, SignIn, AccountStateBoundary, SellerEligibilityGate, IdentityPlaceholder as IdentityFeaturePlaceholder } from '../features/identity';
 import { ListingsPlaceholder as ListingsFeaturePlaceholder } from '../features/listings';
 import { CreateListing, ListingDetail, ListingEdit, MyListings } from '../features/listings';
 import { WantedBrowse, MyWantedRequests, WantedDetail, SavedListings, SaveListingAction } from '../features/search';
@@ -10,11 +10,11 @@ import { PageFrame, SegmentedControl } from '../shared/ui';
 
 type View = 'sales' | 'wanted';
 
-function RoutePage({ title, children }: PropsWithChildren<{ title: string }>) {
+function RoutePage({ title, children, sessionScoped = true }: PropsWithChildren<{ title: string; sessionScoped?: boolean }>) {
   return (
     <PageFrame className="route-page">
       <h1>{title}</h1>
-      {children}
+      {sessionScoped ? <AccountStateBoundary>{children}</AccountStateBoundary> : children}
     </PageFrame>
   );
 }
@@ -30,16 +30,16 @@ function RouteValue({ name, value }: { name: string; value?: string }) {
 
 export function SignInPage() {
   return (
-    <RoutePage title="Sign in">
-      <IdentityFeaturePlaceholder title="Sign-in and temporary onboarding" />
+    <RoutePage title="Sign in" sessionScoped={false}>
+      <SignIn />
     </RoutePage>
   );
 }
 
 export function AuthCallbackPage() {
   return (
-    <RoutePage title="Authentication return">
-      <IdentityFeaturePlaceholder title="Authentication callback state" />
+    <RoutePage title="Authentication return" sessionScoped={false}>
+      <MicrosoftCallback />
     </RoutePage>
   );
 }
@@ -68,10 +68,10 @@ export function DiscoveryPage() {
 
 export function ListingCreatePage() {
   return (
-    <RoutePage title="Create a sale listing">
-      <CreateListing>
-        <IdentityFeaturePlaceholder title="Seller eligibility connection" />
-      </CreateListing>
+    <RoutePage title="Create a sale listing" sessionScoped={false}>
+      <SellerEligibilityGate>
+        <CreateListing />
+      </SellerEligibilityGate>
     </RoutePage>
   );
 }
@@ -91,8 +91,8 @@ export function ListingDetailPage() {
 export function ListingEditPage() {
   const { listingId } = useParams();
   return (
-    <RoutePage title="Edit a sale listing">
-      <ListingEdit listingId={listingId} />
+    <RoutePage title="Edit a sale listing" sessionScoped={false}>
+      <SellerEligibilityGate action="manage"><ListingEdit listingId={listingId} /></SellerEligibilityGate>
     </RoutePage>
   );
 }
@@ -111,7 +111,7 @@ export function MyListingsPage() {
         onValueChange={setView}
       />
       {view === 'sales' ? (
-        <MyListings />
+        <SellerEligibilityGate action="manage"><MyListings /></SellerEligibilityGate>
       ) : (
         <MyWantedRequests />
       )}
@@ -153,7 +153,7 @@ export function ConversationDetailPage() {
 export function AccountContactsPage() {
   return (
     <RoutePage title="My contact details">
-      <IdentityFeaturePlaceholder title="Private contact editor" />
+      <ContactsEditor />
     </RoutePage>
   );
 }
@@ -169,7 +169,7 @@ export function WantedRequestPage() {
 
 export function NotFoundPage() {
   return (
-    <RoutePage title="Page not found">
+    <RoutePage title="Page not found" sessionScoped={false}>
       <p>This path is not part of the approved scaffold.</p>
     </RoutePage>
   );

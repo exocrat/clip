@@ -57,6 +57,15 @@ export function ListingEdit({ listingId }: { listingId?: string }) {
   const summary = useRef<HTMLDivElement>(null);
   const attempt = useRef<{ intent: string; operationId: string } | null>(null);
 
+  // A save can finish after logout/account change unmounts this form. Preserve
+  // its server outcome, but never navigate or update a replacement actor's UI.
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
+
+
   useEffect(() => {
     const controller = new AbortController();
     setListing(null);
@@ -125,11 +134,12 @@ export function ListingEdit({ listingId }: { listingId?: string }) {
         ...intent,
         operation_id: attempt.current.operationId,
       });
+      if (!mounted.current) return;
       navigate(`/listings/${listingId}`, { state: { listingUpdated: true } });
     } catch (failure) {
-      setSaveError((failure as Error).message);
+      if (mounted.current) setSaveError((failure as Error).message);
     } finally {
-      setSaving(false);
+      if (mounted.current) setSaving(false);
     }
   }
 

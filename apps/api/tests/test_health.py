@@ -2,13 +2,13 @@
 
 from fastapi.testclient import TestClient
 
+from app.application import create_app
+from app.core.config import Settings
 
-def test_health_in_test_mode_exposes_only_process_status(monkeypatch):
-    """Start the app lifespan in test mode and verify its safe HTTP response."""
-    monkeypatch.setenv("CLIP_ENVIRONMENT", "test")
-    from app.main import app, settings
 
-    assert settings.environment == "test"
+def test_health_in_test_mode_exposes_only_process_status():
+    """Compose a test-mode app and verify the safe HTTP health response."""
+    app = create_app(Settings(environment="test"))
     with TestClient(app) as client:
         response = client.get("/health")
 

@@ -378,8 +378,9 @@ checkpoint IDs; no cloud/reset/merge authority or passed check is implied.
 
 PD-08 Step 3 reserves `database/migrations/20261018094330_mvp_tables.sql`,
 `20261018094331_mvp_integrity.sql`, `20261018094332_initial_catalogue.sql`, and
-forward correction `20261018152702_reject_retired_origin_entries.sql`; current
-expected head is `20261018152702`. `database/dbmate.version` pins 2.36.0 and
+forward correction `20261018152702_reject_retired_origin_entries.sql` and Identity
+hardening `20261023173439_identity_account_profile_integrity.sql`; current
+isolated-branch head is `20261023173439` (PR10 integration deferred). `database/dbmate.version` pins 2.36.0 and
 `database/tests/schema-smoke.sql` prepares rollback-only synthetic integrity
 checks for a validated local `clip_test_` database. Step 5 now implements the
 local lifecycle commands below; their real Docker/PostgreSQL execution remains
@@ -413,7 +414,7 @@ registry access; no cloud resource/provider is invoked.
 | `bash database/local-db.sh start` | Create/start only the local service, then authenticated readiness. Nonzero on unavailable tools, ownership/configuration/port conflict or readiness failure; inspect sanitized output. |
 | `bash database/local-db.sh wait` | Authenticated TCP `SELECT 1`, up to 30 attempts (2-second connect timeout and pauses). Exit 0 means connectivity only; absent container/timeout fails. |
 | `bash database/local-db.sh migrate` | Pinned dbmate 2.36.0, fixed local URL, strict transactional migrations, no schema dump/implicit dotenv. Exit 0 means the tool finished; Step 6 separately verifies expected head/schema. Inspect failures before retry; never automatically reset. |
-| `bash database/local-db.sh status` | Display migration state. Pending migrations can appear with exit 0; compare expected head `20261018152702`. |
+| `bash database/local-db.sh status` | Display migration state. Pending migrations can appear with exit 0; isolated branch head is `20261023173439`; do not apply the isolated chain to retained/shared data before current-main integration. |
 | `bash database/local-db.sh stop` | Stop validated local container; retain all volume data. Absent container succeeds. |
 | `bash database/local-db.sh reset --confirm-delete-local-data` | Warn and permanently delete only the validated service container and `clip-local_clip_local_postgres_data`. Requires deliberate approval of that destructive action. No force/prune/broad volume deletion; leaves DB stopped. Missing confirmation fails before Docker. |
 | `bash database/local-db.sh --help` | Fixed usage; no tools/password required. |
@@ -521,7 +522,7 @@ provider or cloud calls. [Outputs and limits](../../contracts/README.md).
 
 Contract regression command: `uv run --locked pytest tests/contracts -q -W error`.
 It checks canonical-source parity, all 50 declared domain HTTP operations, the
-live API's health-only route set, sensitive-field publication boundaries, and
+live API's health and implemented Listings route set, sensitive-field publication boundaries, and
 generated TypeScript consumers. Requires locked Python tools plus root `npm ci`
 (Node 24/TypeScript 5.9.3/Hey API 0.99.0). Synthetic negative cases use temporary
 trees and local tools; generated domain routes are never installed. Exit 0 means
@@ -547,7 +548,7 @@ tools remain deferred under the existing tooling decision.
 
 | Command | Effect / failure |
 |---|---|
-| `uv run --locked python scripts/check_database.py` | Requires local Unix-socket Docker. Creates a fresh PostgreSQL 18.6 container with temporary memory-backed data and no host port or persistent data volume; dbmate 2.36.0 checks clean apply, repeat migration, both SQL smoke suites, rollback of every migration and clean reapply against the migration files in the current checkout. On `domain/listings` at this checkpoint, the required head is `20261022062357` with 26 domain tables. Removes only its own container; nonzero on SQL/setup/cleanup failure. Never targets retained Compose data. |
+| `uv run --locked python scripts/check_database.py` | Requires local Unix-socket Docker. Creates a fresh PostgreSQL 18.6 container with temporary memory-backed data and no host port or persistent data volume; dbmate 2.36.0 checks clean apply, repeat migration, all seven SQL smoke suites plus Identity upgrade/atomicity checks, rollback of every migration and clean reapply against the migration files in the current checkout. The combined17-migration chain ends at `20261025013000` with37domain tables. Removes only its own container; nonzero on SQL/setup/cleanup failure. Never targets retained Compose data. |
 | `uv run --locked python scripts/check_database.py --listings-store` | Runs those same isolated migration checks, then mounts only a private temporary Unix-socket directory and runs `apps/api/tests/domains/listings/test_postgres_store.py` against that container. Verifies real PostgreSQL create/edit/selection/availability writes and retry behavior using synthetic Identity/Conversations test doubles; prints a sample row selected from PostgreSQL before cleanup. No shared database, host port, real object storage or cloud resource is used. Removes the temporary container and socket directory. |
 | `uv run --locked python scripts/check_secrets.py` | Requires local Unix-socket Docker. Gitleaks 8.30.1 scans tracked and nonignored new source in a temporary snapshot, offline/read-only. Uses `.gitleaks.toml`; findings print file/line/rule only and fail. This scans current source, not Git history; ignored files are excluded and symlinks rejected. |
 
@@ -682,6 +683,316 @@ clean migration checks used disposable containers. Other-machine checks remain
 pending. Exact logs/source overlay are linked from the work log; Step 6 consolidates
 the evidence and task review.
 
+## Identity provider offline checks — ID-01 Step 2
+
+From the repository root, after `uv sync --locked`:
+
+```bash
+uv run --locked pytest apps/api/tests/domains/identity/test_email.py apps/api/tests/core/test_provider_settings.py apps/api/tests/test_config.py -q -W error
+```
+
+Runs controlled configuration/transport checks using injected clients and
+synthetic recipients. No AWS client, send, network listener or database is
+created. Exit 0 means collected offline checks pass; failures and exit 5 are not
+success. This does not establish SES permission, actual delivery, Microsoft
+sign-in or ID-READY. The [setup record](identity-provider-setup.md) owns real gates.
+
+## Identity one-shot email command — ID-01 Step 2
+
+Offline checks from the repository root:
+
+```bash
+uv run --locked pytest apps/api/tests/domains/identity -q -W error
+uv run --locked mypy --no-incremental apps/api/app/domains/identity/email_smoke.py
+```
+
+Tests inject synthetic providers/role responses and never send mail. Exit 0
+means collected local checks pass, not delivery or runtime-role evidence.
+
+The future approved ECS image uses working directory `/app/apps/api` and command
+`python -m app.domains.identity.email_smoke`. This is a LIVE operation only with
+separately approved task/image/send inputs; do not run it as a local delivery
+shortcut. Default settings refuse sending. It requires explicit smoke approval,
+test mode, SES selection, exactly one allowlisted recipient and the expected ECS
+container-role credentials. It attempts one fixed generic message, suppresses SDK
+logs and exits within a 45-second command deadline. Success output means provider
+acceptance only. See the [bounded plan](../evaluation/identity/provider-history.md#delivery-diagnostics).
+
+### Identity diagnostic wrapper offline checks — ID-01 Step 2
+
+Run from the repository root:
+
+```bash
+uv run --locked pytest apps/api/tests/domains/identity/test_runtime_diagnostic.py apps/api/tests/domains/identity/test_email.py apps/api/tests/domains/identity/test_email_smoke.py -q -W error
+uv run --locked black --check docs/evaluation/identity/id-01-step-2/runtime_diagnostic.py apps/api/tests/domains/identity/test_runtime_diagnostic.py
+```
+
+The tests import the exact reviewed diagnostic command from the evaluation folder
+and inject offline SDK failures/success. They perform no AWS calls or sends;
+expected result is 28 passing tests. The wrapper itself can send when explicitly
+run with approved ECS settings; do not invoke it as a local test command. Its
+[live request and cleanup plan](../evaluation/identity/provider-history.md#delivery-diagnostics)
+require separate exact approval. No new Make target or deployment command added.
+
+### SES authorization diagnostic offline checks — ID-01 Step 2
+
+```bash
+uv run --locked pytest apps/api/tests/domains/identity/test_authorization_diagnostic.py apps/api/tests/domains/identity/test_runtime_diagnostic.py apps/api/tests/domains/identity/test_email.py apps/api/tests/domains/identity/test_email_smoke.py -q -W error
+uv run --locked black --check docs/evaluation/identity/id-01-step-2/runtime_authorization_diagnostic.py apps/api/tests/domains/identity/test_authorization_diagnostic.py
+```
+
+These are offline checks (37 tests), not a send command. The extended diagnostic
+parses denied-resource/reason text only in memory and emits fixed categories;
+[the exact live plan](../evaluation/identity/provider-history.md#delivery-diagnostics)
+retains a separate approved task/send/cleanup window. Shared sandbox plans must
+preserve the private `TF_VAR_ses_sandbox_recipient_identity_arn` when its additional
+identity scope is still needed; see the shared Terraform README. Never supply
+its value in a shell argument, repository file or printed evidence.
+
+### Identity schema verification — ID-01 Step3
+
+`uv run --locked python scripts/check_database.py` is the existing database gate
+used by `make check`; it now covers the Identity-only fifth migration and three
+SQL smokes. It creates only a new tmpfs PostgreSQL18.6 container with no host
+ports/retained volume and uses pinned dbmate2.36.0 with strict ordered migration,
+explicit empty dotenv input and advisory locks. No external target arguments,
+cloud/profile/database credentials or retained database are accepted.
+
+The new identity-schema-smoke.sql checks valid/invalid profile/contact bounds,
+revocation event pairing/chronology, provider-mapping immutability/uniqueness/FK,
+and original UTC/activation/enrollment protections. identity-upgrade-seed.sql and
+identity-upgrade-check.sql create/verify only synthetic rows in that disposable
+database. Upgrade failure must preserve incompatible data and leave no applied
+version/partial constraints. Successful upgrade/down/reapply preserves rows.
+
+The native macOS runner's source now expects five migrations/head20261023173439,
+21 functions/33 triggers and three smokes; only Bash syntax is checked on this
+Linux ARM64 contributor environment. Earlier native run evidence is historical.
+PR10/current-main combined-chain verification remains pending before ID-READY;
+no persistent/shared database apply is authorized by local check success.
+
+### Microsoft token/account checks — ID-01 Step4
+
+```bash
+uv run --locked pytest apps/api/tests/domains/identity/test_microsoft.py apps/api/tests/domains/identity/test_microsoft_postgres.py -q -W error
+uv run --locked mypy --no-incremental apps/api/app/domains/identity/microsoft.py apps/api/app/domains/identity/microsoft_accounts.py apps/api/app/core/config.py
+```
+
+The first file uses fresh in-memory RSA keys and controlled public-metadata
+responses, never a real user/token. The second requires a local Unix-socket
+Docker context and creates a new network-none tmpfs PostgreSQL18.6 instance,
+SCRAM-authenticated socket under a private test directory, and pinned dbmate
+2.36.0 migrations. No retained target or host ports are accepted. It tests actual
+validator/store concurrency, stable mapping, revocation and transaction failure;
+finally removes only its own container. Root/API pytest includes these real DB
+checks, so Docker is now required for that full suite. Runtime dependencies are
+locked PyJWT2.15.1 crypto and psycopg3.3.6 binary; tests do not call Microsoft.
+
+Public discovery/JWKS reads are distinct from sign-in checks. No public route,
+session cookie, trusted CallerContext or production Microsoft integration is
+installed by these checks; nonce lifecycle/session design remains a real gate.
+
+### Temporary OTP primitives and offline delivery — ID-01 Step 5 (partial)
+
+```sh
+uv run --locked pytest apps/api/tests/domains/identity/test_temporary_crypto.py apps/api/tests/domains/identity/test_temporary_policy.py apps/api/tests/domains/identity/test_temporary_delivery.py apps/api/tests/domains/identity/test_email.py -q -W error
+uv run --locked mypy --no-incremental apps/api/app/domains/identity/temporary_crypto.py apps/api/app/domains/identity/temporary_policy.py apps/api/app/domains/identity/temporary_delivery.py
+```
+
+Uses synthetic keys, controlled time and a recording SDK client with the actual
+SES adapter. Exercises normalization, protected target/verifier binding, shared
+attempt windows, concurrent one-shot delivery, leading-zero codes, suppression,
+expiry and uncertain provider failures. No AWS client, live send or database is
+used. These checks do not establish transactional persistence or real delivery.
+
+### Transactional temporary OTP checks — ID-01 Step5
+
+```sh
+uv run --locked pytest apps/api/tests/domains/identity/test_temporary_postgres.py -q -W error
+uv run --locked mypy --no-incremental apps/api/app/domains/identity/temporary_challenges.py apps/api/app/domains/identity/temporary_crypto.py apps/api/app/domains/identity/temporary_policy.py apps/api/app/domains/identity/temporary_delivery.py
+uv run --locked python scripts/check_database.py
+```
+
+The test reuses `postgres_fixtures.py` through explicit Identity conftest
+registration. Each module gets a new private socket/SCRAM PostgreSQL18.6/dbmate
+2.36.0 target with no host port, network or retained data; cleanup removes only
+its owned container. Synthetic mail capture/SDK failures do not contact AWS.
+Checks exercise source/target limits, shared failures/latest expiry, duplicate
+and consume races, rollback, eligibility, non-renewal, key continuity and safe
+uncertain SES outcomes. No password activation/reset or session is implemented.
+
+The migration checker now verifies six migrations/head20261023192856,27 tables,
+four SQL smokes, preserved historical Step3 failure/round-trip proof, and empty
+OTP down/up with legacy-row preservation. Occupied down refusal is covered by
+actual service tests. Native harness source is updated but no new macOS run is
+claimed; PR10/current-main integration remains pending. These commands accept no
+retained/cloud DB target and do not authorize provider sends or cleanup jobs.
+
+### Temporary account activation — ID-01 Step6 (private)
+
+```sh
+uv run --locked pytest apps/api/tests/domains/identity/test_temporary_passwords.py apps/api/tests/domains/identity/test_temporary_activation_postgres.py apps/api/tests/domains/identity/test_temporary_postgres.py -q -W error
+uv run --locked mypy --no-incremental apps/api/app/domains/identity/temporary_passwords.py apps/api/app/domains/identity/temporary_accounts.py
+uv lock --check --offline
+uv pip check --python .venv/bin/python
+```
+
+Uses actual Argon2id hashing and the shared private disposable PostgreSQL fixture,
+controlled time and synthetic OTP/mail/password data only. Tests activation time,
+exact336-hour expiry, concurrent/replayed proof, rejected challenge/password,
+atomic rollback on hash/credential/enrollment failure, enrollment after credential
+cleanup and stale-caller/current-state denial. Existing Step5 integration tests
+remain included. No user input/password/OTP file, actual email, ambient DB target,
+cloud action or live cleanup is used. Runtime hashes are sensitive and never
+responses/logs; lock pins argon2-cffi25.1.0 and bindings26.1.0. Public session/API/UI
+and real protected-operation/provider checks remain pending before ID-READY.
+
+### Sessions, Identity HTTP and bounded cleanup — ID-01 Step7
+
+```sh
+uv run --locked pytest apps/api/tests/domains/identity/test_sessions_postgres.py apps/api/tests/domains/identity/test_identity_http.py apps/api/tests/domains/identity/test_identity_cleanup.py -q -W error
+uv run --locked mypy --no-incremental apps/api/app/domains/identity/sessions.py apps/api/app/domains/identity/http.py apps/api/app/domains/identity/cleanup.py scripts/identity_cleanup.py apps/api/app/domains/identity/microsoft_accounts.py apps/api/app/domains/identity/temporary_accounts.py apps/api/app/domains/identity/temporary_passwords.py apps/api/app/domains/identity/temporary_challenges.py
+uv run --locked python scripts/check_database.py
+make contracts-check
+```
+
+Requires local Docker for fresh private PostgreSQL18.6/dbmate2.36.0, no retained
+DB target or host port. Actual RSA/Argon2id/session/HTTP/cleanup implementations
+use synthetic keys/accounts/mail only. Covers cookie/CORS/CSRF/origin/context,
+atomic credential/reset/activation/Microsoft replay races, idle/absolute/account
+expiry, limits, bounded cleanup/CLI target checks and permanent guard retention.
+No real provider or frontend browser is used. Normal app.main includes health/Listings; Identity runtime remains unbound;
+explicit create_identity_app runtime binding still needs reviewed secrets/DB
+roles/TLS/proxy/provider configuration before deployment. Never treat arbitrary
+forwarded headers as trusted source/identity.
+
+Cleanup invocation (reference only; no retained/cloud execution authorized):
+
+```sh
+uv run --locked python scripts/identity_cleanup.py --expected-database clip_test_identity
+```
+
+Supply CLIP_IDENTITY_DATABASE_URL through the approved secret-access path,
+never argv/logs/files; no dotenv fallback. Default is count-only; --apply writes
+only after exact target/dry-run/operator approval, and --batch-size is1–1000
+(default100 per table). No schedule is installed. Output is per-table counts,
+errors are generic and apply can be partially committed before a failure; retry
+rechecks cutoffs. Do not delete lifetime markers/users/key bindings. Step9 removes only source
+contacts/display names at the approved thirty-day terminal cutoff.
+The revised migration checker expects seven versions/head20261023202807 and30
+tables/five smokes while preserving historical Step3/5 proofs. Revised native
+harness is syntax-checked only on Linux; PR10/current-main integration pending.
+
+### Capability policy and public runtime binding — ID-01 Step8
+
+```sh
+uv run --locked pytest apps/api/tests/core/test_runtime_bindings.py apps/api/tests/domains/identity/test_capabilities_postgres.py apps/api/tests/domains/identity/test_capabilities_http.py tests/contracts/test_runtime_binding_generation.py tests/contracts/test_domain_declarations.py tests/contracts/test_identity_declarations.py -q -W error
+uv run --locked mypy --no-incremental apps/api/app/core/runtime_bindings.py apps/api/app/domains/identity/capabilities.py apps/api/app/domains/identity/sessions.py apps/api/app/domains/identity/http.py apps/api/app/domains/identity/public.py
+make contracts-check
+```
+
+Uses explicit context scopes and actual PostgreSQL/RSA/session/HTTP with synthetic
+keys/accounts only, through the existing new private socket/tmpfs DB fixture.
+Tests26 regular/temporary matrix combinations, fresh lifecycle/stale/forged
+context, exact class/boolean result, unavailable/unbound503, parallel real
+providers, generated adapter invariants and malformed results/metadata. HTTP
+probes are fixture-only capability categories, not implemented marketplace
+resources. Source declarations refuse; only generated eligibility dispatches.
+Other generated domains and HTTP/OpenAPI/TypeScript shapes stay unchanged.
+No runtime/provider/cloud/retained data action or full FR-03 claim; Step14 keeps
+its required actual consumer matrix and ID-READY keeps real integration gates.
+
+### Own profile/contact sharing and cleanup — ID-01 Step9
+
+```sh
+uv run --locked pytest apps/api/tests/domains/identity/test_contacts.py apps/api/tests/domains/identity/test_contacts_http.py apps/api/tests/domains/identity/test_identity_cleanup.py tests/contracts/test_domain_declarations.py -q -W error
+uv run --locked mypy --no-incremental apps/api/app/core/runtime_bindings.py apps/api/app/domains/identity/contacts.py apps/api/app/domains/identity/cleanup.py apps/api/app/domains/identity/sessions.py apps/api/app/domains/identity/http.py apps/api/app/domains/identity/public.py
+```
+
+Uses only synthetic data/keys and owned disposable PostgreSQL, no provider or
+retained/cloud cleanup. Covers own display-name/field CRUD, immutable login,
+scoped confirmed-only sharing/privacy, fresh denial, concurrent writes and exact
+thirty-day cutoff/guard preservation. Controlled sharing grants are not actual
+CN membership/confirmation evidence. Existing contracts-generate/check commands
+regenerate the two additional selected dispatch adapters; HTTP schemas unchanged.
+Use the existing target-checked cleanup command only with separate actual-target
+approval; no scheduler/deadline acceptance follows from local tests. Full make
+check remains the aggregate gate; ID-READY/provider/browser integration is open.
+
+### Deterministic Identity security integration — ID-01 Step10
+
+```sh
+uv run --locked pytest apps/api/tests/domains/identity/test_microsoft.py apps/api/tests/domains/identity/test_identity_security_integration.py apps/api/tests/core/test_security_boundaries.py tests/fixtures/core/test_providers.py -q -W error
+```
+
+Explicit signed_tokens/jwt_clock fixtures control only the installed PyJWT date
+lookup during requesting tests; actual RSA/claim checks stay enabled and the
+patch is restored afterward. No global wall-clock change or production fake
+activation. Owned disposable SQL/actual HTTP tests cover lifecycle/reset/contact/
+retention/concurrency; shared guarded fake and actual production startup controls
+remain in their existing owners' tests. No provider/send/retained DB/cloud action.
+The full make check includes these tests and all pre-existing OTP/session/privacy
+coverage; local results cannot accept real provider/browser/consumer/readiness.
+
+### Identity first UI checkpoint — ID-01 Step11
+
+```sh
+CLIP_ENVIRONMENT=test uv run --locked python scripts/identity_ui_preview.py --synthetic-preview --seconds 1800
+npm run dev -- --mode identity-preview
+```
+
+Separate foreground terminals; URL `http://localhost:5173/sign-in`. Both bind
+loopback only; fixed API8001/Vite5173, fail on conflicts. Script creates only an
+owned no-network disposable PostgreSQL18.6/dbmate2.36.0 database, transient keys
+and synthetic-only mailbox. It refuses non-test environment/implicit enablement;
+60–3600s cap, default1800s, or Ctrl+C then own DB removal. Stop Vite separately.
+No real SES/Microsoft call, account/credential input, retained DB or cloud action.
+Use only the reserved example recipient documented in apps/web/README.md.
+Preview mode cannot build/deploy; ordinary dev has no proxy and ordinary builds
+remove preview inbox. Normal API startup includes health/Listings; Identity remains explicitly unbound.
+
+```sh
+uv run --locked pytest apps/api/tests/domains/identity/test_ui_preview.py apps/api/tests/test_health.py -q -W error
+npm run check
+```
+
+Python checks refusal, unbound-Identity production composition, actual registration/
+SQL/cookie and non-loopback denial. Web checks include DOM interaction tests
+with synthetic contract responses and existing route/import boundaries. Source
+formatter remains disabled automatically; an explicit one-off web-local command
+can format only this step's new files using `npx biome format --write
+--javascript-formatter-enabled=true --javascript-formatter-indent-style=space
+--javascript-formatter-indent-width=2 --javascript-formatter-line-width=100
+--javascript-formatter-quote-style=single <explicit-file-paths>` from apps/web.
+No shared formatter configuration change. Full make check remains required;
+local/browser doubles do not accept actual provider/device/ID-READY gates.
+
+The Step11 recovery increment uses the same preview commands/ports and disposable
+backend; no new route/provider/resource. After restarting the harness, recreate
+its synthetic account. Wait the shared60s OTP cooldown, then exercise Forgot
+password → reset code → new password → explicit sign-in. Existing make check/
+npm run check include the added reset UI cases. Preview restart discards only
+its own ephemeral data; it never reconnects to a retained/shared database.
+
+The Step11 contact-editor increment uses the same capped synthetic preview and
+registered make check/npm run check commands. Visit `/account/contacts` after
+signing in. Existing backend tests use actual own-contact SQL/HTTP; new DOM
+cases cover CSRF/refetch/delete/privacy/known-actor race behavior. Headless layout
+positive controls use explicitly intercepted synthetic read results and are not
+real authenticated provider evidence; human exercises the actual local API.
+
+### Microsoft browser UI — ID-01 Step11
+
+Existing `npm run check` and `make check` include the controlled SDK/callback/
+StrictMode/replay/recovery tests. The same capped identity-preview commands serve
+local disabled-button and callback/error/status screens; no new resource/provider
+or route. Preview always disables Microsoft. Public build flag
+VITE_MICROSOFT_SIGN_IN_ENABLED defaults false in the example; the API does not
+read it and it grants no authority. Actual enablement, metadata/token traffic,
+registered localhost/HTTPS redirect, consent/default scopes, provider artifacts
+and server-cookie flow need their own approved live/runtime verification plan.
+No live-enable command or provider action is authorized by this registry entry.
+
 ## LI-01 Step 7 — isolated PostgreSQL browser checkpoint
 
 Run from the repository root with the locked Python environment, Node 24/npm 11,
@@ -696,6 +1007,201 @@ commands, not deployment or task-completion evidence.
 | `VITE_LISTINGS_ISOLATED_DEMO=true npm run dev` | Runs the same development web server on loopback 5173; exposes only labelled local Listings controls for preparing synthetic image metadata through the separate test app. Production builds ignore this development flag. | Ctrl+C stops the owned Vite process. Missing API/dependencies produce visible failures, not simulated successful saves. |
 | `CLIP_ENVIRONMENT=test CLIP_DEVELOPMENT_AUTH=true uv run --locked python apps/api/tests/domains/listings/browser_demo.py --isolated-listings-browser --inspect SESSION_PATH` | Requires the exact printed retained session path and matching container ownership label. Executes read-only SQL against that running browser database to print synthetic listing ID/title/price/status/proof values. | Fails closed on wrong owner/path/label, stopped/unavailable container or SQL failure; never inspects the shared database. |
 | `CLIP_ENVIRONMENT=test CLIP_DEVELOPMENT_AUTH=true uv run --locked python apps/api/tests/domains/listings/browser_demo.py --isolated-listings-browser --resume SESSION_PATH` | Validates the recorded private session/container label, starts that same database without resetting rows, reapplies only pending migrations, and serves the isolated API again. | Ctrl+C retains rows. Does not remove containers/volumes/session files. Cleanup requires a separate targeted action. |
+
+### Shared Identity/Listings API composition — ID-01 Step12
+
+`uv run --locked pytest apps/api/tests/domains/identity/test_application_composition.py apps/api/tests/domains/listings/test_integrations.py -q -W error`
+checks the real shared factory with disposable PostgreSQL, actual session/OTP/
+signed-token validation and Listings routes. Synthetic signer/mail are explicit
+controlled ports; no fake caller override, external provider, shared database,
+secret-manager read or retained data. Requires local Docker and locked setup.
+Checks regular cookie/eligibility, temporary browsing and sale/upload denial,
+contact CSRF, logout, expiry/revocation, per-app isolation, one-time installation,
+pool closure and refusal of incomplete/production/demo bindings. No website or
+provider acceptance is inferred. `app.main:app` remains unbound by default.
+
+
+### Identity database setup procedure — ID-01 Step12 (local checks only)
+
+`uv run --locked pytest apps/api/tests/domains/identity/test_database_setup.py -q -W error`
+uses the owned networkless PostgreSQL18.6 fixture and applies current migrations.
+It changes roles/ACLs only inside that disposable container and removes the owned
+container afterward. Requires the locked environment and local Unix-socket Docker;
+no AWS credentials, cloud calls, published DB port or shared database URL are used.
+Expected: real SCRAM restricted-login validation, unchanged-key startup audit,
+existing-role collision and unsafe metadata/logging/target refusals, and rollback
+after a post-create failure. Failures remain failures; no retry or live fallback.
+`make check` includes these tests. Strict typing:
+`uv run --locked mypy --strict apps/api/app/domains/identity/database_setup.py`.
+
+`database_setup.py` exposes operator-only `inspect_identity_database` and
+`create_identity_role` functions with an explicit connection factory and expected
+database/admin. They are not connected to startup or a live CLI. Each transaction
+has5-second statement/3-second lock limits; the execution launcher must separately
+bound total process/connection time. Live launcher/private networking, credentials,
+RDS start, exact SQL, URL publication and cleanup still need their reviewed plans.
+
+
+### Safe Identity database metadata — ID-01 Step12
+
+`uv run --locked pytest apps/api/tests/domains/identity/test_database_metadata.py -q -W error`
+checks only owned disposable PostgreSQL. Requires local Unix-socket Docker and
+locked setup; no AWS credentials, secret reads or shared database URL. Expected:
+missing migration tracker/column/schema reported as findings; later failures
+retain completed allowlisted fields; wrong targets stop; the actual transaction
+is repeatable-read/read-only. `make check` includes the suite. Strict types:
+`uv run --locked mypy --strict apps/api/app/domains/identity/database_metadata.py`.
+
+`collect_database_metadata` accepts an explicit trusted connection factory and
+expected database/admin, returning a serializable report. `complete` means the
+metadata collection completed, not that setup or migrations passed. Inspect
+required-version and inventory/logging/ACL fields; missing objects remain blockers.
+It has no live CLI, secret retrieval, provider, writes, repair or retries. Live
+callers still require exact endpoint/account/TLS checks, process/connection bounds,
+a separately approved secret read/window and sanitized report handling.
+
+
+### Identity migration runner and logging probe — ID-01 Step12 local checks
+
+`uv run --locked pytest apps/api/tests/domains/identity/test_migration_runner.py -q -W error`
+requires locked setup, Linux Docker on a local Unix socket, cached/retrievable
+PostgreSQL18.6/dbmate2.36 images. Creates only owned disposable PostgreSQL containers
+with tmpfs data, an ephemeral loopback-published TLS port and synthetic short-lived
+certificates/passwords. Unlike the networkless socket fixtures, this fixture uses
+Docker bridge plus loopback publication to test real TLS. Deletes its own container
+and synthetic private key afterward; no AWS/shared URL or real credential is used.
+
+Expected: full17file clean/repeat, real TLS hostname mismatch rejection, no secret
+in Docker config/args, hash/image/namespace/prefix/target refusals, real partial-DDL
+preservation and no replay, client-success structural postconditions, timed-out
+version-client cleanup, and rollback-only logging role/default checks. Full
+`make check` includes the tests. Strict types:
+`uv run --locked mypy --strict apps/api/app/domains/identity/migration_runner.py`.
+
+The operator functions have no live CLI or startup binding. `run_migrations`
+requires the reviewed manifest/image, fixed target and trusted private connection;
+live use rejects the current image-review-pending manifest. `probe_logging`
+creates only a passwordless NOLOGIN probe role inside a rolled-back transaction
+and checks absence/defaults through a fresh connection. Neither function retrieves
+AWS secrets or grants cloud authorization. Read-only preflight is not permission
+to call these write-capable tools; exact window, SQL/role probe, metadata/secret
+access, shared-schema review and cleanup approvals remain mandatory.
+
+### Offline Identity migration review consistency — ID-01 Step12
+
+```bash
+uv run --locked python scripts/identity_readiness.py --upstream <full-accepted-main-commit-sha>
+```
+
+Reads local Git objects and current source only; no fetch, Docker, SQL connection,
+settings/credential load, provider request or file write. Requires locked Python
+setup. Use the actual accepted main revision after integrating it. Exit0 means
+manifest/reference/SHA, runner compatibility, recorded local image, preserved
+upstream SQL and reviewed migration/setup source agree. Exit1 means the review
+package is stale/invalid; inspect the safe JSON check names and reconcile source
+and evidence. Git external diff/text conversion drivers are disabled.
+
+`ready_for_live` is always false: success is not image/owner/cloud approval or a
+live-schema inspection. The runner's live-review guard is not modified. Refresh
+manifest/candidate/runner expectations after upstream schema changes and rerun
+real disposable migration tests before requesting a live apply.
+
+Focused offline regression command:
+`uv run --locked pytest apps/api/tests/domains/identity/test_readiness_audit.py -q -W error`.
+Strict types: `uv run --locked mypy --strict scripts/identity_readiness.py`.
+
+### Explicit real local Identity bootstrap — ID-01 Step12 preparation
+
+**Prepared only; running either mode requires separate live secret/DB access
+approval.** Import/help is offline:
+
+```bash
+uv run --locked python scripts/identity_runtime.py --help
+```
+
+After the exact account/region, references, database roles/URLs, recipient list,
+network/TLS route and execution window have been reviewed and approved:
+
+```bash
+uv run --locked python scripts/identity_runtime.py --check --approved-bootstrap
+uv run --locked python scripts/identity_runtime.py --serve --approved-bootstrap
+```
+
+The acknowledgement flag prevents accidental startup; it does not grant approval.
+Both modes retrieve fixed Identity SSM keys/DB URL/email configuration and perform
+real Identity database safety checks. Warmup does not send mail. `--check` opens no
+listener and does not start/check the Listings pool. `--serve` starts the existing
+combined app on127.0.0.1:8000, one worker, no reload or forwarded-header trust, with
+safe application logging and raw access logging disabled. Auth requests can create
+real state and dispatch real mail, so exact user/recipient/send/cleanup approval is
+required before exercising them. Ctrl+C closes the app's own pool; it does not
+stop cloud infrastructure or delete data.
+
+Requires explicit local/test Settings, Microsoft+dual selectors, controlled
+recipient list, debug off and the separate private Listings `CLIP_DATABASE_URL`;
+Identity uses its own fixed SSM DB URL/login. Do not put credential values in
+arguments, this guide, logs or chat. The UI uses registered
+`http://localhost:5173/auth/callback`;127.0.0.1 is not a Microsoft callback alias.
+Use the normal Vite API proxy to8000, not the synthetic preview proxy to8001.
+Enable the existing Microsoft UI flag only in the approved real test session.
+Default app.main, production rejection and synthetic preview behavior are unchanged.
+
+This is operator-local preparation, excluded from the production API image. It
+is not a deploy route or proof of image CA trust, actual permissions or delivery.
+The corrected local image installs regional RDS roots and selects the standard
+OS CA file; AMD64/Hybrid rebuild and real deployed TLS acceptance remain gated.
+See the image-trust checks below and integration evidence.
+
+Checks: `uv run --locked pytest apps/api/tests/domains/identity/test_runtime_command.py -q -W error`
+and `uv run --locked mypy --strict scripts/identity_runtime.py`.
+
+### Real-provider local demo — ID-01 Step12
+
+`uv run --locked python scripts/identity_local_demo.py --approved-live-local --recipient APPROVED_ADDRESS --seconds 10800`
+
+Requires exact human approval for live access and each controlled recipient; repeat
+`--recipient` for up to five. Uses profile `adityalaxmi1` to capture short-lived
+credentials privately, reads only `/clip/test/identity/authentication-keys` and
+`/clip/test/identity/email-delivery`, and uses a generated local Identity URL.
+No shared DB URL/master secret, AWS mutation or automatic send. Creates a fresh
+network-isolated PostgreSQL18.6 container through the existing disposable helper,
+applies the current migrations, and creates separate Identity and marketplace
+logins. The latter has local Listings/Search table grants only. Real Microsoft
+validation, email routing, sessions and HTTP handlers are unchanged; no fixture
+signer, mailbox route or auth bypass is installed. API binds127.0.0.1:8000 with
+raw access logs/proxy trust disabled. Ctrl+C or the60–14400second cap removes
+only this run's container/data; local accounts are disposable. Credentials remain
+in process memory; never print provider/DB configuration. Script/tests are outside
+the image's copied application source.
+
+Start the frontend with `VITE_MICROSOFT_SIGN_IN_ENABLED=true npm run dev`; browse
+`http://localhost:5173/sign-in`, not127.0.0.1. Both ports must be available. Real
+registration/reset requests send to approved recipients; startup does not send.
+No image uploads/Hybrid/cloud/ID-READY acceptance is implied. Offline checks:
+`uv run --locked pytest apps/api/tests/domains/identity/test_local_demo.py -q -W error`.
+
+### Hosted test-mode Identity startup — ID-01 Step12 preparation
+
+The default `app.main:app` stays Identity-unbound. The explicit ASGI opt-in is
+`CLIP_IDENTITY_RUNTIME_ENABLED=true`; Settings accept it only with
+`CLIP_ENVIRONMENT=test`, `CLIP_IDENTITY_PROVIDER=microsoft`,
+`CLIP_EMAIL_PROVIDER=dual`, debug/development auth off, a separate Listings
+`CLIP_DATABASE_URL`, the exact JSON origin list
+`CLIP_IDENTITY_BROWSER_ORIGINS=["https://clip-iisc.site"]`, and the approved
+controlled-recipient list. The app reads only the three fixed Identity SSM
+parameters during ASGI import and fails closed if they, the restricted Identity
+DB role, or the email snapshot are invalid. It performs no migrations or sends at
+startup. Auth requests can create account/session state and send real email.
+
+This is prepared code, not an operator command or current deployment config. The
+shared ECS task still lacks these settings, SSM access, the separate Listings DB
+URL/role, and a reviewed public HTTPS/proxy route. Do not enable the flag until
+the exact runtime, ingress, recipient and cleanup plan is approved. If
+`CLIP_SERVE_WEB_APP=true`, Identity routes and marketplace APIs use `/api` with
+the bundled UI; otherwise the HTTPS same-origin proxy must strip `/api` before
+forwarding to the API's unprefixed routes. Uvicorn forwarded-header trust remains
+unset until the actual proxy peer is verified.
+
 | `CLIP_ENVIRONMENT=test CLIP_DEVELOPMENT_AUTH=true uv run --locked python apps/api/tests/domains/listings/browser_demo.py --isolated-listings-browser --hybrid-search --resume SESSION_PATH` | Resumes that same local database and enables the real pinned helper, worker and Hybrid reader. Requires the repo-local CPython 3.13 helper and model under `.tools/semantic/`. Before serving, verifies the worker pool reaches `clip_listings_browser` over its private Unix socket, prepares existing rows, waits for complete vectors and activates the pinned pipeline. New listing creates/edits then use the database trigger and worker automatically; no copied vectors. | Refuses a mismatched database, unavailable helper/worker, failed vector job or incomplete five-minute bootstrap. Ctrl+C retains the labelled local database. No shared database or cloud target. |
 
 The browser harness also mounts real Wanted Request and Saved Listings routes
@@ -1174,8 +1680,8 @@ bash database/tests/native-checks.sh .tools/native-db/pgsql .tools/native-db/dow
 ```
 
 The existing native wrapper adds real wanted HTTP/concurrency/receipt checks,
-creates only its own socket-only cluster, applies14migrations to20261025013000,
-runs four smokes twice, all14downs/reapply/inventory, then stops its cluster.
+creates only its own socket-only cluster, applies17migrations to20261025013000,
+runs seven smokes twice, all17downs/reapply/inventory, then stops its cluster.
 Synthetic origin references remain retained in that disposable database; fixture
 teardown never bypasses immutable-reference guards. Docker adapter registration
 includes the same test, but Docker execution remains unavailable here. These
@@ -1291,3 +1797,77 @@ without its flag they are skipped. It creates/closes a synthetic wanted request
 and unsaves/resaves one fixture pair, leaving the preview usable. It accepts no
 arbitrary target URL. It verifies API wiring, not actual Identity/Conversations,
 React interaction, Safari/device behavior or final SE-02 acceptance.
+
+### API image RDS root trust — ID-01 Step12
+
+The ordinary API Dockerfile installs the three vendored public ap-south-1 RDS
+roots into the existing system store. No CA download occurs during build; use the
+registered allowlisted source-only build procedure above, never the legacy
+builder's unrestricted repository context. `apps/api/app/**` includes the reviewed
+public certificate files/manifest. Build for the local native platform; publication
+for ECS still requires a reviewed linux/amd64 build and separate approval.
+The optional Hybrid image must use the newly corrected ordinary API image as its
+explicit API_IMAGE input; an old parent image retains its old trust store.
+
+Public-data integrity test (no Docker/network):
+
+```bash
+uv run --locked pytest apps/api/tests/domains/identity/test_image_trust.py::test_public_regional_roots_match_pinned_manifest_and_are_current -q -W error
+```
+
+After a local native ordinary image has been built, explicitly select its tag
+(the verifier accepts `clip-api:id-ready-rds-ca-...` tags or immutable local image
+IDs and never pulls):
+
+```bash
+CLIP_IDENTITY_TEST_IMAGE=clip-api:id-ready-rds-ca-arm64-local uv run --locked pytest apps/api/tests/domains/identity/test_image_trust.py -q -W error
+```
+
+Requires locked development dependencies, a local Unix-socket Docker daemon and
+cached PostgreSQL18.6/dbmate2.36.0 images. Verifies pinned/root-only/current X.509
+metadata, exact current root fingerprints in the image, retained distribution
+roots, non-root/default production metadata and the exact shipped
+SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt setting. A read-only
+container tests the default health/protected API without external networking.
+Another uses only the fixture-owned PostgreSQL TLS network namespace. Unknown CA
+must fail; a temporary container-only copy of the default system CA file permits actual SQL;
+a wrong hostname must still fail with verify-full/system. No real database,
+credentials, SSM/provider call, schema migration or email is used. Temporary SQL
+and image-check containers are removed; the selected image remains for review.
+The synthetic root never enters the source certificates or image layers. No
+test-only SSL_CERT_FILE/SSL_CERT_DIR or PostgreSQL TLS environment override is
+used; the test exercises the image's actual configured system CA path.
+
+Without CLIP_IDENTITY_TEST_IMAGE the three actual-image checks skip explicitly;
+make check still runs the public-certificate integrity check. Explicit image
+verification is required for this checkpoint. ARM64 success does not establish
+AMD64/Hybrid or deployed RDS acceptance; retain those separate evidence/approval gates.
+
+### Shared browser CSRF transport — ID-01 Step12
+
+`npm run check` runs shared transport and feature tests, types/lint and build.
+Focused: `npm test -- session-fetch.test.ts listings-api.test.ts listings-image-api.test.ts wanted-api.test.ts`.
+The focused helpers use reviewed synthetic CSRF responses; no provider/network
+access. Public auth endpoints still require the marker, protected writes require
+successful fresh CSRF, no automatic transport retry is added, and upload bytes
+use their existing separate S3 transport.
+
+Actual local TypeScript/HTTP/SQL verification:
+
+```bash
+uv run --locked pytest apps/api/tests/domains/identity/test_browser_transport.py -q -W error
+uv run --locked pytest apps/api/tests/domains/identity/test_browser_csrf_fixtures.py -q -W error
+```
+
+Requires locked Python/Node dependencies and local Docker, using only owned
+disposable PostgreSQL. The first command starts one loopback ephemeral HTTP port,
+uses the real shared app/cookie/CSRF/domain SQL and runs the actual TS adapters in
+Vitest. Only signing/mail/image metadata and browser Origin/cookie/proxy handling
+are synthetic. No public test-auth/OTP-inbox endpoint, live provider/send/secret or
+cloud target is used. It cleans its server/socket/container and redacts transient
+synthetic cookies in /tmp/clip-id-ready-csrf-http-node.log. The standalone JS HTTP
+case skips unless the Python owner supplies CLIP_IDENTITY_TRANSPORT_HTTP privately;
+never supply a real cookie or retained/hosted target. Ordinary npm checks skip it.
+This automation is not actual browser/device, deployment or full Step14 evidence.
+The second command proves normal/production runtime exposes no synthetic CSRF
+route and existing isolated local/hosted profiles retain their transport gates.

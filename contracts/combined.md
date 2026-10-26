@@ -43,8 +43,9 @@ count as real integration.
 
 ## Identity HTTP operations
 
-Session transport details (cookie attributes, CSRF binding, lifetime and
-provider credentials) remain the ID-01 authentication/session design gate.
+Session transport/lifetime/CSRF and bounded cleanup follow the Aditya-verified
+[Identity session decision](../docs/decisions/identity-sessions-and-cleanup.md).
+Provider/runtime/browser activation and real checks remain ID-01 gates.
 Responses never return a bearer/session secret in JSON. Successful sign-in
 returns the public SessionView and establishes a server-managed session;
 logout revokes it. ID-01 must finish provider/abuse settings before real
@@ -52,7 +53,9 @@ provider use.
 
 | Method and route / operation ID | Input → output | Authorization, state, errors, retries and required cases |
 |---|---|---|
-| POST /auth/microsoft/sessions — identity_create_microsoft_session | MicrosoftSessionRequest{id_token: SecretStr} → SessionView{user_id,account_class=regular,valid_until,display_name?} | Public credential exchange. Identity validates signature, issuer, audience, expiry, claims and approved IISc domain; atomically get/create by verified issuer/subject. Invalid token/domain is generic 401; provider unavailability 503. No raw token logging/storage. Account identity is unique by verified issuer/subject; a repeated valid exchange may establish another session, and the provider-state anti-replay/session replacement policy remains ID-01 review. Do not automatically retry an ambiguous exchange. Test valid, expired, wrong issuer/signature/audience/domain, duplicate callback and provider failure. |
+| POST /auth/microsoft/login-attempts — identity_start_microsoft_login_attempt | No body → MicrosoftLoginAttempt{nonce,expires_at} (201), private HttpOnly attempt cookie | Exact Origin/non-simple request guard; bounded source limit429. Ten-minute server-bound nonce; no bearer in JSON. Exchange consumes once; invalid/expired/replayed cookie or assertion401, storage/provider503. Browser PKCE/state remain required. |
+| GET /auth/csrf — identity_read_csrf_token | No body → CsrfToken{csrf_token} | Current session required401; no-store, exact-origin browser access. Token is bound to current session and required on authenticated unsafe requests; not a bearer credential. |
+| POST /auth/microsoft/sessions — identity_create_microsoft_session | MicrosoftSessionRequest{id_token: SecretStr} → SessionView{user_id,account_class=regular,valid_until,display_name?} | Public credential exchange. Identity validates signature, issuer, audience, expiry, claims and approved IISc domain; atomically get/create by verified issuer/subject. Invalid token/domain is generic 401; provider unavailability 503. No raw token logging/storage. Account identity is unique by verified issuer/subject; the trusted attempt is consumed once atomically with account/session creation; repeated exchange of that attempt is rejected. Do not automatically retry an ambiguous exchange. Test valid, expired, wrong issuer/signature/audience/domain, duplicate callback and provider failure. |
 | POST /auth/temporary/registration-challenges — identity_start_temporary_registration | RegistrationChallengeRequest{email,operation_id} → ChallengeAccepted{challenge_id,expires_at} (202) | Public; normalize email and return indistinguishable acceptance for enrolled/ineligible addresses. Send one purpose-bound OTP through Identity; challenge/attempt state belongs to Identity. Rate limit 429; provider error is safe and cannot pretend delivery succeeded. Same `(purpose,normalized email,operation_id)` and intent returns the same challenge without another send; deliberate resend uses a new UUIDv4 operation ID and replaces the prior unconsumed challenge within approved limits. It never extends a verified account. Test same-key retry, deliberate resend, enumeration, expiry, attempt cap and provider timeout. |
 | POST /auth/temporary/accounts — identity_activate_temporary_account | ActivateTemporaryRequest{challenge_id,code,password} → temporary SessionView (201) | Public OTP exchange. Verify challenge once, then atomically create/activate the account, set activated_at, set exact expires_at=activated_at+14 days, and create session. Preserve the service-lifetime enrollment guard; no self-renew. Invalid/expired/consumed challenge is generic 422; already-enrolled conflict is non-enumerating. If a successful response is lost, replay is rejected and the user may sign in with the chosen credentials; the account/session write is atomic. Test wrong/replayed OTP, ambiguous response followed by login, concurrent activation and no renewal. |
 | POST /auth/temporary/sessions — identity_create_temporary_session | TemporarySessionRequest{email,password} → temporary SessionView (200) | Public credential exchange; only verified, active temporary account. Generic 401 for incorrect/expired/revoked credentials; 429 for abuse controls. Each successful explicit login may create a session; do not automatically retry an ambiguous response. No account/password-state oracle. Test correct/incorrect password, expiry, revocation, duplicate explicit login and concurrent reset/login. |
@@ -78,7 +81,7 @@ parameter.
 
 | Import path and signature | Allowed caller / result and failure behavior |
 |---|---|
-| app.domains.identity.public.check_account_eligibility(user_id: UserId, required_class: Optional[AccountClass] = None) -> AccountEligibility | Listings, Search, Conversations. Returns only eligible true/false for current state and optional class requirement; no profile, contact, login or reason. Identity unavailable fails closed. Test active, wrong-class, expired, revoked, missing and dependency failure. |
+| app.domains.identity.public.check_account_eligibility(user_id: UserId, required_class: Optional[AccountClass] = None) -> AccountEligibility | Listings, Search, Conversations. Returns only eligible true/false for fresh current state and optional exact class requirement; no profile, contact, login or reason. Identity unavailable/unbound fails safe503 through its explicitly scoped generated adapter; no browser lookup. Test active, wrong-class, expired, revoked, missing and dependency failure. |
 | app.domains.identity.public.get_shareable_contact_options(caller: CallerContext, conversation_id: ConversationId) -> ShareableContactOptions | Conversations only after participant/consent-flow check. Returns the actor ID and three availability booleans, never values. Non-actor/invalid context denied. Read-only/no transaction. |
 | app.domains.identity.public.get_selected_own_contacts(caller: CallerContext, conversation_id: ConversationId, fields: frozenset[ContactField]) -> SelectedOwnContacts | Conversations only after membership and explicit confirmation. fields is nonempty and contains only supported contact kinds; returns only requested, still-present values as required nullable fields. No storage write; values are ephemeral and repr/log/error redacted. Invalid/removed fields fail safely. |
 | app.domains.identity.public.resolve_notification_recipient(context: NotificationWorkerContext, recipient_id: UserId) -> Optional[NotificationRecipient] | CN-03 delivery path only, with server-injected worker context. Returns only the currently eligible account's verified delivery destination; returns none for ineligible/removed recipients. No contact-profile fields and no persistence. Identity outage yields retryable dependency failure; no address is copied into Conversations. |
@@ -424,3 +427,15 @@ The user reports that domain owners reviewed the cleanup document. Human
 approval of this exact destructive cleanup mechanism/order remains required
 before implementation. No provider setup, cloud change, destructive execution,
 or domain feature code is authorized here.
+
+## Identity Step9 trusted contact composition
+
+The [Identity sharing boundary](identity.md#step9-trusted-sharing-implementation)
+and [approved mechanism](../docs/decisions/identity-contact-sharing-and-cleanup.md)
+require a server-only actor/conversation scope established after Conversations
+participation checks; selected disclosure additionally requires confirmed fields.
+Construction/IDs/client flags do not authorize disclosure. Availability remains
+flags-only, requested removed fields return safe422, and no broad sharing or
+user-directory HTTP route exists. Actual CN-02 client/participant integration
+remains required. Generated Python exposes ContactSharingContext for trusted
+composition; OpenAPI/TypeScript HTTP shapes remain unchanged.

@@ -2,7 +2,8 @@
 
 DL-00 Step 11 extends PD-11's offline health generator to the reviewed domain
 contracts. The source describes explicitly mapped HTTP operations and internal
-calls; generated declarations remain behavior-free.
+calls; generated interfaces contain no business policy. Explicitly reviewed
+runtime metadata may generate a typed technical dispatcher.
 
 ## Source and generated files
 
@@ -15,7 +16,7 @@ edit reviewed typed Python declarations separately from implementation handlers.
 | `scripts/generate_contracts.py` | Python orchestrator; format version 2; fixed output registry. |
 | `scripts/generate_types.mjs` | Local Hey API TypeScript-only helper; rejects external references. |
 | `apps/api/app/contracts/health.py`, `domain_types.py` | Generated runtime health and shared wire models. |
-| `apps/api/app/domains/{identity,listings,search,conversations}/public.py` | Generated typed internal interfaces; each callable refuses use until implemented. |
+| `apps/api/app/domains/{identity,listings,search,conversations}/public.py` | Generated typed internal interfaces; reviewed eligibility dispatch uses an explicit runtime scope, while unimplemented callables refuse use. |
 | `contracts/generated/openapi.json` | Generated HTTP-only OpenAPI 3.1 document. |
 | `contracts/generated/types.gen.ts` | Generated TypeScript types; no runtime SDK/client. |
 
@@ -199,6 +200,18 @@ For every shared contract change:
    owners' and independent human approval and explicit authorization for the
    exact merge revision. Record accepted main SHA and refresh consumers afterward.
    Changed reviewed semantics require renewed review; merge never deploys cloud.
+
+## Scoped Identity eligibility binding — ID-01 Step8
+
+The [approved extension](../docs/decisions/identity-capabilities-and-runtime-binding.md)
+keeps source declarations refusing. RUNTIME_BINDINGS selects only
+check_account_eligibility; regenerate its public wrapper, never edit generated
+code. It forwards the unchanged async arguments through shared technical
+ContextVar dispatch and strictly validates AccountEligibility. No request/user
+input, mutable global provider or private implementation import can install it.
+Unbound/invalid/dependency failure is safe503. Real SQL/capability policy remains
+Identity-owned; other declarations and all HTTP/TypeScript shapes are unchanged.
+The signature is still the reviewed in-process function, not a new HTTP lookup.
 
 ## SE-01 draft public search query amendment
 

@@ -166,7 +166,7 @@ disabled and verified in the password-setting transaction; error bind values
 are suppressed. The non-error bind-parameter cap is not changed because RDS
 does not permit it and it only affects statement/duration logs that the guard
 already disables. See [PostgreSQL logging settings](https://www.postgresql.org/docs/18/runtime-config-logging.html)
-and the shared [password logging boundary](../../../../docs/decisions/private-postgresql-probe-login.md).
+and the shared [password logging boundary](../../../../../docs/decisions/private-postgresql-probe-login.md).
 The idle guard treats another role's database session with a hidden backend
 type as busy, so restricted statistics visibility cannot hide an active client
 and incorrectly permit deleting the disposable LI-02 database.

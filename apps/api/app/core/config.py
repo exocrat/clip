@@ -24,6 +24,7 @@ ISOLATED_LISTINGS_TEST_DATABASE = "clip_test_listings"
 ISOLATED_LISTINGS_TEST_BUCKET = "clip-test-listings-images-ap-south-1-li02"
 ISOLATED_LISTINGS_TEST_REGION = "ap-south-1"
 ISOLATED_LISTINGS_TEST_MAX_COUNT = 10
+IDENTITY_TEST_BROWSER_ORIGINS = ("https://clip-iisc.site",)
 
 
 class Settings(BaseSettings):
@@ -43,9 +44,19 @@ class Settings(BaseSettings):
 
     environment: Literal["local", "test", "production"] = "local"
     debug: bool = False
-    # Fake selectors authorize test-package helpers only; no real adapter is configured.
-    identity_provider: Literal["disabled", "fake"] = "disabled"
-    email_provider: Literal["disabled", "fake"] = "disabled"
+    # Selectors default disabled. Real Identity startup remains unbound unless the
+    # separately guarded test-only runtime flag and complete configuration exist.
+    identity_provider: Literal["disabled", "fake", "microsoft"] = "disabled"
+    email_provider: Literal["disabled", "fake", "ses", "dual"] = "disabled"
+    # Hosted real Identity startup is an explicit test-environment capability.
+    # Defaults preserve the liveness-only, Identity-unbound ASGI entry point.
+    identity_runtime_enabled: bool = False
+    identity_browser_origins: tuple[str, ...] = Field(default=(), repr=False)
+    # Step 2 permits only explicitly controlled sandbox recipients. General delivery
+    # requires a separately reviewed production configuration increment.
+    ses_region: Literal["ap-south-1"] = "ap-south-1"
+    ses_sender: Literal["verify@clip-iisc.site"] = "verify@clip-iisc.site"
+    ses_test_recipients: tuple[str, ...] = Field(default=(), repr=False)
     storage_provider: Literal["disabled", "fake", "s3"] = "disabled"
     image_bucket: str | None = None
     image_region: str | None = None
@@ -145,6 +156,77 @@ class Settings(BaseSettings):
         return value
 
     @model_validator(mode="after")
+    def restrict_microsoft_integration(self) -> Self:
+        """Keep private validation unavailable in production before session wiring."""
+        if self.identity_provider == "microsoft" and self.environment == "production":
+            raise ValueError(
+                "Microsoft session integration is not enabled for production"
+            )
+        return self
+
+    @model_validator(mode="after")
+    def validate_hosted_identity_runtime(self) -> Self:
+        """Allow explicit real Identity startup only in the bounded test profile.
+
+        This is not a production switch: it requires the test environment, real
+        Microsoft plus dual-provider selectors, a separate Listings database URL,
+        and exact HTTPS browser origins. Cloud task/IAM/proxy setup remains gated.
+        """
+        if not self.identity_runtime_enabled:
+            if self.identity_browser_origins:
+                raise ValueError(
+                    "identity_browser_origins requires identity_runtime_enabled"
+                )
+            return self
+        if (
+            self.environment != "test"
+            or self.identity_provider != "microsoft"
+            or self.email_provider != "dual"
+            or self.debug
+            or self.development_auth
+            or self.isolated_listings_test_caller
+            or self.database_url is None
+            or self.identity_browser_origins != IDENTITY_TEST_BROWSER_ORIGINS
+        ):
+            raise ValueError("Invalid hosted Identity test configuration")
+        for origin in self.identity_browser_origins:
+            parsed = urlsplit(origin)
+            if (
+                not parsed.hostname
+                or parsed.scheme != "https"
+                or parsed.username
+                or parsed.password
+                or parsed.path
+                or parsed.query
+                or parsed.fragment
+                or "*" in origin
+            ):
+                raise ValueError("Identity browser origins must be exact HTTPS origins")
+        return self
+
+    @model_validator(mode="after")
+    def restrict_ses_sandbox(self) -> Self:
+        """Require an explicit bounded recipient list and refuse production sending.
+
+        The list limits local/test dispatch; it neither verifies SES identities
+        nor authorizes a live send. Those actions retain their human gates.
+        """
+        if self.email_provider in ("ses", "dual"):
+            if self.environment == "production" or not self.ses_test_recipients:
+                raise ValueError(
+                    "SES currently requires controlled local/test recipients"
+                )
+            if len(self.ses_test_recipients) > 5 or any(
+                not recipient.isascii()
+                or recipient.count("@") != 1
+                or any(character.isspace() for character in recipient)
+                or not all(recipient.split("@"))
+                for recipient in self.ses_test_recipients
+            ):
+                raise ValueError("Invalid controlled SES recipients")
+        return self
+
+    @model_validator(mode="after")
     def reject_production_debug(self) -> Self:
         """Prevent detailed error responses from being enabled in production."""
         if self.environment == "production" and self.debug:
@@ -204,7 +286,8 @@ def load_settings() -> Settings:
             (
                 "CLIP_" + str(detail["loc"][0]).upper()
                 if detail["loc"]
-                else "CLIP_DEBUG (must be false when CLIP_ENVIRONMENT=production)"
+                else "CLIP_DEBUG (must be false when CLIP_ENVIRONMENT=production); "
+                "CLIP_EMAIL_PROVIDER; CLIP_SES_TEST_RECIPIENTS"
             )
             for detail in error.errors(include_input=False, include_url=False)
         }

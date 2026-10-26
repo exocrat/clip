@@ -1,0 +1,16 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "SendIdentityEmailFromVerifiedDomain",
+      "Effect": "Allow",
+      "Action": "ses:SendEmail",
+      "Resource": "arn:aws:ses:ap-south-1:335523638354:identity/clip-iisc.site",
+      "Condition": {
+        "StringEquals": {
+          "ses:FromAddress": "no-reply@clip-iisc.site"
+        }
+      }
+    }
+  ]
+}

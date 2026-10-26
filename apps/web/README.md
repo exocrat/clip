@@ -1,5 +1,10 @@
 # Web application guide
 
+The web scaffold provides shared routes and UI primitives. Identity implements
+authentication/contact screens under its explicit local modes; Listings supplies
+its accepted lifecycle/image UI and isolated demo. Real combined auth/runtime
+integration is pending ID-READY. Both domains retain their documented test gates.
+
 ## SE-01 Step 7 — first discovery UI checkpoint
 
 `features/search/SaleDiscovery.tsx` supplies responsive sale discovery through
@@ -103,6 +108,119 @@ Open `http://127.0.0.1:4173` and stop the foreground process with Ctrl+C. Build
 first; preview serves only the generated local assets and does not deploy them.
 
 These commands need no AWS credentials, external accounts, or production
+endpoints. Identity reads its documented public build flag and calls the reviewed
+same-origin API when configured. `npm ci` downloads packages in the committed lockfile
+from the configured npm registry.
+
+## Identity first browser checkpoint — explicit local synthetic mode
+
+From the repository root, in two foreground terminals:
+
+```sh
+CLIP_ENVIRONMENT=test uv run --locked python scripts/identity_ui_preview.py --synthetic-preview --seconds 1800
+npm run dev -- --mode identity-preview
+```
+
+Open `http://localhost:5173/sign-in`. Both servers bind only to loopback. The
+backend creates/migrates its own no-network disposable PostgreSQL container,
+uses real Identity sessions/OTP/SQL and a reserved synthetic-only inbox; no SES
+or Microsoft calls. Use only `preview@example.invalid` and a made-up password.
+Create a temporary account, open Check test inbox, enter its transient code and
+choose a8–128character password. Sign out and sign back in with those details.
+The normal attempt/resend limits apply; code acknowledgements do not prove send
+or eligibility. The preview code is only in local memory/browser, never logs or
+evidence. Do not use real personal data or passwords in this mode.
+
+The API expires after the chosen cap (default1800s, allowed60–3600s); Ctrl+C
+also stops it and removes only its owned ephemeral database. Stop Vite separately
+with Ctrl+C. A restart starts a new database, not the previous synthetic account.
+The API port is8001 and Vite5173; busy ports fail rather than choose another.
+The identity-preview mode is prohibited for builds/deployment. Normal builds
+exclude the synthetic inbox; normal dev enables no proxy. Deployed runtime
+wiring/cloud exposure and actual-phone access need their own reviewed plan.
+
+Tests in `tests/identity.test.tsx` use jsdom/Testing Library and synthetic reviewed
+HTTP results, covering forms, safe errors, duplicate/uncertain writes, session
+expiry/stale reads and CSRF. The existing route/boundary tests remain. Full web
+lint/types/tests/build uses `npm run check`. Human visual/device verification
+follows the [browser procedure](../../docs/environment/browser-verification.md).
+
+## Password recovery browser checkpoint
+
+After creating the synthetic account above, sign out and choose **Forgot
+password**. Enter the same reserved example email, request a reset code, and
+read **Check test inbox**. Enter the code and a new8–128character password.
+After reset, sign in explicitly with the new password; the old password and
+sessions must fail. The shared OTP cooldown is60seconds from the previous send,
+including registration, so wait a minute after registration before requesting
+reset. Acknowledgement stays generic for unknown/ineligible addresses. Incorrect
+or expired codes show a safe validation message; rate limits ask you to wait.
+
+Uncertain reset outcomes guide sign-in with the new password rather than an
+automatic retry. Passwords are never trimmed; UI and backend count Unicode code
+points, with eight minimum and128maximum. Browser input permits the UTF-16 space
+needed for128astral characters; the explicit character-count check remains the
+client hint and backend authorization/validation remains authoritative.
+This recovery increment awaits human browser verification; Microsoft callback
+and own-contact UI remain pending Step11 increments.
+
+## Private contact editor browser checkpoint
+
+Open `http://localhost:5173/account/contacts` in the same capped local preview.
+Sign in with the synthetic account you created (or register the reserved example
+account again if the disposable database was restarted). Signed-out visitors see
+a sign-in prompt and no contact request. Use synthetic contact values only.
+
+Save email, phone and UPI one at a time; confirm a refresh shows the saved values.
+Delete one field and confirm it disappears while the others remain. Blank fields
+have an explicit empty state; clearing a draft does not delete a saved value.
+Changing contact email does not change the sign-in email. Saving contacts does
+not share them; actual Conversation selection/confirmation remains CN-02 work.
+Copies already shared have separate retention. Errors/rate limits do not claim
+success; uncertain writes require an explicit refresh before another attempt.
+
+The page keeps drafts in memory, clears its UI on known logout/account changes,
+and ignores old unmounted-editor responses. The session provider rechecks on
+focus; ordinary focus changes preserve an unfinished draft for the same actor. Saving
+one field also preserves unfinished edits in the other fields.
+It uses no browser storage for contacts and never accepts an actor ID from the
+URL. Human desktop/portrait/landscape and actual-device checks remain required.
+Microsoft callback remains the next unimplemented Step11 UI scope.
+
+## Microsoft sign-in/callback checkpoint
+
+The pinned MSAL Browser5.26.0 adapter now backs the existing Microsoft button and
+`/auth/callback`. It uses the reviewed public client/common authority, server
+nonce plus SDK state/PKCE, one-shot server exchange, SDK cache cleanup, safe
+failure and explicit current-session recovery. Actual regular-account eligibility
+and cookie issuance remain server-authoritative. There is no cached-token reuse
+or automatic credential retry; logout revokes CLIP's session only.
+
+Public build setting `VITE_MICROSOFT_SIGN_IN_ENABLED` defaults false. It is never
+a secret or authorization credential. Exact permitted callback origins are
+`http://localhost:5173` and `https://clip-iisc.site`;127.0.0.1 is not a registered
+Microsoft callback. The identity-preview mode unconditionally disables Microsoft,
+even if the flag is set. No current runtime/provider activation is authorized.
+Do not enable a live flow until the separately reviewed actual API/provider/
+permissions/TLS/proxy/key/DB configuration and test plan are ready.
+
+In the synthetic preview, sign out to see the disabled **Continue with Microsoft**
+button. Open `/auth/callback` to inspect the safe unavailable/no-active-attempt
+screen, Back to sign in and Check sign-in status. The last action uses only a
+safe current-session read; it cannot repeat the assertion exchange. If an existing
+temporary session is recovered it says current CLIP session, not IISc proof.
+Inspect desktop/phone portrait/landscape. These are local UI checks, not actual
+Microsoft acceptance. Native phone keyboard/provider/cache/PKCE checks stay open.
+
+MSAL's redirect cache uses sessionStorage and its standard defaults include
+OIDC offline_access; these SDK artifacts are cleared around the callback and
+never copied to CLIP's app storage. CLIP stores only public state/nonce/expiry in
+its own one-shot marker. No client secret, Graph data scope, raw-token logging,
+CLIP bearer localStorage or automatic silent acquisition. Referrer metadata and
+callback response URLs are suppressed/cleaned. See the [reviewed provider
+mechanism](../../docs/decisions/identity-provider-setup.md#step11-browser-implementation--2026-10-24)
+and [checkpoint evidence](../../docs/evaluation/identity/implementation.md#step-11).
+
 endpoints. Listings calls `/api`; the development server forwards that prefix
 to `127.0.0.1:8000`, stripping it before reaching FastAPI. This proxy is development
 only; production routing remains a later runtime integration obligation.
@@ -232,3 +350,17 @@ against the running disposable harness. Default `npm run check` skips its two
 network tests; unit/initial-render tests still run. This does not exercise React
 effects or replace human browser/device checks. See the command registry and
 `docs/evaluation/domain/se-02/frontend/README.md` for the exact review package.
+
+### Shared cookie and CSRF transport
+
+Identity, Listings and Wanted/Saved API wrappers use shared/http/sessionFetch.ts.
+Protected writes obtain a fresh session token before dispatch and carry the
+required marker/CSRF headers. Failure stops that request; the transport never
+replays it or stores a token. Feature validators and existing owner-controlled
+idempotency/retry behavior remain separate. The shared helper targets same-origin
+JSON/204 APIs only; presigned S3 byte uploads are unchanged.
+Normal Identity uses /api through the existing proxy; explicit Identity preview
+retains its unprefixed path/build guard. Existing isolated demos supply the
+reviewed CSRF response double under their own guards, not a client bypass.
+See the [decision](../../docs/decisions/browser-session-transport.md) and current
+[Identity integration evidence](../../docs/evaluation/identity/integration.md).

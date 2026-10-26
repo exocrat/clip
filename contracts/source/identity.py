@@ -2,6 +2,7 @@
 
 from app.core.auth import CallerContext
 from app.core.identifiers import UserId
+from app.core.runtime_bindings import dispatch_runtime as _dispatch_runtime
 
 from contracts.source.types import (
     AccountClass,
@@ -11,7 +12,10 @@ from contracts.source.types import (
     ConversationId,
     ContactField,
     ContactValueRequest,
+    ContactSharingContext,
     MicrosoftSessionRequest,
+    MicrosoftLoginAttempt,
+    CsrfToken,
     NotificationRecipient,
     NotificationWorkerContext,
     OwnContacts,
@@ -26,7 +30,29 @@ from contracts.source.types import (
     TemporarySessionRequest,
 )
 
+# Reviewed runtime adapter metadata; source callables below remain declarations.
+RUNTIME_BINDINGS = frozenset(
+    {
+        "check_account_eligibility",
+        "get_shareable_contact_options",
+        "get_selected_own_contacts",
+    }
+)
+
 HTTP_OPERATIONS = (
+    {
+        "method": "POST",
+        "path": "/auth/microsoft/login-attempts",
+        "operation_id": "identity_start_microsoft_login_attempt",
+        "response": MicrosoftLoginAttempt,
+        "status_code": 201,
+    },
+    {
+        "method": "GET",
+        "path": "/auth/csrf",
+        "operation_id": "identity_read_csrf_token",
+        "response": CsrfToken,
+    },
     {
         "method": "POST",
         "path": "/auth/microsoft/sessions",
@@ -121,7 +147,8 @@ async def check_account_eligibility(
     """Declare the minimal current account-capability lookup.
 
     This declaration returns no profile, contact, login, or denial-reason data.
-    The owning Identity service supplies the eventual implementation.
+    Source invocation refuses; approved metadata generates a scoped technical
+    adapter to the real Identity provider without changing this signature.
     """
     raise NotImplementedError("declaration-only")
 

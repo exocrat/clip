@@ -48,8 +48,8 @@ The API reads these values from the process environment at startup:
 |---|---|---|
 | `CLIP_ENVIRONMENT` | `local`, `test`, or `production`; default `local` | Rejects unsupported or empty values. This labels configuration mode, not deployment readiness. |
 | `CLIP_DEBUG` | Boolean; default `false` | Controls FastAPI debug responses; production rejects `true`. Invalid or empty boolean values fail startup. |
-| `CLIP_IDENTITY_PROVIDER` | `disabled` or `fake`; default `disabled` | Explicit local/test helper selection; production rejects `fake`. No real/fake authentication is implemented here. |
-| `CLIP_EMAIL_PROVIDER` | `disabled` or `fake`; default `disabled` | Explicit local/test helper selection; production rejects `fake`. No email is sent or claimed delivered. |
+| `CLIP_IDENTITY_PROVIDER` | `disabled`, `fake`, or `microsoft`; default `disabled` | `microsoft` permits private local/test validator construction; production rejects this incomplete integration and all fake auth. No sign-in route/session is installed. |
+| `CLIP_EMAIL_PROVIDER` | `disabled`, `fake`, or `ses`; default `disabled` | Explicit local/test helper selection; production rejects `fake`. No email is sent or claimed delivered. |
 | `CLIP_STORAGE_PROVIDER` | `disabled`, `fake`, or `s3`; default `disabled` | `s3` selects the real private S3 adapter; `fake` is reserved for explicit test helpers and is rejected in production. |
 | `CLIP_IMAGE_BUCKET` | Optional bucket name; default unset | Required with `CLIP_STORAGE_PROVIDER=s3`. It names the private bucket and is not a credential. |
 | `CLIP_IMAGE_REGION` | Optional AWS region; default unset | Required with `CLIP_STORAGE_PROVIDER=s3`; the S3 adapter uses the normal AWS credential provider chain (task role in ECS, selected profile locally). |
@@ -90,6 +90,8 @@ From the repository root, run:
 uv sync --locked
 uv run --locked pytest apps/api/tests -q -W error
 ```
+
+`uv run --locked pytest` runs all currently configured test roots; PD-11 contract generation tests also require root `npm ci` and the pinned Node toolchain. The API-only command above needs no Node installation. Foundation API tests start the real ASGI app in explicit test mode using FastAPI's TestClient without an HTTP listener/provider/cloud call. ID-01 Microsoft persistence tests additionally require local Docker: they create only their own tmpfs PostgreSQL18.6 database, private Unix socket and synthetic records, then remove the container; no retained database or host port is used. The tests discard inherited `CLIP_`/`AWS_` settings for isolation and restore the developer's environment afterward. Synthetic cases cover local defaults, typed overrides, malformed/empty values, production-debug rejection, redacted errors, fresh reads and ignored dotenv/example files. Fresh credential-free subprocesses verify invalid configuration prevents the actual entry point from importing. Temporary fixture files stay under pytest's temporary directory.
 
 `uv run --locked pytest` runs all currently configured test roots; PD-11 contract generation tests also require root `npm ci` and the pinned Node toolchain. The API-only command above needs no Node installation. API tests start the real ASGI app in explicit test mode using FastAPI's TestClient; no HTTP listener, database, provider or cloud access is needed unless a test explicitly configures one. The tests discard inherited `CLIP_`/`AWS_` settings for isolation and restore the developer's environment afterward. Synthetic cases cover local defaults, typed overrides, malformed/empty values, production-debug rejection, redacted database URLs/errors, fresh reads and ignored dotenv/example files. Fresh credential-free subprocesses verify invalid configuration prevents the actual entry point from importing. Temporary fixture files stay under pytest's temporary directory.
 
@@ -136,6 +138,133 @@ Fresh credential-free child processes import `app.main` with a ten-second timeou
 generated runtime module. The handler still returns only `{"status":"ok"}`.
 Generation and public schema publication are separate; no schema endpoint or
 marketplace feature is enabled.
+
+## Identity provider setup (ID-01 Step 2)
+
+The [setup record](../../docs/environment/identity-provider-setup.md) documents
+Microsoft registration inputs, sandbox SES configuration and pending approvals.
+`CLIP_EMAIL_PROVIDER=ses` requires explicit controlled recipients through the
+JSON-array setting `CLIP_SES_TEST_RECIPIENTS`; production rejects SES until its
+separate configuration review. Defaults remain disabled. Fixed non-secret
+settings are `CLIP_SES_REGION=ap-south-1` and
+`CLIP_SES_SENDER=verify@clip-iisc.site`. The Identity-owned transport has no
+public route and does not generate/verify OTPs or authenticate anyone.
+
+The Identity one-shot runtime test is documented in the
+[command registry](../../docs/environment/commands.md#identity-one-shot-email-command--id-01-step-2).
+Its separate approval, task-role checks and single-message/deadline guards keep
+it outside normal API startup; no live delivery has yet been tested.
+
+## ID-01 Step4 private Microsoft preparation
+
+Identity owns microsoft.py and microsoft_accounts.py. PyJWT2.15.1 with its crypto
+extra validates actual RSA assertions; psycopg3.3.6 binary supports transactional
+local account persistence. Construction/import does not fetch keys or connect.
+The real factory permits only explicit microsoft selection in local/test, with
+disabled default and production refusal until complete session integration.
+
+The validator uses fixed public-cloud v2 discovery/JWKS, registered client-ID
+audience, RS256-only signatures, key-issuer/tenant binding, required/time claims,
+trusted expected nonce and exact signed-email domain iisc.ac.in. There is no
+username/client-email fallback, extra regular-user OTP or tenant allowlist.
+Only provider/issuer/subject are persisted; token/email/nonce are not copied to
+account/profile/session tables. Existing eligible accounts are reused; revoked,
+pending, wrong-class or profile-removed records are denied without reactivation.
+
+The private service returns an account record only. It does not issue a cookie,
+SessionView or CallerContext, register HTTP routes or implement browser PKCE/
+state/nonce consumption. Expected nonce must originate from a reviewed trusted
+server-bound login attempt; no browser-supplied expected value may be wired.
+That design and real Microsoft/browser/database-role integration remain required
+before ID-READY. Do not treat the public-metadata read as an actual sign-in test.
+
+Offline RSA/key tests and isolated real-PostgreSQL checks:
+
+```bash
+uv run --locked pytest apps/api/tests/domains/identity/test_microsoft.py apps/api/tests/domains/identity/test_microsoft_postgres.py -q -W error
+uv run --locked mypy --no-incremental apps/api/app/domains/identity/microsoft.py apps/api/app/domains/identity/microsoft_accounts.py apps/api/app/core/config.py
+```
+
+Network fetches are synchronous with bounded size/socket timeout; future async
+HTTP wiring must move blocking operations off the event loop and enforce an
+overall request deadline. Public endpoint/clock-skew/session policy is not
+implicitly authorized by this private implementation.
+
+## Temporary activation — ID-01 Step6 (private)
+
+Identity now composes real PostgreSQL OTP consumption with salted Argon2id
+hashing and atomic temporary user/credential/enrollment creation. Runtime library
+argon2-cffi25.1.0 and bindings26.1.0 are pinned in the root manifest/lock.
+[Identity module documentation](app/domains/identity/README.md) explains the
+approved parameters,14-day lifetime, no-renewal guard and fresh account-state
+gate. This private increment adds no HTTP route or session/cookie behavior.
+Public activation/session and actual protected-operation wiring remain pending.
+
+## Explicit Identity HTTP composition — ID-01 Step7
+
+`app.domains.identity.http.create_identity_app` implements auth/GET /me endpoints
+with explicit trusted session/store/key/sender/validator dependencies, origin/
+CSRF and cookie guards. Default `app.main` retains health/Listings while Identity waits for approved
+runtime wiring is supplied. Local HTTP tests use actual disposable PostgreSQL,
+Argon2id and real RSA validation with synthetic keys; no provider is contacted.
+Deployment must review TLS/forwarded peer trust, runtime secret references/DB
+permissions and provider/browser behavior before enabling real authentication.
+The [session decision](../../docs/decisions/identity-sessions-and-cleanup.md) and
+[command registry](../../docs/environment/commands.md) define checks and cleanup
+boundaries. No cloud resources, real send or enabled cleanup schedule is added.
+
+## Capability/eligibility binding — ID-01 Step8
+
+Identity now applies the approved regular/temporary rules against fresh account
+state and binds its actual boolean eligibility provider per explicit HTTP runtime
+scope. Generated public eligibility dispatch preserves the reviewed signature
+without business/private imports; unconfigured calls fail503. Default app.main
+serves health/Listings with Identity runtime still unbound. [Identity module details](app/domains/identity/README.md)
+explain the matrix and ownership limits; [the decision](../../docs/decisions/identity-capabilities-and-runtime-binding.md)
+records scoped binding. No new marketplace/lookup route or runtime/cloud
+activation is added. Existing own-session summary uses fresh capability checks.
+
+## Own profile/contact implementation — ID-01 Step9
+
+The explicit Identity HTTP factory now implements reviewed PATCH /me/profile,
+GET /me/contacts and PUT/DELETE /me/contacts/{contact_kind} with current session,
+origin/CSRF and no-store controls. Contact values stay out of /me and general
+responses. The private contact provider uses the actual Identity schema and
+scoped selected-contact public adapters; its trusted membership/confirmation
+preconditions remain Conversations-owned. The normal app.main still exposes
+health/Listings with unbound Identity. [Step9 evidence](../../docs/evaluation/identity/implementation.md#step-9)
+records local SQL/HTTP tests and pending runtime/browser/consumer gates.
+
+[Step10 security coverage](../../docs/evaluation/identity/implementation.md#step-10)
+maps Identity requirements to actual local tests. Explicit JWT-time fixtures keep
+real signature/date validation enabled; lifecycle/reset/contact/cleanup journeys
+use disposable SQL and actual HTTP. Existing guarded test identity providers and
+production-startup rejection tests are reused. This does not enable public auth
+in app.main or replace provider/browser/readiness acceptance.
+
+## Explicit Identity and Listings composition — ID-01 Step12
+
+`app.application.create_app(settings, identity=bindings)` (also re-exported from
+app.main) can install real Identity
+routes/session middleware into the same application that owns Listings' pool,
+state and routes. `IdentityHttpDependencies` requires actual session service,
+BrowserPolicy, sender, Microsoft validator and clock. Installation performs no
+provider/secret/DB discovery; the existing lifespan opens/closes the explicitly
+configured Listings database pool. No mounted sub-app or fixed test caller is
+used to authenticate cross-domain requests.
+
+The trusted factory requires explicit local/test bindings and database settings;
+it refuses production, development-auth and isolated hosted-demo combinations.
+Default `app.main:app` remains Identity-unbound, with its accepted health/Listings
+surface unchanged. This is a local composition building block, not live website
+authentication. Persistent keys, least-privilege DB/SSM access, source/proxy/TLS,
+provider/browser checks and reviewed production startup remain pending.
+
+The approved Listings adapter now asks Identity for current account eligibility
+without forcing regular class on every lookup. Listings' own regular-only guards
+still deny temporary sale/image creation; browsing is permitted. See the
+[handoff and checks](../../docs/evaluation/identity/integration.md#local-api-composition)
+and [registered test command](../../docs/environment/commands.md#shared-identitylistings-api-composition--id-01-step12).
 
 
 ## Normal API Hybrid read lifecycle (SE-01)
@@ -232,3 +361,14 @@ Retired/pending/missing requests fail404, self403, unavailable dependencies503.
 Normal public providers remain unimplemented defaults, so no successful thread
 is fabricated. Native tests use explicit C scripts; real integration and Step7
 UI remain pending. No scheduler, resource or migration was added.
+
+## RDS system trust in the shared image
+
+The ordinary image installs pinned public ap-south-1 RDS roots alongside its
+existing distribution roots and points SSL_CERT_FILE at the standard OS CA file.
+This also corrects the bundled libpq OpenSSL wheel-build default path. Identity
+continues to require verify-full/system roots; no URI or provider setting changes.
+The optional Hybrid image inherits the corrected store from its selected parent.
+See the [shared trust decision](../../docs/decisions/identity-rds-system-trust.md)
+and [local image checks](../../docs/environment/commands.md#api-image-rds-root-trust--id-01-step12).
+AMD64/Hybrid rebuild and actual deployed RDS verification remain separate gates.

@@ -1,0 +1,12 @@
+{
+  "containerOverrides": [
+    {
+      "name": "identity-email-smoke",
+      "command": [
+        "python",
+        "-c",
+        "import time; time.sleep(1800)"
+      ]
+    }
+  ]
+}

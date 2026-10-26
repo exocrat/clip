@@ -238,6 +238,9 @@ def create_app(cluster):
 
     app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
     install_error_handlers(app)
+    from apps.api.tests.domains.identity.browser_csrf_fixtures import install_demo_csrf
+
+    install_demo_csrf(app, "")
     app.include_router(listing_router)
     app.include_router(wanted_router)
     app.include_router(saved_router)

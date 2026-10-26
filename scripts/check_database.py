@@ -11,6 +11,7 @@ import json
 import os
 from pathlib import Path
 import secrets
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -20,6 +21,9 @@ from urllib.parse import quote
 ROOT = Path(__file__).resolve().parents[1]
 POSTGRES_IMAGE = "postgres:18.6-bookworm"
 DBMATE_IMAGE = "ghcr.io/amacneil/dbmate:2.36.0"
+IDENTITY_GUARD = "20261023173439"
+OTP_HEAD = "20261023192856"
+IDENTITY_HEAD = "20261023202807"
 
 
 def main():
@@ -101,8 +105,17 @@ def main():
             extra={"PGPASSWORD": password},
         )
 
-    def migrate(operation="migrate", *, expect_failure=False):
-        """Run pinned dbmate without implicit .env input against only this container."""
+    def migrate(
+        operation="migrate", *, directory=None, rollback=False, expect_failure=False
+    ):
+        """Run the combined or a bounded historical chain only in this disposable target.
+
+        Directory subsets exercise Identity upgrades; rollback and expected refusal
+        retain Listings retirement protection without ambient environment input.
+        """
+        directory = directory or ROOT / "database/migrations"
+        if rollback:
+            operation = "rollback"
         arguments = docker + [
             "run",
             "--rm",
@@ -120,7 +133,7 @@ def main():
             "--env",
             "DATABASE_URL",
             "--mount",
-            f"type=bind,src={ROOT}/database/migrations,dst=/db/migrations,readonly",
+            f"type=bind,src={directory},dst=/db/migrations,readonly",
             DBMATE_IMAGE,
             "--env-file",
             "/dev/null",
@@ -149,6 +162,15 @@ def main():
                     "Rollback failed for a reason other than retained retirement state"
                 )
         return result
+
+    def migrate_guard(through=IDENTITY_GUARD):
+        """Exercise Identity upgrades above the accepted combined predecessor chain."""
+        with tempfile.TemporaryDirectory(prefix="clip-identity-guard-") as name:
+            directory = Path(name)
+            for source in (ROOT / "database/migrations").glob("*.sql"):
+                if source.name.split("_")[0] <= through:
+                    shutil.copyfile(source, directory / source.name)
+            migrate(directory=directory)
 
     try:
         # No names to collide with existing services, no ports or named volumes.
@@ -239,6 +261,9 @@ def main():
         for filename in (
             "schema-smoke.sql",
             "retired-origin-smoke.sql",
+            "identity-schema-smoke.sql",
+            "identity-otp-smoke.sql",
+            "identity-session-smoke.sql",
             "embedding-smoke.sql",
             "search-storage-smoke.sql",
         ):
@@ -247,9 +272,161 @@ def main():
             sql(
                 "SELECT count(*) FROM pg_tables WHERE schemaname IN ('identity','listings','search','conversations')"
             )
-            != "30"
+            != "37"
         ):
-            raise RuntimeError("Expected 30 domain tables")
+            raise RuntimeError("Expected 37 domain tables")
+        # Keep the native harness's merged schema inventory tied to actual SQL,
+        # rather than treating textual conflict resolution as platform evidence.
+        functions = sql(
+            "SELECT count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace "
+            "WHERE n.nspname IN ('identity','listings','search','conversations')"
+        )
+        triggers = sql(
+            "SELECT count(*) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid "
+            "JOIN pg_namespace n ON n.oid=c.relnamespace WHERE NOT t.tgisinternal "
+            "AND n.nspname IN ('identity','listings','search','conversations')"
+        )
+        if (functions, triggers) != ("33", "43"):
+            raise RuntimeError(
+                f"Combined runtime inventory differs: functions={functions}, triggers={triggers}"
+            )
+        # The only rollback is against this invocation's fresh disposable target.
+        # Seed older-schema rows, reject incompatible data atomically, then verify
+        # upgrade/down/reapply preserve every fixture value and original guard.
+        # Empty OTP rollback preserves all older data; occupied rollback is
+        # separately checked by the actual transactional service suite.
+        # Remove accepted later domain forwards before exercising Identity upgrades.
+        for version in reversed(expected):
+            if version > IDENTITY_HEAD:
+                migrate(rollback=True)
+        migrate(rollback=True)
+        if sql("SELECT max(version) FROM public.schema_migrations") != OTP_HEAD:
+            raise RuntimeError("Session rollback did not restore OTP head")
+        migrate(rollback=True)
+        if sql("SELECT max(version) FROM public.schema_migrations") != IDENTITY_GUARD:
+            raise RuntimeError("OTP rollback did not restore the Identity guard head")
+        migrate(rollback=True)
+        migrations = sorted((ROOT / "database/migrations").glob("*.sql"))
+        with tempfile.TemporaryDirectory(prefix="clip-identity-baseline-") as name:
+            baseline = Path(name)
+            for source in migrations:
+                if source.name.split("_")[0] < IDENTITY_GUARD:
+                    shutil.copyfile(source, baseline / source.name)
+            migrate(directory=baseline)
+        sql((ROOT / "database/tests/identity-upgrade-seed.sql").read_text())
+        sql(
+            "UPDATE identity.users SET display_name = repeat('x', 81) "
+            "WHERE id = 'e2300000-0000-4000-8000-000000000001'"
+        )
+        try:
+            migrate_guard()
+        except RuntimeError as error:
+            if "users_display_name_length" not in str(error):
+                raise
+        else:
+            raise RuntimeError("Identity migration silently accepted incompatible data")
+        if (
+            sql(
+                "SELECT count(*) FROM public.schema_migrations WHERE version = '"
+                + IDENTITY_GUARD
+                + "'"
+            )
+            != "0"
+        ):
+            raise RuntimeError("Failed Identity migration left an applied version")
+        if (
+            sql(
+                "SELECT count(*) FROM pg_constraint WHERE conname IN "
+                "('users_display_name_length', 'users_revocation_consistency', 'contacts_value_lengths')"
+            )
+            != "0"
+        ):
+            raise RuntimeError("Failed Identity migration left partial constraints")
+        if (
+            sql(
+                "SELECT char_length(display_name) FROM identity.users "
+                "WHERE id = 'e2300000-0000-4000-8000-000000000001'"
+            )
+            != "81"
+        ):
+            raise RuntimeError("Failed Identity migration rewrote fixture data")
+        sql(
+            "UPDATE identity.users SET display_name = 'Identity upgrade fixture' "
+            "WHERE id = 'e2300000-0000-4000-8000-000000000001'"
+        )
+        migrate_guard()
+        sql((ROOT / "database/tests/identity-upgrade-check.sql").read_text())
+        sql((ROOT / "database/tests/identity-schema-smoke.sql").read_text())
+        migrate(rollback=True)
+        sql((ROOT / "database/tests/identity-upgrade-check.sql").read_text())
+        if (
+            sql(
+                "SELECT count(*) FROM pg_trigger WHERE tgname = 'external_identities_history'"
+            )
+            != "0"
+        ):
+            raise RuntimeError("Identity rollback left its provider-mapping trigger")
+        migrate_guard()
+        migrate_guard()
+        sql((ROOT / "database/tests/identity-upgrade-check.sql").read_text())
+        # Current cross-domain smokes require later Search category-code SQL.
+        # At this historical Identity head, run only its matching storage checks;
+        # all seven current smokes run at the complete head before/after rollback.
+        sql((ROOT / "database/tests/identity-schema-smoke.sql").read_text())
+        # Legacy verifier rows survive both OTP directions without invented
+        # encryption/key references; the new service fails closed on adoption.
+        sql(
+            "INSERT INTO identity.otp_challenges "
+            "(id,target_lookup_digest,verifier,purpose,expires_at) VALUES "
+            "('e2300000-0000-4000-8000-000000000099',decode('11','hex'),decode('22','hex'),"
+            "'initial_verification',CURRENT_TIMESTAMP + INTERVAL '10 minutes')"
+        )
+        migrate_guard(OTP_HEAD)
+        if (
+            sql(
+                "SELECT key_version IS NULL AND encrypted_target IS NULL FROM identity.otp_challenges "
+                "WHERE id='e2300000-0000-4000-8000-000000000099'"
+            )
+            != "t"
+        ):
+            raise RuntimeError("OTP upgrade invented legacy key/encryption data")
+        migrate(rollback=True)
+        if (
+            sql(
+                "SELECT encode(verifier,'hex') FROM identity.otp_challenges "
+                "WHERE id='e2300000-0000-4000-8000-000000000099'"
+            )
+            != "22"
+        ):
+            raise RuntimeError("OTP rollback changed a legacy verifier")
+        migrate_guard(OTP_HEAD)
+        sql(
+            "INSERT INTO identity.sessions(id,user_id,token_digest,expires_at) VALUES "
+            "('e2700000-0000-4000-8000-000000000099','e2300000-0000-4000-8000-000000000001',"
+            "decode('33','hex'),CURRENT_TIMESTAMP+INTERVAL '8 days')"
+        )
+        migrate_guard(IDENTITY_HEAD)
+        if (
+            sql(
+                "SELECT last_seen_at IS NULL FROM identity.sessions WHERE id='e2700000-0000-4000-8000-000000000099'"
+            )
+            != "t"
+        ):
+            raise RuntimeError("Session migration invented legacy activity")
+        migrate(rollback=True)
+        if (
+            sql(
+                "SELECT encode(token_digest,'hex') FROM identity.sessions WHERE id='e2700000-0000-4000-8000-000000000099'"
+            )
+            != "33"
+        ):
+            raise RuntimeError("Session rollback rewrote legacy digest")
+        migrate()
+        migrate()
+        sql((ROOT / "database/tests/identity-upgrade-check.sql").read_text())
+        sql((ROOT / "database/tests/identity-otp-smoke.sql").read_text())
+        sql((ROOT / "database/tests/identity-session-smoke.sql").read_text())
+
         phase = "rolling back and reapplying migrations"
         sql("""
             INSERT INTO conversations.origin_retirement_operations
@@ -296,6 +473,9 @@ def main():
         for filename in (
             "schema-smoke.sql",
             "retired-origin-smoke.sql",
+            "identity-schema-smoke.sql",
+            "identity-otp-smoke.sql",
+            "identity-session-smoke.sql",
             "embedding-smoke.sql",
             "search-storage-smoke.sql",
         ):
@@ -371,7 +551,7 @@ def main():
                 )
             print(f"POSTGRES_LISTING_SAMPLE_ROW {sample}")
         print(
-            "PASS: PostgreSQL 18.6; clean apply/head, repeat apply, four smokes, full rollback and clean reapply"
+            "PASS: PostgreSQL 18.6; combined clean/head/repeat, seven smokes, Identity upgrade/atomicity/rollback, protected retirement rollback and full clean reapply"
         )
     except (subprocess.TimeoutExpired, OSError, ValueError) as error:
         raise RuntimeError(

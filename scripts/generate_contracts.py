@@ -5,6 +5,7 @@ endpoints refuse invocation and are never installed in the running API.
 """
 
 import argparse
+import ast
 import importlib
 import inspect
 import json
@@ -218,6 +219,68 @@ def _generated_python(source, imports):
     return body
 
 
+def runtime_public(body, domain, bindings):
+    """Transform only approved refusing declarations into typed technical dispatch.
+
+    Metadata is code-owned canonical source, never runtime/user configuration.
+    Unsupported signatures/results fail generation rather than invent adapters.
+    The source stays behavior-free; other providers retain exact refusal bodies.
+    """
+    if not isinstance(bindings, frozenset):
+        raise ValueError("Runtime binding metadata must be an explicit frozen set")
+    tree = ast.parse(body)
+    functions = {
+        node.name: node for node in tree.body if isinstance(node, ast.AsyncFunctionDef)
+    }
+    if not bindings <= functions.keys():
+        raise ValueError("Runtime binding names must be declared operations")
+    if bindings and not any(
+        isinstance(node, ast.ImportFrom)
+        and node.module == "app.core.runtime_bindings"
+        and any(
+            alias.name == "dispatch_runtime" and alias.asname == "_dispatch_runtime"
+            for alias in node.names
+        )
+        for node in tree.body
+    ):
+        raise ValueError("Runtime adapter requires its reviewed technical import")
+    lines = body.splitlines(keepends=True)
+    for name in sorted(
+        bindings, key=lambda value: functions[value].lineno, reverse=True
+    ):
+        node = functions[name]
+        if (
+            len(node.body) != 2
+            or not ast.get_docstring(node)
+            or not isinstance(node.body[1], ast.Raise)
+            or not isinstance(node.body[1].exc, ast.Call)
+            or not isinstance(node.body[1].exc.func, ast.Name)
+            or node.body[1].exc.func.id != "NotImplementedError"
+            or not isinstance(node.returns, ast.Name)
+            or node.args.vararg
+            or node.args.kwarg
+            or node.args.kwonlyargs
+            or node.decorator_list
+        ):
+            raise ValueError("Unsupported runtime declaration adapter")
+        arguments = [
+            argument.arg for argument in (*node.args.posonlyargs, *node.args.args)
+        ]
+        forwarded = "".join("        " + argument + ",\n" for argument in arguments)
+        replacement = (
+            "    return await _dispatch_runtime(\n"
+            + f'        "{domain}.{name}",\n'
+            + "        "
+            + node.returns.id
+            + ",\n"
+            + forwarded
+            + "    )\n"
+        )
+        refusal = node.body[1]
+        lines[refusal.lineno - 1 : refusal.end_lineno] = [replacement]
+    return "".join(lines)
+
+
 def render(work):
     """Render every output in temporary space before the caller writes any file."""
     health, domains = load_sources()
@@ -259,12 +322,27 @@ def render(work):
         ).encode(),
     }
     for domain in DOMAINS:
-        generated[PUBLIC_OUTPUTS[DOMAINS.index(domain)]] = (
-            f"# Generated declaration-only {domain} interface; format {FORMAT_VERSION}. Do not edit.\n"
-            + _generated_python(
+        bindings = getattr(domains[domain], "RUNTIME_BINDINGS", frozenset())
+        label = "typed runtime" if bindings else "declaration-only"
+        public_body = runtime_public(
+            _generated_python(
                 ROOT / f"contracts/source/{domain}.py",
                 {"contracts.source.types": "app.contracts.domain_types"},
-            )
+            ),
+            domain,
+            bindings,
+        )
+        for name in bindings:
+            result_type = inspect.signature(
+                getattr(domains[domain], name)
+            ).return_annotation
+            if not inspect.isclass(result_type) or not issubclass(
+                result_type, BaseModel
+            ):
+                raise ValueError("Runtime adapters require a reviewed result model")
+        generated[PUBLIC_OUTPUTS[DOMAINS.index(domain)]] = (
+            f"# Generated {label} {domain} interface; format {FORMAT_VERSION}. Do not edit.\n"
+            + public_body
         ).encode()
     generated["contracts/generated/openapi.json"] = schema_path.read_bytes()
     generated["contracts/generated/types.gen.ts"] = (

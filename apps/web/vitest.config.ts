@@ -3,11 +3,12 @@ import { fileURLToPath } from 'node:url';
 import { mergeConfig } from 'vitest/config';
 import viteConfig from './vite.config.ts';
 
-export default mergeConfig(viteConfig, {
+export default mergeConfig(viteConfig({ command: 'serve', mode: 'test' }), {
   root: dirname(fileURLToPath(import.meta.url)),
   test: {
-    include: ['tests/**/*.test.ts'],
+    include: ['tests/**/*.test.ts', 'tests/**/*.test.tsx'],
     environment: 'node',
+    environmentOptions: { jsdom: { url: 'http://localhost:5173' } },
     passWithNoTests: false,
   },
 });

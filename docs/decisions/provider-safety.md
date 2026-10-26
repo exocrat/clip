@@ -17,7 +17,10 @@ Which shared explicit test providers and production rejection convention should 
 
 ## Selected choice
 
-Default providers to disabled; explicitly select fakes only locally/in tests; reject fakes/development auth in production and never fall back from real-provider failure.
+Default providers to disabled; explicitly select fakes only locally/in tests; reject fakes/development auth in production and never fall back to fake success from real-provider failure. The
+[2026-10-24 Identity email decision](identity-email-routing.md) explicitly permits
+one alternate real-email-provider attempt, including after uncertainty; it does
+not relax fake rejection or enable a provider.
 
 PD-10 extends explicit selectors to storage and approves a generic scripted test helper with safe outcomes/counts/exhaustion. This supports controlled tests before domain-specific provider operation contracts exist; those contracts remain with their owners. The current Stream 1 contributor approved this extension.
 

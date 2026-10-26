@@ -8,7 +8,10 @@
 
 This document proposes the complete MVP data inventory and its relational boundaries. It creates no tables or domain behavior. Names, types, constraints and indexes below are proposals unless identified as already approved. The review gates at the end must be resolved before dependent initial migrations. After approval, versioned migrations in `database/migrations/` become the executable schema source; this document explains their intent and must stay consistent with them.
 
-**Step 3 continuation, authorized by Mohit:** Mohit explicitly directed proceeding before remaining affected-owner review, allowing later corrections while staying within Stream 3 paths. Migrations live in [database/migrations](../../database/migrations/), with current expected dbmate head `20261020142319`; [database/README.md](../../database/README.md) records the files and verification provenance. The additive LI-01 migrations add seller-command results, create-retry receipts, the selected-conversation reference and verified-image metadata. Migration `20261020142319` adds retirement retry/marker storage and removes cross-domain business-table access from the named triggers. The selected-conversation reference and retirement interface still require affected-owner review; image metadata awaits LI-02 verification-flow implementation. The sequencing exception did not waive required checks. The user later confirmed the carried PD-08 checks and owner acceptance complete. Historical platform evidence and its limits are recorded in the work log. This does not accept future domain contracts, cryptographic implementation, or cloud action.
+**Step 3 continuation, authorized by Mohit:** Mohit explicitly directed proceeding before remaining affected-owner review, allowing later corrections while staying within Stream 3 paths. Migrations live in [database/migrations](../../database/migrations/), with combined expected dbmate head `20261025013000`; [database/README.md](../../database/README.md) records the files and verification provenance. The additive LI-01 migrations add seller-command results, create-retry receipts, the selected-conversation reference and verified-image metadata. Migration `20261020142319` adds retirement retry/marker storage and removes cross-domain business-table access from the named triggers. The selected-conversation reference and retirement interface still require affected-owner review; image metadata awaits LI-02 verification-flow implementation. The sequencing exception did not waive required checks. The user later confirmed the carried PD-08 checks and owner acceptance complete. Historical platform evidence and its limits are recorded in the work log. This does not accept future domain contracts, cryptographic implementation, or cloud action.
+
+Identity migrations additionally implement reviewed profile/contact bounds, OTP
+transactions and session/login state; original migration histories are retained.
 
 ## SE-01 hybrid embedding addition — prepared migration
 
@@ -74,9 +77,9 @@ Notation for every table below:
 
 | Table / primary key | Columns | Constraints and access indexes |
 |---|---|---|
-| `identity.users` / `id uuid` | `account_class text`, `status text`, `display_name text?`, `created_at instant`, `activated_at instant?`, `expires_at instant?`, `revoked_at instant?`, `profile_removed_at instant?`, `revision bigint` | Class `regular`/`temporary`; lifecycle pending/active/revoked. Active temporary accounts require original activation and expiry instants; regular accounts do not inherit temporary expiry. Profile removal clears display/contact content but retains approved UUID references; this is not an anonymity claim. Index temporary expiry for lifecycle maintenance. |
-| `identity.external_identities` / `id uuid` | `user_id uuid`, `provider text`, `issuer text`, `subject text`, `created_at instant` | FK user; unique `(provider, issuer, subject)` for concurrent sign-in deduplication; index `user_id`. Persist verified stable identifiers, never raw Microsoft tokens. |
-| `identity.contacts` / `user_id uuid` | `email text?`, `phone text?`, `upi_id text?`, `updated_at instant` | PK/FK user. Private own-contact source; absence differs from an empty value. Own-contact service validates normalization/format. No general profile/search exposure. Source contacts are available to authorized Identity operations; the approved encrypted conversation share does not imply source-contact E2EE. |
+| `identity.users` / `id uuid` | `account_class text`, `status text`, `display_name text?`, `created_at instant`, `activated_at instant?`, `expires_at instant?`, `revoked_at instant?`, `profile_removed_at instant?`, `revision bigint` | Class `regular`/`temporary`; lifecycle pending/active/revoked. Optional display name is at most80 Unicode code points; null/empty semantics match the public contract. Revoked status is paired with a non-null `revoked_at` at/after creation; other statuses have no revocation timestamp. Active temporary accounts require original activation and expiry instants; regular accounts do not inherit temporary expiry. Profile removal clears display/contact content but retains approved UUID references; this is not an anonymity claim. Index temporary expiry for lifecycle maintenance. |
+| `identity.external_identities` / `id uuid` | `user_id uuid`, `provider text`, `issuer text`, `subject text`, `created_at instant` | FK user; unique `(provider, issuer, subject)` for concurrent sign-in deduplication; index `user_id`. Provider mapping ID, owner UUID, provider/issuer/subject tuple and creation time are immutable after insertion; harmless no-op updates remain allowed. Persist verified stable identifiers, never raw Microsoft tokens. |
+| `identity.contacts` / `user_id uuid` | `email text?`, `phone text?`, `upi_id text?`, `updated_at instant` | PK/FK user. Private own-contact source; absence differs from an empty value. Present fields are nonempty and at most254 code points, matching the public request bound. Own-contact service validates normalization/format. No general profile/search exposure. Source contacts are available to authorized Identity operations; the approved encrypted conversation share does not imply source-contact E2EE. |
 
 Mohit approved first successful initial email verification as activation, with expiry exactly 14 × 24 hours later in UTC. Set the original activation/expiry once; registration/password entry, login, resend, repeated verification, reset and profile edits cannot extend it. A must review the stable normalized-login/enrollment guard implementation before migration acceptance. Authorization compares the current clock/account state even before maintenance marks expiry; no database `CHECK(now())` is proposed.
 
@@ -380,3 +383,60 @@ Review this consolidated document and its linked decisions using the applicable 
 For each affected area, report the exact reviewed artifact, acceptance or concrete findings, and any required contract/constraint clarification. Missing public transaction/locking or crypto compatibility decisions must be resolved before dependent migration acceptance; do not substitute a fake contract. Storage review does not approve an unselected cryptographic protocol or replace CN-01's security design/tests.
 
 Mohit authorized Step 3 before this owner review; later corrections remained in the reviewed source paths. The user subsequently confirmed PD-08 owner acceptance and executable checks complete; specific other-machine run artifacts are unavailable in this checkout. Full cryptographic protocol design/testing remains with CN-01, and cloud actions retain their separate approvals. PD-08 is user-confirmed complete; PRE-00 still requires PD-19 and the combined reviewed/main-merged PD-17–19 handoff.
+
+## ID-01 Step3 branch-local schema verification
+
+Aditya verified the Identity-only hardening plan on2026-10-23. Migration
+20261023173439 reuses the seven Identity tables and existing useful indexes,
+adding profile/contact bounds, revocation event consistency and immutable
+provider mapping only. Existing UTC/UUID/336-hour lifetime/enrollment guards stay.
+The branch deliberately excludes PR10 until later integration; its expected
+head does not imply the full accepted-main migration chain is installed.
+The new storage checks and data-preserving round trip use disposable real
+PostgreSQL only, not a schema test double. Microsoft validation, normalization/
+key rotation, hash/verifier design, session policy, safe cleanup and service
+authorization remain their original ID-01 gates. See the database README.
+
+## ID-01 Step5 protected challenge transaction state
+
+Forward migration20261023192856 adds `identity.otp_key_binding`,
+`identity.otp_operations`, `identity.otp_send_reservations` and
+`identity.otp_verification_windows`; domain table count is27 on this isolated
+branch. The existing challenge gains nullable key version, authenticated target
+ciphertext and supersession time with protected-field/time checks. Legacy rows
+are preserved; the new service requires reviewed adoption before existing
+unbound temporary state can be used. No raw code or password is stored.
+
+The service serializes source then target for sends, and target then account for
+verification/reset eligibility. Three failures survive resends until the latest
+code expires. Correct verification, consume and the later owning mutation share
+one transaction; failed verification counters commit before returning an error.
+Suppressed acknowledgements consume the same limits and failure budget, without
+creating phantom users or persisting dummy reset verifiers. Public uniform timing
+and actual activation/reset/session checks remain integration gates.
+
+Aditya approved service-lifetime retention of minimal request markers, limited
+to keyed request digest, key version, challenge ID and original expiry. Cleanup
+of the separate operational state still requires the owning retention design;
+no deletion job is authorized. Ordinary OTP private-data retention and immediate
+access revocation remain unchanged. Occupied down migrations fail
+closed under exclusive locks; review a security-state migration before rollback.
+
+## ID-01 Step7 session/login extension
+
+[Reviewed session/cleanup policy](../decisions/identity-sessions-and-cleanup.md)
+adds nullable `sessions.last_seen_at` and three Identity tables through
+migration20261023202807: `password_login_windows`, `auth_source_events`,
+`microsoft_login_attempts`.30 domain tables. Raw session/attempt secrets, passwords,
+assertions and source addresses are not stored. Seven-day absolute/24-hour idle
+sessions, temporary-expiry cap and single-use browser-bound nonce state are
+server-enforced. Legacy session activity is not backfilled; occupied down fails.
+
+Account/session creation and reset/hash/all-session revocation compose in one
+owner transaction. Lock order is source→target→user→session for temporary
+credentials; final Microsoft redemption locks attempt→provider tuple→user.
+Current authentication locks user→session. Cleanup rechecks under compatible
+locks per candidate; it never deletes permanent user/guard/contact records.
+Operational rate/attempt state ages out only after it no longer protects active
+windows. Source and target failure windows remain separate from OTP's three
+attempt budget. No cleanup schedule or public/cloud enablement is implied.

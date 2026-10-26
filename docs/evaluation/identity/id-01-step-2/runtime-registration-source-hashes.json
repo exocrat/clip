@@ -1,0 +1,7 @@
+{
+  "infra/terraform/domains/identity/test/.terraform.lock.hcl": "8e943f65218efc74b64233304fcea1a642c1c394452dcc1a4c0e138a20d78b5d",
+  "infra/terraform/domains/identity/test/email-smoke-container.json": "6439578e2c0d3992953b0f31cd849badb1a1c7b2e8b498f32f5cb4e97d064cde",
+  "infra/terraform/domains/identity/test/email-smoke.tf": "b8280966d6e0d55f85c370b552f022ae94b845aacfa1c8ab12e8e5bbdafe381c",
+  "infra/terraform/domains/identity/test/main.tf": "c7b03fc6eeeb2f914bb06aa3f8c5e57e1b62b1d696c0501ce522d599c0b6faa1",
+  "infra/terraform/domains/identity/test/versions.tf": "0a02ba985bece257c80f126bddacce5146bc73e612563452e33f9765bc75de58"
+}

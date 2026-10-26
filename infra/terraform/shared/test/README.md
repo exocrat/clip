@@ -52,3 +52,29 @@ Do not run these templates during local validation or without the separate targe
 The RDS master password is supplied only to Terraform's ephemeral variable, RDS write-only `password_wo`, and base-phase Parameter Store `value_wo`. The separate, single-line probe password uses an ephemeral variable and service-phase `value_wo`. The pinned provider requires the value/version pairs whenever those resources are active, even for unchanged credentials: supply master for base plans/applies and both master/probe for service plans/applies. Retrieve existing approved SecureString versions into the Terraform child’s memory; for initial probe creation, retain its newly generated value securely until apply. Preserve version counters, check parameter metadata for drift, and never rotate as a side effect of start/stop or teardown preparation. Terraform omits ephemeral/write-only values from saved plans/state; re-supply the same values on apply and stop for a freshly reviewed plan if they change or become unavailable. Rotation/version bumps require separate approval. See [DEC-11](../../../../docs/decisions/terraform-write-only-credential-inputs.md). See [Terraform write-only arguments](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only). Never commit either password, include it in an ordinary variable file, print it, or put it in an output, tag, user data, task-definition environment field, or log. ECS task definitions contain only SecureString references. The setup task uses psql's `\password` prompt and suppresses SQL diagnostics; the probe task sees only the probe parameter. AWS-managed Parameter Store encryption is used, with task execution policies scoped to exact parameter ARNs. The user selected base-plan inputs: VPC `10.64.0.0/20`, NAT subnet `10.64.0.0/24`, active private subnet `10.64.1.0/24` in `ap-south-1a`, RDS-subnet-only `10.64.2.0/24` in `ap-south-1b`, `db.t4g.micro` PostgreSQL 18.6 with 20 GiB gp3, 1-day RDS backup retention (AWS accepted it in the recorded Step 6 apply), 7-day CloudWatch log retention, no final snapshot, and cleanup review date 2026-10-23. API/PostgreSQL-client image digests remain required only for the later service phase.
 
 Run the repository's pinned backend-free checks with `make terraform-check`. For Step 5, verify the PD-15 backend/migration gates, absence of local shared/test state, complete cost/retention inputs, and explicit authorization for the non-applying plan. Initialize with `terraform init -reconfigure`, never `-migrate-state`, and do not plan against local state. For initial base provisioning, explicitly pass `deployment_phase=base` and `api_service_enabled=false`. For service deployment and later service stop/start plans, retain `deployment_phase=service`. **Never omit the phase in a cloud plan: omission fails with `-input=false`; explicit `disabled` is empty only against empty state; against populated state it proposes resource deletion. Changing `service` back to `base` also removes service-phase resources.** Preserve all approved non-secret inputs between plans and inspect every create/update/delete; a checksum identifies the reviewed artifact but does not establish that its changes are safe. The [approved phase-selection decision](../../../../docs/decisions/terraform-deployment-phase.md) removes the default; cloud plans use `-input=false`. Configuration changes invalidate earlier plan approval; review a fresh plan before any apply. Use the verified non-root `adityalaxmi1` profile for apply and other non-root cloud operations. [DEC-06](../../../../docs/decisions/terraform-planning-identity.md) records the identity decision. Each changed saved plan must be inspected and explicitly approved by exact checksum before apply. See [Terraform ownership boundaries](../../../../docs/architecture/terraform-ownership.md) and the [Terraform change workflow](../../README.md).
+
+## Reviewed ECS image pin — ID-01 Step 2
+
+The host image is pinned to the existing deployed `ami-0c10ee7b040aa465e` through
+`local.ecs_ami_id`; ordinary IAM plans no longer refresh a mutable recommended
+AMI. See the [decision](../../../../docs/decisions/shared-test-ecs-image-pin.md).
+This is an approved source correction, pending fresh cloud-plan verification;
+no launch-template update or compute start has been applied. Future image
+upgrades and launches retain their separate approval and verification gates.
+
+## SES sandbox controlled-recipient scope — ID-01 Step 2
+
+The real task-role diagnostic identified a denial on the verified recipient's
+SES identity. `identity-email.tf` accepts the sensitive optional
+`ses_sandbox_recipient_identity_arn`, adding only that exact identity alongside
+the sender domain while retaining `ses:SendEmail` and the exact FromAddress.
+Pass the approved value privately through `TF_VAR_ses_sandbox_recipient_identity_arn`;
+never commit/print the address or ARN. IAM and protected Terraform state retain
+it; sensitivity masks normal rendered output, not state access.
+
+Preserve this input in subsequent shared sandbox plans. Omitting it proposes
+removing the added resource and can restore the sandbox delivery failure; inspect
+that diff deliberately. Once SES production access/configuration is reviewed,
+remove the test-recipient resource through a separately reviewed plan and verify
+normal delivery. This is a sandbox test exception, not the production recipient
+model. All original exact plan, role-ownership and cloud approval gates remain.

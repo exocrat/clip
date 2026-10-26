@@ -1,13 +1,14 @@
 import { Link, NavLink, Outlet } from 'react-router';
 import './AppShell.css';
+import { IdentitySessionControl, useIdentity } from '../features/identity';
 
 const previewRoutes = [
   { to: '/sign-in', label: 'Sign in' },
   { to: '/auth/callback', label: 'Auth callback' },
   { to: '/', label: 'Discover' },
-  { to: '/listings/new', label: 'New listing' },
+  { to: '/listings/new', label: 'New listing', sellerOnly: true },
   { to: '/listings/example', label: 'Listing detail' },
-  { to: '/listings/example/edit', label: 'Edit listing' },
+  { to: '/listings/example/edit', label: 'Edit listing', sellerOnly: true },
   { to: '/my/listings', label: 'My listings' },
   { to: '/saved', label: 'Saved' },
   { to: '/my/conversations', label: 'Conversations' },
@@ -18,12 +19,15 @@ const previewRoutes = [
 
 /** Supplies the shared scaffold navigation and renders the selected route. */
 export function AppShell() {
+  const { status, user } = useIdentity();
+  const seller = status === 'ready' && user?.account_class === 'regular' && Date.parse(user.valid_until) > Date.now();
   return (
     <div className="app-shell">
       <header className="app-shell__header">
         <Link className="app-shell__brand" to="/">Campus Marketplace</Link>
+        <IdentitySessionControl />
         <nav aria-label="Scaffold route preview" className="app-shell__nav">
-          {previewRoutes.map(({ to, label }) => (
+          {previewRoutes.filter((route) => !route.sellerOnly || seller).map(({ to, label }) => (
             <NavLink
               key={to}
               end={to === '/'}
@@ -37,7 +41,7 @@ export function AppShell() {
           ))}
         </nav>
         <p className="app-shell__note">
-          Navigation previews scaffold routes; authentication and domain actions are not implemented.
+          Marketplace links preview unfinished domain routes. Identity sign-in is being verified locally.
         </p>
       </header>
       <Outlet />

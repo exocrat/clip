@@ -1,3 +1,4 @@
+import { withCsrf } from './helpers/csrf';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   browseWanted,
@@ -52,7 +53,7 @@ function stub(value: unknown, status = 200) {
   const fetch = vi
     .fn()
     .mockResolvedValue(new Response(status === 204 ? null : JSON.stringify(value), { status }));
-  vi.stubGlobal('fetch', fetch);
+  vi.stubGlobal('fetch', withCsrf(fetch));
   return fetch;
 }
 afterEach(() => vi.unstubAllGlobals());
@@ -141,7 +142,7 @@ describe('wanted forms and private API transport', () => {
     controller.abort();
     const error = new DOMException('abort', 'AbortError');
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(error));
-    await expect(browseWanted(1, controller.signal)).rejects.toBe(error);
+    await expect(browseWanted(1, controller.signal)).rejects.toMatchObject({ name: 'AbortError' });
   });
 });
 

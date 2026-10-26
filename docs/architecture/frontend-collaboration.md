@@ -129,18 +129,18 @@ it is not an additional product route.
 
 | Page path | Page component | Public feature placeholders and connections | Owning task(s) |
 |---|---|---|---|
-| `/sign-in` | `SignInPage` | `identity/IdentityPlaceholder` | A — ID-01 |
-| `/auth/callback` | `AuthCallbackPage` | `identity/IdentityPlaceholder` | A — ID-01 |
+| `/sign-in` | `SignInPage` | `identity/SignIn` (Microsoft and temporary registration/login/reset; real local provider smoke verified) | A — ID-01 |
+| `/auth/callback` | `AuthCallbackPage` | `identity/MicrosoftCallback` (real local IISc success/non-IISc denial verified; cloud/device acceptance pending) | A — ID-01 |
 | `/` | `DiscoveryPage` | `search/SaleDiscovery` renders reviewed public sale summaries, displays the first attached photo via Listings' public `ListingImagePreview`, and links to B's detail route; `search/WantedBrowse` renders open requests | C — SE-01/SE-02; B — public summary/image delivery integration |
-| `/listings/new` | `ListingCreatePage` | `listings/CreateListing` contains `identity/IdentityPlaceholder` for the pending real eligibility connection | B — LI-01/LI-02; A — ID-01 integration |
+| `/listings/new` | `ListingCreatePage` | public `identity/SellerEligibilityGate` wraps `listings/CreateListing`; mounts only for a current regular session, blocks temporary/loading/missing/expired/unavailable states | B — LI-01/LI-02; A — ID-01 integration |
 | `/listings/:listingId` | `ListingDetailPage` | `listings/ListingDetail` composes Search's `SaveListingAction`, which checks the caller's saved list and prevents a repeat Save, plus the `conversations/ConversationsPlaceholder` start/reopen action | B — LI-01/LI-02; C — SE-02; D — CN-01 integration |
-| `/listings/:listingId/edit` | `ListingEditPage` | `listings/ListingsPlaceholder` | B — LI-01/LI-02 |
-| `/my/listings` | `MyListingsPage` | Local view switch; sale view uses `listings/ListingsPlaceholder` with a `conversations/ConversationsPlaceholder` seller-inbox connection; wanted view uses `search/SearchPlaceholder` with a listings match placeholder | B — LI-01/LI-02; C — SE-02; D — CN-02 integration |
+| `/listings/:listingId/edit` | `ListingEditPage` | public `identity/SellerEligibilityGate` wraps `listings/ListingEdit`; server enforces regular seller/owner checks | B — LI-01/LI-02 |
+| `/my/listings` | `MyListingsPage` | Local view switch; public `listings/MyListings` and `search/MyWantedRequests` with draft matching; public Identity account boundary resets private state on actor changes; Conversations integration pending | B — LI-01/LI-02; C — SE-02; D — CN-02 integration |
 | `/saved` | `SavedListingsPage` | `search/SavedListings` uses the same `SaleListingCard` as Discover, including the Listings public photo renderer, current availability and Remove action; retired records remain content-free | C — SE-02; B — LI-01/LI-02 integration |
 | `/my/conversations` | `ConversationsPage` | `conversations/ConversationsPlaceholder` contains `listings/ListingsPlaceholder` context | D — CN-01/CN-02; B — LI-01 integration |
 | `/my/conversations/:conversationId` | `ConversationDetailPage` | `conversations/ConversationsPlaceholder` contains listing selection/availability and identity contact-option placeholders | D — CN-01/CN-02; B — LI-01 and A — ID-01 integration |
-| `/account/contacts` | `AccountContactsPage` | `identity/IdentityPlaceholder` | A — ID-01 |
-| `/wanted/:requestId` | `WantedRequestPage` | `search/SearchPlaceholder` contains identity eligibility and conversations contact-requester placeholders | C — SE-02; A — ID-01 and D — CN-01/CN-02 integration |
+| `/account/contacts` | `AccountContactsPage` | `identity/ContactsEditor` (own-source editor; human verification pending) | A — ID-01 |
+| `/wanted/:requestId` | `WantedRequestPage` | public `search/WantedDetail` reads `/me`, disables responses for temporary/expired sessions and calls the response API; real Conversations provider pending | C — SE-02; A — ID-01 and D — CN-01/CN-02 integration |
 
 Public wrappers are `src/features/identity/IdentityPlaceholder.tsx`,
 `src/features/listings/ListingsPlaceholder.tsx`,
@@ -292,6 +292,58 @@ lists must define the business contracts before implementation depends on them.
 Step 9 updates downstream task and agent instructions to the implemented
 scaffold and reviewed contracts.
 
+## ID-01 Step11 first UI checkpoint
+
+Aditya is the reserved current writer on task/id-01-identity for Identity feature
+exports and bounded Identity page/shell composition. `/sign-in` now uses public
+`SignIn`; `App` supplies public `IdentityProvider` and the shell uses public
+`IdentitySessionControl`. The existing IdentityPlaceholder export remains for
+unchanged marketplace compositions. No route/private feature boundary changes.
+The first visible increment supplies temporary sign-in/registration/OTP and
+session/logout controls. `/auth/callback`, password reset and `/account/contacts`
+remain original Step11 pending checkpoints. Human desktop/phone-layout checks
+are pending; actual-phone keyboard/provider/deployed acceptance remains open.
+
+The explicit development-only identity-preview mode uses a fixed loopback proxy
+and synthetic test inbox with actual disposable Identity SQL/HTTP. It rejects
+build/deployment of that mode; normal builds eliminate the test inbox module.
+Normal development does not enable this proxy; unconfigured backend main is
+still health-only. See [first checkpoint evidence](../evaluation/identity/implementation.md#step-11).
+
+### ID-01 Step11 recovery increment
+
+After Aditya verified the first sign-in screen, the same reserved Identity writer
+adds forgot-password/request-code/reset states inside `/sign-in`; no new route,
+page composition or public feature prop change. API requests use the reviewed
+reset-specific operations, generic acknowledgement and single-use proof; reset
+issues no new session. Human recovery/portrait/landscape verification remains
+pending. Microsoft callback and private contact editor remain later Step11 work.
+
+### ID-01 Step11 private contact editor increment
+
+Aditya continues as sole reserved Identity/page writer after verified recovery
+checkpointbcfff32. AccountContactsPage now composes public ContactsEditor on its
+existing route. Existing Identity placeholder/props/session exports remain
+compatible; other feature/private/page connections are unchanged. Contact values
+stay inside an actor-keyed own editor, with CSRF writes and confirmed refetch;
+known logout/account changes unmount private drafts and fence late responses.
+There is no general profile/directory or Conversation contact-sharing endpoint
+or client bypass. Actual CN-02 deliberate sharing remains its original gate.
+Human contact-editor desktop/phone/browser verification is pending.
+
+### ID-01 Step11 Microsoft UI increment
+
+Aditya remains reserved Identity/shared-page writer. SignIn composes its private
+Microsoft button through the shared submission guard; AuthCallbackPage now uses
+public MicrosoftCallback. Existing public feature exports and all approved routes
+remain. New own-controller lazily selects only the real pinned SDK, with explicit
+origin/build activation and unconditional synthetic-preview disablement. Callback
+success requires one server exchange; safe status recovery uses IdentityProvider's
+generation fence. The provider refresh result now returns a current SessionView
+or null while existing callers may ignore it. No other feature private imports.
+The app's no-referrer HTML metadata protects redirect material; shared-owner/peer
+review remains before integration. Live provider activation is separately gated.
+
 
 ### SE-01 mode/relevance feature increment
 
@@ -310,3 +362,68 @@ awaits human verification. No other feature private implementation is imported.
 Mohit (C) is the current writer for Search composition in `ScaffoldPages.tsx`: Wanted discovery, My Wanted Requests, Saved Listings, Wanted detail and the existing ListingDetail save-action child slot. Search public components consume reviewed HTTP contracts, including Identity `GET /me`; other feature internals, routes and shared shell are outside this reservation. Human authorized Step7; release after implementation checks.
 
 Reservation released 2026-10-25 08:26:59 UTC after local checks. Search public components now fill the reserved slots using reviewed HTTP types; no other feature internals/routes changed. Browser verification and actual-provider integration remain pending.
+
+### ID-01 Step12 shared HTTP integration — 2026-10-25
+
+Aditya(A) is the bounded integration writer for shared/http/sessionFetch.ts,
+Identity's adapter and transport-only adoption in Listings listingsApi.ts and
+Search wantedApi.ts. Suraj/Mohit keep feature ownership and review these changes;
+no page composition, public component export, UI behavior or business payload is
+reassigned. Feature validators/status text/operation keys stay local. No feature
+imports Identity-private code. Presigned upload bytes remain outside this helper.
+Normal Identity uses the existing /api proxy; only explicit Identity preview uses
+unprefixed routes. Existing isolated harnesses implement the reviewed CSRF response
+as test doubles instead of introducing a client-side fallback. See the
+[shared session transport decision](../decisions/browser-session-transport.md).
+Human browser/device and real runtime/provider checks remain separate.
+
+### ID-01 Step12 seller-eligibility integration — 2026-10-26
+
+Aditya(A) is the bounded current writer after explicit human authorization for
+Identity's new public SellerEligibilityGate and only ListingCreatePage composition,
+shared application's guarded isolated-demo `/me`, tests and this map. Suraj keeps
+Listings implementation ownership and affected-owner review. Normal create page
+uses IdentityProvider's real `/me` session; no feature-private import or client-side
+demo bypass. Loading/unavailable/missing/expired/temporary sessions never mount the
+seller form. A regular actor switch remounts the form to discard prior drafts.
+The backend retains authoritative regular/owner/lifecycle checks on every write.
+
+Existing local browser demos already expose their reviewed synthetic `/me`.
+Shared isolated cloud rehearsal gains the same response only under its existing
+exact test/development/dedicated DB/bucket guards, before SPA fallback; it reuses
+the existing fixed server actor and rejects normal/production configuration. No
+real sessions are issued and no client actor headers are accepted. This preserves
+isolated demo compatibility and proves no real Identity acceptance for that mode.
+Frontend/backend checks and human regular/temporary page walkthrough are recorded
+in the work log; owner review and live cloud/device checks remain separate.
+See [connection audit](../evaluation/identity/cross-owner-review.md#identity-connection-audit--2026-10-26).
+
+### ID-01 Step12 marketplace account lifecycle integration — 2026-10-26
+
+After human authorization, Aditya(A) is the bounded shared composition writer for
+public AccountStateBoundary, RoutePage integration, edit/sale-management seller
+gates and AppShell's seller-only navigation. No Listings/Search private component
+is edited. B/C affected review remains required. Marketplace children unmount when
+session ends, expires or cannot be verified; keys by actor/class reset private
+content/drafts and invoke each feature's abort/cleanup on account changes. Stable
+same-actor refreshes preserve state. Create/edit pages use their seller gate;
+sign-in/callback and not-found remain outside account-scoped remounting. A
+StrictMode callback test uses the real page to ensure accepting a login does not
+restart its consumed callback. No API permission or backend policy is weakened.
+
+The Sale Listings tab is regular-only; the Wanted Requests tab remains available
+to temporary users. New/edit navigation links are hidden unless the current
+regular session is valid. Direct URLs retain the same UI gate and server guards.
+Focused actual Listings/Search page tests cover logout/actor reset, stable refresh,
+late-response discard, expiry, dependency failure and Wanted draft preservation/
+removal. Actual TS/HTTP/SQL tests cover saved CRUD/idempotency/account isolation/
+unavailable records, and expired/revoked sessions are denied for checked domain
+reads/writes. Full Step14/Conversations/cloud/phone acceptance remains pending.
+
+Explicit follow-up approval extended this bounded integration to Listings' private
+CreateListing/ListingEdit components: mounted refs prevent an old completed save
+from navigating/updating UI after account-scoped unmount. B retains review; no
+save payload/validation/retry/idempotency/server behavior changes. Four controlled
+form/router cases verify mounted navigation and late-completion suppression.
+Aditya verified the requested seller/logout/Wanted states; exact checks/results
+are in the work log. Writer reservation released2026-10-26 05:22:07UTC.

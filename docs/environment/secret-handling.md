@@ -44,6 +44,20 @@ Rahul's local profile `clip-project` uses interactive `aws login --profile clip-
 The AWS account `335523638354` has the verified one-year budget `CLIP-Account-Actual-Spend-From-2026-10-17` (2026-10-17 through 2027-10-17), USD 200 reference amount, with actual incurred-spend notifications above USD 50, 80, 100, 120, and 130. All thresholds are configured for `adityalaxmi1@iisc.ac.in`, `surajs2@iisc.ac.in`, `mohitmahapa1@iisc.ac.in`, and `rahulkoyye@iisc.ac.in`; credits are excluded from the cost basis. This is an account-specific notification, not a spending cap or a secret-access control. Details and limitations are in [cloud inventory](cloud-inventory.md). Rahul verified the budget configuration.
 
 No secret values, keys, tokens, passwords, MFA codes, or local credential files are recorded here. Existing provider/database references are added by their owning tasks only after an approved access method is configured and verified.
+## ID-01 Microsoft app registration — user-reported — 2026-10-22 14:02:07 UTC
+
+Aditya supplied these non-secret identifiers in chat; they have not been independently checked in the Microsoft portal.
+
+| Field | Value/status |
+|---|---|
+| Application (client) ID | `ab3a63e3-d4db-4c3c-b4bf-ac5f7573ffbb` |
+| Directory (tenant) ID | `19d07278-f040-4722-8202-b1174cf3a4d3` |
+| Supported account types | Aditya confirmed the portal selection is any organizational directory plus personal Microsoft accounts on 2026-10-22 14:03:25 UTC; not independently inspected |
+| SPA redirect URIs | Aditya confirmed `http://localhost:5173/auth/callback` and `https://clip-iisc.site/auth/callback` are configured on 2026-10-22 14:03:25 UTC; not independently inspected |
+| Client secret | None requested or recorded; SPA uses authorization code with PKCE |
+
+The identifiers and portal settings are human-reported and not independently inspected. The registration does not establish a validated sign-in implementation.
+
 ## Selected shared store
 
 - Store: AWS Systems Manager Parameter Store in account `335523638354`, Region `ap-south-1`.
@@ -74,3 +88,71 @@ The user approved [DEC-10](../decisions/broad-human-operator-access.md), retaini
 ## Current setup status
 
 PD-16 records the master reference provisioned; the probe reference remains planned and application/provider references are deferred to their owning tasks. Reported team access and runtime permission boundaries have not been independently verified. PD-14 itself created no parameter/key/resource; later PD-16 provisioning is recorded in the [inventory](cloud-inventory.md#pd-1516-recorded-deployment--2026-10-19).
+
+## ID-01 SES runtime access — setup partial
+
+SES uses the task role in ECS and the operator's approved non-root profile locally;
+no static SES/SMTP credential. Sender-scoped policy applied2026-10-23 06:17:00 UTC;
+corrected sandbox task-role delivery/inbox/cleanup passed17:17:30. Production access
+and the live verify@ sender update remain pending. See [current setup](identity-provider-setup.md)
+and [historical permissions/delivery](../evaluation/identity/provider-history.md).
+
+## ID-01 SES controlled-recipient input
+
+`ses_sandbox_recipient_identity_arn` is the private approved verified inbox ARN.
+Supply its TF_VAR input in child memory, not CLI arguments, committed tfvars or
+logs. It is sensitive in Terraform rendering but present in access-controlled
+state/policy/saved plans. Preserve it during sandbox work; omission removes scope.
+Deployed From condition still permits no-reply@clip-iisc.site; desired source uses
+verify@clip-iisc.site, awaiting exact reviewed plan/apply. Remove the recipient
+scope only through reviewed production transition and verify actual sending.
+
+## ID-01 dual email configuration
+
+| Reference | Recorded state |
+| --- | --- |
+| Parameter | `/clip/test/identity/email-delivery` |
+| Account/region | `335523638354` / `ap-south-1` |
+| Storage | Standard SecureString, `alias/aws/ssm`, version1 |
+| Private schema | version(integer1), primary(resend/ses), resend_api_key |
+| Provisioning | Explicitly authorized; operator adityalaxmi1 create/decrypted read-back verified2026-10-24 14:15:45 UTC; no prior parameter overwritten. |
+| Runtime access | ECS task-role permission and live application loading remain unverified. |
+
+Keep order/key in one parameter version for the approved four-hour runtime cache.
+A configuration switch without redeployment requires actual runtime retrieval,
+not ECS startup-only environment injection. Verify exact task-role access before
+live use. No credential value is recorded here; the key supplied in chat must be
+rotated privately through an approved path. Do not request keys in chat or print
+values in CLI arguments/logs/files. The local SDK's optional AWS-login dependency
+was unavailable; CLI-exported temporary credentials stayed only in process memory.
+This establishes operator access, not deployed runtime permission. Full outcomes
+and current gates are consolidated in [provider history](../evaluation/identity/provider-history.md#resend-and-sender-outcome).
+
+
+### ID-01 persistent runtime references — local preparation only
+
+`/clip/test/identity/authentication-keys` was provisioned with explicit Aditya
+approval on 2026-10-24 18:47:02 UTC: Standard SecureString version1,
+AWS-managed aws/ssm key, account335523638354/ap-south-1. Metadata confirmed;
+no decrypted read. `/clip/test/identity/database-url` remains proposed/unprovisioned.
+The existing `/clip/test/identity/email-delivery` reference retains its reviewed
+routing schema and four-hour refresh policy. No live reads were performed for
+this preparation.
+
+Authentication keys use exactly `schema_version` (integer 1), `key_version`
+(a stable safe label), `lookup`, `verifier`, and `target_encryption`. The last
+three are independent 32-byte random keys encoded as canonical standard base64.
+Generate and persist actual values only through a separately approved private
+procedure; never paste them into chat, repository, command arguments or evidence.
+Duplicates, extra fields and noncanonical encodings are rejected. Bootstrap reads
+keys once, verifies database commitments and never substitutes generated keys.
+Key rotation requires a reviewed data migration/recovery plan.
+
+The database reference contains an explicit private PostgreSQL URI for the
+separate `clip_test_identity_app` login. Remote targets require database
+`clip_test`, password and `sslmode=verify-full&sslrootcert=system`. Validate the
+actual certificate chain before live use. The
+[role proposal](../../database/roles/identity-runtime.sql.proposed) does not create
+or change a shared role. Public grants, credential generation, role logging,
+scoped SSM permissions and rollback require a concrete separately approved plan.
+See the [runtime handoff](../evaluation/identity/integration.md#secure-runtime-preparation).

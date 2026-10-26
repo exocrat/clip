@@ -149,6 +149,43 @@ Before the base-infrastructure plan, select and verify the approved account/prof
 
 PD-15 preparation is complete and its bootstrap `.tf` files exist (`main.tf`, `outputs.tf`, `variables.tf`, `versions.tf`); the live S3 backend and state migration remain pending. PD-16 `shared/test/` still contains only its README, and `apps/api/` has no Dockerfile. The PD-16 task requires a plan and API deployment but has no explicit step to create/validate the shared Terraform root or build/publish the image. This is a task-definition gap; no workaround or resource operation was performed. The budget context, shared ownership/creator-led cleanup, per-run duration, Fargate exclusion, and ECR non-blocker are recorded.
 
+## Deferred NAT cost review — 2026-10-24 21:39:04 UTC
+
+Aditya asked to retain these options for later and resume ID-01. This is a
+follow-up note, not an accepted network architecture or apply approval. Public
+pricing research only; no AWS account query or network change for this review.
+One Mumbai NAT Gateway at approximately0.056USD/hour plus one public IPv4 at
+0.005USD/hour costs about43.92USD per30days before traffic, taxes and transfer.
+It incurs hourly charges while provisioned even with stopped workloads. This
+makes it a plausible large component of the observed small actual spend, but
+neither bill attribution nor the much higher forecast is verified by this estimate.
+
+Options to evaluate with shared owners before a separate plan:
+
+- Recommended candidate for this small development setup: public-subnet ECS EC2
+  host with outbound internet access and tightly restricted inbound rules, while
+  RDS remains private. Removes NAT fixed/processing charges; public IPv4 is billed
+  while allocated, alongside normal compute/transfer. Requires shared networking,
+  launch-template and security review; current private-host design stays in place.
+- Provision/delete NAT around coordinated development windows. No stop/pause
+  operation; review routes and release unused Elastic IPs deliberately because
+  retained idle IPv4 addresses are still billed.60NAT/IP hours would be about3.66USD
+  before traffic. Rebuild/recovery time and shared users must be accounted for.
+- A small NAT instance preserves private hosts but adds patching, routing,
+  monitoring and recovery responsibilities; obtain current sizing/cost evidence
+  before choosing it.
+- Free S3 gateway endpoints can avoid NAT processing for S3 traffic but do not
+  remove NAT's fixed charge. Paid interface endpoints introduce their own hourly
+  charges and do not replace access to external Microsoft/Resend endpoints.
+
+Sources: [AWS VPC pricing](https://aws.amazon.com/vpc/pricing/),
+[Mumbai rate reference](https://devopstryhard.com/building-a-low-cost-nat-architecture-on-aws-with-fck-nat/),
+[ECS outbound networking](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/networking-outbound.html),
+[free gateway endpoints](https://docs.aws.amazon.com/vpc/latest/privatelink/gateway-endpoints.html),
+[NAT instances](https://docs.aws.amazon.com/vpc/latest/userguide/work-with-nat-instances.html).
+Follow up after the current ID-01 checkpoint under shared-owner coordination;
+no automatic NAT deletion or change to the pending ID-01 private preflight route.
+
 ## Canonical sources
 
 - [PD-16 task requirements](../tasks/pre-domain-task-list.md#pd-16--review-and-provision-the-shared-cloud-test-foundation)

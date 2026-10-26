@@ -30,6 +30,24 @@ OTHER_ID = UUID("20000000-0000-4000-8000-000000000002")
 IMAGE = b"\x89PNG\r\n\x1a\n" + b"IHDR" + b"synthetic-bytes"
 
 
+@pytest.fixture(autouse=True)
+def _fixed_authentication_clock(monkeypatch):
+    """Align auth checks with this module's existing synthetic service clock.
+
+    The fixture's one-day sessions must not expire as the calendar advances.
+    Freeze only this test module's auth clock; keep real expiry comparison and
+    all production code unchanged. Pytest restores the clock after each case.
+    """
+    import app.core.auth as auth
+
+    class FixedDatetime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return NOW.astimezone(tz) if tz is not None else NOW.replace(tzinfo=None)
+
+    monkeypatch.setattr(auth, "datetime", FixedDatetime)
+
+
 class _Identity:
     """Allow only the two explicit test identities."""
 

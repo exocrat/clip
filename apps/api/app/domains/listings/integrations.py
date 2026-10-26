@@ -9,10 +9,10 @@ class PublicListingsIdentity:
     """Use Identity's narrow capability API; never read Identity-owned tables."""
 
     async def account_is_eligible(self, user_id: UserId) -> bool:
-        """Require a current regular account and fail closed until Identity is wired."""
+        """Check current eligibility; Listings enforces regular-only seller actions."""
         try:
             result = await identity_public.check_account_eligibility(
-                user_id, required_class="regular"
+                user_id, required_class=None
             )
         except NotImplementedError:
             raise PublicError(ERRORS[503]) from None

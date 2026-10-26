@@ -1,0 +1,14 @@
+[
+  {
+    "path": "apps/api/app/domains/identity/database_setup.py",
+    "sha256": "2d88017e729698b4c8565debfee1fdddb96973a9bf726db2d58a31bd00d34669"
+  },
+  {
+    "path": "apps/api/tests/domains/identity/test_database_setup.py",
+    "sha256": "711fd9332afe34338076936462374a4369c7b18c40ff4e72ebb2cc6dca31d95a"
+  },
+  {
+    "path": "database/roles/identity-runtime.sql.proposed",
+    "sha256": "19bf55d3bc1d8fc9e89a236e50ed9c5b53057a0a2dd93801a2c3729ca5e82d69"
+  }
+]

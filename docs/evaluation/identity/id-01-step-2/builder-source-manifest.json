@@ -1,0 +1,15 @@
+{
+  "revision": "52186a0466feb24ffb855d9f019c78cd5a17aa39",
+  "paths": [
+    "pyproject.toml",
+    "uv.lock",
+    "apps/api/app",
+    "apps/api/Dockerfile",
+    "apps/api/Dockerfile.dockerignore"
+  ],
+  "archive_bytes": 215040,
+  "archive_sha256": "f908ca84471bef45e880ffe714a76aed57a5e9a9f67e7d8c6843cd2836839800",
+  "gzip_mtime": 0,
+  "gzip_bytes": 54191,
+  "gzip_sha256": "34f1404bec5c4971ed022ed3e4ba4ba0d2599b8d12f7b05032913b76e855deb0"
+}

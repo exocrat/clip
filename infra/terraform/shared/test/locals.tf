@@ -1,9 +1,12 @@
 # Shared constants and derived values keep the account, Region, tags, and
 # secret reference consistent across resources in this root.
 locals {
-  account_id                        = "335523638354"
-  region                            = "ap-south-1"
-  prefix                            = "clip-shared-test"
+  account_id = "335523638354"
+  region     = "ap-south-1"
+  prefix     = "clip-shared-test"
+  # Preserve the deployed ECS image until a separate reviewed upgrade. Reading
+  # the mutable recommended-image parameter made unrelated IAM plans update it.
+  ecs_ami_id                        = "ami-0c10ee7b040aa465e"
   db_probe_username                 = "clip_test_probe"
   db_master_password_parameter_name = "/clip/test/database-master-password"
   db_probe_password_parameter_name  = "/clip/test/database-probe-password"

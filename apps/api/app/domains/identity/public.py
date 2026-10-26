@@ -1,8 +1,9 @@
-# Generated declaration-only identity interface; format 2. Do not edit.
+# Generated typed runtime identity interface; format 2. Do not edit.
 """Reviewed Identity HTTP operations and internal declaration-only callables."""
 
 from app.core.auth import CallerContext
 from app.core.identifiers import UserId
+from app.core.runtime_bindings import dispatch_runtime as _dispatch_runtime
 
 from app.contracts.domain_types import (
     AccountClass,
@@ -12,7 +13,10 @@ from app.contracts.domain_types import (
     ConversationId,
     ContactField,
     ContactValueRequest,
+    ContactSharingContext,
     MicrosoftSessionRequest,
+    MicrosoftLoginAttempt,
+    CsrfToken,
     NotificationRecipient,
     NotificationWorkerContext,
     OwnContacts,
@@ -27,7 +31,29 @@ from app.contracts.domain_types import (
     TemporarySessionRequest,
 )
 
+# Reviewed runtime adapter metadata; source callables below remain declarations.
+RUNTIME_BINDINGS = frozenset(
+    {
+        "check_account_eligibility",
+        "get_shareable_contact_options",
+        "get_selected_own_contacts",
+    }
+)
+
 HTTP_OPERATIONS = (
+    {
+        "method": "POST",
+        "path": "/auth/microsoft/login-attempts",
+        "operation_id": "identity_start_microsoft_login_attempt",
+        "response": MicrosoftLoginAttempt,
+        "status_code": 201,
+    },
+    {
+        "method": "GET",
+        "path": "/auth/csrf",
+        "operation_id": "identity_read_csrf_token",
+        "response": CsrfToken,
+    },
     {
         "method": "POST",
         "path": "/auth/microsoft/sessions",
@@ -122,9 +148,15 @@ async def check_account_eligibility(
     """Declare the minimal current account-capability lookup.
 
     This declaration returns no profile, contact, login, or denial-reason data.
-    The owning Identity service supplies the eventual implementation.
+    Source invocation refuses; approved metadata generates a scoped technical
+    adapter to the real Identity provider without changing this signature.
     """
-    raise NotImplementedError("declaration-only")
+    return await _dispatch_runtime(
+        "identity.check_account_eligibility",
+        AccountEligibility,
+        user_id,
+        required_class,
+    )
 
 
 async def get_shareable_contact_options(
@@ -135,7 +167,12 @@ async def get_shareable_contact_options(
     The caller must be the actor authorized by Conversations. Only availability
     flags are returned; this declaration reads no persistence or contact value.
     """
-    raise NotImplementedError("declaration-only")
+    return await _dispatch_runtime(
+        "identity.get_shareable_contact_options",
+        ShareableContactOptions,
+        caller,
+        conversation_id,
+    )
 
 
 async def get_selected_own_contacts(
@@ -148,7 +185,13 @@ async def get_selected_own_contacts(
     Only requested, currently present fields may be returned. Values are private
     and ephemeral; this declaration performs no read and always refuses calls.
     """
-    raise NotImplementedError("declaration-only")
+    return await _dispatch_runtime(
+        "identity.get_selected_own_contacts",
+        SelectedOwnContacts,
+        caller,
+        conversation_id,
+        fields,
+    )
 
 
 async def resolve_notification_recipient(

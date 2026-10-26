@@ -292,8 +292,10 @@ def test_seller_cannot_submit_an_offer_to_own_listing() -> None:
     assert conversations.commands == []
 
 
-def test_temporary_buyer_is_denied_by_regular_identity_capability(
+@pytest.mark.parametrize("eligible", [False, True])
+def test_temporary_buyer_offer_uses_current_identity_eligibility(
     monkeypatch: pytest.MonkeyPatch,
+    eligible: bool,
 ) -> None:
     temporary_user_id = uuid4()
     capability_calls: list[tuple[UUID, str | None]] = []
@@ -302,7 +304,7 @@ def test_temporary_buyer_is_denied_by_regular_identity_capability(
         user_id: UUID, required_class: str | None = None
     ) -> AccountEligibility:
         capability_calls.append((user_id, required_class))
-        return AccountEligibility(eligible=False)
+        return AccountEligibility(eligible=eligible)
 
     monkeypatch.setattr(
         identity_public, "check_account_eligibility", check_account_eligibility
@@ -316,11 +318,12 @@ def test_temporary_buyer_is_denied_by_regular_identity_capability(
         conversations=conversations,
     )
     temporary_caller = CallerContext(
-        temporary_user_id, "temporary", NOW + timedelta(days=30)
+        temporary_user_id, "temporary", datetime(2099, 1, 1, tzinfo=UTC)
     )
 
-    with pytest.raises(PublicError) as captured:
-        asyncio.run(
+    def submit():
+        """Exercise the existing offer boundary with a valid synthetic caller."""
+        return asyncio.run(
             service.submit_offer(
                 temporary_caller,
                 LISTING_ID,
@@ -329,6 +332,16 @@ def test_temporary_buyer_is_denied_by_regular_identity_capability(
             )
         )
 
-    assert captured.value.spec.status == 403
-    assert capability_calls == [(temporary_user_id, "regular")]
-    assert conversations.commands == []
+    if eligible:
+        assert submit().status == "submitted"
+        assert len(conversations.commands) == 1
+    else:
+        with pytest.raises(PublicError) as captured:
+            submit()
+        assert captured.value.spec.status == 403
+        assert conversations.commands == []
+    # A successful offer also rechecks the current listing owner's eligibility.
+    expected_calls = [(temporary_user_id, None)]
+    if eligible:
+        expected_calls.append((OWNER_ID, None))
+    assert capability_calls == expected_calls
