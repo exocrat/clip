@@ -162,7 +162,8 @@ class IdentityBrowserMiddleware:
             await send(message)
 
         unsafe = request.method not in {"GET", "HEAD", "OPTIONS"}
-        path = request.url.path
+        raw_path = request.url.path
+        path = raw_path[4:] if raw_path.startswith("/api/") else raw_path
         development_peer = True
         if self.policy.development:
             try:
@@ -278,7 +279,12 @@ class IdentityHttpDependencies:
             raise ValueError("Complete trusted Identity dependencies required")
 
 
-def install_identity_http(app: FastAPI, runtime: IdentityHttpDependencies) -> None:
+def install_identity_http(
+    app: FastAPI,
+    runtime: IdentityHttpDependencies,
+    *,
+    path_prefix: str = "",
+) -> None:
     """Install real auth routes and request-scoped caller policy into an existing app.
 
     The composition root owns error/logging middleware, health and lifespan; do not
@@ -289,6 +295,13 @@ def install_identity_http(app: FastAPI, runtime: IdentityHttpDependencies) -> No
         raise ValueError("Complete trusted Identity dependencies required")
     if getattr(app.state, "identity_http_installed", False):
         raise ValueError("Identity HTTP already installed")
+    if path_prefix not in ("", "/api"):
+        raise ValueError("Unsupported Identity API prefix")
+
+    def route(path: str) -> str:
+        """Match the Vite and same-origin hosted UI /api transport paths."""
+        return path_prefix + path
+
     sessions, policy = runtime.sessions, runtime.policy
     sender, validator, clock = runtime.sender, runtime.validator, runtime.clock
     app.add_middleware(IdentityBrowserMiddleware, sessions=sessions, policy=policy)
@@ -349,7 +362,7 @@ def install_identity_http(app: FastAPI, runtime: IdentityHttpDependencies) -> No
         return session_view(result.identity)
 
     @app.post(
-        "/auth/microsoft/login-attempts",
+        route("/auth/microsoft/login-attempts"),
         operation_id="identity_start_microsoft_login_attempt",
         response_model=MicrosoftLoginAttempt,
         status_code=201,
@@ -366,7 +379,7 @@ def install_identity_http(app: FastAPI, runtime: IdentityHttpDependencies) -> No
         return MicrosoftLoginAttempt(nonce=result.nonce, expires_at=result.expires_at)
 
     @app.post(
-        "/auth/microsoft/sessions",
+        route("/auth/microsoft/sessions"),
         operation_id="identity_create_microsoft_session",
         response_model=SessionView,
     )
@@ -391,7 +404,7 @@ def install_identity_http(app: FastAPI, runtime: IdentityHttpDependencies) -> No
         return grant(response, result)
 
     @app.post(
-        "/auth/temporary/registration-challenges",
+        route("/auth/temporary/registration-challenges"),
         operation_id="identity_start_temporary_registration",
         response_model=ChallengeAccepted,
         status_code=202,
@@ -411,7 +424,7 @@ def install_identity_http(app: FastAPI, runtime: IdentityHttpDependencies) -> No
         )
 
     @app.post(
-        "/auth/temporary/password-reset-challenges",
+        route("/auth/temporary/password-reset-challenges"),
         operation_id="identity_start_password_reset",
         response_model=ChallengeAccepted,
         status_code=202,
@@ -444,7 +457,7 @@ def install_identity_http(app: FastAPI, runtime: IdentityHttpDependencies) -> No
         )
 
     @app.post(
-        "/auth/temporary/accounts",
+        route("/auth/temporary/accounts"),
         operation_id="identity_activate_temporary_account",
         response_model=SessionView,
         status_code=201,
@@ -460,7 +473,7 @@ def install_identity_http(app: FastAPI, runtime: IdentityHttpDependencies) -> No
         )
 
     @app.post(
-        "/auth/temporary/sessions",
+        route("/auth/temporary/sessions"),
         operation_id="identity_create_temporary_session",
         response_model=SessionView,
     )
@@ -475,7 +488,7 @@ def install_identity_http(app: FastAPI, runtime: IdentityHttpDependencies) -> No
         )
 
     @app.post(
-        "/auth/temporary/password-resets",
+        route("/auth/temporary/password-resets"),
         operation_id="identity_reset_temporary_password",
         status_code=204,
     )
@@ -488,7 +501,9 @@ def install_identity_http(app: FastAPI, runtime: IdentityHttpDependencies) -> No
         return Response(status_code=204)
 
     @app.get(
-        "/auth/csrf", operation_id="identity_read_csrf_token", response_model=CsrfToken
+        route("/auth/csrf"),
+        operation_id="identity_read_csrf_token",
+        response_model=CsrfToken,
     )
     def csrf(request: Request) -> CsrfToken:
         """Return session-bound request token, never the bearer cookie secret."""
@@ -499,7 +514,7 @@ def install_identity_http(app: FastAPI, runtime: IdentityHttpDependencies) -> No
             )
         )
 
-    @app.get("/me", operation_id="identity_read_me", response_model=SessionView)
+    @app.get(route("/me"), operation_id="identity_read_me", response_model=SessionView)
     def me(request: Request) -> SessionView:
         """Fresh session/current-account summary established by the middleware."""
         identity = current(request)
@@ -508,7 +523,7 @@ def install_identity_http(app: FastAPI, runtime: IdentityHttpDependencies) -> No
         )
         return session_view(identity)
 
-    @app.delete("/auth/session", operation_id="identity_logout", status_code=204)
+    @app.delete(route("/auth/session"), operation_id="identity_logout", status_code=204)
     def logout(request: Request) -> Response:
         """Revoke current session and clear its host cookie with matching attributes."""
         sessions.logout(request.cookies.get(policy.session_cookie))
@@ -523,7 +538,7 @@ def install_identity_http(app: FastAPI, runtime: IdentityHttpDependencies) -> No
         return response
 
     @app.patch(
-        "/me/profile",
+        route("/me/profile"),
         operation_id="identity_update_own_profile",
         response_model=ProfileView,
     )
@@ -533,7 +548,7 @@ def install_identity_http(app: FastAPI, runtime: IdentityHttpDependencies) -> No
         return sessions.contacts.update_profile(current(request).caller, payload)
 
     @app.get(
-        "/me/contacts",
+        route("/me/contacts"),
         operation_id="identity_read_own_contacts",
         response_model=OwnContacts,
     )
@@ -542,7 +557,7 @@ def install_identity_http(app: FastAPI, runtime: IdentityHttpDependencies) -> No
         return sessions.contacts.read_contacts(current(request).caller)
 
     @app.put(
-        "/me/contacts/{contact_kind}",
+        route("/me/contacts/{contact_kind}"),
         operation_id="identity_set_own_contact",
         status_code=204,
     )
@@ -557,7 +572,7 @@ def install_identity_http(app: FastAPI, runtime: IdentityHttpDependencies) -> No
         return Response(status_code=204)
 
     @app.delete(
-        "/me/contacts/{contact_kind}",
+        route("/me/contacts/{contact_kind}"),
         operation_id="identity_delete_own_contact",
         status_code=204,
     )

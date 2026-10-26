@@ -1,8 +1,9 @@
 """Unit settings guards; entry-point rejection is covered in security-boundary tests."""
 
 import pytest
+from pydantic import ValidationError
 
-from app.core.config import ConfigurationError, load_settings
+from app.core.config import ConfigurationError, Settings, load_settings
 
 
 @pytest.mark.parametrize("mode", ["local", "test", "production"])
@@ -63,6 +64,75 @@ def test_normal_hosted_ui_does_not_require_a_synthetic_caller(monkeypatch):
     assert settings.serve_web_app
     assert not settings.isolated_listings_test_caller
     assert not settings.development_auth
+
+
+def hosted_identity_settings(**overrides):
+    """Build the explicit real-provider test profile without ambient env state."""
+    values = {
+        "environment": "test",
+        "identity_provider": "microsoft",
+        "email_provider": "dual",
+        "ses_test_recipients": ("user@example.test",),
+        "identity_runtime_enabled": True,
+        "identity_browser_origins": ("https://clip-iisc.site",),
+        "database_url": "postgresql://app:secret@db.invalid/clip_test",
+    }
+    values.update(overrides)
+    return Settings(**values)
+
+
+def test_hosted_identity_runtime_requires_explicit_secure_test_configuration():
+    """Opt-in requires real providers, both DB/config and exact HTTPS origins."""
+    settings = hosted_identity_settings()
+    assert settings.identity_runtime_enabled
+    assert settings.identity_browser_origins == ("https://clip-iisc.site",)
+    assert settings.database_url is not None
+
+
+def test_hosted_identity_runtime_reads_the_registered_environment_names(monkeypatch):
+    """ECS-style JSON tuple settings parse through the shared CLIP_ prefix."""
+    monkeypatch.setenv("CLIP_ENVIRONMENT", "test")
+    monkeypatch.setenv("CLIP_IDENTITY_PROVIDER", "microsoft")
+    monkeypatch.setenv("CLIP_EMAIL_PROVIDER", "dual")
+    monkeypatch.setenv("CLIP_IDENTITY_RUNTIME_ENABLED", "true")
+    monkeypatch.setenv("CLIP_IDENTITY_BROWSER_ORIGINS", '["https://clip-iisc.site"]')
+    monkeypatch.setenv("CLIP_SES_TEST_RECIPIENTS", '["user@example.test"]')
+    monkeypatch.setenv(
+        "CLIP_DATABASE_URL", "postgresql://app:secret@db.invalid/clip_test"
+    )
+
+    settings = load_settings()
+
+    assert settings.identity_runtime_enabled
+    assert settings.identity_browser_origins == ("https://clip-iisc.site",)
+    assert settings.ses_test_recipients == ("user@example.test",)
+
+
+@pytest.mark.parametrize(
+    "overrides",
+    [
+        {"environment": "production"},
+        {"identity_provider": "disabled"},
+        {"email_provider": "disabled"},
+        {"database_url": None},
+        {"identity_browser_origins": ()},
+        {"identity_browser_origins": ("http://clip-iisc.site",)},
+        {"identity_browser_origins": ("https://*.clip-iisc.site",)},
+        {"identity_browser_origins": ("https://other.example",)},
+        {"debug": True},
+        {"development_auth": True},
+    ],
+)
+def test_hosted_identity_runtime_rejects_incomplete_or_unsafe_settings(overrides):
+    """Never allow production, fake, insecure, partial or bypass configuration."""
+    with pytest.raises(ValidationError):
+        hosted_identity_settings(**overrides)
+
+
+def test_identity_origins_cannot_be_configured_without_runtime_opt_in():
+    """A stray origin setting must not silently prepare an unused trust policy."""
+    with pytest.raises(ValidationError):
+        Settings(identity_browser_origins=("https://clip-iisc.site",))
 
 
 def _set_isolated_test_profile(monkeypatch, **overrides):

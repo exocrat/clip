@@ -130,13 +130,13 @@ def create_app(
     *,
     identity: IdentityHttpDependencies | None = None,
 ) -> FastAPI:
-    """Compose the normal API with optional explicit local/test Identity bindings.
+    """Compose the API with optional explicit real Identity bindings.
 
     Keep Listings lifespan/state/routes and health in one app. No caller, key,
-    provider or DB is invented from missing configuration. Ambient startup stays
-    Identity-unbound. Real production enablement requires its later reviewed
-    runtime/secret/proxy plan; isolated demo/test caller must never coexist with
-    Identity session issuance. Each app closes its own configured Listings pool.
+    provider or DB is invented from missing configuration. Default and production
+    startup stay Identity-unbound; only the explicit real test runtime can enable
+    sessions. The isolated demo caller never coexists with Identity issuance. Each
+    app closes its own configured Listings pool.
     """
     settings = settings if settings is not None else load_settings()
     if identity is not None:
@@ -149,7 +149,7 @@ def create_app(
         if (
             settings.environment == "production"
             or settings.isolated_listings_test_caller
-            or settings.serve_web_app
+            or (settings.serve_web_app and not settings.identity_runtime_enabled)
             or settings.development_auth
         ):
             raise ConfigurationError(
@@ -176,7 +176,11 @@ def create_app(
 
     install_error_handlers(app)
     if identity is not None:
-        install_identity_http(app, identity)
+        install_identity_http(
+            app,
+            identity,
+            path_prefix="/api" if settings.serve_web_app else "",
+        )
     app.add_middleware(RequestLoggingMiddleware)
 
     if settings.isolated_listings_test_caller:

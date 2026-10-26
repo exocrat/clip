@@ -74,6 +74,7 @@ Both checklists are present in this bundle and apply from BOOT-00. Workstation f
 - [Identity provider setup and pending real checks](environment/identity-provider-setup.md)
 - [Identity provider setup decision](decisions/identity-provider-setup.md)
 - [Identity dual-provider email routing and four-hour refresh](decisions/identity-email-routing.md)
+- [Identity test-runtime activation](decisions/identity-test-runtime-activation.md)
 - [Identity contact sharing and source-data cleanup](decisions/identity-contact-sharing-and-cleanup.md)
 
 - [Shared test ECS image pin](decisions/shared-test-ecs-image-pin.md)
