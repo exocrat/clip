@@ -53,7 +53,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | SE-01 | Mohit (C); peer Suraj (B), Identity review | in progress | Local create-to-Keyword-and-Hybrid flow and browser walkthrough verified; formal acceptance remains pending | Test-only browser demo binds the same fixed synthetic Identity for writes/browse and can opt into the real helper, worker, pipeline bootstrap and Hybrid reader; automatic new-listing vector generation was observed | Suraj verified the local command/API/proxy flow and subsequent browser walkthrough | Search PR #11 worktree `task/search-evidence-reduction` at `864e53b`; new listing `194a32d4-64bb-491b-b4ec-68403e26f7f3` produced one title and one description vector (384 dimensions each), then matched in both modes through API and Vite proxy; session `/tmp/clip-listings-browser-v6e1f01t`; UI `http://127.0.0.1:5173/` | Formal SE-CORE/DATA-READY and final NFR/hosted-CI acceptance remain outside this merge step | 2026-10-25 14:38:24 UTC |
 | SE-02 | Mohit (C); peer Suraj (B), Identity/Conversations review | in progress | Step8 real integration gated; local handoff human-verified | Steps1–7 isolated result verified; Step8 audit performed | Mohit verified isolated UI and combined local handoff | [Search handoff](../evaluation/domain/search-handoff/result.json): Python1270/data94/web144,Black183,native20/3skip,wrapper35/contracts8/boundaries/parity/type/build pass | Await actual ID-READY/LI-CORE/SE-CORE/C adapters; Step9 final acceptance, pinned secrets/hosted CI and independent review pending | 2026-10-25 08:50:43 UTC |
 | MERGE-LI-SE | Suraj (integration); Listings/Search affected owners | done | PR #11 is squash-merged; Search–Listings local merge task is complete | Steps 1–9 performed; approved PR head `2a43066` merged to `main` as `e315c9d`; final hosted CI run `40204621122` passed | Steps 3–8 verified by Suraj; user authorized squash merge of the exact PR revision on 2026-10-25 | PR #11 `https://github.com/exocrat/clip/pull/11`; source head `2a430660d25e7c14cf33d84bd78172db4ec063c7`; squash merge `e315c9df3e0e11d6e9c8d7d244d676204d3af7e8`; hosted CI `40204621122`; local merge commit `29eb6fb`; fallback branch `safety/search-pr11-pre-main-reconciliation-20261025`; stash `af9d7f5`; local checks recorded below | No blocker for the Search–Listings merge. Final dataset, formal NFR/cloud checks, and real Identity/Conversations remain later work. | 2026-10-25 15:17:46 UTC |
-| CN-01 | Rahul (D) | in progress | Combined-application integration Step1 inventory/reservation performed; verify the Listing read-only lookup correction and Step2 scope next | Current fetched main3d6c270 is already included; existing wiring/session tests inspected; missing Listing HTTP/service/UI connection identified; no application/test change this increment | Rahul verified the six-step integration plan; prior local chat browser checks remain verified | `task/cn-01-conversations`; [integration checkpoint](../evaluation/domain/conversations-integration.md), bounded frontend reservation; prior cleanup102 DB checks at1b77308 | Step2 needs typed existing-Listing-pair lookup correction; normal A/B/C review; later provider/device/CN-02/CN-03/NFR gates are outside this merge scope | 2026-10-26 14:51:33 UTC |
+| CN-01 | Rahul (D) | in progress | Integration Step2 Listing-to-chat HTTP/service/public UI connection implemented; verify result before Step3 signed-in combined workflows | DB107; contract/Listings regressions118; web385/3skip, lint/types/build; focused mypy4, contracts8 current, boundaries0 and Gitleaks passed | Rahul verified Step2 and the read-only Listing lookup correction, and confirmed Conversations-only scope; prior browser checks stay verified | `task/cn-01-conversations`; [integration checkpoint](../evaluation/domain/conversations-integration.md); canonical sources regenerated; page reservation released | Step3 real-cookie combined workflows; normal A/B/C review. CN-02/CN-03/provider/device/NFR work remains outside this implementation increment | 2026-10-26 18:21:27 UTC |
 | CN-02 | D; A/B interface review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | Isolated development: PRE-00, then DL-00 and a reviewed contract/stub. Later real gates: CN-CORE, ID-READY, and LI-CORE for listing-origin behavior; SE-02 plus CN-01's real request path for request-response inbox integration. | — |
 | CN-03 | A; D producer review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | CN-CORE, ID-READY | — |
 | INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
@@ -82,6 +82,45 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | DATA-READY | not accepted | SE-01 steps 2/4/9 | — | pending |
 | CN-CORE | not accepted | CN-01 step 10 | — | pending |
 | OPTIONAL-OK | not approved | Each optional task's selection/priority plan | — | pending |
+
+## CN-01 — Combined application integration Step2 — 2026-10-26 18:21:27 UTC
+
+Rahul verified Step2 and the small read-only lookup correction, reconfirmed
+Conversations-only scope and directed continuation. Implemented the missing
+Listing start/reopen connection. `thread_creation.py` provides the exact
+authenticated-buyer Listing lookup through current Identity eligibility.
+`contracts/source/types.py` and `conversations.py` define the public type/port;
+their generated Python mirrors were regenerated, never hand-edited. Updated the
+combined and owner Markdown contracts and both installed-route test inventories.
+
+Listings `service.py` resolves the owner, checks current buyer/owner eligibility,
+and chooses creation or existing-only lookup under a bounded origin lock.
+`postgres_store.py` adds a chat-specific `FOR NO KEY UPDATE` guard: seller state
+changes serialize while the independent thread FK key-share remains compatible.
+`routes.py` validates the operation UUID and returns201/200. The browser sends no
+owner/participant IDs. `listingsApi.ts`, public `StartListingConversationAction`
+and its `index.ts` export replace only the P05 placeholder in `ScaffoldPages.tsx`.
+They use existing cookie/CSRF transport, validate the returned thread, reuse the
+intent UUID on manual retry, and cancel late navigation after account unmount.
+
+Five new disposable DB cases cover regular/temporary buyers, creation/reopening,
+unavailable exact-pair isolation, pending/self/ineligible denial, concurrent
+creation, single initial intent and actual origin-lock/FK behavior. Four new
+page-action cases cover composition/navigation, manual retry/existing result,
+malformed target rejection and logout cancellation. The registered PostgreSQL18.6
+runner passed107 checks; contract and existing Listings route/offer/retirement/
+image-service selection passed118. Full web gate passed385/3skip, lint, app/test
+types and build; focused backend mypy4 passed; Black, boundaries0, generated
+freshness8, Gitleaks8.30.1 and whitespace checks passed. Initial test setup was
+corrected to use pinned httpx2, a consistent revoked-at timestamp, the existing
+Saved page-size contract and pinned Node24; no failure remains in these checks.
+
+The frontend reservation is released; normal affected-owner review remains.
+Tests use synthetic request authentication and real owner/eligibility SQL;
+signed-in cookie-backed complete workflows are the next Step3 checkpoint.
+No new browser verification of the already accepted private-chat demo is
+requested. No offers/selection/contact implementation, migration, provider/cloud
+operation, shared-target apply, push or merge occurred.
 
 ## CN-01 — Combined application integration Step1 — 2026-10-26 14:51:33 UTC
 

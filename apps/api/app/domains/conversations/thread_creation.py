@@ -11,6 +11,7 @@ from app.contracts.domain_types import (
     AccountEligibility,
     ConversationStartResult,
     ExistingWantedConversationLookup,
+    ExistingListingConversationLookup,
     ListingConversationContext,
     WantedConversationContext,
 )
@@ -84,6 +85,33 @@ class PostgresThreadCreationOperations:
             caller_id=caller.user_id,
             counterparty_id=request.owner_id,
         )
+
+    async def find_existing_listing_conversation(
+        self, caller: CallerContext, request: ExistingListingConversationLookup
+    ) -> ConversationStartResult | None:
+        """Read only the authenticated buyer's pair; never create on an old origin.
+
+        Listings guards retirement/availability in its own transaction. Both
+        regular and eligible temporary buyers may reopen their existing thread;
+        the owner still needs current regular eligibility through Identity.
+        """
+        caller.require_current()
+        await self._require_eligible(caller.user_id, caller.account_class)
+        try:
+            async with self._pool.connection() as connection:
+                row = await (
+                    await connection.execute(
+                        "SELECT id,counterparty_id FROM conversations.threads "
+                        "WHERE listing_id=%s AND initiator_id=%s",
+                        (request.listing_id, caller.user_id),
+                    )
+                ).fetchone()
+        except PsycopgError, PoolTimeout:
+            raise self._unavailable() from None
+        if row is None:
+            return None
+        await self._require_eligible(row[1], "regular")
+        return ConversationStartResult(conversation_id=row[0], created=False)
 
     async def open_or_create_wanted_conversation(
         self, caller: CallerContext, request: WantedConversationContext

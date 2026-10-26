@@ -1109,6 +1109,12 @@ class WantedConversationContext(ContractModel):
     author_id: UserId
 
 
+class ExistingListingConversationLookup(ContractModel):
+    """Exact listing/authenticated-buyer lookup; this operation never creates."""
+
+    listing_id: ListingId
+
+
 class ExistingWantedConversationLookup(ContractModel):
     """Exact request/responder pair lookup; this operation never creates."""
 

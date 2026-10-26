@@ -50,6 +50,20 @@ export class ListingsApiError extends Error {
 
 export class ListingImageFinalError extends Error {}
 
+/** Use Listings' owner-state gate; return only a validated conversation target. */
+export async function startListingConversation(listingId: string, operationId: string, signal: AbortSignal) {
+  const value: unknown = await listingsRequest(`/listings/${encodeURIComponent(listingId)}/conversations`, {
+    method: 'POST', body: JSON.stringify({ operation_id: operationId }), signal,
+  });
+  if (!value || typeof value !== 'object' || Object.keys(value).length !== 2 ||
+    !('created' in value) || typeof value.created !== 'boolean' || !('conversation_id' in value) ||
+    typeof value.conversation_id !== 'string' ||
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value.conversation_id)) {
+    throw new ListingsApiError(503);
+  }
+  return { conversation_id: value.conversation_id, created: value.created };
+}
+
 /** Call the same-origin API; writes have no automatic retry or client actor ID. */
 export async function listingsRequest<T>(
   path: string,

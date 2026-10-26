@@ -184,6 +184,7 @@ def main() -> int:
                 "apps/api/tests/test_conversation_message_routes.py",
                 "apps/api/tests/test_conversation_directory.py",
                 "apps/api/tests/test_conversation_cleanup.py",
+                "apps/api/tests/test_listing_conversation_start.py",
                 "-q",
                 "-W",
                 "error",

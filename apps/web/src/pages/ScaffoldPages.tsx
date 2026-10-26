@@ -3,7 +3,7 @@ import { useLocation, useParams } from 'react-router';
 import { ConversationDetailPage as ConnectedConversationDetail, ConversationInboxPage, ConversationsPlaceholder } from '../features/conversations';
 import { MicrosoftCallback, ContactsEditor, SignIn, AccountStateBoundary, SellerEligibilityGate, IdentityPlaceholder as IdentityFeaturePlaceholder } from '../features/identity';
 import { ListingsPlaceholder as ListingsFeaturePlaceholder } from '../features/listings';
-import { CreateListing, ListingDetail, ListingEdit, MyListings } from '../features/listings';
+import { CreateListing, ListingDetail, ListingEdit, MyListings, StartListingConversationAction } from '../features/listings';
 import { WantedBrowse, MyWantedRequests, WantedDetail, SavedListings, SaveListingAction } from '../features/search';
 import { SaleDiscovery } from '../features/search';
 import { PageFrame, SegmentedControl } from '../shared/ui';
@@ -106,7 +106,7 @@ export function ListingDetailPage() {
     <RoutePage title="Sale listing detail">
       <ListingDetail listingId={listingId}>
         <SaveListingAction listingId={listingId} />
-        <ConversationsPlaceholder title="Start or reopen a conversation" />
+        <StartListingConversationAction listingId={listingId} />
       </ListingDetail>
     </RoutePage>
   );

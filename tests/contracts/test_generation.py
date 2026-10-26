@@ -271,6 +271,7 @@ def test_actual_api_schema_matches_generated_contract():
         "/listings/{listing_id}",
         "/me/listings",
         "/listings/{listing_id}/availability",
+        "/listings/{listing_id}/conversations",
         "/listings/{listing_id}/selection",
         "/listings/{listing_id}/conversations/{conversation_id}/offer",
         "/listings/{listing_id}/conversations/{conversation_id}/offer-withdrawals",

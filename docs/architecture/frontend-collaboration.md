@@ -14,6 +14,11 @@ Mohit reviews any Search impact before merge. It does not reserve or modify the
 separate `task/cn-01-two-person-demo` worktree's demo files. Application edits
 start only at the verified next implementation step; this increment records scope.
 
+Step2's page-slot reservation was released at2026-10-26 18:21:27 UTC after
+implementation and local checks (Conversations DB107, web385/3skip, contract/
+Listings regressions118). P05 now composes the public Listings chat action.
+Further shared application/page changes need a renewed bounded reservation.
+
 ## Bounded browser-Origin correction writer (released)
 
 Rahul (D), on `task/cn-01-conversations`, is the local correction writer for
@@ -172,7 +177,7 @@ it is not an additional product route.
 | `/auth/callback` | `AuthCallbackPage` | `identity/MicrosoftCallback` (real local IISc success/non-IISc denial verified; cloud/device acceptance pending) | A — ID-01 |
 | `/` | `DiscoveryPage` | `search/SaleDiscovery` renders reviewed public sale summaries, displays the first attached photo via Listings' public `ListingImagePreview`, and links to B's detail route; `search/WantedBrowse` renders open requests | C — SE-01/SE-02; B — public summary/image delivery integration |
 | `/listings/new` | `ListingCreatePage` | public `identity/SellerEligibilityGate` wraps `listings/CreateListing`; mounts only for a current regular session, blocks temporary/loading/missing/expired/unavailable states | B — LI-01/LI-02; A — ID-01 integration |
-| `/listings/:listingId` | `ListingDetailPage` | `listings/ListingDetail` composes Search's `SaveListingAction`, which checks the caller's saved list and prevents a repeat Save, plus the `conversations/ConversationsPlaceholder` start/reopen action | B — LI-01/LI-02; C — SE-02; D — CN-01 integration |
+| `/listings/:listingId` | `ListingDetailPage` | `listings/ListingDetail` composes Search's `SaveListingAction` and public `listings/StartListingConversationAction`; the latter invokes Listings' guarded start/reopen HTTP command and navigates to the validated returned conversation ID | B — LI-01/LI-02; C — SE-02; D — CN-01 integration |
 | `/listings/:listingId/edit` | `ListingEditPage` | public `identity/SellerEligibilityGate` wraps `listings/ListingEdit`; server enforces regular seller/owner checks | B — LI-01/LI-02 |
 | `/my/listings` | `MyListingsPage` | Local view switch; public `listings/MyListings` and `search/MyWantedRequests` with draft matching; public Identity account boundary resets private state on actor changes; Conversations integration pending | B — LI-01/LI-02; C — SE-02; D — CN-02 integration |
 | `/saved` | `SavedListingsPage` | `search/SavedListings` uses the same `SaleListingCard` as Discover, including the Listings public photo renderer, current availability and Remove action; retired records remain content-free | C — SE-02; B — LI-01/LI-02 integration |

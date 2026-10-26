@@ -331,6 +331,14 @@ currently eligible sale listing for a new thread; retries may resolve the
 existing buyer/listing thread even after ordinary unavailability. This
 operation does not expose listing-private fields or selection state.
 
+Listings invokes `find_existing_listing_conversation` for an unavailable or
+out-of-window origin under its own origin-state lock. The request carries only
+the listing ID; the buyer comes from trusted caller context. The read-only call
+checks current buyer and regular-owner eligibility and returns only that pair's
+existing conversation or None. It never creates. Listings rejects missing,
+pending or retired origins first. Both regular and eligible temporary buyers
+may reopen their own pair; an owner cannot use this action to contact themself.
+
 `open_or_create_wanted_conversation` is callable only by Search with an open,
 non-retired request, regular eligible responder and server-resolved author.
 It returns an existing request/responder thread when the pair already exists

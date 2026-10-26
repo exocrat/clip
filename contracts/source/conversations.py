@@ -15,6 +15,7 @@ from contracts.source.types import (
     EntryPage,
     EntryQuery,
     ExistingWantedConversationLookup,
+    ExistingListingConversationLookup,
     ListingConversationContext,
     ListingOfferCommand,
     ListingThreadParticipantCheck,
@@ -181,6 +182,10 @@ class ConversationsPublic(Protocol):
         self, caller: CallerContext, request: ListingConversationContext
     ) -> ConversationStartResult: ...
 
+    async def find_existing_listing_conversation(
+        self, caller: CallerContext, request: ExistingListingConversationLookup
+    ) -> ConversationStartResult | None: ...
+
     async def open_or_create_wanted_conversation(
         self, caller: CallerContext, request: WantedConversationContext
     ) -> ConversationStartResult: ...
@@ -229,6 +234,13 @@ async def open_or_create_wanted_conversation(
     caller: CallerContext, request: WantedConversationContext
 ) -> ConversationStartResult:
     """Declare idempotent creation of one Search-origin response thread."""
+    raise NotImplementedError("declaration-only")
+
+
+async def find_existing_listing_conversation(
+    caller: CallerContext, request: ExistingListingConversationLookup
+) -> ConversationStartResult | None:
+    """Declare a read-only exact buyer/listing lookup for reopening or retries."""
     raise NotImplementedError("declaration-only")
 
 

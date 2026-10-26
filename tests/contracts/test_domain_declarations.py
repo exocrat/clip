@@ -46,6 +46,7 @@ EXPECTED_CALLABLES = {
     "search": set(),
     "conversations": {
         "open_or_create_listing_conversation",
+        "find_existing_listing_conversation",
         "open_or_create_wanted_conversation",
         "find_existing_wanted_conversation",
         "check_listing_thread_participant",
@@ -244,6 +245,7 @@ def test_only_implemented_domain_http_routes_are_installed():
         "/listings/{listing_id}",
         "/me/listings",
         "/listings/{listing_id}/availability",
+        "/listings/{listing_id}/conversations",
         "/listings/{listing_id}/selection",
         "/listings/{listing_id}/conversations/{conversation_id}/offer",
         "/listings/{listing_id}/conversations/{conversation_id}/offer-withdrawals",

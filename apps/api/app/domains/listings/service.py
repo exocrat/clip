@@ -7,6 +7,7 @@ the running application.
 
 from __future__ import annotations
 
+import asyncio
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
@@ -21,6 +22,9 @@ from app.contracts.domain_types import (
     CategoryCode,
     CatalogueView,
     ConversationId,
+    ConversationStartResult,
+    ExistingListingConversationLookup,
+    ListingConversationContext,
     CreateListingRequest,
     ExistingListingImage,
     ConfirmedImage,
@@ -304,6 +308,12 @@ class ListingsStore(Protocol):
         """
         ...
 
+    def listing_conversation_guard(
+        self, listing_id: ListingId
+    ) -> AsyncContextManager[ListingManagementView | None]:
+        """Hold an origin-state lock compatible with the thread's FK key-share."""
+        ...
+
     def listing_offer_guard(
         self, listing_id: ListingId
     ) -> AsyncContextManager[ListingManagementView | None]:
@@ -372,7 +382,19 @@ class ListingsStore(Protocol):
 
 
 class ListingsConversations(Protocol):
-    """Only the reviewed Conversations public calls used by Listings Step 5."""
+    """Reviewed Conversations public calls used by Listings-owned commands."""
+
+    async def open_or_create_listing_conversation(
+        self, caller: CallerContext, request: ListingConversationContext
+    ) -> ConversationStartResult:
+        """Create the owner-authorized pair or return its existing thread."""
+        ...
+
+    async def find_existing_listing_conversation(
+        self, caller: CallerContext, request: ExistingListingConversationLookup
+    ) -> ConversationStartResult | None:
+        """Read an exact buyer/listing pair without creating a thread."""
+        ...
 
     async def check_listing_thread_participant(
         self, caller: CallerContext, request: ListingThreadParticipantCheck
@@ -843,6 +865,44 @@ class ListingsService:
             caller.user_id, listing_id, request, self._clock()
         )
         return ListingOwnerView.model_validate(view.model_dump())
+
+    async def start_conversation(
+        self, caller: CallerContext, listing_id: ListingId
+    ) -> ConversationStartResult:
+        """Serialize origin state with a bounded, independently committed chat call.
+
+        Pair uniqueness defines retries; an ambiguous outcome can be retried
+        after unavailability using the read-only port. Browser data supplies no
+        owner or buyer ID. Pending/retired/missing origins are hidden by storage.
+        """
+        await _require_eligible(caller, self._identity)
+        conversations = self._require_conversations()
+        try:
+            async with asyncio.timeout(2):
+                async with self._store.listing_conversation_guard(
+                    listing_id
+                ) as current:
+                    if current is None:
+                        raise PublicError(ERRORS[404])
+                    if current.owner_id == caller.user_id:
+                        raise PublicError(ERRORS[403])
+                    if not await self._identity.account_is_eligible(current.owner_id):
+                        raise PublicError(ERRORS[403])
+                    if self._is_discoverable(current):
+                        return await conversations.open_or_create_listing_conversation(
+                            caller,
+                            ListingConversationContext(
+                                listing_id=listing_id, owner_id=current.owner_id
+                            ),
+                        )
+                    existing = await conversations.find_existing_listing_conversation(
+                        caller, ExistingListingConversationLookup(listing_id=listing_id)
+                    )
+                    if existing is None:
+                        raise PublicError(ERRORS[404])
+                    return existing
+        except NotImplementedError, TimeoutError:
+            raise PublicError(ERRORS[503]) from None
 
     async def submit_offer(
         self,

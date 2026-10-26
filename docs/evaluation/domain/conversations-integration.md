@@ -33,7 +33,7 @@ stated. Existing browser send/reload/offline/unread/read-ack checks stay verifie
 | Web session | Public `ConversationRuntime` uses public Identity state and shared `sessionFetch` | Connect Listing action through a public feature export; preserve logout/session isolation and existing pages |
 | Runtime | Existing config,21-file SQL chain, explicit Identity launcher and `/health` liveness contract | Document combined startup/configuration/build/migrations and verify available local pieces; no invented readiness or worker claims |
 
-## Contract correction needed before Step2
+## Contract correction approved for Step2
 
 `contracts/conversations.md` requires existing buyer/listing retries after ordinary
 unavailability. `open_or_create_listing_conversation` can create and has no
@@ -42,14 +42,41 @@ thread; denying it unconditionally would block legitimate reopening. The current
 public contract has no read-only Listing counterpart to
 `find_existing_wanted_conversation`.
 
-Propose the smallest correction: typed
+Rahul verified the smallest correction: typed
 `find_existing_listing_conversation(caller, request)` with request `{listing_id}`
 and result `ConversationStartResult | None`. It reads only the authenticated
 caller's exact buyer/listing pair, checks current account/owner eligibility, and
 never inserts a thread. Listings owns the origin lock/state check and decides
 whether to use lookup or creation; retirement/pending state remains fail closed.
-Update canonical contract sources and regenerate mirrors in Step2 only after
-human verification of this correction. No general policy change is proposed.
+The canonical sources and generated mirrors now contain this lookup. No general
+policy change was made.
+
+## Step2 implementation result
+
+Listings now owns a real HTTP/service start operation and a public
+`StartListingConversationAction` in the existing page slot. It derives owner
+and buyer on the server, validates the operation UUID, returns201/200 for new/
+existing pairs, and performs a read-only lookup after ordinary unavailability.
+Its new state guard uses `FOR NO KEY UPDATE`: seller state writes serialize, but
+the separate Conversations insertion can perform its FK key-share. Calls are
+bounded to2seconds, and retries resolve by exact pair after an unknown result.
+
+The action uses existing cookie/CSRF transport, keeps its operation UUID through
+failure/retry, validates the response before navigating, and aborts on account
+boundary unmount. It exposes no browser actor/owner selector. Offers, selection
+and contact sharing were not implemented in this increment.
+
+Verification:107 disposable PostgreSQL18.6 checks passed (5 new Listing cases),
+web385 passed/3 skipped including4 new page-action cases, app/test TypeScript,
+Biome and build passed; focused backend mypy4 and contract declarations9 passed.
+The complete contract plus existing Listings route/offer/retirement/image-service
+regression selection passed118 tests. Contract freshness8, boundaries0, pinned
+formatting and Gitleaks8.30.1 also passed.
+Tests here use synthetic request authentication with actual owner services,
+Identity eligibility SQL and database side effects. Real cookie-backed combined
+workflows remain Step3. The new page action has automated interaction coverage;
+its human walkthrough belongs to that combined checkpoint, not a repetition of
+the earlier verified private-chat demo.
 
 ## Ordered implementation and checks
 
