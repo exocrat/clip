@@ -11,6 +11,18 @@ Suraj's amendment review is
 user-reported, without a separate artifact; exact implementation review, public
 integration, Linux/resources and original acceptance gates remain pending.
 
+## User-interface amendment — 2026-10-26
+
+Mohit requested Hybrid as the default and removal of the visible mode choice,
+including the Keyword recovery button, to simplify search. Keyword implementation,
+explicit legacy URLs and public API mode support remain available in code. The
+API's declared Keyword default is unchanged: Search UI explicitly sends Hybrid.
+Clean/reset UI URLs use Hybrid; explicit Keyword URLs round-trip without silently
+changing mode. Newest-first remains the default sort. Semantic outages show a
+plain search-unavailable message and Retry, without silently switching modes.
+This supersedes earlier UI mode-toggle/default guidance only; real-provider,
+model availability, review and NFR acceptance gates remain in force.
+
 ## Question
 
 How should search combine common curated item concepts with description-based
