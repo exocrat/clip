@@ -1,0 +1,238 @@
+{
+  "archive_revision": "890adb1a9c5acaddc27b70e038bc5f0836dffc4a",
+  "reason": "Consolidate duplicate ID-01 narrative reports; retain original exact text in Git and machine artifacts in place.",
+  "reports": {
+    "docs/evaluation/identity/id-01-step-10/README.md": {
+      "target": "docs/evaluation/identity/implementation.md#step-10",
+      "sha256": "0d80381bfb0164af3c47e268d61354e1f5cf71b09997278a49b8b322fadb2efe",
+      "git_blob": "7d24251de2f7b7835b56503f3e1b900678be5826"
+    },
+    "docs/evaluation/identity/id-01-step-11/README.md": {
+      "target": "docs/evaluation/identity/implementation.md#step-11",
+      "sha256": "839a1906462fbd146d5394e08d54dbef1401c346402595e4df2c29aa4663f8a6",
+      "git_blob": "b437442d4774f5aa15780e5b6664e23ad0c8e667"
+    },
+    "docs/evaluation/identity/id-01-step-11/contacts-checkpoint.md": {
+      "target": "docs/evaluation/identity/implementation.md#step-11",
+      "sha256": "7a9c87d9f9f2255c0fd578fd85559fe54e11ec0cc073e7fbf699fcf82e49f4ff",
+      "git_blob": "6a8dae70e9642b4c34fdad1f7d061cfd8ac18e94"
+    },
+    "docs/evaluation/identity/id-01-step-11/microsoft-checkpoint.md": {
+      "target": "docs/evaluation/identity/implementation.md#step-11",
+      "sha256": "3692369668d2cbe1a92268037dd1491c9327cf4b5870a588fa9f7cb95c173868",
+      "git_blob": "20d88fbfd4be1369d264e28a7ba525399fdd7d1b"
+    },
+    "docs/evaluation/identity/id-01-step-11/reset-checkpoint.md": {
+      "target": "docs/evaluation/identity/implementation.md#step-11",
+      "sha256": "0dc90926ac5ed7a391685feb6724b33429d200e02b7b118e00f9e0586647aba7",
+      "git_blob": "765a13c6f34db7274055567c7aa5f40a9df653fb"
+    },
+    "docs/evaluation/identity/id-01-step-12/email-routing-checkpoint.md": {
+      "target": "docs/evaluation/identity/integration.md#email-routing",
+      "sha256": "2c9f8fa6cd8c33f2faf9a2097b0510e7c29d5e646272aca577b92531265fcaa4",
+      "git_blob": "e91c3d96515baed7d8d5f829cf645880658442cd"
+    },
+    "docs/evaluation/identity/id-01-step-12/integration-plan.md": {
+      "target": "docs/evaluation/identity/integration.md#runtime-plan",
+      "sha256": "f56d8f0b7c7a03f8a611c79fbad61a8f3d65b8985dcd3d7fb9a20b83e6d53330",
+      "git_blob": "a68b44fd930b3d1e53b53b82760c44f4d53f8195"
+    },
+    "docs/evaluation/identity/id-01-step-12/merge-checkpoint.md": {
+      "target": "docs/evaluation/identity/integration.md#main-reconciliation",
+      "sha256": "ac6d8f91543ad72cf97443dc2c17ef5596d75885f46f221a3610907fb39ed03a",
+      "git_blob": "70694b7a6f02ce6ef213b9e113a5192e75e2f2a3"
+    },
+    "docs/evaluation/identity/id-01-step-2/README.md": {
+      "target": "docs/evaluation/identity/provider-history.md#setup-and-permissions",
+      "sha256": "2d14f32a8218b02ae0ed476349954a7df5631af5e649171d792873d4d6eedfd6",
+      "git_blob": "5a9663bd3310dcdd89bb48c682efe2d0f332222e"
+    },
+    "docs/evaluation/identity/id-01-step-2/builder-build-result.md": {
+      "target": "docs/evaluation/identity/provider-history.md#builder-and-image",
+      "sha256": "538c3f5e164dd53b3531033bb0f7524661a4b1532f0cc3018eb0228eadaac9e9",
+      "git_blob": "e306683efb4be41791f0efecf677bd4571015c2a"
+    },
+    "docs/evaluation/identity/id-01-step-2/builder-plan-review.md": {
+      "target": "docs/evaluation/identity/provider-history.md#builder-and-image",
+      "sha256": "4faf15a18749ebed0c0ccc2f5fe8de02b1cad1fead8af9a5c8962c530dbfbc35",
+      "git_blob": "ef71e68e40024ad14b030f6f96ed8b329eb2761b"
+    },
+    "docs/evaluation/identity/id-01-step-2/builder-plan.md": {
+      "target": "docs/evaluation/identity/provider-history.md#builder-and-image",
+      "sha256": "3f54b2656d6d6880375ab601535c6c845292988cf883ce17f50a0df6b00b2a4a",
+      "git_blob": "58a92ed1b324261b91a1b228c440380e8390a2e5"
+    },
+    "docs/evaluation/identity/id-01-step-2/checkpoint-commit-review.md": {
+      "target": "docs/evaluation/identity/provider-history.md#setup-and-permissions",
+      "sha256": "59ab8b94d11097f30805f11f277cf673a41b394c7d4b4143fb050aa9426ebd23",
+      "git_blob": "dc5f61347d1b670d63bffd090ef376293d19ff29"
+    },
+    "docs/evaluation/identity/id-01-step-2/cloud-plan-request.md": {
+      "target": "docs/evaluation/identity/provider-history.md#setup-and-permissions",
+      "sha256": "91631f4c2298c0d80f7602176a0f0b8d535b80533195ff7b52b1b97e1cfecdcd",
+      "git_blob": "5514a81d0e5fee8bf0e4c1f4facfbe089b62afb6"
+    },
+    "docs/evaluation/identity/id-01-step-2/cloud-plan-result.md": {
+      "target": "docs/evaluation/identity/provider-history.md#setup-and-permissions",
+      "sha256": "fe29e6f38827abeca7ae9418dade582b5b2db346bb441c7050d1ea0e8bebef40",
+      "git_blob": "9abcc106a323e13531aa17c95ac6c708722c7de8"
+    },
+    "docs/evaluation/identity/id-01-step-2/image-publication-request.md": {
+      "target": "docs/evaluation/identity/provider-history.md#builder-and-image",
+      "sha256": "9bede7d43a965558ef62daaab7e69d8884f718fc13d755f27243ebaeb8ecd264",
+      "git_blob": "2bd29eb122759a6b4475a97551f412d58e0b7806"
+    },
+    "docs/evaluation/identity/id-01-step-2/image-publication-result.md": {
+      "target": "docs/evaluation/identity/provider-history.md#builder-and-image",
+      "sha256": "db720ea471996e0ade790253a1b1ab57c78f6ffd2f79bcb15b23a51d036f8441",
+      "git_blob": "7de39ea87c98013496504a68e7b5e498581d6dec"
+    },
+    "docs/evaluation/identity/id-01-step-2/permission-apply-result.md": {
+      "target": "docs/evaluation/identity/provider-history.md#setup-and-permissions",
+      "sha256": "ff0c6252312004c5c4b90b32d8e1314036d0372f16870499df31fb770ea180c5",
+      "git_blob": "ba671c15172a9cedb1610fa6f050ed280c744eb2"
+    },
+    "docs/evaluation/identity/id-01-step-2/permission-plan-review.md": {
+      "target": "docs/evaluation/identity/provider-history.md#setup-and-permissions",
+      "sha256": "57d901e5f9be8335b3a59fe3bcbbfc10cabdb2d82a28c6966d965a32d227cbbc",
+      "git_blob": "b3e7735cca992040cbf93542e65ccc6f83151c71"
+    },
+    "docs/evaluation/identity/id-01-step-2/pinned-plan-result.md": {
+      "target": "docs/evaluation/identity/provider-history.md#setup-and-permissions",
+      "sha256": "9e5280816985e6f984b3503d590064736f100612fab2c200209e1991ea189cf4",
+      "git_blob": "c34f34b1df7564d381d6d6837a14a49542ac68dd"
+    },
+    "docs/evaluation/identity/id-01-step-2/runtime-attempt-result.md": {
+      "target": "docs/evaluation/identity/provider-history.md#delivery-diagnostics",
+      "sha256": "67531786cbd87ffa6cd403d9d7169e1e7cbe28e5fbfe73a027bd4bd10d08bd25",
+      "git_blob": "1ea093116a69300793b1b4c0ce4591fcde58b2df"
+    },
+    "docs/evaluation/identity/id-01-step-2/runtime-authorization-plan.md": {
+      "target": "docs/evaluation/identity/provider-history.md#delivery-diagnostics",
+      "sha256": "c258cd109185ff15b8e2064c87641c32c2d9a605aa427d7b5a482f5160c12098",
+      "git_blob": "1069ed15635ecc427a84842bfcb418f12a71d014"
+    },
+    "docs/evaluation/identity/id-01-step-2/runtime-corrected-result.md": {
+      "target": "docs/evaluation/identity/provider-history.md#delivery-diagnostics",
+      "sha256": "d19e36498f183feee84ff7fc561f760dacbbf03ef477676942c34f59fa53583c",
+      "git_blob": "ac244b1b53c8851c301e81c0a3895f0c5af2b0d2"
+    },
+    "docs/evaluation/identity/id-01-step-2/runtime-diagnostic-approval.md": {
+      "target": "docs/evaluation/identity/provider-history.md#delivery-diagnostics",
+      "sha256": "ca5c5ab065cc34f356a906624933d4c71e1083dfffc424356df68b70569008a5",
+      "git_blob": "b198528c75a5a6258b71141e11a60ffc9a5e9632"
+    },
+    "docs/evaluation/identity/id-01-step-2/runtime-diagnostic-next.md": {
+      "target": "docs/evaluation/identity/provider-history.md#delivery-diagnostics",
+      "sha256": "84cf5d519842c23a14650561b3f6e9b95ab8e31b85ebd6e4956efa5e79194a5d",
+      "git_blob": "cdc8b70f221024fc278acb892fb2d53073536e48"
+    },
+    "docs/evaluation/identity/id-01-step-2/runtime-diagnostic-result.md": {
+      "target": "docs/evaluation/identity/provider-history.md#delivery-diagnostics",
+      "sha256": "aaad2c0fccb244afb865e0c7b9661ed80def7397cb90e8f74e9738f0b5c7efcf",
+      "git_blob": "39139bf8fbf5001dbf508cb140ae2e20d731c67c"
+    },
+    "docs/evaluation/identity/id-01-step-2/runtime-preparation-result.md": {
+      "target": "docs/evaluation/identity/provider-history.md#delivery-diagnostics",
+      "sha256": "f4dfcff5ce91de641609711e379a71d39f9f889db33ddbcecdb7faf102ac33fc",
+      "git_blob": "ecf5702ad018afcbf4b841267254a4e5778a107b"
+    },
+    "docs/evaluation/identity/id-01-step-2/runtime-registration-apply-result.md": {
+      "target": "docs/evaluation/identity/provider-history.md#builder-and-image",
+      "sha256": "cc2d96399999d95824ac50e8936a08a36cafb0b14dc249500a9d01befd2de1c9",
+      "git_blob": "6b405042b227a653ca591f18d83f355cad3a88dd"
+    },
+    "docs/evaluation/identity/id-01-step-2/runtime-registration-plan-request.md": {
+      "target": "docs/evaluation/identity/provider-history.md#builder-and-image",
+      "sha256": "8c2148d76f982fe25f4a92079618a04913a0708ba61ff532ae3b6582483f275c",
+      "git_blob": "d01ab9bf319ff6c2e61cf6c3a2ccfcbf003b69b3"
+    },
+    "docs/evaluation/identity/id-01-step-2/runtime-registration-plan-review.md": {
+      "target": "docs/evaluation/identity/provider-history.md#builder-and-image",
+      "sha256": "36216cd8752e1489ad564273b16d00848be632eb9fdee1b2337f590029144bf9",
+      "git_blob": "9137dd6e5feed76c8a4cd0b2f2d8356b0efdfe11"
+    },
+    "docs/evaluation/identity/id-01-step-2/runtime-registration-preflight-stop.md": {
+      "target": "docs/evaluation/identity/provider-history.md#builder-and-image",
+      "sha256": "8104d42765cfe7ec2caa8f6ae4115f95f2b1c3f4e2ba0017cb689f17dc523aa0",
+      "git_blob": "85756e31cbad4b577694acaa7a8573299fa726e6"
+    },
+    "docs/evaluation/identity/id-01-step-2/runtime-retry-approval.md": {
+      "target": "docs/evaluation/identity/provider-history.md#delivery-diagnostics",
+      "sha256": "24097f8b7579722a0d8c23e20ffdcd20d92aad86f1d709c87caf695d322b0062",
+      "git_blob": "7c122899a46e8b9685e43b1d08d3fa5a1fcb4c9b"
+    },
+    "docs/evaluation/identity/id-01-step-2/runtime-run-approval.md": {
+      "target": "docs/evaluation/identity/provider-history.md#delivery-diagnostics",
+      "sha256": "c3fae4a14d3c767db68a1ee03a46362bba1911121e22f5224e7664cb51c308cb",
+      "git_blob": "0719b076a4e372008624b8ae81a6f8f228a6c0b1"
+    },
+    "docs/evaluation/identity/id-01-step-2/runtime-test-plan.md": {
+      "target": "docs/evaluation/identity/provider-history.md#delivery-diagnostics",
+      "sha256": "eef01fb6d7ec817f2ce294f2f2b542acfdd00d5744e849d4bffb36a34a6f431c",
+      "git_blob": "6fbe96aa21892b7db48ee7932e0e3b1d19990930"
+    },
+    "docs/evaluation/identity/id-01-step-2/runtime-test-preparation.md": {
+      "target": "docs/evaluation/identity/provider-history.md#delivery-diagnostics",
+      "sha256": "16edc442e00256dbaffa6d39e359f45c2662bcbfdf5aa4654e062d52dd8b483c",
+      "git_blob": "fff36645926f6859910da9cf33ee96e55f323d6a"
+    },
+    "docs/evaluation/identity/id-01-step-2/sandbox-recipient-fix-plan.md": {
+      "target": "docs/evaluation/identity/provider-history.md#delivery-diagnostics",
+      "sha256": "9b02be97a960ee28616466c9e2363d354216dabe0f270cc0f183daa28ba1f2ab",
+      "git_blob": "d574d728be1b36193dc3ca0dfde183ab36867fe4"
+    },
+    "docs/evaluation/identity/id-01-step-2/sandbox-recipient-fix-result.md": {
+      "target": "docs/evaluation/identity/provider-history.md#delivery-diagnostics",
+      "sha256": "92fab9a22b436f673870b3dfbaa7945ba8cd2f242b63bf347f819852d37d1ee8",
+      "git_blob": "a832a42576e1d1bdb3c8555fc1a281b53e0be5ca"
+    },
+    "docs/evaluation/identity/id-01-step-3/README.md": {
+      "target": "docs/evaluation/identity/implementation.md#step-3",
+      "sha256": "5b3b865a6f21071d9a005f97f0d94696116b9d2e4daad035fd793837c2b40077",
+      "git_blob": "292b39816b3e2e1d8d83320194e67259222d47dc"
+    },
+    "docs/evaluation/identity/id-01-step-4/README.md": {
+      "target": "docs/evaluation/identity/implementation.md#step-4",
+      "sha256": "1877477f41032aaec538abda0e44a00d0cfab221ec0b19e7e98b031f437c2fd4",
+      "git_blob": "85cebd5acd31d3036c38bae106931896c7c422e1"
+    },
+    "docs/evaluation/identity/id-01-step-5/README.md": {
+      "target": "docs/evaluation/identity/implementation.md#step-5",
+      "sha256": "8105cd651812174492256758e04a5a8fb7f0c16e8344a9183c44e602ebd72ba3",
+      "git_blob": "b93628b41998323693199063df8d477e7e00bf03"
+    },
+    "docs/evaluation/identity/id-01-step-6/README.md": {
+      "target": "docs/evaluation/identity/implementation.md#step-6",
+      "sha256": "e5777c84efbb1c4295376c7f5f7f2a877ea030a1517fb00738a1fe86cd6e46e1",
+      "git_blob": "ce29025eb2069daa1dca8e67704a38bb74c5db3f"
+    },
+    "docs/evaluation/identity/id-01-step-7/README.md": {
+      "target": "docs/evaluation/identity/implementation.md#step-7",
+      "sha256": "e8298c43e3196fc39e7d378d6188ae3404c11c6b3d9aa414431acec80e4fa2e8",
+      "git_blob": "3f0fb724434c2286468899e8c24661f494bf027b"
+    },
+    "docs/evaluation/identity/id-01-step-8/README.md": {
+      "target": "docs/evaluation/identity/implementation.md#step-8",
+      "sha256": "4b1bea4f35c194227257a5fd0aedc18b459539f742b50d42b36315e779ba3c85",
+      "git_blob": "743576ee437f33ac342a34c9c41487cc86b6befe"
+    },
+    "docs/evaluation/identity/id-01-step-9/README.md": {
+      "target": "docs/evaluation/identity/implementation.md#step-9",
+      "sha256": "9fc3a719e45e5078c4be60ef0662ecb5c215f971394406ef29f50a35f4718a2f",
+      "git_blob": "e6ec86bdb1203f972b934949c9a0e87f74ee6ecf"
+    }
+  },
+  "rewritten_guides": {
+    "docs/environment/identity-provider-setup.md": {
+      "sha256": "3402f3c9a9256184c18618e951a9f73adb6828c64865171fa929d36688d510a8",
+      "git_blob": "31938ca4770c873e1c531ad8b7fa1b375f7d0863",
+      "history_summary": "docs/evaluation/identity/provider-history.md"
+    },
+    "docs/environment/secret-handling.md": {
+      "sha256": "fb3d1d43626fff671b681ef70e68a12d825d4907c9661e30fdaae91977fb66c0",
+      "git_blob": "69f420d93283d9340b0330e1a7141e05bd9dd795",
+      "scope": "ID-01 sections only; other contributor/shared records preserved"
+    }
+  }
+}

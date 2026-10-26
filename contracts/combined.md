@@ -36,18 +36,20 @@ the complete resulting live state. Invalid pagination/filter/body inputs use
 ambiguous: follow only that operation's declared idempotency-key or stable-pair
 lookup path; never assume rollback or issue an unguarded retry.
 
-The HTTP operations below map to the same-named function in
-app.domains.<owner>.public; those functions are declarations only until
-Step 11. Internal callables are listed separately and never become HTTP or
-OpenAPI operations by inference. Every operation below has success,
+The HTTP operation IDs below are registered in each owner's `HTTP_OPERATIONS`
+declaration and generated into OpenAPI. They are not Python functions in the
+public module; route handlers are implementation work for the named domain
+task. Internal callables are separately declared Python functions and never
+become HTTP or OpenAPI operations by inference. Every operation below has success,
 unauthorized/forbidden, invalid, duplicate/retry and relevant partial-failure
 checks assigned to the named implementation task; isolated doubles do not
 count as real integration.
 
 ## Identity HTTP operations
 
-Session transport details (cookie attributes, CSRF binding, lifetime and
-provider credentials) remain the ID-01 authentication/session design gate.
+Session transport/lifetime/CSRF and bounded cleanup follow the Aditya-verified
+[Identity session decision](../docs/decisions/identity-sessions-and-cleanup.md).
+Provider/runtime/browser activation and real checks remain ID-01 gates.
 Responses never return a bearer/session secret in JSON. Successful sign-in
 returns the public SessionView and establishes a server-managed session;
 logout revokes it. ID-01 must finish provider/abuse settings before real
@@ -55,7 +57,9 @@ provider use.
 
 | Method and route / operation ID | Input → output | Authorization, state, errors, retries and required cases |
 |---|---|---|
-| POST /auth/microsoft/sessions — identity_create_microsoft_session | MicrosoftSessionRequest{id_token: SecretStr} → SessionView{user_id,account_class=regular,valid_until,display_name?} | Public credential exchange. Identity validates signature, issuer, audience, expiry, claims and approved IISc domain; atomically get/create by verified issuer/subject. Invalid token/domain is generic 401; provider unavailability 503. No raw token logging/storage. Account identity is unique by verified issuer/subject; a repeated valid exchange may establish another session, and the provider-state anti-replay/session replacement policy remains ID-01 review. Do not automatically retry an ambiguous exchange. Test valid, expired, wrong issuer/signature/audience/domain, duplicate callback and provider failure. |
+| POST /auth/microsoft/login-attempts — identity_start_microsoft_login_attempt | No body → MicrosoftLoginAttempt{nonce,expires_at} (201), private HttpOnly attempt cookie | Exact Origin/non-simple request guard; bounded source limit429. Ten-minute server-bound nonce; no bearer in JSON. Exchange consumes once; invalid/expired/replayed cookie or assertion401, storage/provider503. Browser PKCE/state remain required. |
+| GET /auth/csrf — identity_read_csrf_token | No body → CsrfToken{csrf_token} | Current session required401; no-store, exact-origin browser access. Token is bound to current session and required on authenticated unsafe requests; not a bearer credential. |
+| POST /auth/microsoft/sessions — identity_create_microsoft_session | MicrosoftSessionRequest{id_token: SecretStr} → SessionView{user_id,account_class=regular,valid_until,display_name?} | Public credential exchange. Identity validates signature, issuer, audience, expiry, claims and approved IISc domain; atomically get/create by verified issuer/subject. Invalid token/domain is generic 401; provider unavailability 503. No raw token logging/storage. Account identity is unique by verified issuer/subject; the trusted attempt is consumed once atomically with account/session creation; repeated exchange of that attempt is rejected. Do not automatically retry an ambiguous exchange. Test valid, expired, wrong issuer/signature/audience/domain, duplicate callback and provider failure. |
 | POST /auth/temporary/registration-challenges — identity_start_temporary_registration | RegistrationChallengeRequest{email,operation_id} → ChallengeAccepted{challenge_id,expires_at} (202) | Public; normalize email and return indistinguishable acceptance for enrolled/ineligible addresses. Send one purpose-bound OTP through Identity; challenge/attempt state belongs to Identity. Rate limit 429; provider error is safe and cannot pretend delivery succeeded. Same `(purpose,normalized email,operation_id)` and intent returns the same challenge without another send; deliberate resend uses a new UUIDv4 operation ID and replaces the prior unconsumed challenge within approved limits. It never extends a verified account. Test same-key retry, deliberate resend, enumeration, expiry, attempt cap and provider timeout. |
 | POST /auth/temporary/accounts — identity_activate_temporary_account | ActivateTemporaryRequest{challenge_id,code,password} → temporary SessionView (201) | Public OTP exchange. Verify challenge once, then atomically create/activate the account, set activated_at, set exact expires_at=activated_at+14 days, and create session. Preserve the service-lifetime enrollment guard; no self-renew. Invalid/expired/consumed challenge is generic 422; already-enrolled conflict is non-enumerating. If a successful response is lost, replay is rejected and the user may sign in with the chosen credentials; the account/session write is atomic. Test wrong/replayed OTP, ambiguous response followed by login, concurrent activation and no renewal. |
 | POST /auth/temporary/sessions — identity_create_temporary_session | TemporarySessionRequest{email,password} → temporary SessionView (200) | Public credential exchange; only verified, active temporary account. Generic 401 for incorrect/expired/revoked credentials; 429 for abuse controls. Each successful explicit login may create a session; do not automatically retry an ambiguous response. No account/password-state oracle. Test correct/incorrect password, expiry, revocation, duplicate explicit login and concurrent reset/login. |
@@ -81,7 +85,7 @@ parameter.
 
 | Import path and signature | Allowed caller / result and failure behavior |
 |---|---|
-| app.domains.identity.public.check_account_eligibility(user_id: UserId, required_class: Optional[AccountClass] = None) -> AccountEligibility | Listings, Search, Conversations. Returns only eligible true/false for current state and optional class requirement; no profile, contact, login or reason. Identity unavailable fails closed. Test active, wrong-class, expired, revoked, missing and dependency failure. |
+| app.domains.identity.public.check_account_eligibility(user_id: UserId, required_class: Optional[AccountClass] = None) -> AccountEligibility | Listings, Search, Conversations. Returns only eligible true/false for fresh current state and optional exact class requirement; no profile, contact, login or reason. Identity unavailable/unbound fails safe503 through its explicitly scoped generated adapter; no browser lookup. Test active, wrong-class, expired, revoked, missing and dependency failure. |
 | app.domains.identity.public.get_shareable_contact_options(caller: CallerContext, conversation_id: ConversationId) -> ShareableContactOptions | Conversations only after participant/consent-flow check. Returns the actor ID and three availability booleans, never values. Non-actor/invalid context denied. Read-only/no transaction. |
 | app.domains.identity.public.get_selected_own_contacts(caller: CallerContext, conversation_id: ConversationId, fields: frozenset[ContactField]) -> SelectedOwnContacts | Conversations only after membership and explicit confirmation. fields is nonempty and contains only supported contact kinds; returns only requested, still-present values as required nullable fields. No storage write; values are ephemeral and repr/log/error redacted. Invalid/removed fields fail safely. |
 | app.domains.identity.public.resolve_notification_recipient(context: NotificationWorkerContext, recipient_id: UserId) -> Optional[NotificationRecipient] | CN-03 delivery path only, with server-injected worker context. Returns only the currently eligible account's verified delivery destination; returns none for ineligible/removed recipients. No contact-profile fields and no persistence. Identity outage yields retryable dependency failure; no address is copied into Conversations. |
@@ -91,6 +95,11 @@ safety and session transport remain Identity implementation gates in ID-01;
 the API fields and failure privacy are fixed here, but no provider is configured.
 
 ## Listings HTTP operations
+
+Pickup area is optional in the Listings models: create omission/null stores no
+area, full replacement uses explicit null to clear, and read models return null
+when absent. Supplied text keeps its existing bounds. This LI-01 correction is
+directed by Suraj; affected-consumer/schema review remains pending.
 
 ListingSummary is the Listings-owned public display view (title, description,
 category/condition codes and labels, asking price paise, negotiable, pickup
@@ -110,12 +119,12 @@ only that owner's availability and selection state.
 | POST /image-uploads/{upload_id}/confirm — listings_confirm_image_upload | UUID path → ConfirmedImage{upload_id,media_type,size_bytes} | Owner only. LI-02 inspects actual object/type/size; atomically confirms intent metadata. Duplicate identical confirm returns same result; conflicting/missing object is safe conflict/404; storage timeout is retryable and never reports confirmed. Test wrong owner, invalid actual content, duplicate, missing object and timeout. |
 | DELETE /image-uploads/{upload_id} — listings_cancel_image_upload | UUID path → empty 204 | Owner only; cancels/removes only unattached intent, then safe object cleanup per LI-02. Repeated cancel succeeds. Failed/ambiguous object deletion retains cleanup metadata and reports safe failure; cleanup mechanism/order remains gated. Test wrong owner, attached intent, repeat and failed/ambiguous delete. |
 | GET /images/{image_id}/delivery — listings_get_image_delivery | UUID path → ImageDelivery{url,url_expires_at} | Eligible caller who can view the attached image (public discovery-eligible listing or owner where permitted). Listing remains authoritative; no public bucket. Owner-reviewed URL lifetime is at most 5 minutes; LI-02 must implement and validate actual signing/storage behavior. Missing, hidden, retired or deleted content is safe 404; storage outage 503. Test ownership, expiry, revoked/unavailable access and URL redaction. |
-| POST /listings — listings_create | CreateListingRequest{title,description,category_code,condition_code,asking_price_paise,negotiable,pickup_area,available_from?,available_until?,proof_available?,image_upload_ids[1..8],operation_id} → ListingDetail (201) | Eligible regular caller only. Server assigns owner/ID/time/default start; active catalogue and confirmed unattached upload intents are validated; listing and images publish atomically. Required title 1–120, description 1–5000, pickup 1–120 Unicode code points; price >=0 whole-rupee paise; window end > start. Duplicate operation returns original; different intent 409. Test temporary denial, fields, zero, missing/foreign/unconfirmed images and transaction rollback. |
+| POST /listings — listings_create | CreateListingRequest{title,description,category_code,condition_code,asking_price_paise,negotiable,pickup_area?,available_from?,available_until?,proof_available?,image_upload_ids[1..8],operation_id} → ListingDetail (201) | Eligible regular caller only. Server assigns owner/ID/time/default start; active catalogue and confirmed unattached upload intents are validated; listing and images publish atomically. Required title 1–120 and description 1–5000 Unicode code points; optional pickup area is 1–120 when supplied; price >=0 whole-rupee paise; window end > start. Same `(owner_id, operation_id)` plus same intent replays the original response while listing content is retained; changed intent returns 409. Retirement scrubs request/result payloads but keeps the content-free owner/operation/listing key; any later reuse returns 409 without replaying content or creating a second listing. This post-retirement behavior awaits affected-owner review. Test temporary denial, fields, zero, missing/foreign/unconfirmed images, same/changed retry, retirement scrub, late retry and transaction rollback. |
 | PUT /listings/{listing_id} — listings_replace | UUID path; full ListingReplacement{expected_revision,fields...,image_upload_ids[1..8],operation_id} → ListingDetail | Owner only, active/non-retired listing. Full resulting record validation and serialized image invariant; omission of optional available_until/proof_available means explicit null as defined by replacement schema. Atomic owner transaction. Stale revision 409; invalid values 422; image dependency failure 503. Test owner, stale update, concurrent last-image removal and partial failure. |
-| PUT /listings/{listing_id}/availability — listings_change_availability | AvailabilityChange{expected_revision,availability,available_from?,available_until?,operation_id} → ListingDetail | Owner only. `available` or `unavailable` is independent of time window and selection; omitted start preserves current value, null end clears end; successful reopen resets retirement eligibility anchor. Seller-unavailable reads remain out of discovery. Stale 409; no implicit selection change. Test non-owner, exact boundaries, reset, repeated operation and concurrent edit. |
+| PUT /listings/{listing_id}/availability — listings_change_availability | AvailabilityChange{expected_revision,availability,available_from?,available_until?,operation_id} → ListingDetail | Owner only. `available` or `unavailable` is independent of time window and selection; omitted start preserves current value, null end clears end; successful reopen resets retirement eligibility anchor. Seller-unavailable reads remain out of discovery. Stale 409; no implicit selection change. Retry key scope is (listing_id, availability, operation_id): identical intent replays the saved response while the listing is not retired; changed intent with that key returns 409. Retirement deletes the saved request/result; later retries get the retired-state conflict without old listing details. Test non-owner, exact boundaries, reset, repeated operation and concurrent edit. |
 | POST /listings/{listing_id}/conversations — listings_start_conversation | StartListingConversationRequest{operation_id} → ConversationStartResult{conversation_id,created} (201/200) | Eligible caller may initiate as buyer only while the listing is discoverable; owner cannot start a buyer thread with self. Listings resolves owner, locks its own record, then calls Conversations. Unique buyer/listing pair returns existing thread; retries after unavailability resolve only that pair. C dependency timeout 503 may be ambiguous; same pair retry is safe. Test owner-self denial, concurrent create, stale/hidden listing and downstream timeout. |
-| PUT /listings/{listing_id}/selection — listings_set_selected_buyer | SelectionChange{buyer_id: Optional[UUID],conversation_id: Optional[UUID],expected_revision,operation_id} → ListingOwnerView | Eligible listing owner only. Set requires both IDs, eligible buyer membership confirmed by Conversations, and currently available/in-window listing. Clear requires both null and is allowed while ordinarily unavailable, never after retirement. Listings serializes state/write; retry returns same; stale selection 409. Test non-owner, no-offer participant, nonparticipant, wrong listing, race and failed Conversations call. |
-| PUT /listings/{listing_id}/conversations/{conversation_id}/offer — listings_submit_offer | OfferRevisionRequest{amount_paise,note_envelope?:CipherEnvelope,expected_revision?:int,operation_id} → OfferView | Eligible listing-conversation buyer only. Listings resolves authoritative listing/buyer and serializes current available-window check before calling Conversations. Create/revise/resubmit only while available/in-window; integer paise >=0, multiple of 100; amount/status structured, optional note envelope must be encrypted `ciphertext` type with both member key versions (never `prekey_bundle` or `retry_request`). Duplicate identical key returns original; stale revision 409. No reservation/payment. Test role, price, encryption metadata, availability race and timeout. |
+| PUT /listings/{listing_id}/selection — listings_set_selected_buyer | SelectionChange{buyer_id: Optional[UUID],conversation_id: Optional[UUID],expected_revision,operation_id} → ListingOwnerView | Eligible listing owner only. Set requires both IDs, eligible buyer membership confirmed by Conversations, and currently available/in-window listing. Clear requires both null and is allowed while ordinarily unavailable, never after retirement. Listings serializes state/write; stale selection 409. Retry key scope is (listing_id, selection, operation_id): identical intent replays the saved response while the listing is not retired; changed intent with that key returns 409. Retirement deletes the saved request/result; later retries get the retired-state conflict without old listing details. Test non-owner, no-offer participant, nonparticipant, wrong listing, race and failed Conversations call. |
+| PUT /listings/{listing_id}/conversations/{conversation_id}/offer — listings_submit_offer | OfferRevisionRequest{amount_paise,note_envelope?:CipherEnvelope,expected_revision?:int,operation_id} → OfferView | Eligible listing-conversation buyer only. Listings resolves authoritative listing/buyer and serializes current available-window check before calling Conversations. Create/revise/resubmit only while available/in-window; integer paise >=0, multiple of 100; amount/status structured, note encrypted. Duplicate identical key returns original; stale revision 409. No reservation/payment. Test role, price, encryption metadata, availability race and timeout. |
 | POST /listings/{listing_id}/conversations/{conversation_id}/offer-withdrawals — listings_withdraw_offer | OfferWithdrawalRequest{offer_id,expected_revision,operation_id} → OfferView | Eligible offer buyer only. Listings confirms owner/origin and calls Conversations. Allowed after ordinary unavailability but not retirement; appends withdrawn revision with previous amount and no note. Idempotent retry; stale revision 409. Test wrong buyer, duplicate, unavailable and retired listing. |
 
 The sensitive-price threshold remains an LI-01 Step 2 gate; the sensitive flag
@@ -174,9 +183,9 @@ Listings; public request display resolves the retained code/label through the
 Listings display-only boundary even if a catalogue value later becomes
 inactive. Open browse is separate from owner management. Search invokes
 Conversations to create or look up Wanted Request response threads and read
-minimal request-origin activity. The retirement-marker operation is gated on
-separate human approval of the exact cleanup order. Conversations never calls
-back into Search.
+minimal request-origin activity and to use the approved retirement-marker
+operation. Destructive content/object cleanup retains a separate approval
+gate. Conversations never calls back into Search.
 
 Search owns the HTTP operations above. It exposes no separate internal
 business callable to another domain in this contract; for cross-domain work it
@@ -329,11 +338,12 @@ alone is not proof of authorization.
 
 ## HTTP, internal, and frontend connection map
 
-An HTTP operation ID maps to its same-named owner function under
-`app.domains.<owner>.public`; internal function names above are separate
-capabilities. Where HTTP enters an origin owner's boundary, that function then
-calls the downstream public interface as shown below. No browser operation
-calls another domain's private code, and the graph has no cycle:
+An HTTP operation ID identifies the route declared in its owner's
+`HTTP_OPERATIONS` registry. The eventual route handler belongs to that domain;
+internal function names above are separate callable capabilities. Where HTTP
+enters an origin owner's boundary, the handler calls the downstream public
+interface as shown below. No browser operation calls another domain's private
+code, and the graph has no cycle:
 
 ```text
 Search → Listings → Conversations → Identity
@@ -469,3 +479,15 @@ The user reports that domain owners reviewed the cleanup document. Human
 approval of this exact destructive cleanup mechanism/order remains required
 before implementation. No provider setup, cloud change, destructive execution,
 or domain feature code is authorized here.
+
+## Identity Step9 trusted contact composition
+
+The [Identity sharing boundary](identity.md#step9-trusted-sharing-implementation)
+and [approved mechanism](../docs/decisions/identity-contact-sharing-and-cleanup.md)
+require a server-only actor/conversation scope established after Conversations
+participation checks; selected disclosure additionally requires confirmed fields.
+Construction/IDs/client flags do not authorize disclosure. Availability remains
+flags-only, requested removed fields return safe422, and no broad sharing or
+user-directory HTTP route exists. Actual CN-02 client/participant integration
+remains required. Generated Python exposes ContactSharingContext for trusted
+composition; OpenAPI/TypeScript HTTP shapes remain unchanged.

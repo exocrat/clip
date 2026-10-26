@@ -8,11 +8,12 @@ from __future__ import annotations
 
 import base64
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Annotated, Generic, Literal, TypeVar
 from uuid import UUID
 
+from app.core.identifiers import format_id
 from app.core.timestamps import as_utc, format_timestamp, parse_timestamp
 from pydantic import (
     BaseModel,
@@ -109,6 +110,19 @@ class SessionView(ContractModel):
     display_name: str | None = None
 
 
+class MicrosoftLoginAttempt(ContractModel):
+    """Public nonce paired with a private server-bound HttpOnly attempt cookie."""
+
+    nonce: str = Field(min_length=32, max_length=128, repr=False)
+    expires_at: UtcInstant
+
+
+class CsrfToken(ContractModel):
+    """Session-bound request protection token; never a session credential."""
+
+    csrf_token: str = Field(min_length=32, max_length=128, repr=False)
+
+
 class MicrosoftSessionRequest(ContractModel):
     """Provider assertion exchanged by Identity, never persisted or logged."""
 
@@ -184,6 +198,31 @@ class ContactValueRequest(ContractModel):
     """One contact field submitted to the authenticated Identity boundary."""
 
     value: str = Field(min_length=1, max_length=254, repr=False)
+
+
+@dataclass(frozen=True)
+class ContactSharingContext:
+    """Server-only scope after Conversation participation/confirmation checks.
+
+    Not an HTTP model or authentication credential. Trusted composition installs
+    this immutable record only for the approved flow; IDs alone grant nothing.
+    None permits availability only; selected values require confirmed fields.
+    """
+
+    actor_id: UserId = field(repr=False)
+    conversation_id: ConversationId = field(repr=False)
+    confirmed_fields: frozenset[ContactField] | None = field(default=None, repr=False)
+
+    def __post_init__(self) -> None:
+        """Validate opaque IDs/field scope without contacting another domain."""
+        format_id(self.actor_id)
+        format_id(self.conversation_id)
+        if self.confirmed_fields is not None and (
+            not isinstance(self.confirmed_fields, frozenset)
+            or not self.confirmed_fields
+            or not self.confirmed_fields <= {"email", "phone", "upi_id"}
+        ):
+            raise ValueError("Invalid confirmed contact fields")
 
 
 class ShareableContactOptions(ContractModel):
@@ -359,7 +398,7 @@ class ListingSummary(ContractModel):
     condition_label: str
     asking_price_paise: int = Field(ge=0, multiple_of=100)
     negotiable: bool
-    pickup_area: str
+    pickup_area: str | None
     available_from: UtcInstant
     available_until: UtcInstant | None
     availability: Literal["available", "unavailable"]
@@ -403,9 +442,13 @@ class ListingQuery(ContractModel):
     page_size: Literal[20, 50, 100] = 20
     category_code: str | None = None
     condition_code: str | None = None
+    negotiable: bool | None = None
     min_price_paise: int | None = Field(default=None, ge=0, multiple_of=100)
     max_price_paise: int | None = Field(default=None, ge=0, multiple_of=100)
-    sort: Literal["newest", "price_asc", "price_desc"] = "newest"
+    search_mode: Literal["keyword", "hybrid"] = "keyword"
+    sort: Literal["created_desc", "price_asc", "price_desc", "relevance"] = (
+        "created_desc"
+    )
     q: str | None = Field(default=None, max_length=120)
 
 
@@ -461,7 +504,7 @@ class CreateListingRequest(ContractModel):
     condition_code: str
     asking_price_paise: int = Field(ge=0, multiple_of=100)
     negotiable: bool
-    pickup_area: str = Field(min_length=1, max_length=120)
+    pickup_area: str | None = Field(default=None, min_length=1, max_length=120)
     available_from: UtcInstant | None = None
     available_until: UtcInstant | None = None
     proof_available: bool | None = None
@@ -469,8 +512,28 @@ class CreateListingRequest(ContractModel):
     operation_id: OperationId
 
 
+class ExistingListingImage(ContractModel):
+    """Keep one of the listing's currently attached images in place/order."""
+
+    source: Literal["existing"]
+    image_id: ImageId
+
+
+class NewListingImage(ContractModel):
+    """Attach one newly confirmed, owner-bound image upload."""
+
+    source: Literal["upload"]
+    upload_id: ImageId
+
+
+ListingImageSelection = Annotated[
+    ExistingListingImage | NewListingImage,
+    Field(discriminator="source"),
+]
+
+
 class ListingReplacement(ContractModel):
-    """Full listing replacement with revision guard and explicit nullable fields."""
+    """Replace listing details and its ordered keep/add image selection."""
 
     expected_revision: int = Field(ge=1)
     title: str = Field(min_length=1, max_length=120)
@@ -479,11 +542,11 @@ class ListingReplacement(ContractModel):
     condition_code: str
     asking_price_paise: int = Field(ge=0, multiple_of=100)
     negotiable: bool
-    pickup_area: str = Field(min_length=1, max_length=120)
+    pickup_area: str | None = Field(min_length=1, max_length=120)
     available_from: UtcInstant
     available_until: UtcInstant | None
     proof_available: bool | None
-    image_upload_ids: list[ImageId] = Field(min_length=1, max_length=8)
+    images: list[ListingImageSelection] = Field(min_length=1, max_length=8)
     operation_id: OperationId
 
 

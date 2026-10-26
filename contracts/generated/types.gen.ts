@@ -362,7 +362,7 @@ export type CreateListingRequest = {
     /**
      * Pickup Area
      */
-    pickup_area: string;
+    pickup_area?: string | null;
     /**
      * Proof Available
      */
@@ -399,6 +399,18 @@ export type CreateWantedRequest = {
      * Title
      */
     title: string;
+};
+
+/**
+ * CsrfToken
+ *
+ * Session-bound request protection token; never a session credential.
+ */
+export type CsrfToken = {
+    /**
+     * Csrf Token
+     */
+    csrf_token: string;
 };
 
 /**
@@ -524,6 +536,22 @@ export type ErrorEnvelope = {
      * Request Id
      */
     request_id?: string | null;
+};
+
+/**
+ * ExistingListingImage
+ *
+ * Keep one of the listing's currently attached images in place/order.
+ */
+export type ExistingListingImage = {
+    /**
+     * Image Id
+     */
+    image_id: string;
+    /**
+     * Source
+     */
+    source: 'existing';
 };
 
 /**
@@ -666,7 +694,7 @@ export type ListingDetail = {
     /**
      * Pickup Area
      */
-    pickup_area: string;
+    pickup_area: string | null;
     /**
      * Proof Available
      */
@@ -746,7 +774,7 @@ export type ListingManagementView = {
     /**
      * Pickup Area
      */
-    pickup_area: string;
+    pickup_area: string | null;
     /**
      * Proof Available
      */
@@ -842,7 +870,7 @@ export type ListingOwnerView = {
     /**
      * Pickup Area
      */
-    pickup_area: string;
+    pickup_area: string | null;
     /**
      * Proof Available
      */
@@ -876,7 +904,7 @@ export type ListingOwnerView = {
 /**
  * ListingReplacement
  *
- * Full listing replacement with revision guard and explicit nullable fields.
+ * Replace listing details and its ordered keep/add image selection.
  */
 export type ListingReplacement = {
     /**
@@ -908,9 +936,9 @@ export type ListingReplacement = {
      */
     expected_revision: number;
     /**
-     * Image Upload Ids
+     * Images
      */
-    image_upload_ids: Array<string>;
+    images: Array<ExistingListingImage | NewListingImage>;
     /**
      * Negotiable
      */
@@ -922,7 +950,7 @@ export type ListingReplacement = {
     /**
      * Pickup Area
      */
-    pickup_area: string;
+    pickup_area: string | null;
     /**
      * Proof Available
      */
@@ -990,7 +1018,7 @@ export type ListingSummary = {
     /**
      * Pickup Area
      */
-    pickup_area: string;
+    pickup_area: string | null;
     /**
      * Sensitive Purchase
      */
@@ -1046,6 +1074,22 @@ export type MessageRequest = {
 };
 
 /**
+ * MicrosoftLoginAttempt
+ *
+ * Public nonce paired with a private server-bound HttpOnly attempt cookie.
+ */
+export type MicrosoftLoginAttempt = {
+    /**
+     * Expires At
+     */
+    expires_at: string;
+    /**
+     * Nonce
+     */
+    nonce: string;
+};
+
+/**
  * MicrosoftSessionRequest
  *
  * Provider assertion exchanged by Identity, never persisted or logged.
@@ -1055,6 +1099,22 @@ export type MicrosoftSessionRequest = {
      * Id Token
      */
     id_token: string;
+};
+
+/**
+ * NewListingImage
+ *
+ * Attach one newly confirmed, owner-bound image upload.
+ */
+export type NewListingImage = {
+    /**
+     * Source
+     */
+    source: 'upload';
+    /**
+     * Upload Id
+     */
+    upload_id: string;
 };
 
 /**
@@ -1988,6 +2048,120 @@ export type TemporarySessionRequestWritable = {
      */
     password: string;
 };
+
+export type IdentityReadCsrfTokenData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/auth/csrf';
+};
+
+export type IdentityReadCsrfTokenErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorEnvelope;
+    /**
+     * Unauthorized
+     */
+    401: ErrorEnvelope;
+    /**
+     * Forbidden
+     */
+    403: ErrorEnvelope;
+    /**
+     * Not Found
+     */
+    404: ErrorEnvelope;
+    /**
+     * Conflict
+     */
+    409: ErrorEnvelope;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorEnvelope;
+    /**
+     * Too Many Requests
+     */
+    429: ErrorEnvelope;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorEnvelope;
+    /**
+     * Service Unavailable
+     */
+    503: ErrorEnvelope;
+};
+
+export type IdentityReadCsrfTokenError = IdentityReadCsrfTokenErrors[keyof IdentityReadCsrfTokenErrors];
+
+export type IdentityReadCsrfTokenResponses = {
+    /**
+     * Successful Response
+     */
+    200: CsrfToken;
+};
+
+export type IdentityReadCsrfTokenResponse = IdentityReadCsrfTokenResponses[keyof IdentityReadCsrfTokenResponses];
+
+export type IdentityStartMicrosoftLoginAttemptData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/auth/microsoft/login-attempts';
+};
+
+export type IdentityStartMicrosoftLoginAttemptErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorEnvelope;
+    /**
+     * Unauthorized
+     */
+    401: ErrorEnvelope;
+    /**
+     * Forbidden
+     */
+    403: ErrorEnvelope;
+    /**
+     * Not Found
+     */
+    404: ErrorEnvelope;
+    /**
+     * Conflict
+     */
+    409: ErrorEnvelope;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorEnvelope;
+    /**
+     * Too Many Requests
+     */
+    429: ErrorEnvelope;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorEnvelope;
+    /**
+     * Service Unavailable
+     */
+    503: ErrorEnvelope;
+};
+
+export type IdentityStartMicrosoftLoginAttemptError = IdentityStartMicrosoftLoginAttemptErrors[keyof IdentityStartMicrosoftLoginAttemptErrors];
+
+export type IdentityStartMicrosoftLoginAttemptResponses = {
+    /**
+     * Successful Response
+     */
+    201: MicrosoftLoginAttempt;
+};
+
+export type IdentityStartMicrosoftLoginAttemptResponse = IdentityStartMicrosoftLoginAttemptResponses[keyof IdentityStartMicrosoftLoginAttemptResponses];
 
 export type IdentityCreateMicrosoftSessionData = {
     body: MicrosoftSessionRequest;
@@ -3524,6 +3698,10 @@ export type ListingsQueryAvailableData = {
          */
         condition_code?: string | null;
         /**
+         * Negotiable
+         */
+        negotiable?: boolean | null;
+        /**
          * Min Price Paise
          */
         min_price_paise?: number | null;
@@ -3532,9 +3710,13 @@ export type ListingsQueryAvailableData = {
          */
         max_price_paise?: number | null;
         /**
+         * Search Mode
+         */
+        search_mode?: 'keyword' | 'hybrid';
+        /**
          * Sort
          */
-        sort?: 'newest' | 'price_asc' | 'price_desc';
+        sort?: 'created_desc' | 'price_asc' | 'price_desc' | 'relevance';
         /**
          * Q
          */
@@ -3893,7 +4075,7 @@ export type ListingsStartConversationResponses = {
     /**
      * OK
      */
-    200: unknown;
+    200: ConversationStartResult;
     /**
      * Successful Response
      */
@@ -5368,7 +5550,7 @@ export type SearchStartWantedResponseResponses = {
     /**
      * OK
      */
-    200: unknown;
+    200: ConversationStartResult;
     /**
      * Successful Response
      */

@@ -1,9 +1,11 @@
 import { Suspense, lazy, useState, type PropsWithChildren } from 'react';
 import { useLocation, useParams } from 'react-router';
 import { ConversationDetailPage as ConnectedConversationDetail, ConversationInboxPage, ConversationsPlaceholder } from '../features/conversations';
-import { IdentityPlaceholder as IdentityFeaturePlaceholder } from '../features/identity';
+import { MicrosoftCallback, ContactsEditor, SignIn, AccountStateBoundary, SellerEligibilityGate, IdentityPlaceholder as IdentityFeaturePlaceholder } from '../features/identity';
 import { ListingsPlaceholder as ListingsFeaturePlaceholder } from '../features/listings';
-import { SearchPlaceholder as SearchFeaturePlaceholder } from '../features/search';
+import { CreateListing, ListingDetail, ListingEdit, MyListings } from '../features/listings';
+import { WantedBrowse, MyWantedRequests, WantedDetail, SavedListings, SaveListingAction } from '../features/search';
+import { SaleDiscovery } from '../features/search';
 import { PageFrame, SegmentedControl } from '../shared/ui';
 import { isLocalConversationDemoAllowed } from './conversationDemoGate';
 import type { ConversationDemoPageProps } from './ConversationDemo';
@@ -16,21 +18,12 @@ const LazyConversationDemoPage = import.meta.env.DEV
     )
   : null;
 
-function RoutePage({ title, children }: PropsWithChildren<{ title: string }>) {
+function RoutePage({ title, children, sessionScoped = true }: PropsWithChildren<{ title: string; sessionScoped?: boolean }>) {
   return (
     <PageFrame className="route-page">
       <h1>{title}</h1>
-      {children}
+      {sessionScoped ? <AccountStateBoundary>{children}</AccountStateBoundary> : children}
     </PageFrame>
-  );
-}
-
-function RouteValue({ name, value }: { name: string; value?: string }) {
-  return (
-    <p>
-      Route parameter <code>{name}</code>: <code>{value ?? 'not present'}</code>. No record is
-      loaded by this scaffold.
-    </p>
   );
 }
 
@@ -39,12 +32,12 @@ function DevelopmentConversationDemo(props: ConversationDemoPageProps) {
   return (
     <Suspense
       fallback={
-        <RoutePage title={props.page === 'inbox' ? 'My conversations' : 'Conversation'}>
+        <RoutePage title={props.page === 'inbox' ? 'My conversations' : 'Conversation'} sessionScoped={false}>
           <p role="status">Loading local conversation demo…</p>
         </RoutePage>
       }
     >
-      <RoutePage title={props.page === 'inbox' ? 'My conversations' : 'Conversation'}>
+      <RoutePage title={props.page === 'inbox' ? 'My conversations' : 'Conversation'} sessionScoped={false}>
         <LazyConversationDemoPage {...props} />
       </RoutePage>
     </Suspense>
@@ -61,16 +54,16 @@ function localConversationDemoEnabled(search: string): boolean {
 
 export function SignInPage() {
   return (
-    <RoutePage title="Sign in">
-      <IdentityFeaturePlaceholder title="Sign-in and temporary onboarding" />
+    <RoutePage title="Sign in" sessionScoped={false}>
+      <SignIn />
     </RoutePage>
   );
 }
 
 export function AuthCallbackPage() {
   return (
-    <RoutePage title="Authentication return">
-      <IdentityFeaturePlaceholder title="Authentication callback state" />
+    <RoutePage title="Authentication return" sessionScoped={false}>
+      <MicrosoftCallback />
     </RoutePage>
   );
 }
@@ -89,11 +82,9 @@ export function DiscoveryPage() {
         onValueChange={setView}
       />
       {view === 'sales' ? (
-        <SearchFeaturePlaceholder title="Search and browse sale listings">
-          <ListingsFeaturePlaceholder title="Sale listing summaries" />
-        </SearchFeaturePlaceholder>
+        <SaleDiscovery />
       ) : (
-        <SearchFeaturePlaceholder title="Browse public wanted requests" />
+        <WantedBrowse />
       )}
     </RoutePage>
   );
@@ -101,10 +92,10 @@ export function DiscoveryPage() {
 
 export function ListingCreatePage() {
   return (
-    <RoutePage title="Create a sale listing">
-      <ListingsFeaturePlaceholder title="Sale listing form">
-        <IdentityFeaturePlaceholder title="Seller eligibility connection" />
-      </ListingsFeaturePlaceholder>
+    <RoutePage title="Create a sale listing" sessionScoped={false}>
+      <SellerEligibilityGate>
+        <CreateListing />
+      </SellerEligibilityGate>
     </RoutePage>
   );
 }
@@ -113,11 +104,10 @@ export function ListingDetailPage() {
   const { listingId } = useParams();
   return (
     <RoutePage title="Sale listing detail">
-      <RouteValue name="listingId" value={listingId} />
-      <ListingsFeaturePlaceholder title="Listing details">
-        <SearchFeaturePlaceholder title="Save listing action" />
+      <ListingDetail listingId={listingId}>
+        <SaveListingAction listingId={listingId} />
         <ConversationsPlaceholder title="Start or reopen a conversation" />
-      </ListingsFeaturePlaceholder>
+      </ListingDetail>
     </RoutePage>
   );
 }
@@ -125,9 +115,8 @@ export function ListingDetailPage() {
 export function ListingEditPage() {
   const { listingId } = useParams();
   return (
-    <RoutePage title="Edit a sale listing">
-      <RouteValue name="listingId" value={listingId} />
-      <ListingsFeaturePlaceholder title="Listing editor" />
+    <RoutePage title="Edit a sale listing" sessionScoped={false}>
+      <SellerEligibilityGate action="manage"><ListingEdit listingId={listingId} /></SellerEligibilityGate>
     </RoutePage>
   );
 }
@@ -146,13 +135,9 @@ export function MyListingsPage() {
         onValueChange={setView}
       />
       {view === 'sales' ? (
-        <ListingsFeaturePlaceholder title="My sale listings and their status">
-          <ConversationsPlaceholder title="Seller conversations link" />
-        </ListingsFeaturePlaceholder>
+        <SellerEligibilityGate action="manage"><MyListings /></SellerEligibilityGate>
       ) : (
-        <SearchFeaturePlaceholder title="My wanted requests and their status">
-          <ListingsFeaturePlaceholder title="Possible sale matches" />
-        </SearchFeaturePlaceholder>
+        <MyWantedRequests />
       )}
     </RoutePage>
   );
@@ -161,9 +146,7 @@ export function MyListingsPage() {
 export function SavedListingsPage() {
   return (
     <RoutePage title="Saved sale listings">
-      <SearchFeaturePlaceholder title="Saved listings">
-        <ListingsFeaturePlaceholder title="Saved listing summaries and availability" />
-      </SearchFeaturePlaceholder>
+      <SavedListings />
     </RoutePage>
   );
 }
@@ -200,7 +183,7 @@ export function ConversationDetailPage() {
 export function AccountContactsPage() {
   return (
     <RoutePage title="My contact details">
-      <IdentityFeaturePlaceholder title="Private contact editor" />
+      <ContactsEditor />
     </RoutePage>
   );
 }
@@ -209,18 +192,14 @@ export function WantedRequestPage() {
   const { requestId } = useParams();
   return (
     <RoutePage title="Wanted request">
-      <RouteValue name="requestId" value={requestId} />
-      <SearchFeaturePlaceholder title="Public wanted request details">
-        <IdentityFeaturePlaceholder title="Regular-member response eligibility" />
-        <ConversationsPlaceholder title="Contact requester" />
-      </SearchFeaturePlaceholder>
+      <WantedDetail requestId={requestId} />
     </RoutePage>
   );
 }
 
 export function NotFoundPage() {
   return (
-    <RoutePage title="Page not found">
+    <RoutePage title="Page not found" sessionScoped={false}>
       <p>This path is not part of the approved scaffold.</p>
     </RoutePage>
   );

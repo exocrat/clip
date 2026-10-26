@@ -19,73 +19,109 @@ Remove original title, description, pickup/price/condition/category/selection de
 Bounds old content without turning availability changes into immediate deletion or breaking saved pointers and origin-pair uniqueness.
 
 ## Implications
-PD-08 specifies retirement/profile-removal timestamps, a continuous-eligibility anchor and conditional live/retired field constraints. Mandatory seller price, required fields and usable images still apply to live listings. Affected owners must review safe object cleanup, current-offer/FK/marker ordering and profile/external-identity retirement. Failed object deletion retains only the cleanup metadata needed for safe retry and is reported as pending, never falsely recorded as deleted. No blanket cascade or new public deletion endpoint is approved.
+PD-08 specifies retirement/profile-removal timestamps, a continuous-eligibility anchor and conditional live/retired field constraints. Mandatory seller price, required fields and usable images still apply to live listings. Affected owners must review safe object cleanup, destructive current-offer/FK cleanup ordering, and profile/external-identity retirement. The API no-write-marker order and race handling are approved separately below. Failed object deletion retains only the cleanup metadata needed for safe retry and is reported as pending, never falsely recorded as deleted. No blanket cascade or new public deletion endpoint is approved.
 
 The [private-data retention policy](private-data-retention.md) still governs shorter windows and backup/restore reconciliation. Actual cleanup implementations, destructive runs, cloud resources and exact object-store operations retain their normal gates.
 
-## Approved cross-domain implementation sequence
+## Approved API-only retirement coordination — 2026-10-20
 
-Listings owner B (Suraj) approved the following implementation direction on
-2026-10-20. It preserves the existing 180-day continuous origin-eligibility
-rule and separately requires every associated conversation's latest
-participant-write time to be at or before the server-derived activity cutoff
-(`server_now - 2160 hours`). The 90-day rule does not replace the 180-day rule.
+The user approved the following coordination rule for Listings and Search to
+use before their separate local content cleanup:
 
-1. Listings or Search rechecks its own origin under a short transaction, sets a
-   stable `retirement_pending_operation_id`, and commits. Pending origins block
-   reopening/edits, selection or offer changes that could invalidate
-   retirement, and new origin conversations; they are hidden from discovery.
-   This does not block participant writes in existing threads before the
-   Conversations marker. The owner never holds the origin lock while calling
-   Conversations.
-2. The origin owner calls Conversations' `get_origin_activity` as a preflight.
-   Unknown/incomplete results and dependency failures defer retirement; they
-   never mean zero activity.
-3. The origin owner calls `mark_origin_retired` with the same operation ID and
-   cutoff `server_now - 2160 hours`, computed on the server after its
-   authoritative eligibility check, never from browser input. Conversations
-   locks all associated threads in ascending thread-ID order, rechecks
-   server-recorded participant activity, then marks every eligible thread
-   no-write in one transaction. Any too-recent thread means
-   none are marked. Participant messages, offer revisions/withdrawals and
-   contact shares use that same thread lock and receive server timestamps
-   after acquiring it.
-4. Store `origin_kind`, `origin_id`, `cutoff_utc`, outcome and marked count
-   beside a globally unique operation ID. Same-ID/same-request retries return
-   the original outcome; reuse for another origin or cutoff is a stable
-   conflict without changes. `marked` with zero threads is success;
-   `blocked_recent_activity` marks none; `already_marked` means every related
-   thread was marked before this operation, and its `marked_count` is the
-   number of those existing markers. Mixed marker state must stop for
-   Conversations-API reconciliation.
-5. A blocked result clears pending state without clearing content; a later
-   attempt uses a new operation ID. An unknown result leaves the origin
-   pending and retries/lookups use the same ID. Only a confirmed marker permits
-   the origin owner to clear its own content, through the separately reviewed
-   cleanup mechanism. If cleanup fails, keep the origin pending and retry it;
-   after success, set `retired_at` and clear the pending operation ID in the
-   same origin-owner transaction. No destructive content/object cleanup is
-   authorized by this sequence alone.
+1. The owning domain rechecks the existing retirement eligibility rule and
+   commits a unique pending operation ID and its server-derived activity
+   cutoff on its own listing/request. Keep the pair together so a retry after
+   restart sends the identical request. While the result is unresolved, the
+   origin is hidden from discovery and cannot be reopened, edited, or used to
+   start a new thread.
+2. The owner calls Conversations' `get_origin_activity` as a preflight. An
+   error or incomplete result fails closed and leaves the origin pending.
+3. The owner calls `mark_origin_retired` with the same operation ID and
+   cutoff. Conversations locks all associated threads in ascending UUID order,
+   checks every participant-write time, and either marks all threads as
+   no-write or marks none. Message, offer and contact-share writes take the
+   same thread lock; the server sets activity time after locking. A write that
+   wins first can block retirement; a marker that wins first makes the waiting
+   write fail.
+4. The result is `{outcome, marked_count}`. `marked` includes zero threads;
+   `blocked_recent_activity` means no threads were changed; `already_marked`
+   means the origin's threads already carry the marker. The same operation ID
+   and request replays the saved result. Reusing an ID for a different origin
+   or cutoff conflicts. A blocked result clears both pending fields and a
+   later attempt uses a new ID and cutoff. An unknown result keeps both fields
+   and retries with the same ID and cutoff.
 
-Cross-domain business checks must not read/write another domain's tables from
-a trigger, SQL function or migration, including a one-time backfill. Use the
-owning domain's declared public interface. Keep approved cross-domain foreign
-keys and local database protections such as sequence ordering and immutable
-thread identity. PostgreSQL triggers cannot call Python public functions, so
-the migration replaces only affected trigger definitions and moves
-cross-domain checks to owner-service orchestration; it does not remove the
-triggers wholesale.
+This approves API calls, lock order, race behavior and retry behavior only. It
+does not approve the method/order for clearing origin content, deleting image
+objects, or purging Conversations content. Each domain still needs its own
+cleanup method/order approval before implementing those destructive actions.
+No cross-domain trigger, one-time SQL backfill, shared database session or
+cascade may replace the public API calls. Migration
+`20261020142319_api_owned_retirement_and_trigger_boundaries.sql` implements
+the database storage and local trigger boundary. Its PostgreSQL 18.6 disposable
+apply/rollback/reapply and focused marker checks passed; the native schema
+inventory and corresponding C/D contract reviews remain pending. Listings
+retirement coordination and its approved local cleanup now have isolated service
+implementations; real Conversations and object-storage integration remain pending.
 
-The shared migration has one writer (Listings B/Suraj); Search C and
-Conversations D review the portions affecting their domains, and A coordinates
-integration at INT-01. Before applying it to any persistent database, inspect
-that exact target and reconcile selected buyers/retired origins through
-owner APIs. Never infer that a target is empty. The migration, shared-database
-apply, and destructive content/object cleanup retain their separate review and
-approval gates.
+## Approved Listings-owned content/image cleanup — 2026-10-20
+
+After Conversations confirms `marked` or `already_marked`, Listings performs
+one local transaction. It verifies the same pending operation ID and cutoff,
+marks the listing retired and unavailable, clears the listing's user-entered
+content and buyer selection, marks attached images retired, and clears the
+pending pair. Existing retirement triggers scrub create request/result payloads
+and delete seller availability/selection receipts. The listing/owner IDs and
+the content-free create-operation key remain; Search saved references remain
+unchanged. Conversations content is not touched by this transaction.
+
+Image rows already contain `retired_at` and the exact object key, so they serve
+as durable cleanup work without a new table. A Listings-owned worker processes
+only retired images whose parent listing is retired. It calls the storage
+adapter with that exact key. Only after storage confirms deletion or absence
+does the worker delete the image and upload rows together. A failed or unknown
+storage result keeps both rows, allowing an idempotent retry. Deleting the
+object before scrubbing the listing is prohibited because a failed object
+delete must not leave a live listing pointing at an inaccessible image.
+
+This approval covers the Listings local transaction and retryable image cleanup
+order. It does not provide a real object-storage adapter or deploy/schedule a
+worker; those real integrations remain later LI-02 work. Retired listings stay
+omitted from My Listings under the current contract. Showing a content-free
+retired marker remains a separate follow-up decision.
+
+## Owner management-view follow-up
+
+Unavailable listings must remain visible in the seller's "My Listings" view
+while their listing content is retained. The user asked that owner visibility
+after retirement be studied. It is not yet decided whether the retired listing
+should appear there as a content-free marker or be omitted. This follow-up does
+not change the approved retirement trigger, timing, or content-cleanup rules.
 
 ## Approver
 Mohit (C), explicit approval of the consolidated remaining package. The user later confirmed the PD-08 affected-owner/privacy gate complete on 2026-10-19; see the [work-log reconciliation](../status/work-log.md#resolved-integration-evidence). Domain implementation must still follow the stated cleanup and ordering safeguards.
 
 ## Supersedes
 None; refines the previously open origin/metadata retirement policy.
+
+## Approved Search-owned request/receipt cleanup — 2026-10-25
+
+Mohit verified the SE-02 wanted API checkpoint and approved the concrete local
+order in [wanted-request retirement](../architecture/wanted-request-retirement.md):
+persist/reuse the server-owned pending operation/cutoff, use Conversations public
+preflight plus authoritative all-or-none marker, then lock/recheck the exact
+request/pair and 180-day eligibility. In one Search transaction first clear both
+JSON payloads in every wanted-command receipt, then clear request title,
+description, category and budget, mark retired/unavailable, clear the pending
+pair and advance revision/update time. Keep content-free request/author and
+retry-key references plus existing lifecycle timestamps. A local failure rolls
+back both scrub stages; unknown marker results keep the original pending pair.
+
+Blocked-recent-activity clears only the matching pair and removes no content.
+An older attempt cannot clear a newer pair. Reads hide retired content, late
+retained-key retries conflict, and no request can reopen after retirement.
+No other domain row, saved reference or storage object is modified/deleted.
+The internal operation processes one server-selected request per explicit call;
+no browser route, startup cleanup, worker/scheduler or shared/live-data run is
+approved. Isolated implementation/tests now exist; actual Conversations
+provider/race integration remains a required real acceptance gate.

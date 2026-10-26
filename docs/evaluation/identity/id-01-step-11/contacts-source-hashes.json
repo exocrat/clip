@@ -1,0 +1,26 @@
+[
+  {
+    "path": "apps/web/src/features/identity/api.ts",
+    "sha256": "3d7ddd67d49f923711c60a2d7ea017ad918df4241bd07a55de831625e198c1b2"
+  },
+  {
+    "path": "apps/web/src/features/identity/ContactsEditor.tsx",
+    "sha256": "702cc165402112ca082a2b6ede8446151b577abd421a14fdc70b45187c7e0c41"
+  },
+  {
+    "path": "apps/web/src/features/identity/identity.css",
+    "sha256": "04170cc14c99e422d4c4e7530db7ead7a3a3c578754b3bb47bd1e39f85f4f320"
+  },
+  {
+    "path": "apps/web/src/features/identity/index.ts",
+    "sha256": "3ffe82f0a257995674059702b9259b5f3b6f63b193c253a3fa7c81bf85365a53"
+  },
+  {
+    "path": "apps/web/src/pages/ScaffoldPages.tsx",
+    "sha256": "ce854c46353fecad206fcbfcc4dc248c6bde617442863f138ff721b9b65c17bc"
+  },
+  {
+    "path": "apps/web/tests/identity-contacts.test.tsx",
+    "sha256": "c322ea68f1a5e81dd52cfc5e765399ac8b5279d2232af856fdd0d60c62e5e599"
+  }
+]

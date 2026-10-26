@@ -1,0 +1,1608 @@
+#!/usr/bin/env python3
+"""Start or stop the isolated LI-02 cloud demo with explicit plan gates.
+
+The start command continues a saved partial run from its last recorded phase.
+
+The command targets only account 335523638354 in ap-south-1. It uses fixed
+Terraform/task definitions, owns a dedicated LI-02 ECS cluster and host, and
+asks for the displayed plan hash before each apply.
+"""
+
+from __future__ import annotations
+
+import argparse
+import datetime as dt
+import hashlib
+import json
+import os
+import secrets
+import shlex
+import subprocess
+import sys
+import tempfile
+import time
+from pathlib import Path
+from typing import Any
+from urllib.parse import quote
+from shutil import which
+
+ROOT = Path(__file__).resolve().parents[1]
+TF_ROOT = ROOT / "infra/terraform/domains/listings/test"
+BASELINE = TF_ROOT / ".demo-baseline.json"
+ACCOUNT_ID = "335523638354"
+REGION = "ap-south-1"
+CLUSTER = "clip-test-listings-ap-south-1-li02"
+CAPACITY_PROVIDER = "clip-test-listings-capacity-ap-south-1-li02"
+AUTO_SCALING_GROUP = "clip-test-listings-ecs-host-ap-south-1-li02"
+ROOT_VOLUME_NAME = "clip-test-listings-ecs-root-ap-south-1-li02"
+DEMO_DATABASE_ID = "clip-test-listings-ap-south-1-li02"
+DATABASE_AZ_CANDIDATES = ("ap-south-1b", "ap-south-1a")
+ECR_REPO = f"{ACCOUNT_ID}.dkr.ecr.{REGION}.amazonaws.com/clip-shared-test-api"
+BUCKET = "clip-test-listings-images-ap-south-1-li02"
+URL_PARAMETER = "/clip/test/listings-database-url"
+MASTER_PARAMETER = "/clip/test/database-master-password"
+DB_NAME = "clip_test_listings"
+DB_ROLE = "clip_test_listings_app"
+BUDGET_NAME = "CLIP-Account-Actual-Spend-From-2026-10-17"
+ACTIVE_PROFILE: str | None = None
+DEMO_STATE_MARKERS = (
+    "aws_subnet.demo_public",
+    "aws_route_table.demo_public",
+    "aws_route.demo_public_default",
+    "aws_route_table_association.demo_public",
+    "aws_security_group.demo_alb",
+    "aws_vpc_security_group_ingress_rule.demo_from_alb",
+    "aws_lb.demo",
+    "aws_lb_target_group.demo",
+    "aws_lb_listener.demo_http",
+    "aws_ecs_task_definition.demo_api",
+    "aws_ecs_service.demo_api",
+    "aws_db_instance.demo",
+    "aws_db_subnet_group.demo",
+    "aws_security_group.demo_database",
+    "aws_vpc_security_group_ingress_rule.demo_database_from_ecs",
+    "aws_ecs_task_definition.database_",
+)
+REQUIRED_DEMO_STATE_ADDRESSES = (
+    "aws_subnet.demo_public[0]",
+    "aws_route_table.demo_public[0]",
+    "aws_route.demo_public_default[0]",
+    "aws_route_table_association.demo_public[0]",
+    "aws_security_group.demo_alb[0]",
+    "aws_vpc_security_group_ingress_rule.demo_from_alb[0]",
+    "aws_lb.demo[0]",
+    "aws_lb_target_group.demo[0]",
+    "aws_lb_listener.demo_http[0]",
+    "aws_ecs_task_definition.demo_api[0]",
+    "aws_ecs_service.demo_api[0]",
+    "aws_db_instance.demo[0]",
+    "aws_db_subnet_group.demo[0]",
+    "aws_security_group.demo_database[0]",
+    "aws_vpc_security_group_ingress_rule.demo_database_from_ecs[0]",
+    "aws_ecs_task_definition.database_bootstrap[0]",
+    "aws_ecs_task_definition.database_cleanup[0]",
+    "aws_ecs_task_definition.database_migration[0]",
+    "aws_ecs_task_definition.database_seed[0]",
+    "aws_ecs_task_definition.database_idle_check[0]",
+)
+REQUIRED_RUNTIME_STATE_ADDRESSES = (
+    "aws_ecs_cluster.demo",
+    "aws_security_group.demo_ecs_host",
+    "aws_iam_role.demo_ecs_instance",
+    "aws_iam_role_policy_attachment.demo_ecs_instance_agent",
+    "aws_iam_instance_profile.demo_ecs_instance",
+    "aws_launch_template.demo_ecs_host",
+    "aws_autoscaling_group.demo_ecs_host",
+    "aws_ecs_capacity_provider.demo",
+    "aws_ecs_cluster_capacity_providers.demo",
+)
+
+
+class DemoError(RuntimeError):
+    """A safe, actionable failure without printing command secrets."""
+
+
+class InsufficientRdsCapacity(DemoError):
+    """Signal only the explicit AWS error that permits a second-AZ attempt."""
+
+
+def command(
+    args: list[str],
+    *,
+    capture: bool = False,
+    input_text: str | None = None,
+    env_overrides: dict[str, str] | None = None,
+) -> str:
+    """Run a command and redact its raw failure output from the user-facing log."""
+    child_env = os.environ.copy()
+    if args and args[0] == "terraform":
+        if ACTIVE_PROFILE is None:
+            raise DemoError(
+                "Select the approved AWS profile before invoking Terraform."
+            )
+        child_env["AWS_PROFILE"] = ACTIVE_PROFILE
+        child_env["AWS_REGION"] = REGION
+        child_env["AWS_DEFAULT_REGION"] = REGION
+    if env_overrides:
+        child_env.update(env_overrides)
+    result = subprocess.run(
+        args,
+        cwd=ROOT,
+        check=False,
+        text=True,
+        input=input_text,
+        env=child_env,
+        stdout=subprocess.PIPE if capture else None,
+        stderr=subprocess.PIPE if capture else None,
+    )
+    if result.returncode:
+        detail = (result.stderr or "").strip() if capture else ""
+        raise DemoError(
+            f"Command failed ({shlex.join(args[:3])}…, exit {result.returncode})."
+            + (f" Safe diagnostic: {detail[:240]}" if detail else "")
+        )
+    return result.stdout or "" if capture else ""
+
+
+def aws(profile: str, *args: str, region: str = REGION, capture: bool = True) -> str:
+    """Run AWS CLI calls with the explicit profile and selected Region."""
+    return command(
+        ["aws", *args, "--profile", profile, "--region", region, "--no-cli-pager"],
+        capture=capture,
+    )
+
+
+def aws_json(profile: str, *args: str, region: str = REGION) -> dict[str, Any]:
+    """Parse JSON output from a read-only or non-secret AWS CLI command."""
+    try:
+        return json.loads(aws(profile, *args, region=region))
+    except json.JSONDecodeError as exc:
+        raise DemoError(
+            "AWS CLI returned unexpected JSON; no action was taken."
+        ) from exc
+
+
+def require_tools(*names: str) -> None:
+    """Require host CLI tools before the selected action can begin."""
+    missing = [name for name in names if not which(name)]
+    if missing:
+        raise DemoError(
+            f"Install or expose required tools before continuing: {', '.join(missing)}"
+        )
+
+
+def require_clean_revision() -> str:
+    """Require a committed, clean source revision for immutable image builds."""
+    sha = command(["git", "rev-parse", "HEAD"], capture=True).strip()
+    dirty = command(
+        [
+            "git",
+            "status",
+            "--porcelain",
+            "--",
+            "apps/api",
+            "apps/web",
+            "contracts",
+            "database/migrations",
+            "infra/terraform/domains/listings/test",
+            "scripts/li02-demo",
+        ],
+        capture=True,
+    ).strip()
+    if dirty:
+        raise DemoError(
+            "The demo image must come from a committed revision; commit/review the intended LI-02 changes first."
+        )
+    return sha
+
+
+def require_approval(prompt: str, expected: str) -> None:
+    """Require a typed, exact confirmation for the named cloud operation."""
+    print(prompt)
+    typed = input(f"Type {expected!r} to continue: ").strip()
+    if typed != expected:
+        raise DemoError("Approval text did not match; no next action was taken.")
+
+
+def authorize_start(baseline: dict[str, Any]) -> None:
+    """Approve the run's fixed data/image/resource actions once, before its first write."""
+    if baseline.get("start_authorized") is True:
+        return
+    run_id = baseline.get("run_id")
+    if not isinstance(run_id, str) or not run_id:
+        raise DemoError("The LI-02 run ID is missing; no start action was authorized.")
+    require_approval(
+        f"This starts LI-02 run {run_id} in account {ACCOUNT_ID}/{REGION}. It may publish two run-tagged images, "
+        "create the run's database URL SecureString, reset only clip_test_listings, apply migrations and seed synthetic data, "
+        "create a public unauthenticated HTTP demo, and start one private EC2 host, disposable RDS and ALB. "
+        "Use synthetic data only. Shared RDS and shared ECS resources remain untouched. Each Terraform plan still needs its own exact-hash approval.",
+        f"START LI02 DEMO {run_id}",
+    )
+    baseline["start_authorized"] = True
+    save_baseline(baseline)
+
+
+def authorize_stop(baseline: dict[str, Any]) -> None:
+    """Approve the recorded run's bounded destructive cleanup once for safe retries."""
+    if baseline.get("stop_authorized") is True:
+        return
+    run_id = baseline.get("run_id")
+    if not isinstance(run_id, str) or not run_id:
+        raise DemoError("The LI-02 run ID is missing; no stop action was authorized.")
+    require_approval(
+        f"This tears down LI-02 run {run_id}: it can stop the demo, drop only clip_test_listings and its dedicated login, "
+        "delete this run's S3 objects and SecureString, remove its temporary ALB/subnet/route and disposable RDS/data, "
+        "clear LI-02 log streams while retaining run ECR images, and terminate the dedicated LI-02 EC2 host/root disk. "
+        "The empty LI-02 cluster/ASG and shared RDS, VPC/NAT, and shared ECS resources remain. "
+        "The exact Terraform removal plan will still need its own hash approval.",
+        f"STOP LI02 DEMO {run_id}",
+    )
+    baseline["stop_authorized"] = True
+    save_baseline(baseline)
+
+
+def verify_account(profile: str) -> None:
+    """Verify the explicit profile resolves to the fixed project account."""
+    identity = aws_json(profile, "sts", "get-caller-identity")
+    if identity.get("Account") != ACCOUNT_ID:
+        raise DemoError(
+            f"Refusing AWS account {identity.get('Account')!r}; expected {ACCOUNT_ID}."
+        )
+
+
+def verify_identity_and_budget(profile: str) -> dict[str, Any]:
+    """Check account identity and compare month-to-date costs with the monthly cap."""
+    verify_account(profile)
+    budget = aws_json(
+        profile,
+        "budgets",
+        "describe-budget",
+        "--account-id",
+        ACCOUNT_ID,
+        "--budget-name",
+        BUDGET_NAME,
+    ).get("Budget", {})
+    limit = float(budget.get("BudgetLimit", {}).get("Amount", "0"))
+    today = dt.datetime.now(dt.UTC).date()
+    month_start = today.replace(day=1).isoformat()
+    today_iso = today.isoformat()
+    next_month = (today.replace(day=28) + dt.timedelta(days=4)).replace(day=1)
+    no_credits = json.dumps(
+        {"Not": {"Dimensions": {"Key": "RECORD_TYPE", "Values": ["Credit"]}}},
+        separators=(",", ":"),
+    )
+    actual = 0.0
+    if month_start < today_iso:
+        month_costs = aws_json(
+            profile,
+            "ce",
+            "get-cost-and-usage",
+            "--time-period",
+            json.dumps({"Start": month_start, "End": today_iso}, separators=(",", ":")),
+            "--granularity",
+            "MONTHLY",
+            "--metrics",
+            "UnblendedCost",
+            "--filter",
+            no_credits,
+            region="us-east-1",
+        )
+        periods = month_costs.get("ResultsByTime", [])
+        if not periods:
+            raise DemoError(
+                "Cost Explorer returned no month-to-date cost period; refusing an unverified start."
+            )
+        actual = sum(
+            float(period.get("Total", {}).get("UnblendedCost", {}).get("Amount", "0"))
+            for period in periods
+        )
+    forecast_response = aws_json(
+        profile,
+        "ce",
+        "get-cost-forecast",
+        "--time-period",
+        json.dumps(
+            {"Start": today_iso, "End": next_month.isoformat()},
+            separators=(",", ":"),
+        ),
+        "--metric",
+        "UNBLENDED_COST",
+        "--granularity",
+        "MONTHLY",
+        "--filter",
+        no_credits,
+        region="us-east-1",
+    )
+    forecast_amount = forecast_response.get("Total", {}).get("Amount")
+    if forecast_amount is None:
+        raise DemoError(
+            "Cost Explorer returned no monthly forecast; refusing an unverified start."
+        )
+    forecast = actual + float(forecast_amount)
+    if limit <= 0 or actual >= limit or forecast >= limit:
+        raise DemoError(
+            f"Monthly budget preflight failed: reported usage is USD {actual:.2f}, estimated month-end spend is "
+            f"USD {forecast:.2f}, and the monthly limit is USD {limit:.2f}."
+        )
+    print(
+        f"Target verified: account {ACCOUNT_ID}, Region {REGION}; calendar-month usage is USD {actual:.2f}, "
+        f"estimated month-end spend is USD {forecast:.2f}, and the monthly limit is USD {limit:.2f}. "
+        "Cost Explorer data can be delayed."
+    )
+    return {
+        "calendar_month_start": month_start,
+        "reported_actual_excluding_credits_usd": actual,
+        "forecast_month_end_excluding_credits_usd": forecast,
+        "monthly_limit_usd": limit,
+    }
+
+
+def demo_database_info(profile: str) -> dict[str, Any]:
+    """Read only the disposable LI-02 RDS status and endpoint metadata."""
+    result = aws_json(
+        profile,
+        "rds",
+        "describe-db-instances",
+        "--db-instance-identifier",
+        DEMO_DATABASE_ID,
+    )
+    instances = result.get("DBInstances", [])
+    if (
+        len(instances) != 1
+        or instances[0].get("DBInstanceIdentifier") != DEMO_DATABASE_ID
+    ):
+        raise DemoError("Could not identify exactly the disposable LI-02 RDS instance.")
+    return instances[0]
+
+
+def running_ecs_tasks(profile: str) -> list[str]:
+    """List running tasks in the dedicated LI-02 cluster only."""
+    tasks = aws_json(
+        profile,
+        "ecs",
+        "list-tasks",
+        "--cluster",
+        CLUSTER,
+        "--desired-status",
+        "RUNNING",
+    ).get("taskArns", [])
+    return tasks
+
+
+def li02_capacity_group(profile: str) -> dict[str, Any] | None:
+    """Return the exact LI-02 capacity provider's ASG, or None before first creation."""
+    result = aws_json(
+        profile,
+        "ecs",
+        "describe-capacity-providers",
+        "--capacity-providers",
+        CAPACITY_PROVIDER,
+    )
+    providers = result.get("capacityProviders", [])
+    failures = result.get("failures", [])
+    if not providers and len(failures) == 1:
+        failure = failures[0]
+        reason = str(failure.get("reason", "")).lower()
+        if failure.get("arn") == CAPACITY_PROVIDER and (
+            failure.get("reason") == "MISSING" or "does not exist" in reason
+        ):
+            return None
+    if len(providers) != 1:
+        raise DemoError("Could not identify exactly the LI-02 ECS capacity provider.")
+    provider = providers[0]
+    asg_arn = provider.get("autoScalingGroupProvider", {}).get(
+        "autoScalingGroupArn", ""
+    )
+    if not asg_arn or asg_arn.rsplit("/", 1)[-1] != AUTO_SCALING_GROUP:
+        raise DemoError("The LI-02 capacity provider points to an unexpected ASG.")
+    group_name = asg_arn.rsplit("/", 1)[-1]
+    groups = aws_json(
+        profile,
+        "autoscaling",
+        "describe-auto-scaling-groups",
+        "--auto-scaling-group-names",
+        group_name,
+    ).get("AutoScalingGroups", [])
+    if len(groups) != 1:
+        raise DemoError("Could not identify exactly the LI-02 Auto Scaling group.")
+    group = groups[0]
+    return {
+        "cluster": CLUSTER,
+        "capacity_provider": CAPACITY_PROVIDER,
+        "auto_scaling_group": group_name,
+        "desired_capacity": group.get("DesiredCapacity"),
+        "min_size": group.get("MinSize"),
+        "max_size": group.get("MaxSize"),
+        "instances": [
+            {
+                "instance_id": instance.get("InstanceId"),
+                "lifecycle_state": instance.get("LifecycleState"),
+            }
+            for instance in group.get("Instances", [])
+        ],
+        "capacity_provider_status": provider.get("status"),
+    }
+
+
+def ensure_li02_ecs_idle(profile: str) -> None:
+    """Require the owned cluster and service to have no active work before host removal."""
+    tasks = running_ecs_tasks(profile)
+    if tasks:
+        raise DemoError(
+            f"The dedicated LI-02 cluster still has {len(tasks)} running task(s); preserve the host and retry after they stop."
+        )
+    service = demo_service(profile)
+    if service and any(
+        service.get(field, 0) != 0
+        for field in ("desiredCount", "runningCount", "pendingCount")
+    ):
+        raise DemoError(
+            "The LI-02 service is not idle; refusing to terminate its private ECS host."
+        )
+
+
+def wait_for_li02_host_removed(profile: str) -> None:
+    """Scale only the LI-02 ASG to zero and verify its instance and root disk are gone."""
+    capacity = li02_capacity_group(profile)
+    if capacity is None:
+        return
+    ensure_li02_ecs_idle(profile)
+    group_name = capacity["auto_scaling_group"]
+    if capacity.get("desired_capacity") != 0 or capacity.get("instances"):
+        aws(
+            profile,
+            "autoscaling",
+            "set-desired-capacity",
+            "--auto-scaling-group-name",
+            group_name,
+            "--desired-capacity",
+            "0",
+            capture=False,
+        )
+
+    for attempt in range(80):
+        capacity = li02_capacity_group(profile)
+        if capacity is None:
+            raise DemoError(
+                "The LI-02 capacity provider disappeared while stopping its host; preserve the baseline and inspect."
+            )
+        volumes = aws_json(
+            profile,
+            "ec2",
+            "describe-volumes",
+            "--filters",
+            f"Name=tag:Name,Values={ROOT_VOLUME_NAME}",
+        ).get("Volumes", [])
+        if (
+            capacity.get("desired_capacity") == 0
+            and not capacity.get("instances")
+            and not volumes
+        ):
+            print("The LI-02 ECS host is terminated and its root EBS volume is absent.")
+            return
+        if attempt % 4 == 0:
+            print("Waiting for the LI-02 EC2 host and root volume to be removed.")
+        time.sleep(15)
+    raise DemoError(
+        "The LI-02 host or root volume remains after 20 minutes; the baseline is retained for a safe retry."
+    )
+
+
+def parameter_exists(profile: str, name: str) -> bool:
+    """Check only parameter metadata, never retrieve or display its value."""
+    data = aws_json(
+        profile,
+        "ssm",
+        "describe-parameters",
+        "--parameter-filters",
+        f"Key=Name,Values={name}",
+    )
+    return bool(data.get("Parameters"))
+
+
+def put_secret_parameter(profile: str, name: str, value: str) -> None:
+    """Create one SecureString through a mode-0600 temporary JSON file."""
+    payload = json.dumps(
+        {
+            "Name": name,
+            "Type": "SecureString",
+            "Tier": "Standard",
+            "Value": value,
+            "Overwrite": False,
+            "Description": "Isolated LI-02 demo; value is injected only into fixed ECS tasks.",
+        }
+    )
+    with tempfile.NamedTemporaryFile(
+        mode="w", encoding="utf-8", delete=False
+    ) as handle:
+        os.chmod(handle.name, 0o600)
+        handle.write(payload)
+        filename = handle.name
+    try:
+        aws(
+            profile,
+            "ssm",
+            "put-parameter",
+            "--cli-input-json",
+            f"file://{filename}",
+            capture=False,
+        )
+    finally:
+        Path(filename).unlink(missing_ok=True)
+
+
+def get_database_master_credentials(profile: str) -> tuple[str, int]:
+    """Read the approved test master secret/version into memory without displaying it."""
+    parameter = aws_json(
+        profile,
+        "ssm",
+        "get-parameter",
+        "--name",
+        MASTER_PARAMETER,
+        "--with-decryption",
+    ).get("Parameter", {})
+    value = parameter.get("Value")
+    version = parameter.get("Version")
+    if not isinstance(value, str) or not value or not isinstance(version, int):
+        raise DemoError(
+            "The approved database master parameter is incomplete; no Terraform action was taken."
+        )
+    return value, version
+
+
+def ensure_demo_database_secret(
+    profile: str, database: dict[str, Any], baseline: dict[str, Any]
+) -> None:
+    """Create this run's app URL secret for the disposable database without exposing it."""
+    url_present = parameter_exists(profile, URL_PARAMETER)
+    if url_present and baseline.get("url_parameter_owned") is True:
+        print(
+            "The isolated Listings database URL SecureString is already recorded for this run."
+        )
+        return
+    if url_present:
+        raise DemoError(
+            "The LI-02 database URL parameter already exists without a recorded demo baseline; "
+            "refusing to reuse or later delete unowned state."
+        )
+
+    endpoint = database.get("Endpoint", {})
+    host, port = endpoint.get("Address"), endpoint.get("Port")
+    if not host or not port:
+        raise DemoError(
+            "The disposable LI-02 RDS endpoint is unavailable; no database secret was created."
+        )
+    password = secrets.token_hex(32)
+    url = f"postgresql://{DB_ROLE}:{quote(password, safe='')}@{host}:{port}/{DB_NAME}?sslmode=require"
+    put_secret_parameter(profile, URL_PARAMETER, url)
+    baseline["url_parameter_owned"] = True
+    save_baseline(baseline)
+    print("The isolated Listings database URL SecureString was created.")
+
+
+def build_and_push_images(
+    profile: str, revision: str, baseline: dict[str, Any]
+) -> tuple[str, str, list[str]]:
+    """Build UI/API and fixed database images, then return immutable ECR digests."""
+    suffix = dt.datetime.now(dt.UTC).strftime("%Y%m%d%H%M%S")
+    tag = f"li02-{revision[:12]}-{suffix}-{secrets.token_hex(3)}"
+    api_tag, database_tag = f"{ECR_REPO}:{tag}", f"{ECR_REPO}:{tag}-database"
+    print(f"Source revision: {revision}; new LI-02 ECR tags: {tag}, {tag}-database.")
+    baseline["image_tags"] = sorted(
+        set(baseline.get("image_tags", [])) | {tag, f"{tag}-database"}
+    )
+    save_baseline(baseline)
+    token = command(
+        ["aws", "ecr", "get-login-password", "--profile", profile, "--region", REGION],
+        capture=True,
+    )
+    with tempfile.TemporaryDirectory(prefix="li02-docker-auth-") as docker_config:
+        os.chmod(docker_config, 0o700)
+        docker_env = {"DOCKER_CONFIG": docker_config}
+        command(
+            [
+                "docker",
+                "login",
+                "--username",
+                "AWS",
+                "--password-stdin",
+                ECR_REPO.split("/", 1)[0],
+            ],
+            input_text=token,
+            env_overrides=docker_env,
+        )
+        command(
+            [
+                "docker",
+                "buildx",
+                "build",
+                "--platform",
+                "linux/amd64",
+                "--provenance=false",
+                "--push",
+                "--file",
+                "apps/api/Dockerfile",
+                "--build-arg",
+                "VITE_LISTINGS_PUBLIC_DEMO=true",
+                "--tag",
+                api_tag,
+                ".",
+            ],
+            env_overrides=docker_env,
+        )
+        command(
+            [
+                "docker",
+                "buildx",
+                "build",
+                "--platform",
+                "linux/amd64",
+                "--provenance=false",
+                "--push",
+                "--file",
+                "apps/api/Dockerfile.database",
+                "--tag",
+                database_tag,
+                ".",
+            ],
+            env_overrides=docker_env,
+        )
+    api_digest = aws_json(
+        profile,
+        "ecr",
+        "describe-images",
+        "--repository-name",
+        "clip-shared-test-api",
+        "--image-ids",
+        f"imageTag={tag}",
+    )["imageDetails"][0]["imageDigest"]
+    database_digest = aws_json(
+        profile,
+        "ecr",
+        "describe-images",
+        "--repository-name",
+        "clip-shared-test-api",
+        "--image-ids",
+        f"imageTag={tag}-database",
+    )["imageDetails"][0]["imageDigest"]
+    return (
+        f"{ECR_REPO}@{api_digest}",
+        f"{ECR_REPO}@{database_digest}",
+        [tag, f"{tag}-database"],
+    )
+
+
+def terraform_init() -> None:
+    """Initialize only the approved LI-02 remote state key and locked provider."""
+    command(
+        [
+            "terraform",
+            f"-chdir={TF_ROOT}",
+            "init",
+            "-input=false",
+            "-lockfile=readonly",
+        ]
+    )
+
+
+def terraform_apply_plan(
+    variables: dict[str, str | None],
+    *,
+    destroy: bool = False,
+    env_overrides: dict[str, str] | None = None,
+    detect_rds_capacity: bool = False,
+) -> None:
+    """Show and hash a saved exact plan; apply only after matching typed approval."""
+    with tempfile.TemporaryDirectory(prefix="li02-demo-plan-") as temporary:
+        plan_file = Path(temporary) / "plan.tfplan"
+        args = [
+            "terraform",
+            f"-chdir={TF_ROOT}",
+            "plan",
+            "-input=false",
+            "-lock-timeout=2m",
+            f"-out={plan_file}",
+        ]
+        if destroy:
+            args.append("-destroy")
+        for name, value in variables.items():
+            if value is not None:
+                args.extend(["-var", f"{name}={value}"])
+        command(args, env_overrides=env_overrides)
+        plan_text = command(
+            ["terraform", f"-chdir={TF_ROOT}", "show", "-no-color", str(plan_file)],
+            capture=True,
+        )
+        print(plan_text)
+        plan_sha = hashlib.sha256(plan_file.read_bytes()).hexdigest()
+        require_approval(
+            f"Review the exact Terraform plan above. Saved plan SHA-256: {plan_sha}",
+            f"APPLY {plan_sha}",
+        )
+        apply_args = [
+            "terraform",
+            f"-chdir={TF_ROOT}",
+            "apply",
+            "-input=false",
+            str(plan_file),
+        ]
+        child_env = os.environ.copy()
+        if ACTIVE_PROFILE is None:
+            raise DemoError(
+                "Select the approved AWS profile before invoking Terraform."
+            )
+        child_env.update(
+            {
+                "AWS_PROFILE": ACTIVE_PROFILE,
+                "AWS_REGION": REGION,
+                "AWS_DEFAULT_REGION": REGION,
+            }
+        )
+        if env_overrides:
+            child_env.update(env_overrides)
+        result = subprocess.run(
+            apply_args,
+            cwd=ROOT,
+            check=False,
+            text=True,
+            capture_output=True,
+            env=child_env,
+        )
+        if result.returncode:
+            apply_output = f"{result.stdout}\n{result.stderr}"
+            if (
+                detect_rds_capacity
+                and "InsufficientDBInstanceCapacity" in apply_output
+                and "aws_db_instance.demo[0]" in apply_output
+                and apply_output.count("Error:") == 1
+            ):
+                raise InsufficientRdsCapacity(
+                    "AWS explicitly reported InsufficientDBInstanceCapacity for the selected disposable RDS Availability Zone."
+                )
+            raise DemoError(
+                "The approved Terraform plan failed during apply; raw provider output was suppressed. "
+                "Inspect current Terraform state and AWS resources before retrying."
+            )
+        print("The approved Terraform plan applied successfully.")
+
+
+def run_task(profile: str, family_suffix: str) -> None:
+    """Run one fixed LI-02 task and require its container exit code to be zero."""
+    family = f"clip-test-listings-db-{REGION}-li02-{family_suffix}"
+    task_definition = aws_json(
+        profile,
+        "ecs",
+        "describe-task-definition",
+        "--task-definition",
+        family,
+    )["taskDefinition"]["taskDefinitionArn"]
+    result = aws_json(
+        profile,
+        "ecs",
+        "run-task",
+        "--cluster",
+        CLUSTER,
+        "--capacity-provider-strategy",
+        f"capacityProvider={CAPACITY_PROVIDER},weight=1,base=1",
+        "--task-definition",
+        task_definition,
+        "--count",
+        "1",
+    )
+    failures = result.get("failures", [])
+    tasks = result.get("tasks", [])
+    if failures or len(tasks) != 1:
+        raise DemoError(
+            f"ECS refused the fixed {family_suffix} task; inspect ECS failure details."
+        )
+    task_arn = tasks[0]["taskArn"]
+    command(
+        [
+            "aws",
+            "ecs",
+            "wait",
+            "tasks-stopped",
+            "--cluster",
+            CLUSTER,
+            "--tasks",
+            task_arn,
+            "--profile",
+            profile,
+            "--region",
+            REGION,
+        ]
+    )
+    detail = aws_json(
+        profile,
+        "ecs",
+        "describe-tasks",
+        "--cluster",
+        CLUSTER,
+        "--tasks",
+        task_arn,
+    )["tasks"][0]
+    codes = [container.get("exitCode") for container in detail.get("containers", [])]
+    if detail.get("lastStatus") != "STOPPED" or codes != [0]:
+        raise DemoError(
+            f"Fixed {family_suffix} task did not pass; inspect its bounded CloudWatch status/logs."
+        )
+    print(f"Fixed {family_suffix} task passed.")
+
+
+def run_variables(
+    *,
+    enabled: bool,
+    app_enabled: bool,
+    run_id: str,
+    api_uri: str | None,
+    database_uri: str | None,
+    database_master_password_version: int = 1,
+    database_engine_version: str | None = None,
+    database_availability_zone: str | None = None,
+) -> dict[str, str | None]:
+    """Create the complete non-secret variable map for this exact LI-02 run."""
+    expiry = (dt.datetime.now(dt.UTC).date() + dt.timedelta(days=30)).isoformat()
+    return {
+        "demo_enabled": str(enabled).lower(),
+        "demo_app_enabled": str(app_enabled).lower(),
+        "api_image_uri": api_uri,
+        "database_image_uri": database_uri,
+        "database_master_password_version": str(database_master_password_version),
+        "demo_database_engine_version": database_engine_version,
+        "demo_database_availability_zone": database_availability_zone,
+        "test_run_id": run_id,
+        "cleanup_review_date": expiry,
+    }
+
+
+def verify_rds_absent_after_capacity_failure(profile: str) -> None:
+    """Allow an AZ retry only when neither AWS nor Terraform has a partial RDS instance."""
+    managed = "aws_db_instance.demo[0]" in state_addresses()
+    matches = [
+        instance
+        for instance in aws_json(profile, "rds", "describe-db-instances").get(
+            "DBInstances", []
+        )
+        if instance.get("DBInstanceIdentifier") == DEMO_DATABASE_ID
+    ]
+    if len(matches) > 1 or managed or matches:
+        raise DemoError(
+            "AWS reported an RDS capacity error, but partial LI-02 RDS state remains; refusing the alternate-AZ apply until it is inspected."
+        )
+
+
+def apply_initial_infrastructure_with_rds_fallback(
+    profile: str,
+    variables: dict[str, str | None],
+    baseline: dict[str, Any],
+    *,
+    env_overrides: dict[str, str] | None = None,
+) -> None:
+    """Try 1b, then 1a only after a verified explicit AWS RDS capacity failure."""
+    failed_zones = set(baseline.get("rds_capacity_unavailable_zones", []))
+    candidates = [zone for zone in DATABASE_AZ_CANDIDATES if zone not in failed_zones]
+    if not candidates:
+        raise DemoError(
+            "Both reviewed LI-02 RDS Availability Zones already failed with explicit capacity errors; preserve the baseline and retry after capacity changes."
+        )
+
+    for index, zone in enumerate(candidates):
+        zone_variables = dict(variables)
+        zone_variables["demo_database_availability_zone"] = zone
+        print(f"Preparing the disposable LI-02 RDS plan for {zone}.")
+        try:
+            terraform_apply_plan(
+                zone_variables,
+                env_overrides=env_overrides,
+                detect_rds_capacity=True,
+            )
+        except InsufficientRdsCapacity:
+            verify_rds_absent_after_capacity_failure(profile)
+            failed_zones.add(zone)
+            baseline["rds_capacity_unavailable_zones"] = [
+                item for item in DATABASE_AZ_CANDIDATES if item in failed_zones
+            ]
+            save_baseline(baseline)
+            if index + 1 == len(candidates):
+                raise DemoError(
+                    f"AWS explicitly reported insufficient LI-02 RDS capacity in {zone}; no alternate AZ remains. The baseline is retained."
+                )
+            next_zone = candidates[index + 1]
+            print(
+                f"AWS explicitly reported insufficient capacity in {zone}; read-only checks found no partial RDS instance. "
+                f"A separate exact plan for {next_zone} will now be shown and needs its own hash approval."
+            )
+            continue
+        baseline["database_availability_zone"] = zone
+        save_baseline(baseline)
+        return
+
+
+def save_baseline(data: dict[str, Any]) -> None:
+    """Persist non-secret run metadata and LI-02-owned resource identifiers."""
+    temporary = BASELINE.with_suffix(".tmp")
+    temporary.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+    os.chmod(temporary, 0o600)
+    temporary.replace(BASELINE)
+
+
+def load_baseline() -> dict[str, Any]:
+    """Read and validate the non-secret local state for the active demo."""
+    if not BASELINE.is_file():
+        raise DemoError(
+            "No LI-02 demo baseline is recorded; refusing to infer shared-resource state."
+        )
+    try:
+        data = json.loads(BASELINE.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise DemoError(
+            "The LI-02 baseline file is unreadable; preserve cloud state and inspect it."
+        ) from exc
+    if data.get("account") != ACCOUNT_ID or data.get("region") != REGION:
+        raise DemoError(
+            "The stored LI-02 baseline targets a different account or Region."
+        )
+    return data
+
+
+def demo_service(profile: str) -> dict[str, Any] | None:
+    """Return the active LI-02 service; an inactive service is already removed."""
+    services = aws_json(
+        profile,
+        "ecs",
+        "describe-services",
+        "--cluster",
+        CLUSTER,
+        "--services",
+        "clip-test-listings-demo-ap-south-1-li02",
+    ).get("services", [])
+    if not services:
+        return None
+    if len(services) == 1 and services[0].get("status") == "INACTIVE":
+        return None
+    if len(services) != 1 or services[0].get("status") != "ACTIVE":
+        raise DemoError(
+            "The LI-02 ECS service is inactive or ambiguous; preserve the run and inspect it."
+        )
+    return services[0]
+
+
+def require_database_task_definition(profile: str, action: str) -> None:
+    """Verify the exact active task family needed before any database cleanup or setup."""
+    family = f"clip-test-listings-db-{REGION}-li02-{action}"
+    arns = aws_json(
+        profile,
+        "ecs",
+        "list-task-definitions",
+        "--family-prefix",
+        family,
+        "--status",
+        "ACTIVE",
+    ).get("taskDefinitionArns", [])
+    if not any(arn.rsplit("/", 1)[-1].split(":", 1)[0] == family for arn in arns):
+        raise DemoError(
+            f"The exact LI-02 {action} task definition is missing; no database or resource cleanup was attempted."
+        )
+
+
+def state_addresses() -> list[str]:
+    """Read the initialized LI-02 state addresses without changing cloud resources."""
+    return command(
+        ["terraform", f"-chdir={TF_ROOT}", "state", "list"], capture=True
+    ).splitlines()
+
+
+def demo_state_addresses() -> list[str]:
+    """Select every temporary route, app, and database-task address from the LI-02 state."""
+    return [
+        address
+        for address in state_addresses()
+        if any(marker in address for marker in DEMO_STATE_MARKERS)
+    ]
+
+
+def verify_li02_runtime_state(profile: str, *, require_present: bool = False) -> bool:
+    """Check Terraform and AWS agree about the persistent LI-02 ECS runtime."""
+    addresses = set(state_addresses())
+    runtime_addresses = [
+        address for address in REQUIRED_RUNTIME_STATE_ADDRESSES if address in addresses
+    ]
+    if runtime_addresses and len(runtime_addresses) != len(
+        REQUIRED_RUNTIME_STATE_ADDRESSES
+    ):
+        raise DemoError(
+            "The persistent LI-02 ECS runtime is only partly recorded in Terraform state; preserve resources and inspect before starting or stopping."
+        )
+    capacity = li02_capacity_group(profile)
+    state_has_runtime = len(runtime_addresses) == len(REQUIRED_RUNTIME_STATE_ADDRESSES)
+    if state_has_runtime != (capacity is not None):
+        raise DemoError(
+            "The dedicated LI-02 ECS capacity provider and Terraform state disagree; preserve the baseline and inspect before continuing."
+        )
+    if require_present and not state_has_runtime:
+        raise DemoError(
+            "The LI-02 ECS cluster/capacity resources are missing from state after infrastructure apply."
+        )
+    return state_has_runtime
+
+
+def verify_demo_database_state(profile: str) -> None:
+    """Refuse to adopt or overlook an LI-02 RDS instance outside this Terraform state."""
+    addresses = state_addresses()
+    managed = "aws_db_instance.demo[0]" in addresses
+    instances = aws_json(profile, "rds", "describe-db-instances").get("DBInstances", [])
+    exists = any(
+        item.get("DBInstanceIdentifier") == DEMO_DATABASE_ID for item in instances
+    )
+    if managed != exists:
+        raise DemoError(
+            "The disposable LI-02 RDS instance and Terraform state disagree; preserve the run and inspect before continuing."
+        )
+
+
+def verify_empty_demo_target(profile: str) -> None:
+    """Fail before a fresh run if LI-02 route, runtime, state, or secret residue exists."""
+    terraform_init()
+    if demo_state_addresses():
+        raise DemoError(
+            "LI-02 Terraform state already contains demo resources without a saved run; inspect before starting."
+        )
+    verify_li02_runtime_state(profile)
+    capacity = li02_capacity_group(profile)
+    if capacity is not None:
+        ensure_li02_ecs_idle(profile)
+        if capacity.get("desired_capacity") != 0 or capacity.get("instances"):
+            raise DemoError(
+                "The persistent LI-02 ECS host is not stopped; run the LI-02 stop command before starting a new run."
+            )
+        volumes = aws_json(
+            profile,
+            "ec2",
+            "describe-volumes",
+            "--filters",
+            f"Name=tag:Name,Values={ROOT_VOLUME_NAME}",
+        ).get("Volumes", [])
+        if volumes:
+            raise DemoError(
+                "A LI-02 ECS root volume remains while no demo run is recorded; inspect it before starting."
+            )
+    if capacity is not None and demo_service(profile):
+        raise DemoError(
+            "An LI-02 ECS service already exists without a saved run; inspect before starting."
+        )
+    load_balancers = aws_json(profile, "elbv2", "describe-load-balancers").get(
+        "LoadBalancers", []
+    )
+    if any(item.get("LoadBalancerName") == "clip-li02-demo" for item in load_balancers):
+        raise DemoError(
+            "The LI-02 public load balancer already exists without a saved run; inspect before starting."
+        )
+    if parameter_exists(profile, URL_PARAMETER):
+        raise DemoError(
+            "The LI-02 database URL parameter already exists without a saved run; inspect before starting."
+        )
+    if not parameter_exists(profile, MASTER_PARAMETER):
+        raise DemoError(
+            "The approved test RDS master-password parameter is absent; no isolated run was started."
+        )
+    databases = aws_json(profile, "rds", "describe-db-instances").get("DBInstances", [])
+    if any(item.get("DBInstanceIdentifier") == DEMO_DATABASE_ID for item in databases):
+        raise DemoError(
+            "The disposable LI-02 RDS instance already exists without a saved run; inspect it before starting."
+        )
+    repositories = aws_json(
+        profile,
+        "ecr",
+        "describe-repositories",
+        "--repository-names",
+        "clip-shared-test-api",
+    ).get("repositories", [])
+    if len(repositories) != 1:
+        raise DemoError(
+            "The expected shared ECR repository is not uniquely available; no isolated run was started."
+        )
+
+
+def wait_for_demo(profile: str, baseline: dict[str, Any]) -> str:
+    """Wait for the one app task and return its generated public URL."""
+    command(
+        [
+            "aws",
+            "ecs",
+            "wait",
+            "services-stable",
+            "--cluster",
+            CLUSTER,
+            "--services",
+            "clip-test-listings-demo-ap-south-1-li02",
+            "--profile",
+            profile,
+            "--region",
+            REGION,
+        ]
+    )
+    baseline["phase"] = "running"
+    save_baseline(baseline)
+    return command(
+        ["terraform", f"-chdir={TF_ROOT}", "output", "-raw", "demo_url"], capture=True
+    ).strip()
+
+
+def continue_start(profile: str, baseline: dict[str, Any]) -> None:
+    """Continue the recorded run from its last completed phase using the normal start command."""
+    revision = baseline.get("revision")
+    run_id = baseline.get("run_id")
+    if not revision or not run_id:
+        raise DemoError(
+            "The saved run lacks its revision or ID; preserve it and inspect state before recovery."
+        )
+    if baseline.get("stop_authorized") is True:
+        raise DemoError(
+            "Teardown was already authorized for this run; finish with the stop command before starting a new run."
+        )
+    if baseline.get("database_mode") != "disposable-rds":
+        if baseline.get("database_may_exist") or baseline.get("infrastructure_ready"):
+            raise DemoError(
+                "This saved run may still target shared RDS; preserve it and inspect before continuing with the disposable database."
+            )
+        baseline["database_mode"] = "disposable-rds"
+        baseline["database_instance"] = DEMO_DATABASE_ID
+        save_baseline(baseline)
+    authorize_start(baseline)
+    terraform_init()
+    verify_demo_database_state(profile)
+
+    has_runtime = verify_li02_runtime_state(profile)
+    service = demo_service(profile) if has_runtime else None
+    if service and service.get("desiredCount", 0) > 0:
+        if baseline.get("database_setup_complete") is True:
+            url = wait_for_demo(profile, baseline)
+            print(f"LI-02 isolated demo is running: {url}")
+            print(
+                "Use synthetic listings and images only. Open this URL on desktop and phone."
+            )
+            print(f"Stop it with: make li02-demo-stop AWS_PROFILE={profile}")
+            return
+        raise DemoError(
+            "The LI-02 service is already requested while database setup is incomplete; preserve the run and inspect it."
+        )
+
+    api_uri = baseline.get("api_image_uri")
+    database_uri = baseline.get("database_image_uri")
+    if not (api_uri and database_uri):
+        if (
+            command(["git", "rev-parse", "HEAD"], capture=True).strip() != revision
+            or command(
+                [
+                    "git",
+                    "status",
+                    "--porcelain",
+                    "--",
+                    "apps/api",
+                    "apps/web",
+                    "contracts",
+                    "database/migrations",
+                    "infra/terraform/domains/listings/test",
+                    "scripts/li02-demo",
+                ],
+                capture=True,
+            ).strip()
+        ):
+            raise DemoError(
+                "Incomplete images must be rebuilt from the exact clean saved revision; preserve this run and inspect it."
+            )
+        require_tools("docker", "git")
+        require_clean_revision()
+        api_uri, database_uri, _tags = build_and_push_images(
+            profile, revision, baseline
+        )
+        baseline.update({"api_image_uri": api_uri, "database_image_uri": database_uri})
+        save_baseline(baseline)
+    baseline["phase"] = "images-ready"
+    save_baseline(baseline)
+
+    database_master_password, database_master_password_version = (
+        get_database_master_credentials(profile)
+    )
+    terraform_secret_environment = {
+        "TF_VAR_database_master_password": database_master_password
+    }
+    addresses = state_addresses()
+    if not all(address in addresses for address in REQUIRED_DEMO_STATE_ADDRESSES):
+        apply_initial_infrastructure_with_rds_fallback(
+            profile,
+            run_variables(
+                enabled=True,
+                app_enabled=False,
+                run_id=run_id,
+                api_uri=api_uri,
+                database_uri=database_uri,
+                database_master_password_version=database_master_password_version,
+                database_engine_version=baseline.get("database_engine_version"),
+            ),
+            baseline,
+            env_overrides=terraform_secret_environment,
+        )
+
+    addresses = state_addresses()
+    if not all(address in addresses for address in REQUIRED_DEMO_STATE_ADDRESSES):
+        raise DemoError(
+            "The LI-02 infrastructure apply did not produce every required address; preserve the run and inspect state."
+        )
+    verify_li02_runtime_state(profile, require_present=True)
+    if running_ecs_tasks(profile):
+        raise DemoError(
+            "The dedicated LI-02 ECS cluster has a task left running before database setup; preserve the run and inspect it."
+        )
+    baseline["infrastructure_ready"] = True
+    baseline["phase"] = "infrastructure-ready"
+    save_baseline(baseline)
+
+    database = demo_database_info(profile)
+    if database.get("DBInstanceStatus") != "available":
+        raise DemoError(
+            f"The disposable LI-02 database is {database.get('DBInstanceStatus')!r}; wait for it to become available."
+        )
+    database_engine_version = database.get("EngineVersion")
+    if not isinstance(database_engine_version, str) or not database_engine_version:
+        raise DemoError(
+            "The disposable LI-02 database did not report its PostgreSQL version; preserve the run and inspect it."
+        )
+    baseline["database_engine_version"] = database_engine_version
+    save_baseline(baseline)
+
+    if not parameter_exists(profile, URL_PARAMETER):
+        if baseline.get("database_setup_complete") is True:
+            raise DemoError(
+                "The recorded database URL parameter is missing; preserve the run and inspect it."
+            )
+        ensure_demo_database_secret(profile, database, baseline)
+    elif baseline.get("url_parameter_owned") is not True:
+        raise DemoError(
+            "The existing database URL parameter is not recorded as owned by this run; refusing to reuse it."
+        )
+    baseline["phase"] = "credentials-ready"
+    save_baseline(baseline)
+
+    service = demo_service(profile)
+    if service and any(
+        service.get(field, 0) != 0
+        for field in ("desiredCount", "runningCount", "pendingCount")
+    ):
+        raise DemoError(
+            "The LI-02 service must remain at zero until the recorded isolated database setup completes."
+        )
+
+    if baseline.get("database_setup_complete") is not True:
+        require_database_task_definition(profile, "cleanup")
+        require_database_task_definition(profile, "bootstrap")
+        require_database_task_definition(profile, "migration")
+        require_database_task_definition(profile, "seed")
+        baseline["database_may_exist"] = True
+        save_baseline(baseline)
+        run_task(profile, "cleanup")
+        baseline["database_may_exist"] = False
+        baseline["phase"] = "database-reset"
+        save_baseline(baseline)
+        baseline["database_may_exist"] = True
+        baseline["phase"] = "database-setup"
+        save_baseline(baseline)
+        for action in ("bootstrap", "migration", "seed"):
+            run_task(profile, action)
+        baseline["database_setup_complete"] = True
+        baseline["phase"] = "database-ready"
+        save_baseline(baseline)
+
+    service = demo_service(profile)
+    if not service or service.get("desiredCount", 0) == 0:
+        baseline["phase"] = "app-starting"
+        save_baseline(baseline)
+        terraform_apply_plan(
+            run_variables(
+                enabled=True,
+                app_enabled=True,
+                run_id=run_id,
+                api_uri=api_uri,
+                database_uri=database_uri,
+                database_master_password_version=database_master_password_version,
+                database_engine_version=database_engine_version,
+                database_availability_zone=baseline.get("database_availability_zone"),
+            ),
+            env_overrides=terraform_secret_environment,
+        )
+    url = wait_for_demo(profile, baseline)
+    print(f"LI-02 isolated demo is running: {url}")
+    print("Use synthetic listings and images only. Open this URL on desktop and phone.")
+    print(f"Stop it with: make li02-demo-stop AWS_PROFILE={profile}")
+
+
+def start(profile: str) -> None:
+    """Start a new run or continue its saved phases through one command."""
+    require_tools("aws", "terraform")
+    if BASELINE.exists():
+        verify_identity_and_budget(profile)
+        baseline = load_baseline()
+        continue_start(profile, baseline)
+        return
+
+    require_tools("docker", "git")
+    revision = require_clean_revision()
+    budget = verify_identity_and_budget(profile)
+    verify_empty_demo_target(profile)
+    baseline = {
+        "account": ACCOUNT_ID,
+        "region": REGION,
+        "revision": revision,
+        "database_instance": DEMO_DATABASE_ID,
+        "database_mode": "disposable-rds",
+        "run_id": f"li02-{secrets.token_hex(6)}",
+        "started_at_utc": dt.datetime.now(dt.UTC).isoformat(),
+        "phase": "preflight",
+        "budget_at_start": budget,
+        "url_parameter_owned": False,
+        "database_may_exist": False,
+        "database_setup_complete": False,
+        "infrastructure_ready": False,
+        "image_tags": [],
+        "rds_capacity_unavailable_zones": [],
+    }
+    save_baseline(baseline)
+    continue_start(profile, baseline)
+
+
+def delete_run_objects(profile: str, run_id: str) -> None:
+    """Delete and verify only the exact current LI-02 test-run S3 prefix."""
+    prefix = f"listings/test/{run_id}/"
+    response = aws_json(
+        profile,
+        "s3api",
+        "list-objects-v2",
+        "--bucket",
+        BUCKET,
+        "--prefix",
+        prefix,
+        "--max-keys",
+        "1",
+    )
+    if not response.get("Contents"):
+        print("The isolated run S3 prefix is already empty.")
+        return
+    aws(
+        profile,
+        "s3",
+        "rm",
+        f"s3://{BUCKET}/{prefix}",
+        "--recursive",
+        "--only-show-errors",
+        capture=False,
+    )
+    response = aws_json(
+        profile,
+        "s3api",
+        "list-objects-v2",
+        "--bucket",
+        BUCKET,
+        "--prefix",
+        prefix,
+        "--max-keys",
+        "1",
+    )
+    if response.get("Contents"):
+        raise DemoError(
+            "The isolated run prefix is not empty; preserve the bucket and inspect cleanup state."
+        )
+
+
+def delete_run_parameters(profile: str, baseline: dict[str, Any]) -> None:
+    """Remove only the LI-02-owned URL SecureString after DB cleanup."""
+    names = [URL_PARAMETER] if parameter_exists(profile, URL_PARAMETER) else []
+    if not names:
+        return
+    if baseline.get("url_parameter_owned") is not True:
+        raise DemoError(
+            "The URL parameter exists but this run does not record ownership; preserve it and inspect tags/history."
+        )
+    print("Removing LI-02-only SecureString parameter names: " + ", ".join(names))
+    for name in names:
+        aws(profile, "ssm", "delete-parameter", "--name", name, capture=False)
+    if any(parameter_exists(profile, name) for name in names):
+        raise DemoError(
+            "The owned LI-02 database URL parameter remains after deletion; preserve the baseline and retry cleanup."
+        )
+
+
+def delete_demo_log_streams(profile: str) -> None:
+    """Delete streams in the LI-02-only log group while retaining its empty group."""
+    log_group = "/ecs/clip-test-listings-ap-south-1-li02"
+    result = aws_json(
+        profile,
+        "logs",
+        "describe-log-streams",
+        "--log-group-name",
+        log_group,
+    )
+    names = [stream["logStreamName"] for stream in result.get("logStreams", [])]
+    if not names:
+        print("The LI-02 CloudWatch log group is already empty.")
+        return
+    print(
+        f"Removing {len(names)} log stream(s) from the LI-02-only log group {log_group}."
+    )
+    for name in names:
+        aws(
+            profile,
+            "logs",
+            "delete-log-stream",
+            "--log-group-name",
+            log_group,
+            "--log-stream-name",
+            name,
+            capture=False,
+        )
+
+
+def stop(profile: str) -> None:
+    """Stop LI-02 ingress/service/host, clear test data, and preserve shared services."""
+    require_tools("aws", "terraform")
+    # Cleanup must remain available when the budget threshold is exceeded or
+    # the Budgets API is unavailable; only the target account is a hard gate.
+    verify_account(profile)
+    baseline = load_baseline()
+    run_id = baseline.get("run_id")
+    if not run_id:
+        raise DemoError(
+            "The saved run has no run ID; preserve its resources and inspect the baseline."
+        )
+    if "ecs_capacity" in baseline:
+        raise DemoError(
+            "This baseline was written by the older shared-cluster lifecycle. This driver will not guess which shared ECS resources it may touch; preserve the file and inspect it with the pinned older revision."
+        )
+    terraform_init()
+    verify_li02_runtime_state(profile)
+    verify_demo_database_state(profile)
+    capacity = li02_capacity_group(profile)
+    service = demo_service(profile) if capacity is not None else None
+    task_definitions = aws_json(
+        profile,
+        "ecs",
+        "list-task-definitions",
+        "--family-prefix",
+        f"clip-test-listings-db-{REGION}-li02-",
+        "--status",
+        "ACTIVE",
+    ).get("taskDefinitionArns", [])
+    database_may_exist = baseline.get("database_may_exist")
+    if database_may_exist is None:
+        # Older run files have no phase marker. Existing task definitions are
+        # enough to run the owner-checked cleanup; their absence is ambiguous.
+        if task_definitions:
+            database_may_exist = True
+        else:
+            raise DemoError(
+                "This older run has no database phase marker or cleanup task; preserve it and inspect state."
+            )
+    if database_may_exist and not (
+        baseline.get("api_image_uri") and baseline.get("database_image_uri")
+    ):
+        raise DemoError(
+            "The isolated database may exist but saved immutable images are missing; preserve the run and inspect it."
+        )
+    database: dict[str, Any] | None = None
+    if database_may_exist:
+        if baseline.get("database_mode") != "disposable-rds":
+            raise DemoError(
+                "The saved database state may belong to shared RDS; no cleanup was attempted. Preserve it and inspect before proceeding."
+            )
+        database = demo_database_info(profile)
+        if database.get("DBInstanceStatus") != "available":
+            raise DemoError(
+                f"The disposable LI-02 database is {database.get('DBInstanceStatus')!r}; preserve it and retry cleanup when available."
+            )
+        require_database_task_definition(profile, "cleanup")
+        require_database_task_definition(profile, "idle-check")
+
+    authorize_stop(baseline)
+    if service and (
+        service.get("desiredCount", 0) > 0 or service.get("runningCount", 0) > 0
+    ):
+        aws(
+            profile,
+            "ecs",
+            "update-service",
+            "--cluster",
+            CLUSTER,
+            "--service",
+            "clip-test-listings-demo-ap-south-1-li02",
+            "--desired-count",
+            "0",
+            capture=False,
+        )
+        command(
+            [
+                "aws",
+                "ecs",
+                "wait",
+                "services-stable",
+                "--cluster",
+                CLUSTER,
+                "--services",
+                "clip-test-listings-demo-ap-south-1-li02",
+                "--profile",
+                profile,
+                "--region",
+                REGION,
+            ]
+        )
+
+    if database_may_exist:
+        run_task(profile, "cleanup")
+        baseline["database_may_exist"] = False
+        baseline["database_setup_complete"] = False
+        save_baseline(baseline)
+        run_task(profile, "idle-check")
+
+    delete_run_objects(profile, run_id)
+    delete_run_parameters(profile, baseline)
+
+    demo_addresses = demo_state_addresses()
+    if demo_addresses:
+        terraform_apply_plan(
+            run_variables(
+                enabled=False,
+                app_enabled=False,
+                run_id=run_id,
+                api_uri=baseline.get("api_image_uri"),
+                database_uri=baseline.get("database_image_uri"),
+            )
+        )
+    print("Retaining LI-02 ECR images so this run can be reproduced.")
+    delete_demo_log_streams(profile)
+    wait_for_li02_host_removed(profile)
+    BASELINE.unlink(missing_ok=True)
+    print(
+        "LI-02 public route, app, disposable RDS database, run objects, and log streams are removed. The LI-02 EC2 host and root disk are gone; shared RDS, shared ECS, and ECR images are retained."
+    )
+    print(f"Restart it with: make li02-demo-start AWS_PROFILE={profile}")
+
+
+def main() -> int:
+    """Parse the exact lifecycle action and require an explicit AWS profile."""
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("action", choices=("start", "stop"))
+    parser.add_argument(
+        "--profile", required=True, help="Explicit approved AWS CLI profile name"
+    )
+    args = parser.parse_args()
+    global ACTIVE_PROFILE
+    ACTIVE_PROFILE = args.profile
+    try:
+        if args.action == "start":
+            start(args.profile)
+        else:
+            stop(args.profile)
+    except (DemoError, OSError, subprocess.SubprocessError) as exc:
+        print(f"li02-demo: {exc}", file=sys.stderr)
+        if BASELINE.is_file():
+            if args.action == "start":
+                print(
+                    f"Saved run retained. Retry with `make li02-demo-start AWS_PROFILE={args.profile}` "
+                    f"or clean it with `make li02-demo-stop AWS_PROFILE={args.profile}`.",
+                    file=sys.stderr,
+                )
+            else:
+                print(
+                    f"Baseline retained. Resolve the reported check, then retry `make li02-demo-stop AWS_PROFILE={args.profile}`.",
+                    file=sys.stderr,
+                )
+        return 2
+    except KeyboardInterrupt:
+        print(
+            "li02-demo interrupted. Preserve the baseline file and inspect AWS/Terraform state before retrying.",
+            file=sys.stderr,
+        )
+        return 130
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

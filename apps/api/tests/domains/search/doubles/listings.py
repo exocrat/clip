@@ -4,6 +4,7 @@ from collections import deque
 from collections.abc import Mapping, Sequence
 from datetime import datetime
 from uuid import UUID
+from typing import Never
 
 from app.core.auth import CallerContext
 from app.core.errors import ERRORS, PublicError
@@ -22,6 +23,14 @@ from app.domains.listings.public import ListingsPublic
 from clip_test_fixtures import Fail, ProviderScenarios, Return, SyntheticIds
 
 
+def _fail(result: Fail) -> Never:
+    """Preserve reviewed failure categories without returning stale fixture data."""
+    status = {"denied": 403, "invalid": 422, "timeout": 503, "unavailable": 503}[
+        result.reason
+    ]
+    raise PublicError(ERRORS[status])
+
+
 class SearchListingsDouble(ListingsPublic):
     """Implement Search's Listings dependency with synthetic, scripted results.
 
@@ -35,15 +44,42 @@ class SearchListingsDouble(ListingsPublic):
         ids: SyntheticIds,
         now: datetime,
         query_scenarios: ProviderScenarios[Page[ListingSummary]],
-        saved: Mapping[ListingId, SavedListingState] | None = None,
+        saved: Mapping[ListingId, SavedListingState | Fail] | None = None,
         query_outcomes: Sequence[Fail | Return[Page[ListingSummary]]] | None = None,
+        save_targets: Mapping[ListingId, SaveTargetResult | Fail] | None = None,
     ) -> None:
         """Copy test-owned duplicate results and references for deterministic reads."""
-        self._known_ids = {ids.listing_id}
+        # Save-target decisions are independent, explicit authoritative scripts;
+        # never derive them from a previously displayed saved summary/window.
+        self._save_targets = (
+            dict(save_targets)
+            if save_targets is not None
+            else {
+                ids.listing_id: SaveTargetResult(
+                    listing_id=ids.listing_id, discoverable=True
+                )
+            }
+        )
         self._query_results = deque(
             query_outcomes if query_outcomes is not None else query_scenarios.duplicate
         )
         self._saved = dict(saved or {})
+        for listing_id, target in self._save_targets.items():
+            if not isinstance(target, Fail) and target.listing_id != listing_id:
+                raise ValueError("Synthetic save-target ID mismatch")
+        for listing_id, state in self._saved.items():
+            if isinstance(state, Fail):
+                continue
+            if (
+                state.listing_id != listing_id
+                or (
+                    state.listing is not None and state.listing.listing_id != listing_id
+                )
+                or (state.retired != (state.listing is None))
+            ):
+                raise ValueError(
+                    "Synthetic saved state violates the reviewed content boundary"
+                )
         self._now = now
 
     async def query_available_listings(
@@ -56,13 +92,7 @@ class SearchListingsDouble(ListingsPublic):
             raise AssertionError("Search Listings scenario script exhausted")
         result = self._query_results.popleft()
         if isinstance(result, Fail):
-            status = {
-                "denied": 403,
-                "invalid": 422,
-                "timeout": 503,
-                "unavailable": 503,
-            }[result.reason]
-            raise PublicError(ERRORS[status])
+            _fail(result)
         return result.value
 
     async def read_save_target(
@@ -70,9 +100,12 @@ class SearchListingsDouble(ListingsPublic):
     ) -> SaveTargetResult:
         """Return only the discoverability flag for a known synthetic listing."""
         caller.require_current(self._now)
-        if listing_id not in self._known_ids:
+        if listing_id not in self._save_targets:
             raise PublicError(ERRORS[404])
-        return SaveTargetResult(listing_id=listing_id, discoverable=True)
+        result = self._save_targets[listing_id]
+        if isinstance(result, Fail):
+            _fail(result)
+        return result
 
     async def read_saved_listing_summaries(
         self, caller: CallerContext, listing_ids: tuple[ListingId, ...]
@@ -81,7 +114,14 @@ class SearchListingsDouble(ListingsPublic):
         caller.require_current(self._now)
         if len(listing_ids) > 100:
             raise PublicError(ERRORS[422])
-        return tuple(self._saved[item] for item in listing_ids if item in self._saved)
+        states = []
+        for item in listing_ids:
+            state = self._saved.get(item)
+            if isinstance(state, Fail):
+                _fail(state)
+            if state is not None:
+                states.append(state)
+        return tuple(states)
 
     async def read_active_categories(self) -> tuple[Category, ...]:
         """Return a stable, synthetic catalogue entry for consumer tests."""

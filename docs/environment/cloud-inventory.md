@@ -162,3 +162,215 @@ User named **Aditya** as current operator and accepted a 96-hour idle clock from
 ### Cost precision accepted — 2026-10-19 UTC
 
 User accepted approximate recent bounded PD-16 run costs and negligible run impact for closeout; exact delayed-charge reconciliation is no longer a blocker ([DEC-12](../decisions/foundation-cost-review-precision.md)). Earlier dated billing-follow-up notes are superseded on that point. Estimates remain estimates, not a measured zero or bill. Retained NAT/storage/other costs, USD 50 pause/review point, USD 25 reserve and project-wide budget still apply. No billing/resource action occurred.
+
+### ID-01 SES sender policy applied — 2026-10-23 06:17:00 UTC
+
+Aditya approved/applied exact saved plan `baa80880c96c379289a90a482a888aac9cc5d087aba40e211a17677a18695e9a`
+in the existing shared test root/state. Added inline policy
+`clip-shared-test-identity-email` to `clip-shared-test-api-task`, allowing only
+SendEmail for verified `clip-iisc.site` with exact From `no-reply@clip-iisc.site`.
+Role-policy JSON/state verified; state serial 9 and lock absent. Compute remains
+off: original RDS stopped, ECS/ASG zero. No deployment or email send; actual
+runtime delivery unverified. Existing idle clock/retained costs unchanged;
+policy retained until separately reviewed removal. [Evidence](../evaluation/identity/provider-history.md#setup-and-permissions).
+
+### ID-01 temporary AMD64 builder running — 2026-10-23 07:11:04 UTC
+
+Aditya approved the exact builder plan plus one bounded native build and owned
+VM/disk cleanup. Five-resource apply succeeded in Identity state (serial 2):
+private t3.small `i-086dd4b9830033682`, encrypted root `vol-0125a996fffc44f69`,
+security group `sg-00f275fda4e0f5104`, dedicated builder role/policy/profile.
+No public IP/ingress and exact role policy verified. OS shutdown terminates and
+root DeleteOnTermination true. Launched 2026-10-23 07:10:15 UTC; operator hard
+expiry 2026-10-23 08:10:15 UTC, USD 1 incremental cap. SSM online; bootstrap timer
+verification pending. Source remains `52186a0`; no build/push/send yet. Shared
+RDS/ECS/ASG remain off; original shared idle deadline unchanged. Temporary IAM/
+profile/group removal retains separate exact cleanup-plan approval.
+
+### ID-01 builder image validated; cleanup scheduled — 2026-10-23 07:16:45 UTC
+
+Supersedes pending bootstrap/build state above: timer/SSM/Docker/native checks and
+one committed-source build passed. Exact image/source and checks are in
+[build evidence](../evaluation/identity/provider-history.md#builder-and-image).
+Builder remains private/running; approved absolute shutdown timer verified for
+08:10:00 UTC (earlier than one-hour operator expiry). No image publication or
+application email. Termination/root-volume deletion remain unverified until
+actual cleanup; temporary role/profile/policy/group require later removal plan.
+
+### ID-01 image published; builder VM/disk removed — 2026-10-23 07:23:06 UTC
+
+Supersedes the preceding running-builder snapshots. Exact committed-source image
+published/verified under approved tag `id01-amd64-52186a0466fe`, immutable digest
+`sha256:3ef8b13d3b102dc97e67d79d91e43eb8d4b2cc02fbabb45cf6001c8a93eddd1d`
+in existing `clip-shared-test-api`. Size 68,148,997 registry bytes; retained for
+runtime-test handoff, image removal separately reviewed. Builder
+`i-086dd4b9830033682` terminated and root `vol-0125a996fffc44f69` absent verified
+07:22:28.116194 UTC. No builder compute/disk retained. Dedicated builder role,
+inline policy, profile and group `sg-00f275fda4e0f5104` remain pending approved
+Identity-root removal plan. RDS stopped/ECS/ASG zero confirmed; original shared
+idle deadline unchanged. No application runtime task/email. [Evidence](../evaluation/identity/provider-history.md#builder-and-image).
+
+### Concurrent RDS start observed during Identity preflight — 2026-10-23 09:12:58 UTC
+
+Supersedes the RDS-stopped observation above for the latest snapshot only:
+original RDS resource `db-PYRRZJPVKPGHIXDAHUWATXGH7A` reported `starting` at
+09:11:20 UTC. CloudTrail records IAM user `surajs2` starting it without error at
+08:49:32 UTC, after two capacity errors. This Identity session made no DB change;
+concurrent operator/task approval/window not established here. ECS cluster and
+ASG remained at zero in the snapshot. [Evidence](../evaluation/identity/provider-history.md#builder-and-image).
+
+### ID-01 smoke definition registered; temporary builder fully removed — 2026-10-23 09:27:10 UTC
+
+Approved Identity saved-plan apply registered
+`arn:aws:ecs:ap-south-1:335523638354:task-definition/clip-test-identity-email-ap-south-1-id01:1`
+with exact verified image/shared roles and disabled-by-default email controls.
+No task launched. Temporary builder role/policy/profile and security group now
+verified absent, superseding their retained status above. VM/root cleanup already
+verified; Identity state serial 3 contains no builder resources and lock is absent.
+ECS/ASG capacity stays zero; no RDS calls/change under approved concurrent-work
+exclusion. Image retained for test, task definition retained for separately
+approved run/cleanup; no email. [Evidence](../evaluation/identity/provider-history.md#builder-and-image).
+
+### ID-01 first runtime invocation: no compute observed — 2026-10-23 09:49:29 UTC
+
+Approved one CLI RunTask invocation failed; no task ARN/matching task or host
+observed. At 09:48:44.053417 UTC cluster/ASG capacity remained zero. Image/task
+retained, builder fully removed, no RDS calls/change. No owned resource required
+cleanup, no automatic retry. [Result](../evaluation/identity/provider-history.md#delivery-diagnostics).
+
+### ID-01 corrected single runtime request accepted — 2026-10-23 09:55:32 UTC
+
+Aditya explicitly approved one corrected idempotent request under the same
+one-message/one-host/45-minute/USD1 scope. Original marker/token reused; prior
+task/audit reconciliation and fresh preflight passed; memory-file input validated
+offline. Task `f5352e809bfb4d5e87f1d72f6aff8e6f` accepted PROVISIONING using
+registered :1 and existing capacity provider. Exact window starts
+09:55:23.140122 UTC, expires 10:40:23.140122 UTC. No RDS calls; API service remains
+disabled. Monitoring/cleanup in progress; email submission/receipt not yet proved.
+
+### ID-01 runtime stopped; owned ECS capacity removed — 2026-10-23 10:14:29 UTC
+
+Supersedes the corrected-request provisioning snapshot. Exact :1 task ran and
+exited1; no delivery accepted, human reports no email. Existing managed scale-in
+terminated only test host `i-06514fe65a4232752` and deleted root
+`vol-028a4fa0eea059363`, verified 10:14:07.756278 UTC before the run expiry.
+Cluster/service/ASG zero, no manual backstop or other workload interruption.
+No RDS calls; concurrent DB use remains untouched/unverified here. No new live
+retry. Image/definition/content-free logs retained for approved diagnostic handoff;
+builder remains fully removed. [Evidence](../evaluation/identity/provider-history.md#delivery-diagnostics).
+
+### ID-01 diagnostic ECS host promptly removed — 2026-10-23 16:57:21 UTC
+
+One approved diagnostic task8d59687bbf7f446d84591adf7a81f1e6 ran and exited1
+with SES AccessDeniedException; no resend. Sole owned host i-093fdd05f7b394ef5
+and root vol-07e5d27895688b25a removed after guarded prompt SetDesiredCapacity(0),
+verified16:57:09.886355 UTC; ECS tasks/registered hosts and ASG desired/instances
+zero. No managed alarm/scaling/draining configuration change or other workload
+interruption. RDS calls0; concurrent database state remains outside this record.
+Image/task/log proof retained; [diagnostic evidence](../evaluation/identity/provider-history.md#delivery-diagnostics).
+
+### ID-01 sandbox recipient permission and real delivery verified — 2026-10-23 17:17:30 UTC
+
+Shared inline SES policy now permits the sender domain plus one privately supplied
+controlled-recipient identity under the unchanged exact sender condition. Exact
+reviewed single-update plan36e9738a7120549a9541f0571fb3b213994ebba8efc04edad1566115a11e3d47
+applied; state serial10/lock release/attached policy verified, no other managed
+change. Shared-root refresh read RDS metadata without a DB change.
+
+Enhanced diagnostic host i-01edad09fd8c5e4d4/root vol-0dd35ab2e3a7797c4 removed
+17:10:41.527682 UTC. Corrected verification task403eba24a7d2428394d76272148ab882
+accepted actual SES submission and human inbox receipt. Its host
+i-0bbef51578c9e5ecf/root vol-04f1705171090cf51 removed17:17:09.706322 UTC.
+Both used guarded prompt cleanup; ECS/ASG zero, runtime RDS calls0, no other
+workload interrupted. Normal managed scaling/draining unchanged. Images/task
+definition/log evidence retained. SES sandbox/production access pending.
+[Evidence](../evaluation/identity/provider-history.md#delivery-diagnostics).
+
+
+### ID-01 private database preflight cleanup — 2026-10-24 21:59:41 UTC
+
+Aditya explicitly approved the1hour preflight window anchored21:40:05 UTC, account
+335523638354/ap-south-1. Original RDS resource db-PYRRZJPVKPGHIXDAHUWATXGH7A
+started and is now confirmed stopped. One existing Identity definition:1 task ran
+with sleep-only overrides, no secrets or exposed ports. Verified private SSM tunnel
+and hostname-verified TLS; metadata inspection failed UndefinedTable before a
+complete safe snapshot, likely public.schema_migrations absent, not independently
+confirmed. One approved master-secret read requested privately; no DB writes or
+key/email-secret reads. No schema/role/grant/URL/provider readiness claimed.
+
+Cleanup confirmed: task/tunnel stopped, cluster hosts/tasks0, API desired/running/
+pending0, ASG desired0/empty, owned i-00c9b68c7757c8da2 terminated and root
+vol-0161f12c2748b1dc7 deleted; no active SSM sessions. Guarded early scale-in initially
+rejected ScalingActivityInProgress, later accepted with honor-cooldown and fresh
+idle checks. NAT/data/SSM/IAM/task definitions/state retained; ongoing retained
+costs continue. No network or shared-policy change. [Sanitized record](../evaluation/identity/id-01-step-12/database-preflight-result.json).
+
+
+### ID-01 renewed metadata and cleanup — 2026-10-24 22:27:20 UTC
+
+Approved one-hour window22:13:36→23:13:36 UTC, account335523638354/ap-south-1,
+collector9bfb607. Verified private tunnel/TLS and completed read-only catalog
+inspection: public.schema_migrations absent, all14expected Identity tables absent,
+Identity login absent; PUBLIC ACL counts0. One effective logging mismatch and
+catalog SET flagsfalse require review, not automatic grants/global changes.
+One approved private master-secret read; no role/schema/grant/logging/data writes,
+key/email-secret read, send, deployment, network or IAM change.
+
+Cleanup verified within window: original RDS resource db-PYRRZJPVKPGHIXDAHUWATXGH7A
+stopped; sleep task1f26b751601944c4a0fcf7d88e179f32 stopped; SSM session closed;
+ASG0/empty; cluster hosts/tasks0; API desired/running/pending0. Owned host
+i-09708de46c0fa931a terminated and rootvol-00c3b7f86b1613fed deleted. Guarded
+scale-in accepted with cooldown honored. NAT/data/parameters/state/IAM/task
+retention unchanged; existing retained costs continue. [Sanitized report](../evaluation/identity/id-01-step-12/database-preflight-followup-result.json).
+
+
+### Logging probe start rejected — 2026-10-25 04:06:31 UTC
+
+Authenticated operator/idle guards passed under explicit logging-only approval.
+Original RDS start rejected: InsufficientDBInstanceCapacity for db.t4g.micro in
+ap-south-1a. Resource db-PYRRZJPVKPGHIXDAHUWATXGH7A rechecked stopped. No task,
+host, session or secret read was started; no SQL, IAM/network/class/AZ change or
+cleanup operation. Existing retained NAT/storage/etc. remain unchanged. [Result](../evaluation/identity/id-01-step-12/logging-probe-start-result.json).
+
+
+### Logging retry startup/cleanup pending — 2026-10-25 04:37:19 UTC
+
+Supersedes the preceding stopped observation: Aditya explicitly requested retry,
+original RDS start accepted with recovery event04:16:15.760UTC. Resource
+ db-PYRRZJPVKPGHIXDAHUWATXGH7A remains starting after20minute readiness bound.
+No host/task/tunnel/secret read/probe SQL. Approved stop request rejected
+InvalidDBInstanceState (requires available); cleanup pending. Shared API/ASG/tasks/
+sessions rechecked zero/empty. No class/AZ/role/grant/IAM/network/schema change;
+no automatic retry or unapproved wait extension. Original window ends05:05:35UTC.
+[Retry record](../evaluation/identity/id-01-step-12/logging-probe-retry-result.json).
+
+
+### Logging-only retry stopped baseline restored — 2026-10-25 04:53:05 UTC
+
+Supersedes prior startup/stopping observations. AWS accepted the explicit retry,
+then aborted recovery for insufficient db.t4g.micro capacity in ap-south-1a
+(event04:37:55.153UTC) and put the original RDS into stopping. Our cleanup stop
+call had been rejected InvalidDBInstanceState; do not attribute shutdown to it.
+Original resource db-PYRRZJPVKPGHIXDAHUWATXGH7A now confirmed stopped. Cluster
+hosts/tasks0, API desired/running/pending0, ASG0/empty and active sessions0. No
+child resources launched, credential retrieved, SQL probe/data/schema/role write,
+class/AZ/IAM/network change or alternative infrastructure. Retained NAT/storage/
+parameters/state unchanged; their ongoing costs remain. [Final record](../evaluation/identity/id-01-step-12/logging-probe-retry-result.json).
+
+
+### Live logging probe passed; stopped baseline restored — 2026-10-25 05:41:05 UTC
+
+Aditya explicitly requested same-scope retry; new05:22:29→06:22:29UTC/1USD window.
+Original class/AZ/private target and idle guards matched. RDS available, one exact
+sleep-only task, verified private host/SSM and verify-full TLS. Committed ca935b9
+logging probe returned completed/rollback_verified true, no failure phase;6local
+settings and6NOLOGIN defaults accepted, then role absent/original baseline verified.
+One private master-secret read; no permanent role/data/default changes, migrations,
+auth-key/email-secret reads or provider operation. No class/AZ/IAM/network changes.
+
+Cleanup verified: original RDS resource db-PYRRZJPVKPGHIXDAHUWATXGH7A stopped;
+owned task8d71d4f672504d10b94c713c647b0fce stopped, tunnel closed; cluster hosts/tasks0,
+API desired/running/pending0, ASG0/empty, no active sessions. Owned host
+i-0be3743fe59a127bf terminated and rootvol-0806db641df31317b deleted. Guarded
+scale-in accepted with honor-cooldown. NAT/data/parameters/state retained; baseline
+retention costs continue. [Successful probe record](../evaluation/identity/id-01-step-12/logging-probe-20261025T052229Z.json).

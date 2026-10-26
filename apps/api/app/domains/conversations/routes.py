@@ -8,6 +8,7 @@ from psycopg_pool import AsyncConnectionPool
 
 from app.contracts.domain_types import (
     ConversationEntry,
+    ErrorEnvelope,
     EntryPage,
     EntryQuery,
     MessageRequest,
@@ -31,8 +32,20 @@ from app.core.errors import ERRORS, PublicError
 from app.domains.conversations.messages import PostgresMessageOperations
 from app.domains.conversations.queries import PostgresConversationQueries
 from app.domains.conversations.key_directory import PostgresKeyDirectory
+from app.domains.conversations.provider import PostgresConversationServices
 
-router = APIRouter(tags=["conversations"])
+router = APIRouter(
+    tags=["conversations"],
+    responses={
+        status: {"model": ErrorEnvelope}
+        for status in (400, 401, 403, 404, 409, 422, 429, 500, 503)
+    },
+)
+
+
+def create_public_provider(pool: AsyncConnectionPool) -> PostgresConversationServices:
+    """Public composition seam; never authenticate callers or open a shared session."""
+    return PostgresConversationServices(pool)
 
 
 def _pool(request: Request) -> AsyncConnectionPool:
@@ -54,6 +67,7 @@ def _operations(request: Request) -> PostgresMessageOperations:
     status_code=201,
     responses={200: {"model": ConversationEntry}},
     operation_id="conversations_submit_message",
+    summary="conversations_submit_message",
 )
 async def submit_message(
     conversation_id: UUID,
@@ -73,6 +87,7 @@ async def submit_message(
     "/conversations/{conversation_id}/entries",
     response_model=EntryPage,
     operation_id="conversations_read_entries",
+    summary="conversations_read_entries",
 )
 async def read_entries(
     conversation_id: UUID,
@@ -93,6 +108,7 @@ async def read_entries(
     "/conversations/{conversation_id}/read-state",
     response_model=ReadState,
     operation_id="conversations_read_state",
+    summary="conversations_read_state",
 )
 async def read_state(
     conversation_id: UUID,
@@ -107,6 +123,7 @@ async def read_state(
     "/me/conversation-key",
     response_model=KeyBundle | None,
     operation_id="conversations_read_own_key",
+    summary="conversations_read_own_key",
 )
 async def read_own_key(
     request: Request,
@@ -122,6 +139,7 @@ async def read_own_key(
     "/conversations/{conversation_id}/read-state",
     response_model=ReadState,
     operation_id="conversations_acknowledge_read",
+    summary="conversations_acknowledge_read",
 )
 async def acknowledge_read(
     conversation_id: UUID,
@@ -137,6 +155,7 @@ async def acknowledge_read(
     "/conversations",
     response_model=PageResult[ConversationSummary],
     operation_id="conversations_list_mine",
+    summary="conversations_list_mine",
 )
 async def list_mine(
     request: Request,
@@ -151,6 +170,7 @@ async def list_mine(
     "/conversations/{conversation_id}",
     response_model=ConversationSummary,
     operation_id="conversations_read_summary",
+    summary="conversations_read_summary",
 )
 async def read_summary(
     conversation_id: UUID,
@@ -167,6 +187,7 @@ async def read_summary(
     "/conversations/{conversation_id}/keys",
     response_model=MemberKeyBundles,
     operation_id="conversations_read_member_keys",
+    summary="conversations_read_member_keys",
 )
 async def read_member_keys(
     conversation_id: UUID,
@@ -183,6 +204,7 @@ async def read_member_keys(
     "/me/conversation-key",
     response_model=PublicKeyBundleView,
     operation_id="conversations_register_own_key",
+    summary="conversations_register_own_key",
 )
 async def register_own_key(
     payload: PublicKeyBundleRequest,
@@ -197,6 +219,7 @@ async def register_own_key(
     "/me/conversation-prekeys",
     response_model=OwnPreKeyInventory,
     operation_id="conversations_read_own_prekey_inventory",
+    summary="conversations_read_own_prekey_inventory",
 )
 async def read_own_inventory(
     request: Request, caller: CallerContext = Depends(require_caller)
@@ -209,6 +232,7 @@ async def read_own_inventory(
     "/me/conversation-prekeys",
     response_model=PublicPreKeyBatchView,
     operation_id="conversations_publish_own_prekeys",
+    summary="conversations_publish_own_prekeys",
 )
 async def publish_own_prekeys(
     payload: PublicPreKeyBatchRequest,
@@ -225,6 +249,7 @@ async def publish_own_prekeys(
     "/conversations/{conversation_id}/prekey-bundle",
     response_model=MemberPreKeyBundle,
     operation_id="conversations_consume_member_prekeys",
+    summary="conversations_consume_member_prekeys",
 )
 async def consume_member_prekeys(
     conversation_id: UUID,

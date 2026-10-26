@@ -1,7 +1,17 @@
 **
 !pyproject.toml
 !uv.lock
+!package.json
+!package-lock.json
+!contracts/
+!contracts/generated/
+!contracts/generated/**
 !apps/
 !apps/api/
 !apps/api/app/
 !apps/api/app/**
+!apps/web/
+!apps/web/**
+apps/web/node_modules
+apps/web/dist
+apps/web/.vite

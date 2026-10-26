@@ -1,0 +1,326 @@
+FFFFFF..                                                                 [100%]
+=================================== FAILURES ===================================
+_ test_database_tasks_bound_psql_and_hide_private_output[success-setup-db-role.sh] _
+
+tools = PosixPath('/private/var/folders/f9/mf22ccnn3wl078szdw8gykpr0000gn/T/pytest-of-mohitmahapatra/pytest-69/test_database_tasks_bound_psql0')
+script = 'setup-db-role.sh', mode = 'success'
+
+    @pytest.mark.parametrize("script", ["setup-db-role.sh", "probe-db.sh"])
+    @pytest.mark.parametrize("mode", ["success", "fail", "hang"])
+    def test_database_tasks_bound_psql_and_hide_private_output(tools, script, mode):
+        """A stuck child must stop; ordinary failures must not disclose diagnostics."""
+        record = tools / "record.json"
+        result = subprocess.run(
+            ["/bin/sh", str(SCRIPTS / script)],
+            env={
+                "PATH": f"{tools}:{os.environ['PATH']}",
+                "PGPASSWORD": "controlled-local-test-input",
+                "PROBE_PASSWORD": "controlled-local-test-input",
+                "PGHOST": "127.0.0.1",
+                "PGPORT": "5432",
+                "PGDATABASE": "clip_test",
+                "PGUSER": "clip_test_probe",
+                "PGCONNECT_TIMEOUT": "0",
+                "PGOPTIONS": "-c statement_timeout=0 -c lock_timeout=0",
+                "CHECK_RECORD": str(record),
+                "CHECK_MODE": mode,
+            },
+            capture_output=True,
+            text=True,
+            timeout=4,
+        )
+>       assert (result.returncode == 0) == (mode == "success")
+E       AssertionError: assert (1 == 0) == ('success' == 'success'
+E        +  where 1 = CompletedProcess(args=['/bin/sh', '/Users/mohitmahapatra/Desktop/brancher/clip/infra/terraform/shared/test/scripts/set...stdout='database probe login setup failed or timed out; inspect task status without exposing credentials\n', stderr='').returncode
+E         
+E           success)
+
+tests/architecture/test_db_task_timeouts.py:77: AssertionError
+_ test_database_tasks_bound_psql_and_hide_private_output[success-probe-db.sh] __
+
+tools = PosixPath('/private/var/folders/f9/mf22ccnn3wl078szdw8gykpr0000gn/T/pytest-of-mohitmahapatra/pytest-69/test_database_tasks_bound_psql1')
+script = 'probe-db.sh', mode = 'success'
+
+    @pytest.mark.parametrize("script", ["setup-db-role.sh", "probe-db.sh"])
+    @pytest.mark.parametrize("mode", ["success", "fail", "hang"])
+    def test_database_tasks_bound_psql_and_hide_private_output(tools, script, mode):
+        """A stuck child must stop; ordinary failures must not disclose diagnostics."""
+        record = tools / "record.json"
+        result = subprocess.run(
+            ["/bin/sh", str(SCRIPTS / script)],
+            env={
+                "PATH": f"{tools}:{os.environ['PATH']}",
+                "PGPASSWORD": "controlled-local-test-input",
+                "PROBE_PASSWORD": "controlled-local-test-input",
+                "PGHOST": "127.0.0.1",
+                "PGPORT": "5432",
+                "PGDATABASE": "clip_test",
+                "PGUSER": "clip_test_probe",
+                "PGCONNECT_TIMEOUT": "0",
+                "PGOPTIONS": "-c statement_timeout=0 -c lock_timeout=0",
+                "CHECK_RECORD": str(record),
+                "CHECK_MODE": mode,
+            },
+            capture_output=True,
+            text=True,
+            timeout=4,
+        )
+>       assert (result.returncode == 0) == (mode == "success")
+E       AssertionError: assert (1 == 0) == ('success' == 'success'
+E        +  where 1 = CompletedProcess(args=['/bin/sh', '/Users/mohitmahapatra/Desktop/brancher/clip/infra/terraform/shared/test/scripts/pro...rncode=1, stdout='PostgreSQL probe failed or timed out; inspect task status without exposing credentials\n', stderr='').returncode
+E         
+E           success)
+
+tests/architecture/test_db_task_timeouts.py:77: AssertionError
+_ test_database_tasks_bound_psql_and_hide_private_output[fail-setup-db-role.sh] _
+
+tools = PosixPath('/private/var/folders/f9/mf22ccnn3wl078szdw8gykpr0000gn/T/pytest-of-mohitmahapatra/pytest-69/test_database_tasks_bound_psql2')
+script = 'setup-db-role.sh', mode = 'fail'
+
+    @pytest.mark.parametrize("script", ["setup-db-role.sh", "probe-db.sh"])
+    @pytest.mark.parametrize("mode", ["success", "fail", "hang"])
+    def test_database_tasks_bound_psql_and_hide_private_output(tools, script, mode):
+        """A stuck child must stop; ordinary failures must not disclose diagnostics."""
+        record = tools / "record.json"
+        result = subprocess.run(
+            ["/bin/sh", str(SCRIPTS / script)],
+            env={
+                "PATH": f"{tools}:{os.environ['PATH']}",
+                "PGPASSWORD": "controlled-local-test-input",
+                "PROBE_PASSWORD": "controlled-local-test-input",
+                "PGHOST": "127.0.0.1",
+                "PGPORT": "5432",
+                "PGDATABASE": "clip_test",
+                "PGUSER": "clip_test_probe",
+                "PGCONNECT_TIMEOUT": "0",
+                "PGOPTIONS": "-c statement_timeout=0 -c lock_timeout=0",
+                "CHECK_RECORD": str(record),
+                "CHECK_MODE": mode,
+            },
+            capture_output=True,
+            text=True,
+            timeout=4,
+        )
+        assert (result.returncode == 0) == (mode == "success")
+        assert "controlled-private-diagnostic" not in result.stdout + result.stderr
+        assert "controlled-local-test-input" not in result.stdout + result.stderr
+>       assert json.loads(record.read_text()) == {
+                          ^^^^^^^^^^^^^^^^^^
+            "PGCONNECT_TIMEOUT": "10",
+            "PGOPTIONS": "-c statement_timeout=30000 -c lock_timeout=30000",
+        }
+
+tests/architecture/test_db_task_timeouts.py:80: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.tools/python/cpython-3.14.3-macos-aarch64-none/lib/python3.14/pathlib/__init__.py:787: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/private/var/folders/f9/mf22ccnn3wl078szdw8gykpr0000gn/T/pytest-of-mohitmahapatra/pytest-69/test_database_tasks_bound_psql2/record.json')
+mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/private/var/folders/f9/mf22ccnn3wl078szdw8gykpr0000gn/T/pytest-of-mohitmahapatra/pytest-69/test_database_tasks_bound_psql2/record.json'
+
+.tools/python/cpython-3.14.3-macos-aarch64-none/lib/python3.14/pathlib/__init__.py:771: FileNotFoundError
+___ test_database_tasks_bound_psql_and_hide_private_output[fail-probe-db.sh] ___
+
+tools = PosixPath('/private/var/folders/f9/mf22ccnn3wl078szdw8gykpr0000gn/T/pytest-of-mohitmahapatra/pytest-69/test_database_tasks_bound_psql3')
+script = 'probe-db.sh', mode = 'fail'
+
+    @pytest.mark.parametrize("script", ["setup-db-role.sh", "probe-db.sh"])
+    @pytest.mark.parametrize("mode", ["success", "fail", "hang"])
+    def test_database_tasks_bound_psql_and_hide_private_output(tools, script, mode):
+        """A stuck child must stop; ordinary failures must not disclose diagnostics."""
+        record = tools / "record.json"
+        result = subprocess.run(
+            ["/bin/sh", str(SCRIPTS / script)],
+            env={
+                "PATH": f"{tools}:{os.environ['PATH']}",
+                "PGPASSWORD": "controlled-local-test-input",
+                "PROBE_PASSWORD": "controlled-local-test-input",
+                "PGHOST": "127.0.0.1",
+                "PGPORT": "5432",
+                "PGDATABASE": "clip_test",
+                "PGUSER": "clip_test_probe",
+                "PGCONNECT_TIMEOUT": "0",
+                "PGOPTIONS": "-c statement_timeout=0 -c lock_timeout=0",
+                "CHECK_RECORD": str(record),
+                "CHECK_MODE": mode,
+            },
+            capture_output=True,
+            text=True,
+            timeout=4,
+        )
+        assert (result.returncode == 0) == (mode == "success")
+        assert "controlled-private-diagnostic" not in result.stdout + result.stderr
+        assert "controlled-local-test-input" not in result.stdout + result.stderr
+>       assert json.loads(record.read_text()) == {
+                          ^^^^^^^^^^^^^^^^^^
+            "PGCONNECT_TIMEOUT": "10",
+            "PGOPTIONS": "-c statement_timeout=30000 -c lock_timeout=30000",
+        }
+
+tests/architecture/test_db_task_timeouts.py:80: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.tools/python/cpython-3.14.3-macos-aarch64-none/lib/python3.14/pathlib/__init__.py:787: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/private/var/folders/f9/mf22ccnn3wl078szdw8gykpr0000gn/T/pytest-of-mohitmahapatra/pytest-69/test_database_tasks_bound_psql3/record.json')
+mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/private/var/folders/f9/mf22ccnn3wl078szdw8gykpr0000gn/T/pytest-of-mohitmahapatra/pytest-69/test_database_tasks_bound_psql3/record.json'
+
+.tools/python/cpython-3.14.3-macos-aarch64-none/lib/python3.14/pathlib/__init__.py:771: FileNotFoundError
+_ test_database_tasks_bound_psql_and_hide_private_output[hang-setup-db-role.sh] _
+
+tools = PosixPath('/private/var/folders/f9/mf22ccnn3wl078szdw8gykpr0000gn/T/pytest-of-mohitmahapatra/pytest-69/test_database_tasks_bound_psql4')
+script = 'setup-db-role.sh', mode = 'hang'
+
+    @pytest.mark.parametrize("script", ["setup-db-role.sh", "probe-db.sh"])
+    @pytest.mark.parametrize("mode", ["success", "fail", "hang"])
+    def test_database_tasks_bound_psql_and_hide_private_output(tools, script, mode):
+        """A stuck child must stop; ordinary failures must not disclose diagnostics."""
+        record = tools / "record.json"
+        result = subprocess.run(
+            ["/bin/sh", str(SCRIPTS / script)],
+            env={
+                "PATH": f"{tools}:{os.environ['PATH']}",
+                "PGPASSWORD": "controlled-local-test-input",
+                "PROBE_PASSWORD": "controlled-local-test-input",
+                "PGHOST": "127.0.0.1",
+                "PGPORT": "5432",
+                "PGDATABASE": "clip_test",
+                "PGUSER": "clip_test_probe",
+                "PGCONNECT_TIMEOUT": "0",
+                "PGOPTIONS": "-c statement_timeout=0 -c lock_timeout=0",
+                "CHECK_RECORD": str(record),
+                "CHECK_MODE": mode,
+            },
+            capture_output=True,
+            text=True,
+            timeout=4,
+        )
+        assert (result.returncode == 0) == (mode == "success")
+        assert "controlled-private-diagnostic" not in result.stdout + result.stderr
+        assert "controlled-local-test-input" not in result.stdout + result.stderr
+>       assert json.loads(record.read_text()) == {
+                          ^^^^^^^^^^^^^^^^^^
+            "PGCONNECT_TIMEOUT": "10",
+            "PGOPTIONS": "-c statement_timeout=30000 -c lock_timeout=30000",
+        }
+
+tests/architecture/test_db_task_timeouts.py:80: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.tools/python/cpython-3.14.3-macos-aarch64-none/lib/python3.14/pathlib/__init__.py:787: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/private/var/folders/f9/mf22ccnn3wl078szdw8gykpr0000gn/T/pytest-of-mohitmahapatra/pytest-69/test_database_tasks_bound_psql4/record.json')
+mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/private/var/folders/f9/mf22ccnn3wl078szdw8gykpr0000gn/T/pytest-of-mohitmahapatra/pytest-69/test_database_tasks_bound_psql4/record.json'
+
+.tools/python/cpython-3.14.3-macos-aarch64-none/lib/python3.14/pathlib/__init__.py:771: FileNotFoundError
+___ test_database_tasks_bound_psql_and_hide_private_output[hang-probe-db.sh] ___
+
+tools = PosixPath('/private/var/folders/f9/mf22ccnn3wl078szdw8gykpr0000gn/T/pytest-of-mohitmahapatra/pytest-69/test_database_tasks_bound_psql5')
+script = 'probe-db.sh', mode = 'hang'
+
+    @pytest.mark.parametrize("script", ["setup-db-role.sh", "probe-db.sh"])
+    @pytest.mark.parametrize("mode", ["success", "fail", "hang"])
+    def test_database_tasks_bound_psql_and_hide_private_output(tools, script, mode):
+        """A stuck child must stop; ordinary failures must not disclose diagnostics."""
+        record = tools / "record.json"
+        result = subprocess.run(
+            ["/bin/sh", str(SCRIPTS / script)],
+            env={
+                "PATH": f"{tools}:{os.environ['PATH']}",
+                "PGPASSWORD": "controlled-local-test-input",
+                "PROBE_PASSWORD": "controlled-local-test-input",
+                "PGHOST": "127.0.0.1",
+                "PGPORT": "5432",
+                "PGDATABASE": "clip_test",
+                "PGUSER": "clip_test_probe",
+                "PGCONNECT_TIMEOUT": "0",
+                "PGOPTIONS": "-c statement_timeout=0 -c lock_timeout=0",
+                "CHECK_RECORD": str(record),
+                "CHECK_MODE": mode,
+            },
+            capture_output=True,
+            text=True,
+            timeout=4,
+        )
+        assert (result.returncode == 0) == (mode == "success")
+        assert "controlled-private-diagnostic" not in result.stdout + result.stderr
+        assert "controlled-local-test-input" not in result.stdout + result.stderr
+>       assert json.loads(record.read_text()) == {
+                          ^^^^^^^^^^^^^^^^^^
+            "PGCONNECT_TIMEOUT": "10",
+            "PGOPTIONS": "-c statement_timeout=30000 -c lock_timeout=30000",
+        }
+
+tests/architecture/test_db_task_timeouts.py:80: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.tools/python/cpython-3.14.3-macos-aarch64-none/lib/python3.14/pathlib/__init__.py:787: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/private/var/folders/f9/mf22ccnn3wl078szdw8gykpr0000gn/T/pytest-of-mohitmahapatra/pytest-69/test_database_tasks_bound_psql5/record.json')
+mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/private/var/folders/f9/mf22ccnn3wl078szdw8gykpr0000gn/T/pytest-of-mohitmahapatra/pytest-69/test_database_tasks_bound_psql5/record.json'
+
+.tools/python/cpython-3.14.3-macos-aarch64-none/lib/python3.14/pathlib/__init__.py:771: FileNotFoundError
+=========================== short test summary info ============================
+FAILED tests/architecture/test_db_task_timeouts.py::test_database_tasks_bound_psql_and_hide_private_output[success-setup-db-role.sh]
+FAILED tests/architecture/test_db_task_timeouts.py::test_database_tasks_bound_psql_and_hide_private_output[success-probe-db.sh]
+FAILED tests/architecture/test_db_task_timeouts.py::test_database_tasks_bound_psql_and_hide_private_output[fail-setup-db-role.sh]
+FAILED tests/architecture/test_db_task_timeouts.py::test_database_tasks_bound_psql_and_hide_private_output[fail-probe-db.sh]
+FAILED tests/architecture/test_db_task_timeouts.py::test_database_tasks_bound_psql_and_hide_private_output[hang-setup-db-role.sh]
+FAILED tests/architecture/test_db_task_timeouts.py::test_database_tasks_bound_psql_and_hide_private_output[hang-probe-db.sh]
+6 failed, 2 passed in 4.70s

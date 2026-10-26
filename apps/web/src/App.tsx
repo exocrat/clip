@@ -1,6 +1,12 @@
+import { IdentityProvider } from './features/identity';
 import { AppRouter } from './app/router';
+import { ConversationRuntime } from './pages/ConversationRuntime';
 
-/** Starts the route scaffold; pages contain placeholders without domain effects. */
+/** Provides Identity session state around the approved route tree. */
 export function App() {
-  return <AppRouter />;
+  return (
+    <IdentityProvider>
+      <ConversationRuntime><AppRouter /></ConversationRuntime>
+    </IdentityProvider>
+  );
 }

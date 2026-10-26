@@ -18,7 +18,7 @@ from test_conversation_messages import (
     seed_thread,
 )
 
-MIGRATION = Path("database/migrations/20261024063500_conversation_recovery_storage.sql")
+MIGRATION = Path("database/migrations/20261026090300_conversation_recovery_storage.sql")
 
 
 async def original_message(pool):
@@ -357,7 +357,7 @@ def test_recovery_honors_retirement_marker_and_refuses_destructive_rollback():
                     async with connection.transaction():
                         await connection.execute(down)
                 await connection.execute(
-                    "UPDATE conversations.threads SET participant_writes_blocked_at = clock_timestamp() WHERE id = %s",
+                    "UPDATE conversations.threads SET participant_writes_disabled_at = clock_timestamp() WHERE id = %s",
                     (original["thread"],),
                 )
                 with pytest.raises(errors.CheckViolation):

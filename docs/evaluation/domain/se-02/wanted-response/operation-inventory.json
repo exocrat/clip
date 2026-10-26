@@ -1,0 +1,73 @@
+{
+  "declared_search_operations": [
+    "search_change_wanted_request_state",
+    "search_create_wanted_request",
+    "search_list_my_wanted_requests",
+    "search_list_open_wanted_requests",
+    "search_list_saved_listings",
+    "search_match_draft_title",
+    "search_read_wanted_request",
+    "search_save_listing",
+    "search_start_wanted_response",
+    "search_unsave_listing",
+    "search_update_wanted_request"
+  ],
+  "mounted_search_operations": [
+    "search_change_wanted_request_state",
+    "search_create_wanted_request",
+    "search_list_my_wanted_requests",
+    "search_list_open_wanted_requests",
+    "search_list_saved_listings",
+    "search_match_draft_title",
+    "search_read_wanted_request",
+    "search_save_listing",
+    "search_start_wanted_response",
+    "search_unsave_listing",
+    "search_update_wanted_request"
+  ],
+  "declared_not_mounted": [],
+  "actual_success_responses": {
+    "200": {
+      "description": "OK",
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "#/components/schemas/ConversationStartResult"
+          }
+        }
+      }
+    },
+    "201": {
+      "description": "Successful Response",
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "#/components/schemas/ConversationStartResult"
+          }
+        }
+      }
+    }
+  },
+  "generated_success_responses": {
+    "200": {
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "#/components/schemas/ConversationStartResult"
+          }
+        }
+      },
+      "description": "OK"
+    },
+    "201": {
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "#/components/schemas/ConversationStartResult"
+          }
+        }
+      },
+      "description": "Successful Response"
+    }
+  }
+}

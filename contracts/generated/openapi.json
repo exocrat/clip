@@ -612,10 +612,17 @@
             "type": "string"
           },
           "pickup_area": {
-            "maxLength": 120,
-            "minLength": 1,
-            "title": "Pickup Area",
-            "type": "string"
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pickup Area"
           },
           "proof_available": {
             "anyOf": [
@@ -642,7 +649,6 @@
           "condition_code",
           "asking_price_paise",
           "negotiable",
-          "pickup_area",
           "image_upload_ids",
           "operation_id"
         ],
@@ -695,6 +701,23 @@
           "operation_id"
         ],
         "title": "CreateWantedRequest",
+        "type": "object"
+      },
+      "CsrfToken": {
+        "additionalProperties": false,
+        "description": "Session-bound request protection token; never a session credential.",
+        "properties": {
+          "csrf_token": {
+            "maxLength": 128,
+            "minLength": 32,
+            "title": "Csrf Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "csrf_token"
+        ],
+        "title": "CsrfToken",
         "type": "object"
       },
       "CurrentOfferSummary": {
@@ -887,6 +910,28 @@
           "error"
         ],
         "title": "ErrorEnvelope",
+        "type": "object"
+      },
+      "ExistingListingImage": {
+        "additionalProperties": false,
+        "description": "Keep one of the listing's currently attached images in place/order.",
+        "properties": {
+          "image_id": {
+            "format": "uuid",
+            "title": "Image Id",
+            "type": "string"
+          },
+          "source": {
+            "const": "existing",
+            "title": "Source",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source",
+          "image_id"
+        ],
+        "title": "ExistingListingImage",
         "type": "object"
       },
       "HealthResponse": {
@@ -1088,8 +1133,15 @@
             "type": "boolean"
           },
           "pickup_area": {
-            "title": "Pickup Area",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pickup Area"
           },
           "proof_available": {
             "anyOf": [
@@ -1215,8 +1267,15 @@
             "type": "string"
           },
           "pickup_area": {
-            "title": "Pickup Area",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pickup Area"
           },
           "proof_available": {
             "anyOf": [
@@ -1380,8 +1439,15 @@
             "type": "string"
           },
           "pickup_area": {
-            "title": "Pickup Area",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pickup Area"
           },
           "proof_available": {
             "anyOf": [
@@ -1464,7 +1530,7 @@
       },
       "ListingReplacement": {
         "additionalProperties": false,
-        "description": "Full listing replacement with revision guard and explicit nullable fields.",
+        "description": "Replace listing details and its ordered keep/add image selection.",
         "properties": {
           "asking_price_paise": {
             "minimum": 0.0,
@@ -1508,14 +1574,27 @@
             "title": "Expected Revision",
             "type": "integer"
           },
-          "image_upload_ids": {
+          "images": {
             "items": {
-              "format": "uuid",
-              "type": "string"
+              "discriminator": {
+                "mapping": {
+                  "existing": "#/components/schemas/ExistingListingImage",
+                  "upload": "#/components/schemas/NewListingImage"
+                },
+                "propertyName": "source"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/ExistingListingImage"
+                },
+                {
+                  "$ref": "#/components/schemas/NewListingImage"
+                }
+              ]
             },
             "maxItems": 8,
             "minItems": 1,
-            "title": "Image Upload Ids",
+            "title": "Images",
             "type": "array"
           },
           "negotiable": {
@@ -1528,10 +1607,17 @@
             "type": "string"
           },
           "pickup_area": {
-            "maxLength": 120,
-            "minLength": 1,
-            "title": "Pickup Area",
-            "type": "string"
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pickup Area"
           },
           "proof_available": {
             "anyOf": [
@@ -1563,7 +1649,7 @@
           "available_from",
           "available_until",
           "proof_available",
-          "image_upload_ids",
+          "images",
           "operation_id"
         ],
         "title": "ListingReplacement",
@@ -1642,8 +1728,15 @@
             "type": "boolean"
           },
           "pickup_area": {
-            "title": "Pickup Area",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pickup Area"
           },
           "sensitive_purchase": {
             "title": "Sensitive Purchase",
@@ -1759,6 +1852,29 @@
         "title": "MessageRequest",
         "type": "object"
       },
+      "MicrosoftLoginAttempt": {
+        "additionalProperties": false,
+        "description": "Public nonce paired with a private server-bound HttpOnly attempt cookie.",
+        "properties": {
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          },
+          "nonce": {
+            "maxLength": 128,
+            "minLength": 32,
+            "title": "Nonce",
+            "type": "string"
+          }
+        },
+        "required": [
+          "nonce",
+          "expires_at"
+        ],
+        "title": "MicrosoftLoginAttempt",
+        "type": "object"
+      },
       "MicrosoftSessionRequest": {
         "additionalProperties": false,
         "description": "Provider assertion exchanged by Identity, never persisted or logged.",
@@ -1774,6 +1890,28 @@
           "id_token"
         ],
         "title": "MicrosoftSessionRequest",
+        "type": "object"
+      },
+      "NewListingImage": {
+        "additionalProperties": false,
+        "description": "Attach one newly confirmed, owner-bound image upload.",
+        "properties": {
+          "source": {
+            "const": "upload",
+            "title": "Source",
+            "type": "string"
+          },
+          "upload_id": {
+            "format": "uuid",
+            "title": "Upload Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source",
+          "upload_id"
+        ],
+        "title": "NewListingImage",
         "type": "object"
       },
       "OfferRevisionRequest": {
@@ -3242,6 +3380,230 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/auth/csrf": {
+      "get": {
+        "description": "Reject accidental use; declarations never return fake success.",
+        "operationId": "identity_read_csrf_token",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CsrfToken"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "identity_read_csrf_token",
+        "tags": [
+          "identity"
+        ]
+      }
+    },
+    "/auth/microsoft/login-attempts": {
+      "post": {
+        "description": "Reject accidental use; declarations never return fake success.",
+        "operationId": "identity_start_microsoft_login_attempt",
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MicrosoftLoginAttempt"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "identity_start_microsoft_login_attempt",
+        "tags": [
+          "identity"
+        ]
+      }
+    },
     "/auth/microsoft/sessions": {
       "post": {
         "description": "Reject accidental use; declarations never return fake success.",
@@ -6501,6 +6863,22 @@
           },
           {
             "in": "query",
+            "name": "negotiable",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Negotiable"
+            }
+          },
+          {
+            "in": "query",
             "name": "min_price_paise",
             "required": false,
             "schema": {
@@ -6537,14 +6915,29 @@
           },
           {
             "in": "query",
+            "name": "search_mode",
+            "required": false,
+            "schema": {
+              "default": "keyword",
+              "enum": [
+                "keyword",
+                "hybrid"
+              ],
+              "title": "Search Mode",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
             "name": "sort",
             "required": false,
             "schema": {
-              "default": "newest",
+              "default": "created_desc",
               "enum": [
-                "newest",
+                "created_desc",
                 "price_asc",
-                "price_desc"
+                "price_desc",
+                "relevance"
               ],
               "title": "Sort",
               "type": "string"
@@ -7214,6 +7607,13 @@
         },
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationStartResult"
+                }
+              }
+            },
             "description": "OK"
           },
           "201": {
@@ -10290,6 +10690,13 @@
         },
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationStartResult"
+                }
+              }
+            },
             "description": "OK"
           },
           "201": {

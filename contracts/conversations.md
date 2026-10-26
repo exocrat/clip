@@ -20,8 +20,8 @@ The allowed calls are:
 
 | Caller | Conversations capability | Constraint |
 |---|---|---|
-| Listings | Create/reopen listing-origin thread; check that a buyer participates in a specified listing thread; persist a Listings-authorized offer mutation; read minimal listing-origin activity. | Listings resolves listing/owner state and serializes its own availability/selection changes. It supplies server-derived origin/participant context. |
-| Search | Create/reopen Wanted Request-origin thread; read minimal request-origin activity. | Search resolves author/request state and serializes response creation against closure. It supplies server-derived origin/participant context. |
+| Listings | Create/reopen listing-origin thread; check that a buyer participates in a specified listing thread; persist a Listings-authorized offer mutation; read listing-origin activity; atomically set the no-participant-write marker for retirement. | Listings resolves listing/owner state and serializes its own availability/selection changes. It supplies server-derived origin/participant context. |
+| Search | Create/reopen Wanted Request-origin thread; read request-origin activity; atomically set the no-participant-write marker for retirement. | Search resolves author/request state and serializes response creation against closure. It supplies server-derived origin/participant context. |
 | Identity | None. | Identity never calls Conversations. Conversations calls Identity for the actor/participant eligibility checks and the authorized contact/notification-recipient capabilities. |
 | CN-03 worker | Claim/complete delivery work and read the authorized recipient/read-state facts required for a due event. | Conversations keeps ownership of intent records and state transitions. Worker/provider failure never reverses the primary thread/message write. |
 
@@ -480,9 +480,11 @@ For zero associated threads, count is zero and latest activity is null. For
 one or more threads, the origin owner compares the returned maximum with its
 server-derived cutoff. This is only a preflight: if completeness/state is
 unknown or Conversations is unavailable, return a safe dependency failure and
-the origin owner must defer retirement. Never treat an error or missing result
-as zero activity. The public call exposes no content and grants no private
-table access.
+the origin owner must defer retirement;
+`mark_origin_retired` performs the final authoritative activity check while
+holding the write locks. Never treat an error or missing result as zero
+activity. The public call exposes no content and grants no private table
+access.
 
 After that preflight, Listings or Search calls `mark_origin_retired` with the
 same stable operation ID and cutoff. Conversations locks every associated

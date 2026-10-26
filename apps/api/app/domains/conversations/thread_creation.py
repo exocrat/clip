@@ -10,6 +10,7 @@ from app.contracts.domain_types import (
     AccountClass,
     AccountEligibility,
     ConversationStartResult,
+    ExistingWantedConversationLookup,
     ListingConversationContext,
     WantedConversationContext,
 )
@@ -109,6 +110,33 @@ class PostgresThreadCreationOperations:
             caller_id=caller.user_id,
             counterparty_id=request.author_id,
         )
+
+    async def find_existing_wanted_conversation(
+        self, caller: CallerContext, request: ExistingWantedConversationLookup
+    ) -> ConversationStartResult | None:
+        """Read only the authenticated responder/request pair after closure or timeout.
+
+        Never call create from this path. Missing data returns None; Identity or
+        storage failure stays an error, so Search cannot mistake it for absence.
+        """
+        caller.require_current()
+        if caller.account_class != "regular":
+            raise PublicError(ERRORS[403])
+        await self._require_eligible(caller.user_id, "regular")
+        try:
+            async with self._pool.connection() as connection:
+                cursor = await connection.execute(
+                    "SELECT id, counterparty_id FROM conversations.threads "
+                    "WHERE wanted_request_id = %s AND initiator_id = %s",
+                    (request.request_id, caller.user_id),
+                )
+                row = await cursor.fetchone()
+        except PsycopgError, PoolTimeout:
+            raise self._unavailable() from None
+        if row is None:
+            return None
+        await self._require_eligible(row[1], None)
+        return ConversationStartResult(conversation_id=row[0], created=False)
 
     async def _open_or_create_pair(
         self,

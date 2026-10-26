@@ -247,6 +247,74 @@ def test_actual_api_schema_matches_generated_contract():
                         "content"
                     )
     assert actual["paths"]["/health"] == declared["paths"]["/health"]
+    implemented_paths = {
+        "/conversations",
+        "/conversations/{conversation_id}",
+        "/conversations/{conversation_id}/entries",
+        "/conversations/{conversation_id}/messages",
+        "/conversations/{conversation_id}/read-state",
+        "/conversations/{conversation_id}/keys",
+        "/conversations/{conversation_id}/prekey-bundle",
+        "/me/conversation-key",
+        "/me/conversation-prekeys",
+        "/me/saved-listings",
+        "/me/saved-listings/{listing_id}",
+        "/wanted-requests",
+        "/wanted-requests/draft-matches",
+        "/me/wanted-requests",
+        "/wanted-requests/{request_id}",
+        "/wanted-requests/{request_id}/availability",
+        "/wanted-requests/{request_id}/conversations",
+        "/health",
+        "/catalogue",
+        "/listings",
+        "/listings/{listing_id}",
+        "/me/listings",
+        "/listings/{listing_id}/availability",
+        "/listings/{listing_id}/selection",
+        "/listings/{listing_id}/conversations/{conversation_id}/offer",
+        "/listings/{listing_id}/conversations/{conversation_id}/offer-withdrawals",
+        "/image-uploads",
+        "/image-uploads/{upload_id}/confirm",
+        "/image-uploads/{upload_id}",
+        "/images/{image_id}/delivery",
+    }
+    assert set(actual["paths"]) == implemented_paths
+    # Runtime subclasses add validation without changing the reviewed body
+    # shape. Verify all constraints before normalizing only their local ref names.
+    body_aliases = {
+        "WantedCreate": "CreateWantedRequest",
+        "DraftTitle": "DraftMatchRequest",
+        "WantedPatch": "WantedRequestPatch",
+        "WantedState": "WantedRequestStateChange",
+    }
+    for runtime, canonical in body_aliases.items():
+        runtime_schema = deepcopy(actual["components"]["schemas"][runtime])
+        canonical_schema = deepcopy(declared["components"]["schemas"][canonical])
+        for schema in (runtime_schema, canonical_schema):
+            schema.pop("title", None)
+            schema.pop("description", None)
+        assert runtime_schema == canonical_schema
+    for path in implemented_paths:
+        # Other declared operations remain unmounted. Compare every live
+        # operation while retaining exact operation IDs and wire metadata.
+        for method, operation in actual["paths"][path].items():
+            if method in {"get", "put", "post", "delete", "patch", "options", "head"}:
+                declared_operation = deepcopy(declared["paths"][path][method])
+                actual_operation = deepcopy(operation)
+                # Descriptions and tags are presentation metadata; the route
+                # identifier and HTTP input/output schemas are the wire contract.
+                for metadata in (declared_operation, actual_operation):
+                    metadata.pop("description", None)
+                    metadata.pop("tags", None)
+                if "requestBody" in actual_operation:
+                    schema = actual_operation["requestBody"]["content"][
+                        "application/json"
+                    ]["schema"]
+                    for runtime, canonical in body_aliases.items():
+                        if schema.get("$ref") == "#/components/schemas/" + runtime:
+                            schema["$ref"] = "#/components/schemas/" + canonical
+                assert declared_operation == actual_operation
     assert (
         actual["components"]["schemas"]["HealthResponse"]
         == declared["components"]["schemas"]["HealthResponse"]
@@ -257,7 +325,11 @@ def test_actual_api_schema_matches_generated_contract():
         for operation in path.values()
         if isinstance(operation, dict) and "operationId" in operation
     }
-    assert len(contract_operation_ids) == 55
+    assert len(contract_operation_ids) == 57
+    assert {
+        "identity_start_microsoft_login_attempt",
+        "identity_read_csrf_token",
+    } <= contract_operation_ids
     assert asyncio.run(asgi_get(app, "/health")) == (200, {"status": "ok"})
     for path in ("/openapi.json", "/docs", "/redoc"):
         status, _ = asyncio.run(asgi_get(app, path))
@@ -296,7 +368,9 @@ def test_schema_build_does_not_import_real_application(monkeypatch):
     monkeypatch.setitem(sys.modules, "app.main", None)
     health, domains = generator.load_sources()
     schema = generator.declared_schema(health, domains)
-    assert len(schema["paths"]) == 46
+    assert len(schema["paths"]) == 48
+    assert "/auth/microsoft/login-attempts" in schema["paths"]
+    assert "/auth/csrf" in schema["paths"]
 
 
 def test_generated_types_accept_valid_consumer_reject_wrong_status(tmp_path):
@@ -319,7 +393,12 @@ def test_generated_types_accept_valid_consumer_reject_wrong_status(tmp_path):
     sample = ROOT / "tests/contracts/health_consumer.ts"
     env = {"PATH": os.environ["PATH"], "HOME": str(tmp_path)}
     valid = subprocess.run(
-        command + [str(sample)], env=env, capture_output=True, text=True, timeout=30
+        command
+        + [str(sample), str(ROOT / "tests/contracts/search_response_consumer.ts")],
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=30,
     )
     assert valid.returncode == 0
     invalid = tmp_path / "invalid.ts"

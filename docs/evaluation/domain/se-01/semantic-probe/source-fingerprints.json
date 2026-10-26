@@ -1,0 +1,15 @@
+{
+  "recorded_at": "2026-10-24T14:02:11.052060Z",
+  "git_base": "defec38f59d4acb683f7b51950860f458aacfdd1",
+  "worktree_uncommitted": true,
+  "probe_run": "20261024T135651961346Z",
+  "sha256": {
+    "scripts/evaluation/semantic/fetch.py": "949c14070c7f21d5bf27334aa678555e63dee4d74d1aca25e023a27713c77156",
+    "scripts/evaluation/semantic/model-manifest.json": "7c9776cbc5825c9c036c2027e31eb329c11f17a24c911a1de2adc2ecd4f029c4",
+    "scripts/evaluation/semantic/preflight.py": "671ce03c3cc54d83a934d824d1cffcddc5b46fbb19d6576177a0cbdaba63d465",
+    "scripts/evaluation/semantic/probe.py": "49ad908e1ee01f96dd8fab1156534aeabac4b639803dbd2f334d97d2e2d3372a",
+    "scripts/evaluation/semantic/requirements-macos-arm64.txt": "14f5c81c44edb87b654338842ac7da1fdfb63137c3edb191e4c15f923e1906fe",
+    "scripts/evaluation/semantic/requirements.in": "afbddadea8c974fb562f61ecfa855c1fa4c28559041204a2504057e1a9abd3ce",
+    "scripts/evaluation/semantic/supervise.py": "771fbf11ea263912f6bd71e029791be52b55a7a6d95f8034ac2ff2f2886f9fe5"
+  }
+}

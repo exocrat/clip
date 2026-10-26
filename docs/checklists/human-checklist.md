@@ -22,6 +22,8 @@ The agent runs routine commands and prepares evidence; you verify understandable
 
 ## After every numbered step
 
+- [ ] For a visible UI increment, open the exact result supplied by the agent and try the prepared actions/states on desktop and phone layouts under the [browser procedure](../environment/browser-verification.md). Verify or request correction before advancing the named checkpoint. Check actual-phone camera/gallery and on-screen keyboard behavior where required; browser emulation and automated passes do not establish those device checks. Missing observations remain pending.
+
 - [ ] Does the report identify the correct step and concrete changed paths/resources?
 - [ ] Does it show expected versus observed outcome, exact checks/results, pass/fail/blocked explanation, evidence/revision and remaining questions?
 - [ ] Does the status table accurately record each execution checkpoint and human-verification state? The dated history need not contain a separate entry for every step or routine “verified; proceed” message; it should preserve meaningful outcomes, decisions, checks, blockers, consequential human direction, and closeout evidence.

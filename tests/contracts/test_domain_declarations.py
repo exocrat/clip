@@ -14,6 +14,21 @@ from pydantic import BaseModel, ValidationError
 from scripts.generate_contracts import DOMAINS, load_sources
 
 ROOT = Path(__file__).resolve().parents[2]
+BOUND_IDENTITY = {
+    "check_account_eligibility": ["AccountEligibility", "user_id", "required_class"],
+    "get_shareable_contact_options": [
+        "ShareableContactOptions",
+        "caller",
+        "conversation_id",
+    ],
+    "get_selected_own_contacts": [
+        "SelectedOwnContacts",
+        "caller",
+        "conversation_id",
+        "fields",
+    ],
+}
+
 EXPECTED_CALLABLES = {
     "identity": {
         "check_account_eligibility",
@@ -142,14 +157,26 @@ def test_every_generated_callable_fails_closed_without_implementation():
             assert ast.get_docstring(function)
             assert len(function.body) == 2
             refusal = function.body[1]
-            assert isinstance(refusal, ast.Raise)
-            assert isinstance(refusal.exc, ast.Call)
-            assert isinstance(refusal.exc.func, ast.Name)
-            assert refusal.exc.func.id == "NotImplementedError"
+            if domain == "identity" and function.name in BOUND_IDENTITY:
+                assert isinstance(refusal, ast.Return) and isinstance(
+                    refusal.value, ast.Await
+                )
+                call = refusal.value.value
+                assert isinstance(call, ast.Call) and isinstance(call.func, ast.Name)
+                assert call.func.id == "_dispatch_runtime"
+                assert ast.literal_eval(call.args[0]) == "identity." + function.name
+                assert [argument.id for argument in call.args[1:]] == BOUND_IDENTITY[
+                    function.name
+                ]
+            else:
+                assert isinstance(refusal, ast.Raise)
+                assert isinstance(refusal.exc, ast.Call)
+                assert isinstance(refusal.exc.func, ast.Name)
+                assert refusal.exc.func.id == "NotImplementedError"
 
 
-def test_generated_modules_are_byte_for_byte_source_derivatives():
-    """Only the controlled editable-source import rewrite differs from source."""
+def test_generated_modules_preserve_source_except_approved_dispatch():
+    """Only import rewrites and the reviewed selected-function technical body may differ."""
     for domain in DOMAINS:
         source = (ROOT / f"contracts/source/{domain}.py").read_text()
         expected = source.replace(
@@ -157,17 +184,43 @@ def test_generated_modules_are_byte_for_byte_source_derivatives():
             "from app.contracts.domain_types import",
         )
         generated = (ROOT / f"apps/api/app/domains/{domain}/public.py").read_text()
-        assert generated.splitlines()[0].startswith("# Generated declaration-only")
-        assert generated.partition("\n")[2].lstrip("\n") == expected
+        if domain != "identity":
+            assert generated.splitlines()[0].startswith("# Generated declaration-only")
+            assert generated.partition("\n")[2].lstrip("\n") == expected
+            continue
+        assert generated.splitlines()[0].startswith(
+            "# Generated typed runtime identity"
+        )
+        original = ast.parse(expected)
+        actual = ast.parse(generated.partition("\n")[2])
+        before = {
+            node.name: node
+            for node in original.body
+            if isinstance(node, ast.AsyncFunctionDef)
+        }
+        after = {
+            node.name: node
+            for node in actual.body
+            if isinstance(node, ast.AsyncFunctionDef)
+        }
+        # The independent structural test above verifies exactly what the one
+        # replacement does; restore it here to prove everything else is unchanged.
+        for name in BOUND_IDENTITY:
+            after[name].body[1] = before[name].body[1]
+        assert ast.dump(actual, include_attributes=False) == ast.dump(
+            original, include_attributes=False
+        )
 
 
-def test_declarations_do_not_install_unimplemented_http_routes():
-    """Only health and implemented Conversations routes are mounted."""
+def test_only_implemented_domain_http_routes_are_installed():
+    """Mount only implemented Listings/wanted routes, leaving future declarations out."""
     from app.main import app
 
+    # Inspect the public schema instead of FastAPI's internal router objects.
+    # Newer FastAPI versions can keep included routers as a single internal
+    # object, while OpenAPI still shows the actual installed endpoints.
     paths = set(app.openapi()["paths"])
     assert paths == {
-        "/health",
         "/conversations",
         "/conversations/{conversation_id}",
         "/conversations/{conversation_id}/entries",
@@ -177,6 +230,27 @@ def test_declarations_do_not_install_unimplemented_http_routes():
         "/conversations/{conversation_id}/prekey-bundle",
         "/me/conversation-key",
         "/me/conversation-prekeys",
+        "/me/saved-listings",
+        "/me/saved-listings/{listing_id}",
+        "/wanted-requests",
+        "/wanted-requests/draft-matches",
+        "/me/wanted-requests",
+        "/wanted-requests/{request_id}",
+        "/wanted-requests/{request_id}/availability",
+        "/wanted-requests/{request_id}/conversations",
+        "/health",
+        "/catalogue",
+        "/listings",
+        "/listings/{listing_id}",
+        "/me/listings",
+        "/listings/{listing_id}/availability",
+        "/listings/{listing_id}/selection",
+        "/listings/{listing_id}/conversations/{conversation_id}/offer",
+        "/listings/{listing_id}/conversations/{conversation_id}/offer-withdrawals",
+        "/image-uploads",
+        "/image-uploads/{upload_id}/confirm",
+        "/image-uploads/{upload_id}",
+        "/images/{image_id}/delivery",
     }
     assert not any(path.startswith("/auth/") for path in paths)
 

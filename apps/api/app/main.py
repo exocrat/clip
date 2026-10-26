@@ -1,76 +1,53 @@
-"""ASGI entry point and process-resource composition for the CLIP API."""
+"""Default ASGI entry point and compatibility lifecycle for explicit local probes."""
 
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from psycopg_pool import AsyncConnectionPool
 
-from app.contracts.health import CONTRACT_VERSION, HEALTH_ROUTE, HealthResponse
+from app.application import application_lifespan, create_app
 from app.core.config import Settings, load_settings
-from app.core.database import PoolFactory, PoolLifecycle, create_async_connection_pool
-from app.core.errors import install_error_handlers
-from app.core.logging import RequestLoggingMiddleware, configure_logging
-import app.domains.conversations.routes as conversations_routes
+from app.core.logging import configure_logging
+from app.domains.listings.s3_storage import S3ListingsImageStorage
+from app.domains.identity.runtime_configuration import prepare_hosted_test_identity
 
+settings = load_settings()
 configure_logging()
 
 
-def create_app(
-    settings: Settings,
-    *,
-    pool_factory: PoolFactory = create_async_connection_pool,
-) -> FastAPI:
-    """Compose the health-only API and manage an optional database pool.
+def create_configured_app(settings: Settings) -> FastAPI:
+    """Keep normal startup unbound; prepare real Identity only by test opt-in.
 
-    The DSN is passed only to the pool factory and is never logged or exposed.
-    Missing database configuration leaves the liveness-only skeleton usable;
-    configured pools start lazily and are closed with the ASGI lifespan.
+    The enabled path reads fixed SecureStrings and validates the dedicated
+    Identity DB role during ASGI import. Missing or invalid live configuration
+    fails closed before the app serves requests. It never performs migrations or
+    sends mail during startup.
     """
-
-    @asynccontextmanager
-    async def lifespan(application: FastAPI) -> AsyncIterator[None]:
-        pool: PoolLifecycle | None = None
-        if settings.database_dsn is not None:
-            pool = pool_factory(settings.database_dsn.get_secret_value())
-            try:
-                await pool.open(wait=False)
-            except BaseException:
-                await pool.close()
-                raise
-        application.state.database_pool = pool
-        try:
-            yield
-        finally:
-            application.state.database_pool = None
-            if pool is not None:
-                await pool.close()
-
-    # Keep the initial HTTP surface limited to process health. Database pool
-    # availability does not change /health's liveness-only meaning.
-    application = FastAPI(
-        title="CLIP API",
-        version=CONTRACT_VERSION,
-        debug=settings.debug,
-        docs_url=None,
-        redoc_url=None,
-        openapi_url=None,
-        lifespan=lifespan,
+    identity = (
+        prepare_hosted_test_identity(settings)
+        if settings.identity_runtime_enabled
+        else None
     )
-
-    install_error_handlers(application)
-    application.add_middleware(RequestLoggingMiddleware)
-    # Mount the Conversations public HTTP router; domain methods remain private
-    # to their route adapter and are never imported by this composition root.
-    application.include_router(conversations_routes.router)
-
-    @application.get(**HEALTH_ROUTE)
-    async def health() -> HealthResponse:
-        """Report process liveness without inspecting dependencies or state."""
-        return HealthResponse(status="ok")
-
-    return application
+    return create_app(settings, identity=identity)
 
 
-# Validate before serving requests; invalid settings must fail startup.
-settings = load_settings()
-app = create_app(settings)
+@asynccontextmanager
+async def lifespan(application: FastAPI) -> AsyncIterator[None]:
+    """Preserve accepted probe/test hooks without duplicating composition logic.
+
+    Explicit local probes historically replace main.settings/pool/storage handles
+    before entering main.lifespan. Normal default startup uses the same lifecycle;
+    configured create_app instances retain their own independent settings.
+    """
+    async with application_lifespan(
+        application,
+        settings,
+        pool_factory=AsyncConnectionPool,
+        storage_factory=S3ListingsImageStorage,
+    ):
+        yield
+
+
+app = create_configured_app(settings)
+app.router.lifespan_context = lifespan

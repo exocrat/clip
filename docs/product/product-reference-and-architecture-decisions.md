@@ -49,7 +49,7 @@ The requirement IDs and intent below were checked against the submitted `docs/so
 | FR-01 | Grant regular access only after validating a signed Microsoft identity token and confirming its account identifier belongs to an approved IISc domain. | Valid, expired, incorrectly signed, and non-IISc token integration tests. |
 | FR-02 | Allow a lower-trust temporary buyer account after email OTP verification; expire it automatically after 14 days and do not allow self-renewal. | Lifecycle integration test with controlled time. |
 | FR-03 | Temporary users may browse, search, save listings, create wanted requests, start conversations, and submit offers, but may not create sale listings. | Direct API authorization test for each permitted/restricted operation. |
-| FR-04 | Eligible regular users can create sale listings with title, description, category, condition, asking price including zero, negotiability, pickup area, availability period, and at least one image. | Valid and invalid field combination tests. |
+| FR-04 | Eligible regular users can create sale listings with title, description, category, condition, asking price including zero, negotiability, optional pickup area, availability period, and at least one image. | Valid and invalid field combination tests. |
 | FR-05 | Only the listing owner can edit a listing or change its authoritative availability; unavailable listings are hidden from discovery. | Ownership and state-transition tests. |
 | FR-06 | Authenticated eligible users can browse available listings with pagination. | Seeded multi-page functional test. |
 | FR-07 | Search listing titles/descriptions; filter by item category, price range, condition, and negotiability; sort by recency or price. | Deterministic queries over labeled data. Baseline: PostgreSQL indexed full-text search. |
@@ -129,10 +129,10 @@ The targets and measurement intents above were checked against the submitted PRD
 
 ## 5. Architecture baseline
 
-- **Frontend:** responsive React + TypeScript web client.
+- **Frontend:** responsive React + TypeScript web client across all domain surfaces. The [browser verification decision](../decisions/responsive-ui-and-camera-verification.md) makes desktop/phone human checks explicit and adds supported-phone camera/gallery selection to LI-02, retaining desktop file selection and existing image limits. This is a team clarification; the submitted PRD remains unchanged.
 - **API:** Python + FastAPI REST service.
 - **Authoritative state:** managed PostgreSQL for users, listings, wanted requests, conversations, offers, and related state.
-- **Search:** PostgreSQL native indexed full-text search for MVP.
+- **Search:** PostgreSQL native indexed full-text search for MVP. Mohit selected a gated [hybrid listing-search amendment](../decisions/hybrid-listing-search.md) combining curated vocabulary and local semantic matching. Its documentation checkpoint does not replace the required baseline, change the submitted PRD, activate a model/service or accept new runtime behavior; affected-owner review, feasibility, integration and original evaluation gates remain pending.
 - **Images:** S3 object storage, with short-lived authorized upload URLs where practical; listing records remain authoritative for image references.
 - **Baseline API runtime:** ECS containers. Lambda is available for asynchronous work and for the defined read-heavy experiment.
 - **Experiment:** compare ECS-only against mixed ECS+Lambda for preselected read-heavy browse, listing-detail, and search/filter routes. State-changing operations stay on ECS in both configurations. PostgreSQL remains authoritative in both.

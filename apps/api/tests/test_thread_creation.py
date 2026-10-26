@@ -10,7 +10,9 @@ from psycopg_pool import AsyncConnectionPool
 
 from app.contracts.domain_types import (
     AccountEligibility,
+    ExistingWantedConversationLookup,
     ListingConversationContext,
+    ListingThreadParticipantCheck,
     WantedConversationContext,
 )
 from app.core.auth import CallerContext
@@ -18,6 +20,7 @@ from app.core.errors import PublicError
 from app.domains.conversations.thread_creation import (
     PostgresThreadCreationOperations,
 )
+from app.domains.conversations.routes import create_public_provider
 
 TEST_DATABASE_DSN = os.environ.get("CLIP_TEST_DATABASE_DSN")
 pytestmark = pytest.mark.skipif(
@@ -88,10 +91,10 @@ async def seed_users_and_listing(
             )
             await connection.execute(
                 "INSERT INTO listings.image_uploads "
-                "(id, owner_id, object_key, state, created_at, expires_at, confirmed_at) "
+                "(id, owner_id, object_key, state, created_at, expires_at, confirmed_at, operation_id, confirmed_media_type, confirmed_size_bytes) "
                 "VALUES (%s, %s, %s, 'confirmed', CURRENT_TIMESTAMP, "
-                "CURRENT_TIMESTAMP + INTERVAL '24 hours', CURRENT_TIMESTAMP)",
-                (upload_id, owner_id, object_key),
+                "CURRENT_TIMESTAMP + INTERVAL '24 hours', CURRENT_TIMESTAMP, %s, 'image/png', 1)",
+                (upload_id, owner_id, object_key, uuid4()),
             )
             await connection.execute(
                 "INSERT INTO listings.images "
@@ -118,9 +121,9 @@ async def seed_users_and_request(pool) -> tuple[UUID, UUID, UUID]:
             category_id = (await cursor.fetchone())[0]
             await connection.execute(
                 "INSERT INTO search.wanted_requests "
-                "(id, author_id, title, description, category_id, budget_paise, status) "
+                "(id, author_id, title, description, category_code, budget_paise, status) "
                 "VALUES (%s, %s, 'Synthetic request', 'Test-only description', %s, 100, 'open')",
-                (request_id, author_id, category_id),
+                (request_id, author_id, "other"),
             )
     return author_id, responder_id, request_id
 
@@ -158,6 +161,29 @@ def test_listing_thread_creation_adds_two_members_and_one_owner_intent():
         )
         assert result.created is True
         assert calls == [(buyer_id, "regular"), (owner_id, "regular")]
+        # Selection must bind every part of the relationship, not just a member
+        # ID in some unrelated conversation. This exercises the actual provider.
+        provider = create_public_provider(pool)
+        participant = ListingThreadParticipantCheck(
+            conversation_id=result.conversation_id,
+            listing_id=listing_id,
+            candidate_user_id=buyer_id,
+        )
+        assert (
+            await provider.check_listing_thread_participant(
+                caller(owner_id), participant
+            )
+        ).is_participant
+        assert not (
+            await provider.check_listing_thread_participant(
+                caller(buyer_id), participant
+            )
+        ).is_participant
+        for field in ("conversation_id", "listing_id", "candidate_user_id"):
+            wrong = participant.model_copy(update={field: uuid4()})
+            assert not (
+                await provider.check_listing_thread_participant(caller(owner_id), wrong)
+            ).is_participant
         async with pool.connection() as connection:
             cursor = await connection.execute(
                 "SELECT listing_id, initiator_id, counterparty_id, created_at, last_activity_at "
@@ -436,5 +462,100 @@ def test_concurrent_listing_creates_return_one_thread_and_one_notification():
                 (results[0].conversation_id,),
             )
             assert (await cursor.fetchone())[0] == 1
+
+    run_scenario(scenario, max_size=2)
+
+
+def test_real_search_response_uses_identity_and_closed_exact_pair_lookup():
+    """Real owner SQL and public eligibility cooperate without sharing sessions."""
+    import psycopg
+    from psycopg.rows import dict_row
+    from app.core.runtime_bindings import runtime_scope
+    from app.domains.identity.capabilities import PostgresCapabilities
+    from app.domains.conversations.provider import PostgresConversationServices
+    from app.domains.search.wanted_response import WantedResponseService
+    from app.domains.search.wanted_store import PostgresWantedStore
+
+    async def scenario(pool):
+        author, responder, request_id = await seed_users_and_request(pool)
+        services = PostgresConversationServices(pool)
+        capabilities = PostgresCapabilities(
+            lambda: psycopg.connect(TEST_DATABASE_DSN), lambda: datetime.now(UTC)
+        )
+        search_pool = AsyncConnectionPool(
+            conninfo=TEST_DATABASE_DSN,
+            kwargs={"row_factory": dict_row},
+            min_size=0,
+            max_size=2,
+            open=False,
+        )
+        await search_pool.open(wait=True)
+        try:
+            with runtime_scope(
+                {
+                    "identity.check_account_eligibility": capabilities.check_account_eligibility
+                }
+            ):
+                lookup = ExistingWantedConversationLookup(request_id=request_id)
+                assert (
+                    await services.find_existing_wanted_conversation(
+                        caller(responder), lookup
+                    )
+                    is None
+                )
+                response = WantedResponseService(
+                    PostgresWantedStore(search_pool), conversations=services
+                )
+                first = await response.respond(caller(responder), request_id)
+                assert first.created is True
+                repeat = await response.respond(caller(responder), request_id)
+                assert (
+                    repeat.conversation_id == first.conversation_id
+                    and repeat.created is False
+                )
+                async with pool.connection() as connection:
+                    await connection.execute(
+                        "UPDATE search.wanted_requests SET status='unavailable' WHERE id=%s",
+                        (request_id,),
+                    )
+                closed = await response.respond(caller(responder), request_id)
+                assert (
+                    closed.conversation_id == first.conversation_id
+                    and closed.created is False
+                )
+                with pytest.raises(PublicError) as absent:
+                    await response.respond(caller(author), request_id)
+                assert absent.value.spec.status == 403
+                stranger = uuid4()
+                async with pool.connection() as connection:
+                    await connection.execute(
+                        "INSERT INTO identity.users (id,account_class,status) VALUES (%s,'regular','active')",
+                        (stranger,),
+                    )
+                with pytest.raises(PublicError) as no_pair:
+                    await response.respond(caller(stranger), request_id)
+                assert no_pair.value.spec.status == 404
+                assert (
+                    await services.find_existing_wanted_conversation(
+                        caller(stranger), lookup
+                    )
+                    is None
+                )
+                with pytest.raises(PublicError) as temporary:
+                    await response.respond(caller(responder, "temporary"), request_id)
+                assert temporary.value.spec.status == 403
+                async with pool.connection() as connection:
+                    cursor = await connection.execute(
+                        "SELECT count(*) FROM conversations.threads WHERE wanted_request_id=%s",
+                        (request_id,),
+                    )
+                    assert (await cursor.fetchone())[0] == 1
+                    cursor = await connection.execute(
+                        "SELECT count(*) FROM conversations.notification_intents WHERE conversation_id=%s",
+                        (first.conversation_id,),
+                    )
+                    assert (await cursor.fetchone())[0] == 1
+        finally:
+            await search_pool.close()
 
     run_scenario(scenario, max_size=2)

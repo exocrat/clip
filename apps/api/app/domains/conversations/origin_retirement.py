@@ -84,7 +84,7 @@ class PostgresOriginRetirementOperations:
         column = self._require_matching_origin(context, request.origin_kind)
         database_kind = _DATABASE_ORIGIN_KINDS[request.origin_kind]
         thread_query = (
-            "SELECT id, last_activity_at, participant_writes_blocked_at "
+            "SELECT id, last_activity_at, participant_writes_disabled_at "
             f"FROM conversations.threads WHERE {column} = %s ORDER BY id FOR UPDATE"
         )
 
@@ -159,8 +159,8 @@ class PostgresOriginRetirementOperations:
                         for thread_id, _, _ in rows:
                             await connection.execute(
                                 "UPDATE conversations.threads "
-                                "SET participant_writes_blocked_at = clock_timestamp() "
-                                "WHERE id = %s AND participant_writes_blocked_at IS NULL",
+                                "SET participant_writes_disabled_at = clock_timestamp() "
+                                "WHERE id = %s AND participant_writes_disabled_at IS NULL",
                                 (thread_id,),
                             )
                             marked_count += 1

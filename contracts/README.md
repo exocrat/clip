@@ -2,7 +2,8 @@
 
 DL-00 Step 11 extends PD-11's offline health generator to the reviewed domain
 contracts. The source describes explicitly mapped HTTP operations and internal
-calls; generated declarations remain behavior-free.
+calls; generated interfaces contain no business policy. Explicitly reviewed
+runtime metadata may generate a typed technical dispatcher.
 
 ## Source and generated files
 
@@ -15,7 +16,7 @@ edit reviewed typed Python declarations separately from implementation handlers.
 | `scripts/generate_contracts.py` | Python orchestrator; format version 2; fixed output registry. |
 | `scripts/generate_types.mjs` | Local Hey API TypeScript-only helper; rejects external references. |
 | `apps/api/app/contracts/health.py`, `domain_types.py` | Generated runtime health and shared wire models. |
-| `apps/api/app/domains/{identity,listings,search,conversations}/public.py` | Generated typed internal interfaces; each callable refuses use until implemented. |
+| `apps/api/app/domains/{identity,listings,search,conversations}/public.py` | Generated typed internal interfaces; reviewed eligibility dispatch uses an explicit runtime scope, while unimplemented callables refuse use. |
 | `contracts/generated/openapi.json` | Generated HTTP-only OpenAPI 3.1 document. |
 | `contracts/generated/types.gen.ts` | Generated TypeScript types; no runtime SDK/client. |
 
@@ -79,9 +80,12 @@ provider behavior remains with domain implementation tasks:
 | [Search](source/search.py) | HTTP mappings; consumes Listings, Conversations and Identity interfaces; implementation SE-01/SE-02. |
 | [Conversations](source/conversations.py) | HTTP mappings, ten internal callables, and the injectable `ConversationsPublic` protocol; implementation CN-01/CN-02, notification delivery CN-03. |
 
-The generated contract-only OpenAPI contains 53 domain HTTP mappings plus
-health. The running API still serves only implemented `/health`; generated
-domain routes are never installed or used to return fake success.
+The generated contract-only OpenAPI contains 56 domain HTTP mappings plus
+health. The shared API mounts the implemented Listings, Search/Wanted/Saved and
+Conversations routes. Identity routes require explicit trusted composition.
+Unimplemented operations remain offline or fail closed; generated declarations
+are not runtime implementations. Browser session authentication and CSRF checks
+come from Identity, never from a feature's client-supplied account summary.
 
 ## Tools and exact commands
 
@@ -102,9 +106,10 @@ make contracts-double-check
 
 `generate` builds the contract-only schema without importing/starting the real
 API, renders all artifacts in temporary storage, then writes registered outputs.
-The real app independently serves health only; generated domain endpoints are
-never installed. Health metadata is shared with the actual route. Generated
-JSON keys and text are deterministic; format 2 is recorded in each artifact.
+The real app installs health and the currently implemented Listings HTTP
+subset; the other generated domain endpoints remain offline. Health metadata is
+shared with the actual route. Generated JSON keys and text are deterministic;
+format 2 is recorded in each artifact.
 
 `check` renders in temporary storage and compares registered files, including
 missing outputs. Exit 0 means current; nonzero means drift or source/tool failure.
@@ -139,13 +144,11 @@ The API-only suite still needs only its Python dependencies. Negative generation
 checks copy all canonical source/core inputs into temporary trees and share
 installed tools without writing tracked outputs. Tests cover deterministic
 generation, missing/stale outputs, changed source, tool mismatches, sanitization,
-all 50 operation IDs, live health-only parity, noninstallation of domain routes,
-private type exposure, and TypeScript consumers. The Listings test double is
-type-checked against the generated `ListingsPublic` protocol with Mypy, and a
-consumer probe type-checks retirement calls against `ConversationsPublic`.
-Conversations' module-level declarations remain fail-closed stubs; runtime
-consumers depend on an injected provider implementing the generated protocol.
-HTTP tests use in-process ASGI only; no provider, database or cloud is used.
+all 57 operation IDs including health, live schema parity for implemented
+routes, noninstallation of other domain routes, private type exposure, and
+TypeScript consumers. The Listings test double is
+type-checked against the generated `ListingsPublic` protocol with Mypy. HTTP
+tests use in-process ASGI only; no provider, database or cloud is used.
 
 ## Internal Identity contact declarations
 
@@ -198,3 +201,32 @@ For every shared contract change:
    owners' and independent human approval and explicit authorization for the
    exact merge revision. Record accepted main SHA and refresh consumers afterward.
    Changed reviewed semantics require renewed review; merge never deploys cloud.
+
+## Scoped Identity eligibility binding — ID-01 Step8
+
+The [approved extension](../docs/decisions/identity-capabilities-and-runtime-binding.md)
+keeps source declarations refusing. RUNTIME_BINDINGS selects only
+check_account_eligibility; regenerate its public wrapper, never edit generated
+code. It forwards the unchanged async arguments through shared technical
+ContextVar dispatch and strictly validates AccountEligibility. No request/user
+input, mutable global provider or private implementation import can install it.
+Unbound/invalid/dependency failure is safe503. Real SQL/capability policy remains
+Identity-owned; other declarations and all HTTP/TypeScript shapes are unchanged.
+The signature is still the reviewed in-process function, not a new HTTP lookup.
+
+## SE-01 draft public search query amendment
+
+[Keyword/Hybrid and both-mode relevance proposal](search-mode-proposal.md) is a
+review packet, not registered schema. It names the existing query/response boundary,
+exact validation/ranking/switching rules and downstream review/test gates. Current
+source/generated/runtime declarations remain unchanged in this checkpoint.
+
+## SE-02 wanted-response200 correction
+
+Mohit verified the [pre-implementation Search correction](../docs/decisions/wanted-response-contract-correction.md).
+Only Search's alternate200 response now has the already documented
+ConversationStartResult body;201/path/input/capability stay unchanged. HTTP0.1.0
+is retained for this documented-semantic correction. Registered outputs are
+regenerated; `tests/contracts/search_response_consumer.ts` compiles both success
+statuses and requires the conversation ID. Normal independent/affected-owner
+review and publication/merge gates remain; no other domain response was changed.

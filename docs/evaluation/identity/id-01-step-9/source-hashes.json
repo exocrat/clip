@@ -1,0 +1,62 @@
+[
+  {
+    "path": "apps/api/app/contracts/domain_types.py",
+    "sha256": "88f6f337648f458986a676d6a93b152b3ba1ef0f07836bb22c48cab7b914998a"
+  },
+  {
+    "path": "apps/api/app/core/runtime_bindings.py",
+    "sha256": "981252f07cde1aed37e76a7356998b18605c9d4df4fbed5ca3eda110ab1bc5ca"
+  },
+  {
+    "path": "apps/api/app/domains/identity/cleanup.py",
+    "sha256": "499ee2d71c8c80a9f62058d460f704d277ec7f9fd203abb5a0bbd02fae3bd65e"
+  },
+  {
+    "path": "apps/api/app/domains/identity/contacts.py",
+    "sha256": "a30dd633a63d7c5d98548b965e365bf818ca65284f4f449fea97f0388af6788c"
+  },
+  {
+    "path": "apps/api/app/domains/identity/http.py",
+    "sha256": "310d278c268de56c7592e4215e27bdc2dbf9dfcd9de46e0a7518594001c13bd0"
+  },
+  {
+    "path": "apps/api/app/domains/identity/public.py",
+    "sha256": "a7f26a2a0ddd69e20ebb67b59d97d649b5db19c80678749b1bed2f92105a8398"
+  },
+  {
+    "path": "apps/api/app/domains/identity/sessions.py",
+    "sha256": "c5689c80b4c87bb76fb10b6090eb1f3e90c0c56dd118b959ade20aef52d2162f"
+  },
+  {
+    "path": "apps/api/tests/domains/identity/test_contacts.py",
+    "sha256": "2d5a421aeb0deb7c97705b9ba61146efb4d21a56e470d77f22d4e1d5c5a75894"
+  },
+  {
+    "path": "apps/api/tests/domains/identity/test_contacts_http.py",
+    "sha256": "62ad6347455ca467261b20129a270af65f20b74a76ae0ed5c319e33359ea65f3"
+  },
+  {
+    "path": "apps/api/tests/domains/identity/test_identity_cleanup.py",
+    "sha256": "3b20309ce10956bf6f2efe8ed02f0d1f0925f9bc041ecdea21fe9e2420c4da15"
+  },
+  {
+    "path": "contracts/source/identity.py",
+    "sha256": "df4b0220ceb7e4eb20b3a615397e07142a6ca62424d1096e8690fe8ee80ebca1"
+  },
+  {
+    "path": "contracts/source/types.py",
+    "sha256": "c6bd12c77c4445dace8995c5b634e18ed8a319067b3a923803c5e1957ea6bcbe"
+  },
+  {
+    "path": "pyproject.toml",
+    "sha256": "2aafea19ce285bf3dff3978335e4d6122e3b75fa8a83652809cefa3ed4206700"
+  },
+  {
+    "path": "tests/contracts/test_domain_declarations.py",
+    "sha256": "d97006ce4b9dcd9780ff739ad0067a0956a64c57ab13545457acec1f17be66a2"
+  },
+  {
+    "path": "uv.lock",
+    "sha256": "076ba4650cfdab5f48c8649c141fc4eb50a9bbcf728027e9408405f189739b1d"
+  }
+]

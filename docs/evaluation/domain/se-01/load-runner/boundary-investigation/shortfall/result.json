@@ -1,0 +1,79 @@
+{
+  "preview_only": true,
+  "nfr_accepted": false,
+  "finished": true,
+  "k6_exit": 0,
+  "profile_id": "fault-shortfall",
+  "measured": {
+    "scheduled": 4,
+    "issued": 2,
+    "actual_http_requests": 2,
+    "completed_samples": 2,
+    "uncompleted": 0,
+    "generator_drops": 3,
+    "generator_shortfall": 2,
+    "outcomes": {
+      "ok": 2
+    },
+    "clock_invalid": 0,
+    "offered_rps": 2.0,
+    "issued_rps": 1.0,
+    "successful_rps": 1.0,
+    "all_completed_latency": {
+      "samples": 2,
+      "p50_ms": 1108.5,
+      "p95_ms": 1108.95,
+      "p99_ms": 1108.99
+    },
+    "successful_latency": {
+      "samples": 2,
+      "p50_ms": 1108.5,
+      "p95_ms": 1108.95,
+      "p99_ms": 1108.99
+    },
+    "expected_result_within_1s": 0,
+    "within_1s_fraction_of_issued": 0.0,
+    "case_outcomes": {
+      "browse": {
+        "ok": 2
+      }
+    },
+    "valid": false
+  },
+  "warmup": {
+    "scheduled": 0,
+    "issued": 0,
+    "actual_http_requests": 0,
+    "completed_samples": 0,
+    "uncompleted": 0,
+    "generator_drops": 0,
+    "generator_shortfall": 0,
+    "outcomes": {},
+    "clock_invalid": 0,
+    "offered_rps": 0,
+    "issued_rps": 0,
+    "successful_rps": 0,
+    "all_completed_latency": {
+      "samples": 0,
+      "p50_ms": null,
+      "p95_ms": null,
+      "p99_ms": null
+    },
+    "successful_latency": {
+      "samples": 0,
+      "p50_ms": null,
+      "p95_ms": null,
+      "p99_ms": null
+    },
+    "expected_result_within_1s": 0,
+    "within_1s_fraction_of_issued": null,
+    "case_outcomes": {},
+    "valid": false
+  },
+  "valid_preparation_run": false,
+  "latency_boundary": "Date.now around one synchronous HTTP call through full response body; negative elapsed clock samples invalidate run",
+  "quantile_method": "R7 linear interpolation",
+  "throughput_boundary": "arrival cohort completions / scheduled cohort seconds; bounded completion drain retained",
+  "acceptance": "No local/stub result accepts SE-CORE, DATA-READY or NFRs",
+  "target_kind": "fault-fixtures"
+}

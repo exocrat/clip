@@ -1,0 +1,102 @@
+[
+  {
+    "path": "apps/api/app/contracts/domain_types.py",
+    "sha256": "8036920ea59d65631a20dfb978907a6a02423edf0a670d8520020a488b436b2b"
+  },
+  {
+    "path": "apps/api/app/domains/identity/cleanup.py",
+    "sha256": "6868dd688b81b22a18d4b4d83dc1dd802389410ca60c80b8a6e18a2b11dac430"
+  },
+  {
+    "path": "apps/api/app/domains/identity/http.py",
+    "sha256": "6df2693d9d0b9507e40bf276cf667e118132a64043fe028b3cf72f4eede468da"
+  },
+  {
+    "path": "apps/api/app/domains/identity/microsoft_accounts.py",
+    "sha256": "65d831d0c2d1cf3ccb6e15d31426ec5255e7351927dd2fe74e95d247e0c209b9"
+  },
+  {
+    "path": "apps/api/app/domains/identity/public.py",
+    "sha256": "6d33e855c3e9b09ca1f84a553d6a28fa3671f24c909341800eb9602ba3fd2923"
+  },
+  {
+    "path": "apps/api/app/domains/identity/sessions.py",
+    "sha256": "3f5081f5662258468749ba255a9aaa001d505cedb3ab88f26b77318ec62346d5"
+  },
+  {
+    "path": "apps/api/app/domains/identity/temporary_accounts.py",
+    "sha256": "b361917d06fe662befb0e44940b094e0bd00461786f979de0a3dd771019bfc65"
+  },
+  {
+    "path": "apps/api/app/domains/identity/temporary_challenges.py",
+    "sha256": "2cd1065e2b3330b2ce939ee6afa70a4d91b6243a2e33cb1e7efff7873361fadb"
+  },
+  {
+    "path": "apps/api/app/domains/identity/temporary_passwords.py",
+    "sha256": "8795296293b1172c76ea10271ab4515b35a9c2219ae9bb3f68d980ed00b13af9"
+  },
+  {
+    "path": "apps/api/tests/domains/identity/conftest.py",
+    "sha256": "9cf636dd24d8d8bc9341bfc0230849e965240b1e87f6259b6964902329959673"
+  },
+  {
+    "path": "apps/api/tests/domains/identity/session_fixtures.py",
+    "sha256": "a6ed9fc362095113d52f2bd896c3895b7b3ec0892396ae937056a875487bab0d"
+  },
+  {
+    "path": "apps/api/tests/domains/identity/test_identity_cleanup.py",
+    "sha256": "fb74f855d1d6a86d557d7ba0fd3b41ec1d8d1aec804ca2a4c72707e08ae2091e"
+  },
+  {
+    "path": "apps/api/tests/domains/identity/test_identity_http.py",
+    "sha256": "803f85fc721211d315b4082879145dd97fbba0846ffee01e06e4722d2518a340"
+  },
+  {
+    "path": "apps/api/tests/domains/identity/test_sessions_postgres.py",
+    "sha256": "85706942ab93abdd0d67b246105c259159115089ebc488c3d529824e63126a05"
+  },
+  {
+    "path": "apps/api/tests/domains/identity/test_temporary_postgres.py",
+    "sha256": "743c63c0acb9cbe6199315a985e0e043b223623c0bd850ecf5252ac9c41ba919"
+  },
+  {
+    "path": "contracts/generated/openapi.json",
+    "sha256": "e3187ffd76c6df64cbaf37826cc2dae5dd98ae3ae10b87cef3eea7b65cadca78"
+  },
+  {
+    "path": "contracts/generated/types.gen.ts",
+    "sha256": "4390ec29587ba785f3b8d159d83a17a219f18e8abfa7bf92072b3b6f8e213fdc"
+  },
+  {
+    "path": "contracts/source/identity.py",
+    "sha256": "50b5061a79d85c8d92fed1dae9f50367c8eef06fbd9822f30dd287e69c21f7d2"
+  },
+  {
+    "path": "contracts/source/types.py",
+    "sha256": "141a79e5ae165b58cb020090143777bbca5973c44fb379af089ac1d300bf020a"
+  },
+  {
+    "path": "database/migrations/20261023202807_identity_sessions_and_login.sql",
+    "sha256": "11fca117f8204edc4f1b3283bc8132ea211d786401be1e65e01d7dd087406c4c"
+  },
+  {
+    "path": "database/tests/identity-session-smoke.sql",
+    "sha256": "2ecfde7695cf53b53583aa36f1c670fbe06f6bf7d77eea8ce076655771757a5c"
+  },
+  {
+    "path": "database/tests/native-checks.sh",
+    "sha256": "7b30ac584a198d5c18efec364fa1a3fa42d6e2af462131eeba513e48f8a68fa0"
+  },
+  {
+    "path": "scripts/check_database.py",
+    "sha256": "eb4dd16b8dbe5b19814e286677209bb8df45d3938849a48e3b54fb5ac5a59604"
+  },
+  {
+    "path": "scripts/identity_cleanup.py",
+    "sha256": "99fb7fafc385a9292e5986d1100bee64de63c985951def181083a7ed75452304"
+  },
+  {
+    "path": "tests/contracts/test_generation.py",
+    "sha256": "957c12298e376d4e76941bcdc6cadd0c2dcf3d71e74d09b2f8c0fc9f41bbd2bb"
+  }
+]

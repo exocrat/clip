@@ -160,7 +160,7 @@ HTTP_OPERATIONS = (
         "body": StartListingConversationRequest,
         "response": ConversationStartResult,
         "status_code": 201,
-        "responses": {200: None},
+        "responses": {200: ConversationStartResult},
     },
     {
         "method": "PUT",

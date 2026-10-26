@@ -1,0 +1,19 @@
+{"variant": "fresh_0.2s", "script": "setup-db-role.sh", "mode": "success", "outcome": "AssertionError", "seconds": 0.9512, "warmup": null}
+{"variant": "fresh_0.2s", "script": "setup-db-role.sh", "mode": "fail", "outcome": "FileNotFoundError", "seconds": 1.4167, "warmup": null}
+{"variant": "fresh_0.2s", "script": "setup-db-role.sh", "mode": "hang", "outcome": "FileNotFoundError", "seconds": 1.4391, "warmup": null}
+{"variant": "fresh_0.2s", "script": "probe-db.sh", "mode": "success", "outcome": "AssertionError", "seconds": 1.5328, "warmup": null}
+{"variant": "fresh_0.2s", "script": "probe-db.sh", "mode": "fail", "outcome": "FileNotFoundError", "seconds": 1.4347, "warmup": null}
+{"variant": "fresh_0.2s", "script": "probe-db.sh", "mode": "hang", "outcome": "FileNotFoundError", "seconds": 1.5347, "warmup": null}
+{"variant": "warmed_0.2s", "script": "setup-db-role.sh", "mode": "success", "outcome": "pass", "seconds": 0.8181, "warmup": {"seconds": 1.3334, "rc": 0}}
+{"variant": "warmed_0.2s", "script": "setup-db-role.sh", "mode": "fail", "outcome": "pass", "seconds": 0.8345, "warmup": {"seconds": 0.8043, "rc": 0}}
+{"variant": "warmed_0.2s", "script": "setup-db-role.sh", "mode": "hang", "outcome": "pass", "seconds": 1.0064, "warmup": {"seconds": 0.8008, "rc": 0}}
+{"variant": "warmed_0.2s", "script": "probe-db.sh", "mode": "success", "outcome": "pass", "seconds": 0.8447, "warmup": {"seconds": 0.7318, "rc": 0}}
+{"variant": "warmed_0.2s", "script": "probe-db.sh", "mode": "fail", "outcome": "pass", "seconds": 0.7561, "warmup": {"seconds": 0.6846, "rc": 0}}
+{"variant": "warmed_0.2s", "script": "probe-db.sh", "mode": "hang", "outcome": "pass", "seconds": 1.1255, "warmup": {"seconds": 0.8, "rc": 0}}
+{"variant": "fresh_2s", "script": "setup-db-role.sh", "mode": "success", "outcome": "pass", "seconds": 1.5271, "warmup": null}
+{"variant": "fresh_2s", "script": "setup-db-role.sh", "mode": "fail", "outcome": "pass", "seconds": 1.649, "warmup": null}
+{"variant": "fresh_2s", "script": "setup-db-role.sh", "mode": "hang", "outcome": "pass", "seconds": 2.906, "warmup": null}
+{"variant": "fresh_2s", "script": "probe-db.sh", "mode": "success", "outcome": "pass", "seconds": 1.467, "warmup": null}
+{"variant": "fresh_2s", "script": "probe-db.sh", "mode": "fail", "outcome": "pass", "seconds": 1.5938, "warmup": null}
+{"variant": "fresh_2s", "script": "probe-db.sh", "mode": "hang", "outcome": "pass", "seconds": 2.7884, "warmup": null}
+evidence /var/folders/f9/mf22ccnn3wl078szdw8gykpr0000gn/T/clip-timeout-proof-1c3xq346

@@ -4,7 +4,7 @@ Campus Marketplace (CLIP: Campus Listing and Item Platform) is a planned private
 
 The planned product includes identity checks, listings and images, search, saved listings, wanted requests, private conversations, offers, deliberate contact sharing, and email notifications. The platform will not verify payment, item quality, collection, delivery, or handover. The project also includes an evaluation of ECS-only and ECS-plus-Lambda deployments.
 
-**Project status:** PD-00–PD-19 and PRE-00 are recorded complete; DL-00 is the next task. A minimal local API provides process health, typed configuration, and tests. Private cloud API-health and restricted database checks have passed; compute is currently shut down. Marketplace features and performance/NFR results remain unimplemented/unmeasured. See the [PD-19 foundation handoff](docs/status/foundation-handoff.md) and [cloud foundation evidence](docs/evaluation/foundation/pd-16/README.md).
+**Project status:** Foundation work, PRE-00 and DL-00 are recorded complete. ID-01 is in progress toward ID-READY: local Identity implementation and main/PR10 reconciliation are verified and committed; real runtime/provider integration and readiness review remain pending. Start with the [compact Identity handoff](docs/evaluation/identity/README.md) or the [work log](docs/status/work-log.md). Recorded cloud state is in the [environment inventory](docs/environment/cloud-inventory.md).
 
 ## Project documents
 

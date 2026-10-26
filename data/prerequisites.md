@@ -1,5 +1,15 @@
 # Synthetic-data scope and later prerequisites
 
+## SE-01 Step 2 isolated checkpoint — 2026-10-24
+
+The schema-shaped [Search preview](formats/search-preview.md) and opt-in local
+PostgreSQL loader are implemented in `data/generators/search_preview.py` and
+`search_loader.py`. Isolated generator/contract/safety tests do not complete
+real SQL loading, ordered-migration/FK/field validation, ID-READY/LI-CORE
+integration, step 4 index checks or step 9 reviewed labels. Metadata-only image
+references need LI-02 reconciliation before final/cloud use. The original
+PD-09 boundary below is historical; this preview is not DATA-READY evidence.
+
 **Origin:** PD-09 Step 1, 2026-10-18. **Owner:** Mohit (C); peer: Suraj (B).
 
 PD-09 prepares schema-independent generator/manifest tooling and a query-label

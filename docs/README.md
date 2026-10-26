@@ -17,7 +17,16 @@ The root [README](../README.md) describes the project. Agents start from [AGENTS
 - [Synthetic-data preview tooling and final dataset prerequisites](../data/README.md)
 - [Document 5 — Pre-domain task list](tasks/pre-domain-task-list.md)
 - [Single domain task list](tasks/domain-task-list.md)
+- [Gated hybrid listing-search amendment](decisions/hybrid-listing-search.md)
+- [Provisional hybrid development calibration](architecture/hybrid-search-calibration.md)
+- [Private single-snapshot hybrid read](architecture/hybrid-listing-read.md)
+- [Private keyword relevance](architecture/keyword-listing-relevance.md)
+- [Draft public Keyword/Hybrid contract and both-mode relevance](../contracts/search-mode-proposal.md)
+- [Combined Listings/Search deployment wiring and optional Hybrid image](architecture/listings-search-deployment.md)
 - [Frontend page inventory and collaboration map](architecture/frontend-collaboration.md)
+- [Human browser, mobile layout and camera verification](environment/browser-verification.md)
+- [Responsive UI and camera verification decision](decisions/responsive-ui-and-camera-verification.md)
+- [Provisional sensitive-purchase price threshold](decisions/sensitive-purchase-threshold.md)
 - [Initial repository bootstrap](tasks/bootstrap-task-list.md)
 - [Project phase/milestone/owner index](tasks/project-task-index.md)
 - [Final regression/cost/delivery tasks](tasks/final-closeout-task-list.md)
@@ -60,3 +69,22 @@ Code, scripts, manifests, generated contracts, migrations, actual provider/envir
 - [Stub-enabled checkpoints and non-substitutable integration gates](architecture/stubs-and-integration-gates.md)
 
 Both checklists are present in this bundle and apply from BOOT-00. Workstation facts are produced at `docs/environment/development-workstation.md` during BOOT-00/PD-02; do not fabricate them in planning.
+
+- [Identity evidence and current integration handoff](evaluation/identity/README.md)
+- [Identity provider setup and pending real checks](environment/identity-provider-setup.md)
+- [Identity provider setup decision](decisions/identity-provider-setup.md)
+- [Identity dual-provider email routing and four-hour refresh](decisions/identity-email-routing.md)
+- [Identity test-runtime activation](decisions/identity-test-runtime-activation.md)
+- [Identity contact sharing and source-data cleanup](decisions/identity-contact-sharing-and-cleanup.md)
+
+- [Shared test ECS image pin](decisions/shared-test-ecs-image-pin.md)
+
+Normal API Search runtime: [opt-in helper/read-pool lifecycle and pending gates](architecture/normal-api-search-runtime.md).
+
+Embedding dispatcher: [default-off existing-job processing, limits and cleanup](architecture/semantic-embedding-dispatcher.md).
+
+Pipeline bootstrap: [explicit target-bound status, preparation, queueing and activation](architecture/semantic-pipeline-bootstrap.md).
+
+Search load preparation: [local k6 runner and limits](../scripts/evaluation/k6/README.md), [versioned workloads](../data/evaluation/workloads/README.md).
+- [Shared API RDS system trust](decisions/identity-rds-system-trust.md)
+- [Shared browser cookie/CSRF transport](decisions/browser-session-transport.md)

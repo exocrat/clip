@@ -1,0 +1,58 @@
+{
+  "utc": "2026-10-25T00:31:55.736049+00:00",
+  "profile": {
+    "version": 1,
+    "id": "fault-unauthorized",
+    "purpose": "local-pilot",
+    "rate": 2,
+    "warmup_seconds": 0,
+    "measured_seconds": 2,
+    "max_vus": 2,
+    "timeout_seconds": 0.25,
+    "cases": [
+      {
+        "id": "browse",
+        "query": {},
+        "expected_ids": [
+          "01b4fbd6-4c3c-44da-a578-6284033a869c"
+        ]
+      }
+    ]
+  },
+  "profile_sha256": "8b2c83a72791a425ba69411f438e42eb95927e05e88dc98f5635382845385d82",
+  "source_sha256": {
+    "scripts/evaluation/k6/load.js": "c379e670e2bbcd50947bb8a6b6d0a67f8e6f4764e908536f471bf70a4ad70837",
+    "scripts/evaluation/k6/core.js": "db20c590e72b15c2e67584d3c15e3e48ccae614a27a182046f7041df7f73ba6c",
+    "scripts/evaluation/k6/runner.py": "7c70fed5ec28d1c1ec66f0c42bf7a13e1a9e19a564f772842e98d75c19eda360"
+  },
+  "tool": {
+    "version": "2.3.0",
+    "archive_sha256": "b2417a3038edc5fe81dc178a889237724b595c5c9cfed875822008e46e862c7d",
+    "binary_sha256": "efb8282e24ffe18f54ce3679eaa71d72e0645bbb97b14e2a05cc8b192abf48e3",
+    "minimum_macos": [
+      12,
+      0,
+      0
+    ],
+    "host_macos": [
+      13,
+      7,
+      8
+    ],
+    "version_output": "k6 v2.3.0 (commit/e088784614, go1.26.8, darwin/arm64)",
+    "binary": ".tools/k6/v2.3.0/k6",
+    "source": "https://github.com/grafana/k6/releases/download/v2.3.0/k6-v2.3.0-macos-arm64.zip"
+  },
+  "target": "http://127.0.0.1:56786",
+  "target_kind": "fault-fixtures",
+  "preview_only": true,
+  "nfr_accepted": false,
+  "approval_scope": "Mohit verified bounded local-only Step10 preparation; no cloud/final NFR approval",
+  "auth": "explicit isolated synthetic caller/header only; real Identity pending",
+  "request_cap": 4,
+  "max_simultaneous_requests": 2,
+  "warmup_and_measure_overlap": false,
+  "drain_seconds_each": 0.25,
+  "spend": "local only, no cloud/provider calls",
+  "remaining": "real auth/data/images/labels/deployed target/telemetry/resource/cost/repetition/final acceptance manifests"
+}

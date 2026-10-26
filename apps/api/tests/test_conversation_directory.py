@@ -505,7 +505,7 @@ def test_directory_rollback_refuses_to_erase_durable_state():
             caller(alice), public_bundle()
         )
         migration = Path(
-            "database/migrations/20261023080000_conversation_public_key_directory.sql"
+            "database/migrations/20261026090200_conversation_public_key_directory.sql"
         ).read_text()
         down = migration.split("-- migrate:down", 1)[1]
         async with pool.connection() as connection:

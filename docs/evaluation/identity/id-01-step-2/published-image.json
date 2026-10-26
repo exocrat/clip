@@ -1,0 +1,9 @@
+{
+  "source_revision": "52186a0466feb24ffb855d9f019c78cd5a17aa39",
+  "tag": "id01-amd64-52186a0466fe",
+  "registry_digest": "sha256:3ef8b13d3b102dc97e67d79d91e43eb8d4b2cc02fbabb45cf6001c8a93eddd1d",
+  "config_digest": "sha256:e630678ecb23c3e027b55147a6be4741586e69d22521f1e8b536d212ba7de2c8",
+  "compressed_image_bytes": 68148997,
+  "image_uri": "335523638354.dkr.ecr.ap-south-1.amazonaws.com/clip-shared-test-api@sha256:3ef8b13d3b102dc97e67d79d91e43eb8d4b2cc02fbabb45cf6001c8a93eddd1d",
+  "publication_utc": "2026-10-23T07:21:38.860970+00:00"
+}

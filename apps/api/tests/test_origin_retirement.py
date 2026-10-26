@@ -89,10 +89,10 @@ async def seed_origin(
                 )
                 await connection.execute(
                     "INSERT INTO listings.image_uploads "
-                    "(id, owner_id, object_key, state, created_at, expires_at, confirmed_at) "
+                    "(id, owner_id, object_key, state, created_at, expires_at, confirmed_at, operation_id, confirmed_media_type, confirmed_size_bytes) "
                     "VALUES (%s, %s, %s, 'confirmed', CURRENT_TIMESTAMP, "
-                    "CURRENT_TIMESTAMP + INTERVAL '24 hours', CURRENT_TIMESTAMP)",
-                    (upload_id, owner_id, object_key),
+                    "CURRENT_TIMESTAMP + INTERVAL '24 hours', CURRENT_TIMESTAMP, %s, 'image/png', 1)",
+                    (upload_id, owner_id, object_key, uuid4()),
                 )
                 await connection.execute(
                     "INSERT INTO listings.images "
@@ -103,9 +103,9 @@ async def seed_origin(
             else:
                 await connection.execute(
                     "INSERT INTO search.wanted_requests "
-                    "(id, author_id, title, description, category_id, budget_paise, status) "
+                    "(id, author_id, title, description, category_code, budget_paise, status) "
                     "VALUES (%s, %s, 'Synthetic request', 'Test-only description', %s, 100, 'open')",
-                    (origin_id, owner_id, category_id),
+                    (origin_id, owner_id, "other"),
                 )
             for index, (buyer_id, thread_id, activity) in enumerate(
                 zip(buyer_ids, thread_ids, activity_times, strict=True)
@@ -128,7 +128,7 @@ async def seed_origin(
                 if index in marked:
                     await connection.execute(
                         "UPDATE conversations.threads "
-                        "SET participant_writes_blocked_at = clock_timestamp() WHERE id = %s",
+                        "SET participant_writes_disabled_at = clock_timestamp() WHERE id = %s",
                         (thread_id,),
                     )
     return origin_id, thread_ids
@@ -223,7 +223,7 @@ def test_eligible_threads_are_marked_atomically_and_retry_is_idempotent():
         async with pool.connection() as connection:
             cursor = await connection.execute(
                 "SELECT count(*) FROM conversations.threads "
-                "WHERE id = ANY(%s) AND participant_writes_blocked_at IS NOT NULL",
+                "WHERE id = ANY(%s) AND participant_writes_disabled_at IS NOT NULL",
                 (thread_ids,),
             )
             assert (await cursor.fetchone())[0] == 2
@@ -248,7 +248,7 @@ def test_recent_thread_blocks_all_markers_and_retry_returns_blocked_result():
         async with pool.connection() as connection:
             cursor = await connection.execute(
                 "SELECT count(*) FROM conversations.threads "
-                "WHERE id = ANY(%s) AND participant_writes_blocked_at IS NOT NULL",
+                "WHERE id = ANY(%s) AND participant_writes_disabled_at IS NOT NULL",
                 (thread_ids,),
             )
             assert (await cursor.fetchone())[0] == 0

@@ -1,0 +1,66 @@
+{
+  "observations": [
+    {
+      "runtime": "disabled",
+      "keyword": 200,
+      "blank_hybrid": 200,
+      "nonblank_hybrid": 503,
+      "cleanup": "closed"
+    },
+    {
+      "runtime": "ready",
+      "query": "cycle",
+      "titles": [
+        "Campus bicycle"
+      ]
+    },
+    {
+      "runtime": "ready",
+      "query": "bicyle",
+      "titles": [
+        "Campus bicycle"
+      ]
+    },
+    {
+      "runtime": "ready",
+      "query": "vehicle",
+      "titles": [
+        "Campus bicycle"
+      ]
+    },
+    {
+      "runtime": "ready",
+      "query": "wheeled vehicle",
+      "titles": [
+        "Campus bicycle"
+      ]
+    },
+    {
+      "runtime": "ready",
+      "query": "keep food cold",
+      "titles": [
+        "Compact refrigerator"
+      ]
+    },
+    {
+      "runtime": "ready",
+      "keyword": 200,
+      "blank_hybrid": 200,
+      "nonblank_hybrid": 200,
+      "cleanup": "closed"
+    },
+    {
+      "runtime": "unavailable",
+      "keyword": 200,
+      "blank_hybrid": 200,
+      "nonblank_hybrid": 503,
+      "cleanup": "closed"
+    }
+  ],
+  "peak_api_helper_rss_bytes": 342491136,
+  "max_simultaneous_helpers": 1,
+  "windows": 11,
+  "all_helpers_reaped": true,
+  "faults": [],
+  "elapsed_seconds": 1.026697958004661
+}

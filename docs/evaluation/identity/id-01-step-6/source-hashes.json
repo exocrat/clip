@@ -1,0 +1,26 @@
+[
+  {
+    "path": "apps/api/app/domains/identity/temporary_accounts.py",
+    "sha256": "b4b6fcde33ede014ae97ed93ddc4dcc9b88608b9dc8a97bcb4559bb7e5a1b179"
+  },
+  {
+    "path": "apps/api/app/domains/identity/temporary_passwords.py",
+    "sha256": "493fe6d506ef13da4bf4b8ccccec1c21a5b527e1f8daa22cbf49ec18d215f2cd"
+  },
+  {
+    "path": "apps/api/tests/domains/identity/test_temporary_activation_postgres.py",
+    "sha256": "0f4d43237a87f74aa3edefe8d99a5f0259334fa83e2960817e65848516d52d0b"
+  },
+  {
+    "path": "apps/api/tests/domains/identity/test_temporary_passwords.py",
+    "sha256": "e341a8d281ded4068f4f46fb77af744147b2f30261c60b0521be4daaf9d54a11"
+  },
+  {
+    "path": "pyproject.toml",
+    "sha256": "a1985ce9635218404fad485255d55629525cd521f38cae61f6e4284c9ee9a219"
+  },
+  {
+    "path": "uv.lock",
+    "sha256": "7dfadafe59bf2905ab61d10855faed63ac172135f82066ce99c7ced0c81a919a"
+  }
+]

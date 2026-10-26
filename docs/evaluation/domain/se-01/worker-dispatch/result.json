@@ -1,0 +1,61 @@
+{
+  "task": "SE-01 amendment checkpoint5 / bounded existing-job dispatcher",
+  "utc": "2026-10-24 23:59:13 UTC",
+  "branch": "task/se-01-search",
+  "base": "defec38f59d4acb683f7b51950860f458aacfdd1",
+  "state": "implemented and checked; awaiting Mohit result verification; SE-01 incomplete",
+  "source_sha256": {
+    ".env.example": "23bc998a60b56c6d77438004360ebf7575a9902f9561af19aeb655777121f515",
+    "apps/api/app/core/config.py": "3bf10535cc883991852bd47c582996f0fe4dd5e3b95526c1aa91555a674c6c3c",
+    "apps/api/app/domains/listings/search_runtime.py": "2f81ea46546c5e8b49c080dcbb8455589ec597f62afa6ac5e677d635d858ee20",
+    "apps/api/app/domains/listings/embedding_dispatch.py": "24b11501a7c9b898fb526e19f68608b619287980e227b6292d554070eb83d047",
+    "apps/api/tests/test_config.py": "d3b1340372d4ba341eb4751aa9bd606ad85bc27bda0f9c0a840178a740684d8b",
+    "apps/api/tests/domains/listings/test_search_runtime.py": "9f98939645166155932e87039b04d2fd3d204590db2a719c660516c786e2d669",
+    "apps/api/tests/domains/listings/test_embedding_dispatch.py": "542e9b4c38a3ad49e59c9816fa044d9c53eb73cef69fb25427db90ba3d5a8c36",
+    "apps/api/tests/domains/search/worker_dispatch_probe.py": "49c008b5eace9363d99e97a57ad7803bef5abdc39aca61e2ff6e9b4dfda8f158"
+  },
+  "checks": {
+    "focused_python": "410 passed -q -W error: config/health/security, dispatch/lifecycle/modes/browse/keyword/hybrid/worker/helper, Search and contracts",
+    "narrow_dispatch_lifecycle_config": "62 passed",
+    "real_native": "Actual app.main empty registry stays empty/idle; source edit replaces generation/removes old chunks; pending Hybrid503/Keyword200; dispatcher publishes current source and Hybrid200; worker-pool failure leaves Keyword and complete Hybrid200; all resources closed",
+    "types": "mypy4application files passed",
+    "format": "Black146files unchanged",
+    "boundaries": "0violations; no new composition allowlist changes",
+    "contracts": "8registered artifacts current",
+    "other": "CLI help, py_compile and diff check passed; no frontend code changed"
+  },
+  "actual_directory": "/tmp/clip-listings-test-g2wyt6yq",
+  "resources": {
+    "max_simultaneous_helpers": 1,
+    "windows": 11,
+    "peak_api_helper_rss_bytes": 366133248,
+    "all_helpers_reaped": true,
+    "faults": [],
+    "probe_limits": "6min/40windows/1child/512MiB sampled API+helper; native DB excluded; no deployment equivalence",
+    "normal_bounds": "One additional worker connection per API process (combined max13); shared helper; serial <=10jobs/burst; yield1s, idle2s, failure/deferral5s. Existing per-job20s/lease30s/retry/fencing unchanged."
+  },
+  "failure_record": {
+    "directory": "/tmp/clip-listings-test-3c_ynin6",
+    "exit": 1,
+    "cause": "Probe chunk-count subquery incorrectly resolved listing_id from outer query and counted other listings chunks; assertion failed before HTTP/reindex checks",
+    "correction": "Explicit generation_id correlation plus independent old-generation chunk absence check; production dispatcher unchanged",
+    "cleanup": "Failed run reaped helpers and stopped owned DB; retained reports are failure evidence, not a passed run"
+  },
+  "configuration": "CLIP_HYBRID_WORKER_ENABLED=false default; true requires explicit Hybrid enablement/settings; no worker is constructed when helper startup is unavailable",
+  "scope": [
+    "No pipeline register/queue_missing/backfill/serving transition in dispatcher",
+    "Only existing due jobs through reviewed EmbeddingWorker/EmbeddingStore; no new retry/lease/source semantics",
+    "No second model/helper/service; no fake model/identity binding added to normal application",
+    "Test-only explicit bootstrap and retry_after scheduling gate precede/coordinate real dispatcher checks; not production bootstrap or product retry policy",
+    "Cancellation awaits active job before pool/helper shutdown; committed leases remain reclaimable; unexpected task/cleanup failures remain failures",
+    "No install/global setup/schema/cloud/hosting/old/shared DB/Git publication action"
+  ],
+  "pending": [
+    "Human result verification",
+    "Controlled operator bootstrap/backfill/serving activation checkpoint",
+    "Actual upstream Identity/Listings/images/readiness",
+    "Linux/deployment resource/DB capacity acceptance",
+    "Final corpus20+human labels/relevance/load/NFR checks",
+    "Full CI/Docker secret scanning/task-wide review/independent peer and exact publication/merge approvals"
+  ]
+}

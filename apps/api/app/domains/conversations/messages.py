@@ -104,7 +104,7 @@ class PostgresMessageOperations:
         """Return the locked thread for a member; use one safe 404 otherwise."""
         cursor = await connection.execute(
             "SELECT thread.id, thread.initiator_id, thread.counterparty_id, "
-            "thread.next_sequence, thread.participant_writes_blocked_at "
+            "thread.next_sequence, thread.participant_writes_disabled_at "
             "FROM conversations.threads AS thread "
             "JOIN conversations.members AS member "
             "ON member.conversation_id = thread.id AND member.user_id = %s "

@@ -1,0 +1,38 @@
+[
+  {
+    "path": "apps/api/app/domains/identity/email_configuration.py",
+    "sha256": "9846d9638b8340a38149f1a330ca54e6649da6eae7ec5d7ad41da24c93559810"
+  },
+  {
+    "path": "apps/api/app/domains/identity/email_routing.py",
+    "sha256": "a37a25afd59acf79566c32b3cd82d34dedf00c8f3a922e7f86404b3d0a1bbf14"
+  },
+  {
+    "path": "apps/api/app/domains/identity/resend_email.py",
+    "sha256": "ddfe280b2f12ff0b022cab7c7371564a460061c08b1986a7e6cbf0860903d36a"
+  },
+  {
+    "path": "apps/api/app/domains/identity/temporary_delivery.py",
+    "sha256": "7bd1553d740a3dce00e26cebcd7b325a3a0ee0aff5a4da927e77c17416012111"
+  },
+  {
+    "path": "apps/api/tests/domains/identity/test_email_routing.py",
+    "sha256": "57bbadbbe4bcf58cb3645cfe09257d4953ed2b694e0df6696c611347ded9066c"
+  },
+  {
+    "path": "apps/api/app/core/config.py",
+    "sha256": "bb725bdb5beb7ef084c81f7b209cedf452945155cb5d74f4b23f7c21219744f1"
+  },
+  {
+    "path": "apps/api/tests/domains/identity/test_email.py",
+    "sha256": "9b267a7c0c5e94e06f80afcd394d9096e01d184d8536242ffbd11d3457cd837e"
+  },
+  {
+    "path": ".env.example",
+    "sha256": "b874f16c85020c52bb54c14d71e587f5ddce98ee7513a1e2c7684eae0e1786b4"
+  },
+  {
+    "path": "infra/terraform/shared/test/identity-email.tf",
+    "sha256": "cb6f538e767f93040c55bbbf9288d0fbe9cc0d3b53a139088c9053de6a04b0a2"
+  }
+]

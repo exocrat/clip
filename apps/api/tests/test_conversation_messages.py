@@ -77,9 +77,9 @@ async def seed_thread(
             category_id = (await cursor.fetchone())[0]
             await connection.execute(
                 "INSERT INTO search.wanted_requests "
-                "(id, author_id, title, description, category_id, status) "
+                "(id, author_id, title, description, category_code, status) "
                 "VALUES (%s, %s, 'Synthetic request', 'Test-only request', %s, 'open')",
-                (request_id, author_id, category_id),
+                (request_id, author_id, "other"),
             )
             await connection.execute(
                 "INSERT INTO conversations.threads "
@@ -582,7 +582,7 @@ def test_message_write_observes_no_write_marker_but_exact_retry_stays_idempotent
         first = await operations.submit_message(caller(alice), conversation, request)
         async with pool.connection() as connection:
             await connection.execute(
-                "UPDATE conversations.threads SET participant_writes_blocked_at = clock_timestamp() "
+                "UPDATE conversations.threads SET participant_writes_disabled_at = clock_timestamp() "
                 "WHERE id = %s",
                 (conversation,),
             )

@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "id": "fault-timeout",
+  "purpose": "local-pilot",
+  "rate": 2,
+  "warmup_seconds": 0,
+  "measured_seconds": 2,
+  "max_vus": 2,
+  "timeout_seconds": 0.25,
+  "cases": [
+    {
+      "id": "browse",
+      "query": {},
+      "expected_ids": [
+        "01b4fbd6-4c3c-44da-a578-6284033a869c"
+      ]
+    }
+  ]
+}
