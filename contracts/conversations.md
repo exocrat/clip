@@ -528,6 +528,12 @@ order above is approved for implementation. Physical content/object cleanup
 and the post-retirement My Listings display remain separate decisions; do not
 infer a deletion mechanism from the marker operation.
 
+CN-01's separately approved [content cleanup mechanism](../docs/decisions/conversation-content-cleanup.md)
+implements the90-day thread purge with a bounded, dry-run-default command,
+thread-lock cutoff recheck, and atomic payload/offer-history removal. Content-free
+entry, operation and reference guards survive. This does not enable a deployed
+schedule or authorize a persistent-target cleanup run.
+
 ## Shared errors and safe operations
 
 Use the shared FastAPI error envelope and stable codes. Expected classes are

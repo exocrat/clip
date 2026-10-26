@@ -697,6 +697,16 @@ the evidence and task review.
 
 ## CN-01 — disposable Conversations database checks
 
+The approved90-day cleanup command is
+`uv run --locked python scripts/conversations_cleanup.py --expected-database DATABASE --expected-host HOST --expected-port PORT`.
+It reads only `CLIP_CONVERSATIONS_DATABASE_URL`; placeholders must match the
+reviewed target and are never credentials. Default is dry-run counts only;
+`--batch-size` defaults100/max1000. `--apply` mutates eligible content and requires
+a separately approved persistent-target run plan. No cutoff override or schedule
+exists. Errors are generic; per-thread rollback and retry preserve ID/sequence
+guards. See the [approved mechanism](../decisions/conversation-content-cleanup.md).
+The registered disposable runner below includes real retention/rollback checks.
+
 Browser checkpoint setup: `CLIP_ENVIRONMENT=test uv run --locked python
 scripts/conversation_browser.py --isolated-conversation-browser --check-only`
 creates and removes only one new disposable local PostgreSQL container and

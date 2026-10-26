@@ -337,7 +337,7 @@ Lease duration/claim fencing and clock/timezone handling still require A/D opera
 
 ## Private-data retention and deletion — Mohit-approved
 
-Mohit approved these durations and minimal-record exceptions in the [retention decision](../decisions/private-data-retention.md). Privacy/affected-owner schema and cleanup review remains pending; no cleanup is implemented. Access expiry and data cleanup are separate: credentials stop working at expiry/revocation even if a row has not yet been purged. Do not run destructive cleanup under this document alone.
+Mohit approved these durations and minimal-record exceptions in the [retention decision](../decisions/private-data-retention.md). CN-01 implements the separately approved [Conversations content cleanup](../decisions/conversation-content-cleanup.md) through a dry-run-default command and existing deferred graph constraints; no schema change or deployed schedule is needed. Other owners retain their cleanup gates. Access expiry and data cleanup are separate: credentials stop working at expiry/revocation even if a row has not yet been purged. Persistent-target cleanup requires its own operator run approval.
 
 | Data | Approved retention trigger/window | Cleanup behavior to implement/review |
 |---|---|---|

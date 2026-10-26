@@ -53,7 +53,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | SE-01 | Mohit (C); peer Suraj (B), Identity review | in progress | Local create-to-Keyword-and-Hybrid flow and browser walkthrough verified; formal acceptance remains pending | Test-only browser demo binds the same fixed synthetic Identity for writes/browse and can opt into the real helper, worker, pipeline bootstrap and Hybrid reader; automatic new-listing vector generation was observed | Suraj verified the local command/API/proxy flow and subsequent browser walkthrough | Search PR #11 worktree `task/search-evidence-reduction` at `864e53b`; new listing `194a32d4-64bb-491b-b4ec-68403e26f7f3` produced one title and one description vector (384 dimensions each), then matched in both modes through API and Vite proxy; session `/tmp/clip-listings-browser-v6e1f01t`; UI `http://127.0.0.1:5173/` | Formal SE-CORE/DATA-READY and final NFR/hosted-CI acceptance remain outside this merge step | 2026-10-25 14:38:24 UTC |
 | SE-02 | Mohit (C); peer Suraj (B), Identity/Conversations review | in progress | Step8 real integration gated; local handoff human-verified | Steps1–7 isolated result verified; Step8 audit performed | Mohit verified isolated UI and combined local handoff | [Search handoff](../evaluation/domain/search-handoff/result.json): Python1270/data94/web144,Black183,native20/3skip,wrapper35/contracts8/boundaries/parity/type/build pass | Await actual ID-READY/LI-CORE/SE-CORE/C adapters; Step9 final acceptance, pinned secrets/hosted CI and independent review pending | 2026-10-25 08:50:43 UTC |
 | MERGE-LI-SE | Suraj (integration); Listings/Search affected owners | done | PR #11 is squash-merged; Search–Listings local merge task is complete | Steps 1–9 performed; approved PR head `2a43066` merged to `main` as `e315c9d`; final hosted CI run `40204621122` passed | Steps 3–8 verified by Suraj; user authorized squash merge of the exact PR revision on 2026-10-25 | PR #11 `https://github.com/exocrat/clip/pull/11`; source head `2a430660d25e7c14cf33d84bd78172db4ec063c7`; squash merge `e315c9df3e0e11d6e9c8d7d244d676204d3af7e8`; hosted CI `40204621122`; local merge commit `29eb6fb`; fallback branch `safety/search-pr11-pre-main-reconciliation-20261025`; stash `af9d7f5`; local checks recorded below | No blocker for the Search–Listings merge. Final dataset, formal NFR/cloud checks, and real Identity/Conversations remain later work. | 2026-10-25 15:17:46 UTC |
-| CN-01 | Rahul (D) | in progress | Two-origin synthetic browser checkpoint verified: encrypted send/reply, offline recipient delivery, reload persistence, unread badge updates and display-only read acknowledgement | Frontend build/typecheck passed; the user confirmed the browser flows on the real SDK, IndexedDB and disposable PostgreSQL demo | Rahul confirmed all requested local chat/browser checks work; prior inbox polling confirmation retained | `task/cn-01-conversations` at `9b4f7ff`; demo process20292, fresh disposable DB, URLs on5273/5274; clean private browser storage used for the new fixture; ordinary browser data was preserved | 90-day content purge mechanism/order and tests; real Identity/SE-02 integration, phone keyboard, CN-02/CN-03, NFR-05, readiness acceptance and peer review remain pending | 2026-10-26 10:15:53 UTC |
+| CN-01 | Rahul (D) | in progress | Step9 approved90-day cleanup implementation and disposable tests performed; review this result next | PostgreSQL18.6 Conversations102 passed; Black4, focused mypy2, boundaries0, Gitleaks8.30.1 and contracts8 current | Prior synthetic browser exchange/offline/reload/unread/read-ack checkpoint verified; cleanup result awaits verification | `task/cn-01-conversations`; `cleanup.py`, target-checked dry-run CLI, retention decision and12 new test cases; existing SQL preserved | Real Identity/SE-02 acceptance, phone keyboard, CN-02 independent30-day shares, CN-03, NFR-05 and peer review; scheduling/persistent cleanup require separate operator approval | 2026-10-26 13:40:30 UTC |
 | CN-02 | D; A/B interface review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | Isolated development: PRE-00, then DL-00 and a reviewed contract/stub. Later real gates: CN-CORE, ID-READY, and LI-CORE for listing-origin behavior; SE-02 plus CN-01's real request path for request-response inbox integration. | — |
 | CN-03 | A; D producer review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | CN-CORE, ID-READY | — |
 | INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
@@ -82,6 +82,43 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | DATA-READY | not accepted | SE-01 steps 2/4/9 | — | pending |
 | CN-CORE | not accepted | CN-01 step 10 | — | pending |
 | OPTIONAL-OK | not approved | Each optional task's selection/priority plan | — | pending |
+
+## CN-01 — Step9 coordinated content retention — 2026-10-26 13:40:30 UTC
+
+Rahul authorized the proposed dry-run-default, bounded, thread-lock/recheck
+cleanup mechanism with “proceed” and “continue”. Implemented
+`apps/api/app/domains/conversations/cleanup.py` and
+`scripts/conversations_cleanup.py`: server-derived90-day cutoff, at most100
+threads by default/max1000, per-thread transaction with cutoff recheck, clear
+offer current pointer before deleting revisions/payloads/share links, then set
+entry deletion markers. Thread/member/sequence/read/operation/SDK/recovery and
+notification references survive. Cleanup does not advance participant activity.
+Earlier threads may commit before a later failure; errors fail safely and
+reruns resume. The CLI checks expected database/host/port on every connection,
+accepts no cutoff override, emits only aggregate counts and suppresses private
+driver errors. Existing migrations and constraints remain unchanged.
+
+`apps/api/tests/test_conversation_cleanup.py` adds12 meaningful cases, registered
+in the existing disposable runner: exact90-day boundary, dry-run, reruns,
+content-free409 retry, newer write after selection, transaction rollback,
+offer pointer/history preservation, recovery reference preservation, actual
+thread lock contention, subsequent new activity, batch bounds, and CLI target
+refusal. Initial run had97 passes/1 failure because the new test incorrectly
+expected replay of purged content; corrected to the existing reviewed409
+contract. Final registered PostgreSQL18.6 run passed102 tests and removed its
+own database. Black passed4 files, focused mypy passed2 files, boundaries0,
+Gitleaks8.30.1 source scan passed, all8 generated artifacts are current, CLI help
+and whitespace checks passed. Contract check initially used the wrong Node on
+PATH; it passed with the existing pinned Node24/npm11 toolchain.
+
+Recorded the approved mechanism in
+`docs/decisions/conversation-content-cleanup.md`; linked it from retention,
+Conversations contract/domain README, database schema and command registry.
+Human implementation verification and normal affected-owner review remain
+pending. No persistent/shared database cleanup, schedule, provider, cloud,
+push or merge was performed. Independent30-day share cleanup remains CN-02;
+notification retention remains CN-03. Prior browser checks stay verified and
+are not requested again.
 
 ## CN-01 — Seller/author browser initialization correction — 2026-10-26 08:04:15 UTC
 
