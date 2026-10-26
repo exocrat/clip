@@ -1,7 +1,7 @@
 {
-  "prepared_at_utc": "2026-10-25 17:09:30 UTC",
-  "source_revision": "42e9cd9320cff5a5e15f3ba8eb5e95a31164082a",
-  "recorded_upstream_revision": "6c860603bdd81a98485e721d789b557c5d433948",
+  "prepared_at_utc": "2026-10-26 13:55:49 UTC",
+  "source_revision": "1bb0eb9d8ffb486d444d4055e0032be0f5701a6b",
+  "recorded_upstream_revision": "3d6c2709d93f42bda0b4a6645c633780387c99b8",
   "tool": "dbmate 2.36.0",
   "image_tag": "ghcr.io/amacneil/dbmate:2.36.0",
   "image_digest_review_pending": true,

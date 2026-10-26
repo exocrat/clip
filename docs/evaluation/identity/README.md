@@ -10,27 +10,32 @@ criteria and action approvals still come from their canonical sources.
 | [Implementation](implementation.md) | Steps3–11 behavior, checks, corrections and source snapshots. |
 | [Provider history](provider-history.md) | Completed SES/builder/runtime investigation, delivery outcomes and development cleanup gate. |
 | [Integration handoff](integration.md) | Current Step12 result, email routing and remaining work for ID-READY. |
+| [Hosted demo postmortem](id-01-step-12/demo-postmortem-20261026.md) | What worked/failed in the local and hosted demo, stale IISc DNS, cleanup results, and remaining shared resources. |
 | [Live work log](../../status/work-log.md) | Verification state, exact dated outcomes, ownership and pending integration ledger. |
 
 ## Current state
 
-- Local Identity schema/services/API/UI are implemented and human-verified.
-- Main/PR10 reconciliation is committed as `890adb1`; checkpoint `7a9b4a4`
-  contains dual-provider email preparation. Latest local composition gate:976Python passed,
-  one DB-only skip covered separately,63data and118web passed; all11gates passed.
-- Resend `verify@clip-iisc.site` delivered to Gmail and IISc, human-confirmed.
-  SES sandbox task-role delivery and owned cleanup passed; production access is
-  pending. No new current cloud state is inferred from historical snapshots.
-- Explicit local API composition is verified and committed at `fad1e2f`;
-  [result/remaining work](integration.md#local-api-composition).
-- [Secure runtime preparation](integration.md#secure-runtime-preparation) is locally
-  implemented and human-verified; live secrets/grants are pending.
-- Normal application composition still lacks real Identity runtime wiring.
-  Microsoft sign-in is disabled. ID-READY is not accepted; no final FR03 claim.
+- PR #14's local Identity/marketplace hardening is merged at main `3d6c270`;
+  runtime follow-up branch has commits `6f37b0b` and `1bb0eb9` plus reviewed local
+  cleanup changes. New source still needs its own peer/affected-owner review/CI.
+- Real local Microsoft/IISc and temporary email registration/sign-in/reset were
+  human-verified. No human hosted account/image/Search journey was accepted.
+- The original shared DB's17migrations and separate runtime roles/secure URLs have
+  [recorded real results](id-01-step-12/demo-postmortem-20261026.md#database-preparation).
+  Reusable migration defaults require fresh approval for another live window.
+- AMD64 build switch, scoped runtime IAM and private S3 configuration are useful
+  retained work. ECS runtime is opt-in with a private controlled-recipient input;
+  no personal recipient or default auth bypass is retained.
+- [Demo outcome/cleanup](id-01-step-12/demo-postmortem-20261026.md) records removed
+  temporary ingress and incomplete final RDS-stop/DNS/state-reconciliation checks.
+  These are recorded observations; no new cloud verification is implied.
+- ID-READY is **not accepted**. Durable HTTPS/proxy/runtime/provider checks and
+  actual image/Search/browser integration remain; Hybrid needs its separate
+  privileges/model/pipeline setup. Full Step14 stays outside this milestone.
 
-- Real RDS logging/default probe passed with rollback and stopped/zero cleanup
-  verified on2026-10-25; [live evidence](integration.md#live-logging-probe-passed--2026-10-25-053326-utc).
-  Shared migration apply and Identity login/URL provisioning remain pending.
+Branch cleanup verification2026-10-26 14:02:52UTC: all11local gates passed
+(1830Python/24optional skips,94data,289web/3opt-in skips), plus backend-free
+Terraform4roots and offline review consistency. [Disposition and limits](id-01-step-12/demo-postmortem-20261026.md#what-belongs-in-the-branch).
 
 ## Canonical sources
 

@@ -2,6 +2,31 @@
 
 Non-secret status record. Update only from approved plans and verified outputs. Never record credentials, tokens, or secret values here. This is an observed snapshot, not an authorization to use existing resources or create/change/delete cloud infrastructure.
 
+## Latest recorded demo cleanup handoff — 2026-10-26
+
+This is a repository-evidence reconciliation, **not a fresh AWS inspection**.
+The [consolidated demo handoff](../evaluation/identity/id-01-step-12/demo-postmortem-20261026.md)
+contains exact outcomes, resource identifiers and remaining operator actions.
+
+- Original shared DB successfully received17migrations through20261025013000;
+  Identity and marketplace runtime roles/secure URLs were provisioned and checked.
+- Scoped task/execution IAM, private ID-01 image bucket, AMD64 image and ACM
+  certificate were retained. The alternate RDS candidates were never created.
+- Managed load-balancer creation was rejected by the account. The temporary EC2
+  TLS proxy/EIP/ingress were later removed, and shared API/host capacity returned
+  to zero. Human hosted sign-in/image/Search acceptance was not obtained.
+- RDS was last observed **stopping** at13:27UTC; final stopped state is unconfirmed.
+  The user-managed A record pointing to the released65.0.49.162 needs removal/
+  verification; preserve the ACM validation CNAME.
+- Recorded remote service state still revision1 while live stopped service was
+  revision2. A separately reviewed refresh/reconciliation is required before apply.
+- Shared VPC/NAT, DB storage/backups/data, IAM/SSM, image/S3/log resources and
+  certificate remain. Git cleanup neither changes them nor eliminates their costs.
+
+Older snapshots below retain their historical timestamps and can be superseded
+by this handoff. Do not use them as authorization or proof of current cloud state.
+
+
 Certificate issuance verified2026-10-26 07:13:33 UTC: ACM certificate
 `a9775d00-2af5-4b12-990d-1ce9795f1859` is **ISSUED**, validation SUCCESS,
 not yet associated with a listener. No HTTPS app deployment implied.

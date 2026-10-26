@@ -1,0 +1,102 @@
+{
+  "recorded_at_utc": "2026-10-26 10:04:59 UTC",
+  "task": {
+    "arn": "arn:aws:ecs:ap-south-1:335523638354:task/clip-shared-test/421c4988192c4a958b718a8fb38ef209",
+    "status": "STOPPED",
+    "stopped_at_utc": "2026-10-26T10:02:31.610Z",
+    "sleep_only_override": true,
+    "provider_send": false
+  },
+  "account": "335523638354",
+  "region": "ap-south-1",
+  "source_revision": "1bb0eb9d8ffb486d444d4055e0032be0f5701a6b",
+  "sql_execution_timestamp_utc": null,
+  "sql_timestamp_note": "The inline diagnostic did not record its exact execution time; this safe metadata was captured during the approved follow-up before stopping the task at 2026-10-26T15:32:31.610+05:30.",
+  "target": {
+    "rds_resource_id": "db-PYRRZJPVKPGHIXDAHUWATXGH7A",
+    "database": "clip_test",
+    "status": "available",
+    "engine_version": "18.6",
+    "verified_tls": "verify-full"
+  },
+  "secret_read": {
+    "parameter": "/clip/test/database-master-password",
+    "version": 1,
+    "decrypted_reads": 1,
+    "value_recorded": false
+  },
+  "effective_logging_values": {
+    "log_statement": "none",
+    "log_min_duration_statement": "-1",
+    "log_min_duration_sample": "-1",
+    "log_transaction_sample_rate": "0",
+    "log_min_error_statement": "error",
+    "log_parameter_max_length_on_error": "0",
+    "pgaudit.log": null,
+    "auto_explain.log_min_duration": null
+  },
+  "logging_policy_check": {
+    "only_mismatch": "log_min_error_statement is error; Identity policy requires panic",
+    "other_values_match_or_are_allowed": true,
+    "db_parameter_group": "default.postgres18",
+    "status": "in-sync",
+    "explicit_overrides": false,
+    "configuration_changed": false
+  },
+  "other_client_sessions": [
+    {
+      "role": "rdsadmin",
+      "database": "rdsadmin",
+      "application": "PostgreSQL JDBC Driver",
+      "state": "idle",
+      "backend_started_at_utc": "2026-10-26T09:14:03.988564Z"
+    },
+    {
+      "role": "rdsadmin",
+      "database": "rdsadmin",
+      "application": "",
+      "state": "idle",
+      "backend_started_at_utc": "2026-10-26T09:17:09.650287Z"
+    }
+  ],
+  "privacy_boundary": "Only role/database/sanitized application/state/start metadata was read; no client addresses, SQL text, business rows or query parameters.",
+  "ssm_session": {
+    "id": "adityalaxmi1-ei2ch2fg4frbz5dyacduo6t3z8",
+    "terminated": true
+  },
+  "demo_host_retention": {
+    "user_direction": "Aditya directed retaining this current instance for the demo; do not scale it down.",
+    "asg": "clip-shared-test-ecs-host",
+    "min": 0,
+    "max": 1,
+    "desired": 1,
+    "instance_id": "i-0543832969d007de2",
+    "instance_type": "c7i-flex.large",
+    "instance_state": "running",
+    "root_volume_id": "vol-0d92ee562000e40bc",
+    "root_volume_retained": true,
+    "protected_from_scale_in": true,
+    "protection_verified_at_utc": "2026-10-26 10:04:34 UTC",
+    "protection_action_time_utc": null,
+    "release_gate": "After the demo, remove scale-in protection and return the ASG to desired0 only under a fresh exact cleanup approval."
+  },
+  "current_runtime": {
+    "cluster_running_tasks": 0,
+    "cluster_pending_tasks": 0,
+    "registered_instances": 1,
+    "api_desired_running_pending": [
+      0,
+      0,
+      0
+    ],
+    "original_rds_status": "available"
+  },
+  "failed_cleanup_attempt": {
+    "operation": "SetDesiredCapacity(0)",
+    "result": "ScalingActivityInProgress",
+    "retry_performed": false,
+    "reason": "User directed retaining the instance for the demo."
+  },
+  "result": "The two other database sessions are idle RDS administration connections, not application clients. The logging profile has one effective mismatch. No database write, migration, role change, URL update, or deployment occurred.",
+  "human_verification": "pending"
+}

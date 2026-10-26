@@ -1600,7 +1600,7 @@ Prepared concrete review artifacts:
   Outputs expose only ARN and public validation CNAMEs. No validation waiter,
   Route53 resources, listener, compute or DNS mutation. The shared README explains
   full-plan scope and retention/cleanup. This resource is not yet provisioned.
-- [Runtime configuration proposal](id-01-step-12/shared-runtime-configuration.proposed.json):
+- [Runtime configuration proposal](../../../infra/terraform/shared/test/service.tf):
   exact test-mode selectors/origin; app-role GetParameter for only the three fixed
   Identity references; execution-role GetParameters for the proposed Listings URL
   injection. Separates task/execution responsibilities and excludes master/probe
@@ -1776,7 +1776,7 @@ against6f37b0b, retaining original comparison provenance and explicit image/DDL
 pending gates. All17file paths/hashes still match, head20261025013000. Recorded
 current runner/setup/role source hashes and Suraj's human-confirmed PR14 merge
 without representing it as image or live SQL approval. No manifest-review bypass.
-Expanded [runtime proposal](id-01-step-12/shared-runtime-configuration.proposed.json)
+Expanded [runtime proposal](../../../infra/terraform/shared/test/service.tf)
 with exact target, two-role/URL responsibilities, operation/publication ordering,
 connection budgets and refusal/recovery rules.
 
@@ -1813,3 +1813,36 @@ SUCCESS, expiration2027-05-11 23:59:59 UTC, no resource association. Updated
 inventory. No secret reads/resource writes for this check; HTTPS listener and
 application deployment remain pending. Database/runtime preparation is documentation
 and proposed configuration only; no code behavior changed or full tests rerun.
+
+
+## 2026-10-26 demo and deployment handoff
+
+The [consolidated outcome/cleanup handoff](id-01-step-12/demo-postmortem-20261026.md)
+replaces duplicate local notes and expired recovery/preflight requests. The original
+RDS eventually started; the 17-migration chain, separate Identity/marketplace
+roles and secure URL publication have actual recorded results. The executed
+migration manifest is archived with exact bytes; the reusable default is no
+longer armed with the consumed live approval.
+
+AMD64 image/task IAM/private S3 were prepared and retained. Managed ingress was
+rejected by AWS; a temporary EC2 TLS proxy was used and later removed. Hosted
+human account/image/Search acceptance was not obtained. No-photo local workaround
+and recovery/proxy ingress source are gone; the one-to-eight image contract holds.
+
+Last recorded cleanup has API/host0, released public IP and deleted demo ingress;
+RDS was last observed stopping, so final stopped state remains unknown. User-managed
+A record removal and service state/live revision reconciliation remain outstanding.
+No cloud query, state/DNS edit, apply or secret read is authorized by Git cleanup.
+
+The retained Terraform runtime is now explicitly opt-in with a private nonempty
+controlled-recipient list. Default-off foundation startup remains valid; activation
+requires reviewed DB/IAM/image/HTTPS inputs. Existing marketplace grants do not
+cover Hybrid embedding/pipeline operations. Keep those real integrations and new
+peer/CI review pending; ID-READY is not accepted.
+
+
+The historical runtime JSON proposal was superseded by the retained shared service/
+variables/IAM/S3 source and removed during cleanup. Earlier preparation links now
+lead to that implementation; exact old proposal bytes remain in commit1bb0eb9.
+Historical execution/approval receipts are preserved separately from reusable
+future-run review defaults.

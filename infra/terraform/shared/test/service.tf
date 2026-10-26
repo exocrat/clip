@@ -1,7 +1,8 @@
 # This phase adds the API service and two separately invoked database tasks
 # after the base infrastructure exists. All use private EC2 bridge networking;
-# no public listener or inbound security-group rule is created. New service
-# names follow DEC-03; existing base names remain untouched. Owner=shared-team
+# no public listener or inbound security-group rule is created. Real Identity
+# configuration is opt-in and remains at zero tasks outside an approved window.
+# New service names follow DEC-03; existing base names remain untouched. Owner=shared-team
 # is the explicit PD-16 exception, with the human operator accountable.
 resource "aws_ssm_parameter" "db_probe_password" {
   count = local.service_enabled ? 1 : 0
@@ -79,10 +80,29 @@ resource "aws_ecs_task_definition" "api" {
       hostPort      = 18000
       protocol      = "tcp"
     }]
-    environment = [
-      { name = "CLIP_ENVIRONMENT", value = "production" },
+    # Preserve the disabled foundation profile until complete controlled runtime
+    # inputs are reviewed. Recipients are private Terraform inputs, never literals.
+    environment = concat([
+      { name = "CLIP_ENVIRONMENT", value = var.identity_runtime_enabled ? "test" : "production" },
       { name = "CLIP_DEBUG", value = "false" },
-    ]
+      ], var.identity_runtime_enabled ? [
+      { name = "CLIP_IDENTITY_PROVIDER", value = "microsoft" },
+      { name = "CLIP_EMAIL_PROVIDER", value = "dual" },
+      { name = "CLIP_IDENTITY_RUNTIME_ENABLED", value = "true" },
+      { name = "CLIP_IDENTITY_BROWSER_ORIGINS", value = jsonencode(["https://clip-iisc.site"]) },
+      { name = "CLIP_SES_TEST_RECIPIENTS", value = jsonencode(var.identity_test_recipients) },
+      { name = "CLIP_DEVELOPMENT_AUTH", value = "false" },
+      { name = "CLIP_ISOLATED_LISTINGS_TEST_CALLER", value = "false" },
+      { name = "CLIP_SERVE_WEB_APP", value = "true" },
+      { name = "CLIP_STORAGE_PROVIDER", value = "s3" },
+      { name = "CLIP_IMAGE_BUCKET", value = aws_s3_bucket.listings_images[0].bucket },
+      { name = "CLIP_IMAGE_REGION", value = local.region },
+      { name = "CLIP_IMAGE_KEY_PREFIX", value = "id01" },
+    ] : [])
+    secrets = var.identity_runtime_enabled ? [{
+      name      = "CLIP_DATABASE_URL"
+      valueFrom = "arn:aws:ssm:${local.region}:${local.account_id}:parameter/clip/test/listings-database-url"
+    }] : []
     healthCheck = {
       command = [
         "CMD",
@@ -106,6 +126,10 @@ resource "aws_ecs_task_definition" "api" {
   }])
 
   lifecycle {
+    precondition {
+      condition     = !var.identity_runtime_enabled || length(var.identity_test_recipients) > 0
+      error_message = "Explicit Identity runtime requires a reviewed nonempty controlled-recipient input; never deploy the incomplete demo configuration."
+    }
     precondition {
       condition     = var.api_image_uri != null
       error_message = "Set api_image_uri to the reviewed immutable ECR digest before enabling the service phase."
@@ -140,8 +164,12 @@ resource "aws_ecs_service" "api" {
     rollback = true
   }
 
-  depends_on = [aws_ecs_cluster_capacity_providers.shared]
-  tags       = { Name = "clip-test-api-${local.region}-pd16" }
+  depends_on = [
+    aws_ecs_cluster_capacity_providers.shared,
+    aws_iam_role_policy.api_identity_email,
+    aws_iam_role_policy.api_execution,
+  ]
+  tags = { Name = "clip-test-api-${local.region}-pd16" }
 }
 
 # This one-shot task creates the dedicated database login. Its psql script

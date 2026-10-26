@@ -137,6 +137,12 @@ resource "aws_iam_role_policy" "api_execution" {
         ]
         Resource = "${aws_cloudwatch_log_group.api[0].arn}:*"
       },
+      {
+        Sid      = "ReadListingsDatabaseUrlForTaskInjection"
+        Effect   = "Allow"
+        Action   = ["ssm:GetParameters"]
+        Resource = "arn:aws:ssm:${local.region}:${local.account_id}:parameter/clip/test/listings-database-url"
+      },
     ]
   })
 }

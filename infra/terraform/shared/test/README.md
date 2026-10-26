@@ -108,3 +108,24 @@ resource actions. The certificate is now retained in shared state. Future plans
 must preserve `https_certificate_enabled=true` and its reviewed date unless
 certificate removal is deliberately reviewed; omission/default false is not a
 safe continuation input. See the [current certificate evidence](../../../../docs/evaluation/identity/id-01-step-12/https-certificate-apply-result.json).
+
+
+## Retained Identity and image runtime preparation
+
+The shared bucket in `listings-images.tf` and scoped task/execution policies track
+resources retained after the 2026-10-26 demo. Do not remove those declarations to
+clean up local history: a later apply would propose deleting retained resources.
+The normal API image build accepts `VITE_MICROSOFT_SIGN_IN_ENABLED` (default false).
+Real runtime remains opt-in through `identity_runtime_enabled=true` and a private,
+nonempty `identity_test_recipients` list of at most five. This restores a valid
+disabled default instead of deploying the demo's incomplete email configuration.
+No real addresses belong in source. Keep `api_service_enabled=false` until the
+exact image, DB references, provider inputs and trusted HTTPS ingress are reviewed.
+
+The current private marketplace role has no Hybrid pipeline/table privileges;
+Hybrid deployment/role/model initialization remains separately reviewed work.
+Before any future plan, reconcile the recorded ECS state/live revision difference
+and preserve the retained certificate flag/date and original write-only versions.
+Neither these local changes nor a successful local check authorizes state refresh,
+remote apply, DNS changes or runtime restart. See the
+[consolidated demo handoff](../../../../docs/evaluation/identity/id-01-step-12/demo-postmortem-20261026.md).
