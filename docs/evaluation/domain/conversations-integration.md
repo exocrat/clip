@@ -4,7 +4,7 @@ Owner/writer: Rahul (D), `task/cn-01-conversations`. Scope verified by Rahul on
 2026-10-26; Step1 inventory recorded at2026-10-26 14:51:33 UTC. This is a local
 integration plan within CN-01 Steps4/6/8–10/13, not full CN-01 acceptance.
 
-## Baseline and boundaries
+## Initial Step1 baseline and boundaries
 
 Fetched `origin/main` is `3d6c2709d93f42bda0b4a6645c633780387c99b8` (Identity
 PR14, including Search/Listings PR11). It is already an ancestor of this branch;
@@ -22,7 +22,7 @@ exercising the owner HTTP workflow being tested. Existing fixtures can supply
 synthetic inputs, accounts and external-provider responses with their limits
 stated. Existing browser send/reload/offline/unread/read-ack checks stay verified.
 
-## Inventory and exact gaps
+## Step1 inventory and gaps (historical; results below)
 
 | Surface | Current evidence | Work still needed |
 | --- | --- | --- |
@@ -173,6 +173,49 @@ demo server remains running. No existing resources were deleted or stopped;
 ephemeral test runners removed only their own containers. No cloud/live-provider,
 shared database or persistent content cleanup occurred. No code correction was
 needed. Step6 final diff/PR/review/CI handoff follows human verification.
+
+## Step6 audit and review handoff
+
+Fresh remote inspection on2026-10-26 19:28:38 UTC confirms main remains
+`3d6c2709d93f42bda0b4a6645c633780387c99b8`, already an ancestor; no merge/rebase
+is needed. The only other open PR is Search15; it was not imported. Before
+handoff documentation, this branch changes123 paths (+19741/-328):
+
+| Source of lines | Files | Added | Removed |
+| --- | ---: | ---: | ---: |
+| Application/UI | 41 | 6098 | 43 |
+| Tests | 32 | 6462 | 8 |
+| Database, smokes and archives | 13 | 2126 | 28 |
+| Contracts/generated mirrors | 8 | 2273 | 209 |
+| Documentation | 19 | 1960 | 35 |
+| Tooling, CI and lockfile | 10 | 822 | 5 |
+
+Audit covered the changed-path inventory, shared composition/consumer diff,
+local-only SQL ownership/marker and message/key constraints, SDK/session/history
+and recovery-off boundaries, generated-source/route checks, test/CI wiring,
+migration provenance and privacy/configuration scope. Existing main migrations
+are unchanged; only four later executable migrations are added. Exact added-file
+hash comparison found one duplicated archived public-key migration, deliberately
+retained as immutable branch provenance outside the executable directory. No
+application/test exact-file duplicate was found; no useful test or unique evidence
+was removed. The earlier redundant API README paragraph is the only cleanup.
+Updated stale design/recovery implementation-status wording; no policy change.
+
+Reviewer navigation: Aditya(A) reviews auth/CSRF/public transport, E2EE source/
+dependency assurance and Conversations behavior; Suraj(B) reviews Listing origin
+locking/start/reopen, public action and migration compatibility; Mohit(C) reviews
+Wanted response provider binding and shared Search/schema regressions. Use
+`docs/prompts/peer-review-prompt.md` against the exact final PR revision. Author
+audit and passing tests are not independent human review or security approval.
+Record the team's exact SDK/dependency conclusion before accepting the security
+gate. Directory trust, best-effort IndexedDB and permanent history loss/no backup
+remain intentional limitations, not findings waived by local tests.
+
+Local full gates passed at code-identical380247a; later changes are evidence/
+status documentation only. Publication/PR/current-head CI status is tracked in
+the work log and live PR. No merge, production activation, shared migration or
+cloud operation is authorized by this handoff. Exact-revision human peer/owner
+approval and a separate merge instruction remain required.
 
 ## Ordered implementation and checks
 

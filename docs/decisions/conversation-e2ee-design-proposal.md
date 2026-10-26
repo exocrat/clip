@@ -1,6 +1,15 @@
 # CN-01 Step 2 — E2EE security design proposal
 
-**Status:** User-approved direction; runtime adoption is pending team source/dependency review and implementation checks. The selected candidate is `@open-e2ee/signal-protocol-sdk@13.0.0`; the user approved the v1 application message payload and one-device public-prekey relay contract. The package has not been added to the repository manifest or lockfile in this step.
+**Status:** User-approved direction, now locally implemented for review. The
+manifest/lockfile pin `@open-e2ee/signal-protocol-sdk@13.0.0` and `idb@8.0.3`;
+the browser uses the SDK/IndexedDB, authenticated v1 application content and v2
+transport metadata, with content recovery explicitly disabled. Local SDK,
+adversarial, database and browser evidence is recorded in the
+[integration checkpoint](../evaluation/domain/conversations-integration.md).
+Team source/dependency/security conclusion and normal peer/affected-owner review
+remain merge gates; this status does not certify the SDK or authorize deployment.
+The candidate analysis below records the original selection requirements, not a
+claim that implementation or dependency installation is still absent.
 
 **Origin:** CN-01 Step 2.
 **Prepared:** 2026-10-20.
@@ -60,7 +69,12 @@ The user has approved the direction and format choices below. The remaining work
 
 The user accepts the no-third-party-runtime-script, CSP, safe-rendering, bundled-dependency review, and ordering/retry/replay policies described above. The v1 application payload carries authenticated context inside the encrypted content for recipient-side comparison with server routing fields. The server's check only validates claimed outer metadata; cryptographic context verification is performed by the recipient after decryption. The exact SDK integration and adversarial tests remain implementation checks.
 
-The intended architecture keeps cryptography/key management behind a narrow client-side boundary, separate from conversation UI/domain behavior and the server API's ciphertext envelope. This makes a future product-approved change in encryption policy easier to isolate, without a plaintext fallback or dual-mode bypass. The selected package and v1 app-payload direction are recorded; the repository production dependency pin, SDK integration, and key/message runtime implementation remain pending team review and their later CN-01 steps.
+The implemented architecture keeps cryptography/key management behind a narrow
+client-side boundary, separate from conversation UI/domain behavior and the
+server API's ciphertext envelope. This makes a future product-approved change
+in encryption policy easier to isolate, without a plaintext fallback or dual-mode
+bypass. The dependency pin, SDK adapter and key/message runtime are implemented;
+team review and full task/provider/device/NFR acceptance remain separate gates.
 
 ## Sources checked on 2026-10-22
 
@@ -69,8 +83,9 @@ mapping works for ordinary application sends, but automatic SDK recovery
 uses suffixed retry-family IDs. Rahul approved the detailed separate-ID
 [recovery transport revision](conversation-recovery-transport.md). Its exact
 v2 metadata, original-message correlation, retry/deduplication and compatibility
-rules are approved there for implementation; the installed v1 implementation has not
-yet adopted them. SDK recovery is an open implementation requirement.
+rules are implemented and tested in the v2 transport while preserving v1 reads.
+Normal clients keep `protocol.contentRecovery.mode = 'off'`; retry/null-control
+handling does not provide message-content recovery or a key backup.
 
 The tagged SDK source review confirmed that relay reconstruction requires a
 message type and client timestamp in addition to ciphertext bytes. The CLIP

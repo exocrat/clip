@@ -6,9 +6,11 @@
 The format and behavior below are approved for implementation. The recovery
 storage migration, typed contracts, generated outputs and PostgreSQL message
 provider support the v2 transport and preserve v1 reads. The isolated client
-SDK protocol-control path is implemented and tested; browser/page integration
-and real-service checks remain pending. Normal affected-owner code review
-remains part of the PR process.
+SDK protocol-control path and browser/page handling are implemented and tested;
+local database/SDK and the separately labelled two-browser checks are recorded
+in the [integration checkpoint](../evaluation/domain/conversations-integration.md).
+Live-provider/deployed/device acceptance and normal affected-owner code review
+remain separate gates. Content recovery remains disabled.
 
 ## Sender content-recovery policy
 
@@ -21,7 +23,7 @@ message is not restored. The existing CLIP-local conversation-history cache
 is separate and remains governed by its local-only history design; this choice
 adds no backup or service-side plaintext storage.
 
-When page-level control handling is wired, describe this to the sender as a
+Page-level control handling describes this to the sender as a
 recipient decryption problem, not as a failed send: the encrypted entry may
 have been accepted by the service even though the recipient could not read it.
 Do not offer automatic resend; a user retry would be a new message.

@@ -53,7 +53,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | SE-01 | Mohit (C); peer Suraj (B), Identity review | in progress | Local create-to-Keyword-and-Hybrid flow and browser walkthrough verified; formal acceptance remains pending | Test-only browser demo binds the same fixed synthetic Identity for writes/browse and can opt into the real helper, worker, pipeline bootstrap and Hybrid reader; automatic new-listing vector generation was observed | Suraj verified the local command/API/proxy flow and subsequent browser walkthrough | Search PR #11 worktree `task/search-evidence-reduction` at `864e53b`; new listing `194a32d4-64bb-491b-b4ec-68403e26f7f3` produced one title and one description vector (384 dimensions each), then matched in both modes through API and Vite proxy; session `/tmp/clip-listings-browser-v6e1f01t`; UI `http://127.0.0.1:5173/` | Formal SE-CORE/DATA-READY and final NFR/hosted-CI acceptance remain outside this merge step | 2026-10-25 14:38:24 UTC |
 | SE-02 | Mohit (C); peer Suraj (B), Identity/Conversations review | in progress | Step8 real integration gated; local handoff human-verified | Steps1–7 isolated result verified; Step8 audit performed | Mohit verified isolated UI and combined local handoff | [Search handoff](../evaluation/domain/search-handoff/result.json): Python1270/data94/web144,Black183,native20/3skip,wrapper35/contracts8/boundaries/parity/type/build pass | Await actual ID-READY/LI-CORE/SE-CORE/C adapters; Step9 final acceptance, pinned secrets/hosted CI and independent review pending | 2026-10-25 08:50:43 UTC |
 | MERGE-LI-SE | Suraj (integration); Listings/Search affected owners | done | PR #11 is squash-merged; Search–Listings local merge task is complete | Steps 1–9 performed; approved PR head `2a43066` merged to `main` as `e315c9d`; final hosted CI run `40204621122` passed | Steps 3–8 verified by Suraj; user authorized squash merge of the exact PR revision on 2026-10-25 | PR #11 `https://github.com/exocrat/clip/pull/11`; source head `2a430660d25e7c14cf33d84bd78172db4ec063c7`; squash merge `e315c9df3e0e11d6e9c8d7d244d676204d3af7e8`; hosted CI `40204621122`; local merge commit `29eb6fb`; fallback branch `safety/search-pr11-pre-main-reconciliation-20261025`; stash `af9d7f5`; local checks recorded below | No blocker for the Search–Listings merge. Final dataset, formal NFR/cloud checks, and real Identity/Conversations remain later work. | 2026-10-25 15:17:46 UTC |
-| CN-01 | Rahul (D) | in progress | Integration Step5 full regression/demo lifecycle performed; verify before Step6 final diff/PR/CI handoff | All12 make-check gates passed: Python1919/93skip,data94,web385/3skip,Black289,contracts8,mypy2,boundaries0,wrapper35,PG lifecycle,C107,Gitleaks; isolated Listings/Search SQL21/3skip; both demo checks passed | Step4 and Step5 plan verified; Step5 result awaits verification; prior browser checks stay verified | `task/cn-01-conversations`; implementation tested at380247a; [integration checkpoint](../evaluation/domain/conversations-integration.md); this increment records evidence only | Step6 normal A/B/C review/PR/current-head hosted CI and exact merge authorization. Native/provider/device/NFR and CN-02/CN-03 remain separately scoped | 2026-10-26 19:21:26 UTC |
+| CN-01 | Rahul (D) | in progress | Integration Step6 final diff/manageability audit prepared; publish PR and verify exact-head CI | All12 local gates passed at code-identical380247a; final source/owner/migration/duplicate inventory checked; design-status docs corrected | Step5 and Step6 plan verified; author audit is not human peer approval | `task/cn-01-conversations`; [integration checkpoint](../evaluation/domain/conversations-integration.md); current main3d6c270 unchanged; no merge needed | PR publication/current-head CI, Aditya independent peer and B/C affected-owner review, SDK team conclusion and exact merge authorization; no cloud apply | 2026-10-26 19:28:38 UTC |
 | CN-02 | D; A/B interface review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | Isolated development: PRE-00, then DL-00 and a reviewed contract/stub. Later real gates: CN-CORE, ID-READY, and LI-CORE for listing-origin behavior; SE-02 plus CN-01's real request path for request-response inbox integration. | — |
 | CN-03 | A; D producer review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | CN-CORE, ID-READY | — |
 | INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
@@ -82,6 +82,30 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | DATA-READY | not accepted | SE-01 steps 2/4/9 | — | pending |
 | CN-CORE | not accepted | CN-01 step 10 | — | pending |
 | OPTIONAL-OK | not approved | Each optional task's selection/priority plan | — | pending |
+
+## CN-01 — Combined application integration Step6 audit — 2026-10-26 19:28:38 UTC
+
+Rahul verified Step5 and the final handoff plan. Fresh origin/main remains
+3d6c270 (ancestor); no integration merge/rebase is needed. Inspected123 changed
+paths (+19741/-328 before handoff docs): application/UI6098 added, tests6462,
+database/archive2126, contracts/generated2273, docs1960, tooling/CI/lock822.
+Reviewed shared composition/consumer diff, own-table SQL/marker constraints,
+SDK/session/history/recovery-off boundaries, schema/generated/test/CI wiring and
+privacy/runtime scope. Main's published migration files are unchanged; four
+new forwards follow them. Exact added-file hashes reveal one intentional
+archive/live public-key-migration duplicate; retained immutable provenance and
+unique tests rather than deleting evidence for line count. Prior redundant API
+README paragraph removal remains the only cleanup. Corrected stale E2EE/recovery
+implementation status, preserving policy and the team's security-review gate.
+
+No Conversations PR existed before publication; Search PR15 remains separate.
+Prepared PR scope/checks/limits and named review areas: Aditya(A) independent
+peer/security/Identity, Suraj(B) Listing state/action/schema, Mohit(C) Wanted/
+Search compatibility. Aditya's GitHub login is confirmed by Identity PR14;
+requested the remaining owner-login mapping rather than guessing accounts.
+Publication/hosted checks follow this audit; no review approval, merge or cloud
+action is implied. Local gate results remain the Step5 evidence. No application
+or test implementation changed in this increment.
 
 ## CN-01 — Combined application integration Step5 — 2026-10-26 19:21:26 UTC
 
