@@ -1,5 +1,17 @@
 # Frontend page inventory and collaboration map
 
+## Bounded browser-Origin correction writer (released)
+
+Rahul (D), on `task/cn-01-conversations`, is the local correction writer for
+`src/shared/http/sessionFetch.ts`, its transport tests and this map under the
+ongoing human-authorized browser fix. Scope: preserve an actual Origin on
+same-origin API writes while limiting Referer to the origin alone. Aditya retains
+shared transport ownership and reviews the correction; affected consumer review
+remains required before merge. No page composition is reserved by this correction.
+Reservation released after web checks and an isolated real Firefox156 header
+probe passed at2026-10-26 09:45:53 UTC. See the work log for results and correction
+of the earlier opaque-document diagnosis.
+
 ## Current bounded Conversations integration writer
 
 Rahul (D) is the sole local integration writer for `App.tsx`,

@@ -21,18 +21,19 @@ describe('shared app cookie/CSRF transport', () => {
     expect(fetcher).toHaveBeenCalledTimes(1);
     expect(fetcher.mock.calls[0][0]).toBe('/api/listings?page=1');
     const init = fetcher.mock.calls[0][1];
-    expect(init).toMatchObject({ credentials: 'same-origin', cache: 'no-store', redirect: 'error', mode: 'same-origin' });
+    expect(init).toMatchObject({ credentials: 'same-origin', cache: 'no-store', redirect: 'error', mode: 'same-origin', referrerPolicy: 'origin' });
     expect([...new Headers(init.headers)]).toEqual([]);
   });
   it.each(['POST', 'PUT', 'PATCH', 'DELETE'])('preflights one %s and preserves payload/headers with no replay', async (method) => {
     const fetcher = vi.fn().mockImplementation((path: string) => Promise.resolve(path.endsWith('/auth/csrf') ? json({ csrf_token: token }) : json(null, 204)));
     vi.stubGlobal('fetch', fetcher);
     const body = JSON.stringify({ operation_id: 'synthetic-operation' });
-    await sessionFetch('/wanted-requests', { method, body, credentials: 'omit', cache: 'force-cache', redirect: 'follow', headers: [['Content-Type', 'application/json'], ['X-CSRF-Token', 'stale'], ['If-Match', '7']] });
+    await sessionFetch('/wanted-requests', { method, body, credentials: 'omit', cache: 'force-cache', redirect: 'follow', referrerPolicy: 'no-referrer', headers: [['Content-Type', 'application/json'], ['X-CSRF-Token', 'stale'], ['If-Match', '7']] });
     expect(fetcher).toHaveBeenCalledTimes(2);
     expect(fetcher.mock.calls[0][0]).toBe('/api/auth/csrf');
+    expect(fetcher.mock.calls[0][1].referrerPolicy).toBe('origin');
     const init = fetcher.mock.calls[1][1];
-    expect(init).toMatchObject({ method, body, credentials: 'same-origin', cache: 'no-store', redirect: 'error', mode: 'same-origin' });
+    expect(init).toMatchObject({ method, body, credentials: 'same-origin', cache: 'no-store', redirect: 'error', mode: 'same-origin', referrerPolicy: 'origin' });
     const headers = new Headers(init.headers);
     expect(headers.get('X-CLIP-Request')).toBe('1');
     expect(headers.get('X-CSRF-Token')).toBe(token);

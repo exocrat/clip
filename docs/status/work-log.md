@@ -53,7 +53,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | SE-01 | Mohit (C); peer Suraj (B), Identity review | in progress | Local create-to-Keyword-and-Hybrid flow and browser walkthrough verified; formal acceptance remains pending | Test-only browser demo binds the same fixed synthetic Identity for writes/browse and can opt into the real helper, worker, pipeline bootstrap and Hybrid reader; automatic new-listing vector generation was observed | Suraj verified the local command/API/proxy flow and subsequent browser walkthrough | Search PR #11 worktree `task/search-evidence-reduction` at `864e53b`; new listing `194a32d4-64bb-491b-b4ec-68403e26f7f3` produced one title and one description vector (384 dimensions each), then matched in both modes through API and Vite proxy; session `/tmp/clip-listings-browser-v6e1f01t`; UI `http://127.0.0.1:5173/` | Formal SE-CORE/DATA-READY and final NFR/hosted-CI acceptance remain outside this merge step | 2026-10-25 14:38:24 UTC |
 | SE-02 | Mohit (C); peer Suraj (B), Identity/Conversations review | in progress | Step8 real integration gated; local handoff human-verified | Steps1–7 isolated result verified; Step8 audit performed | Mohit verified isolated UI and combined local handoff | [Search handoff](../evaluation/domain/search-handoff/result.json): Python1270/data94/web144,Black183,native20/3skip,wrapper35/contracts8/boundaries/parity/type/build pass | Await actual ID-READY/LI-CORE/SE-CORE/C adapters; Step9 final acceptance, pinned secrets/hosted CI and independent review pending | 2026-10-25 08:50:43 UTC |
 | MERGE-LI-SE | Suraj (integration); Listings/Search affected owners | done | PR #11 is squash-merged; Search–Listings local merge task is complete | Steps 1–9 performed; approved PR head `2a43066` merged to `main` as `e315c9d`; final hosted CI run `40204621122` passed | Steps 3–8 verified by Suraj; user authorized squash merge of the exact PR revision on 2026-10-25 | PR #11 `https://github.com/exocrat/clip/pull/11`; source head `2a430660d25e7c14cf33d84bd78172db4ec063c7`; squash merge `e315c9df3e0e11d6e9c8d7d244d676204d3af7e8`; hosted CI `40204621122`; local merge commit `29eb6fb`; fallback branch `safety/search-pr11-pre-main-reconciliation-20261025`; stash `af9d7f5`; local checks recorded below | No blocker for the Search–Listings merge. Final dataset, formal NFR/cloud checks, and real Identity/Conversations remain later work. | 2026-10-25 15:17:46 UTC |
-| CN-01 | Rahul (D) | in progress | Inbox/history query fix implemented; current key registration is blocked by browser sending `Origin: null`; next open the exact loopback URL in a normal top-level browser tab | API routes 19 passed, generated OpenAPI parity1 passed, web32 passed, production build and real SQL/HTTP harness startup smoke passed; browser key registration returned403 with opaque Origin | Rahul reported persistent inbox 422 and then supplied 403 evidence; browser retest pending | task/cn-01-conversations; query parser/client defaults and HTTP regression coverage; current local session on 5273/5274 | Actual browser/IndexedDB exchange remains unverified; real-session integration, phone keyboard, retention, CN-02/CN-03, readiness acceptance and peer review remain pending | 2026-10-26 09:33:02 UTC |
+| CN-01 | Rahul (D) | in progress | Shared transport referrer-policy conflict fixed and rebuilt; both existing demo origins serve index-CjI9Z2Yg.js; next hard-refresh both tabs and retry key setup/send/reload | Firefox156 actual shared-transport probe reproduced null-Origin403 and verified fixed exact-Origin200 plus origin-only Referer; web381/3skip, lint/types/build, boundaries0 and diff check pass | Rahul reported403 again; correction performed, human chat retest pending | task/cn-01-conversations; sessionFetch.ts and transport tests; same running local session on5273/5274, no browser/server data reset | Actual browser/IndexedDB exchange remains unverified; real-session integration, phone keyboard, retention, CN-02/CN-03, readiness acceptance and peer review remain pending | 2026-10-26 09:45:53 UTC |
 | CN-02 | D; A/B interface review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | Isolated development: PRE-00, then DL-00 and a reviewed contract/stub. Later real gates: CN-CORE, ID-READY, and LI-CORE for listing-origin behavior; SE-02 plus CN-01's real request path for request-response inbox integration. | — |
 | CN-03 | A; D producer review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | CN-CORE, ID-READY | — |
 | INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
@@ -160,6 +160,40 @@ fail-closed guard response; loosening it would weaken the local write boundary.
 Next action is to open the exact `127.0.0.1` URL directly in a normal top-level
 browser tab, not an embedded/sandboxed preview, then retry key registration.
 No code was changed for this report; browser encryption checks remain pending.
+
+### CN-01 — Confirmed and corrected browser referrer-policy conflict — 2026-10-26 09:45:53 UTC
+
+The preceding embedded/opaque-document diagnosis was incorrect: the shared
+client's `mode: same-origin` inherits the app's `no-referrer` document policy,
+which makes the browser serialize Origin as null on writes under the Fetch
+Standard. This happens in a normal top-level browser too. Rahul reported the
+same403 and supplied a public key-registration request; no supplied key bytes
+or payload were copied into source or logs.
+
+`apps/web/src/shared/http/sessionFetch.ts` now fixes `referrerPolicy: origin`
+after caller options for both token preflight and API calls. This preserves
+same-origin mode, fresh CSRF, exact-Origin server guards and redirect rejection,
+while sending only the origin as Referer, without callback path/query/fragment.
+`apps/web/tests/session-fetch.test.ts` checks the override for reads and all four
+write methods, including a caller-provided conflicting no-referrer policy.
+The shared transport decision and frontend writer record explain the correction;
+Aditya retains transport ownership and affected-owner review remains pending.
+
+An isolated headless Firefox156 profile against a temporary loopback server
+executed the actual transpiled shared transport: baseline inherited no-referrer
+PUT returned403 with Origin:null, while the corrected call returned200 with the
+exact Origin and valid CSRF/marker. The captured Referer was only the origin;
+synthetic login callback path, query and fragment were absent. Probe script and
+profile remained outside the repo; the profile/server were removed after use.
+This is real browser HTTP-header evidence, not two-user SDK/history acceptance.
+
+`npm run check` passed web381/3skip, lint, app/test TypeScript and production
+build; boundaries0 and `git diff --check` passed. Both live fixture origins
+were confirmed to serve index-CjI9Z2Yg.js. The existing fixture process/database
+and user browser storage were not restarted or cleared. Human must hard-refresh
+both tabs and retry registration/exchange. No shared database/cloud/push/merge
+action occurred; CN-CORE and the remaining actual chat/integration gates stay
+pending.
 
 ## CN-01 — Isolated real-encryption browser checkpoint preparation — 2026-10-26 07:51:35 UTC
 
