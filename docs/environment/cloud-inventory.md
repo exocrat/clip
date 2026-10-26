@@ -2,6 +2,24 @@
 
 Non-secret status record. Update only from approved plans and verified outputs. Never record credentials, tokens, or secret values here. This is an observed snapshot, not an authorization to use existing resources or create/change/delete cloud infrastructure.
 
+## Verified cleanup snapshot — 2026-10-26 18:09:02 UTC
+
+Approved read-only checks confirm original RDS **stopped**, deletion protection on;
+shared ECS/API/ASG0/empty. Demo EIP65.0.49.162 is not allocated to this account;
+demo SG/target group absent, exact terminated-instance IDs return no retained
+records and proxy task revision3is inactive. ACM issued/unused. Identity parameter
+metadata remains version1; no values decrypted and no SQL/start/stop performed.
+
+Aditya reports the released-IP apex A deleted at18:20:44UTC and explicitly
+requests no further propagation check. This human report supersedes the action
+item below; retain the ACM validation CNAME. No new DNS query was performed.
+The service mismatch observed in this snapshot was resolved by the approved
+refresh-only apply at18:29:50UTC: state serial18now records revision2, matching live
+revision2/desired-running-pending0. Original RDS stopped and ASG0reverified; no
+infrastructure action. [Reconciliation result](../evaluation/identity/id-01-step-12/ecs-state-reconciliation-result-20261026T182852Z.json).
+[Safe snapshot](../evaluation/identity/id-01-step-12/cleanup-verification-20261026T180723Z.json).
+Older unconfirmed-stop statements below are superseded by this snapshot only.
+
 ## Latest recorded demo cleanup handoff — 2026-10-26
 
 This is a repository-evidence reconciliation, **not a fresh AWS inspection**.

@@ -3,7 +3,7 @@
 Owner: Aditya(A). Source branch: `task/id-01-runtime-readiness`, based on
 main `3d6c270`; last committed preparation `1bb0eb9`. This handoff consolidates
 the local retrospective and emergency hosted demo notes. **ID-READY remains
-incomplete.** Cloud facts below are recorded observations, not a new live audit.
+incomplete.** Cloud facts include the [read-only follow-up](cleanup-verification-20261026T180723Z.json) at2026-10-26 18:09:02UTC; older demo outcomes remain historical.
 
 ## Local demo outcome
 
@@ -80,9 +80,9 @@ was accepted. [Temporary proxy evidence](demo-proxy-bypass-20261026T112213Z.json
 | Temporary ingress | Target group, demo SG and cross-SG rules removed; five corresponding state entries removed. Failed NLB and unused recovery source removed. |
 | Shared ECS host | i-0543832969d007de2 terminated/root removed; ASG0/empty. |
 | Local demo DBs | Four verified disposable tmpfs PostgreSQL containers removed; no persistent volumes removed. |
-| Original RDS | Stop requested; last successful observation at13:27UTC was `stopping`, with deletion protection/data preserved. Final stopped state is **not confirmed**. |
-| Domain | User-managed A record to released65.0.49.162 still requires removal/verification; ACM validation CNAME must remain. No DNS change by this cleanup. |
-| Terraform service state | Recorded state still revision1 while live stopped service is revision2; refresh/reconciliation must be reviewed before any apply. |
+| Original RDS | Read-only follow-up at18:09UTC confirms **stopped**, private, with deletion protection enabled. No SQL/data inspection was performed. |
+| Domain | Aditya reports A removal at18:20UTC; propagation explicitly not rechecked at his direction. Earlier public answers remain historical. Preserve the correct ACM validation CNAME. |
+| Terraform service state | Approved refresh-only apply verified at18:29UTC: state serial18and live service both revision2/desired0. Existing dependency metadata recorded; no infrastructure action. |
 
 VPC/NAT/NAT EIP, RDS storage/backups/data, runtime roles/SSM URLs, ECR image,
 private image bucket, IAM/log group and ACM certificate are deliberately retained.
@@ -114,7 +114,7 @@ controlled-recipient list. The demo's removed personal recipient must not leave 
 enabled, invalid email configuration. Fresh plans must preserve retained certificate
 inputs and reconcile drift; no demo plan/checksum authorizes a future deployment.
 
-Next: verify RDS stop and DNS cleanup separately, review service-state reconciliation,
+Next: prepare a fresh full deployment plan after selecting durable HTTPS ingress,
 choose supported durable HTTPS ingress/proxy trust, then verify real runtime/
 provider/image/Search/browser behavior. Do not mark ID-READY complete from image
 publication, a certificate or synthetic tests. Peer/affected-owner review and a
@@ -137,3 +137,23 @@ security checks or tests. Logs: /tmp/clip-branch-cleanup-check-final.log and
 Cleanup is ready for human/affected-owner review, not automatic deployment or
 ID-READY acceptance. Changes remain uncommitted; no new AWS/state/DNS/SQL/secret
 operation, push or merge occurred during the audit.
+
+
+## Live cleanup verification — 2026-10-26 18:09:02 UTC
+
+After Aditya renewed the expired operator session, read-only checks confirmed the
+original RDS stopped, shared ECS/ASG0/empty, no owned EIP/demo SG/target group,
+and proxy task revision3inactive. Exact proxy/host IDs return no retained instances.
+ACM is issued/unused; fixed Identity parameter metadata remains version1. No
+credential values or SQL were read. State was pulled in memory only; no refresh.
+The two unresolved items are public apex resolution to the releasedIP and live/
+state ECS service revision mismatch. No resources or DNS changed; application
+journeys cannot be validated while stopped and require their separate approved run.
+[Sanitized evidence](cleanup-verification-20261026T180723Z.json).
+
+
+User follow-up18:20:44UTC: released-IP apex A deletion reported complete; do not
+recheck propagation at Aditya's direction. [Refresh-only state plan](ecs-state-reconciliation-review.json)
+was applied with explicit approval at18:29UTC. State/live service now both revision2,
+shared compute remains0and RDS stopped. No secrets, DNS or infrastructure action.
+[Safe apply result](ecs-state-reconciliation-result-20261026T182852Z.json).

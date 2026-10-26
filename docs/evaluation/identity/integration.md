@@ -1846,3 +1846,59 @@ variables/IAM/S3 source and removed during cleanup. Earlier preparation links no
 lead to that implementation; exact old proposal bytes remain in commit1bb0eb9.
 Historical execution/approval receipts are preserved separately from reusable
 future-run review defaults.
+
+
+## ECS service state reconciliation preparation — 2026-10-26 18:25:04 UTC
+
+Aditya reports the released-IP apex A deleted and explicitly requests no further
+propagation check; recorded as human-reported deletion, not newly verified DNS.
+He directed continuing to state reconciliation. Verified account and stopped live
+service revision2/desired-running-pending0. Prepared a saved **refresh-only** plan
+for aws_ecs_service.api[0] plus its dependency closure, using pinned1.15.9 and
+provider6.69.1/existing shared-test backend/default workspace. No state write.
+[Exact plan and scope](id-01-step-12/ecs-state-reconciliation-review.json).
+
+The local dependency graph excludes SSM-parameter and RDS resources. This matters:
+pinned provider SSM reads request decryption even during refresh; a broad refresh
+with missing write-only inputs could expose a value to state. No password values
+were read/supplied here, no fake input used, and no source/credential setting was
+weakened. Targeting is an exceptional out-of-band state recovery only; it is not
+used to hide infrastructure changes or claim global convergence.
+
+Plan exit2: **zero resource mutations**, zero output changes. State drift records
+service revision1→2 with desired0 unchanged plus already-existing tags, inline
+IAM metadata and bucket CORS/policy/lifecycle metadata in dependencies. Fifteen
+state-drift entries are not fifteen infrastructure updates. Prior serial17; task
+resource already2. Saved0600plan at
+`/tmp/clip-ecs-reconcile-c9_ual1t/ecs-service-refresh.tfplan`, SHA256
+`44693eb7f73c2138bcc48912b27448b30201bc64b56c5b4ef1aaee6be6ce293f`.
+Action/revision/hash/privacy checks pass. Operator session credentials stayed in
+memory; no raw state/plan details, recipient values or secrets were printed.
+
+Next separate approval: apply this exact refresh-only plan within15minutes,
+writing only shared state and lock metadata; verify state/live revision2 and zero
+service capacity. No app/DB restart, DNS query/change, SSM read/write, grants,
+role/image/ingress/storage change or deployment. Stop on stale plan/source/state;
+never replan/apply automatically. Future normal infrastructure work still requires
+a fresh full plan. Code unchanged; JSON/link/diff checks appropriate here.
+
+References: [HashiCorp refresh-only mode](https://developer.hashicorp.com/terraform/cli/commands/plan#planning-modes),
+[pinned SSM provider read implementation](https://github.com/hashicorp/terraform-provider-aws/blob/v6.69.1/internal/service/ssm/parameter.go#L270-L337).
+
+
+## ECS state reconciliation applied — 2026-10-26 18:29:50 UTC
+
+Aditya explicitly approved saved refresh-only plan44693eb7. Rechecked full plan/
+source/provider-lock hashes, account, prior serial17 and live stopped service2;
+applied only that saved plan, no automatic replan/retry. [Safe result](id-01-step-12/ecs-state-reconciliation-result-20261026T182852Z.json).
+State serial17→18, service record now revision2/desired0 and matches live desired/
+running/pending0. Existing dependency metadata was recorded; no AWS configuration
+mutation. Verified original RDS stopped and ASG0/empty. No application start,
+secret decryption, SQL, provider send or DNS query/change. Operator credentials
+used in memory only; raw state/plan/logs remain private outside Git.
+
+This resolves the recorded service-state drift only, not global source/live
+convergence or ID-READY. A future deployment requires a fresh full normal plan,
+valid controlled provider inputs, durable HTTPS/proxy design and real application
+acceptance. Aditya's DNS deletion remains human-reported, propagation intentionally
+not checked. Evidence/docs updates uncommitted; JSON/link/whitespace checks pass.

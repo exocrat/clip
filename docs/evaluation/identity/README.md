@@ -26,9 +26,12 @@ criteria and action approvals still come from their canonical sources.
 - AMD64 build switch, scoped runtime IAM and private S3 configuration are useful
   retained work. ECS runtime is opt-in with a private controlled-recipient input;
   no personal recipient or default auth bypass is retained.
-- [Demo outcome/cleanup](id-01-step-12/demo-postmortem-20261026.md) records removed
-  temporary ingress and incomplete final RDS-stop/DNS/state-reconciliation checks.
-  These are recorded observations; no new cloud verification is implied.
+- [Read-only cleanup verification](id-01-step-12/cleanup-verification-20261026T180723Z.json)
+  at18:09UTC confirms RDS stopped, compute0and temporary ingress absent. Aditya
+  later reports apex A removal; propagation is deliberately not rechecked.
+  [Refresh-only service reconciliation](id-01-step-12/ecs-state-reconciliation-result-20261026T182852Z.json)
+  is applied/verified: state serial18and live service both revision2, capacity0.
+  No infrastructure changes or restarts were performed.
 - ID-READY is **not accepted**. Durable HTTPS/proxy/runtime/provider checks and
   actual image/Search/browser integration remain; Hybrid needs its separate
   privileges/model/pipeline setup. Full Step14 stays outside this milestone.

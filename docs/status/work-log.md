@@ -47,7 +47,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PD-19 | Integration owner (current branch) | done | Steps 1–9 and combined foundation handoff complete | Steps 1–9 performed | User confirms all work before PRE-00 is complete | PR #8 merged at `2cd83e7` from head `18c966e` against base `68d9da9`; [Foundation quality gates passed](https://github.com/exocrat/clip/actions/runs/39323851584) for that exact head/base; `make test` (395 Python, 63 data, 16 web), Black, contract freshness and 10 `make check` gates passed; [handoff](foundation-handoff.md) | No open PD-19 work per user confirmation. Linux AMD64/macOS results remain user-confirmed without raw outputs. PR #8 has no submitted GitHub review; independent-review completion is user-confirmed, with no separate review artifact linked. Refresh cloud snapshot before any operation. | 2026-10-19 21:09:05 UTC |
 | PRE-00 | Integration owner | done | Foundation gate audit accepted; DL-00 is unblocked | performed | verified/accepted by user | Reviewed handoff PR #8 merged to `main` at `2cd83e7`; hosted Foundation quality gates passed for head `18c966e` against base `68d9da9` (run `39323851584`); clean-checkout evidence at `0747be6`; see [PD-19 handoff](foundation-handoff.md) | None. PR #8 has no GitHub review event; independent-review completion remains user-reported without a separate artifact. | 2026-10-19 21:20:55 UTC |
 | DL-00 | Shared-core/contract coordinator; all domains review | done | Steps 1–13 and task-wide audit complete; accepted and merged | Steps 1–13 performed; accepted by user | User confirmed full acceptance and merge on 2026-10-22 05:30:49 UTC | PR #9 merged to `main` at `f5576ef`; current `main` is `44cd8ff`; Step 13 check evidence is recorded below and was not rerun for this update | None for DL-00; cleanup implementation remains separately gated; real providers/integrations and crypto/worker implementation remain downstream | 2026-10-22 05:30:49 UTC |
-| ID-01 | A | in progress | Branch cleanup complete locally: obsolete plans/duplicate note removed; safe reusable review/runtime defaults; ready for human review | All11local gates passed:1830Python/24skip,94data,289web/3skip,Black261,DB lifecycle/Gitleaks; TF4roots; offline audit12tests/consistent true,ready_for_live false | Aditya verified branch cleanup and explicitly authorized this local commit; deployment/peer/merge gates remain | Branch `task/id-01-runtime-readiness`, HEAD `1bb0eb9`; origin/main `3d6c270`, 0behind/2ahead; [consolidated handoff](../evaluation/identity/id-01-step-12/demo-postmortem-20261026.md) | No ID-READY acceptance: RDS final-stop/DNS cleanup/service-state reconciliation and real runtime/provider/image/Search/browser checks remain; new peer/CI/merge gates | 2026-10-26 17:56:50 UTC |
+| ID-01 | A | in progress | Approved refresh-only reconciliation verified; state/live service2/capacity0; RDS stopped; deployment planning next | Saved-plan/source/account/serial checks; state17→18, desired-running-pending0, RDS stopped/ASG0; no secret/SQL/DNS/resource action | Aditya verified reconciliation via explicit commit instruction; new Firefox sign-in report to investigate separately | `246a7df`; [reconciliation result](../evaluation/identity/id-01-step-12/ecs-state-reconciliation-result-20261026T182852Z.json) | Fresh full deployment plan, durable HTTPS/runtime/provider/image/Search acceptance; new peer/CI/merge gates; ID-READY incomplete | 2026-10-26 18:33:38 UTC |
 | LI-01 | B | in progress | Finish the remaining Step 7 browser states and current-head Step 11 checks/reviews; prepare a progress PR without claiming LI-CORE. Steps 12–13 remain integration-gated. | Steps 1–6 and 8–10 implemented and locally checked; Step 7 partial (create/detail/edit/My Listings/gallery). | Suraj verified the multi-image edit/gallery checkpoint, seller-only selected-buyer visibility, and Step 10. No LI-01 phone-device result is claimed. | domain/listings at 6ffbe0b; focused Listings suite: 61 passed, one database-only test skipped outside the wrapper; disposable PostgreSQL workflow passed; current worktree `make check` passed 2026-10-23 (573 Python, 63 data, 42 web tests; remaining contract, type, boundary, database, safety, formatting, lint, and build checks passed). | LI-CORE not accepted. Remaining Step 7 states; Step 11 query-plan, current aggregate, and affected-owner review; native schema check; five pre-existing backend boundary findings; real Identity, Conversations, storage, and Search integration; Steps 12–13. | 2026-10-23 10:38:31 UTC |
 | LI-02 | B | in progress | Step 12 demo is tested and stopped; record final evidence, then begin intake of the Search owner's PR under the review workflow. | Steps 1–11 and 1.5 verified; Step 12 ran on ECS and was tested on desktop/mobile. Read-only app checks found the synthetic listing and its S3 image; teardown is complete. | User approved and applied teardown plan `3703bb7b23405a5a23a1ac6c39fa8870e682dddf3a1a8272183f4642f8f0db81` (0 add, 1 change to LI-02 bucket CORS, 20 LI-02 deletes). Post-stop inventory confirms disposable RDS/ALB/service/host/root volume/run S3 objects/URL parameter/log streams absent; shared RDS is stopped, shared ECS cluster remains, LI-02 ASG desired 0/no instances. Two run ECR images are retained (105,624,604 bytes total) per user direction. | `task/li-02-isolated-runtime` at `f0bf6c6`; earlier 11 focused tests, Black, Python compilation, Terraform fmt/validate, CLI help and diff checks. Start plans: infrastructure `a2b8cbeaa6cc4fc2d13ff8c8696cfa133d8134280de89f719e0d6f2b91668f55`; app start `b6a3fbd4812c965a5830780f337997d13b4b362c7eb1a73f2b3e70f5946b5bd4`. Stop-path corrections are currently uncommitted in `scripts/li02-demo`, `infra/terraform/domains/listings/test/database_tasks.tf`, both LI-02 operator guides, and this work log. `git diff --check` passed; no tests rerun. Existing untracked `data/runs/` and `database/migrations.zip` remain untouched. | Compute/ingress/disposable-database charges from the demo have ended. Retained run images add about 101 MiB of ECR storage; Step 4 bucket/IAM/log group and shared VPC/NAT/ECS/RDS remain. No manual RDS snapshot remains. | 2026-10-25 09:29:55 UTC |
 | SE-01 | Mohit (C); peer Suraj (B), Identity review | in progress | Local create-to-Keyword-and-Hybrid flow and browser walkthrough verified; formal acceptance remains pending | Test-only browser demo binds the same fixed synthetic Identity for writes/browse and can opt into the real helper, worker, pipeline bootstrap and Hybrid reader; automatic new-listing vector generation was observed | Suraj verified the local command/API/proxy flow and subsequent browser walkthrough | Search PR #11 worktree `task/search-evidence-reduction` at `864e53b`; new listing `194a32d4-64bb-491b-b4ec-68403e26f7f3` produced one title and one description vector (384 dimensions each), then matched in both modes through API and Vite proxy; session `/tmp/clip-listings-browser-v6e1f01t`; UI `http://127.0.0.1:5173/` | Formal SE-CORE/DATA-READY and final NFR/hosted-CI acceptance remain outside this merge step | 2026-10-25 14:38:24 UTC |
@@ -577,6 +577,44 @@ client navigation/state updates are suppressed. B affected review remains pendin
 Reservation released2026-10-26 05:22:07UTC after implementation and checks.
 
 ## Dated history entries
+
+### ID-01 — approved state-only reconciliation verified — 2026-10-26 18:29:50 UTC
+
+Aditya(A) approved exact refresh-only plan44693eb7. Plan/source/provider/account/
+prior serial17/live service2checked; saved apply passed, state now18with service2/
+desired0matching live desired/running/pending0. [Safe result](../evaluation/identity/id-01-step-12/ecs-state-reconciliation-result-20261026T182852Z.json).
+Original RDS stopped/ASG0empty reverified. Existing dependency metadata only; no
+resource restart/configuration, secret read, SQL/provider/DNS action. No propagation
+verification at user's direction. Updated inventory/handoff/summary; JSON/links/
+whitespace pass. No code change/full tests repeated; future full normal plan and
+real deployed acceptance remain gated. Result awaits human verification; no commit.
+
+### ID-01 — DNS human update and refresh-only state plan — 2026-10-26 18:25:04 UTC
+
+Aditya(A) reports apex A deleted and explicitly declines propagation verification;
+no further DNS lookup. Directed next item. Local graph excludes password/RDS nodes;
+prepared targeted refresh-only saved plan against exact shared-test backend, prior
+serial17. Service state1→live2 and existing dependency metadata, zero infrastructure/
+output changes; desired0 unchanged. No passwords supplied/decrypted or state write.
+[Exact checksum/scope](../evaluation/identity/id-01-step-12/ecs-state-reconciliation-review.json)
+44693eb7,0600private file. Target exception is out-of-band state recovery, not normal
+partial infrastructure apply/global drift acceptance. Updated handoff/inventory;
+JSON/links/whitespace checked. Exact state-write approval and later full deployment
+review remain pending. No cloud mutation, restart, provider send or secret read.
+
+### ID-01 — read-only cleanup verification — 2026-10-26 18:09:02 UTC
+
+Aditya(A) requested verification and renewed expired AWS login. Confirmed correct
+account, original RDS stopped/private/protected, shared ECS/API/ASG0/empty; no owned
+demo EIP/SG/target group, exact host/proxy IDs return no retained instances and
+revision3inactive. ACM issued/unused; Identity reference metadata v1only. State
+pull in memory shows serial17service revision1 versus live stopped revision2;
+task-definition state already2. Public Google/Cloudflare A still65.0.49.162,
+released from this account; validation CNAME correct. [Evidence](../evaluation/identity/id-01-step-12/cleanup-verification-20261026T180723Z.json).
+Updated handoff/inventory/summary. No secret decryption, SQL/start/stop, DNS/state
+refresh/write/deploy/send. Offline review consistent, ready_for_live=false. JSON/
+links/whitespace checked; no code change/full test rerun needed. DNS cleanup and
+reviewed state reconciliation remain; real hosted flows unverified while stopped.
 
 ### ID-01 — branch audit and demo cleanup reconciliation — 2026-10-26 13:51:41 UTC
 
