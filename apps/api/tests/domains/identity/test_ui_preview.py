@@ -80,7 +80,7 @@ def test_preview_uses_real_registration_and_refuses_non_loopback(disposable_data
             json={
                 "challenge_id": requested.json()["challenge_id"],
                 "code": code,
-                "password": "synthetic preview passphrase",
+                "password": "synthetic-preview-passphrase",
             },
         )
         assert result.status_code == 201

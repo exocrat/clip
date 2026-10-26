@@ -116,8 +116,13 @@ export function SignIn() {
         return;
       }
       if (creatingPassword) {
-        if (Array.from(password).length < 8 || Array.from(password).length > 128) {
-          setError('Use 8–128 characters for your password.');
+        // Include Unicode whitespace and the legacy C0 separators recognized by
+        // Python's server-side policy. Never trim or rewrite the chosen password.
+        const hasWhitespace = Array.from(password).some((character) =>
+          /\s/u.test(character) || [0x85, 0x1c, 0x1d, 0x1e, 0x1f].includes(character.codePointAt(0) ?? 0),
+        );
+        if (Array.from(password).length < 8 || Array.from(password).length > 128 || hasWhitespace) {
+          setError('Use 8–128 characters with no spaces or other whitespace.');
           return;
         }
         if (!challenge || Date.parse(challenge.expires_at) <= Date.now()) {
@@ -296,7 +301,7 @@ export function SignIn() {
               </label>
               {creatingPassword && (
                 <p id="password-help" className="identity-muted">
-                  Use 8–128 characters. Spaces are allowed.
+                  Use 8–128 characters. Spaces and other whitespace are not allowed.
                 </p>
               )}
             </>

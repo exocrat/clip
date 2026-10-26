@@ -16,7 +16,7 @@ from app.domains.identity.sessions import IdentitySessions
 from app.domains.identity.temporary_crypto import TemporaryKeys
 
 EMAIL = "session-fixture@example.invalid"
-PASSWORD = SecretStr("synthetic session passphrase")
+PASSWORD = SecretStr("synthetic-session-passphrase")
 SOURCE = ip_address("192.0.2.27")
 ORIGIN = "https://clip-iisc.site"
 HEADERS = {"Origin": ORIGIN, "X-CLIP-Request": "1"}

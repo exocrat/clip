@@ -74,6 +74,9 @@ export function MicrosoftCallback() {
   }
   return (
     <section className="identity-card" aria-label="Microsoft sign-in result">
+      {import.meta.env.DEV && (
+        <p className="identity-muted">Local callback diagnostics v3</p>
+      )}
       {phase === 'pending' ? (
         <>
           <h2>Completing sign-in</h2>

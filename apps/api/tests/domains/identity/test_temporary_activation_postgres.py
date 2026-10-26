@@ -23,7 +23,7 @@ from app.domains.identity.temporary_crypto import TemporaryKeys
 
 NOW = datetime(2030, 1, 1, tzinfo=UTC)
 EMAIL = "synthetic@example.invalid"
-PASSWORD = SecretStr("  synthetic passphrase  ")
+PASSWORD = SecretStr("synthetic-passphrase")
 SOURCE = ip_address("192.0.2.25")
 
 

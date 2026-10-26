@@ -164,6 +164,33 @@ export function beginMicrosoft(): Promise<void> {
   return starting;
 }
 
+/** Extract only a bounded numeric Microsoft error identifier, never its text. */
+function callbackServerCode(error: unknown): string {
+  if (!error || typeof error !== 'object') return '';
+  if ('errorNo' in error && (typeof error.errorNo === 'string' || typeof error.errorNo === 'number')) {
+    const number = String(error.errorNo);
+    if (/^[0-9]{4,9}$/.test(number)) return `/AADSTS${number}`;
+  }
+  if (error instanceof Error) {
+    const match = error.message.match(/\bAADSTS([0-9]{4,9})\b/);
+    if (match) return `/AADSTS${match[1]}`;
+  }
+  return '';
+}
+
+// Development diagnostics expose only fixed stages and known SDK codes. Never
+// include provider messages, assertions, claims, state, nonce or callback URLs.
+const callbackCodes = new Set([
+  'hash_empty_error', 'no_state_in_hash', 'unable_to_parse_state',
+  'state_interaction_type_mismatch', 'no_token_request_cache_error',
+  'unable_to_parse_token_request_cache_error', 'interaction_in_progress',
+  'nonce_mismatch', 'state_mismatch', 'invalid_state', 'invalid_grant',
+  'invalid_request', 'invalid_client', 'post_request_failed', 'get_request_failed',
+  'no_network_connectivity', 'crypto_key_not_found', 'crypto_nonexistent',
+  'failed_to_decrypt_ear_response', 'redirect_bridge_empty_response',
+  'uninitialized_public_client_application', 'timed_out',
+]);
+
 /** Deduplicate in-flight StrictMode calls and consume each attempt once: SDK validation,
  * matching own state/nonce, then one server assertion exchange. Backend signature,
  * issuer/audience/domain/nonce/cookie/account checks grant the actual CLIP session.
@@ -176,29 +203,42 @@ export function completeMicrosoft(): Promise<SessionView> {
     let app: PublicClientApplication | null = null;
     let outcome: SessionView | undefined;
     let problem: MicrosoftSignInError | undefined;
+    let stage = 'activation';
+    let diagnostic: string | undefined;
     try {
       if (!microsoftEnabled()) throw new MicrosoftSignInError('unavailable');
       if (window.location.pathname !== '/auth/callback') throw new MicrosoftSignInError('failed');
+      stage = 'sdk_initialization';
       app = await client();
+      stage = 'local_marker';
       const marker = takeMarker();
+      stage = 'sdk_return';
       const result = await app.handleRedirectPromise({ navigateToLoginRequestUrl: false });
-      const claims = result?.idTokenClaims as Record<string, unknown> | undefined;
-      if (
-        !result ||
-        result.state !== marker.state ||
-        claims?.nonce !== marker.nonce ||
-        typeof result.idToken !== 'string' ||
-        !result.idToken ||
-        result.idToken.length > 16384
-      )
+      stage = 'response_empty';
+      if (!result) throw new MicrosoftSignInError('failed');
+      stage = 'response_state';
+      if (result.state !== marker.state) throw new MicrosoftSignInError('failed');
+      stage = 'response_nonce';
+      const claims = result.idTokenClaims as Record<string, unknown> | undefined;
+      if (claims?.nonce !== marker.nonce) throw new MicrosoftSignInError('failed');
+      stage = 'response_assertion';
+      if (typeof result.idToken !== 'string' || !result.idToken || result.idToken.length > 16384)
         throw new MicrosoftSignInError('failed');
       if (Date.parse(marker.expiresAt) <= Date.now()) throw new MicrosoftSignInError('expired');
       // Discard SDK artifacts before the CLIP exchange; only this local variable
       // carries the assertion to the canonical request. No application token cache.
+      stage = 'sdk_cleanup';
       await app.clearCache();
+      stage = 'server_exchange';
       outcome = await identityApi.microsoftSession({ id_token: result.idToken });
     } catch (error) {
       problem = failure(error);
+      if (import.meta.env.DEV) {
+        const code = error && typeof error === 'object' && 'errorCode' in error
+          && typeof error.errorCode === 'string' && callbackCodes.has(error.errorCode)
+          ? `/${error.errorCode}` : '';
+        diagnostic = `${stage}${code}${callbackServerCode(error)}`;
+      }
     } finally {
       try {
         window.sessionStorage.removeItem(MICROSOFT_ATTEMPT_KEY);
@@ -212,7 +252,11 @@ export function completeMicrosoft(): Promise<SessionView> {
         problem = new MicrosoftSignInError('unavailable');
       }
     }
-    if (problem) throw problem;
+    if (problem) {
+      if (import.meta.env.DEV)
+        problem.message += ` Development diagnostic: ${diagnostic ?? 'callback_cleanup'}.`;
+      throw problem;
+    }
     if (!outcome) throw new MicrosoftSignInError('failed');
     return outcome;
   })();

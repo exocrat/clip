@@ -10,8 +10,8 @@ This guide contains current setup facts and pending actions, not new approval.
 
 | Provider/path | Verified | Still pending |
 | --- | --- | --- |
-| Microsoft | Registration/callbacks human-confirmed; real validator/SQL and controlled browser tests passed. | Actual IISc sign-in, consent/cache/PKCE and real runtime/browser acceptance. Button remains disabled. |
-| Resend | Domain human-reported verified; operator SecureString create/read passed; corrected local adapter reached Gmail and IISc from verify@, human-confirmed. | Normal API/ECS wiring, task-role secret access, real OTP/browser flows, key rotation and general configuration acceptance. |
+| Microsoft | Real local IISc sign-in and non-IISc denial human-verified2026-10-26 04:48:20UTC after SPA correction guidance; validator/SQL and controlled browser tests passed. | Cloud/domain deployment, phone and remaining session/cache/browser acceptance; default build flag remains disabled. |
+| Resend | Domain human-reported verified; corrected adapter delivered from verify@; real local Gmail temporary registration/login/forgot-password human-verified. | ECS wiring, task-role secret access, cloud/browser/device checks, key rotation and general configuration acceptance. |
 | SES | Recorded domain/DKIM verification, real sandbox application-role delivery/inbox and owned cleanup passed2026-10-23. | Production access/configuration, current provider-state refresh and exact live verify-sender IAM update. |
 
 No new resource-state inspection was performed for this documentation cleanup.
@@ -24,8 +24,16 @@ together in a comparison, so the precise IISc filtering cause is not established
 - Public client: `ab3a63e3-d4db-4c3c-b4bf-ac5f7573ffbb`.
 - Registration tenant: `19d07278-f040-4722-8202-b1174cf3a4d3`; metadata only,
   not an IISc tenant allowlist.
-- SPA callbacks: `http://localhost:5173/auth/callback` and
+- Intended SPA callbacks: `http://localhost:5173/auth/callback` and
   `https://clip-iisc.site/auth/callback`. The127.0.0.1 origin is not registered.
+  Earlier portal setup was human-reported, not independently inspected. Real
+  local callback on2026-10-26 returned `AADSTS9002326`, showing the URI used for
+  browser redemption is not marked SPA. In Entra App registrations, select client
+  `ab3a63e3-d4db-4c3c-b4bf-ac5f7573ffbb`, Authentication, and move these exact
+  CLIP callbacks to Single-page application (not Web). Preserve unrelated URIs;
+  no client secret/implicit-flow toggle is needed. Following this guidance,
+  Aditya verified real IISc sign-in and non-IISc denial at2026-10-26 04:48:20UTC;
+  portal contents were not independently inspected. See [Microsoft SPA configuration](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow#redirect-uris-for-single-page-apps-spas).
 - Authority/discovery: public-cloud common v2; audience is the client ID.
   Validate signed issuer/tenant/key rather than accepting literal common as issuer.
 - Selected flow: SPA code/PKCE, no browser client secret/Graph permission. Real

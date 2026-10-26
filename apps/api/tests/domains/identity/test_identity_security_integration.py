@@ -126,7 +126,7 @@ def test_http_contact_source_survives_reset_without_login_or_lifetime_change(
             "/auth/temporary/password-reset-challenges", headers=HEADERS, json=payload
         )
         assert repeated.json() == request.json() and len(state.mail.messages) == sent
-        new = "synthetic Step10 replacement passphrase"
+        new = "synthetic-Step10-replacement-passphrase"
         reset = {
             "challenge_id": request.json()["challenge_id"],
             "code": state.mail.code(),

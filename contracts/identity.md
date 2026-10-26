@@ -207,8 +207,8 @@ Actual scheduling and observed retention deadlines remain separately gated.
 
 Aditya approved an8-character minimum on2026-10-24 09:15:28 UTC (recording
 time). Activation, password reset and password verification share the same
-8–128 Unicode-character policy, including spaces, without trimming or
-normalization. The backend enforces the limit; the UI provides matching guidance.
+8–128 Unicode-character policy. New activation/reset passwords reject whitespace
+without trimming or normalization; existing passwords retain login compatibility. The backend enforces the limit; the UI provides matching guidance.
 Existing longer passwords remain valid. Hashing/session/lifetime policy is
 unchanged. See [temporary authentication](../docs/decisions/temporary-authentication-storage.md).
 

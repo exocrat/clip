@@ -1155,6 +1155,31 @@ See the image-trust checks below and integration evidence.
 Checks: `uv run --locked pytest apps/api/tests/domains/identity/test_runtime_command.py -q -W error`
 and `uv run --locked mypy --strict scripts/identity_runtime.py`.
 
+### Real-provider local demo — ID-01 Step12
+
+`uv run --locked python scripts/identity_local_demo.py --approved-live-local --recipient APPROVED_ADDRESS --seconds 10800`
+
+Requires exact human approval for live access and each controlled recipient; repeat
+`--recipient` for up to five. Uses profile `adityalaxmi1` to capture short-lived
+credentials privately, reads only `/clip/test/identity/authentication-keys` and
+`/clip/test/identity/email-delivery`, and uses a generated local Identity URL.
+No shared DB URL/master secret, AWS mutation or automatic send. Creates a fresh
+network-isolated PostgreSQL18.6 container through the existing disposable helper,
+applies the current migrations, and creates separate Identity and marketplace
+logins. The latter has local Listings/Search table grants only. Real Microsoft
+validation, email routing, sessions and HTTP handlers are unchanged; no fixture
+signer, mailbox route or auth bypass is installed. API binds127.0.0.1:8000 with
+raw access logs/proxy trust disabled. Ctrl+C or the60–14400second cap removes
+only this run's container/data; local accounts are disposable. Credentials remain
+in process memory; never print provider/DB configuration. Script/tests are outside
+the image's copied application source.
+
+Start the frontend with `VITE_MICROSOFT_SIGN_IN_ENABLED=true npm run dev`; browse
+`http://localhost:5173/sign-in`, not127.0.0.1. Both ports must be available. Real
+registration/reset requests send to approved recipients; startup does not send.
+No image uploads/Hybrid/cloud/ID-READY acceptance is implied. Offline checks:
+`uv run --locked pytest apps/api/tests/domains/identity/test_local_demo.py -q -W error`.
+
 ### Hosted test-mode Identity startup — ID-01 Step12 preparation
 
 The default `app.main:app` stays Identity-unbound. The explicit ASGI opt-in is

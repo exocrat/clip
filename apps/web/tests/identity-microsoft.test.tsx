@@ -457,3 +457,78 @@ describe('Microsoft session deadline', () => {
     expect(sessionStorage.length).toBe(0);
   });
 });
+
+describe('Development callback diagnostics', () => {
+  it('shows only a fixed stage and an allowlisted SDK code', async () => {
+    vi.stubEnv('DEV', true);
+    marker();
+    mocks.handle.mockRejectedValue(Object.assign(new Error('PRIVATE_PROVIDER_DETAIL'), {
+      errorCode: 'post_request_failed',
+    }));
+    const controller = await flow();
+    await expect(controller.completeMicrosoft()).rejects.toMatchObject({
+      message: expect.stringContaining('Development diagnostic: sdk_return/post_request_failed.'),
+    });
+    await expect(controller.completeMicrosoft()).rejects.not.toHaveProperty('message', expect.stringContaining('PRIVATE_PROVIDER_DETAIL'));
+  });
+
+  it('does not expose unknown error codes or provider text', async () => {
+    vi.stubEnv('DEV', true);
+    marker();
+    mocks.handle.mockRejectedValue(Object.assign(new Error('PRIVATE_PROVIDER_DETAIL'), {
+      errorCode: 'PRIVATE_CODE_OR_TOKEN',
+    }));
+    const controller = await flow();
+    try {
+      await controller.completeMicrosoft();
+      throw new Error('Expected callback failure');
+    } catch (error) {
+      expect((error as Error).message).toContain('Development diagnostic: sdk_return.');
+      expect((error as Error).message).not.toContain('PRIVATE');
+    }
+  });
+
+  it('keeps development stages out of production errors', async () => {
+    vi.stubEnv('DEV', false);
+    marker();
+    mocks.handle.mockRejectedValue(Object.assign(new Error('PRIVATE_PROVIDER_DETAIL'), {
+      errorCode: 'post_request_failed',
+    }));
+    const controller = await flow();
+    await expect(controller.completeMicrosoft()).rejects.toMatchObject({
+      message: 'We could not complete Microsoft sign-in. Try again with an eligible IISc account.',
+    });
+  });
+});
+
+
+it('preserves the callback diagnostic if later cache cleanup also fails', async () => {
+  vi.stubEnv('DEV', true);
+  marker();
+  mocks.handle.mockRejectedValue(Object.assign(new Error('PRIVATE_PROVIDER_DETAIL'), {
+    errorCode: 'post_request_failed',
+  }));
+  mocks.clear.mockRejectedValue(new Error('PRIVATE_CLEANUP_DETAIL'));
+  const controller = await flow();
+  await expect(controller.completeMicrosoft()).rejects.toMatchObject({
+    message: expect.stringContaining('Development diagnostic: sdk_return/post_request_failed.'),
+  });
+});
+
+
+it.each([
+  Object.assign(new Error('PRIVATE_PROVIDER_DETAIL'), { errorCode: 'invalid_request', errorNo: '9002326' }),
+  Object.assign(new Error('AADSTS9002326: PRIVATE_PROVIDER_DETAIL'), { errorCode: 'invalid_request' }),
+])('shows only the numeric Microsoft error identifier in development', async (error) => {
+  vi.stubEnv('DEV', true);
+  marker();
+  mocks.handle.mockRejectedValue(error);
+  const controller = await flow();
+  try {
+    await controller.completeMicrosoft();
+    throw new Error('Expected callback failure');
+  } catch (failure) {
+    expect((failure as Error).message).toContain('sdk_return/invalid_request/AADSTS9002326');
+    expect((failure as Error).message).not.toContain('PRIVATE_PROVIDER_DETAIL');
+  }
+});

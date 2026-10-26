@@ -150,7 +150,7 @@ def test_reset_changes_hash_consumes_and_revokes_without_renewal(identity_runtim
     second = state.service.password_login(EMAIL, PASSWORD, SOURCE)
     activated_at = state.clock[0]
     request, code = challenge(state, "password_reset")
-    new = SecretStr("synthetic new passphrase")
+    new = SecretStr("synthetic-new-passphrase")
     state.service.reset_password(request.challenge_id, code, new)
     for grant in (first, second):
         denied(401, lambda: state.service.authenticate(grant.token.get_secret_value()))
@@ -172,7 +172,7 @@ def test_concurrent_reset_and_old_password_login_cannot_leave_old_session(
     state = identity_runtime
     activate(state)
     request, code = challenge(state, "password_reset")
-    new = SecretStr("synthetic replacement password")
+    new = SecretStr("synthetic-replacement-password")
     barrier = Barrier(12)
 
     def call(i):
@@ -215,7 +215,7 @@ def test_reset_failure_rolls_back_hash_consume_and_session_revocation(identity_r
         denied(
             503,
             lambda: state.service.reset_password(
-                request.challenge_id, code, SecretStr("synthetic replacement password")
+                request.challenge_id, code, SecretStr("synthetic-replacement-password")
             ),
         )
     finally:

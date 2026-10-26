@@ -354,6 +354,22 @@ describe('Temporary password recovery', () => {
     expect(fetcher.mock.calls.filter((row) => row[0].endsWith('/password-resets'))).toHaveLength(0);
   });
 
+  it.each([' ', '\t', '\u0085', '\u00a0'])('rejects whitespace in a new password before dispatch (%j)', async (separator) => {
+    const requests: unknown[] = [];
+    mockApi((path, init) => {
+      if (path === '/api/me') return response({}, 401);
+      if (path.endsWith('/password-reset-challenges')) return response(challenge, 202);
+      requests.push(JSON.parse(String(init.body)));
+      return response(null, 204);
+    });
+    const user = await resetForm();
+    await user.type(screen.getByLabelText('Verification code'), '654321');
+    fireEvent.change(screen.getByLabelText('New password'), { target: { value: `synthetic${separator}password` } });
+    fireEvent.submit(screen.getByRole('form', { name: 'Reset temporary password' }));
+    expect((await screen.findByRole('alert')).textContent).toMatch(/no spaces or other whitespace/);
+    expect(requests).toHaveLength(0);
+  });
+
   it('counts Unicode password code points without truncating astral characters', async () => {
     const requests: unknown[] = [];
     mockApi((path, init) => {

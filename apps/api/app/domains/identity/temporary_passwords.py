@@ -31,7 +31,7 @@ class TemporaryPasswords:
 
     @staticmethod
     def validate(password: SecretStr) -> None:
-        """Accept 8–128 Unicode characters, including spaces, without rewriting.
+        """Accept 8–128 Unicode characters without whitespace or rewriting.
 
         Bound input before UTF-8 encoding; invalid surrogate text fails safely.
         This checks policy only and neither authenticates nor stores anything.
@@ -39,7 +39,9 @@ class TemporaryPasswords:
         if not isinstance(password, SecretStr):
             raise PublicError(ERRORS[422])
         value = password.get_secret_value()
-        if not 8 <= len(value) <= 128:
+        if not 8 <= len(value) <= 128 or any(
+            c.isspace() or c == "\ufeff" for c in value
+        ):
             raise PublicError(ERRORS[422])
         try:
             value.encode("utf-8")
@@ -66,8 +68,15 @@ class TemporaryPasswords:
         No automatic rehash or password/account-state response is introduced.
         """
         try:
-            self.validate(password)
-        except PublicError:
+            # Existing whitespace-containing passwords remain usable. Only new
+            # activation/reset hashes apply the revised no-whitespace policy.
+            if not isinstance(password, SecretStr):
+                raise PublicError(ERRORS[422])
+            value = password.get_secret_value()
+            if not 8 <= len(value) <= 128:
+                raise PublicError(ERRORS[422])
+            value.encode("utf-8")
+        except PublicError, UnicodeError:
             return False
         try:
             params = extract_parameters(encoded)

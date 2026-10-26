@@ -200,7 +200,7 @@ def test_real_http_reset_revokes_all_sessions_and_requires_normal_login(
             json={"email": EMAIL, "operation_id": str(uuid4())},
         )
         assert request.status_code == 202
-        new = "synthetic new HTTP password"
+        new = "synthetic-new-HTTP-password"
         result = browser.post(
             "/auth/temporary/password-resets",
             headers=HEADERS,
@@ -435,7 +435,7 @@ def test_reset_state_race_is409_only_with_correct_proof(identity_runtime):
         payload = {
             "challenge_id": request["challenge_id"],
             "code": wrong,
-            "new_password": "synthetic reset replacement",
+            "new_password": "synthetic-reset-replacement",
         }
         assert (
             browser.post(

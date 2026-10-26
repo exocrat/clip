@@ -97,3 +97,15 @@ bound to activation, login verification and reset, retaining whitespace/Unicode
 without normalization and the existing Argon2id cost/salt parameters. The earlier
 Step6 evidence records its original15-character boundary; it is historical, not
 the current rule. API/UI/boundary/integration tests must agree with the new rule.
+
+
+## New-password whitespace revision — 2026-10-26
+
+Aditya requested that passwords disallow spaces after the real local temporary
+registration/login/reset walkthrough. New activation and reset passwords reject
+all whitespace, including Unicode whitespace, without trimming or rewriting.
+The8–128code-point bounds and Argon2id parameters remain unchanged. Existing
+password hashes can still be verified with their exact original passwords, so
+this rule does not lock existing accounts out; reset selects a compliant password.
+UI guidance and server enforcement agree. This supersedes the earlier allowance
+of spaces for newly chosen passwords, not the historical test evidence.

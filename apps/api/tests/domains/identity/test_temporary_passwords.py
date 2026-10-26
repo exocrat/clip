@@ -10,9 +10,7 @@ from app.core.errors import PublicError
 from app.domains.identity.temporary_passwords import TemporaryPasswords
 
 
-@pytest.mark.parametrize(
-    "value", ["x" * 8, "x" * 128, "  synthetic passphrase  ", "é" * 8, " " * 8]
-)
+@pytest.mark.parametrize("value", ["x" * 8, "x" * 128, "synthetic-passphrase", "é" * 8])
 def test_exact_password_preserved_with_approved_parameters(value):
     encoded = TemporaryPasswords().hash(SecretStr(value))
     parameters = extract_parameters(encoded)
@@ -47,7 +45,7 @@ def test_invalid_password_is_rejected_without_private_error(value):
 
 def test_repeated_hashes_get_independent_random_salts():
     passwords = TemporaryPasswords()
-    value = SecretStr("synthetic passphrase")
+    value = SecretStr("synthetic-passphrase")
     first, second = passwords.hash(value), passwords.hash(value)
     assert first != second
     assert PasswordHasher().verify(first, value.get_secret_value())
@@ -60,6 +58,28 @@ def test_hash_failure_is_safe(monkeypatch):
 
     monkeypatch.setattr(PasswordHasher, "hash", failed)
     with pytest.raises(PublicError) as error:
-        TemporaryPasswords().hash(SecretStr("synthetic passphrase"))
+        TemporaryPasswords().hash(SecretStr("synthetic-passphrase"))
     assert error.value.spec.status == 503
     assert str(error.value) == "dependency_unavailable"
+
+
+@pytest.mark.parametrize("separator", [" ", "\t", "\n", "\u00a0", "\u0085", "\ufeff"])
+def test_new_password_rejects_whitespace_without_trimming(separator):
+    with pytest.raises(PublicError) as error:
+        TemporaryPasswords().hash(SecretStr("synthetic" + separator + "password"))
+    assert error.value.spec.status == 422
+
+
+def test_existing_password_with_spaces_can_still_sign_in():
+    value = "synthetic legacy passphrase"
+    hasher = PasswordHasher(
+        time_cost=2,
+        memory_cost=19456,
+        parallelism=1,
+        hash_len=32,
+        salt_len=16,
+        type=Type.ID,
+    )
+    encoded = hasher.hash(value)
+    assert TemporaryPasswords().verify(encoded, SecretStr(value))
+    assert not TemporaryPasswords().verify(encoded, SecretStr(value.replace(" ", "")))

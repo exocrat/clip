@@ -47,7 +47,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PD-19 | Integration owner (current branch) | done | Steps 1–9 and combined foundation handoff complete | Steps 1–9 performed | User confirms all work before PRE-00 is complete | PR #8 merged at `2cd83e7` from head `18c966e` against base `68d9da9`; [Foundation quality gates passed](https://github.com/exocrat/clip/actions/runs/39323851584) for that exact head/base; `make test` (395 Python, 63 data, 16 web), Black, contract freshness and 10 `make check` gates passed; [handoff](foundation-handoff.md) | No open PD-19 work per user confirmation. Linux AMD64/macOS results remain user-confirmed without raw outputs. PR #8 has no submitted GitHub review; independent-review completion is user-confirmed, with no separate review artifact linked. Refresh cloud snapshot before any operation. | 2026-10-19 21:09:05 UTC |
 | PRE-00 | Integration owner | done | Foundation gate audit accepted; DL-00 is unblocked | performed | verified/accepted by user | Reviewed handoff PR #8 merged to `main` at `2cd83e7`; hosted Foundation quality gates passed for head `18c966e` against base `68d9da9` (run `39323851584`); clean-checkout evidence at `0747be6`; see [PD-19 handoff](foundation-handoff.md) | None. PR #8 has no GitHub review event; independent-review completion remains user-reported without a separate artifact. | 2026-10-19 21:20:55 UTC |
 | DL-00 | Shared-core/contract coordinator; all domains review | done | Steps 1–13 and task-wide audit complete; accepted and merged | Steps 1–13 performed; accepted by user | User confirmed full acceptance and merge on 2026-10-22 05:30:49 UTC | PR #9 merged to `main` at `f5576ef`; current `main` is `44cd8ff`; Step 13 check evidence is recorded below and was not rerun for this update | None for DL-00; cleanup implementation remains separately gated; real providers/integrations and crypto/worker implementation remain downstream | 2026-10-22 05:30:49 UTC |
-| ID-01 | A | in progress | Step12 overnight runtime addition reviewed and integrated locally; next prepare exact DB role/URL and hosted runtime plans; real-auth prerequisite remains blocked | `make check`: 1,818 Python passed/24 skipped; 94 data; 257 web passed/3 skipped; Black 259 files; boundaries/contracts/types/web build/DB safety+PostgreSQL18.6 lifecycle/Gitleaks pass. AWS caller verified as adityalaxmi1/account 335523638354/ap-south-1; parameter-name metadata shows Identity DB URL and Listings CLIP_DATABASE_URL absent. No secret values read, DB connection or sign-in evidence. | User requested local real-auth run; exact DB role/URL provisioning and runtime execution remain pending separate plan approval | `task/id-ready-local-hardening`, integrated overnight head `2a55c6bd562099ab4c94cefcf2eff99b6e4ee6f0`; implementation source `a76d3e81e1770bd01d4a7ffcddae2307b1c24872`; [hosted runtime and ingress audit](../evaluation/identity/integration.md#additional-runtime-activation-and-ingress-gate--offline-source-audit); [cross-owner handoff](../evaluation/identity/cross-owner-review.md) | Identity DB login/grants/URL; Listings URL and available DB; exact secret provisioning and RDS window; hosted ingress/IAM/image; real provider/device checks; owner review/CI; Step14 outside scope | 2026-10-26 02:49:53 UTC |
+| ID-01 | A | in progress | Step12 real local auth smoke human-verified: IISc Microsoft allowed, non-IISc denied; Gmail temporary registration/login/reset verified; next review/commit local increment then prepare exact cloud/runtime plan | All11 aggregate gates passed (Python1826/24skip,data94,web265/3skip); subsequent numeric diagnostic web check passed; source secret scan passed. Restart loaded new-password whitespace policy; health200/UI200/proxy401 | Aditya verified real IISc success/non-IISc denial at04:48:20UTC and earlier Gmail registration/login/reset; full browser/device/session/retention acceptance remains pending | `task/id-ready-local-hardening`, integrated overnight head `2a55c6bd562099ab4c94cefcf2eff99b6e4ee6f0`; implementation source `a76d3e81e1770bd01d4a7ffcddae2307b1c24872`; [hosted runtime and ingress audit](../evaluation/identity/integration.md#additional-runtime-activation-and-ingress-gate--offline-source-audit); [cross-owner handoff](../evaluation/identity/cross-owner-review.md) | Identity DB login/grants/URL; Listings URL and available DB; exact secret provisioning and RDS window; hosted ingress/IAM/image; real provider/device checks; owner review/CI; Step14 outside scope | 2026-10-26 04:48:20 UTC |
 | LI-01 | B | in progress | Finish the remaining Step 7 browser states and current-head Step 11 checks/reviews; prepare a progress PR without claiming LI-CORE. Steps 12–13 remain integration-gated. | Steps 1–6 and 8–10 implemented and locally checked; Step 7 partial (create/detail/edit/My Listings/gallery). | Suraj verified the multi-image edit/gallery checkpoint, seller-only selected-buyer visibility, and Step 10. No LI-01 phone-device result is claimed. | domain/listings at 6ffbe0b; focused Listings suite: 61 passed, one database-only test skipped outside the wrapper; disposable PostgreSQL workflow passed; current worktree `make check` passed 2026-10-23 (573 Python, 63 data, 42 web tests; remaining contract, type, boundary, database, safety, formatting, lint, and build checks passed). | LI-CORE not accepted. Remaining Step 7 states; Step 11 query-plan, current aggregate, and affected-owner review; native schema check; five pre-existing backend boundary findings; real Identity, Conversations, storage, and Search integration; Steps 12–13. | 2026-10-23 10:38:31 UTC |
 | LI-02 | B | in progress | Step 12 demo is tested and stopped; record final evidence, then begin intake of the Search owner's PR under the review workflow. | Steps 1–11 and 1.5 verified; Step 12 ran on ECS and was tested on desktop/mobile. Read-only app checks found the synthetic listing and its S3 image; teardown is complete. | User approved and applied teardown plan `3703bb7b23405a5a23a1ac6c39fa8870e682dddf3a1a8272183f4642f8f0db81` (0 add, 1 change to LI-02 bucket CORS, 20 LI-02 deletes). Post-stop inventory confirms disposable RDS/ALB/service/host/root volume/run S3 objects/URL parameter/log streams absent; shared RDS is stopped, shared ECS cluster remains, LI-02 ASG desired 0/no instances. Two run ECR images are retained (105,624,604 bytes total) per user direction. | `task/li-02-isolated-runtime` at `f0bf6c6`; earlier 11 focused tests, Black, Python compilation, Terraform fmt/validate, CLI help and diff checks. Start plans: infrastructure `a2b8cbeaa6cc4fc2d13ff8c8696cfa133d8134280de89f719e0d6f2b91668f55`; app start `b6a3fbd4812c965a5830780f337997d13b4b362c7eb1a73f2b3e70f5946b5bd4`. Stop-path corrections are currently uncommitted in `scripts/li02-demo`, `infra/terraform/domains/listings/test/database_tasks.tf`, both LI-02 operator guides, and this work log. `git diff --check` passed; no tests rerun. Existing untracked `data/runs/` and `database/migrations.zip` remain untouched. | Compute/ingress/disposable-database charges from the demo have ended. Retained run images add about 101 MiB of ECR storage; Step 4 bucket/IAM/log group and shared VPC/NAT/ECS/RDS remain. No manual RDS snapshot remains. | 2026-10-25 09:29:55 UTC |
 | SE-01 | Mohit (C); peer Suraj (B), Identity review | in progress | Local create-to-Keyword-and-Hybrid flow and browser walkthrough verified; formal acceptance remains pending | Test-only browser demo binds the same fixed synthetic Identity for writes/browse and can opt into the real helper, worker, pipeline bootstrap and Hybrid reader; automatic new-listing vector generation was observed | Suraj verified the local command/API/proxy flow and subsequent browser walkthrough | Search PR #11 worktree `task/search-evidence-reduction` at `864e53b`; new listing `194a32d4-64bb-491b-b4ec-68403e26f7f3` produced one title and one description vector (384 dimensions each), then matched in both modes through API and Vite proxy; session `/tmp/clip-listings-browser-v6e1f01t`; UI `http://127.0.0.1:5173/` | Formal SE-CORE/DATA-READY and final NFR/hosted-CI acceptance remain outside this merge step | 2026-10-25 14:38:24 UTC |
@@ -544,6 +544,94 @@ Bounded local writer scope released 2026-10-25 19:00:23 UTC after implementation
 checks. Human result and affected-owner/peer acceptance remain pending.
 
 ## Dated history entries
+
+### ID-01 — Step12 local demo restart — 2026-10-26 04:45:32 UTC
+
+Aditya requested checking and starting the servers. Both loopback8000 and5173
+were stopped. Restarted the approved real-provider local launcher with the same
+two fixed secret references, controlled Gmail/IISc recipients and10800second cap,
+and Vite with Microsoft enabled. Fresh disposable SQL was created; prior demo
+accounts are not retained. Backend now loads the new-password whitespace policy.
+API health200, frontend sign-in200 and proxied unauthenticated session401 passed.
+No automatic email send, shared/cloud change or Microsoft registration mutation.
+Logs `/tmp/clip-real-local-demo-{api,web}-restart.log`. Aditya subsequently verified at2026-10-26 04:48:20 UTC that IISc Microsoft
+sign-in succeeds and a non-IISc Microsoft account is correctly denied, following
+the SPA registration correction guidance. This completes these two local real
+provider smoke cases; portal contents were not independently inspected. Earlier
+Gmail temporary registration/login/reset remain human-verified at their recorded
+runtime. No token/claim/account details retained. Local smoke is not cloud/domain,
+phone, full session/retention or Step14 evidence. Review/commit and exact cloud
+runtime planning are next; ID-READY remains incomplete.
+
+### ID-01 — Step12 local provider walkthrough and password correction — 2026-10-26 03:17:04 UTC
+
+Aditya confirmed Gmail temporary registration, sign-in and forgot-password work
+through the approved real local runtime. Initial failures at127.0.0.1 were resolved
+by using registered localhost through the existing VS Code port forward. Microsoft
+button/redirect/account selection/consent work, but callback fails; reported network
+includes login-attempt201 and logout204, with no confirmed Microsoft sessions POST.
+Added development-only callback stage/allowlisted SDK-code diagnostics; raw provider
+text, claims, tokens and callback URLs are never shown; production stays generic.
+Await a fresh human diagnostic before selecting a fix; Microsoft acceptance pending.
+
+Aditya requested passwords disallow spaces. `temporary_passwords.py` rejects
+whitespace for new activation/reset hashes without trimming, while preserving
+exact existing-password login. `SignIn.tsx` enforces matching new-password guidance;
+synthetic activation/reset fixtures updated. Contract and temporary-auth decision
+record the revision. Identity504 tests passed/3 optional image skips; web264 passed/
+3 existing opt-in skips, lint/types/build passed; no-whitespace and legacy-hash
+compatibility plus diagnostic redaction/production exclusion covered. Initial web
+case used a newline browsers strip from password inputs; replaced with retained
+Unicode whitespace, preserving backend newline coverage. Earlier aggregate passed
+all gates except Gitleaks flagging a test's literal master-secret reference; changed
+that denied-reference test to an unrelated sentinel, then Gitleaks passed unchanged.
+Logs `/tmp/clip-identity-password-{check,web}.log`; new full aggregate pending.
+Callback diagnostic follow-up2026-10-26 03:22:14 UTC: user did not see the
+label. Verified current Vite module has DEV=true and diagnostic code; added a
+visible development-only callback v2 marker and retained the original safe stage
+through later cleanup failure without changing its unavailable classification.
+New regression verifies this combination; web265 passed/3 skipped and lint/types/
+build passed. Requested hard-refresh at sign-in and a fresh one-time attempt;
+backend/account unchanged. Aggregate Python1826 passed/24 skipped, data94 passed;
+remaining aggregate checks subsequently passed (all11 gates), including PostgreSQL
+lifecycle and Gitleaks; log `/tmp/clip-real-local-demo-final-check.log`.
+At2026-10-26 03:24:32 UTC Aditya reported `sdk_return/invalid_request`. This narrows
+the failure to SDK/provider processing before a confirmed CLIP session exchange,
+but does not establish the registration defect. Added development-only extraction
+of a bounded numeric AADSTS identifier from the SDK error; no raw message, URL,
+claims or assertion is displayed. Current callback v3 marker verified served;
+web checks passed in `/tmp/clip-identity-diagnostic-v3-web.log`. Requested one fresh
+attempt with the numeric diagnostic before changing Microsoft configuration.
+No backend restart or registration change; temporary account remains running.
+At2026-10-26 03:25:37 UTC Aditya supplied `AADSTS9002326`. Microsoft documentation
+identifies browser redemption against a callback not marked SPA. Updated provider
+setup to distinguish prior human-reported intent from this live finding; provided
+exact client/URI/platform correction for the human portal operator. No portal
+access or Azure CLI is available here; no registration change performed. Fresh
+post-correction Microsoft sign-in remains required.
+Running API predates backend policy edit; controlled restart still required and
+will discard only local demo accounts. No cloud mutation, deployment, auto email
+retry or commit. ID-READY/FR acceptance and owner review remain pending.
+
+### ID-01 — Step12 real-provider local demo startup — 2026-10-26 02:58:26 UTC
+
+Aditya selected the local demo path for a demo in two hours and explicitly approved
+fresh local PostgreSQL, reads of the existing authentication-key/email-delivery
+SecureStrings, and real verification/reset mail to his previously approved Gmail
+and IISc addresses. Added `scripts/identity_local_demo.py` and matching
+`test_local_demo.py`; command registered. Launcher reuses the owned disposable
+PostgreSQL helper/current migrations, creates separate local application logins,
+and composes unchanged real Microsoft/email/session/HTTP services. No shared RDS
+migration, database-URL publication, cloud mutation or synthetic sign-in/mailbox.
+A first test found closed connection metadata access; copied the required metadata
+before close and reran: two tests passed. Live preparation succeeded using only
+the two approved remote parameters; local API health200, UI sign-in200 and proxied
+unauthenticated session401. Frontend Microsoft flag enabled; both services running
+on fixed loopback8000/5173, demo cap10800seconds. Ctrl+C/cap removes local SQL data.
+Logs `/tmp/clip-real-local-demo-{api,web}.log`; no mail sent by startup. Human
+Microsoft/OTP/reset/inbox verification and the new full gate remain pending.
+Shared RDS independently inspected stopped and shared API desired/running/pending0;
+no start, shared migration, cloud deployment, push or commit performed.
 
 ### ID-01 — Step12 overnight review and local integration — 2026-10-26 02:49:53 UTC
 
