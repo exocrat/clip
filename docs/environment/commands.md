@@ -697,6 +697,25 @@ the evidence and task review.
 
 ## CN-01 — disposable Conversations database checks
 
+Combined runtime preparation checks (Rahul, CN-01 integration Step4):
+
+```bash
+uv run --locked pytest apps/api/tests/test_database_lifespan.py apps/api/tests/test_config.py apps/api/tests/core/test_security_boundaries.py -q -W error
+uv run --locked pytest apps/api/tests/test_conversation_identity_integration.py apps/api/tests/domains/identity/test_application_composition.py -q -W error
+```
+
+The first command controls pool I/O and checks real composition/configuration
+failure paths without live dependencies. The second requires local Unix-socket
+Docker and cached PostgreSQL18.6/dbmate2.36 images, creates/migrates only its own
+disposable databases and exercises actual signed-in owner/chat workflows. Signer,
+mail and external image metadata are controlled ports; no fixed caller establishes
+session evidence. Both commands accept no persistent database target and perform
+no AWS/secret lookup, real mail delivery or deployment. Expected result: all
+collected tests pass; not readiness, encryption or cloud-performance acceptance.
+Use the existing `npm run build` for the normal web artifact; this does not build
+or deploy a container. [Combined runtime setup](../../apps/api/README.md#combined-conversations-runtime--cn-01-integration)
+documents same-target pool configuration, schema/grant gates and liveness limits.
+
 The approved90-day cleanup command is
 `uv run --locked python scripts/conversations_cleanup.py --expected-database DATABASE --expected-host HOST --expected-port PORT`.
 It reads only `CLIP_CONVERSATIONS_DATABASE_URL`; placeholders must match the

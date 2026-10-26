@@ -1,9 +1,10 @@
-# API foundation and Listings routes
+# Combined API: Identity, Listings, Search and Conversations
 
 SE-01 Steps 3–6 add authenticated `GET /listings` collection browse/search with stable
 numbered pages over currently available records. Both eligible account classes
-are supported through a separate public Identity read adapter. Real Identity
-remains declaration-only, so default requests fail closed. Plain-text `q` uses
+are supported through a separate public Identity read adapter. Explicit Identity
+composition binds its real implementation; default startup remains unbound, so
+unauthenticated requests fail closed. Plain-text `q` uses
 the existing PostgreSQL English title/description vector and GIN index, with
 recency or price ordering. Category, condition, inclusive price and negotiability
 filters are applied before paging. Runtime validation rejects malformed/range-
@@ -24,9 +25,12 @@ for the later cleanup step. The Listings handlers are implemented in
 explicit Listings storage adapter, and (for selection and offers) the
 Conversations public-call adapter. An explicit database URL opens the
 PostgreSQL-backed Listings store at startup; without it, feature routes fail
-closed. Identity authentication and capability implementation, and
-Conversations' declaration-only calls, still fail closed until their owners
-wire them. The [shared-core boundary](app/core/README.md) and typed startup
+closed. The combined factory also mounts Search/Wanted/Saved and Conversations
+routes and binds Conversations' real thread, message, key, read-state and retirement
+operations. Real Identity authentication requires explicit trusted composition;
+selecting a provider name alone does not enable it. CN-02 offer persistence and
+contact-sharing integration, and CN-03 recipient/delivery workers, remain pending.
+The [shared-core boundary](app/core/README.md) and typed startup
 settings remain the foundation for the remaining domain tasks.
 
 From the repository root, install the locked dependencies and start the local API:
@@ -96,10 +100,8 @@ uv run --locked pytest apps/api/tests -q -W error
 
 `uv run --locked pytest` runs all currently configured test roots; PD-11 contract generation tests also require root `npm ci` and the pinned Node toolchain. The API-only command above needs no Node installation. Foundation API tests start the real ASGI app in explicit test mode using FastAPI's TestClient without an HTTP listener/provider/cloud call. ID-01 Microsoft persistence tests additionally require local Docker: they create only their own tmpfs PostgreSQL18.6 database, private Unix socket and synthetic records, then remove the container; no retained database or host port is used. The tests discard inherited `CLIP_`/`AWS_` settings for isolation and restore the developer's environment afterward. Synthetic cases cover local defaults, typed overrides, malformed/empty values, production-debug rejection, redacted errors, fresh reads and ignored dotenv/example files. Fresh credential-free subprocesses verify invalid configuration prevents the actual entry point from importing. Temporary fixture files stay under pytest's temporary directory.
 
-`uv run --locked pytest` runs all currently configured test roots; PD-11 contract generation tests also require root `npm ci` and the pinned Node toolchain. The API-only command above needs no Node installation. API tests start the real ASGI app in explicit test mode using FastAPI's TestClient; no HTTP listener, database, provider or cloud access is needed unless a test explicitly configures one. The tests discard inherited `CLIP_`/`AWS_` settings for isolation and restore the developer's environment afterward. Synthetic cases cover local defaults, typed overrides, malformed/empty values, production-debug rejection, redacted database URLs/errors, fresh reads and ignored dotenv/example files. Fresh credential-free subprocesses verify invalid configuration prevents the actual entry point from importing. Temporary fixture files stay under pytest's temporary directory.
-
-The PostgreSQL adapter test is separate because the regular API suite does not
-start a database. Run `uv run --locked python scripts/check_database.py
+The Listings store workflow also has a separate explicit runner. Run
+`uv run --locked python scripts/check_database.py
 --listings-store` to apply migrations to a fresh disposable PostgreSQL container
 and exercise listing creation, edit, selection, availability, and retry writes.
 It uses a temporary Unix socket and synthetic Identity/Conversations test
@@ -107,7 +109,7 @@ doubles, then prints a sample row selected from PostgreSQL before cleanup. Its
 image metadata is fixture data, not an S3 upload. The shared Compose database
 is not used.
 
-Exit 0 means the collected suite passed; a failure must be investigated, and exit 5 (no tests collected) is not a pass. The development-only `httpx2` pin supports the installed Starlette TestClient. No fake identity or storage implementation is used, and this suite does not prove domain integration, deployed readiness or performance.
+Exit 0 means the collected suite passed; a failure must be investigated, and exit 5 (no tests collected) is not a pass. The development-only `httpx2` pin supports the installed Starlette TestClient. Individual tests label controlled signer/mail/storage ports or caller doubles. Do not mistake these for live providers, deployed readiness or performance evidence.
 
 See the [command registry](../../docs/environment/commands.md) for effects and readiness. The [common setup guide](../../docs/environment/README.md#local-foundation-setup) documents shared Make targets. The user later confirmed the previously pending PD-13 clean-environment gates on 2026-10-19; PD-19 Step 2 reran setup on Linux ARM64.
 
@@ -268,6 +270,83 @@ without forcing regular class on every lookup. Listings' own regular-only guards
 still deny temporary sale/image creation; browsing is permitted. See the
 [handoff and checks](../../docs/evaluation/identity/integration.md#local-api-composition)
 and [registered test command](../../docs/environment/commands.md#shared-identitylistings-api-composition--id-01-step12).
+
+## Combined Conversations runtime — CN-01 integration
+
+`app.application.create_app` composes all four domains in the same ASGI app.
+Listings and Search own origin commands; they call the app-bound Conversations
+public provider rather than another domain's private store. Listing and Wanted
+start endpoints return an actual persisted thread (201 new, 200 existing).
+The public web `ConversationRuntime` consumes Identity session state and the
+shared cookie/CSRF transport; it does not authenticate a browser itself.
+
+### Configuration and lifecycle
+
+- `CLIP_DATABASE_URL` supplies the existing dictionary-row Listings/Search pool
+  (min1/max10, acquisition/startup wait5seconds). The separate Conversations
+  tuple-row pool uses `CLIP_DATABASE_DSN` when supplied, otherwise the same URL
+  (min0/max1, lazy startup). An override may use a separate authorized login but
+  must address the **same logical database**: cross-domain foreign keys and owner
+  workflows do not support independently populated databases. Settings validate
+  connection syntax, not this target identity or the login's grants.
+- Both pools belong to the ASGI lifespan and close on orderly exit or failed
+  marketplace startup. Optional Search helper/dispatcher resources retain their
+  existing lifecycle; the Conversations connection adds no worker or backfill.
+- Startup never applies migrations, creates database roles, reconciles data or
+  schedules cleanup. Provision the complete reviewed migration chain and exact
+  runtime grants through the existing [database process](../../database/README.md).
+  Do not apply only Conversations SQL to an empty target. Persistent targets
+  retain their exact-target preflight/run-plan approval requirements.
+- `/health` is process liveness only. The lazy Conversations pool does not probe
+  its schema/grants at startup. A healthy process is not an integration/readiness
+  assertion; configured database/schema/authorization failures must be checked
+  through actual permitted workflows and may return safe503 responses.
+- Default `app.main:app` mounts the routes but leaves Identity unbound. Use explicit
+  trusted `IdentityHttpDependencies` for local SQL tests, or the separately approved
+  Identity launcher. Its `--check` reads live secrets and checks Identity only;
+  it does **not** validate the marketplace/Conversations pools or schema. Do not
+  run that launcher as an offline setup check.
+
+### Local checks and build (no live providers)
+
+From the root with the pinned Python/Node24/npm11 setup:
+
+```bash
+uv run --locked pytest apps/api/tests/test_database_lifespan.py apps/api/tests/test_config.py -q -W error
+uv run --locked pytest apps/api/tests/test_conversation_identity_integration.py apps/api/tests/domains/identity/test_application_composition.py -q -W error
+npm run build
+```
+
+The second command creates/removes its own disposable PostgreSQL18.6 containers,
+applies the full migration chain and uses real sessions, owner HTTP commands and
+database side effects. Microsoft signing/discovery, OTP mail and external image
+storage are controlled test ports. Public keys/opaque envelopes in these HTTP
+tests are synthetic; actual SDK encryption/IndexedDB evidence is separate.
+For migration/message/retirement storage checks, use the registered
+`uv run --locked python scripts/check_conversations_retirement.py` disposable
+runner. It accepts no retained database target.
+
+The existing API Dockerfile already builds/copies the normal web bundle and
+Conversations application source; no extra image, service or dependency install
+is needed for chat. `CLIP_SERVE_WEB_APP=true` uses the existing `/api` same-origin
+composition. Local Vite's normal `/api` proxy rewrites to8000; `identity-preview`
+is a separate synthetic profile, not a combined-app connection. A web build does
+not validate a container image or deploy it. No image/cloud run occurred here.
+
+### Concrete remaining runtime gates
+
+Before a real environment can serve signed-in chat, its operator must validate
+the reviewed full schema, same-target domain logins/grants, Identity secret and
+provider configuration, exact browser origin/cookie/CSRF and TLS/proxy routing,
+and the built web artifact. Test-mode Identity opt-in is not production auth
+approval. Use the existing approved launcher/deployment handoff; do not add a
+fixed caller or invent a new secret path to bypass missing setup. No real grant,
+secret lookup, provider call or deployment is implied by local tests.
+
+Offer persistence, selected-contact sharing and notification recipient/delivery
+workers are not implemented by this CN-01 integration. The existing cleanup CLI
+is bounded/dry-run by default and has no automatically installed schedule. These
+are concrete follow-ons, not claims that chat cannot be reviewed/merged now.
 
 
 ## Normal API Hybrid read lifecycle (SE-01)

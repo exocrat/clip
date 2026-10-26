@@ -377,6 +377,8 @@ def test_real_session_and_csrf_authorize_conversation_key_writes(
     with TestClient(
         app, base_url="https://clip-iisc.site", client=("192.0.2.27", 41000)
     ) as client:
+        conversation_pool = app.state.database_pool
+        assert not conversation_pool.closed
         assert client.get("/conversations").status_code == 401
         session = regular(client, signed_tokens)
         assert client.get("/conversations").status_code == 200
@@ -392,3 +394,6 @@ def test_real_session_and_csrf_authorize_conversation_key_writes(
         assert client.get("/me/conversation-key").status_code == 200
         assert client.delete("/auth/session", headers=headers).status_code == 204
         assert client.get("/conversations").status_code == 401
+    assert conversation_pool.closed
+    assert app.state.database_pool is None
+    assert app.state.conversations_public is None

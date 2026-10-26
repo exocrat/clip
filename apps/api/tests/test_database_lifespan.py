@@ -1,9 +1,16 @@
-"""Exercise optional database-pool lifecycle without opening a real connection."""
+"""Exercise optional and combined pool ownership without external connections."""
+
+import asyncio
+from unittest.mock import MagicMock
 
 from pydantic import SecretStr
+from psycopg.rows import dict_row
+from psycopg_pool import AsyncConnectionPool
 import pytest
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
+from app.application import application_lifespan
 from app.core.config import Settings
 from app.core.database import PoolLifecycle
 from app.main import create_app
@@ -85,3 +92,110 @@ def test_lifespan_closes_pool_when_open_fails():
         with TestClient(application):
             pytest.fail("a failed pool open must prevent application startup")
     assert pool.closed is True
+
+
+@pytest.mark.parametrize(
+    "failure",
+    [None, "marketplace_factory", "marketplace_wait", "body", "marketplace_close"],
+)
+@pytest.mark.parametrize("dedicated_login", [False, True])
+def test_combined_lifespan_owns_both_pools_and_unwinds_failures(
+    failure, dedicated_login
+):
+    """Exercise the actual composition context, not a copied lifecycle algorithm.
+
+    Mock only connection-pool I/O; providers/stores and disabled Search runtime
+    use their real constructors. SQL/auth integration is checked separately on
+    disposable PostgreSQL. A failure in either startup or shutdown must still
+    close the Conversations pool, without opening worker/provider resources.
+    """
+    events = []
+
+    def recording_pool(name):
+        """Record ordered async boundaries; never create sockets or background tasks."""
+        pool = MagicMock(spec=AsyncConnectionPool)
+
+        async def opened(**kwargs):
+            events.append((name, "open", kwargs))
+
+        async def waited(**kwargs):
+            events.append((name, "wait", kwargs))
+            if failure == "marketplace_wait":
+                raise RuntimeError("synthetic private connection detail")
+
+        async def closed():
+            events.append((name, "close"))
+            if name == "marketplace" and failure == "marketplace_close":
+                raise RuntimeError("synthetic close failure")
+
+        pool.open.side_effect = opened
+        pool.wait.side_effect = waited
+        pool.close.side_effect = closed
+        return pool
+
+    conversation_pool = recording_pool("conversations")
+    marketplace_pool = recording_pool("marketplace")
+    shared = "postgresql://synthetic@database.invalid/shared"
+    dedicated = "postgresql://synthetic_conversations@database.invalid/shared"
+    settings = Settings(
+        environment="test",
+        database_url=SecretStr(shared),
+        database_dsn=SecretStr(dedicated) if dedicated_login else None,
+    )
+    application = FastAPI()
+
+    def tuple_factory(conninfo):
+        """Keep explicit Conversations override separate from marketplace settings."""
+        assert conninfo == (dedicated if dedicated_login else shared)
+        return conversation_pool
+
+    def dictionary_factory(**kwargs):
+        """Assert the existing bounded dictionary-row configuration is preserved."""
+        assert kwargs == {
+            "conninfo": shared,
+            "kwargs": {"row_factory": dict_row},
+            "min_size": 1,
+            "max_size": 10,
+            "timeout": 5,
+            "open": False,
+        }
+        if failure == "marketplace_factory":
+            raise RuntimeError("synthetic factory failure")
+        return marketplace_pool
+
+    async def exercise():
+        """Check all public providers share app ownership, not database sessions."""
+        async with application_lifespan(
+            application,
+            settings,
+            pool_factory=dictionary_factory,
+            conversation_pool_factory=tuple_factory,
+        ):
+            assert application.state.database_pool is conversation_pool
+            assert (
+                application.state.conversations_public
+                is application.state.listings_conversations
+            )
+            assert application.state.listings_store is not None
+            assert application.state.wanted_store is not None
+            assert application.state.saved_store is not None
+            assert application.state.search_runtime.state == "disabled"
+            assert application.state.listings_image_storage is None
+            if failure == "body":
+                raise RuntimeError("synthetic body failure")
+
+    if failure is None:
+        asyncio.run(exercise())
+    else:
+        with pytest.raises(RuntimeError) as raised:
+            asyncio.run(exercise())
+        if failure == "marketplace_wait":
+            assert "connection details are redacted" in str(raised.value)
+            assert "synthetic private" not in str(raised.value)
+    conversation_pool.close.assert_awaited_once()
+    if failure != "marketplace_factory":
+        marketplace_pool.close.assert_awaited_once()
+        assert events[-2:] == [("marketplace", "close"), ("conversations", "close")]
+    assert events[0] == ("conversations", "open", {"wait": False})
+    assert application.state.database_pool is None
+    assert application.state.conversations_public is None

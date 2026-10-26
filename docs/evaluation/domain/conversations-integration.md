@@ -110,6 +110,34 @@ installed for Identity, Listings, Search or Conversations. Existing browser chec
 were not repeated. Full regression and existing isolated demos remain Step5;
 normal review/merge and full CN-01 acceptance remain pending.
 
+## Step4 runtime preparation result
+
+Rahul is the bounded writer for runtime tests and the API/command/evidence
+documentation in this checkpoint; no shared application/page/configuration
+implementation changes were needed. `test_database_lifespan.py` adds10 cases
+against the actual combined lifecycle with controlled pool I/O: shared URL versus
+explicit Conversations DSN, normal exit, marketplace construction/wait failure,
+body failure and marketplace-close failure. Both row-format pools preserve their
+bounds; providers/stores use actual constructors, Search stays disabled by default,
+and the Conversations pool closes even when marketplace teardown raises. A real
+SQL-session test also confirms its actual Conversations pool closes on app exit
+and the app clears the public provider reference.
+
+Lifecycle/configuration/production-security selection passed78 tests; signed-in
+composition selection passed24 (Step3 flows retained). Normal web typecheck/build
+passed613 modules, with the existing >500kB chunk advisory. The final real-pool
+shutdown assertion is checked in the8-test Conversations cookie suite. These are
+local checks, not container/cloud/provider or schema/grant readiness evidence.
+
+The API README now describes all four domains, existing pool/factory bindings,
+same-logical-database requirement, full reviewed migration chain and separate
+grant/Identity/TLS/proxy gates, lazy tuple-pool/liveness limits, normal bundle/image
+composition and absent CN-02/CN-03 workers. The command registry records the local
+checks. Removed one redundant overlapping API test paragraph; preserved unique test
+coverage/evidence. No new worker, startup migration, schema probe, secret path,
+grant or production-auth activation was introduced. Step5 full regressions and
+isolated-demo lifecycle remain next, after human verification.
+
 ## Ordered implementation and checks
 
 1. Inventory/reservation: this record, frontend map and current work-log row.

@@ -53,7 +53,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | SE-01 | Mohit (C); peer Suraj (B), Identity review | in progress | Local create-to-Keyword-and-Hybrid flow and browser walkthrough verified; formal acceptance remains pending | Test-only browser demo binds the same fixed synthetic Identity for writes/browse and can opt into the real helper, worker, pipeline bootstrap and Hybrid reader; automatic new-listing vector generation was observed | Suraj verified the local command/API/proxy flow and subsequent browser walkthrough | Search PR #11 worktree `task/search-evidence-reduction` at `864e53b`; new listing `194a32d4-64bb-491b-b4ec-68403e26f7f3` produced one title and one description vector (384 dimensions each), then matched in both modes through API and Vite proxy; session `/tmp/clip-listings-browser-v6e1f01t`; UI `http://127.0.0.1:5173/` | Formal SE-CORE/DATA-READY and final NFR/hosted-CI acceptance remain outside this merge step | 2026-10-25 14:38:24 UTC |
 | SE-02 | Mohit (C); peer Suraj (B), Identity/Conversations review | in progress | Step8 real integration gated; local handoff human-verified | Steps1–7 isolated result verified; Step8 audit performed | Mohit verified isolated UI and combined local handoff | [Search handoff](../evaluation/domain/search-handoff/result.json): Python1270/data94/web144,Black183,native20/3skip,wrapper35/contracts8/boundaries/parity/type/build pass | Await actual ID-READY/LI-CORE/SE-CORE/C adapters; Step9 final acceptance, pinned secrets/hosted CI and independent review pending | 2026-10-25 08:50:43 UTC |
 | MERGE-LI-SE | Suraj (integration); Listings/Search affected owners | done | PR #11 is squash-merged; Search–Listings local merge task is complete | Steps 1–9 performed; approved PR head `2a43066` merged to `main` as `e315c9d`; final hosted CI run `40204621122` passed | Steps 3–8 verified by Suraj; user authorized squash merge of the exact PR revision on 2026-10-25 | PR #11 `https://github.com/exocrat/clip/pull/11`; source head `2a430660d25e7c14cf33d84bd78172db4ec063c7`; squash merge `e315c9df3e0e11d6e9c8d7d244d676204d3af7e8`; hosted CI `40204621122`; local merge commit `29eb6fb`; fallback branch `safety/search-pr11-pre-main-reconciliation-20261025`; stash `af9d7f5`; local checks recorded below | No blocker for the Search–Listings merge. Final dataset, formal NFR/cloud checks, and real Identity/Conversations remain later work. | 2026-10-25 15:17:46 UTC |
-| CN-01 | Rahul (D) | in progress | Integration Step3 signed-in combined workflows performed; verify result before Step4 runtime preparation | Real-cookie Conversations/Identity composition24 passed with warnings-as-errors; boundaries0, Black and Gitleaks passed; prior Step2 DB107/web385 evidence retained | Step2 verified; Step3 result awaits human verification; prior browser checks stay verified | `task/cn-01-conversations`; [integration checkpoint](../evaluation/domain/conversations-integration.md); no application/schema change this step | Step4 runtime checks, Step5 full regression and normal A/B/C review. CN-02/CN-03/provider/device/NFR work remains outside this increment | 2026-10-26 18:44:01 UTC |
+| CN-01 | Rahul (D) | in progress | Integration Step4 runtime preparation performed; verify result before Step5 full regression | Lifecycle/config/security78, real-session composition24 and final real-pool suite8 passed; web types/build613 modules; Black/boundaries0/Gitleaks passed | Step3 and Step4 plan verified; Step4 result awaits verification; prior browser checks stay verified | `task/cn-01-conversations`; [integration checkpoint](../evaluation/domain/conversations-integration.md); tests/runtime docs only, no application/schema/config change | Step5 regressions/demos and normal A/B/C review. CN-02/CN-03/provider/device/NFR work remains outside this increment | 2026-10-26 18:56:50 UTC |
 | CN-02 | D; A/B interface review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | Isolated development: PRE-00, then DL-00 and a reviewed contract/stub. Later real gates: CN-CORE, ID-READY, and LI-CORE for listing-origin behavior; SE-02 plus CN-01's real request path for request-response inbox integration. | — |
 | CN-03 | A; D producer review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | CN-CORE, ID-READY | — |
 | INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
@@ -82,6 +82,32 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | DATA-READY | not accepted | SE-01 steps 2/4/9 | — | pending |
 | CN-CORE | not accepted | CN-01 step 10 | — | pending |
 | OPTIONAL-OK | not approved | Each optional task's selection/priority plan | — | pending |
+
+## CN-01 — Combined application integration Step4 — 2026-10-26 18:56:50 UTC
+
+Rahul verified Step3 and the Step4 runtime plan. Extended
+`test_database_lifespan.py` with10 actual-context cases using controlled pool I/O:
+shared-URL fallback/separate login to the same database, normal exit, marketplace
+factory/wait failure, body failure and marketplace-close failure. Assertions
+preserve pool bounds/row formats, real provider/store constructors, disabled
+Search defaults, redacted startup errors and closure of both owned pools.
+`test_conversation_identity_integration.py` also confirms its actual PostgreSQL
+Conversations pool closes and public state clears when the shared app exits.
+
+Lifecycle/configuration/security selection passed78 tests; real-session combined
+composition selection passed24; final Conversations suite with the real close
+assertion passed8. Normal Node24/npm11 web types/build passed613 modules; existing
+>500kB chunk advisory remains. Black, boundaries0, diff checks and Gitleaks8.30.1
+snapshot passed. No application, configuration or schema implementation changed.
+
+API README, command registry and integration checkpoint now explain the combined
+startup/build, same-target domain credentials, full reviewed migration chain,
+separate runtime-grant/Identity/TLS/proxy gates and lazy-pool/liveness limits.
+Removed one redundant overlapping API test paragraph, retaining unique evidence
+and correcting its overly broad no-doubles claim. No worker, startup migration,
+readiness probe or new secret path was introduced. No live bootstrap/provider,
+container-image/cloud run, shared-target apply, push or merge occurred.
+Step4 result awaits verification; Step5 is the full regression/demo lifecycle.
 
 ## CN-01 — Combined application integration Step3 — 2026-10-26 18:44:58 UTC
 
