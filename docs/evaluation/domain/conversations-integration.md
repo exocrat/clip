@@ -21,9 +21,9 @@ state in the actual member-key API;2) map only the explicit peer-setup reason to
 clear waiting copy, disabled sending and bounded visible retry;3) verify the
 transition and negative cases, record results and commit. Execute one verified
 increment at a time. Steps1/2 are now human-verified; Step3 results follow below.
-The last fetched remote main advanced to7612fd8; refresh/reconcile it and rerun exact-head
-checks before continuing the earlier final PR/CI handoff, not during this fix by
-silently changing the baseline.
+The last fetched remote main advanced to7612fd8; it was merged into this branch
+after Step3, and the full combined gate passed. See the main-reconciliation
+result below; the earlier final PR/CI handoff can now continue.
 
 Step1 result: member-key reads now distinguish409 `own_key/not_registered` from
 `peer_key/not_registered` only after membership and account locks. Own-key and
@@ -77,6 +77,21 @@ full CN-01/FR/NFR acceptance or fresh browser evidence. Earlier human chat check
 remain recorded rather than repeated. Real-provider/phone/cloud acceptance is
 unchanged. Refresh and reconcile main before PR/current-head CI and human review;
 no push, merge or shared database apply occurred in this correction step.
+
+### Current-main reconciliation — 2026-10-26
+
+After Rahul verified the local correction, fetched `main` at
+`7612fd8747ee053701a7316ef9b93dedc5d10cdb` (PR16) and merged it into the task
+branch. Conflicts were limited to the shared `sessionFetch.ts`, its test, and
+the work-log status row. The transport retained the origin-only referrer policy
+and its Firefox/CSRF rationale; the shared test retains main's unsafe-url caller
+input to prove callers cannot override it. Main's newer ID-01 status/evidence and
+the current CN-01 status were both preserved. The resulting combined branch
+passed all12 `make check` gates: Python1930/100skip, data94, web403/3skip,
+Black290, boundaries0, contract artifacts8, consumer mypy2, wrapper35,
+PostgreSQL18.6 migration lifecycle, Conversations114 and Gitleaks8.30.1.
+The existing build-size warning remains. This is a local check on the merged
+branch; hosted CI and required human peer/owner review remain before merge.
 
 Fetched `origin/main` is `3d6c2709d93f42bda0b4a6645c633780387c99b8` (Identity
 PR14, including Search/Listings PR11). It is already an ancestor of this branch;

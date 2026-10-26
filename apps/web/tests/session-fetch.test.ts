@@ -28,7 +28,7 @@ describe('shared app cookie/CSRF transport', () => {
     const fetcher = vi.fn().mockImplementation((path: string) => Promise.resolve(path.endsWith('/auth/csrf') ? json({ csrf_token: token }) : json(null, 204)));
     vi.stubGlobal('fetch', fetcher);
     const body = JSON.stringify({ operation_id: 'synthetic-operation' });
-    await sessionFetch('/wanted-requests', { method, body, credentials: 'omit', cache: 'force-cache', redirect: 'follow', referrerPolicy: 'no-referrer', headers: [['Content-Type', 'application/json'], ['X-CSRF-Token', 'stale'], ['If-Match', '7']] });
+    await sessionFetch('/wanted-requests', { method, body, credentials: 'omit', cache: 'force-cache', redirect: 'follow', referrerPolicy: 'unsafe-url', headers: [['Content-Type', 'application/json'], ['X-CSRF-Token', 'stale'], ['If-Match', '7']] });
     expect(fetcher).toHaveBeenCalledTimes(2);
     expect(fetcher.mock.calls[0][0]).toBe('/api/auth/csrf');
     expect(fetcher.mock.calls[0][1].referrerPolicy).toBe('origin');

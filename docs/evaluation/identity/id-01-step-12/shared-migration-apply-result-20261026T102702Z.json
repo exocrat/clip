@@ -1,0 +1,49 @@
+{
+  "completed_at_utc": "2026-10-26 10:27:21 UTC",
+  "operator": "Aditya (A) approval; Codex execution",
+  "target": {
+    "account": "335523638354",
+    "region": "ap-south-1",
+    "rds": "clip-shared-test-postgres",
+    "resource_id": "db-PYRRZJPVKPGHIXDAHUWATXGH7A",
+    "database": "clip_test",
+    "engine": "PostgreSQL 18.6"
+  },
+  "approval": "Aditya confirmed image review and required approvals complete and authorized work through a demo URL.",
+  "image": "ghcr.io/amacneil/dbmate@sha256:520c740c6e0ad73fde2cd1ea7e2b779aaf789d22aca8858f87a478e7094535fb",
+  "preflight": {
+    "tls": "verify-full using reviewed regional RDS CA",
+    "baseline": "four project schemas absent; migration tracker absent",
+    "other_client_sessions": 0,
+    "other_active_sessions": 0,
+    "identity_runtime_role_existed": false
+  },
+  "execution": {
+    "runner": "apps/api/app/domains/identity/migration_runner.py:run_migrations",
+    "strict": true,
+    "process_timeout_seconds": 300,
+    "statement_timeout_seconds": 30,
+    "lock_timeout_seconds": 10,
+    "migrations_applied": 17,
+    "head": "20261025013000",
+    "result": "passed",
+    "postcheck": {
+      "tables": 37,
+      "functions": 33,
+      "triggers": 43
+    }
+  },
+  "retained": {
+    "rds_available": true,
+    "demo_host_running_and_scale_in_protected": true
+  },
+  "not_changed": [
+    "database logging settings",
+    "runtime roles and URLs",
+    "ECS service",
+    "IAM",
+    "load balancer",
+    "DNS"
+  ],
+  "secret_handling": "Master SecureString was read into process memory for the preflight and apply; no credential value was recorded."
+}

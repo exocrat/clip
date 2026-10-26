@@ -471,3 +471,11 @@ save payload/validation/retry/idempotency/server behavior changes. Four controll
 form/router cases verify mounted navigation and late-completion suppression.
 Aditya verified the requested seller/logout/Wanted states; exact checks/results
 are in the work log. Writer reservation released2026-10-26 05:22:07UTC.
+
+### ID-01 Step12 Firefox transport correction — 2026-10-26 19:31:52 UTC
+
+Aditya is the human-authorized bounded writer for shared/http/sessionFetch.ts and
+its tests: pin origin-only referrer policy on API/preflight requests to preserve
+Firefox Origin validation under the unchanged no-referrer HTML metadata. Existing
+Listings/Search consumers inherit transport behavior only; their feature code and
+page composition are unchanged. Suraj/Mohit affected-owner review remains pending.

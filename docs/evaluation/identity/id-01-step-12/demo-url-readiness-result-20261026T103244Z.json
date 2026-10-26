@@ -1,0 +1,72 @@
+{
+  "checked_at_utc": "2026-10-26 10:33:02 UTC",
+  "database": {
+    "rds": "clip-shared-test-postgres",
+    "status": "available",
+    "database": "clip_test",
+    "migration_head": "20261025013000",
+    "migrations": 17,
+    "tables": 37,
+    "functions": 33,
+    "triggers": 43
+  },
+  "demo_host": {
+    "instance": "i-0543832969d007de2",
+    "type": "c7i-flex.large",
+    "status": "running",
+    "healthy": true,
+    "scale_in_protected": true,
+    "public_ip": false,
+    "security_group_ingress_rules": 0
+  },
+  "ecs": {
+    "cluster": "clip-shared-test",
+    "service": "clip-test-api-ap-south-1-pd16",
+    "desired": 0,
+    "running": 0,
+    "pending": 0,
+    "task_definition_revision": 1,
+    "image_digest": "sha256:8f07c52fdfd5a15c29eedae5b7189e6923e5ab0c622459568f70f6d7581a2bed",
+    "runtime_secrets": 0,
+    "load_balancers": 0
+  },
+  "vpc": {
+    "id": "vpc-04b0cc01cbf93cd17",
+    "subnets": 3,
+    "internet_routed_subnets": 1,
+    "internet_gateway": "igw-04a6091c2e2bd79d3"
+  },
+  "https": {
+    "certificate_status": "ISSUED",
+    "domain": "clip-iisc.site",
+    "in_use_by": [],
+    "route53_zone_found": false,
+    "domain_a_resolution_found": false
+  },
+  "runtime_parameters": {
+    "identity_authentication_keys": "present SecureString",
+    "identity_email_delivery": "present SecureString",
+    "identity_database_url": "absent",
+    "listings_database_url": "absent"
+  },
+  "task_iam": {
+    "api_task_role_policy": "only scoped SES SendEmail policy; no SSM GetParameter statement observed",
+    "api_execution_role_policy": "ECR pull and CloudWatch logs only; no SSM secret injection policy observed"
+  },
+  "approval_gate": {
+    "action": "create clip_test_identity_app and publish /clip/test/identity/database-url SecureString",
+    "status": "blocked by automatic approval review",
+    "review_reason": "Broad request to reach a demo URL did not clearly authorize this persistent access-control and credential change."
+  },
+  "session_cleanup": {
+    "ssm_session": "adityalaxmi1-f29fuvvsvirbvdb3vj6ny554sq",
+    "status": "terminated and no longer active"
+  },
+  "no_other_changes": [
+    "RDS logging unchanged",
+    "ECS service unchanged",
+    "instance/ASG unchanged",
+    "load balancer/DNS unchanged",
+    "no role or SecureString created"
+  ]
+}

@@ -21,6 +21,8 @@ describe('reviewed discovery URL and form boundary', () => {
     expect(discoveryParams(DEFAULT_QUERY).toString()).toBe('');
     expect(discoveryForm(DEFAULT_QUERY).min_rupees).toBe('');
     expect(parseDiscoveryQuery(new URLSearchParams()).page).toBe(1);
+    expect(parseDiscoveryQuery(new URLSearchParams()).search_mode).toBe('hybrid');
+    expect(applyDiscoveryForm(discoveryForm(DEFAULT_QUERY)).search_mode).toBe('hybrid');
   });
   it('counts Unicode code points after trimming', () => {
     expect(parseDiscoveryQuery(new URLSearchParams({ q: ` ${'🙂'.repeat(120)} ` })).q).toBe('🙂'.repeat(120));
@@ -43,14 +45,14 @@ describe('mode and relevance URL/form transitions', () => {
     const applied = { ...DEFAULT_QUERY, q: 'vehicle', search_mode: mode, sort: 'relevance' as const, page: 3, page_size: 100 as const };
     expect(parseDiscoveryQuery(discoveryParams(applied))).toEqual(applied);
     expect(parseDiscoveryQuery(new URLSearchParams({ search_mode: mode })).sort).toBe('created_desc');
-    expect(discoveryParams(applied).has('search_mode')).toBe(mode === 'hybrid');
+    expect(discoveryParams(applied).has('search_mode')).toBe(mode === 'keyword');
   });
   it.each(['search_mode=', 'search_mode=Hybrid', 'search_mode=semantic', 'search_mode=keyword&search_mode=hybrid',
     'sort=relevance', 'q=+&sort=relevance&search_mode=hybrid'])('rejects invalid manual URL %s', (raw) => {
     expect(() => parseDiscoveryQuery(new URLSearchParams(raw))).toThrow();
   });
   it('switches only applied inputs, preserves filters/sort/size, resets page and leaves drafts intact', () => {
-    const applied = { ...DEFAULT_QUERY, q: 'bicycle', negotiable: 'false' as const, min_price_paise: '0', sort: 'relevance' as const, page_size: 50 as const, page: 3 };
+    const applied = { ...DEFAULT_QUERY, search_mode: 'keyword' as const, q: 'bicycle', negotiable: 'false' as const, min_price_paise: '0', sort: 'relevance' as const, page_size: 50 as const, page: 3 };
     const draft = { ...discoveryForm(applied), q: 'desk', max_rupees: '500' };
     const switched = switchDiscoveryMode(applied, 'hybrid');
     expect(switched).toEqual({ ...applied, search_mode: 'hybrid', page: 1 });

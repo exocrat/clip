@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { Button } from '../../shared/ui';
 import { type DiscoveryApiError, discoveryPreviewBackend,
   type CatalogueView, type PageResultListingSummary } from './discoveryApi';
 import { applyDiscoveryForm, DEFAULT_QUERY, discoveryForm, discoveryParams,
-  parseDiscoveryQuery, switchDiscoveryMode, type DiscoveryForm, type DiscoveryQuery } from './discoveryQuery';
+  parseDiscoveryQuery, type DiscoveryForm, type DiscoveryQuery } from './discoveryQuery';
 import { startDiscoveryRequest } from './discoveryRequest';
 import { SaleListingCard } from './SaleListingCard';
 import './discovery.css';
@@ -25,13 +25,10 @@ export function SaleDiscovery() {
   const [formError, setFormError] = useState('');
   const [catalogue, setCatalogue] = useState<CatalogueView>({ categories: [], conditions: [] });
   const [requestResult, setRequestResult] = useState<{ key: string; reload: number; value: ResultState }>({ key, reload: 0, value: { kind: 'loading' } });
-  const preserveDraftFor = useRef<string | null>(null);
   const [reload, setReload] = useState(0);
 
-  // Only an explicit mode action preserves drafts. History/manual URLs resync them.
+  // History and explicit legacy-mode URLs resynchronize the filter draft.
   useEffect(() => {
-    if (preserveDraftFor.current === key) { preserveDraftFor.current = null; return; }
-    preserveDraftFor.current = null;
     setDraft(discoveryForm(parsed.query ?? DEFAULT_QUERY));
     setFormError('');
   }, [parsed, key]);
@@ -72,14 +69,6 @@ export function SaleDiscovery() {
     else setParams(nextParams);
   }
 
-  /** Immediate mode changes preserve unsaved edits; only applied inputs are sent. */
-  function changeMode(mode: DiscoveryQuery['search_mode']) {
-    if (!parsed.query || mode === query.search_mode) return;
-    const next = switchDiscoveryMode(query, mode);
-    preserveDraftFor.current = discoveryParams(next).toString();
-    navigate(next);
-  }
-
   // Hide a preceding request synchronously, before the next effect is scheduled.
   const result: ResultState = requestResult.key === key && requestResult.reload === reload
     ? requestResult.value : { kind: 'loading' };
@@ -101,18 +90,6 @@ export function SaleDiscovery() {
         </aside>
       )}
       <p className="discovery-intro">Find what you need, right here on campus.</p>
-      <div className="discovery-mode">
-        <label htmlFor="discovery-mode">Search mode
-          <select id="discovery-mode" value={query.search_mode} disabled={!parsed.query}
-            aria-describedby="discovery-mode-help" onChange={(event) => changeMode(event.target.value as DiscoveryQuery['search_mode'])}>
-            <option value="keyword">Keyword</option><option value="hybrid">Hybrid</option>
-          </select>
-        </label>
-        <p id="discovery-mode-help" className="discovery-hint">
-          {query.search_mode === 'keyword' ? 'Matches words and known item terms, with limited typo tolerance.' : 'Adds related meanings to keyword matches.'}
-          {!query.q && ' Hybrid takes effect when search text is entered.'}
-        </p>
-      </div>
       <form className="discovery-form" onSubmit={submit} noValidate>
         <div className="discovery-search">
           <label htmlFor="discovery-query">Search listings
@@ -156,7 +133,7 @@ export function SaleDiscovery() {
               <option value="created_desc">Newest first</option><option value="price_asc">Price: low to high</option><option value="price_desc">Price: high to low</option>
               <option value="relevance" disabled={!draft.q.trim()}>Relevance</option>
             </select>
-            <span id="discovery-sort-help" className="discovery-hint">Orders matches using the selected search mode. Relevance requires search text.</span>
+            <span id="discovery-sort-help" className="discovery-hint">Orders matching listings. Relevance requires search text.</span>
           </label>
           <label htmlFor="discovery-size">Listings per page
             <select id="discovery-size" value={draft.page_size} onChange={(event) => change('page_size', Number(event.target.value) as DiscoveryForm['page_size'])}>
@@ -176,8 +153,7 @@ export function SaleDiscovery() {
         {result.kind === 'invalid' && <div className="discovery-state" role="alert"><h2>Check your search</h2><p>{result.message}</p></div>}
         {result.kind === 'error' && <div className="discovery-state" role="alert">
           <h2>{result.error.status === 401 ? 'Sign in to continue' : 'Could not load listings'}</h2>
-          <p>{hybridUnavailable ? 'Hybrid search is temporarily unavailable. Retry or use Keyword.' : result.error.message}</p>
-          {hybridUnavailable && <Button variant="secondary" onClick={() => changeMode('keyword')}>Use Keyword</Button>}
+          <p>{hybridUnavailable ? 'Search is temporarily unavailable. Please retry.' : result.error.message}</p>
           {result.error.status === 401 && <Link to="/sign-in">Go to sign in</Link>}
           <Button variant="secondary" onClick={() => setReload((value) => value + 1)}>Retry</Button>
         </div>}

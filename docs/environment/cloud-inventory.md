@@ -2,6 +2,82 @@
 
 Non-secret status record. Update only from approved plans and verified outputs. Never record credentials, tokens, or secret values here. This is an observed snapshot, not an authorization to use existing resources or create/change/delete cloud infrastructure.
 
+## Verified cleanup snapshot — 2026-10-26 18:09:02 UTC
+
+Approved read-only checks confirm original RDS **stopped**, deletion protection on;
+shared ECS/API/ASG0/empty. Demo EIP65.0.49.162 is not allocated to this account;
+demo SG/target group absent, exact terminated-instance IDs return no retained
+records and proxy task revision3is inactive. ACM issued/unused. Identity parameter
+metadata remains version1; no values decrypted and no SQL/start/stop performed.
+
+Aditya reports the released-IP apex A deleted at18:20:44UTC and explicitly
+requests no further propagation check. This human report supersedes the action
+item below; retain the ACM validation CNAME. No new DNS query was performed.
+The service mismatch observed in this snapshot was resolved by the approved
+refresh-only apply at18:29:50UTC: state serial18now records revision2, matching live
+revision2/desired-running-pending0. Original RDS stopped and ASG0reverified; no
+infrastructure action. [Reconciliation result](../evaluation/identity/id-01-step-12/ecs-state-reconciliation-result-20261026T182852Z.json).
+[Safe snapshot](../evaluation/identity/id-01-step-12/cleanup-verification-20261026T180723Z.json).
+Older unconfirmed-stop statements below are superseded by this snapshot only.
+
+## Latest recorded demo cleanup handoff — 2026-10-26
+
+This is a repository-evidence reconciliation, **not a fresh AWS inspection**.
+The [consolidated demo handoff](../evaluation/identity/id-01-step-12/demo-postmortem-20261026.md)
+contains exact outcomes, resource identifiers and remaining operator actions.
+
+- Original shared DB successfully received17migrations through20261025013000;
+  Identity and marketplace runtime roles/secure URLs were provisioned and checked.
+- Scoped task/execution IAM, private ID-01 image bucket, AMD64 image and ACM
+  certificate were retained. The alternate RDS candidates were never created.
+- Managed load-balancer creation was rejected by the account. The temporary EC2
+  TLS proxy/EIP/ingress were later removed, and shared API/host capacity returned
+  to zero. Human hosted sign-in/image/Search acceptance was not obtained.
+- RDS was last observed **stopping** at13:27UTC; final stopped state is unconfirmed.
+  The user-managed A record pointing to the released65.0.49.162 needs removal/
+  verification; preserve the ACM validation CNAME.
+- Recorded remote service state still revision1 while live stopped service was
+  revision2. A separately reviewed refresh/reconciliation is required before apply.
+- Shared VPC/NAT, DB storage/backups/data, IAM/SSM, image/S3/log resources and
+  certificate remain. Git cleanup neither changes them nor eliminates their costs.
+
+Older snapshots below retain their historical timestamps and can be superseded
+by this handoff. Do not use them as authorization or proof of current cloud state.
+
+
+Certificate issuance verified2026-10-26 07:13:33 UTC: ACM certificate
+`a9775d00-2af5-4b12-990d-1ce9795f1859` is **ISSUED**, validation SUCCESS,
+not yet associated with a listener. No HTTPS app deployment implied.
+[Issuance evidence](../evaluation/identity/id-01-step-12/https-certificate-apply-result.json).
+
+## HTTPS certificate and sender update — 2026-10-26 07:04:31 UTC
+
+Approved saved plan9f7d85f7 applied: one non-exportable ACM certificate for
+clip-iisc.site (`a9775d00-2af5-4b12-990d-1ce9795f1859`, Mumbai) pending public DNS
+validation; SES task-role FromAddress now verify@clip-iisc.site. No HTTPS listener,
+DNS write or application deployment. Original shared RDS remains stopped, shared
+API0tasks; separate Listings demo remains1host/1task. Certificate retained for
+integration, review date2026-10-27. [Public validation/result evidence](../evaluation/identity/id-01-step-12/https-certificate-apply-result.json).
+This supersedes older no-reply/no-regional-certificate observations below only;
+remaining runtime/DB/HTTPS setup is not complete.
+
+## Latest Identity connection snapshot — 2026-10-26 06:44:03 UTC
+
+Approved read-only inspection confirmed account335523638354/ap-south-1. Shared RDS
+is stopped; shared ECS/API/ASG have zero hosts/tasks/desired capacity. **Separate
+Listings demo is active**: clip-test-listings-ap-south-1-li02 has one host/task,
+clip-li02-demo HTTP listener has a healthy target. Preserve this other-owner work;
+older demo-stopped records below are historical. Images bucket remains private/
+AES256 and CORS names only that demo origin. Identity DB URL is not listed; keys/
+email/Listings URL metadata are present. No secret values or SQL were read.
+Apex domain has no public A/AAAA answers, nameservers are Spaceship, and no matching
+Route53 zone/ACM regional certificate was listed. Shared task remains the original
+foundation configuration; runtime/IAM/HTTPS connection work is pending.
+[Detailed snapshot](../evaluation/identity/id-01-step-12/cloud-metadata-20261026T064141Z.json).
+No cloud mutation or authority for future changes is implied.
+
+## Earlier foundation inventory (historical)
+
 | Fact | Current status |
 |---|---|
 | Account or project | `335523638354` — last checked 2026-10-19 20:27:40 UTC as IAM user `adityalaxmi1` with the approved non-root profile; account alias not determined |

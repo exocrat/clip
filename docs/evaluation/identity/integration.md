@@ -1389,7 +1389,7 @@ The run depends on the morning gates: current reviewed AMD64 image; exact shared
 schema and separate Identity login/URL; scoped task-role permissions and persistent
 keys; current sender/provider configuration with the approved controlled-recipient
 allowlist; HTTPS/proxy/API routing; and the intended frontend flag/revision. The
-user performs the Microsoft account and inbox actions. Physical-phone verification,
+user performs the Microsoft account and inbox actions. Mobile-browser usability (not phone-number/SMS verification),
 affected-owner review, hosted CI, and the full Step14 consumer matrix remain
 separate checks; Step14 is outside current ID-READY scope.
 
@@ -1428,3 +1428,477 @@ separate Listings/Identity DB and SSM configuration. The likely low-complexity
 shape is the existing API image serving the UI and `/api` on one HTTPS origin, but
 that remains an inference until the actual listener/host is identified. No AWS
 state was queried for this audit.
+
+
+## Post-merge shared runtime plan
+
+Prepared2026-10-26 06:32:23 UTC by Aditya(A)'s agent, from merged main
+`3d6c2709d93f42bda0b4a6645c633780387c99b8` (PR #14). Aditya confirms Suraj's
+review/merge; the PR is closed. This supersedes open-review claims for that
+implementation, not the historical evidence or future runtime-change reviews.
+Current17migration hashes match the manifest, head20261025013000; expected shared
+inventory37tables/33functions/43triggers remains subject to exact preflight.
+
+Authentication is Microsoft sign-in for regular users or **email OTP** for temporary
+activation/reset. There is no phone-number/SMS authentication requirement.
+Mobile-browser checks concern responsive website behavior only.
+
+### Ordered checkpoints
+
+| Checkpoint | Output and checks | Gate |
+|---|---|---|
+| 1. Source/environment discovery | Pin merged source; verify manifest; inspect current target identity, shared workload/writer state, RDS namespace/tracker metadata, IAM/SSM reference metadata and domain/DNS/HTTPS route. Identify the actual same-origin ingress and proxy hop. | Local source portion completed. Live inspection, resource startup and secret reads are not performed/authorized by this document. Present an exact bounded inspection window first; avoid decrypted secrets where metadata suffices. |
+| 2. Shared schema | Final reviewed image/manifest; fresh four-domain preflight; strict17file apply and read-only version/head/inventory postchecks. | Exact account/target/source/image/DDL approval and exclusive operator window. Stop on manual/partial/unknown schema, concurrent writer, unsafe logging or TLS failure. |
+| 3. Application DB credentials | Separate Identity login/grants and private `/clip/test/identity/database-url`; establish the separate Listings URL with its owner. Verify effective privileges and denied cross-domain/DDL access. | Separate role/password/secret-publication approval after schema checks. No master credential in app; no assumed Listings login name/secret path or credential rotation. Preserve stable auth keys. |
+| 4. Runtime/IAM/provider configuration | Narrow task access to approved Identity SSM references, separate Listings URL injection, Microsoft/dual selectors and real test startup; privately rotated Resend key. Review verify@ SES FromAddress transition if SES enabled. | Review exact IAM/resources/config diff before apply. Resend primary permits progress without SES production access; sandbox recipients remain constrained. No wildcard secret access. |
+| 5. Image and HTTPS ingress | Current immutable AMD64 image with verified regional RDS roots and bundled UI; same-origin HTTPS app/API and exact trusted proxy handling. Test health, certificate/hostname validation, cookie/Origin/CSRF and sign-in callback routing. | Actual route discovery must precede selecting listener/certificate/DNS resources. Separate build/publish/deployment/ingress approval, scoped writer coordination and cost plan. Never reuse the synthetic Listings HTTP demo as real-auth ingress. |
+| 6. Real runtime acceptance | Approved Microsoft user, temporary email registration/sign-in/reset and receipt, logout/revocation/expiry, profile/contact privacy and available consumer smoke checks. Verify retention operation and safe cleanup; record sanitized desktop/mobile-browser results. | Separate exact provider-send/test-identity/data/cleanup scope; human handles Microsoft/inbox interaction. Local provider successes are retained but not counted as hosted proof. No full Step14 matrix. |
+| 7. ID-READY closeout | Task-wide requirement/checklist review, source-bound evidence, current checks/review for new changes, human milestone acceptance and work-log milestone update. | Keep milestone unaccepted until required real integration succeeds. ID-01 itself stays in progress for later steps. |
+
+### Scope for the first live request — draft, not authorization
+
+Use existing account335523638354, profileadityalaxmi1, ap-south-1, original
+`clip-shared-test-postgres`/clip_test and shared test ECS resources. Verify resource
+IDs/class/AZ/endpoint against recorded inventory; no implicit class/AZ/network
+substitution. Recheck Suraj's active workloads before starting or stopping anything.
+The prior migration candidate's one-task/host,60minute/$1 operating ceiling and
+20minute startup limit are proposed bounds only, not current prices or a budget
+approval. No automatic capacity-start retry. A new exact UTC window/operator and
+current cost assumptions must be established before execution.
+
+Separate read-only AWS/DNS discovery from private SQL access: obtain metadata first;
+if stopped RDS needs starting for catalogs, request its bounded start/tunnel/secret
+read/cleanup scope before doing so. Never query live credentials/data merely to
+fill this document. Record only safe target/version/permission/schema metadata.
+The existing apply candidate is still non-executable; refresh its source/manifest
+review provenance after this merge before requesting actual DDL approval.
+
+For apply, preserve committed migration prefixes on failure; no down/drop/reset,
+automatic adoption/replay, global grants repair or restore. Role setup must retain
+its atomic transaction and refuse existing/ambiguous role state; ambiguous commit
+requires metadata inspection before retry. Cleanup closes only owned task/tunnel/
+host resources; stop RDS/zero shared capacity only while exclusive and safe for
+other owners. Preserve shared data, secrets, network and other domains' resources.
+
+Runtime configuration must use the existing explicitly guarded **test** startup:
+`CLIP_ENVIRONMENT=test`, debug/development auth off, Microsoft and dual email,
+`CLIP_IDENTITY_RUNTIME_ENABLED=true`, exact approved HTTPS origins and separate
+Listings DB URL. Production remains rejected; do not relax that guard to fit the
+old production-only ECS task definition. IAM/secret injection, HTTPS ingress and
+actual startup must be reviewed together before enabling this path.
+
+Acceptance evidence contains revision/image digest, UTC time, config/reference
+versions, safe check outcomes and cleanup status. Never retain OTPs, passwords,
+tokens, cookies, email/contact values or decrypted provider/key/URL contents.
+Docs-only plan checks: manifest equality, relative links and whitespace. No new
+full application test run or live state assertion is implied.
+
+
+### Marketplace connection audit — 2026-10-26 06:38:54 UTC
+
+Aditya authorized starting the integrated connection preparation. Read the existing
+[Listings/Search deployment handoff](../../architecture/listings-search-deployment.md),
+application lifespan, Settings, S3 adapter, shared ECS task and Listings Terraform.
+The implementation is already connected internally; remaining release work is
+configuration, permissions, artifacts, initialization and actual integration checks.
+This checkpoint changes documentation only and does not authorize another owner's
+Terraform edits. Use the original public adapters; do not create replacement services.
+
+| Feature | Existing connection / exact release inputs | Required deployed check |
+|---|---|---|
+| Identity | Guarded hosted test startup, exact HTTPS origins, Microsoft/dual mail, fixed three SSM references and separate Identity role/URL. | Regular IISc and temporary email activation/reset/session flows; no SMS. |
+| Listings / Keyword / Wanted / Saved | `application_lifespan` creates real stores and public Listings access from the same `CLIP_DATABASE_URL` pool. Search needs no separate database or HTTP bridge. | Real regular create/edit/read/availability and temporary seller denial; Keyword filters/pagination, Wanted CRUD/draft matching, Saved CRUD/isolation/unavailable-target handling. |
+| Images | Existing `S3ListingsImageStorage` selected by `CLIP_STORAGE_PROVIDER=s3`, `CLIP_IMAGE_BUCKET`, `CLIP_IMAGE_REGION`, `CLIP_IMAGE_KEY_PREFIX`. Task role needs reviewed object operations; bucket CORS needs actual HTTPS origin and signed request headers. | Authorized initiate/PUT/confirm/read/display with approved synthetic files, private objects, type/size/owner/expiry failures; image-backed detail/discovery/Saved. |
+| Hybrid | Existing `Dockerfile.hybrid` plus pinned AMD64 Python/wheels/model contexts, Hybrid read and worker flags and absolute interpreter/model paths. | Real inference, new/edit invalidation and worker updates, current-source coverage, useful safe unavailable behavior; no performance/NFR claim. |
+| Hybrid initialization | Existing packaged `search_pipeline.py`: separately approved prepare, bounded queue, worker processing/status, activation after complete coverage for pinned pipeline ID. | Exact host/database/role/pipeline checks and complete current vector coverage before serving; startup must not silently activate/backfill. |
+| UI / HTTPS | Bundled UI via `CLIP_SERVE_WEB_APP=true`, real auth and same-origin `/api`; public TLS/listener/domain mapping still needs discovery. | Static routes/callback/API mapping, cookies and CSRF, account-scoped state reset, image/search flows. |
+
+Listings Terraform records bucket `clip-test-listings-images-ap-south-1-li02`,
+run-scoped prefix `listings/test/<run-id>` and isolated task roles/permissions.
+Those are source records, not current live-state proof or approved integrated
+prefix/IAM configuration. Review with Suraj before selecting a persistent shared
+prefix, CORS origin or runtime role. Do not invoke the LI-02 demo start/stop route,
+reuse its synthetic caller or disposable DB, or delete its owner's objects.
+The `/clip/test/listings-database-url` name appears in that isolated root; do not
+assume its current value/role is appropriate for the shared database.
+
+Hybrid packaging/bootstrap is part of the full non-Conversations deployment scope;
+it is not silently omitted to claim all Search modes work. Confirm artifact
+availability and source hashes locally, coordinate Search's role/pipeline setup
+with Mohit, then propose exact build/resources/bootstrap mutations. Start with
+one API process: up to10command+2Hybrid-read+1worker DB connections. The old512MiB
+foundation task is not evidence of sufficient model memory; sizing remains an
+explicit release decision supported by measurement, not a guessed unchanged value.
+The Identity-only least-privilege role must never be broadened for Search jobs.
+
+Conversations, offers/selection, wanted-response thread creation, deliberate
+conversation contact sharing and notifications remain visibly unavailable through
+their public boundaries. Do not count their failure as working marketplace flows.
+These connections do not accept full Step14 or other owners' final milestones.
+
+#### Next proposed action: metadata-only discovery
+
+Request approval for one read-only inspection, maximum15minutes, using existing
+profileadityalaxmi1/account335523638354/ap-south-1. Inspect STS caller identity;
+RDS instance status/endpoint/security metadata; shared ECS service/task-definition/
+capacity and EC2/ASG metadata; applicable IAM policy documents; SSM names/types/
+versions only; known Listings bucket CORS/public-access/encryption/policy metadata;
+ELB/listener/target-group, certificate and hosted-zone record metadata where
+accessible; and public DNS/TLS for clip-iisc.site. Restrict queries to CLIP resources
+and do not enumerate application rows, object contents or decrypted parameters.
+No resource start/stop, SQL connection, secret decryption, Terraform plan/apply,
+provider request/email, artifact push, DNS/IAM mutation or deployment. No running
+compute is created. Stop on wrong account or unavailable authorization; report
+unknowns rather than infer absence. This request does not approve later changes.
+
+After approval, record sanitized findings and prepare the exact change set for
+review. A live DB catalog probe, AMD64 build, pipeline initialization and any paid
+runtime window each retain their separate scoped execution approval.
+
+
+### Approved metadata discovery result — 2026-10-26 06:44:03 UTC
+
+Aditya explicitly approved the15minute metadata-only scope. Completed in under
+three minutes against confirmed account335523638354/profileadityalaxmi1/Mumbai;
+[source-bound sanitized evidence](id-01-step-12/cloud-metadata-20261026T064141Z.json).
+The sandbox's first network check failed; the network-enabled account check and
+resource queries succeeded. No resource was started, stopped or modified.
+
+| Connection | Observed live result | Next concrete work |
+|---|---|---|
+| Shared RDS | Original resource stopped,18.6/t4g.micro/ap-south-1a/private, expected resource ID and CA. | Separate exclusive start/tunnel/catalog-check and migration approval; current schema/roles unknown. |
+| Shared app | Cluster/ASG hosts0, service desired/running/pending0. Task:1 still original foundation image,256CPU/512MiB, no secrets, only environment/debug names and no LB. | Reviewed immutable integrated image and complete runtime task/configuration; measured Hybrid sizing rather than assuming512MiB. |
+| Credentials | Identity auth-key/email route and Listings URL SecureStrings listed, allv1; Identity DB URL absent from prefix metadata listing. | Provision Identity login/URL after schema; privately validate Listings URL target/role under separate read approval. Name presence does not establish shared DB compatibility. |
+| Shared task role | One inline SES policy, no attached policies; condition still no-reply@. No S3/Identity SSM grant in these policies. | Reviewed exact runtime IAM/secret injection and verify@ SES sender transition. No broad secret or cross-domain data grants. |
+| Images | Existing Listings bucket private-blocked/AES256; CORS only active demo's HTTP origin. | Coordinate shared prefix/object rights and HTTPS-origin CORS with Suraj; preserve current demo access. |
+| Domain/HTTPS | Public apex A/AAAA queries succeeded with no address answers; nameservers launch1/2.spaceship.net. Local apex/www resolution failed, so TLS unavailable. No matching Route53 zone and no ACM certificate listed in this account/region. | Prepare reviewed certificate/validation/HTTPS-listener/domain-record route using actual DNS operator. Do not assume Route53 manages the domain or request registrar credentials in chat. |
+| Other-owner runtime | Separate Listings cluster has1host/1running task; clip-li02-demo HTTP80 listener has healthy instance target at18001. | Preserve all current resources/work; coordinate window and any image bucket or listener changes with Suraj. Old stopped-demo evidence is superseded for this snapshot. |
+
+Next checkpoint is local preparation of the runtime/IAM/HTTPS and storage changes,
+with owner coordination for shared paths, followed by exact review/approvals.
+A stopped original shared cluster does not mean all CLIP workloads are idle.
+Do not reuse cleanup logic that would stop/delete the active Listings demo.
+No secret contents, objects, business rows or provider deliveries were inspected.
+All17schema versions, role grants, model readiness and actual runtime acceptance
+remain unverified live; this metadata check does not accept ID-READY.
+
+
+### Runtime policy and HTTPS preparation — 2026-10-26 06:50:29 UTC
+
+Aditya verified discovery and requested continued local preparation, including
+HTTPS if straightforward. Current writer Aditya(A) reserves new shared
+`https-certificate.tf` and its README section for this increment; existing shared
+service/network/IAM code and Listings/Search-owned roots remain unchanged.
+Shared state owns this application-wide certificate under the canonical Terraform
+ownership rules; no domain state adopts the shared origin.
+
+Prepared concrete review artifacts:
+
+- [Shared HTTPS certificate source](../../../infra/terraform/shared/test/https-certificate.tf):
+  opt-in, default disabled, apex clip-iisc.site only, RSA2048/DNS validation,
+  non-exportable ACM default, explicit review date and prevent-destroy protection.
+  Outputs expose only ARN and public validation CNAMEs. No validation waiter,
+  Route53 resources, listener, compute or DNS mutation. The shared README explains
+  full-plan scope and retention/cleanup. This resource is not yet provisioned.
+- [Runtime configuration proposal](../../../infra/terraform/shared/test/service.tf):
+  exact test-mode selectors/origin; app-role GetParameter for only the three fixed
+  Identity references; execution-role GetParameters for the proposed Listings URL
+  injection. Separates task/execution responsibilities and excludes master/probe
+  access. Explicit unresolved image/S3/prefix/recipient/Hybrid/proxy items make it
+  non-deployable; it is not a guessed ECS task definition or approved policy apply.
+
+HTTPS route: validated ACM certificate in Mumbai, reviewed shared ALB HTTPS443
+listener and exact integrated target group, HTTP redirect as appropriate, apex
+ALIAS to the selected ALB at Spaceship. Preserve existing MX/SPF/DKIM/DMARC and
+Suraj's demo origin/listener/CORS. Spaceship documents ALIAS for apex hostnames;
+do not pin transient ALB IPs or put an ordinary CNAME at the apex. No DNS migration
+or registrar credentials are required. Exact ALB choice, public subnet topology,
+SG-only target access, trusted proxy source and ongoing cost remain review items;
+do not mutate the active LI-02 ALB without its owner's review.
+
+The certificate can be requested/validated before the app is ready. An issued
+certificate alone does not activate HTTPS or authenticate the app. ACM's standard
+non-exportable certificate has no certificate charge; ALB/runtime charges are
+separate and need the exact reviewed deployment cost/cap plan. References:
+[AWS HTTPS listeners](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html),
+[DNS validation/renewal](https://docs.aws.amazon.com/acm/latest/userguide/dns-validation.html),
+[ACM pricing](https://aws.amazon.com/certificate-manager/pricing/),
+[Spaceship apex ALIAS](https://www.spaceship.com/en-GB/knowledgebase/spaceship-mcp/).
+
+Next proposed gate: approve non-applying full Terraform planning in existing
+shared/test state/account335523638354/ap-south-1, with certificate flag enabled,
+proposed review date2026-10-27, current service phase/stopped API and all original
+private inputs preserved through their existing approved secure path. No new secret
+read is authorized. Expected scope exactly1ACM addition/no other changes. Desired
+verify@ source differs from live no-reply, so a full plan may expose that or other
+drift: stop, summarize safely and seek review rather than hide it with targeting.
+Save plan privately outside Git; inspect and report checksum/safe scope only.
+Certificate apply still needs approval for that exact plan; after apply, provide
+public CNAME name/value for the human DNS operator, then verify issuance separately.
+No DNS/listener/service operation is bundled into certificate-plan approval.
+
+Checks: PATH Terraform1.16.5 was correctly rejected; reran backend-free checks
+using existing pinned1.15.9. All four roots passed validation; formatting passed.
+No backend initialization, AWS plan/apply, secret read or app/provider action.
+Other code tests are not needed for this declarative preparation. JSON/link/diff
+and secret scanning complete the local review; ID-READY remains incomplete.
+
+
+### Certificate planning preflight — 2026-10-26 06:57:25 UTC
+
+Aditya approved non-applying certificate planning and explicitly retained all other
+marketplace deployments in scope. Confirmed account335523638354; initialized the
+existing shared/test backend with pinned Terraform1.15.9/default workspace. Private
+preparation directory `/tmp/clip-id01-https-plan-us1a7pkp` is0700; inputs and init
+log are0600 and outside Git. Preserved original service/stopped-API/image/version
+inputs from prior private preparation; enabled only the certificate proposal with
+review date2026-10-27. Read existing approved shared state in process memory to
+preserve the exact sandbox recipient ARN privately; never printed recipient/state.
+Operator session credentials stayed in process memory. No app-secret read occurred.
+
+The retained input files contain no ephemeral master/probe passwords, and neither
+is present in the process environment. The shared root explicitly requires these
+existing write-only inputs for planning; their version counters remain1. No dummy
+value, omission, targeted plan, source rewrite or password rotation was used to
+bypass this requirement. **Backend initialization succeeded; saved plan has not
+been created.** Earlier approval explicitly excluded new secret reads, so pause
+before two SSM decryptions, not after attempting an invalid substitute plan.
+
+Exact additional proposed scope: once each, decrypt only
+`/clip/test/database-master-password` and `/clip/test/database-probe-password`
+under the already selected operator/account/region; capture into process memory
+and Terraform ephemeral environment inputs, never files/arguments/logs/evidence.
+Continue the already approved full non-applying certificate plan with private
+output/save and sanitized checksum/resource-action review. No SQL/RDS start,
+secret write/rotation, task start, provider send or apply. If source/live sender or
+other drift adds changes, report and stop before apply; plan approval does not
+approve those mutations. All apply operations remain separately gated.
+
+Full deployment scope retained in order: reviewed schema and separate role/URLs;
+Identity/provider IAM/config; S3 shared prefix/role/CORS with Suraj; current AMD64
+image and Keyword/Wanted/Saved; Hybrid model/worker/bootstrap/sizing with Mohit;
+HTTPS listener/DNS/trusted proxy and real integrated acceptance. Certificate
+validation can overlap preparation of these connections, but does not replace any.
+No one else's active runtime was changed or contacted.
+
+
+### Saved HTTPS certificate plan — 2026-10-26 06:59:49 UTC
+
+Aditya explicitly approved two one-time master/probe parameter decryptions for
+non-applying planning. Verified both SecureString references at version1; values
+went only to process memory/ephemeral Terraform environment, never arguments or
+files/logs. Correct account confirmed, original version counters unchanged.
+Full Terraform1.15.9 plan completed successfully (detailed exit2 = changes).
+[Sanitized exact review](id-01-step-12/https-certificate-plan-review.json).
+
+Private saved plan `/tmp/clip-id01-https-plan-us1a7pkp/https-certificate.tfplan`,0600,
+SHA256 `9f7d85f76e72a4d955d2224e11086a9909d79c134f37827d7d4159f71c04c741`.
+It contains **one create and one in-place update, zero replacements/deletions**:
+
+- Create `aws_acm_certificate.identity_https[0]` for clip-iisc.site, DNS validation,
+  RSA2048, review date2026-10-27. No listener, DNS or compute is created by this.
+- Update `aws_iam_role_policy.api_identity_email[0]` sender condition from
+  no-reply@ to verify@. Parsed policies are otherwise identical, preserving exact
+  resources/recipient/action. This is a previously desired but unapplied change;
+  it exceeds certificate-only scope and therefore needs explicit approval too.
+
+Refresh reports only computed RDS latest_restorable_time and role inline-policy
+metadata drift; neither means an additional RDS/role resource action. No changes
+to database credentials, tasks/services, ASG/network/storage or active Listings demo.
+No apply or email send performed. Source/hash/plan actions and0600checks passed;
+existing Terraform validation remains applicable, no source changed this increment.
+
+Exact next proposal: up to15minutes, apply only this checksum in existing
+account335523638354/Mumbai/shared/test state, approve the two actions above,
+retain certificate for the deployment, verify resource/sender metadata and obtain
+public validation CNAME for human Spaceship entry. Standard non-exportable ACM
+certificate has no certificate fee; this adds no running compute/listener. Preserve
+all other resources. Abort on checksum/source/state mismatch or unexpected actions;
+no automatic credential read retry, IAM reversal or cleanup. Apply requires the
+same ephemeral inputs; approval should explicitly include one fresh read of each
+existing master/probe parameter if needed by Terraform. No SQL/start/send, DNS or
+listener mutation is bundled; certificate removal/sender rollback is separately
+reviewed. If Terraform rejects the plan as stale, stop and prepare a new plan for
+review rather than silently replan/apply.
+
+Schema, roles, Identity, images, Listings/Search/Wanted/Saved/Hybrid and eventual
+HTTPS listener/DNS/trusted-proxy deployment remain tracked; certificate creation
+is only the first independent preparatory deployment action.
+
+
+### Certificate requested and sender updated — 2026-10-26 07:04:31 UTC
+
+Aditya explicitly approved the exact saved two-action plan and fresh one-time
+master/probe reads for apply. Rechecked plan/certificate-source hashes and account;
+passwords used only in process memory/ephemeral Terraform inputs. Applied saved
+SHA2569f7d85f76e72a4d955d2224e11086a9909d79c134f37827d7d4159f71c04c741
+successfully, with no automatic retry/replan. [Sanitized result](id-01-step-12/https-certificate-apply-result.json).
+
+Certificate `arn:aws:acm:ap-south-1:335523638354:certificate/a9775d00-2af5-4b12-990d-1ce9795f1859`
+for clip-iisc.site is PENDING_VALIDATION, export DISABLED. Applied task-role sender
+condition verified as verify@clip-iisc.site. No provider mail was sent.
+
+Human DNS action at existing Spaceship provider: add CNAME host
+`_2bfe7e93e85073296eb175def8bb245a` (full name
+`_2bfe7e93e85073296eb175def8bb245a.clip-iisc.site.`), target
+`_11c10845a76a4820548879213899012f.wzccmgtwzk.acm-validations.aws.`;
+use default TTL. This is public certificate validation, not email authentication
+and not the site's address record. Preserve MX/SPF/DKIM/DMARC and keep this CNAME
+for renewal. No DNS write performed by the agent; verify public resolution and
+ACM issuance after the human confirms entry. HTTPS is not live yet: listener,
+apex ALIAS and integrated app remain separately gated deployments.
+
+Post-apply metadata checks: original RDS remains stopped/t4g.micro; shared API
+revision1desired/running/pending0; separate Listings demo retains1host/1running
+and0pending. No app deployment, task/DB startup, SQL, S3/CORS, network or demo
+mutation. Certificate retained for upcoming deployment, review date2026-10-27;
+future cleanup/sender reversal requires its own exact plan approval. Other
+marketplace connections remain pending in the ordered runtime plan.
+
+
+DNS follow-up2026-10-26 07:08:19 UTC: Aditya reports the CNAME added. Public
+DNS-over-HTTPS lookup returned the exact ACM-required CNAME target (TTL1800).
+ACM remained PENDING_VALIDATION in two checks, with no listener association.
+No record correction is indicated by this evidence; issuance remains pending,
+not a failure or completed HTTPS endpoint. [Updated safe result](id-01-step-12/https-certificate-apply-result.json).
+No DNS/resource change, secret read or send in this verification. Retain the
+record for renewal; later recheck issuance before listener deployment.
+
+
+### Database/runtime connection package — 2026-10-26 07:12:03 UTC
+
+Aditya requested the current changes committed first, then local database/runtime
+preparation and an ACM recheck. Certificate/discovery package committed6f37b0b;
+Gitleaks/JSON/links/whitespace passed. No push or extra commit authorized.
+
+Refreshed [migration review candidate](id-01-step-12/shared-migration-apply-review.json)
+against6f37b0b, retaining original comparison provenance and explicit image/DDL
+pending gates. All17file paths/hashes still match, head20261025013000. Recorded
+current runner/setup/role source hashes and Suraj's human-confirmed PR14 merge
+without representing it as image or live SQL approval. No manifest-review bypass.
+Expanded [runtime proposal](../../../infra/terraform/shared/test/service.tf)
+with exact target, two-role/URL responsibilities, operation/publication ordering,
+connection budgets and refusal/recovery rules.
+
+Material finding: the existing Listings lifecycle script is explicitly for
+`clip_test_listings`, gives its demo role database ownership and includes teardown.
+It is not a safe shared database login/migration route. Its URL parameter name
+alone does not justify injecting that value into the shared app. No decrypted URL
+was read. Preserve the active demo and its current credential. The local Identity
+demo creates a separate disposable marketplace role with broad existing local
+table grants; that does not establish reviewed shared runtime privileges either.
+
+Identity's14table least-privilege role/setup already exists and remains separate.
+The shared marketplace pool covers Listings plus Search/Wanted/Saved; B/C must
+confirm required explicit table/sequence/function/catalogue access, Hybrid read/
+worker limits and operator pipeline privileges. No invented grants, owner role,
+private Identity table reads, or reuse of the isolated bootstrap. This is the
+remaining implementation/review boundary before a safe shared role apply.
+
+Next bounded live checkpoint to request separately: original shared RDS start,
+existing one-sleep-task/private-tunnel route and read-only four-namespace/tracker/
+role/logging catalog inspection. Keep shared API stopped, no migrations/role/grant/
+URL writes, no provider sends, no Listings demo start/stop. Use existing fixed
+account/resource/class/AZ with named exclusive original-resource window, explicit
+caps/deadline/one private admin-secret read and owned cleanup. Previous one-hour/
+$1/20minute-start bounds are proposals, not fresh execution approval or cost proof.
+After metadata, finalize image/first-apply review and the safe marketplace-role
+setup; apply schema/roles/secret publication only through separately verified
+increments. No live DB connection occurred during this preparation.
+
+
+ACM recheck2026-10-26 07:13:33 UTC: certificate **ISSUED**, DNS validation
+SUCCESS, expiration2027-05-11 23:59:59 UTC, no resource association. Updated
+[certificate evidence](id-01-step-12/https-certificate-apply-result.json) and cloud
+inventory. No secret reads/resource writes for this check; HTTPS listener and
+application deployment remain pending. Database/runtime preparation is documentation
+and proposed configuration only; no code behavior changed or full tests rerun.
+
+
+## 2026-10-26 demo and deployment handoff
+
+The [consolidated outcome/cleanup handoff](id-01-step-12/demo-postmortem-20261026.md)
+replaces duplicate local notes and expired recovery/preflight requests. The original
+RDS eventually started; the 17-migration chain, separate Identity/marketplace
+roles and secure URL publication have actual recorded results. The executed
+migration manifest is archived with exact bytes; the reusable default is no
+longer armed with the consumed live approval.
+
+AMD64 image/task IAM/private S3 were prepared and retained. Managed ingress was
+rejected by AWS; a temporary EC2 TLS proxy was used and later removed. Hosted
+human account/image/Search acceptance was not obtained. No-photo local workaround
+and recovery/proxy ingress source are gone; the one-to-eight image contract holds.
+
+Last recorded cleanup has API/host0, released public IP and deleted demo ingress;
+RDS was last observed stopping, so final stopped state remains unknown. User-managed
+A record removal and service state/live revision reconciliation remain outstanding.
+No cloud query, state/DNS edit, apply or secret read is authorized by Git cleanup.
+
+The retained Terraform runtime is now explicitly opt-in with a private nonempty
+controlled-recipient list. Default-off foundation startup remains valid; activation
+requires reviewed DB/IAM/image/HTTPS inputs. Existing marketplace grants do not
+cover Hybrid embedding/pipeline operations. Keep those real integrations and new
+peer/CI review pending; ID-READY is not accepted.
+
+
+The historical runtime JSON proposal was superseded by the retained shared service/
+variables/IAM/S3 source and removed during cleanup. Earlier preparation links now
+lead to that implementation; exact old proposal bytes remain in commit1bb0eb9.
+Historical execution/approval receipts are preserved separately from reusable
+future-run review defaults.
+
+
+## ECS service state reconciliation preparation — 2026-10-26 18:25:04 UTC
+
+Aditya reports the released-IP apex A deleted and explicitly requests no further
+propagation check; recorded as human-reported deletion, not newly verified DNS.
+He directed continuing to state reconciliation. Verified account and stopped live
+service revision2/desired-running-pending0. Prepared a saved **refresh-only** plan
+for aws_ecs_service.api[0] plus its dependency closure, using pinned1.15.9 and
+provider6.69.1/existing shared-test backend/default workspace. No state write.
+[Exact plan and scope](id-01-step-12/ecs-state-reconciliation-review.json).
+
+The local dependency graph excludes SSM-parameter and RDS resources. This matters:
+pinned provider SSM reads request decryption even during refresh; a broad refresh
+with missing write-only inputs could expose a value to state. No password values
+were read/supplied here, no fake input used, and no source/credential setting was
+weakened. Targeting is an exceptional out-of-band state recovery only; it is not
+used to hide infrastructure changes or claim global convergence.
+
+Plan exit2: **zero resource mutations**, zero output changes. State drift records
+service revision1→2 with desired0 unchanged plus already-existing tags, inline
+IAM metadata and bucket CORS/policy/lifecycle metadata in dependencies. Fifteen
+state-drift entries are not fifteen infrastructure updates. Prior serial17; task
+resource already2. Saved0600plan at
+`/tmp/clip-ecs-reconcile-c9_ual1t/ecs-service-refresh.tfplan`, SHA256
+`44693eb7f73c2138bcc48912b27448b30201bc64b56c5b4ef1aaee6be6ce293f`.
+Action/revision/hash/privacy checks pass. Operator session credentials stayed in
+memory; no raw state/plan details, recipient values or secrets were printed.
+
+Next separate approval: apply this exact refresh-only plan within15minutes,
+writing only shared state and lock metadata; verify state/live revision2 and zero
+service capacity. No app/DB restart, DNS query/change, SSM read/write, grants,
+role/image/ingress/storage change or deployment. Stop on stale plan/source/state;
+never replan/apply automatically. Future normal infrastructure work still requires
+a fresh full plan. Code unchanged; JSON/link/diff checks appropriate here.
+
+References: [HashiCorp refresh-only mode](https://developer.hashicorp.com/terraform/cli/commands/plan#planning-modes),
+[pinned SSM provider read implementation](https://github.com/hashicorp/terraform-provider-aws/blob/v6.69.1/internal/service/ssm/parameter.go#L270-L337).
+
+
+## ECS state reconciliation applied — 2026-10-26 18:29:50 UTC
+
+Aditya explicitly approved saved refresh-only plan44693eb7. Rechecked full plan/
+source/provider-lock hashes, account, prior serial17 and live stopped service2;
+applied only that saved plan, no automatic replan/retry. [Safe result](id-01-step-12/ecs-state-reconciliation-result-20261026T182852Z.json).
+State serial17→18, service record now revision2/desired0 and matches live desired/
+running/pending0. Existing dependency metadata was recorded; no AWS configuration
+mutation. Verified original RDS stopped and ASG0/empty. No application start,
+secret decryption, SQL, provider send or DNS query/change. Operator credentials
+used in memory only; raw state/plan/logs remain private outside Git.
+
+This resolves the recorded service-state drift only, not global source/live
+convergence or ID-READY. A future deployment requires a fresh full normal plan,
+valid controlled provider inputs, durable HTTPS/proxy design and real application
+acceptance. Aditya's DNS deletion remains human-reported, propagation intentionally
+not checked. Evidence/docs updates uncommitted; JSON/link/whitespace checks pass.

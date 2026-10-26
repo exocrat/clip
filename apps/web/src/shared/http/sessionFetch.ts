@@ -33,6 +33,8 @@ function appPath(path: string): boolean {
 }
 
 /** Fetch fresh session CSRF before each unsafe write, with no automatic replay.
+ * API requests send only the referrer origin, keeping Firefox Origin validation
+ * compatible with the page-wide no-referrer policy without leaking callback paths.
  * Prefix/headers/credentials/cache/redirect policy cannot come from a server reply.
  * A ten-second deadline covers preflight and response receipt; owning JSON validators stay
  * with each feature. The caller's abort propagates through both stages. A session

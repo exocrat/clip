@@ -47,13 +47,13 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PD-19 | Integration owner (current branch) | done | Steps 1–9 and combined foundation handoff complete | Steps 1–9 performed | User confirms all work before PRE-00 is complete | PR #8 merged at `2cd83e7` from head `18c966e` against base `68d9da9`; [Foundation quality gates passed](https://github.com/exocrat/clip/actions/runs/39323851584) for that exact head/base; `make test` (395 Python, 63 data, 16 web), Black, contract freshness and 10 `make check` gates passed; [handoff](foundation-handoff.md) | No open PD-19 work per user confirmation. Linux AMD64/macOS results remain user-confirmed without raw outputs. PR #8 has no submitted GitHub review; independent-review completion is user-confirmed, with no separate review artifact linked. Refresh cloud snapshot before any operation. | 2026-10-19 21:09:05 UTC |
 | PRE-00 | Integration owner | done | Foundation gate audit accepted; DL-00 is unblocked | performed | verified/accepted by user | Reviewed handoff PR #8 merged to `main` at `2cd83e7`; hosted Foundation quality gates passed for head `18c966e` against base `68d9da9` (run `39323851584`); clean-checkout evidence at `0747be6`; see [PD-19 handoff](foundation-handoff.md) | None. PR #8 has no GitHub review event; independent-review completion remains user-reported without a separate artifact. | 2026-10-19 21:20:55 UTC |
 | DL-00 | Shared-core/contract coordinator; all domains review | done | Steps 1–13 and task-wide audit complete; accepted and merged | Steps 1–13 performed; accepted by user | User confirmed full acceptance and merge on 2026-10-22 05:30:49 UTC | PR #9 merged to `main` at `f5576ef`; current `main` is `44cd8ff`; Step 13 check evidence is recorded below and was not rerun for this update | None for DL-00; cleanup implementation remains separately gated; real providers/integrations and crypto/worker implementation remain downstream | 2026-10-22 05:30:49 UTC |
-| ID-01 | A | in progress | Step12 marketplace actor reset, seller UX, saved/terminal-session checks, and synthetic routed account workflows implemented; full local gate passed; PR #14 merged on main; task acceptance pending; local aggregate and hosted quality gates passed on the reviewed implementation; this is a work-log-only follow-up; required reviews remain | All11 `make check` gates pass: Python1830/24skip, data94, web289/3skip, Black261, boundaries/contracts/types/build, wrapper35, PostgreSQL18.6 lifecycle, Gitleaks8.30.1 | Aditya verified lifecycle/seller/Wanted UI states2026-10-26 05:17:22UTC and separately authorized narrow Listings navigation guards; new synthetic workflow tests are available for review | `task/id-ready-local-hardening`; PR #14; reviewed implementation head `94cc2c77ad40a721efccdd6ea36775e6f90c65ba` against current main `6c860603bdd81a98485e721d789b557c5d433948`; this commit only corrects the work-log row; [hosted Foundation quality gates](https://github.com/exocrat/clip/actions/runs/40276423964); prior integrated overnight head `2a55c6bd562099ab4c94cefcf2eff99b6e4ee6f0`; [hosted runtime and ingress audit](../evaluation/identity/integration.md#additional-runtime-activation-and-ingress-gate--offline-source-audit); [cross-owner handoff](../evaluation/identity/cross-owner-review.md) | Identity DB login/grants/URL; Listings URL and available DB; exact secret provisioning and RDS window; hosted ingress/IAM/image; real provider/device checks; independent peer and affected-owner review; Step14 outside scope | 2026-10-26 06:09:06 UTC |
+| ID-01 | A | in progress | Step12 runtime-preparation review handoff; main PR15 integrated; Firefox fix locally human-verified | All11 local gates pass: Python1841/24skip, data94, web295/3skip, Black262, boundaries/contracts/types/build, wrapper35, PostgreSQL18.6 lifecycle and Gitleaks; Terraform4roots pass | Aditya verified Firefox sign-in and requested branch rename, main integration and PR creation; peer/affected-owner approval pending | `task/id-01-runtime-preparation`; accepted base `d7afc8b`; runtime and Firefox evidence/history below | Current hosted CI, independent/affected-owner review and exact merge approval; durable HTTPS/runtime/provider/image/Search acceptance; ID-READY incomplete | 2026-10-26 19:43:43 UTC |
 | LI-01 | B | in progress | Finish the remaining Step 7 browser states and current-head Step 11 checks/reviews; prepare a progress PR without claiming LI-CORE. Steps 12–13 remain integration-gated. | Steps 1–6 and 8–10 implemented and locally checked; Step 7 partial (create/detail/edit/My Listings/gallery). | Suraj verified the multi-image edit/gallery checkpoint, seller-only selected-buyer visibility, and Step 10. No LI-01 phone-device result is claimed. | domain/listings at 6ffbe0b; focused Listings suite: 61 passed, one database-only test skipped outside the wrapper; disposable PostgreSQL workflow passed; current worktree `make check` passed 2026-10-23 (573 Python, 63 data, 42 web tests; remaining contract, type, boundary, database, safety, formatting, lint, and build checks passed). | LI-CORE not accepted. Remaining Step 7 states; Step 11 query-plan, current aggregate, and affected-owner review; native schema check; five pre-existing backend boundary findings; real Identity, Conversations, storage, and Search integration; Steps 12–13. | 2026-10-23 10:38:31 UTC |
 | LI-02 | B | in progress | Step 12 demo is tested and stopped; record final evidence, then begin intake of the Search owner's PR under the review workflow. | Steps 1–11 and 1.5 verified; Step 12 ran on ECS and was tested on desktop/mobile. Read-only app checks found the synthetic listing and its S3 image; teardown is complete. | User approved and applied teardown plan `3703bb7b23405a5a23a1ac6c39fa8870e682dddf3a1a8272183f4642f8f0db81` (0 add, 1 change to LI-02 bucket CORS, 20 LI-02 deletes). Post-stop inventory confirms disposable RDS/ALB/service/host/root volume/run S3 objects/URL parameter/log streams absent; shared RDS is stopped, shared ECS cluster remains, LI-02 ASG desired 0/no instances. Two run ECR images are retained (105,624,604 bytes total) per user direction. | `task/li-02-isolated-runtime` at `f0bf6c6`; earlier 11 focused tests, Black, Python compilation, Terraform fmt/validate, CLI help and diff checks. Start plans: infrastructure `a2b8cbeaa6cc4fc2d13ff8c8696cfa133d8134280de89f719e0d6f2b91668f55`; app start `b6a3fbd4812c965a5830780f337997d13b4b362c7eb1a73f2b3e70f5946b5bd4`. Stop-path corrections are currently uncommitted in `scripts/li02-demo`, `infra/terraform/domains/listings/test/database_tasks.tf`, both LI-02 operator guides, and this work log. `git diff --check` passed; no tests rerun. Existing untracked `data/runs/` and `database/migrations.zip` remain untouched. | Compute/ingress/disposable-database charges from the demo have ended. Retained run images add about 101 MiB of ECR storage; Step 4 bucket/IAM/log group and shared VPC/NAT/ECS/RDS remain. No manual RDS snapshot remains. | 2026-10-25 09:29:55 UTC |
-| SE-01 | Mohit (C); peer Suraj (B), Identity review | in progress | Local create-to-Keyword-and-Hybrid flow and browser walkthrough verified; formal acceptance remains pending | Test-only browser demo binds the same fixed synthetic Identity for writes/browse and can opt into the real helper, worker, pipeline bootstrap and Hybrid reader; automatic new-listing vector generation was observed | Suraj verified the local command/API/proxy flow and subsequent browser walkthrough | Search PR #11 worktree `task/search-evidence-reduction` at `864e53b`; new listing `194a32d4-64bb-491b-b4ec-68403e26f7f3` produced one title and one description vector (384 dimensions each), then matched in both modes through API and Vite proxy; session `/tmp/clip-listings-browser-v6e1f01t`; UI `http://127.0.0.1:5173/` | Formal SE-CORE/DATA-READY and final NFR/hosted-CI acceptance remain outside this merge step | 2026-10-25 14:38:24 UTC |
+| SE-01 | Mohit (C); peer Suraj (B), Identity review | in progress | PR15 hosted Python/web/database gates pass; checksum-evidence scanner false positive corrected locally | 47714cc fixes readiness; subsequent CI reaches final secret scanner; two verified SHA256 fingerprints reformatted without scanner exemptions | Mohit verified Hybrid-default UI and requested branch push/PR | Search PR #11 worktree `task/search-evidence-reduction` at `864e53b`; new listing `194a32d4-64bb-491b-b4ec-68403e26f7f3` produced one title and one description vector (384 dimensions each), then matched in both modes through API and Vite proxy; session `/tmp/clip-listings-browser-v6e1f01t`; UI `http://127.0.0.1:5173/`  [Hybrid default UI](../evaluation/domain/se-01/hybrid-default-ui/result.json): lint86/web289pass/3skip/types/build pass;  [PR15 correction](../evaluation/domain/se-01/pr15-ci-readiness/result.json): unit11/native21/3skip/17migrations/Black2/boundaries/diff pass;  [Hosted rerun](https://github.com/exocrat/clip/actions/runs/40382575520) functional/database gates pass; evidence-format rerun pending. | Formal SE-CORE/DATA-READY and final NFR/hosted-CI acceptance remain outside this merge step | 2026-10-26 19:06:47 UTC |
 | SE-02 | Mohit (C); peer Suraj (B), Identity/Conversations review | in progress | Step8 real integration gated; local handoff human-verified | Steps1–7 isolated result verified; Step8 audit performed | Mohit verified isolated UI and combined local handoff | [Search handoff](../evaluation/domain/search-handoff/result.json): Python1270/data94/web144,Black183,native20/3skip,wrapper35/contracts8/boundaries/parity/type/build pass | Await actual ID-READY/LI-CORE/SE-CORE/C adapters; Step9 final acceptance, pinned secrets/hosted CI and independent review pending | 2026-10-25 08:50:43 UTC |
 | MERGE-LI-SE | Suraj (integration); Listings/Search affected owners | done | PR #11 is squash-merged; Search–Listings local merge task is complete | Steps 1–9 performed; approved PR head `2a43066` merged to `main` as `e315c9d`; final hosted CI run `40204621122` passed | Steps 3–8 verified by Suraj; user authorized squash merge of the exact PR revision on 2026-10-25 | PR #11 `https://github.com/exocrat/clip/pull/11`; source head `2a430660d25e7c14cf33d84bd78172db4ec063c7`; squash merge `e315c9df3e0e11d6e9c8d7d244d676204d3af7e8`; hosted CI `40204621122`; local merge commit `29eb6fb`; fallback branch `safety/search-pr11-pre-main-reconciliation-20261025`; stash `af9d7f5`; local checks recorded below | No blocker for the Search–Listings merge. Final dataset, formal NFR/cloud checks, and real Identity/Conversations remain later work. | 2026-10-25 15:17:46 UTC |
-| CN-01 | Rahul (D) | in progress | Participant-key readiness correction Step3 local regression complete; verify result before resuming main/PR reconciliation | All12 make check gates passed: Python1919/100skip, data94, web397/3skip, DB114, migrations, format/types/contracts/boundaries/wrapper/secrets; real-session suite8 passed | Rahul verified Steps1/2 and authorized Step3; Step3 result awaits verification | `task/cn-01-conversations`; [integration checkpoint](../evaluation/domain/conversations-integration.md); temporary harness stays uncommitted under/tmp | Refresh/reconcile last-fetched main7612fd8 before final PR/CI; normal A/B/C/security review, exact merge authorization and full CN-01 later gates remain | 2026-10-26 20:56:57 UTC |
+| CN-01 | Rahul (D) | in progress | Participant-key readiness correction complete; latest main merged; prepare and validate PR | All12 combined `make check` gates passed: Python1930/100skip, data94, web403/3skip, DB114, migrations, Black, types, contracts, boundaries, wrapper and secrets | Rahul verified Steps1–3; current-main reconciliation awaits verification | `task/cn-01-conversations`; current base `7612fd8747ee053701a7316ef9b93dedc5d10cdb`; [integration checkpoint](../evaluation/domain/conversations-integration.md); temporary harness stays uncommitted under/tmp | Current hosted CI and independent Aditya/affected-owner review; exact merge authorization; full CN-01 later gates remain | 2026-10-26 21:10:00 UTC |
 | CN-02 | D; A/B interface review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | Isolated development: PRE-00, then DL-00 and a reviewed contract/stub. Later real gates: CN-CORE, ID-READY, and LI-CORE for listing-origin behavior; SE-02 plus CN-01's real request path for request-response inbox integration. | — |
 | CN-03 | A; D producer review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | CN-CORE, ID-READY | — |
 | INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
@@ -105,6 +105,20 @@ passed. This is current local correction evidence, not new provider/browser/NFR
 acceptance or a claim against newer main. Step3 awaits verification; refresh/
 reconcile main before final PR/CI and human peer/owner review. No push, merge,
 cloud operation or shared database apply; temporary harness remains uncommitted.
+
+## CN-01 — Current main reconciliation — 2026-10-26 21:10:00 UTC
+
+After Step3 verification, refreshed main at `7612fd8747ee053701a7316ef9b93dedc5d10cdb`
+(PR16) and merged it into the task branch. The only conflicts were in shared
+session transport, its regression test and the work-log status row. Resolution
+preserved main's incoming `unsafe-url` test input and newer Identity status while
+retaining the reviewed origin-only policy rationale and CN-01 evidence. Full
+combined `make check` passed all12 gates: Python1930 passed/100 skipped, data94,
+web403 passed/3 existing skips, Black290, boundaries0, contracts8, consumer mypy2,
+wrapper35, real PostgreSQL18.6 migrations, Conversations114 and Gitleaks8.30.1.
+Existing large web bundle warning remains. The merged branch is ready for PR
+preparation; current hosted CI and designated human reviews are pending. No cloud
+or shared database action occurred.
 
 ## CN-01 — Participant-key readiness correction Step2 — 2026-10-26 20:45:04 UTC
 
@@ -1151,6 +1165,340 @@ client navigation/state updates are suppressed. B affected review remains pendin
 Reservation released2026-10-26 05:22:07UTC after implementation and checks.
 
 ## Dated history entries
+
+### ID-01 — approved state-only reconciliation verified — 2026-10-26 18:29:50 UTC
+
+Aditya(A) approved exact refresh-only plan44693eb7. Plan/source/provider/account/
+prior serial17/live service2checked; saved apply passed, state now18with service2/
+desired0matching live desired/running/pending0. [Safe result](../evaluation/identity/id-01-step-12/ecs-state-reconciliation-result-20261026T182852Z.json).
+Original RDS stopped/ASG0empty reverified. Existing dependency metadata only; no
+resource restart/configuration, secret read, SQL/provider/DNS action. No propagation
+verification at user's direction. Updated inventory/handoff/summary; JSON/links/
+whitespace pass. No code change/full tests repeated; future full normal plan and
+real deployed acceptance remain gated. Result awaits human verification; no commit.
+
+### ID-01 — DNS human update and refresh-only state plan — 2026-10-26 18:25:04 UTC
+
+Aditya(A) reports apex A deleted and explicitly declines propagation verification;
+no further DNS lookup. Directed next item. Local graph excludes password/RDS nodes;
+prepared targeted refresh-only saved plan against exact shared-test backend, prior
+serial17. Service state1→live2 and existing dependency metadata, zero infrastructure/
+output changes; desired0 unchanged. No passwords supplied/decrypted or state write.
+[Exact checksum/scope](../evaluation/identity/id-01-step-12/ecs-state-reconciliation-review.json)
+44693eb7,0600private file. Target exception is out-of-band state recovery, not normal
+partial infrastructure apply/global drift acceptance. Updated handoff/inventory;
+JSON/links/whitespace checked. Exact state-write approval and later full deployment
+review remain pending. No cloud mutation, restart, provider send or secret read.
+
+### ID-01 — read-only cleanup verification — 2026-10-26 18:09:02 UTC
+
+Aditya(A) requested verification and renewed expired AWS login. Confirmed correct
+account, original RDS stopped/private/protected, shared ECS/API/ASG0/empty; no owned
+demo EIP/SG/target group, exact host/proxy IDs return no retained instances and
+revision3inactive. ACM issued/unused; Identity reference metadata v1only. State
+pull in memory shows serial17service revision1 versus live stopped revision2;
+task-definition state already2. Public Google/Cloudflare A still65.0.49.162,
+released from this account; validation CNAME correct. [Evidence](../evaluation/identity/id-01-step-12/cleanup-verification-20261026T180723Z.json).
+Updated handoff/inventory/summary. No secret decryption, SQL/start/stop, DNS/state
+refresh/write/deploy/send. Offline review consistent, ready_for_live=false. JSON/
+links/whitespace checked; no code change/full test rerun needed. DNS cleanup and
+reviewed state reconciliation remain; real hosted flows unverified while stopped.
+
+### ID-01 — branch audit and demo cleanup reconciliation — 2026-10-26 13:51:41 UTC
+
+Aditya(A) requested auditing all uncommitted work against main and removing obsolete
+files after demo changes across chats. Refreshed origin/main3d6c270; branch0behind/
+2ahead at1bb0eb9. Private reversible30file snapshot retained outside Git before
+cleanup. Kept Docker Microsoft build input, retained scoped IAM/S3 and gated ECS
+runtime; fixed invalid enabled-without-recipients demo configuration using default-off
+runtime plus private validated recipient input. Preserved exact applied migration
+manifest byte-for-byte under a historical path; canonical reusable manifest is
+unreviewed/unapproved again, resolving the live-unreviewed guard-test regression.
+Consolidated local/hosted reports, removed duplicate retrospective,4expired plan
+JSONs and the runtime proposal superseded by actual TF source; redirected links
+and retained executed-action/results and meaningful history.
+The scan finding was a public service-name field in one removed obsolete plan;
+no scanner exception or secret value exposure. [Current handoff/disposition](../evaluation/identity/id-01-step-12/demo-postmortem-20261026.md).
+Updated root/evidence summaries and cloud inventory without fresh cloud claims.
+Final verification2026-10-26 14:02:52UTC: locked setup; all11local gates pass,
+1830Python/24skip,94data,289web/3skip,Black261,types/contracts/boundaries/build,
+35wrapper safety, real PG18.6lifecycle and Gitleaks8.30.1. Pinned TFall4roots,
+exact archive/current SHA, all17main SQL bytes, JSON/paths/anchors pass. First
+aggregate found a historical/reusable review-reference mismatch; separate executed
+receipt restored the canonical format without weakening tools/tests. Focused12tests
+and actual offline audit pass, ready_for_live=false. Logs /tmp/clip-branch-cleanup-check-final.log
+and /tmp/clip-branch-cleanup-terraform.log. Applicable local ownership/privacy/docs/
+quality checklist reviewed; milestone-wide real acceptance remains pending. No new
+AWS/SQL/SSM/DNS/state action, commit, push or merge. Human result verification,
+cloud stop/DNS/service-state follow-up and peer review remain gated.
+
+### ID-01 — Step12 small-class saved plan reviewed — 2026-10-26 07:38:44 UTC
+
+Aditya(A) approved revised full plan and two ephemeral reads. Correct account/
+source/version1confirmed; one private1b t4g.small create only, no other resource
+actions. [Exact0600plan/hash](../evaluation/identity/id-01-step-12/demo-postmortem-20261026.md#database-preparation)
+c01833ce, same source/latest restorable point, no apply/create. Action/checksum/
+permissions/JSON/diff checks pass; TF validation unchanged. Fresh exact apply and
+read scope require approval; original/demo/URLs intact and SQL/cutover excluded.
+
+### ID-01 — Step12 revised recovery class — 2026-10-26 07:36:33 UTC
+
+Aditya(A) directed trying t4g.small. Metadata supports18.6/gp3/small in all3Mumbai
+AZs; no capacity guarantee. Official ordinary rate0.042USD/h, storage unchanged.
+Changed only recovery candidate class/source hash; retained1b/private/PITR/source
+preservation and all failed micro evidence. [Revised scope](../evaluation/identity/id-01-step-12/demo-postmortem-20261026.md#database-preparation).
+Pinned TF fmt/shared-root validation and JSON/diff passed. No plan/secret read/
+resource change. Fresh full plan/two ephemeral reads then exact new-checksum apply
+approval required; old micro plan cannot be reused. ID-READY remains pending.
+
+### ID-01 — Step12 approved alternate-zone restore capacity failure — 2026-10-26 07:34:28 UTC
+
+Aditya(A) approved exact c216c12c saved plan and ephemeral reads. Hash/account/
+source/recovery point verified; one apply returned AWS InsufficientDBInstanceCapacity
+for t4g.micro/gp3 across available zones in this VPC. [Safe result](../evaluation/identity/id-01-step-12/database-recovery-apply-20261026T073215Z.json).
+Candidate absent, original stopped, no SQL/URL/demo change or temporary cleanup.
+Controller ended/no background retry. Two approved version1reads stayed in memory.
+Updated review/inventory/integration; JSON/links/whitespace checked. Different-class
+candidate requires new plan/approval; no automatic substitution or restore acceptance.
+
+### ID-01 — Step12 alternate-zone restore plan review — 2026-10-26 07:31:15 UTC
+
+Aditya(A) approved full non-applying restore plan and two in-memory password reads.
+Correct source/account/version1checked; plan exit2, exact1private1b RDS create,
+zero other changes/replacements/deletes. [Saved plan/hash/review](../evaluation/identity/id-01-step-12/demo-postmortem-20261026.md#database-preparation)
+records c216c12c checksum,0600artifact, latest restorable2026-10-25 05:30:04UTC,
+60minute/$1/40minute-create proposal and separate stop/retention/cutover boundaries.
+Original stopped source/demo/URLs preserved; no restore/apply or SQL. JSON/links/
+whitespace and exact action/hash/privacy checks pass; prior TF validation retained.
+Exact apply and fresh ephemeral reads require separate approval. ID-READY pending.
+
+### ID-01 — Step12 alternate-zone RDS source and cost plan — 2026-10-26 07:27:21 UTC
+
+Aditya(A) directed trying a new instance. Prepared default-off shared recovery TF:
+separate private1b t4g.micro/18.6/20GiB gp3 from latest PITR, original and shared
+AZ/network unchanged; source KMS/SG/subnet reused, no cutover or deletion. Review
+and source hashes in [recovery package](../evaluation/identity/id-01-step-12/demo-postmortem-20261026.md#database-preparation).
+Published Mumbai ordinary instance rate0.021USD/h and storage0.131USD/GiB-month;
+20GiB2.62USD/month before extras. Pinned Terraform fmt/backend-free validation
+pass all four roots. No restore/plan or app-secret read. Planning requires exact
+non-applying scope/two fresh ephemeral reads; creation requires saved-plan review.
+Shared source paths reserved by A; original/demo preserved. JSON/links/whitespace
+and secret scan checked; result pending verification/next approval.
+
+### ID-01 — Step12 alternate-AZ capacity assessment — 2026-10-26 07:24:00 UTC
+
+Aditya(A) suggested trying another zone. Read-only orderability returns t4g.micro/
+PostgreSQL18.6 in1b/1c, not current1a; existing DB subnet group includes1b. Backup
+metadata shows latest restorable point2026-10-25 05:30:04UTC, newer than latest
+listed snapshot. [Assessment](../evaluation/identity/id-01-step-12/demo-postmortem-20261026.md#database-preparation)
+records stopped-instance modification restriction, new-instance restore/data-currency
+and endpoint implications, and shared active-AZ/network coupling. Preserve original;
+no retry/restore/zone/class mutation or secret read. Availability listing is not
+capacity guarantee. Candidate1b restore requires exact cost/currency/state/cutover
+plan before approval. JSON/links/whitespace checked; ID-READY remains pending.
+
+### ID-01 — Step12 approved DB preflight capacity failure — 2026-10-26 07:20:43 UTC
+
+Aditya(A) approved exact bounded read-only preflight. Correct target/shared idle/
+image/port checks passed; one RDS start at07:20:10UTC rejected
+InsufficientDBInstanceCapacity. No retry/substitution. [Evidence](../evaluation/identity/id-01-step-12/shared-database-preflight-20261026T071912Z.json).
+Postcheck: original RDS stopped, shared ECS0hosts/tasks/pending and ASG0/empty;
+no task/tunnel/host started, secret read or SQL. No temporary cleanup required;
+active Listings demo untouched. Attempt closed, no background retry. Live baseline
+still unknown; later retry requires explicit fresh window. Updated plan/inventory;
+JSON/links/whitespace pass. Result awaits verification; ID-READY incomplete.
+
+### ID-01 — Step12 shared database preflight scope — 2026-10-26 07:15:55 UTC
+
+Aditya(A) authorized connection-package commit then preflight preparation. Prepared
+[exact read-only execution request](../evaluation/identity/id-01-step-12/demo-postmortem-20261026.md#database-preparation)
+from1bb0eb9: original fixed RDS, one sleep task/host, private10minute tunnel, one
+master-secret read, bounded60minute/$1operator ceiling and20minute startup, no
+retry. Catalog checks cover all four namespaces/complete migration history plus
+Identity metadata; collector's narrower scope explicitly documented. No SQL
+writes/role/grants/URLs/app/provider/network changes. Separate active Listings demo
+preserved; owned cleanup guarded by exclusivity/cooldown. JSON/links/whitespace
+pass. New scope uncommitted; exact live approval pending, no cloud actions taken.
+
+### ID-01 — Step12 database connection preparation and certificate issuance — 2026-10-26 07:13:33 UTC
+
+Aditya(A) directed commit first, then local database/runtime preparation and ACM
+recheck. Prepared current17file/head migration candidate/source hashes and exact
+two-role/URL/publication/refusal package from6f37b0b. [Connection result](../evaluation/identity/integration.md#databaseruntime-connection-package--2026-10-26-071203-utc)
+identifies isolated Listings bootstrap/owner URL as unsuitable for implicit shared
+reuse; B/C shared marketplace privilege/setup review remains. No new role grants,
+SQL/DB start or URL read/write. ACM now ISSUED/validation SUCCESS, not in use;
+[updated evidence](../evaluation/identity/id-01-step-12/https-certificate-apply-result.json).
+Migration/source hashes, JSON, links and whitespace pass; prior code tests unchanged.
+Updated cloud inventory and plan. New preparation edits uncommitted; result awaits
+verification and separate shared-RDS preflight/execution approvals.
+
+### ID-01 — Step12 public certificate DNS verified — 2026-10-26 07:08:19 UTC
+
+Aditya(A) reports Spaceship validation CNAME added. Public DNS lookup matches the
+exact required ACM target (TTL1800); two ACM checks still PENDING_VALIDATION,
+not in use. Updated [certificate evidence](../evaluation/identity/id-01-step-12/https-certificate-apply-result.json)
+and integration handoff; no DNS correction or new resource/secret/send action.
+Issuance/HTTPS listener still pending; retain CNAME for renewal. JSON/whitespace
+checks passed. Other deployment checkpoints remain pending as recorded.
+
+### ID-01 — Step12 certificate/sender apply and verification — 2026-10-26 07:04:31 UTC
+
+Aditya(A) explicitly approved saved plan9f7d85f7 and two fresh ephemeral password
+reads. Hash/source/account checked; exact plan applied successfully. Created
+non-exportable ACM certificate a9775d00-2af5-4b12-990d-1ce9795f1859, now pending
+Spaceship CNAME validation; SES condition verified verify@. [Safe result/DNS record](../evaluation/identity/id-01-step-12/https-certificate-apply-result.json).
+RDS still stopped/shared API0; separate Listings demo1host/1running unchanged.
+No DNS/listener/app/SQL/send/storage/network mutation. Certificate retained with
+2026-10-27review; future cleanup separately gated. Updated integration/inventory;
+JSON/relative links/whitespace checked. Human verification/DNS entry pending;
+other database/runtime/S3/Search/Hybrid deployments remain in the same plan.
+
+### ID-01 — Step12 HTTPS full plan reviewed — 2026-10-26 06:59:49 UTC
+
+Aditya(A) approved the two exact one-time password decryptions for planning.
+Correct account/version1checked; values memory/ephemeral env only. Full pinned
+Terraform plan succeeded with one ACM create and one existing SES FromAddress
+update no-reply→verify; parsed policy otherwise identical. No replacements/deletes
+or compute/RDS/network/S3/demo actions. Observed drift is computed RDS restore-time
+and inline-policy metadata only. [Exact safe review/checksum](../evaluation/identity/id-01-step-12/https-certificate-plan-review.json)
+records protected plan, verification/retention, scope change and separate apply
+approval. No apply, send or application/source change; existing Terraform checks
+retained and JSON/link/whitespace checks pass. Full remaining marketplace deployment
+scope preserved. Result awaits verification/exact two-action apply approval.
+
+### ID-01 — Step12 certificate plan preflight and deployment scope — 2026-10-26 06:57:25 UTC
+
+Aditya(A) approved non-applying certificate planning, reminding that all other
+marketplace deployments remain in scope. Confirmed account, initialized exact
+shared/test backend/default workspace using pinned1.15.9, prepared protected local
+inputs and preserved the private sandbox recipient from existing state in memory.
+No app-secret decryption, SQL/start/send/apply. Existing master/probe ephemeral
+passwords are absent from retained inputs/environment; root requires them even
+for this plan. [Exact two-read continuation scope](../evaluation/identity/integration.md#certificate-planning-preflight--2026-10-26-065725-utc)
+prepared; saved plan not yet created. No placeholder password or targeted bypass.
+Schema/roles, Identity, S3/images/Listings, Search/Wanted/Saved/Hybrid and HTTPS
+remain deployment scope; active Listings demo preserved. JSON/link/whitespace
+checks passed; no application source changed or new application tests claimed.
+
+### ID-01 — Step12 runtime permissions and HTTPS source — 2026-10-26 06:50:29 UTC
+
+Aditya(A) verified discovery and requested HTTPS alongside connection work.
+Prepared shared-state opt-in DNS-validated ACM certificate source/default-off,
+review-date and prevent-destroy guards/public CNAME outputs, plus exact separate
+Identity task-read/Listings execution-injection policy proposal and pending config
+fields. Reserved new shared certificate/README paths; existing service/network,
+Listings/Search roots and active demo unchanged. [Review/next plan scope](../evaluation/identity/integration.md#runtime-policy-and-https-preparation--2026-10-26-065029-utc).
+PATH Terraform1.16.5 failed version guard; pinned1.15.9 backend-free formatting/
+validation passed all four roots. No cloud plan/apply or new resource/query/send.
+Certificate-only non-applying plan and exact subsequent apply remain separate
+gates; source/live SES difference may prevent a one-add plan and must be reviewed.
+Result awaits verification; ID-READY remains incomplete.
+
+### ID-01 — Step12 approved cloud metadata discovery — 2026-10-26 06:44:03 UTC
+
+Aditya(A) verified the local map then explicitly approved the bounded read-only
+inspection. Confirmed correct AWS identity, stopped shared RDS/zero shared ECS,
+foundation task lacking integrated config, missing listed Identity URL, existing
+v1key/email/Listings URL metadata, old no-reply SES policy and demo-only S3 CORS.
+Public apex A/AAAA absent; Spaceship NS; no matching account Route53 zone/regional
+ACM certificate. **Listings demo is currently active with healthy target/one task**,
+so older stopped evidence must not drive cleanup. Recorded [safe evidence](../evaluation/identity/id-01-step-12/cloud-metadata-20261026T064141Z.json),
+updated integration handoff/cloud inventory. No decryption, SQL, object content,
+app request/email or resource mutation; initial network restriction resolved by
+approved network-enabled execution. JSON/links/whitespace checks pass. Result
+awaits verification; next is local exact change preparation, not live apply.
+
+### ID-01 — Step12 marketplace deployment connections — 2026-10-26 06:38:54 UTC
+
+Aditya(A) authorized starting connection preparation. Audited existing Listings/S3,
+Keyword/Wanted/Saved and Hybrid composition against the canonical deployment
+handoff and added the [configuration/check map](../evaluation/identity/integration.md#marketplace-connection-audit--2026-10-26-063854-utc).
+S3 requires shared prefix/CORS/runtime-role review with Suraj; existing isolated
+resources are not assumed safe for shared use. Hybrid needs its existing AMD64
+artifacts, operator pipeline initialization/coverage and reviewed sizing with Mohit;
+no new Search service/database is proposed. Prepared a15minute metadata-only cloud/
+DNS discovery request excluding decryption, SQL, resource starts and changes.
+No cloud action/code change; relative links and whitespace pass. Local preparation
+awaits verification; metadata discovery requires its separate exact approval.
+
+### ID-01 — Step12 PR acceptance and shared runtime plan — 2026-10-26 06:32:23 UTC
+
+Aditya(A) confirms Suraj reviewed and merged PR #14; local main is3d6c270.
+Corrected the stale open-PR/task row without accepting ID-READY: shared runtime
+checks remain pending. Prepared the [post-merge runtime plan](../evaluation/identity/integration.md#post-merge-shared-runtime-plan)
+on task/id-01-runtime-readiness, preserving main. Current17migration paths/hashes
+match manifest/head20261025013000. Microsoft/IISc and temporary email flows have
+real local evidence; hosted configuration is not established by their merge.
+Clarified that authentication uses Microsoft or email OTP, never SMS/phone-number
+verification; mobile-browser usability is a separate UI check. No cloud query,
+secret read, SQL, send, deployment or commit. Plan awaits human verification and
+separate exact live approvals; PR #14 review is no longer a pending blocker for
+its merged implementation. New runtime/shared changes retain their own review.
+### PR15 hosted readiness verification and checksum-evidence correction — 2026-10-26 19:06:47 UTC
+
+User approved local correction commit/push. On exact head47714cc, hosted run
+40382575520 passes Python, data, boundaries, contracts, double types, web checks,
+wrapper safety, clean migrations/schema, formatting and parity. The initial
+Identity fixture setup failure no longer occurs. Final secret gate reports only
+two generic-api-key findings: hybrid-default-ui/result.json42/43. Both values
+recomputed exactly match their referenced discoveryApi.ts/discovery-api.test.ts
+SHA256, not credentials. Changed only that evidence object's representation to
+path/sha256 records; values preserved. No scanner rule, allowlist, ignore,
+credential, product code or test assertion changed. Updated correction evidence;
+whitespace/JSON/hash binding checked. No redundant functional rerun for metadata.
+Full hosted success remains pending publication and rerun of this follow-up.
+Commit/push approval still required by CONTRIBUTING.md; no merge/cloud action.
+
+### PR15 Identity fixture readiness correction supporting SE-01 — 2026-10-26 18:57:41 UTC
+
+Mohit requested CI diagnosis and correction. PR15 remains open/mergeable at
+c94b4a6; run40337135112 failed Python with1773pass/24skip/57setup errors at the
+Identity Docker/dbmate command, before web checks. Raw error output is withheld,
+so the exact original subprocess reason is not established. Source audit found
+a real readiness mismatch: Unix SQL accepts the official image's temporary
+bootstrap server while migrations use final TCP. Reserved the test-only fixture
+under Mohit's requested CI correction; no Identity product behavior changed.
+
+postgres_fixtures now gates migrations with authenticated TCP/version on the owned
+container, bounded30s deadline and <=5s command probes. Safe phase/exit/fixed
+category and timeout diagnostics retain no raw argument/output disclosure.
+Network isolation, SCRAM, read-only/cap-drop and exact owned cleanup preserved.
+New test_postgres_fixture_readiness covers11race/deadline/version/cleanup/privacy
+cases with explicit subprocess fixtures. No tests or workflow checks disabled.
+
+Locked uv sync installed new-main Identity dependencies into existing repository
+venv only; sandbox DNS failed then escalated sync passed. No global install or
+Docker installation. Regression11pass(0.04s), native21pass/3optional model skips
+(4.12s), all17migration down/up/repeat and seven smoke suites twice/identical
+schema pass. Owned cluster stopped; /tmp/clip-pd08-native-check.xgV46B retained.
+Black2, boundaries0 and whitespace pass.
+[Evidence](../evaluation/domain/se-01/pr15-ci-readiness/result.json) binds files.
+Docker/hosted rerun remains required before claiming CI fixed; full root Python
+not rerun without Docker. Explicit commit/push approval and exact-head hosted
+verification pending; no publication, merge or cloud action in this increment.
+Reservation released after local checks; only these test files/evidence/log changed.
+
+### SE-01 Step7 Hybrid-default UI amendment — 2026-10-26 13:59:07 UTC
+
+Mohit requested Hybrid by default, no visible Keyword/Hybrid selector or recovery
+button, and both modes retained in code; explicitly selected branch hybrid-nochoice.
+Audited the request against the mode contract and Search frontend boundary: no
+new task-definition gap. Changed Search-owned SaleDiscovery/query/API modules
+only: Hybrid clean/reset URL defaults, explicit transport mode despite unchanged
+API Keyword default, legacy explicit Keyword links/transition helper preserved,
+plain unavailable/Retry and unchanged Newest-first sort. No shared page/import
+boundary, generated contract, backend or public API default changed. Updated four
+web tests, web README, existing decision amendment and mode-proposal UI note.
+
+First check exposed old-default expectations and missing new-main jsdom packages.
+Corrected expectations; pinned npm ci synced repository node_modules using local
+cache only (sandbox DNS failed; required escalated retry passed). No global
+installation or manifest/lock change. Final npm check passes: lint86files,289tests
+pass/3skip, TypeScript and production build pass; diff whitespace pass.
+[Evidence](../evaluation/domain/se-01/hybrid-default-ui/result.json) binds source
+hashes and code purposes. Browser verification pending; no full-task/readiness
+acceptance. No staging, commit, push, merge, cloud or deployment.
 
 ### ID-01 — Step12 marketplace account lifecycle and real saved integration — 2026-10-26 05:22:07 UTC
 
@@ -7184,3 +7532,229 @@ Ran `VITE_MICROSOFT_SIGN_IN_ENABLED=true npm run build` from the repository root
 ### ID-01 Step12 hosted runtime activation and ingress gap — 2026-10-25 19:45:09 UTC
 
 Read-only source/Terraform audit found the default ASGI app does not bind Identity, the shared task definition selects production with no Identity settings/parameter wiring, Identity runtime bootstrap is local/test-only, and the shared API service has private bridge networking with no public listener. Identity middleware needs a verified HTTPS origin/proxy path. The current repository does not identify that route or a trusted proxy hop. Recorded this as a prerequisite to code activation/deployment rather than guessing a public listener or trusting arbitrary forwarded headers. No AWS query, configuration change, application code edit or test run occurred.
+
+
+### ID-01 Step12 small restore blocked by account Free plan — 2026-10-26 07:45:03 UTC
+
+Applied the exact Aditya-approved `db.t4g.small`/1b saved plan once, with two fresh
+master/probe values read into process memory only. AWS rejected the create with
+`FreeTierRestrictionError`; the candidate is absent and the original RDS remains
+stopped. No retry, SQL, cutover, demo mutation or account-plan change occurred.
+Recorded the sanitized result and updated the recovery decision state. AWS Free-plan
+options include `db.t3.micro`; PostgreSQL18.6/gp3 orderability in1b/1c is not a live
+capacity guarantee. Next review the t3.micro price and 1b/1c choice, then prepare a
+fresh plan only after separate verification.
+
+
+### ID-01 Step12 t3.micro recovery plan prepared — 2026-10-26 07:51:54 UTC
+
+Aditya approved review of t3.micro Mumbai pricing and preparation of a fresh
+non-applying restore plan. Rechecked the approved AWS principal, stopped original
+resource/recovery point, absent candidate and existing1a/1b DB subnet group.
+Retrieved two fresh version1 SecureStrings once each into process memory only.
+Pinned Terraform1.15.9/provider6.69.1 plan exited2 with exactly one private t3.micro
+PostgreSQL18.6/20GiB gp3 restore create in1b and zero other actions. Plan checksum
+`e09be3f840d97b486245a99e416bb823c57cfed64a74b5844636fbaa61bf28a`; saved plan,
+inputs and logs are outside Git under mode0700/0600 private paths. No apply, SQL,
+cutover, retry or upgrade. [Evidence](../evaluation/identity/id-01-step-12/demo-postmortem-20261026.md#database-preparation). Pricing is0.026USD/hour compute plus2.62USD/month for20GiB gp3; steady730-hour estimate21.60USD before extras. Exact-checksum apply approval remains pending; ID-READY incomplete.
+
+
+### ID-01 Step12 t3.micro restore rejected by Free-plan instance limit — 2026-10-26 09:01:15 UTC
+
+Aditya verified and approved exact plan `e09be3f840d97b486245a99e416bb823c57cfed64a74b5844636fbaa61bf28a6`. Rechecked saved-plan/source hashes, approved account, original stopped resource/recovery point and candidate absence; read each fresh version1 master/probe SecureString once into process memory. AWS rejected the only apply with `InstanceQuotaExceeded`, stating the Free-plan RDS instance limit had been reached. No recovery candidate exists; original remains stopped. No retry, SQL, cutover, demo mutation or account upgrade. [Sanitized result](../evaluation/identity/id-01-step-12/database-recovery-t3-apply-20261026T075358Z.json). Aditya reports Listings demo resources removed; next do read-only RDS inventory/quota verification before preparing any fresh plan. ID-READY remains incomplete.
+
+
+### ID-01 Step12 original RDS start completed — 2026-10-26 09:17:15 UTC
+
+Aditya asked to try the original RDS after Suraj's demo teardown. Read-only inventory
+showed only the original RDS in ap-south-1; the ordinary RDS quota was1/20, while AWS
+had separately rejected the prior Free-plan second-instance restore with
+`InstanceQuotaExceeded`. Verified the exact operator, source resource ID, original
+private/encrypted/protected metadata and idle shared ECS/API/ASG. Sent one start at
+09:03:30UTC; AWS recovery began09:03:52, completed09:13:52, and the DB reached
+`available`09:17:08.735UTC. [Result](../evaluation/identity/id-01-step-12/database-original-rds-start-20261026T090330Z.json). No retry, SQL, secret read, task, tunnel, restore, cutover or demo action. Original RDS is running and accruing compute charges. Await Aditya verification before any further database work; ID-READY remains incomplete.
+
+
+### ID-01 Step12 logging/session diagnosis and demo host retention — 2026-10-26 10:04:59 UTC
+
+Aditya verified the clean empty baseline and directed retaining the current shared
+ECS host for the demo. The follow-up found two idle AWS `rdsadmin` sessions and one
+Identity logging mismatch: `log_min_error_statement=error` instead of the required
+`panic`; other reviewed settings match. The sleep task/tunnel are closed. A guarded desired-zero request was rejected
+with `ScalingActivityInProgress`; it was not retried. The follow-up `c7i-flex.large` is retained with scale-in protection, ASG desired1/min0/
+max1, API service0; RDS remains available. No database or application configuration
+was changed. [Evidence](../evaluation/identity/id-01-step-12/shared-database-followup-result-20261026T100459Z.json). ID-READY remains incomplete; human verification of the follow-up findings is pending.
+
+### ID-01 Step12 shared database preflight result — 2026-10-26 09:54:24 UTC
+
+Aditya approved the bounded read-only preflight and retained the original RDS for
+the demo. The verified TLS transaction found an empty initial database: four project
+schemas and the migration tracker are absent, all17 migrations are unapplied, the
+Identity runtime role is absent, and PUBLIC privilege counts are zero. The safe
+logging check mismatched and two other client backends were counted without reading
+session identities/query text; migrations and runtime setup remain gated on review.
+One master SecureString was read once in memory; no database writes/provider sends.
+The task and SSM session stopped; Aditya set ASG desired0. Follow-up confirmed zero
+ECS/API/ASG capacity, the owned root volume deleted, no active SSM sessions, and the
+original RDS still available. [Result](../evaluation/identity/id-01-step-12/shared-database-preflight-result-20261026T095424Z.json). Human verification of these findings is pending; ID-READY remains incomplete.
+
+### ID-01 Step12 shared database preflight scope verified — 2026-10-26 09:26:41 UTC
+
+Aditya verified the bounded read-only preflight plan and directed that the original RDS remain running for the later demo. The cleanup scope now explicitly excludes stopping the database. No cloud task, tunnel, SQL, secret read or infrastructure mutation occurred; exact execution approval is still pending. ID-READY remains incomplete.
+
+### ID-01 Step12 refreshed shared database preflight scope — 2026-10-26 09:24:31 UTC
+
+Aditya directed beginning the next deployment prerequisite. Reviewed the stale07:15
+preflight request and refreshed it against current source and read-only AWS metadata.
+The original RDS is available; the shared API service/task cluster and ASG are zero.
+The actual preflight task definition defaults to Identity email smoke, so the proposed
+exact override is sleep-only; it has no secret injection and will not send email.
+Metadata-only SSM review found master/probe/auth/email parameters version1, while
+Identity DB URL and Listings DB URL are absent. Local psycopg3.3.6 and SSM plugin are
+available; psql is not installed. One master-secret read is proposed only after exact
+execution approval.
+
+Prepared [refreshed scope](../evaluation/identity/id-01-step-12/demo-postmortem-20261026.md#database-preparation): one task/host, one tunnel, verify-full TLS, bounded read-only transaction and supplemental four-schema/tracker/role catalog queries; proposed60minute/$1 working bounds, no retries. It preserves the previous failed capacity attempt, no automatic start, no DDL/DML or credential/URL changes. Stopping the now-running original RDS is a separately selected/approved cleanup action. No task, secret read, tunnel or SQL executed. Await human scope verification before requesting exact cloud execution approval; ID-READY remains incomplete.
+
+### ID-01 Step12 shared migrations applied — 2026-10-26 10:27:21 UTC
+Aditya confirmed image review and required approvals and authorized continuing through a demo URL. The fresh private TLS preflight found the clean four-schema/empty-tracker baseline and no other application sessions. Applied the 17 reviewed migrations with the pinned dbmate 2.36.0 digest through the strict runner; its postcheck verified head `20261025013000` and 37 tables/33 functions/43 triggers. The existing protected demo host and available RDS remain running. The logging mismatch was left unchanged as directed. No runtime role/URL, IAM, ECS service, listener, or DNS changes were made in this migration step. [Evidence](../evaluation/identity/id-01-step-12/shared-migration-apply-result-20261026T102702Z.json).
+
+### ID-01 Step12 runtime and demo URL readiness — 2026-10-26 10:33:02 UTC
+After the successful shared migration, inspected the runtime and network path read-only. The ECS API is still desired0 with an October19 image, no injected DB parameters and no load balancer. Its host has no public IP or inbound rules; the VPC has only one internet-routed subnet. ACM is issued for `clip-iisc.site` but unused; there is no Route53 zone or resolved apex address, and the repo assigns DNS changes to Spaceship. Identity auth/email SecureStrings exist; Identity and Listings database URLs do not. Task/execution IAM lacks the needed SSM access. A bounded session-local logging override was proven to roll back while the RDS-wide value remained `error`. Automatic approval review rejected creating the persistent Identity login and publishing its credential-bearing URL, citing insufficiently exact authorization. No IAM/service/listener/DNS/role/secret change was made. The owned SSM migration tunnel was terminated. [Readiness evidence](../evaluation/identity/id-01-step-12/demo-url-readiness-result-20261026T103244Z.json).
+
+### ID-01 Step12 Identity DB runtime login — 2026-10-26 10:35:43 UTC
+After Aditya explicitly approved the exact role/parameter creation, created `clip_test_identity_app` with the reviewed Identity-only grants and a generated password held only in process memory. Published its TLS `verify-full` URL as SecureString `/clip/test/identity/database-url` version1 using the AWS-managed SSM key. The live role login, 17 migration versions, `log_min_error_statement=panic`, and denial of schema CREATE all passed. Transaction-local log overrides allowed this operation without changing the RDS-wide `error` setting. The SSM tunnel was terminated; host and RDS remain running. Listings access, task IAM, app image/service, and public HTTPS/DNS remain pending. [Evidence](../evaluation/identity/id-01-step-12/identity-runtime-role-result-20261026T103522Z.json).
+
+### ID-01 Step12 Marketplace DB runtime login — 2026-10-26 10:44:28 UTC
+Aditya approved a separate `clip_test_marketplace_app` login for the shared Listings/Search pool. Created it with connection limit10, no elevated attributes, no DDL/ownership, no Identity/Conversations access, and explicit privileges on only the ten current tables used by the API. No sequence, function, embedding or schema-migration privileges were granted. Published its generated verify-full DSN to SecureString `/clip/test/listings-database-url` version1. Login and positive/negative privilege checks passed; the RDS-global logging value remains `error`, while this role gets `panic`. The migration tracker read was intentionally denied and no grant was added. SSM tunnel closed. [Evidence](../evaluation/identity/id-01-step-12/marketplace-runtime-role-result-20261026T104412Z.json).
+### ID-01 Step12 AMD64 demo image and ELB account restriction — 2026-10-26 11:14:41 UTC
+
+At Aditya's direction, built the current API/web source natively on the retained
+AMD64 EC2 host with Microsoft sign-in enabled in the web bundle. The bounded Docker
+context SHA-256 was `b05fbd5409518f153e51f21884be4ec0cd14901a09867ae6207a68abcaae30e7`;
+the container passed loopback `/health` and web-root checks. Published immutable
+ECR digest `sha256:50de5b7d8f27ca41c89b9617d8fc1d53e267110481648468c7cf48bb49c3f881`.
+Applied the reviewed full Terraform plan (checksum
+`3343982571b513e9a31baa9bd1e06aa08564ad5cff0705ec8e486c08fabf622d`): private
+image storage and scoped IAM, API task definition revision2, target group/security
+rules, and static EIP were applied. AWS rejected NLB creation with
+`OperationNotPermitted: This AWS account currently does not support creating load
+balancers`; listener and ECS service update were not reached. API stays desired/
+running0 on service revision1. EIP `65.0.49.162` is unassociated; target group and
+security group are unused. RDS remains available with deletion protection, and
+the database change was tags only. The existing EC2 host remains healthy/running/
+scale-in-protected; ASG desired capacity stays0 as previously selected. No DNS
+change or public endpoint exists; ID-READY remains incomplete. [Sanitized result]
+(../evaluation/identity/id-01-step-12/demo-deploy-attempt-20261026T111441Z.json).
+### ID-01 Step12 temporary EC2 HTTPS proxy — 2026-10-26 11:22:13 UTC
+
+After AWS denied ELB creation, Aditya explicitly approved the temporary public EC2
+proxy and asked to skip assistant-side verification for the five-minute demo.
+Updated the ECS API service directly to task definition revision2, desired1; AWS's
+update response reported one running task. Launched `t3.micro` proxy
+`i-0ddd52b8041114121` in the existing public subnet, reused EIP `65.0.49.162`, and
+configured Caddy to forward `clip-iisc.site` to the private ECS host. Inbound is
+limited to TCP80/443; SSH is closed; outbound HTTPS supports image/ACME access,
+and port18000 reaches only the ECS host SG. The user must add the Spaceship apex A
+record and manually verify. No external health/sign-in/listing/image check was
+run. ECS/EC2 CLI changes are not reconciled in Terraform yet; ID-READY remains
+incomplete. [Handoff](../evaluation/identity/id-01-step-12/demo-proxy-bypass-20261026T112213Z.json).
+
+### ID-01 Step12 local demo retrospective and no-photo workaround rollback — 2026-10-26 13:15:50 UTC
+
+After Aditya confirmed the demo was over, documented the local auth and listing
+photo outcomes in [the colleague handoff](../evaluation/identity/id-01-step-12/demo-postmortem-20261026.md#local-demo-outcome).
+The local no-photo exception had passed focused API/web checks but was not browser-
+verified or committed; its API routes, UI flag, disposable database trigger
+override, launcher changes and related tests/docs were removed. The normal
+one-to-eight image requirement is restored. No local S3 integration was made or
+tested. Existing cloud/Terraform work in the shared worktree was preserved. The
+handoff records remaining S3 prerequisites and the limits of prior check results.
+
+### ID-01 Step12 hosted demo postmortem and cleanup — 2026-10-26 13:28:43 UTC
+
+After Aditya confirmed the demo was over, documented the local Identity/image
+outcomes and hosted route in [the colleague handoff](../evaluation/identity/id-01-step-12/demo-postmortem-20261026.md).
+The IISc resolver reported stale `43.205.193.65`, while public DNS returned
+`65.0.49.162`; direct HTTPS to that IP served the page after the temporary
+forwarded-protocol fix. No human hosted sign-in or listing/image workflow passed.
+Using the approved non-root `adityalaxmi1` profile, restored ECS to desired0 on
+revision2, deactivated temporary revision3, terminated the demo proxy and the
+zero-capacity protected shared host, released the demo EIP, and deleted the demo
+target group/security group and cross-SG ingress rule. Pinned Terraform1.15.9
+removed the five deleted ingress resources from remote state. RDS deletion
+protection/data remain; stop request was accepted but the last status check still
+reported `stopping`. The user-managed Spaceship A record still needs removal.
+Terraform state says the stopped service is revision1 while AWS is revision2;
+prepare and review a state refresh plan before any future apply. Existing
+uncommitted source/task changes were preserved. ID-READY and ID-01 remain
+incomplete.
+
+### ID-01 Step12 local and Terraform demo cleanup follow-up — 2026-10-26 13:32:45 UTC
+
+Inspected four local `postgres:18.6-bookworm` containers and confirmed each was
+created by the Identity demo fixture with a `/tmp/clip-real-local-*` bind mount,
+tmpfs database storage, and no persistent Docker volume. Removed exactly those
+four and verified no matching PostgreSQL 18.6 container remained. Removed the
+temporary NLB/EIP/SG Terraform file and ECS attachment after the corresponding
+cloud resources and five state entries were removed. Removed the unused
+alternate-AZ recovery implementation (no candidate was created) while preserving
+its review/attempt evidence; removed the demo-only personal SES recipient from
+ECS configuration. Kept the ID-01 runtime, database, IAM, private image bucket,
+certificate, and ECR configuration. RDS remained last-observed `stopping`;
+follow-up AWS API calls failed to connect, so final stopped-state confirmation is
+pending. The Spaceship A record is still human-managed and must be removed by
+Aditya. See the updated
+[postmortem](../evaluation/identity/id-01-step-12/demo-postmortem-20261026.md).
+
+### ID-01 Step12 Firefox sign-in origin correction — 2026-10-26 19:31:52 UTC
+
+Chrome succeeded while Firefox failed before provider redirect. Development-only
+Identity start-stage diagnostics narrowed this to the server attempt; Aditya
+reported HTTP403 with `Origin: null` and `X-CLIP-Request: 1`. The page's existing
+`no-referrer` metadata combined with `mode: same-origin` suppresses the origin in
+Firefox. After Aditya verified the plan, set `referrerPolicy: origin` on shared
+API requests and CSRF preflight, overriding caller policies while preserving the
+page-wide no-referrer metadata, exact-origin backend checks, cookie/CSRF policy,
+redirect rejection and no-retry behavior. API referrers contain no path/query.
+
+Actual Firefox148 with the real shared TS transport and a disposable local HTTP
+endpoint reproduced old `Origin: null`, then verified the corrected exact origin
+and origin-only referrer despite a synthetic callback query and conflicting caller
+policy. This synthetic probe sent no real authentication request. The approved
+real-provider local API was separately started with a disposable database and a
+three-hour cap; startup sent no email. Aditya confirmed real local Firefox sign-in works at
+2026-10-26 19:36:18 UTC; this verifies the local correction. Full frontend check:295 passed/3 opt-in skips, lint/types/build passed;
+43 focused Identity diagnostic cases passed earlier. Logs are local temporary
+artifacts `/tmp/clip-firefox-origin-check.log` and
+`/tmp/clip-firefox-origin-bswwc7gc/result.json`. No deployed update or readiness
+acceptance is claimed; shared Listings/Search transport review remains required.
+## PR15 disposable Identity fixture correction reservation
+
+Writer: Mohit on `hybrid-nochoice`, 2026-10-26 18:54:14 UTC. User requested CI failure correction.
+Scope: Identity test-only PostgreSQL readiness/credential-safe diagnostics and
+focused regression tests, evidence and log. No Identity product behavior, schema,
+cloud or new Docker installation. Actual Linux/Docker confirmation remains CI.
+
+### ID-01 Step12 current-main integration and review handoff — 2026-10-26 19:43:43 UTC
+
+At Aditya's request, renamed the continuation branch to
+`task/id-01-runtime-preparation` and integrated accepted main
+`d7afc8b128c8b2caae368589573dabc133e3008a` (PR15 Hybrid-default UI and disposable
+Identity PostgreSQL readiness). Resolved two work-log conflicts by retaining both
+histories, the current Identity checkpoint and incoming Search row; incoming
+main-only files match their accepted bytes. All17SQL files remain unchanged.
+Refreshed the reusable migration-review base/hash, preserving historical executed
+receipts and all live-approval gates. Updated the current Identity handoff and
+Terraform instructions to reflect the completed state reconciliation.
+
+Locked Python/npm setup and all11local gates passed:1841Python/24optional skips,
+94data,295web/3opt-in skips, Black262files, boundaries/contracts/double types/build,
+35wrapper cases, actual PostgreSQL18.6 migration lifecycle and Gitleaks8.30.1.
+Backend-free pinned Terraform1.15.9 formatting/validation passed all4roots; the
+system1.16.5was first rejected by the version guard. JSON, changed local Markdown
+file links and whitespace checks passed. Logs: `/tmp/clip-id01-pr-check.log` and
+`/tmp/clip-id01-pr-terraform.log`. No cloud or DNS action occurred. The PR is a
+reviewable runtime-preparation increment, not ID-READY acceptance; hosted CI,
+independent/affected-owner review, exact merge approval and real hosted runtime
+checks remain pending. Use the canonical peer-review prompt for this revision.

@@ -78,3 +78,55 @@ that diff deliberately. Once SES production access/configuration is reviewed,
 remove the test-recipient resource through a separately reviewed plan and verify
 normal delivery. This is a sandbox test exception, not the production recipient
 model. All original exact plan, role-ownership and cloud approval gates remain.
+
+
+## Shared application HTTPS certificate preparation
+
+`https-certificate.tf` adds an opt-in ACM DNS-validated public certificate for
+`clip-iisc.site` in this shared root/state, because the HTTPS origin serves every
+feature. It defaults disabled; no DNS/listener/compute change is included.
+`https_certificate_enabled=true` requires an explicitly reviewed
+`https_certificate_review_date`. The expected full certificate-phase plan adds
+exactly one ACM certificate with no other changes/replacements/deletions.
+Preserve current deployment phase and all existing inputs, including private
+sandbox recipient, passwords' write-only versions, stopped API and pinned image.
+A fresh full root plan is mandatory; stop on drift or unrelated sender-policy
+changes. Do not use a targeted apply to hide those changes.
+
+Outputs supply public CNAME records for the existing Spaceship DNS operator;
+there is no assumed Route53 zone or blocking validation resource. Keep CNAMEs
+for managed renewal. The certificate does not make the application available:
+validation, shared listener/proxy and later deploy remain separate approvals.
+`prevent_destroy` blocks accidental teardown if its flag/phase is disabled;
+actual removal requires a deliberate reviewed source/cleanup change.
+The certificate review date overrides historical tags for this resource only.
+
+
+Applied2026-10-26: the reviewed full plan included the certificate addition plus
+an explicitly approved existing SES sender-condition update to verify@; no other
+resource actions. The certificate is now retained in shared state. Future plans
+must preserve `https_certificate_enabled=true` and its reviewed date unless
+certificate removal is deliberately reviewed; omission/default false is not a
+safe continuation input. See the [current certificate evidence](../../../../docs/evaluation/identity/id-01-step-12/https-certificate-apply-result.json).
+
+
+## Retained Identity and image runtime preparation
+
+The shared bucket in `listings-images.tf` and scoped task/execution policies track
+resources retained after the 2026-10-26 demo. Do not remove those declarations to
+clean up local history: a later apply would propose deleting retained resources.
+The normal API image build accepts `VITE_MICROSOFT_SIGN_IN_ENABLED` (default false).
+Real runtime remains opt-in through `identity_runtime_enabled=true` and a private,
+nonempty `identity_test_recipients` list of at most five. This restores a valid
+disabled default instead of deploying the demo's incomplete email configuration.
+No real addresses belong in source. Keep `api_service_enabled=false` until the
+exact image, DB references, provider inputs and trusted HTTPS ingress are reviewed.
+
+The current private marketplace role has no Hybrid pipeline/table privileges;
+Hybrid deployment/role/model initialization remains separately reviewed work.
+The approved refresh-only reconciliation recorded state serial18 with service
+revision2 matching live. Before any future apply, review a fresh full normal plan
+and preserve the retained certificate flag/date and original write-only versions.
+Neither these local changes nor a successful local check authorizes state refresh,
+remote apply, DNS changes or runtime restart. See the
+[consolidated demo handoff](../../../../docs/evaluation/identity/id-01-step-12/demo-postmortem-20261026.md).

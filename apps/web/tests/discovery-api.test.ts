@@ -20,7 +20,7 @@ describe('current, public-only discovery transport', () => {
     const fetch = stub(page());
     const signal = new AbortController().signal;
     await readDiscoveryPage({ ...DEFAULT_QUERY, min_price_paise: '0', negotiable: 'false' }, signal);
-    expect(fetch).toHaveBeenCalledWith('/api/listings?min_price_paise=0&negotiable=false', expect.objectContaining({ signal, cache: 'no-store', credentials: 'same-origin' }));
+    expect(fetch).toHaveBeenCalledWith('/api/listings?min_price_paise=0&negotiable=false&search_mode=hybrid', expect.objectContaining({ signal, cache: 'no-store', credentials: 'same-origin' }));
     expect(JSON.stringify(fetch.mock.calls)).not.toMatch(/owner_id|user_id|Authorization|X-Clip-UI-Preview/);
   });
   it('enables the preview transport header only with explicit development opt-in', async () => {
@@ -74,6 +74,6 @@ describe('development backend disclosure', () => {
     vi.stubGlobal('fetch', fetch);
     await readDiscoveryPage(DEFAULT_QUERY, new AbortController().signal);
     expect(discoveryPreviewBackend()).toBe(expected);
-    expect(fetch.mock.calls[0][0]).toBe('/api/listings');
+    expect(fetch.mock.calls[0][0]).toBe('/api/listings?search_mode=hybrid');
   });
 });

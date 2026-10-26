@@ -1,0 +1,218 @@
+{
+  "prepared_at_utc": "2026-10-26 18:25:04 UTC",
+  "state": "approved_saved_refresh_only_plan_applied_and_verified",
+  "source_commit": "246a7df",
+  "account": "335523638354",
+  "profile": "adityalaxmi1",
+  "region": "ap-south-1",
+  "root": "infra/terraform/shared/test",
+  "backend_bucket": "clip-tfstate-335523638354-ap-south-1-20261019-0e51ca0",
+  "backend_key": "shared/test/terraform.tfstate",
+  "workspace": "default",
+  "terraform_version": "1.15.9",
+  "provider_version": "6.69.1",
+  "mode": "targeted_refresh_only",
+  "state_key": "shared/test/terraform.tfstate",
+  "prior_state_serial": 17,
+  "target": "aws_ecs_service.api[0]",
+  "plan_returncode": 2,
+  "apply_executed": true,
+  "secret_decryption": false,
+  "dns_lookup": false,
+  "private_directory": "/tmp/clip-ecs-reconcile-c9_ual1t",
+  "planned_resource_mutations": [],
+  "drift": [
+    {
+      "address": "aws_cloudwatch_log_group.api[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_attribute_names": [
+        "tags"
+      ]
+    },
+    {
+      "address": "aws_ecr_repository.api[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_attribute_names": [
+        "tags"
+      ]
+    },
+    {
+      "address": "aws_ecs_capacity_provider.shared[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_attribute_names": [
+        "tags"
+      ]
+    },
+    {
+      "address": "aws_ecs_cluster.shared[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_attribute_names": [
+        "tags"
+      ]
+    },
+    {
+      "address": "aws_ecs_service.api[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_attribute_names": [
+        "task_definition"
+      ]
+    },
+    {
+      "address": "aws_ecs_task_definition.api[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_attribute_names": [
+        "tags"
+      ]
+    },
+    {
+      "address": "aws_iam_instance_profile.ecs_instance[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_attribute_names": [
+        "tags"
+      ]
+    },
+    {
+      "address": "aws_iam_role.api_execution[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_attribute_names": [
+        "inline_policy",
+        "tags"
+      ]
+    },
+    {
+      "address": "aws_iam_role.api_task[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_attribute_names": [
+        "inline_policy",
+        "tags"
+      ]
+    },
+    {
+      "address": "aws_iam_role.ecs_instance[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_attribute_names": [
+        "tags"
+      ]
+    },
+    {
+      "address": "aws_launch_template.ecs_host[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_attribute_names": [
+        "tags"
+      ]
+    },
+    {
+      "address": "aws_s3_bucket.listings_images[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_attribute_names": [
+        "cors_rule",
+        "lifecycle_rule",
+        "policy"
+      ]
+    },
+    {
+      "address": "aws_security_group.ecs_host[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_attribute_names": [
+        "tags"
+      ]
+    },
+    {
+      "address": "aws_subnet.workload_private[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_attribute_names": [
+        "tags"
+      ]
+    },
+    {
+      "address": "aws_vpc.shared[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_attribute_names": [
+        "tags"
+      ]
+    }
+  ],
+  "plan_sha256": "44693eb7f73c2138bcc48912b27448b30201bc64b56c5b4ef1aaee6be6ce293f",
+  "planned_output_changes": {},
+  "plan_path": "/tmp/clip-ecs-reconcile-c9_ual1t/ecs-service-refresh.tfplan",
+  "plan_permission": "0600",
+  "intended_state_update": {
+    "service_record_revision_before": 1,
+    "service_record_revision_after": 2,
+    "desired_count_before": 0,
+    "desired_count_after": 0,
+    "task_definition_record_already_revision": 2
+  },
+  "scope_rationale": "Exceptional recovery of known out-of-band stopped ECS service update. Targeted refresh-only limits state reconciliation to the service and dependencies; it is not a normal targeted infrastructure apply and does not assert global convergence.",
+  "graph_safety": {
+    "no_ssm_parameter_resource_in_dependency_closure": true,
+    "no_rds_resource_in_dependency_closure": true,
+    "no_password_inputs_supplied": true,
+    "no_state_changed_by_plan": true
+  },
+  "apply_proposal": {
+    "time_bound_minutes": 15,
+    "actions": "Apply only this saved refresh-only plan; write one new shared-state revision including inspected dependency metadata; verify service state2/live2/desired0",
+    "no_infrastructure_mutations": true,
+    "no_resource_start_stop_or_deploy": true,
+    "no_secret_values_needed": true,
+    "no_dns_queries_or_changes": true,
+    "stop_conditions": [
+      "wrong identity/account/backend/workspace",
+      "plan/source/state serial mismatch",
+      "unexpected infrastructure action",
+      "stale plan; do not automatically replan/apply"
+    ],
+    "recovery": "Existing versioned S3 state/retained private plan preserve prior state; rollback would require its own exact review, never revert live service to inactive revision1"
+  },
+  "limits": [
+    "Global shared-stack drift outside this dependency graph is not reconciled",
+    "This does not deploy the new default-off source, test sign-in, or accept ID-READY",
+    "Fresh full reviewed normal plan remains required before any future infrastructure apply"
+  ],
+  "source_sha256": {
+    "infra/terraform/shared/test/base.tf": "014fd912c57ec8870756b01a5f121578e2250de4173741b4855ffb0b858aad46",
+    "infra/terraform/shared/test/https-certificate.tf": "8a1b12c14af14bb0a5cf303ed4f6d8963336429c5e438edaca17f4e34335b30a",
+    "infra/terraform/shared/test/identity-email.tf": "466ef2fef48dd6268a21be9b5e5c784115699f90055cd3028994dd001ffcc76f",
+    "infra/terraform/shared/test/listings-images.tf": "3dd67d86f5485be065063200885ed2e6b6a395bdc7aef2e86fa36d99ea2cdf65",
+    "infra/terraform/shared/test/locals.tf": "92b1dd0e50adbc0937e845acc2b4476f67bd2d1a20c4a26b65a5e3a7649d374e",
+    "infra/terraform/shared/test/network.tf": "cc22c15bb83d0ef3cff78db5059f52e26c42a3fc4fa1ff01351b4f885dc9b008",
+    "infra/terraform/shared/test/outputs.tf": "b252fcac10aae837f8525b9ba11db2ba188ec1ff5db4bf2e31c1d23ff9faf4ce",
+    "infra/terraform/shared/test/service.tf": "35fa4e2fb4f59784eccf0dc43708ebd98413f96eb09f7a1e96fc7c761870aa3f",
+    "infra/terraform/shared/test/variables.tf": "bb044febdf21a61965757cd0dda6612b7ad4db44651d503f251f4f425c71beb9",
+    "infra/terraform/shared/test/versions.tf": "85378f9c60b449e27a7d8fe68661c2d359fd088f620d34c541177abe76ddb332"
+  },
+  "provider_lock_sha256": "8e943f65218efc74b64233304fcea1a642c1c394452dcc1a4c0e138a20d78b5d",
+  "apply_result": "docs/evaluation/identity/id-01-step-12/ecs-state-reconciliation-result-20261026T182852Z.json",
+  "approval_consumed": true
+}

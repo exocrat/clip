@@ -512,3 +512,15 @@ retains its unprefixed path/build guard. Existing isolated demos supply the
 reviewed CSRF response double under their own guards, not a client bypass.
 See the [decision](../../docs/decisions/browser-session-transport.md) and current
 [Identity integration evidence](../../docs/evaluation/identity/integration.md).
+
+### Hybrid default without mode controls
+
+On `hybrid-nochoice`, clean/reset discovery uses Hybrid. The mode selector and
+Keyword recovery button are removed; search-unavailable retains Retry. Keyword
+parsing, the transition helper and backend implementation remain in code for
+explicit URLs/API consumers. `discoveryQuery.ts` owns the UI default and preserves
+explicit Keyword URLs; `discoveryApi.ts` always sends search_mode because the
+public API still defaults to Keyword. `SaleDiscovery.tsx` keeps search/filter/sort/
+pagination controls without asking users to choose an implementation mode.
+Newest-first remains the default sort. No shared page, route or generated
+contract was changed. Mohit verified the browser increment.

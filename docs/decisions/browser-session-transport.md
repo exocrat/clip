@@ -70,3 +70,14 @@ independent and affected-owner review remain pending; no push/deployment approva
 
 ## Supersedes
 None; implements the existing reviewed session/CSRF extension across feature APIs.
+
+## Firefox origin compatibility — 2026-10-26 19:31:52 UTC
+
+Aditya verified the API-only referrer-policy correction. Both CSRF preflight and
+business fetches pin `referrerPolicy: origin`, overriding caller options. The
+page retains `no-referrer`; Firefox otherwise sends `Origin: null` for these
+same-origin-mode POSTs. This preserves backend exact-origin validation and emits
+only an origin as referrer, never callback paths/query parameters. Firefox148
+reproduced the old behavior and verified the actual corrected transport against a
+local synthetic endpoint. Aditya confirmed real local Firefox sign-in works on 2026-10-26 19:36:18 UTC;
+affected-owner review and deployed acceptance remain pending.
