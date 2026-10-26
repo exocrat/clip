@@ -495,6 +495,133 @@ def test_missing_stale_incompatible_and_expired_keys_fail_closed():
     run_scenario(scenario)
 
 
+@pytest.mark.parametrize(
+    "state",
+    [
+        "retired",
+        "missing_rows",
+        "malformed",
+        "incompatible",
+        "wrong_owner",
+        "wrong_version",
+    ],
+)
+def test_member_key_failures_never_masquerade_as_first_setup(state):
+    """Simulated storage damage stays a conflict/dependency error, not waiting UX."""
+
+    async def scenario(pool):
+        alice, bob, _, thread, *_ = await seed_thread(pool)
+        keys = PostgresKeyDirectory(pool)
+        await keys.register_own_key(caller(alice), public_bundle())
+        await keys.register_own_key(caller(bob), public_bundle())
+        peer = await keys.read_own_key(caller(bob))
+        async with pool.connection() as connection:
+            if state == "retired":
+                await connection.execute(
+                    "UPDATE conversations.public_key_versions SET retired_at=clock_timestamp() WHERE user_id=%s AND retired_at IS NULL",
+                    (bob,),
+                )
+            elif state == "missing_rows":
+                # Registration-operation evidence survives this simulated loss.
+                await connection.execute(
+                    "DELETE FROM conversations.public_key_versions WHERE user_id=%s",
+                    (bob,),
+                )
+            else:
+                if state == "malformed":
+                    material = b"invalid-public-bundle"
+                else:
+                    changed = {"key_version": 3}
+                    if state == "wrong_owner":
+                        changed["user_id"] = alice
+                    elif state == "wrong_version":
+                        changed["key_version"] = 999
+                    else:
+                        changed["protocol_version"] = "unsupported"
+                    material = (
+                        peer.model_copy(update=changed).model_dump_json().encode()
+                    )
+                # Existing versions are immutable. Model bad imported storage by
+                # retiring the valid head and inserting an owner-local new row,
+                # not by disabling or bypassing any database trigger.
+                await connection.execute(
+                    "UPDATE conversations.public_key_versions SET retired_at=clock_timestamp() WHERE user_id=%s AND retired_at IS NULL",
+                    (bob,),
+                )
+                await connection.execute(
+                    "INSERT INTO conversations.public_key_versions (id,user_id,version,public_key_material,protocol_id) VALUES (%s,%s,3,%s,'open-e2ee-signal')",
+                    (uuid4(), bob, material),
+                )
+        with pytest.raises(PublicError) as error:
+            await keys.read_member_keys(caller(alice), thread)
+        assert error.value.spec.status == (
+            409 if state in {"retired", "missing_rows", "incompatible"} else 503
+        )
+        assert not any(
+            detail.code == "not_registered" for detail in error.value.details
+        )
+
+    run_scenario(scenario)
+
+
+def test_member_key_setup_http_distinguishes_own_peer_and_ready_without_enumeration():
+    """Real router/SQL transition; only request authentication is a test double."""
+
+    async def scenario(pool):
+        alice, bob, _, thread, *_ = await seed_thread(pool)
+        # Remove the fixture's legacy keys before either account has a real
+        # registration receipt or any message/key references.
+        async with pool.connection() as connection:
+            await connection.execute(
+                "DELETE FROM conversations.public_key_versions WHERE user_id IN (%s,%s)",
+                (alice, bob),
+            )
+        actor = [caller(alice)]
+        app = create_app(Settings(environment="test", database_dsn=TEST_DATABASE_DSN))
+        app.dependency_overrides[require_caller] = lambda: actor[0]
+        path = f"/conversations/{thread}/keys"
+        with TestClient(app) as client:
+            result = client.get(path)
+            assert result.status_code == 409
+            assert result.json()["error"]["details"] == [
+                {"field": "own_key", "code": "not_registered"}
+            ]
+            assert (
+                client.put(
+                    "/me/conversation-key", json=public_bundle().model_dump(mode="json")
+                ).status_code
+                == 200
+            )
+            result = client.get(path)
+            assert result.status_code == 409
+            assert result.json()["error"]["details"] == [
+                {"field": "peer_key", "code": "not_registered"}
+            ]
+            actor[0] = caller(uuid4())
+            assert client.get(path).status_code == 404
+            from dataclasses import replace
+
+            actor[0] = replace(
+                caller(alice), valid_until=datetime.now(UTC) - timedelta(seconds=1)
+            )
+            assert client.get(path).status_code == 401
+            actor[0] = caller(bob)
+            assert (
+                client.put(
+                    "/me/conversation-key", json=public_bundle().model_dump(mode="json")
+                ).status_code
+                == 200
+            )
+            result = client.get(path)
+            assert result.status_code == 200
+            assert {row["user_id"] for row in result.json()["members"]} == {
+                str(alice),
+                str(bob),
+            }
+
+    run_scenario(scenario)
+
+
 def test_directory_rollback_refuses_to_erase_durable_state():
     async def scenario(pool):
         from pathlib import Path

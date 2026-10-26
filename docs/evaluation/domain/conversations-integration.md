@@ -6,6 +6,37 @@ integration plan within CN-01 Steps4/6/8–10/13, not full CN-01 acceptance.
 
 ## Initial Step1 baseline and boundaries
 
+### Subsequent participant-key readiness correction
+
+Rahul authorized a real-project correction after the combined local website
+showed a generic encryption error while the peer had never registered a key.
+The temporary website harness stays under `/tmp`, uncommitted. Rahul is the
+bounded writer for Conversations key service/tests, its UI/client/tests and
+the Conversations/combined error-semantics documentation; no shared page edit,
+schema change or new authentication mechanism is needed. Normal Aditya peer and
+affected contract-owner review remain required before merge.
+
+Ordered correction:1) distinguish participant first setup from bad/lost key
+state in the actual member-key API;2) map only the explicit peer-setup reason to
+clear waiting copy, disabled sending and bounded visible retry;3) verify the
+transition and negative cases, record results and commit. Execute one verified
+increment at a time. Until Step2, the browser still shows its old generic error.
+The latest remote main has advanced to7612fd8; reconcile it and rerun exact-head
+checks before continuing the earlier final PR/CI handoff, not during this fix by
+silently changing the baseline.
+
+Step1 result: member-key reads now distinguish409 `own_key/not_registered` from
+`peer_key/not_registered` only after membership and account locks. Own-key and
+member-key reads reuse the same current-bundle/history check. Retired, missing
+after registration, incompatible, malformed and wrong-owner/version state never
+maps to ordinary first setup. Seven new DB cases cover these failures and the
+real HTTP own→peer→ready transition, including nonmember404/expired401. The
+disposable runner passed114 tests; contracts8 current, focused mypy1, boundaries0
+and pinned formatting passed. Eight real-session workflow regressions also
+passed. No migration/generated-schema change was required. The initial
+test attempted immutable-key updates; corrected it to model an invalid imported
+new version without disabling any guard. Step2 UI mapping/retry remains pending.
+
 Fetched `origin/main` is `3d6c2709d93f42bda0b4a6645c633780387c99b8` (Identity
 PR14, including Search/Listings PR11). It is already an ancestor of this branch;
 local `main` is stale and is not the comparison baseline. Implementation head

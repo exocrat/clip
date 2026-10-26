@@ -139,47 +139,50 @@ class PostgresKeyDirectory:
             raise PublicError(ERRORS[404])
         return UUID(str(row[0]))
 
-    async def read_own_key(self, caller: CallerContext) -> KeyBundle | None:
-        """Distinguish first registration from lost browser keys without a thread.
+    async def _current_bundle(
+        self, connection: AsyncConnection[Any], user_id: UUID
+    ) -> KeyBundle | None:
+        """Under the account lock, distinguish never registered from broken state.
 
-        Null means no public version has ever existed. A retired latest version,
-        malformed bundle or inconsistent owner/version must never look like a
-        fresh account: callers fail closed instead of replacing a lost identity.
-        The account lock gives a coherent read against concurrent registration.
+        Reuse the same rule for own-key and member-key reads. Durable registration
+        evidence prevents missing rows from masquerading as normal first setup.
+        Retired, malformed or mismatched bundles must never return None.
         """
+        cursor = await connection.execute(
+            "SELECT version, protocol_id, public_key_material, retired_at "
+            "FROM conversations.public_key_versions WHERE user_id = %s "
+            "ORDER BY version DESC LIMIT 1",
+            (user_id,),
+        )
+        row = await cursor.fetchone()
+        if row is None:
+            cursor = await connection.execute(
+                "SELECT EXISTS (SELECT 1 FROM conversations.key_directory_operations "
+                "WHERE user_id = %s AND request->>'kind' = 'register')",
+                (user_id,),
+            )
+            history = await cursor.fetchone()
+            if history is None:
+                raise PublicError(ERRORS[503])
+            if history[0]:
+                raise self._conflict()
+            return None
+        if row[3] is not None:
+            raise self._conflict()
+        bundle = self._decode(row[2])
+        if (
+            bundle.user_id != user_id
+            or bundle.key_version != row[0]
+            or bundle.protocol_id != row[1]
+        ):
+            raise PublicError(ERRORS[503])
+        return bundle
+
+    async def read_own_key(self, caller: CallerContext) -> KeyBundle | None:
+        """Return null only for first registration, never retired or lost state."""
         async with self._transaction(caller) as connection:
             await self._lock(connection, f"key-account:{caller.user_id}")
-            cursor = await connection.execute(
-                "SELECT version, protocol_id, public_key_material, retired_at "
-                "FROM conversations.public_key_versions WHERE user_id = %s "
-                "ORDER BY version DESC LIMIT 1",
-                (caller.user_id,),
-            )
-            row = await cursor.fetchone()
-            if row is None:
-                # Durable registration evidence also survives missing bundle rows.
-                # Missing storage must not become permission to replace an identity.
-                cursor = await connection.execute(
-                    "SELECT EXISTS (SELECT 1 FROM conversations.key_directory_operations "
-                    "WHERE user_id = %s AND request->>'kind' = 'register')",
-                    (caller.user_id,),
-                )
-                history = await cursor.fetchone()
-                if history is None:
-                    raise PublicError(ERRORS[503])
-                if history[0]:
-                    raise self._conflict()
-                return None
-            if row[3] is not None:
-                raise self._conflict()
-            bundle = self._decode(row[2])
-            if (
-                bundle.user_id != caller.user_id
-                or bundle.key_version != row[0]
-                or bundle.protocol_id != row[1]
-            ):
-                raise PublicError(ERRORS[503])
-            return bundle
+            return await self._current_bundle(connection, caller.user_id)
 
     async def register_own_key(
         self, caller: CallerContext, payload: PublicKeyBundleRequest
@@ -252,6 +255,13 @@ class PostgresKeyDirectory:
             # Keep active/history selection coherent with either member rotating.
             for user_id in sorted((caller.user_id, peer)):
                 await self._lock(connection, f"key-account:{user_id}")
+            # Only authenticated participants learn a relative setup state, never
+            # arbitrary-user registration data. Other key failures remain errors.
+            for user_id, field in ((caller.user_id, "own_key"), (peer, "peer_key")):
+                if await self._current_bundle(connection, user_id) is None:
+                    raise PublicError(
+                        ERRORS[409], (FieldError(field, "not_registered"),)
+                    )
             cursor = await connection.execute(
                 "SELECT key.public_key_material FROM conversations.public_key_versions AS key "
                 "WHERE key.user_id IN (%s, %s) AND (key.retired_at IS NULL OR EXISTS "
@@ -263,8 +273,6 @@ class PostgresKeyDirectory:
                 (caller.user_id, peer, conversation_id),
             )
             bundles = [self._decode(row[0]) for row in await cursor.fetchall()]
-            for user_id in (caller.user_id, peer):
-                await self._active(connection, user_id)
             return MemberKeyBundles(members=bundles)
 
     @staticmethod

@@ -82,6 +82,25 @@ where the caller is one of the two members; it is ordered by
 minimal participant/read-summary metadata only; frontend pages obtain listing
 or request details from the corresponding origin owner.
 
+## Participant key setup readiness
+
+`GET /conversations/{conversation_id}/keys` first authenticates membership.
+If an authorized participant has never registered a bundle, it returns409 with
+the standard error envelope and exactly one content-free detail:
+`{field: "own_key" | "peer_key", code: "not_registered"}`. The field is relative
+to the authenticated caller; it exposes no arbitrary-user lookup, user ID or key
+material. If both are unregistered, report `own_key` first. After both register,
+the same read succeeds normally; this is not an invitation-acceptance workflow.
+
+Only absence of both bundle rows and durable registration evidence means first
+setup. A retired latest bundle, deleted rows after registration, invalid protocol,
+malformed material, wrong owner/version, or dependency failure must not produce
+`not_registered`. Preserve their conflict/dependency errors and fail closed. The
+client may map only the exact peer-setup detail to a waiting state; a generic409
+is not proof that the other participant needs to set up encryption. Sending
+remains disabled until both valid bundles are available; no plaintext fallback
+or automatic key replacement is permitted.
+
 ## E2EE key and envelope boundary
 
 The client encrypts/decrypts message text, optional offer notes and
