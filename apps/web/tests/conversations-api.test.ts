@@ -30,6 +30,27 @@ function setup(value: unknown, status = 200) {
 }
 
 describe('ConversationApi', () => {
+  it('recognises only the explicit member-key peer setup conflict without retaining server text', async () => {
+    const detail = { field: 'peer_key', code: 'not_registered' };
+    const body = { error: { code: 'conflict', message: 'synthetic private diagnostics', details: [detail] } };
+    const error = await setup(body, 409).api.readMemberKeys(thread).catch((failure: unknown) => failure);
+    expect(error).toMatchObject({ status: 409, kind: 'http', reason: 'peer_key_not_registered' });
+    expect(JSON.stringify(error)).not.toContain('private diagnostics');
+    for (const details of [undefined, [], [detail, detail], [{ ...detail, field: 'own_key' }],
+      [{ ...detail, code: 'conflict' }]]) {
+      await expect(setup({ error: { ...body.error, details } }, 409).api.readMemberKeys(thread))
+        .rejects.toMatchObject({ status: 409, reason: undefined });
+    }
+    await expect(setup(body, 503).api.readMemberKeys(thread)).rejects.toMatchObject({ reason: undefined });
+    await expect(setup(body, 409).api.readSummary(thread)).rejects.toMatchObject({ reason: undefined });
+    await expect(setup({ error: { ...body.error, code: 'forbidden' } }, 409).api.readMemberKeys(thread))
+      .rejects.toMatchObject({ reason: undefined });
+    for (const [content, type] of [['{', 'application/json'], [JSON.stringify(body), 'text/html']]) {
+      const api = new ConversationApi(async () => new Response(content, { status: 409, headers: { 'Content-Type': type } }));
+      await expect(api.readMemberKeys(thread)).rejects.toMatchObject({ status: 409, reason: undefined });
+    }
+  });
+
   it('maps authorized inbox filters and abort signals without adding authentication assumptions', async () => {
     const page = { items: [summary], page: 1, page_size: 20, has_next: false };
     const { api, transport } = setup(page);

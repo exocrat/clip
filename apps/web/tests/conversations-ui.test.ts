@@ -39,6 +39,16 @@ function renderThread(overrides: Partial<Parameters<typeof ConversationThread>[0
 }
 
 describe('ConversationThread UI', () => {
+  it('explains first-time peer setup without inviting acceptance or enabling send', () => {
+    const html = renderThread({ key_state: { kind: 'waiting_for_peer_key' } });
+    expect(html).toContain('Waiting for the other participant to set up encryption');
+    expect(html).toContain('complete encryption setup before you can send');
+    expect(html).toContain('role="status"');
+    expect(html).toMatch(/disabled=""[^>]*>Send encrypted message/);
+    expect(html).not.toContain('Encryption is not ready');
+    expect(html).not.toContain('Accept new key');
+  });
+
   it('renders message text as text, never as markup', () => {
     const html = renderThread();
     expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');

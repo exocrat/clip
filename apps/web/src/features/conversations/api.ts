@@ -29,7 +29,8 @@ export type ConversationListQuery = NonNullable<ConversationsListMineData['query
 
 /** Content-free errors are safe to map to UI states; never retain the server body/cause. */
 export class ConversationApiError extends Error {
-  constructor(readonly status: number, readonly kind: 'http' | 'transport' | 'invalid_response') {
+  constructor(readonly status: number, readonly kind: 'http' | 'transport' | 'invalid_response',
+    readonly reason?: 'peer_key_not_registered') {
     super('Conversation request could not be completed');
     this.name = 'ConversationApiError';
   }
@@ -160,7 +161,7 @@ export class ConversationApi {
 
   private async request<T>(
     path: string, method: 'GET' | 'POST' | 'PUT', validate: (value: unknown) => boolean,
-    body?: unknown, signal?: AbortSignal,
+    body?: unknown, signal?: AbortSignal, allowPeerSetupReason = false,
   ): Promise<T> {
     let response: Response;
     try {
@@ -172,7 +173,25 @@ export class ConversationApi {
     } catch {
       throw new ConversationApiError(0, 'transport');
     }
-    if (!response.ok) throw new ConversationApiError(response.status, 'http');
+    if (!response.ok) {
+      // Only this reviewed member-key response means first-time peer setup.
+      // Discard all server text; unrelated conflicts must never become waiting.
+      let reason: 'peer_key_not_registered' | undefined;
+      if (allowPeerSetupReason && response.status === 409 && !response.redirected &&
+        response.headers.get('content-type')?.split(';')[0].trim().toLowerCase() === 'application/json') {
+        try {
+          const value: unknown = await response.json();
+          if (record(value) && record(value.error) && value.error.code === 'conflict' &&
+            Array.isArray(value.error.details) && value.error.details.length === 1) {
+            const detail: unknown = value.error.details[0];
+            if (record(detail) && detail.field === 'peer_key' && detail.code === 'not_registered') {
+              reason = 'peer_key_not_registered';
+            }
+          }
+        } catch { /* Malformed error bodies retain only the HTTP status. */ }
+      }
+      throw new ConversationApiError(response.status, 'http', reason);
+    }
     try {
       if (response.redirected || response.headers.get('content-type')?.split(';')[0].trim().toLowerCase() !== 'application/json') {
         throw new Error();
@@ -241,7 +260,8 @@ export class ConversationApi {
 
   readMemberKeys(conversationId: string): Promise<MemberKeyBundles> {
     return this.request(`${this.threadPath(conversationId)}/keys`, 'GET',
-      (value) => record(value) && Array.isArray(value.members) && value.members.length >= 2 && value.members.every(keyBundle));
+      (value) => record(value) && Array.isArray(value.members) && value.members.length >= 2 && value.members.every(keyBundle),
+      undefined, undefined, true);
   }
 
   /** Null is an explicit never-registered account, never a fallback for HTTP failure. */

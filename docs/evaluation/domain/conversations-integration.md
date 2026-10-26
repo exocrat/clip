@@ -35,7 +35,27 @@ disposable runner passed114 tests; contracts8 current, focused mypy1, boundaries
 and pinned formatting passed. Eight real-session workflow regressions also
 passed. No migration/generated-schema change was required. The initial
 test attempted immutable-key updates; corrected it to model an invalid imported
-new version without disabling any guard. Step2 UI mapping/retry remains pending.
+new version without disabling any guard. Rahul verified Step1 before Step2.
+
+Step2 result: the client recognises only the member-key endpoint's explicit409
+`peer_key/not_registered` detail, discards server text and shows a waiting status
+with sending disabled. The existing two-second visible-page poll checks readiness
+without recreating keys/sessions or consuming prekeys while the peer remains
+unregistered. Hidden pages pause; visibility/focus resumes checks. Once ready,
+normal session setup runs again, retaining key-loss and key-change safeguards.
+Other conflicts/dependency failures leave waiting and show the existing error;
+they never become false first-setup states. Generation and in-flight guards
+discard stale results and prevent overlapping setup, including StrictMode replay.
+
+Five new client cases cover allowlisted/error-body parsing, waiting copy and
+disabled send, visible→hidden→ready, unrelated conflict and StrictMode setup.
+`npm run check` passed390 tests with3 existing skips, lint, app/test TypeScript
+and production build (existing bundle-size warning). Boundary check0, generated
+contracts8 current and Gitleaks source scan passed. Contract checking initially
+used ambient Node and failed; rerunning with pinned Node24/npm11 passed. These
+React tests use the existing labelled crypto/API lifecycle doubles, not new
+real-browser or cryptographic evidence. Step2 awaits human verification; Step3
+final transition/negative integration regression and main reconciliation remain.
 
 Fetched `origin/main` is `3d6c2709d93f42bda0b4a6645c633780387c99b8` (Identity
 PR14, including Search/Listings PR11). It is already an ancestor of this branch;

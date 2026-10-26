@@ -20,6 +20,7 @@ export type ConversationDisplayEntry = {
 
 export type ConversationKeyUiState =
   | { kind: 'ready' }
+  | { kind: 'waiting_for_peer_key' }
   | { kind: 'registration_acknowledgement_required' }
   | { kind: 'key_change'; participant_label: string }
   | { kind: 'key_state_lost' }
@@ -315,6 +316,13 @@ function KeyStatePanel({
   onAcknowledgeKeyRegistration: () => void;
 }) {
   if (keyState.kind === 'ready') return null;
+  if (keyState.kind === 'waiting_for_peer_key') {
+    return <div className="conversation-thread__key-state" role="status">
+      <h2>Waiting for the other participant to set up encryption</h2>
+      <p>They need to open a conversation and complete encryption setup before you can send messages.</p>
+      <p>Sending is paused. We’ll check automatically while this page is visible. This is not a conversation acceptance request.</p>
+    </div>;
+  }
   if (keyState.kind === 'registration_acknowledgement_required') {
     return (
       <div className="conversation-thread__key-state" role="alert">

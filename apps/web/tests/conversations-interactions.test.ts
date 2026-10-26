@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, createElement } from 'react';
+import { act, createElement, StrictMode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { MemoryRouter } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -7,7 +7,7 @@ import { ConversationThread, type ConversationThreadProps } from '../src/feature
 import { ConversationDetailPage, ConversationInboxPage, ConversationPageRuntimeProvider,
   type ConversationPageRuntime } from '../src/features/conversations/ConversationPages';
 import { openIndexedDbConversationSession } from '../src/features/conversations/relay';
-import type { ConversationApi } from '../src/features/conversations/api';
+import { ConversationApiError, type ConversationApi } from '../src/features/conversations/api';
 
 // Isolate page lifecycle from crypto/IndexedDB. Real SDK and PostgreSQL behavior
 // have separate suites; these fixtures prove React visibility and account isolation.
@@ -46,6 +46,7 @@ afterEach(async () => {
   await act(async () => root.unmount());
   host.remove();
   vi.restoreAllMocks();
+  vi.useRealTimers();
   vi.unstubAllGlobals();
 });
 
@@ -119,6 +120,61 @@ function detail(value: ConversationPageRuntime | null) {
 }
 
 describe('conversation account lifecycle', () => {
+  it('does not let a discarded StrictMode initialization block the current setup', async () => {
+    vi.mocked(openIndexedDbConversationSession).mockResolvedValue({
+      stop: vi.fn(async () => undefined), crypto: { resumeParticipantSession: vi.fn(async () => true) },
+      history: { read: vi.fn(async () => ({ received: [], sent: [] })) },
+    } as unknown as Awaited<ReturnType<typeof openIndexedDbConversationSession>>);
+    const value = runtime('alice', async () => ({ conversation_id: 'thread', origin_kind: 'sale_listing',
+      initiator_user_id: 'alice', counterparty_user_id: 'bob', caller_role: 'initiator' }));
+    await act(async () => root.render(createElement(StrictMode, {}, detail(value))));
+    expect(value.api.readState).toHaveBeenCalledOnce();
+    expect(host.textContent).not.toContain('Encryption is not ready');
+  });
+
+  it('waits without reopening crypto, pauses hidden polling, and resumes after peer setup', async () => {
+    vi.useFakeTimers();
+    const visibility = vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
+    const resume = vi.fn(async () => true);
+    vi.mocked(openIndexedDbConversationSession).mockResolvedValue({
+      stop: vi.fn(async () => undefined), crypto: { resumeParticipantSession: resume },
+      history: { read: vi.fn(async () => ({ received: [], sent: [] })) },
+    } as unknown as Awaited<ReturnType<typeof openIndexedDbConversationSession>>);
+    const value = runtime('alice', async () => ({ conversation_id: 'thread', origin_kind: 'sale_listing',
+      initiator_user_id: 'alice', counterparty_user_id: 'bob', caller_role: 'initiator' }));
+    const members = vi.mocked(value.api.readMemberKeys);
+    members.mockRejectedValue(new ConversationApiError(409, 'http', 'peer_key_not_registered'));
+    await act(async () => root.render(detail(value)));
+    expect(host.textContent).toContain('Waiting for the other participant');
+    await act(async () => vi.advanceTimersByTimeAsync(4_000));
+    expect(openIndexedDbConversationSession).toHaveBeenCalledOnce();
+    expect(resume).not.toHaveBeenCalled();
+    expect(value.api.readEntries).not.toHaveBeenCalled();
+    visibility.mockReturnValue('hidden');
+    await act(async () => document.dispatchEvent(new Event('visibilitychange')));
+    const calls = members.mock.calls.length;
+    await act(async () => vi.advanceTimersByTimeAsync(20_000));
+    expect(members).toHaveBeenCalledTimes(calls);
+    members.mockResolvedValue({ members: [{ user_id: 'bob', key_version: 1 }] } as never);
+    visibility.mockReturnValue('visible');
+    await act(async () => document.dispatchEvent(new Event('visibilitychange')));
+    expect(resume).toHaveBeenCalledOnce();
+    expect(host.textContent).not.toContain('Waiting for the other participant');
+    expect(host.textContent).not.toContain('Encryption is not ready');
+  });
+
+  it('stops waiting when the next readiness check is an unrelated conflict', async () => {
+    vi.mocked(openIndexedDbConversationSession).mockResolvedValue({ stop: vi.fn(async () => undefined) } as never);
+    const value = runtime('alice', async () => ({ conversation_id: 'thread', origin_kind: 'sale_listing',
+      initiator_user_id: 'alice', counterparty_user_id: 'bob', caller_role: 'initiator' }));
+    vi.mocked(value.api.readMemberKeys)
+      .mockRejectedValueOnce(new ConversationApiError(409, 'http', 'peer_key_not_registered'))
+      .mockRejectedValue(new ConversationApiError(409, 'http'));
+    await act(async () => root.render(detail(value)));
+    expect(host.textContent).toContain('Encryption is not ready');
+    expect(host.textContent).not.toContain('Waiting for the other participant');
+  });
+
   it.each([
     ['sale_listing', 'initiator'], ['sale_listing', 'origin_owner'],
     ['wanted_request', 'initiator'], ['wanted_request', 'origin_owner'],

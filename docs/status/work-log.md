@@ -53,7 +53,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | SE-01 | Mohit (C); peer Suraj (B), Identity review | in progress | Local create-to-Keyword-and-Hybrid flow and browser walkthrough verified; formal acceptance remains pending | Test-only browser demo binds the same fixed synthetic Identity for writes/browse and can opt into the real helper, worker, pipeline bootstrap and Hybrid reader; automatic new-listing vector generation was observed | Suraj verified the local command/API/proxy flow and subsequent browser walkthrough | Search PR #11 worktree `task/search-evidence-reduction` at `864e53b`; new listing `194a32d4-64bb-491b-b4ec-68403e26f7f3` produced one title and one description vector (384 dimensions each), then matched in both modes through API and Vite proxy; session `/tmp/clip-listings-browser-v6e1f01t`; UI `http://127.0.0.1:5173/` | Formal SE-CORE/DATA-READY and final NFR/hosted-CI acceptance remain outside this merge step | 2026-10-25 14:38:24 UTC |
 | SE-02 | Mohit (C); peer Suraj (B), Identity/Conversations review | in progress | Step8 real integration gated; local handoff human-verified | Steps1–7 isolated result verified; Step8 audit performed | Mohit verified isolated UI and combined local handoff | [Search handoff](../evaluation/domain/search-handoff/result.json): Python1270/data94/web144,Black183,native20/3skip,wrapper35/contracts8/boundaries/parity/type/build pass | Await actual ID-READY/LI-CORE/SE-CORE/C adapters; Step9 final acceptance, pinned secrets/hosted CI and independent review pending | 2026-10-25 08:50:43 UTC |
 | MERGE-LI-SE | Suraj (integration); Listings/Search affected owners | done | PR #11 is squash-merged; Search–Listings local merge task is complete | Steps 1–9 performed; approved PR head `2a43066` merged to `main` as `e315c9d`; final hosted CI run `40204621122` passed | Steps 3–8 verified by Suraj; user authorized squash merge of the exact PR revision on 2026-10-25 | PR #11 `https://github.com/exocrat/clip/pull/11`; source head `2a430660d25e7c14cf33d84bd78172db4ec063c7`; squash merge `e315c9df3e0e11d6e9c8d7d244d676204d3af7e8`; hosted CI `40204621122`; local merge commit `29eb6fb`; fallback branch `safety/search-pr11-pre-main-reconciliation-20261025`; stash `af9d7f5`; local checks recorded below | No blocker for the Search–Listings merge. Final dataset, formal NFR/cloud checks, and real Identity/Conversations remain later work. | 2026-10-25 15:17:46 UTC |
-| CN-01 | Rahul (D) | in progress | Participant-key readiness correction Step1 API implemented; verify before Step2 waiting UI/retry | Disposable Conversations114 passed; contracts8 current, focused mypy1, Black and boundaries0; prior full gate at380247a is not a new final-head result | Rahul approved moving the correction into the project and the three-step plan; Step1 result awaits verification | `task/cn-01-conversations`; [integration checkpoint](../evaluation/domain/conversations-integration.md); temporary harness stays uncommitted under/tmp | Step2 UI then Step3 regression; reconcile advanced main7612fd8 before final PR/CI; normal A/B/C/security review and exact merge authorization remain | 2026-10-26 20:33:38 UTC |
+| CN-01 | Rahul (D) | in progress | Participant-key readiness correction Step2 waiting UI/retry implemented; verify before Step3 regression | Web390 passed/3 existing skips; lint/types/build, boundaries0, contracts8 and Gitleaks passed; Step1 DB114 remains prior evidence, not a new final-head full gate | Rahul verified Step1 and authorized Step2; Step2 result awaits verification | `task/cn-01-conversations`; [integration checkpoint](../evaluation/domain/conversations-integration.md); temporary harness stays uncommitted under/tmp | Step3 final regression; reconcile advanced main7612fd8 before final PR/CI; normal A/B/C/security review and exact merge authorization remain | 2026-10-26 20:45:04 UTC |
 | CN-02 | D; A/B interface review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | Isolated development: PRE-00, then DL-00 and a reviewed contract/stub. Later real gates: CN-CORE, ID-READY, and LI-CORE for listing-origin behavior; SE-02 plus CN-01's real request path for request-response inbox integration. | — |
 | CN-03 | A; D producer review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | CN-CORE, ID-READY | — |
 | INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
@@ -82,6 +82,27 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | DATA-READY | not accepted | SE-01 steps 2/4/9 | — | pending |
 | CN-CORE | not accepted | CN-01 step 10 | — | pending |
 | OPTIONAL-OK | not approved | Each optional task's selection/priority plan | — | pending |
+
+## CN-01 — Participant-key readiness correction Step2 — 2026-10-26 20:45:04 UTC
+
+After Rahul verified Step1, `api.ts` maps only the exact member-key peer setup
+conflict to a content-free reason; unrelated/malformed errors retain generic
+failure. `ConversationPages.tsx` uses existing visible polling to probe readiness,
+without recreating encryption state on each check, and resumes normal setup only
+after readiness succeeds. In-flight/generation guards protect navigation and
+StrictMode replay. `ConversationThread.tsx` explains the peer's required setup,
+keeps send disabled and makes clear this is not conversation acceptance. No
+automatic key-change acceptance, lost-key recovery or plaintext fallback added.
+
+Three existing web test files add five cases: error allowlisting/privacy, waiting
+copy/disabled send, hidden polling and ready transition, unrelated conflict, and
+StrictMode. Pinned `npm run check` passed390 tests/3 existing skips, lint,
+TypeScript and build (existing size warning); boundaries0, contracts8 current,
+whitespace and Gitleaks source scan passed. Contract check first failed with
+ambient Node; pinned-toolchain rerun passed. Lifecycle tests use existing labelled
+API/crypto doubles; no new real-browser/SDK or database evidence is claimed.
+Step2 awaits verification; Step3 final regression remains. Demo harness stays
+uncommitted under/tmp. No main merge, cloud action, shared DB or publication.
 
 ## CN-01 — Participant-key readiness correction Step1 — 2026-10-26 20:33:38 UTC
 

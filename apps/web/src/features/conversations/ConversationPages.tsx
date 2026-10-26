@@ -162,10 +162,14 @@ function ConversationDetailSession({ conversationId }: { conversationId: string 
   const cursor = useRef(0);
   const generation = useRef(0);
   const activeSession = useRef<ConversationSession | null>(null);
+  const initializing = useRef<number | null>(null);
+  const readinessInFlight = useRef(false);
 
   const initialize = useCallback(async (acknowledgeHistoryLoss = false, token = generation.current) => {
-    if (!runtime || !conversationId) return;
+    if (!runtime || !conversationId || initializing.current === token) return;
+    initializing.current = token;
     setLoading(true);
+    setReady(null);
     try {
       const previous = activeSession.current;
       activeSession.current = null;
@@ -210,8 +214,11 @@ function ConversationDetailSession({ conversationId }: { conversationId: string 
       if (error instanceof KeyRegistrationAcknowledgementRequiredError) setKeyState({ kind: 'registration_acknowledgement_required' });
       else if (error instanceof ConversationKeyStateLostError) setKeyState({ kind: 'key_state_lost' });
       else if (error instanceof ConversationKeyChangeRequiredError) setKeyState({ kind: 'key_change', participant_label: 'The other participant' });
+      else if (error instanceof ConversationApiError && error.reason === 'peer_key_not_registered') setKeyState({ kind: 'waiting_for_peer_key' });
       else setKeyState({ kind: 'error' });
       setLoading(false);
+    } finally {
+      if (initializing.current === token) initializing.current = null;
     }
   }, [conversationId, runtime]);
 
@@ -229,6 +236,26 @@ function ConversationDetailSession({ conversationId }: { conversationId: string 
   }, [initialize]);
 
   const refresh = useCallback(async () => {
+    // Reuse the thread's visible-only, non-overlapping polling. While waiting,
+    // read only readiness: do not recreate keys/sessions or consume prekeys.
+    if (runtime && conversationId && keyState.kind === 'waiting_for_peer_key') {
+      if (readinessInFlight.current || initializing.current === generation.current) return;
+      readinessInFlight.current = true;
+      const token = generation.current;
+      try {
+        await runtime.api.readMemberKeys(conversationId);
+        if (generation.current === token) await initialize(false, token);
+      } catch (error) {
+        if (generation.current !== token) return;
+        if (!(error instanceof ConversationApiError && error.reason === 'peer_key_not_registered')) {
+          setKeyState({ kind: 'error' });
+          throw error;
+        }
+      } finally {
+        readinessInFlight.current = false;
+      }
+      return;
+    }
     if (!runtime || !conversationId || !ready?.session.history || keyState.kind !== 'ready') return;
     // A response may arrive after logout/navigation closed this session. Do not
     // read its history or process protocol traffic after that boundary changes.
@@ -279,7 +306,7 @@ function ConversationDetailSession({ conversationId }: { conversationId: string 
       }
       return [...byId.values()].sort((a, b) => a.sequence - b.sequence);
     });
-  }, [conversationId, keyState.kind, ready, runtime]);
+  }, [conversationId, initialize, keyState.kind, ready, runtime]);
 
   const send = useCallback(async (text: string, operationId: string) => {
     if (!runtime || !conversationId || !ready) throw new ConversationCryptoError('Conversation is not ready');
