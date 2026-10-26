@@ -20,8 +20,8 @@ Ordered correction:1) distinguish participant first setup from bad/lost key
 state in the actual member-key API;2) map only the explicit peer-setup reason to
 clear waiting copy, disabled sending and bounded visible retry;3) verify the
 transition and negative cases, record results and commit. Execute one verified
-increment at a time. Until Step2, the browser still shows its old generic error.
-The latest remote main has advanced to7612fd8; reconcile it and rerun exact-head
+increment at a time. Steps1/2 are now human-verified; Step3 results follow below.
+The last fetched remote main advanced to7612fd8; refresh/reconcile it and rerun exact-head
 checks before continuing the earlier final PR/CI handoff, not during this fix by
 silently changing the baseline.
 
@@ -54,8 +54,29 @@ and production build (existing bundle-size warning). Boundary check0, generated
 contracts8 current and Gitleaks source scan passed. Contract checking initially
 used ambient Node and failed; rerunning with pinned Node24/npm11 passed. These
 React tests use the existing labelled crypto/API lifecycle doubles, not new
-real-browser or cryptographic evidence. Step2 awaits human verification; Step3
-final transition/negative integration regression and main reconciliation remain.
+real-browser or cryptographic evidence. Rahul verified Step2 before Step3.
+
+Step3 result (2026-10-26 20:56:57 UTC): the existing interaction suite adds
+seven cases covering six unrelated HTTP failure statuses and late peer-ready
+responses after logout/account change (replacing the single conflict case).
+Pending readiness probes do not overlap on focus/timer events; stale responses
+cannot reopen the old session or fetch history. No application behavior changed
+in this step, and no demo artifact was added.
+
+All12 `make check` gates passed with the pinned toolchain: Python1919 passed/
+100 skipped, data94 passed, web397 passed/3 existing skips, Black289 unchanged,
+boundaries0, contracts8 current, consumer mypy2, wrapper35, real PostgreSQL18.6
+migration lifecycle, Conversations114 passed and Gitleaks8.30.1 source scan.
+The focused interaction suite passed27; the separate actual cookie/CSRF
+integration suite passed8. General Python DB skips are not reported as passes;
+the dedicated disposable DB gate covers the key readiness transition and invalid
+state cases. The web build retains its existing large-bundle warning.
+
+This completes the correction's local checks, awaiting human verification, not
+full CN-01/FR/NFR acceptance or fresh browser evidence. Earlier human chat checks
+remain recorded rather than repeated. Real-provider/phone/cloud acceptance is
+unchanged. Refresh and reconcile main before PR/current-head CI and human review;
+no push, merge or shared database apply occurred in this correction step.
 
 Fetched `origin/main` is `3d6c2709d93f42bda0b4a6645c633780387c99b8` (Identity
 PR14, including Search/Listings PR11). It is already an ancestor of this branch;

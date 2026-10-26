@@ -163,15 +163,48 @@ describe('conversation account lifecycle', () => {
     expect(host.textContent).not.toContain('Encryption is not ready');
   });
 
-  it('stops waiting when the next readiness check is an unrelated conflict', async () => {
+  it.each([401, 403, 404, 409, 429, 503])('stops waiting on unrelated HTTP %i, rather than claiming first setup', async (status) => {
     vi.mocked(openIndexedDbConversationSession).mockResolvedValue({ stop: vi.fn(async () => undefined) } as never);
     const value = runtime('alice', async () => ({ conversation_id: 'thread', origin_kind: 'sale_listing',
       initiator_user_id: 'alice', counterparty_user_id: 'bob', caller_role: 'initiator' }));
     vi.mocked(value.api.readMemberKeys)
       .mockRejectedValueOnce(new ConversationApiError(409, 'http', 'peer_key_not_registered'))
-      .mockRejectedValue(new ConversationApiError(409, 'http'));
+      .mockRejectedValue(new ConversationApiError(status, 'http'));
     await act(async () => root.render(detail(value)));
     expect(host.textContent).toContain('Encryption is not ready');
+    expect(host.textContent).not.toContain('Waiting for the other participant');
+  });
+
+  it.each(['logout', 'account_change'])('discards a late peer-ready response after %s', async (transition) => {
+    vi.useFakeTimers();
+    const stop = vi.fn(async () => undefined);
+    const resume = vi.fn(async () => true);
+    vi.mocked(openIndexedDbConversationSession).mockResolvedValue({ stop,
+      crypto: { resumeParticipantSession: resume },
+    } as unknown as Awaited<ReturnType<typeof openIndexedDbConversationSession>>);
+    const value = runtime('alice', async () => ({ conversation_id: 'thread', origin_kind: 'sale_listing',
+      initiator_user_id: 'alice', counterparty_user_id: 'bob', caller_role: 'initiator' }));
+    let finishRead!: (value: Awaited<ReturnType<ConversationApi['readMemberKeys']>>) => void;
+    vi.mocked(value.api.readMemberKeys)
+      .mockRejectedValueOnce(new ConversationApiError(409, 'http', 'peer_key_not_registered'))
+      .mockImplementation(() => new Promise((resolve) => { finishRead = resolve; }));
+    await act(async () => root.render(detail(value)));
+    expect(host.textContent).toContain('Waiting for the other participant');
+    // Focus and timer events must not overlap the pending readiness request.
+    const calls = vi.mocked(value.api.readMemberKeys).mock.calls.length;
+    await act(async () => {
+      window.dispatchEvent(new Event('focus'));
+      await vi.advanceTimersByTimeAsync(10_000);
+    });
+    expect(value.api.readMemberKeys).toHaveBeenCalledTimes(calls);
+    const next = transition === 'logout' ? null : runtime('carol', () => new Promise(() => undefined));
+    await act(async () => root.render(detail(next)));
+    expect(stop).toHaveBeenCalledOnce();
+    await act(async () => finishRead({ members: [{ user_id: 'bob', key_version: 1 }] } as never));
+    expect(openIndexedDbConversationSession).toHaveBeenCalledOnce();
+    expect(resume).not.toHaveBeenCalled();
+    expect(value.api.readState).not.toHaveBeenCalled();
+    expect(value.api.readEntries).not.toHaveBeenCalled();
     expect(host.textContent).not.toContain('Waiting for the other participant');
   });
 
