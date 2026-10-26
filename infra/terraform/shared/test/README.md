@@ -78,3 +78,33 @@ that diff deliberately. Once SES production access/configuration is reviewed,
 remove the test-recipient resource through a separately reviewed plan and verify
 normal delivery. This is a sandbox test exception, not the production recipient
 model. All original exact plan, role-ownership and cloud approval gates remain.
+
+
+## Shared application HTTPS certificate preparation
+
+`https-certificate.tf` adds an opt-in ACM DNS-validated public certificate for
+`clip-iisc.site` in this shared root/state, because the HTTPS origin serves every
+feature. It defaults disabled; no DNS/listener/compute change is included.
+`https_certificate_enabled=true` requires an explicitly reviewed
+`https_certificate_review_date`. The expected full certificate-phase plan adds
+exactly one ACM certificate with no other changes/replacements/deletions.
+Preserve current deployment phase and all existing inputs, including private
+sandbox recipient, passwords' write-only versions, stopped API and pinned image.
+A fresh full root plan is mandatory; stop on drift or unrelated sender-policy
+changes. Do not use a targeted apply to hide those changes.
+
+Outputs supply public CNAME records for the existing Spaceship DNS operator;
+there is no assumed Route53 zone or blocking validation resource. Keep CNAMEs
+for managed renewal. The certificate does not make the application available:
+validation, shared listener/proxy and later deploy remain separate approvals.
+`prevent_destroy` blocks accidental teardown if its flag/phase is disabled;
+actual removal requires a deliberate reviewed source/cleanup change.
+The certificate review date overrides historical tags for this resource only.
+
+
+Applied2026-10-26: the reviewed full plan included the certificate addition plus
+an explicitly approved existing SES sender-condition update to verify@; no other
+resource actions. The certificate is now retained in shared state. Future plans
+must preserve `https_certificate_enabled=true` and its reviewed date unless
+certificate removal is deliberately reviewed; omission/default false is not a
+safe continuation input. See the [current certificate evidence](../../../../docs/evaluation/identity/id-01-step-12/https-certificate-apply-result.json).

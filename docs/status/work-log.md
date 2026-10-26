@@ -47,7 +47,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PD-19 | Integration owner (current branch) | done | Steps 1–9 and combined foundation handoff complete | Steps 1–9 performed | User confirms all work before PRE-00 is complete | PR #8 merged at `2cd83e7` from head `18c966e` against base `68d9da9`; [Foundation quality gates passed](https://github.com/exocrat/clip/actions/runs/39323851584) for that exact head/base; `make test` (395 Python, 63 data, 16 web), Black, contract freshness and 10 `make check` gates passed; [handoff](foundation-handoff.md) | No open PD-19 work per user confirmation. Linux AMD64/macOS results remain user-confirmed without raw outputs. PR #8 has no submitted GitHub review; independent-review completion is user-confirmed, with no separate review artifact linked. Refresh cloud snapshot before any operation. | 2026-10-19 21:09:05 UTC |
 | PRE-00 | Integration owner | done | Foundation gate audit accepted; DL-00 is unblocked | performed | verified/accepted by user | Reviewed handoff PR #8 merged to `main` at `2cd83e7`; hosted Foundation quality gates passed for head `18c966e` against base `68d9da9` (run `39323851584`); clean-checkout evidence at `0747be6`; see [PD-19 handoff](foundation-handoff.md) | None. PR #8 has no GitHub review event; independent-review completion remains user-reported without a separate artifact. | 2026-10-19 21:20:55 UTC |
 | DL-00 | Shared-core/contract coordinator; all domains review | done | Steps 1–13 and task-wide audit complete; accepted and merged | Steps 1–13 performed; accepted by user | User confirmed full acceptance and merge on 2026-10-22 05:30:49 UTC | PR #9 merged to `main` at `f5576ef`; current `main` is `44cd8ff`; Step 13 check evidence is recorded below and was not rerun for this update | None for DL-00; cleanup implementation remains separately gated; real providers/integrations and crypto/worker implementation remain downstream | 2026-10-22 05:30:49 UTC |
-| ID-01 | A | in progress | Step12 marketplace actor reset, seller UX, saved/terminal-session checks, and synthetic routed account workflows implemented; full local gate passed; PR #14 open; local aggregate and hosted quality gates passed on the reviewed implementation; this is a work-log-only follow-up; required reviews remain | All11 `make check` gates pass: Python1830/24skip, data94, web289/3skip, Black261, boundaries/contracts/types/build, wrapper35, PostgreSQL18.6 lifecycle, Gitleaks8.30.1 | Aditya verified lifecycle/seller/Wanted UI states2026-10-26 05:17:22UTC and separately authorized narrow Listings navigation guards; new synthetic workflow tests are available for review | `task/id-ready-local-hardening`; PR #14; reviewed implementation head `94cc2c77ad40a721efccdd6ea36775e6f90c65ba` against current main `6c860603bdd81a98485e721d789b557c5d433948`; this commit only corrects the work-log row; [hosted Foundation quality gates](https://github.com/exocrat/clip/actions/runs/40276423964); prior integrated overnight head `2a55c6bd562099ab4c94cefcf2eff99b6e4ee6f0`; [hosted runtime and ingress audit](../evaluation/identity/integration.md#additional-runtime-activation-and-ingress-gate--offline-source-audit); [cross-owner handoff](../evaluation/identity/cross-owner-review.md) | Identity DB login/grants/URL; Listings URL and available DB; exact secret provisioning and RDS window; hosted ingress/IAM/image; real provider/device checks; independent peer and affected-owner review; Step14 outside scope | 2026-10-26 06:09:06 UTC |
+| ID-01 | A | in progress | Step12 certificate/sender applied; public validation CNAME correct, ACM issuance pending; full marketplace deployment remains | All11 `make check` gates pass: Python1830/24skip, data94, web289/3skip, Black261, boundaries/contracts/types/build, wrapper35, PostgreSQL18.6 lifecycle, Gitleaks8.30.1 | Aditya added DNS record; agent verified exact public CNAME; ACM still pending | main `3d6c2709d93f42bda0b4a6645c633780387c99b8` (PR #14); prior implementation checks and [hosted quality gates](https://github.com/exocrat/clip/actions/runs/40276423964); [runtime plan](../evaluation/identity/integration.md#post-merge-shared-runtime-plan) | Live schema/login/URLs/IAM/image/HTTPS and real runtime checks; exact cloud approvals; Step14 outside scope | 2026-10-26 07:08:19 UTC |
 | LI-01 | B | in progress | Finish the remaining Step 7 browser states and current-head Step 11 checks/reviews; prepare a progress PR without claiming LI-CORE. Steps 12–13 remain integration-gated. | Steps 1–6 and 8–10 implemented and locally checked; Step 7 partial (create/detail/edit/My Listings/gallery). | Suraj verified the multi-image edit/gallery checkpoint, seller-only selected-buyer visibility, and Step 10. No LI-01 phone-device result is claimed. | domain/listings at 6ffbe0b; focused Listings suite: 61 passed, one database-only test skipped outside the wrapper; disposable PostgreSQL workflow passed; current worktree `make check` passed 2026-10-23 (573 Python, 63 data, 42 web tests; remaining contract, type, boundary, database, safety, formatting, lint, and build checks passed). | LI-CORE not accepted. Remaining Step 7 states; Step 11 query-plan, current aggregate, and affected-owner review; native schema check; five pre-existing backend boundary findings; real Identity, Conversations, storage, and Search integration; Steps 12–13. | 2026-10-23 10:38:31 UTC |
 | LI-02 | B | in progress | Step 12 demo is tested and stopped; record final evidence, then begin intake of the Search owner's PR under the review workflow. | Steps 1–11 and 1.5 verified; Step 12 ran on ECS and was tested on desktop/mobile. Read-only app checks found the synthetic listing and its S3 image; teardown is complete. | User approved and applied teardown plan `3703bb7b23405a5a23a1ac6c39fa8870e682dddf3a1a8272183f4642f8f0db81` (0 add, 1 change to LI-02 bucket CORS, 20 LI-02 deletes). Post-stop inventory confirms disposable RDS/ALB/service/host/root volume/run S3 objects/URL parameter/log streams absent; shared RDS is stopped, shared ECS cluster remains, LI-02 ASG desired 0/no instances. Two run ECR images are retained (105,624,604 bytes total) per user direction. | `task/li-02-isolated-runtime` at `f0bf6c6`; earlier 11 focused tests, Black, Python compilation, Terraform fmt/validate, CLI help and diff checks. Start plans: infrastructure `a2b8cbeaa6cc4fc2d13ff8c8696cfa133d8134280de89f719e0d6f2b91668f55`; app start `b6a3fbd4812c965a5830780f337997d13b4b362c7eb1a73f2b3e70f5946b5bd4`. Stop-path corrections are currently uncommitted in `scripts/li02-demo`, `infra/terraform/domains/listings/test/database_tasks.tf`, both LI-02 operator guides, and this work log. `git diff --check` passed; no tests rerun. Existing untracked `data/runs/` and `database/migrations.zip` remain untouched. | Compute/ingress/disposable-database charges from the demo have ended. Retained run images add about 101 MiB of ECR storage; Step 4 bucket/IAM/log group and shared VPC/NAT/ECS/RDS remain. No manual RDS snapshot remains. | 2026-10-25 09:29:55 UTC |
 | SE-01 | Mohit (C); peer Suraj (B), Identity review | in progress | Local create-to-Keyword-and-Hybrid flow and browser walkthrough verified; formal acceptance remains pending | Test-only browser demo binds the same fixed synthetic Identity for writes/browse and can opt into the real helper, worker, pipeline bootstrap and Hybrid reader; automatic new-listing vector generation was observed | Suraj verified the local command/API/proxy flow and subsequent browser walkthrough | Search PR #11 worktree `task/search-evidence-reduction` at `864e53b`; new listing `194a32d4-64bb-491b-b4ec-68403e26f7f3` produced one title and one description vector (384 dimensions each), then matched in both modes through API and Vite proxy; session `/tmp/clip-listings-browser-v6e1f01t`; UI `http://127.0.0.1:5173/` | Formal SE-CORE/DATA-READY and final NFR/hosted-CI acceptance remain outside this merge step | 2026-10-25 14:38:24 UTC |
@@ -577,6 +577,109 @@ client navigation/state updates are suppressed. B affected review remains pendin
 Reservation released2026-10-26 05:22:07UTC after implementation and checks.
 
 ## Dated history entries
+
+### ID-01 — Step12 public certificate DNS verified — 2026-10-26 07:08:19 UTC
+
+Aditya(A) reports Spaceship validation CNAME added. Public DNS lookup matches the
+exact required ACM target (TTL1800); two ACM checks still PENDING_VALIDATION,
+not in use. Updated [certificate evidence](../evaluation/identity/id-01-step-12/https-certificate-apply-result.json)
+and integration handoff; no DNS correction or new resource/secret/send action.
+Issuance/HTTPS listener still pending; retain CNAME for renewal. JSON/whitespace
+checks passed. Other deployment checkpoints remain pending as recorded.
+
+### ID-01 — Step12 certificate/sender apply and verification — 2026-10-26 07:04:31 UTC
+
+Aditya(A) explicitly approved saved plan9f7d85f7 and two fresh ephemeral password
+reads. Hash/source/account checked; exact plan applied successfully. Created
+non-exportable ACM certificate a9775d00-2af5-4b12-990d-1ce9795f1859, now pending
+Spaceship CNAME validation; SES condition verified verify@. [Safe result/DNS record](../evaluation/identity/id-01-step-12/https-certificate-apply-result.json).
+RDS still stopped/shared API0; separate Listings demo1host/1running unchanged.
+No DNS/listener/app/SQL/send/storage/network mutation. Certificate retained with
+2026-10-27review; future cleanup separately gated. Updated integration/inventory;
+JSON/relative links/whitespace checked. Human verification/DNS entry pending;
+other database/runtime/S3/Search/Hybrid deployments remain in the same plan.
+
+### ID-01 — Step12 HTTPS full plan reviewed — 2026-10-26 06:59:49 UTC
+
+Aditya(A) approved the two exact one-time password decryptions for planning.
+Correct account/version1checked; values memory/ephemeral env only. Full pinned
+Terraform plan succeeded with one ACM create and one existing SES FromAddress
+update no-reply→verify; parsed policy otherwise identical. No replacements/deletes
+or compute/RDS/network/S3/demo actions. Observed drift is computed RDS restore-time
+and inline-policy metadata only. [Exact safe review/checksum](../evaluation/identity/id-01-step-12/https-certificate-plan-review.json)
+records protected plan, verification/retention, scope change and separate apply
+approval. No apply, send or application/source change; existing Terraform checks
+retained and JSON/link/whitespace checks pass. Full remaining marketplace deployment
+scope preserved. Result awaits verification/exact two-action apply approval.
+
+### ID-01 — Step12 certificate plan preflight and deployment scope — 2026-10-26 06:57:25 UTC
+
+Aditya(A) approved non-applying certificate planning, reminding that all other
+marketplace deployments remain in scope. Confirmed account, initialized exact
+shared/test backend/default workspace using pinned1.15.9, prepared protected local
+inputs and preserved the private sandbox recipient from existing state in memory.
+No app-secret decryption, SQL/start/send/apply. Existing master/probe ephemeral
+passwords are absent from retained inputs/environment; root requires them even
+for this plan. [Exact two-read continuation scope](../evaluation/identity/integration.md#certificate-planning-preflight--2026-10-26-065725-utc)
+prepared; saved plan not yet created. No placeholder password or targeted bypass.
+Schema/roles, Identity, S3/images/Listings, Search/Wanted/Saved/Hybrid and HTTPS
+remain deployment scope; active Listings demo preserved. JSON/link/whitespace
+checks passed; no application source changed or new application tests claimed.
+
+### ID-01 — Step12 runtime permissions and HTTPS source — 2026-10-26 06:50:29 UTC
+
+Aditya(A) verified discovery and requested HTTPS alongside connection work.
+Prepared shared-state opt-in DNS-validated ACM certificate source/default-off,
+review-date and prevent-destroy guards/public CNAME outputs, plus exact separate
+Identity task-read/Listings execution-injection policy proposal and pending config
+fields. Reserved new shared certificate/README paths; existing service/network,
+Listings/Search roots and active demo unchanged. [Review/next plan scope](../evaluation/identity/integration.md#runtime-policy-and-https-preparation--2026-10-26-065029-utc).
+PATH Terraform1.16.5 failed version guard; pinned1.15.9 backend-free formatting/
+validation passed all four roots. No cloud plan/apply or new resource/query/send.
+Certificate-only non-applying plan and exact subsequent apply remain separate
+gates; source/live SES difference may prevent a one-add plan and must be reviewed.
+Result awaits verification; ID-READY remains incomplete.
+
+### ID-01 — Step12 approved cloud metadata discovery — 2026-10-26 06:44:03 UTC
+
+Aditya(A) verified the local map then explicitly approved the bounded read-only
+inspection. Confirmed correct AWS identity, stopped shared RDS/zero shared ECS,
+foundation task lacking integrated config, missing listed Identity URL, existing
+v1key/email/Listings URL metadata, old no-reply SES policy and demo-only S3 CORS.
+Public apex A/AAAA absent; Spaceship NS; no matching account Route53 zone/regional
+ACM certificate. **Listings demo is currently active with healthy target/one task**,
+so older stopped evidence must not drive cleanup. Recorded [safe evidence](../evaluation/identity/id-01-step-12/cloud-metadata-20261026T064141Z.json),
+updated integration handoff/cloud inventory. No decryption, SQL, object content,
+app request/email or resource mutation; initial network restriction resolved by
+approved network-enabled execution. JSON/links/whitespace checks pass. Result
+awaits verification; next is local exact change preparation, not live apply.
+
+### ID-01 — Step12 marketplace deployment connections — 2026-10-26 06:38:54 UTC
+
+Aditya(A) authorized starting connection preparation. Audited existing Listings/S3,
+Keyword/Wanted/Saved and Hybrid composition against the canonical deployment
+handoff and added the [configuration/check map](../evaluation/identity/integration.md#marketplace-connection-audit--2026-10-26-063854-utc).
+S3 requires shared prefix/CORS/runtime-role review with Suraj; existing isolated
+resources are not assumed safe for shared use. Hybrid needs its existing AMD64
+artifacts, operator pipeline initialization/coverage and reviewed sizing with Mohit;
+no new Search service/database is proposed. Prepared a15minute metadata-only cloud/
+DNS discovery request excluding decryption, SQL, resource starts and changes.
+No cloud action/code change; relative links and whitespace pass. Local preparation
+awaits verification; metadata discovery requires its separate exact approval.
+
+### ID-01 — Step12 PR acceptance and shared runtime plan — 2026-10-26 06:32:23 UTC
+
+Aditya(A) confirms Suraj reviewed and merged PR #14; local main is3d6c270.
+Corrected the stale open-PR/task row without accepting ID-READY: shared runtime
+checks remain pending. Prepared the [post-merge runtime plan](../evaluation/identity/integration.md#post-merge-shared-runtime-plan)
+on task/id-01-runtime-readiness, preserving main. Current17migration paths/hashes
+match manifest/head20261025013000. Microsoft/IISc and temporary email flows have
+real local evidence; hosted configuration is not established by their merge.
+Clarified that authentication uses Microsoft or email OTP, never SMS/phone-number
+verification; mobile-browser usability is a separate UI check. No cloud query,
+secret read, SQL, send, deployment or commit. Plan awaits human verification and
+separate exact live approvals; PR #14 review is no longer a pending blocker for
+its merged implementation. New runtime/shared changes retain their own review.
 
 ### ID-01 — Step12 marketplace account lifecycle and real saved integration — 2026-10-26 05:22:07 UTC
 

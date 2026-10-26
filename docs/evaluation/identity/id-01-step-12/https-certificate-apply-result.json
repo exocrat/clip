@@ -1,0 +1,55 @@
+{
+  "apply_returncode": 0,
+  "approved_plan_sha256": "9f7d85f76e72a4d955d2224e11086a9909d79c134f37827d7d4159f71c04c741",
+  "secret_reads": 2,
+  "automatic_retry": false,
+  "certificate_arn": "arn:aws:acm:ap-south-1:335523638354:certificate/a9775d00-2af5-4b12-990d-1ce9795f1859",
+  "domain": "clip-iisc.site",
+  "certificate_status": "PENDING_VALIDATION",
+  "validation": [
+    {
+      "domain": "clip-iisc.site",
+      "status": "PENDING_VALIDATION",
+      "record": {
+        "Name": "_2bfe7e93e85073296eb175def8bb245a.clip-iisc.site.",
+        "Type": "CNAME",
+        "Value": "_11c10845a76a4820548879213899012f.wzccmgtwzk.acm-validations.aws."
+      }
+    }
+  ],
+  "sender_conditions": [
+    "verify@clip-iisc.site"
+  ],
+  "certificate_export": "DISABLED",
+  "verified_at_utc": "2026-10-26 07:04:31 UTC",
+  "account": "335523638354",
+  "region": "ap-south-1",
+  "state_key": "shared/test/terraform.tfstate",
+  "shared_rds": "stopped",
+  "shared_api": {
+    "desired": 0,
+    "running": 0,
+    "pending": 0,
+    "task_revision": 1
+  },
+  "listings_demo": {
+    "hosts": 1,
+    "running": 1,
+    "pending": 0
+  },
+  "deployed_application": false,
+  "dns_mutated": false,
+  "https_listener_created": false,
+  "provider_email_sent": false,
+  "retention": "Certificate retained for deployment; cleanup separately approved; review date2026-10-27",
+  "dns_verification": {
+    "checked_at_utc": "2026-10-26 07:08:19 UTC",
+    "human_reported_added": true,
+    "public_cname_matches": true,
+    "resolver": "Google public DNS over HTTPS",
+    "ttl_seconds": 1800,
+    "acm_status": "PENDING_VALIDATION",
+    "acm_validation_status": "PENDING_VALIDATION",
+    "in_use_by": []
+  }
+}

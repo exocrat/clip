@@ -2,6 +2,34 @@
 
 Non-secret status record. Update only from approved plans and verified outputs. Never record credentials, tokens, or secret values here. This is an observed snapshot, not an authorization to use existing resources or create/change/delete cloud infrastructure.
 
+## HTTPS certificate and sender update — 2026-10-26 07:04:31 UTC
+
+Approved saved plan9f7d85f7 applied: one non-exportable ACM certificate for
+clip-iisc.site (`a9775d00-2af5-4b12-990d-1ce9795f1859`, Mumbai) pending public DNS
+validation; SES task-role FromAddress now verify@clip-iisc.site. No HTTPS listener,
+DNS write or application deployment. Original shared RDS remains stopped, shared
+API0tasks; separate Listings demo remains1host/1task. Certificate retained for
+integration, review date2026-10-27. [Public validation/result evidence](../evaluation/identity/id-01-step-12/https-certificate-apply-result.json).
+This supersedes older no-reply/no-regional-certificate observations below only;
+remaining runtime/DB/HTTPS setup is not complete.
+
+## Latest Identity connection snapshot — 2026-10-26 06:44:03 UTC
+
+Approved read-only inspection confirmed account335523638354/ap-south-1. Shared RDS
+is stopped; shared ECS/API/ASG have zero hosts/tasks/desired capacity. **Separate
+Listings demo is active**: clip-test-listings-ap-south-1-li02 has one host/task,
+clip-li02-demo HTTP listener has a healthy target. Preserve this other-owner work;
+older demo-stopped records below are historical. Images bucket remains private/
+AES256 and CORS names only that demo origin. Identity DB URL is not listed; keys/
+email/Listings URL metadata are present. No secret values or SQL were read.
+Apex domain has no public A/AAAA answers, nameservers are Spaceship, and no matching
+Route53 zone/ACM regional certificate was listed. Shared task remains the original
+foundation configuration; runtime/IAM/HTTPS connection work is pending.
+[Detailed snapshot](../evaluation/identity/id-01-step-12/cloud-metadata-20261026T064141Z.json).
+No cloud mutation or authority for future changes is implied.
+
+## Earlier foundation inventory (historical)
+
 | Fact | Current status |
 |---|---|
 | Account or project | `335523638354` — last checked 2026-10-19 20:27:40 UTC as IAM user `adityalaxmi1` with the approved non-root profile; account alias not determined |

@@ -101,3 +101,12 @@ ports; no actual browser/device/provider acceptance. [Result](integration.md#sha
 and [exact source/check evidence](id-01-step-12/browser-transport-local.json).
 Aditya verified this local result. Affected-owner review and current deployed/
 runtime/image gates remain.
+
+
+## PR #14 merged — shared runtime pending
+
+Aditya confirms Suraj reviewed/merged PR #14; main is `3d6c270`.
+[Post-merge shared runtime plan](integration.md#post-merge-shared-runtime-plan)
+records the remaining schema/credentials/IAM/image/HTTPS and real-runtime gates.
+This merged implementation is not ID-READY acceptance. Authentication uses
+Microsoft or email OTP; there is no SMS/phone-number verification.

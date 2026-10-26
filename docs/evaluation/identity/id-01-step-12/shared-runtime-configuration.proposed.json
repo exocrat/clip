@@ -1,0 +1,83 @@
+{
+  "state": "review_proposal_not_deployable",
+  "source_revision": "3d6c2709d93f42bda0b4a6645c633780387c99b8",
+  "target": {
+    "account": "335523638354",
+    "region": "ap-south-1",
+    "service": "clip-test-api-ap-south-1-pd16",
+    "container": "api",
+    "container_port": 8000,
+    "host_port": 18000
+  },
+  "environment": {
+    "CLIP_ENVIRONMENT": "test",
+    "CLIP_DEBUG": "false",
+    "CLIP_IDENTITY_PROVIDER": "microsoft",
+    "CLIP_EMAIL_PROVIDER": "dual",
+    "CLIP_IDENTITY_RUNTIME_ENABLED": "true",
+    "CLIP_IDENTITY_BROWSER_ORIGINS": "[\"https://clip-iisc.site\"]",
+    "CLIP_DEVELOPMENT_AUTH": "false",
+    "CLIP_ISOLATED_LISTINGS_TEST_CALLER": "false",
+    "CLIP_SERVE_WEB_APP": "true",
+    "CLIP_STORAGE_PROVIDER": "s3",
+    "CLIP_IMAGE_REGION": "ap-south-1",
+    "CLIP_SES_SENDER": "verify@clip-iisc.site"
+  },
+  "task_role_identity_policy": {
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Sid": "ReadOnlyExactIdentityRuntimeParameters",
+        "Effect": "Allow",
+        "Action": [
+          "ssm:GetParameter"
+        ],
+        "Resource": [
+          "arn:aws:ssm:ap-south-1:335523638354:parameter/clip/test/identity/authentication-keys",
+          "arn:aws:ssm:ap-south-1:335523638354:parameter/clip/test/identity/database-url",
+          "arn:aws:ssm:ap-south-1:335523638354:parameter/clip/test/identity/email-delivery"
+        ]
+      }
+    ]
+  },
+  "execution_role_listings_url_policy": {
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Sid": "InjectReviewedListingsDatabaseUrl",
+        "Effect": "Allow",
+        "Action": [
+          "ssm:GetParameters"
+        ],
+        "Resource": [
+          "arn:aws:ssm:ap-south-1:335523638354:parameter/clip/test/listings-database-url"
+        ]
+      }
+    ]
+  },
+  "container_secret_references": [
+    {
+      "name": "CLIP_DATABASE_URL",
+      "valueFrom": "arn:aws:ssm:ap-south-1:335523638354:parameter/clip/test/listings-database-url"
+    }
+  ],
+  "unresolved_before_plan": [
+    "Verify Listings URL target/login privileges privately under separate approval before choosing the recorded reference",
+    "Provision separate Identity DB login/URL after reviewed schema apply",
+    "Select approved controlled recipients privately for CLIP_SES_TEST_RECIPIENTS; do not place addresses in this proposal",
+    "Review shared bucket/prefix/S3 action policy and preserve active demo CORS with Suraj",
+    "Provide current immutable AMD64 image and enable reviewed Microsoft frontend build flag",
+    "Provide pinned Hybrid image/model/interpreter settings, pipeline initialization role and measured CPU/memory sizing with Search owner",
+    "Determine exact ALB subnet/security/target-group topology and restricted trusted proxy source; default Uvicorn loopback trust will not trust an external ALB",
+    "Review HTTPS certificate issuance/DNS validation and apex-compatible DNS mapping at existing provider",
+    "Privately rotate exposed Resend key; review SES verify sender policy",
+    "Confirm current SSM key alias and exact KMS requirement before adding any KMS policy"
+  ],
+  "restrictions": [
+    "No master/probe secret access for application task or execution roles",
+    "No shared-role change from Identity Terraform root; shared owner applies reviewed policy there",
+    "No fake caller, automatic DB migration, bootstrap or data seed at startup",
+    "No modifications to active Listings demo",
+    "No deployment until unresolved fields and exact image/resources/approval are complete"
+  ]
+}
