@@ -1,7 +1,7 @@
 import { useState, type PropsWithChildren } from 'react';
 import { useParams } from 'react-router';
 import { ConversationsPlaceholder } from '../features/conversations';
-import { MicrosoftCallback, ContactsEditor, SignIn, IdentityPlaceholder as IdentityFeaturePlaceholder } from '../features/identity';
+import { MicrosoftCallback, ContactsEditor, SignIn, SellerEligibilityGate, IdentityPlaceholder as IdentityFeaturePlaceholder } from '../features/identity';
 import { ListingsPlaceholder as ListingsFeaturePlaceholder } from '../features/listings';
 import { CreateListing, ListingDetail, ListingEdit, MyListings } from '../features/listings';
 import { WantedBrowse, MyWantedRequests, WantedDetail, SavedListings, SaveListingAction } from '../features/search';
@@ -69,9 +69,9 @@ export function DiscoveryPage() {
 export function ListingCreatePage() {
   return (
     <RoutePage title="Create a sale listing">
-      <CreateListing>
-        <IdentityFeaturePlaceholder title="Seller eligibility connection" />
-      </CreateListing>
+      <SellerEligibilityGate>
+        <CreateListing />
+      </SellerEligibilityGate>
     </RoutePage>
   );
 }

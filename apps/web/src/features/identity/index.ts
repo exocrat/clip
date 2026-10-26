@@ -7,3 +7,5 @@ export { SignIn, IdentitySessionControl } from './SignIn';
 export { ContactsEditor } from './ContactsEditor';
 
 export { MicrosoftCallback } from './MicrosoftSignIn';
+
+export { SellerEligibilityGate } from './SellerEligibilityGate';

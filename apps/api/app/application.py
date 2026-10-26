@@ -13,7 +13,7 @@ from psycopg.rows import dict_row
 from psycopg_pool import AsyncConnectionPool
 
 from app.contracts.health import CONTRACT_VERSION, HEALTH_ROUTE, HealthResponse
-from app.contracts.domain_types import CsrfToken
+from app.contracts.domain_types import CsrfToken, SessionView
 from app.core.auth import require_caller
 from app.core.config import ConfigurationError, Settings, load_settings
 from app.core.errors import install_error_handlers
@@ -197,6 +197,28 @@ def create_app(
             """Support the shared browser transport only in the guarded demo profile."""
             response.headers["Cache-Control"] = "no-store"
             return CsrfToken(csrf_token="isolated-demo-csrf-" + "0" * 46)
+
+        @app.get(
+            ("/api" if settings.serve_web_app else "") + "/me",
+            response_model=SessionView,
+            include_in_schema=False,
+        )
+        def isolated_session(response: Response) -> SessionView:
+            """Expose only the existing fixed demo actor, never real authentication.
+
+            Required by the shared frontend eligibility gate. The exact isolated
+            target/settings guards above still exclude normal/production runtime.
+            """
+            from app.domains.listings.isolated_test import isolated_test_caller
+
+            response.headers["Cache-Control"] = "no-store"
+            caller = isolated_test_caller()
+            return SessionView(
+                user_id=caller.user_id,
+                account_class=caller.account_class,
+                valid_until=caller.valid_until,
+                display_name=None,
+            )
 
     @app.get(**HEALTH_ROUTE)
     async def health() -> HealthResponse:

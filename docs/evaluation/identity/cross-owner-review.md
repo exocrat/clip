@@ -159,6 +159,45 @@ details, so no hosted sign-in claim is made. Review the exact committed source a
 this separate infrastructure gate before enabling anything. Owner review remains
 pending and is explicitly deferred by Aditya until the morning.
 
+## Identity connection audit — 2026-10-26
+
+Audited2026-10-26 04:59:58UTC on `task/id-ready-local-hardening`, committed base
+`fb77795`, plus the authorized uncommitted seller-gate increment. Remote main
+remains `6c860603bdd81a98485e721d789b557c5d433948`; Listings ref remains
+`23028365c2a981d8cc2656ce97d237553b325e0d`. This is a source/integration-check audit,
+not affected-owner approval, current hosted CI, cloud acceptance or final Step14.
+
+| Connection | Backend | Frontend | Remaining work / owner |
+|---|---|---|---|
+| Shared authentication/session transport | Real Identity middleware authenticates cookies, constructs server-only CallerContext, rechecks account state, and binds three public Identity ports per request. Listings/Search require that caller. Origin/CSRF/no-store rules remain enforced. Default unconfigured app stays unbound. | App supplies public IdentityProvider/session controls. Shared sessionFetch handles `/api`, fresh CSRF and safe writes for all three feature adapters. Real local Microsoft and temporary flows verified. | Hosted runtime, separate DB URLs/roles/IAM/HTTPS and phone acceptance; A/shared operator with separate approvals. |
+| Identity → Listings sale creation/images | Listings create/image initiation requires regular eligible caller; edit/availability/selection require regular eligibility plus ownership. Real temporary cookie denies create/upload403 despite spoofed actor headers. | **New:** public SellerEligibilityGate wraps CreateListing. Temporary users see an explanation; unknown/error/expired sessions do not mount the form. Regular actor keys discard prior form drafts. | Human regular/temporary walkthrough of this increment and Suraj review. Actual image publishing requires real configured storage; the current local auth demo has no S3 adapter. |
+| Identity → Listings browse/detail/own reads | PublicListingsIdentity/PublicBrowseIdentity call real `check_account_eligibility(...,None)`. Both active classes can browse. Actor/owner data comes from server context. | Real components use cookie transport; permission failures are safe errors. Own Listings/ListingEdit are implemented components, not their historical placeholders. | ListingEdit lacks a page eligibility wrapper; scaffold/create links are not class-filtered. MyListings/ListingEdit state is not wired to Identity actor changes (see lifecycle finding). B, with A's public session API. |
+| Identity → Search browse/draft/Wanted CRUD | Wanted/Saved/draft adapters call real public eligibility. Shared factory supplies current Search stores and Listings public access. Both classes may browse and manage their own Wanted Requests. Real cookie tests cover empty reads and actual Wanted create/edit through HTTP/SQL. | SaleDiscovery, WantedBrowse, MyWantedRequests, draft matches and SavedListings use real API wrappers. Temporary Wanted creation remains allowed. | Full nonempty saved CRUD and complete expired/revoked cross-domain matrix remain real acceptance checks, not evidence of an absent adapter. C/A; cloud/device acceptance pending. |
+| Identity → Search Wanted response | PublicResponseIdentity requires regular; trusted temporary caller denied before origin/thread access. Actual Conversations create/existing lookup is still declaration-only. | WantedDetail reads reviewed `/me`, bounds session expiry and disables temporary responses. Regular response calls the real API and navigates only on confirmed thread result. | Regular response cannot succeed end to end until D supplies actual Conversations operations; C/D/A repeat real creation/existing/closed/participant checks. |
+| Identity session changes → private marketplace state | Every new protected request is reauthenticated; server checks remain connected. | **Gap:** MyListings page data/drafts, ListingEdit, MyWantedRequests/SavedListings and SaveAction membership state are keyed to route/query inputs rather than Identity actor/generation. WantedDetail fetches session independently and does not subscribe to IdentityProvider changes. | B/C must clear/remount private views and pending drafts on logout/account switch, fence late responses, and refresh capability state. Source audit identifies missing hooks; no cross-owner fix is hidden in this increment. A can provide public actor/session boundaries. |
+| Identity → Conversations actor/participant eligibility | `conversations/public.py` remains declaration-only; no real thread/message/key/offer service or routes exist in this branch. No real consumer invokes Identity eligibility/membership at those operations yet. | Conversation list/thread/start action are still explicit placeholders. Listing detail's start/reopen slot is a Conversations placeholder. | CN-01/CN-02 implementation and real public eligibility at every applicable operation; D, affected B/C/A integration. Do not treat shared caller plumbing as a finished Conversations integration. |
+| Identity → Conversations contact sharing | Identity providers for availability flags and selected-own fields exist and are bound. They require a trusted ContactSharingContext matching actor/conversation and confirmed fields. Real Conversations has not supplied that authorization context. | Own ContactsEditor is connected to real Identity API; the conversation's deliberate-sharing slot remains IdentityPlaceholder. | D/A must connect participant-authorized availability/selection, trusted context, encryption/send and selected-field privacy checks. Own contact editing does not prove conversation disclosure. |
+| Identity → Conversations notifications | `identity.resolve_notification_recipient` is declaration-only; no worker-authorized real recipient resolver/binding exists yet. | No contact-sharing or notification setting connection is implied by current placeholders. | A/CN-03 with D producer/read-state review: real minimal recipient lookup, eligibility recheck and approved provider/worker path. This is downstream work, not a reason to invent a fake recipient now. |
+| Cross-domain expiry/revocation/cleanup | Identity local services enforce current state and tested owned retention. Public consumers fail closed. Conversations origin-retirement/contact/thread/notification behavior still lacks real providers. | SessionProvider clears at expiry and refreshes on focus; other-feature private state needs the lifecycle connection above. | Full Step14 capability matrix plus actual domain-owned retention/retirement integration at its named gates; all owners. ID-READY and FR-03 remain incomplete. |
+
+Evidence: [shared factory](../../../apps/api/app/application.py),
+[Identity middleware](../../../apps/api/app/domains/identity/http.py),
+[Listings integration](../../../apps/api/app/domains/listings/integrations.py),
+[Search eligibility](../../../apps/api/app/domains/search/wanted.py),
+[Wanted response](../../../apps/api/app/domains/search/wanted_response.py),
+[Identity contacts](../../../apps/api/app/domains/identity/contacts.py),
+[Conversations declarations](../../../apps/api/app/domains/conversations/public.py),
+[page composition](../../../apps/web/src/pages/ScaffoldPages.tsx),
+[Search views](../../../apps/web/src/features/search/WantedViews.tsx),
+[MyListings](../../../apps/web/src/features/listings/MyListings.tsx), and
+[ListingEdit](../../../apps/web/src/features/listings/ListingEdit.tsx).
+
+Focused real SQL/HTTP integration20passed: shared composition, temporary seller
+denials, Search reads for both classes, TS cookie/CSRF Writes and guarded isolated
+profiles. Frontend gate checks use the actual page/CreateListing with controlled
+reviewed `/me`/catalogue responses, not a fabricated successful seller bypass.
+Full aggregate and human gate verification are recorded in the work log.
+
 ## 3. Eligibility and capabilities — Listings, Search and Conversations
 
 **Paths:** [capabilities.py](../../../apps/api/app/domains/identity/capabilities.py),

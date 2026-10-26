@@ -129,18 +129,18 @@ it is not an additional product route.
 
 | Page path | Page component | Public feature placeholders and connections | Owning task(s) |
 |---|---|---|---|
-| `/sign-in` | `SignInPage` | `identity/SignIn` (temporary sign-in/registration first checkpoint; Microsoft/reset pending) | A — ID-01 |
-| `/auth/callback` | `AuthCallbackPage` | `identity/MicrosoftCallback` (gated SDK flow; actual provider checks pending) | A — ID-01 |
+| `/sign-in` | `SignInPage` | `identity/SignIn` (Microsoft and temporary registration/login/reset; real local provider smoke verified) | A — ID-01 |
+| `/auth/callback` | `AuthCallbackPage` | `identity/MicrosoftCallback` (real local IISc success/non-IISc denial verified; cloud/device acceptance pending) | A — ID-01 |
 | `/` | `DiscoveryPage` | `search/SaleDiscovery` renders reviewed public sale summaries, displays the first attached photo via Listings' public `ListingImagePreview`, and links to B's detail route; `search/WantedBrowse` renders open requests | C — SE-01/SE-02; B — public summary/image delivery integration |
-| `/listings/new` | `ListingCreatePage` | `listings/CreateListing` contains `identity/IdentityPlaceholder` for the pending real eligibility connection | B — LI-01/LI-02; A — ID-01 integration |
+| `/listings/new` | `ListingCreatePage` | public `identity/SellerEligibilityGate` wraps `listings/CreateListing`; mounts only for a current regular session, blocks temporary/loading/missing/expired/unavailable states | B — LI-01/LI-02; A — ID-01 integration |
 | `/listings/:listingId` | `ListingDetailPage` | `listings/ListingDetail` composes Search's `SaveListingAction`, which checks the caller's saved list and prevents a repeat Save, plus the `conversations/ConversationsPlaceholder` start/reopen action | B — LI-01/LI-02; C — SE-02; D — CN-01 integration |
-| `/listings/:listingId/edit` | `ListingEditPage` | `listings/ListingsPlaceholder` | B — LI-01/LI-02 |
-| `/my/listings` | `MyListingsPage` | Local view switch; sale view uses `listings/ListingsPlaceholder` with a `conversations/ConversationsPlaceholder` seller-inbox connection; wanted view uses `search/SearchPlaceholder` with a listings match placeholder | B — LI-01/LI-02; C — SE-02; D — CN-02 integration |
+| `/listings/:listingId/edit` | `ListingEditPage` | public `listings/ListingEdit`; regular-only UI eligibility wrapper still pending, server enforces seller/owner checks | B — LI-01/LI-02 |
+| `/my/listings` | `MyListingsPage` | Local view switch; public `listings/MyListings` and `search/MyWantedRequests` with draft matching; actor-switch state reset and Conversations integration pending | B — LI-01/LI-02; C — SE-02; D — CN-02 integration |
 | `/saved` | `SavedListingsPage` | `search/SavedListings` uses the same `SaleListingCard` as Discover, including the Listings public photo renderer, current availability and Remove action; retired records remain content-free | C — SE-02; B — LI-01/LI-02 integration |
 | `/my/conversations` | `ConversationsPage` | `conversations/ConversationsPlaceholder` contains `listings/ListingsPlaceholder` context | D — CN-01/CN-02; B — LI-01 integration |
 | `/my/conversations/:conversationId` | `ConversationDetailPage` | `conversations/ConversationsPlaceholder` contains listing selection/availability and identity contact-option placeholders | D — CN-01/CN-02; B — LI-01 and A — ID-01 integration |
 | `/account/contacts` | `AccountContactsPage` | `identity/ContactsEditor` (own-source editor; human verification pending) | A — ID-01 |
-| `/wanted/:requestId` | `WantedRequestPage` | `search/SearchPlaceholder` contains identity eligibility and conversations contact-requester placeholders | C — SE-02; A — ID-01 and D — CN-01/CN-02 integration |
+| `/wanted/:requestId` | `WantedRequestPage` | public `search/WantedDetail` reads `/me`, disables responses for temporary/expired sessions and calls the response API; real Conversations provider pending | C — SE-02; A — ID-01 and D — CN-01/CN-02 integration |
 
 Public wrappers are `src/features/identity/IdentityPlaceholder.tsx`,
 `src/features/listings/ListingsPlaceholder.tsx`,
@@ -376,3 +376,24 @@ unprefixed routes. Existing isolated harnesses implement the reviewed CSRF respo
 as test doubles instead of introducing a client-side fallback. See the
 [shared session transport decision](../decisions/browser-session-transport.md).
 Human browser/device and real runtime/provider checks remain separate.
+
+### ID-01 Step12 seller-eligibility integration — 2026-10-26
+
+Aditya(A) is the bounded current writer after explicit human authorization for
+Identity's new public SellerEligibilityGate and only ListingCreatePage composition,
+shared application's guarded isolated-demo `/me`, tests and this map. Suraj keeps
+Listings implementation ownership and affected-owner review. Normal create page
+uses IdentityProvider's real `/me` session; no feature-private import or client-side
+demo bypass. Loading/unavailable/missing/expired/temporary sessions never mount the
+seller form. A regular actor switch remounts the form to discard prior drafts.
+The backend retains authoritative regular/owner/lifecycle checks on every write.
+
+Existing local browser demos already expose their reviewed synthetic `/me`.
+Shared isolated cloud rehearsal gains the same response only under its existing
+exact test/development/dedicated DB/bucket guards, before SPA fallback; it reuses
+the existing fixed server actor and rejects normal/production configuration. No
+real sessions are issued and no client actor headers are accepted. This preserves
+isolated demo compatibility and proves no real Identity acceptance for that mode.
+Frontend/backend checks and human regular/temporary page walkthrough are recorded
+in the work log; owner review and live cloud/device checks remain separate.
+See [connection audit](../evaluation/identity/cross-owner-review.md#identity-connection-audit--2026-10-26).

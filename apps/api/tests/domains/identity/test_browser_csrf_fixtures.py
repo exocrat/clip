@@ -35,6 +35,7 @@ def test_unconfigured_runtime_has_no_synthetic_csrf_endpoint(environment):
     response = client.get("/auth/csrf")
     assert response.status_code == 404
     assert "csrf_token" not in response.text
+    assert client.get("/me").status_code == 404
     client.close()
 
 
@@ -45,6 +46,13 @@ def test_existing_isolated_profile_only_exposes_the_contract_double():
     assert set(response.json()) == {"csrf_token"}
     assert 32 <= len(response.json()["csrf_token"]) <= 128
     assert response.headers["cache-control"] == "no-store"
+    session = client.get(
+        "/me", headers={"X-Account-Class": "temporary", "X-User-ID": "untrusted"}
+    )
+    assert session.status_code == 200
+    assert session.json()["account_class"] == "regular"
+    assert session.json()["user_id"] == "10000000-0000-4000-8000-000000000001"
+    assert session.headers["cache-control"] == "no-store"
     client.close()
     with pytest.raises(ValidationError):
         isolated_settings(environment="production")
@@ -60,6 +68,9 @@ def test_hosted_demo_csrf_is_registered_before_the_spa_fallback(monkeypatch, tmp
     response = client.get("/api/auth/csrf")
     assert response.status_code == 200 and "csrf_token" in response.json()
     assert response.headers["cache-control"] == "no-store"
+    session = client.get("/api/me")
+    assert session.status_code == 200 and session.json()["account_class"] == "regular"
+    assert session.headers["cache-control"] == "no-store"
     client.close()
 
 
