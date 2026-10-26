@@ -697,6 +697,20 @@ the evidence and task review.
 
 ## CN-01 — disposable Conversations database checks
 
+Browser checkpoint setup: `CLIP_ENVIRONMENT=test uv run --locked python
+scripts/conversation_browser.py --isolated-conversation-browser --check-only`
+creates and removes only one new disposable local PostgreSQL container and
+checks real chat HTTP/SQL plus loopback/Origin/write guards. Requires the normal
+web build (`npm run build`), local Unix-socket Docker and the pinned images.
+Without `--check-only`, it serves the built UI at `http://127.0.0.1:5273` and
+`:5274` for two fixed synthetic identities, real SDK/IndexedDB and chat SQL.
+Default cap30min, `--seconds`60–3600; Ctrl+C stops both sides/pools and removes
+only its container. No target/host/identity override, live provider or AWS access.
+Refuses ambient DB/provider settings and non-test startup. This is not real
+session authentication or CN-CORE/NFR acceptance. See the
+[exact browser walkthrough](conversation-browser-test.md). The agent starts it
+and supplies URLs; the human does not reconstruct setup.
+
 Run `uv run --locked python scripts/check_conversations_retirement.py` from
 the repository root, or use `.venv/bin/python` with the already synchronized
 locked environment. It requires local Unix-socket Docker and the pinned

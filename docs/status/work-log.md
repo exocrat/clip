@@ -53,7 +53,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | SE-01 | Mohit (C); peer Suraj (B), Identity review | in progress | Local create-to-Keyword-and-Hybrid flow and browser walkthrough verified; formal acceptance remains pending | Test-only browser demo binds the same fixed synthetic Identity for writes/browse and can opt into the real helper, worker, pipeline bootstrap and Hybrid reader; automatic new-listing vector generation was observed | Suraj verified the local command/API/proxy flow and subsequent browser walkthrough | Search PR #11 worktree `task/search-evidence-reduction` at `864e53b`; new listing `194a32d4-64bb-491b-b4ec-68403e26f7f3` produced one title and one description vector (384 dimensions each), then matched in both modes through API and Vite proxy; session `/tmp/clip-listings-browser-v6e1f01t`; UI `http://127.0.0.1:5173/` | Formal SE-CORE/DATA-READY and final NFR/hosted-CI acceptance remain outside this merge step | 2026-10-25 14:38:24 UTC |
 | SE-02 | Mohit (C); peer Suraj (B), Identity/Conversations review | in progress | Step8 real integration gated; local handoff human-verified | Steps1–7 isolated result verified; Step8 audit performed | Mohit verified isolated UI and combined local handoff | [Search handoff](../evaluation/domain/search-handoff/result.json): Python1270/data94/web144,Black183,native20/3skip,wrapper35/contracts8/boundaries/parity/type/build pass | Await actual ID-READY/LI-CORE/SE-CORE/C adapters; Step9 final acceptance, pinned secrets/hosted CI and independent review pending | 2026-10-25 08:50:43 UTC |
 | MERGE-LI-SE | Suraj (integration); Listings/Search affected owners | done | PR #11 is squash-merged; Search–Listings local merge task is complete | Steps 1–9 performed; approved PR head `2a43066` merged to `main` as `e315c9d`; final hosted CI run `40204621122` passed | Steps 3–8 verified by Suraj; user authorized squash merge of the exact PR revision on 2026-10-25 | PR #11 `https://github.com/exocrat/clip/pull/11`; source head `2a430660d25e7c14cf33d84bd78172db4ec063c7`; squash merge `e315c9df3e0e11d6e9c8d7d244d676204d3af7e8`; hosted CI `40204621122`; local merge commit `29eb6fb`; fallback branch `safety/search-pr11-pre-main-reconciliation-20261025`; stash `af9d7f5`; local checks recorded below | No blocker for the Search–Listings merge. Final dataset, formal NFR/cloud checks, and real Identity/Conversations remain later work. | 2026-10-25 15:17:46 UTC |
-| CN-01 | Rahul (D) | in progress | Local integration with main 3d6c270 complete; next verify the integration report, then plan real two-browser/IndexedDB checks | All 12 make check gates pass: Python 1866/80 skipped, data 94, web 370/3 skipped, focused PostgreSQL Conversations 73; migration lifecycle, contracts/types, boundaries, safety and secrets pass | Earlier isolated increments verified; this integration awaits human verification | task/cn-01-conversations; pre-integration head ce2130e; 17 published SQL files preserved, four new forwards; exact evidence below | Real browser/IndexedDB, phone UI, CN-CORE acceptance, 90-day purge, CN-02 offers/contact sharing, CN-03 notifications and peer review remain pending; no push/shared apply | 2026-10-26 07:12:12 UTC |
+| CN-01 | Rahul (D) | in progress | Real-encryption two-origin browser harness ready; next human send/reply, reload/IndexedDB and display-read checks | All 12 checks pass: Python 1881/80 skipped, data 94, web 370/3 skipped, focused PostgreSQL Conversations 73; harness safety/lifecycle 15 and owned HTTP/SQL smoke pass | Rahul verified local main integration a239c21; this browser checkpoint awaits observation and verification | task/cn-01-conversations; scripts/conversation_browser.py; browser walkthrough linked below; no runtime application or migration changes in this increment | Fixed synthetic request identities are not real-session integration; cross-browser/IndexedDB, physical-phone keyboard, 90-day purge, CN-02/CN-03, readiness acceptance and peer review remain pending | 2026-10-26 07:51:35 UTC |
 | CN-02 | D; A/B interface review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | Isolated development: PRE-00, then DL-00 and a reviewed contract/stub. Later real gates: CN-CORE, ID-READY, and LI-CORE for listing-origin behavior; SE-02 plus CN-01's real request path for request-response inbox integration. | — |
 | CN-03 | A; D producer review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | CN-CORE, ID-READY | — |
 | INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
@@ -82,6 +82,62 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | DATA-READY | not accepted | SE-01 steps 2/4/9 | — | pending |
 | CN-CORE | not accepted | CN-01 step 10 | — | pending |
 | OPTIONAL-OK | not approved | Each optional task's selection/priority plan | — | pending |
+
+## CN-01 — Isolated real-encryption browser checkpoint preparation — 2026-10-26 07:51:35 UTC
+
+Rahul verified the local main integration `a239c21`, then authorized preparation
+of the two-browser checkpoint within CN-01 Steps5–9. PRE-00/DL-00 remain accepted;
+ID-READY/LI-CORE/CN-CORE acceptance is still pending. This increment uses the
+reviewed isolated-fixture route, not a second authentication implementation.
+
+- New `scripts/conversation_browser.py` requires an explicit test environment and
+  opt-in flag, refuses ambient database/Identity/email target settings, and owns
+  one fresh network-isolated tmpfs PostgreSQL18.6 container through the existing
+  disposable fixture. It seeds one synthetic listing, creates its thread through
+  the actual Conversations operation with real Identity eligibility SQL, and
+  serves the normal built UI plus real chat router on127.0.0.1:5273/5274. Each
+  origin has one fixed synthetic request identity, one bounded pool and a
+  prominent test disclosure. Host/peer/Origin and per-side write-token checks
+  reject foreign requests and identity selectors. Logout ends that fixed side;
+  no public test-login/switch route exists. The script is not imported by the
+  normal app and scripts/tests are excluded from the production image.
+- The same script's `--check-only` checks real HTTP/SQL setup without listeners.
+  Normal serving verifies both listeners start, stops both when either ends or
+  the default30-minute cap is reached, closes pools, and removes only its owned
+  database container. Existing databases/Docker resources/browser storage are
+  untouched. No plaintext messages, keys or ciphertext are preloaded or logged;
+  actual encryption and IndexedDB still require browser observation.
+- New `apps/api/tests/test_conversation_browser.py` covers explicit environment
+  refusal, fixed-actor spoof rejection, foreign host/origin/peer denial, per-side
+  CSRF/marker checks, logout, normal-app exclusion and paired-server timeout/
+  startup-failure shutdown. Synthetic HTML and idle pools keep guard tests local;
+  these are not browser encryption tests.
+- New [browser walkthrough](../environment/conversation-browser-test.md), the
+  command registry and web README distinguish this real-SDK/SQL exercise from
+  the older unencrypted presentation demo. No production code, feature exports,
+  dependencies, contracts or migrations changed in this increment.
+
+Checks: all12 `make check` gates pass: Python1881/80skip, data94, web370/3skip,
+Black285, boundaries0, contracts8, mypy2, build, wrapper safety35, full disposable
+migration lifecycle, Conversations PostgreSQL73 and Gitleaks8.30.1. The final
+shared-error-envelope alignment was additionally formatted and rechecked with
+all15 focused harness guard/lifecycle tests. The preceding focused run of16
+tests also passed the existing real Identity/Conversations HTTP case and route
+fail-closed checks. `--check-only` passed real owned SQL/HTTP setup; its initial
+empty-entry assertion used `entries` instead of the canonical `items`, was
+corrected in the harness only, then passed. `git diff --check` passes. No new
+browser/phone, live-provider, hosted-CI or NFR evidence is claimed.
+
+Next human checkpoint: agent starts the bounded harness; human opens both exact
+URLs, acknowledges each key-loss warning, sends synthetic messages both ways,
+checks same-profile reload/reopen history, display-driven unread acknowledgement
+and optional offline retry, then logout last. Record browser/version/profile and
+actual layouts checked. No browser is connected to the computer-use tool, so
+human browser observations remain pending. Physical-phone keyboard checks need
+their own approved accessible setup; do not expose this harness on a LAN.
+Real Identity session/browser integration, 90-day purge, CN-02 offers/contacts,
+CN-03 recipient/delivery, final NFR and peer/affected-owner review remain pending.
+No push, main merge, shared database apply or AWS action is authorized.
 
 ## CN-01 — Main integration and real local Identity/Search boundaries — 2026-10-26 07:12:12 UTC
 

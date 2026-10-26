@@ -219,6 +219,12 @@ prove browser reload, eviction/quota, multi-tab durability or real sign-in.
 
 ### Conversation route composition
 
+The database-backed, real-encryption local browser checkpoint is documented in
+[the two-browser walkthrough](../../docs/environment/conversation-browser-test.md).
+Unlike `?demo=conversations`, it uses the actual SDK and IndexedDB, with explicitly
+fixed synthetic identities and disposable PostgreSQL. It is never a production
+authentication path or an accepted real-session integration check.
+
 `ConversationInboxPage` loads the caller-scoped inbox and opens the selected
 conversation. `ConversationDetailPage` first asks the API for the route's
 summary and confirms the authenticated caller is one of its participants,
