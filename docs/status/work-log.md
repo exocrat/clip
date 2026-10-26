@@ -53,7 +53,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | SE-01 | Mohit (C); peer Suraj (B), Identity review | in progress | Local create-to-Keyword-and-Hybrid flow and browser walkthrough verified; formal acceptance remains pending | Test-only browser demo binds the same fixed synthetic Identity for writes/browse and can opt into the real helper, worker, pipeline bootstrap and Hybrid reader; automatic new-listing vector generation was observed | Suraj verified the local command/API/proxy flow and subsequent browser walkthrough | Search PR #11 worktree `task/search-evidence-reduction` at `864e53b`; new listing `194a32d4-64bb-491b-b4ec-68403e26f7f3` produced one title and one description vector (384 dimensions each), then matched in both modes through API and Vite proxy; session `/tmp/clip-listings-browser-v6e1f01t`; UI `http://127.0.0.1:5173/` | Formal SE-CORE/DATA-READY and final NFR/hosted-CI acceptance remain outside this merge step | 2026-10-25 14:38:24 UTC |
 | SE-02 | Mohit (C); peer Suraj (B), Identity/Conversations review | in progress | Step8 real integration gated; local handoff human-verified | Steps1–7 isolated result verified; Step8 audit performed | Mohit verified isolated UI and combined local handoff | [Search handoff](../evaluation/domain/search-handoff/result.json): Python1270/data94/web144,Black183,native20/3skip,wrapper35/contracts8/boundaries/parity/type/build pass | Await actual ID-READY/LI-CORE/SE-CORE/C adapters; Step9 final acceptance, pinned secrets/hosted CI and independent review pending | 2026-10-25 08:50:43 UTC |
 | MERGE-LI-SE | Suraj (integration); Listings/Search affected owners | done | PR #11 is squash-merged; Search–Listings local merge task is complete | Steps 1–9 performed; approved PR head `2a43066` merged to `main` as `e315c9d`; final hosted CI run `40204621122` passed | Steps 3–8 verified by Suraj; user authorized squash merge of the exact PR revision on 2026-10-25 | PR #11 `https://github.com/exocrat/clip/pull/11`; source head `2a430660d25e7c14cf33d84bd78172db4ec063c7`; squash merge `e315c9df3e0e11d6e9c8d7d244d676204d3af7e8`; hosted CI `40204621122`; local merge commit `29eb6fb`; fallback branch `safety/search-pr11-pre-main-reconciliation-20261025`; stash `af9d7f5`; local checks recorded below | No blocker for the Search–Listings merge. Final dataset, formal NFR/cloud checks, and real Identity/Conversations remain later work. | 2026-10-25 15:17:46 UTC |
-| CN-01 | Rahul (D) | in progress | Integration Step2 Listing-to-chat HTTP/service/public UI connection implemented; verify result before Step3 signed-in combined workflows | DB107; contract/Listings regressions118; web385/3skip, lint/types/build; focused mypy4, contracts8 current, boundaries0 and Gitleaks passed | Rahul verified Step2 and the read-only Listing lookup correction, and confirmed Conversations-only scope; prior browser checks stay verified | `task/cn-01-conversations`; [integration checkpoint](../evaluation/domain/conversations-integration.md); canonical sources regenerated; page reservation released | Step3 real-cookie combined workflows; normal A/B/C review. CN-02/CN-03/provider/device/NFR work remains outside this implementation increment | 2026-10-26 18:21:27 UTC |
+| CN-01 | Rahul (D) | in progress | Integration Step3 signed-in combined workflows performed; verify result before Step4 runtime preparation | Real-cookie Conversations/Identity composition24 passed with warnings-as-errors; boundaries0, Black and Gitleaks passed; prior Step2 DB107/web385 evidence retained | Step2 verified; Step3 result awaits human verification; prior browser checks stay verified | `task/cn-01-conversations`; [integration checkpoint](../evaluation/domain/conversations-integration.md); no application/schema change this step | Step4 runtime checks, Step5 full regression and normal A/B/C review. CN-02/CN-03/provider/device/NFR work remains outside this increment | 2026-10-26 18:44:01 UTC |
 | CN-02 | D; A/B interface review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | Isolated development: PRE-00, then DL-00 and a reviewed contract/stub. Later real gates: CN-CORE, ID-READY, and LI-CORE for listing-origin behavior; SE-02 plus CN-01's real request path for request-response inbox integration. | — |
 | CN-03 | A; D producer review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | CN-CORE, ID-READY | — |
 | INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
@@ -82,6 +82,35 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | DATA-READY | not accepted | SE-01 steps 2/4/9 | — | pending |
 | CN-CORE | not accepted | CN-01 step 10 | — | pending |
 | OPTIONAL-OK | not approved | Each optional task's selection/priority plan | — | pending |
+
+## CN-01 — Combined application integration Step3 — 2026-10-26 18:44:58 UTC
+
+After Rahul verified Step2, expanded
+`apps/api/tests/test_conversation_identity_integration.py` with distinct real
+cookie sessions, controlled OIDC/OTP authentication and actual owner HTTP flows.
+Sale Listing upload/confirmation/publication leads to a temporary buyer's real
+thread and message/reply; the owner changes availability and the buyer reopens
+only the existing pair. Wanted creation supports regular/temporary authors,
+denies self/temporary responses, and connects real response creation to account-
+bound key registration, message retries and explicit read acknowledgement.
+Nonmember, invalid-key and sender-spoof attempts fail; logout/old-cookie replay,
+revocation and expiry reject reads/writes. Read-only SQL audits confirm retries/
+denials leave one thread, two members and one entry. No origin/thread/message
+was seeded or copied into place. No application/configuration/schema code changed.
+
+The combined Conversations/Identity composition selection passed24 tests under
+`pytest -q -W error`;7 new parameterized cases complement the existing cookie
+test. Black, boundaries0, whitespace and Gitleaks8.30.1 snapshot checks passed.
+Initial fixture failures used stale catalogue codes, assumed the public Listing
+response exposed owner revision, and expected409 rather than the implemented
+422 invalid-key result; corrected the tests against real public workflows and
+the existing error contract without weakening application behavior.
+
+The integration checkpoint records controlled signer/mail/image-storage limits.
+Synthetic public bundles and opaque envelopes test HTTP/persistence, not SDK
+encryption; prior actual SDK/browser evidence remains separate and verified.
+No live provider/cloud/shared database, destructive cleanup, push or merge.
+Human verification is pending; next is Step4 runtime preparation, not CN-02/03.
 
 ## CN-01 — Combined application integration Step2 — 2026-10-26 18:21:27 UTC
 

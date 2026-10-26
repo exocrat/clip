@@ -78,6 +78,38 @@ workflows remain Step3. The new page action has automated interaction coverage;
 its human walkthrough belongs to that combined checkpoint, not a repetition of
 the earlier verified private-chat demo.
 
+## Step3 signed-in integration result
+
+The shared application now has8 Conversations real-session tests (7 new cases)
+using the existing disposable PostgreSQL fixture and actual cookie/CSRF middleware.
+The combined selection with the existing Identity application-composition suite
+passed24 tests with warnings treated as errors. No application/configuration or
+schema changes were needed in this step.
+
+- Sale Listing: real upload intent/confirmation and publication, regular seller
+  self-denial, temporary buyer thread creation, public-key registration, message/
+  reply, owner availability change and existing-pair reopening; a new stranger
+  cannot create on the unavailable origin or read the private thread.
+- Wanted Request: regular and temporary authors create through Search HTTP;
+  self-response and temporary response initiation are denied. A regular responder
+  creates/retries the actual thread, registers account-bound public keys, submits/
+  retries a message, and the author observes unread/read-watermark changes.
+  Fetching entries does not acknowledge them. Invalid recipient key versions and
+  browser sender spoofing refuse before entry creation. Nonmembers cannot read
+  metadata/keys/entries/read state or send/acknowledge. Logout (including old-cookie
+  replay), revocation and expiry deny subsequent reads and writes. Independent
+  read-only SQL confirms one thread, two members and one entry after retries and
+  denials; no fixture SQL created those records.
+
+The controlled external ports are Microsoft signing/discovery, OTP mail and image
+storage metadata. These are not live-provider or S3 evidence. Keys/envelopes in
+these HTTP tests are explicitly shape-valid synthetic public/opaque bytes, not
+an encryption substitute or new cryptographic evidence; the actual SDK/two-client
+checks remain separately recorded. No fixed caller/provider success override was
+installed for Identity, Listings, Search or Conversations. Existing browser checks
+were not repeated. Full regression and existing isolated demos remain Step5;
+normal review/merge and full CN-01 acceptance remain pending.
+
 ## Ordered implementation and checks
 
 1. Inventory/reservation: this record, frontend map and current work-log row.
