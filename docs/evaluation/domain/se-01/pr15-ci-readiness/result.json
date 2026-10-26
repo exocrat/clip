@@ -1,0 +1,60 @@
+{
+  "recorded_utc": "2026-10-26 18:57:41 UTC",
+  "task": "PR15 CI correction supporting SE-01 Step7 UI amendment",
+  "branch": "hybrid-nochoice",
+  "base_head": "c94b4a6c131062736af9f313022c91a6a9253666",
+  "scope": "Identity test-only readiness/diagnostics; no product/schema/auth-policy/CI weakening",
+  "failed_run": {
+    "url": "https://github.com/exocrat/clip/actions/runs/40337135112",
+    "head": "c94b4a6c131062736af9f313022c91a6a9253666",
+    "stage": "Python tests",
+    "passed": 1773,
+    "skipped": 24,
+    "errors": 57,
+    "observed_failure": "Docker/dbmate command failed while setting up disposable Identity fixtures; raw stderr withheld",
+    "root_cause_limit": "Original hidden stderr prevents certainty that the identified readiness race was the only cause."
+  },
+  "correction": {
+    "identified_bug": "Unix SQL can succeed on the official Docker image temporary bootstrap server before final TCP startup; migration uses TCP.",
+    "readiness": "authenticated 127.0.0.1 TCP inside only the owned container, same user/database as dbmate; exact PG18.6;30second monotonic deadline, <=5second command probes and2second SQL connect timeout",
+    "diagnostics": "fixed phase/exit/category only; no raw argument/output or credential reflection; timeouts sanitized",
+    "preserved": "network none, no published ports, SCRAM password auth, read-only/cap-drop migration container, owned cleanup, SQL and assertions"
+  },
+  "checks": {
+    "focused_regressions": {
+      "passed": 11,
+      "seconds": 0.04,
+      "command": ".venv/bin/pytest -q -W error apps/api/tests/domains/identity/test_postgres_fixture_readiness.py"
+    },
+    "native": {
+      "passed": 21,
+      "skipped_optional_model": 3,
+      "seconds": 4.12,
+      "migrations": 17,
+      "smoke_suites": 7,
+      "outcome": "clean/repeat apply, all down migrations, clean reapply and identical schema inventory",
+      "evidence": "/tmp/clip-pd08-native-check.xgV46B",
+      "cluster": "stopped"
+    },
+    "black": "2 changed files pass",
+    "boundaries": "0 violations",
+    "whitespace": "pass",
+    "dependency_sync": "locked uv sync into existing repository .venv; sandbox DNS failure followed by escalated successful download; no global installs or lockfile changes"
+  },
+  "not_claimed": [
+    "Docker execution on this machine",
+    "full root Python aggregate",
+    "new hosted CI success",
+    "exact original dbmate stderr cause",
+    "final task/readiness/NFR acceptance"
+  ],
+  "source_sha256": {
+    "apps/api/tests/domains/identity/postgres_fixtures.py": "d50b497a9a171eaf6122c54283a82e35b966d3e442c92eeab7f1d52b59736742",
+    "apps/api/tests/domains/identity/test_postgres_fixture_readiness.py": "594609784edb25c88fe6fced45b992bb69b0da364dfe50a0241041dc1e94b7e4"
+  },
+  "upstream_sources": [
+    "https://raw.githubusercontent.com/docker-library/postgres/master/18/bookworm/docker-entrypoint.sh",
+    "https://raw.githubusercontent.com/amacneil/dbmate/v2.36.0/README.md"
+  ],
+  "publication": "pending explicit commit/push approval and hosted rerun"
+}
