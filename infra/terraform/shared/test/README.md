@@ -124,7 +124,8 @@ exact image, DB references, provider inputs and trusted HTTPS ingress are review
 
 The current private marketplace role has no Hybrid pipeline/table privileges;
 Hybrid deployment/role/model initialization remains separately reviewed work.
-Before any future plan, reconcile the recorded ECS state/live revision difference
+The approved refresh-only reconciliation recorded state serial18 with service
+revision2 matching live. Before any future apply, review a fresh full normal plan
 and preserve the retained certificate flag/date and original write-only versions.
 Neither these local changes nor a successful local check authorizes state refresh,
 remote apply, DNS changes or runtime restart. See the

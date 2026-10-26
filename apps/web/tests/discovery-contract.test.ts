@@ -40,13 +40,13 @@ describe('reviewed discovery HTTP operation and generated TypeScript parity', ()
   it('serializes the registered query vocabulary while preserving zero and false', () => {
     const typed: NonNullable<ListingsQueryAvailableData['query']> = {
       q: 'bicycle', category_code: 'bicycles', condition_code: 'good', min_price_paise: 0,
-      max_price_paise: 100, negotiable: false, search_mode: 'hybrid', sort: 'price_desc', page: 2, page_size: 50,
+      max_price_paise: 100, negotiable: false, search_mode: 'keyword', sort: 'price_desc', page: 2, page_size: 50,
     };
     const params = discoveryParams({ ...DEFAULT_QUERY, ...typed, q: 'bicycle', category_code: 'bicycles', condition_code: 'good',
-      min_price_paise: '0', max_price_paise: '100', negotiable: 'false', search_mode: 'hybrid', sort: 'price_desc', page: 2, page_size: 50 });
+      min_price_paise: '0', max_price_paise: '100', negotiable: 'false', search_mode: 'keyword', sort: 'price_desc', page: 2, page_size: 50 });
     expect([...params.keys()].sort()).toEqual(document.paths['/listings'].get.parameters.map((entry) => entry.name).sort());
     expect(document.paths['/listings'].get.parameters.some((entry) => entry.name === 'search_mode')).toBe(true);
-    expect(params.get('search_mode')).toBe('hybrid');
+    expect(params.get('search_mode')).toBe('keyword');
     expect(params.get('min_price_paise')).toBe('0');
     expect(params.get('negotiable')).toBe('false');
   });

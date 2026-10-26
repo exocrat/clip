@@ -11,9 +11,10 @@ export type DiscoveryForm = Omit<DiscoveryQuery, 'min_price_paise' | 'max_price_
   min_rupees: string; max_rupees: string;
 };
 
+/** User-facing default; explicit Keyword links remain supported for compatibility. */
 export const DEFAULT_QUERY: DiscoveryQuery = {
   q: '', category_code: '', condition_code: '', min_price_paise: '', max_price_paise: '',
-  negotiable: '', search_mode: 'keyword', sort: 'created_desc', page: 1, page_size: 20,
+  negotiable: '', search_mode: 'hybrid', sort: 'created_desc', page: 1, page_size: 20,
 };
 
 /** Safe validation messages contain field names only, never raw URL/provider data. */
@@ -45,8 +46,8 @@ export function parseDiscoveryQuery(params: URLSearchParams): DiscoveryQuery {
   const rawSize = params.get('page_size') ?? '20';
   if (!/^[0-9]+$/.test(rawPage) || !Number.isSafeInteger(Number(rawPage)) || Number(rawPage) < 1) throw new DiscoveryQueryError('The page number cannot be displayed safely. Reset to page 1.');
   if (!['20', '50', '100'].includes(rawSize)) throw new DiscoveryQueryError('Choose 20, 50 or 100 listings per page.');
-  const search_mode = params.get('search_mode') ?? 'keyword';
-  if (!['keyword', 'hybrid'].includes(search_mode)) throw new DiscoveryQueryError('Choose Keyword or Hybrid search.');
+  const search_mode = params.get('search_mode') ?? 'hybrid';
+  if (!['keyword', 'hybrid'].includes(search_mode)) throw new DiscoveryQueryError('The search settings in this link are invalid.');
   const sort = params.get('sort') ?? 'created_desc';
   const negotiable = params.get('negotiable') ?? '';
   if (!['created_desc', 'price_asc', 'price_desc', 'relevance'].includes(sort) || !['', 'true', 'false'].includes(negotiable)) throw new DiscoveryQueryError('The sort or negotiability filter is invalid.');
@@ -63,7 +64,7 @@ export function discoveryParams(query: DiscoveryQuery): URLSearchParams {
   for (const key of ['q', 'category_code', 'condition_code', 'min_price_paise', 'max_price_paise', 'negotiable'] as const) {
     if (query[key] !== '') params.set(key, query[key]);
   }
-  if (query.search_mode !== 'keyword') params.set('search_mode', query.search_mode);
+  if (query.search_mode !== 'hybrid') params.set('search_mode', query.search_mode);
   if (query.sort !== 'created_desc') params.set('sort', query.sort);
   if (query.page > 1) params.set('page', String(query.page));
   if (query.page_size !== 20) params.set('page_size', String(query.page_size));
@@ -78,7 +79,7 @@ export function discoveryForm(query: DiscoveryQuery): DiscoveryForm {
 }
 
 /** Apply draft controls atomically; any filter/sort/page-size submission resets page 1. */
-export function applyDiscoveryForm(form: DiscoveryForm, mode: DiscoveryQuery['search_mode'] = 'keyword'): DiscoveryQuery {
+export function applyDiscoveryForm(form: DiscoveryForm, mode: DiscoveryQuery['search_mode'] = 'hybrid'): DiscoveryQuery {
   const { min_rupees, max_rupees, ...rest } = form;
   const query = { ...rest, search_mode: mode, page: 1,
     sort: !rest.q.trim() && rest.sort === 'relevance' ? 'created_desc' as const : rest.sort,

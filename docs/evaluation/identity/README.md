@@ -16,8 +16,10 @@ criteria and action approvals still come from their canonical sources.
 ## Current state
 
 - PR #14's local Identity/marketplace hardening is merged at main `3d6c270`;
-  runtime follow-up branch has commits `6f37b0b` and `1bb0eb9` plus reviewed local
-  cleanup changes. New source still needs its own peer/affected-owner review/CI.
+  runtime follow-up is on `task/id-01-runtime-preparation`, integrating accepted
+  main `d7afc8b` (PR #15). It includes runtime preparation, cleanup/state evidence
+  and the locally human-verified Firefox origin fix. New source still needs its
+  own peer/affected-owner review and current CI.
 - Real local Microsoft/IISc and temporary email registration/sign-in/reset were
   human-verified. No human hosted account/image/Search journey was accepted.
 - The original shared DB's17migrations and separate runtime roles/secure URLs have

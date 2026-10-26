@@ -14,6 +14,85 @@ import pytest
 ROOT = Path(__file__).resolve().parents[5]
 
 
+def failure_category(output):
+    """Map private subprocess output to fixed categories; never return raw text."""
+    message = output.lower()
+    for category, phrases in (
+        ("connection-refused", ("connection refused",)),
+        ("authentication", ("password authentication failed",)),
+        ("permission", ("permission denied",)),
+        (
+            "name-resolution",
+            (
+                "could not resolve host",
+                "no such host",
+                "temporary failure in name resolution",
+            ),
+        ),
+        (
+            "image-unavailable",
+            ("pull access denied", "toomanyrequests", "manifest unknown"),
+        ),
+    ):
+        if any(phrase in message for phrase in phrases):
+            return category
+    return "command-failed"
+
+
+def wait_for_migration_tcp(command, docker, container, password):
+    """Gate migrations on authenticated TCP in the owned container, not bootstrap Unix SQL.
+
+    The official image temporarily accepts Unix connections before its final TCP
+    server starts. Probe the same host/database/user as dbmate inside that network
+    namespace. Keep the deadline bounded and credentials in environment only.
+    """
+    deadline = time.monotonic() + 30
+    reason = "not-ready"
+    while True:
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise RuntimeError(
+                f"Disposable PostgreSQL TCP readiness failed ({reason}); output withheld"
+            ) from None
+        try:
+            version = command(
+                docker
+                + [
+                    "exec",
+                    "--env",
+                    "PGPASSWORD",
+                    "--env",
+                    "PGCONNECT_TIMEOUT",
+                    container,
+                    "psql",
+                    "-XqAtw",
+                    "-h",
+                    "127.0.0.1",
+                    "-U",
+                    "clip_identity_ci",
+                    "-d",
+                    "clip_test_identity",
+                    "-v",
+                    "ON_ERROR_STOP=1",
+                    "-c",
+                    "SHOW server_version_num",
+                ],
+                {"PGPASSWORD": password, "PGCONNECT_TIMEOUT": "2"},
+                phase="tcp-readiness",
+                timeout=min(5, remaining),
+            )
+        except RuntimeError:
+            # The command's own exception contains only fixed, safe diagnostics.
+            reason = "probe-failed"
+            time.sleep(min(0.2, max(0, deadline - time.monotonic())))
+            continue
+        if version != "180006":
+            raise RuntimeError(
+                "Disposable PostgreSQL version mismatch; output withheld"
+            )
+        return
+
+
 @pytest.fixture(scope="module")
 def disposable_database(tmp_path_factory):
     """Create one fresh database, migrate it and remove only its own container."""
@@ -37,13 +116,23 @@ def disposable_identity_database(root):
     password = secrets.token_hex(24)
     env = {key: os.environ[key] for key in ("HOME", "PATH")}
 
-    def command(args, extra=None):
-        p = subprocess.run(
-            args, env=env | (extra or {}), capture_output=True, text=True, timeout=90
-        )
+    def command(args, extra=None, *, phase="setup", timeout=90):
+        """Run a fixed fixture operation; report its stage without private arguments/output."""
+        try:
+            p = subprocess.run(
+                args,
+                env=env | (extra or {}),
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+            )
+        except subprocess.TimeoutExpired:
+            raise RuntimeError(
+                f"Disposable Identity database {phase} timed out; output withheld"
+            ) from None
         if p.returncode:
             raise RuntimeError(
-                "Disposable Identity database command failed; arguments/output withheld"
+                f"Disposable Identity database {phase} failed (exit={p.returncode}, category={failure_category(p.stderr + p.stdout)}); arguments/output withheld"
             )
         return p.stdout.strip()
 
@@ -98,19 +187,7 @@ def disposable_identity_database(root):
             ],
             {"POSTGRES_PASSWORD": password},
         )
-        for attempt in range(45):
-            try:
-                with connect() as c:
-                    assert (
-                        c.execute("SHOW server_version_num").fetchone()[0] == "180006"
-                    )
-                break
-            except psycopg.OperationalError:
-                if attempt == 44:
-                    raise RuntimeError(
-                        "Disposable PostgreSQL readiness failed"
-                    ) from None
-                time.sleep(0.2)
+        wait_for_migration_tcp(command, docker, container, password)
         command(
             docker
             + [
@@ -141,6 +218,7 @@ def disposable_identity_database(root):
             {
                 "DATABASE_URL": f"postgres://clip_identity_ci:{password}@127.0.0.1:5432/clip_test_identity?sslmode=disable"
             },
+            phase="migration",
         )
         yield connect
     finally:

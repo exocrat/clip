@@ -47,10 +47,10 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PD-19 | Integration owner (current branch) | done | Steps 1–9 and combined foundation handoff complete | Steps 1–9 performed | User confirms all work before PRE-00 is complete | PR #8 merged at `2cd83e7` from head `18c966e` against base `68d9da9`; [Foundation quality gates passed](https://github.com/exocrat/clip/actions/runs/39323851584) for that exact head/base; `make test` (395 Python, 63 data, 16 web), Black, contract freshness and 10 `make check` gates passed; [handoff](foundation-handoff.md) | No open PD-19 work per user confirmation. Linux AMD64/macOS results remain user-confirmed without raw outputs. PR #8 has no submitted GitHub review; independent-review completion is user-confirmed, with no separate review artifact linked. Refresh cloud snapshot before any operation. | 2026-10-19 21:09:05 UTC |
 | PRE-00 | Integration owner | done | Foundation gate audit accepted; DL-00 is unblocked | performed | verified/accepted by user | Reviewed handoff PR #8 merged to `main` at `2cd83e7`; hosted Foundation quality gates passed for head `18c966e` against base `68d9da9` (run `39323851584`); clean-checkout evidence at `0747be6`; see [PD-19 handoff](foundation-handoff.md) | None. PR #8 has no GitHub review event; independent-review completion remains user-reported without a separate artifact. | 2026-10-19 21:20:55 UTC |
 | DL-00 | Shared-core/contract coordinator; all domains review | done | Steps 1–13 and task-wide audit complete; accepted and merged | Steps 1–13 performed; accepted by user | User confirmed full acceptance and merge on 2026-10-22 05:30:49 UTC | PR #9 merged to `main` at `f5576ef`; current `main` is `44cd8ff`; Step 13 check evidence is recorded below and was not rerun for this update | None for DL-00; cleanup implementation remains separately gated; real providers/integrations and crypto/worker implementation remain downstream | 2026-10-22 05:30:49 UTC |
-| ID-01 | A | in progress | Step12 Firefox null-Origin fix locally human-verified; hosted update pending | Firefox148 actual shared transport reproduces old null Origin and verifies exact-origin fix; frontend295 passed/3 skipped, lint/types/build passed | Aditya verified the plan and confirmed Firefox sign-in works locally | Shared session transport and Identity start diagnostics; history below; reconciliation result retained | Affected-owner review, hosted runtime acceptance and fresh deployment plan; ID-READY incomplete | 2026-10-26 19:36:18 UTC |
+| ID-01 | A | in progress | Step12 runtime-preparation review handoff; main PR15 integrated; Firefox fix locally human-verified | All11 local gates pass: Python1841/24skip, data94, web295/3skip, Black262, boundaries/contracts/types/build, wrapper35, PostgreSQL18.6 lifecycle and Gitleaks; Terraform4roots pass | Aditya verified Firefox sign-in and requested branch rename, main integration and PR creation; peer/affected-owner approval pending | `task/id-01-runtime-preparation`; accepted base `d7afc8b`; runtime and Firefox evidence/history below | Current hosted CI, independent/affected-owner review and exact merge approval; durable HTTPS/runtime/provider/image/Search acceptance; ID-READY incomplete | 2026-10-26 19:43:43 UTC |
 | LI-01 | B | in progress | Finish the remaining Step 7 browser states and current-head Step 11 checks/reviews; prepare a progress PR without claiming LI-CORE. Steps 12–13 remain integration-gated. | Steps 1–6 and 8–10 implemented and locally checked; Step 7 partial (create/detail/edit/My Listings/gallery). | Suraj verified the multi-image edit/gallery checkpoint, seller-only selected-buyer visibility, and Step 10. No LI-01 phone-device result is claimed. | domain/listings at 6ffbe0b; focused Listings suite: 61 passed, one database-only test skipped outside the wrapper; disposable PostgreSQL workflow passed; current worktree `make check` passed 2026-10-23 (573 Python, 63 data, 42 web tests; remaining contract, type, boundary, database, safety, formatting, lint, and build checks passed). | LI-CORE not accepted. Remaining Step 7 states; Step 11 query-plan, current aggregate, and affected-owner review; native schema check; five pre-existing backend boundary findings; real Identity, Conversations, storage, and Search integration; Steps 12–13. | 2026-10-23 10:38:31 UTC |
 | LI-02 | B | in progress | Step 12 demo is tested and stopped; record final evidence, then begin intake of the Search owner's PR under the review workflow. | Steps 1–11 and 1.5 verified; Step 12 ran on ECS and was tested on desktop/mobile. Read-only app checks found the synthetic listing and its S3 image; teardown is complete. | User approved and applied teardown plan `3703bb7b23405a5a23a1ac6c39fa8870e682dddf3a1a8272183f4642f8f0db81` (0 add, 1 change to LI-02 bucket CORS, 20 LI-02 deletes). Post-stop inventory confirms disposable RDS/ALB/service/host/root volume/run S3 objects/URL parameter/log streams absent; shared RDS is stopped, shared ECS cluster remains, LI-02 ASG desired 0/no instances. Two run ECR images are retained (105,624,604 bytes total) per user direction. | `task/li-02-isolated-runtime` at `f0bf6c6`; earlier 11 focused tests, Black, Python compilation, Terraform fmt/validate, CLI help and diff checks. Start plans: infrastructure `a2b8cbeaa6cc4fc2d13ff8c8696cfa133d8134280de89f719e0d6f2b91668f55`; app start `b6a3fbd4812c965a5830780f337997d13b4b362c7eb1a73f2b3e70f5946b5bd4`. Stop-path corrections are currently uncommitted in `scripts/li02-demo`, `infra/terraform/domains/listings/test/database_tasks.tf`, both LI-02 operator guides, and this work log. `git diff --check` passed; no tests rerun. Existing untracked `data/runs/` and `database/migrations.zip` remain untouched. | Compute/ingress/disposable-database charges from the demo have ended. Retained run images add about 101 MiB of ECR storage; Step 4 bucket/IAM/log group and shared VPC/NAT/ECS/RDS remain. No manual RDS snapshot remains. | 2026-10-25 09:29:55 UTC |
-| SE-01 | Mohit (C); peer Suraj (B), Identity review | in progress | Local create-to-Keyword-and-Hybrid flow and browser walkthrough verified; formal acceptance remains pending | Test-only browser demo binds the same fixed synthetic Identity for writes/browse and can opt into the real helper, worker, pipeline bootstrap and Hybrid reader; automatic new-listing vector generation was observed | Suraj verified the local command/API/proxy flow and subsequent browser walkthrough | Search PR #11 worktree `task/search-evidence-reduction` at `864e53b`; new listing `194a32d4-64bb-491b-b4ec-68403e26f7f3` produced one title and one description vector (384 dimensions each), then matched in both modes through API and Vite proxy; session `/tmp/clip-listings-browser-v6e1f01t`; UI `http://127.0.0.1:5173/` | Formal SE-CORE/DATA-READY and final NFR/hosted-CI acceptance remain outside this merge step | 2026-10-25 14:38:24 UTC |
+| SE-01 | Mohit (C); peer Suraj (B), Identity review | in progress | PR15 hosted Python/web/database gates pass; checksum-evidence scanner false positive corrected locally | 47714cc fixes readiness; subsequent CI reaches final secret scanner; two verified SHA256 fingerprints reformatted without scanner exemptions | Mohit verified Hybrid-default UI and requested branch push/PR | Search PR #11 worktree `task/search-evidence-reduction` at `864e53b`; new listing `194a32d4-64bb-491b-b4ec-68403e26f7f3` produced one title and one description vector (384 dimensions each), then matched in both modes through API and Vite proxy; session `/tmp/clip-listings-browser-v6e1f01t`; UI `http://127.0.0.1:5173/`  [Hybrid default UI](../evaluation/domain/se-01/hybrid-default-ui/result.json): lint86/web289pass/3skip/types/build pass;  [PR15 correction](../evaluation/domain/se-01/pr15-ci-readiness/result.json): unit11/native21/3skip/17migrations/Black2/boundaries/diff pass;  [Hosted rerun](https://github.com/exocrat/clip/actions/runs/40382575520) functional/database gates pass; evidence-format rerun pending. | Formal SE-CORE/DATA-READY and final NFR/hosted-CI acceptance remain outside this merge step | 2026-10-26 19:06:47 UTC |
 | SE-02 | Mohit (C); peer Suraj (B), Identity/Conversations review | in progress | Step8 real integration gated; local handoff human-verified | Steps1–7 isolated result verified; Step8 audit performed | Mohit verified isolated UI and combined local handoff | [Search handoff](../evaluation/domain/search-handoff/result.json): Python1270/data94/web144,Black183,native20/3skip,wrapper35/contracts8/boundaries/parity/type/build pass | Await actual ID-READY/LI-CORE/SE-CORE/C adapters; Step9 final acceptance, pinned secrets/hosted CI and independent review pending | 2026-10-25 08:50:43 UTC |
 | MERGE-LI-SE | Suraj (integration); Listings/Search affected owners | done | PR #11 is squash-merged; Search–Listings local merge task is complete | Steps 1–9 performed; approved PR head `2a43066` merged to `main` as `e315c9d`; final hosted CI run `40204621122` passed | Steps 3–8 verified by Suraj; user authorized squash merge of the exact PR revision on 2026-10-25 | PR #11 `https://github.com/exocrat/clip/pull/11`; source head `2a430660d25e7c14cf33d84bd78172db4ec063c7`; squash merge `e315c9df3e0e11d6e9c8d7d244d676204d3af7e8`; hosted CI `40204621122`; local merge commit `29eb6fb`; fallback branch `safety/search-pr11-pre-main-reconciliation-20261025`; stash `af9d7f5`; local checks recorded below | No blocker for the Search–Listings merge. Final dataset, formal NFR/cloud checks, and real Identity/Conversations remain later work. | 2026-10-25 15:17:46 UTC |
 | CN-01 | D | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | Isolated development: PRE-00, then DL-00 and a reviewed contract/stub. Later real gates: CN-CORE; SE-02's real request interfaces for request-response integration; CN-03's producer path for final NFR-05 acceptance. | — |
@@ -847,6 +847,70 @@ verification; mobile-browser usability is a separate UI check. No cloud query,
 secret read, SQL, send, deployment or commit. Plan awaits human verification and
 separate exact live approvals; PR #14 review is no longer a pending blocker for
 its merged implementation. New runtime/shared changes retain their own review.
+### PR15 hosted readiness verification and checksum-evidence correction — 2026-10-26 19:06:47 UTC
+
+User approved local correction commit/push. On exact head47714cc, hosted run
+40382575520 passes Python, data, boundaries, contracts, double types, web checks,
+wrapper safety, clean migrations/schema, formatting and parity. The initial
+Identity fixture setup failure no longer occurs. Final secret gate reports only
+two generic-api-key findings: hybrid-default-ui/result.json42/43. Both values
+recomputed exactly match their referenced discoveryApi.ts/discovery-api.test.ts
+SHA256, not credentials. Changed only that evidence object's representation to
+path/sha256 records; values preserved. No scanner rule, allowlist, ignore,
+credential, product code or test assertion changed. Updated correction evidence;
+whitespace/JSON/hash binding checked. No redundant functional rerun for metadata.
+Full hosted success remains pending publication and rerun of this follow-up.
+Commit/push approval still required by CONTRIBUTING.md; no merge/cloud action.
+
+### PR15 Identity fixture readiness correction supporting SE-01 — 2026-10-26 18:57:41 UTC
+
+Mohit requested CI diagnosis and correction. PR15 remains open/mergeable at
+c94b4a6; run40337135112 failed Python with1773pass/24skip/57setup errors at the
+Identity Docker/dbmate command, before web checks. Raw error output is withheld,
+so the exact original subprocess reason is not established. Source audit found
+a real readiness mismatch: Unix SQL accepts the official image's temporary
+bootstrap server while migrations use final TCP. Reserved the test-only fixture
+under Mohit's requested CI correction; no Identity product behavior changed.
+
+postgres_fixtures now gates migrations with authenticated TCP/version on the owned
+container, bounded30s deadline and <=5s command probes. Safe phase/exit/fixed
+category and timeout diagnostics retain no raw argument/output disclosure.
+Network isolation, SCRAM, read-only/cap-drop and exact owned cleanup preserved.
+New test_postgres_fixture_readiness covers11race/deadline/version/cleanup/privacy
+cases with explicit subprocess fixtures. No tests or workflow checks disabled.
+
+Locked uv sync installed new-main Identity dependencies into existing repository
+venv only; sandbox DNS failed then escalated sync passed. No global install or
+Docker installation. Regression11pass(0.04s), native21pass/3optional model skips
+(4.12s), all17migration down/up/repeat and seven smoke suites twice/identical
+schema pass. Owned cluster stopped; /tmp/clip-pd08-native-check.xgV46B retained.
+Black2, boundaries0 and whitespace pass.
+[Evidence](../evaluation/domain/se-01/pr15-ci-readiness/result.json) binds files.
+Docker/hosted rerun remains required before claiming CI fixed; full root Python
+not rerun without Docker. Explicit commit/push approval and exact-head hosted
+verification pending; no publication, merge or cloud action in this increment.
+Reservation released after local checks; only these test files/evidence/log changed.
+
+### SE-01 Step7 Hybrid-default UI amendment — 2026-10-26 13:59:07 UTC
+
+Mohit requested Hybrid by default, no visible Keyword/Hybrid selector or recovery
+button, and both modes retained in code; explicitly selected branch hybrid-nochoice.
+Audited the request against the mode contract and Search frontend boundary: no
+new task-definition gap. Changed Search-owned SaleDiscovery/query/API modules
+only: Hybrid clean/reset URL defaults, explicit transport mode despite unchanged
+API Keyword default, legacy explicit Keyword links/transition helper preserved,
+plain unavailable/Retry and unchanged Newest-first sort. No shared page/import
+boundary, generated contract, backend or public API default changed. Updated four
+web tests, web README, existing decision amendment and mode-proposal UI note.
+
+First check exposed old-default expectations and missing new-main jsdom packages.
+Corrected expectations; pinned npm ci synced repository node_modules using local
+cache only (sandbox DNS failed; required escalated retry passed). No global
+installation or manifest/lock change. Final npm check passes: lint86files,289tests
+pass/3skip, TypeScript and production build pass; diff whitespace pass.
+[Evidence](../evaluation/domain/se-01/hybrid-default-ui/result.json) binds source
+hashes and code purposes. Browser verification pending; no full-task/readiness
+acceptance. No staging, commit, push, merge, cloud or deployment.
 
 ### ID-01 — Step12 marketplace account lifecycle and real saved integration — 2026-10-26 05:22:07 UTC
 
@@ -6847,3 +6911,32 @@ three-hour cap; startup sent no email. Aditya confirmed real local Firefox sign-
 artifacts `/tmp/clip-firefox-origin-check.log` and
 `/tmp/clip-firefox-origin-bswwc7gc/result.json`. No deployed update or readiness
 acceptance is claimed; shared Listings/Search transport review remains required.
+## PR15 disposable Identity fixture correction reservation
+
+Writer: Mohit on `hybrid-nochoice`, 2026-10-26 18:54:14 UTC. User requested CI failure correction.
+Scope: Identity test-only PostgreSQL readiness/credential-safe diagnostics and
+focused regression tests, evidence and log. No Identity product behavior, schema,
+cloud or new Docker installation. Actual Linux/Docker confirmation remains CI.
+
+### ID-01 Step12 current-main integration and review handoff — 2026-10-26 19:43:43 UTC
+
+At Aditya's request, renamed the continuation branch to
+`task/id-01-runtime-preparation` and integrated accepted main
+`d7afc8b128c8b2caae368589573dabc133e3008a` (PR15 Hybrid-default UI and disposable
+Identity PostgreSQL readiness). Resolved two work-log conflicts by retaining both
+histories, the current Identity checkpoint and incoming Search row; incoming
+main-only files match their accepted bytes. All17SQL files remain unchanged.
+Refreshed the reusable migration-review base/hash, preserving historical executed
+receipts and all live-approval gates. Updated the current Identity handoff and
+Terraform instructions to reflect the completed state reconciliation.
+
+Locked Python/npm setup and all11local gates passed:1841Python/24optional skips,
+94data,295web/3opt-in skips, Black262files, boundaries/contracts/double types/build,
+35wrapper cases, actual PostgreSQL18.6 migration lifecycle and Gitleaks8.30.1.
+Backend-free pinned Terraform1.15.9 formatting/validation passed all4roots; the
+system1.16.5was first rejected by the version guard. JSON, changed local Markdown
+file links and whitespace checks passed. Logs: `/tmp/clip-id01-pr-check.log` and
+`/tmp/clip-id01-pr-terraform.log`. No cloud or DNS action occurred. The PR is a
+reviewable runtime-preparation increment, not ID-READY acceptance; hosted CI,
+independent/affected-owner review, exact merge approval and real hosted runtime
+checks remain pending. Use the canonical peer-review prompt for this revision.
