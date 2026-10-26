@@ -53,7 +53,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | SE-01 | Mohit (C); peer Suraj (B), Identity review | in progress | Local create-to-Keyword-and-Hybrid flow and browser walkthrough verified; formal acceptance remains pending | Test-only browser demo binds the same fixed synthetic Identity for writes/browse and can opt into the real helper, worker, pipeline bootstrap and Hybrid reader; automatic new-listing vector generation was observed | Suraj verified the local command/API/proxy flow and subsequent browser walkthrough | Search PR #11 worktree `task/search-evidence-reduction` at `864e53b`; new listing `194a32d4-64bb-491b-b4ec-68403e26f7f3` produced one title and one description vector (384 dimensions each), then matched in both modes through API and Vite proxy; session `/tmp/clip-listings-browser-v6e1f01t`; UI `http://127.0.0.1:5173/` | Formal SE-CORE/DATA-READY and final NFR/hosted-CI acceptance remain outside this merge step | 2026-10-25 14:38:24 UTC |
 | SE-02 | Mohit (C); peer Suraj (B), Identity/Conversations review | in progress | Step8 real integration gated; local handoff human-verified | Steps1–7 isolated result verified; Step8 audit performed | Mohit verified isolated UI and combined local handoff | [Search handoff](../evaluation/domain/search-handoff/result.json): Python1270/data94/web144,Black183,native20/3skip,wrapper35/contracts8/boundaries/parity/type/build pass | Await actual ID-READY/LI-CORE/SE-CORE/C adapters; Step9 final acceptance, pinned secrets/hosted CI and independent review pending | 2026-10-25 08:50:43 UTC |
 | MERGE-LI-SE | Suraj (integration); Listings/Search affected owners | done | PR #11 is squash-merged; Search–Listings local merge task is complete | Steps 1–9 performed; approved PR head `2a43066` merged to `main` as `e315c9d`; final hosted CI run `40204621122` passed | Steps 3–8 verified by Suraj; user authorized squash merge of the exact PR revision on 2026-10-25 | PR #11 `https://github.com/exocrat/clip/pull/11`; source head `2a430660d25e7c14cf33d84bd78172db4ec063c7`; squash merge `e315c9df3e0e11d6e9c8d7d244d676204d3af7e8`; hosted CI `40204621122`; local merge commit `29eb6fb`; fallback branch `safety/search-pr11-pre-main-reconciliation-20261025`; stash `af9d7f5`; local checks recorded below | No blocker for the Search–Listings merge. Final dataset, formal NFR/cloud checks, and real Identity/Conversations remain later work. | 2026-10-25 15:17:46 UTC |
-| CN-01 | Rahul (D) | in progress | Real-encryption two-origin browser harness ready; next human send/reply, reload/IndexedDB and display-read checks | All 12 checks pass: Python 1881/80 skipped, data 94, web 370/3 skipped, focused PostgreSQL Conversations 73; harness safety/lifecycle 15 and owned HTTP/SQL smoke pass | Rahul verified local main integration a239c21; this browser checkpoint awaits observation and verification | task/cn-01-conversations; scripts/conversation_browser.py; browser walkthrough linked below; no runtime application or migration changes in this increment | Fixed synthetic request identities are not real-session integration; cross-browser/IndexedDB, physical-phone keyboard, 90-day purge, CN-02/CN-03, readiness acceptance and peer review remain pending | 2026-10-26 07:51:35 UTC |
+| CN-01 | Rahul (D) | in progress | Seller/author role-handling correction built and served in the existing local browser session; next hard-refresh both sides and repeat key setup/send/reload checks | Web 381/3 skipped, lint/types/build, boundaries0, secret scan and diff checks pass; previous full baseline Python1881/80skip and PostgreSQL73 retained | Rahul reported seller initialization failure and authorized this correction; browser result awaits retest | task/cn-01-conversations; ConversationPages.tsx plus interaction regression tests; same test process/database, new frontend bundle index-CUonwioA.js | Actual browser/IndexedDB exchange remains unverified; real-session integration, phone keyboard, retention, CN-02/CN-03, readiness acceptance and peer review remain pending | 2026-10-26 08:04:15 UTC |
 | CN-02 | D; A/B interface review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | Isolated development: PRE-00, then DL-00 and a reviewed contract/stub. Later real gates: CN-CORE, ID-READY, and LI-CORE for listing-origin behavior; SE-02 plus CN-01's real request path for request-response inbox integration. | — |
 | CN-03 | A; D producer review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | CN-CORE, ID-READY | — |
 | INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
@@ -82,6 +82,45 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | DATA-READY | not accepted | SE-01 steps 2/4/9 | — | pending |
 | CN-CORE | not accepted | CN-01 step 10 | — | pending |
 | OPTIONAL-OK | not approved | Each optional task's selection/priority plan | — | pending |
+
+## CN-01 — Seller/author browser initialization correction — 2026-10-26 08:04:15 UTC
+
+Rahul reported the seller-side generic encryption initialization error and
+explicitly authorized its fix. The real synthetic API summary and
+`PostgresConversationQueries` show that `counterparty_user_id` is caller-relative:
+for an origin owner it equals the initiator/peer, not the owner's own ID. The UI
+incorrectly required its current user to appear in those two peer fields, so the
+seller failed before local key setup. This is a frontend defect, not evidence of
+lost browser keys or failed encryption primitives.
+
+- `apps/web/src/features/conversations/ConversationPages.tsx` now validates the
+  authorized summary's caller role, rejects self-peer/inconsistent role/thread
+  data and always uses its caller-relative counterparty as the peer. It also
+  confirms the own-key owner matches the runtime account. The summary endpoint's
+  server-side membership check remains authoritative and unchanged; no private
+  API import, contract/schema change, auth bypass or plaintext fallback was added.
+- `apps/web/tests/conversations-interactions.test.ts` now supplies canonical
+  caller roles and own-key ownership in existing fixtures. Eleven regression
+  cases cover initiator and origin-owner loading for both Sale Listings and
+  Wanted Requests, inconsistent roles/participants/thread IDs, self peers and API
+  denial before local key access. Crypto/IndexedDB are mocked only in these page
+  lifecycle tests; they do not establish actual browser exchange.
+
+`npm run check` passed: web381/3skip, lint, app/test TypeScript and production
+build. Boundaries0, Gitleaks8.30.1 and `git diff --check` passed. The previous
+full aggregate (Python1881/80skip, data94, PostgreSQL Conversations73 and complete
+migration lifecycle) was not rerun for this frontend-only correction. The known
+large-bundle warning remains; no latency acceptance is claimed.
+
+Both existing loopback pages were confirmed to serve the corrected
+`index-CUonwioA.js` bundle. Test process145666 and its existing database were not
+restarted; no browser data, keys, messages or conversation were deleted. Human
+must hard-refresh both existing profiles (not clear site data), then retry key
+setup and synthetic send/reply/reload. This corrects the prior sandbox-only
+process check that missed the still-running external test session; its attempted
+restart could not bind the occupied ports and did not replace the original run.
+Browser confirmation, actual SDK/IndexedDB/two-client results, phone checks,
+real-session integration, retention, CN-02/CN-03 and peer acceptance stay pending.
 
 ## CN-01 — Isolated real-encryption browser checkpoint preparation — 2026-10-26 07:51:35 UTC
 

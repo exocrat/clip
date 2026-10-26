@@ -102,14 +102,14 @@ describe('conversation display acknowledgements', () => {
 /** Only the fields read by the page are provided; this is no API/key validation test. */
 function runtime(userId: string, summary: () => Promise<unknown>): ConversationPageRuntime {
   return { userId, api: { readSummary: vi.fn(summary),
-    readOwnKey: vi.fn(async () => ({ key_version: 1 })),
+    readOwnKey: vi.fn(async () => ({ user_id: userId, key_version: 1 })),
     readMemberKeys: vi.fn(async () => ({ members: [{ user_id: 'bob', key_version: 1 }] })),
     readState: vi.fn(async () => ({ own_last_read_sequence: 0 })),
     readEntries: vi.fn(async () => ({ items: [{ entry_id: 'sent', sequence: 1, sender_user_id: userId,
       kind: 'message', created_at: '2026-10-25T00:00:00Z', content_deleted: false, envelope: null }],
       scanned_through_sequence: 1, has_more: false })),
     listMine: vi.fn(async () => ({ items: [{ conversation_id: 'thread', initiator_user_id: userId,
-      counterparty_user_id: 'bob', origin_kind: 'sale_listing', unread_count: 1 }], has_next: false })),
+      counterparty_user_id: 'bob', caller_role: 'initiator', origin_kind: 'sale_listing', unread_count: 1 }], has_next: false })),
   } as unknown as ConversationApi };
 }
 
@@ -119,6 +119,47 @@ function detail(value: ConversationPageRuntime | null) {
 }
 
 describe('conversation account lifecycle', () => {
+  it.each([
+    ['sale_listing', 'initiator'], ['sale_listing', 'origin_owner'],
+    ['wanted_request', 'initiator'], ['wanted_request', 'origin_owner'],
+  ] as const)('loads %s as %s using the caller-scoped peer', async (origin_kind, caller_role) => {
+    const resume = vi.fn(async () => true);
+    vi.mocked(openIndexedDbConversationSession).mockResolvedValue({
+      stop: vi.fn(async () => undefined), crypto: { resumeParticipantSession: resume },
+      history: { read: vi.fn(async () => ({ received: [], sent: [] })) },
+    } as unknown as Awaited<ReturnType<typeof openIndexedDbConversationSession>>);
+    const value = runtime('alice', async () => ({ conversation_id: 'thread', origin_kind, caller_role,
+      // The origin owner's own ID is deliberately absent from this wire shape.
+      initiator_user_id: caller_role === 'initiator' ? 'alice' : 'bob', counterparty_user_id: 'bob' }));
+    vi.mocked(value.api.readEntries).mockResolvedValue({ items: [], scanned_through_sequence: 0, has_more: false });
+    await act(async () => root.render(detail(value)));
+    expect(openIndexedDbConversationSession).toHaveBeenCalledWith('alice', 'thread', value.api, {});
+    expect(resume).toHaveBeenCalledWith({ userId: 'bob', keyVersion: 1 });
+    expect(host.textContent).not.toContain('Encryption is not ready');
+    expect(host.textContent).not.toContain('Retry loading conversation');
+  });
+
+  it.each([
+    { conversation_id: 'wrong-thread', caller_role: 'initiator', initiator_user_id: 'alice', counterparty_user_id: 'bob' },
+    { conversation_id: 'thread', caller_role: 'initiator', initiator_user_id: 'bob', counterparty_user_id: 'carol' },
+    { conversation_id: 'thread', caller_role: 'origin_owner', initiator_user_id: 'bob', counterparty_user_id: 'carol' },
+    { conversation_id: 'thread', caller_role: 'origin_owner', initiator_user_id: 'alice', counterparty_user_id: 'bob' },
+    { conversation_id: 'thread', caller_role: 'initiator', initiator_user_id: 'alice', counterparty_user_id: 'alice' },
+    { conversation_id: 'thread', caller_role: 'unknown', initiator_user_id: 'alice', counterparty_user_id: 'bob' },
+  ])('rejects inconsistent authorized-summary context before opening local keys: %j', async (summary) => {
+    const value = runtime('alice', async () => ({ ...summary, origin_kind: 'sale_listing' }));
+    await act(async () => root.render(detail(value)));
+    expect(openIndexedDbConversationSession).not.toHaveBeenCalled();
+    expect(host.textContent).toContain('Encryption is not ready');
+  });
+
+  it('keeps API membership denial authoritative before local key access', async () => {
+    const value = runtime('alice', async () => { throw new Error('Controlled denied API result'); });
+    await act(async () => root.render(detail(value)));
+    expect(openIndexedDbConversationSession).not.toHaveBeenCalled();
+    expect(host.textContent).toContain('Encryption is not ready');
+  });
+
   it('clears decrypted messages on account change and discards late polling results', async () => {
     const stop = vi.fn(async () => undefined);
     vi.mocked(openIndexedDbConversationSession).mockResolvedValue({ stop,
@@ -127,7 +168,7 @@ describe('conversation account lifecycle', () => {
         confirmation: { message_id: 'sent' } }] })) },
     } as unknown as Awaited<ReturnType<typeof openIndexedDbConversationSession>>);
     const alice = runtime('alice', async () => ({ conversation_id: 'thread', origin_kind: 'sale_listing',
-      initiator_user_id: 'alice', counterparty_user_id: 'bob' }));
+      initiator_user_id: 'alice', counterparty_user_id: 'bob', caller_role: 'initiator' }));
     await act(async () => root.render(detail(alice)));
     expect(host.textContent).toContain('Alice private fixture');
     let finishPoll!: (value: unknown) => void;
@@ -164,7 +205,7 @@ describe('conversation account lifecycle', () => {
       history: { read: historyRead },
     } as unknown as Awaited<ReturnType<typeof openIndexedDbConversationSession>>);
     const alice = runtime('alice', async () => ({ conversation_id: 'thread', origin_kind: 'sale_listing',
-      initiator_user_id: 'alice', counterparty_user_id: 'bob' }));
+      initiator_user_id: 'alice', counterparty_user_id: 'bob', caller_role: 'initiator' }));
     await act(async () => root.render(detail(alice)));
     expect(host.textContent).toContain('Logout private fixture');
     let finishPoll!: (value: unknown) => void;

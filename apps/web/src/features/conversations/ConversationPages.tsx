@@ -125,8 +125,15 @@ function ConversationDetailSession({ conversationId }: { conversationId: string 
       // Authorize the exact route through the server before opening local history.
       const summary = await runtime.api.readSummary(conversationId);
       if (generation.current !== token) return;
+      // This authorized summary describes the caller's role and *their peer*,
+      // not a fixed initiator/owner pair. For an origin owner both peer and
+      // initiator are the other account; the owner's own ID is not repeated.
+      const callerMatchesRole = summary.caller_role === 'initiator'
+        ? summary.initiator_user_id === runtime.userId
+        : summary.caller_role === 'origin_owner' && summary.initiator_user_id !== runtime.userId
+          && summary.counterparty_user_id === summary.initiator_user_id;
       if (summary.conversation_id !== conversationId ||
-        (summary.initiator_user_id !== runtime.userId && summary.counterparty_user_id !== runtime.userId)) {
+        !callerMatchesRole || summary.counterparty_user_id === runtime.userId) {
         throw new ConversationApiError(404, 'http');
       }
       const session = await openIndexedDbConversationSession(runtime.userId, conversationId, runtime.api,
@@ -135,11 +142,8 @@ function ConversationDetailSession({ conversationId }: { conversationId: string 
       activeSession.current = session;
       const [ownKey, members] = await Promise.all([runtime.api.readOwnKey(), runtime.api.readMemberKeys(conversationId)]);
       if (generation.current !== token) return;
-      if (!ownKey) throw new ConversationCryptoError('Own conversation key is unavailable');
-      if (summary.initiator_user_id !== runtime.userId && summary.counterparty_user_id !== runtime.userId) {
-        throw new ConversationApiError(404, 'http');
-      }
-      const peerId = summary.initiator_user_id === runtime.userId ? summary.counterparty_user_id : summary.initiator_user_id;
+      if (!ownKey || ownKey.user_id !== runtime.userId) throw new ConversationCryptoError('Own conversation key is unavailable');
+      const peerId = summary.counterparty_user_id;
       const peerKey = members.members.filter((member) => member.user_id === peerId).sort((a, b) => b.key_version - a.key_version)[0];
       if (!peerKey) throw new ConversationCryptoError('Participant key is unavailable');
       setReady({ summary, session, ownKey, peerId, peerKeyVersion: peerKey.key_version });
