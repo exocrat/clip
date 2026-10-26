@@ -1,5 +1,19 @@
 # Frontend page inventory and collaboration map
 
+## CN-01 listing-to-chat integration reservation
+
+Rahul (D), `task/cn-01-conversations`, is the bounded writer from
+2026-10-26 14:51:33 UTC for `src/pages/ScaffoldPages.tsx`'s Listing detail
+conversation slot, the corresponding public Listings feature action/export,
+and any necessary `ConversationRuntime.tsx`/`App.tsx` integration correction.
+Existing Identity/Search/Listings page behavior and public feature boundaries
+are preserved. This reservation follows Rahul's verification of the six-step
+[integration checkpoint](../evaluation/domain/conversations-integration.md).
+Suraj reviews Listings changes, Aditya reviews shared/session composition, and
+Mohit reviews any Search impact before merge. It does not reserve or modify the
+separate `task/cn-01-two-person-demo` worktree's demo files. Application edits
+start only at the verified next implementation step; this increment records scope.
+
 ## Bounded browser-Origin correction writer (released)
 
 Rahul (D), on `task/cn-01-conversations`, is the local correction writer for

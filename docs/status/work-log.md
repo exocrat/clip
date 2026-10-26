@@ -53,7 +53,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | SE-01 | Mohit (C); peer Suraj (B), Identity review | in progress | Local create-to-Keyword-and-Hybrid flow and browser walkthrough verified; formal acceptance remains pending | Test-only browser demo binds the same fixed synthetic Identity for writes/browse and can opt into the real helper, worker, pipeline bootstrap and Hybrid reader; automatic new-listing vector generation was observed | Suraj verified the local command/API/proxy flow and subsequent browser walkthrough | Search PR #11 worktree `task/search-evidence-reduction` at `864e53b`; new listing `194a32d4-64bb-491b-b4ec-68403e26f7f3` produced one title and one description vector (384 dimensions each), then matched in both modes through API and Vite proxy; session `/tmp/clip-listings-browser-v6e1f01t`; UI `http://127.0.0.1:5173/` | Formal SE-CORE/DATA-READY and final NFR/hosted-CI acceptance remain outside this merge step | 2026-10-25 14:38:24 UTC |
 | SE-02 | Mohit (C); peer Suraj (B), Identity/Conversations review | in progress | Step8 real integration gated; local handoff human-verified | Steps1–7 isolated result verified; Step8 audit performed | Mohit verified isolated UI and combined local handoff | [Search handoff](../evaluation/domain/search-handoff/result.json): Python1270/data94/web144,Black183,native20/3skip,wrapper35/contracts8/boundaries/parity/type/build pass | Await actual ID-READY/LI-CORE/SE-CORE/C adapters; Step9 final acceptance, pinned secrets/hosted CI and independent review pending | 2026-10-25 08:50:43 UTC |
 | MERGE-LI-SE | Suraj (integration); Listings/Search affected owners | done | PR #11 is squash-merged; Search–Listings local merge task is complete | Steps 1–9 performed; approved PR head `2a43066` merged to `main` as `e315c9d`; final hosted CI run `40204621122` passed | Steps 3–8 verified by Suraj; user authorized squash merge of the exact PR revision on 2026-10-25 | PR #11 `https://github.com/exocrat/clip/pull/11`; source head `2a430660d25e7c14cf33d84bd78172db4ec063c7`; squash merge `e315c9df3e0e11d6e9c8d7d244d676204d3af7e8`; hosted CI `40204621122`; local merge commit `29eb6fb`; fallback branch `safety/search-pr11-pre-main-reconciliation-20261025`; stash `af9d7f5`; local checks recorded below | No blocker for the Search–Listings merge. Final dataset, formal NFR/cloud checks, and real Identity/Conversations remain later work. | 2026-10-25 15:17:46 UTC |
-| CN-01 | Rahul (D) | in progress | Step9 approved90-day cleanup implementation and disposable tests performed; review this result next | PostgreSQL18.6 Conversations102 passed; Black4, focused mypy2, boundaries0, Gitleaks8.30.1 and contracts8 current | Prior synthetic browser exchange/offline/reload/unread/read-ack checkpoint verified; cleanup result awaits verification | `task/cn-01-conversations`; `cleanup.py`, target-checked dry-run CLI, retention decision and12 new test cases; existing SQL preserved | Real Identity/SE-02 acceptance, phone keyboard, CN-02 independent30-day shares, CN-03, NFR-05 and peer review; scheduling/persistent cleanup require separate operator approval | 2026-10-26 13:40:30 UTC |
+| CN-01 | Rahul (D) | in progress | Combined-application integration Step1 inventory/reservation performed; verify the Listing read-only lookup correction and Step2 scope next | Current fetched main3d6c270 is already included; existing wiring/session tests inspected; missing Listing HTTP/service/UI connection identified; no application/test change this increment | Rahul verified the six-step integration plan; prior local chat browser checks remain verified | `task/cn-01-conversations`; [integration checkpoint](../evaluation/domain/conversations-integration.md), bounded frontend reservation; prior cleanup102 DB checks at1b77308 | Step2 needs typed existing-Listing-pair lookup correction; normal A/B/C review; later provider/device/CN-02/CN-03/NFR gates are outside this merge scope | 2026-10-26 14:51:33 UTC |
 | CN-02 | D; A/B interface review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | Isolated development: PRE-00, then DL-00 and a reviewed contract/stub. Later real gates: CN-CORE, ID-READY, and LI-CORE for listing-origin behavior; SE-02 plus CN-01's real request path for request-response inbox integration. | — |
 | CN-03 | A; D producer review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | CN-CORE, ID-READY | — |
 | INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
@@ -82,6 +82,30 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | DATA-READY | not accepted | SE-01 steps 2/4/9 | — | pending |
 | CN-CORE | not accepted | CN-01 step 10 | — | pending |
 | OPTIONAL-OK | not approved | Each optional task's selection/priority plan | — | pending |
+
+## CN-01 — Combined application integration Step1 — 2026-10-26 14:51:33 UTC
+
+Rahul verified the six-step combined integration plan. Read-only inspection
+confirmed fetched main3d6c270 (including PR14) is already an ancestor of the
+current branch; local main is stale. Existing actual application/provider,
+Identity cookie/CSRF and Search-store coverage is retained. No open Conversations
+PR exists; PR15 is separate Search work. Preserved the separate two-person-demo
+worktree. Added the concise integration checkpoint and bounded frontend writer
+reservation. Listings backend changes are limited to its origin-owned
+route/service/store and public client action, with Suraj affected-owner review;
+canonical contract corrections/regeneration remain coordinated under Rahul,
+with Aditya peer and relevant affected-owner review.
+
+The audit found a concrete gap before Step2: Listing retries must reopen an
+existing buyer/listing pair after ordinary unavailability, but the only current
+Listing creation port can also insert. Recorded the proposed typed read-only
+exact-caller Listing lookup, matching Search's existing pattern, for human
+verification before implementation. No product rule was changed. The published
+Listing start route is declaration-only and its UI slot is still a placeholder.
+Existing browser checks stay verified; the next work is the missing real path.
+This increment changes documentation only; source/Git inspection and whitespace
+checks passed, no application tests rerun. Cloud/provider/shared-target actions
+remain outside the verified local integration scope.
 
 ## CN-01 — Step9 coordinated content retention — 2026-10-26 13:40:30 UTC
 
