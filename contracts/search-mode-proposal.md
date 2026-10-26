@@ -237,3 +237,12 @@ Before registering/activating the new interface, require:
 
 This document introduces no executable code or configuration and requests no
 cloud/hosting/commit/push/merge action. Those keep their separate approvals.
+
+## UI-only default amendment — 2026-10-26
+
+Mohit approved making Hybrid the Search UI default and removing the visible
+mode selector/Keyword recovery button. API omission still means Keyword; the
+frontend explicitly sends its selected mode on every read. Its clean URLs omit
+the Hybrid default and retain explicit Keyword URLs for compatibility. Both
+backend modes, sort choices and generated contracts remain unchanged. See the
+[decision amendment](../docs/decisions/hybrid-listing-search.md).

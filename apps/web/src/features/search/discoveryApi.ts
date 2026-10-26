@@ -77,7 +77,10 @@ export async function readDiscoveryCatalogue(signal: AbortSignal): Promise<Catal
 
 /** Validate page coordinates, public summaries and lookahead semantics against the query. */
 export async function readDiscoveryPage(query: DiscoveryQuery, signal: AbortSignal): Promise<PageResultListingSummary> {
-  const suffix = discoveryParams(query).toString();
+  const params = discoveryParams(query);
+  // UI defaults differ from the public API default: always send the chosen mode.
+  params.set('search_mode', query.search_mode);
+  const suffix = params.toString();
   const value = await getJson(`/listings${suffix ? `?${suffix}` : ''}`, signal);
   if (!record(value) || !keys(value, ['items', 'page', 'page_size', 'has_next']) || value.page !== query.page || value.page_size !== query.page_size
     || typeof value.has_next !== 'boolean' || !Array.isArray(value.items) || value.items.length > query.page_size || !value.items.every(summary)
