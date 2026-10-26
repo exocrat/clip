@@ -138,6 +138,42 @@ coverage/evidence. No new worker, startup migration, schema probe, secret path,
 grant or production-auth activation was introduced. Step5 full regressions and
 isolated-demo lifecycle remain next, after human verification.
 
+## Step5 full regression result
+
+All12 registered `make check` gates passed against implementation `380247a`:
+Black289 files; Python1919 passed/93 skipped; data94 passed; boundaries0;
+contracts8 current; consumer mypy2; web385 passed/3 skipped, lint113 files,
+app/test types and build613 modules; wrapper safety35; full PostgreSQL18.6
+migration lifecycle; Conversations107 actual SQL checks; Gitleaks8.30.1 snapshot.
+The existing >500kB bundle advisory remains, not a build failure. Signed-in
+Conversations/Identity workflows are included in the aggregate Python suite.
+
+`scripts/check_database.py --listings-store` separately passed the full migration
+lifecycle and21 actual Listings/Search store cases with3 explicit skips. Those
+include native/model-specific opt-ins; neither these nor the93 general Python
+skips are claimed as passed. The web skips are the opt-in native Wanted HTTP and
+real-cookie HTTP fixtures, not the normal jsdom/SDK checks. The registered SQL
+runners provide their own explicit database-backed evidence rather than treating
+an absent runner DSN as a successful integration test.
+
+The existing chat demo `--check-only` passed its actual disposable HTTP/SQL setup,
+loopback/write guards and owned teardown. No browser/IndexedDB check was rerun.
+The existing isolated Listings image UI harness was started on127.0.0.1:5174;
+HTTP exercised built-page delivery, actual local image PUT/confirmation/download,
+listing create/browse/save, owner unavailability/discovery removal and Wanted
+creation. No prepared thread or generated output was copied in to bypass those
+workflows. Stopped, resumed the same database, verified Listing/Wanted/Saved rows
+were retained without reset, then stopped again. This remains fixed synthetic
+Identity and temporary local image storage, not real session/S3/device evidence.
+
+Retained local session: `/tmp/clip-listings-browser-sodlqzfg`; labelled container
+`44d230e7ed9f` confirmed `Exited (0)`. Its test rows remain recoverable by the
+registered resume command; image bytes intentionally vanish at shutdown. No
+demo server remains running. No existing resources were deleted or stopped;
+ephemeral test runners removed only their own containers. No cloud/live-provider,
+shared database or persistent content cleanup occurred. No code correction was
+needed. Step6 final diff/PR/review/CI handoff follows human verification.
+
 ## Ordered implementation and checks
 
 1. Inventory/reservation: this record, frontend map and current work-log row.

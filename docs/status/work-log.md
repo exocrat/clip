@@ -53,7 +53,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | SE-01 | Mohit (C); peer Suraj (B), Identity review | in progress | Local create-to-Keyword-and-Hybrid flow and browser walkthrough verified; formal acceptance remains pending | Test-only browser demo binds the same fixed synthetic Identity for writes/browse and can opt into the real helper, worker, pipeline bootstrap and Hybrid reader; automatic new-listing vector generation was observed | Suraj verified the local command/API/proxy flow and subsequent browser walkthrough | Search PR #11 worktree `task/search-evidence-reduction` at `864e53b`; new listing `194a32d4-64bb-491b-b4ec-68403e26f7f3` produced one title and one description vector (384 dimensions each), then matched in both modes through API and Vite proxy; session `/tmp/clip-listings-browser-v6e1f01t`; UI `http://127.0.0.1:5173/` | Formal SE-CORE/DATA-READY and final NFR/hosted-CI acceptance remain outside this merge step | 2026-10-25 14:38:24 UTC |
 | SE-02 | Mohit (C); peer Suraj (B), Identity/Conversations review | in progress | Step8 real integration gated; local handoff human-verified | Steps1–7 isolated result verified; Step8 audit performed | Mohit verified isolated UI and combined local handoff | [Search handoff](../evaluation/domain/search-handoff/result.json): Python1270/data94/web144,Black183,native20/3skip,wrapper35/contracts8/boundaries/parity/type/build pass | Await actual ID-READY/LI-CORE/SE-CORE/C adapters; Step9 final acceptance, pinned secrets/hosted CI and independent review pending | 2026-10-25 08:50:43 UTC |
 | MERGE-LI-SE | Suraj (integration); Listings/Search affected owners | done | PR #11 is squash-merged; Search–Listings local merge task is complete | Steps 1–9 performed; approved PR head `2a43066` merged to `main` as `e315c9d`; final hosted CI run `40204621122` passed | Steps 3–8 verified by Suraj; user authorized squash merge of the exact PR revision on 2026-10-25 | PR #11 `https://github.com/exocrat/clip/pull/11`; source head `2a430660d25e7c14cf33d84bd78172db4ec063c7`; squash merge `e315c9df3e0e11d6e9c8d7d244d676204d3af7e8`; hosted CI `40204621122`; local merge commit `29eb6fb`; fallback branch `safety/search-pr11-pre-main-reconciliation-20261025`; stash `af9d7f5`; local checks recorded below | No blocker for the Search–Listings merge. Final dataset, formal NFR/cloud checks, and real Identity/Conversations remain later work. | 2026-10-25 15:17:46 UTC |
-| CN-01 | Rahul (D) | in progress | Integration Step4 runtime preparation performed; verify result before Step5 full regression | Lifecycle/config/security78, real-session composition24 and final real-pool suite8 passed; web types/build613 modules; Black/boundaries0/Gitleaks passed | Step3 and Step4 plan verified; Step4 result awaits verification; prior browser checks stay verified | `task/cn-01-conversations`; [integration checkpoint](../evaluation/domain/conversations-integration.md); tests/runtime docs only, no application/schema/config change | Step5 regressions/demos and normal A/B/C review. CN-02/CN-03/provider/device/NFR work remains outside this increment | 2026-10-26 18:56:50 UTC |
+| CN-01 | Rahul (D) | in progress | Integration Step5 full regression/demo lifecycle performed; verify before Step6 final diff/PR/CI handoff | All12 make-check gates passed: Python1919/93skip,data94,web385/3skip,Black289,contracts8,mypy2,boundaries0,wrapper35,PG lifecycle,C107,Gitleaks; isolated Listings/Search SQL21/3skip; both demo checks passed | Step4 and Step5 plan verified; Step5 result awaits verification; prior browser checks stay verified | `task/cn-01-conversations`; implementation tested at380247a; [integration checkpoint](../evaluation/domain/conversations-integration.md); this increment records evidence only | Step6 normal A/B/C review/PR/current-head hosted CI and exact merge authorization. Native/provider/device/NFR and CN-02/CN-03 remain separately scoped | 2026-10-26 19:21:26 UTC |
 | CN-02 | D; A/B interface review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | Isolated development: PRE-00, then DL-00 and a reviewed contract/stub. Later real gates: CN-CORE, ID-READY, and LI-CORE for listing-origin behavior; SE-02 plus CN-01's real request path for request-response inbox integration. | — |
 | CN-03 | A; D producer review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | CN-CORE, ID-READY | — |
 | INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
@@ -82,6 +82,35 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | DATA-READY | not accepted | SE-01 steps 2/4/9 | — | pending |
 | CN-CORE | not accepted | CN-01 step 10 | — | pending |
 | OPTIONAL-OK | not approved | Each optional task's selection/priority plan | — | pending |
+
+## CN-01 — Combined application integration Step5 — 2026-10-26 19:21:26 UTC
+
+Rahul verified Step4 and the Step5 regression plan. All12 registered `make check`
+gates passed at implementation380247a: Black289 files; Python1919/93skip;
+data94; boundaries0; contracts8 current; consumer mypy2; web385/3skip, lint113,
+app/test types/build613; wrapper safety35; combined PostgreSQL18.6 migration
+lifecycle; real Conversations107; Gitleaks8.30.1. Existing large-bundle advisory
+remains. Environment-gated skips are recorded, not counted as passing native,
+image/provider or unbound-database checks. The separate registered
+`check_database.py --listings-store` passed migration lifecycle plus21 actual
+Listings/Search cases/3skip; native/model bridge opt-ins remain outside that run.
+
+The existing chat-demo `--check-only` passed disposable SQL/HTTP setup/guards and
+teardown, without repeating verified browser checks. Started the existing local
+Listings image UI harness, exercised actual HTTP image upload/confirmation/
+delivery, listing publication/browse/save, owner unavailability/discovery and
+Wanted creation. Stopped/resumed the exact same database, verified retained
+Listing/Wanted/Saved rows without reset, then stopped it again. The harness uses
+fixed synthetic Identity and temporary local image storage, not real auth/S3.
+Session `/tmp/clip-listings-browser-sodlqzfg`, owned container44d230e7ed9f:
+confirmed stopped `Exited (0)`; test rows retained per harness design, no active
+demo server. Only runner-owned ephemeral containers were automatically removed;
+no existing/shared target, cloud or live provider was touched.
+
+No implementation failure or code correction was needed. Updated only this log
+and the integration checkpoint with results/limits. Human verification is pending;
+next Step6 is final current-main diff/manageability/PR/review/hosted-CI preparation,
+not merge authorization or additional CN-02/CN-03 implementation.
 
 ## CN-01 — Combined application integration Step4 — 2026-10-26 18:56:50 UTC
 
