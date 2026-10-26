@@ -33,6 +33,8 @@ function appPath(path: string): boolean {
 }
 
 /** Fetch fresh session CSRF before each unsafe write, with no automatic replay.
+ * API requests send only the referrer origin, keeping Firefox Origin validation
+ * compatible with the page-wide no-referrer policy without leaking callback paths.
  * Prefix/headers/credentials/cache/redirect policy cannot come from a server reply.
  * A ten-second deadline covers preflight and response receipt; owning JSON validators stay
  * with each feature. The caller's abort propagates through both stages. A session
@@ -69,7 +71,7 @@ export async function sessionFetch(
       if (!policy.publicAuthentication) {
         const csrf = await fetch(`${prefix}/auth/csrf`, {
           credentials: 'same-origin', cache: 'no-store', mode: 'same-origin',
-          redirect: 'error', signal: controller.signal,
+          redirect: 'error', referrerPolicy: 'origin', signal: controller.signal,
           headers: { Accept: 'application/json' },
         });
         if (!csrf.ok) throw new SessionFetchError(csrf.status);
@@ -86,7 +88,7 @@ export async function sessionFetch(
     dispatched = unsafe;
     const response = await fetch(`${prefix}${path}`, {
       ...init, method, headers, credentials: 'same-origin', cache: 'no-store',
-      mode: 'same-origin', redirect: 'error', signal: controller.signal,
+      mode: 'same-origin', redirect: 'error', referrerPolicy: 'origin', signal: controller.signal,
     });
     // App endpoints are bounded JSON/204, never byte uploads or streaming feeds.
     // Finish receiving while abort/deadline are attached; keep the original

@@ -183,6 +183,56 @@ describe('Microsoft redirect controller with a controlled SDK port', () => {
     expect(mocks.clear).toHaveBeenCalledTimes(2);
   });
 
+  it.each([
+    ['sdk_initialization', 'initialize', 'database_unavailable'],
+    ['sdk_cleanup', 'clear', 'database_not_open'],
+    ['sdk_redirect', 'redirect', 'pkce_not_created'],
+  ])('identifies a failed start at %s with only an allowlisted code', async (stage, method, code) => {
+    fetcher(() => response({ nonce, expires_at: new Date(Date.now() + 600_000).toISOString() }));
+    mocks[method as 'initialize' | 'clear' | 'redirect'].mockRejectedValueOnce(
+      Object.assign(new Error('PRIVATE_PROVIDER_TOKEN_AND_URL'), { errorCode: code }),
+    );
+    const controller = await flow();
+    const problem = await controller.beginMicrosoft().catch((error: Error) => error);
+    expect(problem).toBeInstanceOf(controller.MicrosoftSignInError);
+    expect((problem as Error).message).toContain(`start/${stage}/${code}`);
+    expect((problem as Error).message).not.toContain('PRIVATE');
+    expect(sessionStorage.getItem(controller.MICROSOFT_ATTEMPT_KEY)).toBeNull();
+  });
+
+  it('separates backend-attempt failure from SDK redirect failure', async () => {
+    fetcher(() => response({}, 503));
+    const problem = await (await flow()).beginMicrosoft().catch((error: Error) => error);
+    expect((problem as Error).message).toContain('start/server_attempt');
+    expect(mocks.redirect).not.toHaveBeenCalled();
+  });
+
+  it('identifies blocked browser storage without rendering its private message', async () => {
+    fetcher(() => response({ nonce, expires_at: new Date(Date.now() + 600_000).toISOString() }));
+    const write = vi.spyOn(Storage.prototype, 'setItem').mockImplementationOnce(() => {
+      throw new DOMException('PRIVATE_STORAGE_VALUE', 'SecurityError');
+    });
+    try {
+      const problem = await (await flow()).beginMicrosoft().catch((error: Error) => error);
+      expect((problem as Error).message).toContain('start/local_marker/SecurityError');
+      expect((problem as Error).message).not.toContain('PRIVATE');
+      expect(mocks.redirect).not.toHaveBeenCalled();
+    } finally {
+      write.mockRestore();
+    }
+  });
+
+  it('keeps start diagnostics generic in production builds', async () => {
+    vi.stubEnv('DEV', false);
+    mocks.initialize.mockRejectedValueOnce(
+      Object.assign(new Error('PRIVATE_PROVIDER_FAILURE'), { errorCode: 'database_unavailable' }),
+    );
+    const problem = await (await flow()).beginMicrosoft().catch((error: Error) => error);
+    expect((problem as Error).message).not.toContain('Development diagnostic');
+    expect((problem as Error).message).not.toContain('database_unavailable');
+    expect((problem as Error).message).not.toContain('PRIVATE');
+  });
+
   it('exchanges one validated result, consumes marker, clears SDK and sanitizes URL', async () => {
     marker();
     window.history.replaceState(null, '', '/auth/callback?code=PRIVATE_URL#PRIVATE_FRAGMENT');
