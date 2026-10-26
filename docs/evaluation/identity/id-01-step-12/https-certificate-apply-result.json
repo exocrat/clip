@@ -51,5 +51,13 @@
     "acm_status": "PENDING_VALIDATION",
     "acm_validation_status": "PENDING_VALIDATION",
     "in_use_by": []
+  },
+  "issuance_verification": {
+    "checked_at_utc": "2026-10-26 07:13:33 UTC",
+    "certificate_status": "ISSUED",
+    "validation_status": "SUCCESS",
+    "not_after_utc": "2027-05-11 23:59:59 UTC",
+    "in_use_by": [],
+    "https_listener_deployed": false
   }
 }

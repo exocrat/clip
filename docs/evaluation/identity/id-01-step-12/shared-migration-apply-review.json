@@ -1,8 +1,8 @@
 {
-  "prepared_at_utc": "2026-10-25 17:09:30 UTC",
+  "prepared_at_utc": "2026-10-26 07:12:03 UTC",
   "state": "review_candidate_not_executable",
-  "source_head": "42e9cd9320cff5a5e15f3ba8eb5e95a31164082a",
-  "runner_source_commit": "42e9cd9320cff5a5e15f3ba8eb5e95a31164082a",
+  "source_head": "6f37b0b0d2749da0296cf46d3f81c6ceaf7da447",
+  "runner_source_commit": "6f37b0b0d2749da0296cf46d3f81c6ceaf7da447",
   "upstream_base": "6c860603bdd81a98485e721d789b557c5d433948",
   "manifest_path": "docs/evaluation/identity/id-01-step-12/shared-migration-manifest.json",
   "manifest_sha256": "16b9ac0b1476a647a3ade73cf66dcf2b3f127d4c641bc6ef958dde82a79a6958",
@@ -12,8 +12,8 @@
   "upstream_migrations_unchanged": 14,
   "new_identity_migrations": 3,
   "review_gates": {
-    "independent_human": "not_recorded",
-    "affected_owner": "not_recorded",
+    "independent_human": "Suraj PR14 review/merge human-confirmed; new runtime changes and image/live execution not yet reviewed",
+    "affected_owner": "Implementation merged; exact shared first-apply execution scope requires current affected-owner coordination",
     "image_digest": "pending",
     "exact_cloud_ddl_approval": "pending"
   },
@@ -65,5 +65,18 @@
     "provider sends or application deployment",
     "IAM/network/class/AZ changes",
     "push/merge or backup/restore provisioning"
-  ]
+  ],
+  "accepted_implementation_merge": {
+    "pr": 14,
+    "main_revision": "3d6c2709d93f42bda0b4a6645c633780387c99b8",
+    "reviewer": "Suraj",
+    "evidence": "Aditya confirms review and merge; source acceptance is not image or live DDL approval"
+  },
+  "recorded_upstream_base_note": "upstream_base/counts retain the original pre-PR14 comparison provenance; source_head is the current release preparation",
+  "source_hashes": {
+    "apps/api/app/domains/identity/migration_runner.py": "51cf916bd60624377dcb3bd67a14419eaa2805d714a31f3123057458e8f20d11",
+    "apps/api/app/domains/identity/database_setup.py": "2d88017e729698b4c8565debfee1fdddb96973a9bf726db2d58a31bd00d34669",
+    "apps/api/app/domains/identity/runtime_database.py": "dce0a0dfe40d7cb90ae7676cc0444280b1f48d4d932513e2709a1a32884f1a62",
+    "database/roles/identity-runtime.sql.proposed": "19bf55d3bc1d8fc9e89a236e50ed9c5b53057a0a2dd93801a2c3729ca5e82d69"
+  }
 }

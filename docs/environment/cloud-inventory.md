@@ -2,6 +2,11 @@
 
 Non-secret status record. Update only from approved plans and verified outputs. Never record credentials, tokens, or secret values here. This is an observed snapshot, not an authorization to use existing resources or create/change/delete cloud infrastructure.
 
+Certificate issuance verified2026-10-26 07:13:33 UTC: ACM certificate
+`a9775d00-2af5-4b12-990d-1ce9795f1859` is **ISSUED**, validation SUCCESS,
+not yet associated with a listener. No HTTPS app deployment implied.
+[Issuance evidence](../evaluation/identity/id-01-step-12/https-certificate-apply-result.json).
+
 ## HTTPS certificate and sender update — 2026-10-26 07:04:31 UTC
 
 Approved saved plan9f7d85f7 applied: one non-exportable ACM certificate for

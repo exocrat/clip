@@ -1763,3 +1763,53 @@ No record correction is indicated by this evidence; issuance remains pending,
 not a failure or completed HTTPS endpoint. [Updated safe result](id-01-step-12/https-certificate-apply-result.json).
 No DNS/resource change, secret read or send in this verification. Retain the
 record for renewal; later recheck issuance before listener deployment.
+
+
+### Database/runtime connection package — 2026-10-26 07:12:03 UTC
+
+Aditya requested the current changes committed first, then local database/runtime
+preparation and an ACM recheck. Certificate/discovery package committed6f37b0b;
+Gitleaks/JSON/links/whitespace passed. No push or extra commit authorized.
+
+Refreshed [migration review candidate](id-01-step-12/shared-migration-apply-review.json)
+against6f37b0b, retaining original comparison provenance and explicit image/DDL
+pending gates. All17file paths/hashes still match, head20261025013000. Recorded
+current runner/setup/role source hashes and Suraj's human-confirmed PR14 merge
+without representing it as image or live SQL approval. No manifest-review bypass.
+Expanded [runtime proposal](id-01-step-12/shared-runtime-configuration.proposed.json)
+with exact target, two-role/URL responsibilities, operation/publication ordering,
+connection budgets and refusal/recovery rules.
+
+Material finding: the existing Listings lifecycle script is explicitly for
+`clip_test_listings`, gives its demo role database ownership and includes teardown.
+It is not a safe shared database login/migration route. Its URL parameter name
+alone does not justify injecting that value into the shared app. No decrypted URL
+was read. Preserve the active demo and its current credential. The local Identity
+demo creates a separate disposable marketplace role with broad existing local
+table grants; that does not establish reviewed shared runtime privileges either.
+
+Identity's14table least-privilege role/setup already exists and remains separate.
+The shared marketplace pool covers Listings plus Search/Wanted/Saved; B/C must
+confirm required explicit table/sequence/function/catalogue access, Hybrid read/
+worker limits and operator pipeline privileges. No invented grants, owner role,
+private Identity table reads, or reuse of the isolated bootstrap. This is the
+remaining implementation/review boundary before a safe shared role apply.
+
+Next bounded live checkpoint to request separately: original shared RDS start,
+existing one-sleep-task/private-tunnel route and read-only four-namespace/tracker/
+role/logging catalog inspection. Keep shared API stopped, no migrations/role/grant/
+URL writes, no provider sends, no Listings demo start/stop. Use existing fixed
+account/resource/class/AZ with named exclusive original-resource window, explicit
+caps/deadline/one private admin-secret read and owned cleanup. Previous one-hour/
+$1/20minute-start bounds are proposals, not fresh execution approval or cost proof.
+After metadata, finalize image/first-apply review and the safe marketplace-role
+setup; apply schema/roles/secret publication only through separately verified
+increments. No live DB connection occurred during this preparation.
+
+
+ACM recheck2026-10-26 07:13:33 UTC: certificate **ISSUED**, DNS validation
+SUCCESS, expiration2027-05-11 23:59:59 UTC, no resource association. Updated
+[certificate evidence](id-01-step-12/https-certificate-apply-result.json) and cloud
+inventory. No secret reads/resource writes for this check; HTTPS listener and
+application deployment remain pending. Database/runtime preparation is documentation
+and proposed configuration only; no code behavior changed or full tests rerun.
