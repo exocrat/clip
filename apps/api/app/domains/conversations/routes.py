@@ -1,9 +1,11 @@
 """Public HTTP router adapter for the Conversations-owned entry operations."""
 
-from typing import Annotated, Literal
+import re
+from typing import Annotated, Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Request, Response
+from pydantic import field_validator
 from psycopg_pool import AsyncConnectionPool
 
 from app.contracts.domain_types import (
@@ -41,6 +43,37 @@ router = APIRouter(
         for status in (400, 401, 403, 404, 409, 422, 429, 500, 503)
     },
 )
+
+
+def _http_integer(value: Any) -> Any:
+    """Convert decimal URL integers exactly, without accepting float-like input."""
+    if isinstance(value, str) and re.fullmatch(r"[+-]?[0-9]+", value):
+        return int(value)
+    if value is None or type(value) is int:
+        return value
+    raise ValueError("Integer query parameter required")
+
+
+class ConversationHttpQuery(ConversationQuery):
+    """Parse URL strings before applying the unchanged public query constraints."""
+
+    @field_validator(
+        "page", "page_size", "offer_min_paise", "offer_max_paise", mode="before"
+    )
+    @classmethod
+    def exact_integer_query(cls, value: Any) -> Any:
+        """Keep pagination and money values exact across HTTP string parsing."""
+        return _http_integer(value)
+
+
+class EntryHttpQuery(EntryQuery):
+    """Parse entry cursors before applying the bounded public query contract."""
+
+    @field_validator("after_sequence", "page_size", mode="before")
+    @classmethod
+    def exact_integer_query(cls, value: Any) -> Any:
+        """Reject decimal-looking strings instead of silently truncating them."""
+        return _http_integer(value)
 
 
 def create_public_provider(pool: AsyncConnectionPool) -> PostgresConversationServices:
@@ -92,15 +125,14 @@ async def submit_message(
 async def read_entries(
     conversation_id: UUID,
     request: Request,
-    after_sequence: int = Query(default=0, ge=0),
-    page_size: Literal[20, 50, 100] = Query(default=20),
+    query: Annotated[EntryHttpQuery, Query()],
     caller: CallerContext = Depends(require_caller),
 ) -> EntryPage:
     """Read a bounded visible entry page with a scan-through sequence cursor."""
     return await _operations(request).read_entries(
         caller,
         conversation_id,
-        EntryQuery(after_sequence=after_sequence, page_size=page_size),
+        query,
     )
 
 
@@ -159,7 +191,7 @@ async def acknowledge_read(
 )
 async def list_mine(
     request: Request,
-    query: Annotated[ConversationQuery, Query()],
+    query: Annotated[ConversationHttpQuery, Query()],
     caller: CallerContext = Depends(require_caller),
 ) -> PageResult[ConversationSummary]:
     """Return an authorized, filtered inbox without reading origin-domain content."""

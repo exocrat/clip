@@ -71,7 +71,7 @@ describe('ConversationApi', () => {
     const { api, transport } = setup({ items: [entry], scanned_through_sequence: 1, has_more: false });
     await api.readEntries(thread);
     expect(transport).toHaveBeenCalledTimes(1);
-    expect(transport.mock.calls[0][0]).toContain('/entries?');
+    expect(transport.mock.calls[0][0]).toBe(`/conversations/${thread}/entries?after_sequence=0`);
     const ack = setup({ own_last_read_sequence: 1 });
     await ack.api.acknowledgeDisplayed(thread, 1);
     expect(ack.transport.mock.calls[0][1]).toMatchObject({ method: 'PUT', body: '{"last_read_sequence":1}' });

@@ -38,7 +38,9 @@ function ConversationInboxSession() {
     if (!runtime) return;
     setLoading(true);
     try {
-      const result = await runtime.api.listMine({ view: 'all', page: pageNumber, page_size: 100 });
+      // Use the server's bounded default page size. This also stays compatible
+      // with older HTTP adapters that mishandle integer Literal query strings.
+      const result = await runtime.api.listMine({ view: 'all', page: pageNumber });
       setItems(result.items.map((summary) => toInboxItem(summary, runtime.userId)));
       setHasNextPage(result.has_next);
       setLoadError(false);

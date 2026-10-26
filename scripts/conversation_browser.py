@@ -224,12 +224,18 @@ def check_apps(apps, conversation_id):
         with TestClient(app, base_url=origin, client=("127.0.0.1", 41000)) as client:
             assert client.get("/api/me").status_code == 200
             assert (
+                client.get(
+                    "/api/conversations?view=all&page=1&page_size=100"
+                ).status_code
+                == 200
+            )
+            assert (
                 client.get(f"/api/conversations/{conversation_id}").status_code == 200
             )
             assert (
-                client.get(f"/api/conversations/{conversation_id}/entries").json()[
-                    "items"
-                ]
+                client.get(
+                    f"/api/conversations/{conversation_id}/entries?after_sequence=0&page_size=100"
+                ).json()["items"]
                 == []
             )
             assert (

@@ -210,7 +210,7 @@ export class ConversationApi {
 
   readEntries(conversationId: string, afterSequence = 0, signal?: AbortSignal): Promise<EntryPage> {
     if (!natural(afterSequence)) throw new RangeError('Invalid entry cursor');
-    return this.request(`${this.threadPath(conversationId)}/entries?after_sequence=${afterSequence}&page_size=100`, 'GET',
+    return this.request(`${this.threadPath(conversationId)}/entries?after_sequence=${afterSequence}`, 'GET',
       (value) => record(value) && Array.isArray(value.items) && value.items.every(entry) &&
         natural(value.scanned_through_sequence) && value.scanned_through_sequence >= afterSequence &&
         typeof value.has_more === 'boolean' &&
