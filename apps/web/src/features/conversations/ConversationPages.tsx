@@ -34,9 +34,11 @@ function ConversationInboxSession() {
   const [loadError, setLoadError] = useState(false);
   const [pageNumber, setPageNumber] = useState(1);
   const [hasNextPage, setHasNextPage] = useState(false);
-  const refresh = useCallback(async () => {
-    if (!runtime) return;
-    setLoading(true);
+  const requestInFlight = useRef(false);
+  const refresh = useCallback(async (options: { silent?: boolean } = {}) => {
+    if (!runtime || requestInFlight.current) return;
+    requestInFlight.current = true;
+    if (!options.silent) setLoading(true);
     try {
       // Use the server's bounded default page size. This also stays compatible
       // with older HTTP adapters that mishandle integer Literal query strings.
@@ -47,10 +49,54 @@ function ConversationInboxSession() {
     } catch {
       setLoadError(true);
       throw new ConversationApiError(0, 'transport');
-    } finally { setLoading(false); }
+    } finally {
+      requestInFlight.current = false;
+      if (!options.silent) setLoading(false);
+    }
   }, [pageNumber, runtime]);
 
-  useEffect(() => { if (runtime) void refresh().catch(() => undefined); }, [runtime, refresh]);
+  useEffect(() => {
+    if (!runtime || typeof document === 'undefined') return;
+
+    const pollIntervalMs = 2_000;
+    const maxBackoffMs = 30_000;
+    let delay = pollIntervalMs;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let disposed = false;
+    const visible = () => document.visibilityState === 'visible';
+    const schedule = () => {
+      if (disposed || !visible()) return;
+      timer = setTimeout(() => { void poll(); }, delay);
+    };
+    const poll = async () => {
+      if (disposed || !visible()) return;
+      if (timer) clearTimeout(timer);
+      try {
+        await refresh({ silent: true });
+        delay = pollIntervalMs;
+      } catch {
+        delay = Math.min(delay * 2, maxBackoffMs);
+      }
+      schedule();
+    };
+    const refreshNow = () => {
+      if (visible()) {
+        if (timer) clearTimeout(timer);
+        void poll();
+      } else if (timer) clearTimeout(timer);
+    };
+
+    void refresh().catch(() => undefined);
+    schedule();
+    document.addEventListener('visibilitychange', refreshNow);
+    window.addEventListener('focus', refreshNow);
+    return () => {
+      disposed = true;
+      if (timer) clearTimeout(timer);
+      document.removeEventListener('visibilitychange', refreshNow);
+      window.removeEventListener('focus', refreshNow);
+    };
+  }, [runtime, refresh]);
   if (!runtime) return <p role="status">Sign in to load your conversations. The authenticated session is not connected here yet.</p>;
   return <ConversationInbox conversations={items} loading={loading} loadError={loadError} onRefresh={refresh}
     page={pageNumber} hasNextPage={hasNextPage} onPageChange={setPageNumber}
