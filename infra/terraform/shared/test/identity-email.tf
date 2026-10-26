@@ -27,19 +27,39 @@ resource "aws_iam_role_policy" "api_identity_email" {
   role = aws_iam_role.api_task[0].id
   policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [{
-      Sid    = "SendIdentityEmailFromVerifiedDomain"
-      Effect = "Allow"
-      Action = "ses:SendEmail"
-      Resource = compact([
-        "arn:aws:ses:${local.region}:${local.account_id}:identity/clip-iisc.site",
-        var.ses_sandbox_recipient_identity_arn,
-      ])
-      Condition = {
-        StringEquals = {
-          "ses:FromAddress" = "verify@clip-iisc.site"
+    Statement = [
+      {
+        Sid    = "SendIdentityEmailFromVerifiedDomain"
+        Effect = "Allow"
+        Action = "ses:SendEmail"
+        Resource = compact([
+          "arn:aws:ses:${local.region}:${local.account_id}:identity/clip-iisc.site",
+          var.ses_sandbox_recipient_identity_arn,
+        ])
+        Condition = {
+          StringEquals = {
+            "ses:FromAddress" = "verify@clip-iisc.site"
+          }
         }
-      }
-    }]
+      },
+      {
+        Sid    = "ReadOnlyIdentityRuntimeParameters"
+        Effect = "Allow"
+        Action = ["ssm:GetParameter"]
+        Resource = [
+          "arn:aws:ssm:${local.region}:${local.account_id}:parameter/clip/test/identity/authentication-keys",
+          "arn:aws:ssm:${local.region}:${local.account_id}:parameter/clip/test/identity/database-url",
+          "arn:aws:ssm:${local.region}:${local.account_id}:parameter/clip/test/identity/email-delivery",
+        ]
+      },
+      {
+        Sid    = "PrivateListingsImageObjectAccess"
+        Effect = "Allow"
+        Action = ["s3:PutObject", "s3:GetObject", "s3:DeleteObject"]
+        Resource = [
+          "${aws_s3_bucket.listings_images[0].arn}/id01/*",
+        ]
+      },
+    ]
   })
 }

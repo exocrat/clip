@@ -131,18 +131,24 @@ export function beginMicrosoft(): Promise<void> {
   if (completion) return Promise.reject(new MicrosoftSignInError('failed'));
   starting = (async () => {
     let app: PublicClientApplication | null = null;
+    let stage = 'activation';
     try {
       if (!microsoftEnabled()) throw new MicrosoftSignInError('unavailable');
+      stage = 'sdk_initialization';
       app = await client();
+      stage = 'sdk_cleanup';
       await app.clearCache();
+      stage = 'server_attempt';
       const attempt = await identityApi.microsoftAttempt();
       if (Date.parse(attempt.expires_at) <= Date.now()) throw new MicrosoftSignInError('expired');
+      stage = 'local_marker';
       const marker: RedirectMarker = {
         state: crypto.randomUUID(),
         nonce: attempt.nonce,
         expiresAt: attempt.expires_at,
       };
       window.sessionStorage.setItem(MICROSOFT_ATTEMPT_KEY, JSON.stringify(marker));
+      stage = 'sdk_redirect';
       await app.loginRedirect({
         scopes: ['openid', 'profile', 'email'],
         nonce: marker.nonce,
@@ -156,7 +162,10 @@ export function beginMicrosoft(): Promise<void> {
       } catch {
         /* No raw storage/provider diagnostics. */
       }
-      throw failure(error);
+      const problem = failure(error);
+      if (import.meta.env.DEV)
+        problem.message += ` Development diagnostic: start/${stage}${diagnosticErrorCode(error)}.`;
+      throw problem;
     } finally {
       starting = null;
     }
@@ -180,7 +189,7 @@ function callbackServerCode(error: unknown): string {
 
 // Development diagnostics expose only fixed stages and known SDK codes. Never
 // include provider messages, assertions, claims, state, nonce or callback URLs.
-const callbackCodes = new Set([
+const diagnosticCodes = new Set([
   'hash_empty_error', 'no_state_in_hash', 'unable_to_parse_state',
   'state_interaction_type_mismatch', 'no_token_request_cache_error',
   'unable_to_parse_token_request_cache_error', 'interaction_in_progress',
@@ -189,7 +198,23 @@ const callbackCodes = new Set([
   'no_network_connectivity', 'crypto_key_not_found', 'crypto_nonexistent',
   'failed_to_decrypt_ear_response', 'redirect_bridge_empty_response',
   'uninitialized_public_client_application', 'timed_out',
+  'database_unavailable', 'database_not_open', 'storage_not_supported',
+  'pkce_not_created', 'unable_to_load_token', 'redirect_in_iframe',
 ]);
+
+/** Return only known SDK identifiers or fixed browser storage/crypto exception names.
+ * Never render an arbitrary error code/message, request, token, nonce or URL.
+ * Callers append this suffix only in development builds.
+ */
+function diagnosticErrorCode(error: unknown): string {
+  if (!error || typeof error !== 'object') return '';
+  if ('errorCode' in error && typeof error.errorCode === 'string'
+    && diagnosticCodes.has(error.errorCode)) return `/${error.errorCode}`;
+  if (error instanceof DOMException
+    && ['SecurityError', 'NotSupportedError', 'QuotaExceededError'].includes(error.name))
+    return `/${error.name}`;
+  return '';
+}
 
 /** Deduplicate in-flight StrictMode calls and consume each attempt once: SDK validation,
  * matching own state/nonce, then one server assertion exchange. Backend signature,
@@ -234,10 +259,7 @@ export function completeMicrosoft(): Promise<SessionView> {
     } catch (error) {
       problem = failure(error);
       if (import.meta.env.DEV) {
-        const code = error && typeof error === 'object' && 'errorCode' in error
-          && typeof error.errorCode === 'string' && callbackCodes.has(error.errorCode)
-          ? `/${error.errorCode}` : '';
-        diagnostic = `${stage}${code}${callbackServerCode(error)}`;
+        diagnostic = `${stage}${diagnosticErrorCode(error)}${callbackServerCode(error)}`;
       }
     } finally {
       try {

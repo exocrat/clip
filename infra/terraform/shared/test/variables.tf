@@ -209,3 +209,24 @@ variable "postgres_probe_image_uri" {
     error_message = "postgres_probe_image_uri must use an immutable sha256 digest when supplied."
   }
 }
+
+
+# These are deployment inputs, not approval to start a real provider runtime.
+variable "identity_runtime_enabled" {
+  description = "Opt into the reviewed real Identity/marketplace test profile; default retains the disabled foundation API."
+  type        = bool
+  default     = false
+}
+
+variable "identity_test_recipients" {
+  description = "Private controlled test-recipient allowlist, maximum five. Required with the real Identity profile; no general sending or recipient verification is implied."
+  type        = list(string)
+  sensitive   = true
+  default     = []
+  validation {
+    condition = length(var.identity_test_recipients) <= 5 && alltrue([
+      for address in var.identity_test_recipients : can(regex("^[^@[:space:]]+@[^@[:space:]]+$", address))
+    ])
+    error_message = "Use no more than five nonempty email addresses without whitespace."
+  }
+}

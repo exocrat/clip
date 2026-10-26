@@ -1,0 +1,112 @@
+{
+  "completed_at_utc": "2026-10-26 10:44:28 UTC",
+  "approval": "Aditya explicitly approved the exact marketplace role and SecureString creation.",
+  "target": {
+    "account": "335523638354",
+    "region": "ap-south-1",
+    "rds": "clip-shared-test-postgres",
+    "database": "clip_test"
+  },
+  "role": {
+    "name": "clip_test_marketplace_app",
+    "login": true,
+    "superuser": false,
+    "createdb": false,
+    "createrole": false,
+    "inherit": false,
+    "replication": false,
+    "bypassrls": false,
+    "connection_limit": 10,
+    "password": "generated in process memory; never recorded"
+  },
+  "parameter": {
+    "name": "/clip/test/listings-database-url",
+    "type": "SecureString",
+    "version": 1,
+    "kms_key": "alias/aws/ssm",
+    "credential_value_recorded": false
+  },
+  "grants": {
+    "schemas": [
+      "USAGE on listings and search; no CREATE"
+    ],
+    "tables": {
+      "listings.categories": [
+        "SELECT"
+      ],
+      "listings.conditions": [
+        "SELECT"
+      ],
+      "listings.sale_listings": [
+        "SELECT",
+        "INSERT",
+        "UPDATE"
+      ],
+      "listings.images": [
+        "SELECT",
+        "INSERT",
+        "UPDATE",
+        "DELETE"
+      ],
+      "listings.image_uploads": [
+        "SELECT",
+        "INSERT",
+        "UPDATE",
+        "DELETE"
+      ],
+      "listings.create_command_results": [
+        "SELECT",
+        "INSERT",
+        "UPDATE"
+      ],
+      "listings.owner_command_results": [
+        "SELECT",
+        "INSERT",
+        "DELETE"
+      ],
+      "search.wanted_requests": [
+        "SELECT",
+        "INSERT",
+        "UPDATE"
+      ],
+      "search.wanted_command_results": [
+        "SELECT",
+        "INSERT",
+        "UPDATE"
+      ],
+      "search.saved_listings": [
+        "SELECT",
+        "INSERT",
+        "DELETE"
+      ]
+    },
+    "sequences": [],
+    "functions": [],
+    "hybrid_embedding_tables": [],
+    "identity_schema": "denied",
+    "conversations_schema": "denied",
+    "schema_migrations": "denied"
+  },
+  "verification": {
+    "login": true,
+    "categories_select": true,
+    "categories_insert_denied": true,
+    "sale_listing_insert": true,
+    "image_delete": true,
+    "saved_listing_delete": true,
+    "identity_denied": true,
+    "conversations_denied": true,
+    "ddl_denied": true,
+    "database_temp_denied": true,
+    "safe_role_logging_panic": true,
+    "tracker_select_denied": true
+  },
+  "logging": {
+    "RDS_global_log_min_error_statement": "error unchanged",
+    "per_role_log_min_error_statement": "panic"
+  },
+  "session": {
+    "ssm_tunnel": "terminated and verified inactive"
+  },
+  "verification_note": "An initial check attempted a tracker-row SELECT, which correctly failed because tracker access is not granted; the follow-up confirmed tracker SELECT remains denied and all intended role checks pass."
+}

@@ -1,0 +1,115 @@
+{
+  "started_at_utc": "2026-10-26 18:07:23 UTC",
+  "completed_at_utc": "2026-10-26 18:09:02 UTC",
+  "mode": "user_authorized_read_only",
+  "account": "335523638354",
+  "operator": "adityalaxmi1",
+  "region": "ap-south-1",
+  "source_commit": "246a7df",
+  "rds": {
+    "identifier": "clip-shared-test-postgres",
+    "resource_id": "db-PYRRZJPVKPGHIXDAHUWATXGH7A",
+    "status": "stopped",
+    "deletion_protection": true,
+    "engine": "18.6",
+    "publicly_accessible": false
+  },
+  "shared_cluster": {
+    "name": "clip-shared-test",
+    "hosts": 0,
+    "running_tasks": 0,
+    "pending_tasks": 0
+  },
+  "service_live": {
+    "name": "clip-test-api-ap-south-1-pd16",
+    "desired": 0,
+    "running": 0,
+    "pending": 0,
+    "task_revision": 2,
+    "load_balancers": []
+  },
+  "shared_asg": {
+    "name": "clip-shared-test-ecs-host",
+    "desired": 0,
+    "instances": []
+  },
+  "temporary_resources": {
+    "specified_proxy_and_host_instance_ids": [
+      "i-0ddd52b8041114121",
+      "i-0543832969d007de2"
+    ],
+    "instance_query_results": [],
+    "released_ip": "65.0.49.162",
+    "ip_allocations_in_account": [],
+    "security_group": "sg-08804549ba604c6a6",
+    "matching_security_groups": [],
+    "target_group": "clip-test-api-id01",
+    "matching_target_groups": [],
+    "proxy_task_revision_3": "INACTIVE"
+  },
+  "terraform": {
+    "operation": "state pull only; no refresh/write/plan",
+    "state_serial": 17,
+    "service_state_desired": 0,
+    "service_state_task_revision": 1,
+    "task_resource_state_revision": 2,
+    "temporary_ingress_addresses_tracked": [],
+    "service_revision_matches_live": false
+  },
+  "dns": {
+    "resolvers": [
+      "Google DNS-over-HTTPS",
+      "Cloudflare DNS-over-HTTPS"
+    ],
+    "apex": "clip-iisc.site",
+    "A_answers_both": [
+      "65.0.49.162"
+    ],
+    "released_ip_still_resolves": true,
+    "AAAA_answers": [],
+    "validation_cname_matches_both": true,
+    "note": "Recursive public resolution verified; removal/propagation not confirmed. No HTTP/TLS request sent to released IP."
+  },
+  "acm": {
+    "status": "ISSUED",
+    "in_use_by": []
+  },
+  "identity_parameter_metadata": [
+    {
+      "name": "/clip/test/identity/authentication-keys",
+      "type": "SecureString",
+      "version": 1
+    },
+    {
+      "name": "/clip/test/identity/database-url",
+      "type": "SecureString",
+      "version": 1
+    },
+    {
+      "name": "/clip/test/identity/email-delivery",
+      "type": "SecureString",
+      "version": 1
+    }
+  ],
+  "limits": {
+    "secret_decryption": false,
+    "sql": false,
+    "resource_start_or_stop": false,
+    "dns_change": false,
+    "state_refresh_or_write": false,
+    "deployment_or_provider_send": false,
+    "runtime_flows_tested": false
+  },
+  "outcomes": {
+    "rds_stop_confirmed": true,
+    "compute_and_temporary_ingress_cleanup_confirmed": true,
+    "dns_cleanup_confirmed": false,
+    "service_state_reconciliation_complete": false,
+    "hosted_app_acceptance": false
+  },
+  "later_dns_human_report": {
+    "reported_at_utc": "2026-10-26 18:20:44 UTC",
+    "apex_A_deleted": true,
+    "propagation_check": "explicitly declined by Aditya; not performed again"
+  }
+}
