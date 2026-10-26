@@ -56,5 +56,25 @@
     "https://raw.githubusercontent.com/docker-library/postgres/master/18/bookworm/docker-entrypoint.sh",
     "https://raw.githubusercontent.com/amacneil/dbmate/v2.36.0/README.md"
   ],
-  "publication": "pending explicit commit/push approval and hosted rerun"
+  "publication": "47714cc correction pushed; evidence-format follow-up prepared, awaiting explicit commit/push approval",
+  "hosted_verification": {
+    "run": "https://github.com/exocrat/clip/actions/runs/40382575520",
+    "head": "47714cc69303b3da0c2bd32a66aaddf3102c53ec",
+    "recorded_utc": "2026-10-26 19:06:47 UTC",
+    "passed_steps": [
+      "Python tests",
+      "data tests",
+      "domain boundaries",
+      "generated contracts",
+      "contract-double types",
+      "web lint/tests/types/build",
+      "wrapper safety",
+      "clean migrations/schema",
+      "formatting",
+      "command parity"
+    ],
+    "remaining_failure": "Gitleaks flagged two real source SHA-256 fingerprints at hybrid-default-ui/result.json42/43; both recomputed and matched",
+    "correction": "Represent hashes as path/sha256 records, preserving values; no scanner policy/allowlist/exemption change",
+    "remaining_gate": "hosted full rerun after publishing evidence-format correction"
+  }
 }
