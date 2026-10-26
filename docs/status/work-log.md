@@ -47,7 +47,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PD-19 | Integration owner (current branch) | done | Steps 1–9 and combined foundation handoff complete | Steps 1–9 performed | User confirms all work before PRE-00 is complete | PR #8 merged at `2cd83e7` from head `18c966e` against base `68d9da9`; [Foundation quality gates passed](https://github.com/exocrat/clip/actions/runs/39323851584) for that exact head/base; `make test` (395 Python, 63 data, 16 web), Black, contract freshness and 10 `make check` gates passed; [handoff](foundation-handoff.md) | No open PD-19 work per user confirmation. Linux AMD64/macOS results remain user-confirmed without raw outputs. PR #8 has no submitted GitHub review; independent-review completion is user-confirmed, with no separate review artifact linked. Refresh cloud snapshot before any operation. | 2026-10-19 21:09:05 UTC |
 | PRE-00 | Integration owner | done | Foundation gate audit accepted; DL-00 is unblocked | performed | verified/accepted by user | Reviewed handoff PR #8 merged to `main` at `2cd83e7`; hosted Foundation quality gates passed for head `18c966e` against base `68d9da9` (run `39323851584`); clean-checkout evidence at `0747be6`; see [PD-19 handoff](foundation-handoff.md) | None. PR #8 has no GitHub review event; independent-review completion remains user-reported without a separate artifact. | 2026-10-19 21:20:55 UTC |
 | DL-00 | Shared-core/contract coordinator; all domains review | done | Steps 1–13 and task-wide audit complete; accepted and merged | Steps 1–13 performed; accepted by user | User confirmed full acceptance and merge on 2026-10-22 05:30:49 UTC | PR #9 merged to `main` at `f5576ef`; current `main` is `44cd8ff`; Step 13 check evidence is recorded below and was not rerun for this update | None for DL-00; cleanup implementation remains separately gated; real providers/integrations and crypto/worker implementation remain downstream | 2026-10-22 05:30:49 UTC |
-| ID-01 | A | in progress | Step12 seller gate and full connection audit locally complete/human-verified; next review actor-change/reset and remaining cross-owner integration findings; changes await commit approval | All11 make check gates pass: Python1826/24skip,data94,web273/3skip,Black261,boundaries/contracts/types/build,wrapper35,PostgreSQL18.6 lifecycle,Gitleaks; focused SQL/HTTP20 pass | Aditya verified both gate states2026-10-26 05:03:15UTC: temporary sees restriction/no form, IISc sees form; prior real provider smoke verified; owner/peer/live acceptance pending | `task/id-ready-local-hardening`, integrated overnight head `2a55c6bd562099ab4c94cefcf2eff99b6e4ee6f0`; implementation source `a76d3e81e1770bd01d4a7ffcddae2307b1c24872`; [hosted runtime and ingress audit](../evaluation/identity/integration.md#additional-runtime-activation-and-ingress-gate--offline-source-audit); [cross-owner handoff](../evaluation/identity/cross-owner-review.md) | Identity DB login/grants/URL; Listings URL and available DB; exact secret provisioning and RDS window; hosted ingress/IAM/image; real provider/device checks; owner review/CI; Step14 outside scope | 2026-10-26 05:05:19 UTC |
+| ID-01 | A | in progress | Step12 marketplace actor reset, seller UX, saved/terminal-session checks, and synthetic routed account workflows implemented; full local gate passed; review/commit publication and owner reviews next | All11 `make check` gates pass: Python1830/24skip, data94, web289/3skip, Black261, boundaries/contracts/types/build, wrapper35, PostgreSQL18.6 lifecycle, Gitleaks8.30.1 | Aditya verified lifecycle/seller/Wanted UI states2026-10-26 05:17:22UTC and separately authorized narrow Listings navigation guards; new synthetic workflow tests are available for review | `task/id-ready-local-hardening`, current source to be committed/pushed per Aditya's request; prior integrated overnight head `2a55c6bd562099ab4c94cefcf2eff99b6e4ee6f0`; [hosted runtime and ingress audit](../evaluation/identity/integration.md#additional-runtime-activation-and-ingress-gate--offline-source-audit); [cross-owner handoff](../evaluation/identity/cross-owner-review.md) | Identity DB login/grants/URL; Listings URL and available DB; exact secret provisioning and RDS window; hosted ingress/IAM/image; real provider/device checks; owner review/CI; Step14 outside scope | 2026-10-26 05:42:01 UTC |
 | LI-01 | B | in progress | Finish the remaining Step 7 browser states and current-head Step 11 checks/reviews; prepare a progress PR without claiming LI-CORE. Steps 12–13 remain integration-gated. | Steps 1–6 and 8–10 implemented and locally checked; Step 7 partial (create/detail/edit/My Listings/gallery). | Suraj verified the multi-image edit/gallery checkpoint, seller-only selected-buyer visibility, and Step 10. No LI-01 phone-device result is claimed. | domain/listings at 6ffbe0b; focused Listings suite: 61 passed, one database-only test skipped outside the wrapper; disposable PostgreSQL workflow passed; current worktree `make check` passed 2026-10-23 (573 Python, 63 data, 42 web tests; remaining contract, type, boundary, database, safety, formatting, lint, and build checks passed). | LI-CORE not accepted. Remaining Step 7 states; Step 11 query-plan, current aggregate, and affected-owner review; native schema check; five pre-existing backend boundary findings; real Identity, Conversations, storage, and Search integration; Steps 12–13. | 2026-10-23 10:38:31 UTC |
 | LI-02 | B | in progress | Step 12 demo is tested and stopped; record final evidence, then begin intake of the Search owner's PR under the review workflow. | Steps 1–11 and 1.5 verified; Step 12 ran on ECS and was tested on desktop/mobile. Read-only app checks found the synthetic listing and its S3 image; teardown is complete. | User approved and applied teardown plan `3703bb7b23405a5a23a1ac6c39fa8870e682dddf3a1a8272183f4642f8f0db81` (0 add, 1 change to LI-02 bucket CORS, 20 LI-02 deletes). Post-stop inventory confirms disposable RDS/ALB/service/host/root volume/run S3 objects/URL parameter/log streams absent; shared RDS is stopped, shared ECS cluster remains, LI-02 ASG desired 0/no instances. Two run ECR images are retained (105,624,604 bytes total) per user direction. | `task/li-02-isolated-runtime` at `f0bf6c6`; earlier 11 focused tests, Black, Python compilation, Terraform fmt/validate, CLI help and diff checks. Start plans: infrastructure `a2b8cbeaa6cc4fc2d13ff8c8696cfa133d8134280de89f719e0d6f2b91668f55`; app start `b6a3fbd4812c965a5830780f337997d13b4b362c7eb1a73f2b3e70f5946b5bd4`. Stop-path corrections are currently uncommitted in `scripts/li02-demo`, `infra/terraform/domains/listings/test/database_tasks.tf`, both LI-02 operator guides, and this work log. `git diff --check` passed; no tests rerun. Existing untracked `data/runs/` and `database/migrations.zip` remain untouched. | Compute/ingress/disposable-database charges from the demo have ended. Retained run images add about 101 MiB of ECR storage; Step 4 bucket/IAM/log group and shared VPC/NAT/ECS/RDS remain. No manual RDS snapshot remains. | 2026-10-25 09:29:55 UTC |
 | SE-01 | Mohit (C); peer Suraj (B), Identity review | in progress | Local create-to-Keyword-and-Hybrid flow and browser walkthrough verified; formal acceptance remains pending | Test-only browser demo binds the same fixed synthetic Identity for writes/browse and can opt into the real helper, worker, pipeline bootstrap and Hybrid reader; automatic new-listing vector generation was observed | Suraj verified the local command/API/proxy flow and subsequent browser walkthrough | Search PR #11 worktree `task/search-evidence-reduction` at `864e53b`; new listing `194a32d4-64bb-491b-b4ec-68403e26f7f3` produced one title and one description vector (384 dimensions each), then matched in both modes through API and Vite proxy; session `/tmp/clip-listings-browser-v6e1f01t`; UI `http://127.0.0.1:5173/` | Formal SE-CORE/DATA-READY and final NFR/hosted-CI acceptance remain outside this merge step | 2026-10-25 14:38:24 UTC |
@@ -558,7 +558,83 @@ findings are reported rather than silently implemented across owners.
 Reservation released2026-10-26 05:05:19UTC after all checks; human gate states
 verified. Owner/peer review and commit approval remain pending.
 
+## ID-01 Step12 account lifecycle integration reservation
+
+Writer: Aditya(A), `task/id-ready-local-hardening`, started2026-10-26 05:10:57UTC.
+User authorized clearing private marketplace state on logout/account switch,
+remaining seller UX gating, and fuller saved/expired/revoked integration checks.
+Reserve Identity public state boundary/gate/exports, shared RoutePage composition,
+ListingEditPage/MyListingsPage sales slot, AppShell seller-only navigation, owned
+Identity integration tests and shared TS transport test, map/audit/log. Keep
+sign-in/callback outside the reset to preserve redirects. No Listings/Search
+private component or production domain behavior changes; B/C affected review
+remains required. Cloud/provider/migration/push/commit gates remain separate.
+
+Scope expanded by Aditya's explicit separate approval to narrow unmount guards in
+Suraj-owned CreateListing.tsx/ListingEdit.tsx and matching lifecycle tests. Save
+payloads, validation, idempotency and server outcome are unchanged; only stale
+client navigation/state updates are suppressed. B affected review remains pending.
+Reservation released2026-10-26 05:22:07UTC after implementation and checks.
+
 ## Dated history entries
+
+### ID-01 — Step12 marketplace account lifecycle and real saved integration — 2026-10-26 05:22:07 UTC
+
+Aditya authorized the previously explained pending fixes. Added public
+`AccountStateBoundary.tsx`/Identity export; shared `ScaffoldPages.tsx` scopes
+marketplace children to current actor/class, and uses the seller gate for edit
+and sale-management tabs. Missing/expired/unavailable sessions unmount private
+views. Account changes remount children and run their cleanup; stable same-actor
+refreshes preserve drafts. Sign-in/callback/not-found are excluded; actual callback
+page StrictMode test still exchanges once. AppShell hides new/edit seller links
+unless the regular session is current. Temporary Wanted management stays available.
+No private Search implementation or backend authorization rule changed.
+
+Focused actual-page tests cover private Listings/Wanted/Saved content after logout
+and direct actor switches, stable refresh, actual Wanted draft retention/reset,
+late saved response discard, expiry, failed session verification and temporary
+edit/navigation/Wanted behavior. Aditya verified the requested visible states at
+2026-10-26 05:17:22UTC. Further review found create/edit saves could navigate after
+unmount. Aditya separately authorized narrow changes in Suraj-owned
+`CreateListing.tsx`/`ListingEdit.tsx`; mounted refs suppress only late navigation,
+error and saving-state updates. Four actual form/validation/CSRF/router tests
+verify mounted success still navigates and fully parsed late success does not;
+the photo-picker boundary alone is controlled. No server cancellation/replay or
+new idempotency behavior is claimed. Suraj review remains required.
+
+Expanded actual TS/HTTP/SQL transport test now checks regular and temporary saved
+CRUD, pair-idempotent duplicate save, actor isolation, unavailable-item visibility,
+idempotent removal and empty final saved table. Four real-cookie regular/temporary
+expired/revoked cases deny checked Listings/Search reads and Saved/Wanted writes
+without domain-row mutations. Focused SQL/HTTP17passed. A new route-level synthetic
+workflow suite covers temporary registration/OTP, logout/login, blocked seller
+form/no catalogue request, continued Wanted Requests access, and regular-session
+access to the seller form. Every request is intercepted in-process and stays under
+`/api/`; no provider or mailbox is contacted. Full `make check` passed all11gates
+2026-10-26 05:42:01UTC: Python1830/24skip, data94, web289/3skip, Black261,
+boundaries/contracts/types/build, wrapper35, PostgreSQL18.6 lifecycle and
+Gitleaks8.30.1. An initial test-only TypeScript issue was corrected before this
+passing run. Docs/map/audit updated; original private-state and seller-UX gaps are
+resolved locally. Affected-owner review, hosted checks, cloud/device/full Step14
+acceptance remain pending. Conversations implementation and actual sharing/
+recipient worker remain.
+
+### ID-01 — Step12 routed workflow coverage and full local gate — 2026-10-26 05:42:01 UTC
+
+Added `apps/web/tests/identity-app-workflows.test.tsx`. It composes the real
+Identity provider, sign-in UI, route pages, seller gate and Wanted management with
+synthetic HTTP responses. The temporary journey registers with a synthetic OTP,
+logs out and back in, confirms sale-listing creation stays blocked without loading
+seller data, and confirms Wanted Requests remain usable. A synthetic regular
+session reaches the seller form; no Microsoft provider or email delivery is
+invoked. Existing pytest integration covers underlying local cookie/SQL
+authorization, saved/Wanted writes, temporary seller denial, and expired/revoked
+account behavior, so those scenarios were not duplicated. Final `make check`
+passed all11gates: Python1830/24skip, data94, web289/3skip, Black261,
+boundaries/contracts/types/build, wrapper35, PostgreSQL18.6 lifecycle and
+Gitleaks8.30.1. A test-only TS issue caught in the first run was corrected before
+the final passing run. The requested commit/push follows; affected-owner and
+independent peer reviews remain separate gates.
 
 ### ID-01 — Step12 seller gate and cross-domain connection audit — 2026-10-26 05:01:46 UTC
 

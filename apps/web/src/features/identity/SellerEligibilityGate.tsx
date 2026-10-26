@@ -7,22 +7,23 @@ import { useIdentity } from './session';
  * Server authorization remains authoritative on every mutation. Actor keys discard
  * unsaved form/image state on account switches; no feature-private import is used.
  */
-export function SellerEligibilityGate({ children }: PropsWithChildren) {
+export function SellerEligibilityGate({ children, action = 'create' }: PropsWithChildren<{ action?: 'create' | 'manage' }>) {
+  const verb = action === 'create' ? 'create' : 'manage';
   const { status, user, refresh } = useIdentity();
   if (status === 'loading') return <p role="status">Checking seller eligibility…</p>;
   if (status === 'unavailable')
     return (
       <section>
-        <p role="alert">We could not check your account. Try again before creating a listing.</p>
+        <p role="alert">We could not check your account. Try again before managing sale listings.</p>
         <Button onClick={() => { void refresh(); }}>Check account again</Button>
       </section>
     );
   if (status !== 'ready' || !user || Date.parse(user.valid_until) <= Date.now())
-    return <p><Link to="/sign-in">Sign in with your IISc Microsoft account</Link> to create a sale listing.</p>;
+    return <p><Link to="/sign-in">Sign in with your IISc Microsoft account</Link> to {verb} sale listings.</p>;
   if (user.account_class !== 'regular')
     return (
       <section>
-        <p>Temporary accounts cannot create sale listings. Sign in with an eligible IISc Microsoft account to sell.</p>
+        <p>Temporary accounts cannot {verb} sale listings. Sign in with an eligible IISc Microsoft account to sell.</p>
         <Link to="/">Browse the marketplace</Link>
       </section>
     );

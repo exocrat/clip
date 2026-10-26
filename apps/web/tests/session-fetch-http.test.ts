@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { identityApi } from '../src/features/identity/api';
 import { changeListingAvailability } from '../src/features/listings/listingsApi';
-import { createWanted, editWanted, ownWanted } from '../src/features/search/wantedApi';
+import { createWanted, editWanted, ownWanted, saveListing, readSaved, unsaveListing } from '../src/features/search/wantedApi';
 
 /** Python owns the loopback server/SQL and supplies only transient synthetic cookies.
  * The bridge emulates browser Origin/cookie handling and the Vite /api rewrite.
@@ -38,9 +38,26 @@ describe.skipIf(!raw)('real cookie/CSRF client-to-shared-API integration', () =>
     const edited = await editWanted(wanted.request_id, { expected_revision: wanted.revision, title: 'Synthetic browser updated', operation_id: crypto.randomUUID() }, signal());
     expect(edited.title).toBe('Synthetic browser updated');
     expect((await ownWanted(1, signal())).items).toHaveLength(1);
+    // Both account classes own independent saved references to the same target.
+    const saved = await saveListing(config.listingId, crypto.randomUUID(), signal());
+    const repeated = await saveListing(config.listingId, crypto.randomUUID(), signal());
+    expect(repeated).toEqual(saved);
+    expect((await readSaved(1, signal())).items).toHaveLength(1);
+    cookie = config.temporaryCookie;
+    expect((await readSaved(1, signal())).items).toHaveLength(0);
+    await saveListing(config.listingId, crypto.randomUUID(), signal());
+    expect((await readSaved(1, signal())).items).toHaveLength(1);
+    await unsaveListing(config.listingId, signal());
+    expect((await readSaved(1, signal())).items).toHaveLength(0);
+    cookie = config.regularCookie;
+    expect((await readSaved(1, signal())).items).toHaveLength(1);
     const listing = await changeListingAvailability(config.listingId, { expected_revision: 1, availability: 'unavailable', available_until: null, operation_id: crypto.randomUUID() });
     expect(listing.availability).toBe('unavailable');
     expect('revision' in listing).toBe(false);
+    expect((await readSaved(1, signal())).items[0].listing?.availability).toBe('unavailable');
+    await unsaveListing(config.listingId, signal());
+    await unsaveListing(config.listingId, signal());
+    expect((await readSaved(1, signal())).items).toHaveLength(0);
     cookie = config.temporaryCookie;
     expect((await createWanted({ ...fields, operation_id: crypto.randomUUID() }, signal())).title).toBe(fields.title);
     await expect(changeListingAvailability(config.listingId, { expected_revision: 2, availability: 'available', available_until: null, operation_id: crypto.randomUUID() })).rejects.toMatchObject({ status: 403 });

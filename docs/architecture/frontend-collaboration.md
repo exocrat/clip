@@ -134,8 +134,8 @@ it is not an additional product route.
 | `/` | `DiscoveryPage` | `search/SaleDiscovery` renders reviewed public sale summaries, displays the first attached photo via Listings' public `ListingImagePreview`, and links to B's detail route; `search/WantedBrowse` renders open requests | C — SE-01/SE-02; B — public summary/image delivery integration |
 | `/listings/new` | `ListingCreatePage` | public `identity/SellerEligibilityGate` wraps `listings/CreateListing`; mounts only for a current regular session, blocks temporary/loading/missing/expired/unavailable states | B — LI-01/LI-02; A — ID-01 integration |
 | `/listings/:listingId` | `ListingDetailPage` | `listings/ListingDetail` composes Search's `SaveListingAction`, which checks the caller's saved list and prevents a repeat Save, plus the `conversations/ConversationsPlaceholder` start/reopen action | B — LI-01/LI-02; C — SE-02; D — CN-01 integration |
-| `/listings/:listingId/edit` | `ListingEditPage` | public `listings/ListingEdit`; regular-only UI eligibility wrapper still pending, server enforces seller/owner checks | B — LI-01/LI-02 |
-| `/my/listings` | `MyListingsPage` | Local view switch; public `listings/MyListings` and `search/MyWantedRequests` with draft matching; actor-switch state reset and Conversations integration pending | B — LI-01/LI-02; C — SE-02; D — CN-02 integration |
+| `/listings/:listingId/edit` | `ListingEditPage` | public `identity/SellerEligibilityGate` wraps `listings/ListingEdit`; server enforces regular seller/owner checks | B — LI-01/LI-02 |
+| `/my/listings` | `MyListingsPage` | Local view switch; public `listings/MyListings` and `search/MyWantedRequests` with draft matching; public Identity account boundary resets private state on actor changes; Conversations integration pending | B — LI-01/LI-02; C — SE-02; D — CN-02 integration |
 | `/saved` | `SavedListingsPage` | `search/SavedListings` uses the same `SaleListingCard` as Discover, including the Listings public photo renderer, current availability and Remove action; retired records remain content-free | C — SE-02; B — LI-01/LI-02 integration |
 | `/my/conversations` | `ConversationsPage` | `conversations/ConversationsPlaceholder` contains `listings/ListingsPlaceholder` context | D — CN-01/CN-02; B — LI-01 integration |
 | `/my/conversations/:conversationId` | `ConversationDetailPage` | `conversations/ConversationsPlaceholder` contains listing selection/availability and identity contact-option placeholders | D — CN-01/CN-02; B — LI-01 and A — ID-01 integration |
@@ -397,3 +397,33 @@ isolated demo compatibility and proves no real Identity acceptance for that mode
 Frontend/backend checks and human regular/temporary page walkthrough are recorded
 in the work log; owner review and live cloud/device checks remain separate.
 See [connection audit](../evaluation/identity/cross-owner-review.md#identity-connection-audit--2026-10-26).
+
+### ID-01 Step12 marketplace account lifecycle integration — 2026-10-26
+
+After human authorization, Aditya(A) is the bounded shared composition writer for
+public AccountStateBoundary, RoutePage integration, edit/sale-management seller
+gates and AppShell's seller-only navigation. No Listings/Search private component
+is edited. B/C affected review remains required. Marketplace children unmount when
+session ends, expires or cannot be verified; keys by actor/class reset private
+content/drafts and invoke each feature's abort/cleanup on account changes. Stable
+same-actor refreshes preserve state. Create/edit pages use their seller gate;
+sign-in/callback and not-found remain outside account-scoped remounting. A
+StrictMode callback test uses the real page to ensure accepting a login does not
+restart its consumed callback. No API permission or backend policy is weakened.
+
+The Sale Listings tab is regular-only; the Wanted Requests tab remains available
+to temporary users. New/edit navigation links are hidden unless the current
+regular session is valid. Direct URLs retain the same UI gate and server guards.
+Focused actual Listings/Search page tests cover logout/actor reset, stable refresh,
+late-response discard, expiry, dependency failure and Wanted draft preservation/
+removal. Actual TS/HTTP/SQL tests cover saved CRUD/idempotency/account isolation/
+unavailable records, and expired/revoked sessions are denied for checked domain
+reads/writes. Full Step14/Conversations/cloud/phone acceptance remains pending.
+
+Explicit follow-up approval extended this bounded integration to Listings' private
+CreateListing/ListingEdit components: mounted refs prevent an old completed save
+from navigating/updating UI after account-scoped unmount. B retains review; no
+save payload/validation/retry/idempotency/server behavior changes. Four controlled
+form/router cases verify mounted navigation and late-completion suppression.
+Aditya verified the requested seller/logout/Wanted states; exact checks/results
+are in the work log. Writer reservation released2026-10-26 05:22:07UTC.

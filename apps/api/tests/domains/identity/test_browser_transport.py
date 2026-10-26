@@ -151,6 +151,9 @@ def test_real_browser_transport_over_loopback(identity_runtime, signed_tokens):
                 "SELECT count(*) FROM search.wanted_requests"
             ).fetchone() == (2,)
             assert c.execute(
+                "SELECT count(*) FROM search.saved_listings"
+            ).fetchone() == (0,)
+            assert c.execute(
                 "SELECT revision,availability FROM listings.sale_listings WHERE id=%s",
                 (listing,),
             ).fetchone() == (2, "unavailable")

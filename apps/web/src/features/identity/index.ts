@@ -9,3 +9,5 @@ export { ContactsEditor } from './ContactsEditor';
 export { MicrosoftCallback } from './MicrosoftSignIn';
 
 export { SellerEligibilityGate } from './SellerEligibilityGate';
+
+export { AccountStateBoundary } from './AccountStateBoundary';

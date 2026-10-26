@@ -293,12 +293,13 @@ describe('Microsoft callback UI', () => {
   it('handles StrictMode with one exchange and no displayed claims/assertions', async () => {
     marker();
     fetcher((path) => (path === '/api/me' ? response({}, 401) : response(view)));
-    const { IdentityProvider, MicrosoftCallback } = await import('../src/features/identity');
+    const { IdentityProvider } = await import('../src/features/identity');
+    const { AuthCallbackPage } = await import('../src/pages/ScaffoldPages');
     render(
       <StrictMode>
         <MemoryRouter>
           <IdentityProvider>
-            <MicrosoftCallback />
+            <AuthCallbackPage />
           </IdentityProvider>
         </MemoryRouter>
       </StrictMode>,

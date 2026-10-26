@@ -390,3 +390,76 @@ def test_real_session_reaches_accepted_search_routes(
             assert "no-store" in result.headers["cache-control"]
         # Bindings are app-specific; unconfigured default remains unavailable.
         assert browser.get("/me").json()["account_class"] == account_class
+
+
+@pytest.mark.parametrize("account_class", ["regular", "temporary"])
+@pytest.mark.parametrize("terminal", ["expired", "revoked"])
+def test_marketplace_saved_and_wanted_reject_terminal_real_sessions(
+    identity_runtime, signed_tokens, account_class, terminal
+):
+    """Real cookies and current state deny cross-domain reads/writes before SQL work.
+
+    No caller header, fake eligibility service or real provider is used. The
+    controlled signer/mail only establishes real fixture sessions; terminal state
+    uses the owning Identity clock/revocation operation.
+    """
+    from uuid import UUID
+
+    state = identity_runtime
+    application, _, _ = compose(state, signed_tokens)
+    with TestClient(
+        application, base_url=ORIGIN, client=("192.0.2.27", 50000)
+    ) as browser:
+        account = (
+            regular(browser, signed_tokens)
+            if account_class == "regular"
+            else temporary(browser, state)
+        )
+        assert browser.get("/me/saved-listings").status_code == 200
+        csrf = browser.get("/auth/csrf").json()["csrf_token"]
+        headers = HEADERS | {"X-CSRF-Token": csrf}
+        if terminal == "expired":
+            state.clock[0] += timedelta(days=15)
+        else:
+            state.service.revoke_account(UUID(account["user_id"]))
+        for path in (
+            "/listings",
+            "/wanted-requests",
+            "/me/wanted-requests",
+            "/me/saved-listings",
+            "/me/listings",
+        ):
+            assert browser.get(path).status_code == 401, path
+        target = str(uuid4())
+        assert (
+            browser.put(
+                "/me/saved-listings/" + target,
+                headers=headers,
+                json={"operation_id": str(uuid4())},
+            ).status_code
+            == 401
+        )
+        assert (
+            browser.delete("/me/saved-listings/" + target, headers=headers).status_code
+            == 401
+        )
+        assert (
+            browser.post(
+                "/wanted-requests",
+                headers=headers,
+                json={
+                    "title": "Synthetic denied request",
+                    "description": "Owned integration fixture",
+                    "category_code": "books",
+                    "operation_id": str(uuid4()),
+                },
+            ).status_code
+            == 401
+        )
+    with state.connect() as c:
+        assert c.execute("SELECT count(*) FROM search.saved_listings").fetchone() == (
+            0,
+        )
+        assert c.execute("SELECT count(*) FROM search.wanted_requests").fetchone() == (
+            0,
+        )
