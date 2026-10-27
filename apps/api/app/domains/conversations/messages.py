@@ -18,6 +18,7 @@ from app.contracts.domain_types import (
     EntryPage,
     EntryQuery,
     MessageRequest,
+    ContactShareRequest,
     ReadAcknowledgement,
     ReadState,
 )
@@ -231,18 +232,55 @@ class PostgresMessageOperations:
         conversation_id: UUID,
         request: MessageRequest,
     ) -> MessageWriteResult:
+        """Write one encrypted text/control entry and replay exact live retries."""
+        return await self._submit_entry(caller, conversation_id, request, "message")
+
+    async def submit_contact_share(
+        self,
+        caller: CallerContext,
+        conversation_id: UUID,
+        request: ContactShareRequest,
+    ) -> MessageWriteResult:
+        """Persist an encrypted contact share as an ordered participant write."""
+        return await self._submit_entry(
+            caller, conversation_id, request, "contact_share"
+        )
+
+    async def _submit_entry(
+        self,
+        caller: CallerContext,
+        conversation_id: UUID,
+        request: MessageRequest | ContactShareRequest,
+        requested_kind: str,
+    ) -> MessageWriteResult:
         """Write one opaque entry atomically and replay only exact live retries."""
         caller.require_current()
+        if requested_kind == "contact_share" and (
+            request.operation_id.version != 4
+            or request.envelope.envelope_version != 2
+            or request.envelope.sdk_message_type not in {"ciphertext", "prekey_bundle"}
+            or request.envelope.sdk_client_message_id != str(request.operation_id)
+            or request.envelope.recovery_for_entry_id is not None
+            or request.envelope.sender_key_version is None
+            or request.envelope.recipient_key_version is None
+        ):
+            raise PublicError(
+                ERRORS[422], (FieldError("body", "invalid_contact_share"),)
+            )
         payload = self._payload(request.envelope)
         recovery = self._recovery_identity(request.envelope)
         recovery_kind = recovery[0] if recovery is not None else None
         recovery_family_id = recovery[1] if recovery is not None else None
         recovery_attempt = recovery[2] if recovery is not None else None
         kind = (
-            "protocol_control"
-            if recovery is not None
-            or request.envelope.sdk_message_type == "retry_request"
-            else "message"
+            requested_kind
+            if requested_kind == "contact_share"
+            else (
+                "protocol_control"
+                if recovery is not None
+                or request.envelope.sdk_message_type == "retry_request"
+                else "message"
+            )
         )
         try:
             async with self._pool.connection() as connection:
@@ -425,6 +463,11 @@ class PostgresMessageOperations:
                             payload,
                         ),
                     )
+                    if kind == "contact_share":
+                        await connection.execute(
+                            "INSERT INTO conversations.contact_shares (entry_id) VALUES (%s)",
+                            (new_entry_id,),
+                        )
                     if kind == "message":
                         await self._upsert_unread_intent(
                             connection,

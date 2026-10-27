@@ -42,6 +42,12 @@ export type ConversationMessageContext = {
   text: string;
 };
 
+export type OwnContactValues = Partial<Record<'email' | 'phone' | 'upi_id', string>>;
+export type ConversationContactShareContext = Omit<ConversationMessageContext, 'kind' | 'text'> & {
+  kind: 'contact_share';
+  contacts: OwnContactValues;
+};
+
 export type ConversationEnvelopeRoute = {
   conversation_id: string;
   operation_id: string;
@@ -53,6 +59,7 @@ export type ConversationEnvelopeRoute = {
   sender_key_version: number;
   recipient_key_version: number;
   client_timestamp_ms: number;
+  entry_kind?: 'message' | 'contact_share';
 };
 
 /** The application relay uses this operation-id map to bind SDK sends to CLIP threads. */
@@ -71,6 +78,10 @@ export type SendConversationMessage = Omit<
   sender_key_version: number;
   recipient_key_version: number;
   text: string;
+};
+
+export type SendConversationContactShare = Omit<SendConversationMessage, 'text'> & {
+  contacts: OwnContactValues;
 };
 
 export type ReceivedConversationMessage = {
@@ -222,6 +233,49 @@ export function decodeConversationMessage(
     throw new ConversationCryptoError('Decrypted message context does not match its envelope');
   }
   return value;
+}
+
+export function encodeConversationContactShare(context: ConversationContactShareContext): string {
+  const contacts = context.contacts;
+  const keys = Object.keys(contacts);
+  if (context.version !== 1 || context.kind !== 'contact_share' || !context.conversation_id ||
+    !context.sender_user_id || !context.recipient_user_id || context.sender_user_id === context.recipient_user_id ||
+    !Number.isSafeInteger(context.sender_key_version) || context.sender_key_version < 1 ||
+    !Number.isSafeInteger(context.recipient_key_version) || context.recipient_key_version < 1 ||
+    !Number.isSafeInteger(context.client_timestamp_ms) || context.client_timestamp_ms < 0 ||
+    keys.length < 1 || keys.some((key) => !['email', 'phone', 'upi_id'].includes(key)) ||
+    keys.some((key) => typeof contacts[key as keyof OwnContactValues] !== 'string' ||
+      !contacts[key as keyof OwnContactValues]?.trim() || (contacts[key as keyof OwnContactValues]?.length ?? 0) > 320)) {
+    throw new ConversationCryptoError('Invalid contact share');
+  }
+  return JSON.stringify(context);
+}
+
+export function decodeConversationContactShare(
+  plaintext: string,
+  expected: Omit<ConversationContactShareContext, 'version' | 'kind' | 'contacts'>,
+): OwnContactValues {
+  let value: unknown;
+  try { value = JSON.parse(plaintext); }
+  catch { throw new ConversationCryptoError('Encrypted contact details have an invalid format'); }
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new ConversationCryptoError('Encrypted contact details have an unsupported format');
+  }
+  const item = value as Partial<ConversationContactShareContext>;
+  if (item.version !== 1 || item.kind !== 'contact_share' || item.conversation_id !== expected.conversation_id ||
+    item.sender_user_id !== expected.sender_user_id || item.recipient_user_id !== expected.recipient_user_id ||
+    item.sender_key_version !== expected.sender_key_version || item.recipient_key_version !== expected.recipient_key_version ||
+    item.client_timestamp_ms !== expected.client_timestamp_ms || !item.contacts || typeof item.contacts !== 'object' ||
+    Array.isArray(item.contacts)) {
+    throw new ConversationCryptoError('Encrypted contact details do not match this conversation');
+  }
+  const fields = item.contacts as Record<string, unknown>;
+  const keys = Object.keys(fields);
+  if (keys.length < 1 || keys.some((key) => !['email', 'phone', 'upi_id'].includes(key)) ||
+    keys.some((key) => typeof fields[key] !== 'string' || !fields[key].trim() || fields[key].length > 320)) {
+    throw new ConversationCryptoError('Encrypted contact details have invalid fields');
+  }
+  return { ...fields } as OwnContactValues;
 }
 
 function isMessageContext(value: unknown): value is ConversationMessageContext {
@@ -471,6 +525,7 @@ export class ConversationCrypto {
       sender_key_version: request.sender_key_version,
       recipient_key_version: request.recipient_key_version,
       client_timestamp_ms: request.client_timestamp_ms,
+      entry_kind: 'message',
     };
     const payload = encodeConversationMessage({
       version: 1,
@@ -484,16 +539,49 @@ export class ConversationCrypto {
       text: request.text,
     });
 
-    // Register before SDK send: the relay callback resolves the CLIP route by operation ID.
+    return this.sendEncrypted(route, payload);
+  }
+
+  async sendContactShare(request: SendConversationContactShare): Promise<SendResult> {
+    if (this.pendingIdentityChanges.has(request.recipient_user_id) ||
+      this.establishedPeerVersions.get(request.recipient_user_id) !== request.recipient_key_version) {
+      throw new ConversationCryptoError('Establish a trusted participant session before sharing contacts');
+    }
+    const route: ConversationEnvelopeRoute = {
+      conversation_id: request.conversation_id,
+      operation_id: request.operation_id,
+      protocol_id: CLIP_PROTOCOL_ID,
+      protocol_version: CLIP_PROTOCOL_VERSION,
+      envelope_version: CLIP_ENVELOPE_VERSION,
+      sender_user_id: this.client.userId,
+      recipient_user_id: request.recipient_user_id,
+      sender_key_version: request.sender_key_version,
+      recipient_key_version: request.recipient_key_version,
+      client_timestamp_ms: request.client_timestamp_ms,
+      entry_kind: 'contact_share',
+    };
+    const payload = encodeConversationContactShare({
+      version: 1,
+      conversation_id: route.conversation_id,
+      kind: 'contact_share',
+      sender_user_id: route.sender_user_id,
+      recipient_user_id: route.recipient_user_id,
+      sender_key_version: route.sender_key_version,
+      recipient_key_version: route.recipient_key_version,
+      client_timestamp_ms: route.client_timestamp_ms,
+      contacts: request.contacts,
+    });
+    return this.sendEncrypted(route, payload);
+  }
+
+  private async sendEncrypted(route: ConversationEnvelopeRoute, plaintext: string): Promise<SendResult> {
     this.routes.register(route);
-    const result = await this.client.send(route.recipient_user_id, payload, {
+    const result = await this.client.send(route.recipient_user_id, plaintext, {
       clientMessageId: route.operation_id,
       timestamp: route.client_timestamp_ms,
     });
-    if (
-      result.clientMessageId !== route.operation_id ||
-      (result.clientTimestamp !== undefined && result.clientTimestamp !== route.client_timestamp_ms)
-    ) {
+    if (result.clientMessageId !== route.operation_id ||
+      (result.clientTimestamp !== undefined && result.clientTimestamp !== route.client_timestamp_ms)) {
       throw new ConversationCryptoError('OpenE2EE send identity differs from the CLIP operation');
     }
     return result;
@@ -564,6 +652,60 @@ export class ConversationCrypto {
       sender_key_version: decoded.sender_key_version,
       recipient_key_version: decoded.recipient_key_version,
       text: decoded.text,
+    };
+    await history.put(message);
+    await this.client.completeReceive(outcome.messageId);
+    return message;
+  }
+
+  async receiveContactShare(
+    context: ConversationReceiveContext,
+    history: ConversationHistoryStore,
+  ): Promise<ReceivedConversationMessage | ReceiveOutcome> {
+    const currentUserId = this.client.userId;
+    if (context.envelope.protocol_id !== CLIP_PROTOCOL_ID ||
+      context.envelope.protocol_version !== CLIP_PROTOCOL_VERSION ||
+      context.envelope.envelope_version !== CLIP_ENVELOPE_VERSION ||
+      !['ciphertext', 'prekey_bundle'].includes(context.envelope.sdk_message_type) ||
+      context.envelope.sender_key_version !== context.expected_sender_key_version ||
+      context.envelope.recipient_key_version !== context.expected_recipient_key_version ||
+      !context.envelope.sdk_client_message_id || context.envelope.recovery_for_entry_id != null) {
+      throw new ConversationCryptoError('Encrypted contact-share metadata is unsupported or inconsistent');
+    }
+    const payload = decodeCanonicalBase64(context.envelope.payload_base64, 'Encrypted payload');
+    if (atob(payload).length > MAX_CIPHERTEXT_BYTES) throw new ConversationCryptoError('Encrypted payload exceeds the supported size');
+    const outcome = await this.client.processIncomingEnvelope({
+      id: context.message_id,
+      clientMessageId: context.envelope.sdk_client_message_id,
+      senderUserId: context.sender_user_id,
+      senderDeviceId: context.sender_device_id,
+      ciphertext: payload,
+      timestamp: context.envelope.client_timestamp_ms,
+      messageType: context.envelope.sdk_message_type,
+    });
+    if (outcome.kind !== 'processed') return outcome;
+    let contacts: OwnContactValues;
+    try {
+      contacts = decodeConversationContactShare(outcome.plaintext, {
+        conversation_id: context.conversation_id,
+        sender_user_id: context.sender_user_id,
+        recipient_user_id: currentUserId,
+        sender_key_version: context.expected_sender_key_version,
+        recipient_key_version: context.expected_recipient_key_version,
+        client_timestamp_ms: context.envelope.client_timestamp_ms,
+      });
+    } catch (error) {
+      await this.client.completeReceive(outcome.messageId);
+      throw error;
+    }
+    const message: ReceivedConversationMessage = {
+      message_id: context.message_id,
+      sequence: context.sequence,
+      sender_user_id: context.sender_user_id,
+      client_timestamp_ms: context.envelope.client_timestamp_ms,
+      sender_key_version: context.expected_sender_key_version,
+      recipient_key_version: context.expected_recipient_key_version,
+      text: JSON.stringify(contacts),
     };
     await history.put(message);
     await this.client.completeReceive(outcome.messageId);

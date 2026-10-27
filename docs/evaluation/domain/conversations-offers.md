@@ -22,7 +22,7 @@ There is no unresolved offer-status or seller-selection product decision.
 | Seller selection | Listings owns setting, clearing and replacing an eligible conversation buyer, including buyers without offers. Setting a buyer now also atomically marks the listing unavailable; clearing does not reopen it. Selected buyer is owner-only data. |
 | Seller overview | Group by owned origin, filter by partner/origin/offer; retain no-offer threads. Default last activity DESC/ID DESC; amount sort places missing offers last with the same ties. Grouping must respect bounded pagination rather than claim a page is the complete listing inventory. See [combined registry](../../../contracts/combined.md#conversations-http-operations). |
 | Contact sharing | Confirm membership first, then Identity's trusted actor/conversation/confirmed-field scope. Return only selected, still-present own values to the client for encryption. Store field labels with values inside ciphertext. See [Identity sharing boundary](../../decisions/identity-contact-sharing-and-cleanup.md). |
-| Retention | Offer notes/revisions share the 90-day inactivity policy. Each contact share has its own 30-day payload/label lifetime. Content-free references survive; the new 30-day cleanup mechanism still requires its concrete Step8 review. See [existing cleanup mechanism](../../decisions/conversation-content-cleanup.md). |
+| Retention | Offer notes/revisions share the 90-day inactivity policy. Each contact share has its own 30-day payload/label lifetime. Content-free references survive; the Step8 cleanup implementation is covered in the [cleanup decision](../../decisions/conversation-content-cleanup.md). |
 | Wanted Requests | Response threads support discussion and contact sharing. Structured offers remain Sale Listing only. |
 
 ## Existing implementation and gaps
@@ -34,8 +34,8 @@ There is no unresolved offer-status or seller-selection product decision.
 | Selection | Listings owns the HTTP operation, revision/idempotency handling and participant check through the concrete Conversations provider. | Step5 atomically selects the buyer and marks the listing unavailable; dates are preserved and clearing does not reopen. Rahul verified the updated local browser flow; affected-owner review remains pending. |
 | Availability | Listings has owner-authorized PUT availability; the public feature export now supplies the seller inbox action. | Step6 automated checks and Rahul's local browser checkpoint pass; affected-owner review remains pending. |
 | Inbox | Conversations queries support membership-scoped origin/partner/offer filters and stable amount ordering; the frontend now consumes those queries and groups only the returned page. | Origin and partner names are not in the current summary contract, so the inbox shows shortened IDs. A reviewed public display-context interface remains a separate B/C/Identity integration; no feature-private lookup is used. |
-| Contacts | Identity implements public options/selected-own-contact providers and trusted disclosure scopes; Conversations now implements member-authorized options/preparation with explicit UI confirmation. | Step7 real SQL and cookie/CSRF integration pass; human browser verification pending. Encrypted publication and 30-day cleanup remain Step8. |
-| Client crypto | OpenE2EE13.0.0 and IndexedDB text-message sessions are implemented. | Confirm typed offer/contact payload context and ciphertext-only envelope requirements against real SDK behavior before wiring private notes/shares. No plaintext fallback. |
+| Contacts | Identity implements public options/selected-own-contact providers and trusted disclosure scopes; Conversations implements member-authorized preparation and encrypted publication. | Step7 preparation and Step8 ciphertext-only send/decrypt paths are implemented. Human browser verification of contact sharing remains pending. |
+| Client crypto | OpenE2EE13.0.0 and IndexedDB text-message sessions are implemented. | Contact shares use the existing peer session and encrypt values plus labels with conversation/participant/key-version context. The initial encrypted SDK `prekey_bundle` is accepted as content; recovery/control envelopes are not. No plaintext fallback. |
 | Frontend map | Actual ScaffoldPages uses ConversationInboxPage and ConversationDetailPage through ConversationRuntime. | Older implementation-table rows still mention placeholders. Reconcile those rows and reserve any shared composition before Step4 edits. |
 
 ## Done-deal action approved for Step6
@@ -63,7 +63,7 @@ or payment/handover verification is implied by this label.
 | 5 | Public Listings selection action in conversation UI. | Real eligible buyer relationship, stale state, retry and failure handling checked; updated local browser checkpoint verified by Rahul. |
 | 6 | Separate done-deal availability action. | Owner-only, preserve window/selection, discovery exclusion, retained chats and browser checkpoint. |
 | 7 | Selected-own-contact preparation and confirmation. | Real Identity scope, membership, exact fields and no unselected values. |
-| 8 | Encrypted contact entries and independent 30-day cleanup. | Review concrete destructive mechanism first; retention/FK/order/privacy checks and browser checkpoint. |
+| 8 | Encrypted contact entries and independent 30-day cleanup. | Contact ciphertext/prekey-bundle acceptance, tampering/context rejection, idempotent storage, exact 30-day cutoff, atomic deletion and browser checkpoint. |
 | 9 | Combined offer/selection/contact regression coverage. | Actual database/SDK paths where implemented; synthetic contacts only. |
 | 10 | Cross-domain failure and ambiguous outcome behavior. | No false selection/share success or duplicate side effects. |
 | 11 | Real dependency and aggregate acceptance checks. | Actual CN-CORE/ID-READY/LI-CORE and request-origin integration; full local/CI gates. |
@@ -216,6 +216,39 @@ workflow. Web427/3 existing skips, lint120, app/test types, build, boundaries,
 Black, Gitleaks and the local two-actor API check pass on available Node26/npm12.
 Required Node24/npm11 CI, human browser verification and affected-owner review
 remain pending. No migration, dependency or generated-contract change is needed.
+
+## Step8 encrypted contact sharing and cleanup — 2026-10-27 (browser verified)
+
+After the human approved the concrete deletion order and accepted the SDK's
+initial encrypted `prekey_bundle` as application content, Conversations now
+stores contact shares through its existing ordered-entry transaction. The
+client sends only an OpenE2EE-encrypted payload; field labels and values are
+inside that ciphertext. Recipients decrypt and validate conversation,
+participants, key versions and context before displaying the shared details.
+Wrong-key/context/tampered payloads fail closed. Exact retries return the
+original stored entry; changed reuse conflicts. Contact shares do not create an
+unread acknowledgement or use a plaintext fallback. Protocol recovery/control
+envelopes remain rejected.
+
+The independent 30-day cleanup defaults to dry-run, uses PostgreSQL time, and
+locks/rechecks each thread and entry before deleting the payload and subtype in
+one transaction. It retains the content-free ordered entry and its operation,
+SDK, sequence and thread-activity guards. The command exposes explicit
+`contact-shares` and `all` scopes and validates its exact database target.
+Cleanup does not erase browser-local copies, schedule a worker, or authorize a
+persistent database apply.
+
+Validation: focused OpenE2EE frontend tests passed35 cases and the focused
+disposable PostgreSQL suite passed164 cases on PostgreSQL18.6. The full
+database lifecycle/rollback/reapply checker passed. Pinned Node24/npm11
+`npm run check` passed lint120, web431/3 existing skips, app/test TypeScript and
+production build. All8 generated contract artifacts are current, changed Python
+files pass individual Black checks, boundaries found0 violations, and
+Gitleaks8.30.1 plus whitespace checks pass. Vite retains its existing advisory
+for bundles above500 kB. Rahul confirmed the two-browser contact-share flow
+works locally at 2026-10-27 12:53 UTC; browser/version/viewport details were not
+provided. Affected-owner review, hosted CI and later real-session/deployment
+work remain separate gates; this does not claim full CN-02 completion.
 
 ## Step3 implementation scope (awaiting human verification)
 

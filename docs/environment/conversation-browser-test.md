@@ -94,10 +94,17 @@ cross-browser result. Always use the exact `127.0.0.1` URLs, not `localhost`.
    refreshing the inbox. Open B's thread and display the message; return to its
    inbox and refresh. The badge should clear only after display acknowledgement.
    Reading/polling alone must not acknowledge a message.
-7. Optionally test a failed send using the browser's offline control, then restore
+7. Test encrypted contact sharing with synthetic values only. On A, choose
+   **Choose contact details**, select Email, choose **Review selected details**,
+   then **Confirm and send encrypted details**. Expect the sender to see that the
+   encrypted details were sent, and B to see a **Contact details shared with
+   you** card with the synthetic email after the thread refreshes. Do not use
+   real contact details or copy request bodies. The labels and values are inside
+   the encrypted payload; the server stores ciphertext only.
+8. Optionally test a failed send using the browser's offline control, then restore
    connectivity and use Retry. Expect no duplicated message. Do not enter real
    message content or export network bodies, ciphertext or key material.
-8. Test Logout last: its fixed side must lose API/chat access and clear private
+9. Test Logout last: its fixed side must lose API/chat access and clear private
    UI. There is deliberately no test login/identity-switch endpoint. Restarting
    this harness creates a different fresh fixture and loses its old server data;
    it is not a persistence or recovery procedure. Cross-account switching remains

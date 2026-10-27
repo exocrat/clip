@@ -27,7 +27,9 @@ import {
   ConversationKeyStateLostError,
   KeyRegistrationAcknowledgementRequiredError,
   assertConversationKeyState,
+  decodeConversationContactShare,
   decodeConversationMessage,
+  encodeConversationContactShare,
   encodeConversationMessage,
   toOpenE2eePreKeyBundle,
   type ConversationEnvelopeRoute,
@@ -45,6 +47,17 @@ const messageContext = {
   recipient_key_version: 7,
   client_timestamp_ms: 1_797_000_000_000,
   text: 'encrypted hello',
+};
+const contactContext = {
+  version: 1 as const,
+  conversation_id: 'conversation-1',
+  kind: 'contact_share' as const,
+  sender_user_id: 'alice',
+  recipient_user_id: 'bob',
+  sender_key_version: 3,
+  recipient_key_version: 7,
+  client_timestamp_ms: 1_797_000_000_000,
+  contacts: { email: 'synthetic@example.invalid' },
 };
 
 const bytes = (length: number, fill = '\x01') => btoa(fill.repeat(length));
@@ -128,6 +141,31 @@ describe('conversation message context', () => {
     expect(() =>
       encodeConversationMessage({ ...messageContext, version: 2 as 1 }),
     ).toThrow(ConversationCryptoError);
+  });
+});
+
+describe('encrypted contact-share context', () => {
+  const expected = {
+    conversation_id: contactContext.conversation_id,
+    sender_user_id: contactContext.sender_user_id,
+    recipient_user_id: contactContext.recipient_user_id,
+    sender_key_version: contactContext.sender_key_version,
+    recipient_key_version: contactContext.recipient_key_version,
+    client_timestamp_ms: contactContext.client_timestamp_ms,
+  };
+
+  it('encrypts only the selected fields and verifies the decrypted conversation route', () => {
+    const encoded = encodeConversationContactShare(contactContext);
+    expect(encoded).toContain(contactContext.contacts.email);
+    expect(decodeConversationContactShare(encoded, expected)).toEqual(contactContext.contacts);
+    expect(() => decodeConversationContactShare(encoded, { ...expected, conversation_id: 'other' }))
+      .toThrow(ConversationCryptoError);
+  });
+
+  it('rejects missing and unsupported contact fields before display', () => {
+    expect(() => encodeConversationContactShare({ ...contactContext, contacts: {} })).toThrow(ConversationCryptoError);
+    const tampered = JSON.stringify({ ...contactContext, contacts: { email: 'x', bank_account: 'y' } });
+    expect(() => decodeConversationContactShare(tampered, expected)).toThrow(ConversationCryptoError);
   });
 });
 
@@ -405,6 +443,7 @@ describe('OpenE2EE adapter', () => {
     expect(routeRegister).toHaveBeenCalledWith({
       conversation_id: 'conversation-1',
       operation_id: 'operation-1',
+      entry_kind: 'message',
       protocol_id: CLIP_PROTOCOL_ID,
       protocol_version: CLIP_PROTOCOL_VERSION,
       envelope_version: CLIP_ENVELOPE_VERSION,
@@ -471,6 +510,33 @@ describe('OpenE2EE adapter', () => {
     ).rejects.toThrow(ConversationCryptoError);
     expect(history.put).not.toHaveBeenCalled();
     expect(client.completeReceive).toHaveBeenCalledWith('server-message-1');
+  });
+
+  it('discards a decrypted contact share when the authenticated recipient context is wrong', async () => {
+    const completeReceive = vi.fn(async () => undefined);
+    const processIncomingEnvelope = vi.fn(async () => ({
+      kind: 'processed' as const,
+      messageId: 'share-entry',
+      plaintext: encodeConversationContactShare({ ...contactContext, recipient_user_id: 'mallory' }),
+    }));
+    const client = {
+      userId: 'bob', processIncomingEnvelope, completeReceive,
+    } as unknown as ConstructorParameters<typeof ConversationCrypto>[0];
+    const history: ConversationHistoryStore = { put: vi.fn(async () => undefined) };
+    const crypto = new ConversationCrypto(client, { register: vi.fn() });
+    await expect(crypto.receiveContactShare({
+      conversation_id: 'conversation-1', message_id: 'share-entry', sequence: 1,
+      sender_user_id: 'alice', sender_device_id: 1,
+      expected_sender_key_version: 3, expected_recipient_key_version: 7,
+      envelope: {
+        protocol_id: CLIP_PROTOCOL_ID, protocol_version: CLIP_PROTOCOL_VERSION, envelope_version: 2,
+        sdk_message_type: 'ciphertext', sdk_client_message_id: globalThis.crypto.randomUUID(), recovery_for_entry_id: null,
+        client_timestamp_ms: contactContext.client_timestamp_ms, sender_key_version: 3,
+        recipient_key_version: 7, payload_base64: btoa('opaque'),
+      },
+    }, history)).rejects.toThrow(ConversationCryptoError);
+    expect(completeReceive).toHaveBeenCalledWith('share-entry');
+    expect(history.put).not.toHaveBeenCalled();
   });
 
   it('rejects a non-canonical or oversized ciphertext envelope before decrypting', async () => {

@@ -16,6 +16,7 @@ import type {
   PublicPreKeyBatchView,
   ReadState,
   ContactPreparationRequest,
+  ContactShareRequest,
   ContactOptionsView,
   SelectedOwnContacts,
 } from '../../../../../contracts/generated/types.gen';
@@ -149,9 +150,7 @@ function entry(value: unknown): boolean {
   }
   if (hasRecoveryReference || familyMatch || envelope.sdk_message_type === 'retry_request') return false;
   return positive(envelope.sender_key_version) && positive(envelope.recipient_key_version) &&
-    (value.kind === 'contact_share'
-      ? envelope.sdk_message_type === 'ciphertext'
-      : ['ciphertext', 'prekey_bundle'].includes(String(envelope.sdk_message_type)));
+    ['ciphertext', 'prekey_bundle'].includes(String(envelope.sdk_message_type));
 }
 
 const inventory = (value: unknown): boolean => record(value) && positive(value.key_version) &&
@@ -247,6 +246,13 @@ export class ConversationApi {
     return this.request(`${this.threadPath(conversationId)}/messages`, 'POST',
       (value) => entry(value) && record(value) && !value.content_deleted && record(value.envelope) &&
         Object.entries(payload.envelope).every(([key, expected]) =>
+          record(value.envelope) && value.envelope[key] === expected), payload);
+  }
+
+  submitContactShare(conversationId: string, payload: ContactShareRequest): Promise<ConversationEntry> {
+    return this.request(`${this.threadPath(conversationId)}/contact-shares`, 'POST',
+      (value) => entry(value) && record(value) && value.kind === 'contact_share' && !value.content_deleted &&
+        record(value.envelope) && Object.entries(payload.envelope).every(([key, expected]) =>
           record(value.envelope) && value.envelope[key] === expected), payload);
   }
 

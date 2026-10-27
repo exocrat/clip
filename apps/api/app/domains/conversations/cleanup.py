@@ -21,6 +21,15 @@ class ConversationCleanupResult:
     entries: int
 
 
+@dataclass(frozen=True)
+class ContactShareCleanupResult:
+    """Aggregate counts only for independently expired contact-share payloads."""
+
+    dry_run: bool
+    contact_shares: int
+    entries: int
+
+
 class ConversationCleanup:
     """Purge inactive content atomically per thread, preserving integrity guards.
 
@@ -82,6 +91,96 @@ class ConversationCleanup:
             # Do not expose SQL, driver detail, DSNs or content. Earlier threads
             # may have committed: an error is never reported as empty success.
             raise PublicError(ERRORS[503]) from None
+
+    async def run_contact_shares(
+        self, *, apply: bool = False, batch_size: int = 100
+    ) -> ContactShareCleanupResult:
+        """Expire each share at 30 days, locking its thread and preserving its entry."""
+        if type(batch_size) is not int or not 1 <= batch_size <= 1000:
+            raise ValueError("Invalid cleanup batch")
+        if type(apply) is not bool:
+            raise ValueError("Invalid cleanup mode")
+        try:
+            async with self._pool.connection() as connection:
+                async with connection.transaction():
+                    await self._timeouts(connection)
+                    row = await (
+                        await connection.execute("SELECT clock_timestamp()")
+                    ).fetchone()
+                    if row is None:
+                        raise RuntimeError("Database clock unavailable")
+                    now = as_utc(self._clock() if self._clock else row[0])
+                    cutoff = now - timedelta(days=30)
+                    rows = await (
+                        await connection.execute(
+                            "SELECT e.id, e.conversation_id FROM conversations.entries e "
+                            "JOIN conversations.contact_shares s ON s.entry_id=e.id "
+                            "WHERE e.kind='contact_share' AND e.content_deleted_at IS NULL "
+                            "AND e.created_at <= %s ORDER BY e.id LIMIT %s",
+                            (cutoff, batch_size),
+                        )
+                    ).fetchall()
+            count = 0
+            for entry_id, thread_id in rows:
+                if await self._expire_contact_share(
+                    entry_id, thread_id, cutoff, now, apply
+                ):
+                    count += 1
+            return ContactShareCleanupResult(not apply, count, count)
+        except Exception:
+            raise PublicError(ERRORS[503]) from None
+
+    async def _expire_contact_share(
+        self,
+        entry_id: UUID,
+        thread_id: UUID,
+        cutoff: datetime,
+        now: datetime,
+        apply: bool,
+    ) -> bool:
+        """Recheck the per-share deadline after taking the participant-write lock."""
+        async with self._pool.connection() as connection:
+            async with connection.transaction():
+                await self._timeouts(connection)
+                thread = await (
+                    await connection.execute(
+                        "SELECT id FROM conversations.threads WHERE id=%s FOR UPDATE",
+                        (thread_id,),
+                    )
+                ).fetchone()
+                if thread is None:
+                    return False
+                entry = await (
+                    await connection.execute(
+                        "SELECT created_at FROM conversations.entries WHERE id=%s "
+                        "AND conversation_id=%s AND kind='contact_share' AND content_deleted_at IS NULL "
+                        "FOR UPDATE",
+                        (entry_id, thread_id),
+                    )
+                ).fetchone()
+                if entry is None or entry[0] > cutoff:
+                    return False
+                if apply:
+                    await self._delete_contact_share(connection, entry_id, now)
+                return True
+
+    @staticmethod
+    async def _delete_contact_share(
+        connection: AsyncConnection, entry_id: UUID, now: datetime
+    ) -> None:
+        """Remove ciphertext/subtype and set its content-free marker atomically."""
+        await connection.execute(
+            "DELETE FROM conversations.encrypted_payloads WHERE entry_id=%s",
+            (entry_id,),
+        )
+        await connection.execute(
+            "DELETE FROM conversations.contact_shares WHERE entry_id=%s", (entry_id,)
+        )
+        await connection.execute(
+            "UPDATE conversations.entries SET content_deleted_at=%s "
+            "WHERE id=%s AND content_deleted_at IS NULL",
+            (now, entry_id),
+        )
 
     @staticmethod
     async def _timeouts(connection: AsyncConnection) -> None:

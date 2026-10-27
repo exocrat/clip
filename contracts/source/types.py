@@ -776,7 +776,7 @@ class ConversationEntry(ContractModel):
                 raise ValueError("retry requests require a retry-request SDK ID")
         if self.kind == "message" and sdk_type not in {"ciphertext", "prekey_bundle"}:
             raise ValueError("messages require encrypted SDK content")
-        if self.kind == "contact_share" and sdk_type != "ciphertext":
+        if self.kind == "contact_share" and sdk_type not in {"ciphertext", "prekey_bundle"}:
             raise ValueError("contact shares require encrypted SDK content")
         return self
 
@@ -1059,8 +1059,8 @@ class ContactShareRequest(ContractModel):
 
     @model_validator(mode="after")
     def validate_encrypted_contact_share(self) -> ContactShareRequest:
-        if self.envelope.sdk_message_type != "ciphertext":
-            raise ValueError("contact shares require an encrypted ciphertext envelope")
+        if self.envelope.sdk_message_type not in {"ciphertext", "prekey_bundle"}:
+            raise ValueError("contact shares require encrypted SDK content")
         return self
 
 

@@ -8,10 +8,11 @@ const conversationId = '11111111-1111-4111-8111-111111111111';
 afterEach(cleanup);
 
 describe('explicit own-contact preparation', () => {
-  it('requires exact selection and confirmation, then keeps values out of the UI', async () => {
+  it('requires exact selection and confirmation, encrypts through the callback, and keeps values out of the UI', async () => {
     const api = { readContactOptions: vi.fn(async () => ({ email_available: true, phone_available: true, upi_available: false })),
       prepareOwnContacts: vi.fn(async () => ({ email: 'synthetic@example.invalid', phone: null, upi_id: null })) };
-    render(<ConversationContactPreparation conversationId={conversationId} api={api} />);
+    const onShare = vi.fn(async () => undefined);
+    render(<ConversationContactPreparation conversationId={conversationId} api={api} canShare onShare={onShare} onRetry={vi.fn()} />);
     expect(api.readContactOptions).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Choose contact details' }));
     const email = await screen.findByRole('checkbox', { name: 'Email' });
@@ -20,16 +21,17 @@ describe('explicit own-contact preparation', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Review selected details' }));
     expect(api.prepareOwnContacts).not.toHaveBeenCalled();
     expect(screen.getByText('Confirm for this conversation: Email.')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Confirm selected details' }));
-    await screen.findByText(/Selection checked. Nothing has been sent/);
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm and send encrypted details' }));
+    await screen.findByText('Encrypted contact details sent.');
     expect(api.prepareOwnContacts).toHaveBeenCalledWith(conversationId, ['email'], expect.any(AbortSignal));
+    expect(onShare).toHaveBeenCalledWith({ email: 'synthetic@example.invalid', phone: null, upi_id: null }, expect.any(String));
     expect(screen.queryByText('synthetic@example.invalid')).toBeNull();
   });
 
   it('cancels without retrieving values and shows dependency failure without private diagnostics', async () => {
     const api = { readContactOptions: vi.fn(async () => ({ email_available: true, phone_available: false, upi_available: false })),
       prepareOwnContacts: vi.fn(async () => { throw new Error('private-detail'); }) };
-    render(<ConversationContactPreparation conversationId={conversationId} api={api} />);
+    render(<ConversationContactPreparation conversationId={conversationId} api={api} canShare onShare={vi.fn()} onRetry={vi.fn()} />);
     fireEvent.click(screen.getByRole('button', { name: 'Choose contact details' }));
     fireEvent.click(await screen.findByRole('checkbox', { name: 'Email' }));
     fireEvent.click(screen.getByRole('button', { name: 'Review selected details' }));
@@ -38,8 +40,8 @@ describe('explicit own-contact preparation', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Choose contact details' }));
     fireEvent.click(await screen.findByRole('checkbox', { name: 'Email' }));
     fireEvent.click(screen.getByRole('button', { name: 'Review selected details' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Confirm selected details' }));
-    await screen.findByText(/Couldn’t prepare.*Nothing has been sent/);
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm and send encrypted details' }));
+    await screen.findByText(/Couldn’t prepare.*Nothing was sent/);
     expect(screen.queryByText('private-detail')).toBeNull();
   });
 

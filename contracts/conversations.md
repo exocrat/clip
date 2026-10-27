@@ -443,6 +443,8 @@ The client submits a contact-share envelope addressed to the other member
 using the approved protocol. Conversations stores only its entry kind, key
 references and encrypted envelope; selected field labels are inside the
 ciphertext and are not stored as plaintext columns or notification metadata.
+The SDK may label a first encrypted send `prekey_bundle`; contact shares accept
+that or `ciphertext`, but never retry/recovery control envelopes.
 Only the two members can retrieve it. If Identity retrieval or conversation
 storage fails, no contact-share entry is reported as successful or partly
 published. Contact-share payloads and encrypted field labels are removed 30

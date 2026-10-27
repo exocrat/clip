@@ -8,9 +8,12 @@ write-disabled marker before installing Identity's actor/conversation scope.
 Options expose flags; confirmed preparation returns only selected current own
 values with no-store responses, entries, persistence or activity writes. The
 normal Identity middleware supplies the real public providers; unbound calls
-fail503. The UI deliberately labels this preparation and discards values until
-Step8 connects encrypted publication. Contact-share storage/30-day cleanup and
-final real-session acceptance remain later checkpoints.
+fail503. The UI keeps those values transient until the participant confirms
+encrypted publication. Step8 stores only SDK-encrypted shares; `ciphertext` and
+the SDK's encrypted first-send `prekey_bundle` are accepted, while protocol
+controls are rejected. Independent30-day cleanup removes ciphertext/subtype
+but preserves the ordered entry marker. It defaults to dry-run; no schedule or
+persistent-target apply is enabled.
 
 `origin_retirement.py` implements the internal `get_origin_activity` and `mark_origin_retired` database operations. `thread_creation.py` implements internal Listing and Wanted Request thread creation through trusted origin contexts and Identity's eligibility interface. Both providers are tested directly and await real origin-owner composition.
 
@@ -18,9 +21,11 @@ final real-session acceptance remain later checkpoints.
 
 All HTTP routes still require Identity to supply trusted `CallerContext`; no production test identity is installed. Real-session and origin-owner acceptance, deployed retention scheduling, and notification delivery remain pending. The future `notifications/` subtree is reserved for A; other conversation/offer implementation remains D-owned. Shared primitives belong in `app.core`; cross-domain calls use reviewed public interfaces.
 
-`cleanup.py` implements the approved90-day thread-content purge. It defaults to
-count-only inspection, locks/rechecks activity, and removes payloads and offer
-history atomically per thread while preserving ordering, operation and reference
-guards. `scripts/conversations_cleanup.py` supplies explicit target checks;
-scheduling, real apply and independent30-day contact-share cleanup remain pending.
+`cleanup.py` implements the approved90-day thread-content purge and independent
+per-share30-day cleanup. Both default to count-only inspection and preserve
+ordering, operation and reference guards. The contact-share path locks and
+rechecks each thread/entry, then removes ciphertext and subtype atomically while
+retaining a content-free entry marker. `scripts/conversations_cleanup.py`
+supplies explicit target checks and `history`, `contact-shares`, or `all`
+scopes; scheduling and persistent-target apply remain pending.
 See the [mechanism and deletion order](../../../../../docs/decisions/conversation-content-cleanup.md).

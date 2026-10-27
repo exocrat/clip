@@ -31,6 +31,7 @@ from app.contracts.domain_types import (
     OfferView,
     ContactOptionsView,
     ContactPreparationRequest,
+    ContactShareRequest,
     SelectedOwnContacts,
 )
 from app.core.auth import CallerContext, require_caller
@@ -156,6 +157,30 @@ async def submit_message(
 ) -> ConversationEntry:
     """Submit one ciphertext/control envelope and return 200 only for exact retry."""
     result = await _operations(request).submit_message(caller, conversation_id, payload)
+    if result.replayed:
+        response.status_code = 200
+    return result.entry
+
+
+@router.post(
+    "/conversations/{conversation_id}/contact-shares",
+    response_model=ConversationEntry,
+    status_code=201,
+    responses={200: {"model": ConversationEntry}},
+    operation_id="conversations_submit_contact_share",
+    summary="conversations_submit_contact_share",
+)
+async def submit_contact_share(
+    conversation_id: UUID,
+    payload: ContactShareRequest,
+    response: Response,
+    request: Request,
+    caller: CallerContext = Depends(require_caller),
+) -> ConversationEntry:
+    """Store a member's ciphertext-only selected-contact entry."""
+    result = await _operations(request).submit_contact_share(
+        caller, conversation_id, payload
+    )
     if result.replayed:
         response.status_code = 200
     return result.entry
