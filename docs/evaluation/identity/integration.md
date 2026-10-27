@@ -1985,3 +1985,15 @@ an existing17-file tracker: empty application tables do not remove schemas or
 migration history. A fresh baseline therefore needs a separately reviewed exact
 reset/replacement scope and shared-owner/cloud approval. No live inspection,
 reset, schema change or cloud action was performed; source safeguards are unchanged.
+
+### Source binding verified — 2026-10-27 19:17:44 UTC
+
+Aditya explicitly approved the verified implementation and source-bound metadata
+commits. Candidate and manifest now reference39bfb4b; source_commit_binding_pending
+is false and the manifest checksum was recomputed. The unchanged offline audit
+passes9/9checks, consistent=true, ready_for_live=false;12regressions pass. This
+supersedes the earlier uncommitted-source blocker. Image/live review guards,
+private data handling and prefix refusal remain unchanged. New source review,
+hosted CI/merge and actual Step13 runtime acceptance remain required; no cloud,
+SQL/provider action or ID-READY acceptance occurred. The clean bootstrap/reset
+preference above remains the next database-planning input.

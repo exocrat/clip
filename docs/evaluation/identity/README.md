@@ -24,14 +24,15 @@ criteria and action approvals still come from their canonical sources.
   external signer/mail/storage boundaries; they do not prove deployed delivery.
 - Step12's current migration candidate pins23unchanged accepted SQL files through
   20261027112205and40tables/36functions/46triggers. New runner/manifest changes
-  are human-verified locally; commit/source binding and review remain. Live approval stays
+  are human-verified and committed at39bfb4b; source binding passes. New source
+  review/CI/merge remain. Live approval stays
   false. The original shared DB's recorded17-file apply/roles/URLs remain valid
   historical evidence. Aditya reports no application data needs preservation;
   Step13 now prefers a separately reviewed clean bootstrap/reset.
 - Local preparation checks pass at2026-10-27 18:33:45UTC:12aggregate gates,
   1932Python/153skips,94data,433web/3skips, Conversations167 and focused32.
-  The separate offline source-binding guard correctly remains false until the
-  uncommitted runner has an actual reviewed source commit.
+  At2026-10-27 19:17:44UTC the separate source-binding audit passes9/9checks
+  against39bfb4b, with12regressions passed; ready_for_live remains false.
 - At2026-10-27 18:25:58UTC Aditya confirmed exposed Resend-key revocation and
   replacement in SSM. No secret was read or delivery tested after that rotation.
   SES production access is not a blocker to approved Resend active-provider use.
@@ -40,7 +41,7 @@ criteria and action approvals still come from their canonical sources.
   observations, not a fresh cloud inspection. DNS propagation is not rechecked.
 - ID-READY is **not accepted**. Remaining real acceptance is Step13's approved
   HTTPS/runtime/provider/browser and operational retention checks, plus the final
-  Step12 source-bound handoff. Full image/Search/Hybrid/Conversations feature
+  Step12 reviewed/merged handoff. Full image/Search/Hybrid/Conversations feature
   acceptance and Step14's exhaustive consumer matrix are separate obligations.
 
 Branch cleanup verification2026-10-26 14:02:52UTC: all11local gates passed
