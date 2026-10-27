@@ -18,6 +18,8 @@
     "preview": "vite preview apps/web"
   },
   "dependencies": {
+    "@open-e2ee/signal-protocol-sdk": "13.0.0",
+    "idb": "8.0.3",
     "@azure/msal-browser": "5.26.0",
     "react": "19.3.1",
     "react-dom": "19.3.1",

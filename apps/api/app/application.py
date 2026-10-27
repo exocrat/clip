@@ -19,6 +19,8 @@ from app.core.config import ConfigurationError, Settings, load_settings
 from app.core.errors import install_error_handlers
 from app.core.logging import RequestLoggingMiddleware
 import app.domains.conversations.public as conversations_public
+import app.domains.conversations.routes as conversations_routes
+from app.core.database import PoolFactory, create_async_connection_pool
 from app.domains.listings.routes import router as listings_router
 from app.domains.listings.integrations import PublicListingsIdentity
 from app.domains.listings.postgres_store import PostgresListingsStore
@@ -34,7 +36,7 @@ from app.domains.identity.http import IdentityHttpDependencies, install_identity
 
 
 @asynccontextmanager
-async def application_lifespan(
+async def _marketplace_lifespan(
     application: FastAPI,
     settings: Settings,
     *,
@@ -125,10 +127,52 @@ async def application_lifespan(
         await finish_search_cleanup(pool.close())
 
 
+@asynccontextmanager
+async def application_lifespan(
+    application: FastAPI,
+    settings: Settings,
+    *,
+    pool_factory=AsyncConnectionPool,
+    storage_factory=S3ListingsImageStorage,
+    conversation_pool_factory: PoolFactory = create_async_connection_pool,
+) -> AsyncIterator[None]:
+    """Own both row-format-specific pools and close them on failure or shutdown.
+
+    Listings/Search use dictionary rows; Conversations retains its bounded tuple
+    pool. Connections/sessions are never passed across domain boundaries.
+    """
+    pool = None
+    application.state.database_pool = None
+    application.state.conversations_public = None
+    dsn = settings.database_dsn or settings.database_url
+    try:
+        if dsn is not None:
+            pool = conversation_pool_factory(dsn.get_secret_value())
+            await pool.open(wait=False)
+            application.state.database_pool = pool
+        async with _marketplace_lifespan(
+            application,
+            settings,
+            pool_factory=pool_factory,
+            storage_factory=storage_factory,
+        ):
+            if isinstance(pool, AsyncConnectionPool):
+                services = conversations_routes.create_public_provider(pool)
+                application.state.conversations_public = services
+                application.state.listings_conversations = services
+            yield
+    finally:
+        application.state.database_pool = None
+        application.state.conversations_public = None
+        if pool is not None:
+            await pool.close()
+
+
 def create_app(
     settings: Settings | None = None,
     *,
     identity: IdentityHttpDependencies | None = None,
+    pool_factory: PoolFactory = create_async_connection_pool,
 ) -> FastAPI:
     """Compose the API with optional explicit real Identity bindings.
 
@@ -159,7 +203,9 @@ def create_app(
     @asynccontextmanager
     async def lifespan(application: FastAPI) -> AsyncIterator[None]:
         """Bind this app's immutable configuration to the shared owned lifecycle."""
-        async with application_lifespan(application, settings):
+        async with application_lifespan(
+            application, settings, conversation_pool_factory=pool_factory
+        ):
             yield
 
     # Health, Listings lifecycle and wanted-request author/read routes are mounted here.
@@ -235,6 +281,7 @@ def create_app(
         app.include_router(listings_router, prefix="/api")
         app.include_router(wanted_router, prefix="/api")
         app.include_router(saved_router, prefix="/api")
+        app.include_router(conversations_routes.router, prefix="/api")
 
         if settings.isolated_listings_test_caller:
 
@@ -266,6 +313,7 @@ def create_app(
         app.include_router(listings_router)
         app.include_router(wanted_router)
         app.include_router(saved_router)
+        app.include_router(conversations_routes.router)
 
     if settings.isolated_listings_test_caller:
         from app.domains.listings.isolated_test import isolated_test_caller

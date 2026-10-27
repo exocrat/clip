@@ -199,7 +199,12 @@ def response_service(request: Request) -> WantedResponseService:
     store = getattr(request.app.state, "wanted_store", None)
     if store is None:
         raise PublicError(ERRORS[503])
-    return WantedResponseService(store)
+    conversations = getattr(request.app.state, "conversations_public", None)
+    return (
+        WantedResponseService(store, conversations=conversations)
+        if conversations is not None
+        else WantedResponseService(store)
+    )
 
 
 @router.post(

@@ -70,9 +70,9 @@ BEGIN
             (request_thread, buyer), (request_thread, seller);
     INSERT INTO conversations.public_key_versions
         (id, user_id, version, public_key_material, protocol_id, created_at)
-        VALUES (seller_key, seller, 1, decode('01', 'hex'), 'synthetic-retirement-test',
+        VALUES (seller_key, seller, 1, decode('01', 'hex'), 'open-e2ee-signal',
                 CURRENT_TIMESTAMP - INTERVAL '200 days'),
-            (buyer_key, buyer, 1, decode('02', 'hex'), 'synthetic-retirement-test',
+            (buyer_key, buyer, 1, decode('02', 'hex'), 'open-e2ee-signal',
                 CURRENT_TIMESTAMP - INTERVAL '200 days');
     UPDATE search.wanted_requests SET status = 'unavailable' WHERE id = request;
     SET CONSTRAINTS ALL IMMEDIATE;
@@ -88,9 +88,9 @@ BEGIN
                 VALUES (entry, target_thread, buyer, gen_random_uuid(), entry_kind,
                     CURRENT_TIMESTAMP - INTERVAL '100 days');
             INSERT INTO conversations.encrypted_payloads
-                (entry_id, protocol_id, envelope_version,
+                (entry_id, protocol_id, protocol_version, envelope_version, sdk_message_type, client_timestamp_ms,
                     sender_key_version_id, recipient_key_version_id, envelope)
-                VALUES (entry, 'synthetic-retirement-test', 1, buyer_key, seller_key, decode('00', 'hex'));
+                VALUES (entry, 'open-e2ee-signal', '13.0.0', 1, 'ciphertext', 1, buyer_key, seller_key, decode('00', 'hex'));
             IF entry_kind = 'contact_share' THEN
                 INSERT INTO conversations.contact_shares (entry_id) VALUES (entry);
             END IF;
@@ -109,9 +109,9 @@ BEGIN
         (id, conversation_id, sender_id, client_operation_id, kind)
         VALUES (share_entry, request_thread, buyer, gen_random_uuid(), 'contact_share');
     INSERT INTO conversations.encrypted_payloads
-        (entry_id, protocol_id, envelope_version,
+        (entry_id, protocol_id, protocol_version, envelope_version, sdk_message_type, client_timestamp_ms,
             sender_key_version_id, recipient_key_version_id, envelope)
-        VALUES (share_entry, 'synthetic-retirement-test', 1, buyer_key, seller_key, decode('00', 'hex'));
+        VALUES (share_entry, 'open-e2ee-signal', '13.0.0', 1, 'ciphertext', 1, buyer_key, seller_key, decode('00', 'hex'));
     INSERT INTO conversations.contact_shares (entry_id) VALUES (share_entry);
     SET CONSTRAINTS ALL IMMEDIATE;
     SET CONSTRAINTS ALL DEFERRED;
@@ -151,9 +151,9 @@ BEGIN
                     (id, conversation_id, sender_id, client_operation_id, kind)
                     VALUES (entry, target_thread, buyer, gen_random_uuid(), entry_kind);
                 INSERT INTO conversations.encrypted_payloads
-                    (entry_id, protocol_id, envelope_version,
+                    (entry_id, protocol_id, protocol_version, envelope_version, sdk_message_type, client_timestamp_ms,
                         sender_key_version_id, recipient_key_version_id, envelope)
-                    VALUES (entry, 'synthetic-retirement-test', 1, buyer_key, seller_key, decode('00', 'hex'));
+                    VALUES (entry, 'open-e2ee-signal', '13.0.0', 1, 'ciphertext', 1, buyer_key, seller_key, decode('00', 'hex'));
                 IF entry_kind = 'contact_share' THEN
                     INSERT INTO conversations.contact_shares (entry_id) VALUES (entry);
                 END IF;

@@ -1,7 +1,8 @@
 # Coordinated database migrations
 
-**Current ID-01 Step12 combined checkout:**17published migrations, head
-`20261025013000`,37domain tables,33functions and43triggers. Older isolated
+**Current Conversations integration checkout:** 17 published migrations plus four
+new forwards, head `20261026090300`, 40 domain tables, 36 functions and 46 triggers.
+The 17 published SQL files are unchanged. Older isolated
 Identity/Listings sections below retain their historical checkpoints; their
 former PR10 deferral/counts do not describe this combined checkout. See the
 [merge evidence](../docs/evaluation/identity/integration.md#main-reconciliation).
@@ -38,7 +39,7 @@ was changed. [Tool rationale](../docs/decisions/database-migration-tool.md).
 
 | Ordered migration | Purpose |
 |---|---|
-| `20261018094330_mvp_tables.sql` | Four owned namespaces, 23 application tables, FK/scalar/live-versus-retired constraints, query indexes and the deferred current-offer FK. |
+| `20261018094330_mvp_tables.sql` | Four owned namespaces, 23 initial application tables, FK/scalar/live-versus-retired constraints, query indexes and the deferred current-offer FK. |
 | `20261018094331_mvp_integrity.sql` | Cross-row guards, deferred publication/member/entry/offer consistency, immutable origin/key/operation identities, sequence allocation, unread-episode and source-derived notification invariants. |
 | `20261018094332_initial_catalogue.sql` | The approved eight categories/four conditions only; no users, fake credentials, private data or final evaluation dataset. |
 | `20261018152702_reject_retired_origin_entries.sql` | Forward correction: reject new entries on permanently retired origins under the existing origin lock, before allocating sequence/activity state. Down restores the original guard. |
@@ -49,19 +50,29 @@ was changed. [Tool rationale](../docs/decisions/database-migration-tool.md).
 | `20261021105546_optional_listing_pickup_area.sql` | Allow a null pickup area on live listings while preserving other live/retired requirements. Down refuses while live rows without an area exist; never invents data. |
 | `20261022050000_listing_image_upload_intents.sql` | Persist owner-scoped upload operation keys and declared metadata so image-upload intents can be retried safely before confirmation. |
 | `20261022062357_listing_image_cleanup_retries.sql` | Add bounded cleanup retry timestamps and indexes for retired images and abandoned uploads. |
-
 | `20261023173439_identity_account_profile_integrity.sql` | Identity-only forward guards: contract profile/contact length bounds, paired chronological revocation event and immutable provider/account mapping. Down removes only its own checks/trigger/function, preserving data. |
 | `20261023192856_identity_otp_transactions.sql` | Protected OTP metadata plus key commitments, minimal operation acknowledgements, send reservations and shared verification windows. Empty-state down preserves legacy rows; occupied down fails closed. |
 | `20261023202807_identity_sessions_and_login.sql` | Nullable legacy-safe last-seen session time, bounded password failure windows/source events and server Microsoft attempt digests. Occupied down refuses security-state loss. |
 | `20261024153316_listing_embedding_generations.sql` | Accepted Listings semantic pipeline/generation/vector storage and invalidation guards; no automatic backfill or worker activation. |
 | `20261025012200_wanted_category_code_reference.sql` | Accepted Search wanted category UUID-to-immutable-code FK migration, preserving request content/lifecycle. |
 | `20261025013000_wanted_command_results.sql` | Accepted Search private idempotency receipts and guards for wanted commands. |
+| `20261026090000_conversation_retirement_hardening.sql` | Preserve immutable thread markers and local offer/contact guards using the published write-disable column. No second retirement schema or cross-domain business queries. |
+| `20261026090100_conversation_message_transport.sql` | Ciphertext transport, immutable routing, protocol metadata and ordered read-state protections. |
+| `20261026090200_conversation_public_key_directory.sql` | Owned public key-directory and prekey metadata; no private keys. |
+| `20261026090300_conversation_recovery_storage.sql` | Typed encrypted protocol-control storage; client content recovery remains disabled. |
+
+Four superseded branch-only SQL files are preserved byte-for-byte in
+[`archived/cn-01-pre-main`](archived/cn-01-pre-main/README.md), outside the executable
+chain. A target containing any archived version requires a separately reviewed
+upgrade plan; do not apply this fresh-chain procedure to it. Aditya's pinned
+17-file Identity manifest remains unchanged and intentionally rejects this larger
+chain until a new candidate is reviewed. No shared apply is authorized here.
 
 The optional-pickup forward migration is under Listings writer scope; affected
 consumer/schema review and exact shared-database apply remain pending. Local
 isolated checks do not authorize shared/Compose/cloud migration.
 
-Expected combined migration version: **20261025013000**. One integrator allocates
+Expected combined migration version: **20261026090300**. One integrator allocates
 later timestamp identifiers; no parallel heads or uncoordinated edits to initial
 DDL. Published/applied migrations are corrected forward, not rewritten.
 
@@ -461,7 +472,7 @@ was corrected and final state/aborted-sequence rollback checked on the rerun.
 `uv run --locked python scripts/check_database.py` uses the same PostgreSQL
 18.6 image and dbmate 2.36.0 as local development, with a new `clip_test_ci`
 database, no published port and temporary memory-backed storage. The current
-checker requires clean apply/exact combined head (`20261025013000`), repeated
+checker requires clean apply/exact combined head (`20261026090300`), repeated
 application, seven SQL smoke suites, the37-table inventory, preserved Identity
 upgrades/rollback and full rollback of all17migrations with a clean reapply, then removes only its own container. The
 `--listings-store` option additionally mounts one private temporary Unix-socket

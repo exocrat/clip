@@ -67,7 +67,10 @@ thread content and rejection of new participant writes after retirement.
 Enforcing that boundary without Conversations calling back to an origin owner
 requires Listings/Search to publish retirement through a Conversations-owned
 operation before clearing origin content. The exact lock/recheck/order and
-failure recovery remain a separate human approval gate before implementation.
+failure recovery are approved for implementation as specified in the
+Conversation activity and content retention section below. This approval does
+not select or authorize the separate destructive content/object cleanup
+mechanism.
 
 Every public thread, entry, offer, key and read-state route checks both current
 caller eligibility and membership at the owning operation. Direct ID
@@ -79,18 +82,41 @@ where the caller is one of the two members; it is ordered by
 minimal participant/read-summary metadata only; frontend pages obtain listing
 or request details from the corresponding origin owner.
 
+## Participant key setup readiness
+
+`GET /conversations/{conversation_id}/keys` first authenticates membership.
+If an authorized participant has never registered a bundle, it returns409 with
+the standard error envelope and exactly one content-free detail:
+`{field: "own_key" | "peer_key", code: "not_registered"}`. The field is relative
+to the authenticated caller; it exposes no arbitrary-user lookup, user ID or key
+material. If both are unregistered, report `own_key` first. After both register,
+the same read succeeds normally; this is not an invitation-acceptance workflow.
+
+Only absence of both bundle rows and durable registration evidence means first
+setup. A retired latest bundle, deleted rows after registration, invalid protocol,
+malformed material, wrong owner/version, or dependency failure must not produce
+`not_registered`. Preserve their conflict/dependency errors and fail closed. The
+client may map only the exact peer-setup detail to a waiting state; a generic409
+is not proof that the other participant needs to set up encryption. Sending
+remains disabled until both valid bundles are available; no plaintext fallback
+or automatic key replacement is permitted.
+
 ## E2EE key and envelope boundary
 
 The client encrypts/decrypts message text, optional offer notes and
-contact-share field names/values. Conversations stores and relays ciphertext
-only; it never stores message plaintext, note plaintext, contact values, or
-private/decryption keys. The server cannot recover a lost private key. MVP
-supports one active browser device/key bundle per user.
+contact-share field names/values. Conversations stores/relays encrypted
+payloads and the SDK's unencrypted retry-control metadata; it never stores
+message plaintext, note plaintext, contact values, or private/decryption keys.
+The retry control is not chat content and is routed only to the other
+authorized member. The server cannot recover a lost private key. MVP supports
+one active browser device/key bundle per user.
 
 The approved storage ceilings are 1–16 KiB for an encoded public-key bundle
-and 1–64 KiB for an encoded encrypted envelope. Each retained envelope is
-tagged with an allowlisted protocol ID and positive envelope version and names
-the sender and recipient public-key versions. The client protocol must bind
+and 1–64 KiB for the decoded OpenE2EE payload bytes. Each relay envelope is
+tagged with an allowlisted protocol ID, positive envelope version, SDK message
+type and client timestamp. Encrypted message types name the sender and
+recipient public-key versions; retry controls have no key-version claims. The
+client protocol must bind
 conversation, payload kind, sender, recipient and key versions, reject
 tampering/wrong-recipient use, and preserve history according to the
 human-approved key-change behavior. Key references must belong to the actual
@@ -98,21 +124,108 @@ members and use a compatible protocol. Keep referenced historical public
 versions while ciphertext needs them. The byte ceilings are not plaintext
 character limits or an algorithm choice.
 
-The concrete protocol/library, serialization/nonce/authentication format,
-browser storage, replacement/rotation behavior and tests remain the explicit
-CN-01 Step 2 security-design approval gate. Do not generate keys, invent
-cryptography, silently choose a wire format, or imply history recovery after
-key loss. Until that gate is accepted, contracts specify only the reviewed
-envelope boundary, not implementable crypto details.
+The team selected `@open-e2ee/signal-protocol-sdk` 13.0.0 for the client
+protocol after the team's source/dependency review. The CLIP protocol ID is
+`open-e2ee-signal`; `protocol_version` is the exact SDK release `13.0.0`, and
+the first CLIP envelope version is `1`. The client keeps SDK protocol state
+and decrypted history locally in IndexedDB for the user's normal chat
+experience; the server stores encrypted message envelopes, unencrypted
+retry-control metadata, and public-key/prekey material. Retry controls contain
+no chat content and are never logged. Neither keys nor plaintext history are
+backed up by CLIP.
+Browser-data loss can therefore make retained history unreadable. This
+selection is the design boundary; the isolated web client crypto adapter now
+exists, but the real CLIP relay/key-directory integration, durable decrypted-
+history store and browser UI remain unimplemented.
 
-Conversations exposes own-key registration for the authenticated account and
-key lookup only for the caller's authorized conversation members. The server
-allocates a strictly increasing version and permits at most one active bundle
-per user; a caller cannot register or replace another user's key. Retire an
-old public version from active lookup when replaced, but keep the version
-available to authorized history while retained envelopes reference it. The
-accepted protocol determines how a new active key is introduced to prior
-threads; the server never transfers or recovers private keys.
+The client checks local IndexedDB identity state before opening the protocol
+client. First-time key creation requires an explicit acknowledgement of the
+permanent-history-loss warning. If local identity state is absent while the
+account directory still publishes an identity for that account, startup fails
+closed: the client does not silently create a replacement key, and the server
+cannot restore the missing private key. Directory lookup errors also fail
+closed. A later product flow may offer deliberate account-key replacement, but
+it must not imply that replacement restores prior history.
+
+OpenE2EE's IndexedDB contact-identity pin is the durable record of an accepted
+peer identity; CLIP does not treat a numeric public-bundle version change by
+itself as an identity change. On an SDK untrusted-identity result, the client
+blocks sending and exposes a key-change state. Sending resumes only after the
+user deliberately accepts the current directory identity, with the account-
+directory trust limitation shown, and a new session is established. The client
+re-reads the current directory identity at acceptance time and rejects stale
+or mismatching bundles. It does not accept the SDK exception's identity value
+as the new key. The feature-level warning strings are defined for the later UI
+step; this implementation does not yet display dialogs or registration UI.
+
+The application message payload is versioned independently of the server
+envelope. Its UTF-8 JSON v1 object has exactly these fields:
+`{version:1,conversation_id,kind:"message",sender_user_id,recipient_user_id,`
+`sender_key_version,recipient_key_version,client_timestamp_ms,text}`. The
+client timestamp and operation ID are generated before SDK encryption; the
+operation ID is the SDK `clientMessageId` and is not duplicated in plaintext.
+After SDK decryption, the receiving client checks every context field against
+the authenticated thread, sender, own recipient ID, key versions, and outer
+client timestamp before storing or displaying plaintext. A mismatch fails
+closed. The server can reject mismatched claimed routing metadata, but only
+the receiving client can verify the decrypted context. SDK-produced protocol
+ciphertext remains opaque. Public key bundles use typed JSON fields matching
+OpenE2EE 13.0.0's `PreKeyBundle`: a v1 composite identity, registration and
+device IDs, an EC signed prekey, a reusable KEM last-resort prekey, and
+separately selected one-time prekeys. Public byte fields are validated as
+canonical standard-padded Base64 and mapped to the SDK's branded public-key
+types; CLIP does not invent another key format or cryptographic primitive.
+The reviewed browser security policy still applies: no third-party runtime scripts on the
+conversation origin, strict CSP and safe rendering, and review of every bundled
+runtime dependency.
+
+`GET /me/conversation-key` returns only the authenticated caller's current
+`KeyBundle`, without requiring a conversation or accepting a target user ID.
+It returns HTTP 200 with JSON null only when no public version has ever been
+registered for that account. Existing history without a valid active latest
+bundle is an error, never null. Malformed/misbound stored material and storage
+failures fail closed. The read serializes with own-key registration, does not
+advance participant activity, and returns `Cache-Control: no-store`. This allows
+the browser to distinguish first registration from lost local key state; it
+does not retrieve or restore private keys. Normal unauthenticated/expired
+session behavior still applies. Rahul approved this addition on 2026-10-24.
+
+Conversations exposes own-key registration and prekey publication only for the
+authenticated account, plus member-scoped public-key lookup and a separate
+prekey-bundle operation. The server allocates a strictly increasing key
+version and permits one active browser-device bundle per user; a caller cannot
+register or replace another user's key. Registration and lookup use the same
+explicit public fields: protocol ID/version, registration ID, fixed device ID
+`1`, composite identity (32-byte X25519 and 32-byte Ed25519 public keys), EC
+signed prekey (32-byte public key and 64-byte signature), and KEM last-resort
+prekey (1569-byte tagged ML-KEM-1024 public key and 64-byte signature).
+One-time prekeys are uploaded separately. The service validates canonical
+Base64 and expected byte lengths, but does not claim to cryptographically
+verify prekey signatures; the SDK verifies them during session setup. The
+service keeps referenced historical public versions while retained ciphertext
+needs them and never transfers or recovers private keys.
+
+One-time prekey publication is idempotent by `(authenticated_user,
+operation_id)`. Repeating the same operation and exact batch returns its
+original result; reusing the operation ID with a different key version or
+batch is a stable conflict. A batch contains 1–200 unique `(key_type,key_id)`
+pairs for the active key version. EC one-time prekeys carry public bytes only;
+KEM one-time prekeys also carry their identity signature. Inventory exposes
+only counts for the caller's active version, never key bytes. A consumed bundle
+is requested only for an authorized conversation member; Conversations
+determines the peer from the stored thread and atomically reserves that peer's
+available one-time prekeys. Its retry key is scoped to the authenticated
+caller and conversation: an identical retry returns the same reserved public
+bundle without consuming another key, while changed-target reuse conflicts.
+The response contains the peer's typed public identity bundle, registration
+ID, fixed single-device ID `1`, and any selected EC/KEM one-time public keys.
+These fields map to the SDK's `PreKeyBundle` fields after Base64 decoding. If
+the optional EC one-time key is exhausted, the signed EC prekey may be used;
+the KEM one-time field is returned when reserved, otherwise the stored signed
+KEM last-resort field is used. The adapter places exactly one of
+`kem_one_time_prekey` or `kem_last_resort_prekey` in the SDK bundle. Private
+material is never returned. These operations do not create a conversation or
+imply that the server can decrypt messages.
 
 ## Ordered conversation entries and messages
 
@@ -127,23 +240,88 @@ plaintext message fields and malformed/unsupported envelope metadata. A
 write that cannot atomically persist required primary records returns failure;
 no success is reported for a partial message.
 
+`CipherEnvelope` carries the OpenE2EE relay fields needed to reconstruct an
+incoming SDK `Envelope`: `sdk_message_type`, `client_timestamp_ms`, and
+`payload_base64`, alongside CLIP's protocol/version fields. The v2 envelope
+also carries the exact `sdk_client_message_id` and, for recovery traffic, the
+original `recovery_for_entry_id`. For ordinary v2 messages, the SDK ID is a
+UUIDv4; for recovery it has the SDK's family suffix and is distinct from the
+UUIDv4 `operation_id` used for CLIP API idempotency. Both IDs are stored and
+independently unique per sender. Existing v1 messages remain readable and use
+their operation ID as their SDK ID. For encrypted `ciphertext` and
+`prekey_bundle` messages, both key-version references are required except the
+SDK's `null` recovery response, which has none. The client timestamp is
+milliseconds, is set before encryption, and must match the SDK timestamp and
+the timestamp bound into encrypted message content. It exists only for SDK
+replay/retry matching; it is not authoritative for sequence, participant
+activity, retention, or authorization. The server supplies the SDK envelope's
+sender, recipient, transport entry ID and server-received timestamp from
+authenticated membership and the stored entry.
+
+SDK recovery requests, encrypted resends and null responses are ordered
+`protocol_control` entries, sent through the member-only message operation.
+The server stores the SDK ID, binds each control to the original retained
+message, and returns a server-derived `recovery_target` containing that
+original entry's ID, sequence, sender and server timestamp. It does not use a
+currently open thread or a client-supplied target to correlate recovery.
+Recovery families are bound to the original recipient, conversation and
+message; only that recipient may request recovery, and only the original
+sender may answer an accepted request attempt. Request controls are routed
+only to the original sender; resend/null controls only to the original
+recipient. The sender cannot retrieve controls addressed to the other member.
+No control creates unread text counts or notification intents. The server
+never parses or logs opaque SDK payloads. Retry requests and null responses
+have no application key-version references; a resend preserves the original
+message's SDK timestamp and sender/recipient key versions. Controls use the
+normal server sequence and activity timestamp, obey the no-write marker,
+rate limits and content retention, and are not presented as separate user
+messages. Clients use the SDK's batch recovery receive path, persist recovered
+content at the original chat position, then acknowledge SDK receipt. `sender_key`
+and `unidentified_sender` are not accepted by CLIP's one-device, 1:1 MVP.
+
+**Approved recovery revision (2026-10-24):** the original v1 UUID-to-SDK-ID
+equality supports old ordinary sends but is incompatible with the pinned
+SDK's automatic retry-family IDs. The
+[approved v2 recovery transport](../docs/decisions/conversation-recovery-transport.md)
+separates those IDs, preserves them on retrieval, links recovery responses
+to the original chat entry, and defines authorization, deduplication and
+rollout checks. Rahul verified its detailed shape. The typed contracts,
+generated schemas and PostgreSQL message provider now support v2 transport;
+browser SDK recovery handling remains pending. Automatic SDK recovery is not
+complete until that client path is implemented and tested;
+v1 retry-control storage alone is not evidence of recovery support.
+
+For every OpenE2EE message or retry-control send, the client generates a fresh
+UUIDv4 `operation_id` that is globally unique for that sender across
+conversations and SDK message types; it reuses that ID only for an identical
+retry. Reuse for another conversation, type, timestamp, or payload is a
+conflict. Non-SDK writes such as offer revisions retain their separately
+declared idempotency scopes.
+
 Messages are retrieved only by a member, in ascending sequence order, using
 incremental `sequence > after_sequence` retrieval rather than numbered pages.
 The cursor is a nonnegative committed sequence (default zero); the response
-includes entries, the last returned sequence and `has_more`, with a bounded
-page size of 20 by default and 20/50/100 allowed. An empty page does not
+includes visible entries, `scanned_through_sequence`, and `has_more`, with a
+bounded visible page size of 20 by default and 20/50/100 allowed. The cursor
+means the greatest global sequence the server inspected, not necessarily the
+last returned entry. Because a sender cannot retrieve its own recipient-only
+retry controls, a response may contain no visible entries while advancing the
+cursor across those controls. Clients continue while `has_more` is true and do
+not interpret skipped sequence numbers as message loss. An empty scan does not
 advance the cursor. Each entry exposes only the metadata needed to render the
 authorized thread: ID, sequence, kind, sender, creation instant and either the
-opaque encrypted envelope or a content-deleted marker. It never exposes an
+opaque SDK transport envelope (encrypted message or unencrypted retry
+control) or a content-deleted marker. It never exposes an
 envelope to a nonparticipant or content after its approved purge.
 
-Every participant write carries a client-generated UUID operation ID scoped
-to `(conversation_id, sender_id)` for retry deduplication. An identical retry
-returns the original entry/sequence; reuse with different intent returns a
-stable conflict. After retained content is purged, an operation ID remains
-reserved and retry cannot recreate the expired payload. Step 9 records exact
-opaque-byte retry equality and an owner-reviewed 409 conflict after content
-purge in the [combined registry](combined.md).
+Every participant write carries a client-generated UUID operation ID for
+retry deduplication. OpenE2EE sends require that ID to be globally unique per
+sender across conversations and SDK envelope types; identical retries return
+the original entry/sequence, while reuse with different intent or scope
+returns a stable conflict. After retained content is purged, an operation ID
+remains reserved and retry cannot recreate the expired payload. Step 9 records
+exact opaque-byte retry equality and an owner-reviewed 409 conflict after
+content purge in the [combined registry](combined.md).
 Reads, polling, key lookup, acknowledgements and workers do not advance
 `last_activity_at`.
 
@@ -171,6 +349,14 @@ server-resolved listing ID, buyer actor and owner. Listings requires a
 currently eligible sale listing for a new thread; retries may resolve the
 existing buyer/listing thread even after ordinary unavailability. This
 operation does not expose listing-private fields or selection state.
+
+Listings invokes `find_existing_listing_conversation` for an unavailable or
+out-of-window origin under its own origin-state lock. The request carries only
+the listing ID; the buyer comes from trusted caller context. The read-only call
+checks current buyer and regular-owner eligibility and returns only that pair's
+existing conversation or None. It never creates. Listings rejects missing,
+pending or retired origins first. Both regular and eligible temporary buyers
+may reopen their own pair; an owner cannot use this action to contact themself.
 
 `open_or_create_wanted_conversation` is callable only by Search with an open,
 non-retired request, regular eligible responder and server-resolved author.
@@ -313,55 +499,67 @@ conversation count and latest `last_activity_at`; it does not return thread
 IDs, member IDs, messages, offers, receipts or notification state. The
 timestamp is initialized when a thread is created and advances only for
 participant message, offer-revision/withdrawal or contact-share writes.
+Each participant-write timestamp comes from the server after the write holds
+the Conversations thread lock. Callers cannot supply an activity timestamp.
 Reads, polling, key lookup, notifications and cleanup never advance it.
 
-For zero associated threads, count is zero and latest activity is null; the
-90-day conversation-activity gate is satisfied because no associated thread
-has participant activity. For one or more threads, the origin owner compares
-the returned maximum with the approved cutoff; this proves every associated
-thread is old enough only if the query is complete. If completeness/state is
+For zero associated threads, count is zero and latest activity is null. For
+one or more threads, the origin owner compares the returned maximum with its
+server-derived cutoff. This is only a preflight: if completeness/state is
 unknown or Conversations is unavailable, return a safe dependency failure and
-the origin owner must defer retirement. This is a preflight only;
+the origin owner must defer retirement;
 `mark_origin_retired` performs the final authoritative activity check while
 holding the write locks. Never treat an error or missing result as zero
 activity. The public call exposes no content and grants no private table
 access.
 
-`mark_origin_retired` accepts the origin kind/ID, cutoff and globally unique
-operation ID. It locks every retained thread for that origin in ascending
-conversation UUID order, checks every latest participant-write time against
-the cutoff, and sets a no-new-participant-writes marker on all of them in one
-Conversations transaction. A zero-thread origin returns `marked` with
-`marked_count: 0`. If any thread is newer than the cutoff, it changes none and
-returns `blocked_recent_activity` with `marked_count: 0`. If the origin's
-threads are already marked, it returns `already_marked` and the number already
-marked. A repeated operation ID with the same origin and cutoff returns the
-stored original result; reusing that ID with a different origin or cutoff is a
-conflict. An unknown call result is retried with the same ID. The result says
-only what happened to thread write markers; it does not mean listing/request
-content or image objects have been deleted.
+After that preflight, Listings or Search calls `mark_origin_retired` with the
+same stable operation ID and cutoff. Conversations locks every associated
+thread in ascending thread-ID order, rechecks each server-recorded latest
+participant-write time against the cutoff, and marks all threads no-write in
+one transaction. A write after the cutoff blocks retirement; if any thread is
+too recent, none are marked. A message and the marker contend on the same
+thread lock: whichever acquires it first determines the result. Messages,
+offer revisions/withdrawals, and contact shares all check the local marker
+under that thread lock before writing or advancing activity. The marker does
+not prevent authorized reads of retained history and does not delete content.
 
-Participant message, offer, and contact-share writes use the same per-thread
-lock. They set `last_activity_at` using server time only after obtaining that
-lock, then check the no-write marker before committing. Therefore, if a write
-gets the lock first, retirement sees its new activity and blocks the whole
-attempt; if retirement gets the lock first, the waiting write sees the marker
-and is rejected. For multi-thread marking, a participant write waits until the
-all-or-none marker transaction finishes. Reads and non-participant operations
-do not advance activity.
+The result is `{outcome,marked_count}`, where `outcome` is `marked`,
+`blocked_recent_activity`, or `already_marked`. `marked` with count zero means
+the origin has no associated threads; `blocked_recent_activity` marks none;
+`already_marked` means all associated threads were already marked before this
+operation, and `marked_count` reports the number of those existing markers. A
+mixture of marked and unmarked threads is an inconsistent state:
+stop and reconcile through the Conversations API rather than partially
+proceeding. Operation IDs are globally unique. Repeating the same ID with the
+same origin and cutoff returns its stored result; reusing it for a different
+origin or cutoff returns a stable conflict without changes. Unknown outcomes
+keep the origin pending; retry the same operation ID and never clear content
+on an unknown result. After a blocked result, the origin owner may clear its
+pending state without clearing content; a later attempt uses a new ID.
+
+The origin owner sets pending state in its own transaction before calling
+Conversations, blocking new origin work while the call is in progress. It may
+clear its own content only after a confirmed marker, in its own transaction.
+Listings and Search do not hold an origin lock across a Conversations call.
+Conversations never queries or updates Listings or Search business tables;
+origin owners validate their own state and use these public operations.
 
 After 90 days without participant writes, purge message content, encrypted
 offer notes and structured offer revisions together under the approved
 retention policy. Contact-share payloads/labels are removed after 30 days.
 Keep only content-free ordered markers and minimal origin/thread/member and
 offer uniqueness guards for their approved lifetimes. Reads, polling, workers,
-account expiry and cleanup do not restart the 90-day timer. Retention timing
-does not itself authorize destructive content or object cleanup. The
-Conversations-owned no-write marker is the approved coordination boundary:
-Listings/Search must use it before beginning their own local retirement
-transition. Each domain still needs its separately approved local content/image
-cleanup mechanism and order before implementing deletion. No cross-domain
-trigger or shared database transaction may perform those operations.
+account expiry and cleanup do not restart the 90-day timer. The origin marker
+order above is approved for implementation. Physical content/object cleanup
+and the post-retirement My Listings display remain separate decisions; do not
+infer a deletion mechanism from the marker operation.
+
+CN-01's separately approved [content cleanup mechanism](../docs/decisions/conversation-content-cleanup.md)
+implements the90-day thread purge with a bounded, dry-run-default command,
+thread-lock cutoff recheck, and atomic payload/offer-history removal. Content-free
+entry, operation and reference guards survive. This does not enable a deployed
+schedule or authorize a persistent-target cleanup run.
 
 ## Shared errors and safe operations
 
@@ -377,7 +575,9 @@ request/operation/entity IDs and safe outcome codes; neither ciphertext nor
 key material is logged or attached to traces/evidence.
 
 The required deterministic checks are assigned in Steps 9/12 and CN-01/02/03:
-two-client ciphertext exchange and tampering/wrong-key failure; participant
+two-client ciphertext exchange, SDK prekey/ciphertext relay reconstruction,
+retry-request control routing without unread/notification side effects, and
+tampering/wrong-key failure; participant
 and ID-substitution denial; origin-pair duplicate/concurrent creation and
 close/create races; ordered/incremental reads and retry; monotonic read
 acknowledgements; listing availability-gated offer writes and revisions;
@@ -388,9 +588,9 @@ retention. Isolated stubs cannot establish real cross-domain acceptance.
 
 ## Explicit review items
 
-- CN-01 Step 2 must approve the actual established E2EE library/protocol,
-  serialization, browser key handling, key-change and key-loss behavior before
-  message implementation; this contract deliberately does not choose them.
+- CN-01 Step 2 selected OpenE2EE 13.0.0 and the envelope fields above; runtime
+  adoption remains gated on recording the team source/dependency review and
+  implementing the browser storage, key-change and key-loss behavior.
 - The user reports that affected owners reviewed origin create/close locks,
   activity completeness, read-receipt visibility, no-write behavior after
   origin retirement and the retirement-marker operation, notification

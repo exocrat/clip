@@ -28,6 +28,17 @@ API responses are buffered through a clone before returning the original Respons
 for each feature's own parser. This transport is not for streams or upload bytes.
 Failures expose safe status and whether the business request might have run.
 
+API preflight and business requests explicitly use `referrerPolicy: "origin"`.
+The document keeps its `no-referrer` policy for other activity. In fetch mode
+`same-origin`, inheriting `no-referrer` serializes the write's Origin as `null`
+under the [Fetch Standard](https://fetch.spec.whatwg.org/#append-a-request-origin-header),
+causing the existing exact-Origin guard to reject legitimate writes. The API
+override sends only the site origin as Referer, excluding path, query and fragment
+(including login callback material), and preserves the browser's real Origin.
+It is fixed after caller options so features cannot accidentally restore the
+conflicting policy. Same-origin mode still prevents foreign destinations and
+redirects remain rejected. Server Origin/CSRF validation continues unchanged.
+
 Normal Identity uses the existing /api proxy like marketplace features. Explicit
 Identity preview retains unprefixed routing; its existing build guard remains.
 Listings/Search adopt only the shared transport, preserving their public exports,

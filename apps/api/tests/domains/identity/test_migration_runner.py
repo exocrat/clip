@@ -24,6 +24,22 @@ MANIFEST = (
 DIRECTORY = ROOT / "database/migrations"
 
 
+@pytest.fixture(autouse=True)
+def reviewed_migration_package(tmp_path, monkeypatch):
+    """Test the pinned 17-file runner package, not a newer unreviewed chain.
+
+    The live runner must keep rejecting the expanded Conversations chain until
+    its manifest and source receive a separate exact-target review.
+    """
+    directory = tmp_path / "reviewed-migrations"
+    directory.mkdir()
+    for record in json.loads(MANIFEST.read_text())["migrations"]:
+        shutil.copyfile(ROOT / record["path"], directory / Path(record["path"]).name)
+    monkeypatch.setattr(
+        __import__(__name__, fromlist=["DIRECTORY"]), "DIRECTORY", directory
+    )
+
+
 def migrate(case, **overrides):
     args = dict(directory=DIRECTORY, manifest=MANIFEST, ca=case.ca, image=case.image)
     args.update(overrides)
@@ -311,7 +327,18 @@ def test_timed_out_version_client_is_removed(migration_case, monkeypatch):
         text=True,
         timeout=10,
     )
-    assert check.returncode != 0 and "No such" in check.stderr
+    assert check.returncode != 0 and "no such" in check.stderr.lower()
+
+
+def test_new_conversations_chain_requires_its_own_review(migration_case):
+    """Do not let isolated test packaging authorize the expanded live chain."""
+    with pytest.raises(ValueError):
+        runner.validate_manifest(
+            ROOT / "database/migrations",
+            MANIFEST,
+            migration_case.image,
+            migration_case.target,
+        )
 
 
 @pytest.mark.parametrize("operation", ["migration", "probe"])

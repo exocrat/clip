@@ -164,6 +164,18 @@ transactions, retry behavior and tests.
 | Change availability/window | Owner only. `available`/`unavailable` and the time window are separate. An update never assigns or clears a buyer implicitly. A successful reopen clears the continuous-retirement eligibility anchor; exact transitions follow the approved retirement decision. |
 | Read catalogue | Return active category/condition values with stable codes and labels. Listings owns updates; Search reuses category codes through this public boundary. |
 
+`POST /listings/{listing_id}/conversations` accepts only an operation UUID;
+the buyer comes from trusted authentication and the owner from Listings.
+Listings checks current eligibility and holds its origin state lock during a
+bounded Conversations call. A discoverable origin uses the create-or-existing
+port; an unavailable/out-of-window origin uses the read-only exact buyer/listing
+lookup. Missing, pending and retired origins return safe404; self-contact is403.
+Eligible regular and temporary buyers may participate. The exact pair is the
+retry identity, so an ambiguous attempt cannot produce a duplicate thread or
+initial notification. New creation returns201; existing-pair reopening returns200.
+The PostgreSQL guard uses `FOR NO KEY UPDATE` to serialize seller changes while
+allowing the independent thread transaction's FK key-share check.
+
 Create commands save the validated request and original response atomically
 with listing and image publication. The retry key is `(owner_id, operation_id)`;
 while listing content is retained, the same key and request replay the original

@@ -255,7 +255,7 @@ def main():
         actual = sql(
             "SELECT version FROM public.schema_migrations ORDER BY version"
         ).splitlines()
-        if not expected or actual != expected or actual[-1] != "20261025013000":
+        if not expected or actual != expected or actual[-1] != "20261026090300":
             raise RuntimeError("Migration history differs from the expected head")
         migrate()
         for filename in (
@@ -272,9 +272,9 @@ def main():
             sql(
                 "SELECT count(*) FROM pg_tables WHERE schemaname IN ('identity','listings','search','conversations')"
             )
-            != "37"
+            != "40"
         ):
-            raise RuntimeError("Expected 37 domain tables")
+            raise RuntimeError("Expected 40 domain tables")
         # Keep the native harness's merged schema inventory tied to actual SQL,
         # rather than treating textual conflict resolution as platform evidence.
         functions = sql(
@@ -286,7 +286,7 @@ def main():
             "JOIN pg_namespace n ON n.oid=c.relnamespace WHERE NOT t.tgisinternal "
             "AND n.nspname IN ('identity','listings','search','conversations')"
         )
-        if (functions, triggers) != ("33", "43"):
+        if (functions, triggers) != ("36", "46"):
             raise RuntimeError(
                 f"Combined runtime inventory differs: functions={functions}, triggers={triggers}"
             )

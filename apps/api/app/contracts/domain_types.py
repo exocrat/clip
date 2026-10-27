@@ -7,6 +7,8 @@ authorization, persistence, provider calls, retries, encryption, or cleanup.
 
 from __future__ import annotations
 
+import base64
+import re
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Annotated, Generic, Literal, TypeVar
@@ -22,6 +24,7 @@ from pydantic import (
     PlainSerializer,
     SecretStr,
     WithJsonSchema,
+    model_validator,
 )
 
 UserId = UUID
@@ -284,14 +287,104 @@ class CatalogueView(ContractModel):
 
 
 class CipherEnvelope(ContractModel):
-    """Opaque encrypted payload transport metadata; never plaintext content."""
+    """OpenE2EE relay envelope metadata and its opaque transport payload."""
 
     protocol_id: str
     protocol_version: str
-    envelope_version: int = Field(ge=1)
-    sender_key_version: int = Field(ge=1)
-    recipient_key_version: int = Field(ge=1)
-    payload_base64: str = Field(min_length=1, repr=False)
+    envelope_version: int = Field(ge=1, le=2)
+    sdk_message_type: Literal["ciphertext", "prekey_bundle", "retry_request"]
+    sdk_client_message_id: str | None = Field(
+        default=None, min_length=1, max_length=128
+    )
+    recovery_for_entry_id: UUID | None = None
+    client_timestamp_ms: int = Field(ge=0, le=9_007_199_254_740_991, strict=True)
+    sender_key_version: int | None = Field(default=None, ge=1)
+    recipient_key_version: int | None = Field(default=None, ge=1)
+    payload_base64: str = Field(min_length=1, max_length=87384, repr=False)
+
+    @model_validator(mode="after")
+    def validate_sdk_envelope_metadata(self) -> CipherEnvelope:
+        """Validate selected SDK metadata while keeping payload bytes opaque."""
+        if (
+            self.protocol_id != "open-e2ee-signal"
+            or self.protocol_version != "13.0.0"
+            or self.envelope_version not in {1, 2}
+        ):
+            raise ValueError("unsupported conversation protocol or envelope version")
+        try:
+            payload = base64.b64decode(self.payload_base64, validate=True)
+        except ValueError as exc:
+            raise ValueError("payload must use standard padded Base64") from exc
+        if (
+            not 1 <= len(payload) <= 65536
+            or base64.b64encode(payload).decode("ascii") != self.payload_base64
+        ):
+            raise ValueError("payload has invalid Base64 or byte length")
+        has_versions = (
+            self.sender_key_version is not None
+            and self.recipient_key_version is not None
+        )
+        recovery_suffix = None
+        if self.envelope_version == 2 and self.sdk_client_message_id is not None:
+            recovery_suffix = self.sdk_client_message_id.split(":", 1)[1:]
+        is_null_recovery = bool(
+            recovery_suffix and recovery_suffix[0].startswith("null")
+        )
+        if self.sdk_message_type == "retry_request" or is_null_recovery:
+            if (
+                self.sender_key_version is not None
+                or self.recipient_key_version is not None
+            ):
+                raise ValueError(
+                    "retry requests must not claim encryption key versions"
+                )
+        elif not has_versions:
+            raise ValueError("encrypted SDK envelopes require both key versions")
+        if self.envelope_version == 1:
+            if self.recovery_for_entry_id is not None:
+                raise ValueError("legacy envelopes cannot identify a recovery target")
+        else:
+            if self.sdk_client_message_id is None:
+                raise ValueError("v2 envelopes require the SDK client message ID")
+            try:
+                sdk_id_bytes = self.sdk_client_message_id.encode("ascii")
+            except UnicodeEncodeError as exc:
+                raise ValueError("SDK client message ID must be ASCII") from exc
+            if len(sdk_id_bytes) > 128 or any(
+                byte < 32 or byte > 126 for byte in sdk_id_bytes
+            ):
+                raise ValueError(
+                    "SDK client message ID must be bounded printable ASCII"
+                )
+            recovery_id = re.fullmatch(
+                r"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})"
+                r"(?::(retry-request|resend|null)(?::([2-9]|[1-9][0-9]+))?)?",
+                self.sdk_client_message_id,
+            )
+            if recovery_id is None:
+                raise ValueError("SDK client message ID has an unsupported format")
+            if (
+                recovery_id.group(3)
+                and int(recovery_id.group(3)) > 9_007_199_254_740_991
+            ):
+                raise ValueError("recovery attempt exceeds the SDK safe integer range")
+            is_recovery = recovery_id.group(2) is not None
+            if is_recovery != (self.recovery_for_entry_id is not None):
+                raise ValueError("recovery SDK IDs must bind an original entry")
+            if not is_recovery and self.sdk_message_type == "retry_request":
+                raise ValueError("retry requests must use a recovery SDK ID")
+            if not is_recovery and UUID(recovery_id.group(1)).version != 4:
+                raise ValueError("ordinary v2 SDK IDs must be UUIDv4")
+            if is_recovery and recovery_id.group(2) == "retry-request":
+                if self.sdk_message_type != "retry_request":
+                    raise ValueError(
+                        "retry-request IDs require retry request envelopes"
+                    )
+            elif is_recovery and self.sdk_message_type == "retry_request":
+                raise ValueError(
+                    "only retry-request IDs may use retry request envelopes"
+                )
+        return self
 
 
 class ListingSummary(ContractModel):
@@ -514,6 +607,15 @@ class OfferRevisionRequest(ContractModel):
     expected_revision: int | None = Field(default=None, ge=1)
     operation_id: OperationId
 
+    @model_validator(mode="after")
+    def validate_encrypted_note(self) -> OfferRevisionRequest:
+        if (
+            self.note_envelope is not None
+            and self.note_envelope.sdk_message_type != "ciphertext"
+        ):
+            raise ValueError("offer notes require an encrypted ciphertext envelope")
+        return self
+
 
 class OfferWithdrawalRequest(ContractModel):
     """Append an offer withdrawal revision under its stable operation key."""
@@ -629,22 +731,71 @@ class ConversationSummary(ContractModel):
 
 
 class ConversationEntry(ContractModel):
-    """Ordered message/share envelope metadata; content may be retired."""
+    """Ordered message/control/share envelope metadata; content may be retired."""
 
     entry_id: UUID
     sequence: int = Field(ge=1)
-    kind: Literal["message", "contact_share"]
+    kind: Literal["message", "protocol_control", "contact_share"]
     sender_user_id: UserId
     created_at: UtcInstant
     envelope: CipherEnvelope | None = None
+    recovery_target: RecoveryTarget | None = None
     content_deleted: bool = False
+
+    @model_validator(mode="after")
+    def validate_entry_envelope_kind(self) -> ConversationEntry:
+        if self.envelope is None:
+            if self.recovery_target is not None:
+                raise ValueError("recovery targets require a retained envelope")
+            return self
+        sdk_type = self.envelope.sdk_message_type
+        if self.kind == "protocol_control":
+            if self.envelope.envelope_version == 1:
+                if sdk_type != "retry_request" or self.recovery_target is not None:
+                    raise ValueError("legacy protocol controls require a retry request")
+            elif (
+                self.envelope.recovery_for_entry_id is None
+                or self.recovery_target is None
+            ):
+                raise ValueError(
+                    "protocol controls require a stored v2 recovery target"
+                )
+        if self.kind != "protocol_control" and (
+            self.envelope.recovery_for_entry_id is not None
+            or self.recovery_target is not None
+        ):
+            raise ValueError("only protocol controls may identify a recovery target")
+        if (
+            self.kind == "protocol_control"
+            and sdk_type == "retry_request"
+            and self.envelope.envelope_version == 2
+        ):
+            if (
+                self.envelope.sdk_client_message_id is None
+                or not self.envelope.sdk_client_message_id.endswith(":retry-request")
+            ):
+                raise ValueError("retry requests require a retry-request SDK ID")
+        if self.kind == "message" and sdk_type not in {"ciphertext", "prekey_bundle"}:
+            raise ValueError("messages require encrypted SDK content")
+        if self.kind == "contact_share" and sdk_type != "ciphertext":
+            raise ValueError("contact shares require encrypted SDK content")
+        return self
+
+
+class RecoveryTarget(ContractModel):
+    """Stored original entry details used to restore recovered content in place."""
+
+    entry_id: UUID
+    sequence: int = Field(ge=1)
+    sender_user_id: UserId
+    created_at: UtcInstant
 
 
 class EntryPage(ContractModel):
-    """Ordered entry page and replay-safe cursor state."""
+    """Visible entry page plus the last global sequence inspected for this member."""
 
     items: list[ConversationEntry]
-    last_sequence: int = Field(ge=0)
+    scanned_through_sequence: int = Field(ge=0)
     has_more: bool
 
 
@@ -656,10 +807,23 @@ class EntryQuery(ContractModel):
 
 
 class MessageRequest(ContractModel):
-    """Encrypted message plus stable retry key."""
+    """OpenE2EE envelope plus a UUIDv4 CLIP write identity."""
 
     envelope: CipherEnvelope
     operation_id: OperationId
+
+    @model_validator(mode="after")
+    def validate_operation_id(self) -> MessageRequest:
+        """Keep v1's shared ID compatible and v2's API ID independently typed."""
+        if self.operation_id.version != 4:
+            raise ValueError("operation_id must be UUIDv4")
+        if (
+            self.envelope.envelope_version == 1
+            and self.envelope.sdk_client_message_id
+            not in {None, str(self.operation_id)}
+        ):
+            raise ValueError("v1 SDK client ID must equal operation_id")
+        return self
 
 
 class ReadState(ContractModel):
@@ -674,14 +838,73 @@ class ReadAcknowledgement(ContractModel):
     last_read_sequence: int = Field(ge=0)
 
 
+def _validate_base64_key(value: str, expected_bytes: int, label: str) -> None:
+    """Require canonical standard Base64 for one SDK public-key field."""
+    try:
+        decoded = base64.b64decode(value, validate=True)
+    except ValueError as exc:
+        raise ValueError(f"{label} must use standard padded Base64") from exc
+    if (
+        len(decoded) != expected_bytes
+        or base64.b64encode(decoded).decode("ascii") != value
+    ):
+        raise ValueError(f"{label} has an invalid encoding or byte length")
+
+
+class PublicCompositeIdentityV1(ContractModel):
+    """OpenE2EE public identity tuple; private identity keys never cross the API."""
+
+    version: Literal[1] = 1
+    x25519_public_key_base64: str = Field(min_length=1, max_length=64, repr=False)
+    ed25519_public_key_base64: str = Field(min_length=1, max_length=64, repr=False)
+
+    @model_validator(mode="after")
+    def validate_public_key_lengths(self) -> PublicCompositeIdentityV1:
+        _validate_base64_key(self.x25519_public_key_base64, 32, "X25519 key")
+        _validate_base64_key(self.ed25519_public_key_base64, 32, "Ed25519 key")
+        return self
+
+
+class PublicEcSignedPreKey(ContractModel):
+    """Public X25519 signed prekey and its OpenE2EE identity signature."""
+
+    key_id: int = Field(ge=0, le=4_294_967_295)
+    public_key_base64: str = Field(min_length=1, max_length=64, repr=False)
+    signature_base64: str = Field(min_length=1, max_length=88, repr=False)
+
+    @model_validator(mode="after")
+    def validate_key_lengths(self) -> PublicEcSignedPreKey:
+        _validate_base64_key(self.public_key_base64, 32, "EC signed prekey")
+        _validate_base64_key(self.signature_base64, 64, "EC prekey signature")
+        return self
+
+
+class PublicKemPreKey(ContractModel):
+    """Public tagged ML-KEM-1024 prekey and its identity signature."""
+
+    key_id: int = Field(ge=0, le=4_294_967_295)
+    public_key_base64: str = Field(min_length=1, max_length=2200, repr=False)
+    signature_base64: str = Field(min_length=1, max_length=88, repr=False)
+
+    @model_validator(mode="after")
+    def validate_key_lengths(self) -> PublicKemPreKey:
+        _validate_base64_key(self.public_key_base64, 1569, "KEM prekey")
+        _validate_base64_key(self.signature_base64, 64, "KEM prekey signature")
+        return self
+
+
 class KeyBundle(ContractModel):
-    """One user's public bundle and its compatible protocol metadata."""
+    """Typed public SDK bundle and its compatible protocol metadata."""
 
     user_id: UserId
     protocol_id: str
     protocol_version: str
     key_version: int = Field(ge=1)
-    bundle_base64: str = Field(min_length=1, repr=False)
+    registration_id: int = Field(ge=1, le=16383)
+    device_id: Literal[1] = 1
+    identity: PublicCompositeIdentityV1
+    ec_signed_prekey: PublicEcSignedPreKey
+    kem_last_resort_prekey: PublicKemPreKey
 
 
 class MemberKeyBundles(ContractModel):
@@ -691,11 +914,15 @@ class MemberKeyBundles(ContractModel):
 
 
 class PublicKeyBundleRequest(ContractModel):
-    """Opaque standard padded Base64 public-key bundle registration."""
+    """Register own public OpenE2EE identity and reusable signed prekeys."""
 
     protocol_id: str
     protocol_version: str
-    bundle_base64: str = Field(min_length=1, repr=False)
+    registration_id: int = Field(ge=1, le=16383)
+    device_id: Literal[1] = 1
+    identity: PublicCompositeIdentityV1
+    ec_signed_prekey: PublicEcSignedPreKey
+    kem_last_resort_prekey: PublicKemPreKey
     operation_id: OperationId
 
 
@@ -706,6 +933,117 @@ class PublicKeyBundleView(ContractModel):
     protocol_id: str
     protocol_version: str
     key_version: int = Field(ge=1)
+
+
+class PublicPreKeyMaterial(ContractModel):
+    """One public one-time prekey in OpenE2EE's supported client profile."""
+
+    key_type: Literal["ecPreKey", "kemOneTimePreKey"]
+    key_id: int = Field(ge=0)
+    public_key_base64: str = Field(min_length=1, max_length=4096, repr=False)
+    signature_base64: str | None = Field(
+        default=None, min_length=1, max_length=256, repr=False
+    )
+
+    @model_validator(mode="after")
+    def validate_signature_shape(self) -> PublicPreKeyMaterial:
+        try:
+            public_key = base64.b64decode(self.public_key_base64, validate=True)
+        except ValueError as exc:
+            raise ValueError("prekey bytes must use standard padded Base64") from exc
+        if (
+            not public_key
+            or base64.b64encode(public_key).decode("ascii") != self.public_key_base64
+        ):
+            raise ValueError("prekey bytes must use standard padded Base64")
+        expected_length = 32 if self.key_type == "ecPreKey" else 1569
+        if len(public_key) != expected_length:
+            raise ValueError("prekey public key has an invalid byte length")
+
+        if self.signature_base64 is not None:
+            try:
+                signature = base64.b64decode(self.signature_base64, validate=True)
+            except ValueError as exc:
+                raise ValueError(
+                    "prekey bytes must use standard padded Base64"
+                ) from exc
+            if (
+                not signature
+                or base64.b64encode(signature).decode("ascii") != self.signature_base64
+            ):
+                raise ValueError("prekey bytes must use standard padded Base64")
+            if len(signature) != 64:
+                raise ValueError("prekey signature has an invalid byte length")
+        if self.key_type == "kemOneTimePreKey" and self.signature_base64 is None:
+            raise ValueError("KEM one-time prekeys require an identity signature")
+        if self.key_type == "ecPreKey" and self.signature_base64 is not None:
+            raise ValueError("EC one-time prekeys do not carry a signature")
+        return self
+
+
+class PublicPreKeyBatchRequest(ContractModel):
+    """Idempotent public one-time prekey publication for the active key version."""
+
+    key_version: int = Field(ge=1)
+    prekeys: list[PublicPreKeyMaterial] = Field(min_length=1, max_length=200)
+    operation_id: OperationId
+
+    @model_validator(mode="after")
+    def validate_unique_prekey_ids(self) -> PublicPreKeyBatchRequest:
+        identifiers = [(prekey.key_type, prekey.key_id) for prekey in self.prekeys]
+        if len(identifiers) != len(set(identifiers)):
+            raise ValueError("prekey IDs must be unique within each key type")
+        return self
+
+
+class OwnPreKeyInventory(ContractModel):
+    """Counts only the authenticated account's unconsumed public prekeys."""
+
+    key_version: int = Field(ge=1)
+    ec_one_time_count: int = Field(ge=0)
+    kem_one_time_count: int = Field(ge=0)
+
+
+class PublicPreKeyBatchView(ContractModel):
+    """Accepted public-prekey counts for the caller's active key version."""
+
+    key_version: int = Field(ge=1)
+    ec_one_time_count: int = Field(ge=0)
+    kem_one_time_count: int = Field(ge=0)
+
+
+class PreKeyBundleRequest(ContractModel):
+    """Idempotency key for atomically reserving a member's one-time prekeys."""
+
+    operation_id: OperationId
+
+
+class MemberPreKeyBundle(ContractModel):
+    """Peer's public session bundle plus any atomically consumed one-time keys."""
+
+    key_bundle: KeyBundle
+    registration_id: int = Field(ge=1, le=16383)
+    device_id: Literal[1] = 1
+    ec_one_time_prekey: PublicPreKeyMaterial | None = None
+    kem_one_time_prekey: PublicPreKeyMaterial | None = None
+
+    @model_validator(mode="after")
+    def validate_selected_prekey_types(self) -> MemberPreKeyBundle:
+        if (
+            self.ec_one_time_prekey is not None
+            and self.ec_one_time_prekey.key_type != "ecPreKey"
+        ):
+            raise ValueError("EC one-time prekey field requires an EC prekey")
+        if (
+            self.kem_one_time_prekey is not None
+            and self.kem_one_time_prekey.key_type != "kemOneTimePreKey"
+        ):
+            raise ValueError("KEM one-time prekey field requires a KEM prekey")
+        if self.registration_id != self.key_bundle.registration_id:
+            raise ValueError("registration ID must match the registered key bundle")
+        if self.device_id != self.key_bundle.device_id:
+            raise ValueError("device ID must match the registered key bundle")
+        return self
 
 
 class ContactPreparationRequest(ContractModel):
@@ -719,6 +1057,12 @@ class ContactShareRequest(ContractModel):
 
     envelope: CipherEnvelope
     operation_id: OperationId
+
+    @model_validator(mode="after")
+    def validate_encrypted_contact_share(self) -> ContactShareRequest:
+        if self.envelope.sdk_message_type != "ciphertext":
+            raise ValueError("contact shares require an encrypted ciphertext envelope")
+        return self
 
 
 class ConversationQuery(ContractModel):
@@ -764,6 +1108,12 @@ class WantedConversationContext(ContractModel):
 
     request_id: WantedRequestId
     author_id: UserId
+
+
+class ExistingListingConversationLookup(ContractModel):
+    """Exact listing/authenticated-buyer lookup; this operation never creates."""
+
+    listing_id: ListingId
 
 
 class ExistingWantedConversationLookup(ContractModel):
@@ -814,7 +1164,7 @@ class OriginActivityResult(ContractModel):
 
 
 class OriginRetirementCommand(ContractModel):
-    """Stable retirement attempt checked atomically against every thread."""
+    """Stable owner-authorized retirement attempt checked against every thread."""
 
     origin_kind: OriginKind
     origin_id: UUID
@@ -823,7 +1173,7 @@ class OriginRetirementCommand(ContractModel):
 
 
 class RetirementMarkerResult(ContractModel):
-    """All-or-none no-write marker outcome; no content cleanup is implied."""
+    """Marker outcome/count; already-marked reports the existing marker count."""
 
     outcome: Literal["marked", "blocked_recent_activity", "already_marked"]
     marked_count: int = Field(ge=0)

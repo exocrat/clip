@@ -71,7 +71,8 @@ export async function sessionFetch(
       if (!policy.publicAuthentication) {
         const csrf = await fetch(`${prefix}/auth/csrf`, {
           credentials: 'same-origin', cache: 'no-store', mode: 'same-origin',
-          redirect: 'error', referrerPolicy: 'origin', signal: controller.signal,
+          referrerPolicy: 'origin',
+          redirect: 'error', signal: controller.signal,
           headers: { Accept: 'application/json' },
         });
         if (!csrf.ok) throw new SessionFetchError(csrf.status);
@@ -88,7 +89,11 @@ export async function sessionFetch(
     dispatched = unsafe;
     const response = await fetch(`${prefix}${path}`, {
       ...init, method, headers, credentials: 'same-origin', cache: 'no-store',
-      mode: 'same-origin', redirect: 'error', referrerPolicy: 'origin', signal: controller.signal,
+      mode: 'same-origin', redirect: 'error', signal: controller.signal,
+      // In same-origin fetch mode, inherited no-referrer nulls the Origin on
+      // writes. Origin-only Referer preserves CSRF checks without leaking the
+      // page path, callback query or fragment; callers cannot override it.
+      referrerPolicy: 'origin',
     });
     // App endpoints are bounded JSON/204, never byte uploads or streaming feeds.
     // Finish receiving while abort/deadline are attached; keep the original

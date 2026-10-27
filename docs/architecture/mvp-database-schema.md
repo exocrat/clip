@@ -192,8 +192,16 @@ Draft-title matching is a read against the Listings public query boundary; it cr
 | `conversations.origin_retirement_operations` / `operation_id uuid` | `origin_kind text`, `origin_id uuid`, `cutoff_utc instant`, `outcome text`, `marked_count integer`, `created_at instant` | Globally unique operation ID; store request identity and stable result so same-request retries replay and a reused ID with different origin/cutoff conflicts. Record blocked outcomes too; a later attempt after recent activity must use a new ID. This table stores only minimal IDs, cutoff and outcome, never content. Added by migration `20261020142319`; public service handling remains to be implemented and tested. |
 | `conversations.members` / `(conversation_id uuid, user_id uuid)` | `last_read_sequence bigint`, `read_at instant?`, `joined_at instant`, `reminder_episode_start_sequence bigint?`, `reminder_sent_at instant?` | FKs thread/user; nonnegative watermark, positive episode start when present; sent-at requires an episode. Preserve episode state beyond terminal-job cleanup until read catch-up. Index `(user_id, conversation_id)` for private inbox lookup. Only the two thread participants may have member rows; exact member/episode/read consistency requires A/D-reviewed deferred constraints/transaction checks. |
 | `conversations.public_key_versions` / `id uuid` | `user_id uuid`, `version bigint`, `public_key_material bytea`, `protocol_id text`, `created_at instant`, `retired_at instant?` | FK user; unique `(user_id, version)`, positive version; partial unique active bundle per user. Mohit-approved encoded public bundle length 1–16 KiB. Authentication, exact serialization and device/key replacement rules require A/D/security review. No private keys. |
-| `conversations.entries` / `id uuid` | `conversation_id uuid`, `sequence bigint`, `sender_id uuid`, `client_operation_id uuid`, `kind text`, `created_at instant`, `content_deleted_at instant?` | Unique `(conversation_id, sequence)`; FK `(conversation_id, sender_id)` to members. Unique `(conversation_id, sender_id, client_operation_id)` for proposed send deduplication. Content-free marker after retention purge; no restoration of deleted payload on retries. Proposed kinds message/offer/contact-share; final event taxonomy/marker lifecycle reviewed with D. |
-| `conversations.encrypted_payloads` / `entry_id uuid` | `protocol_id text`, `envelope_version integer`, `sender_key_version_id uuid`, `recipient_key_version_id uuid`, `envelope bytea` | PK/FK entry and FKs key versions; positive envelope version; encoded envelope 1–64 KiB. Sender/recipient key ownership and protocol must agree with entry/thread. Exact protocol-compatible serialization/security review remains required below. No plaintext note/contact/message columns. |
+| `conversations.entries` / `id uuid` | `conversation_id uuid`, `sequence bigint`, `sender_id uuid`, `client_operation_id uuid`, `sdk_client_message_id text?`, `kind text`, `recipient_id uuid?`, `recovery_for_entry_id uuid?`, `recovery_requester_id uuid?`, `recovery_family_id uuid?`, `recovery_attempt bigint?`, `recovery_kind text?`, `created_at instant`, `content_deleted_at instant?` | Unique thread/sequence, sender/operation and sender/SDK ID; FK sender to members. Recovery metadata is all-null or complete, immutable and bound to an original chat entry and accepted request attempt. Recovery kinds retry-request/resend/null are recipient-only protocol controls; ordinary kinds remain message/offer/contact-share. Content-free IDs/references survive payload purge. |
+| `conversations.recovery_families` / `(requester_id uuid, family_id uuid)` | `conversation_id uuid`, `original_entry_id uuid`, `first_request_entry_id uuid`, `created_at instant` | Immutable content-free family binding, globally scoped per requester. Original must be a retained chat message in this thread; requester must be its recipient. The first request and binding commit atomically using a deferred check/FK. Responses require the original sender and an accepted matching attempt. No cross-domain business queries. |
+| `conversations.encrypted_payloads` / `entry_id uuid` | `protocol_id text`, `protocol_version text`, `envelope_version integer`, `sdk_message_type text`, `client_timestamp_ms bigint`, `sender_key_version_id uuid?`, `recipient_key_version_id uuid?`, `envelope bytea` | PK/FK entry and FKs key versions; encoded envelope 1–64 KiB. v1 routing remains valid; v2 storage enforces SDK IDs and recovery context. Retry controls and SDK null responses have null application key references; content resends preserve the original key versions and SDK timestamp. Key ownership/protocol match thread members. No plaintext columns. |
+
+The recovery storage migration implements the database portion of the
+[approved transport revision](../decisions/conversation-recovery-transport.md).
+The HTTP contracts/provider and browser recovery integration remain pending;
+database support alone does not advertise or accept v2 through the current API.
+Legacy SDK IDs are copied from the retained operation UUID with deferred
+entry checks flushed before further DDL; ciphertext is not rewritten.
 
 The initiator is the buyer for a listing origin and the regular responder for a request origin. Counterparty identity comes from the authoritative listing/request owner via its public operation, never request-supplied ownership. These are stable origin roles, not a claim that every request responder is a buyer. Service authorization checks live account eligibility, resource state and participant membership; foreign keys alone cannot enforce these policies.
 
@@ -202,8 +210,56 @@ Concurrency requirements for the reviewed implementation:
 - Serialize entry sequence allocation on the thread row; entries then have a committed per-conversation ordering. Incremental reads use `sequence > watermark ORDER BY sequence`, separate from shared numbered-page APIs. Do not substitute a UUID or wall clock for committed conversation order.
 - A duplicate operation key with different content is a conflict; retry with identical intent returns the original result. Server-side deduplication must not require decrypting the content. Exact payload equivalence representation and retention are reviewed before implementation.
 - Read acknowledgement is sent after client display. Atomically advance, never decrease, a member's watermark; reject values beyond existing authorized entries. Fetching/polling alone does not mark read. A watermark comparison is bounded by the thread and actual entries.
-- Listing/request owner and eligibility validation occurs through public interfaces. A closure/create race requires an agreed owner-mediated lock/operation protocol or equivalent concurrency contract; a preflight read is insufficient. Preserve this as a DL-00 real integration requirement, not permission for private cross-domain SQL.
+- Listing/request owner and eligibility validation occurs through public
+  interfaces. Listings/Search serialize their own ordinary origin state against
+  thread creation; retirement uses the pending/preflight/marker protocol below,
+  not an origin lock held across the Conversations call. A preflight read alone
+  is insufficient. Verify these paths against real owner APIs at integration;
+  this is not permission for private cross-domain SQL.
 - Client encryption must bind the intended conversation, sender, recipient/key version and payload kind according to the reviewed authenticated protocol. The proposed generic envelope is not a cryptographic design or evidence of safe key distribution.
+
+### Origin-retirement coordination — approved implementation direction
+
+Listings owner B (Suraj) approved this sequence on 2026-10-20. The origin owner
+keeps its 180-day continuous eligibility anchor and separately requires every
+associated thread's latest participant-write time to be at or before
+`server_now - 2160 hours`. It sets `retirement_pending_operation_id` and
+commits before calling Conversations; pending Listings/Search origins reject
+owner edits/reopen, invalidating selection/offer changes and new origin
+conversations, and are hidden from discovery. They do not block participant
+writes in existing threads before the Conversations marker.
+`get_origin_activity` is a fail-closed preflight only.
+`mark_origin_retired` locks all associated threads in ascending ID order,
+rechecks activity and marks them all no-write or none. Every Conversations
+participant write takes that thread lock, checks
+`participant_writes_disabled_at`, and obtains its activity timestamp from the
+server after locking. Reads, polling and workers do not advance activity.
+
+The cutoff is computed from the origin owner's server clock after its
+authoritative eligibility check, never browser input.
+`conversations.origin_retirement_operations` provides durable idempotency by a
+globally unique operation ID and records origin kind/ID, cutoff, outcome and
+marked count. Identical retries return the stored result; different request
+reuse conflicts. A blocked result clears owner pending state without clearing
+content; an unknown result leaves it pending and is retried/looked up with the
+same ID. Only a confirmed marker allows the owning domain to clear its own
+content. Cleanup failure leaves the origin pending for retry; on success the
+owner sets `retired_at` and clears the pending operation ID in one transaction.
+These pending/no-write/operation-result columns and table describe required
+forward-migration additions; they are not present in the historical migrations
+or deployed by this documentation. The physical content/object cleanup
+mechanism remains separately reviewed; this coordination is not authorization
+for a destructive run.
+
+No trigger, SQL function or migration may query another domain's business
+tables, including a one-time backfill. Application services use the owning
+domain's public API; PostgreSQL triggers cannot call Python. Keep local
+protections such as message ordering and immutable thread identity, and keep
+the approved cross-domain foreign keys. The shared forward migration writer is
+Listings B in `domain/listings`; Search C and Conversations D review their
+affected portions, while A coordinates real integrated verification at INT-01.
+Exact-target data preflight and normal migration apply/review gates remain
+mandatory.
 
 The key/envelope review must decide how sender/recipient key-version references and authentication/nonce data are encoded and constrained, how historical entries reference retired public versions, and how key changes behave with one active browser device. Generic `bytea` alone does not close this gate. Do not add invented fixed key lengths or server key recovery. Public-key material and ciphertext are excluded from diagnostics/evidence even though public keys are not decryption secrets.
 
@@ -281,7 +337,7 @@ Lease duration/claim fencing and clock/timezone handling still require A/D opera
 
 ## Private-data retention and deletion — Mohit-approved
 
-Mohit approved these durations and minimal-record exceptions in the [retention decision](../decisions/private-data-retention.md). Privacy/affected-owner schema and cleanup review remains pending; no cleanup is implemented. Access expiry and data cleanup are separate: credentials stop working at expiry/revocation even if a row has not yet been purged. Do not run destructive cleanup under this document alone.
+Mohit approved these durations and minimal-record exceptions in the [retention decision](../decisions/private-data-retention.md). CN-01 implements the separately approved [Conversations content cleanup](../decisions/conversation-content-cleanup.md) through a dry-run-default command and existing deferred graph constraints; no schema change or deployed schedule is needed. Other owners retain their cleanup gates. Access expiry and data cleanup are separate: credentials stop working at expiry/revocation even if a row has not yet been purged. Persistent-target cleanup requires its own operator run approval.
 
 | Data | Approved retention trigger/window | Cleanup behavior to implement/review |
 |---|---|---|

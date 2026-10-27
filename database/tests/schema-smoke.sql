@@ -34,8 +34,10 @@ DECLARE
     outsider_key uuid := gen_random_uuid();
     offer uuid := gen_random_uuid();
     offer_entry uuid := gen_random_uuid();
+    contact_entry uuid := gen_random_uuid();
     reminder uuid := gen_random_uuid();
     message_time timestamptz;
+    activity_head timestamptz;
     category uuid;
     rejected boolean;
     receipt_duplicate_rejected boolean;
@@ -43,6 +45,7 @@ DECLARE
     create_receipt_duplicate_rejected boolean;
     create_receipt_count bigint;
     sequence_head bigint;
+    blocked_sequence bigint;
 BEGIN
     IF (SELECT count(*) FROM listings.categories) <> 8
         OR (SELECT count(*) FROM listings.conditions) <> 4 THEN
@@ -257,6 +260,43 @@ BEGIN
     IF NOT rejected THEN RAISE EXCEPTION 'Incomplete confirmed image metadata was accepted'; END IF;
     SET CONSTRAINTS ALL IMMEDIATE;
     SET CONSTRAINTS ALL DEFERRED;
+
+    -- A forward trigger replacement must preserve thread identity immutability.
+    rejected := false;
+    BEGIN
+        UPDATE conversations.threads SET id = gen_random_uuid() WHERE id = thread;
+    EXCEPTION WHEN check_violation THEN rejected := true;
+    END;
+    IF NOT rejected THEN RAISE EXCEPTION 'Conversation ID rewrite was accepted'; END IF;
+    rejected := false;
+    BEGIN
+        UPDATE conversations.threads SET listing_id = gen_random_uuid() WHERE id = thread;
+    EXCEPTION WHEN check_violation THEN rejected := true;
+    END;
+    IF NOT rejected THEN RAISE EXCEPTION 'Conversation origin rewrite was accepted'; END IF;
+    rejected := false;
+    BEGIN
+        UPDATE conversations.threads SET initiator_id = gen_random_uuid() WHERE id = thread;
+    EXCEPTION WHEN check_violation THEN rejected := true;
+    END;
+    IF NOT rejected THEN RAISE EXCEPTION 'Conversation initiator rewrite was accepted'; END IF;
+    rejected := false;
+    BEGIN
+        UPDATE conversations.threads SET counterparty_id = gen_random_uuid() WHERE id = thread;
+    EXCEPTION WHEN check_violation THEN rejected := true;
+    END;
+    IF NOT rejected THEN RAISE EXCEPTION 'Conversation counterparty rewrite was accepted'; END IF;
+    rejected := false;
+    BEGIN
+        UPDATE conversations.threads SET created_at = created_at - INTERVAL '1 second'
+            WHERE id = thread;
+    EXCEPTION WHEN check_violation THEN rejected := true;
+    END;
+    IF NOT rejected THEN RAISE EXCEPTION 'Conversation creation-time rewrite was accepted'; END IF;
+    IF NOT EXISTS (SELECT 1 FROM conversations.threads WHERE id = thread
+        AND listing_id = item AND initiator_id = buyer AND counterparty_id = seller) THEN
+        RAISE EXCEPTION 'Rejected identity rewrite changed the thread';
+    END IF;
     rejected := false;
     BEGIN
         INSERT INTO conversations.threads (id, listing_id, initiator_id, counterparty_id)
@@ -274,29 +314,53 @@ BEGIN
     -- Deliberately fake opaque bytes validate storage shape only; they are not
     -- cryptographic fixtures, real keys or a successful encryption claim.
     INSERT INTO conversations.public_key_versions (id, user_id, version, public_key_material, protocol_id)
-        VALUES (seller_key, seller, 1, decode('01', 'hex'), 'synthetic-storage-test'),
-            (buyer_key, buyer, 1, decode('02', 'hex'), 'synthetic-storage-test'),
-            (outsider_key, outsider, 1, decode('03', 'hex'), 'synthetic-storage-test');
+        VALUES (seller_key, seller, 1, decode('01', 'hex'), 'open-e2ee-signal'),
+            (buyer_key, buyer, 1, decode('02', 'hex'), 'open-e2ee-signal'),
+            (outsider_key, outsider, 1, decode('03', 'hex'), 'open-e2ee-signal');
     INSERT INTO conversations.entries (id, conversation_id, sender_id, client_operation_id, kind)
         VALUES (message, thread, buyer, operation, 'message');
     rejected := false;
     BEGIN
         INSERT INTO conversations.encrypted_payloads
-            (entry_id, protocol_id, envelope_version, sender_key_version_id, recipient_key_version_id, envelope)
-            VALUES (message, 'synthetic-storage-test', 1, buyer_key, outsider_key, decode('00', 'hex'));
+            (entry_id, protocol_id, protocol_version, envelope_version, sdk_message_type,
+                client_timestamp_ms, sender_key_version_id, recipient_key_version_id, envelope)
+            VALUES (message, 'open-e2ee-signal', '13.0.0', 1, 'ciphertext', 1,
+                buyer_key, outsider_key, decode('00', 'hex'));
     EXCEPTION WHEN check_violation THEN rejected := true;
     END;
     IF NOT rejected THEN RAISE EXCEPTION 'Outsider envelope key was accepted'; END IF;
     INSERT INTO conversations.encrypted_payloads
-        (entry_id, protocol_id, envelope_version, sender_key_version_id, recipient_key_version_id, envelope)
-        VALUES (message, 'synthetic-storage-test', 1, buyer_key, seller_key, decode('00', 'hex'));
+        (entry_id, protocol_id, protocol_version, envelope_version, sdk_message_type,
+            client_timestamp_ms, sender_key_version_id, recipient_key_version_id, envelope)
+        VALUES (message, 'open-e2ee-signal', '13.0.0', 1, 'ciphertext', 1,
+            buyer_key, seller_key, decode('00', 'hex'));
     SET CONSTRAINTS ALL IMMEDIATE;
     SET CONSTRAINTS ALL DEFERRED;
     IF NOT EXISTS (SELECT 1 FROM conversations.members WHERE conversation_id = thread AND user_id = seller
         AND reminder_episode_start_sequence = 1) THEN
         RAISE EXCEPTION 'Incoming message did not initialize an unread episode';
     END IF;
-    SELECT next_sequence INTO sequence_head FROM conversations.threads WHERE id = thread;
+    SELECT next_sequence, last_activity_at INTO sequence_head, activity_head
+        FROM conversations.threads WHERE id = thread;
+    rejected := false;
+    BEGIN
+        UPDATE conversations.threads SET next_sequence = next_sequence - 1 WHERE id = thread;
+    EXCEPTION WHEN check_violation THEN rejected := true;
+    END;
+    IF NOT rejected OR (SELECT next_sequence FROM conversations.threads WHERE id = thread) <> sequence_head THEN
+        RAISE EXCEPTION 'Conversation sequence head was allowed to decrease';
+    END IF;
+    rejected := false;
+    BEGIN
+        UPDATE conversations.threads SET last_activity_at = last_activity_at - INTERVAL '1 second'
+            WHERE id = thread;
+    EXCEPTION WHEN check_violation THEN rejected := true;
+    END;
+    IF NOT rejected OR (SELECT last_activity_at FROM conversations.threads WHERE id = thread)
+        <> activity_head THEN
+        RAISE EXCEPTION 'Conversation activity timestamp was allowed to decrease';
+    END IF;
+
     rejected := false;
     BEGIN
         INSERT INTO conversations.entries (id, conversation_id, sender_id, client_operation_id, kind)
@@ -347,10 +411,65 @@ BEGIN
         VALUES (offer_entry, thread, buyer, gen_random_uuid(), 'offer');
     INSERT INTO conversations.offers (id, conversation_id, buyer_id, current_revision, next_revision)
         VALUES (offer, thread, buyer, 1, 2);
+    SELECT last_activity_at INTO activity_head FROM conversations.threads WHERE id = thread;
+    PERFORM pg_sleep(0.002);
     INSERT INTO conversations.offer_revisions (offer_id, revision, entry_id, amount_paise, status)
         VALUES (offer, 1, offer_entry, 0, 'submitted');
+    IF (SELECT last_activity_at FROM conversations.threads WHERE id = thread) <= activity_head THEN
+        RAISE EXCEPTION 'Offer revision did not advance server-recorded activity';
+    END IF;
+
+    INSERT INTO conversations.entries (id, conversation_id, sender_id, client_operation_id, kind)
+        VALUES (contact_entry, thread, buyer, gen_random_uuid(), 'contact_share');
+    INSERT INTO conversations.encrypted_payloads
+        (entry_id, protocol_id, protocol_version, envelope_version, sdk_message_type,
+            client_timestamp_ms, sender_key_version_id, recipient_key_version_id, envelope)
+        VALUES (contact_entry, 'open-e2ee-signal', '13.0.0', 1, 'ciphertext', 1,
+            buyer_key, seller_key, decode('00', 'hex'));
+    SELECT last_activity_at INTO activity_head FROM conversations.threads WHERE id = thread;
+    PERFORM pg_sleep(0.002);
+    INSERT INTO conversations.contact_shares (entry_id) VALUES (contact_entry);
+    IF (SELECT last_activity_at FROM conversations.threads WHERE id = thread) <= activity_head THEN
+        RAISE EXCEPTION 'Contact share did not advance server-recorded activity';
+    END IF;
     SET CONSTRAINTS ALL IMMEDIATE;
     SET CONSTRAINTS ALL DEFERRED;
+
+    -- A retirement marker is immutable and blocks every participant-write path.
+    UPDATE conversations.threads SET participant_writes_disabled_at = clock_timestamp()
+        WHERE id = thread;
+    SELECT next_sequence, last_activity_at INTO blocked_sequence, activity_head
+        FROM conversations.threads WHERE id = thread;
+    rejected := false;
+    BEGIN
+        INSERT INTO conversations.entries (id, conversation_id, sender_id, client_operation_id, kind)
+            VALUES (gen_random_uuid(), thread, buyer, gen_random_uuid(), 'message');
+    EXCEPTION WHEN check_violation THEN rejected := true;
+    END;
+    IF NOT rejected THEN RAISE EXCEPTION 'No-write marker allowed a new message'; END IF;
+    rejected := false;
+    BEGIN
+        INSERT INTO conversations.offer_revisions (offer_id, revision, entry_id, amount_paise, status)
+            VALUES (offer, 1, offer_entry, 0, 'submitted');
+    EXCEPTION WHEN check_violation THEN rejected := true;
+    END;
+    IF NOT rejected THEN RAISE EXCEPTION 'No-write marker allowed an offer revision'; END IF;
+    rejected := false;
+    BEGIN
+        INSERT INTO conversations.contact_shares (entry_id) VALUES (contact_entry);
+    EXCEPTION WHEN check_violation THEN rejected := true;
+    END;
+    IF NOT rejected THEN RAISE EXCEPTION 'No-write marker allowed a contact-share write'; END IF;
+    rejected := false;
+    BEGIN
+        UPDATE conversations.threads SET participant_writes_disabled_at = NULL WHERE id = thread;
+    EXCEPTION WHEN check_violation THEN rejected := true;
+    END;
+    IF NOT rejected THEN RAISE EXCEPTION 'No-write marker was cleared'; END IF;
+    IF EXISTS (SELECT 1 FROM conversations.threads WHERE id = thread
+        AND (next_sequence <> blocked_sequence OR last_activity_at <> activity_head)) THEN
+        RAISE EXCEPTION 'Rejected participant write changed sequence or activity';
+    END IF;
     UPDATE listings.sale_listings SET availability = 'unavailable' WHERE id = item;
     IF NOT EXISTS (SELECT 1 FROM search.saved_listings WHERE user_id = buyer AND listing_id = item) THEN
         RAISE EXCEPTION 'Availability change removed a saved reference';
@@ -358,7 +477,7 @@ BEGIN
 
     -- Retention may purge history but must preserve the single logical offer.
     UPDATE conversations.offers SET current_revision = NULL, history_deleted_at = statement_timestamp() WHERE id = offer;
-    UPDATE conversations.entries SET content_deleted_at = statement_timestamp() WHERE id = offer_entry;
+    UPDATE conversations.entries SET content_deleted_at = clock_timestamp() WHERE id = offer_entry;
     DELETE FROM conversations.offer_revisions WHERE offer_id = offer;
     SET CONSTRAINTS ALL IMMEDIATE;
     IF NOT EXISTS (SELECT 1 FROM conversations.offers WHERE id = offer AND current_revision IS NULL

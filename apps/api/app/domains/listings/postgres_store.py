@@ -975,6 +975,25 @@ class PostgresListingsStore:
                 current = await self._get_view(connection, listing_id, for_update=True)
                 yield current
 
+    @asynccontextmanager
+    async def listing_conversation_guard(
+        self, listing_id: ListingId
+    ) -> AsyncIterator[ListingManagementView | None]:
+        """Serialize state without blocking the remote thread's FK key-share.
+
+        FOR UPDATE would deadlock creation's independent transaction: the
+        thread FK must key-share this row. NO KEY UPDATE still serializes
+        availability, edits and retirement while permitting that FK check.
+        """
+        async with self._connection() as connection:
+            async with connection.transaction():
+                cursor = await connection.execute(
+                    _VIEW_QUERY + " AND listing.id=%s FOR NO KEY UPDATE OF listing",
+                    (self._threshold, listing_id),
+                )
+                row = await cursor.fetchone()
+                yield _management_view(row) if row is not None else None
+
     async def clear_listing_retirement_pending(
         self, listing_id: ListingId, operation_id: UUID
     ) -> None:

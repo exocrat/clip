@@ -1,5 +1,7 @@
 """Reviewed Conversations HTTP operations and internal public callables."""
 
+from typing import Protocol
+
 from app.core.auth import CallerContext
 from contracts.source.types import (
     ContactOptionsView,
@@ -13,10 +15,13 @@ from contracts.source.types import (
     EntryPage,
     EntryQuery,
     ExistingWantedConversationLookup,
+    ExistingListingConversationLookup,
     ListingConversationContext,
     ListingOfferCommand,
     ListingThreadParticipantCheck,
+    MemberPreKeyBundle,
     MemberKeyBundles,
+    KeyBundle,
     MessageRequest,
     NotificationAttemptResult,
     NotificationClaimRequest,
@@ -32,6 +37,10 @@ from contracts.source.types import (
     OriginRetirementCommand,
     PageResult,
     ParticipantCheck,
+    OwnPreKeyInventory,
+    PreKeyBundleRequest,
+    PublicPreKeyBatchRequest,
+    PublicPreKeyBatchView,
     PublicKeyBundleRequest,
     PublicKeyBundleView,
     ReadAcknowledgement,
@@ -105,11 +114,38 @@ HTTP_OPERATIONS = (
         "response": MemberKeyBundles,
     },
     {
+        "method": "GET",
+        "path": "/me/conversation-key",
+        "operation_id": "conversations_read_own_key",
+        "response": KeyBundle | None,
+    },
+    {
         "method": "PUT",
         "path": "/me/conversation-key",
         "operation_id": "conversations_register_own_key",
         "body": PublicKeyBundleRequest,
         "response": PublicKeyBundleView,
+    },
+    {
+        "method": "GET",
+        "path": "/me/conversation-prekeys",
+        "operation_id": "conversations_read_own_prekey_inventory",
+        "response": OwnPreKeyInventory,
+    },
+    {
+        "method": "POST",
+        "path": "/me/conversation-prekeys",
+        "operation_id": "conversations_publish_own_prekeys",
+        "body": PublicPreKeyBatchRequest,
+        "response": PublicPreKeyBatchView,
+    },
+    {
+        "method": "POST",
+        "path": "/conversations/{conversation_id}/prekey-bundle",
+        "operation_id": "conversations_consume_member_prekeys",
+        "path_parameters": {"conversation_id": ConversationId},
+        "body": PreKeyBundleRequest,
+        "response": MemberPreKeyBundle,
     },
     {
         "method": "GET",
@@ -139,6 +175,54 @@ HTTP_OPERATIONS = (
 )
 
 
+class ConversationsPublic(Protocol):
+    """Injectable typed interface for calls owned by Conversations."""
+
+    async def open_or_create_listing_conversation(
+        self, caller: CallerContext, request: ListingConversationContext
+    ) -> ConversationStartResult: ...
+
+    async def find_existing_listing_conversation(
+        self, caller: CallerContext, request: ExistingListingConversationLookup
+    ) -> ConversationStartResult | None: ...
+
+    async def open_or_create_wanted_conversation(
+        self, caller: CallerContext, request: WantedConversationContext
+    ) -> ConversationStartResult: ...
+
+    async def find_existing_wanted_conversation(
+        self, caller: CallerContext, request: ExistingWantedConversationLookup
+    ) -> ConversationStartResult | None: ...
+
+    async def check_listing_thread_participant(
+        self, caller: CallerContext, request: ListingThreadParticipantCheck
+    ) -> ParticipantCheck: ...
+
+    async def persist_listing_offer(
+        self, caller: CallerContext, request: ListingOfferCommand
+    ) -> OfferView: ...
+
+    async def get_origin_activity(
+        self, context: OriginOwnerContext, request: OriginActivityRequest
+    ) -> OriginActivityResult: ...
+
+    async def mark_origin_retired(
+        self, context: OriginOwnerContext, request: OriginRetirementCommand
+    ) -> RetirementMarkerResult: ...
+
+    async def claim_due_notification_intents(
+        self, context: NotificationWorkerContext, request: NotificationClaimRequest
+    ) -> NotificationClaimResult: ...
+
+    async def read_notification_dispatch_context(
+        self, context: NotificationWorkerContext, request: NotificationDispatchCheck
+    ) -> NotificationDispatchContext: ...
+
+    async def record_notification_attempt(
+        self, context: NotificationWorkerContext, request: NotificationAttemptResult
+    ) -> NotificationIntentState: ...
+
+
 async def open_or_create_listing_conversation(
     caller: CallerContext, request: ListingConversationContext
 ) -> ConversationStartResult:
@@ -150,6 +234,13 @@ async def open_or_create_wanted_conversation(
     caller: CallerContext, request: WantedConversationContext
 ) -> ConversationStartResult:
     """Declare idempotent creation of one Search-origin response thread."""
+    raise NotImplementedError("declaration-only")
+
+
+async def find_existing_listing_conversation(
+    caller: CallerContext, request: ExistingListingConversationLookup
+) -> ConversationStartResult | None:
+    """Declare a read-only exact buyer/listing lookup for reopening or retries."""
     raise NotImplementedError("declaration-only")
 
 
@@ -177,14 +268,14 @@ async def persist_listing_offer(
 async def get_origin_activity(
     context: OriginOwnerContext, request: OriginActivityRequest
 ) -> OriginActivityResult:
-    """Declare a content-free activity result for the caller's own origin."""
+    """Declare an owner-scoped preflight; unknown state fails closed, not as zero."""
     raise NotImplementedError("declaration-only")
 
 
 async def mark_origin_retired(
     context: OriginOwnerContext, request: OriginRetirementCommand
 ) -> RetirementMarkerResult:
-    """Declare all-or-none marking under stable thread locks; no content is deleted."""
+    """Declare an idempotent all-thread marker operation; it never deletes content."""
     raise NotImplementedError("declaration-only")
 
 

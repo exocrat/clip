@@ -53,7 +53,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | SE-01 | Mohit (C); peer Suraj (B), Identity review | in progress | PR15 hosted Python/web/database gates pass; checksum-evidence scanner false positive corrected locally | 47714cc fixes readiness; subsequent CI reaches final secret scanner; two verified SHA256 fingerprints reformatted without scanner exemptions | Mohit verified Hybrid-default UI and requested branch push/PR | Search PR #11 worktree `task/search-evidence-reduction` at `864e53b`; new listing `194a32d4-64bb-491b-b4ec-68403e26f7f3` produced one title and one description vector (384 dimensions each), then matched in both modes through API and Vite proxy; session `/tmp/clip-listings-browser-v6e1f01t`; UI `http://127.0.0.1:5173/`  [Hybrid default UI](../evaluation/domain/se-01/hybrid-default-ui/result.json): lint86/web289pass/3skip/types/build pass;  [PR15 correction](../evaluation/domain/se-01/pr15-ci-readiness/result.json): unit11/native21/3skip/17migrations/Black2/boundaries/diff pass;  [Hosted rerun](https://github.com/exocrat/clip/actions/runs/40382575520) functional/database gates pass; evidence-format rerun pending. | Formal SE-CORE/DATA-READY and final NFR/hosted-CI acceptance remain outside this merge step | 2026-10-26 19:06:47 UTC |
 | SE-02 | Mohit (C); peer Suraj (B), Identity/Conversations review | in progress | Step8 real integration gated; local handoff human-verified | Steps1–7 isolated result verified; Step8 audit performed | Mohit verified isolated UI and combined local handoff | [Search handoff](../evaluation/domain/search-handoff/result.json): Python1270/data94/web144,Black183,native20/3skip,wrapper35/contracts8/boundaries/parity/type/build pass | Await actual ID-READY/LI-CORE/SE-CORE/C adapters; Step9 final acceptance, pinned secrets/hosted CI and independent review pending | 2026-10-25 08:50:43 UTC |
 | MERGE-LI-SE | Suraj (integration); Listings/Search affected owners | done | PR #11 is squash-merged; Search–Listings local merge task is complete | Steps 1–9 performed; approved PR head `2a43066` merged to `main` as `e315c9d`; final hosted CI run `40204621122` passed | Steps 3–8 verified by Suraj; user authorized squash merge of the exact PR revision on 2026-10-25 | PR #11 `https://github.com/exocrat/clip/pull/11`; source head `2a430660d25e7c14cf33d84bd78172db4ec063c7`; squash merge `e315c9df3e0e11d6e9c8d7d244d676204d3af7e8`; hosted CI `40204621122`; local merge commit `29eb6fb`; fallback branch `safety/search-pr11-pre-main-reconciliation-20261025`; stash `af9d7f5`; local checks recorded below | No blocker for the Search–Listings merge. Final dataset, formal NFR/cloud checks, and real Identity/Conversations remain later work. | 2026-10-25 15:17:46 UTC |
-| CN-01 | D | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | Isolated development: PRE-00, then DL-00 and a reviewed contract/stub. Later real gates: CN-CORE; SE-02's real request interfaces for request-response integration; CN-03's producer path for final NFR-05 acceptance. | — |
+| CN-01 | Rahul (D) | in progress | Participant-key readiness correction complete; latest main merged; prepare and validate PR | All12 combined `make check` gates passed: Python1930/100skip, data94, web403/3skip, DB114, migrations, Black, types, contracts, boundaries, wrapper and secrets | Rahul verified Steps1–3; current-main reconciliation awaits verification | `task/cn-01-conversations`; current base `7612fd8747ee053701a7316ef9b93dedc5d10cdb`; [integration checkpoint](../evaluation/domain/conversations-integration.md); temporary harness stays uncommitted under/tmp | Current hosted CI and independent Aditya/affected-owner review; exact merge authorization; full CN-01 later gates remain | 2026-10-26 21:10:00 UTC |
 | CN-02 | D; A/B interface review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | Isolated development: PRE-00, then DL-00 and a reviewed contract/stub. Later real gates: CN-CORE, ID-READY, and LI-CORE for listing-origin behavior; SE-02 plus CN-01's real request path for request-response inbox integration. | — |
 | CN-03 | A; D producer review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | CN-CORE, ID-READY | — |
 | INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
@@ -69,6 +69,8 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | OPT-01 | A | unselected | — | not started | pending | No optional work selected; task definition in `docs/tasks/domain-task-list.md` | ID-READY, SE-02, CN-03, OPTIONAL-OK | — |
 | OPT-02 | C | unselected | — | not started | pending | No optional work selected; task definition in `docs/tasks/domain-task-list.md` | ID-READY, LI-CORE, SE-CORE, SE-02, CN-03, OPTIONAL-OK | — |
 | OPT-03 | C | unselected | — | not started | pending | No optional work selected; task definition in `docs/tasks/domain-task-list.md` | LI-02, SE-CORE, DATA-READY, OPTIONAL-OK | — |
+| ORIGIN-RETIREMENT-BOUNDARY | Shared A/B/C/D; B/D may author | in progress | Published main retirement schema retained; Conversations uses its canonical marker/ledger, with new local guard hardening | Disposable migration lifecycle and 73 Conversations checks passed | Earlier isolated checks verified; current integration awaits verification | `task/cn-01-conversations`; main `3d6c270`; forward `20261026090000`; original branch-only SQL archived unchanged | Affected-owner review and final owner cleanup/races remain; inspect/reconcile exact persistent target before any separately approved apply. No push/shared apply/destructive cleanup authorized. | 2026-10-26 07:10:21 UTC |
+
 ## Milestones
 
 | Milestone | State | Creating task/checkpoint | Accepted revision/PR/checks | Human verification |
@@ -80,6 +82,592 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | DATA-READY | not accepted | SE-01 steps 2/4/9 | — | pending |
 | CN-CORE | not accepted | CN-01 step 10 | — | pending |
 | OPTIONAL-OK | not approved | Each optional task's selection/priority plan | — | pending |
+
+## CN-01 — Participant-key readiness correction Step3 — 2026-10-26 20:56:57 UTC
+
+Rahul verified Step2 and authorized the final local regression checkpoint.
+`conversations-interactions.test.ts` extends the existing unrelated-conflict case
+to401/403/404/409/429/503 and adds logout/account-switch races with a pending
+readiness response. These seven additional cases confirm that unrelated failures
+leave waiting, focus/timer events do not overlap probes, and late readiness cannot
+reopen a closed account session or fetch its history. No application code,
+migration, configuration or demo file changed in this step. Existing lifecycle
+API/crypto doubles remain explicitly labelled, not real encryption evidence.
+
+Full pinned `make check` passed all12 gates: Python1919 passed/100 skipped,
+data94, web397 passed/3 existing skips, Black289 unchanged, boundaries0,
+contracts8, consumer mypy2, wrapper35, actual PostgreSQL18.6 migration lifecycle,
+Conversations114 and Gitleaks8.30.1 source snapshot. Separately, focused web
+interactions27 and actual cookie/CSRF integration8 passed. The dedicated SQL gate
+ran the real own→peer→ready transition and invalid-state cases; general DB skips
+are not counted as passes. Existing build-size warning remains. Whitespace checks
+passed. This is current local correction evidence, not new provider/browser/NFR
+acceptance or a claim against newer main. Step3 awaits verification; refresh/
+reconcile main before final PR/CI and human peer/owner review. No push, merge,
+cloud operation or shared database apply; temporary harness remains uncommitted.
+
+## CN-01 — Current main reconciliation — 2026-10-26 21:10:00 UTC
+
+After Step3 verification, refreshed main at `7612fd8747ee053701a7316ef9b93dedc5d10cdb`
+(PR16) and merged it into the task branch. The only conflicts were in shared
+session transport, its regression test and the work-log status row. Resolution
+preserved main's incoming `unsafe-url` test input and newer Identity status while
+retaining the reviewed origin-only policy rationale and CN-01 evidence. Full
+combined `make check` passed all12 gates: Python1930 passed/100 skipped, data94,
+web403 passed/3 existing skips, Black290, boundaries0, contracts8, consumer mypy2,
+wrapper35, real PostgreSQL18.6 migrations, Conversations114 and Gitleaks8.30.1.
+Existing large web bundle warning remains. The merged branch is ready for PR
+preparation; current hosted CI and designated human reviews are pending. No cloud
+or shared database action occurred.
+
+## CN-01 — Participant-key readiness correction Step2 — 2026-10-26 20:45:04 UTC
+
+After Rahul verified Step1, `api.ts` maps only the exact member-key peer setup
+conflict to a content-free reason; unrelated/malformed errors retain generic
+failure. `ConversationPages.tsx` uses existing visible polling to probe readiness,
+without recreating encryption state on each check, and resumes normal setup only
+after readiness succeeds. In-flight/generation guards protect navigation and
+StrictMode replay. `ConversationThread.tsx` explains the peer's required setup,
+keeps send disabled and makes clear this is not conversation acceptance. No
+automatic key-change acceptance, lost-key recovery or plaintext fallback added.
+
+Three existing web test files add five cases: error allowlisting/privacy, waiting
+copy/disabled send, hidden polling and ready transition, unrelated conflict, and
+StrictMode. Pinned `npm run check` passed390 tests/3 existing skips, lint,
+TypeScript and build (existing size warning); boundaries0, contracts8 current,
+whitespace and Gitleaks source scan passed. Contract check first failed with
+ambient Node; pinned-toolchain rerun passed. Lifecycle tests use existing labelled
+API/crypto doubles; no new real-browser/SDK or database evidence is claimed.
+Step2 awaits verification; Step3 final regression remains. Demo harness stays
+uncommitted under/tmp. No main merge, cloud action, shared DB or publication.
+
+## CN-01 — Participant-key readiness correction Step1 — 2026-10-26 20:33:38 UTC
+
+Rahul asked for a real-project waiting message after a peer without an encryption
+key produced the generic error in the temporary combined website, and verified
+the three-step API/UI/regression plan. `key_directory.py` factors the existing
+own-key check into one locked current-bundle/history helper. Member-key reads
+return409 with only `own_key/not_registered` or `peer_key/not_registered` for
+true first setup; membership is checked first, own takes precedence and no
+user/key data is added to errors. Retired, missing-after-registration, malformed,
+incompatible and wrong-owner/version bundles preserve conflict/dependency errors.
+Existing key mutation/rotation rules, auth and database protections are unchanged.
+
+`test_conversation_directory.py` adds7 cases for those failures and the actual
+HTTP own→peer→ready transition, nonmember404 and expired401. Disposable
+PostgreSQL18.6 runner passed114 checks; generated contracts8 remain current,
+focused mypy1, Black, boundaries0 and whitespace checks passed. Eight actual
+cookie/CSRF Listing/Wanted workflow regressions also passed. The initial
+corruption fixture correctly hit key immutability; replaced its update with
+a simulated imported new version, leaving the guard intact. Both contract
+Markdown sources document the relative content-free detail; success/error schema
+did not change and no generated file or migration was edited. Current UI still
+shows the old generic state until Step2. No live/cloud or shared database action.
+
+The separate combined website harness remains under/tmp, uncommitted; no demo
+artifacts are included in this correction. Fresh origin/main advanced to7612fd8
+(Identity runtime/Firefox and Search default-Hybrid changes); no silent merge
+was performed. Reconcile and rerun final-head checks before resuming PR/CI handoff.
+
+## CN-01 — Combined application integration Step6 audit — 2026-10-26 19:28:38 UTC
+
+Rahul verified Step5 and the final handoff plan. Fresh origin/main remains
+3d6c270 (ancestor); no integration merge/rebase is needed. Inspected123 changed
+paths (+19741/-328 before handoff docs): application/UI6098 added, tests6462,
+database/archive2126, contracts/generated2273, docs1960, tooling/CI/lock822.
+Reviewed shared composition/consumer diff, own-table SQL/marker constraints,
+SDK/session/history/recovery-off boundaries, schema/generated/test/CI wiring and
+privacy/runtime scope. Main's published migration files are unchanged; four
+new forwards follow them. Exact added-file hashes reveal one intentional
+archive/live public-key-migration duplicate; retained immutable provenance and
+unique tests rather than deleting evidence for line count. Prior redundant API
+README paragraph removal remains the only cleanup. Corrected stale E2EE/recovery
+implementation status, preserving policy and the team's security-review gate.
+
+No Conversations PR existed before publication; Search PR15 remains separate.
+Prepared PR scope/checks/limits and named review areas: Aditya(A) independent
+peer/security/Identity, Suraj(B) Listing state/action/schema, Mohit(C) Wanted/
+Search compatibility. Aditya's GitHub login is confirmed by Identity PR14;
+requested the remaining owner-login mapping rather than guessing accounts.
+Publication/hosted checks follow this audit; no review approval, merge or cloud
+action is implied. Local gate results remain the Step5 evidence. No application
+or test implementation changed in this increment.
+
+## CN-01 — Combined application integration Step5 — 2026-10-26 19:21:26 UTC
+
+Rahul verified Step4 and the Step5 regression plan. All12 registered `make check`
+gates passed at implementation380247a: Black289 files; Python1919/93skip;
+data94; boundaries0; contracts8 current; consumer mypy2; web385/3skip, lint113,
+app/test types/build613; wrapper safety35; combined PostgreSQL18.6 migration
+lifecycle; real Conversations107; Gitleaks8.30.1. Existing large-bundle advisory
+remains. Environment-gated skips are recorded, not counted as passing native,
+image/provider or unbound-database checks. The separate registered
+`check_database.py --listings-store` passed migration lifecycle plus21 actual
+Listings/Search cases/3skip; native/model bridge opt-ins remain outside that run.
+
+The existing chat-demo `--check-only` passed disposable SQL/HTTP setup/guards and
+teardown, without repeating verified browser checks. Started the existing local
+Listings image UI harness, exercised actual HTTP image upload/confirmation/
+delivery, listing publication/browse/save, owner unavailability/discovery and
+Wanted creation. Stopped/resumed the exact same database, verified retained
+Listing/Wanted/Saved rows without reset, then stopped it again. The harness uses
+fixed synthetic Identity and temporary local image storage, not real auth/S3.
+Session `/tmp/clip-listings-browser-sodlqzfg`, owned container44d230e7ed9f:
+confirmed stopped `Exited (0)`; test rows retained per harness design, no active
+demo server. Only runner-owned ephemeral containers were automatically removed;
+no existing/shared target, cloud or live provider was touched.
+
+No implementation failure or code correction was needed. Updated only this log
+and the integration checkpoint with results/limits. Human verification is pending;
+next Step6 is final current-main diff/manageability/PR/review/hosted-CI preparation,
+not merge authorization or additional CN-02/CN-03 implementation.
+
+## CN-01 — Combined application integration Step4 — 2026-10-26 18:56:50 UTC
+
+Rahul verified Step3 and the Step4 runtime plan. Extended
+`test_database_lifespan.py` with10 actual-context cases using controlled pool I/O:
+shared-URL fallback/separate login to the same database, normal exit, marketplace
+factory/wait failure, body failure and marketplace-close failure. Assertions
+preserve pool bounds/row formats, real provider/store constructors, disabled
+Search defaults, redacted startup errors and closure of both owned pools.
+`test_conversation_identity_integration.py` also confirms its actual PostgreSQL
+Conversations pool closes and public state clears when the shared app exits.
+
+Lifecycle/configuration/security selection passed78 tests; real-session combined
+composition selection passed24; final Conversations suite with the real close
+assertion passed8. Normal Node24/npm11 web types/build passed613 modules; existing
+>500kB chunk advisory remains. Black, boundaries0, diff checks and Gitleaks8.30.1
+snapshot passed. No application, configuration or schema implementation changed.
+
+API README, command registry and integration checkpoint now explain the combined
+startup/build, same-target domain credentials, full reviewed migration chain,
+separate runtime-grant/Identity/TLS/proxy gates and lazy-pool/liveness limits.
+Removed one redundant overlapping API test paragraph, retaining unique evidence
+and correcting its overly broad no-doubles claim. No worker, startup migration,
+readiness probe or new secret path was introduced. No live bootstrap/provider,
+container-image/cloud run, shared-target apply, push or merge occurred.
+Step4 result awaits verification; Step5 is the full regression/demo lifecycle.
+
+## CN-01 — Combined application integration Step3 — 2026-10-26 18:44:58 UTC
+
+After Rahul verified Step2, expanded
+`apps/api/tests/test_conversation_identity_integration.py` with distinct real
+cookie sessions, controlled OIDC/OTP authentication and actual owner HTTP flows.
+Sale Listing upload/confirmation/publication leads to a temporary buyer's real
+thread and message/reply; the owner changes availability and the buyer reopens
+only the existing pair. Wanted creation supports regular/temporary authors,
+denies self/temporary responses, and connects real response creation to account-
+bound key registration, message retries and explicit read acknowledgement.
+Nonmember, invalid-key and sender-spoof attempts fail; logout/old-cookie replay,
+revocation and expiry reject reads/writes. Read-only SQL audits confirm retries/
+denials leave one thread, two members and one entry. No origin/thread/message
+was seeded or copied into place. No application/configuration/schema code changed.
+
+The combined Conversations/Identity composition selection passed24 tests under
+`pytest -q -W error`;7 new parameterized cases complement the existing cookie
+test. Black, boundaries0, whitespace and Gitleaks8.30.1 snapshot checks passed.
+Initial fixture failures used stale catalogue codes, assumed the public Listing
+response exposed owner revision, and expected409 rather than the implemented
+422 invalid-key result; corrected the tests against real public workflows and
+the existing error contract without weakening application behavior.
+
+The integration checkpoint records controlled signer/mail/image-storage limits.
+Synthetic public bundles and opaque envelopes test HTTP/persistence, not SDK
+encryption; prior actual SDK/browser evidence remains separate and verified.
+No live provider/cloud/shared database, destructive cleanup, push or merge.
+Human verification is pending; next is Step4 runtime preparation, not CN-02/03.
+
+## CN-01 — Combined application integration Step2 — 2026-10-26 18:21:27 UTC
+
+Rahul verified Step2 and the small read-only lookup correction, reconfirmed
+Conversations-only scope and directed continuation. Implemented the missing
+Listing start/reopen connection. `thread_creation.py` provides the exact
+authenticated-buyer Listing lookup through current Identity eligibility.
+`contracts/source/types.py` and `conversations.py` define the public type/port;
+their generated Python mirrors were regenerated, never hand-edited. Updated the
+combined and owner Markdown contracts and both installed-route test inventories.
+
+Listings `service.py` resolves the owner, checks current buyer/owner eligibility,
+and chooses creation or existing-only lookup under a bounded origin lock.
+`postgres_store.py` adds a chat-specific `FOR NO KEY UPDATE` guard: seller state
+changes serialize while the independent thread FK key-share remains compatible.
+`routes.py` validates the operation UUID and returns201/200. The browser sends no
+owner/participant IDs. `listingsApi.ts`, public `StartListingConversationAction`
+and its `index.ts` export replace only the P05 placeholder in `ScaffoldPages.tsx`.
+They use existing cookie/CSRF transport, validate the returned thread, reuse the
+intent UUID on manual retry, and cancel late navigation after account unmount.
+
+Five new disposable DB cases cover regular/temporary buyers, creation/reopening,
+unavailable exact-pair isolation, pending/self/ineligible denial, concurrent
+creation, single initial intent and actual origin-lock/FK behavior. Four new
+page-action cases cover composition/navigation, manual retry/existing result,
+malformed target rejection and logout cancellation. The registered PostgreSQL18.6
+runner passed107 checks; contract and existing Listings route/offer/retirement/
+image-service selection passed118. Full web gate passed385/3skip, lint, app/test
+types and build; focused backend mypy4 passed; Black, boundaries0, generated
+freshness8, Gitleaks8.30.1 and whitespace checks passed. Initial test setup was
+corrected to use pinned httpx2, a consistent revoked-at timestamp, the existing
+Saved page-size contract and pinned Node24; no failure remains in these checks.
+
+The frontend reservation is released; normal affected-owner review remains.
+Tests use synthetic request authentication and real owner/eligibility SQL;
+signed-in cookie-backed complete workflows are the next Step3 checkpoint.
+No new browser verification of the already accepted private-chat demo is
+requested. No offers/selection/contact implementation, migration, provider/cloud
+operation, shared-target apply, push or merge occurred.
+
+## CN-01 — Combined application integration Step1 — 2026-10-26 14:51:33 UTC
+
+Rahul verified the six-step combined integration plan. Read-only inspection
+confirmed fetched main3d6c270 (including PR14) is already an ancestor of the
+current branch; local main is stale. Existing actual application/provider,
+Identity cookie/CSRF and Search-store coverage is retained. No open Conversations
+PR exists; PR15 is separate Search work. Preserved the separate two-person-demo
+worktree. Added the concise integration checkpoint and bounded frontend writer
+reservation. Listings backend changes are limited to its origin-owned
+route/service/store and public client action, with Suraj affected-owner review;
+canonical contract corrections/regeneration remain coordinated under Rahul,
+with Aditya peer and relevant affected-owner review.
+
+The audit found a concrete gap before Step2: Listing retries must reopen an
+existing buyer/listing pair after ordinary unavailability, but the only current
+Listing creation port can also insert. Recorded the proposed typed read-only
+exact-caller Listing lookup, matching Search's existing pattern, for human
+verification before implementation. No product rule was changed. The published
+Listing start route is declaration-only and its UI slot is still a placeholder.
+Existing browser checks stay verified; the next work is the missing real path.
+This increment changes documentation only; source/Git inspection and whitespace
+checks passed, no application tests rerun. Cloud/provider/shared-target actions
+remain outside the verified local integration scope.
+
+## CN-01 — Step9 coordinated content retention — 2026-10-26 13:40:30 UTC
+
+Rahul authorized the proposed dry-run-default, bounded, thread-lock/recheck
+cleanup mechanism with “proceed” and “continue”. Implemented
+`apps/api/app/domains/conversations/cleanup.py` and
+`scripts/conversations_cleanup.py`: server-derived90-day cutoff, at most100
+threads by default/max1000, per-thread transaction with cutoff recheck, clear
+offer current pointer before deleting revisions/payloads/share links, then set
+entry deletion markers. Thread/member/sequence/read/operation/SDK/recovery and
+notification references survive. Cleanup does not advance participant activity.
+Earlier threads may commit before a later failure; errors fail safely and
+reruns resume. The CLI checks expected database/host/port on every connection,
+accepts no cutoff override, emits only aggregate counts and suppresses private
+driver errors. Existing migrations and constraints remain unchanged.
+
+`apps/api/tests/test_conversation_cleanup.py` adds12 meaningful cases, registered
+in the existing disposable runner: exact90-day boundary, dry-run, reruns,
+content-free409 retry, newer write after selection, transaction rollback,
+offer pointer/history preservation, recovery reference preservation, actual
+thread lock contention, subsequent new activity, batch bounds, and CLI target
+refusal. Initial run had97 passes/1 failure because the new test incorrectly
+expected replay of purged content; corrected to the existing reviewed409
+contract. Final registered PostgreSQL18.6 run passed102 tests and removed its
+own database. Black passed4 files, focused mypy passed2 files, boundaries0,
+Gitleaks8.30.1 source scan passed, all8 generated artifacts are current, CLI help
+and whitespace checks passed. Contract check initially used the wrong Node on
+PATH; it passed with the existing pinned Node24/npm11 toolchain.
+
+Recorded the approved mechanism in
+`docs/decisions/conversation-content-cleanup.md`; linked it from retention,
+Conversations contract/domain README, database schema and command registry.
+Human implementation verification and normal affected-owner review remain
+pending. No persistent/shared database cleanup, schedule, provider, cloud,
+push or merge was performed. Independent30-day share cleanup remains CN-02;
+notification retention remains CN-03. Prior browser checks stay verified and
+are not requested again.
+
+## CN-01 — Seller/author browser initialization correction — 2026-10-26 08:04:15 UTC
+
+Rahul reported the seller-side generic encryption initialization error and
+explicitly authorized its fix. The real synthetic API summary and
+`PostgresConversationQueries` show that `counterparty_user_id` is caller-relative:
+for an origin owner it equals the initiator/peer, not the owner's own ID. The UI
+incorrectly required its current user to appear in those two peer fields, so the
+seller failed before local key setup. This is a frontend defect, not evidence of
+lost browser keys or failed encryption primitives.
+
+- `apps/web/src/features/conversations/ConversationPages.tsx` now validates the
+  authorized summary's caller role, rejects self-peer/inconsistent role/thread
+  data and always uses its caller-relative counterparty as the peer. It also
+  confirms the own-key owner matches the runtime account. The summary endpoint's
+  server-side membership check remains authoritative and unchanged; no private
+  API import, contract/schema change, auth bypass or plaintext fallback was added.
+- `apps/web/tests/conversations-interactions.test.ts` now supplies canonical
+  caller roles and own-key ownership in existing fixtures. Eleven regression
+  cases cover initiator and origin-owner loading for both Sale Listings and
+  Wanted Requests, inconsistent roles/participants/thread IDs, self peers and API
+  denial before local key access. Crypto/IndexedDB are mocked only in these page
+  lifecycle tests; they do not establish actual browser exchange.
+
+`npm run check` passed: web381/3skip, lint, app/test TypeScript and production
+build. Boundaries0, Gitleaks8.30.1 and `git diff --check` passed. The previous
+full aggregate (Python1881/80skip, data94, PostgreSQL Conversations73 and complete
+migration lifecycle) was not rerun for this frontend-only correction. The known
+large-bundle warning remains; no latency acceptance is claimed.
+
+Both existing loopback pages were confirmed to serve the corrected
+`index-CUonwioA.js` bundle. Test process145666 and its existing database were not
+restarted; no browser data, keys, messages or conversation were deleted. Human
+must hard-refresh both existing profiles (not clear site data), then retry key
+setup and synthetic send/reply/reload. This corrects the prior sandbox-only
+process check that missed the still-running external test session; its attempted
+restart could not bind the occupied ports and did not replace the original run.
+Browser confirmation, actual SDK/IndexedDB/two-client results, phone checks,
+real-session integration, retention, CN-02/CN-03 and peer acceptance stay pending.
+
+### CN-01 — Inbox and history query-string parsing correction — 2026-10-26 09:27:39 UTC
+
+Rahul reported that the inbox still returned HTTP 422 for
+`view=all&page=1&page_size=100`. The API used integer `Literal` page sizes, but
+URL query parameters arrive as strings. Added local HTTP query-model validators
+in `apps/api/app/domains/conversations/routes.py` to convert exact decimal
+integer strings before applying the existing bounds for inbox pagination,
+offer filters and entry pagination. Floats, booleans, unsupported sizes and
+invalid money bounds still fail validation. Canonical contract types and the
+generated schema were not changed.
+
+The browser client now uses the documented bounded default page size instead
+of explicitly requesting100 entries, allowing the already-built UI to work
+with the older API process while its new backend parser is deployed on the next
+session. `scripts/conversation_browser.py` smoke-checks the exact inbox URL with
+`page_size=100` and entry history with `page_size=100`. That old 30-minute demo
+session had expired and its temporary database was already removed; a fresh
+synthetic session now runs on127.0.0.1:5273/5274. Browser IndexedDB was not
+cleared, though the new fixture has new synthetic account/thread IDs.
+
+Verification:19 Conversations route tests passed, generated API/OpenAPI parity
+passed,32 focused Conversations web tests passed, TypeScript and production
+build passed. The isolated harness started successfully, including its real
+PostgreSQL/HTTP smoke checks for both identities. Browser refresh, encryption,
+IndexedDB persistence and message/read-ack behavior still await human testing.
+No shared database, cloud, push or merge action occurred.
+
+### CN-01 — Inbox unread-count refresh while page is open — 2026-10-26 09:56:20 UTC
+
+Rahul verified that both synthetic browser profiles can exchange encrypted
+messages, then reported that a newly received message did not increment the
+conversation inbox count until a manual refresh. The thread view already polls
+while visible, but the inbox view only loaded on mount, page change, or manual
+refresh. Updated `ConversationInboxSession` in
+`apps/web/src/features/conversations/ConversationPages.tsx` to refresh the
+current inbox page every two seconds while visible, refresh immediately on
+focus/return-to-tab, suspend polling while hidden, and back off up to30 seconds
+after failures. Background refreshes preserve the current rows and avoid the
+manual-refresh loading indicator. A request-in-flight guard prevents overlapping
+list calls. No API, unread-watermark, or server-side behavior changed.
+
+Manual browser verification is pending: leave `/my/conversations` open on one
+profile, send a message from the other profile, and confirm the unread count
+updates without clicking Refresh. This implementation change has not been
+tested here; real Identity and final CN-01 integration gates remain pending.
+
+The frontend production build and application/test TypeScript checks passed. The
+previous 30-minute synthetic demo had expired, so process20292 started a fresh
+isolated PostgreSQL database and conversation at the same loopback URLs for the
+human retest. Existing browser site data was not cleared; the new fixture has
+new synthetic account/thread IDs, so register each browser's key for this run.
+
+Rahul confirmed that, with one participant left on the inbox page, sending a
+message from the other participant updates the unread count without a manual
+refresh. This verifies the inbox polling behavior in the isolated two-origin
+synthetic flow only. Real Identity-backed browser sessions, actual deployment,
+phone layout, NFR-05 timing, and full CN-01 acceptance remain pending.
+
+Rahul additionally confirmed the same isolated browser checkpoint end to end:
+sender and recipient decrypt their messages; a message sent while the recipient
+tab is closed arrives after reopening; reload preserves local keys/history while
+the fixture server stays running; the inbox unread count updates automatically;
+and the count clears after the message is displayed and acknowledged. No browser
+data was cleared. This does not establish real Identity sessions, deployment,
+phone layout or NFR-05 latency. Step 9's source audit already found adversarial
+tamper/wrong-recipient, retry, ordering and key-change/loss coverage; the major
+unimplemented CN-01 item remains coordinated 90-day content purge/marker
+preservation, whose concrete destructive cleanup method/order is not approved.
+
+### CN-01 — Browser key registration blocked by opaque Origin — 2026-10-26 09:33:02 UTC
+
+Rahul's browser capture shows inbox loading reached key registration, then
+`PUT /api/me/conversation-key` returned403 with `Origin: null`. The local
+synthetic harness intentionally requires the exact page origin
+(`http://127.0.0.1:5273` or`:5274`) and its per-origin write token. An opaque
+origin cannot be authenticated as that page origin, so this is an expected
+fail-closed guard response; loosening it would weaken the local write boundary.
+Next action is to open the exact `127.0.0.1` URL directly in a normal top-level
+browser tab, not an embedded/sandboxed preview, then retry key registration.
+No code was changed for this report; browser encryption checks remain pending.
+
+### CN-01 — Confirmed and corrected browser referrer-policy conflict — 2026-10-26 09:45:53 UTC
+
+The preceding embedded/opaque-document diagnosis was incorrect: the shared
+client's `mode: same-origin` inherits the app's `no-referrer` document policy,
+which makes the browser serialize Origin as null on writes under the Fetch
+Standard. This happens in a normal top-level browser too. Rahul reported the
+same403 and supplied a public key-registration request; no supplied key bytes
+or payload were copied into source or logs.
+
+`apps/web/src/shared/http/sessionFetch.ts` now fixes `referrerPolicy: origin`
+after caller options for both token preflight and API calls. This preserves
+same-origin mode, fresh CSRF, exact-Origin server guards and redirect rejection,
+while sending only the origin as Referer, without callback path/query/fragment.
+`apps/web/tests/session-fetch.test.ts` checks the override for reads and all four
+write methods, including a caller-provided conflicting no-referrer policy.
+The shared transport decision and frontend writer record explain the correction;
+Aditya retains transport ownership and affected-owner review remains pending.
+
+An isolated headless Firefox156 profile against a temporary loopback server
+executed the actual transpiled shared transport: baseline inherited no-referrer
+PUT returned403 with Origin:null, while the corrected call returned200 with the
+exact Origin and valid CSRF/marker. The captured Referer was only the origin;
+synthetic login callback path, query and fragment were absent. Probe script and
+profile remained outside the repo; the profile/server were removed after use.
+This is real browser HTTP-header evidence, not two-user SDK/history acceptance.
+
+`npm run check` passed web381/3skip, lint, app/test TypeScript and production
+build; boundaries0 and `git diff --check` passed. Both live fixture origins
+were confirmed to serve index-CjI9Z2Yg.js. The existing fixture process/database
+and user browser storage were not restarted or cleared. Human must hard-refresh
+both tabs and retry registration/exchange. No shared database/cloud/push/merge
+action occurred; CN-CORE and the remaining actual chat/integration gates stay
+pending.
+
+## CN-01 — Isolated real-encryption browser checkpoint preparation — 2026-10-26 07:51:35 UTC
+
+Rahul verified the local main integration `a239c21`, then authorized preparation
+of the two-browser checkpoint within CN-01 Steps5–9. PRE-00/DL-00 remain accepted;
+ID-READY/LI-CORE/CN-CORE acceptance is still pending. This increment uses the
+reviewed isolated-fixture route, not a second authentication implementation.
+
+- New `scripts/conversation_browser.py` requires an explicit test environment and
+  opt-in flag, refuses ambient database/Identity/email target settings, and owns
+  one fresh network-isolated tmpfs PostgreSQL18.6 container through the existing
+  disposable fixture. It seeds one synthetic listing, creates its thread through
+  the actual Conversations operation with real Identity eligibility SQL, and
+  serves the normal built UI plus real chat router on127.0.0.1:5273/5274. Each
+  origin has one fixed synthetic request identity, one bounded pool and a
+  prominent test disclosure. Host/peer/Origin and per-side write-token checks
+  reject foreign requests and identity selectors. Logout ends that fixed side;
+  no public test-login/switch route exists. The script is not imported by the
+  normal app and scripts/tests are excluded from the production image.
+- The same script's `--check-only` checks real HTTP/SQL setup without listeners.
+  Normal serving verifies both listeners start, stops both when either ends or
+  the default30-minute cap is reached, closes pools, and removes only its owned
+  database container. Existing databases/Docker resources/browser storage are
+  untouched. No plaintext messages, keys or ciphertext are preloaded or logged;
+  actual encryption and IndexedDB still require browser observation.
+- New `apps/api/tests/test_conversation_browser.py` covers explicit environment
+  refusal, fixed-actor spoof rejection, foreign host/origin/peer denial, per-side
+  CSRF/marker checks, logout, normal-app exclusion and paired-server timeout/
+  startup-failure shutdown. Synthetic HTML and idle pools keep guard tests local;
+  these are not browser encryption tests.
+- New [browser walkthrough](../environment/conversation-browser-test.md), the
+  command registry and web README distinguish this real-SDK/SQL exercise from
+  the older unencrypted presentation demo. No production code, feature exports,
+  dependencies, contracts or migrations changed in this increment.
+
+Checks: all12 `make check` gates pass: Python1881/80skip, data94, web370/3skip,
+Black285, boundaries0, contracts8, mypy2, build, wrapper safety35, full disposable
+migration lifecycle, Conversations PostgreSQL73 and Gitleaks8.30.1. The final
+shared-error-envelope alignment was additionally formatted and rechecked with
+all15 focused harness guard/lifecycle tests. The preceding focused run of16
+tests also passed the existing real Identity/Conversations HTTP case and route
+fail-closed checks. `--check-only` passed real owned SQL/HTTP setup; its initial
+empty-entry assertion used `entries` instead of the canonical `items`, was
+corrected in the harness only, then passed. `git diff --check` passes. No new
+browser/phone, live-provider, hosted-CI or NFR evidence is claimed.
+
+Next human checkpoint: agent starts the bounded harness; human opens both exact
+URLs, acknowledges each key-loss warning, sends synthetic messages both ways,
+checks same-profile reload/reopen history, display-driven unread acknowledgement
+and optional offline retry, then logout last. Record browser/version/profile and
+actual layouts checked. No browser is connected to the computer-use tool, so
+human browser observations remain pending. Physical-phone keyboard checks need
+their own approved accessible setup; do not expose this harness on a LAN.
+Real Identity session/browser integration, 90-day purge, CN-02 offers/contacts,
+CN-03 recipient/delivery, final NFR and peer/affected-owner review remain pending.
+No push, main merge, shared database apply or AWS action is authorized.
+
+## CN-01 — Main integration and real local Identity/Search boundaries — 2026-10-26 07:12:12 UTC
+
+Rahul (D) authorized integration of team changes and continued execution. The
+local checkpoint combines Conversations `ce2130e` with fetched main `3d6c270`
+(including merged PR14). This is a local branch merge, not main acceptance or
+permission to push, migrate a shared target, deploy, send mail, or run cleanup.
+
+Implementation and meaningful changed-file behavior:
+
+- `apps/api/app/application.py` composes the existing marketplace lifecycle with
+  a separate bounded tuple-row Conversations pool; Listings/Search retain their
+  dictionary-row pool. Shutdown closes owned pools. `core/config.py` preserves
+  optional redacted/syntax-checked `CLIP_DATABASE_DSN`, falling back to
+  `CLIP_DATABASE_URL`. `main.py` keeps the upstream public factory boundary;
+  no exception for private Conversations imports was introduced.
+- `domains/conversations/routes.py` exposes `create_public_provider` for trusted
+  composition and aligns live route summaries/error schemas with the generated
+  contract. New `provider.py` binds creation/retirement and exact
+  seller/listing/buyer/thread participant checks without cross-domain SQL.
+  Offer persistence explicitly remains 503 pending CN-02. `thread_creation.py`
+  adds a read-only authenticated responder/request lookup that never creates a
+  thread after closure. `domains/search/wanted_routes.py` injects that provider
+  into Search's existing availability/closure boundary; Search still owns its
+  origin lock and state rules. Worker notification methods remain unimplemented.
+- `apps/web/src/pages/ConversationRuntime.tsx` connects public Identity state,
+  public Conversations controllers and the shared cookie/CSRF transport.
+  `App.tsx` mounts it inside Identity. `ScaffoldPages.tsx` retains other owners'
+  public components and session boundaries; only the explicit loopback/dev demo
+  bypasses the real-session page boundary. No production demo path is enabled.
+- The 17 published main SQL files are byte-identical to main. Four older
+  branch-only migrations retain their original SHA-256 bytes under
+  `database/archived/cn-01-pre-main/`; only disposable applications were recorded.
+  Four forwards `20261026090000`–`20261026090300` add local guard hardening,
+  ciphertext transport, public directory and protocol-control storage after
+  main. Runtime `messages.py` and `origin_retirement.py` use main's canonical
+  `participant_writes_disabled_at`, not a duplicated marker. Recovery stays off.
+  Active inventory: 21 migrations, 40 tables, 36 functions, 46 triggers.
+- `scripts/check_database.py`, `check_conversations_retirement.py`, native SQL
+  harness/smokes and synthetic Conversations fixtures track the combined chain,
+  new Search category-code field and confirmed image metadata. No new native
+  macOS run is claimed. Identity's reviewed 17-file live manifest/runner remain
+  unchanged and correctly refuse this expanded chain until separately reviewed.
+  Its runner/readiness tests now construct that exact pinned package, rather than
+  accidentally treating later unreviewed migrations as reviewed. Docker's
+  missing-object diagnostic is checked case-insensitively without relaxing the
+  absence/cleanup assertion.
+- New `test_conversation_config.py` checks secret-safe DSN validation;
+  `test_conversation_identity_integration.py` checks real Identity SQL, cookies,
+  CSRF and logout with controlled signing/mail only. `test_thread_creation.py`
+  covers actual Search service/store plus Identity capability SQL and
+  Conversations creation/closed retry, as well as exact selection bindings.
+  `conversation-composition.test.tsx` covers anonymous denial, authenticated
+  transport wiring and the synthetic demo without sign-in. Contract tests retain
+  every implemented route and verify live schema parity (57 operations/48 paths).
+- Contract sources/Markdown were reconciled and the eight generated artifacts
+  regenerated, never edited by hand. Package/uv locks preserve both teams' pins.
+  Boundary allowlists add only exact public composition imports. Documentation,
+  command registry and current task rows now describe this combined checkout.
+
+Verification on Linux with temporary Node24.22.0/npm11.19.1/uv0.10.7 tools:
+all **12 `make check` gates passed**. Python **1866 passed/80 skipped**; data
+**94 passed**; web **370 passed/3 skipped**; focused disposable PostgreSQL18.6
+Conversations **73 passed**; Black283, contract generation/check8, mypy2,
+boundaries0, production build, wrapper safety35, migration clean/repeat/seven
+smokes/Identity upgrades/atomic refusal/protected rollback/full reapply and
+Gitleaks8.30.1 all passed. The real Identity/Conversations HTTP case is included
+in the Python count. Skipped provider/native/device gates are not passes.
+`git diff --cached --check origin/main` passes; comparing all imported upstream
+history to the old branch also reports pre-existing whitespace in main's retained
+diagnostic logs, which were not altered. Build retains the existing large-chunk
+warning; successful build is not latency evidence.
+
+Shared frontend writer reservation released after these local checks; affected
+A/B/C code review and independent PR review remain required via
+`docs/prompts/peer-review-prompt.md`. No CN-CORE/FR/NFR acceptance: real browser
+IndexedDB/two-client and phone checks, reviewed 90-day purge implementation,
+CN-02 offers/contacts, CN-03 delivery/recipient integration, owner cleanup races
+and final deployed latency evidence remain pending. Persistent targets need
+their own preflight/reconciliation and exact-target reviewed migration package;
+any archived migration version on a target is a stop condition, not permission
+to delete or rewrite its migration tracker.
 
 ## SE-02 Step6 response correction reservation (released after checks)
 
@@ -4428,6 +5016,103 @@ Add a history entry when it records a meaningful outcome, decision, changed outp
 
 Include the task and covered step(s), contributor, date/time, and the details needed to understand or verify the outcome: relevant execution/verification state, changed paths, exact checks/results, decision/evidence reference, blocker/owner, or next action as applicable. Keep entries brief, omit repeated background, and link existing artifacts rather than duplicating them. Use exact UTC date and time for new entries. Keep historical timestamp precision as recorded; never guess or backfill an unknown time. Preserve distinct decisions, evidence, and other contributors' useful history.
 
+### CN-01 — Step 1 requirements and implementation inventory — 2026-10-20 06:44 UTC
+Rahul (D); Step 1 performed and human-verified. Reviewed the submitted PRD and product summary, CN-01 task/stub gates, Conversations contract/source/generated declaration, encryption-storage and private-data decisions, schema retention rules, frontend scaffold, and root npm manifest/lockfile. Requirements confirm client-side E2EE, one active browser device per user, no server recovery after key loss, responsive web (desktop/mobile), authenticated participant keys, ciphertext-only server storage, and two-client tampering/wrong-key checks. The approved storage boundary specifies 1–16 KiB public-key bundle and 1–64 KiB encrypted envelope ceilings; it does not select a cryptographic protocol, serialization, key handling, or replacement behavior. The frontend is still a placeholder, and the root dependency set has no crypto library or existing crypto implementation. The contract and public declarations are reviewed but declaration-only; real ID-READY/LI-CORE and SE-02/CN-03 integration gates remain as recorded. No implementation, protocol choice, generated key, migration, test, or destructive cleanup was performed. Next: Step 2 security design and explicit human approval before selecting a protocol/library or committing to a data/key format.
+
+### CN-01 — Step 2 E2EE security-design proposal — 2026-10-20 07:25 UTC
+Rahul (D); proposal revised after second user review; human verification pending. Clarified that per-message HPKE requires an explicit CN-01 scope decision and added its recipient-only/sender-history requirement and RFC 9180 key-compromise-impersonation limitation (including that any signature mitigation needs separate review). Clarified that the concrete client library must expose or permit recipient verification of required context; the server only validates claimed outer metadata. Added ordered unblock actions for key changes under either trust model and reordered pending decisions into gating stages. No option, security property, trust or storage model, version, or format was selected. No code, dependency, migration, or test changed; documentation whitespace checks remain to be rerun.
+
+### CN-01 — Step 2 decisions recorded — 2026-10-20 11:00 UTC
+Rahul (D); updated the proposal following user direction; human verification pending. OpenE2EE is the intended candidate subject to team review of the exact source and full production dependency tree; no independent/external reviewer is required. Forward secrecy/ratcheting is not an MVP requirement (without disabling library protections); no key backup/recovery will be provided, and permanent history loss after browser-state loss is accepted, with registration-time disclosure/acknowledgement. The user accepts the browser-origin/dependency controls and ordering/retry/replay policy. Key trust, exact browser persistence, context representation, and exact release/license/key/wire format remain open. Recorded the future-replaceability constraint as a narrow client crypto/key-management boundary with no plaintext fallback. No code, package, lockfile, test, migration, or cloud resource changed; documentation checks pending. Next: human verifies the revised Step 2 proposal; team source/dependency review follows before package selection.
+
+### CN-01 — Step 2 trust, persistence, and review target — 2026-10-20 11:13 UTC
+Rahul (D); user accepted the recommendations and the proposal was updated; human verification pending. Selected account-directory trust with explicit acceptance of its key-substitution limitation, and OpenE2EE's documented IndexedDB adapter as the intended browser storage subject to exact-version/browser review. `@open-e2ee/signal-protocol-sdk@11.0.0` is the review target only, not installed or approved; current official package metadata and protocol/storage docs were checked, including default ratcheting/PQXDH behavior and license. Recorded an opaque, versioned CLIP-envelope direction without freezing serialization. No package, lockfile, application code, test, migration, or cloud resource changed. Remaining: team review of exact release/source/dependencies and security fit; approve exact context/envelope representation and warning wording; verify Step 2 proposal.
+
+### CN-01 — Step 2 default protocol setup condition — 2026-10-20 11:16 UTC
+Rahul (D); user conditionally accepts OpenE2EE's default PQXDH/ratcheting behavior if it requires no dedicated post-quantum service or manual cryptographic setup. Official v11.0.0 browser guidance indicates these are SDK defaults; ordinary browser/CLIP integration still requires the SDK and IndexedDB helper dependency, secure context/CSP, and CLIP authentication/relay integration. Updated the proposal and source list. No package installation, code, lockfile, test, migration, or cloud resource changed. Human verification and team review of the exact release remain pending.
+
+### CN-01 — Step 2 human verification — 2026-10-20 11:17 UTC
+Rahul (D); user verified the revised security-design proposal and recorded directions. Step 2 is accepted. No code or dependency was added. Next: inspect Step 3's exact task scope and prerequisites, then present its plan for verification before acting.
+
+### CN-01 — Step 3 schema/contract comparison — 2026-10-20 11:19 UTC
+Rahul (D); read-only comparison of `contracts/conversations.md`, the approved retention/origin decisions, Step 2 design, and the PD-08 baseline migrations/tests. The existing migration at `20261018094330_mvp_tables.sql` already creates threads, participants/read watermarks, public-key versions, ordered entries, opaque encrypted payloads, offers, contact-share markers and notification intents; integrity triggers enforce fixed two-member threads, origin-pair uniqueness, monotonic reads/sequences, participant/key-owner binding and content-free purge markers. No duplicate tables or immediate structural migration gap identified; static SQL/test source inspection only, no database/test run. Remaining application/release checks: service must enforce the contract's allowlisted protocol IDs and strictly increasing key-version allocation (the schema currently enforces nonempty protocol IDs and unique positive versions, not those full rules); team must check the reviewed SDK's serialized public bundle/envelope fits the existing 16 KiB/64 KiB limits. No schema change. Await human review of comparison before deciding whether any migration/test work is needed.
+
+### CN-01 — Step 3 schema comparison verified — 2026-10-20 11:21:54 UTC
+Rahul (D); user verified the static comparison and accepted reuse of the existing PD-08 schema baseline. No duplicate/new migration is needed for the current schema shape. This does not claim database tests were rerun or approve implementation details: service-level protocol allowlisting/key-version sequencing and exact SDK size compatibility remain checks for later implementation review. No schema/database change. Next: prepare Step 4 operation-boundary plan.
+
+### CN-01 — Step 3 trigger-boundary follow-up — 2026-10-20 11:23:07 UTC
+Rahul (D); a deeper static review found that the earlier table-shape comparison missed trigger semantics. `conversations.guard_thread` reads/updates Listings and Search origins and reads Identity account class; `conversations.guard_entry` updates origin rows for each entry; `conversations.guard_offer_revision` reads/locks Listings state. These conflict with the reviewed rule that Conversations uses public owner/Identity interfaces and does not read their tables. The contract also declares an idempotent `mark_origin_retired` operation, but no Conversations marker column/table exists; current entry trigger instead re-reads origin retirement state. With separate owner/domain transactions, the prescribed origin lock held across a Conversations call may also block when these triggers re-lock the origin. Prior Step 3 acceptance of the table shapes is superseded for trigger/boundary compatibility. No files outside this work-log update were changed; no migration/test/database operation was performed. Stop before Step 4 pending affected-owner/contract resolution.
+
+### CN-01 — Step 3 approved retirement-contract follow-up — 2026-10-21 05:08:16 UTC
+Rahul (D); user supplied the Listings B-approved retirement handoff and directed implementation while preserving local trigger protections and using a forward migration. Updated the Conversations contract and canonical retirement result/API declarations to specify server-derived activity, all-thread locking, the local no-write marker, exact outcome and idempotency semantics, and the no-cross-domain-table-access boundary. `git diff --check` passed. The required `uv run --locked python scripts/generate_contracts.py generate` could not start because `uv` is not available on PATH; generated outputs, contract tests, and the commit remain pending. Per the handoff, Suraj (B) remains the sole shared migration writer; no migration or database was changed.
+
+### CN-01 — Step 3 venv/toolchain follow-up — 2026-10-21 05:25:26 UTC
+Rahul (D); user verified the source/document edits. The project-pinned uv 0.10.7 is available at `/tmp/clip-uv-0.10.7`; its locked contract-generation command ran with a `/tmp` cache but exited 1 during rendering. Environment evidence: Python 3.14.7, Pydantic 2.14.1/FastAPI 0.143.3; shell Node v26.8.2/npm 12.0.2 (project requires Node 24 and npm 11.x), with no root `node_modules`. Contract generation and tests therefore remain pending. `git diff --check` passed. No generated outputs or migration/database were changed.
+
+### CN-01 — Step 3 pinned contract toolchain and checks — 2026-10-21 05:34:25 UTC
+Installed the project-pinned Node 24.22.0/npm 11.19.1 under `/tmp/clip-node-v24.22.0`; the official archive SHA-256 matched `cc2f601cee82d9a5a233302fe307abc600727035fd7d2c3a3571755989e95008`. No shell profile or tracked environment configuration was changed. Ran `npm ci` with npm cache under `/tmp/clip-npm-cache` (101 packages, zero reported vulnerabilities), then generated and checked all eight registered contract artifacts. Focused verification passed: `tests/contracts` (49 passed), `make contracts-double-check` (Mypy clean), and `git diff --check`. Generated files are from canonical sources only. The first `npm ci` attempt used system Node 26 and was stopped before installation; the successful locked install explicitly used Node 24.22.0. Shared migration and database state remain untouched.
+
+### CN-01 — Shared origin-retirement documentation checkpoint — 2026-10-21 05:46:06 UTC
+User verified the scoped documentation plan. Aligned the combined contract's `mark_origin_retired` declaration and marker sequence, the origin-retirement decision, schema inventory, and database trigger notes with the approved 180-day origin / separate `server_now - 2160 hours` activity cutoff, pending/preflight/marker order, globally unique operation outcomes, no-cross-domain-query rule, and cleanup boundary. Added the named shared checkpoint and B/C/D/A ownership, writer, test, and target-preflight gates to `docs/tasks/domain-task-list.md`; tracked it here. `make contracts-check` reports all eight generated artifacts current; `git diff --check` passed. No migration, database target, shared apply, merge/push, or destructive cleanup was touched. This documentation step awaits human verification; shared migration and real integration remain pending.
+
+### CN-01 — Approved retirement-gate wording correction — 2026-10-21 06:42:32 UTC
+Rahul (D); user verified this documentation-only step. Corrected `contracts/conversations.md` so the lock/recheck/order and recovery rules point to the approved implementation procedure, while explicitly retaining destructive content/object cleanup as a separate gate. Updated the CN-01 and shared-checkpoint status rows. `make contracts-check` and `git diff --check` passed. No generated contract source, implementation code, migration, database, merge/push, or cleanup action changed.
+
+### Shared origin-retirement checkpoint — Conversations local-protection regression tests — 2026-10-21 09:27:35 UTC
+Rahul (D); user verified the bounded test step. Extended `database/tests/schema-smoke.sql` to assert that thread ID, origin, participants and creation time cannot be rewritten, and that sequence/activity heads cannot decrease. The disposable PostgreSQL 18.6 check passed clean migration apply, exact current head, repeat migration and both SQL smoke suites. Docker access required the approved elevated run; the repository runner used only a new memory-backed test container and removed it. This is baseline evidence only; Suraj's forward migration and real marker/race integration remain pending. No migration, app implementation, persistent/shared database, merge/push, or content cleanup changed.
+
+### Shared origin-retirement checkpoint — first forward migration draft — 2026-10-21 10:05:28 UTC
+Rahul (D); user verified the migration-drafting step. Added `database/migrations/20261021101000_api_owned_retirement_and_trigger_boundaries.sql` using Suraj's supplied migration as a read-only reference. The draft adds paired pending-retirement state, the Conversations no-write marker and a globally unique outcome ledger; replaces Listings/Conversations trigger bodies to remove cross-domain business-table reads while retaining local owner/identity, thread/entry ordering, offer revision and reference protections. The marker uses the canonical `participant_writes_blocked_at` name. `git diff --check` passed. No migration tool is installed on PATH, so this draft has not been applied to even a disposable database; no contracts, app services, persistent/shared database, merge/push, or cleanup behavior changed. The down section fails closed and needs review before migration readiness.
+
+### Shared origin-retirement checkpoint — migration review corrections — 2026-10-21 10:11:17 UTC
+Rahul (D); user verified the focused review step. Updated the offer-revision and contact-share guards to advance `last_activity_at` using server time after the Conversations thread lock, in addition to rejecting writes after the no-write marker. Replaced the unconditional down-migration failure with a disposable-only rollback guard that refuses if any operation result or pending/no-write marker exists, then restores the prior trigger functions and drops only this migration's additions. Static inspection confirmed the up-section trigger bodies contain no Identity, Listings, or Search business-table reads/writes; cross-domain SQL appears only in the down section to restore the prior version. `git diff --check` passed. No database was available through an installed host `psql`/`dbmate`, so migration apply/up-down behavior is still unverified; real service/API implementation and exact-target reconciliation also remain pending.
+
+### CN-01 — retirement API/database integration inventory and command-doc correction — 2026-10-21 10:57:28 UTC
+Read-only inventory confirmed the retirement callables remain generated declaration-only stubs, the API has no database connection/driver configuration, and no implementation composition or connection-injection pattern is selected. The disposable SQL migration check does not establish real API integration. Corrected `docs/environment/commands.md` to distinguish the historical four-migration head from the current CN-01 branch's five-migration head `20261021101000`, including the local status, native runner and CI database-check instructions. No runtime/dependency code, migration, or database target changed. Documentation verification is pending; selecting a database driver and safe domain implementation boundary remains a prerequisite to implementing the retirement operations.
+
+### CN-01 — PostgreSQL runtime driver selected — 2026-10-21 15:07:17 UTC
+Rahul (D) selected Psycopg 3 in response to the driver comparison. Recorded DEC-13: async API, `AsyncConnectionPool`, and explicit SQL; FastAPI lifespan will own pool lifecycle when implemented, with per-domain transaction/SQL ownership and no raw connection crossing domain calls. Updated the API guide to distinguish this future selection from the current health-only skeleton. No dependency, lockfile, setting, service, readiness route, or database changed. Exact package release/extras and license review, runtime binding, and integration remain pending.
+
+### CN-01 — generated Conversations injection interface — 2026-10-21 16:33:50 UTC
+User approved the bounded contract/generator scope. Added the canonical `ConversationsPublic` Protocol for all ten internal callables and regenerated the module-level declaration stubs; callers can now type against an injected Conversations implementation while stubs remain fail-closed. Added signature-parity coverage and a Mypy consumer probe for activity/retirement calls; registered that check in both `make contracts-double-check` and `scripts/check.py` and documented the pattern. The generator itself needed no logic change because it emits canonical source modules. The first run used system Node 26 and failed the required Node 24 guard; tests also initially inherited that wrong Node version. Reruns with the already-installed Node 24.22.0 and project venv passed: the full 50-test contract suite, then 9 focused declaration tests after the final assertion adjustment, generation freshness, Mypy, Black, CI command parity (11 checks), and `git diff --check`. No driver/dependency, service implementation, DB settings, persistent database, or shared operation changed. Runtime Conversations provider/composition and real integration tests remain pending.
+
+### CN-01 — Psycopg package pin and license review — 2026-10-21 18:21:54 UTC
+Rahul (D); user verified this dependency checkpoint. Reviewed current PyPI metadata and official Psycopg installation/pool guidance. Pinned `psycopg[binary]==3.3.6` and `psycopg-pool==3.3.3`; PyPI declares Psycopg, its binary component, and pool LGPL-3.0-only, stable, and Python 3.14 compatible. Added runtime pins in `pyproject.toml`, refreshed `uv.lock`, and recorded license/distribution implications in DEC-13. A temporary Python 3.14.7 environment installed from the lock; imports and versions (`psycopg`/binary 3.3.6, pool 3.3.3, binary implementation, `AsyncConnectionPool`) passed without opening a DB connection. `uv lock --check`, `uv pip check`, and `git diff --check` passed. The first sandboxed lock/install attempts hit network DNS restrictions; elevated retries passed. No connection code, settings, credentials, database, or cloud resource changed. Runtime settings/pool sizing/readiness and API provider remain pending.
+
+### CN-01 — optional database settings and lazy pool lifecycle — 2026-10-22 06:08:15 UTC
+Rahul (D); verified implementation scope performed, result awaits user verification. Added optional `CLIP_DATABASE_DSN` parsing with Pydantic `SecretStr` masking and a Psycopg conninfo syntax check; created an injectable pool factory with `min_size=0`, `max_size=1`, and FastAPI lifespan open/close using `wait=False`. The app creates no pool when unset, and `/health` remains process liveness only. Added deterministic fake-pool tests for lifecycle, absent configuration, and startup cleanup; expanded settings tests. Updated API/core/secret-handling docs and DEC-13. The API task definition has no DSN SSM mapping or execution-role access; the existing PD-16 master/probe secrets are not reused, and no AWS/Terraform/database change was made. The real `CLIP_DATABASE_DSN` secret-delivery binding remains a separate infrastructure integration gate. Full API suite: 254 passed; Mypy passed for three changed production modules; Black check passed for six Python files; `uv lock --check`, `git diff --check`, and the Gitleaks source-snapshot scan passed. Black's sandboxed worker manager hit the known local-IPC restriction; elevated check passed. An ad hoc Mypy run including test modules reported missing return annotations (including existing tests); the supported production-module check passed. Domain behavior and real database integration remain pending.
+
+### CN-01 — Conversations retirement operations runtime — 2026-10-22 10:20:19 UTC
+Rahul (D); user verified the approved meaning of `already_marked.marked_count` (number of associated threads already marked) and authorized this implementation step; implementation result awaits user verification. Added the narrow Conversations-owned `get_origin_activity` aggregate and transactional `mark_origin_retired` provider, including sorted thread locks, all-or-none activity recheck/marking, globally idempotent stored results, operation-ID conflict handling, mixed-marker fail-closed behavior, and safe dependency errors. Attached the provider to optional application lifespan state without adding routes or making startup connect to PostgreSQL; typed the pool's connection-acquisition boundary. Added a synthetic integration fixture/test suite and a loopback-only disposable PostgreSQL harness; updated canonical/generated result docs, provider/run instructions, command registry and CI. The harness passed all 10 retirement-operation tests on fresh PostgreSQL 18.6. Existing migration check passed clean apply, exact head, repeat apply, both smoke suites, latest down/up and retirement-marker protections; API suite: 254 passed, 10 database-gated tests skipped outside the harness; focused Mypy, Black, contract freshness, CI parity, `git diff --check`, and Gitleaks 8.30.1 source-snapshot scan passed. The final `scripts/check_boundaries.py` run found one issue: `main.py` imports the private Conversations provider, while no exact composition exception is approved. Work is paused for direction on that boundary; no shared database was involved. No API route, content cleanup, cloud operation, persistent/shared database apply, push, merge, or commit occurred. Real Listings/Search integration, the broader Conversations API/message/E2EE implementation, and runtime secret/role wiring remain pending.
+
+### CN-01 — remove app-level private-domain wiring — 2026-10-22 10:25:08 UTC
+User directed that no exception be added and `main.py` must not import private domain methods. Removed its Conversations provider import/attachment and kept the process entry point responsible only for shared pool lifecycle. The tested retirement provider remains within Conversations and is not yet composed into an application operation; updated lifespan tests and API/core/domain/DEC-13 documentation accordingly. No boundary-policy exception was added. After this correction, formatting and Mypy passed; the API suite passed (254; 10 DB-gated skips); `scripts/check_boundaries.py` reported zero violations; contracts and CI parity passed; the direct disposable-PostgreSQL retirement suite passed all 10; the DB migration/smoke/rollback and source-only secret scan passed; and `git diff --check` passed. No shared/persistent database, cloud resource, push, merge or commit was touched.
+
+### CN-01 — retirement-operations step verified and committed — 2026-10-22 10:28:22 UTC
+User verified the implementation result. Committed the 17-file Conversations retirement-operations step as `0ab1eed` (`feat(conversations): implement origin retirement operations`). Application composition remains intentionally deferred; the tested provider is not mounted in `main.py`. No push, merge, shared database, or cloud action.
+
+### CN-01 — Step 4 thread creation verified — 2026-10-22 10:35:46 UTC
+Rahul (D); user verified the result. Added Conversations-owned Listing and Wanted Request thread open/create operations. They use server-resolved origin contexts, check participant eligibility through Identity's public interface, atomically persist the thread, both members and one notification intent, and make exact-pair retries/concurrent creation idempotent. The disposable PostgreSQL suite passed 20 focused retirement/thread-creation tests; the API suite passed 254 with 20 database-gated skips; Mypy, Black, generated-contract freshness, CI parity, boundary checks and whitespace checks passed. Committed as `46e4ecd` (`feat(conversations): add thread creation operations`). No `main.py` composition, routes, real Listings/Search integration, shared database, cloud operation, push or merge. Real owner integration remains pending.
+
+### CN-01 — Step 5 public prekey contract substep — 2026-10-22 11:15:13 UTC
+Rahul (D); user approved the narrow Conversations contract/interface work and verified its result at 2026-10-22 11:18:15 UTC. Added typed public EC/KEM prekey batch, own-inventory, and member prekey-bundle request/response models and three explicit HTTP declarations. The contract specifies member-derived peer selection, atomic one-time-key reservation, per-operation idempotency/conflict behavior, public-only material, single device ID 1, and signed last-resort fallback; no provider, handler, database storage, key generation, or crypto runtime was added. Updated the Conversations/combined contracts, OpenE2EE 13.0.0 decision record, operation counts/traceability, and added model validation tests. Generated all eight registered artifacts. `tests/contracts` passed (53); generation check, Black check, and `git diff --check` passed. First suite run exposed two stale generated-operation/path count assertions; updated them, then reran successfully. A sandboxed dependency fetch and Black worker IPC were blocked; exact locked dependencies were obtained in the approved temporary cache and checks used Node 24.22.0/npm 11.19.1. No repository Node package/lockfile, database, cloud, push, or merge changed. This verified substep is included in the current commit. Next: team source/dependency review before SDK runtime implementation.
+
+### CN-01 — Step 5 typed OpenE2EE bundle schema correction — 2026-10-22 11:30:22 UTC
+Rahul (D); user approved revising the prekey contract to expose SDK-compatible public bundle fields explicitly. Replaced the opaque registered public-key blob with typed v1 composite identity, registration/device IDs, EC signed prekey, and tagged ML-KEM-1024 last-resort prekey fields. Added canonical padded-Base64 and exact decoded-length validation for identity, signed, KEM, and one-time public keys; signature authenticity remains the SDK's responsibility. Member responses retain separately reserved EC/KEM one-time keys and define that the client adapter supplies exactly one KEM choice (one-time or last-resort) to the SDK. Updated the Conversations/combined contracts and E2EE decision, tests, and generated OpenAPI/Python/TypeScript artifacts. Focused tests passed (4); the complete contract suite passed (54) before a validation-only refactor, and focused tests passed again afterward. Final generator freshness, Black, and `git diff --check` passed. Awaiting user verification before committing. No runtime crypto/provider, package or lockfile, DB, cloud, push, or merge changes.
+
+### CN-01 — Step 5 OpenE2EE transport-envelope correction — 2026-10-22 11:59:01 UTC
+Rahul (D); reconciled that the user verified and committed the preceding typed prekey correction as `ee52cd9`. Reviewed the exact 13.0.0 npm artifact and tagged source (`e94f496657ce3aa0e724f833f0b28b4dfd633620`): published integrity/provenance matched; the eight-package production tree had permissive licenses, valid package signatures, five provenance attestations and no reported production advisories; Node 24.22.0/npm 11.19.1 meets the SDK engine. Review caveats remain: the SDK is not Signal/libsignal-compatible or independently audited, and its retry request is an unencrypted control payload. Updated the CLIP envelope contract to carry the SDK message type/client timestamp, map `operation_id` to SDK `clientMessageId`, classify retry requests as non-rendered protocol-control entries, and preserve authoritative server ordering/activity. Added type checks and tests; offer/contact payloads reject control/prekey types. Updated the combined and Conversations contracts, E2EE/storage decisions, and the reviewer wording to team review. Generated all eight artifacts; `tests/contracts` passed (59), generation check, Black and whitespace checks passed. This transport-contract change is awaiting user verification; it does not install or pin the SDK, implement a relay/runtime, or authorize DB/cloud work. No package/lockfile, migration, shared database, push or merge.
+
+User verified this transport-contract result at the current checkpoint, recorded 2026-10-22 15:04:29 UTC, and authorized the previously described commit. The contract checks above remain current; only verification status changed afterward.
+
+### CN-01 — Step 5 SDK and IndexedDB dependency pins — 2026-10-22 16:29:05 UTC
+Pinned `@open-e2ee/signal-protocol-sdk@13.0.0` and its documented IndexedDB helper `idb@8.0.3` exactly in the root manifest and lockfile, using Node 24.22.0/npm 11.19.1. A clean `npm ci` succeeded; the production tree resolves the exact pins. `npm audit --omit=dev` reported zero vulnerabilities; `npm audit signatures` verified registry signatures for 109 packages and attestations for 42. `npm run check` passed lint, 16 web tests, typecheck, and production build. Only dependency manifest/lock and this work-log status were changed; no SDK runtime, key data, database, or cloud resource was implemented. This dependency-pin substep awaits user verification. Next CN-01 work is the client crypto/key-state boundary and encryption/decryption implementation under the approved design.
+
+### Shared origin-retirement checkpoint — disposable migration verification — 2026-10-21 10:18:19 UTC
+Rahul (D); user verified the test step. Updated `scripts/check_database.py` to expect migration head `20261021101000` and 24 domain tables, then to verify the new migration's down/up round-trip. Expanded `database/tests/schema-smoke.sql` to check server-activity advancement for offer revisions/contact shares and to reject messages, offer revisions, contact-share writes, and marker clearing after retirement marking without changing sequence/activity. Updated `database/tests/retired-origin-smoke.sql` to model successful API marking before origin cleanup. Updated `database/tests/native-checks.sh` for five migrations and refreshed active migration/head descriptions in `database/README.md`. The repository runner passed on a fresh ephemeral PostgreSQL 18.6 container: exact head, repeat migration, both smoke suites, latest rollback/reapply, and marker checks. `bash -n`, Python byte-compilation, and `git diff --check` passed. No shared/persistent database, real Conversations API, migration merge/push, or content/object cleanup was used.
+
+### Shared origin-retirement checkpoint — migration co-authoring update — 2026-10-21 09:53:25 UTC
+Rahul (D); user authorized D to co-author the shared forward migration, superseding the earlier sole-writer restriction while retaining one active editor at a time. User supplied Suraj's eight SQL migration files under `~/Downloads/migrations` as read-only references, including `20261020142319_api_owned_retirement_and_trigger_boundaries.sql`; none has been copied or applied. Updated the checkpoint ownership wording and current status rows. `git diff --check` passed; migration behavior, databases, and files outside the repository were not changed. The reference set remains subject to full contract/data/test review before adaptation.
 ### ID-01 — Step11 UI writer reservation and first checkpoint — 2026-10-24 08:49:34 UTC
 
 Aditya(A) verified Step11 UI plan and directed implementation on task/id-01-identity
@@ -6590,10 +7275,82 @@ authorization test fixture; Black reformatted three existing API files. No
 cloud action or Git publication occurred.
 
 
+### CN-01 — Step 5 isolated client crypto boundary — 2026-10-22 21:01:19 UTC
+Rahul (D); user-approved protocol/wire choices implemented as an isolated client boundary. Added the versioned v1 context codec, OpenE2EE send/receive wrapper with stable operation ID/timestamp, route-registry seam, member-scoped public prekey-bundle validation/mapping and IndexedDB-backed SDK client factory. The feature does not yet contain the actual Conversations relay/key-directory adapter or a durable decrypted-history store implementation; those real integrations remain pending under Steps 5–8. Tests include a real two-client OpenE2EE in-memory exchange plus wrong-key/tampered ciphertext rejection, context mismatch/tamper checks, key-version/member checks, and SDK send-envelope option checks. `npm run check` passed (32 tests, lint, TypeScript, Vite build); `git diff --check` passed. No database/cloud action. Awaiting human verification; no commit yet.
+
+### CN-01 — Step 5 isolated client crypto verified and committed — 2026-10-22 21:08:20 UTC
+Rahul verified the isolated Step 5 result. Commit `4206955` contains the client crypto boundary, v1 wire context, public feature exports, tests, contract update and implementation record. Real relay/key-directory integration, durable decrypted-history storage/UI and upstream real checks remain pending.
+
+### CN-01 — Step 6 message transport and retrieval implementation — 2026-10-22 22:11:39 UTC
+Rahul (D); implemented the previously verified Step 6 scope and recipient-only retry-control/pagination choice; result awaits human verification before commit. Added the Conversations message persistence service and public HTTP router for ciphertext submission/retry, participant-scoped incremental retrieval, read-state retrieval and explicit monotonic read acknowledgements. Retry controls are visible only to their recipient; the scan-through cursor can advance over hidden controls, including an empty visible page. The server stores only opaque SDK envelopes and metadata, never plaintext; message writes preserve thread sequence/activity, reject wrong key versions, and create coalesced unread-reminder intents. Added the forward migration `20261022213000_conversation_message_transport.sql`; it refuses to infer metadata for existing entries, and its local/test-only rollback refuses to run when entries exist. Mounted only the public router in `main.py`, expanded the exact router boundary allowlist, updated the canonical/generated message contract and disposable SQL smoke fixtures, and exported a web read-ack helper that acknowledges only after the UI explicitly reports display. Fixed an incorrect stored-payload column index exposed by exact-retry tests and corrected `check_database.py` to test rollback of only the newest migration while preserving prior retirement state. Verification: API suite 263 passed/24 DB-gated skips; focused disposable Conversations integration 33 passed; disposable PostgreSQL 18.6 migration apply/repeat, both SQL smoke suites, latest down/up and retirement-marker checks passed; web lint/tests/typecheck/build passed (36 tests); targeted Mypy and Black checks, generated-contract freshness, boundary scan, CI parity, Gitleaks 8.30.1 source scan and `git diff --check` passed. The verified option 2 policy is encoded in contracts/tests. This is isolated implementation evidence only: real Identity auth/composition, Listings/Search integration, production key-directory/history UI wiring and real service integration remain pending. No shared/persistent DB, cloud action, push, merge or commit.
+
+### CN-01 — Step 6 verified and committed — 2026-10-22 22:13:13 UTC
+Rahul verified the Step 6 implementation. Commit `a0dbab0` (`feat(conversations): add message transport and retrieval`) records the API service/router, migration, contracts, client read-ack helper, tests and verification updates on `task/cn-01-conversations`. No push, merge, persistent/shared database, or cloud action.
+
+### CN-01 — Step 7 implementation — 2026-10-23 05:27:58 UTC
+Rahul verified the Step 7 scope. Added fail-closed local-key startup checks: first key creation requires the permanent-history-loss acknowledgement, while a missing browser identity paired with a published account identity reports lost local key state without silently replacing it. OpenE2EE's IndexedDB identity pin handles peer trust; numeric bundle-version changes alone do not trigger identity warnings. An SDK untrusted-identity error blocks sending; explicit acceptance rechecks the current account-directory identity, rejects stale/mismatched bundles, accepts the new identity through the SDK, and establishes a new session. Added safe key-state errors/warning strings, public feature exports, focused tests, and contract behavior. The changed code is limited to `apps/web/src/features/conversations/crypto.ts` and `index.ts`; `apps/web/tests/conversations-crypto.test.ts` covers first-use/loss policy, send blocking, changed-key acceptance and message send routing; `contracts/conversations.md` records the behavior and notes that dialogs remain Step 8 UI. Verification: all 39 web tests, Biome lint, TypeScript app/test checks, Vite production build and `git diff --check` passed. Available runtime is Node 26.8.2/npm 12.0.2, not required Node 24.22.0/npm 11.19.1; rerun the checks on the project-pinned runtime before relying on them as the supported-toolchain result. Real relay/auth-directory integration, browser IndexedDB integration, user-facing dialogs, security review, normal peer review and task-wide acceptance remain pending. No persistent/shared database, cloud action, push, merge or commit; awaiting Rahul's result verification.
+
+### CN-01 — Step 7 verification recorded — 2026-10-23 05:50:34 UTC
+Rahul verified Step 7. Commit `fc12617` records the implementation and verification on `task/cn-01-conversations`. No additional code or behavior change.
+
+### CN-01 — Step 8 feature UI draft — 2026-10-23 06:21:44 UTC
+Rahul verified the UI scope. Added feature-local `ConversationInbox` and `ConversationThread` presentation components and their styles, exported only through the Conversations public entry point. The thread supports externally supplied decrypted messages, 2-second active-visible retrieval with focus refresh and bounded backoff, read acknowledgement only after message rows intersect the visible scroll area, local pending/failure state with retry delegated by the same operation ID, and key registration/key-change/key-loss/error panels. The inbox accepts authorized summary data from its caller and shows unread counts. No route/page composition file changed because the frontend map requires a designated sole current writer for shared `ScaffoldPages.tsx`, and none is recorded; real auth/API/key-directory/history wiring also remains unavailable. Added server-rendered accessibility/privacy presentation tests; full interactive/browser visibility and polling tests remain future work. `npm run check` passed all 44 web tests, lint, typecheck and production build; `git diff --check` passed. The current machine is Node 26/npm 12 rather than specified Node 24/npm 11, so rerun on pinned versions. Changed files are `apps/web/src/features/conversations/ConversationInbox.tsx`/`.css` (inbox view), `ConversationThread.tsx`/`.css` (thread, key/error, polling and rendered-read behavior), `index.ts` (public feature exports), and `apps/web/tests/conversations-ui.test.ts` (rendering and key-state coverage). No cross-feature private imports, shared page edits, persistent/shared DB, cloud action, push, merge or commit. Step 8 result awaits Rahul's verification.
+
+### CN-01 — Step 8 feature draft verified — 2026-10-23 06:22:43 UTC
+Rahul verified the feature-local UI draft. Implementation commit `f7c7e5f` records it on `task/cn-01-conversations`; shared page composition and real API/auth/key-directory/history integration remain pending, so Step 8 is not end-to-end complete.
+
+### CN-01 — Step 8 loopback-only demo route composition — 2026-10-23 06:49:30 UTC
+Rahul (D) performed the next Step 8 increment as sole writer for the two Conversations page compositions. Existing `/my/conversations` and `/my/conversations/:conversationId` routes activate a clearly labeled synthetic demo only when Vite development mode, a loopback hostname, and exact `?demo=conversations` query all match; otherwise they retain the original placeholders. Sample messages remain in component memory, are explicitly labeled unencrypted/not sent, and disappear on reload. Added a local-demo presentation mode to `ConversationThread` so its privacy and send copy does not falsely claim encryption. Added gate and page rendering tests. `npm run check` passed 54 web tests, lint, typecheck and production build; `git diff --check` passed. The production build emitted no `ConversationDemo` chunk and no demo/banner text in `apps/web/dist/assets`. Checks used available Node 26/npm 12; Node 24/npm 11 remains to be rerun. Changed paths: `apps/web/src/pages/ScaffoldPages.tsx`, `ConversationDemo.tsx`/`.css`, `conversationDemoGate.ts`, `apps/web/src/features/conversations/ConversationThread.tsx`, and `apps/web/tests/conversation-demo-ui.test.ts`, `conversation-demo-gate.test.ts`, `conversations-ui.test.ts`. Rahul verified the increment at 2026-10-23 07:13:12 UTC; code commit `9357bb9` is on `task/cn-01-conversations`. Real API/auth/key-directory/history integration and browser interaction review remain pending; no database, cloud, push, or merge occurred.
+
+### CN-01 — Step 8 loopback-only demo route verified and committed — 2026-10-23 07:13:12 UTC
+Rahul verified the loopback-only synthetic route demo. Implementation commit `9357bb9` records the verified code and tests on `task/cn-01-conversations`; the previous feature-local UI remains in `f7c7e5f`. Automated checks recorded above passed under the available Node 26/npm 12 toolchain. The production build excludes the demo chunk/code. Real API/auth/key-directory/history wiring and interactive browser review remain pending; no database, cloud, push, or merge occurred.
+
+### CN-01 — Step 8 backend prerequisites for route integration — 2026-10-23 16:11:38 UTC
+Rahul (D) authorized implementing the missing Conversations inbox/summary/key-directory endpoints while real Identity is unavailable. Fetching origin found Listings work on main `defec38`, but Identity still consists of declarations/placeholders and session/CSRF transport remains an ID-01 gate. No remote changes were merged. Added `queries.py` for membership-scoped summary/inbox reads, filters before paging, deterministic amount/activity/ID sorting with no-offer rows last, and own unread counts. Added `key_directory.py` for typed public SDK bundle registration/rotation, active/referenced historical public versions, own public prekey counts/publication, and atomic peer prekey reservations. Caller/operation retry records return the exact original result or conflict on changed requests; account locks prevent concurrent duplicate reservations and serialize rotation. Private keys are never accepted or stored. The new forward migration adds Conversations-only public-prekey and retry-result storage; rollback locks its tables and refuses populated state. The public router mounts these reviewed operations with trusted `require_caller`; production still has no fake authentication.
+
+Updated the disposable database harness/head and migration docs for seven migrations/26 domain tables. `test_conversation_directory.py` covers both origins, authorization/expiry, pagination/ties/offer filtering, rotation/history, malformed legacy bundles, missing/stale keys, atomic batch failure, exact and concurrent retry/reservation behavior, depletion, rollback refusal, and real mounted HTTP-to-PostgreSQL round trips with test-only Identity overrides. Corrected two stale contract tests that still assumed only health was implemented; implemented operation IDs and success response schemas now match the generated declarations. Black also made formatting-only changes in existing `thread_creation.py` and its test; their behavior is unchanged.
+
+Checks: full Python suite 452 passed/33 database-gated skips; the later expanded disposable PostgreSQL 18.6 focused suite passed 48 tests, including the added HTTP round trip. Fresh database apply/repeat, exact head `20261023080000`, both SQL smoke suites and latest down/up passed. Targeted Mypy, generated-contract freshness (all eight artifacts), domain boundaries, CI parity, 35 simulated database-wrapper safety cases and Gitleaks 8.30.1 source scan passed. Web lint/54 tests/types/production build passed with temporary Node 24.22.0/npm 11.19.1; no system toolchain or dependency manifest was changed. Initial broad failures from Node 26 and stale health-only test expectations were corrected and rerun. Initial repository-wide Black check found two existing Conversations formatting drifts, corrected mechanically. Real Identity and origin-owner integration, browser API/relay/history wiring, interaction checks and CN-CORE acceptance remain pending. Disposable databases were removed by their harnesses; no shared database, cloud, push or merge action occurred. Result awaits Rahul verification.
+
+### CN-01 — Step 8 browser HTTP adapter and startup contract gap — 2026-10-23 16:25:51 UTC
+Rahul verified backend commit `5e21720` and authorized the browser integration increment. Added `apps/web/src/features/conversations/api.ts`, exported through the feature's `index.ts`, to map the reviewed inbox/summary/entry/message/read/public-key/prekey HTTP operations using generated types. The required transport callback is supplied by Identity; cookie/CSRF policy remains ID-01's gate, and no default fetch, actor header or fake session was introduced. Successful responses are validated before consumption (including ordered cursor progress, public byte lengths/protocol versions and message-envelope identity); HTTP/network/malformed-body failures expose only safe status/kind without response bodies or causes. Writes are never automatically retried, and entry polling never acknowledges reads. `apps/web/tests/conversations-api.test.ts` uses explicit test-only HTTP doubles for safe errors/statuses, unknown/malformed wire shapes, hidden-control cursor advancement, routing mismatch, exact prepared ciphertext and public-key operations. `apps/web/README.md` documents the boundary and pending wiring.
+
+Inspection of `openIndexedDbConversationCrypto` and SDK `getIdentityKey` shows a concrete contract gap: startup needs the authenticated account's existing public identity before first registration, but the declared own endpoints expose only key registration/inventory and the thread-key operation fails for missing/incompatible bundles. That failure cannot safely mean no prior account identity. Proposed `GET /me/conversation-key` would return the caller's current `KeyBundle`, or null only if it has never registered one; this addition awaits Rahul's explicit decision. No endpoint was invented or missing lookup treated as an empty-success response. Real authentication, SDK relay/startup, browser history persistence and page composition remain pending. This is isolated HTTP-consumer evidence, not working two-client chat or CN-CORE acceptance.
+
+Checks: all 69 web tests, Biome lint, TypeScript app/test checks, Vite production build and whitespace check passed with temporary Node 24.22.0/npm 11.19.1. Biome format attempts processed no source because this repo intentionally disables its formatter; no config was changed. Backend code/schema/contracts were unchanged in this increment. No persistent/shared database, cloud, push or merge action. Awaiting adapter result verification and the own-key lookup decision before dependent startup work.
+
+### CN-01 — Step 8 approved own-public-key lookup — 2026-10-23 19:02:16 UTC
+Rahul approved the own-key lookup addition on 2026-10-24 local date. Added GET `/me/conversation-key` in `contracts/source/conversations.py`, returning the authenticated caller's `KeyBundle` or null only when neither public versions nor durable registration evidence exist. Regenerated `apps/api/app/domains/conversations/public.py`, `contracts/generated/openapi.json` and `contracts/generated/types.gen.ts` using the pinned generator; no generated file was edited manually. `key_directory.py` serializes the read with registration and rejects retired-only, malformed, incompatible or misbound latest bundles. Missing bundle rows with a durable prior registration also conflict instead of looking like first use. `routes.py` mounts the trusted-auth read with Cache-Control: no-store; it accepts no target-user parameter and requires no thread. `apps/web/src/features/conversations/api.ts` exposes validated `readOwnKey()` without converting auth/storage/malformed-response failures into null.
+
+Updated `contracts/conversations.md`, `contracts/combined.md`, the existing E2EE decision and web README with the approved behavior. Extended `test_conversation_directory.py` for first use, own-only/no-thread HTTP behavior, expiry, current-key rotation, concurrent reads/registration, retired-only state, malformed/misbound material and missing version rows with durable registration history. Extended the browser API tests for valid/null/error own-key responses and GET mapping. Updated the generated-contract operation count to 55 in `tests/contracts/test_generation.py`. No database migration or private-key storage/recovery was introduced.
+
+Checks: full Python 453 passed/38 DB-gated skips; focused PostgreSQL 18.6 suite passed 53 tests, including a final rerun after strengthening the durable-history guard. Web lint/69 tests/types/build passed on temporary Node 24.22.0/npm 11.19.1. Contract generate/check (eight artifacts), targeted Mypy, repository-wide Black, boundaries and whitespace checks passed. Authentication is a test-only trusted override in isolated HTTP tests; real Identity, SDK relay/startup, local history, page composition and two-browser acceptance remain pending. Fresh disposable databases were removed by their harnesses. No shared/persistent database, cloud, push or merge action; endpoint result awaits Rahul verification.
+
+### CN-01 — Step 8 SDK relay and session composition — 2026-10-23 20:06:23 UTC
+Rahul (D) authorized the next SDK relay increment. Added `apps/web/src/features/conversations/relay.ts`, exported through the feature `index.ts`, implementing the SDK's approved one-device/ACI public-key and identified-message path. The session factories check the account's published identity before key creation, preserve the existing warning/lost-key gate, atomically bind SDK-local state to the authenticated account, preserve required PQ/Braid and maintenance defaults, suppress SDK logs, and reject failed initial publication instead of returning a ready offline client. A null selected conversation permits key publication before any chat exists; peer operations still require the authoritative member-scoped summary. The browser factory opens actual SDK IndexedDB and closes it on shutdown/failure.
+
+Public bundle/prekey publication is serialized and uses durable exact-request UUID journals in SDK metadata. Public inventory projects matching SDK-local creation times and the SDK maximum-age default without inventing remote timestamps. Peer reservations derive the peer from the authorized conversation, serialize successful calls within a client and isolate reservation intents between SDK clients; a restarted client may reserve a fresh pair rather than share an OTP. SDK ciphertext is bound to registered CLIP routing and persisted before HTTP submission. Prepared retries reuse the same envelope/UUID and recheck current directory identity/registration; no fresh encryption is performed by `retrySend`. Normal SDK delivery completion does not mutate CLIP reads or delete retained content. Peer receipts are disabled per MVP policy; unsupported groups/device linking/socket subscription/stale-KEM clearing/implicit identity replacement fail explicitly. No server device-set capability or atomic registration check is falsely advertised. The metadata prefix is versioned `clip:relay:v1`; no private key or HTTP secret is sent to the API.
+
+Added `apps/web/tests/conversations-relay.test.ts` with actual SDK clients/crypto and an explicit HTTP-contract double: pre-chat registration/acknowledgement, both-direction encrypted exchange, lost local keys, account isolation, prepared retry after ambiguous commit/adapter recreation, key-change retry blocking, publication failure before/after commit, distinct concurrent OTP reservations (including different adapter instances), and rejected unsupported routing/capabilities. `npm run check` passed all 75 web tests, lint without warnings, app/test type checks and production build on temporary Node 24.22.0/npm 11.19.1. Updated `apps/web/README.md` with composition, persistence and limits. Backend/schema/contracts/dependency manifests are unchanged; previous backend evidence is retained rather than reclassified as client integration. Real Identity, real HTTP-to-PostgreSQL SDK transport, browser IndexedDB reload/concurrency, automatic protocol-control receive/resend recovery, application history storage, pages and two-browser acceptance remain pending. No persistent/shared database, cloud, push or merge action; result awaits Rahul verification.
+
+Supplemental SDK relay checks: domain-boundary scan, Gitleaks 8.30.1 source snapshot and `git diff --check` passed. No source credentials or private test key fixtures were added.
+
+### CN-01 — Step 8 browser-local application history — 2026-10-23 20:12:52 UTC
+Rahul (D) authorized this bounded increment after the SDK relay. Added feature-owned `history.ts`, exported through `index.ts`, with versioned account/thread-bound snapshots in the SDK-local metadata store (actual IndexedDB when using the browser session factory). Received messages are ordered and deduplicated; conflicting IDs/sequences fail closed. Outgoing text is staged before encryption and retained with an optional validated server confirmation. Atomic CAS merges concurrent snapshot updates with bounded contention retries. Storage, quota and corrupt-state errors expose generic diagnostics, not plaintext or storage internals. A snapshot is rewritten per thread write; large-history performance/paging is not proven.
+
+Updated `relay.ts` session composition to expose history and application `sendText`/`receiveText` helpers. Receive rejects a mismatched thread before crypto and writes verified plaintext before SDK completion. Send persists sender text before encryption; a staged operation cannot be encrypted again through that helper. The relay records confirmations after validated HTTP replies; exact prepared retry repairs an ambiguous commit without fresh encryption. A staged record alone is not evidence that encryption or server commit succeeded. Low-level crypto remains available for existing isolated consumers; page composition must use the session helpers. Reads do not fetch or acknowledge messages. Registration-only sessions have null history. No server plaintext, auth shortcut, backup/recovery, retention-policy change, shared page edit or new dependency was added.
+
+Added `conversations-history.test.ts` using the actual SDK memory CAS adapter: detached reopen/read behavior, ordering/deduplication, sent-stage/confirmation retry, concurrent updates, account/thread isolation including copied snapshots, invalid state, quota/storage failure and bounded contention. Expanded real-SDK/HTTP-double relay tests to verify sender and recipient history, wrong-thread receive rejection, no encryption/post on failed staging, and original-ciphertext retry repairing sender confirmation. Initial test run had one assertion expecting an account-specific diagnostic rather than the intended generic error; corrected the assertion. Subsequent web suite passed 81 tests. README explains use and limitations. Real browser reload/eviction/quota/multi-tab persistence, Identity-backed transport, page composition, protocol-control recovery and two-browser acceptance remain pending; no CN-CORE or NFR claim. Final check outcomes are recorded below before commit; result awaits Rahul verification.
+
+Final local-history checks: `npm run check` passed lint (50 files, no warnings), all 81 tests in nine files, app/test type checks and production build on Node 24.22.0/npm 11.19.1. `.venv/bin/python scripts/check_boundaries.py` reported zero violations; `.venv/bin/python scripts/check_secrets.py` passed pinned network-isolated Gitleaks 8.30.1; `git diff --check` passed. No Python/schema/contract/dependency changes, so earlier backend evidence is retained rather than claimed as rerun. Normal human/affected-owner peer review, current aggregate/hosted CI and exact merge approval remain required at handoff. No push, merge, shared database or cloud action.
+
 ## Pending integration ledger
 
 | Task/step | Mode, source/version, double and scenarios | Required real dependency | Owner roles | Trigger | Real checks and expected result | Current evidence/state |
 |---|---|---|---|---|---|---|
+| CN-01 Step 8 local history | Actual SDK memory CAS adapter and real crypto with reviewed HTTP double; `conversations-history.test.ts` and `conversations-relay.test.ts` | Browser IndexedDB, ID-READY transport and actual API/PostgreSQL path | Conversations D; Identity A | Real auth and service transport are available | Verify browser restart and two profiles, retained sender/recipient history, prepared retries after unknown outcomes, account/key-loss isolation, storage failure, concurrent tabs and display-only acknowledgements | Isolated result human-verified; route composition now exists, but real browser durability and service integration remain pending; no CN-CORE/FR/NFR acceptance |
+| CN-01 Step 8 SDK relay | Real OpenE2EE 13.0.0 crypto/local-memory adapters; generator format 2 HTTP double in `apps/web/tests/conversations-relay.test.ts`; API/provider recovery exercised on disposable PostgreSQL; SDK content recovery is explicitly off; IndexedDB factory implemented but not browser-tested | ID-READY authenticated HTTP transport, real API/PostgreSQL binding, browser IndexedDB and page/history integration | Conversations D; Identity A; affected origin owners B/C | Real Identity transport and service are available | Run two actual browser profiles against real services: registration and offline peer bundles, encrypted send/decrypt, prepared retries, display-only reads, changed/lost keys, browser restart/account isolation, safe null response when recovery is disabled, useful sender decryption-failure status, and no sensitive observability | SDK controls and page handling/status are locally implemented and tested through the same page helper with real SDK sessions; UI suite/full web check passes (86 tests). Real multi-browser/IndexedDB/HTTP integration and browser interaction review remain pending; no CN-CORE or latency acceptance |
+| CN-01 Steps 4–8 route integration | Reviewed generated contract format 2; actual PostgreSQL providers and HTTP handlers, synthetic typed public-key bytes and test-only trusted Identity contexts in `test_conversation_directory.py` | ID-READY authentication/session transport and origin-owner composition; live `ConversationPageRuntimeProvider` mounting | Identity A; Conversations D; Listings B/Search C | Identity implementation and transport become available; route/session composition is implemented | Wire trusted sessions, then run actual two-browser key registration/participant binding/encrypted send/retry/history/read acknowledgement and nonmember/expired-session denial through the real application | Backend prerequisites pass 48 disposable PostgreSQL tests; page controllers are implemented but Identity/runtime mounting and real owner integration remain pending; no CN-CORE or FR/NFR acceptance |
 | DL-00 Step 11; Search → Listings | Isolated; HTTP 0.1.0 / generator format 2; `apps/api/tests/domains/search/doubles/listings.py`; success/repeat, denied 403, expired caller 401, missing ID 404, timeout/unavailable 503 | Accepted LI-CORE implementation and the consuming SE-01 integration checkpoint | Listings B; Search C | LI-CORE is accepted and SE-01 reaches its real Listings integration checks | Run SE-01 Steps 3–8 against real Listings: verify availability/filter/order/page ties, category labels, saved/current summaries and retired-content privacy; denied/expired/missing/failure outcomes preserve safe errors; confirm Search uses only the public interface. | Isolated tests pass in the 55-test contract/double run; real provider checks remain pending. |
 | LI-01 Step 5 / Step 11 — migration and database smoke | Isolated PostgreSQL 18.6/dbmate 2.36.0; never the shared Compose database | Current expected head 20261022062357, 26 domain tables across 11 migrations; retirement rollback guard at 20261020142319 | Listings B; database/migration maintainer if needed | Before LI-CORE/Step 11 database acceptance | Clean/repeat apply, SQL smokes, retirement rollback refusal, empty rollback/reapply; native inventory of 26 tables, 23 functions, 35 triggers | Historical disposable check passed at 20261020142319. Step 11 aggregate passed at current head; native schema-inventory run and affected-owner review remain pending. |
 | LI-01 Steps 9–10 — isolated owner-command and lifecycle behavior | Local Listings service/store, disposable PostgreSQL, reviewed Conversations test double, synthetic Identity context | Real Identity and Conversations interfaces/providers | LI-CORE Step 11 and real consumer integration | Verify owner/auth denial, idempotent create/command replay and conflict, competing edits, availability/selection/offer gates, 180/90-day retirement, content/receipt cleanup, and 500,000-paise/category/proof boundaries | Focused suite: 61 passed, one direct DB-only skip outside wrapper; PostgreSQL workflow passed. Real Conversations offer writes and thread-start rejection, Identity, images, and Search remain pending. |
@@ -6649,6 +7406,67 @@ cloud action or Git publication occurred.
 | Task/step | Mode, source/version, double and scenarios | Required real dependency | Owner roles | Trigger | Checks and expected result | Current evidence/state |
 |---|---|---|---|---|---|---|
 | SE-02 Step6 response (updates missing-handler/200body checkpoint) | Approved correction implemented; current contract0.1.0/format2; all11Search routes mounted,201/200typed; actual Search SQL/row locks and schema FK probe, explicit C pair-result script | Actual Identity/C create/existing lookup providers with independent capability/membership/unique thread and close/retirement enforcement | Search C; Conversations D; Identity A | Actual providers ready/Step8/INT-01 | Repeat positive/denied/closed/retired and ambiguous retry/race cases with real C transactions, member/privacy assertions and current auth | Local gap resolved; native/consumer tests pass, real provider acceptance still pending |
+
+### CN-01 — Rahul verified Step 8 browser-local history — 2026-10-23 20:14:02 UTC
+Rahul verified commit `c888d6a` and its isolated checks. Browser IndexedDB durability, page composition, real Identity/API integration, protocol-control recovery, CN-CORE, and FR/NFR acceptance remain pending.
+
+### CN-01 — Step 8 authenticated page/session composition implementation — 2026-10-24 06:09:19 UTC
+Rahul (D), implementing the previously verified route-composition checkpoint; result awaits Rahul's verification before commit. Added feature-local `ConversationPages.tsx` with an Identity-injected runtime, participant-checked detail loading, inbox paging, IndexedDB session/history composition, pinned peer-session resume, encrypted entry display, stable-ciphertext retries and display-triggered read acknowledgements. `ScaffoldPages.tsx` now composes the controllers only through the Conversations public exports; the loopback-only synthetic demo behavior is preserved. No runtime provider is mounted because Identity's authenticated transport is not yet implemented, so routes fail closed with a clear unavailable state. Added `ConversationCrypto.resumeParticipantSession` to reuse persisted SDK sessions only when the directory identity matches the pinned local identity; otherwise key-change handling remains fail-closed. Inbox paging and recovered outgoing pending messages are supported. `apps/web/README.md` documents the composition seam and current limitations. Changed code paths: `ConversationPages.tsx` (new page controllers); `ConversationInbox.tsx`/`.css` (page navigation); `ConversationThread.tsx` (restored pending-send UI); `crypto.ts` and `relay.ts` (safe persisted-session resume and local store access); `index.ts` (public exports); `ScaffoldPages.tsx` (route composition); relay/UI tests (session-resume and fail-closed route checks). Verification: `npm run check` passed 82 tests, Biome lint, application/test TypeScript checks and Vite production build using temporary Node 24.22.0/npm 11.19.1; `git diff --check` passed. Build reports a large-chunk advisory, not a failure. Browser IndexedDB, live Identity provider, real API/PostgreSQL end-to-end, protocol-control recovery, browser interaction checks, CN-CORE and FR/NFR acceptance remain pending. No schema, cloud, persistent database, push, merge or commit.
+
+Rahul verified this implementation on 2026-10-24 06:09:58 UTC. Implementation commit `86c82fa` is on `task/cn-01-conversations`; no push, PR or merge occurred.
+
+### CN-01 — Step 9 persisted-session resume and identity-change tests — 2026-10-24 06:14:35 UTC
+Rahul (D); implementing the user-continued isolated Step 9 test increment; result awaits Rahul's verification before commit. Added tests in `apps/web/tests/conversations-crypto.test.ts` for resuming a saved SDK session only when its current directory identity equals the pinned local identity; no-session behavior; missing directory and local identity failure; changed identity blocking message send; and explicit directory-key acceptance before session re-establishment and sending. These use deterministic synthetic keys/identities, the actual OpenE2EE client contract types, and mocked client/storage/directory seams; no real account or Identity service is involved. No production code changed. The focused crypto suite passed 21 tests; full `npm run check` passed 84 tests, Biome lint, application/test TypeScript checks, and Vite build on Node 24.22.0/npm 11.19.1. `git diff --check` passed. Actual Identity/API/DB integration, browser IndexedDB durability, two-browser checks, CN-CORE and NFR-05 remain pending their required real dependencies; no push, merge, database or cloud action.
+
+Rahul verified this isolated test result on 2026-10-24 06:15:54 UTC. Test commit `0c7ad5e` is on `task/cn-01-conversations`; no push or merge occurred.
+
+### CN-01 — Step 9 Wanted Request author participation test — 2026-10-24 06:18:38 UTC
+Rahul (D); implementing the user-verified isolated test scope; result awaits Rahul's verification before commit. Added a deterministic database-backed test in `apps/api/tests/test_conversation_messages.py` proving the Wanted Request author can send an opaque ciphertext entry and that both the author and responder can retrieve both messages in sequence. The test uses synthetic users, synthetic key records and the existing disposable PostgreSQL harness; no production code or Identity implementation changed. Verification: `scripts/check_conversations_retirement.py` passed all 54 focused Conversations tests against fresh PostgreSQL 18.6; Black check passed. Request-author data is never plaintext. Closed/unavailable request orchestration, message-content purge, actual Identity/Search integration and CN-CORE remain pending; no shared database, cloud, push, merge or commit.
+
+Rahul verified this isolated test result on 2026-10-24 06:20:03 UTC and authorized its checkpoint commit on `task/cn-01-conversations`. `git diff --check` passed; no push or merge occurred.
+
+### CN-01 — SDK recovery wire-format conflict confirmed — 2026-10-24 06:22:08 UTC
+Rahul (D); user authorized wiring retry controls through the crypto, relay and page, with real-SDK isolated tests. Inspection of pinned OpenE2EE 13.0.0 and a synthetic Node 24 probe of its actual retry-envelope constructor confirmed that automatic requests use `<retry-id>:retry-request`, with resend/null members and later attempt suffixes. These IDs violate CLIP's approved UUIDv4-only SDK-ID/operation-ID equality and are rejected by `ConversationRelay.send`. `ConversationEntry` also omits the SDK client message ID that the SDK requires when the relay assigns its own entry ID. The SDK's `processIncomingEnvelope` rejects retry controls; its supported control receive path is `receiveIncomingEnvelopes`. Recovery resends additionally need their saved original application routing context; the current route map only recognizes original application operations. The current page renders a pending notice rather than processing these controls. No production code changed. Stop at the existing CN-01 contract/message-format decision gate: propose preserving SDK IDs separately from UUID operation IDs, delivering them back to receivers, and specifying durable original-message correlation and recovery deduplication before updating the canonical contracts, generators, schema and client. The probe printed only message type, a redacted ID pattern and the UUID-rule result; no payload or keys. The request-author checkpoint is committed as `fae5935`; this finding awaits human review. No shared database, cloud, push or merge action.
+
+### CN-01 — recovery transport revision prepared — 2026-10-24 06:26:20 UTC
+Rahul (D); after the explanation of SDK recovery IDs, Rahul verified the separate-ID direction and preparation of a concrete contract revision. Added `docs/decisions/conversation-recovery-transport.md`: proposed v2 transport metadata, durable UUID/SDK-ID mapping, original-message references, member/family authorization, saved routing and timestamp collision handling, non-rendered recovery responses, local-history deduplication, fail-closed behavior, legacy-v1 compatibility and required real-SDK/integration checks. `contracts/conversations.md`, `contracts/combined.md` and the E2EE design decision link the revision and identify the current v1 recovery limitation. This is a documentation draft awaiting detailed verification; typed sources, generated outputs, ciphertext/application-payload format and runtime behavior are unchanged. Validation: Gitleaks 8.30.1 source-snapshot scan and `git diff --check` passed; linked draft paths exist. Normal affected-owner review and all real integration gates remain. No migration, shared database, cloud, push, merge or commit.
+
+Rahul verified the detailed recovery revision on 2026-10-24 06:33:47 UTC. Its status and linked canonical-contract notices now record approval for implementation, with normal affected-owner code review retained. This checkpoint commits documentation; typed declarations, generated outputs, migration and runtime behavior still await implementation.
+
+### CN-01 — recovery storage migration and local checks — 2026-10-24 06:39:52 UTC
+Rahul (D); implemented the user-verified storage checkpoint. New forward migration `20261024063500_conversation_recovery_storage.sql` retains exact SDK IDs alongside UUID operation IDs, original-message references, immutable requester/family bindings and accepted-attempt checks. Conversations-local triggers preserve existing ordering/no-write/key-owner/content protections and add v2 storage validation for requests, encrypted resends and SDK null responses. The Conversations-only legacy metadata backfill leaves ciphertext unchanged; pending deferred head/content checks are flushed before later DDL. Rollback refuses populated recovery/v2 state. The first run exposed a CASE-expression syntax error; the populated-v1 roundtrip then caught pending deferred trigger events during DDL. Both were corrected and rechecked. `test_conversation_recovery_storage.py` uses disposable PostgreSQL and synthetic fixtures to check valid/second-attempt traffic, shape/ID/role/target/context rejection, SDK-ID uniqueness, first-request atomicity, immutable bindings, purge/retirement rejection, v1 ciphertext preservation and rollback refusal. Existing test runners now check head `20261024063500`; the migration gate verifies rollback preserves prior directory storage. Database README, schema notes and the command registry document the storage and test scope. Final checks: focused PostgreSQL suite 67 passed; clean/repeat migration application, both SQL smoke suites and latest rollback/reapply passed; Black for the three changed Python files, Gitleaks 8.30.1 source snapshot and `git diff --check` passed. Actual API v2, generated models, browser recovery and real Identity/origin integration remain pending. Tests are storage/provider checks, not a two-client cryptographic recovery result. Result awaits Rahul's verification before commit; no shared database, cloud, push or merge.
+
+Rahul verified this storage checkpoint on 2026-10-24 07:07:25 UTC and authorized its commit on `task/cn-01-conversations`. The next checkpoint is typed v2 contracts and their API/provider persistence; browser recovery and real integration remain pending.
+
+### CN-01 — typed v2 recovery contracts and API/provider support — 2026-10-24 07:20:39 UTC
+Rahul (D); implementing the verified next checkpoint. Extended canonical `CipherEnvelope`, `ConversationEntry` and `MessageRequest` with v2 SDK ID and original-entry metadata, plus server-derived `RecoveryTarget`; retained v1 compatibility. Updated the PostgreSQL message provider to persist/return SDK IDs separately from UUID operation IDs, atomically bind first recovery requests, validate original message/family/participant role and accepted response attempts, keep recovery entries recipient-only, and return the original entry's stored position/sender/time. Updated generated contract outputs and the Conversations/combined contract descriptions; adjusted the disposable suite's execution order so its down/up migration check runs before API recovery fixtures persist state. Added contract tests and provider tests for v1 compatibility, request/resend/null paths, target response, retry, wrong role/target, and duplicate SDK ID. Checks: `scripts/check_conversations_retirement.py` passed 71 tests on fresh PostgreSQL 18.6; message contract tests passed 9; all eight generated artifacts current; Black check, boundary check (0 violations), Gitleaks 8.30.1 and `git diff --check` passed. These prove isolated API/provider storage behavior, not actual SDK/browser recovery; that client work, IndexedDB/two-browser integration and real Identity/origin dependencies remain pending. Result awaited Rahul verification before commit; no shared database, push, merge or cloud action.
+
+Rahul verified the typed v2 contract/API-provider checkpoint on 2026-10-24 07:21:16 UTC and authorized its step commit on `task/cn-01-conversations`.
+
+### CN-01 — Step 8 isolated SDK recovery controls with resend retention disabled — 2026-10-24 08:16:55 UTC
+Rahul (D); implementing the verified client-control checkpoint. Rahul explicitly chose to keep OpenE2EE content recovery disabled after reviewing its 14-day local resend-text retention and same-database IndexedDB key custody. `crypto.ts` now sets SDK `contentRecovery.mode = off` in both client constructors, so a future store change cannot silently enable resend plaintext. `relay.ts` binds retry-control writes to the original local/peer key versions and checks both directory identities before posting; recovery controls cannot bypass a changed peer key. The API validator enforces strict numeric envelope versions and accepts canonical SDK attempt suffixes including two-digit attempts. `conversations-relay.test.ts` exercises real SDK retry-request and null-response behavior with local resend content absent; `conversations-crypto.test.ts` now supplies the required v2 SDK ID in its authenticated-context mismatch fixture. `conversation-recovery-transport.md` records that no resend cache is enabled and recommends describing this to a sender as recipient decryption failure, not failed send; actual page status wiring remains pending. Checks passed on Node 24.22.0/npm 11.19.1: app/test typecheck, Biome lint (51 files, no warnings), all 85 web tests, and `git diff --check`. No new dependency, UI/page edit, browser/real-service integration, database, cloud, push or merge. Rahul verified this checkpoint on 2026-10-24 08:18:35 UTC, authorized its local commit on 2026-10-24 11:57:50 UTC, and the code/docs checkpoint was committed as `26896a8`; final work-log closeout follows.
+
+### CN-01 — Step 8 recovery-control page handling and sender status — 2026-10-24 12:16:38 UTC
+Rahul verified this page-level UI result on 2026-10-24 12:21:08 UTC. `ConversationPages.tsx` now routes incoming protocol controls through the SDK receive handler, suppresses control traffic from chat bubbles, and records a failure notice against the original sender-owned message only after a retry request is successfully handled. `ConversationThread.tsx` presents “The recipient couldn’t decrypt this message. You can send it again as a new message.”; `ConversationThread.css` gives that status subdued secondary styling. This does not claim the original server-accepted ciphertext was unsent, does not automatically resend it, and leaves transport retry behavior unchanged. `conversations-ui.test.ts` verifies the status appears on the original message without the failed-send retry UI. Node 24.22.0/npm 11.19.1 `npm run check` passed: lint (51 files), all 86 tests, app/test TypeScript checks and production build; `git diff --check` passed. Real Identity/HTTP/PostgreSQL and IndexedDB/two-browser integration, browser interaction review, and full CN-01 acceptance remain pending. No dependency, API/contract, database, cloud, push or merge occurred. Code commit `574d7c6` records the UI step on `task/cn-01-conversations`.
+
+### CN-01 — Step 8 recovery-control page behavior test — 2026-10-24 12:41:45 UTC
+Rahul (D); implementing the user-started isolated test increment; Rahul verified it on 2026-10-24 12:45:27 UTC. Extracted the page's protocol-control decision into `processProtocolControlEntry` within `ConversationPages.tsx`, keeping it internal to the feature page module. `conversations-relay.test.ts` now passes the real SDK-generated retry request and null response through that exact handler using actual OpenE2EE sessions and local memory stores: retry request returns the original entry ID for annotation, while null response returns no failure target. The existing `conversations-ui.test.ts` separately verifies the returned notice renders without failed-send retry UI. No live Identity/API service or browser runtime is implied. Focused relay/UI tests passed (15); full Node 24.22.0/npm 11.19.1 `npm run check` passed (86 tests, lint, app/test typecheck and production build); `git diff --check` passed. Changed files: `ConversationPages.tsx` (testable page control handler used by the polling loop), `conversations-relay.test.ts` (real-SDK page-handler scenario), and this work log (current status and integration ledger). No contract, API provider, migration, dependency, database, cloud, push or merge changed. Code/test commit `ed55384` records this verified checkpoint; real Identity/HTTP/PostgreSQL and IndexedDB/two-browser integration remain pending.
+
+### CN-01 — loopback demo unread/read interaction — 2026-10-24 12:53:49 UTC
+Rahul verified the bounded demo behavior scope on 2026-10-24 12:56:56 UTC. `conversationDemoState.ts` provides isolated in-memory sample threads, per-thread monotonic read watermarks, displayed-sequence acknowledgement, locally added messages and inbox unread-count derivation; a fresh module/store starts from the original synthetic state. `ConversationDemo.tsx` now uses that state across inbox/thread route changes, wiring the existing visible-message acknowledgement callback and local send action back into the page. Its warning explains that unread changes are simulated locally and reset on reload. `conversation-demo-ui.test.ts` checks initial unread counts, partial and complete read-through behavior, ignored invalid/regressive sequence acknowledgements, local send ordering, fresh-state reset and the demo warning. An initial focused run exposed that the old fixture badge (2) disagreed with its initial read watermark; corrected the watermark so both peer messages begin unread. Focused demo tests passed (4); full Node 24.22.0/npm 11.19.1 `npm run check` passed (88 tests, lint, app/test typecheck and production build); `git diff --check` passed. Changed files: `conversationDemoState.ts` (demo-only state model), `ConversationDemo.tsx` (route persistence while the page remains loaded and read/send callback wiring), `conversation-demo-ui.test.ts` (demo behavior coverage), and this work log (status/history). No production API/provider, contracts, dependency, database, cloud, push or merge changed. Real browser click/IntersectionObserver review remains pending. Code commit: `35b95d4`.
+
+### CN-01 — Step 9 coverage audit — 2026-10-24 13:08:51 UTC
+Rahul verified the Step 9 audit findings on 2026-10-24 13:32:56 UTC. Inspected CN-01 steps/acceptance, current work-log evidence, and test inventories in `apps/api/tests/test_thread_creation.py`, `test_conversation_messages.py`, `test_conversation_directory.py`, `test_conversation_recovery_storage.py`, `test_origin_retirement.py`, plus the Conversations web crypto/API/relay/history/read-state/UI/demo suites. Existing isolated coverage includes SDK two-client encrypted exchange and tamper/wrong-recipient rejection; backend nonparticipant ID-substitution denial; duplicate/concurrent listing and Wanted Request thread creation; message ordering, pagination/cursor progress and exact retry; key change/loss; read acknowledgement only after display and no thread activity advance from acknowledgement; request-author participation and temporary-responder denial. Gaps: no Conversations content-retention worker/cleanup implementation or tests were found for 90-day purge, content-free marker preservation, or read/poll/worker non-renewal of the timer; current `docs/decisions/private-data-retention.md` and `docs/architecture/mvp-database-schema.md` leave the destructive cleanup mechanism/order separately gated. No closed/unavailable Wanted Request response test was found. Real authenticated two-browser/Identity/Search integration, browser IndexedDB behavior, and CN-CORE are also pending their documented dependencies; existing HTTP/API/SDK checks use test Identity or contract doubles and are not full production integration. This was a source/test inventory only: no tests were run and no code or test was changed. Next proposed increment: add a bounded Conversations-owned test that proves entry polling and read-state reads leave `last_activity_at` unchanged. Search-owned closed/unavailable request orchestration waits for SE-02; destructive purge waits for its separately reviewed mechanism/order. Worker non-renewal remains pending until a worker exists.
+
+### CN-01 — Step 9 read/poll activity-clock regression — 2026-10-25 08:23:27 UTC
+Rahul authorized the bounded test increment after reviewing Aditya's Identity handoff. Added `test_reads_and_repeated_polls_do_not_renew_participant_activity` in `apps/api/tests/test_conversation_messages.py`: after a real synthetic message write, capture the persisted activity timestamp and next sequence; repeatedly read full and empty entry pages plus each member's read state; verify fetching leaves watermarks at zero and the clock/sequence unchanged. Explicit display acknowledgements, identical retries and a regressive acknowledgement also preserve the clock/sequence while keeping the watermark monotonic. The test uses the actual PostgreSQL provider and existing synthetic trusted caller fixture. Exact equality with the post-write timestamp proves non-renewal without modifying immutable creation timestamps or manufacturing an inconsistent aged thread. Targeted Black check passed; the registered disposable harness passed all 72 focused Conversations tests on fresh PostgreSQL 18.6 and removed its own database container. Initial sandbox Docker denial was resolved by the approved elevated harness run. Only this test and the work log changed; no production behavior or cleanup was implemented. Result awaits Rahul verification. Worker non-renewal, 90-day purge/marker preservation, browser integration and real Identity/Search acceptance remain pending.
+
+### CN-01 — Steps 8/9 DOM interactions and account isolation — 2026-10-25 08:32:45 UTC
+Rahul verified the read/poll regression (`44bb8c4`), then authorized UI interaction coverage following the Identity handoff review. D is the sole writer for the bounded shared manifest/lockfile addition on this branch: development-only `jsdom@30.1.3`, compatible with verified Node 24.22.0/npm 11.19.1 (jsdom requires Node >=24.15 on the 24.x line). Existing production pins remain unchanged; reconcile the separate Identity dependency additions and obtain A's public-provider/consumer review at integration. The first registry install timed out; retry succeeded, adding 35 development packages, with zero reported vulnerabilities.
+
+Added `apps/web/tests/conversations-interactions.test.ts` using actual React roots/components in jsdom, controlled IntersectionObserver events and explicit API/crypto-session doubles. Six cases cover no acknowledgement on fetch/offscreen/below-threshold rows, monotonic display acknowledgement, safe retry after acknowledgement failure, hidden-document rejection, account switching with a late poll, inbox isolation while the next account loads, and logout/session shutdown with late results ignored. Initial execution failed three cases, demonstrating hidden-tab read acknowledgement and retained prior-account detail/inbox state. `ConversationThread.tsx` now requires a visible document and the configured 25% intersection before acknowledging. `ConversationPages.tsx` remounts account/thread controllers on identity/route changes; a null runtime unmounts private state and stops the crypto session, while persisted keys/history remain intact. Polling checks session generation after asynchronous reads/decryption so late responses cannot read local history or process more protocol traffic. The strengthened logout test confirms no history read after the late response. `apps/web/README.md` documents these behaviors, tool requirements and test limits. No Identity-private import, auth implementation, database/schema, cloud, push or merge changed.
+
+Validation: full `npm run check` passed 94 tests in ten files, warning-free Biome lint, application/test TypeScript checks and production build on Node 24.22.0/npm 11.19.1. Existing large-bundle build advisory remains. Python boundary scan reported zero violations; pinned Gitleaks 8.30.1 source-snapshot scan passed after the approved Docker-enabled retry; whitespace check passed. The test environment controls visibility/geometry and mocks session/history APIs: it does not prove actual browser layout, IndexedDB durability, real Identity authentication, two-browser transport or CN-CORE/FR/NFR acceptance. Current result awaits Rahul verification; retention cleanup and its separate method/order gate remain pending.
 
 ## Resolved integration evidence
 
