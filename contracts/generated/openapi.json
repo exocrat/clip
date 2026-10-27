@@ -156,14 +156,22 @@
       },
       "CipherEnvelope": {
         "additionalProperties": false,
-        "description": "Opaque encrypted payload transport metadata; never plaintext content.",
+        "description": "OpenE2EE relay envelope metadata and its opaque transport payload.",
         "properties": {
+          "client_timestamp_ms": {
+            "maximum": 9007199254740991.0,
+            "minimum": 0.0,
+            "title": "Client Timestamp Ms",
+            "type": "integer"
+          },
           "envelope_version": {
+            "maximum": 2.0,
             "minimum": 1.0,
             "title": "Envelope Version",
             "type": "integer"
           },
           "payload_base64": {
+            "maxLength": 87384,
             "minLength": 1,
             "title": "Payload Base64",
             "type": "string"
@@ -177,22 +185,70 @@
             "type": "string"
           },
           "recipient_key_version": {
-            "minimum": 1.0,
-            "title": "Recipient Key Version",
-            "type": "integer"
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recipient Key Version"
+          },
+          "recovery_for_entry_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recovery For Entry Id"
+          },
+          "sdk_client_message_id": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sdk Client Message Id"
+          },
+          "sdk_message_type": {
+            "enum": [
+              "ciphertext",
+              "prekey_bundle",
+              "retry_request"
+            ],
+            "title": "Sdk Message Type",
+            "type": "string"
           },
           "sender_key_version": {
-            "minimum": 1.0,
-            "title": "Sender Key Version",
-            "type": "integer"
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sender Key Version"
           }
         },
         "required": [
           "protocol_id",
           "protocol_version",
           "envelope_version",
-          "sender_key_version",
-          "recipient_key_version",
+          "sdk_message_type",
+          "client_timestamp_ms",
           "payload_base64"
         ],
         "title": "CipherEnvelope",
@@ -320,7 +376,7 @@
       },
       "ConversationEntry": {
         "additionalProperties": false,
-        "description": "Ordered message/share envelope metadata; content may be retired.",
+        "description": "Ordered message/control/share envelope metadata; content may be retired.",
         "properties": {
           "content_deleted": {
             "default": false,
@@ -350,10 +406,21 @@
           "kind": {
             "enum": [
               "message",
+              "protocol_control",
               "contact_share"
             ],
             "title": "Kind",
             "type": "string"
+          },
+          "recovery_target": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RecoveryTarget"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "sender_user_id": {
             "format": "uuid",
@@ -739,7 +806,7 @@
       },
       "EntryPage": {
         "additionalProperties": false,
-        "description": "Ordered entry page and replay-safe cursor state.",
+        "description": "Visible entry page plus the last global sequence inspected for this member.",
         "properties": {
           "has_more": {
             "title": "Has More",
@@ -752,15 +819,15 @@
             "title": "Items",
             "type": "array"
           },
-          "last_sequence": {
+          "scanned_through_sequence": {
             "minimum": 0.0,
-            "title": "Last Sequence",
+            "title": "Scanned Through Sequence",
             "type": "integer"
           }
         },
         "required": [
           "items",
-          "last_sequence",
+          "scanned_through_sequence",
           "has_more"
         ],
         "title": "EntryPage",
@@ -938,12 +1005,22 @@
       },
       "KeyBundle": {
         "additionalProperties": false,
-        "description": "One user's public bundle and its compatible protocol metadata.",
+        "description": "Typed public SDK bundle and its compatible protocol metadata.",
         "properties": {
-          "bundle_base64": {
-            "minLength": 1,
-            "title": "Bundle Base64",
-            "type": "string"
+          "device_id": {
+            "const": 1,
+            "default": 1,
+            "title": "Device Id",
+            "type": "integer"
+          },
+          "ec_signed_prekey": {
+            "$ref": "#/components/schemas/PublicEcSignedPreKey"
+          },
+          "identity": {
+            "$ref": "#/components/schemas/PublicCompositeIdentityV1"
+          },
+          "kem_last_resort_prekey": {
+            "$ref": "#/components/schemas/PublicKemPreKey"
           },
           "key_version": {
             "minimum": 1.0,
@@ -958,6 +1035,12 @@
             "title": "Protocol Version",
             "type": "string"
           },
+          "registration_id": {
+            "maximum": 16383.0,
+            "minimum": 1.0,
+            "title": "Registration Id",
+            "type": "integer"
+          },
           "user_id": {
             "format": "uuid",
             "title": "User Id",
@@ -969,7 +1052,10 @@
           "protocol_id",
           "protocol_version",
           "key_version",
-          "bundle_base64"
+          "registration_id",
+          "identity",
+          "ec_signed_prekey",
+          "kem_last_resort_prekey"
         ],
         "title": "KeyBundle",
         "type": "object"
@@ -1699,9 +1785,56 @@
         "title": "MemberKeyBundles",
         "type": "object"
       },
+      "MemberPreKeyBundle": {
+        "additionalProperties": false,
+        "description": "Peer's public session bundle plus any atomically consumed one-time keys.",
+        "properties": {
+          "device_id": {
+            "const": 1,
+            "default": 1,
+            "title": "Device Id",
+            "type": "integer"
+          },
+          "ec_one_time_prekey": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PublicPreKeyMaterial"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "kem_one_time_prekey": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PublicPreKeyMaterial"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "key_bundle": {
+            "$ref": "#/components/schemas/KeyBundle"
+          },
+          "registration_id": {
+            "maximum": 16383.0,
+            "minimum": 1.0,
+            "title": "Registration Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "key_bundle",
+          "registration_id"
+        ],
+        "title": "MemberPreKeyBundle",
+        "type": "object"
+      },
       "MessageRequest": {
         "additionalProperties": false,
-        "description": "Encrypted message plus stable retry key.",
+        "description": "OpenE2EE envelope plus a UUIDv4 CLIP write identity.",
         "properties": {
           "envelope": {
             "$ref": "#/components/schemas/CipherEnvelope"
@@ -1952,6 +2085,34 @@
           "upi_id"
         ],
         "title": "OwnContacts",
+        "type": "object"
+      },
+      "OwnPreKeyInventory": {
+        "additionalProperties": false,
+        "description": "Counts only the authenticated account's unconsumed public prekeys.",
+        "properties": {
+          "ec_one_time_count": {
+            "minimum": 0.0,
+            "title": "Ec One Time Count",
+            "type": "integer"
+          },
+          "kem_one_time_count": {
+            "minimum": 0.0,
+            "title": "Kem One Time Count",
+            "type": "integer"
+          },
+          "key_version": {
+            "minimum": 1.0,
+            "title": "Key Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "key_version",
+          "ec_one_time_count",
+          "kem_one_time_count"
+        ],
+        "title": "OwnPreKeyInventory",
         "type": "object"
       },
       "PageResult_ConversationSummary_": {
@@ -2205,6 +2366,22 @@
         "title": "PasswordResetChallengeRequest",
         "type": "object"
       },
+      "PreKeyBundleRequest": {
+        "additionalProperties": false,
+        "description": "Idempotency key for atomically reserving a member's one-time prekeys.",
+        "properties": {
+          "operation_id": {
+            "format": "uuid",
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id"
+        ],
+        "title": "PreKeyBundleRequest",
+        "type": "object"
+      },
       "ProfilePatch": {
         "additionalProperties": false,
         "description": "Own-profile partial update; omitted and explicit null have distinct meaning.",
@@ -2253,14 +2430,116 @@
         "title": "ProfileView",
         "type": "object"
       },
+      "PublicCompositeIdentityV1": {
+        "additionalProperties": false,
+        "description": "OpenE2EE public identity tuple; private identity keys never cross the API.",
+        "properties": {
+          "ed25519_public_key_base64": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Ed25519 Public Key Base64",
+            "type": "string"
+          },
+          "version": {
+            "const": 1,
+            "default": 1,
+            "title": "Version",
+            "type": "integer"
+          },
+          "x25519_public_key_base64": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "X25519 Public Key Base64",
+            "type": "string"
+          }
+        },
+        "required": [
+          "x25519_public_key_base64",
+          "ed25519_public_key_base64"
+        ],
+        "title": "PublicCompositeIdentityV1",
+        "type": "object"
+      },
+      "PublicEcSignedPreKey": {
+        "additionalProperties": false,
+        "description": "Public X25519 signed prekey and its OpenE2EE identity signature.",
+        "properties": {
+          "key_id": {
+            "maximum": 4294967295.0,
+            "minimum": 0.0,
+            "title": "Key Id",
+            "type": "integer"
+          },
+          "public_key_base64": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Public Key Base64",
+            "type": "string"
+          },
+          "signature_base64": {
+            "maxLength": 88,
+            "minLength": 1,
+            "title": "Signature Base64",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key_id",
+          "public_key_base64",
+          "signature_base64"
+        ],
+        "title": "PublicEcSignedPreKey",
+        "type": "object"
+      },
+      "PublicKemPreKey": {
+        "additionalProperties": false,
+        "description": "Public tagged ML-KEM-1024 prekey and its identity signature.",
+        "properties": {
+          "key_id": {
+            "maximum": 4294967295.0,
+            "minimum": 0.0,
+            "title": "Key Id",
+            "type": "integer"
+          },
+          "public_key_base64": {
+            "maxLength": 2200,
+            "minLength": 1,
+            "title": "Public Key Base64",
+            "type": "string"
+          },
+          "signature_base64": {
+            "maxLength": 88,
+            "minLength": 1,
+            "title": "Signature Base64",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key_id",
+          "public_key_base64",
+          "signature_base64"
+        ],
+        "title": "PublicKemPreKey",
+        "type": "object"
+      },
       "PublicKeyBundleRequest": {
         "additionalProperties": false,
-        "description": "Opaque standard padded Base64 public-key bundle registration.",
+        "description": "Register own public OpenE2EE identity and reusable signed prekeys.",
         "properties": {
-          "bundle_base64": {
-            "minLength": 1,
-            "title": "Bundle Base64",
-            "type": "string"
+          "device_id": {
+            "const": 1,
+            "default": 1,
+            "title": "Device Id",
+            "type": "integer"
+          },
+          "ec_signed_prekey": {
+            "$ref": "#/components/schemas/PublicEcSignedPreKey"
+          },
+          "identity": {
+            "$ref": "#/components/schemas/PublicCompositeIdentityV1"
+          },
+          "kem_last_resort_prekey": {
+            "$ref": "#/components/schemas/PublicKemPreKey"
           },
           "operation_id": {
             "format": "uuid",
@@ -2274,12 +2553,21 @@
           "protocol_version": {
             "title": "Protocol Version",
             "type": "string"
+          },
+          "registration_id": {
+            "maximum": 16383.0,
+            "minimum": 1.0,
+            "title": "Registration Id",
+            "type": "integer"
           }
         },
         "required": [
           "protocol_id",
           "protocol_version",
-          "bundle_base64",
+          "registration_id",
+          "identity",
+          "ec_signed_prekey",
+          "kem_last_resort_prekey",
           "operation_id"
         ],
         "title": "PublicKeyBundleRequest",
@@ -2317,6 +2605,111 @@
         "title": "PublicKeyBundleView",
         "type": "object"
       },
+      "PublicPreKeyBatchRequest": {
+        "additionalProperties": false,
+        "description": "Idempotent public one-time prekey publication for the active key version.",
+        "properties": {
+          "key_version": {
+            "minimum": 1.0,
+            "title": "Key Version",
+            "type": "integer"
+          },
+          "operation_id": {
+            "format": "uuid",
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "prekeys": {
+            "items": {
+              "$ref": "#/components/schemas/PublicPreKeyMaterial"
+            },
+            "maxItems": 200,
+            "minItems": 1,
+            "title": "Prekeys",
+            "type": "array"
+          }
+        },
+        "required": [
+          "key_version",
+          "prekeys",
+          "operation_id"
+        ],
+        "title": "PublicPreKeyBatchRequest",
+        "type": "object"
+      },
+      "PublicPreKeyBatchView": {
+        "additionalProperties": false,
+        "description": "Accepted public-prekey counts for the caller's active key version.",
+        "properties": {
+          "ec_one_time_count": {
+            "minimum": 0.0,
+            "title": "Ec One Time Count",
+            "type": "integer"
+          },
+          "kem_one_time_count": {
+            "minimum": 0.0,
+            "title": "Kem One Time Count",
+            "type": "integer"
+          },
+          "key_version": {
+            "minimum": 1.0,
+            "title": "Key Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "key_version",
+          "ec_one_time_count",
+          "kem_one_time_count"
+        ],
+        "title": "PublicPreKeyBatchView",
+        "type": "object"
+      },
+      "PublicPreKeyMaterial": {
+        "additionalProperties": false,
+        "description": "One public one-time prekey in OpenE2EE's supported client profile.",
+        "properties": {
+          "key_id": {
+            "minimum": 0.0,
+            "title": "Key Id",
+            "type": "integer"
+          },
+          "key_type": {
+            "enum": [
+              "ecPreKey",
+              "kemOneTimePreKey"
+            ],
+            "title": "Key Type",
+            "type": "string"
+          },
+          "public_key_base64": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "title": "Public Key Base64",
+            "type": "string"
+          },
+          "signature_base64": {
+            "anyOf": [
+              {
+                "maxLength": 256,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Signature Base64"
+          }
+        },
+        "required": [
+          "key_type",
+          "key_id",
+          "public_key_base64"
+        ],
+        "title": "PublicPreKeyMaterial",
+        "type": "object"
+      },
       "ReadAcknowledgement": {
         "additionalProperties": false,
         "description": "Read acknowledgement bounded by the greatest committed sequence.",
@@ -2347,6 +2740,40 @@
           "own_last_read_sequence"
         ],
         "title": "ReadState",
+        "type": "object"
+      },
+      "RecoveryTarget": {
+        "additionalProperties": false,
+        "description": "Stored original entry details used to restore recovered content in place.",
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "entry_id": {
+            "format": "uuid",
+            "title": "Entry Id",
+            "type": "string"
+          },
+          "sender_user_id": {
+            "format": "uuid",
+            "title": "Sender User Id",
+            "type": "string"
+          },
+          "sequence": {
+            "minimum": 1.0,
+            "title": "Sequence",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "entry_id",
+          "sequence",
+          "sender_user_id",
+          "created_at"
+        ],
+        "title": "RecoveryTarget",
         "type": "object"
       },
       "RegistrationChallengeRequest": {
@@ -5475,6 +5902,140 @@
         ]
       }
     },
+    "/conversations/{conversation_id}/prekey-bundle": {
+      "post": {
+        "description": "Reject accidental use; declarations never return fake success.",
+        "operationId": "conversations_consume_member_prekeys",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conversation_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Conversation Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreKeyBundleRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberPreKeyBundle"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "conversations_consume_member_prekeys",
+        "tags": [
+          "conversations"
+        ]
+      }
+    },
     "/conversations/{conversation_id}/read-state": {
       "get": {
         "description": "Reject accidental use; declarations never return fake success.",
@@ -8059,6 +8620,124 @@
       }
     },
     "/me/conversation-key": {
+      "get": {
+        "description": "Reject accidental use; declarations never return fake success.",
+        "operationId": "conversations_read_own_key",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/KeyBundle"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Conversations Read Own Key"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "conversations_read_own_key",
+        "tags": [
+          "conversations"
+        ]
+      },
       "put": {
         "description": "Reject accidental use; declarations never return fake success.",
         "operationId": "conversations_register_own_key",
@@ -8175,6 +8854,238 @@
           }
         },
         "summary": "conversations_register_own_key",
+        "tags": [
+          "conversations"
+        ]
+      }
+    },
+    "/me/conversation-prekeys": {
+      "get": {
+        "description": "Reject accidental use; declarations never return fake success.",
+        "operationId": "conversations_read_own_prekey_inventory",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OwnPreKeyInventory"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "conversations_read_own_prekey_inventory",
+        "tags": [
+          "conversations"
+        ]
+      },
+      "post": {
+        "description": "Reject accidental use; declarations never return fake success.",
+        "operationId": "conversations_publish_own_prekeys",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicPreKeyBatchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicPreKeyBatchView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "conversations_publish_own_prekeys",
         "tags": [
           "conversations"
         ]

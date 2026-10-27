@@ -14,6 +14,8 @@ from app.contracts.domain_types import (
     CatalogueView,
     AvailabilityChange,
     ConversationId,
+    ConversationStartResult,
+    StartListingConversationRequest,
     ErrorEnvelope,
     ImageDelivery,
     ListingDetail,
@@ -89,6 +91,30 @@ def _service(request: Request) -> ListingsService:
         conversations=conversations,
         image_storage=image_storage,
     )
+
+
+@router.post(
+    "/listings/{listing_id}/conversations",
+    response_model=ConversationStartResult,
+    status_code=201,
+    operation_id="listings_start_conversation",
+    summary="listings_start_conversation",
+    responses={
+        **_ERROR_RESPONSES,
+        200: {"model": ConversationStartResult, "description": "OK"},
+    },
+)
+async def start_conversation(
+    listing_id: ListingId,
+    body: StartListingConversationRequest,
+    caller: Annotated[CallerContext, Depends(require_caller)],
+    service: Annotated[ListingsService, Depends(_service)],
+    response: Response,
+) -> ConversationStartResult:
+    """Validate the operation UUID; exact authenticated pair defines retries."""
+    result = await service.start_conversation(caller, listing_id)
+    response.status_code = 201 if result.created else 200
+    return result
 
 
 @router.get(
@@ -268,7 +294,7 @@ async def set_selected_buyer(
     caller: Annotated[CallerContext, Depends(require_caller)],
     service: Annotated[ListingsService, Depends(_service)],
 ) -> ListingOwnerView:
-    """Select, replace, or clear a buyer through the owner-only command."""
+    """Select a buyer (making the listing unavailable) or clear the selection."""
     return await service.set_selected_buyer(caller, listing_id, body)
 
 

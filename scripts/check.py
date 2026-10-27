@@ -41,10 +41,18 @@ CHECKS = {
         "mypy",
         "--no-incremental",
         "apps/api/tests/domains/search/doubles/listings.py",
+        "tests/contracts/conversations_consumer_types.py",
     ),
     "web": ("npm", "run", "check"),
     "database-safety": ("bash", "database/tests/local-db-safety.sh"),
     "database": ("uv", "run", "--locked", "python", "scripts/check_database.py"),
+    "conversations-retirement": (
+        "uv",
+        "run",
+        "--locked",
+        "python",
+        "scripts/check_conversations_retirement.py",
+    ),
     "secrets": ("uv", "run", "--locked", "python", "scripts/check_secrets.py"),
 }
 

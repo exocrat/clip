@@ -1,0 +1,46 @@
+.conversation-demo {
+  display: grid;
+  gap: 1rem;
+}
+
+.conversation-demo__warning {
+  display: grid;
+  gap: 0.25rem;
+  border: 2px solid #a64500;
+  border-radius: 0.5rem;
+  background: #fff6e9;
+  padding: 0.85rem 1rem;
+  color: #542900;
+}
+
+.conversation-demo__warning strong {
+  font-size: 1rem;
+}
+
+.conversation-demo__warning span {
+  font-size: 0.9rem;
+}
+
+.conversation-demo__back {
+  width: fit-content;
+}
+
+.conversation-demo__thread-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  border-bottom: 1px solid var(--color-border, #d5dbe5);
+  padding-bottom: 0.75rem;
+}
+
+.conversation-demo__thread-heading h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.conversation-demo__thread-heading span,
+.conversation-demo__missing {
+  color: var(--color-muted, #586174);
+}

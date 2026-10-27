@@ -65,8 +65,9 @@ visibility are recorded in the combined contract.
 The [Conversations contract](conversations.md) is the Step 8 thread, encrypted
 entry, read-state, offer, contact-share, notification-intent, and activity
 boundary; the combined registry records Step 9 operations and page connections.
-It preserves the acyclic origin-owner call direction; the crypto protocol and
-destructive cleanup order remain separate approval gates.
+It preserves the acyclic origin-owner call direction. OpenE2EE 13.0.0 and the
+v2 recovery transport are approved; browser recovery handling and the
+destructive cleanup order remain separate implementation/review gates.
 
 The owner-reviewed sources register each domain's HTTP operations and internal
 callables. Generation creates the four public modules and shared model module;
@@ -77,14 +78,14 @@ provider behavior remains with domain implementation tasks:
 | [Identity](source/identity.py) | HTTP mappings and four internal callables; implementation ID-01. |
 | [Listings](source/listings.py) | HTTP mappings, five internal callables and consumer protocol; implementation LI-01/LI-02. |
 | [Search](source/search.py) | HTTP mappings; consumes Listings, Conversations and Identity interfaces; implementation SE-01/SE-02. |
-| [Conversations](source/conversations.py) | HTTP mappings and ten internal callables; implementation CN-01/CN-02, notification delivery CN-03. |
+| [Conversations](source/conversations.py) | HTTP mappings, ten internal callables, and the injectable `ConversationsPublic` protocol; implementation CN-01/CN-02, notification delivery CN-03. |
 
-The generated contract-only OpenAPI contains 50 domain HTTP mappings plus
-health. The running API currently installs health and the Listings create,
-detail, owner-list, and replacement routes. Other generated domain declarations
-remain offline until their owners implement them. Listings routes fail closed
-until trusted authentication and an explicit storage/Identity adapter are wired;
-the generated declarations are not runtime implementations.
+The generated contract-only OpenAPI contains 56 domain HTTP mappings plus
+health. The shared API mounts the implemented Listings, Search/Wanted/Saved and
+Conversations routes. Identity routes require explicit trusted composition.
+Unimplemented operations remain offline or fail closed; generated declarations
+are not runtime implementations. Browser session authentication and CSRF checks
+come from Identity, never from a feature's client-supplied account summary.
 
 ## Tools and exact commands
 
@@ -143,7 +144,7 @@ The API-only suite still needs only its Python dependencies. Negative generation
 checks copy all canonical source/core inputs into temporary trees and share
 installed tools without writing tracked outputs. Tests cover deterministic
 generation, missing/stale outputs, changed source, tool mismatches, sanitization,
-all 50 operation IDs, live schema parity for health and implemented Listings
+all 57 operation IDs including health, live schema parity for implemented
 routes, noninstallation of other domain routes, private type exposure, and
 TypeScript consumers. The Listings test double is
 type-checked against the generated `ListingsPublic` protocol with Mypy. HTTP

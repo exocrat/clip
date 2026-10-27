@@ -47,6 +47,13 @@ Mohit (C), explicit approval of the retention durations and minimal-record excep
 ## Supersedes
 None.
 
+## CN-01 reviewed implementation mechanism
+
+CN-01's approved [Conversations cleanup mechanism](conversation-content-cleanup.md)
+implements coordinated90-day content removal with bounded, dry-run-first
+operation and per-thread lock/recheck/transactional deletion. Scheduling and
+persistent-target application remain separate operator actions.
+
 ## ID-01 reviewed implementation mechanism
 
 Aditya verified the [bounded Identity cleanup design](identity-sessions-and-cleanup.md)

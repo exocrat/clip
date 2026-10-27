@@ -46,6 +46,7 @@ EXPECTED_CALLABLES = {
     "search": set(),
     "conversations": {
         "open_or_create_listing_conversation",
+        "find_existing_listing_conversation",
         "open_or_create_wanted_conversation",
         "find_existing_wanted_conversation",
         "check_listing_thread_participant",
@@ -84,6 +85,27 @@ def test_public_callable_names_match_reviewed_registry():
             re.findall(rf"app\.domains\.{domain}\.public\.([a-z_]+)\(", contract)
         )
     assert documented == EXPECTED_CALLABLES
+
+
+def test_conversations_protocol_matches_internal_callable_signatures():
+    """The injectable Conversations protocol stays aligned with declarations."""
+    public = importlib.import_module("app.domains.conversations.public")
+    protocol = public.ConversationsPublic
+    declaration_names = EXPECTED_CALLABLES["conversations"]
+    protocol_names = {
+        name
+        for name, value in vars(protocol).items()
+        if inspect.iscoroutinefunction(value)
+    }
+
+    assert protocol_names == declaration_names
+    for name in declaration_names:
+        declared = inspect.signature(getattr(public, name))
+        method = inspect.signature(getattr(protocol, name))
+        assert tuple(method.parameters.values())[1:] == tuple(
+            declared.parameters.values()
+        )
+        assert method.return_annotation == declared.return_annotation
 
 
 def test_http_registry_matches_combined_contract_and_openapi():
@@ -200,6 +222,19 @@ def test_only_implemented_domain_http_routes_are_installed():
     # object, while OpenAPI still shows the actual installed endpoints.
     paths = set(app.openapi()["paths"])
     assert paths == {
+        "/conversations",
+        "/conversations/{conversation_id}",
+        "/conversations/{conversation_id}/entries",
+        "/conversations/{conversation_id}/messages",
+        "/conversations/{conversation_id}/offer",
+        "/conversations/{conversation_id}/contact-options",
+        "/conversations/{conversation_id}/contact-preparations",
+        "/conversations/{conversation_id}/contact-shares",
+        "/conversations/{conversation_id}/read-state",
+        "/conversations/{conversation_id}/keys",
+        "/conversations/{conversation_id}/prekey-bundle",
+        "/me/conversation-key",
+        "/me/conversation-prekeys",
         "/me/saved-listings",
         "/me/saved-listings/{listing_id}",
         "/wanted-requests",
@@ -214,6 +249,7 @@ def test_only_implemented_domain_http_routes_are_installed():
         "/listings/{listing_id}",
         "/me/listings",
         "/listings/{listing_id}/availability",
+        "/listings/{listing_id}/conversations",
         "/listings/{listing_id}/selection",
         "/listings/{listing_id}/conversations/{conversation_id}/offer",
         "/listings/{listing_id}/conversations/{conversation_id}/offer-withdrawals",

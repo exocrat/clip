@@ -1,5 +1,49 @@
 # Frontend page inventory and collaboration map
 
+## CN-01 listing-to-chat integration reservation
+
+Rahul (D), `task/cn-01-conversations`, is the bounded writer from
+2026-10-26 14:51:33 UTC for `src/pages/ScaffoldPages.tsx`'s Listing detail
+conversation slot, the corresponding public Listings feature action/export,
+and any necessary `ConversationRuntime.tsx`/`App.tsx` integration correction.
+Existing Identity/Search/Listings page behavior and public feature boundaries
+are preserved. This reservation follows Rahul's verification of the six-step
+[integration checkpoint](../evaluation/domain/conversations-integration.md).
+Suraj reviews Listings changes, Aditya reviews shared/session composition, and
+Mohit reviews any Search impact before merge. It does not reserve or modify the
+separate `task/cn-01-two-person-demo` worktree's demo files. Application edits
+start only at the verified next implementation step; this increment records scope.
+
+Step2's page-slot reservation was released at2026-10-26 18:21:27 UTC after
+implementation and local checks (Conversations DB107, web385/3skip, contract/
+Listings regressions118). P05 now composes the public Listings chat action.
+Further shared application/page changes need a renewed bounded reservation.
+
+## Bounded browser-Origin correction writer (released)
+
+Rahul (D), on `task/cn-01-conversations`, is the local correction writer for
+`src/shared/http/sessionFetch.ts`, its transport tests and this map under the
+ongoing human-authorized browser fix. Scope: preserve an actual Origin on
+same-origin API writes while limiting Referer to the origin alone. Aditya retains
+shared transport ownership and reviews the correction; affected consumer review
+remains required before merge. No page composition is reserved by this correction.
+Reservation released after web checks and an isolated real Firefox156 header
+probe passed at2026-10-26 09:45:53 UTC. See the work log for results and correction
+of the earlier opaque-document diagnosis.
+
+## Current bounded Conversations integration writer
+
+Rahul (D) is the sole local integration writer for `App.tsx`,
+`pages/ScaffoldPages.tsx` and the new `pages/ConversationRuntime.tsx` on
+`task/cn-01-conversations`, following the human-authorized main integration.
+Existing Identity/Listings/Search public page compositions are preserved.
+The new runtime connects public `useIdentity`, public Conversations exports and
+the shared `sessionFetch` transport; it imports no other feature's private code.
+This reservation covers local reconciliation only, not owner approval, push,
+merge to main or deployment. A/B/C review their affected composition under the
+normal PR process. Reservation released after the local checks at
+2026-10-26 07:12:12 UTC; checks and pending review are recorded in the work log.
+
 **Status:** Human-verified frontend foundation map. It records the approved
 routes, contributor roles, public feature entry points, shared-page coordination
 rule, shared UI baseline, and implemented scaffold connections. These are not
@@ -133,12 +177,12 @@ it is not an additional product route.
 | `/auth/callback` | `AuthCallbackPage` | `identity/MicrosoftCallback` (real local IISc success/non-IISc denial verified; cloud/device acceptance pending) | A — ID-01 |
 | `/` | `DiscoveryPage` | `search/SaleDiscovery` renders reviewed public sale summaries, displays the first attached photo via Listings' public `ListingImagePreview`, and links to B's detail route; `search/WantedBrowse` renders open requests | C — SE-01/SE-02; B — public summary/image delivery integration |
 | `/listings/new` | `ListingCreatePage` | public `identity/SellerEligibilityGate` wraps `listings/CreateListing`; mounts only for a current regular session, blocks temporary/loading/missing/expired/unavailable states | B — LI-01/LI-02; A — ID-01 integration |
-| `/listings/:listingId` | `ListingDetailPage` | `listings/ListingDetail` composes Search's `SaveListingAction`, which checks the caller's saved list and prevents a repeat Save, plus the `conversations/ConversationsPlaceholder` start/reopen action | B — LI-01/LI-02; C — SE-02; D — CN-01 integration |
+| `/listings/:listingId` | `ListingDetailPage` | `listings/ListingDetail` composes Search's `SaveListingAction` and public `listings/StartListingConversationAction`; the latter invokes Listings' guarded start/reopen HTTP command and navigates to the validated returned conversation ID | B — LI-01/LI-02; C — SE-02; D — CN-01 integration |
 | `/listings/:listingId/edit` | `ListingEditPage` | public `identity/SellerEligibilityGate` wraps `listings/ListingEdit`; server enforces regular seller/owner checks | B — LI-01/LI-02 |
 | `/my/listings` | `MyListingsPage` | Local view switch; public `listings/MyListings` and `search/MyWantedRequests` with draft matching; public Identity account boundary resets private state on actor changes; Conversations integration pending | B — LI-01/LI-02; C — SE-02; D — CN-02 integration |
 | `/saved` | `SavedListingsPage` | `search/SavedListings` uses the same `SaleListingCard` as Discover, including the Listings public photo renderer, current availability and Remove action; retired records remain content-free | C — SE-02; B — LI-01/LI-02 integration |
-| `/my/conversations` | `ConversationsPage` | `conversations/ConversationsPlaceholder` contains `listings/ListingsPlaceholder` context | D — CN-01/CN-02; B — LI-01 integration |
-| `/my/conversations/:conversationId` | `ConversationDetailPage` | `conversations/ConversationsPlaceholder` contains listing selection/availability and identity contact-option placeholders | D — CN-01/CN-02; B — LI-01 and A — ID-01 integration |
+| `/my/conversations` | `ConversationsPage` | `ConversationRuntime` provides the authenticated Conversations API to `ConversationInboxPage`. The member-scoped inbox has buyer/seller/requester/responder roles, origin grouping, partner/offer filters, amount sorting and bounded paging. Until owner interfaces expose display names, group/partner labels use shortened IDs; details and message content are not fetched for the inbox. | D — CN-01/CN-02; B — listing display context remains a small integration |
+| `/my/conversations/:conversationId` | `ConversationDetailPage` | `ConversationRuntime` provides the authenticated Conversations API to the private encrypted thread view. Current message/key/read states are implemented; structured-offer UI, seller selection/done-deal, and deliberate contact sharing remain CN-02 Steps 5–8. | D — CN-01/CN-02; B — listing selection/availability; A — Identity contact options |
 | `/account/contacts` | `AccountContactsPage` | `identity/ContactsEditor` (own-source editor; human verification pending) | A — ID-01 |
 | `/wanted/:requestId` | `WantedRequestPage` | public `search/WantedDetail` reads `/me`, disables responses for temporary/expired sessions and calls the response API; real Conversations provider pending | C — SE-02; A — ID-01 and D — CN-01/CN-02 integration |
 
@@ -435,3 +479,47 @@ its tests: pin origin-only referrer policy on API/preflight requests to preserve
 Firefox Origin validation under the unchanged no-referrer HTML metadata. Existing
 Listings/Search consumers inherit transport behavior only; their feature code and
 page composition are unchanged. Suraj/Mohit affected-owner review remains pending.
+
+## CN-02 Step 5 seller-selection composition reservation (released)
+
+Rahul (D) is the bounded current writer for CN-02 Step 5: the public Listings
+selection API export, `pages/ConversationRuntime.tsx` adapter, seller-only
+selection panel on the existing Conversation page, and the bounded local
+two-browser test harness/walkthrough, with focused tests and this map. The
+Conversations feature receives a narrow injected Listings capability;
+it does not import Listings private files or call Listings storage directly.
+Listings retains owner, eligibility, exact-thread membership, availability,
+revision, and retry enforcement. Step 6 availability controls, other Routes and
+app-shell composition are outside this reservation. Suraj reviews the public
+Listings boundary; Aditya reviews the shared runtime/session composition. This
+reservation does not authorize push, merge, or deployment.
+
+Released at 2026-10-27 10:18:54 UTC after Rahul confirmed the updated selection
+and unavailable behavior works in the local preview at `e103562`. Step6 requires
+its own bounded writer scope before shared frontend edits.
+
+## CN-02 Step6 done-deal composition reservation (released)
+
+Rahul (D) is the verified bounded writer for the public Listings availability
+export, `pages/ConversationRuntime.tsx` adapter, seller-only action beside Sale
+Listing inbox group headings, focused tests, and local browser walkthrough.
+Listings owns the availability transaction; Conversations receives a narrow
+injected capability. Preserve the current window and selected buyer, use stable
+operation IDs for uncertain outcomes, and refresh owner state after success.
+Suraj reviews the Listings boundary and Aditya reviews session composition.
+Other routes/app-shell changes, contact sharing and cloud work are outside scope.
+
+Released at 2026-10-27 10:31:38 UTC after Rahul verified the local browser
+checkpoint at `396a0c9`. Further shared composition edits require their own
+bounded writer scope.
+
+## CN-02 Step7 contact preparation checkpoint
+
+Rahul (D) is the verified writer for Conversations-owned contact preparation,
+its existing Conversation page slot/API client, tests and local browser helper.
+The component reads availability only after the user opens the flow and submits
+selected field names only after a separate confirmation. Returned own values
+are transient and are neither displayed nor retained while Step8 publication is
+absent. Identity calls use its public interface and server-only scoped claims;
+Aditya reviews that integration. Shared page routes/runtime/core/generated files
+are unchanged. Step8 encryption/storage/cleanup remain outside this increment.

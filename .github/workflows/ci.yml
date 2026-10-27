@@ -64,5 +64,7 @@ jobs:
         run: uv run --locked python scripts/check.py database-safety
       - name: Check clean migrations and schema
         run: uv run --locked python scripts/check.py database
+      - name: Check Conversations database operations
+        run: uv run --locked python scripts/check.py conversations-retirement
       - name: Scan source for secrets
         run: uv run --locked python scripts/check.py secrets

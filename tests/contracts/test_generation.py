@@ -229,14 +229,38 @@ async def asgi_get(app, path):
 
 
 def test_actual_api_schema_matches_generated_contract():
-    """Real API wire schemas match the implemented health/Listings/wanted subset."""
+    """Implemented routes retain declared operation IDs and success wire schemas."""
     from app.main import app
 
     actual = app.openapi()
     declared = json.loads((ROOT / "contracts/generated/openapi.json").read_text())
     assert declared["x-clip-generator-format"] == 2
     assert actual["info"] == declared["info"]
+    assert set(actual["paths"]) <= set(declared["paths"])
+    for path, methods in actual["paths"].items():
+        for method, operation in methods.items():
+            expected = declared["paths"][path][method]
+            assert operation["operationId"] == expected["operationId"]
+            for code, response in operation["responses"].items():
+                if code.startswith("2"):
+                    assert response.get("content") == expected["responses"][code].get(
+                        "content"
+                    )
+    assert actual["paths"]["/health"] == declared["paths"]["/health"]
     implemented_paths = {
+        "/conversations",
+        "/conversations/{conversation_id}",
+        "/conversations/{conversation_id}/entries",
+        "/conversations/{conversation_id}/messages",
+        "/conversations/{conversation_id}/offer",
+        "/conversations/{conversation_id}/contact-options",
+        "/conversations/{conversation_id}/contact-preparations",
+        "/conversations/{conversation_id}/contact-shares",
+        "/conversations/{conversation_id}/read-state",
+        "/conversations/{conversation_id}/keys",
+        "/conversations/{conversation_id}/prekey-bundle",
+        "/me/conversation-key",
+        "/me/conversation-prekeys",
         "/me/saved-listings",
         "/me/saved-listings/{listing_id}",
         "/wanted-requests",
@@ -251,6 +275,7 @@ def test_actual_api_schema_matches_generated_contract():
         "/listings/{listing_id}",
         "/me/listings",
         "/listings/{listing_id}/availability",
+        "/listings/{listing_id}/conversations",
         "/listings/{listing_id}/selection",
         "/listings/{listing_id}/conversations/{conversation_id}/offer",
         "/listings/{listing_id}/conversations/{conversation_id}/offer-withdrawals",
@@ -305,7 +330,7 @@ def test_actual_api_schema_matches_generated_contract():
         for operation in path.values()
         if isinstance(operation, dict) and "operationId" in operation
     }
-    assert len(contract_operation_ids) == 53
+    assert len(contract_operation_ids) == 57
     assert {
         "identity_start_microsoft_login_attempt",
         "identity_read_csrf_token",
@@ -348,7 +373,7 @@ def test_schema_build_does_not_import_real_application(monkeypatch):
     monkeypatch.setitem(sys.modules, "app.main", None)
     health, domains = generator.load_sources()
     schema = generator.declared_schema(health, domains)
-    assert len(schema["paths"]) == 46
+    assert len(schema["paths"]) == 48
     assert "/auth/microsoft/login-attempts" in schema["paths"]
     assert "/auth/csrf" in schema["paths"]
 

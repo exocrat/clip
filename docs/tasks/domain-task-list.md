@@ -35,7 +35,7 @@ Read these repository copies before starting and revisit the relevant sections w
 | `docs/tasks/pre-domain-task-list.md` | PRE-00, shared local/cloud foundation, datasets, work log, tooling, checklists, and handoff. |
 | `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | Experiment boundary and its own tasks. |
 | `docs/status/work-log.md`, `docs/decisions/`, and current environment inventory | Actual status, approved decisions, and verified infrastructure facts. |
-| `contracts/README.md`, `contracts/source/`, and registered generated outputs | Exact contract source and generated paths. DL-00 defines 50 domain HTTP operations, four domain `public.py` modules, and shared contract types. These generated declarations contain no domain behavior; providers remain with their named tasks. |
+| `contracts/README.md`, `contracts/source/`, and registered generated outputs | Exact contract source and generated paths. DL-00 defined 50 domain HTTP operations; CN-01 adds three E2EE prekey operations in its Conversations contract. Four domain `public.py` modules and shared contract types remain generated declarations without domain behavior; providers remain with their named tasks. |
 | `docs/architecture/foundation-traceability.md` and `docs/evaluation/README.md` | Per-requirement owners/paths/evidence and canonical evidence homes. The traceability map records planned domain paths, not implementation acceptance. |
 
 Use source authority by subject rather than treating every document as one flat priority list:
@@ -182,6 +182,64 @@ DL-00 is the shared serial contract gate. After it, ID-01 and LI-01 can proceed 
 
 **Stop and ask if:** A required product behavior has no clear owner; shared auth/pagination/error/data choices are unresolved; a source conflict changes user-visible behavior; or a contract would require a private cross-domain dependency.  
 **Complete when:** Four domain contracts and the combined contract agree; all four generated `public.py` declaration modules and other generated outputs are current; a consumer can type-check a local test double against a provider interface before that provider implements it; every FR has a named owner/path; and affected owners have reviewed shared boundaries. Domain implementation remains in each domain owner's directory and starts only after this shared contract/interface handoff is merged.
+
+### Shared checkpoint — Origin-retirement trigger boundary
+
+**Status:** Approved for implementation by Listings owner B (Suraj) on
+2026-10-20. This is a shared implementation checkpoint, not a new product
+decision or task number. The exact behavior is in
+[`origin-retirement.md`](../decisions/origin-retirement.md), the approved
+handoff, and the updated Conversations contract. Listings B and Search C still
+need to align and review their own contract sections before the combined
+contract is accepted as fully aligned. This checkpoint gates the shared
+trigger replacement, no-write marker, and cross-domain retirement acceptance;
+it does not block unrelated isolated domain work permitted by the stub guide.
+
+**Ownership and outputs:**
+
+- Listings B (Suraj), `LI-01` Step 5: Listings pending state, owner-side
+  validation/serialization and API calls, and Listings-only reconciliation
+  writes. B and Conversations D (Rahul) may both author the shared forward
+  migration. Coordinate so only one person edits that migration at a time;
+  B reviews Listings-owned behavior and D reviews Conversations-owned behavior.
+- Search C (Mohit), `SE-02`: Wanted Request pending state and response-thread
+  gating; review the migration's Search-owned behavior.
+- Conversations D (Rahul), `CN-01`/`CN-02`: activity/retirement contracts,
+  Conversations-owned no-write marker and operation-result storage, plus
+  marker checks for messages, offer revisions/withdrawals, and contact shares;
+  participant eligibility calls use Identity's public API; review the
+  migration's Conversations-owned behavior.
+- A (Aditya) coordinates this shared checkpoint and verifies the integrated
+  behavior at `INT-01`. B or D may prepare the shared migration; agree on the
+  current editor before changing it and do not make concurrent edits.
+- Outputs include aligned canonical/combined contracts, decision and schema
+  records, a forward migration replacing the affected trigger definitions and
+  cross-domain business access while adding pending/no-write/operation-result
+  state, and tests preserving both Sale Listing and Wanted Request behavior plus
+  local ordering/identity protections. Cover owner/participant eligibility,
+  selection with the matching and mismatching buyer conversation, offer writes
+  around availability changes, create/close races for both origin kinds, and
+  retirement races against messages, offer revisions/withdrawals and contact
+  shares. Verify all-or-none marking, zero-thread success versus recent-write
+  blocking, same-operation retry, conflicting operation-ID reuse, unknown
+  outcomes, rejection of caller-supplied activity times, and preserved message
+  ordering/thread identity/offer rules/references. Keep approved cross-domain
+  foreign keys. Never rewrite committed/shared-applied migration history.
+
+**Required gates:** Before applying to a persistent database, inspect the
+exact target. Resolve selected `(listing_id,buyer_id)` pairs through a
+read-only Conversations API and let Listings write the returned IDs; reconcile
+retired origins/threads through their owner APIs. Do not assume empty data or
+use a cross-domain SQL backfill. Remove the unpublished direct
+Listings-to-Conversations backfill from migration
+`20261020113531_listing_selection_and_confirmed_image_metadata.sql` before it
+is published; if already published/applied, use a separately reviewed
+forward-only correction. Stop on failed/incomplete reconciliation or mixed
+marker state. Owner reviews, independent review, an exact-target run plan, and
+normal merge/apply authorization remain required. Real integration stays
+pending while only interface doubles are used. The checkpoint does not approve
+physical content/object deletion; that needs its separate cleanup procedure
+and review.
 
 ## 6. Identity domain
 
@@ -340,7 +398,7 @@ activation, existing/shared-data runs or real integration acceptance.
 
 ### CN-01 — Implement private conversations, message retrieval, and E2EE
 
-**Owner:** Conversations. **Reviewers:** Identity, Listings, and security reviewer.  
+**Owner:** Conversations. **Reviewers:** Identity, Listings, and team security/design review. No independent reviewer is required.
 **Early isolated start:** PRE-00/DL-00 under the stub guide. **CN-CORE acceptance after:** DL-00, ID-READY, LI-CORE for the core listing-origin conversation path. **Full request-response integration/acceptance additionally requires:** SE-02 and its real open-request read/state interfaces. Final NFR-05 additionally waits for CN-03's final notification producer/send path.
 **FRs:** FR-10, FR-16. **NFR procedure:** NFR-05 after the integrated two-client path is accurate.  
 **Outputs:** Conversation/message/key metadata schema and migrations, cryptographic client integration, message APIs/UI, safe fixtures, owned message-retention implementation, tests, polling settings, a two-client latency harness under `scripts/evaluation/`, its workload profile under `data/evaluation/workloads/`, and evidence.
@@ -374,7 +432,7 @@ activation, existing/shared-data runs or real integration acceptance.
 3. Implement Conversations-owned create, revise, withdraw, and read operations with duplicate/retry/concurrency handling. The frontend submits listing-origin mutations through the Listings-owned command operation; Listings validates current availability/window and caller eligibility under its own serialization, then calls the Conversations public write operation. Withdrawal remains allowed after ordinary unavailability as approved. Conversations does not call Listings, and no raw database session crosses the boundary. An offer does not reserve an item or verify payment; state this in relevant UI copy.
 4. Build the responsive phone and desktop conversation overview with buying and selling/request-response views. The seller view groups by owned Sale Listing; request-response conversations are visible in the relevant request context. Support filtering/grouping by listing or Wanted Request and conversation partner, and sorting/filtering offer amounts where offers apply. Preserve the approved deterministic sort/tie behavior and no-offer conversations. Perform the named human browser checkpoint here and as offer/selection/contact-share UI becomes usable in Steps 5–8. Do not expose another participant's private conversation content.
 5. Keep seller selection as a Listings-owned operation. The Conversations screen invokes that Listings operation directly through the frontend/API boundary; Listings may call Conversations' public participant-check operation, then writes selected-buyer state in its own transaction. Conversations never calls Listings. Make retries and concurrent selections return the approved stable result.
-6. Add the separate seller availability prompt/transition only as defined by the approved contract. Keep selection, availability, and offline payment/handover as distinct states; do not imply a reservation or platform verification.
+6. Add the separate seller availability prompt/transition only as defined by the approved contract. Rahul approved a seller-only **Mark as done deal** button beside the listing heading in grouped conversations; call Listings' existing availability operation to mark it unavailable while preserving the current window and selection. Keep existing chats accessible and follow unavailable discovery/My Listings behavior. Keep selection, availability, and offline payment/handover as distinct states; do not imply a reservation or platform verification. See the [recorded clarification](../decisions/offer-lifecycle.md#seller-availability-action-clarification--2026-10-27).
 7. Implement deliberate contact sharing: retrieve the actor's available-contact options through Identity, let the participant select exact fields, confirm the action, and share only selected values to the relevant conversation participants. Never reveal unselected fields or another user's contacts.
 8. Store/share contact information using the approved minimum-retention design. Delete encrypted contact-share payloads and selected-field labels 30 days after each share, retaining only a content-free ordering marker. Keep contact values out of general message text, search, analytics, logs, notifications, screenshots, and test output. Provide safe user-visible external-payment/transaction wording from approved product copy. Use A's real implemented own-contact editing/options interface if ID-READY exists; otherwise use a reviewed stub based on the frozen contract. Keep real contact retrieval, selected-field disclosure, and integration checks pending until ID-READY is available; do not mark CN-02 technically complete while that obligation remains. Obtain the task-level approval for the concrete destructive cleanup mechanism/order before implementing it.
 9. Add tests for offer create/revise/withdraw, invalid amount/note, duplicate submit, concurrent revisions, buyer/seller ownership, seller overview isolation and filters/grouping by post/request and partner, offer amount ordering where applicable, selection success/failure/retry, stale/unavailable listing, selected-field only, nonparticipant denial, 30/90-day cleanup cutoffs, content-free ordering/uniqueness markers, idempotent retry, and log/error redaction. Add Wanted Request response-inbox tests after the CN-01/SE-02 contracts are real.

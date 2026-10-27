@@ -252,7 +252,7 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
             negotiable=True,
             pickup_area=None,
             available_from=now,
-            available_until=None,
+            available_until=now + timedelta(days=3),
             proof_available=True,
             images=[
                 {"source": "upload", "upload_id": replacement_upload_id},
@@ -350,20 +350,14 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
         )
         assert selected.selected_buyer_id == buyer_id
         assert selected.selected_conversation_id == conversation_id
+        assert selected.availability == "unavailable"
+        assert selected.available_from == edited.available_from
+        assert selected.available_until == edited.available_until
         assert conversations.calls == 1
-
-        unavailable_request = AvailabilityChange(
-            expected_revision=4,
-            availability="unavailable",
-            operation_id=uuid4(),
-        )
-        unavailable = await service.change_availability(
-            owner, created.listing_id, unavailable_request
-        )
-        assert unavailable.availability == "unavailable"
         unavailable_owner_view = await store.read_listing(created.listing_id)
         assert unavailable_owner_view is not None
         assert unavailable_owner_view.selected_buyer_id == buyer_id
+        assert unavailable_owner_view.availability == "unavailable"
 
         # Retrying the old selection returns its saved response, not a new write.
         replayed_selection = await service.set_selected_buyer(
@@ -384,7 +378,7 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
         clear_selection = SelectionChange(
             buyer_id=None,
             conversation_id=None,
-            expected_revision=5,
+            expected_revision=4,
             operation_id=uuid4(),
         )
         cleared = await service.set_selected_buyer(
@@ -392,6 +386,9 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
         )
         assert cleared.selected_buyer_id is None
         assert cleared.selected_conversation_id is None
+        assert cleared.availability == "unavailable"
+        assert cleared.available_from == selected.available_from
+        assert cleared.available_until == selected.available_until
 
         mine = await service.list_mine(owner, PageQuery(page=1, page_size=20))
         assert len(mine.items) == 1
@@ -403,7 +400,7 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
                 outsider,
                 created.listing_id,
                 AvailabilityChange(
-                    expected_revision=6,
+                    expected_revision=5,
                     availability="available",
                     operation_id=uuid4(),
                 ),
@@ -434,12 +431,12 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
         assert final_row == {
             "title": "Revised synthetic textbook",
             "availability": "unavailable",
-            "revision": 6,
+            "revision": 5,
             "selected_buyer_id": None,
             "selected_conversation_id": None,
             "live_images": 1,
             "create_receipts": 1,
-            "owner_receipts": 3,
+            "owner_receipts": 2,
         }
 
         # Two edits submitted at the same revision cannot both win. The store's
@@ -449,7 +446,7 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
                 owner,
                 created.listing_id,
                 ListingReplacement(
-                    expected_revision=6,
+                    expected_revision=5,
                     title=title,
                     description="Competing synthetic edit",
                     category_code="books",
@@ -486,7 +483,7 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
             "Concurrent synthetic edit A",
             "Concurrent synthetic edit B",
         }
-        assert concurrent_view.revision == 7
+        assert concurrent_view.revision == 6
         assert concurrent_view.proof_available is False
 
         # Reopening and extending the window clears the inactivity clock. A new
@@ -496,7 +493,7 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
             owner,
             created.listing_id,
             AvailabilityChange(
-                expected_revision=7,
+                expected_revision=6,
                 availability="available",
                 available_from=now,
                 available_until=now + timedelta(days=1),
@@ -519,7 +516,7 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
             owner,
             created.listing_id,
             AvailabilityChange(
-                expected_revision=8,
+                expected_revision=7,
                 availability="unavailable",
                 available_until=None,
                 operation_id=uuid4(),

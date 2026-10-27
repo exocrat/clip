@@ -5,6 +5,8 @@ from pathlib import Path
 from typing import Literal, Self
 from urllib.parse import urlsplit
 
+from psycopg import ProgrammingError
+from psycopg.conninfo import conninfo_to_dict
 from pydantic import (
     Field,
     SecretStr,
@@ -62,6 +64,26 @@ class Settings(BaseSettings):
     image_region: str | None = None
     image_key_prefix: str | None = None
     development_auth: bool = False
+    # Optional dedicated tuple-row pool for Conversations; otherwise the shared
+    # database URL supplies its connection information at application composition.
+    database_dsn: SecretStr | None = None
+
+    @field_validator("database_dsn")
+    @classmethod
+    def validate_database_dsn(cls, value: SecretStr | None) -> SecretStr | None:
+        """Validate libpq syntax without exposing the supplied connection string."""
+        if value is None:
+            return None
+        if not value.get_secret_value().strip():
+            raise ValueError("must not be empty")
+        try:
+            conninfo_to_dict(value.get_secret_value())
+        except ProgrammingError:
+            raise ValueError(
+                "must be valid PostgreSQL connection information"
+            ) from None
+        return value
+
     isolated_listings_test_caller: bool = False
     isolated_listings_max_count: int | None = None
     serve_web_app: bool = False

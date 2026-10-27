@@ -376,8 +376,16 @@ remaining SQL/CI/command integration and affected-owner/final acceptance are
 still pending. Integration intake must sequence prerequisites and keep original
 checkpoint IDs; no cloud/reset/merge authority or passed check is implied.
 
-PD-08 Step 3 reserves `database/migrations/20261018094330_mvp_tables.sql`,
+PD-08 Step 3 originally reserved `database/migrations/20261018094330_mvp_tables.sql`,
 `20261018094331_mvp_integrity.sql`, `20261018094332_initial_catalogue.sql`, and
+forward correction `20261018152702_reject_retired_origin_entries.sql`. That
+checkpoint's head was `20261018152702`; the current CN-01 branch adds
+`20261021101000_api_owned_retirement_and_trigger_boundaries.sql`, so its
+historical expected head was `20261021101000` across five migrations. The CN-01
+message-transport migration advanced the branch head to `20261022213000`
+across six migrations. The public key-directory migration advances the current
+CN-01 head to `20261023080000` across seven migrations.
+`database/dbmate.version` pins 2.36.0 and
 forward correction `20261018152702_reject_retired_origin_entries.sql` and Identity
 hardening `20261023173439_identity_account_profile_integrity.sql`; current
 isolated-branch head is `20261023173439` (PR10 integration deferred). `database/dbmate.version` pins 2.36.0 and
@@ -414,6 +422,7 @@ registry access; no cloud resource/provider is invoked.
 | `bash database/local-db.sh start` | Create/start only the local service, then authenticated readiness. Nonzero on unavailable tools, ownership/configuration/port conflict or readiness failure; inspect sanitized output. |
 | `bash database/local-db.sh wait` | Authenticated TCP `SELECT 1`, up to 30 attempts (2-second connect timeout and pauses). Exit 0 means connectivity only; absent container/timeout fails. |
 | `bash database/local-db.sh migrate` | Pinned dbmate 2.36.0, fixed local URL, strict transactional migrations, no schema dump/implicit dotenv. Exit 0 means the tool finished; Step 6 separately verifies expected head/schema. Inspect failures before retry; never automatically reset. |
+| `bash database/local-db.sh status` | Display migration state. Pending migrations can appear with exit 0; on the current CN-01 branch compare expected head `20261023080000` (seven migrations). |
 | `bash database/local-db.sh status` | Display migration state. Pending migrations can appear with exit 0; isolated branch head is `20261023173439`; do not apply the isolated chain to retained/shared data before current-main integration. |
 | `bash database/local-db.sh stop` | Stop validated local container; retain all volume data. Absent container succeeds. |
 | `bash database/local-db.sh reset --confirm-delete-local-data` | Warn and permanently delete only the validated service container and `clip-local_clip_local_postgres_data`. Requires deliberate approval of that destructive action. No force/prune/broad volume deletion; leaves DB stopped. Missing confirmation fails before Docker. |
@@ -439,7 +448,7 @@ tools were built in `/tmp` without changing global/Homebrew installations.
 
 | Exact invocation / inputs | Target, effects and expected result |
 |---|---|
-| `bash database/tests/native-checks.sh /tmp/clip-pd08-native.pKC5jz/pgsql /tmp/clip-pd08-native.pKC5jz/bin/dbmate` | Requires macOS/Bash 3.2+, native PostgreSQL 18.6 and dbmate 2.36.0 at these explicit tool locations. Creates only its own private `/tmp/clip-pd08-native-check.*` cluster/database `clip_test_native`; disables TCP, uses an owner-only socket, applies/repeats migrations, runs smoke twice, runs both storage and retired-origin smoke suites, rolls back all four migrations, reapplies, compares ordered schema inventory and stops its cluster. Logs/data retained under printed evidence path. Nonzero on any failure or stop failure; inspect retained logs, never substitute an existing cluster. |
+| `bash database/tests/native-checks.sh /tmp/clip-pd08-native.pKC5jz/pgsql /tmp/clip-pd08-native.pKC5jz/bin/dbmate` | Requires macOS/Bash 3.2+, native PostgreSQL 18.6 and dbmate 2.36.0 at these explicit tool locations. Creates only its own private `/tmp/clip-pd08-native-check.*` cluster/database `clip_test_native`; disables TCP, uses an owner-only socket, applies/repeats the current six migrations, runs both smoke suites, rolls back all six migrations, reapplies, compares ordered schema inventory and stops its cluster. Logs/data retained under printed evidence path. Nonzero on any failure or stop failure; inspect retained logs, never substitute an existing cluster. |
 
 Fresh child environments and fixed new targets prevent ambient database/provider
 configuration from redirecting checks. Local socket trust is confined to the
@@ -458,7 +467,7 @@ The corrected Compose wrapper's 22 simulated cases also passed. The initial
 sandbox shared-memory denial and corrected harness/CLI failures remain recorded
 in the work log; no failure is counted as a pass.
 
-The native pass just described is historical evidence for the initial three migrations. The updated harness expects head `20261018152702` and four migrations; that revised macOS/dbmate route must be rerun. PR #5 correction checks include the current SQL round-trip and both smoke suites on an isolated Linux ARM64 PostgreSQL image, plus 35 simulated lifecycle cases. Internal metadata is preserved before separately redacting human diagnostics; these tests do not establish the real Compose lifecycle.
+The native pass just described is historical evidence for the initial three migrations. The next checkpoint updated the harness for head `20261018152702` and four migrations; that macOS/dbmate route was not rerun here. The current CN-01 branch has seven migrations and expects head `20261023080000`; rerun the native route against this branch before treating it as current evidence. PR #5 correction checks include the then-current SQL round-trip and both smoke suites on an isolated Linux ARM64 PostgreSQL image, plus 35 simulated lifecycle cases. Internal metadata is preserved before separately redacting human diagnostics; these tests do not establish the real Compose lifecycle.
 
 Deferred: container image/Compose runtime, loopback TCP/SCRAM readiness,
 stop/start volume persistence, approved reset/recreate, platform/locale parity,
@@ -511,7 +520,7 @@ Hey API 0.99.0 (TypeScript-only plugin), and existing locked FastAPI/Pydantic.
 |---|---|
 | `uv run --locked python scripts/generate_contracts.py generate` | Rebuild eight registered Python/OpenAPI/TypeScript outputs from reviewed health/domain source, including four declaration-only `public.py` modules. |
 | `uv run --locked python scripts/generate_contracts.py check` | Render in temporary storage; exit 0 if current, nonzero for missing/stale outputs or tool/source failure; outputs unchanged. |
-| `make contracts-double-check` | Run pinned Mypy against Search's consumer-owned Listings adapter and generated provider protocol. |
+| `make contracts-double-check` | Run pinned Mypy against Search's consumer-owned Listings adapter and a typed Conversations retirement consumer using the generated provider protocol. |
 | `uv run --locked pytest apps/api/tests/domains/search -q -W error` | Isolated Search-to-Listings contract-double suite; synthetic success/failure cases only, not real integration evidence. |
 | `uv run --locked pytest tests/integration -q -W error` | Future real cross-domain integration suite. It currently has no tests (pytest exit 5) and is pending, not a pass or readiness evidence. |
 
@@ -521,8 +530,8 @@ pins/lock and use `npm ci`; no unpinned network fallback. No listener, database,
 provider or cloud calls. [Outputs and limits](../../contracts/README.md).
 
 Contract regression command: `uv run --locked pytest tests/contracts -q -W error`.
-It checks canonical-source parity, all 50 declared domain HTTP operations, the
-live API's health and implemented Listings route set, sensitive-field publication boundaries, and
+It checks canonical-source parity, all 56 declared domain HTTP operations plus
+health, implemented Listings/Search/Conversations routes, sensitive-field publication boundaries, and
 generated TypeScript consumers. Requires locked Python tools plus root `npm ci`
 (Node 24/TypeScript 5.9.3/Hey API 0.99.0). Synthetic negative cases use temporary
 trees and local tools; generated domain routes are never installed. Exit 0 means
@@ -543,12 +552,14 @@ incorporate latest main and pass CI before merging, repeating if main advances.
 ### CI quality gates — PD-12 Step 3
 
 CI runs the registered Black, root/data pytest, boundary, contract freshness,
-`npm run check` and simulated database-wrapper safety commands. Python lint/type
-tools remain deferred under the existing tooling decision.
+`npm run check`, database-wrapper safety, clean-schema, and Conversations
+database-operation checks. Python lint/type tools remain deferred under the
+existing tooling decision.
 
 | Command | Effect / failure |
 |---|---|
-| `uv run --locked python scripts/check_database.py` | Requires local Unix-socket Docker. Creates a fresh PostgreSQL 18.6 container with temporary memory-backed data and no host port or persistent data volume; dbmate 2.36.0 checks clean apply, repeat migration, all seven SQL smoke suites plus Identity upgrade/atomicity checks, rollback of every migration and clean reapply against the migration files in the current checkout. The combined17-migration chain ends at `20261025013000` with37domain tables. Removes only its own container; nonzero on SQL/setup/cleanup failure. Never targets retained Compose data. |
+| `uv run --locked python scripts/check.py conversations-retirement` | Requires local Unix-socket Docker and locked Python dependencies. Creates a fresh PostgreSQL 18.6 container with tmpfs storage and a random host port bound only to `127.0.0.1`; applies the checked-in 23-migration chain with dbmate 2.36.0; runs the focused retirement, thread, recovery, message, directory, offer-storage, offer-service, and Listings conversation-start tests with synthetic data; then removes only its own container. No caller-selected database target or cloud configuration is accepted. Nonzero on startup, migration, test, timeout, or cleanup failure. |
+| `uv run --locked python scripts/check_database.py` | Requires local Unix-socket Docker. Creates a fresh PostgreSQL 18.6 container with temporary memory-backed data and no host port or persistent data volume; dbmate 2.36.0 checks clean apply, repeat migration, all seven SQL smoke suites plus Identity upgrade/atomicity checks, rollback of every migration and clean reapply against the migration files in the current checkout. The combined 23-migration chain ends at `20261027112205` with 40 domain tables. Removes only its own container; nonzero on SQL/setup/cleanup failure. Never targets retained Compose data. |
 | `uv run --locked python scripts/check_database.py --listings-store` | Runs those same isolated migration checks, then mounts only a private temporary Unix-socket directory and runs `apps/api/tests/domains/listings/test_postgres_store.py` against that container. Verifies real PostgreSQL create/edit/selection/availability writes and retry behavior using synthetic Identity/Conversations test doubles; prints a sample row selected from PostgreSQL before cleanup. No shared database, host port, real object storage or cloud resource is used. Removes the temporary container and socket directory. |
 | `uv run --locked python scripts/check_secrets.py` | Requires local Unix-socket Docker. Gitleaks 8.30.1 scans tracked and nonignored new source in a temporary snapshot, offline/read-only. Uses `.gitleaks.toml`; findings print file/line/rule only and fail. This scans current source, not Git history; ignored files are excluded and symlinks rejected. |
 
@@ -634,7 +645,7 @@ manifest, environment loader or daemon is introduced. GNU Make is required
 | `make test` | Shared runner's Python, explicit data and web gates; `test-python`, `test-data`, `test-web` select each. Web includes lint/types/build as registered. |
 | `make format` / `make format-check` | Existing rewriting Black / check-only targets; old names retained. |
 | `make contracts-generate` / `make contracts-check` | Registered generation / nonmutating freshness check. |
-| `make contracts-double-check` | Static type check for the representative consumer-owned interface double. |
+| `make contracts-double-check` | Static type checks for the representative Listings interface double and Conversations retirement consumer probe. |
 | `make check` | Existing full CI-equivalent aggregate, including disposable database and scanner. |
 
 Normal Make failure is nonzero (usually 2), including `data-load`'s deliberate
@@ -683,6 +694,68 @@ clean migration checks used disposable containers. Other-machine checks remain
 pending. Exact logs/source overlay are linked from the work log; Step 6 consolidates
 the evidence and task review.
 
+## CN-01 — disposable Conversations database checks
+
+Combined runtime preparation checks (Rahul, CN-01 integration Step4):
+
+```bash
+uv run --locked pytest apps/api/tests/test_database_lifespan.py apps/api/tests/test_config.py apps/api/tests/core/test_security_boundaries.py -q -W error
+uv run --locked pytest apps/api/tests/test_conversation_identity_integration.py apps/api/tests/domains/identity/test_application_composition.py -q -W error
+```
+
+The first command controls pool I/O and checks real composition/configuration
+failure paths without live dependencies. The second requires local Unix-socket
+Docker and cached PostgreSQL18.6/dbmate2.36 images, creates/migrates only its own
+disposable databases and exercises actual signed-in owner/chat workflows. Signer,
+mail and external image metadata are controlled ports; no fixed caller establishes
+session evidence. Both commands accept no persistent database target and perform
+no AWS/secret lookup, real mail delivery or deployment. Expected result: all
+collected tests pass; not readiness, encryption or cloud-performance acceptance.
+Use the existing `npm run build` for the normal web artifact; this does not build
+or deploy a container. [Combined runtime setup](../../apps/api/README.md#combined-conversations-runtime--cn-01-integration)
+documents same-target pool configuration, schema/grant gates and liveness limits.
+
+The approved90-day cleanup command is
+`uv run --locked python scripts/conversations_cleanup.py --expected-database DATABASE --expected-host HOST --expected-port PORT`.
+It reads only `CLIP_CONVERSATIONS_DATABASE_URL`; placeholders must match the
+reviewed target and are never credentials. Default is dry-run counts only;
+`--batch-size` defaults100/max1000. `--apply` mutates eligible content and requires
+a separately approved persistent-target run plan. No cutoff override or schedule
+exists. Errors are generic; per-thread rollback and retry preserve ID/sequence
+guards. See the [approved mechanism](../decisions/conversation-content-cleanup.md).
+The registered disposable runner below includes real retention/rollback checks.
+
+Browser checkpoint setup: `CLIP_ENVIRONMENT=test uv run --locked python
+scripts/conversation_browser.py --isolated-conversation-browser --check-only`
+creates and removes only one new disposable local PostgreSQL container and
+checks real Listings/Conversations HTTP/SQL, seller selection and loopback/
+Origin/write guards. Requires the normal
+web build (`npm run build`), local Unix-socket Docker and the pinned images.
+Without `--check-only`, it serves the built UI at `http://127.0.0.1:5273` and
+`:5274` for two fixed synthetic identities, real SDK/IndexedDB and chat SQL.
+Default cap30min, `--seconds`60–3600; Ctrl+C stops both sides/pools and removes
+only its container. No target/host/identity override, live provider or AWS access.
+Refuses ambient DB/provider settings and non-test startup. This is not real
+session authentication or CN-CORE/NFR acceptance. See the
+[exact browser walkthrough](conversation-browser-test.md). The agent starts it
+and supplies URLs; the human does not reconstruct setup.
+
+Run `uv run --locked python scripts/check_conversations_retirement.py` from
+the repository root, or use `.venv/bin/python` with the already synchronized
+locked environment. It requires local Unix-socket Docker and the pinned
+PostgreSQL 18.6/dbmate 2.36.0 images. It creates one tmpfs-backed database
+container on a generated loopback port, applies migrations to branch head
+`20261027112205`, runs the focused retirement/thread/offer/message/directory/recovery
+storage tests with warnings treated as errors, then removes its own container.
+It accepts no database target and uses only synthetic users and opaque test
+payloads. Exit 0 means the collected checks passed; ordinary pytest without
+this harness skips database tests when its private test DSN is absent.
+
+`uv run --locked python scripts/check_database.py` separately checks clean
+migration application, exact/repeated head, both SQL smoke suites, latest
+rollback and reapplication on its own disposable database. It verifies that
+rolling back recovery storage preserves the prior directory/transport schema.
+These checks do not prove real Identity, origin-owner or browser integration.
 ## Identity provider offline checks — ID-01 Step 2
 
 From the repository root, after `uv sync --locked`:

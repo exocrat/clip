@@ -5,9 +5,13 @@ domain contracts. The user reported that domain owners reviewed and approved
 the documents on 2026-10-20. The human-readable domain behavior remains in
 [identity.md](identity.md), [listings.md](listings.md),
 [search.md](search.md), and [conversations.md](conversations.md). Step 11
-generates declarations from these accepted contracts. The exact origin-cleanup
-order still needs separate human approval before implementation or a destructive
-run. No feature implementation, provider or cloud change is authorized here.
+generates declarations from these accepted contracts. Listings owner B (Suraj)
+approved the origin-retirement pending/preflight/marker order for implementation
+on 2026-10-20. The physical content/object cleanup mechanism and any destructive
+run remain separately gated. No provider, shared-database apply, or cloud change
+is authorized here. The Listings and Search contracts still need their owners'
+corresponding updates and review before this shared contract is considered
+fully aligned.
 
 ## Shared wire models and operation rules
 
@@ -119,8 +123,8 @@ only that owner's availability and selection state.
 | PUT /listings/{listing_id} — listings_replace | UUID path; full ListingReplacement{expected_revision,fields...,image_upload_ids[1..8],operation_id} → ListingDetail | Owner only, active/non-retired listing. Full resulting record validation and serialized image invariant; omission of optional available_until/proof_available means explicit null as defined by replacement schema. Atomic owner transaction. Stale revision 409; invalid values 422; image dependency failure 503. Test owner, stale update, concurrent last-image removal and partial failure. |
 | PUT /listings/{listing_id}/availability — listings_change_availability | AvailabilityChange{expected_revision,availability,available_from?,available_until?,operation_id} → ListingDetail | Owner only. `available` or `unavailable` is independent of time window and selection; omitted start preserves current value, null end clears end; successful reopen resets retirement eligibility anchor. Seller-unavailable reads remain out of discovery. Stale 409; no implicit selection change. Retry key scope is (listing_id, availability, operation_id): identical intent replays the saved response while the listing is not retired; changed intent with that key returns 409. Retirement deletes the saved request/result; later retries get the retired-state conflict without old listing details. Test non-owner, exact boundaries, reset, repeated operation and concurrent edit. |
 | POST /listings/{listing_id}/conversations — listings_start_conversation | StartListingConversationRequest{operation_id} → ConversationStartResult{conversation_id,created} (201/200) | Eligible caller may initiate as buyer only while the listing is discoverable; owner cannot start a buyer thread with self. Listings resolves owner, locks its own record, then calls Conversations. Unique buyer/listing pair returns existing thread; retries after unavailability resolve only that pair. C dependency timeout 503 may be ambiguous; same pair retry is safe. Test owner-self denial, concurrent create, stale/hidden listing and downstream timeout. |
-| PUT /listings/{listing_id}/selection — listings_set_selected_buyer | SelectionChange{buyer_id: Optional[UUID],conversation_id: Optional[UUID],expected_revision,operation_id} → ListingOwnerView | Eligible listing owner only. Set requires both IDs, eligible buyer membership confirmed by Conversations, and currently available/in-window listing. Clear requires both null and is allowed while ordinarily unavailable, never after retirement. Listings serializes state/write; stale selection 409. Retry key scope is (listing_id, selection, operation_id): identical intent replays the saved response while the listing is not retired; changed intent with that key returns 409. Retirement deletes the saved request/result; later retries get the retired-state conflict without old listing details. Test non-owner, no-offer participant, nonparticipant, wrong listing, race and failed Conversations call. |
-| PUT /listings/{listing_id}/conversations/{conversation_id}/offer — listings_submit_offer | OfferRevisionRequest{amount_paise,note_envelope?:CipherEnvelope,expected_revision?:int,operation_id} → OfferView | Eligible listing-conversation buyer only. Listings resolves authoritative listing/buyer and serializes current available-window check before calling Conversations. Create/revise/resubmit only while available/in-window; integer paise >=0, multiple of 100; amount/status structured, note encrypted. Duplicate identical key returns original; stale revision 409. No reservation/payment. Test role, price, encryption metadata, availability race and timeout. |
+| PUT /listings/{listing_id}/selection — listings_set_selected_buyer | SelectionChange{buyer_id: Optional[UUID],conversation_id: Optional[UUID],expected_revision,operation_id} → ListingOwnerView | Eligible listing owner only. Set requires both IDs, eligible buyer membership confirmed by Conversations, and currently available/in-window listing. In one serialized, revision-checked transaction, setting selection also marks the listing unavailable and preserves its availability window; failure/conflict changes neither. Clear requires both null and is allowed while ordinarily unavailable, never after retirement; it does not reopen. Retry key scope is (listing_id, selection, operation_id): identical intent replays the saved response while the listing is not retired; changed intent with that key returns 409. Retirement deletes the saved request/result; later retries get the retired-state conflict without old listing details. Selection does not imply offer acceptance, reservation, payment, handover or verified deal completion. Test non-owner, no-offer participant, nonparticipant, wrong listing, atomic availability change, stale/conflicting retry, clear-without-reopen, race and failed Conversations call. |
+| PUT /listings/{listing_id}/conversations/{conversation_id}/offer — listings_submit_offer | OfferRevisionRequest{amount_paise,note_envelope?:CipherEnvelope,expected_revision?:int,operation_id} → OfferView | Eligible listing-conversation buyer only. Listings resolves authoritative listing/buyer and serializes current available-window check before calling Conversations. Create/revise/resubmit only while available/in-window, including retries; otherwise 409 with listing_id/unavailable, while prior saved history stays readable and ordinary unavailability still permits withdrawal. Integer paise >=0, multiple of 100; amount/status structured, note encrypted. When the state gate permits the action, duplicate identical key returns original; stale revision 409. No reservation/payment. Test role, price, encryption metadata, availability race and timeout. |
 | POST /listings/{listing_id}/conversations/{conversation_id}/offer-withdrawals — listings_withdraw_offer | OfferWithdrawalRequest{offer_id,expected_revision,operation_id} → OfferView | Eligible offer buyer only. Listings confirms owner/origin and calls Conversations. Allowed after ordinary unavailability but not retirement; appends withdrawn revision with previous amount and no note. Idempotent retry; stale revision 409. Test wrong buyer, duplicate, unavailable and retired listing. |
 
 The sensitive-price threshold remains an LI-01 Step 2 gate; the sensitive flag
@@ -203,12 +207,16 @@ responses.
 
 ## Conversations HTTP operations
 
-Conversation payloads use opaque protocol-tagged encrypted envelopes. JSON
-transports envelope and public-key bundle bytes as standard padded Base64; the
-1–16 KiB key-bundle and 1–64 KiB envelope limits apply after decoding. This
-does not choose an E2EE protocol, algorithm, nonce format, or client key-storage
-method; CN-01 Step 2 must approve those before implementation. Plaintext
-message, offer-note, or contact values are never accepted by these operations.
+Conversation payloads use OpenE2EE relay-envelope metadata and standard padded
+Base64 payload bytes. Encrypted message, offer-note and contact values remain
+opaque ciphertext; the SDK's `retry_request` is a separate unencrypted
+protocol-control payload with no chat content. The 1–16 KiB public-key bundle
+and 1–64 KiB decoded SDK payload limits apply. The team selected OpenE2EE
+Signal Protocol SDK 13.0.0, with the v1 application payload context checked
+by the receiving client after decryption. Runtime adoption remains subject to
+the recorded team review of the exact source and dependency tree. Plaintext
+message, offer-note, or contact values are never accepted by these server
+operations.
 
 The actor and both members are derived from trusted server context and the
 stored thread. `origin_kind` is `sale_listing` or `wanted_request`; only the
@@ -224,15 +232,45 @@ origin_id,initiator_user_id,caller_role,counterparty_user_id,last_activity_at,
 own_last_read_sequence,unread_count,current_offer?}` where `caller_role` is
 `initiator` or `origin_owner` and `current_offer` is an optional
 `CurrentOfferSummary{offer_id,revision,amount_paise,status,updated_at}`;
-`ConversationEntry{entry_id,sequence,kind,sender_user_id,created_at,envelope?}`;
+`ConversationEntry{entry_id,sequence,kind,sender_user_id,created_at,envelope?,
+recovery_target?}`; `RecoveryTarget{entry_id,sequence,sender_user_id,created_at}`;
 and `CipherEnvelope{protocol_id,protocol_version,envelope_version,
-sender_key_version,recipient_key_version,payload_base64}`. An entry after
-purge retains its ordering/header metadata and sets a content-deleted marker
-instead of an envelope. The server supplies actor/sender IDs, recipient IDs,
-sequence and timestamps. Payload/base64 fields are required and nonempty;
-unknown protocol metadata, null IDs, empty payloads, booleans-as-integers and
-oversized decoded bytes are rejected. Client writes carry a required UUIDv4
-`operation_id` only on operations whose row declares it; it is a UUIDv4.
+sdk_message_type,sdk_client_message_id?,recovery_for_entry_id?,
+client_timestamp_ms,sender_key_version?,recipient_key_version?,payload_base64}`.
+Version 1 remains readable and uses its API operation UUID as the SDK ID. In
+version 2, an ordinary SDK ID is UUIDv4 and is stored separately from the
+UUIDv4 API `operation_id`; recovery IDs preserve the SDK family/type/attempt
+suffix and bind the original entry. Those SDK IDs are also globally unique per
+sender. A v2 retry request has no key references. A resend carries the original
+timestamp and sender/recipient key versions. A null response has no
+application key references. Recovery entries are recipient-only
+`protocol_control` entries and the server returns the original's stored target
+details; ordinary entries cannot claim a recovery target. The SDK payload is
+opaque, member-only protocol data rather than user chat content. Recovery
+controls create no unread text count or notification and are never rendered as
+separate messages. The server does not parse or log them. `sender_key` and
+`unidentified_sender` are not supported in the 1:1 MVP. An entry after purge
+retains its ordering/header metadata and sets a content-deleted marker instead
+of an envelope. The server supplies actor/sender IDs, recipient IDs, transport
+entry ID, server receive timestamp, sequence and authoritative activity
+timestamp. The client timestamp is SDK replay/retry metadata only and cannot
+authorize or set server sequence/activity/retention. Payload/base64 fields are
+required and nonempty; unknown
+protocol metadata, invalid key-version combinations, null IDs, empty payloads,
+booleans-as-integers and oversized decoded bytes are rejected. Client writes
+carry a required UUIDv4 `operation_id` only on operations whose row declares
+it. OpenE2EE message/control IDs must be fresh and globally unique per sender;
+other operations use their separately declared retry scopes.
+
+The preceding entry/envelope shapes describe v1 compatibility and the v2 recovery fields.
+The [CN-01 recovery transport revision](../docs/decisions/conversation-recovery-transport.md)
+is the approved behavior: SDK retry-family IDs are stored and returned
+separately from CLIP UUID operation IDs, and recovery responses carry their
+server-resolved original-message context. The canonical types, generated
+schemas and PostgreSQL message provider now support v2 transport; SDK/browser
+recovery handling remains a later CN-01 checkpoint, and normal code review is
+still required.
+
 Read operations and monotonic read acknowledgements do not need an
 idempotency key. For keyed writes, equality means the same normalized typed
 intent and the same opaque ciphertext bytes after transport decoding, without
@@ -254,16 +292,20 @@ shared error envelope. Safe field codes never echo submitted values.
 |---|---|---|
 | GET /conversations — conversations_list_mine | `view=initiated\|origin_owner\|all` (default all), `origin_kind?`, `origin_id?`, `counterparty_user_id?`, `offer_status?` (`submitted\|withdrawn`), `offer_min_paise?`, `offer_max_paise?`, `sort=last_activity_desc\|offer_amount_asc\|offer_amount_desc`, page/page_size → `PageResult[ConversationSummary]` | Eligible caller; only own memberships. Default sort `last_activity_at DESC, conversation_id DESC`; amount sort uses current offer amount then last activity DESC and ID DESC, with no-offer threads last. Filters run before pagination; amount bounds are nonnegative whole-rupee paise. Reads only conversation/membership/current-offer summary state; no origin-domain lookup. Empty filters omitted; empty/unknown values and invalid ranges are 422. Storage failure is 503. Tests verify owner/initiator views, ID substitution, filters, no-offer behavior, tie ordering, pages, and outages. |
 | GET /conversations/{conversation_id} — conversations_read_summary | UUID path → `ConversationSummary` | Eligible member only. Reads thread/member summary and current authorized offer summary; never loads origin records. Same safe 404 for missing/nonmember. Read-only and no activity renewal. Tests participant, nonparticipant, expired/revoked account, and redacted response. |
-| GET /conversations/{conversation_id}/entries — conversations_read_entries | UUID path; `after_sequence` nonnegative default 0; `page_size` 20 default, allowed 20/50/100 → `EntryPage{items,last_sequence,has_more}` | Eligible member only. Returns committed entries with sequence greater than cursor in ascending sequence; entries contain sender, kind, timestamp, and encrypted envelope or content-deleted marker. Empty page leaves cursor unchanged. No acknowledgement or activity write. Tests ordering, empty/end pages, limits, purge markers, retry cursor and nonmember denial. |
-| POST /conversations/{conversation_id}/messages — conversations_submit_message | `MessageRequest{envelope: CipherEnvelope,operation_id}` → `ConversationEntry` (201; identical retry 200) | Eligible member only; text envelope only, 1–64 KiB opaque encoded bytes after transport decoding, supported protocol metadata and key versions must match this thread's members. Actor/sender and recipient are server-derived. Atomically stores the next sequence, advances participant activity, and writes/updates one reminder intent per unread episode: due 15 minutes after the first unread text, with later messages updating its target but not postponing due time. `(conversation_id,sender_id,operation_id)` identical retry before purge returns original sequence; conflicting reuse 409. After purge, a content-free marker returns HTTP 409 `conflict` with safe detail `{field: operation_id, code: write_expired}`; it never recreates payload or intent. 422 malformed/unsupported envelope, 503 database failure; no false success on partial transaction. Tests two-client exchange, bad/tampered/wrong-recipient metadata, limits, duplicate/concurrent send, notification atomicity, rollback and dependency timeout. |
+| GET /conversations/{conversation_id}/entries — conversations_read_entries | UUID path; `after_sequence` nonnegative default 0; `page_size` 20 default, allowed 20/50/100 → `EntryPage{items,scanned_through_sequence,has_more}` | Eligible member only. Returns visible committed entries with sequence greater than cursor in ascending sequence; all recipient-only recovery controls are hidden from their sender. The cursor is the greatest global sequence inspected, so a page containing only hidden controls may be empty but advance; `has_more` directs the client to continue scanning. Entries contain sender, kind, timestamp, encrypted envelope or content-deleted marker, and server-derived recovery target when applicable. A scan with no rows leaves the cursor unchanged. No acknowledgement or activity write. Tests ordering, empty/end pages, recipient-only control routing/cursor progress, limits, purge markers and nonmember denial. |
+| POST /conversations/{conversation_id}/messages — conversations_submit_message | `MessageRequest{envelope: CipherEnvelope,operation_id}` → `ConversationEntry` (201; identical retry 200) | Eligible member only; 1–64 KiB decoded payload. Encrypted `ciphertext`/`prekey_bundle` types require matching current/historical member key versions except null recovery controls; server derives actor, sender, recipient, entry ID and server timestamp. `operation_id` is a UUIDv4 API idempotency key. V1 uses it as the SDK ID for compatibility; v2 stores the separate exact `sdk_client_message_id`, UUIDv4 for ordinary messages and SDK family/type/attempt ID for recovery, globally unique per sender. `recovery_for_entry_id` is accepted only for v2 recovery controls and must match the stored original and recovery family. The response returns server-derived `recovery_target` details from that original entry. Only the original recipient can request recovery and only the original sender can answer an accepted request attempt; requests/resends/nulls route only to the counterpart. Retry requests and null responses have no application key references; a resend must match the original SDK timestamp and key references. The server never parses/logs SDK payloads. Controls advance ordered sequence/activity but create no unread text count or notification. `client_timestamp_ms` is SDK matching metadata, never authoritative for sequence/activity/retention. Text messages create/update one reminder intent per unread episode, due 15 minutes after the first unread text; controls do not. Identical retry before purge returns original sequence; reuse of either ID with different content/type/conversation, or after purge, returns a stable 409; a content-free marker never recreates payload or intent. 422 malformed/unsupported envelope, 429 rate limited, 503 database failure; no false success on partial transaction. Tests two-client exchange, SDK envelope reconstruction, control routing/no unread effects, bad/tampered/wrong-recipient metadata, limits, duplicate/concurrent send, notification atomicity, rollback and dependency timeout. |
 | GET /conversations/{conversation_id}/read-state — conversations_read_state | UUID path → `ReadState{own_last_read_sequence}` | Eligible member only. Returns only the caller's watermark. Peer receipt, `read_at`, online/presence and unrelated activity are not exposed in the MVP; the server still reads the recipient watermark for notification suppression. Read-only/no timer renewal. Tests membership and watermark isolation. |
 | PUT /conversations/{conversation_id}/read-state — conversations_acknowledge_read | `ReadAcknowledgement{last_read_sequence}` nonnegative → `ReadState` (200) | Eligible member only and only through the greatest committed sequence. Monotonic atomic max; older/equal repeats succeed without decreasing state. Does not count as participant activity and does not create a notification. Invalid/future sequence 422; unknown thread/nonmember safe 404. Tests repeated/out-of-order ack, future cursor, parallel ack and notification suppression read. |
 | GET /conversations/{conversation_id}/offer — conversations_read_offer | UUID path → `Optional[OfferView]` | Eligible member only. Current offer/revision metadata and optional encrypted note envelope for Sale Listing origin; null for no offer or Wanted Request origin. Reads do not renew activity. Offers are never inferred as payment/reservation. Tests buyer/seller, no offer, wanted origin, note redaction boundaries, purge marker and nonmember denial. |
-| GET /conversations/{conversation_id}/keys — conversations_read_member_keys | UUID path → `MemberKeyBundles{members:[{user_id,active_bundle,referenced_history_bundles}]}` | Eligible member only. Returns only current thread members' public bundles required by retained entries, with version/protocol metadata; never private keys. Read-only. Unknown/incompatible key reference fails safely instead of returning a misleading partial history. Tests member scope, historical references, replaced keys and missing bundle. |
-| PUT /me/conversation-key — conversations_register_own_key | `PublicKeyBundleRequest{protocol_id,protocol_version,bundle_base64,operation_id}` → `PublicKeyBundleView` | Eligible caller registers/replaces only own public bundle. Decoded opaque bundle is 1–16 KiB. Conversations allocates increasing version and keeps referenced historical public versions while retained content needs them. Protocol allowlist and rotation/replacement behavior remain CN-01 Step 2 gates. Same operation retry is idempotent; stale/incompatible version 409; malformed size/metadata 422; storage failure 503. Test own-only, duplicate, race, replace/history retention and private-key absence. |
+| GET /conversations/{conversation_id}/keys — conversations_read_member_keys | UUID path → `MemberKeyBundles{members:[KeyBundle]}` | Eligible member only. Returns only current thread members' public bundles required by retained entries, with version/protocol metadata and typed OpenE2EE 13.0.0 identity/EC-signed/KEM-last-resort fields; never private keys. Read-only. First-time setup only:409 with one relative `{field:own_key or peer_key,code:not_registered}` detail, own first if both absent; no IDs. Retired/lost-after-registration/malformed/incompatible/mismatched state retains conflict/dependency errors, never this setup detail. Tests member scope, historical references, replaced keys, first setup and missing-after-registration bundles. |
+| PUT /me/conversation-key — conversations_register_own_key | `PublicKeyBundleRequest{protocol_id,protocol_version,registration_id,device_id:1,identity,ec_signed_prekey,kem_last_resort_prekey,operation_id}` → `PublicKeyBundleView` | Eligible caller registers/replaces only own typed public identity bundle (32-byte X25519 and Ed25519 public keys, 32-byte EC signed-prekey public key plus 64-byte signature, and 1569-byte tagged ML-KEM-1024 last-resort public key plus 64-byte signature; no private material or one-time prekeys). Standard padded Base64 and exact byte lengths are validated; the server does not cryptographically validate signatures. Conversations allocates increasing version and keeps referenced historical public versions while retained content needs them. Same operation retry is idempotent; stale/incompatible version 409; malformed size/metadata 422; storage failure 503. Test own-only, duplicate, race, replace/history retention and private-key absence. |
+| GET /me/conversation-prekeys — conversations_read_own_prekey_inventory | no input → `OwnPreKeyInventory{key_version,ec_one_time_count,kem_one_time_count}` | Eligible caller only; reports counts for the caller's active registered key version, never identifiers or key bytes. No active bundle is a safe conflict; storage failure is 503. Read-only and does not renew activity. Test own-only scope and zero/depleted counts. |
+| POST /me/conversation-prekeys — conversations_publish_own_prekeys | `PublicPreKeyBatchRequest{key_version,prekeys:[{key_type,key_id,public_key_base64,signature_base64?}],operation_id}` → `PublicPreKeyBatchView` | Eligible caller publishes only public EC or KEM one-time prekeys for its active bundle version. Batch has 1–200 unique type/ID pairs and is accepted all-or-none; EC keys have no signature, KEM keys require their identity signature. Same caller/operation ID and exact request retry returns the stored result; changed request reuse conflicts. Stale key version, already-used ID, or incompatible duplicate conflicts without partial insertion; malformed Base64/shape/size is 422; storage failure is 503. Response reports remaining inventory counts only. Test own-only, signature/type validation, duplicate IDs, atomic failure and retry/conflict behavior. |
+| POST /conversations/{conversation_id}/prekey-bundle — conversations_consume_member_prekeys | UUID path; `PreKeyBundleRequest{operation_id}` → `MemberPreKeyBundle{key_bundle:KeyBundle,registration_id,device_id:1,ec_one_time_prekey?,kem_one_time_prekey?}` | Eligible conversation member only. Server derives the peer from the stored thread; it never accepts a peer ID from the caller. Atomically reserves available peer one-time prekeys and returns only typed public material. Optional EC one-time key may be absent when its pool is depleted; use the bundle's signed EC prekey then. The KEM one-time field is returned when reserved, otherwise the typed KEM last-resort field is available; the client adapter supplies exactly one KEM choice to the SDK. Device ID is fixed at `1` for the one-active-browser-device MVP. Same caller/operation ID and exact conversation retry returns the same reservation without consuming again; changed-target reuse conflicts. Missing peer bundle is a safe conflict/not-found; no private key is returned. Test membership, concurrent consumption, depletion fallback, idempotency, and ID reuse conflict. |
 | GET /conversations/{conversation_id}/contact-options — conversations_read_contact_options | UUID path → `ContactOptionsView{email_available,phone_available,upi_available}` | Eligible member only. Conversations checks membership, then calls Identity for the caller's own availability flags; does not return values or the peer's options. Identity outage is 503 and never becomes empty options. Tests each member, nonmember, no-contact profile and dependency failure. |
 | POST /conversations/{conversation_id}/contact-preparations — conversations_prepare_own_contact_share | `ContactPreparationRequest{fields: ContactField[1..3]}` → `SelectedOwnContacts` | Eligible member only; fields are nonempty, distinct, and supported. The UI submits only after explicit user confirmation; the server derives actor identity from CallerContext and never treats a client confirmation flag as authorization. Conversations calls Identity for only selected, current own values, returns them ephemerally to the actor for client-side encryption, and persists nothing. Removed value is a safe validation result; Identity failure 503. Redact body/value from logs and errors. Tests selected subset, actor binding, removed field, outage and no storage mutation. |
-| POST /conversations/{conversation_id}/contact-shares — conversations_submit_contact_share | `ContactShareRequest{envelope: CipherEnvelope,operation_id}` → `ConversationEntry` (201; identical retry 200) | Eligible member only; server derives the other member and checks compatible protocol/key versions. Stores only encrypted envelope and content-free entry metadata; selected field labels remain inside ciphertext. Atomic sequence/share write, advances participant activity, retains a content-free idempotency marker, and creates no email intent. Server cannot prove ciphertext contains only the selected values. Identical retry before purge returns original; conflicting reuse 409; after purge any replay returns HTTP 409 `conflict` with safe detail `{field: operation_id, code: write_expired}`. Invalid envelope 422; DB failure 503. Tests actor/member/key binding, duplicate, tamper metadata, ciphertext-only persistence, retry after purge and partial failure. |
+| POST /conversations/{conversation_id}/contact-shares — conversations_submit_contact_share | `ContactShareRequest{envelope: CipherEnvelope,operation_id}` → `ConversationEntry` (201; identical retry 200) | Eligible member only; envelope must be encrypted `ciphertext` type with both key versions, never `prekey_bundle` or `retry_request`; server derives the other member and checks compatibility. Stores only encrypted envelope and content-free entry metadata; selected field labels remain inside ciphertext. Atomic sequence/share write, advances participant activity, retains a content-free idempotency marker, and creates no email intent. Server cannot prove ciphertext contains only the selected values. Identical retry before purge returns original; conflicting reuse 409; after purge any replay returns HTTP 409 `conflict` with safe detail `{field: operation_id, code: write_expired}`. Invalid envelope 422; DB failure 503. Tests actor/member/key binding, duplicate, tamper metadata, ciphertext-only persistence, retry after purge and partial failure. |
+| GET /me/conversation-key — conversations_read_own_key | No input → `KeyBundle \| null` (200) | Authenticated caller only; no thread or target user ID. Return null only if this account has never registered any public key version. Return the active latest public bundle otherwise. Retired-only/incompatible state is a safe 409; malformed/misbound stored data or dependency failure is 503, never null. Serialize with own registration and return Cache-Control: no-store. Read-only/no activity renewal; no private keys or recovery. Test first use, own-only scope, rotation/concurrent registration, history without active state, corrupt material, expired authentication and dependency failure. |
 
 `PUT /conversations/{id}/offer` and offer-withdrawal routes are deliberately not
 public Conversations HTTP operations. Browser offer commands use the
@@ -285,11 +327,12 @@ alone is not proof of authorization.
 |---|---|
 | `app.domains.conversations.public.open_or_create_listing_conversation(caller: CallerContext, request: ListingConversationContext) -> ConversationStartResult` | Listings only. `request` supplies the server-resolved listing ID and owner; caller is the buyer. Check both account eligibilities with Identity, reject self-conversation, persist unique `(listing_id,buyer_id)` thread and initial notification intent atomically. Initialize `last_activity_at` at creation. Existing pair is returned with `created=false` on retry/concurrent create; no duplicate notification. Identity/storage failure fails closed; timeout is ambiguous and retry by pair is safe. |
 | `app.domains.conversations.public.open_or_create_wanted_conversation(caller: CallerContext, request: WantedConversationContext) -> ConversationStartResult` | Search only. Caller is a regular responder; request supplies the server-resolved open request ID and author. Check both participants through Identity, reject self-conversation, persist unique `(request_id,responder_id)` thread and notification intent. Search serializes against closure. Initialize `last_activity_at` on creation; existing pair returns with `created=false` and no duplicate notification. Identity/storage failure fails closed. |
+| `app.domains.conversations.public.find_existing_listing_conversation(caller: CallerContext, request: ExistingListingConversationLookup) -> Optional[ConversationStartResult]` | Listings only for an existing buyer/listing pair, including ordinary unavailability or ambiguous retries. Request is `{listing_id}`; buyer comes from authenticated caller context. Read-only, never creates a thread. Checks current buyer and regular-owner eligibility. Missing pair is `None`; Identity/storage failure remains an error. Listings guards its own pending/retired state. |
 | `app.domains.conversations.public.find_existing_wanted_conversation(caller: CallerContext, request: ExistingWantedConversationLookup) -> Optional[ConversationStartResult]` | Search only after an ambiguous retry or request closure. Read-only exact request/responder pair lookup; never creates a thread. Does not reveal any other pair. Identity/storage failure remains an error, not `None`. |
 | `app.domains.conversations.public.check_listing_thread_participant(caller: CallerContext, request: ListingThreadParticipantCheck) -> ParticipantCheck` | Listings only for its seller-selection command. Check that caller is a member in the owner role and candidate is the other member of this exact Listing-origin thread. Return boolean only; no messages/offers. Wrong origin/member returns false or safe denial. Read-only/no activity renewal. |
-| `app.domains.conversations.public.persist_listing_offer(caller: CallerContext, request: ListingOfferCommand) -> OfferView` | Listings only after its own serialized availability/window/eligibility check. Caller is the buyer; request carries server-resolved listing/thread/offer identity and command revision. Conversations rechecks thread membership and both account eligibilities, atomically appends revision/current pointer, advances participant activity and records the operation-specific idempotency outcome. Offer revisions create no email intent. No cross-domain transaction or Listings-state read. Identical retry returns original; stale revision 409; timeout is ambiguous and safe to retry by operation ID. |
+| `app.domains.conversations.public.persist_listing_offer(caller: CallerContext, request: ListingOfferCommand) -> OfferView` | Listings only after its own serialized availability/window/eligibility check, including retries. Caller is the buyer; request carries server-resolved listing/thread/offer identity and command revision. Conversations rechecks thread membership and both account eligibilities, atomically appends revision/current pointer, advances participant activity and records the original expected revision for exact retries. Offer revisions create no email intent. No cross-domain transaction or Listings-state read. Identical retry returns its original revision when the current action gate permits it; changed reuse/stale revision is 409. Removed revision history returns write_expired and is never restored by replay. Timeout is ambiguous; retry only by the same operation ID under the same state gate. |
 | `app.domains.conversations.public.get_origin_activity(context: OriginOwnerContext, request: OriginActivityRequest) -> OriginActivityResult` | Listings/Search cleanup path only for its own origin kind. Request is `{origin_kind,origin_id}`; result is `{thread_count,latest_participant_write_at}`. Read every retained associated thread reference; latest time is null for zero threads. No thread/member IDs or content. Unknown/incomplete state or unavailable storage is a dependency failure, never zero activity. The server must inject a context for the owning origin; the Python type is not authentication. Call direction remains origin owner → Conversations. |
-| `app.domains.conversations.public.mark_origin_retired(context: OriginOwnerContext, request: OriginRetirementCommand) -> RetirementMarkerResult` | Listings/Search only. Request is `{origin_kind,origin_id,cutoff_utc,operation_id}`; result is `{outcome,marked_count}`, where outcome is `marked`, `blocked_recent_activity`, or `already_marked`. Locks every associated thread in ascending UUID order, checks every participant-write time against the cutoff, then marks all threads no-write atomically. Zero threads returns `marked`/0; any recent thread returns `blocked_recent_activity`/0 and marks none. An already-marked origin returns `already_marked` and its marked-thread count. Same ID/request replays the original result; same ID with another origin/cutoff conflicts. Unknown outcome is retried with the same ID. This marks conversation writes only; it does not delete content or objects. |
+| `app.domains.conversations.public.mark_origin_retired(context: OriginOwnerContext, request: OriginRetirementCommand) -> RetirementMarkerResult` | Listings/Search only for their own origin kind, after owner-side pending state and `get_origin_activity` preflight. Request is `{origin_kind,origin_id,cutoff_utc,operation_id}`; result is `{outcome,marked_count}`, with outcome `marked`, `blocked_recent_activity`, or `already_marked`. Conversations locks every associated thread in ascending UUID order, rechecks server-recorded participant-write times against the server-derived cutoff, and marks all eligible threads no-write atomically; if any is recent, none are marked. `marked,0` means no associated threads; for `already_marked`, the count is the number of pre-existing markers. A globally unique operation-ID record returns the original result for the same request; reuse with a different origin/cutoff is a stable conflict without changes. Mixed marker state is an error requiring Conversations-API reconciliation. Unknown results fail closed; no origin content is cleared before a confirmed marker. This callable never deletes content. |
 | `app.domains.conversations.public.claim_due_notification_intents(context: NotificationWorkerContext, request: NotificationClaimRequest) -> NotificationClaimResult` | CN-03 worker only. Request is `{now_utc,max_items}`; owner-reviewed max_items default 20, range 1–50. Result contains claims with intent/conversation/recipient IDs, event kind, due time, optional target sequence, fencing token and lease expiry. Atomically lease due intents; no address/message/contact/ciphertext. Lease duration/auth details remain CN-03 gates. Expired/unknown leases cannot authorize dispatch. |
 | `app.domains.conversations.public.read_notification_dispatch_context(context: NotificationWorkerContext, request: NotificationDispatchCheck) -> NotificationDispatchContext` | CN-03 worker only, immediately before dispatch. Request is `{intent_id,lease_token,now_utc}`; result is `{decision,recipient_id?,target_sequence?}` where decision is send, suppress, or defer. Validate current fencing token/deadline, recheck authorized read watermark and due target, and return recipient UUID only when sending is authorized. Worker resolves destination through Identity; no address is copied into intent. Read/suppression does not advance activity. Unknown read state suppresses safely; Identity outage means no send and a retryable outcome. |
 | `app.domains.conversations.public.record_notification_attempt(context: NotificationWorkerContext, request: NotificationAttemptResult) -> NotificationIntentState` | CN-03 worker only. Request is `{intent_id,lease_token,outcome,attempted_at}`; outcome is delivered, transient_failure, terminal_failure, or ambiguous. Fencing token guards state change; apply 5-attempt/backoff/24-hour policy and terminal 30-day retention. Do not persist provider body or address. Stale lease cannot overwrite a newer attempt; duplicate result is idempotent. Provider delivery is not exactly once and never rolls back the originating write. |
@@ -319,12 +362,11 @@ Listings ───────────────────────�
 closure). Listing offer/withdrawal HTTP commands map to Listings and then
 `persist_listing_offer`; seller selection maps from Listings to
 `check_listing_thread_participant`. Listing and request retirement services
-call `get_origin_activity` as a preflight, then `mark_origin_retired` for the
-authoritative locked check. Destructive local content/object cleanup has a
-separate approval gate.
-Conversations never calls Listings/Search to revalidate origin state. Its
-Identity calls are only eligibility, selected-own-contact, and
-notification-recipient operations.
+set owner-side pending state in a short transaction, call `get_origin_activity`
+as a fail-closed preflight, then call the approved `mark_origin_retired` with a
+stable operation ID and server-derived cutoff. Conversations never calls
+Listings/Search to revalidate origin state. Its Identity calls are only
+eligibility, selected-own-contact, and notification-recipient operations.
 
 | Page | Frontend data/action interface | Server-authoritative state owner | Refresh and visible states |
 |---|---|---|---|
@@ -373,46 +415,57 @@ destructive cleanup mechanism remains required before implementation.
 | Identity/contact | Keep the trimmed display name (1–80 code points), email ≤254 chars, E.164 phone, and bounded ASCII UPI VPA validation. Same-key OTP retry does not send again; deliberate resend needs a new operation ID. Do not automatically resend after an ambiguous provider outcome. | A; approved (user-reported) |
 | Participant identity | Keep counterparty UUID for scoped conversation filtering only. Do not add global profile/name lookup; render role and origin context. Historical offer revisions remain participant-only; only current offer summary is exposed by the summary operation. | A, D; approved (user-reported) |
 | Selection / receipts | Selection state is visible only to the listing owner and the participants in the selected conversation, never public discovery or other buyers. Expose only the caller's read watermark; do not expose peer read sequence, timestamps, or presence. | B, D; approved (user-reported) |
-| Images / transport | Use five-minute image delivery URLs, with actual signing/storage behavior left to LI-02. Use standard padded Base64 for opaque encrypted envelope and public-key bundle bytes; crypto protocol/library remains CN-01 Step 2. | B, D; approved (user-reported) |
+| Images / transport | Use five-minute image delivery URLs, with actual signing/storage behavior left to LI-02. Use standard padded Base64 for opaque encrypted envelope and public-key bundle bytes; OpenE2EE 13.0.0 is the approved CN-01 Step 2 library, subject to normal code review. | B, D; approved (user-reported) |
 | Polling | Keep immediate fetch on focus and after writes, 2-second active polling, pause while hidden, and back off after failure. A 5-second interval would consume the full NFR-05 delivery budget before network/render time; 2 seconds is the better starting point, subject to measurement. | D; approved (user-reported) |
 | Internal contexts / notifications | Construct origin-owner and worker contexts only in server composition/worker wiring, never bind them from HTTP. Check origin kind against caller capability. Keep notification claim default 20/max 50; lease duration, worker identity and dispatch recovery stay CN-03 implementation gates. | A, D; approved (user-reported) |
 
-### Approved origin-retirement coordination sequence
+### Approved origin-retirement marker sequence
 
-The API-only call order, locking, race behavior, and retry rules below are
-approved. This does not authorize destructive content/object cleanup code or a
-destructive run; each domain still needs its local cleanup method/order gate.
+Listings owner B (Suraj) approved this sequence for implementation on
+2026-10-20. Owner code review, the shared-migration writer/reviewer split,
+exact-target data preflight, and normal merge/apply gates still apply. This does
+not select or authorize physical content/object cleanup or a destructive run.
 
 1. Listings or Search starts a short transaction on its own origin row. After
-   rechecking the approved continuous-retirement predicate, it writes the
-   nullable `retirement_pending_operation_id` and
-   `retirement_pending_cutoff_utc`, paired together and using a globally unique
-   operation UUID. A non-null marker blocks new origin threads/edits/reopen and
-   hides the origin from discovery; both values commit before any Conversations
-   call. The stored cutoff lets the origin owner retry the identical request
-   after a process restart. Same ID and same request replays; same ID with a
-   different origin or cutoff conflicts. No cross-domain transaction or shared
-   database session is used.
-2. The origin owner calls `get_origin_activity`. Unknown/incomplete results or
-   dependency failures fail closed and leave the origin pending. This call is
-   a preflight; it does not replace the locked check in the next operation.
-3. The origin owner calls `mark_origin_retired` with the same operation ID and
-   cutoff. Conversations locks every associated thread in ascending UUID
-   order, rechecks participant-write times, and atomically marks all eligible
-   threads no-write. If any thread is newer than the cutoff, none are marked.
-   A zero-thread origin succeeds with `marked_count: 0`.
-4. If the result is `blocked_recent_activity`, the origin owner clears its
-   pending operation ID and cutoff and preserves content and ordinary origin
-   state. A later eligible attempt uses a new ID and cutoff. If the outcome is
-   unknown, keep both pending values and retry with the same ID and cutoff;
-   never unhide or delete on an unknown outcome. A retry with the same
-   ID/request replays the saved result. This avoids cross-domain rollback.
-5. A confirmed marker is the prerequisite for the later origin-local
-   retirement transition. Clearing origin content and deleting image objects
-   are separate destructive actions; each requires the owning domain's
-   approved cleanup method/order. No domain cascades into another domain.
-6. When its separately approved content-retention cleanup runs, Conversations
-   purges history under its own thread lock and final inactivity
+   rechecking its 180-day continuous-eligibility rule, it sets
+   `retirement_pending_operation_id` to a stable operation UUID. Pending state
+   blocks origin edits/reopen, selection or offer changes that could invalidate
+   retirement, new origin conversations, and discovery; it does not block
+   participant writes in existing threads before Conversations marks them.
+   Commit before any Conversations call; never hold an origin lock across it.
+2. The origin owner calls `get_origin_activity` as a preflight. The separate
+   90-day rule requires every associated thread's latest participant write to
+   be at or before `server_now - 2160 hours`. Unknown/incomplete results or
+   dependency failures defer retirement and leave content intact.
+3. The origin owner calls `mark_origin_retired` with the stable operation ID
+   and the activity cutoff `server_now - 2160 hours`, computed from the
+   origin owner's server clock after its authoritative eligibility check,
+   never from a browser. Conversations locks every associated thread in
+   ascending UUID order, rechecks server-recorded participant-write times
+   against the cutoff, and
+   atomically marks all eligible threads no-write. If any thread is too recent,
+   none are marked. The 180-day origin rule is separate from this 90-day thread
+   rule. Participant writes take the same thread lock and get server time only
+   after locking, so lock order determines whether a racing write commits or
+   is rejected.
+4. Store the result beside a globally unique `operation_id`, origin kind/ID,
+   and cutoff. Same ID plus same request returns the original result; reuse
+   with a different origin or cutoff conflicts without changes. `marked` with
+   zero threads is success; `blocked_recent_activity` marks none;
+   `already_marked` means all associated threads were marked before this
+   operation, and `marked_count` is their existing count. Mixed marker state is an error: stop and reconcile through
+   Conversations APIs.
+5. After `blocked_recent_activity`, the origin owner clears pending state and
+   retains content; a later attempt uses a new ID. On timeout/unknown outcome,
+   keep the origin pending and retry or look up the same ID. Never clear content
+   or unhide based on an unknown result.
+6. Only after a confirmed Conversations marker may the origin owner clear its
+   own content in its own transaction. Physical content/object cleanup and its
+   retry procedure remain separate reviewed work; this marker decision alone
+   authorizes no destructive run. If owner cleanup fails, keep the origin
+   pending and retry it. After successful cleanup, set `retired_at` and clear
+   the pending operation ID atomically in the origin owner's transaction.
+7. Conversations purges history under its own thread lock and final inactivity
    recheck. Suppress all nonterminal intents that cannot remain deliverable and
    clear entry targets before payload cleanup; remove contact-share links
    before their entries' payloads; set `offers.current_revision = NULL` and

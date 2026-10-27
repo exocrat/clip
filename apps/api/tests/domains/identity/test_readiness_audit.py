@@ -58,7 +58,11 @@ def package(tmp_path):
         source = ROOT / name
         target = root / name
         if source.is_dir():
-            shutil.copytree(source, target, dirs_exist_ok=True)
+            # This fixture represents the exact reviewed package. New forwards
+            # belong to a different candidate; never silently bless them here.
+            target.mkdir(parents=True, exist_ok=True)
+            for record in manifest["migrations"]:
+                shutil.copyfile(ROOT / record["path"], root / record["path"])
         else:
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(source, target)

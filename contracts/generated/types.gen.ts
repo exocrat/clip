@@ -100,9 +100,13 @@ export type ChallengeAccepted = {
 /**
  * CipherEnvelope
  *
- * Opaque encrypted payload transport metadata; never plaintext content.
+ * OpenE2EE relay envelope metadata and its opaque transport payload.
  */
 export type CipherEnvelope = {
+    /**
+     * Client Timestamp Ms
+     */
+    client_timestamp_ms: number;
     /**
      * Envelope Version
      */
@@ -122,11 +126,23 @@ export type CipherEnvelope = {
     /**
      * Recipient Key Version
      */
-    recipient_key_version: number;
+    recipient_key_version?: number | null;
+    /**
+     * Recovery For Entry Id
+     */
+    recovery_for_entry_id?: string | null;
+    /**
+     * Sdk Client Message Id
+     */
+    sdk_client_message_id?: string | null;
+    /**
+     * Sdk Message Type
+     */
+    sdk_message_type: 'ciphertext' | 'prekey_bundle' | 'retry_request';
     /**
      * Sender Key Version
      */
-    sender_key_version: number;
+    sender_key_version?: number | null;
 };
 
 /**
@@ -209,7 +225,7 @@ export type ContactValueRequest = {
 /**
  * ConversationEntry
  *
- * Ordered message/share envelope metadata; content may be retired.
+ * Ordered message/control/share envelope metadata; content may be retired.
  */
 export type ConversationEntry = {
     /**
@@ -228,7 +244,8 @@ export type ConversationEntry = {
     /**
      * Kind
      */
-    kind: 'message' | 'contact_share';
+    kind: 'message' | 'protocol_control' | 'contact_share';
+    recovery_target?: RecoveryTarget | null;
     /**
      * Sender User Id
      */
@@ -455,7 +472,7 @@ export type DraftMatchResult = {
 /**
  * EntryPage
  *
- * Ordered entry page and replay-safe cursor state.
+ * Visible entry page plus the last global sequence inspected for this member.
  */
 export type EntryPage = {
     /**
@@ -467,9 +484,9 @@ export type EntryPage = {
      */
     items: Array<ConversationEntry>;
     /**
-     * Last Sequence
+     * Scanned Through Sequence
      */
-    last_sequence: number;
+    scanned_through_sequence: number;
 };
 
 /**
@@ -588,13 +605,16 @@ export type ImageUploadRequest = {
 /**
  * KeyBundle
  *
- * One user's public bundle and its compatible protocol metadata.
+ * Typed public SDK bundle and its compatible protocol metadata.
  */
 export type KeyBundle = {
     /**
-     * Bundle Base64
+     * Device Id
      */
-    bundle_base64: string;
+    device_id?: 1;
+    ec_signed_prekey: PublicEcSignedPreKey;
+    identity: PublicCompositeIdentityV1;
+    kem_last_resort_prekey: PublicKemPreKey;
     /**
      * Key Version
      */
@@ -607,6 +627,10 @@ export type KeyBundle = {
      * Protocol Version
      */
     protocol_version: string;
+    /**
+     * Registration Id
+     */
+    registration_id: number;
     /**
      * User Id
      */
@@ -1018,9 +1042,28 @@ export type MemberKeyBundles = {
 };
 
 /**
+ * MemberPreKeyBundle
+ *
+ * Peer's public session bundle plus any atomically consumed one-time keys.
+ */
+export type MemberPreKeyBundle = {
+    /**
+     * Device Id
+     */
+    device_id?: 1;
+    ec_one_time_prekey?: PublicPreKeyMaterial | null;
+    kem_one_time_prekey?: PublicPreKeyMaterial | null;
+    key_bundle: KeyBundle;
+    /**
+     * Registration Id
+     */
+    registration_id: number;
+};
+
+/**
  * MessageRequest
  *
- * Encrypted message plus stable retry key.
+ * OpenE2EE envelope plus a UUIDv4 CLIP write identity.
  */
 export type MessageRequest = {
     envelope: CipherEnvelope;
@@ -1162,6 +1205,26 @@ export type OwnContacts = {
      * Upi Id
      */
     upi_id: string | null;
+};
+
+/**
+ * OwnPreKeyInventory
+ *
+ * Counts only the authenticated account's unconsumed public prekeys.
+ */
+export type OwnPreKeyInventory = {
+    /**
+     * Ec One Time Count
+     */
+    ec_one_time_count: number;
+    /**
+     * Kem One Time Count
+     */
+    kem_one_time_count: number;
+    /**
+     * Key Version
+     */
+    key_version: number;
 };
 
 /**
@@ -1313,6 +1376,18 @@ export type PasswordResetChallengeRequest = {
 };
 
 /**
+ * PreKeyBundleRequest
+ *
+ * Idempotency key for atomically reserving a member's one-time prekeys.
+ */
+export type PreKeyBundleRequest = {
+    /**
+     * Operation Id
+     */
+    operation_id: string;
+};
+
+/**
  * ProfilePatch
  *
  * Own-profile partial update; omitted and explicit null have distinct meaning.
@@ -1341,15 +1416,78 @@ export type ProfileView = {
 };
 
 /**
+ * PublicCompositeIdentityV1
+ *
+ * OpenE2EE public identity tuple; private identity keys never cross the API.
+ */
+export type PublicCompositeIdentityV1 = {
+    /**
+     * Ed25519 Public Key Base64
+     */
+    ed25519_public_key_base64: string;
+    /**
+     * Version
+     */
+    version?: 1;
+    /**
+     * X25519 Public Key Base64
+     */
+    x25519_public_key_base64: string;
+};
+
+/**
+ * PublicEcSignedPreKey
+ *
+ * Public X25519 signed prekey and its OpenE2EE identity signature.
+ */
+export type PublicEcSignedPreKey = {
+    /**
+     * Key Id
+     */
+    key_id: number;
+    /**
+     * Public Key Base64
+     */
+    public_key_base64: string;
+    /**
+     * Signature Base64
+     */
+    signature_base64: string;
+};
+
+/**
+ * PublicKemPreKey
+ *
+ * Public tagged ML-KEM-1024 prekey and its identity signature.
+ */
+export type PublicKemPreKey = {
+    /**
+     * Key Id
+     */
+    key_id: number;
+    /**
+     * Public Key Base64
+     */
+    public_key_base64: string;
+    /**
+     * Signature Base64
+     */
+    signature_base64: string;
+};
+
+/**
  * PublicKeyBundleRequest
  *
- * Opaque standard padded Base64 public-key bundle registration.
+ * Register own public OpenE2EE identity and reusable signed prekeys.
  */
 export type PublicKeyBundleRequest = {
     /**
-     * Bundle Base64
+     * Device Id
      */
-    bundle_base64: string;
+    device_id?: 1;
+    ec_signed_prekey: PublicEcSignedPreKey;
+    identity: PublicCompositeIdentityV1;
+    kem_last_resort_prekey: PublicKemPreKey;
     /**
      * Operation Id
      */
@@ -1362,6 +1500,10 @@ export type PublicKeyBundleRequest = {
      * Protocol Version
      */
     protocol_version: string;
+    /**
+     * Registration Id
+     */
+    registration_id: number;
 };
 
 /**
@@ -1389,6 +1531,70 @@ export type PublicKeyBundleView = {
 };
 
 /**
+ * PublicPreKeyBatchRequest
+ *
+ * Idempotent public one-time prekey publication for the active key version.
+ */
+export type PublicPreKeyBatchRequest = {
+    /**
+     * Key Version
+     */
+    key_version: number;
+    /**
+     * Operation Id
+     */
+    operation_id: string;
+    /**
+     * Prekeys
+     */
+    prekeys: Array<PublicPreKeyMaterial>;
+};
+
+/**
+ * PublicPreKeyBatchView
+ *
+ * Accepted public-prekey counts for the caller's active key version.
+ */
+export type PublicPreKeyBatchView = {
+    /**
+     * Ec One Time Count
+     */
+    ec_one_time_count: number;
+    /**
+     * Kem One Time Count
+     */
+    kem_one_time_count: number;
+    /**
+     * Key Version
+     */
+    key_version: number;
+};
+
+/**
+ * PublicPreKeyMaterial
+ *
+ * One public one-time prekey in OpenE2EE's supported client profile.
+ */
+export type PublicPreKeyMaterial = {
+    /**
+     * Key Id
+     */
+    key_id: number;
+    /**
+     * Key Type
+     */
+    key_type: 'ecPreKey' | 'kemOneTimePreKey';
+    /**
+     * Public Key Base64
+     */
+    public_key_base64: string;
+    /**
+     * Signature Base64
+     */
+    signature_base64?: string | null;
+};
+
+/**
  * ReadAcknowledgement
  *
  * Read acknowledgement bounded by the greatest committed sequence.
@@ -1410,6 +1616,30 @@ export type ReadState = {
      * Own Last Read Sequence
      */
     own_last_read_sequence: number;
+};
+
+/**
+ * RecoveryTarget
+ *
+ * Stored original entry details used to restore recovered content in place.
+ */
+export type RecoveryTarget = {
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Entry Id
+     */
+    entry_id: string;
+    /**
+     * Sender User Id
+     */
+    sender_user_id: string;
+    /**
+     * Sequence
+     */
+    sequence: number;
 };
 
 /**
@@ -3002,6 +3232,68 @@ export type ConversationsReadOfferResponses = {
 
 export type ConversationsReadOfferResponse = ConversationsReadOfferResponses[keyof ConversationsReadOfferResponses];
 
+export type ConversationsConsumeMemberPrekeysData = {
+    body: PreKeyBundleRequest;
+    path: {
+        /**
+         * Conversation Id
+         */
+        conversation_id: string;
+    };
+    query?: never;
+    url: '/conversations/{conversation_id}/prekey-bundle';
+};
+
+export type ConversationsConsumeMemberPrekeysErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorEnvelope;
+    /**
+     * Unauthorized
+     */
+    401: ErrorEnvelope;
+    /**
+     * Forbidden
+     */
+    403: ErrorEnvelope;
+    /**
+     * Not Found
+     */
+    404: ErrorEnvelope;
+    /**
+     * Conflict
+     */
+    409: ErrorEnvelope;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorEnvelope;
+    /**
+     * Too Many Requests
+     */
+    429: ErrorEnvelope;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorEnvelope;
+    /**
+     * Service Unavailable
+     */
+    503: ErrorEnvelope;
+};
+
+export type ConversationsConsumeMemberPrekeysError = ConversationsConsumeMemberPrekeysErrors[keyof ConversationsConsumeMemberPrekeysErrors];
+
+export type ConversationsConsumeMemberPrekeysResponses = {
+    /**
+     * Successful Response
+     */
+    200: MemberPreKeyBundle;
+};
+
+export type ConversationsConsumeMemberPrekeysResponse = ConversationsConsumeMemberPrekeysResponses[keyof ConversationsConsumeMemberPrekeysResponses];
+
 export type ConversationsReadStateData = {
     body?: never;
     path: {
@@ -4224,6 +4516,65 @@ export type IdentitySetOwnContactResponses = {
 
 export type IdentitySetOwnContactResponse = IdentitySetOwnContactResponses[keyof IdentitySetOwnContactResponses];
 
+export type ConversationsReadOwnKeyData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/me/conversation-key';
+};
+
+export type ConversationsReadOwnKeyErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorEnvelope;
+    /**
+     * Unauthorized
+     */
+    401: ErrorEnvelope;
+    /**
+     * Forbidden
+     */
+    403: ErrorEnvelope;
+    /**
+     * Not Found
+     */
+    404: ErrorEnvelope;
+    /**
+     * Conflict
+     */
+    409: ErrorEnvelope;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorEnvelope;
+    /**
+     * Too Many Requests
+     */
+    429: ErrorEnvelope;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorEnvelope;
+    /**
+     * Service Unavailable
+     */
+    503: ErrorEnvelope;
+};
+
+export type ConversationsReadOwnKeyError = ConversationsReadOwnKeyErrors[keyof ConversationsReadOwnKeyErrors];
+
+export type ConversationsReadOwnKeyResponses = {
+    /**
+     * Response Conversations Read Own Key
+     *
+     * Successful Response
+     */
+    200: KeyBundle | null;
+};
+
+export type ConversationsReadOwnKeyResponse = ConversationsReadOwnKeyResponses[keyof ConversationsReadOwnKeyResponses];
+
 export type ConversationsRegisterOwnKeyData = {
     body: PublicKeyBundleRequest;
     path?: never;
@@ -4280,6 +4631,120 @@ export type ConversationsRegisterOwnKeyResponses = {
 };
 
 export type ConversationsRegisterOwnKeyResponse = ConversationsRegisterOwnKeyResponses[keyof ConversationsRegisterOwnKeyResponses];
+
+export type ConversationsReadOwnPrekeyInventoryData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/me/conversation-prekeys';
+};
+
+export type ConversationsReadOwnPrekeyInventoryErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorEnvelope;
+    /**
+     * Unauthorized
+     */
+    401: ErrorEnvelope;
+    /**
+     * Forbidden
+     */
+    403: ErrorEnvelope;
+    /**
+     * Not Found
+     */
+    404: ErrorEnvelope;
+    /**
+     * Conflict
+     */
+    409: ErrorEnvelope;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorEnvelope;
+    /**
+     * Too Many Requests
+     */
+    429: ErrorEnvelope;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorEnvelope;
+    /**
+     * Service Unavailable
+     */
+    503: ErrorEnvelope;
+};
+
+export type ConversationsReadOwnPrekeyInventoryError = ConversationsReadOwnPrekeyInventoryErrors[keyof ConversationsReadOwnPrekeyInventoryErrors];
+
+export type ConversationsReadOwnPrekeyInventoryResponses = {
+    /**
+     * Successful Response
+     */
+    200: OwnPreKeyInventory;
+};
+
+export type ConversationsReadOwnPrekeyInventoryResponse = ConversationsReadOwnPrekeyInventoryResponses[keyof ConversationsReadOwnPrekeyInventoryResponses];
+
+export type ConversationsPublishOwnPrekeysData = {
+    body: PublicPreKeyBatchRequest;
+    path?: never;
+    query?: never;
+    url: '/me/conversation-prekeys';
+};
+
+export type ConversationsPublishOwnPrekeysErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorEnvelope;
+    /**
+     * Unauthorized
+     */
+    401: ErrorEnvelope;
+    /**
+     * Forbidden
+     */
+    403: ErrorEnvelope;
+    /**
+     * Not Found
+     */
+    404: ErrorEnvelope;
+    /**
+     * Conflict
+     */
+    409: ErrorEnvelope;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorEnvelope;
+    /**
+     * Too Many Requests
+     */
+    429: ErrorEnvelope;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorEnvelope;
+    /**
+     * Service Unavailable
+     */
+    503: ErrorEnvelope;
+};
+
+export type ConversationsPublishOwnPrekeysError = ConversationsPublishOwnPrekeysErrors[keyof ConversationsPublishOwnPrekeysErrors];
+
+export type ConversationsPublishOwnPrekeysResponses = {
+    /**
+     * Successful Response
+     */
+    200: PublicPreKeyBatchView;
+};
+
+export type ConversationsPublishOwnPrekeysResponse = ConversationsPublishOwnPrekeysResponses[keyof ConversationsPublishOwnPrekeysResponses];
 
 export type ListingsListMineData = {
     body?: never;

@@ -7,6 +7,7 @@ the running application.
 
 from __future__ import annotations
 
+import asyncio
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
@@ -21,6 +22,9 @@ from app.contracts.domain_types import (
     CategoryCode,
     CatalogueView,
     ConversationId,
+    ConversationStartResult,
+    ExistingListingConversationLookup,
+    ListingConversationContext,
     CreateListingRequest,
     ExistingListingImage,
     ConfirmedImage,
@@ -276,13 +280,14 @@ class ListingsStore(Protocol):
         request: SelectionChange,
         now: datetime,
     ) -> ListingManagementView:
-        """Change only the owner's buyer-selection fields at one revision.
+        """Select a buyer and atomically take the listing off the market.
 
         A set must recheck availability/window in the same write transaction;
-        a clear may proceed while ordinarily unavailable. Operation-ID replay,
-        owner checking, stale-revision conflict and retirement rejection are
-        storage responsibilities. The original result is saved atomically;
-        retirement removes it with the listing content.
+        it also marks the listing unavailable without changing its time window.
+        A clear may proceed while ordinarily unavailable but never reopens it.
+        Operation-ID replay, owner checking, stale-revision conflict and
+        retirement rejection are storage responsibilities. The original result
+        is saved atomically; retirement removes it with the listing content.
         """
         ...
 
@@ -302,6 +307,12 @@ class ListingsStore(Protocol):
         Retirement deletes these saved results, so retired commands follow the
         normal retired-state error path.
         """
+        ...
+
+    def listing_conversation_guard(
+        self, listing_id: ListingId
+    ) -> AsyncContextManager[ListingManagementView | None]:
+        """Hold an origin-state lock compatible with the thread's FK key-share."""
         ...
 
     def listing_offer_guard(
@@ -372,7 +383,19 @@ class ListingsStore(Protocol):
 
 
 class ListingsConversations(Protocol):
-    """Only the reviewed Conversations public calls used by Listings Step 5."""
+    """Reviewed Conversations public calls used by Listings-owned commands."""
+
+    async def open_or_create_listing_conversation(
+        self, caller: CallerContext, request: ListingConversationContext
+    ) -> ConversationStartResult:
+        """Create the owner-authorized pair or return its existing thread."""
+        ...
+
+    async def find_existing_listing_conversation(
+        self, caller: CallerContext, request: ExistingListingConversationLookup
+    ) -> ConversationStartResult | None:
+        """Read an exact buyer/listing pair without creating a thread."""
+        ...
 
     async def check_listing_thread_participant(
         self, caller: CallerContext, request: ListingThreadParticipantCheck
@@ -795,7 +818,11 @@ class ListingsService:
         listing_id: ListingId,
         request: SelectionChange,
     ) -> ListingOwnerView:
-        """Set, replace, or clear the buyer selected by the listing's owner."""
+        """Set or clear the selected buyer through the owner's guarded command.
+
+        Setting a buyer also marks the listing unavailable in the same Listings
+        transaction; clearing does not reopen it.
+        """
         await _require_regular_eligible(caller, self._identity)
         prior = await self._store.previous_owner_command_result(
             caller.user_id, listing_id, "selection", request
@@ -823,15 +850,21 @@ class ListingsService:
                 raise PublicError(ERRORS[403])
             conversations = self._require_conversations()
             try:
-                membership = await conversations.check_listing_thread_participant(
-                    caller,
-                    ListingThreadParticipantCheck(
-                        listing_id=listing_id,
-                        conversation_id=request.conversation_id,
-                        candidate_user_id=request.buyer_id,
-                    ),
-                )
-            except NotImplementedError:
+                async with asyncio.timeout(2):
+                    membership = await conversations.check_listing_thread_participant(
+                        caller,
+                        ListingThreadParticipantCheck(
+                            listing_id=listing_id,
+                            conversation_id=request.conversation_id,
+                            candidate_user_id=request.buyer_id,
+                        ),
+                    )
+            except PublicError:
+                raise
+            except Exception:
+                # A timeout or broken provider must not escape as an unhandled
+                # error or allow selection to look successful. Retrying the same
+                # command is safe because no Listings write has happened yet.
                 raise PublicError(ERRORS[503]) from None
             if not membership.is_participant:
                 raise PublicError(ERRORS[404])
@@ -843,6 +876,44 @@ class ListingsService:
             caller.user_id, listing_id, request, self._clock()
         )
         return ListingOwnerView.model_validate(view.model_dump())
+
+    async def start_conversation(
+        self, caller: CallerContext, listing_id: ListingId
+    ) -> ConversationStartResult:
+        """Serialize origin state with a bounded, independently committed chat call.
+
+        Pair uniqueness defines retries; an ambiguous outcome can be retried
+        after unavailability using the read-only port. Browser data supplies no
+        owner or buyer ID. Pending/retired/missing origins are hidden by storage.
+        """
+        await _require_eligible(caller, self._identity)
+        conversations = self._require_conversations()
+        try:
+            async with asyncio.timeout(2):
+                async with self._store.listing_conversation_guard(
+                    listing_id
+                ) as current:
+                    if current is None:
+                        raise PublicError(ERRORS[404])
+                    if current.owner_id == caller.user_id:
+                        raise PublicError(ERRORS[403])
+                    if not await self._identity.account_is_eligible(current.owner_id):
+                        raise PublicError(ERRORS[403])
+                    if self._is_discoverable(current):
+                        return await conversations.open_or_create_listing_conversation(
+                            caller,
+                            ListingConversationContext(
+                                listing_id=listing_id, owner_id=current.owner_id
+                            ),
+                        )
+                    existing = await conversations.find_existing_listing_conversation(
+                        caller, ExistingListingConversationLookup(listing_id=listing_id)
+                    )
+                    if existing is None:
+                        raise PublicError(ERRORS[404])
+                    return existing
+        except NotImplementedError, TimeoutError:
+            raise PublicError(ERRORS[503]) from None
 
     async def submit_offer(
         self,
@@ -865,7 +936,11 @@ class ListingsService:
             if not await self._identity.account_is_eligible(current.owner_id):
                 raise PublicError(ERRORS[403])
             if not self._is_discoverable(current):
-                raise PublicError(ERRORS[409])
+                # Availability also gates identical retries: a saved earlier
+                # offer stays in history, but unavailable origins show this state.
+                raise PublicError(
+                    ERRORS[409], (FieldError("listing_id", "unavailable"),)
+                )
             command = ListingOfferCommand(
                 action="submit",
                 listing_id=listing_id,
@@ -876,8 +951,9 @@ class ListingsService:
                 operation_id=request.operation_id,
             )
             try:
-                return await conversations.persist_listing_offer(caller, command)
-            except NotImplementedError:
+                async with asyncio.timeout(2):
+                    return await conversations.persist_listing_offer(caller, command)
+            except NotImplementedError, TimeoutError:
                 raise PublicError(ERRORS[503]) from None
 
     async def withdraw_offer(
@@ -907,8 +983,9 @@ class ListingsService:
                 operation_id=request.operation_id,
             )
             try:
-                return await conversations.persist_listing_offer(caller, command)
-            except NotImplementedError:
+                async with asyncio.timeout(2):
+                    return await conversations.persist_listing_offer(caller, command)
+            except NotImplementedError, TimeoutError:
                 raise PublicError(ERRORS[503]) from None
 
     async def retire_eligible_listing(
