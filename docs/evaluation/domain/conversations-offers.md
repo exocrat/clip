@@ -160,6 +160,6 @@ cases. The full `make check` passed1930 Python tests/142 database-only skips,
 wrapper safety, clean/repeated PostgreSQL migrations and full rollback/reapply,
 and Gitleaks also passed. See the Step3 work-log entry for the full gate summary.
 No shared target was migrated and no cloud action was performed. Rahul verified
-Step3 on 2026-10-27. Step4's grouped inbox implementation and local web checks
-are complete; Rahul's responsive desktop/phone browser checkpoint remains before
-Step4 verification. Details and exact check results are in the work log.
+Step3 on 2026-10-27. Rahul verified Step4's responsive browser checkpoint at
+2026-10-27 07:43:40 UTC. Step5 seller selection is the next checkpoint. Details
+and exact check results are in the work log.
