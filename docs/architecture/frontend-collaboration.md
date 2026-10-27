@@ -479,3 +479,17 @@ its tests: pin origin-only referrer policy on API/preflight requests to preserve
 Firefox Origin validation under the unchanged no-referrer HTML metadata. Existing
 Listings/Search consumers inherit transport behavior only; their feature code and
 page composition are unchanged. Suraj/Mohit affected-owner review remains pending.
+
+## CN-02 Step 5 seller-selection composition reservation
+
+Rahul (D) is the bounded current writer for CN-02 Step 5: the public Listings
+selection API export, `pages/ConversationRuntime.tsx` adapter, seller-only
+selection panel on the existing Conversation page, and the bounded local
+two-browser test harness/walkthrough, with focused tests and this map. The
+Conversations feature receives a narrow injected Listings capability;
+it does not import Listings private files or call Listings storage directly.
+Listings retains owner, eligibility, exact-thread membership, availability,
+revision, and retry enforcement. Step 6 availability controls, other Routes and
+app-shell composition are outside this reservation. Suraj reviews the public
+Listings boundary; Aditya reviews the shared runtime/session composition. This
+reservation does not authorize push, merge, or deployment.

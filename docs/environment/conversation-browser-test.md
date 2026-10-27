@@ -1,10 +1,11 @@
 # Local two-browser encrypted chat checkpoint
 
-CN-01 Steps 5–9, isolated browser verification only. Real PostgreSQL, the normal
-Conversations router, built React UI, OpenE2EE 13.0.0 and IndexedDB are used.
-Request authentication is **two fixed synthetic server identities**, not real
-Identity sessions/Microsoft sign-in. Eligibility at fixture creation uses real
-Identity SQL. This does not accept ID-READY, CN-CORE, FR-10/16 or NFR-05.
+CN-01 Steps 5–9 and CN-02 seller-selection checkpoint, isolated browser
+verification only. Real PostgreSQL, the normal Listings and Conversations
+routers, built React UI, OpenE2EE 13.0.0 and IndexedDB are used. Request
+authentication is **two fixed synthetic server identities**, not real Identity
+sessions/Microsoft sign-in. Identity eligibility uses real SQL for the synthetic
+accounts. This does not accept ID-READY, CN-CORE, LI-CORE, FR-10/16 or NFR-05.
 
 ## Agent setup
 
@@ -24,15 +25,19 @@ settings. It accepts no existing target, authentication selector or host/port
 override. The helper creates one new tmpfs PostgreSQL container with no network,
 uses its private local Unix socket and checked-in migrations, then seeds one
 synthetic listing and creates its conversation through the actual Conversations
-operation. No messages/keys/ciphertext are preloaded. Two separate bounded pools
+operation. Listings selection uses its actual PostgreSQL store and actual
+Conversations participant-check interface. The check-only run selects and clears
+the synthetic buyer to verify the complete server-side path, then leaves the
+browser fixture unselected. No messages/keys/ciphertext are preloaded. Two separate bounded pools
 serve the normal bundle on `127.0.0.1:5273` (A, seller) and `:5274` (B, buyer).
 Each side enforces its exact host/origin, a loopback peer and its own transient
 write token. Browser IDs/headers cannot switch the fixed actor. No test-auth route
 or normal application configuration enables this harness; scripts/tests are
 excluded from the production image.
 
-`--check-only` checks HTTP/SQL access and guards without opening listeners. It
-does not execute browser JavaScript, encryption or IndexedDB. Normal operation
+`--check-only` checks HTTP/SQL access, seller-only listing reads, exact-thread
+selection and clearing, and guards without opening listeners. It does not
+execute browser JavaScript, encryption or IndexedDB. Normal operation
 ends after 30 minutes (explicit `--seconds` accepts60–3600) or Ctrl+C. Both
 listeners/pools stop and only the helper's own container/data are removed. Existing
 Docker resources, databases and browser storage are not deleted. A setup failure
@@ -53,20 +58,24 @@ cross-browser result. Always use the exact `127.0.0.1` URLs, not `localhost`.
    may initially report that the peer key is unavailable until the other side
    registers. After both register, use the displayed refresh/retry action on the
    first side. Never clear browser storage to work around a normal error.
-3. Send a made-up message from A to B, then reply from B. Check both sender and
+3. Before sending messages, confirm A (seller) sees **Select this buyer** in the
+   Sale Listing conversation while B (buyer) does not. The fixture has no offer;
+   A can still select B. Click it and confirm the selected state appears. This
+   is only a buyer selection—not offer acceptance, a reservation or a done deal.
+4. Send a made-up message from A to B, then reply from B. Check both sender and
    recipient can read the text. The UI must not offer a plaintext fallback. Any
    key/decryption/send error is a finding, not an accepted outcome.
-4. Reload both pages and close/reopen one tab while this server stays running.
+5. Reload both pages and close/reopen one tab while this server stays running.
    The same browser/profile/origin should retain keys and readable history.
    This checks a normal reload, not resistance to storage eviction or a backup.
-5. Leave B at its inbox, send from A, and check B shows unread activity after
+6. Leave B at its inbox, send from A, and check B shows unread activity after
    refreshing the inbox. Open B's thread and display the message; return to its
    inbox and refresh. The badge should clear only after display acknowledgement.
    Reading/polling alone must not acknowledge a message.
-6. Optionally test a failed send using the browser's offline control, then restore
+7. Optionally test a failed send using the browser's offline control, then restore
    connectivity and use Retry. Expect no duplicated message. Do not enter real
    message content or export network bodies, ciphertext or key material.
-7. Test Logout last: its fixed side must lose API/chat access and clear private
+8. Test Logout last: its fixed side must lose API/chat access and clear private
    UI. There is deliberately no test login/identity-switch endpoint. Restarting
    this harness creates a different fresh fixture and loses its old server data;
    it is not a persistence or recovery procedure. Cross-account switching remains

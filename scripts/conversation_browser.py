@@ -1,8 +1,9 @@
-"""Opt-in loopback E2EE exercise: real chat SQL/SDK, fixed synthetic identities.
+"""Opt-in loopback E2EE exercise: real marketplace SQL/SDK, fixed identities.
 
 Not an authentication test or deployment factory. Two separate local origins
-serve the normal built UI against real Conversations routes. No identity selector,
-live provider, credential input, shared target or production activation exists.
+serve the normal built UI against real Listings and Conversations routes. Only
+request authentication is synthetic. No identity selector, live provider,
+credential input, shared target or production activation exists.
 """
 
 import argparse
@@ -17,6 +18,7 @@ import socket
 import sys
 from tempfile import TemporaryDirectory
 from urllib.parse import urlencode
+from uuid import uuid4
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -25,15 +27,21 @@ sys.path.insert(0, str(ROOT / "apps/api"))
 from fastapi import Depends, FastAPI, Request
 from fastapi.responses import HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
+from psycopg.rows import dict_row
 from psycopg_pool import AsyncConnectionPool
 import uvicorn
 
 from app.contracts.domain_types import CsrfToken, SessionView
 from app.core.auth import CallerContext, require_caller
 from app.core.errors import ERRORS, PublicError, error_response, install_error_handlers
-from app.domains.conversations.routes import router
+from app.domains.conversations.routes import (
+    create_public_provider,
+    router as conversations_router,
+)
 from app.domains.conversations.thread_creation import PostgresThreadCreationOperations
 from app.domains.identity.capabilities import PostgresCapabilities
+from app.domains.listings.postgres_store import PostgresListingsStore
+from app.domains.listings.routes import router as listings_router
 from apps.api.tests.domains.identity.postgres_fixtures import (
     disposable_identity_database,
 )
@@ -96,11 +104,22 @@ async def seed_conversation(dsn, connect):
         result = await operations.open_or_create_listing_conversation(
             caller, ListingConversationContext(listing_id=listing, owner_id=owner)
         )
-    return owner, buyer, result.conversation_id
+    return owner, buyer, listing, result.conversation_id
 
 
-def browser_app(dsn, actor, conversation_id, port, *, dist=DIST):
-    """Test-only composition with fixed server identity and exact-origin writes.
+class _BrowserListingsIdentity:
+    """Use real Identity SQL for the harness's synthetic accounts."""
+
+    def __init__(self, capabilities):
+        self._capabilities = capabilities
+
+    async def account_is_eligible(self, user_id):
+        result = await self._capabilities.check_account_eligibility(user_id)
+        return result.eligible
+
+
+def browser_app(dsn, connect, actor, listing_id, conversation_id, port, *, dist=DIST):
+    """Test-only composition with real Listings/Conversations and fixed identities.
 
     IDs from HTTP never select an actor. Host, peer, Origin and CSRF checks limit
     this fixture to its two explicitly bound origins; these are not real sessions.
@@ -115,15 +134,29 @@ def browser_app(dsn, actor, conversation_id, port, *, dist=DIST):
 
     @asynccontextmanager
     async def lifespan(app):
-        """Give each fixed-actor app its own bounded pool; always close it."""
+        """Give each fixed-actor app bounded domain pools; always close them."""
         async with AsyncConnectionPool(dsn, min_size=0, max_size=1, open=False) as pool:
-            app.state.database_pool = pool
-            try:
-                yield
-            finally:
-                app.state.database_pool = None
+            async with AsyncConnectionPool(
+                dsn,
+                kwargs={"row_factory": dict_row},
+                min_size=0,
+                max_size=1,
+                open=False,
+            ) as listings_pool:
+                app.state.database_pool = pool
+                app.state.listings_store = PostgresListingsStore(listings_pool, 500_000)
+                app.state.listings_identity = _BrowserListingsIdentity(
+                    PostgresCapabilities(connect, lambda: datetime.now(UTC))
+                )
+                app.state.listings_conversations = create_public_provider(pool)
+                app.state.listings_image_storage = None
+                try:
+                    yield
+                finally:
+                    app.state.database_pool = None
 
     app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
+    app.state.fixed_actor_id = actor
     install_error_handlers(app)
 
     async def fixed_actor():
@@ -171,7 +204,8 @@ def browser_app(dsn, actor, conversation_id, port, *, dist=DIST):
         response.headers["Referrer-Policy"] = "no-referrer"
         return response
 
-    app.include_router(router, prefix="/api")
+    app.include_router(conversations_router, prefix="/api")
+    app.include_router(listings_router, prefix="/api")
 
     @app.get("/api/me", response_model=SessionView)
     async def me(verified: CallerContext = Depends(require_caller)):
@@ -205,7 +239,7 @@ def browser_app(dsn, actor, conversation_id, port, *, dist=DIST):
         side = "A · seller" if port == PORTS[0] else "B · buyer"
         banner = (
             f'<aside role="note"><strong>LOCAL E2EE TEST — {side} — synthetic data only</strong>'
-            " · Fixed test identity, not real sign-in. Actual encryption/IndexedDB and temporary SQL."
+            " · Fixed test identity, not real sign-in. Actual encryption/IndexedDB and temporary Listings/Conversations SQL."
             " Use made-up messages only. "
             f'<a href="/my/conversations/{conversation_id}">Open test chat</a>'
             ' · <a href="/my/conversations">Inbox</a></aside>'
@@ -215,14 +249,58 @@ def browser_app(dsn, actor, conversation_id, port, *, dist=DIST):
     return app
 
 
-def check_apps(apps, conversation_id):
-    """Smoke real SQL routes and local guards; no browser/crypto claim is made."""
+def check_apps(apps, listing_id, conversation_id):
+    """Smoke real Listings/Conversations SQL routes and local guards."""
     from fastapi.testclient import TestClient
 
-    for app, port in zip(apps, PORTS, strict=True):
+    for index, (app, port) in enumerate(zip(apps, PORTS, strict=True)):
         origin = f"http://127.0.0.1:{port}"
         with TestClient(app, base_url=origin, client=("127.0.0.1", 41000)) as client:
             assert client.get("/api/me").status_code == 200
+            own_listings = client.get("/api/me/listings?page=1")
+            assert own_listings.status_code == 200
+            if index == 0:
+                item = next(
+                    row
+                    for row in own_listings.json()["items"]
+                    if row["listing_id"] == str(listing_id)
+                )
+                headers = {
+                    "Origin": origin,
+                    "X-CLIP-Request": "1",
+                    "X-CSRF-Token": client.get("/api/auth/csrf").json()["csrf_token"],
+                }
+                selected = client.put(
+                    f"/api/listings/{listing_id}/selection",
+                    headers=headers,
+                    json={
+                        "buyer_id": str(apps[1].state.fixed_actor_id),
+                        "conversation_id": str(conversation_id),
+                        "expected_revision": item["revision"],
+                        "operation_id": str(uuid4()),
+                    },
+                )
+                assert selected.status_code == 200, selected.text
+                assert selected.json()["selected_buyer_id"] == str(
+                    apps[1].state.fixed_actor_id
+                )
+                assert selected.json()["selected_conversation_id"] == str(
+                    conversation_id
+                )
+                cleared = client.put(
+                    f"/api/listings/{listing_id}/selection",
+                    headers=headers,
+                    json={
+                        "buyer_id": None,
+                        "conversation_id": None,
+                        "expected_revision": selected.json()["revision"],
+                        "operation_id": str(uuid4()),
+                    },
+                )
+                assert cleared.status_code == 200, cleared.text
+                assert cleared.json()["selected_buyer_id"] is None
+            else:
+                assert own_listings.json()["items"] == []
             assert (
                 client.get(
                     "/api/conversations?view=all&page=1&page_size=100"
@@ -303,17 +381,17 @@ def main():
         ) as directory:
             with disposable_identity_database(Path(directory)) as connect:
                 dsn = connection_string(connect)
-                owner, buyer, conversation = asyncio.run(
+                owner, buyer, listing, conversation = asyncio.run(
                     seed_conversation(dsn, connect)
                 )
                 apps = [
-                    browser_app(dsn, actor, conversation, port)
+                    browser_app(dsn, connect, actor, listing, conversation, port)
                     for actor, port in zip((owner, buyer), PORTS, strict=True)
                 ]
-                check_apps(apps, conversation)
+                check_apps(apps, listing, conversation)
                 if args.check_only:
                     print(
-                        "PASS: isolated chat HTTP/SQL setup and loopback guards; browser checks pending"
+                        "PASS: isolated Listings/Conversations SQL, selection API and loopback guards; browser checks pending"
                     )
                 else:
                     print(

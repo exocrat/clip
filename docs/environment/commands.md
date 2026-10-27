@@ -728,7 +728,8 @@ The registered disposable runner below includes real retention/rollback checks.
 Browser checkpoint setup: `CLIP_ENVIRONMENT=test uv run --locked python
 scripts/conversation_browser.py --isolated-conversation-browser --check-only`
 creates and removes only one new disposable local PostgreSQL container and
-checks real chat HTTP/SQL plus loopback/Origin/write guards. Requires the normal
+checks real Listings/Conversations HTTP/SQL, seller selection and loopback/
+Origin/write guards. Requires the normal
 web build (`npm run build`), local Unix-socket Docker and the pinned images.
 Without `--check-only`, it serves the built UI at `http://127.0.0.1:5273` and
 `:5274` for two fixed synthetic identities, real SDK/IndexedDB and chat SQL.

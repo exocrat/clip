@@ -10,6 +10,8 @@ import type {
   PageResultListingManagementView,
   ImageDelivery,
   ImageUploadRequest,
+  ListingOwnerView,
+  SelectionChange,
   UploadInstruction,
 } from '../../../../../contracts/generated/types.gen';
 
@@ -23,6 +25,8 @@ export type {
   ListingReplacement,
   PageResultListingManagementView,
   ImageUploadRequest,
+  ListingOwnerView,
+  SelectionChange,
   UploadInstruction,
 };
 
@@ -140,6 +144,15 @@ export const changeListingAvailability = (
   body: AvailabilityChange,
 ) => listingsRequest<ListingDetail>(
   `/listings/${encodeURIComponent(listingId)}/availability`,
+  { method: 'PUT', body: JSON.stringify(body) },
+);
+
+/** Change the selected buyer through Listings' owner- and revision-checked command. */
+export const setSelectedListingBuyer = (
+  listingId: string,
+  body: SelectionChange,
+) => listingsRequest<ListingOwnerView>(
+  `/listings/${encodeURIComponent(listingId)}/selection`,
   { method: 'PUT', body: JSON.stringify(body) },
 );
 

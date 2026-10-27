@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router';
 import { Button } from '../../shared/ui';
 import type { ConversationEntry, ConversationSummary, KeyBundle } from '../../../../../contracts/generated/types.gen';
 import { ConversationApiError, type ConversationApi } from './api';
+import { ConversationListingSelection, isSellerSaleListingConversation, type ListingSelectionPort } from './ConversationListingSelection';
 import { ConversationCryptoError, ConversationKeyChangeRequiredError, ConversationKeyStateLostError,
   KeyRegistrationAcknowledgementRequiredError, type ConversationReceiveContext } from './crypto';
 import { ConversationInbox, type ConversationInboxFilters, type ConversationInboxItem } from './ConversationInbox';
@@ -12,7 +13,7 @@ import { openIndexedDbConversationSession, type ConversationSession } from './re
 /** Identity supplies this only after establishing a real authenticated session.
  * No component accepts a user ID from route/search/form input as caller identity.
  */
-export type ConversationPageRuntime = { userId: string; api: ConversationApi };
+export type ConversationPageRuntime = { userId: string; api: ConversationApi; listingSelection: ListingSelectionPort };
 const RuntimeContext = createContext<ConversationPageRuntime | null>(null);
 
 export function ConversationPageRuntimeProvider({ runtime, children }: PropsWithChildren<{ runtime: ConversationPageRuntime | null }>) {
@@ -175,6 +176,7 @@ export function ConversationDetailPage({ conversationId }: { conversationId: str
 function ConversationDetailSession({ conversationId }: { conversationId: string | undefined }) {
   const runtime = useContext(RuntimeContext);
   const [ready, setReady] = useState<ReadyConversation | null>(null);
+  const [authorizedSummary, setAuthorizedSummary] = useState<ConversationSummary | null>(null);
   const [entries, setEntries] = useState<ConversationDisplayEntry[]>([]);
   const decryptionFailureIds = useRef(new Set<string>());
   const [recoveredPending, setRecoveredPending] = useState<{ operationId: string; text: string } | null>(null);
@@ -192,6 +194,7 @@ function ConversationDetailSession({ conversationId }: { conversationId: string 
     initializing.current = token;
     setLoading(true);
     setReady(null);
+    setAuthorizedSummary(null);
     try {
       const previous = activeSession.current;
       activeSession.current = null;
@@ -210,6 +213,7 @@ function ConversationDetailSession({ conversationId }: { conversationId: string 
         !callerMatchesRole || summary.counterparty_user_id === runtime.userId) {
         throw new ConversationApiError(404, 'http');
       }
+      setAuthorizedSummary(summary);
       const session = await openIndexedDbConversationSession(runtime.userId, conversationId, runtime.api,
         acknowledgeHistoryLoss ? { acknowledgeUnrecoverableHistoryRisk: true } : {});
       if (generation.current !== token) { await session.stop(); return; }
@@ -377,9 +381,19 @@ function ConversationDetailSession({ conversationId }: { conversationId: string 
 
   if (!runtime) return <p role="status">Sign in to view this conversation. The authenticated session is not connected here yet.</p>;
   if (!conversationId) return <p role="alert">This conversation link is invalid.</p>;
+  const pageSummary = authorizedSummary ?? ready?.summary ?? null;
   return <section aria-label="Conversation page">
     <p><Link to="/my/conversations">Back to conversations</Link></p>
-    <h2>{ready?.summary.origin_kind === 'sale_listing' ? 'Sale listing conversation' : ready ? 'Wanted request conversation' : 'Private conversation'}</h2>
+    <h2>{pageSummary?.origin_kind === 'sale_listing' ? 'Sale listing conversation' : pageSummary ? 'Wanted request conversation' : 'Private conversation'}</h2>
+    {authorizedSummary && isSellerSaleListingConversation(authorizedSummary) ? (
+      <ConversationListingSelection
+        key={`${authorizedSummary.origin_id}:${authorizedSummary.conversation_id}`}
+        listingId={authorizedSummary.origin_id}
+        conversationId={authorizedSummary.conversation_id}
+        buyerId={authorizedSummary.counterparty_user_id}
+        selection={runtime.listingSelection}
+      />
+    ) : null}
     {keyState.kind === 'error' ? <Button disabled={loading} onClick={() => void initialize().catch(() => undefined)} variant="secondary">Retry loading conversation</Button> : null}
     <ConversationThread current_user_id={runtime.userId} entries={entries} key_state={keyState}
       last_read_sequence={readSequence} loading={loading} onRefresh={refresh} onSend={send} onRetry={retry}
