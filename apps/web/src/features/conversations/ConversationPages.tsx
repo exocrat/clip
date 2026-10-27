@@ -5,7 +5,7 @@ import type { ConversationEntry, ConversationSummary, KeyBundle } from '../../..
 import { ConversationApiError, type ConversationApi } from './api';
 import { ConversationCryptoError, ConversationKeyChangeRequiredError, ConversationKeyStateLostError,
   KeyRegistrationAcknowledgementRequiredError, type ConversationReceiveContext } from './crypto';
-import { ConversationInbox, type ConversationInboxItem } from './ConversationInbox';
+import { ConversationInbox, type ConversationInboxFilters, type ConversationInboxItem } from './ConversationInbox';
 import { ConversationThread, type ConversationDisplayEntry, type ConversationKeyUiState } from './ConversationThread';
 import { openIndexedDbConversationSession, type ConversationSession } from './relay';
 
@@ -33,27 +33,42 @@ function ConversationInboxSession() {
   const [loading, setLoading] = useState(Boolean(runtime));
   const [loadError, setLoadError] = useState(false);
   const [pageNumber, setPageNumber] = useState(1);
+  const [filters, setFilters] = useState<ConversationInboxFilters>({
+    view: 'all',
+    sort: 'last_activity_desc',
+  });
   const [hasNextPage, setHasNextPage] = useState(false);
-  const requestInFlight = useRef(false);
+  const activeRequest = useRef<AbortController | null>(null);
+  const requestGeneration = useRef(0);
   const refresh = useCallback(async (options: { silent?: boolean } = {}) => {
-    if (!runtime || requestInFlight.current) return;
-    requestInFlight.current = true;
+    if (!runtime || (options.silent && activeRequest.current)) return;
+    activeRequest.current?.abort();
+    const controller = new AbortController();
+    activeRequest.current = controller;
+    const generation = ++requestGeneration.current;
     if (!options.silent) setLoading(true);
     try {
-      // Use the server's bounded default page size. This also stays compatible
-      // with older HTTP adapters that mishandle integer Literal query strings.
-      const result = await runtime.api.listMine({ view: 'all', page: pageNumber });
+      const result = await runtime.api.listMine({ ...filters, page: pageNumber }, controller.signal);
+      if (controller.signal.aborted || generation !== requestGeneration.current) return;
       setItems(result.items.map((summary) => toInboxItem(summary, runtime.userId)));
       setHasNextPage(result.has_next);
       setLoadError(false);
     } catch {
+      if (controller.signal.aborted || generation !== requestGeneration.current) return;
       setLoadError(true);
       throw new ConversationApiError(0, 'transport');
     } finally {
-      requestInFlight.current = false;
-      if (!options.silent) setLoading(false);
+      if (generation === requestGeneration.current) {
+        activeRequest.current = null;
+        if (!options.silent) setLoading(false);
+      }
     }
-  }, [pageNumber, runtime]);
+  }, [filters, pageNumber, runtime]);
+
+  const changeFilters = useCallback((next: ConversationInboxFilters) => {
+    setFilters(next);
+    setPageNumber(1);
+  }, []);
 
   useEffect(() => {
     if (!runtime || typeof document === 'undefined') return;
@@ -92,6 +107,7 @@ function ConversationInboxSession() {
     window.addEventListener('focus', refreshNow);
     return () => {
       disposed = true;
+      activeRequest.current?.abort();
       if (timer) clearTimeout(timer);
       document.removeEventListener('visibilitychange', refreshNow);
       window.removeEventListener('focus', refreshNow);
@@ -99,6 +115,7 @@ function ConversationInboxSession() {
   }, [runtime, refresh]);
   if (!runtime) return <p role="status">Sign in to load your conversations. The authenticated session is not connected here yet.</p>;
   return <ConversationInbox conversations={items} loading={loading} loadError={loadError} onRefresh={refresh}
+    filters={filters} onFiltersChange={changeFilters}
     page={pageNumber} hasNextPage={hasNextPage} onPageChange={setPageNumber}
     onOpen={(id) => navigate(`/my/conversations/${encodeURIComponent(id)}`)} />;
 }
@@ -110,7 +127,12 @@ function toInboxItem(summary: ConversationSummary, userId: string): Conversation
     : (initiated ? 'request responder' : 'request author');
   return { conversation_id: summary.conversation_id,
     label: summary.origin_kind === 'sale_listing' ? 'Sale listing conversation' : 'Wanted request conversation',
-    role, last_activity_at: summary.last_activity_at, unread_count: summary.unread_count };
+    role, last_activity_at: summary.last_activity_at, unread_count: summary.unread_count,
+    origin_kind: summary.origin_kind, origin_id: summary.origin_id,
+    counterparty_user_id: summary.counterparty_user_id,
+    current_offer: summary.current_offer
+      ? { amount_paise: summary.current_offer.amount_paise, status: summary.current_offer.status }
+      : null };
 }
 
 /** Process peer recovery traffic and return the original message to annotate, if it was not decryptable. */

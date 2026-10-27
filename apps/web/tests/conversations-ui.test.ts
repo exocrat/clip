@@ -126,6 +126,56 @@ describe('ConversationInbox UI', () => {
     expect(html).toContain('>2 unread</span>');
     expect(html).toContain('Private messages are encrypted on your device.');
   });
+
+  it('groups the current server page by origin and shows only safe shortened identifiers', () => {
+    const sharedOrigin = {
+      origin_kind: 'sale_listing' as const,
+      origin_id: '11111111-1111-4111-8111-111111111111',
+    };
+    const html = renderToStaticMarkup(
+      createElement(ConversationInbox, {
+        conversations: [
+          { conversation_id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', label: 'Sale listing conversation',
+            role: 'seller', last_activity_at: '2026-10-23T00:00:00Z', unread_count: 1,
+            counterparty_user_id: '22222222-2222-4222-8222-222222222222', current_offer: { amount_paise: 125000, status: 'submitted' }, ...sharedOrigin },
+          { conversation_id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', label: 'Sale listing conversation',
+            role: 'seller', last_activity_at: '2026-10-22T00:00:00Z', unread_count: 0,
+            counterparty_user_id: '33333333-3333-4333-8333-333333333333', current_offer: null, ...sharedOrigin },
+          { conversation_id: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc', label: 'Wanted request conversation',
+            role: 'request author', last_activity_at: '2026-10-21T00:00:00Z', unread_count: 0,
+            origin_kind: 'wanted_request', origin_id: '44444444-4444-4444-8444-444444444444' },
+        ],
+        filters: { view: 'all', sort: 'last_activity_desc' },
+        onFiltersChange: vi.fn(),
+        onRefresh: vi.fn(async () => undefined),
+        onOpen: vi.fn(),
+      }),
+    );
+    expect(html).toContain('Sale listing · 11111111…1111');
+    expect(html).toContain('2 conversations on this page');
+    expect(html).toContain('Wanted request · 44444444…4444');
+    expect(html).toContain('Partner 22222222…2222');
+    expect(html).toContain('₹1,250 · submitted');
+    expect(html).toContain('Each group shows only conversations on this page');
+    expect(html).not.toContain('Partner · 22222222-2222-4222-8222-222222222222');
+  });
+
+  it('renders bounded view, origin, partner and offer controls only when connected to a query owner', () => {
+    const html = renderToStaticMarkup(
+      createElement(ConversationInbox, {
+        conversations: [],
+        filters: { view: 'all', sort: 'last_activity_desc' },
+        onFiltersChange: vi.fn(),
+        onRefresh: vi.fn(async () => undefined),
+        onOpen: vi.fn(),
+      }),
+    );
+    expect(html).toContain('Filter and sort conversations');
+    expect(html).toContain('I started it (buyer or responder)');
+    expect(html).toContain('Conversation partner ID');
+    expect(html).toContain('Minimum offer (₹)');
+    expect(html).toContain('Offer filters apply to Sale Listings');
+  });
 });
 
 describe('Conversation route composition', () => {

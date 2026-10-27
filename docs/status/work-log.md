@@ -54,7 +54,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | SE-02 | Mohit (C); peer Suraj (B), Identity/Conversations review | in progress | Step8 real integration gated; local handoff human-verified | Steps1–7 isolated result verified; Step8 audit performed | Mohit verified isolated UI and combined local handoff | [Search handoff](../evaluation/domain/search-handoff/result.json): Python1270/data94/web144,Black183,native20/3skip,wrapper35/contracts8/boundaries/parity/type/build pass | Await actual ID-READY/LI-CORE/SE-CORE/C adapters; Step9 final acceptance, pinned secrets/hosted CI and independent review pending | 2026-10-25 08:50:43 UTC |
 | MERGE-LI-SE | Suraj (integration); Listings/Search affected owners | done | PR #11 is squash-merged; Search–Listings local merge task is complete | Steps 1–9 performed; approved PR head `2a43066` merged to `main` as `e315c9d`; final hosted CI run `40204621122` passed | Steps 3–8 verified by Suraj; user authorized squash merge of the exact PR revision on 2026-10-25 | PR #11 `https://github.com/exocrat/clip/pull/11`; source head `2a430660d25e7c14cf33d84bd78172db4ec063c7`; squash merge `e315c9df3e0e11d6e9c8d7d244d676204d3af7e8`; hosted CI `40204621122`; local merge commit `29eb6fb`; fallback branch `safety/search-pr11-pre-main-reconciliation-20261025`; stash `af9d7f5`; local checks recorded below | No blocker for the Search–Listings merge. Final dataset, formal NFR/cloud checks, and real Identity/Conversations remain later work. | 2026-10-25 15:17:46 UTC |
 | CN-01 | Rahul (D) | in progress | PR17 integration merged; final CN-01/readiness/NFR obligations remain | Accepted main b09978e contains reviewed head3773931; hosted run40402518748 passed; prior local aggregate1930Python/403web and Conversations114 | Rahul verified local correction and confirmed PR merged; no additional milestone acceptance inferred | [PR17](https://github.com/exocrat/clip/pull/17), merge `b09978e91620ae3877a77c5bea8a4f12df7a8907`; [integration checkpoint](../evaluation/domain/conversations-integration.md) | Formal readiness/remaining device and security checks; CN-03 producer path and final NFR-05; full task acceptance pending | 2026-10-27 06:16:43 UTC |
-| CN-02 | Rahul (D); Aditya/Suraj review | in progress | Step3 offer writes/read complete locally; awaiting Rahul verification before Step4 | `make check`:1930 Python passed/142 skipped,94 data passed,403 web passed/3 skipped; Black293, boundary0, contracts8, types, web build, wrapper35, fresh PostgreSQL migration lifecycle and Gitleaks all passed; focused Conversations suite156 passed | Rahul verified Step2 and approved availability-first offer retries; Step3 result awaits verification | `task/cn-02-offers-contact-sharing`, base b09978e; [checkpoint](../evaluation/domain/conversations-offers.md); migration head `20261027064000` | Step4 inbox UI; Step8 cleanup review; actual dependency/affected-owner acceptance gates remain | 2026-10-27 07:20:35 UTC |
+| CN-02 | Rahul (D); Aditya/Suraj review | in progress | Step4 grouped inbox implemented; local checks pass; awaiting Rahul's responsive browser checkpoint | Pinned Node24/npm11 web gate: lint, 409 tests/3 skipped, typecheck and production build pass; Gitleaks8.30.1 source snapshot and `git diff --check` pass | Step3 verified; Step4 browser verification pending | `task/cn-02-offers-contact-sharing`, Step4 changes based on `4f77a87`; [checkpoint](../evaluation/domain/conversations-offers.md) | Browser checkpoint before Step5; Step8 cleanup review and actual dependency/affected-owner acceptance gates remain | 2026-10-27 07:40:06 UTC |
 | CN-03 | A; D producer review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | CN-CORE, ID-READY | — |
 | INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
 | EXP-01 | C | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | INT-01 | — |
@@ -143,9 +143,36 @@ their owned containers. `bash -n database/tests/native-checks.sh` and `git diff
 --check` passed. No generated artifacts, shared database, cloud service or
 provider were changed.
 
-Step3 is implemented and locally verified; Rahul's step verification is pending.
-Next is Step4: grouped inbox views, filters, sorting and pagination, after this
-result is verified.
+Rahul verified Step3 after the recorded checks above. Step4 is the next
+checkpoint: grouped inbox views, filters, sorting and pagination.
+
+## CN-02 Step4 — Grouped conversation inbox — 2026-10-27 07:40:06 UTC
+
+Implemented the Conversations inbox against the real member-scoped list API.
+The page now groups the server-returned page by Sale Listing or Wanted Request,
+shows the caller's buyer/seller/responder/author role, partner and current offer,
+and provides participation, origin, partner and offer filters plus stable server
+sorting and pagination. Offer bounds are entered in whole rupees and sent as
+integer paise. Offer controls are disabled for Wanted Requests; amount sorting
+keeps no-offer conversations per the existing API behavior. Since the summary
+contract has no origin titles or display names, the UI uses shortened IDs and
+explains that groups and identifier choices cover only conversations currently
+loaded; it makes no private cross-domain lookup.
+
+`ConversationPages.tsx` sends filters/page through the authenticated API and
+ignores stale or aborted responses when users change them quickly. The new
+`ConversationInbox` controls are only enabled when a query owner is supplied, so
+the isolated demo path remains unchanged. Responsive styles, UI/component tests,
+an authenticated route/query regression, the public feature type export, and
+the frontend route map were updated together. No API contract, generated file,
+database, or cloud resource changed.
+
+The focused inbox/composition suite passed18 tests. The full pinned web check
+passed lint,409 tests with3 existing skips, TypeScript checks, and production
+build. Gitleaks8.30.1 passed on a read-only source snapshot; `git diff --check`
+passed. Vite reports its existing large-chunk advisory; build succeeds. Rahul's
+desktop/phone browser checkpoint is still required before Step4 verification and
+Step5. No push or shared operation was performed.
 
 ## CN-01 merge closeout and CN-02 Step1 — 2026-10-27 06:16:43 UTC
 

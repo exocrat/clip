@@ -33,7 +33,7 @@ There is no unresolved offer-status or seller-selection product decision.
 | Offer boundary | Listings service/routes gate submit/revise/resubmit and withdrawal; Conversations now persists revisions and provides member-only current-offer reads. | Step3 checks role/eligibility, availability ordering, exact retry intent, revision races, encrypted-note references, retention expiry and safe failure behavior through the real adapters. |
 | Selection | Listings owns the HTTP operation, revision/idempotency handling and participant check through the concrete Conversations provider. | Add the real public frontend composition; recheck integrated ownership, retries and failures. |
 | Availability | Listings has owner-authorized PUT availability, plus its private feature client. | Expose a bounded public Listings feature action for done-deal UI; Conversations must not import listingsApi.ts privately. |
-| Inbox | Conversations queries already support membership-scoped origin/partner/offer filters and amount ordering. | Add usable grouped views, real origin display through public boundaries and complete pagination behavior. |
+| Inbox | Conversations queries support membership-scoped origin/partner/offer filters and stable amount ordering; the frontend now consumes those queries and groups only the returned page. | Origin and partner names are not in the current summary contract, so the inbox shows shortened IDs. A reviewed public display-context interface remains a separate B/C/Identity integration; no feature-private lookup is used. |
 | Contacts | Identity implements public options/selected-own-contact providers and trusted disclosure scopes. | Conversations prepare/share HTTP operations and encrypted client flow are still absent. Use the real Identity interface when bound; unbound/error state must fail safely. |
 | Client crypto | OpenE2EE13.0.0 and IndexedDB text-message sessions are implemented. | Confirm typed offer/contact payload context and ciphertext-only envelope requirements against real SDK behavior before wiring private notes/shares. No plaintext fallback. |
 | Frontend map | Actual ScaffoldPages uses ConversationInboxPage and ConversationDetailPage through ConversationRuntime. | Older implementation-table rows still mention placeholders. Reconcile those rows and reserve any shared composition before Step4 edits. |
@@ -159,5 +159,7 @@ cases. The full `make check` passed1930 Python tests/142 database-only skips,
 94 data,403 web/3 skips; formatting, boundaries, contracts/types, web build,
 wrapper safety, clean/repeated PostgreSQL migrations and full rollback/reapply,
 and Gitleaks also passed. See the Step3 work-log entry for the full gate summary.
-No shared target was migrated and no cloud action was performed. Step3 awaits
-Rahul's verification; Step4 remains next.
+No shared target was migrated and no cloud action was performed. Rahul verified
+Step3 on 2026-10-27. Step4's grouped inbox implementation and local web checks
+are complete; Rahul's responsive desktop/phone browser checkpoint remains before
+Step4 verification. Details and exact check results are in the work log.

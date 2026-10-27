@@ -1,7 +1,7 @@
 export { ConversationsPlaceholder } from './ConversationsPlaceholder';
 export type { ConversationsPlaceholderProps } from './ConversationsPlaceholder';
 export { ConversationInbox } from './ConversationInbox';
-export type { ConversationInboxItem, ConversationInboxProps } from './ConversationInbox';
+export type { ConversationInboxFilters, ConversationInboxItem, ConversationInboxProps } from './ConversationInbox';
 export { ConversationThread } from './ConversationThread';
 export type {
   ConversationDisplayEntry,
