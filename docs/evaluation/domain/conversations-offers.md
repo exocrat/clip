@@ -250,6 +250,38 @@ works locally at 2026-10-27 12:53 UTC; browser/version/viewport details were not
 provided. Affected-owner review, hosted CI and later real-session/deployment
 work remain separate gates; this does not claim full CN-02 completion.
 
+## Step9 combined regressions — 2026-10-27 (local checks passed; Rahul verified)
+
+Existing focused suites cover the offer lifecycle/retries and retention
+(`test_conversation_offers.py`, `test_conversation_offer_storage.py`), seller
+inbox isolation/filtering/order (`test_conversation_directory.py`), Listings
+selection/availability (`test_postgres_store.py` and the web selection/done-deal
+tests), and real OpenE2EE contact-share tampering/context/retry behavior
+(`conversations-relay.test.ts` and `conversations-crypto.test.ts`). The real
+Identity cookie integration separately checks selected-own-field preparation
+and member/CSRF/Origin boundaries.
+
+Added a combined real local API/database journey in
+`test_conversation_contact_share_cleanup.py`: a buyer submits an offer, the
+seller selects that exact conversation buyer and Listings makes the listing
+unavailable, another offer attempt is rejected without altering the saved
+offer, then the existing chat accepts and exactly replays a contact-share
+entry. The seller still reads the offer through the offer endpoint; the generic
+message transcript contains only the contact share at the correct sequence.
+An additional malformed-control-envelope case checks that the validation
+response and captured logs do not echo its payload marker.
+
+The first combined test run exposed a test-only expectation error: structured
+offers are returned through the offer view rather than rendered as transcript
+entries. The assertion now checks each record through its owning interface.
+The next run passed166 focused PostgreSQL18.6 tests. Six relevant web files
+passed50 tests using the real SDK where browser crypto is implemented. Black,
+boundary scan, Gitleaks8.30.1 and whitespace checks passed. These regression
+tests use synthetic auth/ciphertext in SQL and do not claim a live Identity
+session or deployed cross-domain integration. Rahul verified the Step9 combined
+regression checkpoint at 2026-10-27 13:12 UTC. Affected-owner review and hosted
+CI remain separate gates.
+
 ## Step3 implementation scope (awaiting human verification)
 
 Rahul verified Step2 and approved this retry clarification: submit/revise/resubmit

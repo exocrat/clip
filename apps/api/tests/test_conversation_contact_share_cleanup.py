@@ -156,6 +156,87 @@ def test_contact_share_http_write_is_member_scoped_encrypted_and_idempotent(
     run_scenario(scenario)
 
 
+def test_offer_selection_and_contact_share_work_together_through_real_apis():
+    async def scenario(pool):
+        async with offer_environment(pool) as state:
+            await register_members(state)
+            offer_body = {"amount_paise": 20_000, "operation_id": str(uuid4())}
+            offer_url = state.url + "/offer"
+            offer = await state.client.put(offer_url, json=offer_body)
+            assert offer.status_code == 200
+            assert offer.json()["amount_paise"] == 20_000
+            after_offer = await snapshot(pool, state.thread)
+
+            listing = await state.store.read_listing(state.listing)
+            selection_body = {
+                "buyer_id": str(state.buyer),
+                "conversation_id": str(state.thread),
+                "expected_revision": listing.revision,
+                "operation_id": str(uuid4()),
+            }
+            state.app.dependency_overrides[require_caller] = lambda: caller(state.owner)
+            selection_url = f"/listings/{state.listing}/selection"
+            selected = await state.client.put(selection_url, json=selection_body)
+            assert selected.status_code == 200
+            assert selected.json()["selected_buyer_id"] == str(state.buyer)
+            assert selected.json()["availability"] == "unavailable"
+            assert (
+                await state.client.put(selection_url, json=selection_body)
+            ).json() == selected.json()
+
+            state.app.dependency_overrides[require_caller] = lambda: caller(state.buyer)
+            unavailable_offer = await state.client.put(offer_url, json=offer_body)
+            assert unavailable_offer.status_code == 409
+            assert unavailable_offer.json()["error"]["details"] == [
+                {"field": "listing_id", "code": "unavailable"}
+            ]
+            assert await snapshot(pool, state.thread) == after_offer
+
+            contact_body = contact_request().model_dump(mode="json")
+            share_url = f"/conversations/{state.thread}/contact-shares"
+            share = await state.client.post(share_url, json=contact_body)
+            assert share.status_code == 201
+            assert share.json()["kind"] == "contact_share"
+            assert share.json()["sequence"] == after_offer[0]
+            replay = await state.client.post(share_url, json=contact_body)
+            assert replay.status_code == 200
+            assert replay.json() == share.json()
+
+            state.app.dependency_overrides[require_caller] = lambda: caller(state.owner)
+            current_offer = await state.client.get(state.read_url)
+            assert current_offer.status_code == 200
+            assert current_offer.json() == offer.json()
+            entries = await state.client.get(f"/conversations/{state.thread}/entries")
+            assert [entry["kind"] for entry in entries.json()["items"]] == [
+                "contact_share"
+            ]
+            assert entries.json()["items"][0]["sequence"] == after_offer[0]
+            assert entries.json()["scanned_through_sequence"] == after_offer[0]
+
+    run_scenario(scenario)
+
+
+def test_rejected_contact_envelope_does_not_echo_or_log_payload(caplog):
+    async def scenario(pool):
+        async with offer_environment(pool) as state:
+            marker = b"synthetic-private-test-marker"
+            encoded = b64encode(marker).decode("ascii")
+            body = contact_request().model_dump(mode="json")
+            body["envelope"]["sdk_message_type"] = "retry_request"
+            body["envelope"]["payload_base64"] = encoded
+            with caplog.at_level("DEBUG"):
+                response = await state.client.post(
+                    f"/conversations/{state.thread}/contact-shares", json=body
+                )
+            assert response.status_code == 422
+            assert marker.decode("ascii") not in response.text
+            assert encoded not in response.text
+            assert marker.decode("ascii") not in caplog.text
+            assert encoded not in caplog.text
+
+    run_scenario(scenario)
+
+
 def test_contact_share_cleanup_rolls_back_payload_subtype_and_marker_together():
     async def scenario(pool):
         author, _, _, thread, _, _ = await seed_thread(pool)

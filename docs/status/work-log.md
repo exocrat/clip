@@ -54,7 +54,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | SE-02 | Mohit (C); peer Suraj (B), Identity/Conversations review | in progress | Step8 real integration gated; local handoff human-verified | Steps1–7 isolated result verified; Step8 audit performed | Mohit verified isolated UI and combined local handoff | [Search handoff](../evaluation/domain/search-handoff/result.json): Python1270/data94/web144,Black183,native20/3skip,wrapper35/contracts8/boundaries/parity/type/build pass | Await actual ID-READY/LI-CORE/SE-CORE/C adapters; Step9 final acceptance, pinned secrets/hosted CI and independent review pending | 2026-10-25 08:50:43 UTC |
 | MERGE-LI-SE | Suraj (integration); Listings/Search affected owners | done | PR #11 is squash-merged; Search–Listings local merge task is complete | Steps 1–9 performed; approved PR head `2a43066` merged to `main` as `e315c9d`; final hosted CI run `40204621122` passed | Steps 3–8 verified by Suraj; user authorized squash merge of the exact PR revision on 2026-10-25 | PR #11 `https://github.com/exocrat/clip/pull/11`; source head `2a430660d25e7c14cf33d84bd78172db4ec063c7`; squash merge `e315c9df3e0e11d6e9c8d7d244d676204d3af7e8`; hosted CI `40204621122`; local merge commit `29eb6fb`; fallback branch `safety/search-pr11-pre-main-reconciliation-20261025`; stash `af9d7f5`; local checks recorded below | No blocker for the Search–Listings merge. Final dataset, formal NFR/cloud checks, and real Identity/Conversations remain later work. | 2026-10-25 15:17:46 UTC |
 | CN-01 | Rahul (D) | in progress | PR17 integration merged; final CN-01/readiness/NFR obligations remain | Accepted main b09978e contains reviewed head3773931; hosted run40402518748 passed; prior local aggregate1930Python/403web and Conversations114 | Rahul verified local correction and confirmed PR merged; no additional milestone acceptance inferred | [PR17](https://github.com/exocrat/clip/pull/17), merge `b09978e91620ae3877a77c5bea8a4f12df7a8907`; [integration checkpoint](../evaluation/domain/conversations-integration.md) | Formal readiness/remaining device and security checks; CN-03 producer path and final NFR-05; full task acceptance pending | 2026-10-27 06:16:43 UTC |
-| CN-02 | Rahul (D); Aditya/Suraj review | in progress | Step8 implementation and browser checkpoint complete; Step9 is next | Focused Conversations PostgreSQL164; complete database lifecycle/rollback/reapply passed; pinned Node24/npm11 web431/3skip, lint120, TS/build; contracts8; Black changed files; boundaries0; Gitleaks8.30.1; whitespace clean | Rahul confirmed the two-browser contact-share flow works; browser/version/viewport not supplied. Steps5–6 verified. | `task/cn-02-offers-contact-sharing`; [checkpoint](../evaluation/domain/conversations-offers.md); [browser walkthrough](../environment/conversation-browser-test.md) | Aditya/Suraj affected-owner review; hosted CI and later real-session/deployment gates remain | 2026-10-27 12:53:39 UTC |
+| CN-02 | Rahul (D); Aditya/Suraj review | in progress | Step9 combined regression coverage implemented and verified; Step10 next | Focused Conversations PostgreSQL166 passed on PostgreSQL18.6; relevant web regression50; Black changed test file; boundaries0; Gitleaks8.30.1; whitespace clean | Rahul verified Step9 at 2026-10-27 13:12 UTC; Step8 encrypted contact-share browser flow verified | `task/cn-02-offers-contact-sharing`; [checkpoint](../evaluation/domain/conversations-offers.md); [browser walkthrough](../environment/conversation-browser-test.md) | Aditya/Suraj affected-owner review; hosted CI and later real-session/deployment gates remain | 2026-10-27 13:12:16 UTC |
 | CN-03 | A; D producer review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | CN-CORE, ID-READY | — |
 | INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
 | EXP-01 | C | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | INT-01 | — |
@@ -391,6 +391,32 @@ encrypted contact-share flow works at 2026-10-27 12:53 UTC; browser/version/
 viewport details were not supplied. The local preview and its disposable
 database were stopped. Step8's human checkpoint is verified; affected-owner
 review, hosted CI and later real-session integration remain open.
+
+## CN-02 Step9 — Combined offer, selection and contact-share regression — 2026-10-27 13:07:49 UTC
+
+Added two real API/database regression cases to
+`test_conversation_contact_share_cleanup.py`. The combined journey uses the
+actual Listings and Conversations routers, stores and participant-check
+provider: the buyer submits an offer; the seller selects that exact conversation
+buyer, making the listing unavailable; a new offer is rejected without
+changing the saved offer; then the existing thread accepts and exactly replays
+an encrypted contact-share entry. The current offer remains available through
+the seller offer view, while the general transcript exposes only the contact
+share at its ordered sequence. A malformed recovery/control envelope test
+checks that neither the error response nor captured logs echo its payload.
+
+The first run showed that the new test incorrectly expected structured offer
+entries in the message transcript; the real API correctly exposes offers
+through the offer view. The assertion was corrected to test each through its
+owning API. A follow-up fixture adjustment ensured malformed control content
+reaches the server validation boundary instead of being rejected by the local
+test-model constructor. Final focused PostgreSQL18.6 run passed166 tests. Six
+relevant browser test files passed50 tests with the real SDK crypto paths;
+changed Python test Black check, boundary0, Gitleaks8.30.1 and `git diff
+--check` passed. Only synthetic auth and opaque synthetic ciphertext are used
+in the database harness; live Identity-session and deployed integration remain
+pending. Rahul verified Step9 at 2026-10-27 13:12 UTC. Affected-owner review,
+hosted CI and later real-session/deployment gates remain open.
 
 ## CN-01 merge closeout and CN-02 Step1 — 2026-10-27 06:16:43 UTC
 
