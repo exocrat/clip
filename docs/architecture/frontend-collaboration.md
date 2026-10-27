@@ -480,7 +480,7 @@ Firefox Origin validation under the unchanged no-referrer HTML metadata. Existin
 Listings/Search consumers inherit transport behavior only; their feature code and
 page composition are unchanged. Suraj/Mohit affected-owner review remains pending.
 
-## CN-02 Step 5 seller-selection composition reservation
+## CN-02 Step 5 seller-selection composition reservation (released)
 
 Rahul (D) is the bounded current writer for CN-02 Step 5: the public Listings
 selection API export, `pages/ConversationRuntime.tsx` adapter, seller-only
@@ -493,3 +493,7 @@ revision, and retry enforcement. Step 6 availability controls, other Routes and
 app-shell composition are outside this reservation. Suraj reviews the public
 Listings boundary; Aditya reviews the shared runtime/session composition. This
 reservation does not authorize push, merge, or deployment.
+
+Released at 2026-10-27 10:18:54 UTC after Rahul confirmed the updated selection
+and unavailable behavior works in the local preview at `e103562`. Step6 requires
+its own bounded writer scope before shared frontend edits.

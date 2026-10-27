@@ -31,7 +31,7 @@ There is no unresolved offer-status or seller-selection product decision.
 | --- | --- | --- |
 | Schema | `conversations.offers`, `offer_revisions` and `contact_shares` already exist, with pair uniqueness, ordered entries and current-revision constraints. | Step2 reuses those structures. Step3 adds only original expected-revision metadata needed for exact retries, through a forward migration; all21 prior migrations remain byte-identical. |
 | Offer boundary | Listings service/routes gate submit/revise/resubmit and withdrawal; Conversations now persists revisions and provides member-only current-offer reads. | Step3 checks role/eligibility, availability ordering, exact retry intent, revision races, encrypted-note references, retention expiry and safe failure behavior through the real adapters. |
-| Selection | Listings owns the HTTP operation, revision/idempotency handling and participant check through the concrete Conversations provider. | Step5 now atomically selects the buyer and marks the listing unavailable; dates are preserved and clearing does not reopen. Updated human browser verification and affected-owner review remain pending. |
+| Selection | Listings owns the HTTP operation, revision/idempotency handling and participant check through the concrete Conversations provider. | Step5 atomically selects the buyer and marks the listing unavailable; dates are preserved and clearing does not reopen. Rahul verified the updated local browser flow; affected-owner review remains pending. |
 | Availability | Listings has owner-authorized PUT availability, plus its private feature client. | Expose a bounded public Listings feature action for done-deal UI; Conversations must not import listingsApi.ts privately. |
 | Inbox | Conversations queries support membership-scoped origin/partner/offer filters and stable amount ordering; the frontend now consumes those queries and groups only the returned page. | Origin and partner names are not in the current summary contract, so the inbox shows shortened IDs. A reviewed public display-context interface remains a separate B/C/Identity integration; no feature-private lookup is used. |
 | Contacts | Identity implements public options/selected-own-contact providers and trusted disclosure scopes. | Conversations prepare/share HTTP operations and encrypted client flow are still absent. Use the real Identity interface when bound; unbound/error state must fail safely. |
@@ -60,7 +60,7 @@ or payment/handover verification is implied by this label.
 | 2 | Reused offer storage and only necessary forward schema additions. | Uniqueness, current revision, references, retention and safe rollback. |
 | 3 | Real offer writes/reads through Listings and Conversations. | Ownership, integer paise, revision/operation conflicts, atomic entry/activity updates and retirement marker. |
 | 4 | Grouped seller/buyer/request views and filters. | Membership isolation, page completeness, ordering/no-offer cases and browser checkpoint. |
-| 5 | Public Listings selection action in conversation UI. | Real eligible buyer relationship, stale state, retry and failure handling; seller/buyer browser checkpoint remains pending. |
+| 5 | Public Listings selection action in conversation UI. | Real eligible buyer relationship, stale state, retry and failure handling checked; updated local browser checkpoint verified by Rahul. |
 | 6 | Separate done-deal availability action. | Owner-only, preserve window/selection, discovery exclusion, retained chats and browser checkpoint. |
 | 7 | Selected-own-contact preparation and confirmation. | Real Identity scope, membership, exact fields and no unselected values. |
 | 8 | Encrypted contact entries and independent 30-day cleanup. | Review concrete destructive mechanism first; retention/FK/order/privacy checks and browser checkpoint. |
@@ -134,7 +134,7 @@ storage together with those operations, preserving the approved retention rules.
 Rahul verified Step2. Next: implement the real offer persistence/read
 operations through the existing Listings and Conversations public boundaries.
 
-## Step5 seller-selection implementation — 2026-10-27 (browser verification pending)
+## Step5 seller-selection implementation — 2026-10-27 (local browser verified)
 
 The Conversation page now injects a narrow Listings selection capability through
 the existing public feature export. The authorized Conversations summary gates
@@ -163,11 +163,11 @@ or trigger replacement is needed. UI confirmation reports both effects; a
 reopened listing with a retained selected buyer shows its actual available
 state and permits selecting that buyer again. The final focused suite passed20
 tests; the PostgreSQL and browser API workflows cover the amended effect.
-See the work log for checks and tool-version limits. Repeat the interactive
-seller/buyer browser check at
-`http://127.0.0.1:5273/my/conversations` and
-`http://127.0.0.1:5274/my/conversations`. The check is local-only and does not
-prove real Identity sign-in or overall CN-CORE/ID-READY/LI-CORE acceptance.
+See the work log for checks and tool-version limits. Rahul confirmed the updated
+local browser flow works at 2026-10-27 10:18:54 UTC against `e103562`. Browser
+version/viewport details were not supplied. The preview was stopped and its
+disposable database removed. The local check does not prove real Identity
+sign-in or overall CN-CORE/ID-READY/LI-CORE acceptance. Step6 is next.
 
 ## Step3 implementation scope (awaiting human verification)
 
