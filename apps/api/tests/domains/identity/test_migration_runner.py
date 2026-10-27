@@ -26,10 +26,10 @@ DIRECTORY = ROOT / "database/migrations"
 
 @pytest.fixture(autouse=True)
 def reviewed_migration_package(tmp_path, monkeypatch):
-    """Test the pinned 17-file runner package, not a newer unreviewed chain.
+    """Test only the pinned 23-file candidate, preserving its separate live review gate.
 
-    The live runner must keep rejecting the expanded Conversations chain until
-    its manifest and source receive a separate exact-target review.
+    Exact clean/repeat success does not authorize applying to the recorded older
+    shared target; prefix replay and unreviewed live images remain rejected.
     """
     directory = tmp_path / "reviewed-migrations"
     directory.mkdir()
@@ -102,7 +102,7 @@ def test_real_clean_repeat_and_private_docker_config(migration_case, monkeypatch
     with migration_case.connect() as c:
         assert c.execute(
             "SELECT count(*) FROM public.schema_migrations"
-        ).fetchone() == (17,)
+        ).fetchone() == (23,)
         assert c.execute("SELECT count(*) FROM identity.users").fetchone() == (0,)
         assert c.execute("SELECT count(*) FROM listings.categories").fetchone() == (8,)
 
@@ -119,7 +119,9 @@ def test_real_hostname_mismatch_rejected(migration_case):
         ).fetchone() == (None,)
 
 
-@pytest.mark.parametrize("state", ["manual-schema", "partial-tracker"])
+@pytest.mark.parametrize(
+    "state", ["manual-schema", "partial-tracker", "recorded-17-tracker"]
+)
 def test_no_namespace_adoption_or_prefix_replay(migration_case, state):
     with migration_case.connect() as c:
         if state == "manual-schema":
@@ -128,7 +130,26 @@ def test_no_namespace_adoption_or_prefix_replay(migration_case, state):
             c.execute(
                 "CREATE TABLE public.schema_migrations(version varchar(255) PRIMARY KEY)"
             )
-            c.execute("INSERT INTO public.schema_migrations VALUES ('20261018094330')")
+            if state == "recorded-17-tracker":
+                # A tracker-only refusal fixture, not evidence of an approved upgrade.
+                previous = json.loads(
+                    (
+                        MANIFEST.parent
+                        / "shared-migration-manifest-applied-20261026T102702Z.json"
+                    ).read_text()
+                )
+                for schema in runner.SCHEMAS:
+                    c.execute(
+                        sql.SQL("CREATE SCHEMA {}").format(sql.Identifier(schema))
+                    )
+                c.execute(
+                    "INSERT INTO public.schema_migrations SELECT unnest(%s::text[])",
+                    ([record["version"] for record in previous["migrations"]],),
+                )
+            else:
+                c.execute(
+                    "INSERT INTO public.schema_migrations VALUES ('20261018094330')"
+                )
     with pytest.raises(ConfigurationError):
         migrate(migration_case)
     with migration_case.connect() as c:
@@ -139,17 +160,24 @@ def test_no_namespace_adoption_or_prefix_replay(migration_case, state):
         else:
             assert c.execute(
                 "SELECT count(*) FROM public.schema_migrations"
-            ).fetchone() == (1,)
+            ).fetchone() == (17 if state == "recorded-17-tracker" else 1,)
 
 
 @pytest.mark.parametrize(
-    "change", ["edit", "extra", "mutable-image", "live-unreviewed"]
+    "change", ["edit", "extra", "mutable-image", "live-unreviewed", "legacy-17-package"]
 )
 def test_manifest_image_and_live_review_guards(migration_case, tmp_path, change):
     directory = tmp_path / "migrations"
     shutil.copytree(DIRECTORY, directory)
     image = migration_case.image
     target = migration_case.target
+    manifest = MANIFEST
+    if change == "legacy-17-package":
+        manifest = (
+            MANIFEST.parent / "shared-migration-manifest-applied-20261026T102702Z.json"
+        )
+        for extra in sorted(directory.glob("*.sql"))[17:]:
+            extra.unlink()
     if change == "edit":
         first = sorted(directory.glob("*.sql"))[0]
         first.write_text(first.read_text() + "\n-- synthetic modification\n")
@@ -160,7 +188,7 @@ def test_manifest_image_and_live_review_guards(migration_case, tmp_path, change)
     if change == "live-unreviewed":
         target = runner.MigrationTarget(15432)
     with pytest.raises(ValueError):
-        runner.validate_manifest(directory, MANIFEST, image, target)
+        runner.validate_manifest(directory, manifest, image, target)
 
 
 def test_newline_credential_rejected_before_connection(migration_case):
@@ -331,13 +359,13 @@ def test_timed_out_version_client_is_removed(migration_case, monkeypatch):
 
 
 def test_new_conversations_chain_requires_its_own_review(migration_case):
-    """Do not let isolated test packaging authorize the expanded live chain."""
+    """Local 23-file success must not authorize its still-unreviewed live package."""
     with pytest.raises(ValueError):
         runner.validate_manifest(
             ROOT / "database/migrations",
             MANIFEST,
             migration_case.image,
-            migration_case.target,
+            runner.MigrationTarget(15432),
         )
 
 

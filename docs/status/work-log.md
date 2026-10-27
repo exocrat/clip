@@ -47,7 +47,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PD-19 | Integration owner (current branch) | done | Steps 1–9 and combined foundation handoff complete | Steps 1–9 performed | User confirms all work before PRE-00 is complete | PR #8 merged at `2cd83e7` from head `18c966e` against base `68d9da9`; [Foundation quality gates passed](https://github.com/exocrat/clip/actions/runs/39323851584) for that exact head/base; `make test` (395 Python, 63 data, 16 web), Black, contract freshness and 10 `make check` gates passed; [handoff](foundation-handoff.md) | No open PD-19 work per user confirmation. Linux AMD64/macOS results remain user-confirmed without raw outputs. PR #8 has no submitted GitHub review; independent-review completion is user-confirmed, with no separate review artifact linked. Refresh cloud snapshot before any operation. | 2026-10-19 21:09:05 UTC |
 | PRE-00 | Integration owner | done | Foundation gate audit accepted; DL-00 is unblocked | performed | verified/accepted by user | Reviewed handoff PR #8 merged to `main` at `2cd83e7`; hosted Foundation quality gates passed for head `18c966e` against base `68d9da9` (run `39323851584`); clean-checkout evidence at `0747be6`; see [PD-19 handoff](foundation-handoff.md) | None. PR #8 has no GitHub review event; independent-review completion remains user-reported without a separate artifact. | 2026-10-19 21:20:55 UTC |
 | DL-00 | Shared-core/contract coordinator; all domains review | done | Steps 1–13 and task-wide audit complete; accepted and merged | Steps 1–13 performed; accepted by user | User confirmed full acceptance and merge on 2026-10-22 05:30:49 UTC | PR #9 merged to `main` at `f5576ef`; current `main` is `44cd8ff`; Step 13 check evidence is recorded below and was not rerun for this update | None for DL-00; cleanup implementation remains separately gated; real providers/integrations and crypto/worker implementation remain downstream | 2026-10-22 05:30:49 UTC |
-| ID-01 | A | in progress | Step12 runtime-preparation review handoff; main PR15 integrated; Firefox fix locally human-verified | All11 local gates pass: Python1841/24skip, data94, web295/3skip, Black262, boundaries/contracts/types/build, wrapper35, PostgreSQL18.6 lifecycle and Gitleaks; Terraform4roots pass | Aditya verified Firefox sign-in and requested branch rename, main integration and PR creation; peer/affected-owner approval pending | `task/id-01-runtime-preparation`; accepted base `d7afc8b`; runtime and Firefox evidence/history below | Current hosted CI, independent/affected-owner review and exact merge approval; durable HTTPS/runtime/provider/image/Search acceptance; ID-READY incomplete | 2026-10-26 19:43:43 UTC |
+| ID-01 | A | in progress | Step12 local preparation human-verified; commit/source binding next | All12 local gates pass: Python1932/153skip, data94, web433/3skip, Conversations167, Black296, contracts/types/build, wrapper35, PostgreSQL18.6 and Gitleaks; focused32 and strict types pass | Main merge authorized; Aditya verified local preparation2026-10-27 18:44:48UTC; exposed Resend-key revocation/replacement human-confirmed2026-10-27 18:25:58UTC | `task/id-01-runtime-preparation`; merge479a09c includes accepted main5e8d264; PR16 already merged/CI passed; current code/docs uncommitted | Offline reviewed-source check correctly false until new runner commit/binding; Step13 HTTPS/runtime/provider/retention and reviewed clean bootstrap/reset; ID-READY incomplete | 2026-10-27 18:44:48 UTC |
 | LI-01 | B | in progress | Finish the remaining Step 7 browser states and current-head Step 11 checks/reviews; prepare a progress PR without claiming LI-CORE. Steps 12–13 remain integration-gated. | Steps 1–6 and 8–10 implemented and locally checked; Step 7 partial (create/detail/edit/My Listings/gallery). | Suraj verified the multi-image edit/gallery checkpoint, seller-only selected-buyer visibility, and Step 10. No LI-01 phone-device result is claimed. | domain/listings at 6ffbe0b; focused Listings suite: 61 passed, one database-only test skipped outside the wrapper; disposable PostgreSQL workflow passed; current worktree `make check` passed 2026-10-23 (573 Python, 63 data, 42 web tests; remaining contract, type, boundary, database, safety, formatting, lint, and build checks passed). | LI-CORE not accepted. Remaining Step 7 states; Step 11 query-plan, current aggregate, and affected-owner review; native schema check; five pre-existing backend boundary findings; real Identity, Conversations, storage, and Search integration; Steps 12–13. | 2026-10-23 10:38:31 UTC |
 | LI-02 | B | in progress | Step 12 demo is tested and stopped; record final evidence, then begin intake of the Search owner's PR under the review workflow. | Steps 1–11 and 1.5 verified; Step 12 ran on ECS and was tested on desktop/mobile. Read-only app checks found the synthetic listing and its S3 image; teardown is complete. | User approved and applied teardown plan `3703bb7b23405a5a23a1ac6c39fa8870e682dddf3a1a8272183f4642f8f0db81` (0 add, 1 change to LI-02 bucket CORS, 20 LI-02 deletes). Post-stop inventory confirms disposable RDS/ALB/service/host/root volume/run S3 objects/URL parameter/log streams absent; shared RDS is stopped, shared ECS cluster remains, LI-02 ASG desired 0/no instances. Two run ECR images are retained (105,624,604 bytes total) per user direction. | `task/li-02-isolated-runtime` at `f0bf6c6`; earlier 11 focused tests, Black, Python compilation, Terraform fmt/validate, CLI help and diff checks. Start plans: infrastructure `a2b8cbeaa6cc4fc2d13ff8c8696cfa133d8134280de89f719e0d6f2b91668f55`; app start `b6a3fbd4812c965a5830780f337997d13b4b362c7eb1a73f2b3e70f5946b5bd4`. Stop-path corrections are currently uncommitted in `scripts/li02-demo`, `infra/terraform/domains/listings/test/database_tasks.tf`, both LI-02 operator guides, and this work log. `git diff --check` passed; no tests rerun. Existing untracked `data/runs/` and `database/migrations.zip` remain untouched. | Compute/ingress/disposable-database charges from the demo have ended. Retained run images add about 101 MiB of ECR storage; Step 4 bucket/IAM/log group and shared VPC/NAT/ECS/RDS remain. No manual RDS snapshot remains. | 2026-10-25 09:29:55 UTC |
 | SE-01 | Mohit (C); peer Suraj (B), Identity review | in progress | PR15 hosted Python/web/database gates pass; checksum-evidence scanner false positive corrected locally | 47714cc fixes readiness; subsequent CI reaches final secret scanner; two verified SHA256 fingerprints reformatted without scanner exemptions | Mohit verified Hybrid-default UI and requested branch push/PR | Search PR #11 worktree `task/search-evidence-reduction` at `864e53b`; new listing `194a32d4-64bb-491b-b4ec-68403e26f7f3` produced one title and one description vector (384 dimensions each), then matched in both modes through API and Vite proxy; session `/tmp/clip-listings-browser-v6e1f01t`; UI `http://127.0.0.1:5173/`  [Hybrid default UI](../evaluation/domain/se-01/hybrid-default-ui/result.json): lint86/web289pass/3skip/types/build pass;  [PR15 correction](../evaluation/domain/se-01/pr15-ci-readiness/result.json): unit11/native21/3skip/17migrations/Black2/boundaries/diff pass;  [Hosted rerun](https://github.com/exocrat/clip/actions/runs/40382575520) functional/database gates pass; evidence-format rerun pending. | Formal SE-CORE/DATA-READY and final NFR/hosted-CI acceptance remain outside this merge step | 2026-10-26 19:06:47 UTC |
@@ -8179,3 +8179,61 @@ file links and whitespace checks passed. Logs: `/tmp/clip-id01-pr-check.log` and
 reviewable runtime-preparation increment, not ID-READY acceptance; hosted CI,
 independent/affected-owner review, exact merge approval and real hosted runtime
 checks remain pending. Use the canonical peer-review prompt for this revision.
+
+### ID-01 Step12 accepted Conversations integration and migration preparation — 2026-10-27 18:33:45 UTC
+
+Aditya(A) authorized Step12 preparation and merging main. Merge479a09c includes
+accepted5e8d264(PR17/18), retaining exactly its tree before new work. Equivalent
+Firefox-safe transport formatting/comments and collaboration-record conflicts
+were resolved to accepted main. PR16 is already merged at7612fd8with hosted
+quality gate40389483146passed, so its publication/checks are no longer open.
+
+Updated the owned migration_runner.py, its tests and the existing manifest/review
+pair together:23unchanged SQL files, head20261027112205,40tables/36functions/
+46triggers. Added archived17-package and synthetic17-tracker refusal cases;
+fresh/repeat-only, prefix preservation, TLS, image-review, target and no-secret
+checks remain. The first focused run had31pass/1failure because an older test
+expected even an isolated23-file package to fail; it now exercises the intended
+unreviewed live-target refusal. Final focused32pass and strict mypy2files pass.
+All23published SQL files and prior executed17-file manifest/receipts remain
+byte-identical. No retained/shared DB upgrade is implemented or authorized;
+recorded17→23needs its own reviewed forward procedure in Step13.
+
+Final12-gate local aggregate passed:1932Python/153explicit skips,94data,
+433web/3opt-in skips, Conversations167actual SQL checks, Black296files,
+boundaries/contracts/double types/build,35wrapper cases, PostgreSQL18.6 lifecycle
+and Gitleaks8.30.1. Existing cookie/CSRF/SQL tests cover the new Contacts boundary;
+no duplicate test or full Step14 acceptance was invented. Source/manifest hashes,
+JSON, changed local Markdown file links and whitespace pass. Evidence logs:
+`/tmp/clip-id01-step12-final-check.log`,
+`/tmp/clip-id01-step12-candidate-tests-final.log`,
+`/tmp/clip-id01-step12-types.log`.
+
+The offline audit correctly returns consistent=false/ready_for_live=false solely
+for reviewed_source_unchanged: runner changes are uncommitted, so candidate source
+fields identify preparation base479a09c with an explicit pending-binding note.
+After commit approval, bind the review to the actual source revision and rerun
+that unchanged guard. All other audit checks pass; no failed gate is waived.
+`/tmp/clip-id01-step12-candidate-audit.json` retains the safe result.
+
+At2026-10-27 18:25:58UTC Aditya confirmed old Resend-key revocation and replacement
+in the existing SSM parameter; no secret/version/provider state was read. Updated
+current provider/secret guides and Identity summary/integration, command and DB
+instructions to remove stale PR/key/sender claims and separate Step12 from13.
+Local checklist/diff/privacy review is complete for this preparation increment;
+human result verification, new source-bound commit/review and real Step13
+HTTPS/runtime/provider/browser/operational-retention evidence remain pending.
+No AWS/DNS query, provider send, deployment or push occurred; ID-READY and ID-01
+remain incomplete. Full Step14 and CN-03 retain their separate task scope.
+
+### ID-01 Step12 verification and disposable-data direction — 2026-10-27 18:44:48 UTC
+
+Aditya verified the local preparation and reports that no application data needs
+preserving across database/migration changes. Prefer a separately reviewed clean
+bootstrap/reset in Step13; a custom data-preserving17→23upgrade is no longer a
+required deliverable. Existing recorded schemas/tracker still prevent a fresh
+run, so keep prefix refusal and live-review gates. This is human direction, not
+an independent SQL inspection or an executed reset. Exact target, shared-owner
+coordination and cloud/destructive execution approvals remain separate. Updated
+candidate and current handoff; source binding still awaits explicit commit
+approval. No source behavior changed or functional tests repeated.

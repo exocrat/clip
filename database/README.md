@@ -75,9 +75,12 @@ was changed. [Tool rationale](../docs/decisions/database-migration-tool.md).
 Four superseded branch-only SQL files are preserved byte-for-byte in
 [`archived/cn-01-pre-main`](archived/cn-01-pre-main/README.md), outside the executable
 chain. A target containing any archived version requires a separately reviewed
-upgrade plan; do not apply this fresh-chain procedure to it. Aditya's pinned
-17-file Identity manifest remains unchanged and intentionally rejects this larger
-chain until a new candidate is reviewed. No shared apply is authorized here.
+upgrade plan; do not apply this fresh-chain procedure to it. Aditya's
+Identity runner and unreviewed manifest candidate now pin this23-file chain.
+The recorded17-file shared target is still rejected by its fresh/repeat-only
+baseline guard. Aditya reports no application data needs preservation; the next
+target plan may use a reviewed clean bootstrap/reset. Neither this candidate nor local checks authorize a
+shared apply.
 
 The optional-pickup forward migration is under Listings writer scope; affected
 consumer/schema review and exact shared-database apply remain pending. Local

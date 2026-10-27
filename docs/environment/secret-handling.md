@@ -156,3 +156,15 @@ actual certificate chain before live use. The
 or change a shared role. Public grants, credential generation, role logging,
 scoped SSM permissions and rollback require a concrete separately approved plan.
 See the [runtime handoff](../evaluation/identity/integration.md#secure-runtime-preparation).
+
+### ID-01 email-key rotation confirmation — 2026-10-27 18:25:58 UTC
+
+Aditya confirms the previously chat-exposed Resend key was revoked and a
+replacement stored in the existing `/clip/test/identity/email-delivery`
+SecureString. This supersedes the outstanding exposed-key rotation action above.
+No key value, parameter version, provider or AWS state was read by the agent;
+new runtime loading/delivery is still a Step13 check. Fixed schema, four-hour
+refresh, recipient restrictions and access approvals are unchanged. This does not
+rotate the stable authentication keys or change database URLs. Database roles and
+URLs previously labelled proposed in the historical preparation section were
+subsequently provisioned; see the recorded [database preparation](../evaluation/identity/id-01-step-12/demo-postmortem-20261026.md#database-preparation).

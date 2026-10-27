@@ -1144,7 +1144,8 @@ certificates/passwords. Unlike the networkless socket fixtures, this fixture use
 Docker bridge plus loopback publication to test real TLS. Deletes its own container
 and synthetic private key afterward; no AWS/shared URL or real credential is used.
 
-Expected: full17file clean/repeat, real TLS hostname mismatch rejection, no secret
+Expected: pinned23file clean/repeat (head20261027112205;40tables/36functions/46triggers),
+real TLS hostname mismatch rejection, no secret
 in Docker config/args, hash/image/namespace/prefix/target refusals, real partial-DDL
 preservation and no replay, client-success structural postconditions, timed-out
 version-client cleanup, and rollback-only logging role/default checks. Full
@@ -1156,7 +1157,11 @@ requires the reviewed manifest/image, fixed target and trusted private connectio
 live use rejects the current image-review-pending manifest. `probe_logging`
 creates only a passwordless NOLOGIN probe role inside a rolled-back transaction
 and checks absence/defaults through a fresh connection. Neither function retrieves
-AWS secrets or grants cloud authorization. Read-only preflight is not permission
+AWS secrets or grants cloud authorization. The recorded17-file shared target is
+still refused: preparing this candidate does not add an incremental upgrade mode.
+That target requires a reviewed Step13 reset/bootstrap (Aditya reports no
+application data requiring preservation), or a separately approved upgrade.
+Read-only preflight is not permission
 to call these write-capable tools; exact window, SQL/role probe, metadata/secret
 access, shared-schema review and cleanup approvals remain mandatory.
 

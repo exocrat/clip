@@ -10,9 +10,9 @@ This guide contains current setup facts and pending actions, not new approval.
 
 | Provider/path | Verified | Still pending |
 | --- | --- | --- |
-| Microsoft | Real local IISc sign-in and non-IISc denial human-verified2026-10-26 04:48:20UTC after SPA correction guidance; validator/SQL and controlled browser tests passed. | Cloud/domain deployment, phone and remaining session/cache/browser acceptance; default build flag remains disabled. |
-| Resend | Domain human-reported verified; corrected adapter delivered from verify@; real local Gmail temporary registration/login/forgot-password human-verified. | ECS wiring, task-role secret access, cloud/browser/device checks, key rotation and general configuration acceptance. |
-| SES | Recorded domain/DKIM verification, real sandbox application-role delivery/inbox and owned cleanup passed2026-10-23. | Production access/configuration, current provider-state refresh and exact live verify-sender IAM update. |
+| Microsoft | Real local IISc sign-in and non-IISc denial human-verified2026-10-26 04:48:20UTC after SPA correction guidance; validator/SQL and controlled browser tests passed. | Hosted origin, mobile-browser and remaining session/cache acceptance; local Chrome/Firefox sign-in verified; default build flag remains disabled. |
+| Resend | Domain human-reported verified; corrected adapter delivered from verify@; real local Gmail temporary registration/login/forgot-password human-verified. Aditya confirms exposed-key revocation and replacement in SSM on2026-10-27 18:25:58UTC. | Current deployed secret access/configuration, cloud/browser/device and delivery checks. |
+| SES | Recorded domain/DKIM verification, real sandbox application-role delivery/inbox and owned cleanup passed2026-10-23. | Production access/configuration, current provider-state refresh; verify-sender IAM update is already recorded applied2026-10-26. |
 
 No new resource-state inspection was performed for this documentation cleanup.
 Provider acceptance/Delivered is not proof of inbox placement. Previous no-reply
@@ -66,8 +66,11 @@ No bounce/webhook-triggered retry or automatic permanent promotion is included.
 `/clip/test/identity/email-delivery`, Standard SecureString, alias/aws/ssm,
 account335523638354/ap-south-1. Version1 was created/read back by approved operator
 adityalaxmi1. Private JSON fields: version(integer1), primary(resend/ses),
-resend_api_key. Key/recipients/OTPs must stay out of chat/repo/logs. The key supplied
-in chat must be rotated privately. Operator access is not ECS task-role access.
+resend_api_key. Key/recipients/OTPs must stay out of chat/repo/logs. On
+2026-10-27 18:25:58UTC Aditya confirmed the chat-exposed key was revoked and its
+replacement stored in SSM. This is human-reported; no value/version was retrieved
+and no post-rotation delivery tested in this checkpoint. Operator access is not
+ECS task-role access.
 
 Current adapters accept at most five explicitly controlled recipients. The default
 application composition remains Identity-unbound. An explicit
@@ -86,9 +89,10 @@ and the controlled recipient identity needed by the observed sandbox denial.
 The private ses_sandbox_recipient_identity_arn Terraform input must be preserved
 until its deliberate production transition review; do not broaden identity scope.
 
-Desired source in infra/terraform/shared/test/identity-email.tf now uses exact
-verify@ FromAddress. Deployed policy still uses historical no-reply until a new
-exact reviewed Terraform plan/apply. No local edit changes AWS. SES sandbox
+Source in infra/terraform/shared/test/identity-email.tf uses exact verify@
+FromAddress. The approved2026-10-26 07:04:31UTC apply recorded that sender-condition
+update; it is not still an unperformed change. Current effective permissions and
+delivery need verification in the separately approved deployment window. SES sandbox
 recipients must remain verified; Resend fallback cannot bypass that restriction.
 SES uses task-role credentials, not static access keys/SMTP passwords. Local
 operators use their own approved non-root profile; review actual identity first.

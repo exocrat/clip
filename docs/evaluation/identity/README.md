@@ -15,28 +15,33 @@ criteria and action approvals still come from their canonical sources.
 
 ## Current state
 
-- PR #14's local Identity/marketplace hardening is merged at main `3d6c270`;
-  runtime follow-up is on `task/id-01-runtime-preparation`, integrating accepted
-  main `d7afc8b` (PR #15). It includes runtime preparation, cleanup/state evidence
-  and the locally human-verified Firefox origin fix. New source still needs its
-  own peer/affected-owner review and current CI.
-- Real local Microsoft/IISc and temporary email registration/sign-in/reset were
-  human-verified. No human hosted account/image/Search journey was accepted.
-- The original shared DB's17migrations and separate runtime roles/secure URLs have
-  [recorded real results](id-01-step-12/demo-postmortem-20261026.md#database-preparation).
-  Reusable migration defaults require fresh approval for another live window.
-- AMD64 build switch, scoped runtime IAM and private S3 configuration are useful
-  retained work. ECS runtime is opt-in with a private controlled-recipient input;
-  no personal recipient or default auth bypass is retained.
-- [Read-only cleanup verification](id-01-step-12/cleanup-verification-20261026T180723Z.json)
-  at18:09UTC confirms RDS stopped, compute0and temporary ingress absent. Aditya
-  later reports apex A removal; propagation is deliberately not rechecked.
-  [Refresh-only service reconciliation](id-01-step-12/ecs-state-reconciliation-result-20261026T182852Z.json)
-  is applied/verified: state serial18and live service both revision2, capacity0.
-  No infrastructure changes or restarts were performed.
-- ID-READY is **not accepted**. Durable HTTPS/proxy/runtime/provider checks and
-  actual image/Search/browser integration remain; Hybrid needs its separate
-  privileges/model/pipeline setup. Full Step14 stays outside this milestone.
+- Accepted main `5e8d264` includes Identity PR14/16 and Conversations PR17/18.
+  Our branch `task/id-01-runtime-preparation` merged that exact tree at479a09c.
+  PR16's hosted quality gate passed; its publication is no longer pending.
+- Real local Microsoft/IISc, temporary email registration/sign-in/reset and the
+  Firefox origin correction are human-verified. The new Identity/Conversations
+  session/contact paths have actual local SQL/HTTP checks with controlled
+  external signer/mail/storage boundaries; they do not prove deployed delivery.
+- Step12's current migration candidate pins23unchanged accepted SQL files through
+  20261027112205and40tables/36functions/46triggers. New runner/manifest changes
+  are human-verified locally; commit/source binding and review remain. Live approval stays
+  false. The original shared DB's recorded17-file apply/roles/URLs remain valid
+  historical evidence. Aditya reports no application data needs preservation;
+  Step13 now prefers a separately reviewed clean bootstrap/reset.
+- Local preparation checks pass at2026-10-27 18:33:45UTC:12aggregate gates,
+  1932Python/153skips,94data,433web/3skips, Conversations167 and focused32.
+  The separate offline source-binding guard correctly remains false until the
+  uncommitted runner has an actual reviewed source commit.
+- At2026-10-27 18:25:58UTC Aditya confirmed exposed Resend-key revocation and
+  replacement in SSM. No secret was read or delivery tested after that rotation.
+  SES production access is not a blocker to approved Resend active-provider use.
+- Last recorded cloud cleanup/reconciliation is2026-10-26: stopped RDS, compute0,
+  removed temporary ingress and state/live service revision2. These are historical
+  observations, not a fresh cloud inspection. DNS propagation is not rechecked.
+- ID-READY is **not accepted**. Remaining real acceptance is Step13's approved
+  HTTPS/runtime/provider/browser and operational retention checks, plus the final
+  Step12 source-bound handoff. Full image/Search/Hybrid/Conversations feature
+  acceptance and Step14's exhaustive consumer matrix are separate obligations.
 
 Branch cleanup verification2026-10-26 14:02:52UTC: all11local gates passed
 (1830Python/24optional skips,94data,289web/3opt-in skips), plus backend-free
