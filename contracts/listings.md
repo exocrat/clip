@@ -36,7 +36,7 @@ conversation content.
 | Negotiable | Required boolean, independent of price. Missing and `null` are invalid for a live listing. |
 | Pickup area | Optional trimmed text of 1–120 Unicode code points when supplied. Create omission/null means not provided; a full replacement requires the nullable field and uses null to clear it. Empty/whitespace-only API strings are invalid. Absence is stored/exposed as null; the UI shows Not specified. It is a general collection area, not an exact address or contact channel. See the [corrected field decision](../docs/decisions/catalogue-and-listing-limits.md). |
 | Availability window | `available_from` defaults to the server creation instant when omitted. `available_until` is nullable and, when present, must be later than the start. Both use shared UTC instants. |
-| Seller availability | `available` or `unavailable`, changed only by the owner. It is separate from the time window and selected buyer; the end instant does not rewrite seller status. |
+| Seller availability | `available` or `unavailable`, changed only by the owner. The availability command is separate from selection and the time window; the end instant does not rewrite seller status. Setting a selected buyer is the exception: Listings atomically records the selection and marks the listing `unavailable`. |
 | Sensitive flag | Computed, never client-authoritative: sensitive category OR asking price strictly greater than the configured threshold. `mobile_phone` and `laptop` are sensitive categories at every price. The provisional configurable default is ₹5,000 (500,000 paise), owned by Listings; see the [threshold decision](../docs/decisions/sensitive-purchase-threshold.md). It may be changed through a reviewed configuration update. |
 | Proof declaration | Optional nullable seller statement. It is displayed as unverified and never implies platform authentication or inspection. |
 | Images | A live/publishable listing has 1–8 confirmed usable images. Accept JPEG, PNG or WebP, positive size and at most 10 MiB each. Only controlled image references are exposed; object keys, upload credentials and provider details are not. LI-02 owns upload, actual-object validation and delivery; this contract does not invent a URL, CDN or storage credential shape. |
@@ -201,9 +201,17 @@ eligible seller may select an eligible buyer from an existing listing
 conversation, even without a submitted offer, only while the listing is
 available and inside its window. Listings uses Conversations' participant
 check rather than trusting a client-supplied buyer/conversation relationship.
-The seller may clear or replace the selection through Listings. Selection is
-not offer acceptance, a reservation, a payment state or a handover guarantee;
-it does not change availability. Withdrawing an offer does not clear selection.
+The seller may clear the selection through Listings. To select a different
+buyer after selection made the listing unavailable, the seller must explicitly
+reopen it first; the replacement selection then marks it unavailable again.
+Setting selection and marking the listing `unavailable` happen atomically through the
+same revision-checked, idempotent Listings command; preserve the current
+availability window and selected buyer/conversation pair. A failed or
+conflicting command changes neither. Clearing selection does not reopen the
+listing. Selection is not offer acceptance, a reservation, a payment state or a
+handover guarantee. Withdrawing an offer does not clear selection. The separate
+seller availability action may mark a listing unavailable without selecting a
+buyer.
 The current selected-buyer state is visible only to the owner through
 owner-authorized Listings responses. It is not returned to conversation
 participants or in public listing discovery. Any buyer-facing notice is a

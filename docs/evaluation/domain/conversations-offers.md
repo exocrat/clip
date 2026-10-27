@@ -19,7 +19,7 @@ There is no unresolved offer-status or seller-selection product decision.
 | Amount and notes | Nonnegative integer paise, whole rupees including zero. Amount/status are structured; optional notes are encrypted. See [private payload decision](../../decisions/private-offer-and-contact-payloads.md) and canonical OfferRevisionRequest/OfferView in contracts/source/types.py. |
 | Write boundary | Listings serializes availability/window/retirement and current participant eligibility, then calls Conversations to persist its owned offer. Withdrawal remains allowed after ordinary unavailability. See [Listings contract](../../../contracts/listings.md#selection-and-listing-based-offer-commands). |
 | Concurrency and retry | Expected revision guards updates; identical operation retries return their original result, changed reuse conflicts. Content removal must not allow an old operation to recreate payload. Check ambiguous outcomes and availability changes in Step3. |
-| Seller selection | Listings owns setting, clearing and replacing an eligible conversation buyer, including buyers without offers. Selection does not change availability. Selected buyer is owner-only data. |
+| Seller selection | Listings owns setting, clearing and replacing an eligible conversation buyer, including buyers without offers. Setting a buyer now also atomically marks the listing unavailable; clearing does not reopen it. Selected buyer is owner-only data. |
 | Seller overview | Group by owned origin, filter by partner/origin/offer; retain no-offer threads. Default last activity DESC/ID DESC; amount sort places missing offers last with the same ties. Grouping must respect bounded pagination rather than claim a page is the complete listing inventory. See [combined registry](../../../contracts/combined.md#conversations-http-operations). |
 | Contact sharing | Confirm membership first, then Identity's trusted actor/conversation/confirmed-field scope. Return only selected, still-present own values to the client for encryption. Store field labels with values inside ciphertext. See [Identity sharing boundary](../../decisions/identity-contact-sharing-and-cleanup.md). |
 | Retention | Offer notes/revisions share the 90-day inactivity policy. Each contact share has its own 30-day payload/label lifetime. Content-free references survive; the new 30-day cleanup mechanism still requires its concrete Step8 review. See [existing cleanup mechanism](../../decisions/conversation-content-cleanup.md). |
@@ -31,7 +31,7 @@ There is no unresolved offer-status or seller-selection product decision.
 | --- | --- | --- |
 | Schema | `conversations.offers`, `offer_revisions` and `contact_shares` already exist, with pair uniqueness, ordered entries and current-revision constraints. | Step2 reuses those structures. Step3 adds only original expected-revision metadata needed for exact retries, through a forward migration; all21 prior migrations remain byte-identical. |
 | Offer boundary | Listings service/routes gate submit/revise/resubmit and withdrawal; Conversations now persists revisions and provides member-only current-offer reads. | Step3 checks role/eligibility, availability ordering, exact retry intent, revision races, encrypted-note references, retention expiry and safe failure behavior through the real adapters. |
-| Selection | Listings owns the HTTP operation, revision/idempotency handling and participant check through the concrete Conversations provider. | Step5 now composes that public endpoint into the seller's Sale Listing conversation view; human browser checkpoint and affected-owner review remain pending. |
+| Selection | Listings owns the HTTP operation, revision/idempotency handling and participant check through the concrete Conversations provider. | Step5 composes the public endpoint into the seller's Sale Listing conversation view. The current implementation predates the amended atomic-unavailable behavior and must be updated before the browser checkpoint is repeated. |
 | Availability | Listings has owner-authorized PUT availability, plus its private feature client. | Expose a bounded public Listings feature action for done-deal UI; Conversations must not import listingsApi.ts privately. |
 | Inbox | Conversations queries support membership-scoped origin/partner/offer filters and stable amount ordering; the frontend now consumes those queries and groups only the returned page. | Origin and partner names are not in the current summary contract, so the inbox shows shortened IDs. A reviewed public display-context interface remains a separate B/C/Identity integration; no feature-private lookup is used. |
 | Contacts | Identity implements public options/selected-own-contact providers and trusted disclosure scopes. | Conversations prepare/share HTTP operations and encrypted client flow are still absent. Use the real Identity interface when bound; unbound/error state must fail safely. |
@@ -134,7 +134,7 @@ storage together with those operations, preserving the approved retention rules.
 Rahul verified Step2. Next: implement the real offer persistence/read
 operations through the existing Listings and Conversations public boundaries.
 
-## Step5 seller-selection implementation — 2026-10-27 (browser check pending)
+## Step5 seller-selection implementation — 2026-10-27 (behavior amendment pending)
 
 The Conversation page now injects a narrow Listings selection capability through
 the existing public feature export. The authorized Conversations summary gates
@@ -154,7 +154,11 @@ check and synthetic fixed identities. Gitleaks8.30.1, Black and whitespace
 checks passed. Full details and file responsibilities are recorded in the
 Step5 work-log entry.
 
-Rahul's interactive seller/buyer browser check is still pending at
+The user then clarified that selecting a buyer must also mark the listing
+unavailable. The existing code and test results above cover the earlier
+selection-only behavior and do not verify the amended availability effect.
+Update Listings' command transaction and its public/UI tests before repeating
+the interactive seller/buyer browser check at
 `http://127.0.0.1:5273/my/conversations` and
 `http://127.0.0.1:5274/my/conversations`. The check is local-only and does not
 prove real Identity sign-in or overall CN-CORE/ID-READY/LI-CORE acceptance.

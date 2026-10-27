@@ -54,7 +54,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | SE-02 | Mohit (C); peer Suraj (B), Identity/Conversations review | in progress | Step8 real integration gated; local handoff human-verified | Steps1–7 isolated result verified; Step8 audit performed | Mohit verified isolated UI and combined local handoff | [Search handoff](../evaluation/domain/search-handoff/result.json): Python1270/data94/web144,Black183,native20/3skip,wrapper35/contracts8/boundaries/parity/type/build pass | Await actual ID-READY/LI-CORE/SE-CORE/C adapters; Step9 final acceptance, pinned secrets/hosted CI and independent review pending | 2026-10-25 08:50:43 UTC |
 | MERGE-LI-SE | Suraj (integration); Listings/Search affected owners | done | PR #11 is squash-merged; Search–Listings local merge task is complete | Steps 1–9 performed; approved PR head `2a43066` merged to `main` as `e315c9d`; final hosted CI run `40204621122` passed | Steps 3–8 verified by Suraj; user authorized squash merge of the exact PR revision on 2026-10-25 | PR #11 `https://github.com/exocrat/clip/pull/11`; source head `2a430660d25e7c14cf33d84bd78172db4ec063c7`; squash merge `e315c9df3e0e11d6e9c8d7d244d676204d3af7e8`; hosted CI `40204621122`; local merge commit `29eb6fb`; fallback branch `safety/search-pr11-pre-main-reconciliation-20261025`; stash `af9d7f5`; local checks recorded below | No blocker for the Search–Listings merge. Final dataset, formal NFR/cloud checks, and real Identity/Conversations remain later work. | 2026-10-25 15:17:46 UTC |
 | CN-01 | Rahul (D) | in progress | PR17 integration merged; final CN-01/readiness/NFR obligations remain | Accepted main b09978e contains reviewed head3773931; hosted run40402518748 passed; prior local aggregate1930Python/403web and Conversations114 | Rahul verified local correction and confirmed PR merged; no additional milestone acceptance inferred | [PR17](https://github.com/exocrat/clip/pull/17), merge `b09978e91620ae3877a77c5bea8a4f12df7a8907`; [integration checkpoint](../evaluation/domain/conversations-integration.md) | Formal readiness/remaining device and security checks; CN-03 producer path and final NFR-05; full task acceptance pending | 2026-10-27 06:16:43 UTC |
-| CN-02 | Rahul (D); Aditya/Suraj review | in progress | Step5 seller-selection implementation ready for human browser verification | Pinned Node24/npm11 web gate: 417 passed/3 skipped, lint, typecheck/build; disposable Listings PostgreSQL check 21 passed/3 skipped; two-domain browser harness selection/clear check, Gitleaks8.30.1, Black and whitespace pass | Rahul verified Step5 plan at 2026-10-27 08:08:11 UTC; human browser check is pending | `task/cn-02-offers-contact-sharing`; Step5 implementation checkpoint; [checkpoint](../evaluation/domain/conversations-offers.md) | Record seller/buyer browser result before marking Step5 verified; Step8 cleanup review and actual dependency/affected-owner acceptance gates remain | 2026-10-27 08:08:11 UTC |
+| CN-02 | Rahul (D); Aditya/Suraj review | in progress | Step5 behavior amended: selecting a buyer must also atomically mark the listing unavailable; implementation and browser re-verification pending | Prior Step5 code checks passed for selection-only behavior; they do not verify the amended availability effect | Rahul verified the revised Step1 contract/decision update at 2026-10-27 08:18:21 UTC; browser check for the old behavior is superseded | `task/cn-02-offers-contact-sharing`; Step5 behavior amendment; [checkpoint](../evaluation/domain/conversations-offers.md) | Update Listings command and UI, run atomicity/retry/browser checks, then obtain Suraj's affected-owner review; Step8 cleanup review and actual dependency gates remain | 2026-10-27 08:18:21 UTC |
 | CN-03 | A; D producer review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | CN-CORE, ID-READY | — |
 | INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
 | EXP-01 | C | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | INT-01 | — |
@@ -215,6 +215,31 @@ removes only its disposable PostgreSQL data on stop. Confirm the seller sees and
 can use selection in the no-offer thread, the buyer does not see the control,
 and the confirmation is clear. Step5 is not marked human-verified yet. No cloud,
 shared database, migration, generated contract, push or merge operation occurred.
+
+## CN-02 Step5 behavior amendment — 2026-10-27 08:18:21 UTC
+
+Rahul directed that setting a selected buyer must also make the Sale Listing
+unavailable, then verified the documentation-only implementation plan. This
+changes the previously recorded offer-lifecycle decision that selection left
+availability unchanged. The Listings and combined contracts now specify that
+the owner-authorized selection command atomically writes selected buyer and
+conversation plus `availability=unavailable`, preserving the current window
+under the existing revision/idempotency transaction. Failed/conflicting writes
+change neither value; clearing selection does not reopen. Selection still does
+not mean offer acceptance, reservation, payment/handover verification, or a
+completed deal. The separate **Mark as done deal** action remains for taking a
+listing off-market without selecting a buyer.
+
+Updated the evaluation checkpoint so prior Step5 tests and browser instructions
+are not mistaken for verification of the new behavior. No application code was
+changed in this documentation step; implementation, updated automated tests,
+interactive browser verification and Suraj's Listings-owner review remain next.
+`git diff --check` passed, and the changed contract/decision passages were
+cross-checked for consistent set/clear/reopen semantics. The generated-contract
+check was attempted but refused this environment's Node 26/npm 12 (CI pins Node
+24.22.0); it is not required for these prose-only contract edits. No dedicated
+Markdown link checker is configured. No push, cloud action, shared database
+operation, or merge was performed.
 
 ## CN-01 merge closeout and CN-02 Step1 — 2026-10-27 06:16:43 UTC
 
