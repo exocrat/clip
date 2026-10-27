@@ -53,8 +53,8 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | SE-01 | Mohit (C); peer Suraj (B), Identity review | in progress | PR15 hosted Python/web/database gates pass; checksum-evidence scanner false positive corrected locally | 47714cc fixes readiness; subsequent CI reaches final secret scanner; two verified SHA256 fingerprints reformatted without scanner exemptions | Mohit verified Hybrid-default UI and requested branch push/PR | Search PR #11 worktree `task/search-evidence-reduction` at `864e53b`; new listing `194a32d4-64bb-491b-b4ec-68403e26f7f3` produced one title and one description vector (384 dimensions each), then matched in both modes through API and Vite proxy; session `/tmp/clip-listings-browser-v6e1f01t`; UI `http://127.0.0.1:5173/`  [Hybrid default UI](../evaluation/domain/se-01/hybrid-default-ui/result.json): lint86/web289pass/3skip/types/build pass;  [PR15 correction](../evaluation/domain/se-01/pr15-ci-readiness/result.json): unit11/native21/3skip/17migrations/Black2/boundaries/diff pass;  [Hosted rerun](https://github.com/exocrat/clip/actions/runs/40382575520) functional/database gates pass; evidence-format rerun pending. | Formal SE-CORE/DATA-READY and final NFR/hosted-CI acceptance remain outside this merge step | 2026-10-26 19:06:47 UTC |
 | SE-02 | Mohit (C); peer Suraj (B), Identity/Conversations review | in progress | Step8 real integration gated; local handoff human-verified | Steps1–7 isolated result verified; Step8 audit performed | Mohit verified isolated UI and combined local handoff | [Search handoff](../evaluation/domain/search-handoff/result.json): Python1270/data94/web144,Black183,native20/3skip,wrapper35/contracts8/boundaries/parity/type/build pass | Await actual ID-READY/LI-CORE/SE-CORE/C adapters; Step9 final acceptance, pinned secrets/hosted CI and independent review pending | 2026-10-25 08:50:43 UTC |
 | MERGE-LI-SE | Suraj (integration); Listings/Search affected owners | done | PR #11 is squash-merged; Search–Listings local merge task is complete | Steps 1–9 performed; approved PR head `2a43066` merged to `main` as `e315c9d`; final hosted CI run `40204621122` passed | Steps 3–8 verified by Suraj; user authorized squash merge of the exact PR revision on 2026-10-25 | PR #11 `https://github.com/exocrat/clip/pull/11`; source head `2a430660d25e7c14cf33d84bd78172db4ec063c7`; squash merge `e315c9df3e0e11d6e9c8d7d244d676204d3af7e8`; hosted CI `40204621122`; local merge commit `29eb6fb`; fallback branch `safety/search-pr11-pre-main-reconciliation-20261025`; stash `af9d7f5`; local checks recorded below | No blocker for the Search–Listings merge. Final dataset, formal NFR/cloud checks, and real Identity/Conversations remain later work. | 2026-10-25 15:17:46 UTC |
-| CN-01 | Rahul (D) | in progress | Participant-key readiness correction complete; latest main merged; prepare and validate PR | All12 combined `make check` gates passed: Python1930/100skip, data94, web403/3skip, DB114, migrations, Black, types, contracts, boundaries, wrapper and secrets | Rahul verified Steps1–3; current-main reconciliation awaits verification | `task/cn-01-conversations`; current base `7612fd8747ee053701a7316ef9b93dedc5d10cdb`; [integration checkpoint](../evaluation/domain/conversations-integration.md); temporary harness stays uncommitted under/tmp | Current hosted CI and independent Aditya/affected-owner review; exact merge authorization; full CN-01 later gates remain | 2026-10-26 21:10:00 UTC |
-| CN-02 | D; A/B interface review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | Isolated development: PRE-00, then DL-00 and a reviewed contract/stub. Later real gates: CN-CORE, ID-READY, and LI-CORE for listing-origin behavior; SE-02 plus CN-01's real request path for request-response inbox integration. | — |
+| CN-01 | Rahul (D) | in progress | PR17 integration merged; final CN-01/readiness/NFR obligations remain | Accepted main b09978e contains reviewed head3773931; hosted run40402518748 passed; prior local aggregate1930Python/403web and Conversations114 | Rahul verified local correction and confirmed PR merged; no additional milestone acceptance inferred | [PR17](https://github.com/exocrat/clip/pull/17), merge `b09978e91620ae3877a77c5bea8a4f12df7a8907`; [integration checkpoint](../evaluation/domain/conversations-integration.md) | Formal readiness/remaining device and security checks; CN-03 producer path and final NFR-05; full task acceptance pending | 2026-10-27 06:16:43 UTC |
+| CN-02 | Rahul (D); Aditya/Suraj review | in progress | Step1 contract/interface audit performed; verify before Step2 storage inventory | Lifecycle, owned interfaces and implementation gaps recorded; done-deal button added to Step6; documentation checks only | Rahul verified full plan and Step1 execution scope; result awaits verification | `task/cn-02-offers-contact-sharing`, base b09978e; [checkpoint](../evaluation/domain/conversations-offers.md) | Real acceptance requires CN-CORE/ID-READY/LI-CORE and request-origin checks; Step8 cleanup mechanism review; affected-owner/peer review | 2026-10-27 06:16:43 UTC |
 | CN-03 | A; D producer review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | CN-CORE, ID-READY | — |
 | INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
 | EXP-01 | C | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | INT-01 | — |
@@ -82,6 +82,33 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | DATA-READY | not accepted | SE-01 steps 2/4/9 | — | pending |
 | CN-CORE | not accepted | CN-01 step 10 | — | pending |
 | OPTIONAL-OK | not approved | Each optional task's selection/priority plan | — | pending |
+
+## CN-01 merge closeout and CN-02 Step1 — 2026-10-27 06:16:43 UTC
+
+Verified PR17 merged at2026-10-27 05:43:33 UTC as main
+`b09978e91620ae3877a77c5bea8a4f12df7a8907`; reviewed head3773931 passed hosted
+run40402518748. Rahul confirmed the merge, selected CN-02 and verified its
+twelve-step plan including the seller-only done-deal action. Created
+`task/cn-02-offers-contact-sharing` from that accepted main after finding no
+local/tracked CN-02 branch or open PR. Two unpublished CN-01 documentation commits remain
+on the old branch; no history was rewritten or carried over implicitly.
+
+Step1 checkpoint maps the approved lifecycle to actual schema, public ports and
+UI boundaries: offer tables, Listings guards/selection/availability, Identity
+contact scopes and inbox query filters exist; concrete offer persistence and
+contact-share flows remain to implement. No unresolved status/selection product
+decision was found. Step2 must reuse existing tables. Step6 must preserve the
+availability end date explicitly because null/omission clears it in the existing
+command. The offer decision and CN-02 task now record **Mark as done deal** beside
+the seller's grouped-listing heading. Its action marks unavailable through
+Listings and preserves selection/window and existing thread access.
+
+No application/schema/generated file changed and no test double was used.
+Documentation target/whitespace checks and Gitleaks8.30.1 source scan passed;
+application tests were not needed.
+Step1 awaits verification; next is Step2 storage inventory. Formal readiness and
+actual integration/cleanup/review gates remain listed in the checkpoint. No cloud
+or shared database action occurred.
 
 ## CN-01 — Participant-key readiness correction Step3 — 2026-10-26 20:56:57 UTC
 

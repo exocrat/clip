@@ -26,6 +26,18 @@ Keeps the current offer unambiguous while preserving negotiations and avoiding a
 ## Implications
 PD-08 adds cardinality/status/revision constraints after full schema review. DL-00/CN-02 must define exact API/concurrent-state/duplicate behavior consistent with these approved availability and selection rules. Listings owns the availability-gated offer command and calls Conversations to persist offer records; Conversations never calls Listings. Withdrawal does not authorize Conversations to write Listings state. Retention/retirement follows the approved lifecycle decisions; crypto compatibility and real participant/selection integration remain explicit gates.
 
+## Seller availability action clarification — 2026-10-27
+
+Rahul requested and verified a seller-only **Mark as done deal** button beside
+the listing heading in the grouped Conversations view, to be implemented in CN-02
+Step6. The action explicitly calls Listings' existing availability command to
+set the listing unavailable, preserving its window and buyer selection. Existing
+threads stay accessible and the listing follows the existing unavailable
+discovery/My Listings rules. Selection and this explicit availability action
+remain separate. The label records a seller action and does not create a
+platform-verified payment, handover or new deal state. Listings-owner code review
+remains required for the concrete UI/public-boundary integration.
+
 ## Approver
 Mohit (C), explicit approval of the five-part offer-lifecycle proposal. The user later confirmed the PD-08 Conversations/Listings affected-owner gate complete on 2026-10-19; see the [work-log reconciliation](../status/work-log.md#resolved-integration-evidence). CN-02/LI-02 retain their implementation and concurrency checks.
 
