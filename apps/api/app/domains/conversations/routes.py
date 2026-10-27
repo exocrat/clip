@@ -29,6 +29,9 @@ from app.contracts.domain_types import (
     PublicPreKeyBatchRequest,
     PublicPreKeyBatchView,
     OfferView,
+    ContactOptionsView,
+    ContactPreparationRequest,
+    SelectedOwnContacts,
 )
 from app.core.auth import CallerContext, require_caller
 from app.core.errors import ERRORS, PublicError
@@ -37,6 +40,7 @@ from app.domains.conversations.queries import PostgresConversationQueries
 from app.domains.conversations.key_directory import PostgresKeyDirectory
 from app.domains.conversations.provider import PostgresConversationServices
 from app.domains.conversations.offers import PostgresOfferOperations
+from app.domains.conversations.contacts import PostgresContactPreparation
 
 router = APIRouter(
     tags=["conversations"],
@@ -94,6 +98,45 @@ def _pool(request: Request) -> AsyncConnectionPool:
 def _operations(request: Request) -> PostgresMessageOperations:
     """Keep the message adapter bound to the shared process pool."""
     return PostgresMessageOperations(_pool(request))
+
+
+@router.get(
+    "/conversations/{conversation_id}/contact-options",
+    response_model=ContactOptionsView,
+    operation_id="conversations_read_contact_options",
+    summary="conversations_read_contact_options",
+)
+async def read_contact_options(
+    conversation_id: UUID,
+    request: Request,
+    response: Response,
+    caller: CallerContext = Depends(require_caller),
+) -> ContactOptionsView:
+    """Read only the authenticated participant's own contact availability flags."""
+    response.headers["Cache-Control"] = "no-store"
+    return await PostgresContactPreparation(_pool(request)).read_options(
+        caller, conversation_id
+    )
+
+
+@router.post(
+    "/conversations/{conversation_id}/contact-preparations",
+    response_model=SelectedOwnContacts,
+    operation_id="conversations_prepare_own_contact_share",
+    summary="conversations_prepare_own_contact_share",
+)
+async def prepare_own_contacts(
+    conversation_id: UUID,
+    payload: ContactPreparationRequest,
+    request: Request,
+    response: Response,
+    caller: CallerContext = Depends(require_caller),
+) -> SelectedOwnContacts:
+    """Return confirmed own fields ephemerally for client encryption; persist nothing."""
+    response.headers["Cache-Control"] = "no-store"
+    return await PostgresContactPreparation(_pool(request)).prepare(
+        caller, conversation_id, payload
+    )
 
 
 @router.post(

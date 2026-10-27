@@ -54,7 +54,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | SE-02 | Mohit (C); peer Suraj (B), Identity/Conversations review | in progress | Step8 real integration gated; local handoff human-verified | Steps1–7 isolated result verified; Step8 audit performed | Mohit verified isolated UI and combined local handoff | [Search handoff](../evaluation/domain/search-handoff/result.json): Python1270/data94/web144,Black183,native20/3skip,wrapper35/contracts8/boundaries/parity/type/build pass | Await actual ID-READY/LI-CORE/SE-CORE/C adapters; Step9 final acceptance, pinned secrets/hosted CI and independent review pending | 2026-10-25 08:50:43 UTC |
 | MERGE-LI-SE | Suraj (integration); Listings/Search affected owners | done | PR #11 is squash-merged; Search–Listings local merge task is complete | Steps 1–9 performed; approved PR head `2a43066` merged to `main` as `e315c9d`; final hosted CI run `40204621122` passed | Steps 3–8 verified by Suraj; user authorized squash merge of the exact PR revision on 2026-10-25 | PR #11 `https://github.com/exocrat/clip/pull/11`; source head `2a430660d25e7c14cf33d84bd78172db4ec063c7`; squash merge `e315c9df3e0e11d6e9c8d7d244d676204d3af7e8`; hosted CI `40204621122`; local merge commit `29eb6fb`; fallback branch `safety/search-pr11-pre-main-reconciliation-20261025`; stash `af9d7f5`; local checks recorded below | No blocker for the Search–Listings merge. Final dataset, formal NFR/cloud checks, and real Identity/Conversations remain later work. | 2026-10-25 15:17:46 UTC |
 | CN-01 | Rahul (D) | in progress | PR17 integration merged; final CN-01/readiness/NFR obligations remain | Accepted main b09978e contains reviewed head3773931; hosted run40402518748 passed; prior local aggregate1930Python/403web and Conversations114 | Rahul verified local correction and confirmed PR merged; no additional milestone acceptance inferred | [PR17](https://github.com/exocrat/clip/pull/17), merge `b09978e91620ae3877a77c5bea8a4f12df7a8907`; [integration checkpoint](../evaluation/domain/conversations-integration.md) | Formal readiness/remaining device and security checks; CN-03 producer path and final NFR-05; full task acceptance pending | 2026-10-27 06:16:43 UTC |
-| CN-02 | Rahul (D); Aditya/Suraj review | in progress | Step6 done-deal action browser-verified; Step7 contact preparation next | Web424/3skip, lint118/types/build; real two-domain SQL/API availability/selection/retry/buyer-denial checks; Black/boundaries/Gitleaks pass; available Node26/npm12 differs from required24/11 | Rahul verified Step6 browser checkpoint at 2026-10-27 10:31:38 UTC | `task/cn-02-offers-contact-sharing`; implementation `396a0c9`; [checkpoint](../evaluation/domain/conversations-offers.md) | Step7 plan verification; affected-owner review, required toolchain CI, Step8 cleanup review and actual dependency gates remain | 2026-10-27 10:31:38 UTC |
+| CN-02 | Rahul (D); Aditya/Suraj review | in progress | Step7 contact preparation implemented; human browser verification pending | Conversations SQL160; actual cookie/CSRF integration1; web427/3skip, lint120/types/build; local two-actor API/Black/boundaries/Gitleaks pass; Node26/npm12 differs from required24/11 | Rahul verified Step7 scope; Steps5–6 browser checkpoints verified | `task/cn-02-offers-contact-sharing`; [checkpoint](../evaluation/domain/conversations-offers.md) | Step7 browser verification; Step8 encryption/cleanup-method review, affected-owner review, required toolchain CI and actual dependency gates remain | 2026-10-27 10:45:19 UTC |
 | CN-03 | A; D producer review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | CN-CORE, ID-READY | — |
 | INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
 | EXP-01 | C | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | INT-01 | — |
@@ -322,6 +322,44 @@ control and retained chat flow. Browser/version/viewport details were not
 supplied. Stopped the local preview and its helper-owned disposable database;
 released the shared Step6 writer reservation. Step6 is human-verified and Step7
 contact preparation is next; affected-owner and readiness gates remain pending.
+
+## CN-02 Step7 — Explicit own-contact preparation — 2026-10-27 10:45:19 UTC
+
+Rahul verified the Step7 scope. Added `conversations/contacts.py` and the two
+already-declared HTTP routes. The service checks membership and the local
+no-write marker using Conversations rows, then installs Identity's server-only
+scope inside the request and calls only public Identity ports. Options expose
+own availability flags; confirmed preparation requests exact distinct fields,
+returns only current own values and persists no values, entries or activity.
+Identity handles current account status and removed fields. Unbound providers
+fail503; wrong actor or unselected/partial provider output cannot leak values.
+
+`ConversationContactPreparation.tsx` adds deliberate choose/review/confirm/cancel
+steps in the authorized Conversation page. API methods validate flag-only and
+selected-only responses. Values are discarded without DOM/state/storage/logging;
+the UI explicitly says nothing was sent because encrypted publication is Step8.
+The local helper initializes synthetic source contacts through Identity's own
+editing service and binds real providers per request while clearing ambient
+claims; its HTTP check proves preparation does not change conversation activity.
+The walkthrough and domain README explain these exact limits.
+
+The registered disposable Conversations suite passed160 cases including4 new
+real Identity-contact/Conversation cases. The existing actual-cookie shared-app
+workflow was extended and passed: publish a listing, start a temporary buyer's
+thread, edit own contacts, fetch flags/selected email, reject missing CSRF,
+foreign Origin, removed fields and a nonmember, while preserving entries and
+activity. External Microsoft/mail/object storage are controlled; no caller
+override is used in that cookie workflow. Initial tests caught an invalid
+synthetic email suffix and an inline generated ContactField type; fixtures and
+the client-derived type now match the actual Identity/generated contracts.
+
+Web427/3 existing skips and lint120 passed; final app/test types and build pass.
+Node26.8.2/npm12.0.2 is available here; required24/11 CI remains pending. Black,
+boundaries0, whitespace and Gitleaks8.30.1 pass, as does the actual two-actor
+browser API check. No migration, package, generated declaration, shared-database,
+cloud, push or merge change occurred. Human preparation-flow verification and
+Aditya's Identity/security review remain pending. Step8 encryption/30-day cleanup
+requires its own verified scope and concrete destructive-method review.
 
 ## CN-01 merge closeout and CN-02 Step1 — 2026-10-27 06:16:43 UTC
 

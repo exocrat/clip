@@ -5,6 +5,7 @@ import type { ConversationEntry, ConversationSummary, KeyBundle } from '../../..
 import { ConversationApiError, type ConversationApi } from './api';
 import { ConversationListingSelection, isSellerSaleListingConversation, type ListingSelectionPort } from './ConversationListingSelection';
 import { ConversationListingDoneDeal, type ListingAvailabilityPort } from './ConversationListingDoneDeal';
+import { ConversationContactPreparation } from './ConversationContactPreparation';
 import { ConversationCryptoError, ConversationKeyChangeRequiredError, ConversationKeyStateLostError,
   KeyRegistrationAcknowledgementRequiredError, type ConversationReceiveContext } from './crypto';
 import { ConversationInbox, type ConversationInboxFilters, type ConversationInboxItem } from './ConversationInbox';
@@ -388,6 +389,7 @@ function ConversationDetailSession({ conversationId }: { conversationId: string 
   return <section aria-label="Conversation page">
     <p><Link to="/my/conversations">Back to conversations</Link></p>
     <h2>{pageSummary?.origin_kind === 'sale_listing' ? 'Sale listing conversation' : pageSummary ? 'Wanted request conversation' : 'Private conversation'}</h2>
+    {authorizedSummary ? <ConversationContactPreparation key={conversationId} conversationId={conversationId} api={runtime.api} /> : null}
     {authorizedSummary && isSellerSaleListingConversation(authorizedSummary) ? (
       <ConversationListingSelection
         key={`${authorizedSummary.origin_id}:${authorizedSummary.conversation_id}`}

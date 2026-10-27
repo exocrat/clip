@@ -34,7 +34,7 @@ There is no unresolved offer-status or seller-selection product decision.
 | Selection | Listings owns the HTTP operation, revision/idempotency handling and participant check through the concrete Conversations provider. | Step5 atomically selects the buyer and marks the listing unavailable; dates are preserved and clearing does not reopen. Rahul verified the updated local browser flow; affected-owner review remains pending. |
 | Availability | Listings has owner-authorized PUT availability; the public feature export now supplies the seller inbox action. | Step6 automated checks and Rahul's local browser checkpoint pass; affected-owner review remains pending. |
 | Inbox | Conversations queries support membership-scoped origin/partner/offer filters and stable amount ordering; the frontend now consumes those queries and groups only the returned page. | Origin and partner names are not in the current summary contract, so the inbox shows shortened IDs. A reviewed public display-context interface remains a separate B/C/Identity integration; no feature-private lookup is used. |
-| Contacts | Identity implements public options/selected-own-contact providers and trusted disclosure scopes. | Conversations prepare/share HTTP operations and encrypted client flow are still absent. Use the real Identity interface when bound; unbound/error state must fail safely. |
+| Contacts | Identity implements public options/selected-own-contact providers and trusted disclosure scopes; Conversations now implements member-authorized options/preparation with explicit UI confirmation. | Step7 real SQL and cookie/CSRF integration pass; human browser verification pending. Encrypted publication and 30-day cleanup remain Step8. |
 | Client crypto | OpenE2EE13.0.0 and IndexedDB text-message sessions are implemented. | Confirm typed offer/contact payload context and ciphertext-only envelope requirements against real SDK behavior before wiring private notes/shares. No plaintext fallback. |
 | Frontend map | Actual ScaffoldPages uses ConversationInboxPage and ConversationDetailPage through ConversationRuntime. | Older implementation-table rows still mention placeholders. Reconcile those rows and reserve any shared composition before Step4 edits. |
 
@@ -191,6 +191,31 @@ browser walkthrough. Rahul verified the Step6 checkpoint at 2026-10-27
 10:31:38 UTC against `396a0c9`; browser/version/viewport details were not supplied.
 The temporary preview was stopped and its disposable database removed.
 Affected-owner review remains pending. Step7 contact preparation is next.
+
+## Step7 contact preparation — 2026-10-27 (browser verification pending)
+
+The new Conversations contact service checks membership and its local no-write
+marker before installing Identity's exact actor/conversation/confirmed-field
+scope. The existing declared options/preparation HTTP routes now use the real
+Identity public dispatch. Options reveal flags only; confirmed preparation
+returns selected current own values ephemerally, with no entries or activity
+updates. Duplicate/unsupported fields, removed values, nonmembers, missing
+providers and malformed/unselected provider results fail safely.
+
+The Conversation page offers choose, review, confirm and cancel steps. It does
+not show or retain returned values and explicitly says nothing was sent;
+encrypted publication is Step8. API validators reject unselected response fields.
+The local helper uses Identity's own editing service for synthetic source
+contacts and binds its real providers per request, clearing ambient claims.
+
+Checks:160 real Conversations PostgreSQL cases, including4 preparation cases;
+the shared real-cookie workflow with regular seller/temporary buyer also passes
+contact editing/options/preparation, CSRF/Origin/member checks and no entry
+creation. External Microsoft/mail/object storage remain controlled in that
+workflow. Web427/3 existing skips, lint120, app/test types, build, boundaries,
+Black, Gitleaks and the local two-actor API check pass on available Node26/npm12.
+Required Node24/npm11 CI, human browser verification and affected-owner review
+remain pending. No migration, dependency or generated-contract change is needed.
 
 ## Step3 implementation scope (awaiting human verification)
 

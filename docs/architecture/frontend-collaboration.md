@@ -512,3 +512,14 @@ Other routes/app-shell changes, contact sharing and cloud work are outside scope
 Released at 2026-10-27 10:31:38 UTC after Rahul verified the local browser
 checkpoint at `396a0c9`. Further shared composition edits require their own
 bounded writer scope.
+
+## CN-02 Step7 contact preparation checkpoint
+
+Rahul (D) is the verified writer for Conversations-owned contact preparation,
+its existing Conversation page slot/API client, tests and local browser helper.
+The component reads availability only after the user opens the flow and submits
+selected field names only after a separate confirmation. Returned own values
+are transient and are neither displayed nor retained while Step8 publication is
+absent. Identity calls use its public interface and server-only scoped claims;
+Aditya reviews that integration. Shared page routes/runtime/core/generated files
+are unchanged. Step8 encryption/storage/cleanup remain outside this increment.

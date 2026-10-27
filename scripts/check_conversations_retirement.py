@@ -186,6 +186,7 @@ def main() -> int:
                 "apps/api/tests/test_conversation_cleanup.py",
                 "apps/api/tests/test_conversation_offer_storage.py",
                 "apps/api/tests/test_conversation_offers.py",
+                "apps/api/tests/test_conversation_contact_preparation.py",
                 "apps/api/tests/test_listing_conversation_start.py",
                 "-q",
                 "-W",

@@ -2,6 +2,16 @@
 
 Owner: D — Rahul for CN-01/CN-02; A — Aditya owns CN-03 notifications, with D reviewing producer/read-state integration. Required implementation belongs to the [domain task list](../../../../../docs/tasks/domain-task-list.md), after the required foundation and contract gates.
 
+CN-02 Step7 implements the declared contact-options and contact-preparations
+routes through `contacts.py`. Each checks Conversations membership and its local
+write-disabled marker before installing Identity's actor/conversation scope.
+Options expose flags; confirmed preparation returns only selected current own
+values with no-store responses, entries, persistence or activity writes. The
+normal Identity middleware supplies the real public providers; unbound calls
+fail503. The UI deliberately labels this preparation and discards values until
+Step8 connects encrypted publication. Contact-share storage/30-day cleanup and
+final real-session acceptance remain later checkpoints.
+
 `origin_retirement.py` implements the internal `get_origin_activity` and `mark_origin_retired` database operations. `thread_creation.py` implements internal Listing and Wanted Request thread creation through trusted origin contexts and Identity's eligibility interface. Both providers are tested directly and await real origin-owner composition.
 
 `routes.py` is the public HTTP adapter mounted by the application. `messages.py` stores opaque encrypted messages and explicit read acknowledgements. `queries.py` supplies membership-scoped inbox/summary reads, deterministic filtering/paging, and unread text counts without loading origins or message bodies. `key_directory.py` registers typed public SDK bundles, preserves referenced historical versions, publishes public one-time prekeys, and atomically reserves peer prekeys. Per-account locks serialize rotation/publication/reservation; durable caller/operation records replay the exact result or reject changed requests. Public bundle bytes use the reviewed typed JSON representation in `public_key_material`; incompatible legacy material fails closed. Private keys remain browser-local. The directory migration creates only Conversations-owned storage and keeps consumed key IDs to prevent reuse.

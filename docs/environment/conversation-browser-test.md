@@ -48,6 +48,15 @@ stops rather than resetting an existing target. No live providers or email run.
 
 ## Human walkthrough
 
+For CN-02 Step7, open the chat and choose **Choose contact details**. The helper
+uses Identity's real source-contact editing service to set a synthetic email on
+each fixed actor; no mail is sent. Only Email should be available. Select Email,
+review the field names and confirm. Expect **Selection checked. Nothing has been
+sent.** Cancel before confirmation should retrieve no values. Values never appear
+in the page; encrypted publication is the separate Step8 checkpoint. The
+normal application uses the same public contact endpoints with Identity's real
+session middleware, while this helper retains fixed synthetic authentication.
+
 For the CN-02 Step6 checkpoint, start with a fresh harness run. In A's inbox,
 confirm **Mark as done deal** appears beside the Sale Listing group heading;
 B's inbox must not show this control. Click A's button and check **Listing

@@ -34,12 +34,14 @@ import uvicorn
 from app.contracts.domain_types import CsrfToken, SessionView
 from app.core.auth import CallerContext, require_caller
 from app.core.errors import ERRORS, PublicError, error_response, install_error_handlers
+from app.core.runtime_bindings import runtime_claims, runtime_scope
 from app.domains.conversations.routes import (
     create_public_provider,
     router as conversations_router,
 )
 from app.domains.conversations.thread_creation import PostgresThreadCreationOperations
 from app.domains.identity.capabilities import PostgresCapabilities
+from app.domains.identity.contacts import PostgresContacts
 from app.domains.listings.postgres_store import PostgresListingsStore
 from app.domains.listings.routes import router as listings_router
 from apps.api.tests.domains.identity.postgres_fixtures import (
@@ -94,6 +96,13 @@ async def seed_conversation(dsn, connect):
     """
     async with AsyncConnectionPool(dsn, min_size=0, max_size=1, open=False) as pool:
         owner, buyer, listing = await seed_users_and_listing(pool)
+        contacts = PostgresContacts(connect, lambda: datetime.now(UTC))
+        for actor in (owner, buyer):
+            contacts.set_contact(
+                CallerContext(actor, "regular", datetime.now(UTC) + timedelta(hours=1)),
+                "email",
+                "synthetic-contact@example.com",
+            )
         from app.contracts.domain_types import ListingConversationContext
 
         capabilities = PostgresCapabilities(connect, lambda: datetime.now(UTC))
@@ -131,6 +140,8 @@ def browser_app(dsn, connect, actor, listing_id, conversation_id, port, *, dist=
     caller = CallerContext(actor, "regular", datetime.now(UTC) + timedelta(hours=1))
     csrf = secrets.token_urlsafe(32)
     active = True
+    contacts = PostgresContacts(connect, lambda: datetime.now(UTC))
+    capabilities = PostgresCapabilities(connect, lambda: datetime.now(UTC))
 
     @asynccontextmanager
     async def lifespan(app):
@@ -199,7 +210,17 @@ def browser_app(dsn, connect, actor, listing_id, conversation_id, port, *, dist=
             return error_response(
                 request, ERRORS[403], headers={"Cache-Control": "no-store"}
             )
-        response = await call_next(request)
+        with (
+            runtime_scope(
+                {
+                    "identity.check_account_eligibility": capabilities.check_account_eligibility,
+                    "identity.get_shareable_contact_options": contacts.get_shareable_contact_options,
+                    "identity.get_selected_own_contacts": contacts.get_selected_own_contacts,
+                }
+            ),
+            runtime_claims({}),
+        ):
+            response = await call_next(request)
         response.headers["Cache-Control"] = "no-store"
         response.headers["Referrer-Policy"] = "no-referrer"
         return response
@@ -398,6 +419,35 @@ def check_apps(apps, listing_id, conversation_id):
                     "/api/me", headers={"Origin": "https://foreign.invalid"}
                 ).status_code
                 == 403
+            )
+            summary_before = client.get(f"/api/conversations/{conversation_id}").json()
+            contact_options = client.get(
+                f"/api/conversations/{conversation_id}/contact-options"
+            )
+            assert contact_options.status_code == 200
+            assert contact_options.json() == {
+                "email_available": True,
+                "phone_available": False,
+                "upi_available": False,
+            }
+            preparation = client.post(
+                f"/api/conversations/{conversation_id}/contact-preparations",
+                headers={
+                    "Origin": origin,
+                    "X-CLIP-Request": "1",
+                    "X-CSRF-Token": client.get("/api/auth/csrf").json()["csrf_token"],
+                },
+                json={"fields": ["email"]},
+            )
+            assert preparation.status_code == 200
+            assert preparation.json()["email"] is not None
+            assert (
+                preparation.json()["phone"] is None
+                and preparation.json()["upi_id"] is None
+            )
+            assert (
+                client.get(f"/api/conversations/{conversation_id}").json()
+                == summary_before
             )
             assert client.put("/api/me/conversation-key", json={}).status_code == 403
             assert "LOCAL E2EE TEST" in client.get("/my/conversations").text
