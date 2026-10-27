@@ -309,6 +309,29 @@ violations, Python compilation and whitespace checks passed. Gitleaks8.30.1
 passed. No cloud or deployed Identity session was exercised. Rahul verified
 Step10 at 2026-10-27 13:41 UTC. Step11 and the pinned-runtime web rerun remain.
 
+## Step11 local aggregate checks — 2026-10-27
+
+Used Node24.22.0/npm11.19.1 from `/tmp`; its official archive SHA-256 matched
+`cc2f601cee82d9a5a233302fe307abc600727035fd7d2c3a3571755989e95008`. The full
+local check set passed: Python1930/153 skipped; data94; web433/3 skipped,
+lint/typecheck/build; Black296 files; mypy2 files; contract generation/check8;
+boundary0; database-safety35; combined PostgreSQL18.6 migration lifecycle; the
+focused Conversations retirement harness167; and Gitleaks8.30.1. The generated
+types artifact was refreshed from its canonical source. Vite retains its
+existing warning for a JavaScript chunk over500kB.
+
+The run found and fixed a stale test fixture in
+`apps/api/tests/test_conversation_browser.py` and stale expected contact routes
+in `tests/contracts/test_domain_declarations.py` and
+`tests/contracts/test_generation.py`. `contracts/source/types.py` was formatted
+and `apps/api/app/contracts/domain_types.py` regenerated to match; no runtime
+behavior changed. Real local Identity session, CSRF, contact preparation,
+selected-field disclosure, and encrypted share integration tests passed inside
+the Python suite. No shared database or cloud action was used. Disposable test
+containers were removed. CN-CORE, ID-READY, and LI-CORE remain unaccepted in the
+milestone table; affected-owner review, hosted CI, and human verification of
+Step11 remain pending, so this is not full CN-02 acceptance.
+
 ## Step3 implementation scope (awaiting human verification)
 
 Rahul verified Step2 and approved this retry clarification: submit/revise/resubmit
