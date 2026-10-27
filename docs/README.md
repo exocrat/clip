@@ -5,6 +5,7 @@ The root [README](../README.md) describes the project. Agents start from [AGENTS
 
 - [Document 1 — Product/reference and decisions](product/product-reference-and-architecture-decisions.md)
 - [Document 2 — Primary experiment task list](evaluation/ecs-only-vs-ecs-lambda-task-list.md)
+- [ECS-only vs ECS+Lambda experiment definition guidelines](evaluation/ecs-lambda-experiment-guidelines.md)
 - [Document 3 — Shared conventions](conventions/shared-conventions-and-cross-domain-contract-rules.md)
 - [Document 4 — Repository structure](architecture/repository-structure.md)
 - [Terraform ownership and state boundaries](architecture/terraform-ownership.md)

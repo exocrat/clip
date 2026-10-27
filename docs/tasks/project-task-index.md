@@ -2,6 +2,19 @@
 
 **Canonical path:** `docs/tasks/project-task-index.md`
 
+**Current remaining-work plan:** [Ordered task groups NEXT-00–10](remaining-project-plan.md)
+records Suraj's 2026-10-27 direction. The order is: define the ECS/Lambda
+experiment early; reduce repository clutter; complete the NEXT-03 marketplace
+changes; then NEXT-04 audits readiness and verifies the integrated app on HTTPS,
+so the cloud walkthrough does not need to be repeated after those changes. Notifications
+joins when ready, followed by final synthetic data, required NFR/experiment runs,
+deployment of the measured eligible architecture, final usability/security work,
+optional work if time remains, and CLOSE-00. Suraj verified NEXT-00 and authorized
+NEXT-01 Step 1 on 2026-10-27. Use the original task sources for detailed
+implementation and acceptance. The experiment method is in the separate
+[ECS/Lambda experiment guidelines](../evaluation/ecs-lambda-experiment-guidelines.md).
+Native-mobile feasibility is deferred research only; no native build is selected.
+
 ## Execution source and phase routing
 
 This index supplies the next-work route and readiness definitions. Detailed numbered procedures remain in the linked task lists. Root `CONTRIBUTING.md` is the Git/PR workflow; `docs/prompts/reusable-task-prompt.md` is the mandatory human-verification loop. Status/evidence are actual execution facts, not claims made by this planning document.
@@ -55,7 +68,7 @@ After real PRE-00/DL-00, all eight required domains may begin their documented i
 - SE-01 cloud-preparation step 12 needs LI-01/LI-02, ID-READY and final validated data. DATA-READY is required for the complete measurement/evaluation evidence.
 - CN-01 cloud-preparation step 11 needs CN-03's final producer/notification/read-state path. CN-CORE unblocks CN-02/CN-03 before final NFR-05.
 - Full CN-01 request-response integration also needs SE-02's real public Wanted Request read/state interfaces; CN-02's request-response inbox work needs both SE-02 and CN-01. CN-CORE remains an earlier listing-origin conversation milestone and does not imply request-origin integration is complete.
-- INT-01 needs all eight required domain tasks fully passing; EXP-01 follows its verified merge. NFR-08 final reconciliation occurs in CLOSE-00 after EXP-08, not before later experiment spend.
+- INT-01 needs all eight required domain tasks fully passing. EXP-01 design may be done early; measured experiment runs retain the current verified/merged INT-01 gate unless it is separately revised. NFR-08 final reconciliation occurs in CLOSE-00 after EXP-08, not before later experiment spend.
 
 Preserve numbered step order except the explicit staged-checkpoint route in the stub guide: human-verified isolated portions may advance while real subchecks remain pending under their original step IDs. As real prerequisites arrive, resume the earliest pending integration checkpoint before new isolated work. If the next checkpoint is non-substitutable, record the blocker and propose another owned unblocked task. The human verifies that new task understanding before switching. Do not restart an executed step or skip its human-verification gate.
 
@@ -145,12 +158,12 @@ The graph is derived from the following acceptance dependencies. For multi-stage
 | OPT-01 | ID-READY, SE-02, CN-03, OPTIONAL-OK |
 | OPT-02 | ID-READY, LI-CORE, SE-CORE, SE-02, CN-03, OPTIONAL-OK |
 | OPT-03 | LI-02, SE-CORE, DATA-READY, OPTIONAL-OK |
-| EXP-01 | INT-01 |
+| EXP-01 | Early design may start before INT-01 |
 | EXP-02 | EXP-01 |
 | EXP-03 | EXP-02 |
 | EXP-04 | EXP-03 |
 | EXP-05 | EXP-04 |
-| EXP-06 | EXP-05 |
+| EXP-06 | EXP-05, verified/merged INT-01 for measured runs under the current gate |
 | EXP-07 | EXP-06 |
 | EXP-08 | EXP-07 |
 | CLOSE-00 | INT-01, EXP-08 |

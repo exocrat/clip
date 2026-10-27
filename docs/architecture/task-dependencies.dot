@@ -210,7 +210,7 @@ digraph CampusMarketplace {
   "SE-CORE" -> "OPT-03";
   "DATA-READY" -> "OPT-03";
   "OPTIONAL-OK" -> "OPT-03";
-  "INT-01" -> "EXP-01";
+  "INT-01" -> "EXP-06";
   "EXP-01" -> "EXP-02";
   "EXP-02" -> "EXP-03";
   "EXP-03" -> "EXP-04";

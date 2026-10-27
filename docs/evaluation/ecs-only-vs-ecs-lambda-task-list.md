@@ -3,7 +3,7 @@
 **Canonical repository path:** `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md`
 **Document 2. Status:** Working task list for the PRD's primary cloud experiment. It does not report experiment results; none have been run while preparing this document.
 
-**Entry:** INT-01 verified/merged; select tasks through `docs/tasks/project-task-index.md`. Use the mandatory one-step human-verification loop and `CONTRIBUTING.md` branch/PR/reviewer workflow. Readiness/cloud action approvals remain separate.
+**Entry:** EXP-01 experiment design may start before INT-01 and deployment. The measured comparison still requires the integrated application and the start conditions below, including verified/merged INT-01 under the current gate. Select tasks through `docs/tasks/project-task-index.md`. Use the mandatory one-step human-verification loop and `CONTRIBUTING.md` branch/PR/reviewer workflow. Readiness/cloud action approvals remain separate.
 
 **Purpose:** Determine whether routing selected read-heavy requests from ECS to Lambda improves burst responsiveness or cost efficiency without degrading normal-load performance for this application.
 
@@ -46,8 +46,8 @@ If a condition is missing, make it an explicit prerequisite task or ask the huma
 
 Before changing code or deploying experiment resources:
 
-1. Read the submitted PRD, Document 1, current architecture/environment records, approved decisions, generated API contract, and the completed feature tasks for the candidate routes.
-2. Inspect the actual deployed path and current implementation. List the read routes that can be compared and any route that cannot be safely or fairly offloaded.
+1. Read the submitted PRD, Document 1, current architecture/environment records, approved decisions, generated API contract, and available feature-task evidence for the candidate routes. Record unfinished work and assumptions.
+2. Inspect the current implementation and planned deployed path. List the read routes that can be compared and any route that cannot be safely or fairly offloaded. Confirm the actual integrated and deployed path before measured runs; revise the design with human approval if a material assumption changes.
 3. Present the human with feasible choices for:
    - The exact routes to benchmark and the reason each is representative.
    - A normal workload and a burst workload, including route proportions and the point at which the burst begins and ends.
@@ -57,7 +57,7 @@ Before changing code or deploying experiment resources:
    - Time/concurrency/resource caps, stop conditions, estimated cost, and remaining-budget reserve.
 4. Include the PRD's required conditions when applicable: synthetic reference data of at least 1,000 listings and 5,000 users; at least five minutes of performance measurement after warm-up; warm and cold behavior reported separately where applicable; each load run's maximum duration and resource/concurrency caps declared before execution.
 5. Explain tradeoffs, expected evidence, and any unresolved questions. Recommend one complete plan. Do not silently fill a value that changes workload meaning, comparison fairness, security, cost, or cloud resources.
-6. Stop and ask for the human's choices/approval. Record the approved design in the repository manifest before proceeding. The manifest must contain actual values and commands, not unresolved placeholders.
+6. Obtain the human's choices/approval and record the design in the repository manifest. Specify decision rules and proposed values early; identify deployment-dependent assumptions and commands to confirm after integration. Before measured runs, resolve those items and approve the final runnable manifest without changing rules to favor a result.
 
 **Complete when:** The human-approved plan fixes the routes, workload, data, resources, run limits, metric definitions, cost method, run order/repetitions, evidence location, and cleanup action. The design specifies a feasible comparable implementation and run plan within the budget; configuration B is implemented in EXP-03 and deployed/verified in EXP-04 before it is considered runnable.
 

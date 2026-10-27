@@ -24,6 +24,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 
 | Task ID | Owner role | Task status | Current checkpoint / immediate next action | Execution state | Human verification | Branch/revision/evidence | Blockers | Last UTC update |
 |---|---|---|---|---|---|---|---|---|
+| NEXT-00 | Suraj — requested planning coordinator | done | Planning output verified; NEXT-01 Step 1 authorized. | performed; planning only | verified by Suraj | `task/integrated-marketplace-rollout`, based on main `5e8d264`; [remaining-work plan](../tasks/remaining-project-plan.md), linked from project task index | No blocker for the accepted planning output; implementation and measured-run gates remain separate. | 2026-10-27 18:42:09 UTC |
 | BOOT-00 | B / Suraj (initial contributor) | done | Local documentation seed verified; publication pushed and verified | performed | verified | Current `origin/main` verified at `cfbf9352c03302990e6ffda09521f0a5450572d7`; includes seed `7fb9bfed79b45614a17de1bf2f9c50dbb3981b3f` and publication record | None | 2026-10-15 07:18 UTC |
 | PD-00 | Kickoff owner — Suraj (B) | done | Steps 1–6 complete; task-wide closeout reviewed | performed | verified | `task/pre-domain-foundation` at base `cfbf9352c03302990e6ffda09521f0a5450572d7`; work-log task table, initial inventory, Document 4 comparison, and `git diff --check` | None | 2026-10-16 07:02 UTC |
 | PD-01 | Kickoff owner — Suraj (B) | done | Steps 1–8 and task-wide acceptance review complete; published handoff confirmed | performed | verified | `docs/architecture/foundation-traceability.md`; handoff `d29c02b` is in remote `main` at `4754e97fdaf4284e84062a926eb1864fab745036`, confirmed by `git ls-remote` | None | 2026-10-17 06:26:36 UTC |
@@ -57,7 +58,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | CN-02 | Rahul (D); Aditya/Suraj review | in progress | Step11 local aggregate checks passed; obtain human verification, then complete real dependency/owner review gates | 1930 Python passed/153 skipped; 94 data; 433 web/3 skipped; build/types/lint, Black 296 files, mypy, contract generation (8 artifacts), boundaries, DB lifecycle PostgreSQL18.6, Conversations harness167, DB safety35, Gitleaks8.30.1 passed | Step10 verified; Step11 local result pending Rahul verification | `task/cn-02-offers-contact-sharing`; [checkpoint](../evaluation/domain/conversations-offers.md); [browser walkthrough](../environment/conversation-browser-test.md) | Formal CN-CORE/ID-READY/LI-CORE acceptance, affected-owner review and hosted CI remain required for full CN-02 acceptance; later real-session/deployment gates remain | 2026-10-27 15:15:10 UTC |
 | CN-03 | A; D producer review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | CN-CORE, ID-READY | — |
 | INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
-| EXP-01 | C | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | INT-01 | — |
+| EXP-01 | C | not started | Design may begin before integration; see `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md`. | not started | pending | No experiment outputs in initial inventory | No INT-01 blocker for early design; the current measured-run gate still requires INT-01. | 2026-10-27 18:16:24 UTC |
 | EXP-02 | C | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-01 | — |
 | EXP-03 | B | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-02 | — |
 | EXP-04 | B | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-03 | — |
@@ -1586,6 +1587,91 @@ client navigation/state updates are suppressed. B affected review remains pendin
 Reservation released2026-10-26 05:22:07UTC after implementation and checks.
 
 ## Dated history entries
+
+### NEXT-00 — Planning accepted — 2026-10-27 18:42:09 UTC
+
+Suraj verified NEXT-00 and the NEXT-01 understanding, requested the planning
+changes be committed, and authorized NEXT-01 Step 1. The accepted sequence and
+separate experiment guidelines remain the design inputs; actual implementation,
+dataset generation and measured runs retain their later task/action gates.
+Updated the plan, task-index handoff and NEXT-00 status to reflect acceptance.
+Checks passed: 13 local plan/guideline links, new-document whitespace,
+`git diff --check`, and the pinned Gitleaks 8.30.1 source-snapshot scan.
+Independent review and exact-revision merge authorization remain separate.
+
+### NEXT-00 — Early experiment-design scheduling — 2026-10-27 18:16:24 UTC
+
+Suraj directed that experiment design happen before app integration and that
+the experiment run afterward. Updated Document 2, the task index, its dependency
+graph and the domain handoff to allow early EXP-01 design, while retaining the
+current verified/merged INT-01 gate for measured runs. The early design must
+record assumptions and confirm the actual integrated path before measurement.
+No experiment design, dataset generation, application change or cloud action
+was performed.
+
+### NEXT-00 — Plan audit and cleanup priorities — 2026-10-27 18:11:47 UTC
+
+Reviewed NEXT-00–10 and the existing experiment, domain and evidence task
+instructions. The sequence remains appropriate. Corrected the cloud-security
+step reference, made the independent Notifications path explicit, clarified
+how early experiment design relates to the current formal INT-01/EXP-01 gate,
+and noted that selected optional work may follow the final usability review.
+Per Suraj's direction, NEXT-02 prioritizes evaluation material and other docs,
+including condensing the work log or retaining material in an accessible
+external archive; tests and app code are last and normally left alone. No
+cleanup, product implementation, experiment or cloud action was performed.
+
+### NEXT-00 — Task numbers aligned to execution order — 2026-10-27 18:03:57 UTC
+
+Suraj clarified that the marketplace changes must be NEXT-03 and the completion
+audit/integrated cloud walkthrough must be NEXT-04, so their labels match the
+actual execution sequence. Renumbered both groups and their cross-references in
+the plan; updated the project task index and work-log checkpoint. NEXT-04 cloud
+verification still follows NEXT-03 marketplace/schema work. No app code, cloud
+operation, dataset generation or experiment was performed. NEXT-00 awaits human
+verification.
+
+### NEXT-00 — Planning order corrected — 2026-10-27 17:59:15 UTC
+
+An earlier plan draft put marketplace/schema work in NEXT-04 and the integrated
+cloud walkthrough in NEXT-03. That draft was superseded by the 18:03 numbering
+correction below; the current labels are NEXT-03 for product work and NEXT-04
+for the audit/cloud walkthrough. Experiment definition remains an early design task
+(NEXT-01); NEXT-07 now only runs the approved design alongside required NFR
+checks. The plan is on `task/integrated-marketplace-rollout`, based on remote
+main `5e8d264`; the separate full experiment-method guide is linked from the
+plan and document index. The completion audit asks the agent to show proposed
+task-list additions to Suraj and add them only after verification. Native-mobile
+feasibility remains a deferred study because a wrapper alone does not establish
+camera or end-to-end-encryption support. No experiment, app code or cloud action
+was performed. NEXT-00 awaits human verification.
+
+### NEXT-00 — Remaining work organized from current main — 2026-10-27 17:32:43 UTC
+
+Suraj authorized loading current main and creating task groups only. A clean
+checkout at `/home/suraj/src/clip-planning-main`, branch
+`task/remaining-project-plan`, uses main `5e8d264` (PR #18); the original dirty
+LI-02 checkout and its files were preserved. The
+[ordered plan](../tasks/remaining-project-plan.md) records repository cleanup
+first; a real completion audit; the integrated HTTPS app without waiting for
+email delivery; marketplace changes; parallel Notifications; explicit final
+synthetic-data generation and human query labeling; NFRs and future rigorous
+experiment definition/execution; deployment of the selected measured
+architecture; final usability/security review; and existing CLOSE-00. Native
+mobile feasibility is deferred, with no mobile implementation selected.
+
+The plan preserves the user's detailed experiment guidelines and requires the
+final runtime to follow the eligible tested choice rather than assuming ECS
+wins. Current message/thread code already records notification work; email
+delivery itself is not a technical prerequisite for read comparisons or chat
+sender-to-display timing. Existing broader CN-03/INT-01 experiment-entry gates
+are identified for a precise later scheduling decision, with final required
+Notifications acceptance preserved. No original readiness/task was marked done,
+and no application code, cloud resource, data generator or experiment was run
+or changed. Planning output awaits human verification; NEXT-01 is preview only.
+Documentation validation passed: 24 request-coverage markers, 13 local links,
+new-plan whitespace and `git diff --check`. No product test or implementation
+result is implied by these planning checks.
 
 ### ID-01 — approved state-only reconciliation verified — 2026-10-26 18:29:50 UTC
 
