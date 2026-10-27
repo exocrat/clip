@@ -745,7 +745,7 @@ the repository root, or use `.venv/bin/python` with the already synchronized
 locked environment. It requires local Unix-socket Docker and the pinned
 PostgreSQL 18.6/dbmate 2.36.0 images. It creates one tmpfs-backed database
 container on a generated loopback port, applies migrations to branch head
-`20261026090300`, runs the focused retirement/thread/message/directory/recovery
+`20261026090300`, runs the focused retirement/thread/offer/message/directory/recovery
 storage tests with warnings treated as errors, then removes its own container.
 It accepts no database target and uses only synthetic users and opaque test
 payloads. Exit 0 means the collected checks passed; ordinary pytest without

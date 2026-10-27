@@ -87,5 +87,49 @@ CN-01 branch retains its two unpublished documentation commits unchanged; this
 branch starts directly from accepted main.
 
 Step1 checks: documentation targets, `git diff --check` and Gitleaks8.30.1 passed; no application tests
-are required for this documentation-only increment. Result awaits verification.
-Next: Step2 storage inventory and any necessary forward migration plan.
+are required for this documentation-only increment. Rahul verified this result.
+
+## Step2 storage verification — 2026-10-27 06:31:24 UTC
+
+Rahul verified Step1 and authorized Step2. The existing tables and final installed
+local guards cover core offer identity/current-revision/history storage; no new
+migration is justified by that inventory. Rahul is the bounded writer for the
+Conversations storage test file, its existing disposable-checker file list and
+the corresponding storage/command documentation. All published migrations and
+the head20261026090300 remain unchanged. Tables, indexes, restrictive references,
+deferred current-pointer checks and local guards are reused.
+
+`test_conversation_offer_storage.py` adds18 real PostgreSQL cases covering:
+
+- Zero-valued first offer, revise, withdraw and resubmit under one logical ID,
+  with ordered revision/entry history and a continuing sequence counter.
+- Negative/non-whole-rupee amounts and unknown status, with no partial entry,
+  pointer or activity update surviving rollback.
+- Seller-as-buyer, wrong revision sender and Wanted Request offer rejection;
+  one logical offer per buyer/thread; immutable revisions and no skipped counter.
+- Missing revision at deferred commit, first/repeated withdrawal and withdrawal
+  amount mismatch.
+- Optional opaque-note storage with correct member key ownership, and rejection
+  when sender/recipient keys are reversed.
+- Existing90-day cleanup removing notes/history while retaining the pair/ID,
+  next revision and expired operation marker; deletion/replay rejected and a new
+  revision reusing the retained logical offer successfully.
+
+The fixture writes direct synthetic SQL on the existing harness-owned database.
+It proves storage constraints, not HTTP authorization, real encryption or the
+Listings serialized command integration. No trigger is disabled or bypassed.
+The fixture supplies the required SDK identity for note-bearing entries; actual
+SDK payload preparation remains Step3/client work.
+
+The expanded registered checker passed132 tests with no skips on fresh
+PostgreSQL18.6 and removed its own container. Pinned Black passed both changed
+Python files; boundaries0, whitespace and Gitleaks8.30.1 source checks passed. The first sandboxed
+formatter stalled and was interrupted; the elevated pinned rerun/check passed.
+No new migration means no new rollback path or schema inventory to reconcile.
+
+Exact normalized request replay, including the original expected revision,
+remains a Step3 service/receipt-storage obligation; existing revision rows alone
+do not prove exact request equality after all states. Plan any necessary receipt
+storage together with those operations, preserving the approved retention rules.
+Step2 awaits human verification. Next: implement the real offer persistence/read
+operations through the existing Listings and Conversations public boundaries.

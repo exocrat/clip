@@ -7,6 +7,15 @@ Identity/Listings sections below retain their historical checkpoints; their
 former PR10 deferral/counts do not describe this combined checkout. See the
 [merge evidence](../docs/evaluation/identity/integration.md#main-reconciliation).
 
+CN-02 Step2 reuses the existing offer/revision/contact tables and installed local
+guards; it adds no migration. The registered Conversations checker includes
+`apps/api/tests/test_conversation_offer_storage.py` for revision/withdrawal,
+ownership/origin, integer-paise, rollback, encrypted-note key binding and retained
+identity checks after90-day cleanup. The18 new cases passed inside the132-case
+fresh PostgreSQL18.6 suite. These are synthetic direct-SQL storage checks; the
+offer service/HTTP/idempotency integration remains CN-02 Step3. See the
+[checkpoint](../docs/evaluation/domain/conversations-offers.md#step2-storage-verification--2026-10-27-063124-utc).
+
 PD-08 Step 3 created SQL migrations from the
 [schema](../docs/architecture/mvp-database-schema.md) under the approved
 sequencing exception. The carried PD-08 gates are user-confirmed complete; the
