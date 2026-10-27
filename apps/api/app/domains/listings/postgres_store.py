@@ -969,11 +969,21 @@ class PostgresListingsStore:
     async def listing_offer_guard(
         self, listing_id: ListingId
     ) -> AsyncIterator[ListingManagementView | None]:
-        """Hold the listing row lock while Conversations uses its own database."""
+        """Serialize offers with owner changes without blocking thread FK checks.
+
+        Conversations updates its thread activity in a separate transaction;
+        PostgreSQL may recheck that thread's listing FK during the write. NO KEY
+        UPDATE excludes concurrent owner mutations while permitting FK key-share,
+        just like the listing-conversation guard. No key is changed here.
+        """
         async with self._connection() as connection:
             async with connection.transaction():
-                current = await self._get_view(connection, listing_id, for_update=True)
-                yield current
+                cursor = await connection.execute(
+                    _VIEW_QUERY + " AND listing.id=%s FOR NO KEY UPDATE OF listing",
+                    (self._threshold, listing_id),
+                )
+                row = await cursor.fetchone()
+                yield _management_view(row) if row is not None else None
 
     @asynccontextmanager
     async def listing_conversation_guard(

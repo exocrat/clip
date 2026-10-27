@@ -214,7 +214,10 @@ Listings-owned command. Listings resolves the listing from the verified
 conversation context, serializes with availability/retirement changes, checks
 current account eligibility, then asks Conversations to persist its own offer
 record. Create/revise/resubmit require the listing to be available and within
-its window. The buyer may withdraw after ordinary unavailability, but not after
+its window, including identical operation retries: availability is checked
+before replay, returning 409 with `listing_id: unavailable` if it no longer
+permits submission. A previously saved offer remains readable rather than being
+reported as a newly successful submission. The buyer may withdraw after ordinary unavailability, but not after
 retirement. Conversations never calls Listings to inspect current state.
 Offer amount/revision/note rules remain the Conversations-owned offer contract;
 the shared contract uses integer paise in whole rupees and client-encrypted

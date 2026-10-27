@@ -83,8 +83,8 @@ migrate() {
 
 # Check clean apply, repeat application and schema inventory at both clean heads.
 check_head() {
-  [[ $(sql --command 'SELECT max(version) FROM public.schema_migrations') == 20261026090300 ]]
-  [[ $(sql --command 'SELECT count(*) FROM public.schema_migrations') == 21 ]]
+  [[ $(sql --command 'SELECT max(version) FROM public.schema_migrations') == 20261027064000 ]]
+  [[ $(sql --command 'SELECT count(*) FROM public.schema_migrations') == 22 ]]
   [[ $(sql --command "SELECT count(*) FROM pg_tables WHERE schemaname IN ('identity','listings','search','conversations')") == 40 ]]
   [[ $(sql --command 'SELECT count(*) FROM listings.categories') == 8 ]]
   [[ $(sql --command 'SELECT count(*) FROM listings.conditions') == 4 ]]
@@ -144,7 +144,7 @@ sql --file "$root/database/tests/identity-session-smoke.sql" > "$evidence/sessio
 
 # No fixture commits remain after the smoke rollback; down/up is confined to
 # this disposable database and is not the persistent Compose-volume reset.
-for revision in $(seq 1 17); do migrate rollback > "$evidence/rollback-$revision.log" 2>&1; done
+for revision in $(seq 1 22); do migrate rollback > "$evidence/rollback-$revision.log" 2>&1; done
 [[ $(sql --command 'SELECT count(*) FROM public.schema_migrations') == 0 ]]
 [[ $(sql --command "SELECT count(*) FROM pg_namespace WHERE nspname IN ('identity','listings','search','conversations')") == 0 ]]
 migrate migrate > "$evidence/apply-second.log" 2>&1

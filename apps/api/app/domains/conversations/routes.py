@@ -28,6 +28,7 @@ from app.contracts.domain_types import (
     PublicKeyBundleView,
     PublicPreKeyBatchRequest,
     PublicPreKeyBatchView,
+    OfferView,
 )
 from app.core.auth import CallerContext, require_caller
 from app.core.errors import ERRORS, PublicError
@@ -35,6 +36,7 @@ from app.domains.conversations.messages import PostgresMessageOperations
 from app.domains.conversations.queries import PostgresConversationQueries
 from app.domains.conversations.key_directory import PostgresKeyDirectory
 from app.domains.conversations.provider import PostgresConversationServices
+from app.domains.conversations.offers import PostgresOfferOperations
 
 router = APIRouter(
     tags=["conversations"],
@@ -211,6 +213,23 @@ async def read_summary(
 ) -> ConversationSummary:
     """Resolve thread metadata only for an authenticated participant."""
     return await PostgresConversationQueries(_pool(request)).read_summary(
+        caller, conversation_id
+    )
+
+
+@router.get(
+    "/conversations/{conversation_id}/offer",
+    response_model=OfferView | None,
+    operation_id="conversations_read_offer",
+    summary="conversations_read_offer",
+)
+async def read_offer(
+    conversation_id: UUID,
+    request: Request,
+    caller: CallerContext = Depends(require_caller),
+) -> OfferView | None:
+    """Return only a current member's structured offer and optional opaque note."""
+    return await PostgresOfferOperations(_pool(request)).read_offer(
         caller, conversation_id
     )
 

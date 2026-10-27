@@ -226,6 +226,7 @@ def test_only_implemented_domain_http_routes_are_installed():
         "/conversations/{conversation_id}",
         "/conversations/{conversation_id}/entries",
         "/conversations/{conversation_id}/messages",
+        "/conversations/{conversation_id}/offer",
         "/conversations/{conversation_id}/read-state",
         "/conversations/{conversation_id}/keys",
         "/conversations/{conversation_id}/prekey-bundle",

@@ -1,8 +1,8 @@
 # Coordinated database migrations
 
-**Current Conversations integration checkout:** 17 published migrations plus four
-new forwards, head `20261026090300`, 40 domain tables, 36 functions and 46 triggers.
-The 17 published SQL files are unchanged. Older isolated
+**Current Conversations integration checkout:** 21 published migrations plus one
+offer-request forward, head `20261027064000`, 40 domain tables, 36 functions and 46 triggers.
+All 21 previously published SQL files are unchanged. Older isolated
 Identity/Listings sections below retain their historical checkpoints; their
 former PR10 deferral/counts do not describe this combined checkout. See the
 [merge evidence](../docs/evaluation/identity/integration.md#main-reconciliation).
@@ -69,6 +69,7 @@ was changed. [Tool rationale](../docs/decisions/database-migration-tool.md).
 | `20261026090100_conversation_message_transport.sql` | Ciphertext transport, immutable routing, protocol metadata and ordered read-state protections. |
 | `20261026090200_conversation_public_key_directory.sql` | Owned public key-directory and prekey metadata; no private keys. |
 | `20261026090300_conversation_recovery_storage.sql` | Typed encrypted protocol-control storage; client content recovery remains disabled. |
+| `20261027064000_conversation_offer_requests.sql` | Original expected-revision metadata on retained offer revisions for exact retries, including null after history purge. Legacy rows remain readable without claiming exact replay. Down refuses while recorded request metadata exists; approved history cleanup removes it with revisions. |
 
 Four superseded branch-only SQL files are preserved byte-for-byte in
 [`archived/cn-01-pre-main`](archived/cn-01-pre-main/README.md), outside the executable
@@ -81,7 +82,7 @@ The optional-pickup forward migration is under Listings writer scope; affected
 consumer/schema review and exact shared-database apply remain pending. Local
 isolated checks do not authorize shared/Compose/cloud migration.
 
-Expected combined migration version: **20261026090300**. One integrator allocates
+Expected combined migration version: **20261027064000**. One integrator allocates
 later timestamp identifiers; no parallel heads or uncoordinated edits to initial
 DDL. Published/applied migrations are corrected forward, not rewritten.
 
@@ -481,9 +482,9 @@ was corrected and final state/aborted-sequence rollback checked on the rerun.
 `uv run --locked python scripts/check_database.py` uses the same PostgreSQL
 18.6 image and dbmate 2.36.0 as local development, with a new `clip_test_ci`
 database, no published port and temporary memory-backed storage. The current
-checker requires clean apply/exact combined head (`20261026090300`), repeated
-application, seven SQL smoke suites, the37-table inventory, preserved Identity
-upgrades/rollback and full rollback of all17migrations with a clean reapply, then removes only its own container. The
+checker requires clean apply/exact combined head (`20261027064000`), repeated
+application, seven SQL smoke suites, the40-table inventory, preserved Identity
+upgrades/rollback and full rollback of all22 migrations with a clean reapply, then removes only its own container. The
 `--listings-store` option additionally mounts one private temporary Unix-socket
 directory and runs the focused Listings adapter workflow against that same
 disposable database. It uses synthetic test rows and Identity/Conversations test

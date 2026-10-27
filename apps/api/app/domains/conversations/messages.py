@@ -556,7 +556,8 @@ class PostgresMessageOperations:
                     visible = [
                         row
                         for row in scanned
-                        if row[3] != "protocol_control" or row[5] == caller.user_id
+                        if row[3] != "offer"
+                        and (row[3] != "protocol_control" or row[5] == caller.user_id)
                     ]
                     has_extra_visible = len(visible) > query.page_size
                     returned = visible[: query.page_size]

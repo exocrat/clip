@@ -54,7 +54,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | SE-02 | Mohit (C); peer Suraj (B), Identity/Conversations review | in progress | Step8 real integration gated; local handoff human-verified | Steps1–7 isolated result verified; Step8 audit performed | Mohit verified isolated UI and combined local handoff | [Search handoff](../evaluation/domain/search-handoff/result.json): Python1270/data94/web144,Black183,native20/3skip,wrapper35/contracts8/boundaries/parity/type/build pass | Await actual ID-READY/LI-CORE/SE-CORE/C adapters; Step9 final acceptance, pinned secrets/hosted CI and independent review pending | 2026-10-25 08:50:43 UTC |
 | MERGE-LI-SE | Suraj (integration); Listings/Search affected owners | done | PR #11 is squash-merged; Search–Listings local merge task is complete | Steps 1–9 performed; approved PR head `2a43066` merged to `main` as `e315c9d`; final hosted CI run `40204621122` passed | Steps 3–8 verified by Suraj; user authorized squash merge of the exact PR revision on 2026-10-25 | PR #11 `https://github.com/exocrat/clip/pull/11`; source head `2a430660d25e7c14cf33d84bd78172db4ec063c7`; squash merge `e315c9df3e0e11d6e9c8d7d244d676204d3af7e8`; hosted CI `40204621122`; local merge commit `29eb6fb`; fallback branch `safety/search-pr11-pre-main-reconciliation-20261025`; stash `af9d7f5`; local checks recorded below | No blocker for the Search–Listings merge. Final dataset, formal NFR/cloud checks, and real Identity/Conversations remain later work. | 2026-10-25 15:17:46 UTC |
 | CN-01 | Rahul (D) | in progress | PR17 integration merged; final CN-01/readiness/NFR obligations remain | Accepted main b09978e contains reviewed head3773931; hosted run40402518748 passed; prior local aggregate1930Python/403web and Conversations114 | Rahul verified local correction and confirmed PR merged; no additional milestone acceptance inferred | [PR17](https://github.com/exocrat/clip/pull/17), merge `b09978e91620ae3877a77c5bea8a4f12df7a8907`; [integration checkpoint](../evaluation/domain/conversations-integration.md) | Formal readiness/remaining device and security checks; CN-03 producer path and final NFR-05; full task acceptance pending | 2026-10-27 06:16:43 UTC |
-| CN-02 | Rahul (D); Aditya/Suraj review | in progress | Step2 existing offer storage verified; verify before Step3 real persistence/read work | No new migration;18 added storage cases,132 fresh PostgreSQL checks passed; Black2, boundaries0, whitespace and Gitleaks passed | Rahul verified Step1 and authorized Step2; Step2 result awaits verification | `task/cn-02-offers-contact-sharing`, base b09978e; [checkpoint](../evaluation/domain/conversations-offers.md) | Step3 exact request replay/receipt design and real commands; Step8 cleanup review; actual dependency/affected-owner acceptance gates remain | 2026-10-27 06:31:24 UTC |
+| CN-02 | Rahul (D); Aditya/Suraj review | in progress | Step3 offer writes/read complete locally; awaiting Rahul verification before Step4 | `make check`:1930 Python passed/142 skipped,94 data passed,403 web passed/3 skipped; Black293, boundary0, contracts8, types, web build, wrapper35, fresh PostgreSQL migration lifecycle and Gitleaks all passed; focused Conversations suite156 passed | Rahul verified Step2 and approved availability-first offer retries; Step3 result awaits verification | `task/cn-02-offers-contact-sharing`, base b09978e; [checkpoint](../evaluation/domain/conversations-offers.md); migration head `20261027064000` | Step4 inbox UI; Step8 cleanup review; actual dependency/affected-owner acceptance gates remain | 2026-10-27 07:20:35 UTC |
 | CN-03 | A; D producer review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | CN-CORE, ID-READY | — |
 | INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
 | EXP-01 | C | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | INT-01 | — |
@@ -103,6 +103,49 @@ and check succeeded. Step3 must implement exact normalized-request replay and
 any supporting receipt storage, including original expected-revision semantics;
 these are not inferred from current revision rows. Step2 awaits verification.
 No app behavior, schema, generated contract, shared DB or cloud action changed.
+
+## CN-02 Step3 — Implement real offer writes and reads — 2026-10-27 07:20:35 UTC
+
+After Rahul verified Step2 and approved the availability-first retry rule,
+implemented buyer offer create/revise/withdraw and member-only current-offer
+reads through Listings' existing command and Conversations' concrete provider.
+Submissions check current availability before replay: unavailable/out-of-window
+state returns the typed conflict, old offers remain readable, and withdrawal
+remains available after ordinary closure. Same-operation retries return their
+original revision when that state gate allows the command; altered reuse and
+stale concurrent revisions conflict. A lost reply before or after commit can be
+retried without duplicate offer rows.
+
+The forward migration `20261027064000_conversation_offer_requests.sql` records
+the original expected revision with each retained offer revision so retries
+remain exact even when a fresh offer follows purged history. Existing rows stay
+readable without fabricated retry metadata; down refuses while new receipts
+exist. All21 previously published migrations remain unchanged. Generic message
+pages now skip offer entries while advancing the shared sequence; the current
+offer is read through its separate member-only route.
+
+The first HTTP integration run found PostgreSQL's listing foreign-key key-share
+check blocked by Listings' `FOR UPDATE` guard while Conversations updated thread
+activity. Listings now uses `FOR NO KEY UPDATE`, preserving serialization with
+owner changes while permitting the FK check. The route and generated-contract
+inventories now include the implemented GET offer route.
+
+The full local `make check` passed:1930 Python passed/142 skipped,94 data,
+403 web/3 skipped; Black293, boundary0, eight generated contract artifacts,
+consumer types, web build,35 wrapper-safety cases, clean/repeated PostgreSQL18.6
+migration apply, seven SQL smokes, Identity upgrade checks, protected rollback
+and full 22-migration rollback/reapply, and Gitleaks8.30.1. The registered
+focused Conversations runner separately passed156 PostgreSQL tests with no
+skips, including offer lifecycle/retry/concurrency, timeout ambiguity,
+cookie/CSRF integration, encrypted-note metadata, retention and Listings start
+behavior. Both migration tools used fresh disposable local databases and removed
+their owned containers. `bash -n database/tests/native-checks.sh` and `git diff
+--check` passed. No generated artifacts, shared database, cloud service or
+provider were changed.
+
+Step3 is implemented and locally verified; Rahul's step verification is pending.
+Next is Step4: grouped inbox views, filters, sorting and pagination, after this
+result is verified.
 
 ## CN-01 merge closeout and CN-02 Step1 — 2026-10-27 06:16:43 UTC
 

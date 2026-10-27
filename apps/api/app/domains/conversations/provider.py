@@ -4,9 +4,7 @@ from psycopg import Error as PsycopgError
 from psycopg_pool import AsyncConnectionPool, PoolTimeout
 
 from app.contracts.domain_types import (
-    ListingOfferCommand,
     ListingThreadParticipantCheck,
-    OfferView,
     ParticipantCheck,
 )
 from app.core.auth import CallerContext
@@ -15,21 +13,25 @@ from app.domains.conversations.origin_retirement import (
     PostgresOriginRetirementOperations,
 )
 from app.domains.conversations.thread_creation import PostgresThreadCreationOperations
+from app.domains.conversations.offers import PostgresOfferOperations
 
 
 class PostgresConversationServices(
-    PostgresThreadCreationOperations, PostgresOriginRetirementOperations
+    PostgresThreadCreationOperations,
+    PostgresOriginRetirementOperations,
+    PostgresOfferOperations,
 ):
     """Bind implemented creation/lookup/retirement ports without sharing sessions.
 
     Caller eligibility uses Identity's request-scoped public runtime binding.
-    CN-02 offer persistence remains unavailable until its own implementation.
+    Offer persistence uses the same pool and the public Identity eligibility binding.
     """
 
     def __init__(self, pool: AsyncConnectionPool) -> None:
         """Retain one tuple-row pool; each operation owns its connection/transaction."""
         PostgresThreadCreationOperations.__init__(self, pool)
         PostgresOriginRetirementOperations.__init__(self, pool)
+        PostgresOfferOperations.__init__(self, pool)
 
     async def check_listing_thread_participant(
         self, caller: CallerContext, request: ListingThreadParticipantCheck
@@ -55,9 +57,3 @@ class PostgresConversationServices(
         if row is None:
             raise PublicError(ERRORS[503])
         return ParticipantCheck(is_participant=row[0])
-
-    async def persist_listing_offer(
-        self, caller: CallerContext, request: ListingOfferCommand
-    ) -> OfferView:
-        """Keep the unimplemented CN-02 mutation safely unavailable."""
-        raise PublicError(ERRORS[503])

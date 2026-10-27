@@ -173,6 +173,26 @@ def test_signed_listing_publication_to_temporary_buyer_conversation(
             ),
         )
         assert reply.status_code == 201 and reply.json()["sequence"] == 2
+        # Exercise the real buyer offer path with cookies and CSRF, not a caller
+        # override. The optional note is deliberately opaque synthetic ciphertext.
+        headers = use_actor(client, buyer)
+        offer_body = {
+            "amount_paise": 0,
+            "operation_id": str(uuid4()),
+            "note_envelope": message_request().envelope.model_dump(mode="json"),
+        }
+        offer_url = origin + "/conversations/" + opened.json()["conversation_id"]
+        offered = client.put(offer_url + "/offer", headers=headers, json=offer_body)
+        assert offered.status_code == 200, offered.text
+        assert (
+            client.put(offer_url + "/offer", headers=headers, json=offer_body).json()
+            == offered.json()
+        )
+        headers = use_actor(client, seller)
+        assert client.get(chat + "/offer").json() == offered.json()
+        page = client.get(chat + "/entries").json()
+        assert page["items"] == [sent.json(), reply.json()]
+        assert page["scanned_through_sequence"] == 3
         closed = client.put(
             origin + "/availability",
             headers=headers,
@@ -184,6 +204,24 @@ def test_signed_listing_publication_to_temporary_buyer_conversation(
         )
         assert closed.status_code == 200, closed.text
         headers = use_actor(client, buyer)
+        retry = client.put(offer_url + "/offer", headers=headers, json=offer_body)
+        assert retry.status_code == 409
+        assert retry.json()["error"]["details"] == [
+            {"field": "listing_id", "code": "unavailable"}
+        ]
+        assert client.get(chat + "/offer").json() == offered.json()
+        withdrawn = client.post(
+            offer_url + "/offer-withdrawals",
+            headers=headers,
+            json={
+                "offer_id": offered.json()["offer_id"],
+                "expected_revision": 1,
+                "operation_id": str(uuid4()),
+            },
+        )
+        assert (
+            withdrawn.status_code == 200 and withdrawn.json()["status"] == "withdrawn"
+        )
         reopened = client.post(
             origin + "/conversations",
             headers=headers,

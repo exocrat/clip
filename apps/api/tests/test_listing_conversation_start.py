@@ -82,6 +82,7 @@ async def environment(
                 transport=ASGITransport(app=app), base_url="http://test"
             ) as client:
                 yield SimpleNamespace(
+                    app=app,
                     owner=owner,
                     buyer=buyer,
                     listing=listing,

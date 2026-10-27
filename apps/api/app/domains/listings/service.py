@@ -925,7 +925,11 @@ class ListingsService:
             if not await self._identity.account_is_eligible(current.owner_id):
                 raise PublicError(ERRORS[403])
             if not self._is_discoverable(current):
-                raise PublicError(ERRORS[409])
+                # Availability also gates identical retries: a saved earlier
+                # offer stays in history, but unavailable origins show this state.
+                raise PublicError(
+                    ERRORS[409], (FieldError("listing_id", "unavailable"),)
+                )
             command = ListingOfferCommand(
                 action="submit",
                 listing_id=listing_id,
@@ -936,8 +940,9 @@ class ListingsService:
                 operation_id=request.operation_id,
             )
             try:
-                return await conversations.persist_listing_offer(caller, command)
-            except NotImplementedError:
+                async with asyncio.timeout(2):
+                    return await conversations.persist_listing_offer(caller, command)
+            except NotImplementedError, TimeoutError:
                 raise PublicError(ERRORS[503]) from None
 
     async def withdraw_offer(
@@ -967,8 +972,9 @@ class ListingsService:
                 operation_id=request.operation_id,
             )
             try:
-                return await conversations.persist_listing_offer(caller, command)
-            except NotImplementedError:
+                async with asyncio.timeout(2):
+                    return await conversations.persist_listing_offer(caller, command)
+            except NotImplementedError, TimeoutError:
                 raise PublicError(ERRORS[503]) from None
 
     async def retire_eligible_listing(

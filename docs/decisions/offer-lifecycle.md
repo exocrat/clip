@@ -38,6 +38,18 @@ remain separate. The label records a seller action and does not create a
 platform-verified payment, handover or new deal state. Listings-owner code review
 remains required for the concrete UI/public-boundary integration.
 
+## Availability-first offer retry clarification — 2026-10-27
+
+Rahul approved checking current Listings availability before replaying a
+submit/revise/resubmit operation. If the listing is unavailable or outside its
+window, return a state conflict rather than presenting the earlier saved offer
+as a successful current submission. The earlier offer stays readable as history;
+ordinary unavailability still permits withdrawal. While the action remains
+allowed, an identical operation returns its original revision and changed reuse
+conflicts. Retention removes request metadata with revision history and never
+allows a retry to restore deleted content. No additional replay-lookup interface
+is needed for this rule.
+
 ## Approver
 Mohit (C), explicit approval of the five-part offer-lifecycle proposal. The user later confirmed the PD-08 Conversations/Listings affected-owner gate complete on 2026-10-19; see the [work-log reconciliation](../status/work-log.md#resolved-integration-evidence). CN-02/LI-02 retain their implementation and concurrency checks.
 

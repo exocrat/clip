@@ -29,8 +29,8 @@ There is no unresolved offer-status or seller-selection product decision.
 
 | Surface | Accepted implementation | CN-02 work |
 | --- | --- | --- |
-| Schema | conversations.offers, offer_revisions and contact_shares already exist, with pair uniqueness, ordered entries and current-revision constraints. | Step2 must inventory/reuse these, not recreate tables or rewrite published migrations. Add only demonstrated missing storage/constraints through a forward migration. |
-| Offer boundary | Listings service/routes implement guarded submit and withdrawal and construct ListingOfferCommand. | PostgresConversationServices.persist_listing_offer deliberately returns503; implement the real owned transaction and member-only offer read. |
+| Schema | `conversations.offers`, `offer_revisions` and `contact_shares` already exist, with pair uniqueness, ordered entries and current-revision constraints. | Step2 reuses those structures. Step3 adds only original expected-revision metadata needed for exact retries, through a forward migration; all21 prior migrations remain byte-identical. |
+| Offer boundary | Listings service/routes gate submit/revise/resubmit and withdrawal; Conversations now persists revisions and provides member-only current-offer reads. | Step3 checks role/eligibility, availability ordering, exact retry intent, revision races, encrypted-note references, retention expiry and safe failure behavior through the real adapters. |
 | Selection | Listings owns the HTTP operation, revision/idempotency handling and participant check through the concrete Conversations provider. | Add the real public frontend composition; recheck integrated ownership, retries and failures. |
 | Availability | Listings has owner-authorized PUT availability, plus its private feature client. | Expose a bounded public Listings feature action for done-deal UI; Conversations must not import listingsApi.ts privately. |
 | Inbox | Conversations queries already support membership-scoped origin/partner/offer filters and amount ordering. | Add usable grouped views, real origin display through public boundaries and complete pagination behavior. |
@@ -131,5 +131,33 @@ Exact normalized request replay, including the original expected revision,
 remains a Step3 service/receipt-storage obligation; existing revision rows alone
 do not prove exact request equality after all states. Plan any necessary receipt
 storage together with those operations, preserving the approved retention rules.
-Step2 awaits human verification. Next: implement the real offer persistence/read
+Rahul verified Step2. Next: implement the real offer persistence/read
 operations through the existing Listings and Conversations public boundaries.
+
+## Step3 implementation scope (awaiting human verification)
+
+Rahul verified Step2 and approved this retry clarification: submit/revise/resubmit
+retries first obey Listings' current availability gate. Once unavailable, return
+an unavailable conflict even if an earlier attempt saved; keep that offer's
+history. Withdrawal remains allowed after ordinary unavailability. No additional
+public replay-lookup operation is introduced.
+
+Rahul is the bounded writer for Conversations offer implementation/router/provider,
+its tests, the narrow Listings error/deadline and row-lock adapter, a forward offer-request
+metadata migration and matching migration-head checks, plus the affected contract
+and evidence text. Suraj reviews Listings changes and Aditya reviews Conversations
+and Identity integration. Use revision-owned expected-request metadata rather
+than retaining duplicate ciphertext or unbounded request/response copies.
+
+The first real HTTP checks exposed an existing Listings `FOR UPDATE` lock
+blocking Conversations' independent FK key-share check when the offer trigger
+updates thread activity. The offer guard now uses `FOR NO KEY UPDATE`, matching
+the existing thread-creation guard: seller changes remain serialized, without
+blocking the structural FK. No trigger/FK protection was removed. The focused
+Conversations runner passed156 PostgreSQL checks, including the ambiguous-timeout
+cases. The full `make check` passed1930 Python tests/142 database-only skips,
+94 data,403 web/3 skips; formatting, boundaries, contracts/types, web build,
+wrapper safety, clean/repeated PostgreSQL migrations and full rollback/reapply,
+and Gitleaks also passed. See the Step3 work-log entry for the full gate summary.
+No shared target was migrated and no cloud action was performed. Step3 awaits
+Rahul's verification; Step4 remains next.
