@@ -1,18 +1,22 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type PropsWithChildren } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { Button } from '../../shared/ui';
-import type { ConversationEntry, ConversationSummary, KeyBundle } from '../../../../../contracts/generated/types.gen';
+import type { ConversationEntry, ConversationSummary, KeyBundle, SelectedOwnContacts } from '../../../../../contracts/generated/types.gen';
 import { ConversationApiError, type ConversationApi } from './api';
+import { ConversationListingSelection, isSellerSaleListingConversation, type ListingSelectionPort } from './ConversationListingSelection';
+import { ConversationListingDoneDeal, type ListingAvailabilityPort } from './ConversationListingDoneDeal';
+import { ConversationContactPreparation } from './ConversationContactPreparation';
 import { ConversationCryptoError, ConversationKeyChangeRequiredError, ConversationKeyStateLostError,
-  KeyRegistrationAcknowledgementRequiredError, type ConversationReceiveContext } from './crypto';
-import { ConversationInbox, type ConversationInboxItem } from './ConversationInbox';
+  KeyRegistrationAcknowledgementRequiredError, type ConversationReceiveContext, type OwnContactValues } from './crypto';
+import { ConversationInbox, type ConversationInboxFilters, type ConversationInboxItem } from './ConversationInbox';
 import { ConversationThread, type ConversationDisplayEntry, type ConversationKeyUiState } from './ConversationThread';
 import { openIndexedDbConversationSession, type ConversationSession } from './relay';
 
 /** Identity supplies this only after establishing a real authenticated session.
  * No component accepts a user ID from route/search/form input as caller identity.
  */
-export type ConversationPageRuntime = { userId: string; api: ConversationApi };
+export type ConversationPageRuntime = { userId: string; api: ConversationApi; listingSelection: ListingSelectionPort;
+  listingAvailability: ListingAvailabilityPort };
 const RuntimeContext = createContext<ConversationPageRuntime | null>(null);
 
 export function ConversationPageRuntimeProvider({ runtime, children }: PropsWithChildren<{ runtime: ConversationPageRuntime | null }>) {
@@ -33,27 +37,42 @@ function ConversationInboxSession() {
   const [loading, setLoading] = useState(Boolean(runtime));
   const [loadError, setLoadError] = useState(false);
   const [pageNumber, setPageNumber] = useState(1);
+  const [filters, setFilters] = useState<ConversationInboxFilters>({
+    view: 'all',
+    sort: 'last_activity_desc',
+  });
   const [hasNextPage, setHasNextPage] = useState(false);
-  const requestInFlight = useRef(false);
+  const activeRequest = useRef<AbortController | null>(null);
+  const requestGeneration = useRef(0);
   const refresh = useCallback(async (options: { silent?: boolean } = {}) => {
-    if (!runtime || requestInFlight.current) return;
-    requestInFlight.current = true;
+    if (!runtime || (options.silent && activeRequest.current)) return;
+    activeRequest.current?.abort();
+    const controller = new AbortController();
+    activeRequest.current = controller;
+    const generation = ++requestGeneration.current;
     if (!options.silent) setLoading(true);
     try {
-      // Use the server's bounded default page size. This also stays compatible
-      // with older HTTP adapters that mishandle integer Literal query strings.
-      const result = await runtime.api.listMine({ view: 'all', page: pageNumber });
+      const result = await runtime.api.listMine({ ...filters, page: pageNumber }, controller.signal);
+      if (controller.signal.aborted || generation !== requestGeneration.current) return;
       setItems(result.items.map((summary) => toInboxItem(summary, runtime.userId)));
       setHasNextPage(result.has_next);
       setLoadError(false);
     } catch {
+      if (controller.signal.aborted || generation !== requestGeneration.current) return;
       setLoadError(true);
       throw new ConversationApiError(0, 'transport');
     } finally {
-      requestInFlight.current = false;
-      if (!options.silent) setLoading(false);
+      if (generation === requestGeneration.current) {
+        activeRequest.current = null;
+        if (!options.silent) setLoading(false);
+      }
     }
-  }, [pageNumber, runtime]);
+  }, [filters, pageNumber, runtime]);
+
+  const changeFilters = useCallback((next: ConversationInboxFilters) => {
+    setFilters(next);
+    setPageNumber(1);
+  }, []);
 
   useEffect(() => {
     if (!runtime || typeof document === 'undefined') return;
@@ -92,6 +111,7 @@ function ConversationInboxSession() {
     window.addEventListener('focus', refreshNow);
     return () => {
       disposed = true;
+      activeRequest.current?.abort();
       if (timer) clearTimeout(timer);
       document.removeEventListener('visibilitychange', refreshNow);
       window.removeEventListener('focus', refreshNow);
@@ -99,6 +119,8 @@ function ConversationInboxSession() {
   }, [runtime, refresh]);
   if (!runtime) return <p role="status">Sign in to load your conversations. The authenticated session is not connected here yet.</p>;
   return <ConversationInbox conversations={items} loading={loading} loadError={loadError} onRefresh={refresh}
+    renderSellerListingAction={(listingId) => <ConversationListingDoneDeal listingId={listingId} availability={runtime.listingAvailability} />}
+    filters={filters} onFiltersChange={changeFilters}
     page={pageNumber} hasNextPage={hasNextPage} onPageChange={setPageNumber}
     onOpen={(id) => navigate(`/my/conversations/${encodeURIComponent(id)}`)} />;
 }
@@ -110,7 +132,12 @@ function toInboxItem(summary: ConversationSummary, userId: string): Conversation
     : (initiated ? 'request responder' : 'request author');
   return { conversation_id: summary.conversation_id,
     label: summary.origin_kind === 'sale_listing' ? 'Sale listing conversation' : 'Wanted request conversation',
-    role, last_activity_at: summary.last_activity_at, unread_count: summary.unread_count };
+    role, last_activity_at: summary.last_activity_at, unread_count: summary.unread_count,
+    origin_kind: summary.origin_kind, origin_id: summary.origin_id,
+    counterparty_user_id: summary.counterparty_user_id,
+    current_offer: summary.current_offer
+      ? { amount_paise: summary.current_offer.amount_paise, status: summary.current_offer.status }
+      : null };
 }
 
 /** Process peer recovery traffic and return the original message to annotate, if it was not decryptable. */
@@ -153,6 +180,7 @@ export function ConversationDetailPage({ conversationId }: { conversationId: str
 function ConversationDetailSession({ conversationId }: { conversationId: string | undefined }) {
   const runtime = useContext(RuntimeContext);
   const [ready, setReady] = useState<ReadyConversation | null>(null);
+  const [authorizedSummary, setAuthorizedSummary] = useState<ConversationSummary | null>(null);
   const [entries, setEntries] = useState<ConversationDisplayEntry[]>([]);
   const decryptionFailureIds = useRef(new Set<string>());
   const [recoveredPending, setRecoveredPending] = useState<{ operationId: string; text: string } | null>(null);
@@ -170,6 +198,7 @@ function ConversationDetailSession({ conversationId }: { conversationId: string 
     initializing.current = token;
     setLoading(true);
     setReady(null);
+    setAuthorizedSummary(null);
     try {
       const previous = activeSession.current;
       activeSession.current = null;
@@ -188,6 +217,7 @@ function ConversationDetailSession({ conversationId }: { conversationId: string 
         !callerMatchesRole || summary.counterparty_user_id === runtime.userId) {
         throw new ConversationApiError(404, 'http');
       }
+      setAuthorizedSummary(summary);
       const session = await openIndexedDbConversationSession(runtime.userId, conversationId, runtime.api,
         acknowledgeHistoryLoss ? { acknowledgeUnrecoverableHistoryRisk: true } : {});
       if (generation.current !== token) { await session.stop(); return; }
@@ -284,7 +314,9 @@ function ConversationDetailSession({ conversationId }: { conversationId: string 
           continue;
         }
         const display = await decryptEntry(entry, runtime.userId, ready, local.sent,
-          (context) => ready.session.receiveText(context));
+          local.received,
+          (context) => ready.session.receiveText(context),
+          (context) => ready.session.crypto.receiveContactShare(context, history));
         if (!isCurrent()) return;
         if (display) visible.push(display);
       }
@@ -339,6 +371,23 @@ function ConversationDetailSession({ conversationId }: { conversationId: string 
     await refresh();
   }, [ready, refresh]);
 
+  const shareContacts = useCallback(async (selected: SelectedOwnContacts, operationId: string) => {
+    if (!ready || !conversationId) throw new ConversationCryptoError('Conversation encryption is not ready');
+    const contacts: OwnContactValues = Object.fromEntries(
+      Object.entries(selected).filter((item): item is [string, string] => typeof item[1] === 'string'),
+    ) as OwnContactValues;
+    await ready.session.sendContactShare({ conversation_id: conversationId, operation_id: operationId,
+      recipient_user_id: ready.peerId, client_timestamp_ms: Date.now(), sender_key_version: ready.ownKey.key_version,
+      recipient_key_version: ready.peerKeyVersion, contacts });
+    await refresh();
+  }, [conversationId, ready, refresh]);
+
+  const retryContactShare = useCallback(async (operationId: string) => {
+    if (!ready) throw new ConversationCryptoError('Conversation encryption is not ready');
+    await ready.session.relay.retrySend(operationId);
+    await refresh();
+  }, [ready, refresh]);
+
   const acknowledge = useCallback(async (sequence: number) => {
     if (!runtime || !conversationId) return;
     const result = await runtime.api.acknowledgeDisplayed(conversationId, sequence);
@@ -355,9 +404,21 @@ function ConversationDetailSession({ conversationId }: { conversationId: string 
 
   if (!runtime) return <p role="status">Sign in to view this conversation. The authenticated session is not connected here yet.</p>;
   if (!conversationId) return <p role="alert">This conversation link is invalid.</p>;
+  const pageSummary = authorizedSummary ?? ready?.summary ?? null;
   return <section aria-label="Conversation page">
     <p><Link to="/my/conversations">Back to conversations</Link></p>
-    <h2>{ready?.summary.origin_kind === 'sale_listing' ? 'Sale listing conversation' : ready ? 'Wanted request conversation' : 'Private conversation'}</h2>
+    <h2>{pageSummary?.origin_kind === 'sale_listing' ? 'Sale listing conversation' : pageSummary ? 'Wanted request conversation' : 'Private conversation'}</h2>
+    {authorizedSummary ? <ConversationContactPreparation key={conversationId} conversationId={conversationId} api={runtime.api}
+      canShare={keyState.kind === 'ready' && ready !== null} onShare={shareContacts} onRetry={retryContactShare} /> : null}
+    {authorizedSummary && isSellerSaleListingConversation(authorizedSummary) ? (
+      <ConversationListingSelection
+        key={`${authorizedSummary.origin_id}:${authorizedSummary.conversation_id}`}
+        listingId={authorizedSummary.origin_id}
+        conversationId={authorizedSummary.conversation_id}
+        buyerId={authorizedSummary.counterparty_user_id}
+        selection={runtime.listingSelection}
+      />
+    ) : null}
     {keyState.kind === 'error' ? <Button disabled={loading} onClick={() => void initialize().catch(() => undefined)} variant="secondary">Retry loading conversation</Button> : null}
     <ConversationThread current_user_id={runtime.userId} entries={entries} key_state={keyState}
       last_read_sequence={readSequence} loading={loading} onRefresh={refresh} onSend={send} onRetry={retry}
@@ -372,14 +433,36 @@ async function decryptEntry(
   userId: string,
   ready: ReadyConversation,
   sent: import('./history').LocalSentMessage[],
+  received: import('./crypto').ReceivedConversationMessage[],
   receive: (context: ConversationReceiveContext) => Promise<unknown>,
+  receiveContactShare: (context: ConversationReceiveContext) => Promise<unknown>,
 ): Promise<ConversationDisplayEntry | null> {
   if (entry.kind === 'protocol_control') return null;
-  if (entry.kind === 'contact_share') return { entry_id: entry.entry_id, sequence: entry.sequence,
-    sender_user_id: entry.sender_user_id, created_at: entry.created_at,
-    text: 'A contact share is available through the contact-sharing flow.', content_deleted: false };
   if (entry.content_deleted) return { entry_id: entry.entry_id, sequence: entry.sequence,
-    sender_user_id: entry.sender_user_id, created_at: entry.created_at, text: null, content_deleted: true };
+    sender_user_id: entry.sender_user_id, created_at: entry.created_at,
+    text: entry.kind === 'contact_share' ? 'Contact details were removed after 30 days.' : null, content_deleted: true };
+  if (entry.kind === 'contact_share') {
+    if (entry.sender_user_id === userId) return { entry_id: entry.entry_id, sequence: entry.sequence,
+      sender_user_id: userId, created_at: entry.created_at, text: 'You shared contact details.', content_deleted: false };
+    const cached = received.find((message) => message.message_id === entry.entry_id);
+    let serialized: string;
+    if (cached) serialized = cached.text;
+    else {
+      const envelope = entry.envelope;
+      if (!envelope || envelope.sender_key_version == null || envelope.recipient_key_version == null) {
+        throw new ConversationCryptoError('Contact-share encryption metadata is unavailable');
+      }
+      const result = await receiveContactShare({ conversation_id: ready.summary.conversation_id,
+        message_id: entry.entry_id, sequence: entry.sequence, sender_user_id: entry.sender_user_id, sender_device_id: 1,
+        expected_sender_key_version: envelope.sender_key_version, expected_recipient_key_version: envelope.recipient_key_version,
+        envelope });
+      if (!result || typeof result !== 'object' || !('text' in result) || typeof result.text !== 'string') return null;
+      serialized = result.text;
+    }
+    const details = parseContactDetails(serialized);
+    return { entry_id: entry.entry_id, sequence: entry.sequence, sender_user_id: entry.sender_user_id,
+      created_at: entry.created_at, text: null, contact_details: details, content_deleted: false };
+  }
   if (entry.sender_user_id === userId) {
     const local = sent.find((message) => message.confirmation?.message_id === entry.entry_id);
     const pending = sent.find((message) => message.confirmation === null && message.request.client_timestamp_ms === entry.envelope?.client_timestamp_ms &&
@@ -400,4 +483,17 @@ async function decryptEntry(
   if (!decoded || typeof decoded !== 'object' || !('text' in decoded) || typeof decoded.text !== 'string') return null;
   return { entry_id: entry.entry_id, sequence: entry.sequence, sender_user_id: entry.sender_user_id,
     created_at: entry.created_at, text: decoded.text, content_deleted: false };
+}
+
+function parseContactDetails(value: string): OwnContactValues {
+  let parsed: unknown;
+  try { parsed = JSON.parse(value); } catch { throw new ConversationCryptoError('Saved contact details are invalid'); }
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new ConversationCryptoError('Saved contact details are invalid');
+  const fields = parsed as Record<string, unknown>;
+  const keys = Object.keys(fields);
+  if (!keys.length || keys.some((key) => !['email', 'phone', 'upi_id'].includes(key)) ||
+    keys.some((key) => typeof fields[key] !== 'string' || !fields[key].trim() || fields[key].length > 320)) {
+    throw new ConversationCryptoError('Saved contact details are invalid');
+  }
+  return { ...fields } as OwnContactValues;
 }

@@ -306,7 +306,10 @@ bounded visible page size of 20 by default and 20/50/100 allowed. The cursor
 means the greatest global sequence the server inspected, not necessarily the
 last returned entry. Because a sender cannot retrieve its own recipient-only
 retry controls, a response may contain no visible entries while advancing the
-cursor across those controls. Clients continue while `has_more` is true and do
+cursor across those controls. Structured offer entries also use the shared
+sequence but are not text-message response items; the current offer is read
+through the member-only offer endpoint. The cursor advances across offer entries.
+Clients continue while `has_more` is true and do
 not interpret skipped sequence numbers as message loss. An empty scan does not
 advance the cursor. Each entry exposes only the metadata needed to render the
 authorized thread: ID, sequence, kind, sender, creation instant and either the
@@ -406,8 +409,15 @@ a new submitted revision using an expected current revision; stale changes
 conflict. A withdrawal appends a withdrawn revision with the prior amount; it
 does not clear seller selection. A later resubmit reuses the same offer ID and
 appends another submitted revision. Each command has an idempotency operation
-UUID: identical retries return the original result; conflicting reuse returns
-a conflict. One offer per buyer/thread is a database-backed invariant. Seller
+UUID: identical retries return the original result while the Listings command's
+current state gate permits the action; conflicting reuse returns a conflict.
+Availability is checked before replay for submit/revise/resubmit: an unavailable
+or out-of-window listing returns 409 with `listing_id: unavailable`, even when
+that operation previously saved an offer. The saved revision remains readable;
+withdrawal remains allowed after ordinary unavailability. Recorded original
+expected revisions and opaque note metadata distinguish exact retries from
+changed intent. Removed history cannot be replayed into existence; its operation
+returns `write_expired`. One offer per buyer/thread is a database-backed invariant. Seller
 selection is a separate Listings action, not offer acceptance, reservation,
 payment, or handover verification. Wanted Request response threads do not
 support structured offers; adding them requires a new reviewed decision.
@@ -433,6 +443,8 @@ The client submits a contact-share envelope addressed to the other member
 using the approved protocol. Conversations stores only its entry kind, key
 references and encrypted envelope; selected field labels are inside the
 ciphertext and are not stored as plaintext columns or notification metadata.
+The SDK may label a first encrypted send `prekey_bundle`; contact shares accept
+that or `ciphertext`, but never retry/recovery control envelopes.
 Only the two members can retrieve it. If Identity retrieval or conversation
 storage fails, no contact-share entry is reported as successful or partly
 published. Contact-share payloads and encrypted field labels are removed 30

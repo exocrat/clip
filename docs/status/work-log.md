@@ -53,8 +53,8 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | SE-01 | Mohit (C); peer Suraj (B), Identity review | in progress | PR15 hosted Python/web/database gates pass; checksum-evidence scanner false positive corrected locally | 47714cc fixes readiness; subsequent CI reaches final secret scanner; two verified SHA256 fingerprints reformatted without scanner exemptions | Mohit verified Hybrid-default UI and requested branch push/PR | Search PR #11 worktree `task/search-evidence-reduction` at `864e53b`; new listing `194a32d4-64bb-491b-b4ec-68403e26f7f3` produced one title and one description vector (384 dimensions each), then matched in both modes through API and Vite proxy; session `/tmp/clip-listings-browser-v6e1f01t`; UI `http://127.0.0.1:5173/`  [Hybrid default UI](../evaluation/domain/se-01/hybrid-default-ui/result.json): lint86/web289pass/3skip/types/build pass;  [PR15 correction](../evaluation/domain/se-01/pr15-ci-readiness/result.json): unit11/native21/3skip/17migrations/Black2/boundaries/diff pass;  [Hosted rerun](https://github.com/exocrat/clip/actions/runs/40382575520) functional/database gates pass; evidence-format rerun pending. | Formal SE-CORE/DATA-READY and final NFR/hosted-CI acceptance remain outside this merge step | 2026-10-26 19:06:47 UTC |
 | SE-02 | Mohit (C); peer Suraj (B), Identity/Conversations review | in progress | Step8 real integration gated; local handoff human-verified | Steps1–7 isolated result verified; Step8 audit performed | Mohit verified isolated UI and combined local handoff | [Search handoff](../evaluation/domain/search-handoff/result.json): Python1270/data94/web144,Black183,native20/3skip,wrapper35/contracts8/boundaries/parity/type/build pass | Await actual ID-READY/LI-CORE/SE-CORE/C adapters; Step9 final acceptance, pinned secrets/hosted CI and independent review pending | 2026-10-25 08:50:43 UTC |
 | MERGE-LI-SE | Suraj (integration); Listings/Search affected owners | done | PR #11 is squash-merged; Search–Listings local merge task is complete | Steps 1–9 performed; approved PR head `2a43066` merged to `main` as `e315c9d`; final hosted CI run `40204621122` passed | Steps 3–8 verified by Suraj; user authorized squash merge of the exact PR revision on 2026-10-25 | PR #11 `https://github.com/exocrat/clip/pull/11`; source head `2a430660d25e7c14cf33d84bd78172db4ec063c7`; squash merge `e315c9df3e0e11d6e9c8d7d244d676204d3af7e8`; hosted CI `40204621122`; local merge commit `29eb6fb`; fallback branch `safety/search-pr11-pre-main-reconciliation-20261025`; stash `af9d7f5`; local checks recorded below | No blocker for the Search–Listings merge. Final dataset, formal NFR/cloud checks, and real Identity/Conversations remain later work. | 2026-10-25 15:17:46 UTC |
-| CN-01 | Rahul (D) | in progress | Participant-key readiness correction complete; latest main merged; prepare and validate PR | All12 combined `make check` gates passed: Python1930/100skip, data94, web403/3skip, DB114, migrations, Black, types, contracts, boundaries, wrapper and secrets | Rahul verified Steps1–3; current-main reconciliation awaits verification | `task/cn-01-conversations`; current base `7612fd8747ee053701a7316ef9b93dedc5d10cdb`; [integration checkpoint](../evaluation/domain/conversations-integration.md); temporary harness stays uncommitted under/tmp | Current hosted CI and independent Aditya/affected-owner review; exact merge authorization; full CN-01 later gates remain | 2026-10-26 21:10:00 UTC |
-| CN-02 | D; A/B interface review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | Isolated development: PRE-00, then DL-00 and a reviewed contract/stub. Later real gates: CN-CORE, ID-READY, and LI-CORE for listing-origin behavior; SE-02 plus CN-01's real request path for request-response inbox integration. | — |
+| CN-01 | Rahul (D) | in progress | PR17 integration merged; final CN-01/readiness/NFR obligations remain | Accepted main b09978e contains reviewed head3773931; hosted run40402518748 passed; prior local aggregate1930Python/403web and Conversations114 | Rahul verified local correction and confirmed PR merged; no additional milestone acceptance inferred | [PR17](https://github.com/exocrat/clip/pull/17), merge `b09978e91620ae3877a77c5bea8a4f12df7a8907`; [integration checkpoint](../evaluation/domain/conversations-integration.md) | Formal readiness/remaining device and security checks; CN-03 producer path and final NFR-05; full task acceptance pending | 2026-10-27 06:16:43 UTC |
+| CN-02 | Rahul (D); Aditya/Suraj review | in progress | Step11 local aggregate checks passed; obtain human verification, then complete real dependency/owner review gates | 1930 Python passed/153 skipped; 94 data; 433 web/3 skipped; build/types/lint, Black 296 files, mypy, contract generation (8 artifacts), boundaries, DB lifecycle PostgreSQL18.6, Conversations harness167, DB safety35, Gitleaks8.30.1 passed | Step10 verified; Step11 local result pending Rahul verification | `task/cn-02-offers-contact-sharing`; [checkpoint](../evaluation/domain/conversations-offers.md); [browser walkthrough](../environment/conversation-browser-test.md) | Formal CN-CORE/ID-READY/LI-CORE acceptance, affected-owner review and hosted CI remain required for full CN-02 acceptance; later real-session/deployment gates remain | 2026-10-27 15:15:10 UTC |
 | CN-03 | A; D producer review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | CN-CORE, ID-READY | — |
 | INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
 | EXP-01 | C | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | INT-01 | — |
@@ -82,6 +82,427 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | DATA-READY | not accepted | SE-01 steps 2/4/9 | — | pending |
 | CN-CORE | not accepted | CN-01 step 10 | — | pending |
 | OPTIONAL-OK | not approved | Each optional task's selection/priority plan | — | pending |
+
+## CN-02 Step2 — Reuse and verify offer storage — 2026-10-27 06:31:24 UTC
+
+After Step1 verification, inspected the final installed offer/entry/payload
+guards and existing cleanup path. Core storage already exists; no migration or
+published SQL edit was needed. Added18 synthetic PostgreSQL checks in
+`test_conversation_offer_storage.py`: lifecycle/revision identity, integer-paise/
+status rejection, buyer/origin constraints, uniqueness, immutable history,
+deferred pointer validation, withdrawal rules, optional-note key binding,
+atomic rollback and retention preserving offer/counter/operation guards with
+later fresh revision reuse. Added that file to the existing disposable checker
+and updated its command/storage documentation. This is direct-SQL storage
+evidence, not real offer-service or encryption acceptance.
+
+The registered runner passed132 tests without skips on fresh PostgreSQL18.6 and
+removed its owned container. Black2, boundaries0, whitespace and Gitleaks8.30.1 passed.
+The sandbox formatter stalled and was interrupted; elevated pinned formatting
+and check succeeded. Step3 must implement exact normalized-request replay and
+any supporting receipt storage, including original expected-revision semantics;
+these are not inferred from current revision rows. Step2 awaits verification.
+No app behavior, schema, generated contract, shared DB or cloud action changed.
+
+## CN-02 Step3 — Implement real offer writes and reads — 2026-10-27 07:20:35 UTC
+
+After Rahul verified Step2 and approved the availability-first retry rule,
+implemented buyer offer create/revise/withdraw and member-only current-offer
+reads through Listings' existing command and Conversations' concrete provider.
+Submissions check current availability before replay: unavailable/out-of-window
+state returns the typed conflict, old offers remain readable, and withdrawal
+remains available after ordinary closure. Same-operation retries return their
+original revision when that state gate allows the command; altered reuse and
+stale concurrent revisions conflict. A lost reply before or after commit can be
+retried without duplicate offer rows.
+
+The forward migration `20261027064000_conversation_offer_requests.sql` records
+the original expected revision with each retained offer revision so retries
+remain exact even when a fresh offer follows purged history. Existing rows stay
+readable without fabricated retry metadata; down refuses while new receipts
+exist. All21 previously published migrations remain unchanged. Generic message
+pages now skip offer entries while advancing the shared sequence; the current
+offer is read through its separate member-only route.
+
+The first HTTP integration run found PostgreSQL's listing foreign-key key-share
+check blocked by Listings' `FOR UPDATE` guard while Conversations updated thread
+activity. Listings now uses `FOR NO KEY UPDATE`, preserving serialization with
+owner changes while permitting the FK check. The route and generated-contract
+inventories now include the implemented GET offer route.
+
+The full local `make check` passed:1930 Python passed/142 skipped,94 data,
+403 web/3 skipped; Black293, boundary0, eight generated contract artifacts,
+consumer types, web build,35 wrapper-safety cases, clean/repeated PostgreSQL18.6
+migration apply, seven SQL smokes, Identity upgrade checks, protected rollback
+and full 22-migration rollback/reapply, and Gitleaks8.30.1. The registered
+focused Conversations runner separately passed156 PostgreSQL tests with no
+skips, including offer lifecycle/retry/concurrency, timeout ambiguity,
+cookie/CSRF integration, encrypted-note metadata, retention and Listings start
+behavior. Both migration tools used fresh disposable local databases and removed
+their owned containers. `bash -n database/tests/native-checks.sh` and `git diff
+--check` passed. No generated artifacts, shared database, cloud service or
+provider were changed.
+
+Rahul verified Step3 after the recorded checks above. Step4 is the next
+checkpoint: grouped inbox views, filters, sorting and pagination.
+
+## CN-02 Step4 — Grouped conversation inbox — 2026-10-27 07:40:06 UTC
+
+Implemented the Conversations inbox against the real member-scoped list API.
+The page now groups the server-returned page by Sale Listing or Wanted Request,
+shows the caller's buyer/seller/responder/author role, partner and current offer,
+and provides participation, origin, partner and offer filters plus stable server
+sorting and pagination. Offer bounds are entered in whole rupees and sent as
+integer paise. Offer controls are disabled for Wanted Requests; amount sorting
+keeps no-offer conversations per the existing API behavior. Since the summary
+contract has no origin titles or display names, the UI uses shortened IDs and
+explains that groups and identifier choices cover only conversations currently
+loaded; it makes no private cross-domain lookup.
+
+`ConversationPages.tsx` sends filters/page through the authenticated API and
+ignores stale or aborted responses when users change them quickly. The new
+`ConversationInbox` controls are only enabled when a query owner is supplied, so
+the isolated demo path remains unchanged. Responsive styles, UI/component tests,
+an authenticated route/query regression, the public feature type export, and
+the frontend route map were updated together. No API contract, generated file,
+database, or cloud resource changed.
+
+The focused inbox/composition suite passed18 tests. The full pinned web check
+passed lint,409 tests with3 existing skips, TypeScript checks, and production
+build. Gitleaks8.30.1 passed on a read-only source snapshot; `git diff --check`
+passed. Vite reports its existing large-chunk advisory; build succeeds. Rahul
+verified the responsive browser checkpoint at 2026-10-27 07:43:40 UTC. Step4 is
+complete; Step5 seller selection is next. No push or shared operation was
+performed.
+
+## CN-02 Step5 — Seller selection through Listings — 2026-10-27 08:08:11 UTC
+
+Implemented the seller-only buyer-selection action on an authorized Sale Listing
+conversation. `ConversationPages.tsx` keeps the verified conversation summary
+available even while client encryption setup is pending, then shows the action
+only when the authenticated Conversations summary says this caller is the Sale
+Listing owner. The selection panel reads the owner's current Listing revision
+and selected state, offers selection only while the listing is available and in
+its date window, and describes selection as separate from accepting an offer,
+reserving the item, or marking a done deal.
+
+`listingsApi.ts` adds the typed call to Listings' existing revision/idempotency-
+guarded selection endpoint; the Listings public barrel exports that call and its
+types. `ConversationRuntime.tsx` injects a narrow adapter using only public
+Listings and Conversations entry points. It maps stale 409s to a refresh-and-
+review state, keeps the exact request/operation ID after an uncertain result,
+and never displays success before Listings confirms. Listings continues to
+enforce owner, eligibility, exact-thread membership, availability, revision and
+retry rules. The Conversations feature imports no Listings-private file.
+
+The focused UI and API-boundary suite passed19 tests, including seller-only
+eligibility, no-offer selection, exact listing/thread/revision request, same-key
+retry, stale-revision refresh, unavailable listing, safe read failure, and the
+real route-composition adapter. The full pinned web gate passed lint,417 tests
+with3 existing skips, app/test TypeScript and production build. The guarded
+Listings PostgreSQL workflow passed21 tests with3 documented skips. The updated
+two-browser harness mounts the real Listings and Conversations routers/stores;
+its check-only selection-and-clear workflow passed against disposable PostgreSQL
+with the real Conversations participant check. Synthetic request identities
+remain isolated; actual Identity sign-in is not claimed. Black, Gitleaks8.30.1,
+and `git diff --check` passed. Vite retains its existing large-chunk advisory.
+
+`conversation_browser.py` and its walkthrough now include this combined local
+flow. The live loopback browser checkpoint is waiting for Rahul: seller
+`http://127.0.0.1:5273/my/conversations`, buyer
+`http://127.0.0.1:5274/my/conversations`; the harness is capped at15minutes and
+removes only its disposable PostgreSQL data on stop. Confirm the seller sees and
+can use selection in the no-offer thread, the buyer does not see the control,
+and the confirmation is clear. Step5 is not marked human-verified yet. No cloud,
+shared database, migration, generated contract, push or merge operation occurred.
+
+## CN-02 Step5 behavior amendment — 2026-10-27 08:18:21 UTC
+
+Rahul directed that setting a selected buyer must also make the Sale Listing
+unavailable, then verified the documentation-only implementation plan. This
+changes the previously recorded offer-lifecycle decision that selection left
+availability unchanged. The Listings and combined contracts now specify that
+the owner-authorized selection command atomically writes selected buyer and
+conversation plus `availability=unavailable`, preserving the current window
+under the existing revision/idempotency transaction. Failed/conflicting writes
+change neither value; clearing selection does not reopen. Selection still does
+not mean offer acceptance, reservation, payment/handover verification, or a
+completed deal. The separate **Mark as done deal** action remains for taking a
+listing off-market without selecting a buyer.
+
+Updated the evaluation checkpoint so prior Step5 tests and browser instructions
+are not mistaken for verification of the new behavior. No application code was
+changed in this documentation step; implementation, updated automated tests,
+interactive browser verification and Suraj's Listings-owner review remain next.
+`git diff --check` passed, and the changed contract/decision passages were
+cross-checked for consistent set/clear/reopen semantics. The generated-contract
+check was attempted but refused this environment's Node 26/npm 12 (CI pins Node
+24.22.0); it is not required for these prose-only contract edits. No dedicated
+Markdown link checker is configured. No push, cloud action, shared database
+operation, or merge was performed.
+
+## CN-02 Step5 amended behavior implementation — 2026-10-27 10:11:13 UTC
+
+After Rahul verified the Step1 documentation result and Step2 implementation
+plan, changed Listings' selection store to select the buyer and mark the listing
+unavailable within one locked transaction and one revision increment. The first
+PostgreSQL run exposed the existing origin trigger's available-at-selection
+check. Rather than changing migration history or replacing that trigger, the
+transaction stages selection while available, then marks unavailable before
+commit and saves the original result atomically. Clearing only clears the pair.
+The service/store/route documentation describes these effects. Existing owner,
+eligibility, exact-thread, revision and idempotency checks remain authoritative.
+
+Updated the seller panel and composition tests to confirm the listing becomes
+unavailable. Reopened listings with a retained buyer now show actual availability
+and permit selecting that buyer again. The PostgreSQL workflow checks a non-null
+date window is preserved, replay uses the original revision, conflicting intent
+fails, clearing does not reopen, and existing edit/retirement checks still pass.
+The browser harness and walkthrough check the same effect through real Listings
+and Conversations SQL/public participant checks, with fixed synthetic actors.
+
+Checks: focused web20 and final full web418/3skip passed. An earlier full run had
+one transient inbox-loading timeout; isolated and whole-suite reruns passed. Lint116,
+TypeScript and build passed. Listings PostgreSQL21/3skip and combined migration
+lifecycle passed; check-only two-domain browser harness passed. Changed Python
+files passed individual Black checks, boundary scan found0 violations, and
+Gitleaks8.30.1 passed. Sandbox worker-based Black attempts stalled/refused and
+were stopped; per-file checks resolved that tooling issue. This shell has Node
+26.8.2/npm12.0.2, so these web checks do not replace required Node24/npm11 CI.
+Interactive updated browser verification and Suraj's owner review remain
+pending. No migration, shared database, cloud, push or merge operation occurred.
+
+Rahul confirmed the updated local browser flow works at 2026-10-27 10:18:54 UTC
+against implementation `e103562`. This completes Step5's human checkpoint for
+the revised selection/unavailable behavior; browser/version and viewport details
+were not supplied, so no new device-coverage claim is inferred. Stopped the
+temporary preview; its helper removed its own disposable database. Released the
+Step5 shared frontend reservation. Step6's separate done-deal action is next;
+affected-owner review and aggregate acceptance remain as recorded above.
+
+## CN-02 Step6 — Seller done-deal action — 2026-10-27 10:26:27 UTC
+
+Rahul verified the Step6 plan. Added an owner-only **Mark as done deal** action
+beside each Sale Listing group heading in the real Conversations inbox. The
+new availability component reads current owner state, sends the expected
+revision and both current window values to Listings, and displays authoritative
+state after success. It preserves the exact operation/request after uncertain
+results; a conflict reloads state before another deliberate attempt. Already
+unavailable listings display their status. Buyers and Wanted Request groups
+receive no action. Group headers wrap on narrow screens.
+
+Listings' public feature barrel now exports its existing availability command;
+the shared ConversationRuntime injects the narrow port and reloads owner-only
+state because the command's detail response intentionally omits private
+revision/selection fields. ConversationPages supplies the control slot to the
+inbox; no Conversations-private-to-Listings import or backend change is needed.
+Tests cover exact preserved-window requests, owner-only grouping, already
+unavailable/read-failure states, uncertain retry, stale revision and actual
+session/public Listings page composition. The interaction fixture includes the
+new required capability.
+
+The disposable browser harness now verifies the real availability operation,
+preserved selected buyer/window, identical replay, buyer403 and retained chat
+access. Its fixture is explicitly cleared/reopened through Listings APIs after
+checking; this fixes the earlier setup leaving it unavailable after selection.
+An initial harness assertion incorrectly expected private revision/availability
+on the detail response; owner-only rereads corrected that test to match the
+real contract. The human walkthrough now has a separate Step6 path.
+
+Full web gate passed lint118,424 tests/3 existing skips, TypeScript and production
+build; Vite's existing chunk advisory remains. The shell uses Node26.8.2/npm12.0.2;
+required Node24/npm11 hosted checks remain pending. Actual two-domain SQL/API
+check passed; Python Black, boundaries0 and Gitleaks8.30.1 passed. No migration,
+shared database, cloud, push or merge operation occurred. Human browser
+verification and Suraj/Aditya affected-owner review remain pending.
+
+Rahul verified the Step6 browser checkpoint at 2026-10-27 10:31:38 UTC against
+`396a0c9`: seller done-deal action, unavailable state after reload, absent buyer
+control and retained chat flow. Browser/version/viewport details were not
+supplied. Stopped the local preview and its helper-owned disposable database;
+released the shared Step6 writer reservation. Step6 is human-verified and Step7
+contact preparation is next; affected-owner and readiness gates remain pending.
+
+## CN-02 Step7 — Explicit own-contact preparation — 2026-10-27 10:45:19 UTC
+
+Rahul verified the Step7 scope. Added `conversations/contacts.py` and the two
+already-declared HTTP routes. The service checks membership and the local
+no-write marker using Conversations rows, then installs Identity's server-only
+scope inside the request and calls only public Identity ports. Options expose
+own availability flags; confirmed preparation requests exact distinct fields,
+returns only current own values and persists no values, entries or activity.
+Identity handles current account status and removed fields. Unbound providers
+fail503; wrong actor or unselected/partial provider output cannot leak values.
+
+`ConversationContactPreparation.tsx` adds deliberate choose/review/confirm/cancel
+steps in the authorized Conversation page. API methods validate flag-only and
+selected-only responses. Values are discarded without DOM/state/storage/logging;
+the UI explicitly says nothing was sent because encrypted publication is Step8.
+The local helper initializes synthetic source contacts through Identity's own
+editing service and binds real providers per request while clearing ambient
+claims; its HTTP check proves preparation does not change conversation activity.
+The walkthrough and domain README explain these exact limits.
+
+The registered disposable Conversations suite passed160 cases including4 new
+real Identity-contact/Conversation cases. The existing actual-cookie shared-app
+workflow was extended and passed: publish a listing, start a temporary buyer's
+thread, edit own contacts, fetch flags/selected email, reject missing CSRF,
+foreign Origin, removed fields and a nonmember, while preserving entries and
+activity. External Microsoft/mail/object storage are controlled; no caller
+override is used in that cookie workflow. Initial tests caught an invalid
+synthetic email suffix and an inline generated ContactField type; fixtures and
+the client-derived type now match the actual Identity/generated contracts.
+
+Web427/3 existing skips and lint120 passed; final app/test types and build pass.
+Node26.8.2/npm12.0.2 is available here; required24/11 CI remains pending. Black,
+boundaries0, whitespace and Gitleaks8.30.1 pass, as does the actual two-actor
+browser API check. No migration, package, generated declaration, shared-database,
+cloud, push or merge change occurred. Human preparation-flow verification and
+Aditya's Identity/security review remain pending. Step8 encryption/30-day cleanup
+requires its own verified scope and concrete destructive-method review.
+
+## CN-02 Step8 — Encrypted contact sharing and independent cleanup — 2026-10-27 12:49:07 UTC
+
+Implemented encrypted contact-share publication over the existing Conversations
+entry pipeline. The browser encrypts selected contact labels and values with the
+OpenE2EE peer session and binds the payload to the conversation, participants
+and key versions; recipient-side checks reject tampering, wrong context and
+wrong keys. The initial SDK `prekey_bundle` is accepted as encrypted content,
+while recovery/control envelopes remain rejected. Server persistence stores
+opaque ciphertext only, with exact operation replay/conflict behavior.
+
+Added an independent, dry-run-by-default 30-day cleanup command path. It uses
+PostgreSQL time, locks and rechecks the thread/entry, then removes the encrypted
+payload and subtype in one transaction while retaining the ordered entry and
+operation/SDK/thread guards. A forward migration changes only the local payload
+trigger condition; down restores the old condition without deleting data.
+No schema/table count changes, shared database apply, cloud action, package
+change, push or merge occurred. Updated the browser walkthrough with a
+two-actor synthetic contact-share test.
+
+Checks: focused disposable PostgreSQL suite164 passed; the full PostgreSQL18.6
+database lifecycle, rollback and reapply checker passed. Pinned Node24.22.0/
+npm11.19.1 `npm run check` passed lint120, web431/3 existing skips, app/test
+TypeScript and production build. Contract generator/check reported all8
+artifacts current; changed Python files passed individual Black checks;
+boundaries found0 violations, Gitleaks8.30.1 and `git diff --check` passed. Vite reports its
+existing advisory for bundles above500 kB. Rahul confirmed the two-browser
+encrypted contact-share flow works at 2026-10-27 12:53 UTC; browser/version/
+viewport details were not supplied. The local preview and its disposable
+database were stopped. Step8's human checkpoint is verified; affected-owner
+review, hosted CI and later real-session integration remain open.
+
+## CN-02 Step9 — Combined offer, selection and contact-share regression — 2026-10-27 13:07:49 UTC
+
+Added two real API/database regression cases to
+`test_conversation_contact_share_cleanup.py`. The combined journey uses the
+actual Listings and Conversations routers, stores and participant-check
+provider: the buyer submits an offer; the seller selects that exact conversation
+buyer, making the listing unavailable; a new offer is rejected without
+changing the saved offer; then the existing thread accepts and exactly replays
+an encrypted contact-share entry. The current offer remains available through
+the seller offer view, while the general transcript exposes only the contact
+share at its ordered sequence. A malformed recovery/control envelope test
+checks that neither the error response nor captured logs echo its payload.
+
+The first run showed that the new test incorrectly expected structured offer
+entries in the message transcript; the real API correctly exposes offers
+through the offer view. The assertion was corrected to test each through its
+owning API. A follow-up fixture adjustment ensured malformed control content
+reaches the server validation boundary instead of being rejected by the local
+test-model constructor. Final focused PostgreSQL18.6 run passed166 tests. Six
+relevant browser test files passed50 tests with the real SDK crypto paths;
+changed Python test Black check, boundary0, Gitleaks8.30.1 and `git diff
+--check` passed. Only synthetic auth and opaque synthetic ciphertext are used
+in the database harness; live Identity-session and deployed integration remain
+pending. Rahul verified Step9 at 2026-10-27 13:12 UTC. Affected-owner review,
+hosted CI and later real-session/deployment gates remain open.
+
+## CN-02 Step10 — Cross-domain failure and ambiguous retries — 2026-10-27 13:23:38 UTC
+
+Added a real Listings/Conversations API failure test: the Conversations
+participant-check port times out, Listings returns a safe dependency-unavailable
+response, and Listing revision/availability/selection plus thread counters stay
+unchanged. Retrying the exact same operation succeeds; replaying it returns the
+same result without another Listing or thread write. This exposed and fixed an
+unhandled dependency exception in `ListingsService.set_selected_buyer`: the
+public membership call is now time-bounded, deliberate `PublicError`s retain
+their declared result, and other dependency failures fail closed as 503 before
+Listings writes.
+
+The seller selection UI regression asserts an uncertain result is never shown
+as success and its retry uses the same command. Contact tests assert Identity
+option failure shows no choices, selected-contact preparation failure never
+calls the share action, and a send with an ambiguous result retries the same
+operation ID without fetching values or invoking send again. Existing Identity
+provider-shape tests reject partial/unselected values; existing Conversations
+HTTP tests cover exact contact-share replay. The local PostgreSQL18.6 harness
+passed167 tests; focused web tests passed12 under the available Node26/npm12
+(the project-pinned Node24/npm11 runtime was unavailable). Changed Python files
+passed Black checks, the boundary scan reported0 violations, compilation and
+whitespace checks passed. No cloud or deployed session test was run. Rahul
+verified Step10 at 2026-10-27 13:41 UTC. Step11 and the pinned-runtime
+web rerun remain.
+
+## CN-02 Step11 — Local aggregate acceptance checks — 2026-10-27 15:15:10 UTC
+
+The pinned Node24.22.0/npm11.19.1 runtime was downloaded to `/tmp`, verified
+against the official SHA-256 `cc2f601cee82d9a5a233302fe307abc600727035fd7d2c3a3571755989e95008`,
+and used for the local contract and frontend gates. The full local checks passed:
+1930 Python tests (153 skipped), 94 data tests, 433 web tests (3 skipped),
+web lint/typecheck/production build, Black check for 296 files, mypy for the two
+registered interface-test files, all eight generated contract artifacts,
+zero boundary violations, database safety's 35 cases, the PostgreSQL18.6
+combined clean/head/repeat migration lifecycle, 167 focused Conversations
+retirement tests, and Gitleaks8.30.1. The CI parity check confirmed the 12
+local gates remain ordered with `make check`.
+
+The first full run exposed stale test setup and route inventories. The
+Conversation browser guard fixture now passes the SQL connection provider and
+listing ID required by the harness signature, with a provider that raises if
+those no-database guard tests unexpectedly query SQL. Both route-inventory tests
+now include the three implemented contact endpoints. Black formatted the
+canonical `ConversationEntry` validation in `contracts/source/types.py`; the
+generated `apps/api/app/contracts/domain_types.py` was regenerated from that
+source. The full Python suite passed after these corrections. No conversation,
+offer, selection, contact-sharing or migration runtime behavior changed in this
+step.
+
+The real Identity integration tests ran within that suite, including session,
+Origin/CSRF, temporary-account contact preparation, selected-field disclosure,
+and encrypted contact-share paths. Step11 remains partial for full task
+acceptance: the work-log milestone table still lists CN-CORE, ID-READY and
+LI-CORE as not accepted, and affected-owner review plus hosted CI are pending.
+No cloud action or shared database apply was performed; disposable Docker test
+containers were cleaned up. Vite reports the existing large JavaScript chunk
+warning. Rahul verification is pending.
+
+## CN-01 merge closeout and CN-02 Step1 — 2026-10-27 06:16:43 UTC
+
+Verified PR17 merged at2026-10-27 05:43:33 UTC as main
+`b09978e91620ae3877a77c5bea8a4f12df7a8907`; reviewed head3773931 passed hosted
+run40402518748. Rahul confirmed the merge, selected CN-02 and verified its
+twelve-step plan including the seller-only done-deal action. Created
+`task/cn-02-offers-contact-sharing` from that accepted main after finding no
+local/tracked CN-02 branch or open PR. Two unpublished CN-01 documentation commits remain
+on the old branch; no history was rewritten or carried over implicitly.
+
+Step1 checkpoint maps the approved lifecycle to actual schema, public ports and
+UI boundaries: offer tables, Listings guards/selection/availability, Identity
+contact scopes and inbox query filters exist; concrete offer persistence and
+contact-share flows remain to implement. No unresolved status/selection product
+decision was found. Step2 must reuse existing tables. Step6 must preserve the
+availability end date explicitly because null/omission clears it in the existing
+command. The offer decision and CN-02 task now record **Mark as done deal** beside
+the seller's grouped-listing heading. Its action marks unavailable through
+Listings and preserves selection/window and existing thread access.
+
+No application/schema/generated file changed and no test double was used.
+Documentation target/whitespace checks and Gitleaks8.30.1 source scan passed;
+application tests were not needed.
+Step1 awaits verification; next is Step2 storage inventory. Formal readiness and
+actual integration/cleanup/review gates remain listed in the checkpoint. No cloud
+or shared database action occurred.
 
 ## CN-01 — Participant-key readiness correction Step3 — 2026-10-26 20:56:57 UTC
 

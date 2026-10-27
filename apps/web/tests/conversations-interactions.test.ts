@@ -102,7 +102,15 @@ describe('conversation display acknowledgements', () => {
 
 /** Only the fields read by the page are provided; this is no API/key validation test. */
 function runtime(userId: string, summary: () => Promise<unknown>): ConversationPageRuntime {
-  return { userId, api: { readSummary: vi.fn(summary),
+  return { userId, listingAvailability: {
+    readOwnedListing: vi.fn(async () => { throw new Error('unbound listing fixture'); }),
+    markUnavailable: vi.fn(async () => ({ kind: 'dependency' as const })),
+  }, listingSelection: {
+    readOwnedListing: vi.fn(async () => ({ revision: 1, availability: 'available' as const,
+      available_from: '2026-01-01T00:00:00Z', available_until: null,
+      selected_buyer_id: null, selected_conversation_id: null })),
+    selectBuyer: vi.fn(async () => ({ kind: 'dependency' as const })),
+  }, api: { readSummary: vi.fn(summary),
     readOwnKey: vi.fn(async () => ({ user_id: userId, key_version: 1 })),
     readMemberKeys: vi.fn(async () => ({ members: [{ user_id: 'bob', key_version: 1 }] })),
     readState: vi.fn(async () => ({ own_last_read_sequence: 0 })),

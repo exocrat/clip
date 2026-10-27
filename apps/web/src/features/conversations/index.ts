@@ -1,7 +1,7 @@
 export { ConversationsPlaceholder } from './ConversationsPlaceholder';
 export type { ConversationsPlaceholderProps } from './ConversationsPlaceholder';
 export { ConversationInbox } from './ConversationInbox';
-export type { ConversationInboxItem, ConversationInboxProps } from './ConversationInbox';
+export type { ConversationInboxFilters, ConversationInboxItem, ConversationInboxProps } from './ConversationInbox';
 export { ConversationThread } from './ConversationThread';
 export type {
   ConversationDisplayEntry,
@@ -43,3 +43,6 @@ export { ConversationLocalHistory } from './history';
 export type { LocalConversationHistory, LocalSentMessage } from './history';
 export { ConversationDetailPage, ConversationInboxPage, ConversationPageRuntimeProvider } from './ConversationPages';
 export type { ConversationPageRuntime } from './ConversationPages';
+export type { ListingSelectionAttempt, ListingSelectionPort, ListingSelectionView } from './ConversationListingSelection';
+export { isSellerSaleListingConversation } from './ConversationListingSelection';
+export type { ListingAvailabilityPort } from './ConversationListingDoneDeal';

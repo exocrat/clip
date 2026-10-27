@@ -25,11 +25,22 @@ def applications(tmp_path, monkeypatch):
     (tmp_path / "index.html").write_text(
         "<html><body><div id='root'></div></body></html>"
     )
-    actor, conversation = uuid4(), uuid4()
+    actor, listing, conversation = uuid4(), uuid4(), uuid4()
+
+    def no_database_connection():
+        """Guard-only tests must never invoke the harness's real SQL providers."""
+        raise AssertionError("Guard test unexpectedly accessed the database")
+
     # No route used here acquires a connection from these lazy zero-minimum pools.
     return actor, [
         browser_app(
-            "postgresql://localhost/unused", actor, conversation, port, dist=tmp_path
+            "postgresql://localhost/unused",
+            no_database_connection,
+            actor,
+            listing,
+            conversation,
+            port,
+            dist=tmp_path,
         )
         for port in (5273, 5274)
     ]

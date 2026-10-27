@@ -147,6 +147,74 @@ def test_signed_listing_publication_to_temporary_buyer_conversation(
         assert summary.status_code == 200
         assert summary.json()["initiator_user_id"] == account["user_id"]
         assert summary.json()["counterparty_user_id"] == seller[0]["user_id"]
+        # Real temporary-account cookies, CSRF, membership and Identity contacts
+        # participate in the same app; preparation must not publish an entry.
+        synthetic_email = "synthetic-contact@example.com"
+        assert (
+            client.put(
+                "/me/contacts/email", headers=headers, json={"value": synthetic_email}
+            ).status_code
+            == 204
+        )
+        assert (
+            client.put(
+                "/me/contacts/phone", headers=headers, json={"value": "+919876543210"}
+            ).status_code
+            == 204
+        )
+        options = client.get(chat + "/contact-options")
+        assert options.status_code == 200
+        assert options.json() == {
+            "email_available": True,
+            "phone_available": True,
+            "upi_available": False,
+        }
+        assert (
+            client.post(
+                chat + "/contact-preparations",
+                headers=HEADERS,
+                json={"fields": ["email"]},
+            ).status_code
+            == 403
+        )
+        assert (
+            client.post(
+                chat + "/contact-preparations",
+                headers=headers | {"Origin": "https://foreign.invalid"},
+                json={"fields": ["email"]},
+            ).status_code
+            == 403
+        )
+        prepared = client.post(
+            chat + "/contact-preparations", headers=headers, json={"fields": ["email"]}
+        )
+        assert (
+            prepared.status_code == 200
+            and prepared.headers["cache-control"] == "no-store"
+        )
+        selected_only = prepared.json() == {
+            "email": synthetic_email,
+            "phone": None,
+            "upi_id": None,
+        }
+        assert selected_only, "selected own-contact projection mismatch"
+        assert client.get(chat).json() == summary.json()
+        assert client.get(chat + "/entries").json()["items"] == []
+        assert client.delete("/me/contacts/phone", headers=headers).status_code == 204
+        assert (
+            client.post(
+                chat + "/contact-preparations",
+                headers=headers,
+                json={"fields": ["phone"]},
+            ).status_code
+            == 422
+        )
+        use_actor(client, seller)
+        assert client.get(chat + "/contact-options").json() == {
+            "email_available": False,
+            "phone_available": False,
+            "upi_available": False,
+        }
         for actor in (seller, buyer):
             headers = use_actor(client, actor)
             key = client.put(
@@ -173,6 +241,26 @@ def test_signed_listing_publication_to_temporary_buyer_conversation(
             ),
         )
         assert reply.status_code == 201 and reply.json()["sequence"] == 2
+        # Exercise the real buyer offer path with cookies and CSRF, not a caller
+        # override. The optional note is deliberately opaque synthetic ciphertext.
+        headers = use_actor(client, buyer)
+        offer_body = {
+            "amount_paise": 0,
+            "operation_id": str(uuid4()),
+            "note_envelope": message_request().envelope.model_dump(mode="json"),
+        }
+        offer_url = origin + "/conversations/" + opened.json()["conversation_id"]
+        offered = client.put(offer_url + "/offer", headers=headers, json=offer_body)
+        assert offered.status_code == 200, offered.text
+        assert (
+            client.put(offer_url + "/offer", headers=headers, json=offer_body).json()
+            == offered.json()
+        )
+        headers = use_actor(client, seller)
+        assert client.get(chat + "/offer").json() == offered.json()
+        page = client.get(chat + "/entries").json()
+        assert page["items"] == [sent.json(), reply.json()]
+        assert page["scanned_through_sequence"] == 3
         closed = client.put(
             origin + "/availability",
             headers=headers,
@@ -184,6 +272,24 @@ def test_signed_listing_publication_to_temporary_buyer_conversation(
         )
         assert closed.status_code == 200, closed.text
         headers = use_actor(client, buyer)
+        retry = client.put(offer_url + "/offer", headers=headers, json=offer_body)
+        assert retry.status_code == 409
+        assert retry.json()["error"]["details"] == [
+            {"field": "listing_id", "code": "unavailable"}
+        ]
+        assert client.get(chat + "/offer").json() == offered.json()
+        withdrawn = client.post(
+            offer_url + "/offer-withdrawals",
+            headers=headers,
+            json={
+                "offer_id": offered.json()["offer_id"],
+                "expected_revision": 1,
+                "operation_id": str(uuid4()),
+            },
+        )
+        assert (
+            withdrawn.status_code == 200 and withdrawn.json()["status"] == "withdrawn"
+        )
         reopened = client.post(
             origin + "/conversations",
             headers=headers,
@@ -201,6 +307,15 @@ def test_signed_listing_publication_to_temporary_buyer_conversation(
             == 404
         )
         assert client.get(chat).status_code == 404
+        assert client.get(chat + "/contact-options").status_code == 404
+        assert (
+            client.post(
+                chat + "/contact-preparations",
+                headers=stranger[2],
+                json={"fields": ["email"]},
+            ).status_code
+            == 404
+        )
 
 
 @pytest.mark.parametrize("terminal", ["logout", "revoked", "expired"])

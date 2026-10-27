@@ -1,10 +1,11 @@
 # Local two-browser encrypted chat checkpoint
 
-CN-01 Steps 5–9, isolated browser verification only. Real PostgreSQL, the normal
-Conversations router, built React UI, OpenE2EE 13.0.0 and IndexedDB are used.
-Request authentication is **two fixed synthetic server identities**, not real
-Identity sessions/Microsoft sign-in. Eligibility at fixture creation uses real
-Identity SQL. This does not accept ID-READY, CN-CORE, FR-10/16 or NFR-05.
+CN-01 Steps 5–9 and CN-02 seller-selection/done-deal checkpoints, isolated browser
+verification only. Real PostgreSQL, the normal Listings and Conversations
+routers, built React UI, OpenE2EE 13.0.0 and IndexedDB are used. Request
+authentication is **two fixed synthetic server identities**, not real Identity
+sessions/Microsoft sign-in. Identity eligibility uses real SQL for the synthetic
+accounts. This does not accept ID-READY, CN-CORE, LI-CORE, FR-10/16 or NFR-05.
 
 ## Agent setup
 
@@ -24,21 +25,46 @@ settings. It accepts no existing target, authentication selector or host/port
 override. The helper creates one new tmpfs PostgreSQL container with no network,
 uses its private local Unix socket and checked-in migrations, then seeds one
 synthetic listing and creates its conversation through the actual Conversations
-operation. No messages/keys/ciphertext are preloaded. Two separate bounded pools
+operation. Listings selection uses its actual PostgreSQL store and actual
+Conversations participant-check interface. The check-only run selects and clears
+the synthetic buyer, reopens the listing, and marks it unavailable through the
+availability API while verifying selection/window preservation and exact retry.
+It then clears selection and explicitly reopens through the owner API, leaving
+the browser fixture available and unselected. No messages/keys/ciphertext are
+preloaded. Two separate bounded pools
 serve the normal bundle on `127.0.0.1:5273` (A, seller) and `:5274` (B, buyer).
 Each side enforces its exact host/origin, a loopback peer and its own transient
 write token. Browser IDs/headers cannot switch the fixed actor. No test-auth route
 or normal application configuration enables this harness; scripts/tests are
 excluded from the production image.
 
-`--check-only` checks HTTP/SQL access and guards without opening listeners. It
-does not execute browser JavaScript, encryption or IndexedDB. Normal operation
+`--check-only` checks HTTP/SQL access, seller-only listing reads, exact-thread
+selection, clearing, done-deal availability, buyer denial and guards without opening listeners. It does not
+execute browser JavaScript, encryption or IndexedDB. Normal operation
 ends after 30 minutes (explicit `--seconds` accepts60–3600) or Ctrl+C. Both
 listeners/pools stop and only the helper's own container/data are removed. Existing
 Docker resources, databases and browser storage are not deleted. A setup failure
 stops rather than resetting an existing target. No live providers or email run.
 
 ## Human walkthrough
+
+For CN-02 Step7, open the chat and choose **Choose contact details**. The helper
+uses Identity's real source-contact editing service to set a synthetic email on
+each fixed actor; no mail is sent. Only Email should be available. Select Email,
+review the field names and confirm. Expect **Selection checked. Nothing has been
+sent.** Cancel before confirmation should retrieve no values. Values never appear
+in the page; encrypted publication is the separate Step8 checkpoint. The
+normal application uses the same public contact endpoints with Identity's real
+session middleware, while this helper retains fixed synthetic authentication.
+
+For the CN-02 Step6 checkpoint, start with a fresh harness run. In A's inbox,
+confirm **Mark as done deal** appears beside the Sale Listing group heading;
+B's inbox must not show this control. Click A's button and check **Listing
+unavailable**, then reload and confirm that state persists. Open the retained
+chat on both sides and exchange a synthetic message. This is a seller's
+availability action, not platform confirmation of payment or handover. The
+selection walkthrough below needs another fresh harness run because done-deal
+makes this fixture unavailable. Do not clear browser storage between checks.
 
 Use two desktop browsers/profiles if available. The distinct origins also isolate
 storage in a single browser, but record that as a two-origin rather than a
@@ -53,20 +79,32 @@ cross-browser result. Always use the exact `127.0.0.1` URLs, not `localhost`.
    may initially report that the peer key is unavailable until the other side
    registers. After both register, use the displayed refresh/retry action on the
    first side. Never clear browser storage to work around a normal error.
-3. Send a made-up message from A to B, then reply from B. Check both sender and
+3. Before sending messages, confirm A (seller) sees **Select this buyer** in the
+   Sale Listing conversation while B (buyer) does not. The fixture has no offer;
+   A can still select B. Click it and confirm the buyer is selected and the
+   listing becomes unavailable (while its date window and chat remain intact).
+   This does not accept an offer, reserve the item or confirm payment/handover.
+4. Send a made-up message from A to B, then reply from B. Check both sender and
    recipient can read the text. The UI must not offer a plaintext fallback. Any
    key/decryption/send error is a finding, not an accepted outcome.
-4. Reload both pages and close/reopen one tab while this server stays running.
+5. Reload both pages and close/reopen one tab while this server stays running.
    The same browser/profile/origin should retain keys and readable history.
    This checks a normal reload, not resistance to storage eviction or a backup.
-5. Leave B at its inbox, send from A, and check B shows unread activity after
+6. Leave B at its inbox, send from A, and check B shows unread activity after
    refreshing the inbox. Open B's thread and display the message; return to its
    inbox and refresh. The badge should clear only after display acknowledgement.
    Reading/polling alone must not acknowledge a message.
-6. Optionally test a failed send using the browser's offline control, then restore
+7. Test encrypted contact sharing with synthetic values only. On A, choose
+   **Choose contact details**, select Email, choose **Review selected details**,
+   then **Confirm and send encrypted details**. Expect the sender to see that the
+   encrypted details were sent, and B to see a **Contact details shared with
+   you** card with the synthetic email after the thread refreshes. Do not use
+   real contact details or copy request bodies. The labels and values are inside
+   the encrypted payload; the server stores ciphertext only.
+8. Optionally test a failed send using the browser's offline control, then restore
    connectivity and use Retry. Expect no duplicated message. Do not enter real
    message content or export network bodies, ciphertext or key material.
-7. Test Logout last: its fixed side must lose API/chat access and clear private
+9. Test Logout last: its fixed side must lose API/chat access and clear private
    UI. There is deliberately no test login/identity-switch endpoint. Restarting
    this harness creates a different fresh fixture and loses its old server data;
    it is not a persistence or recovery procedure. Cross-account switching remains

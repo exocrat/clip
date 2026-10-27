@@ -15,6 +15,10 @@ import type {
   PublicPreKeyBatchRequest,
   PublicPreKeyBatchView,
   ReadState,
+  ContactPreparationRequest,
+  ContactShareRequest,
+  ContactOptionsView,
+  SelectedOwnContacts,
 } from '../../../../../contracts/generated/types.gen';
 
 /** Identity supplies authenticated requests, including its chosen CSRF/session handling.
@@ -26,6 +30,7 @@ export type ConversationHttpTransport = (
 ) => Promise<Response>;
 
 export type ConversationListQuery = NonNullable<ConversationsListMineData['query']>;
+export type ContactField = ContactPreparationRequest['fields'][number];
 
 /** Content-free errors are safe to map to UI states; never retain the server body/cause. */
 export class ConversationApiError extends Error {
@@ -145,9 +150,7 @@ function entry(value: unknown): boolean {
   }
   if (hasRecoveryReference || familyMatch || envelope.sdk_message_type === 'retry_request') return false;
   return positive(envelope.sender_key_version) && positive(envelope.recipient_key_version) &&
-    (value.kind === 'contact_share'
-      ? envelope.sdk_message_type === 'ciphertext'
-      : ['ciphertext', 'prekey_bundle'].includes(String(envelope.sdk_message_type)));
+    ['ciphertext', 'prekey_bundle'].includes(String(envelope.sdk_message_type));
 }
 
 const inventory = (value: unknown): boolean => record(value) && positive(value.key_version) &&
@@ -246,9 +249,36 @@ export class ConversationApi {
           record(value.envelope) && value.envelope[key] === expected), payload);
   }
 
+  submitContactShare(conversationId: string, payload: ContactShareRequest): Promise<ConversationEntry> {
+    return this.request(`${this.threadPath(conversationId)}/contact-shares`, 'POST',
+      (value) => entry(value) && record(value) && value.kind === 'contact_share' && !value.content_deleted &&
+        record(value.envelope) && Object.entries(payload.envelope).every(([key, expected]) =>
+          record(value.envelope) && value.envelope[key] === expected), payload);
+  }
+
   readState(conversationId: string): Promise<ReadState> {
     return this.request(`${this.threadPath(conversationId)}/read-state`, 'GET',
       (value) => record(value) && natural(value.own_last_read_sequence));
+  }
+
+  readContactOptions(conversationId: string, signal?: AbortSignal): Promise<ContactOptionsView> {
+    return this.request(`${this.threadPath(conversationId)}/contact-options`, 'GET',
+      (value) => record(value) && Object.keys(value).length === 3 &&
+        ['email_available', 'phone_available', 'upi_available'].every((key) => typeof value[key] === 'boolean'),
+      undefined, signal);
+  }
+
+  /** Called only after the user confirms exact fields. Values stay transient. */
+  prepareOwnContacts(conversationId: string, fields: ContactField[], signal?: AbortSignal): Promise<SelectedOwnContacts> {
+    if (!fields.length || new Set(fields).size !== fields.length ||
+      fields.some((field) => !['email', 'phone', 'upi_id'].includes(field))) {
+      throw new ConversationApiError(422, 'invalid_response');
+    }
+    return this.request(`${this.threadPath(conversationId)}/contact-preparations`, 'POST',
+      (value) => record(value) && Object.keys(value).length === 3 &&
+        ['email', 'phone', 'upi_id'].every((key) => fields.includes(key as ContactField)
+          ? typeof value[key] === 'string' && value[key].length > 0 : value[key] === null),
+      { fields }, signal);
   }
 
   acknowledgeDisplayed(conversationId: string, sequence: number): Promise<ReadState> {

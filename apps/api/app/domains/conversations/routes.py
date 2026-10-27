@@ -28,6 +28,11 @@ from app.contracts.domain_types import (
     PublicKeyBundleView,
     PublicPreKeyBatchRequest,
     PublicPreKeyBatchView,
+    OfferView,
+    ContactOptionsView,
+    ContactPreparationRequest,
+    ContactShareRequest,
+    SelectedOwnContacts,
 )
 from app.core.auth import CallerContext, require_caller
 from app.core.errors import ERRORS, PublicError
@@ -35,6 +40,8 @@ from app.domains.conversations.messages import PostgresMessageOperations
 from app.domains.conversations.queries import PostgresConversationQueries
 from app.domains.conversations.key_directory import PostgresKeyDirectory
 from app.domains.conversations.provider import PostgresConversationServices
+from app.domains.conversations.offers import PostgresOfferOperations
+from app.domains.conversations.contacts import PostgresContactPreparation
 
 router = APIRouter(
     tags=["conversations"],
@@ -94,6 +101,45 @@ def _operations(request: Request) -> PostgresMessageOperations:
     return PostgresMessageOperations(_pool(request))
 
 
+@router.get(
+    "/conversations/{conversation_id}/contact-options",
+    response_model=ContactOptionsView,
+    operation_id="conversations_read_contact_options",
+    summary="conversations_read_contact_options",
+)
+async def read_contact_options(
+    conversation_id: UUID,
+    request: Request,
+    response: Response,
+    caller: CallerContext = Depends(require_caller),
+) -> ContactOptionsView:
+    """Read only the authenticated participant's own contact availability flags."""
+    response.headers["Cache-Control"] = "no-store"
+    return await PostgresContactPreparation(_pool(request)).read_options(
+        caller, conversation_id
+    )
+
+
+@router.post(
+    "/conversations/{conversation_id}/contact-preparations",
+    response_model=SelectedOwnContacts,
+    operation_id="conversations_prepare_own_contact_share",
+    summary="conversations_prepare_own_contact_share",
+)
+async def prepare_own_contacts(
+    conversation_id: UUID,
+    payload: ContactPreparationRequest,
+    request: Request,
+    response: Response,
+    caller: CallerContext = Depends(require_caller),
+) -> SelectedOwnContacts:
+    """Return confirmed own fields ephemerally for client encryption; persist nothing."""
+    response.headers["Cache-Control"] = "no-store"
+    return await PostgresContactPreparation(_pool(request)).prepare(
+        caller, conversation_id, payload
+    )
+
+
 @router.post(
     "/conversations/{conversation_id}/messages",
     response_model=ConversationEntry,
@@ -111,6 +157,30 @@ async def submit_message(
 ) -> ConversationEntry:
     """Submit one ciphertext/control envelope and return 200 only for exact retry."""
     result = await _operations(request).submit_message(caller, conversation_id, payload)
+    if result.replayed:
+        response.status_code = 200
+    return result.entry
+
+
+@router.post(
+    "/conversations/{conversation_id}/contact-shares",
+    response_model=ConversationEntry,
+    status_code=201,
+    responses={200: {"model": ConversationEntry}},
+    operation_id="conversations_submit_contact_share",
+    summary="conversations_submit_contact_share",
+)
+async def submit_contact_share(
+    conversation_id: UUID,
+    payload: ContactShareRequest,
+    response: Response,
+    request: Request,
+    caller: CallerContext = Depends(require_caller),
+) -> ConversationEntry:
+    """Store a member's ciphertext-only selected-contact entry."""
+    result = await _operations(request).submit_contact_share(
+        caller, conversation_id, payload
+    )
     if result.replayed:
         response.status_code = 200
     return result.entry
@@ -211,6 +281,23 @@ async def read_summary(
 ) -> ConversationSummary:
     """Resolve thread metadata only for an authenticated participant."""
     return await PostgresConversationQueries(_pool(request)).read_summary(
+        caller, conversation_id
+    )
+
+
+@router.get(
+    "/conversations/{conversation_id}/offer",
+    response_model=OfferView | None,
+    operation_id="conversations_read_offer",
+    summary="conversations_read_offer",
+)
+async def read_offer(
+    conversation_id: UUID,
+    request: Request,
+    caller: CallerContext = Depends(require_caller),
+) -> OfferView | None:
+    """Return only a current member's structured offer and optional opaque note."""
+    return await PostgresOfferOperations(_pool(request)).read_offer(
         caller, conversation_id
     )
 

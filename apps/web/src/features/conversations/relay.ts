@@ -12,7 +12,7 @@ import { compositeIdentitiesEqual, createCompositeIdentityV1 } from '@open-e2ee/
 import type { AccountIdentityProvisioning, IdentityType, PreKeyInventory, PreKeyPublicationPlan } from '@open-e2ee/signal-protocol-sdk/remote/relay/types';
 import type { SignalProtocolLocalStore } from '@open-e2ee/signal-protocol-sdk/local/store';
 import { indexedDbStore } from '@open-e2ee/signal-protocol-sdk/local/store/web';
-import type { KeyBundle, MessageRequest, PublicKeyBundleRequest } from '../../../../../contracts/generated/types.gen';
+import type { ContactShareRequest, KeyBundle, MessageRequest, PublicKeyBundleRequest } from '../../../../../contracts/generated/types.gen';
 import type { ConversationApi } from './api';
 import {
   CLIP_ENVELOPE_VERSION, CLIP_PROTOCOL_ID, CLIP_PROTOCOL_VERSION,
@@ -20,6 +20,7 @@ import {
   toOpenE2eePreKeyBundle,
   type ConversationEnvelopeRoute, type ConversationRouteRegistry,
   type SendConversationMessage,
+  type SendConversationContactShare,
   type ConversationReceiveContext,
 } from './crypto';
 import { ConversationLocalHistory } from './history';
@@ -38,7 +39,8 @@ type PreparedSend = {
   peerKeyVersion: number;
   sdkClientMessageId: string;
   recoveryTargetId: string | null;
-  request: MessageRequest;
+  request: MessageRequest | ContactShareRequest;
+  entryKind: 'message' | 'contact_share' | 'protocol_control';
 };
 type RecoveryFamilyRoute = {
   conversationId: string;
@@ -336,7 +338,8 @@ export class ConversationRelay implements SignalProtocolRelayServer, Conversatio
       route.envelope_version !== CLIP_ENVELOPE_VERSION ||
       !Number.isSafeInteger(route.sender_key_version) || route.sender_key_version < 1 ||
       !Number.isSafeInteger(route.recipient_key_version) || route.recipient_key_version < 1 ||
-      !Number.isSafeInteger(route.client_timestamp_ms) || route.client_timestamp_ms < 0) {
+      !Number.isSafeInteger(route.client_timestamp_ms) || route.client_timestamp_ms < 0 ||
+      (route.entry_kind !== undefined && !['message', 'contact_share'].includes(route.entry_kind))) {
       throw new ConversationCryptoError('Message routing scope mismatch');
     }
     const previous = this.routes.get(route.operation_id);
@@ -414,15 +417,24 @@ export class ConversationRelay implements SignalProtocolRelayServer, Conversatio
     const oldPrepared = previous ? this.localJson<PreparedSend>(previous) : null;
     const operationId = oldPrepared?.request.operation_id ?? (UUID_V4.test(envelope.clientMessageId)
       ? envelope.clientMessageId : crypto.randomUUID());
-    const request: MessageRequest = { operation_id: operationId, envelope: {
+    const cipherEnvelope = {
       protocol_id: CLIP_PROTOCOL_ID, protocol_version: CLIP_PROTOCOL_VERSION, envelope_version: CLIP_ENVELOPE_VERSION,
       sdk_message_type: envelope.messageType as 'ciphertext' | 'prekey_bundle' | 'retry_request',
       client_timestamp_ms: envelope.timestamp, sender_key_version: senderVersion,
       recipient_key_version: recipientVersion, payload_base64: payload,
       sdk_client_message_id: envelope.clientMessageId, recovery_for_entry_id: recoveryTargetId,
-    } };
+    } as const;
+    const entryKind = control || family !== null ? 'protocol_control' :
+      route?.entry_kind === 'contact_share' ? 'contact_share' : 'message';
+    if (entryKind === 'contact_share' &&
+      (!['ciphertext', 'prekey_bundle'].includes(cipherEnvelope.sdk_message_type) || family !== null)) {
+      throw new ConversationCryptoError('Contact share must use a fresh encrypted message');
+    }
+    const request: MessageRequest | ContactShareRequest = entryKind === 'contact_share'
+      ? { operation_id: operationId, envelope: cipherEnvelope } as unknown as ContactShareRequest
+      : { operation_id: operationId, envelope: cipherEnvelope } as unknown as MessageRequest;
     const prepared: PreparedSend = { conversationId: this.thread(), request, sdkClientMessageId: envelope.clientMessageId,
-      recoveryTargetId, localKeyVersion, peerKeyVersion,
+      recoveryTargetId, localKeyVersion, peerKeyVersion, entryKind,
       recipientUserId: envelope.targetUserId,
       ...(envelope.recipientRegistrationId === undefined ? {} : { recipientRegistrationId: envelope.recipientRegistrationId }),
     };
@@ -572,9 +584,14 @@ export class ConversationRelay implements SignalProtocolRelayServer, Conversatio
         throw new ConversationCryptoError('Participant identity changed; refresh key verification');
       }
     }
-    const result = await this.api.submitMessage(prepared.conversationId, prepared.request);
-    if (result.sender_user_id !== this.userId) throw new ConversationCryptoError('Committed message sender mismatch');
-    await this.history?.confirmSent(prepared.request.operation_id, result);
+    const entryKind = prepared.entryKind ?? 'message';
+    const result = entryKind === 'contact_share'
+      ? await this.api.submitContactShare(prepared.conversationId, prepared.request as ContactShareRequest)
+      : await this.api.submitMessage(prepared.conversationId, prepared.request as MessageRequest);
+    if (result.sender_user_id !== this.userId || result.kind !== entryKind) {
+      throw new ConversationCryptoError('Committed conversation entry does not match its request');
+    }
+    if (entryKind === 'message') await this.history?.confirmSent(prepared.request.operation_id, result);
     return { messageId: result.entry_id, serverTimestamp: Date.parse(result.created_at) };
   }
 
@@ -611,6 +628,7 @@ export type ConversationSession = {
   relay: ConversationRelay;
   history: ConversationLocalHistory | null;
   sendText: (request: SendConversationMessage) => ReturnType<ConversationCrypto['sendText']>;
+  sendContactShare: (request: SendConversationContactShare) => ReturnType<ConversationCrypto['sendContactShare']>;
   receiveText: (context: ConversationReceiveContext) => ReturnType<ConversationCrypto['receiveText']>;
   stop: () => Promise<void>;
 };
@@ -660,6 +678,10 @@ export async function createConversationSession(
       await history.stageSent(copy);
       return conversationCrypto.sendText(copy);
     },
+    sendContactShare: (request) => conversationCrypto.sendContactShare({
+      ...request,
+      contacts: { ...request.contacts },
+    }),
     // A thread-bound cache cannot accept a verified message for a different thread.
     receiveText: async (context) => {
       if (!history || context.conversation_id !== history.conversationId) {

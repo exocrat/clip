@@ -5,8 +5,10 @@ import {
   createListing,
   listingsRequest,
   readMyListings,
+  setSelectedListingBuyer,
   type AvailabilityChange,
   type CreateListingRequest,
+  type SelectionChange,
 } from '../src/features/listings/listingsApi';
 
 afterEach(() => vi.unstubAllGlobals());
@@ -77,5 +79,24 @@ describe('Listings HTTP failures and write retries', () => {
         operation_id: 'operation-id',
       }),
     }));
+  });
+
+  it('sends seller selection through the Listings-owned revision-guarded boundary', async () => {
+    const fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({ listing_id: 'listing-id' }), { status: 200 }));
+    vi.stubGlobal('fetch', withCsrf(fetch));
+    const command: SelectionChange = {
+      buyer_id: 'buyer-id',
+      conversation_id: 'conversation-id',
+      expected_revision: 7,
+      operation_id: 'stable-operation-id',
+    };
+
+    await setSelectedListingBuyer('listing/one', command);
+
+    expect(fetch).toHaveBeenCalledWith('/api/listings/listing%2Fone/selection', expect.objectContaining({
+      method: 'PUT',
+      body: JSON.stringify(command),
+    }));
+    expect(fetch.mock.calls[0][1].body).not.toContain('owner_id');
   });
 });

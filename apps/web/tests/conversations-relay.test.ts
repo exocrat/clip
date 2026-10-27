@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { inMemoryStore } from '@open-e2ee/signal-protocol-sdk/local/store/memory';
 import type { Envelope } from '@open-e2ee/signal-protocol-sdk';
 import type {
-  ConversationEntry, KeyBundle, MemberPreKeyBundle, MessageRequest,
+  ContactShareRequest, ConversationEntry, KeyBundle, MemberPreKeyBundle, MessageRequest,
   PublicKeyBundleRequest, PublicPreKeyBatchRequest, PublicPreKeyMaterial,
 } from '../../../contracts/generated/types.gen';
 import {
@@ -134,6 +134,23 @@ class RelayHttpFixture {
         }
         return reply(entry, 201);
       }
+      if (url.pathname.endsWith('/contact-shares')) {
+        const request = payload as ContactShareRequest;
+        this.submitted.push(JSON.stringify(request));
+        const key = `${actor}:${request.operation_id}`;
+        const saved = this.operations.get(key);
+        if (saved) return saved.request === JSON.stringify(request) ? reply(saved.result) : reply({}, 409);
+        const entry: ConversationEntry = { entry_id: crypto.randomUUID(), sequence: this.entries.length + 1,
+          kind: 'contact_share', sender_user_id: actor, created_at: new Date().toISOString(),
+          content_deleted: false, envelope: request.envelope };
+        this.entries.push(entry);
+        this.operations.set(key, { request: JSON.stringify(request), result: entry });
+        if (this.loseNextMessageReply) {
+          this.loseNextMessageReply = false;
+          throw new Error('Synthetic lost response after commit');
+        }
+        return reply(entry, 201);
+      }
       return reply({}, 404);
     });
   }
@@ -224,6 +241,37 @@ describe('CLIP SDK relay adapter', () => {
       const simultaneous = await Promise.all([a.relay.fetchPreKeyBundle(bob, 1), sibling.fetchPreKeyBundle(bob, 1)]);
       expect(simultaneous[0].ecOneTimePreKey?.keyId !== simultaneous[1].ecOneTimePreKey?.keyId).toBe(true);
       await expect(a.relay.fetchPreKeyBundle(mallory, 1)).rejects.toBeInstanceOf(ConversationCryptoError);
+    } finally { await Promise.all(sessions.map((session) => session.stop())); }
+  }, 30_000);
+
+  it('encrypts selected contact fields, retries the same ciphertext, and rejects tampering and wrong context', async () => {
+    const server = new RelayHttpFixture();
+    const sessions: ConversationSession[] = [];
+    try {
+      const a = await createConversationSession(alice, thread, server.api(alice), inMemoryStore(), { acknowledgeUnrecoverableHistoryRisk: true });
+      sessions.push(a);
+      const b = await createConversationSession(bob, thread, server.api(bob), inMemoryStore(), { acknowledgeUnrecoverableHistoryRisk: true });
+      sessions.push(b);
+      await establish(a, server, alice, bob);
+      const operationId = crypto.randomUUID();
+      const contacts = { email: 'synthetic@example.invalid', upi_id: 'synthetic@oktest' };
+      server.loseNextMessageReply = true;
+      await expect(a.sendContactShare({ conversation_id: thread, operation_id: operationId,
+        recipient_user_id: bob, client_timestamp_ms: Date.now(), sender_key_version: 1,
+        recipient_key_version: 1, contacts })).rejects.toThrow();
+      expect(server.entries).toHaveLength(1);
+      await a.relay.retrySend(operationId);
+      expect(server.entries).toHaveLength(1);
+      expect(new Set(server.submitted).size).toBe(1);
+      expect(server.submitted[0]).not.toContain(contacts.email);
+      const entry = server.entries[0];
+      if (!entry?.envelope || !a.history || !b.history) throw new Error('Expected retained encrypted contact share');
+      const received = await b.crypto.receiveContactShare(receiveContext(entry, alice), b.history);
+      expect(received).toMatchObject({ text: JSON.stringify(contacts) });
+      expect((await b.history.read()).received.at(-1)?.text).toBe(JSON.stringify(contacts));
+      // The sender's device is not the recipient. Even though it created the
+      // ciphertext, the SDK must not decrypt it through the receiver path.
+      await expect(a.crypto.receiveContactShare(receiveContext(entry, alice), a.history)).rejects.toThrow();
     } finally { await Promise.all(sessions.map((session) => session.stop())); }
   }, 30_000);
 

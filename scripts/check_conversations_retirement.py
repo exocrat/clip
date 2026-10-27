@@ -1,4 +1,4 @@
-"""Run Conversations retirement, message, directory and recovery storage checks.
+"""Run Conversations retirement, offer, message, directory and recovery checks.
 
 The harness binds a generated host port to loopback only, uses tmpfs instead of
 a persistent volume, applies the checked-in migrations, runs focused API tests,
@@ -159,7 +159,7 @@ def main() -> int:
             ],
             extra={"DATABASE_URL": database_url},
         )
-        if sql("SELECT max(version) FROM public.schema_migrations") != "20261026090300":
+        if sql("SELECT max(version) FROM public.schema_migrations") != "20261027112205":
             raise RuntimeError(
                 "the disposable database is not at the current migration head"
             )
@@ -184,6 +184,10 @@ def main() -> int:
                 "apps/api/tests/test_conversation_message_routes.py",
                 "apps/api/tests/test_conversation_directory.py",
                 "apps/api/tests/test_conversation_cleanup.py",
+                "apps/api/tests/test_conversation_contact_share_cleanup.py",
+                "apps/api/tests/test_conversation_offer_storage.py",
+                "apps/api/tests/test_conversation_offers.py",
+                "apps/api/tests/test_conversation_contact_preparation.py",
                 "apps/api/tests/test_listing_conversation_start.py",
                 "-q",
                 "-W",

@@ -45,10 +45,29 @@ async def execute(args: argparse.Namespace) -> None:
         check=check_target,
         open=False,
     ) as pool:
-        result = await ConversationCleanup(pool).run(
-            apply=args.apply, batch_size=args.batch_size
+        cleanup = ConversationCleanup(pool)
+        if args.scope == "history":
+            result = await cleanup.run(apply=args.apply, batch_size=args.batch_size)
+        elif args.scope == "contact-shares":
+            result = await cleanup.run_contact_shares(
+                apply=args.apply, batch_size=args.batch_size
+            )
+        else:
+            result = {
+                "history": asdict(
+                    await cleanup.run(apply=args.apply, batch_size=args.batch_size)
+                ),
+                "contact_shares": asdict(
+                    await cleanup.run_contact_shares(
+                        apply=args.apply, batch_size=args.batch_size
+                    )
+                ),
+            }
+    print(
+        json.dumps(
+            asdict(result) if not isinstance(result, dict) else result, sort_keys=True
         )
-    print(json.dumps(asdict(result), sort_keys=True))
+    )
 
 
 def main() -> int:
@@ -58,6 +77,9 @@ def main() -> int:
     parser.add_argument("--expected-host", required=True)
     parser.add_argument("--expected-port", type=int, required=True)
     parser.add_argument("--batch-size", type=int, default=100)
+    parser.add_argument(
+        "--scope", choices=("history", "contact-shares", "all"), default="history"
+    )
     parser.add_argument("--apply", action="store_true")
     args = parser.parse_args()
     # Pool retries otherwise emit private connection/driver diagnostics before

@@ -49,8 +49,23 @@ Rahul (D) approved this implementation mechanism. It adds no migration, schedule
 public deletion endpoint, cross-domain table access, cloud resource or live run.
 Persistent-target apply requires its own exact target/dry-run/operator approval.
 This code does not remove browser-held copies or establish backup deletion.
-CN-02 owns the independent30-day share path; CN-03 owns notification retention.
-Affected owners review these shared lifecycle implications in the normal PR.
+CN-02 Step8 implements the independent30-day share path in
+`ConversationCleanup.run_contact_shares`. PostgreSQL supplies the production
+clock. A bounded selector finds shares whose own entry time is at or before
+the 30-day cutoff; each candidate is rechecked under its thread and entry
+locks. Apply removes only the encrypted payload and contact-share subtype,
+then marks the existing entry content-deleted in the same transaction. It keeps
+the sequence, entry ID, operation/SDK IDs and thread activity unchanged. Dry-run
+is still the default; the CLI exposes `contact-shares` and `all` scopes, with
+target assertions on every connection. This does not erase browser-held copies,
+deploy a schedule or authorize a persistent-target apply. CN-03 owns notification
+retention. Affected owners review these shared lifecycle implications in the
+normal PR.
+
+The OpenE2EE first-send `prekey_bundle` is accepted for contact shares as
+encrypted application content; retry/recovery control envelopes remain
+rejected. A forward migration updates only the local payload-trigger condition.
+Its down restores the prior condition without deleting stored rows.
 
 ## Alternatives
 

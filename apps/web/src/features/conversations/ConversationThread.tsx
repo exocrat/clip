@@ -13,6 +13,7 @@ export type ConversationDisplayEntry = {
   sender_user_id: string;
   created_at: string;
   text: string | null;
+  contact_details?: Partial<Record<'email' | 'phone' | 'upi_id', string>>;
   content_deleted: boolean;
   /** A peer's authenticated SDK retry request says this original message could not be decrypted. */
   delivery_notice?: 'recipient_unable_to_decrypt';
@@ -244,8 +245,15 @@ export function ConversationThread({
             data-sequence={entry.sequence}
             key={entry.entry_id}
           >
-            {entry.content_deleted || entry.text === null ? (
-              <p className="conversation-thread__deleted">Message content is no longer available.</p>
+            {entry.contact_details ? (
+              <section aria-label="Shared contact details" className="conversation-thread__contact-card">
+                <p>Contact details shared with you</p>
+                {entry.contact_details.email ? <p>Email: <a href={`mailto:${entry.contact_details.email}`}>{entry.contact_details.email}</a></p> : null}
+                {entry.contact_details.phone ? <p>Phone: <a href={`tel:${entry.contact_details.phone}`}>{entry.contact_details.phone}</a></p> : null}
+                {entry.contact_details.upi_id ? <p>UPI ID: {entry.contact_details.upi_id}</p> : null}
+              </section>
+            ) : entry.content_deleted || entry.text === null ? (
+              <p className="conversation-thread__deleted">{entry.text ?? 'Message content is no longer available.'}</p>
             ) : (
               <p className="conversation-thread__text">{entry.text}</p>
             )}
