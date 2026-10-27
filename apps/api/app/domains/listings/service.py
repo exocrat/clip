@@ -850,15 +850,21 @@ class ListingsService:
                 raise PublicError(ERRORS[403])
             conversations = self._require_conversations()
             try:
-                membership = await conversations.check_listing_thread_participant(
-                    caller,
-                    ListingThreadParticipantCheck(
-                        listing_id=listing_id,
-                        conversation_id=request.conversation_id,
-                        candidate_user_id=request.buyer_id,
-                    ),
-                )
-            except NotImplementedError:
+                async with asyncio.timeout(2):
+                    membership = await conversations.check_listing_thread_participant(
+                        caller,
+                        ListingThreadParticipantCheck(
+                            listing_id=listing_id,
+                            conversation_id=request.conversation_id,
+                            candidate_user_id=request.buyer_id,
+                        ),
+                    )
+            except PublicError:
+                raise
+            except Exception:
+                # A timeout or broken provider must not escape as an unhandled
+                # error or allow selection to look successful. Retrying the same
+                # command is safe because no Listings write has happened yet.
                 raise PublicError(ERRORS[503]) from None
             if not membership.is_participant:
                 raise PublicError(ERRORS[404])

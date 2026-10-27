@@ -282,6 +282,33 @@ session or deployed cross-domain integration. Rahul verified the Step9 combined
 regression checkpoint at 2026-10-27 13:12 UTC. Affected-owner review and hosted
 CI remain separate gates.
 
+## Step10 cross-domain failures and ambiguous retries — 2026-10-27 (local checks passed; Rahul verified)
+
+The real Listings/Conversations API regression injects a timeout from the
+participant-check public port. Listings returns a safe dependency-unavailable
+response before changing the listing or conversation; an identical retry then
+selects the buyer, and replaying the same operation leaves both states
+unchanged. This test exposed an uncaught provider exception, so
+`ListingsService.set_selected_buyer` now bounds that public call and maps
+unexpected dependency failures to a safe 503 while preserving typed public
+errors.
+
+The seller-selection UI test checks that an uncertain result is not described
+as success and that retry submits the unchanged command/operation ID. Contact
+UI tests check that Identity option failure exposes no field choices, a failed
+selected-contact preparation never invokes sharing, and an uncertain send uses
+the same operation ID without rereading contact values or invoking send again.
+Existing Identity provider-shape tests reject partial/unselected fields, and
+existing Conversations storage/HTTP tests cover exact retry idempotency.
+
+The disposable PostgreSQL18.6 harness passed167 tests. The two focused web test
+files passed12 under the available Node26/npm12; this is not the repository's
+pinned Node24/npm11 evidence and must be rerun under the pinned runtime before
+final task acceptance. Changed Python files passed Black, boundaries reported0
+violations, Python compilation and whitespace checks passed. Gitleaks8.30.1
+passed. No cloud or deployed Identity session was exercised. Rahul verified
+Step10 at 2026-10-27 13:41 UTC. Step11 and the pinned-runtime web rerun remain.
+
 ## Step3 implementation scope (awaiting human verification)
 
 Rahul verified Step2 and approved this retry clarification: submit/revise/resubmit

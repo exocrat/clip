@@ -28,10 +28,25 @@ describe('explicit own-contact preparation', () => {
     expect(screen.queryByText('synthetic@example.invalid')).toBeNull();
   });
 
+  it('shows no contact choices when Identity cannot load availability', async () => {
+    const api = {
+      readContactOptions: vi.fn(async () => { throw new Error('private identity diagnostic'); }),
+      prepareOwnContacts: vi.fn(),
+    };
+    render(<ConversationContactPreparation conversationId={conversationId} api={api} canShare onShare={vi.fn()} onRetry={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Choose contact details' }));
+    await screen.findByText('Couldn’t load your contact options. Try again.');
+    expect(screen.queryByRole('checkbox')).toBeNull();
+    expect(screen.queryByText('private identity diagnostic')).toBeNull();
+    expect(api.prepareOwnContacts).not.toHaveBeenCalled();
+  });
+
   it('cancels without retrieving values and shows dependency failure without private diagnostics', async () => {
     const api = { readContactOptions: vi.fn(async () => ({ email_available: true, phone_available: false, upi_available: false })),
       prepareOwnContacts: vi.fn(async () => { throw new Error('private-detail'); }) };
-    render(<ConversationContactPreparation conversationId={conversationId} api={api} canShare onShare={vi.fn()} onRetry={vi.fn()} />);
+    const onShare = vi.fn();
+    render(<ConversationContactPreparation conversationId={conversationId} api={api} canShare onShare={onShare} onRetry={vi.fn()} />);
     fireEvent.click(screen.getByRole('button', { name: 'Choose contact details' }));
     fireEvent.click(await screen.findByRole('checkbox', { name: 'Email' }));
     fireEvent.click(screen.getByRole('button', { name: 'Review selected details' }));
@@ -43,6 +58,33 @@ describe('explicit own-contact preparation', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Confirm and send encrypted details' }));
     await screen.findByText(/Couldn’t prepare.*Nothing was sent/);
     expect(screen.queryByText('private-detail')).toBeNull();
+    expect(onShare).not.toHaveBeenCalled();
+    expect(screen.queryByText('synthetic-contact@example.invalid')).toBeNull();
+  });
+
+  it('retries an uncertain contact share by operation ID without fetching private values again', async () => {
+    vi.stubGlobal('crypto', { randomUUID: () => '22222222-2222-4222-8222-222222222222' });
+    const api = {
+      readContactOptions: vi.fn(async () => ({ email_available: true, phone_available: false, upi_available: false })),
+      prepareOwnContacts: vi.fn(async () => ({ email: 'synthetic-contact@example.invalid', phone: null, upi_id: null })),
+    };
+    const onShare = vi.fn(async () => { throw new Error('private contact value'); });
+    const onRetry = vi.fn(async () => undefined);
+    render(<ConversationContactPreparation conversationId={conversationId} api={api} canShare onShare={onShare} onRetry={onRetry} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Choose contact details' }));
+    fireEvent.click(await screen.findByRole('checkbox', { name: 'Email' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Review selected details' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm and send encrypted details' }));
+    await screen.findByText(/Couldn’t confirm whether the share was sent/);
+    expect(screen.queryByText('private contact value')).toBeNull();
+    expect(screen.queryByText('synthetic-contact@example.invalid')).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Retry this contact share' }));
+    await screen.findByText('Encrypted contact details sent.');
+    expect(api.prepareOwnContacts).toHaveBeenCalledTimes(1);
+    expect(onShare).toHaveBeenCalledTimes(1);
+    expect(onRetry).toHaveBeenCalledExactlyOnceWith('22222222-2222-4222-8222-222222222222');
   });
 
   it('validates the selected-only API response and passes exact fields to the member route', async () => {

@@ -54,7 +54,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | SE-02 | Mohit (C); peer Suraj (B), Identity/Conversations review | in progress | Step8 real integration gated; local handoff human-verified | Steps1–7 isolated result verified; Step8 audit performed | Mohit verified isolated UI and combined local handoff | [Search handoff](../evaluation/domain/search-handoff/result.json): Python1270/data94/web144,Black183,native20/3skip,wrapper35/contracts8/boundaries/parity/type/build pass | Await actual ID-READY/LI-CORE/SE-CORE/C adapters; Step9 final acceptance, pinned secrets/hosted CI and independent review pending | 2026-10-25 08:50:43 UTC |
 | MERGE-LI-SE | Suraj (integration); Listings/Search affected owners | done | PR #11 is squash-merged; Search–Listings local merge task is complete | Steps 1–9 performed; approved PR head `2a43066` merged to `main` as `e315c9d`; final hosted CI run `40204621122` passed | Steps 3–8 verified by Suraj; user authorized squash merge of the exact PR revision on 2026-10-25 | PR #11 `https://github.com/exocrat/clip/pull/11`; source head `2a430660d25e7c14cf33d84bd78172db4ec063c7`; squash merge `e315c9df3e0e11d6e9c8d7d244d676204d3af7e8`; hosted CI `40204621122`; local merge commit `29eb6fb`; fallback branch `safety/search-pr11-pre-main-reconciliation-20261025`; stash `af9d7f5`; local checks recorded below | No blocker for the Search–Listings merge. Final dataset, formal NFR/cloud checks, and real Identity/Conversations remain later work. | 2026-10-25 15:17:46 UTC |
 | CN-01 | Rahul (D) | in progress | PR17 integration merged; final CN-01/readiness/NFR obligations remain | Accepted main b09978e contains reviewed head3773931; hosted run40402518748 passed; prior local aggregate1930Python/403web and Conversations114 | Rahul verified local correction and confirmed PR merged; no additional milestone acceptance inferred | [PR17](https://github.com/exocrat/clip/pull/17), merge `b09978e91620ae3877a77c5bea8a4f12df7a8907`; [integration checkpoint](../evaluation/domain/conversations-integration.md) | Formal readiness/remaining device and security checks; CN-03 producer path and final NFR-05; full task acceptance pending | 2026-10-27 06:16:43 UTC |
-| CN-02 | Rahul (D); Aditya/Suraj review | in progress | Step9 combined regression coverage implemented and verified; Step10 next | Focused Conversations PostgreSQL166 passed on PostgreSQL18.6; relevant web regression50; Black changed test file; boundaries0; Gitleaks8.30.1; whitespace clean | Rahul verified Step9 at 2026-10-27 13:12 UTC; Step8 encrypted contact-share browser flow verified | `task/cn-02-offers-contact-sharing`; [checkpoint](../evaluation/domain/conversations-offers.md); [browser walkthrough](../environment/conversation-browser-test.md) | Aditya/Suraj affected-owner review; hosted CI and later real-session/deployment gates remain | 2026-10-27 13:12:16 UTC |
+| CN-02 | Rahul (D); Aditya/Suraj review | in progress | Step10 failure/retry coverage implemented and verified; Step11 next | Focused PostgreSQL18.6 Conversations harness167 passed; selection/contact UI regression12 passed on available Node26/npm12; Black changed Python files; boundaries0; compile/diff checks clean; Gitleaks8.30.1 passed | Rahul verified Step10 at 2026-10-27 13:41 UTC; Step9 verified | `task/cn-02-offers-contact-sharing`; [checkpoint](../evaluation/domain/conversations-offers.md); [browser walkthrough](../environment/conversation-browser-test.md) | Step11 real dependency/aggregate checks; Node24/npm11 rerun, Aditya/Suraj review, hosted CI and later real-session/deployment gates remain | 2026-10-27 13:41:44 UTC |
 | CN-03 | A; D producer review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | CN-CORE, ID-READY | — |
 | INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
 | EXP-01 | C | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | INT-01 | — |
@@ -417,6 +417,32 @@ changed Python test Black check, boundary0, Gitleaks8.30.1 and `git diff
 in the database harness; live Identity-session and deployed integration remain
 pending. Rahul verified Step9 at 2026-10-27 13:12 UTC. Affected-owner review,
 hosted CI and later real-session/deployment gates remain open.
+
+## CN-02 Step10 — Cross-domain failure and ambiguous retries — 2026-10-27 13:23:38 UTC
+
+Added a real Listings/Conversations API failure test: the Conversations
+participant-check port times out, Listings returns a safe dependency-unavailable
+response, and Listing revision/availability/selection plus thread counters stay
+unchanged. Retrying the exact same operation succeeds; replaying it returns the
+same result without another Listing or thread write. This exposed and fixed an
+unhandled dependency exception in `ListingsService.set_selected_buyer`: the
+public membership call is now time-bounded, deliberate `PublicError`s retain
+their declared result, and other dependency failures fail closed as 503 before
+Listings writes.
+
+The seller selection UI regression asserts an uncertain result is never shown
+as success and its retry uses the same command. Contact tests assert Identity
+option failure shows no choices, selected-contact preparation failure never
+calls the share action, and a send with an ambiguous result retries the same
+operation ID without fetching values or invoking send again. Existing Identity
+provider-shape tests reject partial/unselected values; existing Conversations
+HTTP tests cover exact contact-share replay. The local PostgreSQL18.6 harness
+passed167 tests; focused web tests passed12 under the available Node26/npm12
+(the project-pinned Node24/npm11 runtime was unavailable). Changed Python files
+passed Black checks, the boundary scan reported0 violations, compilation and
+whitespace checks passed. No cloud or deployed session test was run. Rahul
+verified Step10 at 2026-10-27 13:41 UTC. Step11 and the pinned-runtime
+web rerun remain.
 
 ## CN-01 merge closeout and CN-02 Step1 — 2026-10-27 06:16:43 UTC
 

@@ -216,6 +216,57 @@ def test_offer_selection_and_contact_share_work_together_through_real_apis():
     run_scenario(scenario)
 
 
+def test_selection_dependency_failure_does_not_change_listing_and_same_command_retries(
+    monkeypatch,
+):
+    async def scenario(pool):
+        async with offer_environment(pool) as state:
+            state.app.dependency_overrides[require_caller] = lambda: caller(state.owner)
+            before_listing = await state.store.read_listing(state.listing)
+            before_thread = await snapshot(pool, state.thread)
+            command = {
+                "buyer_id": str(state.buyer),
+                "conversation_id": str(state.thread),
+                "expected_revision": before_listing.revision,
+                "operation_id": str(uuid4()),
+            }
+            url = f"/listings/{state.listing}/selection"
+
+            async def unavailable(*args):
+                raise TimeoutError("private conversation-provider detail")
+
+            with monkeypatch.context() as patch:
+                patch.setattr(
+                    state.provider, "check_listing_thread_participant", unavailable
+                )
+                failed = await state.client.put(url, json=command)
+                assert failed.status_code == 503
+                assert "private conversation-provider detail" not in failed.text
+
+            unchanged = await state.store.read_listing(state.listing)
+            assert unchanged.revision == before_listing.revision
+            assert unchanged.availability == before_listing.availability
+            assert unchanged.selected_buyer_id is None
+            assert await snapshot(pool, state.thread) == before_thread
+
+            selected = await state.client.put(url, json=command)
+            assert selected.status_code == 200
+            assert selected.json()["selected_buyer_id"] == str(state.buyer)
+            assert selected.json()["availability"] == "unavailable"
+            selected_state = await state.store.read_listing(state.listing)
+            selected_thread = await snapshot(pool, state.thread)
+
+            replay = await state.client.put(url, json=command)
+            assert replay.status_code == 200
+            assert replay.json() == selected.json()
+            assert (await state.store.read_listing(state.listing)).revision == (
+                selected_state.revision
+            )
+            assert await snapshot(pool, state.thread) == selected_thread
+
+    run_scenario(scenario)
+
+
 def test_rejected_contact_envelope_does_not_echo_or_log_payload(caplog):
     async def scenario(pool):
         async with offer_environment(pool) as state:

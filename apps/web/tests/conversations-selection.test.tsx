@@ -68,6 +68,8 @@ describe('seller selection in a Sale Listing conversation', () => {
     renderSelection({ readOwnedListing: vi.fn(async () => state()), selectBuyer });
 
     fireEvent.click(await screen.findByRole('button', { name: 'Select this buyer' }));
+    await screen.findByText('Selection could not be confirmed. Retry this same attempt.');
+    expect(screen.queryByText('Buyer selected; the listing is now unavailable. This does not accept an offer or confirm payment or handover.')).toBeNull();
     fireEvent.click(await screen.findByRole('button', { name: 'Retry selection' }));
 
     await screen.findByText('This buyer is selected; the listing is unavailable.');
