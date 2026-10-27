@@ -42,20 +42,21 @@ describe('seller selection in a Sale Listing conversation', () => {
     vi.stubGlobal('crypto', { randomUUID: () => '44444444-4444-4444-8444-444444444444' });
     const selectBuyer = vi.fn(async () => ({
       kind: 'selected' as const,
-      listing: state({ revision: 8, selected_buyer_id: buyerId, selected_conversation_id: conversationId }),
+      listing: state({ revision: 8, availability: 'unavailable', selected_buyer_id: buyerId,
+        selected_conversation_id: conversationId }),
     }));
     renderSelection({ readOwnedListing: vi.fn(async () => state()), selectBuyer });
 
     fireEvent.click(await screen.findByRole('button', { name: 'Select this buyer' }));
 
-    await screen.findByText('This buyer is selected for the listing.');
+    await screen.findByText('This buyer is selected; the listing is unavailable.');
     expect(selectBuyer).toHaveBeenCalledWith(listingId, {
       buyer_id: buyerId,
       conversation_id: conversationId,
       expected_revision: 7,
       operation_id: '44444444-4444-4444-8444-444444444444',
     });
-    expect(screen.getByText(/does not accept an offer or reserve the listing/)).toBeTruthy();
+    expect(screen.getByText(/marks the listing unavailable.*does not accept an offer/i)).toBeTruthy();
   });
 
   it('retries an uncertain outcome with the same command and operation ID', async () => {
@@ -63,13 +64,13 @@ describe('seller selection in a Sale Listing conversation', () => {
     const selectBuyer = vi.fn()
       .mockResolvedValueOnce({ kind: 'dependency' as const })
       .mockResolvedValueOnce({ kind: 'selected' as const,
-        listing: state({ revision: 8, selected_buyer_id: buyerId, selected_conversation_id: conversationId }) });
+        listing: state({ revision: 8, availability: 'unavailable', selected_buyer_id: buyerId, selected_conversation_id: conversationId }) });
     renderSelection({ readOwnedListing: vi.fn(async () => state()), selectBuyer });
 
     fireEvent.click(await screen.findByRole('button', { name: 'Select this buyer' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Retry selection' }));
 
-    await screen.findByText('This buyer is selected for the listing.');
+    await screen.findByText('This buyer is selected; the listing is unavailable.');
     expect(selectBuyer).toHaveBeenCalledTimes(2);
     expect(selectBuyer.mock.calls[0]).toEqual(selectBuyer.mock.calls[1]);
   });
@@ -80,7 +81,7 @@ describe('seller selection in a Sale Listing conversation', () => {
     const selectBuyer = vi.fn()
       .mockResolvedValueOnce({ kind: 'conflict' as const })
       .mockResolvedValueOnce({ kind: 'selected' as const,
-        listing: state({ revision: 9, selected_buyer_id: buyerId, selected_conversation_id: conversationId }) });
+        listing: state({ revision: 9, availability: 'unavailable', selected_buyer_id: buyerId, selected_conversation_id: conversationId }) });
     let nextOperation = 0;
     vi.stubGlobal('crypto', { randomUUID: () => `66666666-6666-4666-8666-66666666666${++nextOperation}` });
     renderSelection({ readOwnedListing, selectBuyer });
@@ -89,7 +90,7 @@ describe('seller selection in a Sale Listing conversation', () => {
     await screen.findByText(/listing changed/i);
     fireEvent.click(screen.getByRole('button', { name: 'Select this buyer' }));
 
-    await screen.findByText('This buyer is selected for the listing.');
+    await screen.findByText('This buyer is selected; the listing is unavailable.');
     expect(selectBuyer.mock.calls[0][1].expected_revision).toBe(7);
     expect(selectBuyer.mock.calls[1][1].expected_revision).toBe(8);
     expect(selectBuyer.mock.calls[0][1].operation_id).not.toBe(selectBuyer.mock.calls[1][1].operation_id);
@@ -101,6 +102,19 @@ describe('seller selection in a Sale Listing conversation', () => {
 
     await screen.findByText(/only while the listing is available/i);
     expect(screen.queryByRole('button', { name: /select this buyer/i })).toBeNull();
+  });
+
+  it('shows reopened availability accurately and lets the seller select the same buyer again', async () => {
+    const selectBuyer = vi.fn(async () => ({ kind: 'selected' as const,
+      listing: state({ revision: 8, availability: 'unavailable', selected_buyer_id: buyerId,
+        selected_conversation_id: conversationId }) }));
+    renderSelection({ readOwnedListing: vi.fn(async () => state({ selected_buyer_id: buyerId,
+      selected_conversation_id: conversationId })), selectBuyer });
+
+    await screen.findByText('This buyer is selected, but the listing is currently available.');
+    fireEvent.click(screen.getByRole('button', { name: 'Select this buyer' }));
+    await screen.findByText('This buyer is selected; the listing is unavailable.');
+    expect(selectBuyer).toHaveBeenCalledTimes(1);
   });
 
   it('does not offer an action if the owner-only listing state cannot be loaded', async () => {

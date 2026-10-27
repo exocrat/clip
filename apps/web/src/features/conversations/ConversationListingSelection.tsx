@@ -96,7 +96,7 @@ export function ConversationListingSelection({ listingId, conversationId, buyerI
       if (result.kind === 'selected') {
         setListing(result.listing);
         setPendingCommand(null);
-        setMessage('Buyer selected. This does not accept an offer or reserve the listing.');
+        setMessage('Buyer selected; the listing is now unavailable. This does not accept an offer or confirm payment or handover.');
       } else if (result.kind === 'conflict') {
         setPendingCommand(null);
         await refresh();
@@ -118,6 +118,7 @@ export function ConversationListingSelection({ listingId, conversationId, buyerI
 
   const selectedForThisBuyer = listing?.selected_buyer_id === buyerId &&
     listing.selected_conversation_id === conversationId;
+  const selectionComplete = selectedForThisBuyer && listing?.availability === 'unavailable';
 
   return (
     <section aria-label="Seller buyer selection">
@@ -127,17 +128,21 @@ export function ConversationListingSelection({ listingId, conversationId, buyerI
         <p>Couldn’t check the listing’s current state.</p>
         <Button disabled={loading} onClick={() => void refresh()} variant="secondary">Retry listing check</Button>
       </div> : null}
-      {!loading && !loadError && listing && selectedForThisBuyer ? <p role="status">This buyer is selected for the listing.</p> : null}
-      {!loading && !loadError && listing && !selectedForThisBuyer && !selectionAllowed(listing, Date.now()) ? (
+      {!loading && !loadError && listing && selectedForThisBuyer ? <p role="status">
+        {listing.availability === 'unavailable'
+          ? 'This buyer is selected; the listing is unavailable.'
+          : 'This buyer is selected, but the listing is currently available.'}
+      </p> : null}
+      {!loading && !loadError && listing && !selectionComplete && !selectionAllowed(listing, Date.now()) ? (
         <p role="status">Buyer selection is available only while the listing is available and within its dates.</p>
       ) : null}
-      {!loading && !loadError && listing && !selectedForThisBuyer && selectionAllowed(listing, Date.now()) ? (
+      {!loading && !loadError && listing && !selectionComplete && selectionAllowed(listing, Date.now()) ? (
         <Button disabled={saving} onClick={() => void submit()}>
-          {saving ? 'Selecting…' : pendingCommand ? 'Retry selection' : listing.selected_buyer_id ? 'Select this buyer instead' : 'Select this buyer'}
+          {saving ? 'Selecting…' : pendingCommand ? 'Retry selection' : listing.selected_buyer_id && !selectedForThisBuyer ? 'Select this buyer instead' : 'Select this buyer'}
         </Button>
       ) : null}
       {message ? <p role="status">{message}</p> : null}
-      <p>Selecting a buyer is separate from accepting an offer, marking a done deal, or reserving the item.</p>
+      <p>Selecting a buyer marks the listing unavailable. It does not accept an offer, reserve the item, or confirm payment or handover.</p>
     </section>
   );
 }

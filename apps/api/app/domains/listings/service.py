@@ -280,13 +280,14 @@ class ListingsStore(Protocol):
         request: SelectionChange,
         now: datetime,
     ) -> ListingManagementView:
-        """Change only the owner's buyer-selection fields at one revision.
+        """Select a buyer and atomically take the listing off the market.
 
         A set must recheck availability/window in the same write transaction;
-        a clear may proceed while ordinarily unavailable. Operation-ID replay,
-        owner checking, stale-revision conflict and retirement rejection are
-        storage responsibilities. The original result is saved atomically;
-        retirement removes it with the listing content.
+        it also marks the listing unavailable without changing its time window.
+        A clear may proceed while ordinarily unavailable but never reopens it.
+        Operation-ID replay, owner checking, stale-revision conflict and
+        retirement rejection are storage responsibilities. The original result
+        is saved atomically; retirement removes it with the listing content.
         """
         ...
 
@@ -817,7 +818,11 @@ class ListingsService:
         listing_id: ListingId,
         request: SelectionChange,
     ) -> ListingOwnerView:
-        """Set, replace, or clear the buyer selected by the listing's owner."""
+        """Set or clear the selected buyer through the owner's guarded command.
+
+        Setting a buyer also marks the listing unavailable in the same Listings
+        transaction; clearing does not reopen it.
+        """
         await _require_regular_eligible(caller, self._identity)
         prior = await self._store.previous_owner_command_result(
             caller.user_id, listing_id, "selection", request

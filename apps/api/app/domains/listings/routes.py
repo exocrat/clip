@@ -294,7 +294,7 @@ async def set_selected_buyer(
     caller: Annotated[CallerContext, Depends(require_caller)],
     service: Annotated[ListingsService, Depends(_service)],
 ) -> ListingOwnerView:
-    """Select, replace, or clear a buyer through the owner-only command."""
+    """Select a buyer (making the listing unavailable) or clear the selection."""
     return await service.set_selected_buyer(caller, listing_id, body)
 
 

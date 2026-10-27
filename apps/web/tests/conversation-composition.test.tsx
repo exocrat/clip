@@ -159,7 +159,7 @@ describe('shared conversation route composition', () => {
         return new Response(JSON.stringify({ csrf_token: 'c'.repeat(64) }), { headers: { 'Content-Type': 'application/json' } });
       }
       if (requestPath === `/api/listings/${listingId}/selection`) {
-        return new Response(JSON.stringify({ ...listing, revision: 8, selected_buyer_id: buyerId,
+        return new Response(JSON.stringify({ ...listing, revision: 8, availability: 'unavailable', selected_buyer_id: buyerId,
           selected_conversation_id: conversationId }), { headers: { 'Content-Type': 'application/json' } });
       }
       return new Response('{}', { status: 404, headers: { 'Content-Type': 'application/json' } });
@@ -169,7 +169,7 @@ describe('shared conversation route composition', () => {
     mountDetail(`/my/conversations/${conversationId}`);
     fireEvent.click(await screen.findByRole('button', { name: 'Select this buyer' }));
 
-    expect(await screen.findByText('This buyer is selected for the listing.')).toBeTruthy();
+    expect(await screen.findByText('This buyer is selected; the listing is unavailable.')).toBeTruthy();
     const selectionWrite = requests.find((request) => request.path === `/api/listings/${listingId}/selection`);
     expect(selectionWrite?.init?.method).toBe('PUT');
     expect(JSON.parse(String(selectionWrite?.init?.body))).toEqual({ buyer_id: buyerId,

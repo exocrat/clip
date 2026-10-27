@@ -60,8 +60,9 @@ cross-browser result. Always use the exact `127.0.0.1` URLs, not `localhost`.
    first side. Never clear browser storage to work around a normal error.
 3. Before sending messages, confirm A (seller) sees **Select this buyer** in the
    Sale Listing conversation while B (buyer) does not. The fixture has no offer;
-   A can still select B. Click it and confirm the selected state appears. This
-   is only a buyer selection—not offer acceptance, a reservation or a done deal.
+   A can still select B. Click it and confirm the buyer is selected and the
+   listing becomes unavailable (while its date window and chat remain intact).
+   This does not accept an offer, reserve the item or confirm payment/handover.
 4. Send a made-up message from A to B, then reply from B. Check both sender and
    recipient can read the text. The UI must not offer a plaintext fallback. Any
    key/decryption/send error is a finding, not an accepted outcome.

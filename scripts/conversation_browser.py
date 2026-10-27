@@ -287,6 +287,9 @@ def check_apps(apps, listing_id, conversation_id):
                 assert selected.json()["selected_conversation_id"] == str(
                     conversation_id
                 )
+                assert selected.json()["availability"] == "unavailable"
+                assert selected.json()["available_from"] == item["available_from"]
+                assert selected.json()["available_until"] == item["available_until"]
                 cleared = client.put(
                     f"/api/listings/{listing_id}/selection",
                     headers=headers,
@@ -299,6 +302,7 @@ def check_apps(apps, listing_id, conversation_id):
                 )
                 assert cleared.status_code == 200, cleared.text
                 assert cleared.json()["selected_buyer_id"] is None
+                assert cleared.json()["availability"] == "unavailable"
             else:
                 assert own_listings.json()["items"] == []
             assert (
