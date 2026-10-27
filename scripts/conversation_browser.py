@@ -290,21 +290,94 @@ def check_apps(apps, listing_id, conversation_id):
                 assert selected.json()["availability"] == "unavailable"
                 assert selected.json()["available_from"] == item["available_from"]
                 assert selected.json()["available_until"] == item["available_until"]
+                reopened = client.put(
+                    f"/api/listings/{listing_id}/availability",
+                    headers=headers,
+                    json={
+                        "expected_revision": selected.json()["revision"],
+                        "availability": "available",
+                        "available_from": item["available_from"],
+                        "available_until": item["available_until"],
+                        "operation_id": str(uuid4()),
+                    },
+                )
+                assert reopened.status_code == 200, reopened.text
+                reopened_owner = client.get("/api/me/listings?page=1").json()["items"][
+                    0
+                ]
+                done_request = {
+                    "expected_revision": reopened_owner["revision"],
+                    "availability": "unavailable",
+                    "available_from": item["available_from"],
+                    "available_until": item["available_until"],
+                    "operation_id": str(uuid4()),
+                }
+                done = client.put(
+                    f"/api/listings/{listing_id}/availability",
+                    headers=headers,
+                    json=done_request,
+                )
+                assert done.status_code == 200, done.text
+                owner_state = client.get("/api/me/listings?page=1").json()["items"][0]
+                assert owner_state["availability"] == "unavailable"
+                assert done.json()["available_from"] == item["available_from"]
+                assert done.json()["available_until"] == item["available_until"]
+                replay = client.put(
+                    f"/api/listings/{listing_id}/availability",
+                    headers=headers,
+                    json=done_request,
+                )
+                assert replay.status_code == 200 and replay.json() == done.json()
+                assert (
+                    owner_state["selected_buyer_id"]
+                    == selected.json()["selected_buyer_id"]
+                )
+                assert owner_state["selected_conversation_id"] == str(conversation_id)
                 cleared = client.put(
                     f"/api/listings/{listing_id}/selection",
                     headers=headers,
                     json={
                         "buyer_id": None,
                         "conversation_id": None,
-                        "expected_revision": selected.json()["revision"],
+                        "expected_revision": owner_state["revision"],
                         "operation_id": str(uuid4()),
                     },
                 )
                 assert cleared.status_code == 200, cleared.text
                 assert cleared.json()["selected_buyer_id"] is None
                 assert cleared.json()["availability"] == "unavailable"
+                # Leave a fresh available, unselected fixture for the human UI
+                # check, using the same real owner workflow rather than SQL reset.
+                ready = client.put(
+                    f"/api/listings/{listing_id}/availability",
+                    headers=headers,
+                    json={
+                        "expected_revision": cleared.json()["revision"],
+                        "availability": "available",
+                        "available_from": item["available_from"],
+                        "available_until": item["available_until"],
+                        "operation_id": str(uuid4()),
+                    },
+                )
+                assert ready.status_code == 200, ready.text
             else:
                 assert own_listings.json()["items"] == []
+                denied = client.put(
+                    f"/api/listings/{listing_id}/availability",
+                    headers={
+                        "Origin": origin,
+                        "X-CLIP-Request": "1",
+                        "X-CSRF-Token": client.get("/api/auth/csrf").json()[
+                            "csrf_token"
+                        ],
+                    },
+                    json={
+                        "expected_revision": 1,
+                        "availability": "unavailable",
+                        "operation_id": str(uuid4()),
+                    },
+                )
+                assert denied.status_code == 403
             assert (
                 client.get(
                     "/api/conversations?view=all&page=1&page_size=100"
@@ -395,7 +468,7 @@ def main():
                 check_apps(apps, listing, conversation)
                 if args.check_only:
                     print(
-                        "PASS: isolated Listings/Conversations SQL, selection API and loopback guards; browser checks pending"
+                        "PASS: isolated Listings/Conversations SQL, selection/availability APIs and loopback guards; browser checks pending"
                     )
                 else:
                     print(

@@ -497,3 +497,14 @@ reservation does not authorize push, merge, or deployment.
 Released at 2026-10-27 10:18:54 UTC after Rahul confirmed the updated selection
 and unavailable behavior works in the local preview at `e103562`. Step6 requires
 its own bounded writer scope before shared frontend edits.
+
+## CN-02 Step6 done-deal composition reservation
+
+Rahul (D) is the verified bounded writer for the public Listings availability
+export, `pages/ConversationRuntime.tsx` adapter, seller-only action beside Sale
+Listing inbox group headings, focused tests, and local browser walkthrough.
+Listings owns the availability transaction; Conversations receives a narrow
+injected capability. Preserve the current window and selected buyer, use stable
+operation IDs for uncertain outcomes, and refresh owner state after success.
+Suraj reviews the Listings boundary and Aditya reviews session composition.
+Other routes/app-shell changes, contact sharing and cloud work are outside scope.

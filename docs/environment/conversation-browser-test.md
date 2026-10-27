@@ -1,6 +1,6 @@
 # Local two-browser encrypted chat checkpoint
 
-CN-01 Steps 5–9 and CN-02 seller-selection checkpoint, isolated browser
+CN-01 Steps 5–9 and CN-02 seller-selection/done-deal checkpoints, isolated browser
 verification only. Real PostgreSQL, the normal Listings and Conversations
 routers, built React UI, OpenE2EE 13.0.0 and IndexedDB are used. Request
 authentication is **two fixed synthetic server identities**, not real Identity
@@ -27,8 +27,11 @@ uses its private local Unix socket and checked-in migrations, then seeds one
 synthetic listing and creates its conversation through the actual Conversations
 operation. Listings selection uses its actual PostgreSQL store and actual
 Conversations participant-check interface. The check-only run selects and clears
-the synthetic buyer to verify the complete server-side path, then leaves the
-browser fixture unselected. No messages/keys/ciphertext are preloaded. Two separate bounded pools
+the synthetic buyer, reopens the listing, and marks it unavailable through the
+availability API while verifying selection/window preservation and exact retry.
+It then clears selection and explicitly reopens through the owner API, leaving
+the browser fixture available and unselected. No messages/keys/ciphertext are
+preloaded. Two separate bounded pools
 serve the normal bundle on `127.0.0.1:5273` (A, seller) and `:5274` (B, buyer).
 Each side enforces its exact host/origin, a loopback peer and its own transient
 write token. Browser IDs/headers cannot switch the fixed actor. No test-auth route
@@ -36,7 +39,7 @@ or normal application configuration enables this harness; scripts/tests are
 excluded from the production image.
 
 `--check-only` checks HTTP/SQL access, seller-only listing reads, exact-thread
-selection and clearing, and guards without opening listeners. It does not
+selection, clearing, done-deal availability, buyer denial and guards without opening listeners. It does not
 execute browser JavaScript, encryption or IndexedDB. Normal operation
 ends after 30 minutes (explicit `--seconds` accepts60–3600) or Ctrl+C. Both
 listeners/pools stop and only the helper's own container/data are removed. Existing
@@ -44,6 +47,15 @@ Docker resources, databases and browser storage are not deleted. A setup failure
 stops rather than resetting an existing target. No live providers or email run.
 
 ## Human walkthrough
+
+For the CN-02 Step6 checkpoint, start with a fresh harness run. In A's inbox,
+confirm **Mark as done deal** appears beside the Sale Listing group heading;
+B's inbox must not show this control. Click A's button and check **Listing
+unavailable**, then reload and confirm that state persists. Open the retained
+chat on both sides and exchange a synthetic message. This is a seller's
+availability action, not platform confirmation of payment or handover. The
+selection walkthrough below needs another fresh harness run because done-deal
+makes this fixture unavailable. Do not clear browser storage between checks.
 
 Use two desktop browsers/profiles if available. The distinct origins also isolate
 storage in a single browser, but record that as a two-origin rather than a

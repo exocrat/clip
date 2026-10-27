@@ -128,6 +128,42 @@ describe('shared conversation route composition', () => {
     })).toBe(true));
   });
 
+  it('marks a seller listing unavailable through public Listings transport and refreshes its owner state', async () => {
+    const listingId = '33333333-3333-4333-8333-333333333333';
+    const ownerId = '11111111-1111-4111-8111-111111111111';
+    const buyerId = '22222222-2222-4222-8222-222222222222';
+    const requests: Array<{ path: string; init?: RequestInit }> = [];
+    let updated = false;
+    const listing = { listing_id: listingId, revision: 7, availability: 'available',
+      available_from: '2026-01-01T00:00:00Z', available_until: '2099-01-01T00:00:00Z',
+      selected_buyer_id: buyerId, selected_conversation_id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa' };
+    vi.stubGlobal('fetch', vi.fn(async (path: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(path);
+      requests.push({ path: url, init });
+      let body: unknown = {};
+      if (url === '/api/me') body = { user_id: ownerId, account_class: 'regular', valid_until: '2099-01-01T00:00:00Z' };
+      else if (url.startsWith('/api/conversations?')) body = { items: [{ caller_role: 'origin_owner',
+        conversation_id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', counterparty_user_id: buyerId,
+        current_offer: null, initiator_user_id: buyerId, last_activity_at: '2026-10-27T00:00:00Z',
+        origin_id: listingId, origin_kind: 'sale_listing', own_last_read_sequence: 0, unread_count: 0 }],
+        page: 1, page_size: 100, has_next: false };
+      else if (url === '/api/me/listings?page=1') body = { items: [{ ...listing,
+        availability: updated ? 'unavailable' : 'available', revision: updated ? 8 : 7 }],
+        page: 1, page_size: 20, has_next: false };
+      else if (url === '/api/auth/csrf') body = { csrf_token: 'c'.repeat(64) };
+      else if (url === `/api/listings/${listingId}/availability`) { updated = true; body = {}; }
+      return new Response(JSON.stringify(body), { headers: { 'Content-Type': 'application/json' } });
+    }));
+    mount('/my/conversations');
+    fireEvent.click(await screen.findByRole('button', { name: 'Mark as done deal' }));
+    await screen.findByText('Listing unavailable');
+    const request = requests.find((entry) => entry.path === `/api/listings/${listingId}/availability`);
+    expect(request?.init?.method).toBe('PUT');
+    expect(JSON.parse(String(request?.init?.body))).toEqual({ availability: 'unavailable', expected_revision: 7,
+      available_from: listing.available_from, available_until: listing.available_until, operation_id: expect.any(String) });
+    expect(requests.filter((entry) => entry.path === '/api/me/listings?page=1')).toHaveLength(2);
+  });
+
   it('connects seller selection through the public Listings API with the exact thread and revision', async () => {
     const conversationId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
     const listingId = '33333333-3333-4333-8333-333333333333';

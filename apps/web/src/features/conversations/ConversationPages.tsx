@@ -4,6 +4,7 @@ import { Button } from '../../shared/ui';
 import type { ConversationEntry, ConversationSummary, KeyBundle } from '../../../../../contracts/generated/types.gen';
 import { ConversationApiError, type ConversationApi } from './api';
 import { ConversationListingSelection, isSellerSaleListingConversation, type ListingSelectionPort } from './ConversationListingSelection';
+import { ConversationListingDoneDeal, type ListingAvailabilityPort } from './ConversationListingDoneDeal';
 import { ConversationCryptoError, ConversationKeyChangeRequiredError, ConversationKeyStateLostError,
   KeyRegistrationAcknowledgementRequiredError, type ConversationReceiveContext } from './crypto';
 import { ConversationInbox, type ConversationInboxFilters, type ConversationInboxItem } from './ConversationInbox';
@@ -13,7 +14,8 @@ import { openIndexedDbConversationSession, type ConversationSession } from './re
 /** Identity supplies this only after establishing a real authenticated session.
  * No component accepts a user ID from route/search/form input as caller identity.
  */
-export type ConversationPageRuntime = { userId: string; api: ConversationApi; listingSelection: ListingSelectionPort };
+export type ConversationPageRuntime = { userId: string; api: ConversationApi; listingSelection: ListingSelectionPort;
+  listingAvailability: ListingAvailabilityPort };
 const RuntimeContext = createContext<ConversationPageRuntime | null>(null);
 
 export function ConversationPageRuntimeProvider({ runtime, children }: PropsWithChildren<{ runtime: ConversationPageRuntime | null }>) {
@@ -116,6 +118,7 @@ function ConversationInboxSession() {
   }, [runtime, refresh]);
   if (!runtime) return <p role="status">Sign in to load your conversations. The authenticated session is not connected here yet.</p>;
   return <ConversationInbox conversations={items} loading={loading} loadError={loadError} onRefresh={refresh}
+    renderSellerListingAction={(listingId) => <ConversationListingDoneDeal listingId={listingId} availability={runtime.listingAvailability} />}
     filters={filters} onFiltersChange={changeFilters}
     page={pageNumber} hasNextPage={hasNextPage} onPageChange={setPageNumber}
     onOpen={(id) => navigate(`/my/conversations/${encodeURIComponent(id)}`)} />;

@@ -1,7 +1,7 @@
 import { useMemo, type PropsWithChildren } from 'react';
 import { useIdentity } from '../features/identity';
-import { ConversationApi, ConversationPageRuntimeProvider, type ListingSelectionPort } from '../features/conversations';
-import { ListingsApiError, readOwnedListing, setSelectedListingBuyer,
+import { ConversationApi, ConversationPageRuntimeProvider, type ListingAvailabilityPort, type ListingSelectionPort } from '../features/conversations';
+import { ListingsApiError, readOwnedListing, setSelectedListingBuyer, changeListingAvailability,
   type ListingManagementView, type ListingOwnerView } from '../features/listings';
 import { sessionFetch } from '../shared/http/sessionFetch';
 
@@ -35,6 +35,23 @@ const listingSelection: ListingSelectionPort = {
   },
 };
 
+const listingAvailability: ListingAvailabilityPort = {
+  readOwnedListing: listingSelection.readOwnedListing,
+  markUnavailable: async (listingId, request) => {
+    try {
+      await changeListingAvailability(listingId, request);
+      // The command's public detail response omits selection; refresh the
+      // owner view to reflect current authoritative selection and availability.
+      const listing = await readOwnedListing(listingId, new AbortController().signal);
+      return { kind: 'done', listing: toSelectionView(listing) };
+    } catch (error) {
+      if (error instanceof ListingsApiError && error.status === 409) return { kind: 'conflict' };
+      if (error instanceof ListingsApiError && [401, 403, 404, 422].includes(error.status)) return { kind: 'not_allowed' };
+      return { kind: 'dependency' };
+    }
+  },
+};
+
 /** Compose public session state with cookie/CSRF transport. Null unmounts private
  * chat controllers on logout/expiry; same-account session refresh preserves work.
  */
@@ -42,7 +59,7 @@ export function ConversationRuntime({ children }: PropsWithChildren) {
   const { status, user } = useIdentity();
   const userId = status === 'ready' && user ? user.user_id : null;
   const runtime = useMemo(() => userId
-    ? { userId, api: new ConversationApi(sessionFetch), listingSelection }
+    ? { userId, api: new ConversationApi(sessionFetch), listingSelection, listingAvailability }
     : null, [userId]);
   return <ConversationPageRuntimeProvider runtime={runtime}>{children}</ConversationPageRuntimeProvider>;
 }

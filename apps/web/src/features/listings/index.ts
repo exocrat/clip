@@ -11,5 +11,6 @@ export {
   ListingsApiError,
   readOwnedListing,
   setSelectedListingBuyer,
+  changeListingAvailability,
 } from './listingsApi';
-export type { ListingManagementView, ListingOwnerView, SelectionChange } from './listingsApi';
+export type { AvailabilityChange, ListingManagementView, ListingOwnerView, SelectionChange } from './listingsApi';

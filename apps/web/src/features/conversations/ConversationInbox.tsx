@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Button } from '../../shared/ui';
 import type { ConversationListQuery } from './api';
 import './ConversationInbox.css';
@@ -28,6 +28,7 @@ export type ConversationInboxProps = {
   page?: number;
   hasNextPage?: boolean;
   onPageChange?: (page: number) => void;
+  renderSellerListingAction?: (listingId: string) => ReactNode;
 };
 
 type ConversationGroup = { key: string; label: string; conversations: ConversationInboxItem[] };
@@ -44,6 +45,7 @@ export function ConversationInbox({
   page = 1,
   hasNextPage = false,
   onPageChange,
+  renderSellerListingAction,
 }: ConversationInboxProps) {
   const groups = useMemo(() => groupConversations(conversations), [conversations]);
   const [minimumRupees, setMinimumRupees] = useState('');
@@ -286,6 +288,8 @@ export function ConversationInbox({
             <section aria-label={group.label} className="conversation-inbox__group" key={group.key}>
               <header className="conversation-inbox__group-header">
                 <h3>{group.label}</h3>
+                {group.conversations.some((item) => item.role === 'seller' && item.origin_kind === 'sale_listing') &&
+                  group.conversations[0].origin_id && renderSellerListingAction?.(group.conversations[0].origin_id)}
                 <span>{group.conversations.length} {group.conversations.length === 1 ? 'conversation' : 'conversations'} on this page</span>
               </header>
               <ul className="conversation-inbox__list">
