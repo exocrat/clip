@@ -35,7 +35,7 @@ and evidence come from the work log and current repository checks.
 | Contracts and domains | `docs/tasks/domain-task-list.md`: DL-00, readiness checkpoints, required domain tasks, INT-01 | Full required FR and NFR-01–07 verification; budget-to-date/reserve; accepted INT-01 revision |
 | Primary comparison | `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md`: EXP-01–EXP-08 | Reviewed parity/design/implementation, valid results/analysis and cleanup |
 | Final closeout | `docs/tasks/final-closeout-task-list.md`: CLOSE-00 | Current regression/evidence, final NFR-08/cost/resources, report/demo/package and honest submission status |
-| Selected optional work | Domain task list OPT-01–03 | Own prerequisites plus OPTIONAL-OK; does not replace required stages |
+| Selected optional work | Domain task list OPT-01–05 | Own prerequisites plus OPTIONAL-OK; does not replace required stages |
 
 PD-19/PRE-00 were accepted. The [foundation handoff](../status/foundation-handoff.md)
 and [work log](../status/work-log.md) retain the accepted result and limits;
@@ -77,8 +77,8 @@ Roles A/B/C/D map to the people in the [work-log roster](../status/work-log.md).
 |---|---|---|---|
 | A | ID-01; CN-03; optional OPT-01 if selected | D | Identity/contact/recipient interfaces; default DL-00/INT-01/CLOSE-00 coordination |
 | B | LI-01; LI-02 | C | Authoritative buyer-selection/availability interfaces; cloud configuration/recovery slice |
-| C | SE-01; SE-02; optional OPT-02/03 if selected | B | Dataset/labels, NFR-01/02/04, workloads and peak API evaluation |
-| D | CN-01; CN-02 | A | E2EE/private messaging, NFR-05, notification producer integration; B also reviews listing selection |
+| C | SE-01; SE-02; optional OPT-02/03/05 if selected | B | Dataset/labels, NFR-01/02/04, workloads and peak API evaluation |
+| D | CN-01; CN-02; optional OPT-04 if selected | A | E2EE/private messaging, NFR-05, notification producer integration; B also reviews listing selection |
 
 DL-00: each owner drafts/reviews its domain contract; A coordinates combined artifacts and D is the primary independent peer. INT-01: A coordinates; A verifies identity/notifications, B images/listings and isolated DB-restore preparation/evidence, C search/peak-load tooling/evidence, D conversations and runtime-loss preparation/evidence. The named cloud operator serializes actual recovery/load/deployment runs. All owners review the integrated journey and fix only their owned implementation through PRs.
 
@@ -120,6 +120,8 @@ The graph is derived from the following acceptance dependencies. For multi-stage
 | OPT-01 | ID-READY, SE-02, CN-03, OPTIONAL-OK |
 | OPT-02 | ID-READY, LI-CORE, SE-CORE, SE-02, CN-03, OPTIONAL-OK |
 | OPT-03 | LI-02, SE-CORE, DATA-READY, OPTIONAL-OK |
+| OPT-04 | CN-CORE, ID-READY, LI-02, OPTIONAL-OK |
+| OPT-05 | ID-READY, LI-CORE, SE-CORE, DATA-READY, OPTIONAL-OK |
 | EXP-01 | Early design may start before INT-01 |
 | EXP-02 | EXP-01 |
 | EXP-03 | EXP-02 |

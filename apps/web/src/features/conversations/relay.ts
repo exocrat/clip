@@ -11,7 +11,7 @@ import {
 import { compositeIdentitiesEqual, createCompositeIdentityV1 } from '@open-e2ee/signal-protocol-sdk/keys';
 import type { AccountIdentityProvisioning, IdentityType, PreKeyInventory, PreKeyPublicationPlan } from '@open-e2ee/signal-protocol-sdk/remote/relay/types';
 import type { SignalProtocolLocalStore } from '@open-e2ee/signal-protocol-sdk/local/store';
-import { indexedDbStore } from '@open-e2ee/signal-protocol-sdk/local/store/web';
+import { openAccountConversationStore, CONVERSATION_STORE_OWNER } from './accountStore';
 import type { ContactShareRequest, KeyBundle, MessageRequest, PublicKeyBundleRequest } from '../../../../../contracts/generated/types.gen';
 import type { ConversationApi } from './api';
 import {
@@ -25,7 +25,7 @@ import {
 } from './crypto';
 import { ConversationLocalHistory } from './history';
 
-const OWNER_KEY = 'clip:conversation-store-owner:v1';
+const OWNER_KEY = CONVERSATION_STORE_OWNER;
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const SDK_RECOVERY_ID = /^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}):(retry-request|resend|null)(?::([2-9]|[1-9][0-9]+))?$/;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -697,7 +697,7 @@ export async function openIndexedDbConversationSession(
   userId: string, conversationId: string | null, api: ConversationApi,
   options: { acknowledgeUnrecoverableHistoryRisk?: true } = {},
 ): Promise<ConversationSession> {
-  const storage = await indexedDbStore();
+  const storage = await openAccountConversationStore(userId);
   try {
     const session = await createConversationSession(userId, conversationId, api, storage, options);
     return { ...session, stop: async () => { try { await session.stop(); } finally { storage.close(); } } };

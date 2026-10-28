@@ -119,10 +119,29 @@ function ConversationInboxSession() {
   }, [runtime, refresh]);
   if (!runtime) return <p role="status">Sign in to load your conversations. The authenticated session is not connected here yet.</p>;
   return <ConversationInbox conversations={items} loading={loading} loadError={loadError} onRefresh={refresh}
-    renderSellerListingAction={(listingId) => <ConversationListingDoneDeal listingId={listingId} availability={runtime.listingAvailability} />}
+    renderSellerListingAction={(listingId) => <ConversationListingDoneDeal listingId={listingId} availability={runtime.listingAvailability} renderSelectedBuyer={(id) => <SelectedBuyerContext conversationId={id} api={runtime.api} />} />}
     filters={filters} onFiltersChange={changeFilters}
     page={pageNumber} hasNextPage={hasNextPage} onPageChange={setPageNumber}
     onOpen={(id) => navigate(`/my/conversations/${encodeURIComponent(id)}`)} />;
+}
+
+/** Private seller summary stays meaningful when selection has no current offer.
+ * Only participant-authorized metadata is read; no contact or message is fetched.
+ */
+function SelectedBuyerContext({ conversationId, api }: { conversationId: string; api: ConversationApi }) {
+  const [summary, setSummary] = useState<ConversationSummary | null>(null);
+  useEffect(() => {
+    const controller = new AbortController();
+    const update = async () => {
+      try { const value = await api.readSummary(conversationId, controller.signal); if (!controller.signal.aborted) setSummary(value); }
+      catch { if (!controller.signal.aborted) setSummary(null); }
+    };
+    void update();
+    const timer = setInterval(() => { if (document.visibilityState === 'visible') void update(); }, 2000);
+    return () => { controller.abort(); clearInterval(timer); };
+  }, [conversationId, api]);
+  if (summary?.caller_role !== 'origin_owner') return null;
+  return <p><strong>Selected buyer</strong> · {summary.current_offer ? `₹${(summary.current_offer.amount_paise / 100).toLocaleString('en-IN')} · ${summary.current_offer.status}` : 'No offer'} · <Link to={`/my/conversations/${conversationId}`}>Open selected conversation</Link></p>;
 }
 
 function toInboxItem(summary: ConversationSummary, userId: string): ConversationInboxItem {
@@ -407,6 +426,7 @@ function ConversationDetailSession({ conversationId }: { conversationId: string 
   const pageSummary = authorizedSummary ?? ready?.summary ?? null;
   return <section aria-label="Conversation page">
     <p><Link to="/my/conversations">Back to conversations</Link></p>
+    {pageSummary ? <Link className="ui-button ui-button--secondary" to={`${pageSummary.origin_kind === 'sale_listing' ? '/listings/' : '/wanted/'}${pageSummary.origin_id}`}>Open {pageSummary.origin_kind === 'sale_listing' ? 'listing' : 'Wanted Request'}</Link> : null}
     <h2>{pageSummary?.origin_kind === 'sale_listing' ? 'Sale listing conversation' : pageSummary ? 'Wanted request conversation' : 'Private conversation'}</h2>
     {authorizedSummary ? <ConversationContactPreparation key={conversationId} conversationId={conversationId} api={runtime.api}
       canShare={keyState.kind === 'ready' && ready !== null} onShare={shareContacts} onRetry={retryContactShare} /> : null}
@@ -428,6 +448,21 @@ function ConversationDetailSession({ conversationId }: { conversationId: string 
   </section>;
 }
 
+/** Restore only locally authenticated history bound to this exact server entry.
+ * SDK replay protection intentionally will not decrypt an already consumed
+ * message again. Tombstones are handled before this helper; metadata changes
+ * fail closed rather than relabeling previously verified plaintext.
+ */
+export function verifiedCachedMessage(entry: ConversationEntry, received: import('./crypto').ReceivedConversationMessage[]) {
+  if (entry.content_deleted) return null;
+  const cached = received.find((item) => item.message_id === entry.entry_id);
+  if (!cached) return null;
+  if (!entry.envelope || cached.sequence !== entry.sequence || cached.sender_user_id !== entry.sender_user_id ||
+    cached.client_timestamp_ms !== entry.envelope.client_timestamp_ms || cached.sender_key_version !== entry.envelope.sender_key_version ||
+    cached.recipient_key_version !== entry.envelope.recipient_key_version) throw new ConversationCryptoError('Local history entry binding changed');
+  return cached;
+}
+
 async function decryptEntry(
   entry: ConversationEntry,
   userId: string,
@@ -441,10 +476,11 @@ async function decryptEntry(
   if (entry.content_deleted) return { entry_id: entry.entry_id, sequence: entry.sequence,
     sender_user_id: entry.sender_user_id, created_at: entry.created_at,
     text: entry.kind === 'contact_share' ? 'Contact details were removed after 30 days.' : null, content_deleted: true };
+  const cached = verifiedCachedMessage(entry, received);
+  if (cached && entry.kind === 'message') return { entry_id: entry.entry_id, sequence: entry.sequence, sender_user_id: entry.sender_user_id, created_at: entry.created_at, text: cached.text, content_deleted: false };
   if (entry.kind === 'contact_share') {
     if (entry.sender_user_id === userId) return { entry_id: entry.entry_id, sequence: entry.sequence,
       sender_user_id: userId, created_at: entry.created_at, text: 'You shared contact details.', content_deleted: false };
-    const cached = received.find((message) => message.message_id === entry.entry_id);
     let serialized: string;
     if (cached) serialized = cached.text;
     else {

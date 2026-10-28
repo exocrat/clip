@@ -205,7 +205,7 @@ describe('shared conversation route composition', () => {
     mountDetail(`/my/conversations/${conversationId}`);
     fireEvent.click(await screen.findByRole('button', { name: 'Select this buyer' }));
 
-    expect(await screen.findByText('This buyer is selected; the listing is unavailable.')).toBeTruthy();
+    expect(await screen.findByText('This buyer is selected for your private tracking.')).toBeTruthy();
     const selectionWrite = requests.find((request) => request.path === `/api/listings/${listingId}/selection`);
     expect(selectionWrite?.init?.method).toBe('PUT');
     expect(JSON.parse(String(selectionWrite?.init?.body))).toEqual({ buyer_id: buyerId,

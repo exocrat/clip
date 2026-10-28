@@ -9,7 +9,7 @@ const choices = [
   { field: 'upi_id', flag: 'upi_available', label: 'UPI ID' },
 ] as const;
 
-/** Explicit selection/confirmation only. Encrypted publication belongs to Step8.
+/** Explicit selection/confirmation only. The thread publishes the selected values through its actual E2EE session.
  * Returned values are deliberately never placed in UI, storage, or diagnostics.
  */
 export function ConversationContactPreparation({ conversationId, api, canShare, onShare, onRetry }: {
@@ -117,7 +117,7 @@ export function ConversationContactPreparation({ conversationId, api, canShare, 
           {label}{options[flag] ? '' : ' (not set)'}
         </label>)}
       </fieldset>
-      {!choices.some(({ flag }) => options[flag]) ? <p>Add contact details in Contact settings first.</p> : null}
+      {!choices.some(({ flag }) => options[flag]) ? <p><a className="ui-button ui-button--secondary" href={`/account/contacts?conversation=${encodeURIComponent(conversationId)}`}>Set up contact details</a></p> : null}
       <Button disabled={!fields.length || busy} onClick={() => setReview(true)}>Review selected details</Button>
       <Button disabled={busy} onClick={() => void load()} variant="secondary">Reload contact options</Button>
     </>}

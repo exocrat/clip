@@ -1,8 +1,8 @@
+import { ConversationOffers } from './ConversationOffers';
 import { Suspense, lazy, useEffect, useState, type PropsWithChildren } from 'react';
-import { useLocation, useParams, useSearchParams } from 'react-router';
-import { ConversationDetailPage as ConnectedConversationDetail, ConversationInboxPage, ConversationsPlaceholder } from '../features/conversations';
-import { MicrosoftCallback, ContactsEditor, SignIn, AccountStateBoundary, SellerEligibilityGate, IdentityPlaceholder as IdentityFeaturePlaceholder } from '../features/identity';
-import { ListingsPlaceholder as ListingsFeaturePlaceholder } from '../features/listings';
+import { Link, useLocation, useParams, useSearchParams } from 'react-router';
+import { ConversationDetailPage as ConnectedConversationDetail, ConversationInboxPage } from '../features/conversations';
+import { MicrosoftCallback, ContactsEditor, SignIn, AccountStateBoundary, SellerEligibilityGate } from '../features/identity';
 import { CreateListing, ListingDetail, ListingEdit, MyListings, StartListingConversationAction } from '../features/listings';
 import { WantedBrowse, MyWantedRequests, WantedDetail, SavedListings, SaveListingAction, SaleListingPreview } from '../features/search';
 import { SaleDiscovery } from '../features/search';
@@ -185,18 +185,20 @@ export function ConversationDetailPage() {
   return (
     <RoutePage title="Conversation">
       <ConnectedConversationDetail conversationId={conversationId} />
-      <ConversationsPlaceholder title="Offer, listing selection, and contact sharing">
-        <ListingsFeaturePlaceholder title="Listing selection and availability" />
-        <IdentityFeaturePlaceholder title="Contact options for deliberate sharing" />
-      </ConversationsPlaceholder>
+      <ConversationOffers key={conversationId} conversationId={conversationId} />
     </RoutePage>
   );
 }
 
 export function AccountContactsPage() {
+  const [params] = useSearchParams();
+  const conversation = params.get('conversation');
+  const returnPath = conversation && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(conversation)
+    ? `/my/conversations/${conversation}` : null;
   return (
     <RoutePage title="My contact details">
       <ContactsEditor />
+      {returnPath ? <Link className="ui-button ui-button--secondary" to={returnPath}>Back to conversation</Link> : null}
     </RoutePage>
   );
 }

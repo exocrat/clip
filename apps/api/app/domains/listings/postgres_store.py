@@ -917,11 +917,10 @@ class PostgresListingsStore:
         request: SelectionChange,
         now: datetime,
     ) -> ListingManagementView:
-        """Set/clear selection atomically with its availability effect.
+        """Persist private seller tracking with unchanged availability/window.
 
-        Setting requires a currently available/in-window listing and marks it
-        unavailable in the same revision-guarded transaction. Clearing leaves
-        availability unchanged. Both forms preserve the existing time window.
+        Owner, revision and live origin checks remain serialized with retirement;
+        participant membership is verified through Conversations before this write.
         """
         async with self._connection() as connection:
             async with connection.transaction():
@@ -939,55 +938,22 @@ class PostgresListingsStore:
                     raise _field_error(
                         "buyer_id", "buyer_and_conversation_must_both_be_set_or_cleared"
                     )
-                if request.buyer_id is not None and (
-                    current.availability != "available"
-                    or current.available_from > now
-                    or (
-                        current.available_until is not None
-                        and current.available_until <= now
-                    )
-                ):
-                    raise _conflict()
-                if request.buyer_id is None:
-                    cursor = await connection.execute(
-                        """
-                        UPDATE listings.sale_listings
-                        SET selected_buyer_id = NULL, selected_conversation_id = NULL,
-                            updated_at = %s, revision = revision + 1
-                        WHERE id = %s AND owner_id = %s AND revision = %s
-                        """,
-                        (now, listing_id, owner_id, request.expected_revision),
-                    )
-                else:
-                    # The local origin trigger validates a changed selection
-                    # while the listing is available. Stage that field update
-                    # inside this transaction, then close the listing before
-                    # commit. Other transactions can observe neither half.
-                    cursor = await connection.execute(
-                        """
-                        UPDATE listings.sale_listings
-                        SET selected_buyer_id = %s, selected_conversation_id = %s
-                        WHERE id = %s AND owner_id = %s AND revision = %s
-                        """,
-                        (
-                            request.buyer_id,
-                            request.conversation_id,
-                            listing_id,
-                            owner_id,
-                            request.expected_revision,
-                        ),
-                    )
-                    if cursor.rowcount != 1:
-                        raise _conflict()
-                    cursor = await connection.execute(
-                        """
-                        UPDATE listings.sale_listings
-                        SET availability = 'unavailable', updated_at = %s,
-                            revision = revision + 1
-                        WHERE id = %s AND owner_id = %s AND revision = %s
-                        """,
-                        (now, listing_id, owner_id, request.expected_revision),
-                    )
+                cursor = await connection.execute(
+                    """
+                    UPDATE listings.sale_listings
+                    SET selected_buyer_id = %s, selected_conversation_id = %s,
+                        updated_at = %s, revision = revision + 1
+                    WHERE id = %s AND owner_id = %s AND revision = %s
+                    """,
+                    (
+                        request.buyer_id,
+                        request.conversation_id,
+                        now,
+                        listing_id,
+                        owner_id,
+                        request.expected_revision,
+                    ),
+                )
                 if cursor.rowcount != 1:
                     raise _conflict()
                 result = await self._get_view(connection, listing_id)

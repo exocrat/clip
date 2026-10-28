@@ -32,6 +32,15 @@ describe('seller done-deal availability', () => {
     expect(screen.queryByRole('button', { name: 'Mark as done deal' })).toBeNull();
   });
 
+  it('reloads reopened availability on focus without remounting the group', async () => {
+    let unavailable = true;
+    mount({ readOwnedListing: vi.fn(async () => state({ availability: unavailable ? 'unavailable' : 'available' })), markUnavailable: vi.fn() });
+    await screen.findByText('Listing unavailable');
+    unavailable = false;
+    fireEvent(window, new Event('focus'));
+    expect(await screen.findByRole('button', { name: 'Mark as done deal' })).toBeTruthy();
+  });
+
   it('keeps the exact command after an uncertain commit', async () => {
     const markUnavailable = vi.fn().mockResolvedValueOnce({ kind: 'dependency' })
       .mockResolvedValueOnce({ kind: 'done', listing: state({ availability: 'unavailable' }) });

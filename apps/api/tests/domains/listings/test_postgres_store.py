@@ -354,14 +354,14 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
         )
         assert selected.selected_buyer_id == buyer_id
         assert selected.selected_conversation_id == conversation_id
-        assert selected.availability == "unavailable"
+        assert selected.availability == "available"
         assert selected.available_from == edited.available_from
         assert selected.available_until == edited.available_until
         assert conversations.calls == 1
         unavailable_owner_view = await store.read_listing(created.listing_id)
         assert unavailable_owner_view is not None
         assert unavailable_owner_view.selected_buyer_id == buyer_id
-        assert unavailable_owner_view.availability == "unavailable"
+        assert unavailable_owner_view.availability == "available"
 
         # Retrying the old selection returns its saved response, not a new write.
         replayed_selection = await service.set_selected_buyer(
@@ -390,14 +390,14 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
         )
         assert cleared.selected_buyer_id is None
         assert cleared.selected_conversation_id is None
-        assert cleared.availability == "unavailable"
+        assert cleared.availability == "available"
         assert cleared.available_from == selected.available_from
         assert cleared.available_until == selected.available_until
 
         mine = await service.list_mine(owner, PageQuery(page=1, page_size=20))
         assert len(mine.items) == 1
         assert mine.items[0].listing_id == created.listing_id
-        assert mine.items[0].availability == "unavailable"
+        assert mine.items[0].availability == "available"
 
         with pytest.raises(PublicError) as wrong_owner:
             await service.change_availability(
@@ -434,7 +434,7 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
             final_row = await saved.fetchone()
         assert final_row == {
             "title": "Revised synthetic textbook",
-            "availability": "unavailable",
+            "availability": "available",
             "revision": 5,
             "selected_buyer_id": None,
             "selected_conversation_id": None,

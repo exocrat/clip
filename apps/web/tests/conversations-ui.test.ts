@@ -42,7 +42,7 @@ describe('ConversationThread UI', () => {
   it('explains first-time peer setup without inviting acceptance or enabling send', () => {
     const html = renderThread({ key_state: { kind: 'waiting_for_peer_key' } });
     expect(html).toContain('Waiting for the other participant to set up encryption');
-    expect(html).toContain('complete encryption setup before you can send');
+    expect(html).toContain('finish their account’s messaging setup before you can send');
     expect(html).toContain('role="status"');
     expect(html).toMatch(/disabled=""[^>]*>Send encrypted message/);
     expect(html).not.toContain('Encryption is not ready');

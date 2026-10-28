@@ -245,3 +245,22 @@ MYPYPATH=apps/api/app/domains/listings .venv/bin/mypy --no-incremental --python-
 
 This installs nothing. It checks the helper against its actual pinned runtime;
 it does not replace CI, inference checks or platform acceptance.
+
+## NEXT-03 complete local inspection
+
+After building the normal web bundle with pinned Node/npm, run:
+
+```bash
+CLIP_ENVIRONMENT=test .venv/bin/python scripts/marketplace_inspection.py --synthetic-inspection
+```
+
+This creates only its own disposable PostgreSQL18.6 database, runs the actual
+authenticated app action sweep, seeds synthetic inspection records and serves
+the normal built application at `http://127.0.0.1:5174/__inspection`. It uses the
+pinned local Hybrid model/interpreter and synthetic external signing/mail/photo
+storage. No AWS, real mail, or retained database is used. Account switching stays
+in the loopback-only launcher and is absent from deployed code. Ctrl+C removes
+its database and temporary photos; `--check-only` checks and cleans up without
+serving. `--port 5175` starts an independent debugging fixture while preserving
+the default5174 inspection session; ports outside5174/5175 are rejected. Full steps and sample-account guidance are in the
+[NEXT-03 visual checklist](../tasks/next-03-step-10-visual-checklist.md).

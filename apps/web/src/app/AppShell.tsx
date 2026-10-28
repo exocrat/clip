@@ -1,3 +1,4 @@
+import { ConversationKeySetup } from '../features/conversations';
 import { Link, NavLink, Outlet } from 'react-router';
 import './AppShell.css';
 import { IdentitySessionControl, useIdentity } from '../features/identity';
@@ -45,7 +46,7 @@ export function AppShell() {
           Marketplace links preview unfinished domain routes. Identity sign-in is being verified locally.
         </p>
       </header>
-      <Outlet />
+      <ConversationKeySetup userId={status === 'ready' ? user?.user_id ?? null : null}><Outlet /></ConversationKeySetup>
     </div>
   );
 }

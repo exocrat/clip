@@ -327,7 +327,7 @@ function KeyStatePanel({
   if (keyState.kind === 'waiting_for_peer_key') {
     return <div className="conversation-thread__key-state" role="status">
       <h2>Waiting for the other participant to set up encryption</h2>
-      <p>They need to open a conversation and complete encryption setup before you can send messages.</p>
+      <p>They need to finish their account’s messaging setup before you can send messages. Once set up, they do not need to be online.</p>
       <p>Sending is paused. We’ll check automatically while this page is visible. This is not a conversation acceptance request.</p>
     </div>;
   }

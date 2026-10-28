@@ -139,7 +139,7 @@ it is not an additional product route.
 | `/my/listings` | `MyListingsPage` | Local view switch; public `listings/MyListings` and `search/MyWantedRequests` with draft matching; public Identity account boundary resets private state on actor changes; Conversations integration pending | B — LI-01/LI-02; C — SE-02; D — CN-02 integration |
 | `/saved` | `SavedListingsPage` | `search/SavedListings` uses the same `SaleListingCard` as Discover, including the Listings public photo renderer, current availability and Remove action; retired records remain content-free | C — SE-02; B — LI-01/LI-02 integration |
 | `/my/conversations` | `ConversationsPage` | `ConversationRuntime` provides the authenticated Conversations API to `ConversationInboxPage`. The member-scoped inbox has buyer/seller/requester/responder roles, origin grouping, partner/offer filters, amount sorting and bounded paging. Until owner interfaces expose display names, group/partner labels use shortened IDs; details and message content are not fetched for the inbox. | D — CN-01/CN-02; B — listing display context remains a small integration |
-| `/my/conversations/:conversationId` | `ConversationDetailPage` | `ConversationRuntime` provides the authenticated Conversations API to the private encrypted thread view. Current message/key/read states are implemented; structured-offer UI, seller selection/done-deal, and deliberate contact sharing remain CN-02 Steps 5–8. | D — CN-01/CN-02; B — listing selection/availability; A — Identity contact options |
+| `/my/conversations/:conversationId` | `ConversationDetailPage` | `ConversationRuntime` provides the authenticated Conversations API to the private encrypted thread view. Message/key/read states, seller selection, deliberate contact sharing, and the amount-only offer panel are connected. `pages/ConversationOffers.tsx` composes authorized Conversations reads with public Listings submit/withdraw exports; only buyers submit/revise/withdraw. Seller group done-deal actions use the Listings availability port. Real provider/cloud acceptance remains separately gated. | D — CN-01/CN-02; B — listing selection/availability; A — Identity contact options |
 | `/account/contacts` | `AccountContactsPage` | `identity/ContactsEditor` (own-source editor; human verification pending) | A — ID-01 |
 | `/wanted/:requestId` | `WantedRequestPage` | public `search/WantedDetail` reads `/me`, disables responses for temporary/expired sessions and calls the response API; real Conversations provider pending | C — SE-02; A — ID-01 and D — CN-01/CN-02 integration |
 
@@ -248,3 +248,20 @@ Conversations and Identity integration details are in their retained
 [CN-02 handoff](../evaluation/domain/conversations-offers.md), and
 [ID-01 provider guide](../environment/identity-provider-setup.md). No historical
 reservation below should be treated as current authorization.
+
+### NEXT-03 inspection composition
+
+Suraj is the sole writer for the `ScaffoldPages.tsx`/`ConversationOffers.tsx` integration increment authorized by the user on 2026-10-28. The normal conversation routes expose inbox multi-selection, buyer selection and seller done-deal actions; the old development-only presentation demo is not the inspection route. `scripts/marketplace_inspection.py` serves the normal built UI and application factory with real local sessions/domain stores and explicit synthetic external provider ports. Its actor controls are test-only and never installed by normal startup. Shared page editing is complete for this increment; affected-owner and independent PR review remain required.
+
+### Conversations-first functional correction — 2026-10-28
+
+Suraj is the sole writer for AppShell/account-key setup, ConversationRuntime/page
+composition and the safe contact-settings return link for this verified scope.
+The public Conversations entry point exposes ConversationKeySetup; AppShell
+mounts it for authenticated accounts before marketplace pages. Matching legacy
+keys are retained, new accounts have separate IndexedDB namespaces, and ordinary
+returning logins resume without key consent again. The SDK13.0.0 compatibility
+adapter configures database/lock identity before initialization and fails closed
+if its pinned adapter shape changes; real-browser regressions are required on
+SDK upgrades. No shared global IndexedDB factory is changed and no private key
+is copied between accounts. Identity handle/schema work remains later.

@@ -1,5 +1,8 @@
 import { sessionFetch, SessionFetchError } from '../../shared/http/sessionFetch';
 import type {
+  OfferRevisionRequest,
+  OfferWithdrawalRequest,
+  OfferView,
   AvailabilityChange,
   CatalogueView,
   ConfirmedImage,
@@ -302,3 +305,13 @@ export function listingPrice(paise: number): string {
     style: 'currency', currency: 'INR', maximumFractionDigits: 0,
   }).format(paise / 100);
 }
+
+/** Submit/revise through Listings so availability and participant checks serialize with writes. */
+export const submitListingOffer = (listingId: string, conversationId: string, body: OfferRevisionRequest) =>
+  listingsRequest<OfferView>(`/listings/${encodeURIComponent(listingId)}/conversations/${encodeURIComponent(conversationId)}/offer`,
+    { method: 'PUT', body: JSON.stringify(body) });
+
+/** Withdraw through the same owner boundary, including the current offer revision. */
+export const withdrawListingOffer = (listingId: string, conversationId: string, body: OfferWithdrawalRequest) =>
+  listingsRequest<OfferView>(`/listings/${encodeURIComponent(listingId)}/conversations/${encodeURIComponent(conversationId)}/offer-withdrawals`,
+    { method: 'POST', body: JSON.stringify(body) });

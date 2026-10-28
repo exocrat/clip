@@ -33,7 +33,7 @@ completed work just because an old status row says it is missing.
 | 7 | NEXT-07 — Run the required NFR tests and the already-designed experiment | NFR evidence and comparative runs under NEXT-01's approved method; no late redesign to favor results. |
 | 8 | NEXT-08 — Select and deploy the measured architecture | Use the better eligible tested configuration; ECS is not the predetermined final choice. |
 | 9 | NEXT-09 — Final usability, visual polish and red-team preparation | Last product-change group; human usability check, buying/selling clarity, visual consistency and adversarial review; revalidate affected evidence. |
-| 10 | NEXT-10 — Consider optional work if time remains | Review OPT-01–03 after NEXT-09 and before CLOSE-00; select only bounded work that fits remaining time/budget and triggers required rechecks. |
+| 10 | NEXT-10 — Consider optional work if time remains | Review OPT-01–05 after NEXT-09 and before CLOSE-00; select only bounded work that fits remaining time/budget and triggers required rechecks. |
 | Closeout | Existing CLOSE-00 | Final regression, Notifications acceptance, cost/resource reconciliation, report/demo/submission and cleanup or explicit retention. |
 | Deferred | MOBILE-REVIEW — Brief native-mobile feasibility assessment | Low priority, research only if time remains; no native app implementation selected. |
 
@@ -218,6 +218,8 @@ reports or another competing status system.
 
 ## NEXT-03 — Marketplace behavior and everyday controls
 
+**Current visual-feedback correction plan:** [grouped feedback and decisions](next-03-visual-feedback-plan.md). Human inspection found functional/UX issues; this task remains open. Its product decisions are settled; Suraj now prioritizes Conversations functional repair and a live verified demo, then commit, before the remaining batch including the handle migration. Consult that feedback plan before every implementation step and completion report. Search relevance tuning and encrypted chat images are deferred/unselected OPT-05 and OPT-04 respectively.
+
 **Owners:** Listings/Search/Conversations owners with the page maintainer.
 Reserve shared composition files through the frontend collaboration procedure.
 Implement related increments with automated checks before each human walkthrough.
@@ -346,6 +348,14 @@ Implement related increments with automated checks before each human walkthrough
    After the action sweep, prepare the full step-by-step desktop/phone visual
    checklist with exact local start/access/stop instructions. Do not generate
    the final inspection dataset during Part 2.
+
+   The Part 2 walkthrough is documented in the
+   [NEXT-03 local visual inspection checklist](next-03-step-10-visual-checklist.md).
+   It uses the normal application routes through the complete local inspection
+   launcher. The user authorized completing the sweep, fixing missing UI
+   connections, running checks and preparing all data/instructions in one
+   execution through the handoff for human visual inspection. External providers
+   remain explicit synthetic ports; cloud verification remains NEXT-04.
 
    **Part 3 — visual inspection data:** Create safe synthetic data that makes
    every checklist item reachable, including known positive and negative Wanted
