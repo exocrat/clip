@@ -159,3 +159,125 @@ retain their separate gates.
 Aditya reconfirmed that the replacement Resend key was saved correctly to the
 configured parameter. The metadata date alone does not establish key contents;
 no new rotation action is requested. Actual approved delivery remains later.
+
+## Corrected stopped-state plans — 2026-10-28 04:43:41 UTC
+
+Aditya explicitly approved unchanged private SES recipient ARN reuse and requested
+a commit first. Both full plans were then regenerated from state serial18 against
+committed source3433ae7, without targets or ignored changes. The existing SES
+policy is unchanged; no IAM policy, RDS, SSM parameter or ACM actions remain.
+Both plans affect15resource addresses, chiefly default-tag normalization, stopped
+API task-definition replacement/service reference and launch-template metadata.
+The Micro plan additionally selects t3.micro for the future host. Capacity stays0;
+API, Identity and proxy stay disabled. No apply, SQL, email or start occurred.
+The old draft hashes are superseded and must never be applied.
+
+Private baseline SHA256: `73694804e9b76abc2295b3274b2b616290714c96b8da7e1129ef3f7369d9d6d4`.
+Private Micro SHA256: `927ac404dc4c48ed2566d6d6724d1bcab65682168181f11d68f726fbe30b1fb7`.
+Artifacts remain owner-only in the previously recorded private directory. Existing
+password versions1 are preserved; no provider/authentication key was read.
+This clears the private-input planning blocker, not Step13 acceptance. Exact-plan
+apply, resource starts and the later clean database bootstrap remain separate
+approvals. Retained ExpiresOn dates are historical metadata, not permission for
+a new operating window; refresh/review them before any active-resource plan.
+
+## Approved stopped-state apply — 2026-10-28 04:46:45 UTC
+
+Applied exactly the approved Micro plan SHA256
+`927ac404dc4c48ed2566d6d6724d1bcab65682168181f11d68f726fbe30b1fb7`
+in account335523638354/ap-south-1/shared/test. Apply completed; backend serial
+18→19. Independent AWS reads verify launch template version3 selects t3.micro,
+ASG desired/min0 with no instances, API task revision4 with desired/running/pending0,
+and protected private RDS still stopped. No host/proxy was created or started,
+no SQL connection/reset or email send occurred. The C7i comparison plan is now
+stale and must not be applied. Private apply log and sanitized status remain in
+the recorded private directory. No new operating window is authorized.
+
+Next checkpoint is the separately approved bounded active window: retained RDS
+and one owned host, observed sizing/address, current-image build/publication
+review, and exact database baseline/reset review. Enabled proxy and actual
+HTTPS/provider/browser/retention checks remain pending.
+
+## Next bounded startup proposal — 2026-10-28 04:48:19 UTC
+
+Aditya verified the stopped-state apply. Fresh read-only preflight confirms both
+clusters idle, RDS stopped/private/protected, ASG min0/max1/desired0 and LT3 Micro
+with encrypted30GiB delete-on-termination root. CPU credit mode is not explicitly
+set in the template; set Standard on only the new host before any diagnostic load.
+
+Requested window: account335523638354, adityalaxmi1, Mumbai shared/test, operator
+Aditya, at most4hours/$2 incremental operating ceiling (an operator stop threshold,
+not an automatic AWS billing cap). Start retained RDS and exactly one private
+Micro host by temporarily setting ASG min1/max1/desired1. Min1 keeps the empty
+diagnostic host from idle scale-in; restore min0 afterward. Before startup create
+a named one-off ASG scale-down for start+4hours, min0/max1/desired0. This fallback
+covers host capacity only; operator must separately stop RDS. No proxy or API task.
+
+Read-only ECS/SSM diagnostics observe actual address, registration and allocatable
+memory, plus uname/free/df, Docker version/info and ECS/SSM service status. No
+SQL connection, credential/provider read, migration, reset, build/publication or
+email is included. No ingress, IAM or other-owner resources change.
+
+At most4hours host+RDS public compute estimate is$0.1288, excluding EBS, NAT,
+storage/log/data/tax. Existing retained costs continue. Stop for drift, unexpected
+workloads/hosts, registration/memory failure, extra-resource requirements, deadline
+or projected ceiling breach. On completion/failure restore min0/max1/desired0,
+verify owned host termination, stop RDS when still exclusive, remove only owned
+scheduled action after cleanup confirmation. Preserve shared infrastructure,
+images, keys and data. Full structured scope is in the adjacent proposal JSON.
+Startup is awaiting its separate human approval.
+
+## Approved startup diagnostic checkpoint — 2026-10-28 04:54:19 UTC
+
+Started at2026-10-28 04:50:53 UTC after explicit approval. One private host
+`i-03d4b9d603b260361` registered with ECS/SSM at10.64.1.247; Standard CPU credits
+were verified. SSM diagnostic652dc658-e0b8-43e6-ad33-bfe3e3572091 exited0:
+x86_64, Docker25.0.16, ECS/SSM services active, root28GiB free, no swap.
+ECS advertises2048CPU units/916MiB available for task reservations. OS idle
+available memory was537MiB. This supports a single512MiB scheduling reservation
+only; no actual API process, memory/load acceptance or build suitability is proven.
+Two512MiB tasks cannot fit. No new blanket Micro sizing acceptance.
+
+Host diagnostics complete; cleanup restored ASG min0/max1/desired0 and the owned
+EC2 host is terminated. Retained RDS startup was still transitioning; cleanup
+continues until RDS can be stopped. The planned host address is historical after
+termination and must never be reused as a future proxy upstream without a new
+live observation. No SQL, provider/auth secret read, API/proxy activation, image
+build/publication or email occurred. Pending cleanup/result verification.
+
+## Diagnostic window cleanup verified — 2026-10-28 05:03:07 UTC
+
+The approved window is complete. RDS reached available and accepted the stop
+request; it is now stopped/private/protected. The owned host is terminated.
+Independent final reads confirm ASG min0/max1/desired0 with no instances, API
+desired/running/pending0, and absence of the owned one-off scheduled action.
+The window began04:50:53 UTC and cleanup reached stopped05:02:50 UTC, within
+the approved four-hour limit. No account billing was queried or actual charge
+claimed. Shared network/storage/NAT and other-owner resources were preserved.
+
+Gitleaks8.30.1 source-snapshot scan and whitespace checks pass; no application
+source/configuration changed during this window. This checkpoint proves host
+registration/sizing diagnostics and bounded startup/cleanup only. Human result
+verification remains pending. Next prepare the reviewed current-image build and
+read-only database-baseline inspection scopes before another live window; clean
+bootstrap/reset, deployment, HTTPS/provider/browser and retention acceptance
+remain pending. ID-READY and ID-01 remain incomplete.
+
+## Next build/database preparation — 2026-10-28 05:10:38 UTC
+
+Aditya verified the diagnostic result and selected t3.micro for a native AMD64
+build. Prepared [the exact build/publication/read-only inspection window](build-and-database-window.md),
+an allowlisted233file source archive bound to3433ae7, a loopback-only hash-checked
+SSM transfer helper, and a sequential bounded native build helper. The latter
+uses2GiB swap on the owned encrypted root,512MiB RAM/1536MiB combined per build
+step, a45minute timeout, non-root/platform and default-runtime health/UI checks,
+and image archive hashes. No host IAM or public port is added. Local ARM64 only
+stores/pushes the resulting AMD64 image; it never executes that image.
+
+Three real transfer boundary tests pass after correcting test-only connection
+cleanup. Shell syntax, embedded Python parse, inert CLI help and formatting pass.
+Source archive excludes local changes/caches/environment files. No new build,
+AWS window, ECR publication or SQL ran. New master-secret use for read-only SQL,
+source/image transfer, publication and bounded startup/cleanup need the exact
+combined window approval. This prepares current-image and catalog findings only;
+bootstrap/reset and all deployed acceptance remain separately pending.

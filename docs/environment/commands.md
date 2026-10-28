@@ -1967,3 +1967,20 @@ No provider, cloud, retained database or DNS query is involved.
 `make terraform-check` remains the backend-free all-root format/schema check;
 `make check` includes the Python transport cases but not the mock-plan wrapper.
 [Reviewed scope and remaining approval gates](../evaluation/identity/id-01-step-13/README.md).
+
+## ID-01 Step13 — native Micro build preparation
+
+These operator helpers require the separately approved exact
+[build/database window](../evaluation/identity/id-01-step-13/build-and-database-window.md).
+They are not `make check`, an application startup path or authorization to start AWS.
+
+| Command | Effects and expected result |
+| --- | --- |
+| `uv run --locked pytest -q tests/test_identity_build_transfer.py` | Three real disposable loopback HTTP tests; synthetic bytes only, no AWS/Docker/provider/SQL. Tests hash/size/overwrite boundaries and completed-artifact-only downloads; local sockets require the ordinary test permission. |
+| `uv run --locked python scripts/identity_build_transfer.py --help` | Help only; does not create a directory, listen or bootstrap. The script is stdlib-compatible with the host Python3. |
+| `python3 scripts/identity_build_transfer.py --directory "$ID01_BUILD_DIR" --source-sha256 "$ID01_SOURCE_SHA256"` | Only on the reviewed disposable private build host: creates a fresh owner-only directory and loopback18765 server for at most two hours of request admission. One exact ≤100MiB source upload; completed image/result downloads only. No extraction, AWS APIs, credentials or build. Stop owned process/session and terminate host at cleanup. |
+| `bash scripts/identity_amd64_build.sh "$ID01_BUILD_DIR" "$ID01_SOURCE_SHA256" "$ID01_SOURCE_COMMIT"` | Only root on approved native x86_64 disposable host with Docker25 and completed source upload. Validates fixed run path/archive; adds2GiB temporary encrypted-root swap; bounded sequential45minute build,512MiB RAM/1536MiB RAM+swap, Microsoft button true/demo false; non-root/platform/loopback health/UI smoke and hash-bound image export. No AWS API/push/SQL/provider. Exit0 exposes completed image.tar/result.json; failures stop the trial, never resize automatically. Owned swap/container cleanup on exit; final host termination is required even after failure. |
+
+Live transfer uses the approved SSM forwarding document, never public ingress or
+a remote Docker socket. Local Docker may load/store/push AMD64 without executing
+it; publication still needs the reviewed account/repository/tag approval.
