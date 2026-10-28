@@ -1,0 +1,33 @@
+#!/bin/bash
+# Dedicated proxy only. No provider/database credentials or client data are read.
+set -eu
+umask 077
+systemctl disable --now ecs || true
+systemctl enable --now docker amazon-ssm-agent
+install -d -m 700 /etc/clip-id01 /var/lib/clip-id01-caddy
+cat > /etc/clip-id01/Caddyfile <<'CLIP_CADDY'
+${caddy_config}
+CLIP_CADDY
+cat > /etc/systemd/system/clip-id01-https.service <<'CLIP_UNIT'
+[Unit]
+Description=Owned CLIP Identity HTTPS test proxy
+After=network-online.target docker.service
+Requires=docker.service
+StartLimitIntervalSec=0
+[Service]
+Type=simple
+Restart=always
+RestartSec=10
+TimeoutStartSec=0
+StandardOutput=null
+StandardError=null
+ExecStartPre=-/usr/bin/docker rm -f clip-id01-https
+ExecStart=/usr/bin/docker run --rm --name clip-id01-https --network host --read-only --cap-drop ALL --cap-add NET_BIND_SERVICE --security-opt no-new-privileges --log-driver none --memory 256m --cpus 0.5 --pids-limit 128 --tmpfs /tmp:rw,noexec,nosuid,size=16m -v /etc/clip-id01/Caddyfile:/etc/caddy/Caddyfile:ro -v /var/lib/clip-id01-caddy:/data ${image} caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
+ExecStop=/usr/bin/docker stop --time 10 clip-id01-https
+[Install]
+WantedBy=multi-user.target
+CLIP_UNIT
+systemctl daemon-reload
+systemctl enable --now --no-block clip-id01-https.service
+# This stops only the dedicated proxy; it does not stop shared ECS or RDS.
+shutdown -h +240

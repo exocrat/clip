@@ -1997,3 +1997,32 @@ private data handling and prefix refusal remain unchanged. New source review,
 hosted CI/merge and actual Step13 runtime acceptance remain required; no cloud,
 SQL/provider action or ID-READY acceptance occurred. The clean bootstrap/reset
 preference above remains the next database-planning input.
+
+## Step13 bounded HTTPS and planning preparation — 2026-10-28 03:42:11 UTC
+
+Aditya requested starting the test setup, renewed the non-root AWS login and
+approved private non-applying planning with the two fixed DB password inputs.
+Read-only preflight confirms stopped/private RDS, zero tasks/hosts in both ECS
+clusters, ASG0/max1, no nonterminated Mumbai EC2, available x86_64AMI and an issued
+unused/non-exportable ACM certificate. No declined DNS propagation check was run.
+[Current proposal, exact source files, tests and planning gates](id-01-step-13/README.md)
+and [safe metadata/draft hashes](id-01-step-13/preflight-and-proposal.json).
+
+The new shared-root proxy proposal defaults off: dedicated Micro node and scoped
+SSM-agent role without parameter reads. Forwarded headers are trusted only from
+`10.64.0.10`; port18000remains private and raw request logging is disabled.
+Caddy obtains separate ACME TLS. The shared ECS type
+default is unchanged; Micro is a per-run sizing proposal, with512MiB tasks
+sequential and actual memory/build/Hybrid limits unaccepted. Local6transport SQL
+checks,3isolated mock plans, pinned Caddy validation, all4Terraform roots and all
+12application gates passed (Python1938/153skip, data94, web433/3skip, CN167).
+
+The first private baseline/Micro plans use state18and keep services off. They
+contain an unintended SES sandbox-recipient resource omission. Reusing its exact
+private ARN as unchanged input was rejected by automatic approval review as
+outside the two-password sensitive-input scope. Additional explicit approval is
+pending; drafts are not for apply. No source ignore/targeting or workaround was
+used. User reconfirmed correct Resend replacement storage; provider value unread.
+No infrastructure mutation, SQL/reset, application deployment, provider send,
+commit/push or ID-READY acceptance occurred. The local code/proposal await human
+verification and later exact-plan gates.

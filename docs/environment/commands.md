@@ -1949,3 +1949,21 @@ never supply a real cookie or retained/hosted target. Ordinary npm checks skip i
 This automation is not actual browser/device, deployment or full Step14 evidence.
 The second command proves normal/production runtime exposes no synthetic CSRF
 route and existing isolated local/hosted profiles retain their transport gates.
+
+### Identity HTTPS proxy preparation — ID-01 Step13
+
+`TERRAFORM_BIN=/path/to/terraform-1.15.9 uv run --locked python scripts/check_identity_https_proxy.py`
+runs the fixed mock plans in a temporary copy without a backend, state/plan/tfvars,
+AWS configuration/credentials or metadata credentials. Readonly provider schema
+installation may contact the public registry; no AWS resource API or live plan is
+performed. Expected3passes: defaults off, exact trust/no secret-read role, missing
+upstream/date refusal. Cleanup removes only the private copy.
+
+`uv run --locked pytest apps/api/tests/domains/identity/test_proxy_transport.py -q -W error`
+uses the existing disposable PostgreSQL/controlled signer fixture. Expected6passes
+for actual Identity HTTPS/origin/cookie gates behind exact Uvicorn peer trust.
+No provider, cloud, retained database or DNS query is involved.
+
+`make terraform-check` remains the backend-free all-root format/schema check;
+`make check` includes the Python transport cases but not the mock-plan wrapper.
+[Reviewed scope and remaining approval gates](../evaluation/identity/id-01-step-13/README.md).

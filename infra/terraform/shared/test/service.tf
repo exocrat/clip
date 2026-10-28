@@ -69,7 +69,7 @@ resource "aws_ecs_task_definition" "api" {
     cpu_architecture        = "X86_64"
   }
 
-  container_definitions = jsonencode([{
+  container_definitions = jsonencode([merge({
     name      = "api"
     image     = var.api_image_uri
     essential = true
@@ -123,7 +123,15 @@ resource "aws_ecs_task_definition" "api" {
         "awslogs-stream-prefix" = "api"
       }
     }
-  }])
+    }, var.identity_runtime_enabled ? {
+    # Disable raw URI access logs; trust only the reviewed proxy's exact source IP.
+    command = concat([
+      "uvicorn", "app.main:app", "--app-dir", "apps/api", "--host", "0.0.0.0",
+      "--port", "8000", "--no-access-log",
+      ], var.identity_https_proxy_enabled ? [
+      "--proxy-headers", "--forwarded-allow-ips", local.identity_proxy_private_ip,
+    ] : ["--no-proxy-headers"])
+  } : {})])
 
   lifecycle {
     precondition {
