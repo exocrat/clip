@@ -1,5 +1,5 @@
 /** Pure workload/response checks shared by k6 and Node tests; no network or globals. */
-export const SUMMARY_FIELDS = ['listing_id','title','description','category_code','category_label','condition_code','condition_label','asking_price_paise','negotiable','pickup_area','available_from','available_until','availability','sensitive_purchase','image_ids'];
+export const SUMMARY_FIELDS = ['listing_id','title','description','category_code','category_label','condition_code','condition_label','asking_price_paise','original_price_paise','negotiable','pickup_area','available_from','available_until','availability','sensitive_purchase','image_ids'];
 const uuid = value => typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(value);
 const exactKeys = (value, keys) => value !== null && typeof value === 'object' && !Array.isArray(value) && Object.keys(value).length === keys.length && keys.every(key => Object.hasOwn(value,key));
 const instant = value => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}Z$/.test(value) && Number.isFinite(Date.parse(value));
@@ -44,6 +44,7 @@ export function validPage(value, item) {
     if (typeof row.title !== 'string' || !row.title.trim() || [...row.title].length > 120 || typeof row.description !== 'string' || [...row.description].length > 5000) return false;
     if (!['category_code','category_label','condition_code','condition_label'].every(key => typeof row[key] === 'string' && row[key])) return false;
     if (!Number.isSafeInteger(row.asking_price_paise) || row.asking_price_paise < 0 || row.asking_price_paise % 100 !== 0 || typeof row.negotiable !== 'boolean' || typeof row.sensitive_purchase !== 'boolean' || row.availability !== 'available') return false;
+    if (!(row.original_price_paise === null || Number.isSafeInteger(row.original_price_paise) && row.original_price_paise > 0 && row.original_price_paise <= 1_000_000_000 && row.original_price_paise % 100 === 0)) return false;
     if (!(row.pickup_area === null || typeof row.pickup_area === 'string') || !instant(row.available_from) || !(row.available_until === null || instant(row.available_until)) || !Array.isArray(row.image_ids) || !row.image_ids.every(uuid)) return false;
     if (Date.parse(row.available_from) > Date.now() || row.available_until !== null && Date.parse(row.available_until) <= Date.now()) return false;
     const q = item.query;
