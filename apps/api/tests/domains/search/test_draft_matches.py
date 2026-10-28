@@ -82,13 +82,12 @@ def test_query_has_title_only_fixed_order_and_first_page(account_class):
             and query.search_mode == "keyword"
         )
         assert (query.page, query.page_size) == (1, 20)
+        assert query.category_code == [] and query.condition_code == []
         assert all(
             getattr(query, name) is None
             for name in [
-                "category_code",
                 "min_price_paise",
                 "max_price_paise",
-                "condition_code",
                 "negotiable",
             ]
         )

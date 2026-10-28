@@ -81,8 +81,8 @@ def test_snapshot_sql_parameterization_filter_order_and_private_projection():
         and "listing.available_until>input.now" in sql
     )
     assert (
-        "category.code=%s" in sql
-        and "listing_condition.code=%s" in sql
+        "category.code=ANY(%s)" in sql
+        and "listing_condition.code=ANY(%s)" in sql
         and "listing.negotiable=%s" in sql
     )
     assert (
@@ -110,18 +110,16 @@ def test_snapshot_sql_parameterization_filter_order_and_private_projection():
     assert "scored.semantic_score DESC, scored.listing_id ASC" in relevant
 
 
-def test_huge_price_bounds_remain_exact_and_do_not_bind_out_of_range_ints():
+def test_marketplace_price_cap_remains_exact_and_is_bound():
     request = ListingQuery(
-        q="vehicle", min_price_paise=10**100, max_price_paise=10**101
+        q="vehicle", min_price_paise=1_000_000_000, max_price_paise=1_000_000_000
     )
     sql, values = hybrid_statement(
         request, NOW, 500000, binding(), scripted_plan("vehicle")
     )
-    assert (
-        "AND FALSE" in sql
-        and request.min_price_paise not in values
-        and request.max_price_paise not in values
-    )
+    assert request.min_price_paise in values and request.max_price_paise in values
+    assert "listing.asking_price_paise>=%s" in sql
+    assert "listing.asking_price_paise<=%s" in sql
 
 
 @pytest.mark.parametrize(
