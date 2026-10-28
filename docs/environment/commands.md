@@ -2009,3 +2009,19 @@ an executable route.
 | `uv run --locked pytest -q tests/test_identity_bootstrap.py tests/test_identity_bootstrap_review.py` | Thirteen disposable local TLS tests covering guarded17→23 bootstrap, lock/role preservation, refusal/rollback and restricted trigger grants. Requires Docker; never supply a shared database. Not hosted acceptance. |
 
 [Exact proposed live target, grants, failure behavior and60minute/$1 window](../evaluation/identity/id-01-step-13/bootstrap-live-review.md). No live execution is authorized by these commands.
+
+## ID-01 Step13 — window-only retention launcher
+
+`uv run --locked python scripts/identity_retention_job.py --help` is inert.
+`uv run --locked pytest -q tests/test_identity_retention_job.py` runs four offline
+safety checks; no cloud/DB. `--image`, `--revision` and `--deadline-utc` bind the
+operator job; default is dry-run. `--apply` and installing the inactive proposed
+service/timer require the [exact live approval](../evaluation/identity/id-01-step-13/retention-window-review.md).
+The launcher uses unchanged identity_cleanup.py inside the actual container,
+returns counts only and never installs scheduling itself. No build is needed.
+
+For an SSM-shell invocation of the retention launcher, supply the actual root
+account HOME only to that process (resolve it with pwd); SSM omits HOME. The
+reviewed service has User=root and its actual automatic run supplies the proper
+account environment. Do not change system-wide environment or job source to
+work around that caller context. [First scheduled run](../evaluation/identity/id-01-step-13/retention-window-result.json).

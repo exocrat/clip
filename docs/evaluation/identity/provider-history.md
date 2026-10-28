@@ -109,3 +109,16 @@ source-hashes.json snapshots; Step11 retains its four snapshot sets, Step12 its
 email-routing and merge snapshots. Their original paths/bytes are retained.
 Full exact historical plan SHA256s/commands/IDs remain in those artifacts or the
 archived Markdown blobs, rather than being duplicated in a new live runbook.
+
+## Step13 hosted acceptance — 2026-10-28 15:47:35 UTC
+
+SES production/sending confirmed enabled in Mumbai, domain DKIM SUCCESS. The
+standalone SES test and actual application reset email were received in Gmail,
+confirmed by Aditya after checking phone; reported nonreceipt was resolved
+without changing provider preference or keys. Hosted temporary registration/
+verification/sign-in/reset/new-password sign-in all human-pass. SES acceptance
+is not treated as inbox proof until that confirmation, and standalone operator
+SES evidence is not claimed as a new ECS fallback measurement. Exact safe
+receipts and remaining closeout are in [Step13](id-01-step-13/runtime-enabled-result.json).
+No paid delivery manager, new notification resources or Resend credential lookup
+was enabled; an automatically rejected lookup was skipped once receipt resolved.

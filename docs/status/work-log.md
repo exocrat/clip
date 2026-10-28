@@ -47,7 +47,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PD-19 | Integration owner (current branch) | done | Steps 1–9 and combined foundation handoff complete | Steps 1–9 performed | User confirms all work before PRE-00 is complete | PR #8 merged at `2cd83e7` from head `18c966e` against base `68d9da9`; [Foundation quality gates passed](https://github.com/exocrat/clip/actions/runs/39323851584) for that exact head/base; `make test` (395 Python, 63 data, 16 web), Black, contract freshness and 10 `make check` gates passed; [handoff](foundation-handoff.md) | No open PD-19 work per user confirmation. Linux AMD64/macOS results remain user-confirmed without raw outputs. PR #8 has no submitted GitHub review; independent-review completion is user-confirmed, with no separate review artifact linked. Refresh cloud snapshot before any operation. | 2026-10-19 21:09:05 UTC |
 | PRE-00 | Integration owner | done | Foundation gate audit accepted; DL-00 is unblocked | performed | verified/accepted by user | Reviewed handoff PR #8 merged to `main` at `2cd83e7`; hosted Foundation quality gates passed for head `18c966e` against base `68d9da9` (run `39323851584`); clean-checkout evidence at `0747be6`; see [PD-19 handoff](foundation-handoff.md) | None. PR #8 has no GitHub review event; independent-review completion remains user-reported without a separate artifact. | 2026-10-19 21:20:55 UTC |
 | DL-00 | Shared-core/contract coordinator; all domains review | done | Steps 1–13 and task-wide audit complete; accepted and merged | Steps 1–13 performed; accepted by user | User confirmed full acceptance and merge on 2026-10-22 05:30:49 UTC | PR #9 merged to `main` at `f5576ef`; current `main` is `44cd8ff`; Step 13 check evidence is recorded below and was not rerun for this update | None for DL-00; cleanup implementation remains separately gated; real providers/integrations and crypto/worker implementation remain downstream | 2026-10-22 05:30:49 UTC |
-| ID-01 | A | in progress | Step13 live bootstrap/grants/login checks and cleanup complete; await verification | 23migrations/head20261027112205;40tables/36functions/46triggers; exact grants/preserved roles and actual logins pass | Host terminated/ASG0/API0; RDS stopped; tunnel/fallback removed | [Bound success receipt](../evaluation/identity/id-01-step-13/bootstrap-retry-result.json) | Human verification; then hosted runtime/HTTPS/provider/browser/retention checks and task-wide closeout | 2026-10-28 13:52:35 UTC |
+| ID-01 | A | in progress | Step13 complete and human-verified; source ready for peer review/publication | Real Microsoft/temp email/reset/contact/logout/phone/HTTPS and scheduled retention checks pass; full approved cleanup independently verified | Aditya verified final Step13 result; API/ASG0, RDS stopped, both hosts/EIP/timer/fallback removed | [Accepted Step13 review](../evaluation/identity/id-01-step-13/closeout-review.json); Git history records closeout commit | Source peer/affected review/publication; formal ID-READY acceptance and Step14/full ID-01 remain separate | 2026-10-28 15:57:07 UTC |
 | LI-01 | B | in progress | Finish the remaining Step 7 browser states and current-head Step 11 checks/reviews; prepare a progress PR without claiming LI-CORE. Steps 12–13 remain integration-gated. | Steps 1–6 and 8–10 implemented and locally checked; Step 7 partial (create/detail/edit/My Listings/gallery). | Suraj verified the multi-image edit/gallery checkpoint, seller-only selected-buyer visibility, and Step 10. No LI-01 phone-device result is claimed. | domain/listings at 6ffbe0b; focused Listings suite: 61 passed, one database-only test skipped outside the wrapper; disposable PostgreSQL workflow passed; current worktree `make check` passed 2026-10-23 (573 Python, 63 data, 42 web tests; remaining contract, type, boundary, database, safety, formatting, lint, and build checks passed). | LI-CORE not accepted. Remaining Step 7 states; Step 11 query-plan, current aggregate, and affected-owner review; native schema check; five pre-existing backend boundary findings; real Identity, Conversations, storage, and Search integration; Steps 12–13. | 2026-10-23 10:38:31 UTC |
 | LI-02 | B | in progress | Step 12 demo is tested and stopped; record final evidence, then begin intake of the Search owner's PR under the review workflow. | Steps 1–11 and 1.5 verified; Step 12 ran on ECS and was tested on desktop/mobile. Read-only app checks found the synthetic listing and its S3 image; teardown is complete. | User approved and applied teardown plan `3703bb7b23405a5a23a1ac6c39fa8870e682dddf3a1a8272183f4642f8f0db81` (0 add, 1 change to LI-02 bucket CORS, 20 LI-02 deletes). Post-stop inventory confirms disposable RDS/ALB/service/host/root volume/run S3 objects/URL parameter/log streams absent; shared RDS is stopped, shared ECS cluster remains, LI-02 ASG desired 0/no instances. Two run ECR images are retained (105,624,604 bytes total) per user direction. | `task/li-02-isolated-runtime` at `f0bf6c6`; earlier 11 focused tests, Black, Python compilation, Terraform fmt/validate, CLI help and diff checks. Start plans: infrastructure `a2b8cbeaa6cc4fc2d13ff8c8696cfa133d8134280de89f719e0d6f2b91668f55`; app start `b6a3fbd4812c965a5830780f337997d13b4b362c7eb1a73f2b3e70f5946b5bd4`. Stop-path corrections are currently uncommitted in `scripts/li02-demo`, `infra/terraform/domains/listings/test/database_tasks.tf`, both LI-02 operator guides, and this work log. `git diff --check` passed; no tests rerun. Existing untracked `data/runs/` and `database/migrations.zip` remain untouched. | Compute/ingress/disposable-database charges from the demo have ended. Retained run images add about 101 MiB of ECR storage; Step 4 bucket/IAM/log group and shared VPC/NAT/ECS/RDS remain. No manual RDS snapshot remains. | 2026-10-25 09:29:55 UTC |
 | SE-01 | Mohit (C); peer Suraj (B), Identity review | in progress | PR15 hosted Python/web/database gates pass; checksum-evidence scanner false positive corrected locally | 47714cc fixes readiness; subsequent CI reaches final secret scanner; two verified SHA256 fingerprints reformatted without scanner exemptions | Mohit verified Hybrid-default UI and requested branch push/PR | Search PR #11 worktree `task/search-evidence-reduction` at `864e53b`; new listing `194a32d4-64bb-491b-b4ec-68403e26f7f3` produced one title and one description vector (384 dimensions each), then matched in both modes through API and Vite proxy; session `/tmp/clip-listings-browser-v6e1f01t`; UI `http://127.0.0.1:5173/`  [Hybrid default UI](../evaluation/domain/se-01/hybrid-default-ui/result.json): lint86/web289pass/3skip/types/build pass;  [PR15 correction](../evaluation/domain/se-01/pr15-ci-readiness/result.json): unit11/native21/3skip/17migrations/Black2/boundaries/diff pass;  [Hosted rerun](https://github.com/exocrat/clip/actions/runs/40382575520) functional/database gates pass; evidence-format rerun pending. | Formal SE-CORE/DATA-READY and final NFR/hosted-CI acceptance remain outside this merge step | 2026-10-26 19:06:47 UTC |
@@ -8610,3 +8610,138 @@ Shared network/storage/NAT/images/roles/keys retained; no actual billing claim.
 Await human verification. Step13 remains incomplete pending hosted runtime/HTTPS,
 regular/temporary provider/session/contact/browser and retention checks plus
 closeout. No commit/push/PR/merge performed.
+
+### ID-01 Step13 — minimal runtime plan ready — 2026-10-28 14:59:53 UTC
+
+Aditya(A) accepted bootstrap checkpoint, requested commit/fast continuation and
+refreshed expired AWS login. Sourcec82dc28 is committed; no push. Non-applying
+shared/test plan from state serial19 changes only API task definition and service
+reference to the verified image/Identity profile; service remains0, proxy absent.
+No IAM/SSM/RDS/network/storage action or live SQL. Existing master/probe version1
+inputs used memory-only under retained planning approval; private SES input
+preserved. Saved exact SHA and source bindings in
+[runtime review](../evaluation/identity/id-01-step-13/runtime-stopped-plan-review.json).
+[Concrete phased startup/HTTPS/provider/cleanup scope](../evaluation/identity/id-01-step-13/runtime-window-plan.md)
+is ready: next approval is exact stopped-plan apply plus one-private-Micro/RDS
+4hour/$2 window to observe upstream and generate enabled/cleanup plans. Public
+proxy/IAM/deployment/sends retain their exact-plan approvals. Human domain A
+update and Microsoft/inbox checks remain. No resources started or provider sent;
+unaffected full suites not repeated. Retention cadence/write verification remains
+a named pending gate; Step13 incomplete.
+
+### ID-01 Step13 — stopped-runtime apply and approved private window — 2026-10-28 15:03:57 UTC
+
+Aditya(A) approved exact saved plan b531b9bad72885a99f1003f21533e2de2471dab824ebc9c2c75dba8f45042159
+and4hour/$2 startup. Apply succeeded: backend19→20, API task revision5 uses
+verified imagebfa7316 and Identity profile; API desired/running/pending0. Only
+task definition/service reference changed; no proxy/IAM/network/RDS/SSM action
+in apply. Unchanged master/probe version1inputs held only in memory.
+Started retained RDS and exactly one private Micro with owned deadline fallback;
+window15:03:57–19:03:57UTC, stop new work18:03:57UTC,20minute startup limit.
+[Safe apply/window result](../evaluation/identity/id-01-step-13/runtime-activation-result.json).
+Actual-upstream enabled HTTPS/cleanup plans are next; no public deployment or
+provider send authorized by this checkpoint. Required human verification and
+remaining hosted/retention checks keep Step13 incomplete.
+
+### ID-01 Step13 — exact enabled HTTPS/API plan prepared — 2026-10-28 15:06:34 UTC
+
+Aditya(A), approved private startup: owned Standard-credit Micro registered with
+ECS/SSM at actual10.64.1.179, no tasks. Full non-applying plan from backend20
+creates eight proxy addresses, replaces API task for exact forwarded trust,
+sets service1 and restores ASGmin0/currentdesired1 capacity-provider control.
+No DB/SSM/key/bucket/existing-policy/NAT/ACM change.
+[Saved SHA/actions/security/exposure/provider/cleanup package](../evaluation/identity/id-01-step-13/runtime-enabled-plan-review.md)
+is ready for exact approval; no public proxy/app/provider send ran. Existing
+master/probe version1inputs reused memory-only for planning; source and private
+recipient inputs preserved. Window deadline remains19:03:57UTC; human A-record
+update, auth/email/browser checks and retention cadence acceptance remain.
+
+### ID-01 Step13 — HTTPS/runtime and real Microsoft verification — 2026-10-28 15:18:09 UTC
+
+Aditya(A) approved exact enabled plan246c5294... and at most6intentional
+verification/reset messages to recorded test addresses. Apply succeeded, backend
+20→22; proxy/EIP15.252.60.239 and API revision6 created. Actual running image
+bfa7316 matches approved immutable digest; task HEALTHY. Proxy-to-private API
+health/UI pass. Aditya added A record; no DNS propagation queries. Initial
+certificate-not-ready handshake failed; one routine post-DNS proxy restart then
+real direct-IP HTTPS validation passes200. Anonymous actual `/api/me` returns401.
+One real Microsoft login-start returns201 with Secure/HttpOnly/SameSite=Lax/
+root-path/no-Domain host binding cookie and no-store; all raw values discarded.
+Aditya confirms hosted Microsoft sign-in works. Temporary Gmail registration/
+sign-in/reset test is now pending human completion; operator sent no email.
+
+Actual restricted-role retention dry-run in verified API container passes: ten
+eligible-category counts all0, no deletion/scheduling; only fixed Identity DSN
+read memory-only through approved task role. Full proxy-off/API0 saved plan from
+state22 removes exactly8owned proxy addresses and updates API task/service; no
+DB/key/shared infrastructure change. [Hosted evidence](../evaluation/identity/id-01-step-13/runtime-enabled-result.json)
+and [exact cleanup hash/actions](../evaluation/identity/id-01-step-13/runtime-cleanup-plan-review.json).
+Resources remain active within existing19:03:57UTC/$2 window; retention cadence/
+apply, remaining human flows and cleanup/closeout keep Step13 incomplete.
+
+### ID-01 Step13 — hosted human acceptance and final retention preparation — 2026-10-28 15:35:35 UTC
+
+Aditya(A) confirms temporary registration/sign-in, password reset/new-password
+sign-in, contact save/reload/delete, logout and requested phone-browser check.
+Desktop browser/version not supplied; not inferred. Reported missing reset mail
+was resolved by checking phone: both reset and standalone SES delivery test were
+received in Gmail. Aggregate restricted-role read-only diagnosis confirmed1temp
+credential/consumed registration/eligible reset. Initial429 is consistent with
+shared60second cross-purpose cooldown; exact reason was not proven. SES prod
+access/sending and DKIM verified; no suppression/bounce observed. One accepted
+standalone SES test sent; user confirms receipt. No provider order/key change.
+Resend metadata lookup was rejected by automatic review before credential read/
+egress; skipped once receipt resolved. No paid VDM or delivery infrastructure added.
+
+Prepared dry-run-default `scripts/identity_retention_job.py`, unchanged cleanup-
+CLI wrapper with exact container/image/source/target/deadline gates, safe counts
+and90second child alarm. Two inactive proposed units specify first tick1minute,
+then hourly; nothing installed or scheduled. `tests/test_identity_retention_job.py`
+passes4offline refusal/redaction/grammar checks; strict mypy/Black pass. Commands
+registered; [exact job/apply and cleanup proposal](../evaluation/identity/id-01-step-13/retention-window-review.md)
+binds source hashes, reviewed zero eligible counts, existing19:03:57UTC/$2 cap
+and exact saved teardown SHA. Next is separate write/schedule/cleanup approval,
+real first tick/next-run verification, resource cleanup and human closeout.
+Step13 is not declared complete; no source push/merge/extra email retry.
+
+### ID-01 Step13 — scheduled retention and complete resource cleanup — 2026-10-28 15:55:36 UTC
+
+Aditya(A) approved exact retention install/write/timer scope and cleanup saved
+plana3da1773...; confirmed A record deletion before EIP release. First dry-run
+installation guard stopped because SSM omits HOME, before timer/write activation.
+Diagnosed with safe metadata and supplied the actual root home only to the
+operator dry-run process; approved source/units/policy unchanged. Fresh dry-run
+passed0eligible counts. Installed reviewed units; actual automatic tick ran
+15:43:42–15:43:50UTC, exit0/dry_run=false/all10category counts0, next hourly
+16:43:42UTC verified. One scheduled run observed; no second-hour/24hour or
+permanent production cadence claim. Source-hash-checked timer/service/launcher
+removed after proof. Existing users/enrollment/operation/key guards retained.
+
+Exact teardown applied backend22→24, task7/API desired/running/pending0; removed
+only8owned proxy addresses and associated roots/interfaces/EIP. Restored ASG0/max1,
+owned private host terminated; retained RDS stopped/private/protected. Cleanup
+complete15:52:21UTC; independent final verification15:55:36UTC confirms API0/ASG0,
+both hosts terminated, EIP/owned fallback absent. Migrated DB/test accounts/roles,
+SSM/keys/images/shared network/NAT/S3/storage/logs/ACM preserved as approved.
+Window15:03:57–15:52:21UTC ended before19:03:57UTC/$2 operator cap; no actual bill
+query/claim. Website intentionally off; no DNS propagation poll.
+
+[Retention proof](../evaluation/identity/id-01-step-13/retention-window-result.json),
+[cleanup receipt](../evaluation/identity/id-01-step-13/runtime-cleanup-result.json),
+[task-wide review](../evaluation/identity/id-01-step-13/closeout-review.json).
+Agent/human checklists reviewed for exact plans/ownership/real integrations,
+privacy/provider safety, source/tests/docs/evidence and retained cleanup scope.
+No remaining Step13 real-flow gap found; all human flows recorded above pass.
+New launcher/proposed service+timer/tests and current docs remain uncommitted
+afterc82dc28. Four focused safety/host3.9/child grammar tests, strict mypy/Black,
+Gitleaks and whitespace pass; unchanged full suites not rerun. Final human Step13
+verification and source peer/affected review/publication remain separate. Formal
+ID-READY acceptance and full ID-01/Step14 matrix are not inferred. No push/merge.
+
+### ID-01 Step13 — human closeout accepted — 2026-10-28 15:57:07 UTC
+
+Aditya(A) verified the complete Step13 cloud-check/retention/resource-cleanup
+result. Step13 is complete and human-verified; [acceptance/evidence](../evaluation/identity/id-01-step-13/closeout-review.json)
+and current status updated. Source independent/affected-owner review and
+publication remain separate; formal ID-READY acceptance and full ID-01/Step14
+are not inferred. No further implementation, cloud startup, push or merge.

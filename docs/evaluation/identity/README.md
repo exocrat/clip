@@ -11,7 +11,7 @@ criteria and action approvals still come from their canonical sources.
 | [Provider history](provider-history.md) | Completed SES/builder/runtime investigation, delivery outcomes and development cleanup gate. |
 | [Integration handoff](integration.md) | Current Step12 result, email routing and remaining work for ID-READY. |
 | [Hosted demo postmortem](id-01-step-12/demo-postmortem-20261026.md) | What worked/failed in the local and hosted demo, stale IISc DNS, cleanup results, and remaining shared resources. |
-| [Step13 live preparation](id-01-step-13/README.md) | Verified native AMD64 image, successful23-migration live bootstrap/grants, cleanup and pending hosted acceptance. |
+| [Step13 live preparation](id-01-step-13/README.md) | Verified native AMD64 image, successful23-migration bootstrap, hosted human auth/email/HTTPS checks, retention tick and cleanup evidence. |
 | [Live work log](../../status/work-log.md) | Verification state, exact dated outcomes, ownership and pending integration ledger. |
 
 ## Current state
@@ -21,7 +21,10 @@ criteria and action approvals still come from their canonical sources.
   grants, preserved roles and existing-password TLS logins before/after. Approved
   old database records discarded; credentials/SSM/S3 preserved.
   [Success and cleanup receipt](id-01-step-13/bootstrap-retry-result.json).
-  Hosted runtime/HTTPS/provider/browser/retention checks remain pending.
+  Hosted HTTPS/actual-provider/human auth/contact/browser checks and the first
+  automatic retention run and resource cleanup now pass; Step13 human verification is recorded;
+  remaining source review/publication is tracked in
+  [the Step13 review](id-01-step-13/closeout-review.json).
 
 - Accepted main `5e8d264` includes Identity PR14/16 and Conversations PR17/18.
   Our branch `task/id-01-runtime-preparation` merged that exact tree at479a09c.

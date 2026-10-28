@@ -1,0 +1,16 @@
+# Inactive review candidate; install only for the approved ID-01 window.
+[Unit]
+Description=Bounded CLIP Identity retention in the reviewed API container
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/opt/clip-id01-retention
+ExecStart=/usr/bin/python3 /opt/clip-id01-retention/identity_retention_job.py --image 335523638354.dkr.ecr.ap-south-1.amazonaws.com/clip-shared-test-api@sha256:bfa7316c26f683654f5c4b3f40e9817876db5afd79f8f13af978a8841fbde8f8 --revision 6 --deadline-utc 2026-10-28T19:03:57+00:00 --apply
+TimeoutStartSec=120
+NoNewPrivileges=true
+PrivateTmp=true
+StandardOutput=journal
+StandardError=journal

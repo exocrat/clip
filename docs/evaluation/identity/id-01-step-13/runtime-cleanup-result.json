@@ -1,0 +1,35 @@
+{
+  "complete": true,
+  "apply_executed": true,
+  "state_serial_before": 22,
+  "state_serial_after": 24,
+  "task_definition": "arn:aws:ecs:ap-south-1:335523638354:task-definition/clip-test-api-ap-south-1-pd16:7",
+  "image": "335523638354.dkr.ecr.ap-south-1.amazonaws.com/clip-shared-test-api@sha256:bfa7316c26f683654f5c4b3f40e9817876db5afd79f8f13af978a8841fbde8f8",
+  "api_desired": 0,
+  "api_running": 0,
+  "api_pending": 0,
+  "proxy_created": false,
+  "approved_plan_sha256": "a3da1773dea736d90f70b21553cde814a1d3a247cc598966e6cbf5c2ef20887e",
+  "secret_versions_preserved": true,
+  "recorded_at_utc": "2026-10-28 15:47:35 UTC",
+  "dns_a_deletion_human_confirmed": true,
+  "dns_propagation_polled": false,
+  "retention_job_removed": true,
+  "private_host_rds_cleanup_complete": true,
+  "cleanup_completed_at_utc": "2026-10-28 15:52:21 UTC",
+  "independent_final_verification": {
+    "passed": true,
+    "api_zero": true,
+    "task_definition": "arn:aws:ecs:ap-south-1:335523638354:task-definition/clip-test-api-ap-south-1-pd16:7",
+    "asg_zero_empty_max1": true,
+    "rds_stopped_private_protected": true,
+    "owned_eip_absent": true,
+    "owned_fallback_absent": true,
+    "owned_hosts": {
+      "i-012c79d8ef66d51f9": "terminated",
+      "i-085bfebce3178d5a8": "terminated"
+    },
+    "verified_at_utc": "2026-10-28 15:55:36 UTC"
+  },
+  "retained": "Migrated shared RDS/database/test accounts/roles, keys/SSM, images, shared network/NAT/S3/storage/logs/ACM"
+}

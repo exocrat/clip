@@ -7,17 +7,31 @@ occurred. Aditya subsequently approved in-memory reads of the two existing DB
 password inputs and non-applying shared/test planning. Two private stopped-state
 drafts now exist; neither is approved for apply or deployment/ID-READY acceptance.
 
-## Current checkpoint — 2026-10-28 13:48:01 UTC
+## Current checkpoint — 2026-10-28 15:57:07 UTC
 
-The approved corrected bootstrap succeeded at13:47:50UTC. All23unchanged
-migrations applied; head20261027112205 and40tables/36functions/46triggers verified.
-Exact table grants and preserved role identity/memberships/logging/database rights
-passed; both existing-password TLS logins succeeded before and after. Approved
-old database records were discarded. No SSM/password/provider/auth-key/S3 change.
-[Bound success receipt](bootstrap-retry-result.json). Cleanup completed2026-10-28 13:52:35UTC: owned host terminated,
-ASG0, RDS stopped, owned tunnel/fallback removed. API/proxy remain off. Step13 remains incomplete pending
-real hosted runtime/HTTPS/provider/browser/retention checks and acceptance.
-Earlier sections below are historical checkpoint records.
+Step13 cloud checks and approved cleanup are complete and human-verified by
+Aditya at the recorded time above. Actual23-migration bootstrap/role grants, verified native image/task6,
+HTTPS/TLS/anonymous denial/secure host-cookie/no-store checks pass. Aditya confirms
+Microsoft, temporary registration/verification/sign-in/reset/new-password login,
+contact save/reload/delete, logout and requested phone-browser checks. Desktop
+browser/version was not supplied. Reset and standalone SES emails were received;
+application provider preference and keys remain unchanged.
+
+The window-only retention timer fired automatically15:43:42UTC, exit0/counts0;
+next hourly16:43:42UTC verified. Only one tick was observed; timer removed before
+teardown. Cleanup completed15:52:21UTC; independently reverified15:55:36UTC:
+API0/ASG0, both hosts terminated, RDS stopped/private/protected, EIP/fallback absent.
+Human deleted A record; no DNS propagation polling. Migrated database/test
+accounts/roles, keys/SSM/images/shared network/NAT/storage/ACM retained as approved.
+No actual cost/billing claim; completed before19:03:57UTC/$2 window limit.
+
+[Hosted results](runtime-enabled-result.json), [retention proof](retention-window-result.json),
+[cleanup](runtime-cleanup-result.json), [task-wide review](closeout-review.json).
+No Step14/full-task/formal ID-READY acceptance or new source merge is inferred.
+Aditya requested the closeout commit; Git history records its revision. Independent
+peer/affected review and publication retain their gates. Website is intentionally off. Future
+active deployment must reinstall reviewed retention cadence; no permanent
+production scheduler is claimed. Earlier sections are historical checkpoints.
 
 ## First checkpoint result
 

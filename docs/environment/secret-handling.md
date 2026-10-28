@@ -168,3 +168,17 @@ refresh, recipient restrictions and access approvals are unchanged. This does no
 rotate the stable authentication keys or change database URLs. Database roles and
 URLs previously labelled proposed in the historical preparation section were
 subsequently provisioned; see the recorded [database preparation](../evaluation/identity/id-01-step-12/demo-postmortem-20261026.md#database-preparation).
+
+### ID-01 Step13 real loading/provider check — 2026-10-28 15:47:35 UTC
+
+Real hosted Identity startup succeeded with existing fixed SSM references and
+stable keys/DSNs; no credential/parameter value/version rotated. Actual temporary
+registration/reset email and Microsoft sessions work, confirmed by Aditya. SES
+Mumbai production access and sending are enabled; verified domain DKIM SUCCESS,
+standalone test receipt confirmed. Application email order/keys unchanged.
+[Safe runtime receipt](../evaluation/identity/id-01-step-13/runtime-enabled-result.json).
+Retention job reads only the fixed Identity DSN inside the reviewed container
+through existing task role, memory-only; no keys/credentials on host/config/output.
+The window-only job was verified then removed; future active runtime needs an
+approved cadence deployment. These facts supersede earlier pending runtime/SES
+status, without rewriting historical approvals or disclosing secret values.
