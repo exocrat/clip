@@ -1,6 +1,6 @@
 {
   "recorded_at_utc": "2026-10-28 03:20:57 UTC",
-  "mode": "non_secret_read_only_preflight_and_local_proposal",
+  "mode": "step13_preparation_and_bounded_live_evidence",
   "source_base": "1d244350e35172d65415a8258d6c156cab0c695f",
   "source_changes_committed": true,
   "target": {
@@ -111,14 +111,17 @@
   },
   "guardrails": {
     "secret_values_read": true,
-    "sql_connected": false,
+    "sql_connected": true,
     "dns_propagation_checked": false,
     "resource_mutated": true,
     "terraform_remote_state_read": true,
     "live_plan_created": true,
     "resource_started": true,
     "provider_email_sent": false,
-    "terraform_apply_executed": true
+    "terraform_apply_executed": true,
+    "sql_read_only": true,
+    "schema_changed": false,
+    "task_deployed": false
   },
   "proposed_proxy": {
     "default_enabled": false,
@@ -241,7 +244,7 @@
       "sha256": "54703498140a0bbaef9cd687953b5d39bd57754e297c7af2ad3f9b0567b8fb7a"
     }
   ],
-  "updated_at_utc": "2026-10-28 08:19:32 UTC",
+  "updated_at_utc": "2026-10-28 09:16:44 UTC",
   "secret_access_scope": {
     "references": [
       "/clip/test/database-master-password",
@@ -1287,9 +1290,9 @@
     }
   },
   "node_heap_retry_proposal": {
-    "approved": false,
+    "approved": true,
     "source_tree_sha256": "6d59f6bb5dba3fff10f56850fe102409fd941d2640f59e63079f2282adeaf043",
-    "source_commit_binding_pending_human_commit_approval": true,
+    "source_commit_binding_pending_human_commit_approval": false,
     "source_files": 233,
     "source_tree_inventory_private_path": "/tmp/clip-id01-resume-window-h4fkz0do/proposed-source-tree.json",
     "ecr_repository": "335523638354.dkr.ecr.ap-south-1.amazonaws.com/clip-shared-test-api",
@@ -1327,10 +1330,104 @@
     "automatic_extension": false,
     "checks": {
       "local_arm64_web_typecheck_and_bundle_with_heap768": "passed",
-      "native_amd64_memory_limited_success": "not yet tested",
+      "native_amd64_memory_limited_success": "passed; built once, corrected UI smoke on same image, archive and registry config verified",
       "transfer_and_python39_grammar_tests": 4,
       "gitleaks_result": "passed",
       "whitespace": true
-    }
+    },
+    "approval_source": "Aditya verified and approved fix commit and same-Micro build-only retry",
+    "source_commit": "2b292adc8c6e9d7841f43cf9b1d9a2c1b7bc0efd",
+    "source_archive_sha256": "d946daaeba1a1ee2dca1ee6726c542befbcccb196f86cc0dcb3e42a4ebc8f719"
+  },
+  "heap_retry_execution": {
+    "private_directory": "/tmp/clip-id01-heap-retry-vdu_p8xm",
+    "started_at_utc": "2026-10-28 08:32:32 UTC",
+    "deadline_utc": "2026-10-28 09:17:07 UTC",
+    "rds_start": false,
+    "status": "image_publication_and_cleanup_human_verified",
+    "c7i_flex_large_fallback": "Aditya authorizes considering C7i if OOM repeats; exact saved Terraform change plan still requires review before apply",
+    "native_artifact": {
+      "source_commit": "2b292adc8c6e9d7841f43cf9b1d9a2c1b7bc0efd",
+      "source_archive_sha256": "d946daaeba1a1ee2dca1ee6726c542befbcccb196f86cc0dcb3e42a4ebc8f719",
+      "image_id": "sha256:3cfa4f5f4a43ab388e72edbb3adc9e76c41e8b165c57295a62fca716e5451767",
+      "architecture": "amd64",
+      "os": "linux",
+      "user": "10001:10001",
+      "image_size_bytes": 210709633,
+      "archive_sha256": "bf58fb173780df4ed5a280c7eb300b2e7c8283de0d45e144793854f458fc5a1b",
+      "health_and_ui": true,
+      "identity_runtime_tested": false,
+      "registry_published": false
+    },
+    "native_archive_bytes": 219055616,
+    "native_build_command": "99055bbc-47eb-4bc7-bd52-3ff8fdccc72f",
+    "initial_smoke_command_status": "failed_missing_explicit_serve_web_flag",
+    "corrected_smoke_export_command": "a29764db-9d3e-4b0e-8ce9-43381fafd6e5",
+    "corrected_smoke_export_status": "Success",
+    "smoke_correction": {
+      "source_image_unchanged": true,
+      "source_commit": "2b292adc8c6e9d7841f43cf9b1d9a2c1b7bc0efd",
+      "changed_configuration": "explicit CLIP_SERVE_WEB_APP=true for intended bundled-UI smoke only",
+      "identity_runtime_enabled": false,
+      "provider_credentials": false,
+      "corrected_operator_helper_sha256": "0b58b8660109267dc40c65361cf45b5655647eb52ff88d24a23ed48bee13f586",
+      "smoke_export_script_sha256": "3f022fdc558eb6821c96d7a629a14cbb5644520ad3dbcf2a803ded08b70c64a6"
+    },
+    "native_image_rebuild_after_smoke_correction": false,
+    "c7i_fallback_used": false,
+    "transfer_recovery": {
+      "first_copy_result": "TimeoutError before ECR attempt",
+      "first_incomplete_copy_removed": true,
+      "fresh_ssm_tunnel": true,
+      "read_timeout_seconds": 180,
+      "new_build_submitted": false,
+      "publication_attempted_before_copy_verified": false,
+      "deadline_extended": false
+    },
+    "publication": {
+      "published": true,
+      "executed_locally": false,
+      "remote_tag": "335523638354.dkr.ecr.ap-south-1.amazonaws.com/clip-shared-test-api:id01-step13-heap768-6d59f6bb5dba",
+      "archive_sha256": "bf58fb173780df4ed5a280c7eb300b2e7c8283de0d45e144793854f458fc5a1b",
+      "archive_bytes": 219055616,
+      "local_image_id": "sha256:3cfa4f5f4a43ab388e72edbb3adc9e76c41e8b165c57295a62fca716e5451767",
+      "registry_digest": "sha256:bfa7316c26f683654f5c4b3f40e9817876db5afd79f8f13af978a8841fbde8f8",
+      "immutable_uri": "335523638354.dkr.ecr.ap-south-1.amazonaws.com/clip-shared-test-api@sha256:bfa7316c26f683654f5c4b3f40e9817876db5afd79f8f13af978a8841fbde8f8",
+      "remote_config_matches_tested_image": true,
+      "health_and_ui": true,
+      "transfer_archive_removed": true
+    },
+    "cleanup": {
+      "cleanup_instance_state": "terminated",
+      "cleanup_asg_instances": 0,
+      "rds_status": "stopped",
+      "cleanup_complete": true,
+      "scheduled_action_removed": true,
+      "observed_at_utc": "2026-10-28 09:04:45 UTC",
+      "final_asg": {
+        "min": 0,
+        "max": 1,
+        "desired": 0,
+        "instances": 0
+      },
+      "final_api": {
+        "desired": 0,
+        "running": 0,
+        "pending": 0
+      },
+      "owned_schedule_absent": true,
+      "owned_tunnel_closed": true,
+      "temporary_docker_auth_removed": true
+    },
+    "no_sql_or_secret_read_in_build_only_retry": true,
+    "identity_runtime_acceptance": false,
+    "verified_at_utc": "2026-10-28 09:06:27 UTC",
+    "final_checks": {
+      "gitleaks_result": "passed",
+      "shell_syntax": "passed",
+      "whitespace": "passed",
+      "json_and_executed_helper_binding": "passed"
+    },
+    "human_verified_at_utc": "2026-10-28 09:16:44 UTC"
   }
 }

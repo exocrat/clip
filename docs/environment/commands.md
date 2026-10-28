@@ -1979,8 +1979,33 @@ They are not `make check`, an application startup path or authorization to start
 | `uv run --locked pytest -q tests/test_identity_build_transfer.py` | Four real disposable loopback HTTP/host-grammar tests; synthetic bytes only, no AWS/Docker/provider/SQL. Tests hash/size/overwrite boundaries and completed-artifact-only downloads; local sockets require the ordinary test permission. |
 | `uv run --locked python scripts/identity_build_transfer.py --help` | Help only; does not create a directory, listen or bootstrap. The script is stdlib-compatible with the host Python3. |
 | `python3 scripts/identity_build_transfer.py --directory "$ID01_BUILD_DIR" --source-sha256 "$ID01_SOURCE_SHA256"` | Only on the reviewed disposable private build host: creates a fresh owner-only directory and loopback18765 server for at most two hours of request admission. One exact ≤100MiB source upload; completed image/result downloads only. No extraction, AWS APIs, credentials or build. Stop owned process/session and terminate host at cleanup. |
-| `bash scripts/identity_amd64_build.sh "$ID01_BUILD_DIR" "$ID01_SOURCE_SHA256" "$ID01_SOURCE_COMMIT"` | Only root on approved native x86_64 disposable host with Docker25 and completed source upload. Validates fixed run path/archive; adds2GiB temporary encrypted-root swap; bounded sequential45minute build,512MiB RAM/1536MiB RAM+swap, Microsoft button true/demo false, optional web-build Node heap768 (new proposal requires approval); non-root/platform/loopback health/UI smoke and hash-bound image export. No AWS API/push/SQL/provider. Exit0 exposes completed image.tar/result.json; failures stop the trial, never resize automatically. Owned swap/container cleanup on exit; final host termination is required even after failure. |
+| `bash scripts/identity_amd64_build.sh "$ID01_BUILD_DIR" "$ID01_SOURCE_SHA256" "$ID01_SOURCE_COMMIT"` | Only root on approved native x86_64 disposable host with Docker25 and completed source upload. Validates fixed run path/archive; adds2GiB temporary encrypted-root swap; bounded sequential45minute build,512MiB RAM/1536MiB RAM+swap, Microsoft button true/demo false, optional web-build Node heap768 (requires exact-window approval); non-root/platform/loopback health/UI smoke and hash-bound image export. No AWS API/push/SQL/provider. Exit0 exposes completed image.tar/result.json; failures stop the trial, never resize automatically. Owned swap/container cleanup on exit; final host termination is required even after failure. |
 
 Live transfer uses the approved SSM forwarding document, never public ingress or
 a remote Docker socket. Local Docker may load/store/push AMD64 without executing
 it; publication still needs the reviewed account/repository/tag approval.
+
+## ID-01 Step13 — bootstrap review preparation
+
+`uv run --locked pytest -q tests/test_identity_bootstrap_review.py` runs three
+owned disposable local PostgreSQL18.6/TLS review cases: cross-schema FK/view
+dependency detection, live-target predicate refusal and historical-grant
+insufficiency for current invoker triggers/Conversations. It applies only the
+unchanged23-file package to its fixture and removes its container; no shared
+SQL, AWS, provider, credential lookup or live reset.
+
+`docs/evaluation/identity/id-01-step-13/bootstrap-inventory.sql` is a pinned-target
+repeatable-read/read-only review input, not an automatic live command. Proposed
+live counts/window/master read need the separate approval in the linked
+[bootstrap plan](../evaluation/identity/id-01-step-13/bootstrap-and-grants-plan.md).
+The destructive coordinator/grants package is still gated, not registered as
+an executable route.
+
+## ID-01 Step13 — guarded bootstrap preparation
+
+| Command | Effect and evidence limit |
+|---|---|
+| `uv run --locked python scripts/identity_bootstrap.py` | Inert documentation entry; does not connect or reset. Actual execution is an operator API requiring reviewed bound inputs and separate live approval, not an unattended CLI. |
+| `uv run --locked pytest -q tests/test_identity_bootstrap.py tests/test_identity_bootstrap_review.py` | Thirteen disposable local TLS tests covering guarded17→23 bootstrap, lock/role preservation, refusal/rollback and restricted trigger grants. Requires Docker; never supply a shared database. Not hosted acceptance. |
+
+[Exact proposed live target, grants, failure behavior and60minute/$1 window](../evaluation/identity/id-01-step-13/bootstrap-live-review.md). No live execution is authorized by these commands.

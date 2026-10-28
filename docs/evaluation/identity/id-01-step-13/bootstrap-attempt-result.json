@@ -1,0 +1,37 @@
+{
+  "complete": false,
+  "reset_committed": false,
+  "individual_application_values_selected": false,
+  "secret_values_persisted": false,
+  "failed_stage": "actual_login_before",
+  "error_type": "OperationalError",
+  "recorded_at_utc": "2026-10-28 13:16:45 UTC",
+  "task": "ID-01 Step13",
+  "window_started_at_utc": "2026-10-28 13:11:17 UTC",
+  "deadline_utc": "2026-10-28 14:11:17 UTC",
+  "private_evidence": "/tmp/clip-id01-bootstrap-live-9sgawmgs",
+  "live_retry_attempted": false,
+  "master_reads": 1,
+  "identity_dsn_reads": 1,
+  "marketplace_dsn_reads": 1,
+  "api_deployed": false,
+  "provider_send": false,
+  "tunnel_closed": true,
+  "diagnosis": "Local disposable-role test reproduces permission denied for restricted log_statement startup override. Live failure recorded only OperationalError; sole live cause not established.",
+  "correction": "Application-role logins omit admin-only logging overrides and verify inherited privacy defaults after TLS login; admin bootstrap connection is unchanged.",
+  "recovery": "No automatic retry. Database reset was never invoked. Fresh exact retry approval required after cleanup.",
+  "cleanup": {
+    "cleanup_instance_state": "terminated",
+    "cleanup_asg_instances": 0,
+    "rds_status": "stopped",
+    "cleanup_complete": true,
+    "scheduled_action_removed": true,
+    "observed_at_utc": "2026-10-28 13:23:05 UTC"
+  },
+  "checks": {
+    "local_bootstrap_tests": 13,
+    "gitleaks": "passed",
+    "black": "passed",
+    "whitespace": "passed"
+  }
+}

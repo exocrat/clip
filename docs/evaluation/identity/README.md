@@ -11,9 +11,17 @@ criteria and action approvals still come from their canonical sources.
 | [Provider history](provider-history.md) | Completed SES/builder/runtime investigation, delivery outcomes and development cleanup gate. |
 | [Integration handoff](integration.md) | Current Step12 result, email routing and remaining work for ID-READY. |
 | [Hosted demo postmortem](id-01-step-12/demo-postmortem-20261026.md) | What worked/failed in the local and hosted demo, stale IISc DNS, cleanup results, and remaining shared resources. |
+| [Step13 live preparation](id-01-step-13/README.md) | Verified native AMD64 image, successful23-migration live bootstrap/grants, cleanup and pending hosted acceptance. |
 | [Live work log](../../status/work-log.md) | Verification state, exact dated outcomes, ownership and pending integration ledger. |
 
 ## Current state
+
+- On2026-10-28 13:47:50UTC the approved corrected live bootstrap passed: all23
+  migrations/head20261027112205,40tables/36functions/46triggers, explicit runtime
+  grants, preserved roles and existing-password TLS logins before/after. Approved
+  old database records discarded; credentials/SSM/S3 preserved.
+  [Success and cleanup receipt](id-01-step-13/bootstrap-retry-result.json).
+  Hosted runtime/HTTPS/provider/browser/retention checks remain pending.
 
 - Accepted main `5e8d264` includes Identity PR14/16 and Conversations PR17/18.
   Our branch `task/id-01-runtime-preparation` merged that exact tree at479a09c.
@@ -25,20 +33,24 @@ criteria and action approvals still come from their canonical sources.
 - Step12's current migration candidate pins23unchanged accepted SQL files through
   20261027112205and40tables/36functions/46triggers. New runner/manifest changes
   are human-verified and committed at39bfb4b; source binding passes. New source
-  review/CI/merge remain. Live approval stays
-  false. The original shared DB's recorded17-file apply/roles/URLs remain valid
-  historical evidence. Aditya reports no application data needs preservation;
-  Step13 now prefers a separately reviewed clean bootstrap/reset.
+  review/CI/merge remain. The original candidate retains its historical pending
+  flags; the separately approved Step13 execution manifest/receipt records the
+  actual23-file bootstrap. The earlier17-file apply is historical evidence.
 - Local preparation checks pass at2026-10-27 18:33:45UTC:12aggregate gates,
   1932Python/153skips,94data,433web/3skips, Conversations167 and focused32.
   At2026-10-27 19:17:44UTC the separate source-binding audit passes9/9checks
   against39bfb4b, with12regressions passed; ready_for_live remains false.
 - At2026-10-27 18:25:58UTC Aditya confirmed exposed Resend-key revocation and
-  replacement in SSM. No secret was read or delivery tested after that rotation.
+  replacement in SSM. The provider key was not read or delivery-tested after that confirmation.
   SES production access is not a blocker to approved Resend active-provider use.
-- Last recorded cloud cleanup/reconciliation is2026-10-26: stopped RDS, compute0,
-  removed temporary ingress and state/live service revision2. These are historical
-  observations, not a fresh cloud inspection. DNS propagation is not rechecked.
+- Step13 read-only catalog inspection confirms the17-version prefix with37tables/
+  33functions/43triggers; no app rows or DDL. Exact clean bootstrap/grants remain
+  separately gated. Native AMD64 image from2b292ad is verified/published after
+  the build-only heap correction; no C7i fallback was needed. [Live receipt](id-01-step-13/preflight-and-proposal.json).
+- Fresh cleanup2026-10-28 09:04:45UTC: owned host terminated, ASG/API counts0,
+  private protected RDS stopped, owned scheduled fallback/tunnel removed. API
+  service remains revision4/disabled; the new image is not deployed. DNS
+  propagation is not rechecked.
 - ID-READY is **not accepted**. Remaining real acceptance is Step13's approved
   HTTPS/runtime/provider/browser and operational retention checks, plus the final
   Step12 reviewed/merged handoff. Full image/Search/Hybrid/Conversations feature

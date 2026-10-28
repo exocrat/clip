@@ -70,7 +70,7 @@ docker run --rm --network none --memory=256m --memory-swap=256m \
   --entrypoint python "$image" -c \
   'import os,platform; assert os.getuid()==10001 and platform.machine()=="x86_64"'
 docker run --detach --name "$container" --memory=512m --memory-swap=512m \
-  --publish 127.0.0.1:18080:8000 "$image" >/dev/null
+  --env CLIP_SERVE_WEB_APP=true --publish 127.0.0.1:18080:8000 "$image" >/dev/null
 # Validate health and bundled UI without Identity activation or real credentials.
 python3 - "$container" <<'PY'
 import json, subprocess, sys, time, urllib.request

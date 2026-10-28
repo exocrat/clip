@@ -1,0 +1,85 @@
+{
+  "complete": true,
+  "reset_committed": true,
+  "individual_application_values_selected": false,
+  "secret_values_persisted": false,
+  "actual_login_before": [
+    "clip_test_identity_app",
+    "clip_test_marketplace_app"
+  ],
+  "recorded_at_utc": "2026-10-28 13:47:50 UTC",
+  "migrations": 23,
+  "head": "20261027112205",
+  "role_identity_preserved": true,
+  "table_grants_verified": true,
+  "real_login_acceptance": true,
+  "actual_login_after": [
+    "clip_test_identity_app",
+    "clip_test_marketplace_app"
+  ],
+  "task": "ID-01 Step13",
+  "window_started_at_utc": "2026-10-28 13:41:46 UTC",
+  "deadline_utc": "2026-10-28 14:41:46 UTC",
+  "approved_plan": "docs/evaluation/identity/id-01-step-13/bootstrap-retry-execution.json",
+  "approved_plan_sha256": "11a9e8fded0898396872182ff4dd0753f7579b67abd718170ee871d31ed67ab8",
+  "manifest_path": "docs/evaluation/identity/id-01-step-13/bootstrap-execution-manifest.json",
+  "manifest_sha256": "cfbb10d485d2eac76ea28c843f4c38615f0c6d5f3206b56c5e1e64bfba1e8a11",
+  "migration_image": "ghcr.io/amacneil/dbmate@sha256:520c740c6e0ad73fde2cd1ea7e2b779aaf789d22aca8858f87a478e7094535fb",
+  "coordinator_sha256": "740dd1f7e4e548fc00f7462c77cfe361676e77d65eca47392fdcdf02bc5f0dc9",
+  "operator_caller_sha256": "f64294a21c3810449ae4c399a340a7be38b6399a50096288b0d30d3d1ed4c06a",
+  "private_evidence": "/tmp/clip-id01-bootstrap-retry-nwti77p4",
+  "target": {
+    "account": "335523638354",
+    "profile": "adityalaxmi1",
+    "region": "ap-south-1",
+    "rds": "clip-shared-test-postgres",
+    "resource_id": "db-PYRRZJPVKPGHIXDAHUWATXGH7A",
+    "database": "clip_test",
+    "admin": "clip_test_admin",
+    "endpoint": "clip-shared-test-postgres.cnsu8kgiimug.ap-south-1.rds.amazonaws.com",
+    "master_reference": "/clip/test/database-master-password"
+  },
+  "database_record_discard_executed": true,
+  "expected_inventory_checked_by_runner": {
+    "tables": 40,
+    "functions": 36,
+    "triggers": 46
+  },
+  "roles_passwords_memberships_logging_database_grants_preserved": true,
+  "marketplace_identity_and_conversations_access_added": false,
+  "secret_reads": {
+    "master": 1,
+    "identity_dsn": 1,
+    "marketplace_dsn": 1,
+    "all_version": 1,
+    "memory_only": true
+  },
+  "provider_or_auth_key_reads": false,
+  "ssm_or_password_writes": false,
+  "api_deployed": false,
+  "provider_send": false,
+  "tunnel_closed": true,
+  "cleanup_complete": true,
+  "pending_real_checks": [
+    "runtime/proxy/HTTPS deployment",
+    "Microsoft and email/session/contact/browser acceptance",
+    "retention cadence and task-wide closeout"
+  ],
+  "cleanup": {
+    "cleanup_instance_state": "terminated",
+    "cleanup_asg_instances": 0,
+    "rds_status": "stopped",
+    "cleanup_complete": true,
+    "scheduled_action_removed": true,
+    "observed_at_utc": "2026-10-28 13:52:35 UTC"
+  },
+  "checks": {
+    "live_bootstrap": "passed",
+    "actual_logins_before_and_after": "passed",
+    "exact_grants_role_preservation": "passed",
+    "source_manifest_image_receipt_binding": "passed",
+    "gitleaks": "passed",
+    "whitespace": "passed",
+    "prior_local_rehearsal": "13 passed; application source unchanged this increment"
+  }
+}

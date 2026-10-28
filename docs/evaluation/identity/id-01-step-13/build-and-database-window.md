@@ -184,3 +184,18 @@ heap768 tag, never the old source tag. One private Micro, Standard CPU credits,
 cleanup; do not start if remaining time cannot fit build/transfer/cleanup. No
 automatic extension/retry. RDS stays stopped: no SQL or secret read is needed for
 this build-only retry. No API/proxy/deployment/provider change.
+
+## Approved retry outcome — 2026-10-28 09:06:27 UTC
+
+The pending retry above was subsequently human-verified/approved and committed
+at2b292ad. Same Micro/RAM/swap limits succeeded; C7i was unnecessary. Corrected
+the smoke harness's missing explicit serve-web flag, then checked/exported the
+same image successfully. A pre-publication transfer timeout was recovered with
+a fresh private tunnel/copy; archive SHA and registry-config binding passed.
+Image is retained at immutable digest `sha256:bfa7316c26f683654f5c4b3f40e9817876db5afd79f8f13af978a8841fbde8f8` in the approved
+shared API repository/tag. No deployment occurred. Owned host is terminated;
+ASG/API0 and RDS stopped; owned schedule/tunnel/auth/transfer archive cleaned.
+[Full immutable URI and safe receipt](preflight-and-proposal.json).
+Clean database bootstrap/grants and all actual Identity activation/HTTPS/provider
+checks still need separate scopes/approvals. This outcome does not authorize
+repeating the old plan or extending its expired/consumed window.

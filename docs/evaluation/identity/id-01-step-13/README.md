@@ -7,6 +7,18 @@ occurred. Aditya subsequently approved in-memory reads of the two existing DB
 password inputs and non-applying shared/test planning. Two private stopped-state
 drafts now exist; neither is approved for apply or deployment/ID-READY acceptance.
 
+## Current checkpoint — 2026-10-28 13:48:01 UTC
+
+The approved corrected bootstrap succeeded at13:47:50UTC. All23unchanged
+migrations applied; head20261027112205 and40tables/36functions/46triggers verified.
+Exact table grants and preserved role identity/memberships/logging/database rights
+passed; both existing-password TLS logins succeeded before and after. Approved
+old database records were discarded. No SSM/password/provider/auth-key/S3 change.
+[Bound success receipt](bootstrap-retry-result.json). Cleanup completed2026-10-28 13:52:35UTC: owned host terminated,
+ASG0, RDS stopped, owned tunnel/fallback removed. API/proxy remain off. Step13 remains incomplete pending
+real hosted runtime/HTTPS/provider/browser/retention checks and acceptance.
+Earlier sections below are historical checkpoint records.
+
 ## First checkpoint result
 
 The configured non-root identity is account335523638354, regionap-south-1. RDS is
@@ -325,3 +337,58 @@ ASG0/empty, retained RDS stopped, owned fallback removed, tunnels closed.
 No image was published. Final preparation scan initially matched explanatory
 check-result metadata; shortened that field without scanner/rule exemptions.
 Gitleaks8.30.1 source scan and whitespace checks now pass.
+
+## Native image publication and cleanup — 2026-10-28 09:06:27 UTC
+
+Aditya verified/approved the heap fix and retry; source commit2b292ad matches
+reviewed tree6d59f6bb5dba. Built native linux/amd64 on one t3.micro with unchanged
+512MiB RAM/1536MiB combined/2GiB root-swap limits. TypeScript and Python builds
+passed. C7i fallback was not needed. The original smoke omitted the existing
+CLIP_SERVE_WEB_APP=true switch: corrected that operator-only configuration and
+rechecked the same image, without rebuilding or enabling Identity/providers.
+UID10001, Docker health, HTTP health and bundled UI passed;219,055,616byte archive
+SHA256 bf58fb173780df4ed5a280c7eb300b2e7c8283de0d45e144793854f458fc5a1b.
+
+First copy timed out before any ECR attempt; removed only that incomplete copy,
+reopened private SSM transfer and verified the complete archive on a fresh copy.
+No duplicate publication/rebuild. Local ARM64 stored/pushed without execution.
+ECR immutable tag id01-step13-heap768-6d59f6bb5dba now resolves to:
+`335523638354.dkr.ecr.ap-south-1.amazonaws.com/clip-shared-test-api@sha256:bfa7316c26f683654f5c4b3f40e9817876db5afd79f8f13af978a8841fbde8f8`.
+Remote manifest config matches tested image3cfa4f5f4a43.
+
+Owned transfer archive and temporary Docker auth removed; verified image retained
+in ECR/local Docker. Host terminated, ASG/API counts0, RDS stayed stopped, owned
+tunnel and scheduled fallback removed; cleanup observed09:04:45UTC, before original
+09:17:07UTC deadline. No SQL, provider read/send, task deployment or new IAM/public
+ingress in this build-only retry. Shared NAT/storage retained; no actual bill claim.
+Operator smoke-flag correction/evidence updates remain uncommitted. Result awaits
+human verification. Next is exact clean23-file bootstrap/grant review, followed by
+real runtime/HTTPS/provider/browser/retention acceptance; ID-READY incomplete.
+
+## Clean bootstrap/grants review candidate — 2026-10-28 09:49:40 UTC
+
+[Ordered plan and proposed fresh read-only window](bootstrap-and-grants-plan.md),
+[source/grant reference bindings](bootstrap-and-grants-review.json) and
+[catalog-only candidate](bootstrap-inventory.sql) are prepared. Three actual
+disposable TLS/SQL tests pass: external FK/view dependency discovery, fixed live
+target refusal, and reproduction of historical grants failing current embedding
+trigger/Conversations access. Live ACL equality is not claimed.
+
+Reusable-role restoration, owner-approved grant matrix/Conversations binding,
+dependency/count inventory and end-to-end lock coordinator are explicit pending
+gates. No live SQL/reset/grant or cloud action in preparation. Proposed next
+window45minutes/$1 is separate from the expired build window; includes catalog
+and scalar counts only, one master read, original private targets and cleanup.
+
+## Read-only inventory verified by execution — 2026-10-28 10:25:43 UTC
+
+Approved catalog/count window completed; [safe counts/ACL/dependency outcome](bootstrap-and-grants-review.json).
+Found3users,6session records,1temporary enrollment/credential,2upload records
+and authentication bookkeeping. No individual values or DDL. Existing Identity/
+marketplace table-level ACLs match receipts; embedding access and Conversations
+schema usage are absent. No external FK/unrelated named-schema graph object
+found; full dependency/role acceptance remains scoped as the plan describes.
+Host terminated/ASG0/RDS stopped; owned tunnel/fallback removed10:19:49UTC.
+Result awaits human verification and explicit database-record discard direction.
+New plan does not add full Conversations activation to ID-READY. No reset/grants
+authorized or executed.

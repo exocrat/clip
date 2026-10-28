@@ -47,7 +47,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PD-19 | Integration owner (current branch) | done | Steps 1–9 and combined foundation handoff complete | Steps 1–9 performed | User confirms all work before PRE-00 is complete | PR #8 merged at `2cd83e7` from head `18c966e` against base `68d9da9`; [Foundation quality gates passed](https://github.com/exocrat/clip/actions/runs/39323851584) for that exact head/base; `make test` (395 Python, 63 data, 16 web), Black, contract freshness and 10 `make check` gates passed; [handoff](foundation-handoff.md) | No open PD-19 work per user confirmation. Linux AMD64/macOS results remain user-confirmed without raw outputs. PR #8 has no submitted GitHub review; independent-review completion is user-confirmed, with no separate review artifact linked. Refresh cloud snapshot before any operation. | 2026-10-19 21:09:05 UTC |
 | PRE-00 | Integration owner | done | Foundation gate audit accepted; DL-00 is unblocked | performed | verified/accepted by user | Reviewed handoff PR #8 merged to `main` at `2cd83e7`; hosted Foundation quality gates passed for head `18c966e` against base `68d9da9` (run `39323851584`); clean-checkout evidence at `0747be6`; see [PD-19 handoff](foundation-handoff.md) | None. PR #8 has no GitHub review event; independent-review completion remains user-reported without a separate artifact. | 2026-10-19 21:20:55 UTC |
 | DL-00 | Shared-core/contract coordinator; all domains review | done | Steps 1–13 and task-wide audit complete; accepted and merged | Steps 1–13 performed; accepted by user | User confirmed full acceptance and merge on 2026-10-22 05:30:49 UTC | PR #9 merged to `main` at `f5576ef`; current `main` is `44cd8ff`; Step 13 check evidence is recorded below and was not rerun for this update | None for DL-00; cleanup implementation remains separately gated; real providers/integrations and crypto/worker implementation remain downstream | 2026-10-22 05:30:49 UTC |
-| ID-01 | A | in progress | Step13 real catalog inspection complete; build heap fix prepared; resources restored; await verification/retry approval | Live17-version prefix,37tables/33functions/43triggers; TLS/privacy/read-only passed; Node OOM stopped; local heap768 web build/4tests/real TLS fixture pass; Gitleaks/whitespace pass | No publication/DDL/deployment; proposed build-only retry not approved; no RDS/secret use needed for retry | e51f5fa plus uncommitted Dockerfile/build/transfer/test/docs; A reserved narrow shared Dockerfile build ARG; [Step13 proposal](../evaluation/identity/id-01-step-13/build-and-database-window.md) | Verify result; approve commit and bounded same-Micro build-only retry; bootstrap/grants/HTTPS/provider/retention still pending; ID-READY incomplete | 2026-10-28 08:19:32 UTC |
+| ID-01 | A | in progress | Step13 live bootstrap/grants/login checks and cleanup complete; await verification | 23migrations/head20261027112205;40tables/36functions/46triggers; exact grants/preserved roles and actual logins pass | Host terminated/ASG0/API0; RDS stopped; tunnel/fallback removed | [Bound success receipt](../evaluation/identity/id-01-step-13/bootstrap-retry-result.json) | Human verification; then hosted runtime/HTTPS/provider/browser/retention checks and task-wide closeout | 2026-10-28 13:52:35 UTC |
 | LI-01 | B | in progress | Finish the remaining Step 7 browser states and current-head Step 11 checks/reviews; prepare a progress PR without claiming LI-CORE. Steps 12–13 remain integration-gated. | Steps 1–6 and 8–10 implemented and locally checked; Step 7 partial (create/detail/edit/My Listings/gallery). | Suraj verified the multi-image edit/gallery checkpoint, seller-only selected-buyer visibility, and Step 10. No LI-01 phone-device result is claimed. | domain/listings at 6ffbe0b; focused Listings suite: 61 passed, one database-only test skipped outside the wrapper; disposable PostgreSQL workflow passed; current worktree `make check` passed 2026-10-23 (573 Python, 63 data, 42 web tests; remaining contract, type, boundary, database, safety, formatting, lint, and build checks passed). | LI-CORE not accepted. Remaining Step 7 states; Step 11 query-plan, current aggregate, and affected-owner review; native schema check; five pre-existing backend boundary findings; real Identity, Conversations, storage, and Search integration; Steps 12–13. | 2026-10-23 10:38:31 UTC |
 | LI-02 | B | in progress | Step 12 demo is tested and stopped; record final evidence, then begin intake of the Search owner's PR under the review workflow. | Steps 1–11 and 1.5 verified; Step 12 ran on ECS and was tested on desktop/mobile. Read-only app checks found the synthetic listing and its S3 image; teardown is complete. | User approved and applied teardown plan `3703bb7b23405a5a23a1ac6c39fa8870e682dddf3a1a8272183f4642f8f0db81` (0 add, 1 change to LI-02 bucket CORS, 20 LI-02 deletes). Post-stop inventory confirms disposable RDS/ALB/service/host/root volume/run S3 objects/URL parameter/log streams absent; shared RDS is stopped, shared ECS cluster remains, LI-02 ASG desired 0/no instances. Two run ECR images are retained (105,624,604 bytes total) per user direction. | `task/li-02-isolated-runtime` at `f0bf6c6`; earlier 11 focused tests, Black, Python compilation, Terraform fmt/validate, CLI help and diff checks. Start plans: infrastructure `a2b8cbeaa6cc4fc2d13ff8c8696cfa133d8134280de89f719e0d6f2b91668f55`; app start `b6a3fbd4812c965a5830780f337997d13b4b362c7eb1a73f2b3e70f5946b5bd4`. Stop-path corrections are currently uncommitted in `scripts/li02-demo`, `infra/terraform/domains/listings/test/database_tasks.tf`, both LI-02 operator guides, and this work log. `git diff --check` passed; no tests rerun. Existing untracked `data/runs/` and `database/migrations.zip` remain untouched. | Compute/ingress/disposable-database charges from the demo have ended. Retained run images add about 101 MiB of ECR storage; Step 4 bucket/IAM/log group and shared VPC/NAT/ECS/RDS remain. No manual RDS snapshot remains. | 2026-10-25 09:29:55 UTC |
 | SE-01 | Mohit (C); peer Suraj (B), Identity review | in progress | PR15 hosted Python/web/database gates pass; checksum-evidence scanner false positive corrected locally | 47714cc fixes readiness; subsequent CI reaches final secret scanner; two verified SHA256 fingerprints reformatted without scanner exemptions | Mohit verified Hybrid-default UI and requested branch push/PR | Search PR #11 worktree `task/search-evidence-reduction` at `864e53b`; new listing `194a32d4-64bb-491b-b4ec-68403e26f7f3` produced one title and one description vector (384 dimensions each), then matched in both modes through API and Vite proxy; session `/tmp/clip-listings-browser-v6e1f01t`; UI `http://127.0.0.1:5173/`  [Hybrid default UI](../evaluation/domain/se-01/hybrid-default-ui/result.json): lint86/web289pass/3skip/types/build pass;  [PR15 correction](../evaluation/domain/se-01/pr15-ci-readiness/result.json): unit11/native21/3skip/17migrations/Black2/boundaries/diff pass;  [Hosted rerun](https://github.com/exocrat/clip/actions/runs/40382575520) functional/database gates pass; evidence-format rerun pending. | Formal SE-CORE/DATA-READY and final NFR/hosted-CI acceptance remain outside this merge step | 2026-10-26 19:06:47 UTC |
@@ -8413,3 +8413,200 @@ result field; shortened metadata, no rule changes/exemptions, corrected scan pas
 [Bound source-tree/recipe and exact proposed retry](../evaluation/identity/id-01-step-13/preflight-and-proposal.json).
 No retry yet: result verification/commit/changed-build approval pending. Build-only
 retry keeps RDS off and needs no secret/SQL. ID-READY/Step13 remain incomplete.
+
+### ID-01 Step13 native AMD64 artifact, publication and cleanup — 2026-10-28 09:06:27 UTC
+
+A verified heap fix/retry and suggested C7i if OOM persisted. One native Micro
+built source2b292ad/reviewed tree6d59f6bb5dba with unchanged512MiB RAM/1536MiB
+combined/2GiB swap limits; C7i unused. Web/Python builds and UID10001 passed.
+Initial helper's UI smoke lacked existing CLIP_SERVE_WEB_APP=true. Added only
+that operator smoke flag; same image then passed health/UI and export, no rebuild
+or Identity activation. One copy timed out before ECR writes; removed incomplete
+owned file and retried transfer over fresh private tunnel, not image publication.
+
+Verified219,055,616byte archive hash; local ARM64 stored/pushed without execution.
+Immutable tag id01-step13-heap768-6d59f6bb5dba published; manifest config matches
+tested image. [Exact source/archive/config/registry digests](../evaluation/identity/id-01-step-13/preflight-and-proposal.json).
+Removed owned archive/auth/tunnel, terminated owned host/root, restored ASG0/API0,
+removed owned fallback. RDS stayed stopped throughout. Cleanup observed09:04:45UTC
+within original09:17:07UTC deadline/$2 operator threshold; no actual bill queried.
+No SQL/provider/deploy/IAM/public ingress action; shared resources preserved.
+
+Updated build helper (explicit UI-smoke flag only), command/evidence/handoff/log.
+Native corrected probe/export/registry checks pass; earlier focused4tests, local
+web build, real local TLS/read-only fixture, formatting and shell checks remain
+valid. Final whitespace/privacy checks recorded below. Result awaits verification;
+new helper correction/docs remain uncommitted. Step13/ID-READY incomplete pending
+clean bootstrap/grants and deployed HTTPS/provider/browser/retention checks.
+
+Final source scan initially flagged the generated local image tag as generic-api-key.
+Removed only redundant non-secret local-tag metadata; immutable registry/source/
+config digests retained. No scanner/rule exemptions. Corrected Gitleaks8.30.1
+source snapshot passes; shell syntax, JSON/executed-helper binding and whitespace
+checks pass. No uncommitted credential values or pending cloud cleanup.
+
+### ID-01 Step13 clean-bootstrap/grant planning audit — 2026-10-28 09:49:40 UTC
+
+A requested preparation after verifying image publication. Canonical order is
+sound; exposed package gaps: strict runner rejects live17prefix; external DROP
+dependency/ownership/ACL/business-guard counts missing; role-creation helper
+refuses existing logins; old marketplace grants omit invoker embedding-trigger
+needs and deny Conversations although current pool falls back to that URL.
+Fresh live ACL equality was not assumed. Preserved published SQL and existing
+role/password/URL/key responsibilities; no blanket grants or SECURITY DEFINER fix.
+
+Prepared ordered plan/review JSON and fixed-target repeatable-read/read-only
+bootstrap-inventory.sql. New tests/test_identity_bootstrap_review.py uses only
+owned TLS PostgreSQL:3pass, proving external FK/view internal-owner discovery,
+live target refusal and old grant set failing actual listing trigger/Conversations
+access. Source23file hashes match; remote main still5e8d264. Registered the local
+command. New code/config is candidate read-only SQL plus disposable tests only.
+
+[Plan/review gates and proposed next window](../evaluation/identity/id-01-step-13/bootstrap-and-grants-plan.md):
+fresh45min/$1 read-only catalog+scalar-count session, one master read, Micro/RDS
+with early cleanup. No AWS/SSM/live SQL/reset/grant action ran during preparation.
+Owner-approved runtime binding/grants and full coordinator/rehearsal remain before
+exact destructive approval. No task completion or commit; verify this package.
+
+Final preparation checks2026-10-28 09:52:36UTC: Gitleaks8.30.1 source scan,
+pinned Black, whitespace and all candidate/source/SQL/test/plan hashes pass.
+No automatic reset/grants/coordinator implementation or cloud start is enabled.
+
+### ID-01 Step13 approved read-only ACL/dependency/count window — 2026-10-28 10:25:43 UTC
+
+A approved fresh45min/$1 snapshot. Exact account/idle target and source37table
+whitelist verified; started one private Micro/retained RDS10:08:32UTC, scheduled
+fallback first, used Standard credits and one master version1 read. TLS/privacy/
+repeatable-read snapshot completed10:13:49UTC; no individual application values
+selected and no DDL/grants/parameter writes.17versions/head20261025013000.
+
+Nonempty state:3users,6session records,1temporary credential/enrollment,2upload
+records and authentication/OTP/key-binding bookkeeping; catalogues8/4, other
+business tables empty. [Safe scalar/ACL/graph results](../evaluation/identity/id-01-step-13/bootstrap-and-grants-review.json).
+Identity/marketplace table-level grants match old receipts; marketplace embedding
+privileges and Conversations USAGE absent. Admin owns all inspected relations;
+active app CONNECT/no CREATE/TEMP.0external FKs/event triggers; conservative
+graph has no unrelated named-schema objects. Column/textual-dependency/real-login
+acceptance is not inferred. Full Conversations activation remains a separate
+obligation unless an agreed readiness consumer needs it; do not silently widen.
+
+Closed tunnel, terminated owned host/root, restored ASG0 and stopped exclusive
+RDS; owned fallback removed, cleanup complete10:19:49UTC before10:53:32UTC cap.
+All data/roles/keys/shared resources preserved. No actual bill queried. Updated
+existing review/plan/log only; raw inventory remains owner-only outside Git.
+Findings await verification and actual database-record discard direction before
+exact destructive-scope finalization. Grant/lock-coordinator/rehearsal/review/DDL
+approvals remain pending; ID-READY incomplete.
+
+Final verification10:28:42UTC: independent AWS reads confirm ASG empty/zero,
+API0, stopped/private/protected RDS and owned fallback absent. Gitleaks8.30.1,
+review/source/SQL/test/plan hash binding and whitespace checks pass. No individual
+application values or credentials copied to evidence.
+
+### ID-01 Step13 — discard decision and guarded bootstrap rehearsal — 2026-10-28 11:15:49 UTC
+
+Aditya(A) confirmed all existing database records disposable. Implemented
+`scripts/identity_bootstrap.py`: fixed target/source/catalog/count/version gates,
+continuous advisory lock, transactional reset, unchanged23-file runner, explicit
+role grants and preserved role identity/logging/memberships. Before-reset failure
+rolls back; after-reset failure preserves committed state without automatic retry.
+`tests/test_identity_bootstrap.py` and inventory tests pass12real local TLS cases,
+including tracker/column privilege drift refusal and restricted embedding trigger
+access. Proposed three-table marketplace additions require affected-owner review;
+Conversations remains denied and full activation is outside ID-READY.
+
+Full `make check` passed before final tracker guard:1953Python/153skips,94data,
+433web/3skips,167Conversations and registered formatting/type/contract/database/
+secret gates. After the guard, final `make test-python`:1954passed/153skipped;
+focused12passed and strict coordinator mypy passed.
+[Bound review candidate and exact live scope](../evaluation/identity/id-01-step-13/bootstrap-live-review.md)
+are prepared; new operator/tests are uncommitted. Independent/affected-owner
+review, source binding and exact reset/grant/cloud approval remain pending. No
+live DDL/grants/deployment/send occurred; resources remain stopped. Step13 and
+ID-READY remain incomplete until real hosted checks and acceptance pass.
+
+### ID-01 Step13 — exact live scope approved — 2026-10-28 13:01:22 UTC
+
+Aditya(A) approved the concrete bootstrap/reset/grant/cloud candidate and its
+60minute/$1 bounded window. Recorded approval without claiming outstanding
+independent/affected-owner/dependency or migration-tool/source reviews complete.
+The window has not started; no resource startup, secret read or DDL authorized
+by incomplete review flags has been attempted. Read-only preflight is underway;
+actual execution remains gated on those recorded prerequisites.
+
+### ID-01 Step13 — reviews confirmed and bounded bootstrap started — 2026-10-28 13:12:25 UTC
+
+Aditya directly confirmed outstanding independent/affected-owner reviews in
+response to the exact bootstrap/grant question; reviewer names were not supplied.
+Recorded that confirmation without claiming agent peer approval. Approved source
+hashes match; unchanged23SQL hashes and pinned dbmate2.36.0 digest/version verified.
+Created a separate execution manifest, preserving original pending/historical
+receipts. Reviewed working-source hashes bind the operator snapshot; no new Git
+commit was made or claimed. Started approved60minute/$1 window13:11:17UTC,
+deadline14:11:17UTC/stop new work13:51:17UTC. Owned private Standard-credit Micro
+i-08c756819fba9d1bc is online, both clusters have no tasks, API stays off.
+RDS is starting; no secrets read or reset run yet. Owned timed host scale-down
+and loopback SSM tunnel prepared; cleanup of host/RDS remains mandatory.
+
+### ID-01 Step13 — pre-reset login refusal, correction and cleanup — 2026-10-28 13:23:05 UTC
+
+Aditya(A), approved window13:11:17UTC: one private Micro/RDS startup succeeded;
+actual existing-role login failed with OperationalError at13:16:45UTC before
+bootstrap/reset was called. No database records/schema/grants/credentials changed.
+Read each of the approved master/Identity/marketplace version1parameters once,
+memory only. No provider/auth-key read/send or runtime deployment.
+
+Found a defect in the private caller: application login inherited administrator
+startup logging overrides. `tests/test_identity_bootstrap.py` reproduces actual
+non-superuser rejection and verifies both roles inherit correct privacy defaults
+without those overrides. Full focused rehearsal13passed; Black/Gitleaks/whitespace
+passed. Corrected private caller omits privileged overrides for app logins only,
+retains post-login privacy checks and records fixed safe error categories. The
+live error was preserved only as class; local reproduction confirms a defect,
+not the sole live cause. Shared coordinator/runner/migration SQL unchanged.
+
+[Failure receipt and cleanup](../evaluation/identity/id-01-step-13/bootstrap-attempt-result.json);
+[concrete corrected retry/source binding](../evaluation/identity/id-01-step-13/bootstrap-retry-plan.md).
+No automatic retry, reread or DDL. Cleanup complete13:23:05UTC: host terminated,
+ASG0/max1, RDS stopped, owned tunnel/fallback removed; shared infrastructure/keys/
+S3/images preserved. Fresh same-scope60minute/$1 retry approval requested as
+required by the approved failure plan. Step13/ID-READY remain incomplete.
+
+### ID-01 Step13 — corrected retry approved and started — 2026-10-28 13:41:46 UTC
+
+Aditya(A) verified/approved the concrete corrected retry. Fresh stopped/zero
+baseline passed, source and corrected caller SHA verified, pinned migration image
+reports dbmate2.36.0. Started the approved same-scope60minute/$1 window, with
+20minute startup limit and stop-new-work14:21:46UTC. API/proxy remain off.
+[Bound approved retry](../evaluation/identity/id-01-step-13/bootstrap-retry-execution.json)
+preserves prior attempt receipts; no changes to coordinator/SQL/grant package.
+Owned timed scale-down installed; retained RDS and one private Micro starting.
+Database login/reset/verification and mandatory cleanup are pending.
+
+### ID-01 Step13 — real bootstrap/grants/logins passed and cleaned — 2026-10-28 13:52:35 UTC
+
+Aditya(A), approved corrected retry: exact17-version/catalog/count baseline
+passed under continuous advisory lock. Approved old database records discarded.
+Unchanged23SQL applied through pinned dbmate2.36.0; head20261027112205 and
+40tables/36functions/46triggers verified. Explicit reviewed grants restored;
+role identity/memberships/logging/database privileges preserved. Both existing-
+password TLS application logins passed before and after. Completed13:47:50UTC.
+No synthetic shared records seeded, Identity/Conversations access added to
+marketplace, SSM/password/auth-key/provider-key/S3 change or provider send.
+
+[Approved execution snapshot](../evaluation/identity/id-01-step-13/bootstrap-retry-execution.json)
+and [success/cleanup receipt](../evaluation/identity/id-01-step-13/bootstrap-retry-result.json)
+bind source/caller/manifest/image hashes. Prior failed-run/17-file receipts
+preserved. One read each of the approved master/Identity/marketplace version1
+parameters, memory only. Live bootstrap/grants/role/logins and offline source/
+SQL/image/manifest/receipt bindings pass; Gitleaks/whitespace pass. Prior13local
+TLS tests remain separate evidence. No application source changed this increment;
+execution manifests freeze approved inputs, receipts record observed checks,
+and evidence index/Step13README/work log now point to the real23-file outcome.
+
+Cleanup complete13:52:35UTC, before14:41:46UTC deadline: owned host terminated,
+ASG0/max1, RDS stopped/private/protected, owned tunnel/fallback removed, API off.
+Shared network/storage/NAT/images/roles/keys retained; no actual billing claim.
+Await human verification. Step13 remains incomplete pending hosted runtime/HTTPS,
+regular/temporary provider/session/contact/browser and retention checks plus
+closeout. No commit/push/PR/merge performed.
