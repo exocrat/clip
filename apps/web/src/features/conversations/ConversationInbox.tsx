@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
-import { Button } from '../../shared/ui';
+import { Button, MultiChoiceDropdown } from '../../shared/ui';
 import type { ConversationListQuery } from './api';
 import './ConversationInbox.css';
 
@@ -51,12 +51,16 @@ export function ConversationInbox({
   const [minimumRupees, setMinimumRupees] = useState('');
   const [maximumRupees, setMaximumRupees] = useState('');
   const [amountError, setAmountError] = useState('');
+  const [draftOrigins, setDraftOrigins] = useState<string[]>(filters?.origin_id ?? []);
+  const [draftPartners, setDraftPartners] = useState<string[]>(filters?.counterparty_user_id ?? []);
 
   useEffect(() => {
     setMinimumRupees(formatRupeesFilter(filters?.offer_min_paise));
     setMaximumRupees(formatRupeesFilter(filters?.offer_max_paise));
+    setDraftOrigins(filters?.origin_id ?? []);
+    setDraftPartners(filters?.counterparty_user_id ?? []);
     setAmountError('');
-  }, [filters?.offer_min_paise, filters?.offer_max_paise]);
+  }, [filters]);
 
   const updateFilters = (next: ConversationInboxFilters) => {
     setAmountError('');
@@ -87,7 +91,18 @@ export function ConversationInbox({
   function clearFilters() {
     setMinimumRupees('');
     setMaximumRupees('');
+    setDraftOrigins([]);
+    setDraftPartners([]);
     updateFilters({ view: 'all', sort: 'last_activity_desc' });
+  }
+
+  function applyIdentifierFilters() {
+    if (!filters || !onFiltersChange) return;
+    updateFilters({
+      ...filters,
+      origin_id: draftOrigins.length ? draftOrigins : undefined,
+      counterparty_user_id: draftPartners.length ? draftPartners : undefined,
+    });
   }
 
   function changeOriginKind(value: 'all' | 'sale_listing' | 'wanted_request') {
@@ -111,8 +126,8 @@ export function ConversationInbox({
   }
 
   const hasActiveFilters = Boolean(filters && (
-    filters.view !== 'all' || filters.origin_kind || filters.origin_id ||
-    filters.counterparty_user_id || filters.offer_status ||
+    filters.view !== 'all' || filters.origin_kind || filters.origin_id?.length ||
+    filters.counterparty_user_id?.length || filters.offer_status ||
     filters.offer_min_paise !== undefined || filters.offer_max_paise !== undefined
   ));
 
@@ -146,8 +161,8 @@ export function ConversationInbox({
                 })}
               >
                 <option value="all">All conversations</option>
-                <option value="initiated">I started it (buyer or responder)</option>
-                <option value="origin_owner">It is my listing or request</option>
+                <option value="initiated">Buyer or responder · I started it</option>
+                <option value="origin_owner">Seller or request author · It is mine</option>
               </select>
             </label>
             <label>
@@ -163,40 +178,28 @@ export function ConversationInbox({
                 <option value="wanted_request">Wanted requests</option>
               </select>
             </label>
-            <label>
-              Listing or request ID
-              <select
-                value={filters.origin_id ?? ''}
-                onChange={(event) => updateFilters({
-                  ...filters,
-                  origin_id: event.currentTarget.value || undefined,
-                })}
-              >
-                <option value="">All origins</option>
-                {originOptions(conversations, filters.origin_id).map((origin) => (
-                  <option key={origin.id} value={origin.id}>
-                    {origin.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Conversation partner ID
-              <select
-                value={filters.counterparty_user_id ?? ''}
-                onChange={(event) => updateFilters({
-                  ...filters,
-                  counterparty_user_id: event.currentTarget.value || undefined,
-                })}
-              >
-                <option value="">All partners</option>
-                {partnerOptions(conversations, filters.counterparty_user_id).map((partner) => (
-                  <option key={partner} value={partner}>
-                    Partner · {shortId(partner)}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <MultiChoiceDropdown
+              disabled={loading}
+              emptyLabel="All origins"
+              label="Listing or request"
+              onValuesChange={setDraftOrigins}
+              options={originOptions(conversations, filters.origin_id ?? []).map((origin) => ({
+                value: origin.id,
+                label: origin.label,
+              }))}
+              values={draftOrigins}
+            />
+            <MultiChoiceDropdown
+              disabled={loading}
+              emptyLabel="All partners"
+              label="Conversation partner"
+              onValuesChange={setDraftPartners}
+              options={partnerOptions(conversations, filters.counterparty_user_id ?? []).map((partner) => ({
+                value: partner,
+                label: `Partner · ${shortId(partner)}`,
+              }))}
+              values={draftPartners}
+            />
             <label>
               Offer status
               <select
@@ -254,6 +257,9 @@ export function ConversationInbox({
             </label>
           </div>
           <div className="conversation-inbox__filter-actions">
+            <Button onClick={applyIdentifierFilters} variant="secondary">
+              Apply origin and partner filters
+            </Button>
             <Button disabled={offerFiltersDisabled} onClick={applyAmountFilters} variant="secondary">
               Apply amount range
             </Button>
@@ -261,7 +267,7 @@ export function ConversationInbox({
           </div>
           <p className="conversation-inbox__filter-help">
             Offer filters apply to Sale Listings and exclude conversations without an offer. Amount sorting keeps no-offer conversations last.
-            Identifier choices come from the conversations currently loaded; use pagination to find other IDs.
+            Origin and partner choices come from the conversations currently loaded; select several, apply them together, or use pagination to find other IDs.
             {offerFiltersDisabled ? ' Select Sale listings or All to enable offer filters.' : ''}
           </p>
           {amountError ? <p className="conversation-inbox__notice" role="alert">{amountError}</p> : null}
@@ -356,21 +362,23 @@ function groupConversations(items: ConversationInboxItem[]): ConversationGroup[]
   return [...groups.values()];
 }
 
-function originOptions(items: ConversationInboxItem[], selectedId?: string | null): { id: string; label: string }[] {
+function originOptions(items: ConversationInboxItem[], selectedIds: readonly string[]): { id: string; label: string }[] {
   const origins = new Map<string, 'sale_listing' | 'wanted_request' | 'origin'>();
   for (const item of items) {
     if (item.origin_id && item.origin_kind) origins.set(item.origin_id, item.origin_kind);
   }
-  if (selectedId && !origins.has(selectedId)) origins.set(selectedId, 'origin');
+  for (const selectedId of selectedIds) {
+    if (!origins.has(selectedId)) origins.set(selectedId, 'origin');
+  }
   return [...origins].sort(([left], [right]) => left.localeCompare(right)).map(([id, kind]) => ({
     id,
     label: `${kind === 'sale_listing' ? 'Sale listing' : kind === 'wanted_request' ? 'Wanted request' : 'Origin'} · ${shortId(id)}`,
   }));
 }
 
-function partnerOptions(items: ConversationInboxItem[], selectedId?: string | null): string[] {
+function partnerOptions(items: ConversationInboxItem[], selectedIds: readonly string[]): string[] {
   const partners = new Set(items.flatMap((item) => item.counterparty_user_id ? [item.counterparty_user_id] : []));
-  if (selectedId) partners.add(selectedId);
+  for (const selectedId of selectedIds) partners.add(selectedId);
   return [...partners].sort();
 }
 

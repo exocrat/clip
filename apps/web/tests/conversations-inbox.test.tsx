@@ -21,7 +21,7 @@ function renderInbox(onFiltersChange = vi.fn()) {
 }
 
 describe('Conversation inbox controls', () => {
-  it('sends participation, origin and partner filters to the page query owner', () => {
+  it('keeps role and origin type single-choice while applying multiple origin and partner choices together', () => {
     const onChange = renderInbox();
     fireEvent.change(screen.getByLabelText('Participation'), { target: { value: 'initiated' } });
     expect(onChange).toHaveBeenLastCalledWith({ ...filters, view: 'initiated' });
@@ -29,15 +29,14 @@ describe('Conversation inbox controls', () => {
     fireEvent.change(screen.getByLabelText('Type'), { target: { value: 'sale_listing' } });
     expect(onChange).toHaveBeenLastCalledWith({ ...filters, origin_kind: 'sale_listing', origin_id: undefined });
 
-    fireEvent.change(screen.getByLabelText('Listing or request ID'), {
-      target: { value: '11111111-1111-4111-8111-111111111111' },
-    });
-    expect(onChange).toHaveBeenLastCalledWith({ ...filters, origin_id: '11111111-1111-4111-8111-111111111111' });
-
-    fireEvent.change(screen.getByLabelText('Conversation partner ID'), {
-      target: { value: '22222222-2222-4222-8222-222222222222' },
-    });
-    expect(onChange).toHaveBeenLastCalledWith({ ...filters, counterparty_user_id: '22222222-2222-4222-8222-222222222222' });
+    fireEvent.click(screen.getByText('All origins'));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Sale listing · 11111111…1111' }));
+    fireEvent.click(screen.getByText('All partners'));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Partner · 22222222…2222' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Apply origin and partner filters' }));
+    expect(onChange).toHaveBeenLastCalledWith({ ...filters,
+      origin_id: ['11111111-1111-4111-8111-111111111111'],
+      counterparty_user_id: ['22222222-2222-4222-8222-222222222222'] });
   });
 
   it('converts whole-rupee offer bounds to paise and rejects invalid ranges', () => {

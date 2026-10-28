@@ -1,4 +1,5 @@
 import type { CreateListingRequest } from './listingsApi';
+import { MAX_MARKETPLACE_RUPEES } from '../../shared/money';
 
 export type ListingFormValues = {
   title: string;
@@ -6,6 +7,7 @@ export type ListingFormValues = {
   category_code: string;
   condition_code: string;
   price_rupees: string;
+  original_price_rupees: string;
   negotiable: boolean;
   pickup_area: string;
   available_from: string;
@@ -15,7 +17,9 @@ export type ListingFormValues = {
 
 export type ListingFormErrors = Partial<Record<keyof ListingFormValues | 'images', string>>;
 export type CreateListingIntent = Omit<CreateListingRequest, 'operation_id'>;
-export type ListingFieldsIntent = Omit<CreateListingIntent, 'image_upload_ids'>;
+export type ListingFieldsIntent = Omit<CreateListingIntent, 'image_upload_ids'> & {
+  original_price_paise: number | null;
+};
 
 /** Validate and translate seller-entered listing details to the API field shape. */
 export function validateListingFields(
@@ -45,6 +49,14 @@ export function validateListingFields(
     errors.price_rupees = 'Enter a price in whole rupees, such as 500. Use 0 for a free item.';
   } else if (!Number.isSafeInteger(paise)) {
     errors.price_rupees = 'That amount is too large. Enter a smaller price.';
+  } else if (Number(values.price_rupees) > MAX_MARKETPLACE_RUPEES) {
+    errors.price_rupees = 'Enter ₹1,00,00,000 or less.';
+  }
+  const original = values.original_price_rupees.trim();
+  const originalPaise = Number(original) * 100;
+  if (original && (!/^\d+$/.test(original) || !Number.isSafeInteger(originalPaise)
+    || Number(original) < 1 || Number(original) > MAX_MARKETPLACE_RUPEES)) {
+    errors.original_price_rupees = 'Enter a positive whole-rupee amount up to ₹1,00,00,000, or leave it blank.';
   }
   const start = values.available_from ? new Date(values.available_from).getTime() : now;
   const end = values.available_until ? new Date(values.available_until).getTime() : null;
@@ -64,6 +76,7 @@ export function validateListingFields(
       title: values.title.trim(), description: values.description.trim(),
       category_code: values.category_code, condition_code: values.condition_code,
       asking_price_paise: paise, negotiable: values.negotiable,
+      original_price_paise: original ? originalPaise : null,
       ...(values.pickup_area.trim() ? { pickup_area: values.pickup_area.trim() } : {}),
       ...(values.available_from ? { available_from: new Date(start).toISOString() } : {}),
       available_until: end === null ? null : new Date(end).toISOString(),

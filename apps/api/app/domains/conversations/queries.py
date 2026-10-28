@@ -73,15 +73,19 @@ class PostgresConversationQueries:
         origin_kind = "CASE WHEN thread.listing_id IS NOT NULL THEN 'sale_listing' ELSE 'wanted_request' END"
         origin_id = "coalesce(thread.listing_id, thread.wanted_request_id)"
         peer = "CASE WHEN thread.initiator_id = member.user_id THEN thread.counterparty_id ELSE thread.initiator_id END"
-        for value, expression in (
-            (query.origin_kind, origin_kind),
+        if query.origin_kind is not None:
+            predicates.append(f"{origin_kind} = %s")
+            parameters.append(query.origin_kind)
+        for values, expression in (
             (query.origin_id, origin_id),
             (query.counterparty_user_id, peer),
-            (query.offer_status, "revision.status"),
         ):
-            if value is not None:
-                predicates.append(f"{expression} = %s")
-                parameters.append(value)
+            if values:
+                predicates.append(f"{expression} = ANY(%s)")
+                parameters.append(values)
+        if query.offer_status is not None:
+            predicates.append("revision.status = %s")
+            parameters.append(query.offer_status)
         for bound, operator in (
             (query.offer_min_paise, ">="),
             (query.offer_max_paise, "<="),

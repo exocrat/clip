@@ -37,6 +37,7 @@ export function ListingImageSet({
   onChange,
   onBusyChange,
   onPendingChange,
+  onPreviewImageChange,
   disabled = false,
   error,
 }: {
@@ -44,6 +45,8 @@ export function ListingImageSet({
   onChange: (images: ListingImageChoice[]) => void;
   onBusyChange?: (busy: boolean) => void;
   onPendingChange?: (pending: boolean) => void;
+  /** Expose the first locally available photo for a draft preview. */
+  onPreviewImageChange?: (previewUrl: string | null) => void;
   disabled?: boolean;
   error?: string;
 }) {
@@ -67,6 +70,14 @@ export function ListingImageSet({
   useEffect(() => {
     onPendingChange?.(pending.length > 0);
   }, [onPendingChange, pending.length]);
+
+  useEffect(() => {
+    const firstImage = images[0];
+    const previewUrl = firstImage?.source === 'upload'
+      ? previewUrls.current.get(firstImage.upload_id) ?? null
+      : firstImage ? null : pending[0]?.previewUrl ?? null;
+    onPreviewImageChange?.(previewUrl);
+  }, [images, onPreviewImageChange, pending]);
 
   // File inputs dispatch a native cancel event; React's input props do not
   // include it. Cancellation never changes the already-selected photos.
@@ -236,7 +247,7 @@ export function ListingImageSet({
     <fieldset id="listing-images" disabled={disabled} className="listings-image-picker">
       <legend>Listing photos</legend>
       <p>Choose 1–8 photos. JPEG, PNG, or WebP; each photo must be 10 MiB or smaller.</p>
-      <p role="status">{images.length} confirmed photo{images.length === 1 ? '' : 's'} selected · {occupiedSlots} of 8 slots in use</p>
+      <p role="status">{occupiedSlots} of 8 photos selected · {images.length} ready</p>
       <input
         ref={galleryInput}
         className="listings-file-input"
@@ -290,7 +301,7 @@ export function ListingImageSet({
                     : <ListingPhotoPlaceholder compact />}
               </div>
               <strong>Photo {index + 1}</strong>
-              <span className="listings-muted">{image.source === 'existing' ? 'Current photo' : 'Uploaded and checked'}</span>
+              <span className="listings-muted">{image.source === 'existing' ? 'Current photo' : 'Ready'}</span>
               <div className="listings-image-tile__actions">
                 <Button variant="secondary" disabled={disabled || uploading || index === 0} onClick={() => move(index, -1)} aria-label={`Move photo ${index + 1} earlier`}>Move up</Button>
                 <Button variant="secondary" disabled={disabled || uploading || index === images.length - 1} onClick={() => move(index, 1)} aria-label={`Move photo ${index + 1} later`}>Move down</Button>

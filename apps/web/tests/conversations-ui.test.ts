@@ -171,8 +171,9 @@ describe('ConversationInbox UI', () => {
       }),
     );
     expect(html).toContain('Filter and sort conversations');
-    expect(html).toContain('I started it (buyer or responder)');
-    expect(html).toContain('Conversation partner ID');
+    expect(html).toContain('Buyer or responder · I started it');
+    expect(html).toContain('Conversation partner');
+    expect(html).toContain('Listing or request');
     expect(html).toContain('Minimum offer (₹)');
     expect(html).toContain('Offer filters apply to Sale Listings');
   });

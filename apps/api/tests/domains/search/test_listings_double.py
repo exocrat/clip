@@ -29,6 +29,7 @@ def listing_page(ids):
         condition_code="synthetic-condition",
         condition_label="Synthetic condition",
         asking_price_paise=100,
+        original_price_paise=None,
         negotiable=False,
         pickup_area="Synthetic area",
         available_from=datetime(2026, 1, 1, tzinfo=UTC),

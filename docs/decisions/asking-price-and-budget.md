@@ -19,7 +19,7 @@ Zero offers are valid, supporting free-item exchanges. An explicitly entered zer
 Preserves a concrete seller price, independent permission to negotiate, and the distinction between an unstated buyer budget and an explicitly entered amount.
 
 ## Implications
-PD-08 retains the proposed non-null seller price/boolean and nullable request budget, allowing nonnegative whole-rupee values for asking prices, offers and supplied budgets. LI-01/SE-02/CN-02 and DL-00 must preserve these distinctions in validation, public types and UI. Upper product limits remain open; the storage type's representable bound does not itself select a product cap.
+PD-08 retains the proposed non-null seller price/boolean and nullable request budget, allowing nonnegative whole-rupee values for asking prices, offers and supplied budgets. LI-01/SE-02/CN-02 and DL-00 must preserve these distinctions in validation, public types and UI. On 2026-10-28, NEXT-03 selected an inclusive ₹1 crore cap for listing asking prices, optional Original price, Wanted budgets, and their discovery bounds; offers retain their existing separate bound. The storage type's representable bound does not itself select a product cap.
 
 ## Approver
 Mohit (C), explicit seller/buyer clarification followed by approval of zero offers, zero-budget-as-free-item and absent-budget-as-unstated rules. The user later confirmed the PD-08 affected-owner schema gate complete on 2026-10-19; see the [work-log reconciliation](../status/work-log.md#resolved-integration-evidence).

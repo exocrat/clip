@@ -64,6 +64,7 @@ SELECT
     listing_condition.code AS condition_code,
     listing_condition.label AS condition_label,
     listing.asking_price_paise,
+    listing.original_price_paise,
     listing.negotiable,
     listing.pickup_area,
     listing.available_from,
@@ -174,7 +175,7 @@ class PostgresListingsStore:
         request = normalize_query(request)
         hybrid = request.search_mode == "hybrid" and request.q is not None
         if hybrid and self._hybrid_helper is None:
-            if request.category_code is not None or request.condition_code is not None:
+            if request.category_code or request.condition_code:
                 async with self._connection() as connection:
                     await validate_catalogue_filters(connection, request)
             raise PublicError(ERRORS[503])
@@ -593,11 +594,11 @@ class PostgresListingsStore:
                     """
                     INSERT INTO listings.sale_listings (
                         id, owner_id, title, description, category_id,
-                        condition_code, asking_price_paise, negotiable,
+                        condition_code, asking_price_paise, original_price_paise, negotiable,
                         pickup_area, available_from, available_until,
                         availability, proof_available, created_at, updated_at
                     ) VALUES (
-                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                         'available', %s, %s, %s
                     )
                     """,
@@ -609,6 +610,7 @@ class PostgresListingsStore:
                         category_id,
                         request.condition_code,
                         request.asking_price_paise,
+                        request.original_price_paise,
                         request.negotiable,
                         normalized_pickup_area,
                         available_from,
@@ -783,6 +785,7 @@ class PostgresListingsStore:
                     UPDATE listings.sale_listings
                     SET title = %s, description = %s, category_id = %s,
                         condition_code = %s, asking_price_paise = %s,
+                        original_price_paise = %s,
                         negotiable = %s, pickup_area = %s,
                         available_from = %s, available_until = %s,
                         proof_available = %s, updated_at = %s,
@@ -795,6 +798,7 @@ class PostgresListingsStore:
                         category_id,
                         request.condition_code,
                         request.asking_price_paise,
+                        request.original_price_paise,
                         request.negotiable,
                         normalized_pickup_area,
                         request.available_from,
@@ -1147,6 +1151,7 @@ class PostgresListingsStore:
                     UPDATE listings.sale_listings
                     SET title = NULL, description = NULL, category_id = NULL,
                         condition_code = NULL, asking_price_paise = NULL,
+                        original_price_paise = NULL,
                         negotiable = NULL, pickup_area = NULL,
                         available_until = NULL, availability = 'unavailable',
                         proof_available = NULL, selected_buyer_id = NULL,

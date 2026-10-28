@@ -19,7 +19,9 @@ describe('search composition initial safety', () => {
   });
   it('shows public browse loading without inventing records or author contact information', () => {
     const html = render(createElement(WantedBrowse));
-    expect(html).toContain('Loading…');
+    expect(html).toContain('Loading wanted requests…');
+    expect(html).toContain('New Wanted Request');
+    expect(html).toContain('/my/listings?view=wanted&amp;create=wanted');
     expect(html).not.toContain('Contact requester');
   });
   it('rejects malformed routes without showing response/save actions', () => {

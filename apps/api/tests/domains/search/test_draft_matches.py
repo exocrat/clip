@@ -37,6 +37,7 @@ def summary():
         condition_code="good",
         condition_label="Good",
         asking_price_paise=100,
+        original_price_paise=None,
         negotiable=False,
         pickup_area=None,
         available_from=datetime.now(UTC) - timedelta(days=1),

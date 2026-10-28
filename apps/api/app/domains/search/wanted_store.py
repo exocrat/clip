@@ -12,13 +12,15 @@ from psycopg_pool import AsyncConnectionPool, PoolTimeout
 
 from app.contracts.domain_types import WantedRequestOwnerView
 from app.core.errors import ERRORS, PublicError
+from app.core.money import MAX_LISTING_PRICE_PAISE
 from app.core.timestamps import as_utc
-from app.domains.search.wanted_models import WantedPage, owner_view
+from app.domains.search.wanted_models import WantedDiscoveryPage, WantedPage, owner_view
 from app.domains.search.wanted_retirement import PendingWantedRetirement
 from app.domains.search.wanted_response import WantedResponseOrigin
 
 LabelResolver = Callable[[str, bool], Awaitable[str]]
 Kind = Literal["create", "edit", "state"]
+_MAX_BUDGET_PAISE = MAX_LISTING_PRICE_PAISE
 _COLUMNS = "id,author_id,title,description,category_code,budget_paise,status,created_at,updated_at,revision,retired_at,retirement_pending_operation_id"
 _PATCH_FIELDS = ("title", "description", "category_code", "budget_paise")
 
@@ -43,7 +45,7 @@ class PostgresWantedStore:
             raise PublicError(ERRORS[503]) from None
 
     async def listing(
-        self, owner: UUID | None, page: WantedPage
+        self, owner: UUID | None, page: WantedPage | WantedDiscoveryPage
     ) -> tuple[list[dict[str, Any]], bool]:
         """Filter visibility/ownership before stable ordering and limit+one."""
         predicate = (
@@ -51,7 +53,36 @@ class PostgresWantedStore:
             if owner is None
             else "author_id=%s"
         )
-        params: tuple[object, ...] = () if owner is None else (owner,)
+        params: list[object] = [] if owner is None else [owner]
+        if owner is None and isinstance(page, WantedDiscoveryPage):
+            if page.q is not None:
+                statement_filter = (
+                    " AND to_tsvector('pg_catalog.english', "
+                    "coalesce(title, '') || ' ' || coalesce(description, '')) "
+                    "@@ plainto_tsquery('pg_catalog.english', %s)"
+                )
+                params.append(page.q)
+            else:
+                statement_filter = ""
+            if page.category_code:
+                statement_filter += " AND category_code = ANY(%s)"
+                params.append(page.category_code)
+            if page.min_budget_paise is not None or page.max_budget_paise is not None:
+                statement_filter += " AND budget_paise IS NOT NULL"
+            if page.min_budget_paise is not None:
+                if page.min_budget_paise > _MAX_BUDGET_PAISE:
+                    statement_filter += " AND FALSE"
+                else:
+                    statement_filter += " AND budget_paise >= %s"
+                    params.append(page.min_budget_paise)
+            if (
+                page.max_budget_paise is not None
+                and page.max_budget_paise < _MAX_BUDGET_PAISE
+            ):
+                statement_filter += " AND budget_paise <= %s"
+                params.append(page.max_budget_paise)
+        else:
+            statement_filter = ""
         async with self.connection() as connection:
             rows = await (
                 await connection.execute(
@@ -59,6 +90,7 @@ class PostgresWantedStore:
                     + _COLUMNS
                     + " FROM search.wanted_requests WHERE retired_at IS NULL AND "
                     + predicate
+                    + statement_filter
                     + " ORDER BY created_at DESC,id DESC LIMIT %s OFFSET %s",
                     (*params, page.page_size + 1, (page.page - 1) * page.page_size),
                 )

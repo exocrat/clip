@@ -3,7 +3,7 @@ import { discoveryPreviewBackend, readDiscoveryCatalogue, readDiscoveryPage, typ
 import { DEFAULT_QUERY } from '../src/features/search/discoveryQuery';
 
 const listing: ListingSummary = { listing_id: '20000000-0000-4000-8000-000000000001', title: 'Synthetic bicycle', description: 'Synthetic fixture',
-  category_code: 'bicycles', category_label: 'Bicycles', condition_code: 'good', condition_label: 'Good', asking_price_paise: 100,
+  category_code: 'bicycles', category_label: 'Bicycles', condition_code: 'good', condition_label: 'Good', asking_price_paise: 100, original_price_paise: null,
   negotiable: false, pickup_area: null, available_from: '2026-01-01T00:00:00.000000Z', available_until: null,
   availability: 'available', sensitive_purchase: false, image_ids: [] };
 
@@ -19,8 +19,8 @@ describe('current, public-only discovery transport', () => {
   it('sends only reviewed filters, disables caching and preserves cancellation', async () => {
     const fetch = stub(page());
     const signal = new AbortController().signal;
-    await readDiscoveryPage({ ...DEFAULT_QUERY, min_price_paise: '0', negotiable: 'false' }, signal);
-    expect(fetch).toHaveBeenCalledWith('/api/listings?min_price_paise=0&negotiable=false&search_mode=hybrid', expect.objectContaining({ signal, cache: 'no-store', credentials: 'same-origin' }));
+    await readDiscoveryPage({ ...DEFAULT_QUERY, q: 'bicycle', min_price_paise: '0', sort: 'relevance' }, signal);
+    expect(fetch).toHaveBeenCalledWith('/api/listings?q=bicycle&min_price_paise=0&sort=relevance&search_mode=hybrid', expect.objectContaining({ signal, cache: 'no-store', credentials: 'same-origin' }));
     expect(JSON.stringify(fetch.mock.calls)).not.toMatch(/owner_id|user_id|Authorization|X-Clip-UI-Preview/);
   });
   it('enables the preview transport header only with explicit development opt-in', async () => {

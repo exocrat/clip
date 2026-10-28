@@ -5,6 +5,7 @@ const now = Date.parse('2026-10-21T10:00:00Z');
 const values: ListingFormValues = {
   title: ' Test textbook ', description: ' A synthetic item ', category_code: 'books',
   condition_code: 'good', price_rupees: '0', negotiable: false, pickup_area: ' Synthetic area ',
+  original_price_rupees: '',
   available_from: '', available_until: '', proof_available: '',
 };
 const images = ['10000000-0000-4000-8000-000000000002'];
@@ -25,6 +26,16 @@ describe('Listings form boundary', () => {
     expect(intent).not.toHaveProperty('proof_available');
     expect(intent).not.toHaveProperty('available_from');
     expect(intent).not.toHaveProperty('owner_id');
+  });
+  it('keeps Original price optional and sends a supplied seller amount without rounding', () => {
+    expect(validateListingForm(values, images, now).intent?.original_price_paise).toBeNull();
+    expect(validateListingForm({ ...values, original_price_rupees: '1250' }, images, now).intent?.original_price_paise).toBe(125000);
+    expect(validateListingForm({ ...values, original_price_rupees: '0' }, images, now).errors.original_price_rupees).toBeDefined();
+    expect(validateListingForm({ ...values, original_price_rupees: '10000001' }, images, now).errors.original_price_rupees).toBeDefined();
+  });
+  it('caps asking price at ₹1,00,00,000', () => {
+    expect(validateListingForm({ ...values, price_rupees: '10000000' }, images, now).intent?.asking_price_paise).toBe(1_000_000_000);
+    expect(validateListingForm({ ...values, price_rupees: '10000001' }, images, now).errors.price_rupees).toBeDefined();
   });
   it.each(['', '-1', '1.5', '1e3', '9007199254740991'])('rejects a missing, fractional, negative or imprecise price: %s', (price) => {
     expect(validateListingForm({ ...values, price_rupees: price }, images, now).intent).toBeUndefined();

@@ -255,7 +255,7 @@ def main():
         actual = sql(
             "SELECT version FROM public.schema_migrations ORDER BY version"
         ).splitlines()
-        if not expected or actual != expected or actual[-1] != "20261028090000":
+        if not expected or actual != expected or actual[-1] != "20261028120000":
             raise RuntimeError("Migration history differs from the expected head")
         migrate()
         for filename in (
@@ -495,6 +495,7 @@ def main():
                     "apps/api/tests/domains/search/test_draft_matches_postgres.py",
                     "apps/api/tests/domains/search/test_wanted_retirement_postgres.py",
                     "apps/api/tests/domains/search/test_wanted_postgres.py",
+                    "apps/api/tests/domains/search/test_wanted_discovery_postgres.py",
                     "apps/api/tests/domains/search/test_step6_postgres.py",
                     "apps/api/tests/domains/search/test_wanted_response_postgres.py",
                     "apps/api/tests/domains/search/test_category_migration_postgres.py",

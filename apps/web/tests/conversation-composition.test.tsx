@@ -108,9 +108,9 @@ describe('shared conversation route composition', () => {
       return query.get('origin_kind') === 'sale_listing' && query.get('page') === '1';
     })).toBe(true));
 
-    fireEvent.change(screen.getByLabelText('Listing or request ID'), {
-      target: { value: '33333333-3333-4333-8333-333333333333' },
-    });
+    fireEvent.click(screen.getByText('All origins'));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Sale listing · 33333333…3333' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Apply origin and partner filters' }));
     await waitFor(() => expect(paths.some((path) =>
       new URL(path, 'http://local.test').searchParams.get('origin_id') === '33333333-3333-4333-8333-333333333333',
     )).toBe(true));

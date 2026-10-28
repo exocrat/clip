@@ -210,6 +210,7 @@ export function MyListings() {
                   {listingPrice(listing.asking_price_paise)}
                   {listing.negotiable ? ' · Negotiable' : ' · Fixed asking price'}
                 </p>
+                {listing.original_price_paise !== null && <p>Original price (seller-provided, unverified): {listingPrice(listing.original_price_paise)}</p>}
                 <p>{listing.category_label} · {listing.condition_label}</p>
                 <p className="listings-muted">{listing.image_ids.length} photo{listing.image_ids.length === 1 ? '' : 's'}</p>
                 <p className="listings-muted">

@@ -170,7 +170,13 @@ def test_inbox_membership_filters_unread_and_summary_privacy():
         service = PostgresConversationQueries(pool)
         messages = PostgresMessageOperations(pool)
         await messages.submit_message(caller(alice), thread, message_request())
-        page = await service.list_mine(caller(bob), ConversationQuery(origin_id=origin))
+        page = await service.list_mine(
+            caller(bob),
+            ConversationQuery(
+                origin_id=[origin, uuid4()],
+                counterparty_user_id=[alice, uuid4()],
+            ),
+        )
         assert len(page.items) == 1 and not page.has_next
         summary = page.items[0]
         assert summary.caller_role == "initiator" and summary.unread_count == 1
@@ -182,7 +188,7 @@ def test_inbox_membership_filters_unread_and_summary_privacy():
         ).items
         assert (
             await service.list_mine(
-                caller(alice), ConversationQuery(view="origin_owner", origin_id=origin)
+                caller(alice), ConversationQuery(view="origin_owner", origin_id=[origin])
             )
         ).items
         assert not (
@@ -190,7 +196,7 @@ def test_inbox_membership_filters_unread_and_summary_privacy():
         ).items
         assert not (
             await service.list_mine(
-                caller(bob), ConversationQuery(counterparty_user_id=bob)
+                caller(bob), ConversationQuery(counterparty_user_id=[bob])
             )
         ).items
         for target in (thread, uuid4()):

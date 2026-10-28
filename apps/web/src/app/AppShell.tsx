@@ -7,6 +7,7 @@ const previewRoutes = [
   { to: '/auth/callback', label: 'Auth callback' },
   { to: '/', label: 'Discover' },
   { to: '/listings/new', label: 'New listing', sellerOnly: true },
+  { to: '/my/listings?view=wanted&create=wanted', label: 'New Wanted Request' },
   { to: '/listings/example', label: 'Listing detail' },
   { to: '/listings/example/edit', label: 'Edit listing', sellerOnly: true },
   { to: '/my/listings', label: 'My listings' },

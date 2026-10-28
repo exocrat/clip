@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Link, useSearchParams } from 'react-router';
-import { Button } from '../../shared/ui';
+import { Button, MultiChoiceDropdown } from '../../shared/ui';
 import { type DiscoveryApiError, discoveryPreviewBackend,
   type CatalogueView, type PageResultListingSummary } from './discoveryApi';
-import { applyDiscoveryForm, DEFAULT_QUERY, discoveryForm, discoveryParams,
+import { applyDiscoveryForm, DEFAULT_QUERY, discoveryForm, discoveryParams, editDiscoveryText,
   parseDiscoveryQuery, type DiscoveryForm, type DiscoveryQuery } from './discoveryQuery';
 import { startDiscoveryRequest } from './discoveryRequest';
 import { SaleListingCard } from './SaleListingCard';
@@ -12,12 +12,25 @@ import './discovery.css';
 type ResultState = { kind: 'loading' } | { kind: 'ready'; page: PageResultListingSummary }
   | { kind: 'error'; error: DiscoveryApiError } | { kind: 'invalid'; message: string };
 
+/** Preserve the inactive Wanted tab's URL filters without passing them to sale search. */
+function withWantedRouteState(sale: URLSearchParams, current: URLSearchParams): URLSearchParams {
+  const combined = new URLSearchParams(sale);
+  current.forEach((value, key) => {
+    if (key.startsWith('wanted_')) combined.append(key, value);
+  });
+  return combined;
+}
+
 /** Own discovery state inside Search; other domains supply only reviewed public data. */
 export function SaleDiscovery() {
   const [params, setParams] = useSearchParams();
   const key = params.toString();
   const parsed = useMemo(() => {
-    try { return { query: parseDiscoveryQuery(new URLSearchParams(key)) }; }
+    try {
+      const saleParams = new URLSearchParams(key);
+      for (const name of [...saleParams.keys()]) if (name.startsWith('wanted_')) saleParams.delete(name);
+      return { query: parseDiscoveryQuery(saleParams) };
+    }
     catch (error) { return { message: error instanceof Error ? error.message : 'Check the filters in this URL.' }; }
   }, [key]);
   const query = parsed.query ?? DEFAULT_QUERY;
@@ -47,7 +60,11 @@ export function SaleDiscovery() {
 
   /** Draft edits do not silently change the applied URL/result set. */
   function change<Key extends keyof DiscoveryForm>(field: Key, value: DiscoveryForm[Key]) {
-    setDraft((previous) => ({ ...previous, [field]: value }));
+    setDraft((previous) => {
+      if (field === 'sort') return { ...previous, sort: value as DiscoveryForm['sort'], sort_explicit: true };
+      if (field === 'q') return editDiscoveryText(previous, String(value));
+      return { ...previous, [field]: value };
+    });
     setFormError('');
   }
 
@@ -55,7 +72,7 @@ export function SaleDiscovery() {
   function submit(event: FormEvent) {
     event.preventDefault();
     try {
-      const next = discoveryParams(applyDiscoveryForm(draft, query.search_mode));
+      const next = withWantedRouteState(discoveryParams(applyDiscoveryForm(draft, query.search_mode)), params);
       setFormError('');
       if (next.toString() === key) setReload((value) => value + 1);
       else setParams(next);
@@ -64,7 +81,7 @@ export function SaleDiscovery() {
 
   /** Page navigation keeps applied filters; resetting clears every filter at once. */
   function navigate(next: DiscoveryQuery) {
-    const nextParams = discoveryParams(next);
+    const nextParams = withWantedRouteState(discoveryParams(next), params);
     if (nextParams.toString() === key) setReload((value) => value + 1);
     else setParams(nextParams);
   }
@@ -101,39 +118,44 @@ export function SaleDiscovery() {
         </div>
         <p id="discovery-query-help" className="discovery-hint">Search titles and descriptions. Up to 120 characters.</p>
         <div className="discovery-filters">
-          <label htmlFor="discovery-category">Item category
-            <select id="discovery-category" value={draft.category_code} onChange={(event) => change('category_code', event.target.value)}>
-              <option value="">All categories</option>
-              {draft.category_code && !catalogue.categories.some((item) => item.code === draft.category_code) && <option value={draft.category_code}>Selected category (check availability)</option>}
-              {catalogue.categories.map((category) => <option key={category.code} value={category.code}>{category.label}</option>)}
-            </select>
-          </label>
-          <label htmlFor="discovery-condition">Condition
-            <select id="discovery-condition" value={draft.condition_code} onChange={(event) => change('condition_code', event.target.value)}>
-              <option value="">Any condition</option>
-              {draft.condition_code && !catalogue.conditions.some((item) => item.code === draft.condition_code) && <option value={draft.condition_code}>Selected condition (check availability)</option>}
-              {catalogue.conditions.map((condition) => <option key={condition.code} value={condition.code}>{condition.label}</option>)}
-            </select>
-          </label>
+          <MultiChoiceDropdown
+            emptyLabel="All categories"
+            label="Item category"
+            onValuesChange={(values) => change('category_code', values)}
+            options={[
+              ...catalogue.categories.map((category) => ({ value: category.code, label: category.label })),
+              ...draft.category_code.filter((code) => !catalogue.categories.some((category) => category.code === code))
+                .map((code) => ({ value: code, label: `Unavailable category · ${code}` })),
+            ]}
+            values={draft.category_code}
+          />
+          <MultiChoiceDropdown
+            emptyLabel="Any condition"
+            label="Condition"
+            onValuesChange={(values) => change('condition_code', values)}
+            options={[
+              ...catalogue.conditions.map((condition) => ({ value: condition.code, label: condition.label })),
+              ...draft.condition_code.filter((code) => !catalogue.conditions.some((condition) => condition.code === code))
+                .map((code) => ({ value: code, label: `Unavailable condition · ${code}` })),
+            ]}
+            values={draft.condition_code}
+          />
           <label htmlFor="discovery-min">Minimum price (₹)
-            <input id="discovery-min" type="text" inputMode="numeric" value={draft.min_rupees} placeholder="No minimum"
+            <input id="discovery-min" type="text" inputMode="numeric" maxLength={8} value={draft.min_rupees} placeholder="No minimum"
               onChange={(event) => change('min_rupees', event.target.value)} />
           </label>
           <label htmlFor="discovery-max">Maximum price (₹)
-            <input id="discovery-max" type="text" inputMode="numeric" value={draft.max_rupees} placeholder="No maximum"
+            <input id="discovery-max" type="text" inputMode="numeric" maxLength={8} value={draft.max_rupees} placeholder="No maximum"
               onChange={(event) => change('max_rupees', event.target.value)} />
           </label>
-          <label htmlFor="discovery-negotiable">Negotiability
-            <select id="discovery-negotiable" value={draft.negotiable} onChange={(event) => change('negotiable', event.target.value as DiscoveryForm['negotiable'])}>
-              <option value="">Any</option><option value="true">Negotiable</option><option value="false">Fixed price</option>
-            </select>
-          </label>
           <label htmlFor="discovery-sort">Sort by
-            <select id="discovery-sort" aria-describedby="discovery-sort-help" value={draft.sort} onChange={(event) => change('sort', event.target.value as DiscoveryForm['sort'])}>
+            <select id="discovery-sort" aria-describedby="discovery-sort-help"
+              value={draft.sort}
+              onChange={(event) => change('sort', event.target.value as DiscoveryForm['sort'])}>
+              {draft.q.trim() && <option value="relevance">Best Match</option>}
               <option value="created_desc">Newest first</option><option value="price_asc">Price: low to high</option><option value="price_desc">Price: high to low</option>
-              <option value="relevance" disabled={!draft.q.trim()}>Relevance</option>
             </select>
-            <span id="discovery-sort-help" className="discovery-hint">Orders matching listings. Relevance requires search text.</span>
+            <span id="discovery-sort-help" className="discovery-hint">Text searches default to Best Match: direct matches first, expanded or typo matches next, and meaning-based matches after. Browsing defaults to newest first.</span>
           </label>
           <label htmlFor="discovery-size">Listings per page
             <select id="discovery-size" value={draft.page_size} onChange={(event) => change('page_size', Number(event.target.value) as DiscoveryForm['page_size'])}>

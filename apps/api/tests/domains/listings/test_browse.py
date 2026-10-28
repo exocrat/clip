@@ -44,6 +44,7 @@ def summary() -> ListingSummary:
         condition_code="good",
         condition_label="Good",
         asking_price_paise=0,
+        original_price_paise=None,
         negotiable=False,
         pickup_area=None,
         available_from=NOW - timedelta(days=1),
@@ -104,8 +105,8 @@ def test_denials_precede_data_access(expired, eligible, status):
 @pytest.mark.parametrize(
     "filters",
     [
-        {"category_code": "bicycles"},
-        {"condition_code": "good"},
+        {"category_code": ["bicycles", "books"]},
+        {"condition_code": ["good", "like_new"]},
         {"min_price_paise": 0},
         {"max_price_paise": 100},
         {"negotiable": False},
@@ -119,6 +120,25 @@ def test_reviewed_filters_and_sorts_are_forwarded(filters):
     asyncio.run(subject.query_available_listings(caller(), ListingQuery(**filters)))
     received = store.browse_available_listings.await_args.args[0]
     assert all(getattr(received, field) == value for field, value in filters.items())
+
+
+def test_legacy_single_catalogue_values_normalize_to_one_selection():
+    """Existing links and internal callers remain valid with list filters."""
+    query = ListingQuery(category_code="bicycles", condition_code="good")
+    assert query.category_code == ["bicycles"]
+    assert query.condition_code == ["good"]
+
+
+def test_multiple_catalogue_values_are_independent_selections():
+    """Repeated category and condition values remain separate OR groups."""
+    query = ListingQuery(
+        category_code=["bicycles", "books"], condition_code=["new", "good"]
+    )
+    statement, parameters = browse_statement(query, NOW, 500000)
+    assert "category.code = ANY(%s)" in statement
+    assert "listing_condition.code = ANY(%s)" in statement
+    assert ["bicycles", "books"] in parameters
+    assert ["new", "good"] in parameters
 
 
 def test_whitespace_query_is_browse_and_huge_offset_is_safe():
@@ -390,8 +410,9 @@ def test_trimmed_unicode_query_limit_and_no_selected_price_cap():
 def test_all_filter_values_are_bound_and_large_amounts_preserve_storage_semantics():
     """SQL-looking codes stay parameters; values outside bigint cannot overflow SQL."""
     code = "books' OR true --"
+    other_code = "bicycles"
     query = BrowseQuery(
-        category_code=code,
+        category_code=[code, other_code],
         condition_code="good",
         negotiable=False,
         min_price_paise=0,
@@ -399,7 +420,7 @@ def test_all_filter_values_are_bound_and_large_amounts_preserve_storage_semantic
         sort="price_asc",
     )
     statement, parameters = browse_statement(query, NOW, 500000)
-    assert code not in statement and code in parameters
+    assert code not in statement and [code, other_code] in parameters
     assert any(value is False for value in parameters)
     assert statement.count("%s") == len(parameters)
     large = 10**100

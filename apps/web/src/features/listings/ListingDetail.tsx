@@ -40,6 +40,7 @@ export function ListingDetail({ listingId, children }: PropsWithChildren<{ listi
               <p className="listings-status">{listing.availability === 'available' ? 'Seller marked available' : 'Seller marked unavailable'}</p>
               <h2>{listing.title}</h2>
               <p className="listings-price">{listingPrice(listing.asking_price_paise)}{listing.negotiable ? ' · Negotiable' : ' · Fixed asking price'}</p>
+              {listing.original_price_paise !== null && <p>Original price (seller-provided, unverified): {listingPrice(listing.original_price_paise)}</p>}
               <ListingPhotoGallery imageIds={listing.image_ids} />
               <p className="listings-description">{listing.description}</p>
               <dl>

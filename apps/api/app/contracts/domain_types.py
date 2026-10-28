@@ -11,10 +11,11 @@ import base64
 import re
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Annotated, Generic, Literal, TypeVar
+from typing import Annotated, Any, Generic, Literal, TypeVar
 from uuid import UUID
 
 from app.core.identifiers import format_id
+from app.core.money import MAX_LISTING_PRICE_PAISE
 from app.core.timestamps import as_utc, format_timestamp, parse_timestamp
 from pydantic import (
     BaseModel,
@@ -61,6 +62,14 @@ class ContractModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+def _selection_list(value: Any) -> list[Any]:
+    """Normalize a legacy scalar or repeated HTTP values to a selection list."""
+    if value is None:
+        return []
+    values = value if isinstance(value, list) else [value]
+    return list(dict.fromkeys(values))
+
+
 T = TypeVar("T")
 
 
@@ -78,6 +87,21 @@ class PageQuery(ContractModel):
 
     page: int = Field(default=1, ge=1)
     page_size: Literal[20, 50, 100] = 20
+
+
+class WantedDiscoveryQuery(PageQuery):
+    """Public Wanted Request discovery filters; categories may repeat in the URL."""
+
+    q: str | None = Field(default=None, max_length=120)
+    category_code: Annotated[list[str], BeforeValidator(_selection_list)] = Field(
+        default_factory=list
+    )
+    min_budget_paise: int | None = Field(
+        default=None, ge=0, le=MAX_LISTING_PRICE_PAISE, multiple_of=100
+    )
+    max_budget_paise: int | None = Field(
+        default=None, ge=0, le=MAX_LISTING_PRICE_PAISE, multiple_of=100
+    )
 
 
 class ErrorDetail(ContractModel):
@@ -397,7 +421,10 @@ class ListingSummary(ContractModel):
     category_label: str
     condition_code: str
     condition_label: str
-    asking_price_paise: int = Field(ge=0, multiple_of=100)
+    asking_price_paise: int = Field(ge=0, le=MAX_LISTING_PRICE_PAISE, multiple_of=100)
+    original_price_paise: int | None = Field(
+        gt=0, le=MAX_LISTING_PRICE_PAISE, multiple_of=100
+    )
     negotiable: bool
     pickup_area: str | None
     available_from: UtcInstant
@@ -437,15 +464,27 @@ class ListingOwnerView(ListingManagementView):
 
 
 class ListingQuery(ContractModel):
-    """Available listing filters and numbered page controls."""
+    """Available listing filters and numbered page controls.
+
+    Category and condition are repeated query values; a single legacy value is
+    accepted as a one-element selection for URL/API compatibility.
+    """
 
     page: int = Field(default=1, ge=1)
     page_size: Literal[20, 50, 100] = 20
-    category_code: str | None = None
-    condition_code: str | None = None
+    category_code: Annotated[list[str], BeforeValidator(_selection_list)] = Field(
+        default_factory=list
+    )
+    condition_code: Annotated[list[str], BeforeValidator(_selection_list)] = Field(
+        default_factory=list
+    )
     negotiable: bool | None = None
-    min_price_paise: int | None = Field(default=None, ge=0, multiple_of=100)
-    max_price_paise: int | None = Field(default=None, ge=0, multiple_of=100)
+    min_price_paise: int | None = Field(
+        default=None, ge=0, le=MAX_LISTING_PRICE_PAISE, multiple_of=100
+    )
+    max_price_paise: int | None = Field(
+        default=None, ge=0, le=MAX_LISTING_PRICE_PAISE, multiple_of=100
+    )
     search_mode: Literal["keyword", "hybrid"] = "keyword"
     sort: Literal["created_desc", "price_asc", "price_desc", "relevance"] = (
         "created_desc"
@@ -503,7 +542,10 @@ class CreateListingRequest(ContractModel):
     description: str = Field(min_length=1, max_length=5000)
     category_code: str
     condition_code: str
-    asking_price_paise: int = Field(ge=0, multiple_of=100)
+    asking_price_paise: int = Field(ge=0, le=MAX_LISTING_PRICE_PAISE, multiple_of=100)
+    original_price_paise: int | None = Field(
+        default=None, gt=0, le=MAX_LISTING_PRICE_PAISE, multiple_of=100
+    )
     negotiable: bool
     pickup_area: str | None = Field(default=None, min_length=1, max_length=120)
     available_from: UtcInstant | None = None
@@ -541,7 +583,10 @@ class ListingReplacement(ContractModel):
     description: str = Field(min_length=1, max_length=5000)
     category_code: str
     condition_code: str
-    asking_price_paise: int = Field(ge=0, multiple_of=100)
+    asking_price_paise: int = Field(ge=0, le=MAX_LISTING_PRICE_PAISE, multiple_of=100)
+    original_price_paise: int | None = Field(
+        gt=0, le=MAX_LISTING_PRICE_PAISE, multiple_of=100
+    )
     negotiable: bool
     pickup_area: str | None = Field(min_length=1, max_length=120)
     available_from: UtcInstant
@@ -633,7 +678,9 @@ class WantedRequestPublic(ContractModel):
     description: str
     category_code: str
     category_label: str
-    budget_paise: int | None = Field(default=None, ge=0, multiple_of=100)
+    budget_paise: int | None = Field(
+        default=None, ge=0, le=MAX_LISTING_PRICE_PAISE, multiple_of=100
+    )
     created_at: UtcInstant
     updated_at: UtcInstant
 
@@ -651,7 +698,9 @@ class CreateWantedRequest(ContractModel):
     title: str = Field(min_length=1, max_length=120)
     description: str = Field(min_length=1, max_length=5000)
     category_code: str
-    budget_paise: int | None = Field(default=None, ge=0, multiple_of=100)
+    budget_paise: int | None = Field(
+        default=None, ge=0, le=MAX_LISTING_PRICE_PAISE, multiple_of=100
+    )
     operation_id: OperationId
 
 
@@ -662,7 +711,9 @@ class WantedRequestPatch(ContractModel):
     title: str | None = Field(default=None, min_length=1, max_length=120)
     description: str | None = Field(default=None, min_length=1, max_length=5000)
     category_code: str | None = None
-    budget_paise: int | None = Field(default=None, ge=0, multiple_of=100)
+    budget_paise: int | None = Field(
+        default=None, ge=0, le=MAX_LISTING_PRICE_PAISE, multiple_of=100
+    )
     operation_id: OperationId
 
 
@@ -1069,12 +1120,20 @@ class ContactShareRequest(ContractModel):
 
 
 class ConversationQuery(ContractModel):
-    """Participant-scoped filters, stable sorting and numbered paging."""
+    """Participant-scoped filters, stable sorting and numbered paging.
+
+    Origin and partner filters accept repeated values (or legacy single values)
+    and represent independent OR selections.
+    """
 
     view: Literal["initiated", "origin_owner", "all"] = "all"
     origin_kind: OriginKind | None = None
-    origin_id: UUID | None = None
-    counterparty_user_id: UserId | None = None
+    origin_id: Annotated[list[UUID], BeforeValidator(_selection_list)] = Field(
+        default_factory=list
+    )
+    counterparty_user_id: Annotated[list[UserId], BeforeValidator(_selection_list)] = (
+        Field(default_factory=list)
+    )
     offer_status: Literal["submitted", "withdrawn"] | None = None
     offer_min_paise: int | None = Field(default=None, ge=0, multiple_of=100)
     offer_max_paise: int | None = Field(default=None, ge=0, multiple_of=100)

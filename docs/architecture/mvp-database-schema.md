@@ -69,7 +69,7 @@ Notation for every table below:
 - Every listed column is `NOT NULL` unless followed by `?`. Each table has the explicitly stated primary key; a UUID entity `id` is generated using the approved application helper, not accepted as an authorization claim. No PostgreSQL UUID-generation extension is assumed.
 - `instant` means `timestamptz(6)`, with UTC connection/display settings. PostgreSQL retains the instant, not the original zone. The application rejects naive timestamps before binding; a database timestamp type alone cannot enforce that input rule.
 - `created_at`/`updated_at` are server-controlled instants. `updated_at` is included only where listed; it is not a concurrency token. Proposed mutable resources use a positive `revision bigint` for compare-and-update semantics.
-- `money` means `bigint`, constrained to a nonnegative multiple of 100. Mohit approved zero asking prices, zero offers and explicit zero budgets; zero budget means seeking a free item, while a missing budget means no amount stated. Upper product limits still need review. No floating-point storage or implicit rounding.
+- `money` means `bigint`, constrained to a nonnegative multiple of 100. Marketplace asking prices, Original price, Wanted budgets and their filters are capped at 1,000,000,000 paise (₹1,00,00,000); Original price, when present, is positive. Mohit approved zero asking prices, zero offers and explicit zero budgets; zero budget means seeking a free item, while a missing budget means no amount stated. No floating-point storage or implicit rounding.
 - Required human-readable text must contain non-whitespace content. Exact length limits, normalization and catalogue values require review rather than arbitrary schema defaults.
 - Status columns are proposed text values with named `CHECK` constraints, rather than PostgreSQL enum types. Final sets and transitions require approval; a status check alone does not implement transition authorization.
 - Foreign keys are explicitly named below. Default deletion proposal is `ON DELETE RESTRICT` to prevent accidental cross-domain cascades. Mohit approved the finite content/authentication retention windows below; affected-owner cleanup ordering and any explicit FK exceptions still require review. Restricted FKs are not indefinite-retention approval.
@@ -104,13 +104,13 @@ Mohit selected password-based normal sign-in for temporary users; email OTP is l
 |---|---|---|
 | `listings.categories` / `id uuid` | `code text`, `label text`, `sensitive_category boolean`, `active boolean`, `created_at instant` | Unique immutable `code`; Mohit-approved catalogue below includes mobile-phone/laptop classification; affected-owner review pending. |
 | `listings.conditions` / `code text` | `label text`, `active boolean` | Mohit-approved shared listing-condition vocabulary below; affected-owner review pending. |
-| `listings.sale_listings` / `id uuid` | `owner_id uuid`, `title text?`, `description text?`, `category_id uuid?`, `condition_code text?`, `asking_price_paise money?`, `negotiable boolean?`, `pickup_area text?`, `available_from instant`, `available_until instant?`, `availability text`, `proof_available boolean?`, `selected_buyer_id uuid?`, `selected_conversation_id uuid?`, `created_at instant`, `updated_at instant`, `retirement_eligible_since instant?`, `retirement_pending_operation_id uuid?`, `retirement_pending_cutoff_utc instant?`, `retired_at instant?`, `search_vector tsvector`, `revision bigint` | Pickup area is optional on live rows; the other content fields are physically nullable solely for retirement. A named live-row check requires every mandatory field when `retired_at IS NULL`, including price and negotiability. Retired rows clear content/category/price/condition/selection/proof and are unavailable. FKs owner/selected buyer/selected conversation/category/condition; buyer and conversation are both set or both clear, and selected buyer differs from owner. Availability available/unavailable; end follows start. Pending operation ID and cutoff are paired so Listings can retry the exact Conversations request after a process restart. Public reads and commands hide pending rows; the owner's management list keeps retained pending listings visible. Stored generated English vector; indexes below. The selected conversation is populated only after validation through Conversations' public participant-check operation. |
+| `listings.sale_listings` / `id uuid` | `owner_id uuid`, `title text?`, `description text?`, `category_id uuid?`, `condition_code text?`, `asking_price_paise money?`, `original_price_paise money?`, `negotiable boolean?`, `pickup_area text?`, `available_from instant`, `available_until instant?`, `availability text`, `proof_available boolean?`, `selected_buyer_id uuid?`, `selected_conversation_id uuid?`, `created_at instant`, `updated_at instant`, `retirement_eligible_since instant?`, `retirement_pending_operation_id uuid?`, `retirement_pending_cutoff_utc instant?`, `retired_at instant?`, `search_vector tsvector`, `revision bigint` | Asking and Original prices are bounded by ₹1 crore in whole rupees. Original price is optional, seller-provided, positive when present, and not verified by CLIP. Pickup area is optional on live rows; the other content fields are physically nullable solely for retirement. A named live-row check requires every mandatory field when `retired_at IS NULL`, including asking price and negotiability. Retired rows clear content/category/prices/condition/selection/proof and are unavailable. FKs owner/selected buyer/selected conversation/category/condition; buyer and conversation are both set or both clear, and selected buyer differs from owner. Availability available/unavailable; end follows start. Pending operation ID and cutoff are paired so Listings can retry the exact Conversations request after a process restart. Public reads and commands hide pending rows; the owner's management list keeps retained pending listings visible. Stored generated English vector; indexes below. The selected conversation is populated only after validation through Conversations' public participant-check operation. |
 | `listings.owner_command_results` / `(listing_id, command_kind, operation_id)` | `listing_id uuid` FK sale listings; `command_kind text` (availability/selection); `operation_id uuid`; `request_payload jsonb`; `result_payload jsonb`; `created_at instant` | Listings saves the validated request and original response atomically with seller availability/selection changes. Same key and request replays the saved response; changed request with the same key conflicts. An after-retirement trigger deletes these saved results in the retirement transaction. |
 | `listings.create_command_results` / `(owner_id, operation_id)` | `owner_id uuid` FK user; `operation_id uuid`; `listing_id uuid` unique FK sale listing; nullable `request_payload jsonb`; nullable `result_payload jsonb` | Listings stores the validated create request and original `ListingDetail` atomically with listing/image publication. Retirement clears both content-bearing payloads but keeps owner, operation and listing IDs. A later retry sees the retained key and must safely conflict without revealing old content or creating a second listing. This post-retirement API behavior awaits affected-owner review. |
 | `listings.image_uploads` / `id uuid` | `owner_id uuid`, `object_key text`, `state text`, `created_at instant`, `expires_at instant`, `confirmed_at instant?`, `failure_code text?`, `confirmed_media_type text?`, `confirmed_size_bytes bigint?`, `cleanup_retry_after instant?` | FK owner, unique controlled object key; pending/confirmed/failed/expired states. Original unattached deadline is creation +24 hours; state/timestamp checks. Actual media type and size are nullable until LI-02 verifies the object, must be set or clear together, and are limited to JPEG/PNG/WebP and 1–10 MiB. Safe failure code only, no provider text. `cleanup_retry_after` delays only an object whose S3 deletion failed or had an unknown outcome. Index owner/state, state/expiry and expiry/ID with retry time for lookup and bounded cleanup. |
 | `listings.images` / `id uuid` | `listing_id uuid`, `upload_id uuid`, `object_key text`, `position integer`, `media_type text`, `size_bytes bigint`, `created_at instant`, `retired_at instant?`, `cleanup_retry_after instant?` | FKs listing and confirmed upload; upload ID and object key unique; nonnegative position, size 1–10 MiB and approved media types. Unique live `(listing_id, position)`; 1–8 usable images for a live listing. Upload/listing owner and object-key agreement require reviewed cross-row checks. Retired image rows are cleanup metadata until actual object deletion/absence is confirmed, then removed with their intent. The cleanup due index orders retired images by retirement time and ID and carries the retry timestamp. |
 
-Mohit confirmed that the seller must supply an asking-price value. The mandatory live-row constraint enforces non-null `asking_price_paise` even when separate `negotiable` is true. Physical nullability only permits trusted content retirement; it does not permit a missing price on create/edit/live rows. Zero remains a valid asking price.
+Mohit confirmed that the seller must supply an asking-price value. The mandatory live-row constraint enforces non-null `asking_price_paise` even when separate `negotiable` is true. Physical nullability only permits trusted content retirement; it does not permit a missing price on create/edit/live rows. Zero remains a valid asking price. Suraj directed NEXT-03 to include optional seller-stated Original price for buyers; it is stored and shown without a computed discount or verification claim.
 
 ### Initial catalogue and field limits — Mohit-approved
 
@@ -118,22 +118,32 @@ The initial Step 2 catalogue was seeded by `20261018094332_initial_catalogue.sql
 
 | Category code | Display label | Sensitive-category flag |
 |---|---|---|
-| `mobile_phone` | Mobile phones | true (FR-17) |
+| `mobile_phone` | Mobile Phones | true (FR-17) |
 | `laptop` | Laptops | true (FR-17) |
 | `electronics` | Electronics | false |
 | `furniture` | Furniture | false |
-| `books` | Books and study materials | false |
+| `books` | Books and Study Materials | false |
 | `bicycles` | Bicycles | false |
-| `appliances` | Home appliances | false |
-| `sports_fitness` | Sports & fitness | false |
+| `appliances` | Home Appliances | false |
+| `sports_fitness` | Sports & Fitness | false |
 | `other` | Other | false |
 
-The mobile-phone/laptop branches must remain explicit for FR-17. A false category flag does not exempt a listing from the independent price-threshold rule. Category assignment is a seller declaration; no platform verification is implied.
+The catalogue labels use title case after NEXT-03 Step 2; migration
+`20261028100100_marketplace_title_case_labels.sql` changes display text only.
+`20261028100200_wanted_discovery_text_search.sql` adds an indexed English
+full-text expression over Wanted Request titles and descriptions; it changes no
+request data or visibility rules.
+`20261028120000_sale_original_price_and_marketplace_amount_cap.sql` adds
+seller-stated Original price and the shared ₹1 crore marketplace amount cap.
+The mobile-phone/laptop branches must remain explicit for FR-17. A false
+category flag does not exempt a listing from the independent price-threshold
+rule. Category assignment is a seller declaration; no platform verification is
+implied.
 
 | Condition code | Display label | Seller declaration |
 |---|---|---|
-| `new` | New / unused | Seller declares the item unused. |
-| `like_new` | Like new | Seller declares prior use with minimal visible wear. |
+| `new` | New / Unused | Seller declares the item unused. |
+| `like_new` | Like New | Seller declares prior use with minimal visible wear. |
 | `good` | Good | Seller declares normal signs of use. |
 | `fair` | Fair | Seller declares substantial visible wear. |
 
@@ -148,7 +158,7 @@ These are seller-declared condition labels, not a platform quality or functional
 | Each accepted image | At most 10 MiB (10,485,760 bytes), positive size | LI-02 actual-object validation plus metadata check |
 | Accepted image media | JPEG (`image/jpeg`), PNG (`image/png`), WebP (`image/webp`) | LI-02 validates actual content, not filename/client MIME alone |
 
-Count limits apply to final retained usable references, including concurrent additions/removals; pending-upload quotas need a separate LI-02 review. API validation must match database bounds and preserve internal whitespace. Unicode code-point length differs from rendered glyph/grapheme count; do not impose byte-count limits on text under these names. The final migration must select a consistent outer-whitespace normalization rule; PostgreSQL's default trim behavior alone is not a full Unicode whitespace validator. No ciphertext/plaintext-note limits, image decoding/dimension policy, money cap or sensitive-price threshold is selected by this proposal.
+Count limits apply to final retained usable references, including concurrent additions/removals; pending-upload quotas need a separate LI-02 review. API validation must match database bounds and preserve internal whitespace. Unicode code-point length differs from rendered glyph/grapheme count; do not impose byte-count limits on text under these names. The final migration must select a consistent outer-whitespace normalization rule; PostgreSQL's default trim behavior alone is not a full Unicode whitespace validator. No ciphertext/plaintext-note limits, image decoding/dimension policy or sensitive-price threshold is selected by this proposal.
 
 Mohit's decision is recorded in the [catalogue decision](../decisions/catalogue-and-listing-limits.md). B/C affected-owner schema review remains pending. Seed data and exact length/count/type constraints belong to the reviewed migration step; no implementation or runtime acceptance is claimed here.
 

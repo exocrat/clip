@@ -85,6 +85,7 @@ def test_replacement_requires_an_explicit_nullable_proof_declaration():
         category_code=request.category_code,
         condition_code=request.condition_code,
         asking_price_paise=0,
+        original_price_paise=None,
         negotiable=False,
         pickup_area=None,
         available_from=request.available_from,

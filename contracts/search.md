@@ -68,16 +68,18 @@ rule. Catalogue values come through the Listings public catalogue operation.
 | Query field | Meaning and validation |
 |---|---|
 | `q` | Optional trimmed plain-text query, at most 120 Unicode code points. Omitted or whitespace-only means browse without text matching. Keyword retains original English full-text matches and adds bounded reviewed vocabulary/typo matches. Zero-lexeme Keyword queries return no rows; Hybrid may add semantic matches. Raw tsquery syntax is not accepted. |
-| `category_code` | Optional active Listings category code; kind of item, not the Sale Listings/Wanted Requests view. Unknown/inactive codes return `422 validation_error`. |
+| `category_code` | Zero or more active Listings category codes using repeated query values, for example `category_code=appliances&category_code=bicycles`. Values match with OR; omission means all categories. One legacy single value remains valid. Unknown/inactive values return `422 validation_error`. |
 | `min_price_paise`, `max_price_paise` | Optional inclusive nonnegative integer paise values, each a multiple of 100. If both are supplied, minimum must not exceed maximum. |
-| `condition_code` | Optional active condition code (`new`, `like_new`, `good`, `fair`). Unknown/inactive values return `422 validation_error`. |
+| `condition_code` | Zero or more active condition codes (`new`, `like_new`, `good`, `fair`) using repeated query values. Values match with OR; omission means any condition. One legacy single value remains valid. Unknown/inactive values return `422 validation_error`. |
 | `negotiable` | Optional boolean; true and false are distinct filters. |
 | `search_mode` | `keyword` (default) or `hybrid`. Blank text browses in either mode without semantic dependencies. Nonblank Hybrid requires explicitly configured capability and complete eligible coverage, otherwise503; no silent fallback. |
 | `sort` | `created_desc` (default), `price_asc`, `price_desc`, or `relevance`. Relevance requires nonblank text in either mode; otherwise422. |
 | `page`, `page_size` | Shared numbered pagination: page defaults to 1; size defaults to 20 and may be 20, 50, or 100. |
 
 Apply current availability/window, authorization, text and supplied filters
-before pagination. Sale results exclude retired listings, seller-unavailable
+before pagination. Category choices match with OR; condition choices match
+with OR; category, condition, text, price, and negotiability filters combine
+with AND. Empty category or condition selections add no restriction. Sale results exclude retired listings, seller-unavailable
 listings, future listings, and listings whose end instant has arrived. Include
 the Listings-owned public listing summary and the shared page envelope
 `{items, page, page_size, has_next}`. Order `created_desc` by
@@ -88,6 +90,15 @@ tie-breaker. Relevance follows the mode-specific ordering in the [mode specifica
 changes may move rows between page requests, as accepted by the shared page
 decision. Empty `q` is treated as absent only after trimming, as explicitly
 defined above.
+
+The browser's Sale Discovery UI does not expose `negotiable` as a filter. The
+API field remains available for compatibility and possible future callers;
+legacy website links containing it are accepted but the value is ignored and
+is not sent with the request. Sale cards and detail pages continue to display
+the listing's negotiability state. In the browser, `sort=relevance` is labeled
+**Best Match**, is the default for nonblank searches, and remains selectable;
+empty browsing defaults to newest-first. The public API spelling remains
+`relevance` for compatibility.
 
 The detail response and public fields are owned by the Listings contract. They
 must not include owner IDs, private contacts, selected-buyer state, upload
@@ -116,10 +127,21 @@ The discovery toggle composes open Wanted Requests separately from sale
 listings. `GET /wanted-requests` and `GET /wanted-requests/{request_id}` return
 only open, non-retired requests to eligible authenticated regular or temporary
 callers. This is public within the signed-in marketplace; anonymous access is
-not selected. Browse is ordered `created_at DESC, request_id DESC`, paginated
-with the shared page envelope and sizes, and does not accept sale-listing price,
-condition, or negotiability filters. A request's category is a displayed item
-category, not a view discriminator.
+not selected. Browse accepts optional `q` text over title and description,
+repeated `category_code` values, optional `min_budget_paise` and
+`max_budget_paise` bounds, and the shared `page`/`page_size` fields. Search uses
+an optional trimmed query of at most 120 Unicode code points; whitespace-only
+text means no text filter. English-normalized keyword matching requires all
+query terms across the combined title and description. Repeated category codes
+are deduplicated and validated against Listings' active public catalogue.
+Selected categories match with OR; text, category, and budget filters combine
+with AND. Budget bounds are nonnegative whole-rupee paise, inclusive; if either
+is set, requests with no stated budget are excluded. The minimum must not
+exceed the maximum. Filters are applied before numbered pagination. Requests
+remain ordered `created_at DESC, request_id DESC`, paginated with the shared
+page envelope and sizes. Browse does not accept sale-listing price, condition,
+or negotiability filters. A request's category is a displayed item category,
+not a view discriminator.
 
 The owner-reviewed public response contains only `request_id`, `title`,
 `description`, category code and

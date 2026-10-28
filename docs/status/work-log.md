@@ -27,7 +27,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | NEXT-00 | Suraj — requested planning coordinator | done | Planning output verified; NEXT-01 Step 1 authorized. | performed; planning only | verified by Suraj | `task/integrated-marketplace-rollout`, based on main `5e8d264`; [remaining-work plan](../tasks/remaining-project-plan.md), linked from project task index | No blocker for the accepted planning output; implementation and measured-run gates remain separate. | 2026-10-27 18:42:09 UTC |
 | NEXT-01 | Suraj — requested planning coordinator; C retains EXP-01 ownership | done | Design and task-wide review verified; NEXT-02 is next. | Steps 1–9 performed | Steps 1–9 verified | Planning baseline `c869f33`; [design and approved gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md#next-01-step-8--proposed-changes-to-measurement-gates); [NEXT-07 references](../tasks/remaining-project-plan.md#experiment-protocol-reference) | No blocker for the design handoff. Real implementations, data, tools, cost anchors, project AWS identity/spend and run approvals remain NEXT-07 prerequisites. | 2026-10-28 06:24:24 UTC |
 | NEXT-02 | Suraj — planning coordinator | done | Evaluation and documentation cleanup completed; test/fixture and app/infrastructure audits found no safe deletions. | Cleanup review and checks complete; its changes are included in the current commit. NEXT-02 itself changed no executable test or application code. | User accepted the cleanup and directed committing the combined changes on 2026-10-28. | `task/integrated-marketplace-rollout`; [NEXT-02 cleanup criteria](../tasks/remaining-project-plan.md); [command index](../environment/commands.md) | No cleanup blocker; documentation references and `git diff --check` passed. No tests/app checks, AWS actions, or paid runs for NEXT-02. | 2026-10-28 09:26:47 UTC |
-| NEXT-03 | Suraj — planning coordinator | in progress | Step 1 (catalogue mapping and dataset alignment) is complete. NEXT-02 is closed. Next: explain the multi-selection behavior for Step 2 and wait for verification. | Step 1 performed; catalogue migration, contract/schema notes, dataset recipe, preview fixtures and migration checks updated. Disposable PostgreSQL migration check, Python syntax check and `git diff --check` passed. No shared/cloud database apply. | Step 1 verified by Suraj on 2026-10-28. | `task/integrated-marketplace-rollout` at `f36ce3d`; [catalogue decision](../decisions/catalogue-and-listing-limits.md), [dataset recipe](../../data/evaluation/reference-dataset-design.md), migration `20261028090000_marketplace_category_catalogue.sql` | User deferred the full Python test suite until the end of NEXT-03; run it then, installing the documented pinned tools if needed. The pinned 17-migration Identity review package remains intentionally unchanged and requires separate refresh/review before its live migration gate. | 2026-10-28 09:26:47 UTC |
+| NEXT-03 | Suraj — planning coordinator | in progress | Steps 7–9 are implemented and scope-verified. Step 10 Part 1: commit, run the full local checks, fix failures, then report the Part 2 app-action inventory. | Steps 1–6 human-verified; Steps 7–9 focused checks passed (186 web tests across 16 files, TypeScript, contracts, formatting, and disposable PostgreSQL migration/store checks). No visual walkthrough or final synthetic dataset yet. | Suraj verified Steps 1–6 and verified the combined Steps 7–9 scopes on 2026-10-28. | `task/integrated-marketplace-rollout` at `1fc8936`; [NEXT-03 plan](../tasks/remaining-project-plan.md#next-03--marketplace-behavior-and-everyday-controls), [catalogue decision](../decisions/catalogue-and-listing-limits.md), [dataset recipe](../../data/evaluation/reference-dataset-design.md) | Full project aggregate is pending Part 1. No shared/cloud database apply. Pinned Node 24.22.0/npm 11.19.1 and uv 0.10.7 and locked dependencies are installed locally. Disposable PostgreSQL checks use only the repository-owned local container. The pinned 17-migration Identity review package remains unchanged and requires separate owner review before its live migration gate. | 2026-10-28 13:02:32 UTC |
 | BOOT-00 | B / Suraj (initial contributor) | done | Local documentation seed verified; publication pushed and verified | performed | verified | Current `origin/main` verified at `cfbf9352c03302990e6ffda09521f0a5450572d7`; includes seed `7fb9bfed79b45614a17de1bf2f9c50dbb3981b3f` and publication record | None | 2026-10-15 07:18 UTC |
 | PD-00 | Kickoff owner — Suraj (B) | done | Steps 1–6 complete; task-wide closeout reviewed | performed | verified | `task/pre-domain-foundation` at base `cfbf9352c03302990e6ffda09521f0a5450572d7`; work-log task table, initial inventory, Document 4 comparison, and `git diff --check` | None | 2026-10-16 07:02 UTC |
 | PD-01 | Kickoff owner — Suraj (B) | done | Steps 1–8 and task-wide acceptance review complete; published handoff confirmed | performed | verified | `docs/architecture/foundation-traceability.md`; handoff `d29c02b` is in remote `main` at `4754e97fdaf4284e84062a926eb1864fab745036`, confirmed by `git ls-remote` | None | 2026-10-17 06:26:36 UTC |
@@ -255,6 +255,123 @@ documented pinned tools then if they are still unavailable. No shared/cloud
 database apply occurred. Identity's reviewed 17-migration package remains frozen
 and needs a separate owner review before its live migration gate. NEXT-02 cleanup
 is accepted and closed; NEXT-03 Step 2 is next.
+
+On 2026-10-28, Suraj verified Step 2's multi-select behavior: category and
+condition values are independent choices, with OR within each filter and no
+condition hierarchy. The plan now includes multi-select origin and partner
+filters in the Conversations inbox while retaining single-choice controls where
+the existing “all” choice covers the union or a record stores one value. Suraj
+also added public Wanted Request search/discovery and a Step 9 human visual
+checklist with synthetic sample data as a fallback. The detailed outputs and
+acceptance conditions are in the [NEXT-03 plan](../tasks/remaining-project-plan.md#next-03--marketplace-behavior-and-everyday-controls).
+Step 2 implementation uses repeated query parameters for sale category and
+condition, and for conversation origin and partner IDs. UI filters apply as one
+draft in the inbox; Sale Discovery keeps applied filters in browser history and
+resets pagination when filter changes are submitted. SQL uses independent
+`ANY` predicates, and the HTTP test preview handles repeated query values. The
+single-choice catalogue assignments, conversation view/type/status/sort,
+negotiability, and page size remain as specified in the plan. Relevant tests
+were updated but not run. Source contracts are updated; generated contracts and
+the final verification remain pending until pinned tools are installed at the
+end of NEXT-03. No shared/cloud database apply occurred.
+
+Suraj verified the Step 2 implementation on 2026-10-28 and clarified the
+negotiability requirement: remove it from the search filter in Step 3 while
+keeping the state visible on discovery cards and detail pages. The current card
+shows the state inline beside condition; the approved task text does not yet
+specify a dedicated badge style. Step 2's generated contract files and tests
+remain deferred to NEXT-03 final verification. Step 3 is the next review gate;
+no Step 3 changes have started.
+
+Suraj clarified that the website must not let users filter listings by
+negotiability, while the API field may remain for compatibility/future use.
+They asked whether a short card marker would improve visibility. Step 3's plan
+now records retaining the API field and considering a visible badge; I
+recommended the full word “Negotiable” rather than an unexplained “N”. The
+specific card treatment and complete Step 3 scope await Suraj's verification.
+
+Suraj verified Step 3 on 2026-10-28, keeping the negotiability filter out of
+the website while retaining the API field, and chose readable status badges.
+The Search UI now defaults text searches to the existing Hybrid relevance
+ordering, hides relevance as a selectable sort, preserves explicit newest/price
+choices, and defaults empty browsing to newest-first. Listing cards display a
+full-word “Negotiable” or “Fixed price” badge; the detail page retains its
+existing status. Legacy website negotiability query values are ignored and
+omitted from API calls. An explicit sort remains while filters refine the same
+search; editing its query text resets to automatic match ordering. Relevant
+tests were updated but not run; `git diff --check` passed. Generated Step 2
+contracts and final verification remain pending. No database migration was
+applied.
+
+Suraj then verified that **Best Match** should remain a selectable sort, not
+only the automatic state, so users can restore it after choosing Newest or a
+price order. The sort control now uses that title-cased label for the existing
+`relevance` API sort; text searches default to it, and empty browsing stays
+newest-first. The exact label and behavior are recorded in the task plan and
+Search contract.
+
+Suraj verified the Step 3 implementation on 2026-10-28, including the selectable
+**Best Match** sort. Step 4 is next. Its existing photo picker keeps preview
+object URLs private to Listings, and Search's sale card is not a public Search
+entry point; the Step 4 plan must settle a public preview composition/data
+boundary before implementation.
+
+For Step 4, Suraj requires the browse card and draft preview to share one
+Search-owned renderer so later browse-card presentation changes automatically
+appear in the preview. The plan now specifies that shared renderer and a public
+feature entry point with draft/photo data passed through route composition,
+without duplicate card markup/styles or a direct private Listings-to-Search
+dependency. Suraj verified Step 4 on 2026-10-28. The create form now exposes a
+non-publishing draft preview through the route's public Search entry point;
+browse and preview share the same sale-card renderer, and the first local photo
+preview follows the selected image order. Photo counts and upload/failure
+statuses use plain wording in create/edit flows. The relevant preview test was
+updated but not run under NEXT-03's deferred-test rule; `git diff --check`
+passed. Step 5 is next: review the existing Wanted Request title-only matching
+flow and its failure/submission behavior; the reviewed panel is already
+implemented and currently reachable under My Listings → Wanted Requests →
+Create wanted request. Suraj verified the review and asked that Step 9 provide
+local synthetic data or exact instructions that produce known positive sale
+listing matches as well as no-match/failure checks. The plan now requires this
+data and setup guidance. Step 6 is next. Generated Step 2 contracts and final
+verification remain pending. No shared/cloud database apply occurred.
+
+On 2026-10-28, Suraj verified the Step 6 Wanted Request discovery implementation
+and asked for programmatic evidence before proceeding. The environment has no
+pinned Node/npm or uv/pytest executables, Python's pytest module is absent, and
+the Docker daemon socket denies access, so the focused web/API/PostgreSQL tests
+could not run here. `python3 -m py_compile` passed for the changed Wanted API,
+contract and database-test modules; `git diff --check` passed. Behavioral test
+results and generated contracts remain pending for NEXT-03's pinned-tool final
+verification. Suraj also directed that an optional cost/original-price field be
+added before the previous Step 9 walkthrough. The plan now inserts this as Step
+9 and moves the comprehensive local checklist to Step 10. Existing Listings
+currently require an asking price and define no separate reference/purchase
+price field in the UI/schema; the new step first resolves whether the optional
+field means public original retail/reference price or seller purchase cost, and
+where the approved value appears. No field implementation or database change
+has started.
+
+After Suraj authorized installation, the existing pinned Node 24.22.0/npm
+11.19.1 and uv 0.10.7 toolchain was found outside PATH and used; `npm ci` and
+`uv sync --locked` installed project dependencies locally. The focused web
+Wanted discovery query/API tests passed (55 tests). The first disposable
+PostgreSQL run found five related Search failures because the generated runtime
+ListingQuery still represented category/condition as nullable scalars; the
+validator received `None` where the new multi-select contract expects lists.
+Regenerating the eight registered outputs from canonical contract sources
+resolved those failures. The rerun of
+`uv run --locked python scripts/check_database.py --listings-store` passed its
+full disposable migration/reapply and Listings/Search adapter workflow: 22
+passed, 3 skipped, including `test_wanted_discovery_postgres.py`. Contract
+freshness passed for all eight outputs, and pinned Black reported all ten
+relevant Python files unchanged after formatting. The database runner now
+includes the new Wanted discovery SQL test. Suraj clarified the added price
+field: seller-entered, buyer-visible, not necessarily MRP; the plan names it
+**Original price**, treats it as seller-provided, and leaves exact display
+locations to Step 9. No listing field or migration had been implemented at that planning point.
+
+On 2026-10-28, Suraj verified the Steps 7–9 scopes together. Step 7 now shows Unicode-aware title/description/pickup-area counters and consistent input validation, and sets an inclusive ₹1,00,00,000 cap for listing prices, Original price, Wanted budgets, and their filters. Step 8 adds a top-level **New Wanted Request** link in discovery and the header that opens the existing form directly; the Conversations inbox still groups by origin, and its seller-only Mark as done deal action follows the approved availability command. Step 9 adds optional, positive, seller-provided Original price across create/edit, API/contracts/storage, public cards, detail, My Listings, and the shared preview. Blank stays absent; no discount is inferred. Forward migration `20261028120000_sale_original_price_and_marketplace_amount_cap.sql` is authored but has not been applied to any shared/cloud database. Focused web checks passed (186 tests across 16 files), TypeScript checks passed, all eight generated contract artifacts are current, and the disposable PostgreSQL Listings/Search workflow passed (22 passed, 3 skipped) with migration clean/head/repeat, seven SQL smokes, rollback, and reapply checks. Targeted Conversations inbox/done-deal checks also passed (25 tests across four files). Step 10's three-part order was directed by Suraj on 2026-10-28: Part 1 commits this work, runs the full local quality/test aggregate, fixes failures, and reports the Part 2 action inventory; Part 2 performs the isolated programmatic action sweep and prepares the visual checklist; Part 3 creates the final data for the user's visual inspection. Notifications are excluded. No Part 2 actions or Part 3 data are to be run during Part 1. The pinned 17-migration Identity review package remains unchanged.
 
 DEC-12's approximate PD-16 run cost is not an invoice or final NFR-08 result;
 CLOSE-00 still reconciles total project spend against the strict USD 200 limit.

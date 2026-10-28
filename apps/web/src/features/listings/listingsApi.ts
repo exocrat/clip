@@ -43,7 +43,7 @@ export class ListingsApiError extends Error {
       403: 'This account is not allowed to perform this action.',
       404: 'This listing is missing or is not available to this account.',
       409: 'The listing or request has changed. Reload its current state before continuing.',
-      422: 'Some details were rejected. Check the fields, dates and confirmed images.',
+      422: 'Use a title up to 120 characters, description up to 5,000, and pickup area up to 120; enter whole-rupee prices up to ₹1,00,00,000 and check dates and photos.',
       503: 'A required service is unavailable. Your form has been kept; try again later.',
     };
     super(code === 'demo_listing_limit_reached'

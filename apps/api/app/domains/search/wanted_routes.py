@@ -33,6 +33,7 @@ from app.domains.search.wanted_response import WantedResponseService
 from app.domains.search.wanted_models import (
     WantedCreate,
     DraftTitle,
+    WantedDiscoveryPage,
     WantedPage,
     WantedPatch,
     WantedState,
@@ -86,6 +87,7 @@ def wanted_service(request: Request) -> WantedService:
 Caller = Annotated[CallerContext, Depends(require_caller)]
 Service = Annotated[WantedService, Depends(wanted_service)]
 Paging = Annotated[WantedPage, Query()]
+DiscoveryPaging = Annotated[WantedDiscoveryPage, Query()]
 
 
 def draft_match_service(request: Request) -> DraftMatchService:
@@ -120,7 +122,7 @@ async def match_draft(
     summary="search_list_open_wanted_requests",
     responses=_ERRORS,
 )
-async def list_open(caller: Caller, service: Service, query: Paging) -> Any:
+async def list_open(caller: Caller, service: Service, query: DiscoveryPaging) -> Any:
     """List only current open non-pending requests, without author identity."""
     return await service.listing(caller, query)
 

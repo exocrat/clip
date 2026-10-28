@@ -230,48 +230,138 @@ Implement related increments with automated checks before each human walkthrough
    generated contracts and affected fixtures deliberately. After the final
    taxonomy is agreed, review and update the dataset recipe's category counts,
    item mappings and search cases before NEXT-06 generates or labels data.
-2. Define and implement multi-selection where requested: multiple categories
-   (e.g. appliances or bicycles) and conditions (e.g. Like New or better).
-   Specify OR within one filter and combination across different filters,
-   empty/all behavior, URL/API encoding, pagination and condition ordering.
-   Do not invent a condition order without confirming its meaning. Normalize
-   visible labels to proper title case, including **Like New**.
-3. Remove the negotiability search filter; continue showing negotiability on
-   discovery cards before the user opens full detail and on the detail page.
-   Remove the visible **Sort by Relevance** control while retaining the correct
-   default ranking; review any remaining sort choices rather than silently
-   deleting unrelated sorting capabilities. Use Hybrid for the product search.
-   For a nonblank search, make the default ordering put direct word matches
-   first, expanded/typo matches next, and other meaning-based matches after
-   them, ordered by the existing score within each group. The reader already
-   supports this relevance ordering, but the website currently defaults to
-   newest first. Preserve normal browsing and deliberate price/recency choices;
-   assess existing links and API compatibility before changing legacy mode
-   handling. Verify ordering with representative results across pages.
+2. Define and implement multi-selection for the Sale Listing discovery category
+   and condition filters and the Conversations inbox origin and partner filters.
+   A user may select any values; selections match with OR within one filter,
+   while different filters combine with AND. An empty selection means no
+   restriction. Preserve existing single-value URLs/API callers, encode multiple
+   values consistently, and reset to page 1 when applied filters change. Keep
+   participation (all / I started it / my origin), origin type (all / sale /
+   wanted), offer status, sort, and page size as single-choice controls: each
+   picks one mutually exclusive mode or ordering. Negotiability stays one of
+   any / negotiable / fixed-price because a listing has one boolean value.
+   Keep listing creation/edit category and condition, Wanted Request category,
+   proof availability, and My Listings availability view single-choice because
+   each assigns or selects one record value/view. There is no condition rank or
+   “better than” rule. Normalize visible catalogue labels to title case,
+   including **Like New**.
+3. Remove the negotiability filter from the website's search controls and its
+   draft/URL state so users cannot filter by it. Keep the public API query field
+   for compatibility and possible future use unless a separate contract change
+   is reviewed. Continue showing negotiability on discovery cards before the
+   user opens full detail and on the detail page. Put a clear text badge reading
+   **Negotiable** or **Fixed price** on the card; do not abbreviate the state to
+   an unexplained letter.
+   Replace the visible **Relevance** sort label with **Best Match**, while
+   retaining deliberate newest/price choices. Best Match is the default for a
+   nonblank search and can be selected again after another sort; empty browsing
+   defaults to newest-first. Use Hybrid for the product search. Put direct word
+   matches first, expanded/typo matches next, and other meaning-based matches
+   after them, ordered by the existing score within each group. Retain a chosen
+   sort while applying filters to the same search, but return to Best Match
+   when the search text changes. Assess existing links and API compatibility
+   before changing legacy mode handling. Verify ordering with representative
+   results across pages.
 4. Replace technical image wording such as **1 out of 8 confirmed** with plain
    photo-count/status text that still explains failures or in-progress uploads.
-   Add a pre-publication sale-listing preview using the normal discovery-card
-   presentation and current draft/photos, without publishing it.
+   Add a pre-publication sale-listing preview using the current draft/photos,
+   without publishing it. The browse card and draft preview must share one
+   Search-owned card renderer so future browse-card presentation changes also
+   appear automatically in the preview; do not duplicate its markup or styles.
+   Expose the preview through a reviewed public feature entry point and pass
+   draft fields and local photo preview data through the route composition,
+   without a direct Listings-to-Search private-module dependency.
 5. Verify/complete Wanted Request draft matching: show existing sale listings
    matching the request while it is composed, without saving the draft merely
    to search. Reuse the real search path and existing implementation. Confirm
    the intended interaction before implementation because the user's original
    sentence about the preview was unfinished. Search failure must not erase
    the draft or unnecessarily prevent a valid request from being submitted.
-6. Check title/description and other length/field limits for both sale listings
+6. Implement public Wanted Request search and discovery in the Discovery view.
+   Search open requests by title and description with English-normalized
+   keyword matching (all query terms must occur across the combined title and
+   description); add multi-choice category filtering and optional whole-rupee
+   minimum/maximum budget filters. Budget bounds are inclusive. Text, each
+   budget bound, and category filtering combine with AND; selected categories
+   match with OR. A budget bound excludes requests with no stated budget.
+   Accept `q`, repeated `category_code`, `min_budget_paise`,
+   `max_budget_paise`, `page`, and `page_size`; use shared page sizes 20, 50,
+   and 100. Preserve open/non-retired visibility, privacy-safe public
+   responses, URL/history state, and numbered pagination with stable
+   newest-first ordering; changed filters reset to page 1.
+   Condition and negotiability filters do not apply to Wanted Requests. Keep
+   Wanted Request creation/edit category assignment single-choice. Align the
+   controls with the existing Discovery experience. Keep Wanted and sale filter
+   state separate in the shared Discovery URL and translate Wanted's route keys
+   to the unprefixed endpoint fields.
+7. Check title/description and other length/field limits for both sale listings
    and wanted requests against the PRD, approved contracts and server rules.
    Align UI validation, counters and server errors; test boundary, empty,
-   whitespace and relevant Unicode cases. Do not invent new numerical limits.
-7. Fix essential buying/selling navigation: make creating a Wanted Request
-   reachable from the relevant buying/discovery context, rather than only My
-   Listings. Check meaningful header/tab/link names and destinations. Verify
+   whitespace and relevant Unicode cases. Keep the approved title, description,
+   and pickup-area limits. Where price/budget ceilings were not yet defined,
+   use a reasonable, shared limit across forms, filters, API validation and
+   storage; NEXT-03 selects ₹1,00,00,000 inclusive.
+8. Fix essential buying/selling navigation: provide a top-level **New Wanted
+   Request** action from discovery, parallel to **New listing**, opening the
+   existing creation form directly. Check meaningful header/tab/link names and
+   destinations. Verify
    Conversations grouping and Close deal against approved CN rules; NEXT-04
    audits the resulting integration and cloud behavior. Implement any known
    gaps through the owning feature. Leave the broader aesthetic refresh to
    NEXT-09.
-8. Verify changes locally. Finish schema/ranking/filter changes before freezing
-   data and measurement settings; a later behavior change triggers an evidence-
-   impact review. Cloud verification belongs to NEXT-04 after these changes.
+9. Define and implement an optional **Original price** field for Sale Listings.
+   The seller chooses what value to enter; show it to buyers as a seller-provided
+   statement, without describing it as verified or requiring that it be MRP.
+   Keep it distinct from the required asking price and negotiability. Show the
+   seller-provided/unverified amount on public sale cards, listing details, My
+   Listings, and the shared draft preview, omitting the row when blank. Then
+   trace and update the create/edit forms,
+   validation, API and persistence contracts/schema as needed, plus listing
+   details and other approved surfaces such as browse cards, My Listings and the
+   shared draft preview. Add focused coverage for omitted/present values and
+   create/edit/read behavior. Any schema change is forward-only in this task;
+   do not apply it to a shared or cloud database. Do not infer discount
+   calculations.
+10. Complete final verification and user inspection in three separate parts.
+   **Part 1 — tests and action inventory:** Commit the verified Steps 1–9 work,
+   run the repository's full local quality/test aggregate with pinned tools, and
+   fix failures. Then report the complete inventory of app actions proposed for
+   Part 2, with expected outcomes and any unavailable real dependencies. Do not
+   execute the action sweep, prepare the visual checklist, or generate its data
+   during Part 1.
+
+   **Part 2 — programmatic action sweep and visual checklist:** Exercise every
+   implemented user action that can be checked locally, using the actual app
+   routes and APIs with isolated synthetic identities and temporary records.
+   Include identity/session transitions; listing create/edit, image progress and
+   failure/retry, availability and buyer selection; sale search/discovery,
+   filters/sorts/pagination and saved listings; Wanted Request create/edit,
+   availability, draft matching, public search/filters/history/pagination; and
+   Conversations start, inbox filters/grouping, messages, offers, contact
+   sharing, seller buyer-selection, and Mark as done deal. Exclude notifications.
+   Check an exact-term bicycle search and a meaning-related query such as
+   “wheeled vehicle” where the configured search path supports it; also cover
+   no-match and safe failure outcomes. Do not treat unavailable real provider
+   integrations as passing via an unreviewed substitute; record those limits.
+   After the action sweep, prepare the full step-by-step desktop/phone visual
+   checklist with exact local start/access/stop instructions. Do not generate
+   the final inspection dataset during Part 2.
+
+   **Part 3 — visual inspection data:** Create safe synthetic data that makes
+   every checklist item reachable, including known positive and negative Wanted
+   draft matches. Cover Original price present/omitted across all approved
+   display surfaces; changed catalogue labels and single-choice assignment;
+   multiple and cleared multi-choice filters; Best Match/Newest/price sorting;
+   negotiability badges; photo upload progress/failure/retry/remove; shared
+   draft preview; Wanted discovery and creation navigation; and Conversations
+   buyer/seller context. Provide exact setup and cleanup instructions, then ask
+   the user to perform the desktop/phone visual inspection.
+   Run the agreed full local verification package, including relevant tests and
+   migration checks, at the end of NEXT-03; do not run tests during earlier
+   NEXT-03 steps unless an identified issue materially benefits from one.
+   Finish schema/ranking/filter changes before freezing data and measurement
+   settings; later behavior changes trigger an evidence-impact review. Cloud
+   verification belongs to NEXT-04 after these changes.
 
 ## NEXT-04 — Completion audit and integrated HTTPS cloud app
 

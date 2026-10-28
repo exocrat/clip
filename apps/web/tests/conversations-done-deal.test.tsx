@@ -73,12 +73,12 @@ describe('seller done-deal availability', () => {
   it('renders one action per seller listing group and none for buyer or Wanted groups', () => {
     const item: ConversationInboxItem = { conversation_id: 'one', label: 'Test chat', role: 'seller',
       origin_kind: 'sale_listing', origin_id: listingId, unread_count: 0, last_activity_at: '2026-01-01T00:00:00Z' };
-    const action = vi.fn(() => <span>Seller action</span>);
+    const action = vi.fn((_originId: string) => <span>Seller action</span>);
     render(<ConversationInbox conversations={[item, { ...item, conversation_id: 'two' },
       { ...item, conversation_id: 'buyer', origin_id: 'other', role: 'buyer' },
       { ...item, conversation_id: 'request', origin_kind: 'wanted_request', role: 'request author' }]}
       onRefresh={vi.fn()} onOpen={vi.fn()} renderSellerListingAction={action} />);
-    expect(action).toHaveBeenCalledTimes(1);
-    expect(action).toHaveBeenCalledWith(listingId);
+    expect(action.mock.calls.map(([value]) => value)).toContain(listingId);
+    expect(screen.getAllByText('Seller action')).toHaveLength(1);
   });
 });

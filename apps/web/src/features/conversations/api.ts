@@ -215,7 +215,11 @@ export class ConversationApi {
   async listMine(query: ConversationListQuery = {}, signal?: AbortSignal): Promise<PageResultConversationSummary> {
     const parameters = new URLSearchParams();
     for (const [key, value] of Object.entries(query)) {
-      if (value !== undefined && value !== null) parameters.set(key, String(value));
+      if (Array.isArray(value)) {
+        for (const item of value) parameters.append(key, String(item));
+      } else if (value !== undefined && value !== null) {
+        parameters.set(key, String(value));
+      }
     }
     const suffix = parameters.size ? `?${parameters}` : '';
     return this.request(`/conversations${suffix}`, 'GET', (value) => record(value) &&

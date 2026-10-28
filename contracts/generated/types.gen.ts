@@ -360,6 +360,10 @@ export type CreateListingRequest = {
      */
     operation_id: string;
     /**
+     * Original Price Paise
+     */
+    original_price_paise?: number | null;
+    /**
      * Pickup Area
      */
     pickup_area?: string | null;
@@ -692,6 +696,10 @@ export type ListingDetail = {
      */
     negotiable: boolean;
     /**
+     * Original Price Paise
+     */
+    original_price_paise: number | null;
+    /**
      * Pickup Area
      */
     pickup_area: string | null;
@@ -767,6 +775,10 @@ export type ListingManagementView = {
      * Negotiable
      */
     negotiable: boolean;
+    /**
+     * Original Price Paise
+     */
+    original_price_paise: number | null;
     /**
      * Owner Id
      */
@@ -864,6 +876,10 @@ export type ListingOwnerView = {
      */
     negotiable: boolean;
     /**
+     * Original Price Paise
+     */
+    original_price_paise: number | null;
+    /**
      * Owner Id
      */
     owner_id: string;
@@ -948,6 +964,10 @@ export type ListingReplacement = {
      */
     operation_id: string;
     /**
+     * Original Price Paise
+     */
+    original_price_paise: number | null;
+    /**
      * Pickup Area
      */
     pickup_area: string | null;
@@ -1015,6 +1035,10 @@ export type ListingSummary = {
      * Negotiable
      */
     negotiable: boolean;
+    /**
+     * Original Price Paise
+     */
+    original_price_paise: number | null;
     /**
      * Pickup Area
      */
@@ -2634,11 +2658,11 @@ export type ConversationsListMineData = {
         /**
          * Origin Id
          */
-        origin_id?: string | null;
+        origin_id?: Array<string>;
         /**
          * Counterparty User Id
          */
-        counterparty_user_id?: string | null;
+        counterparty_user_id?: Array<string>;
         /**
          * Offer Status
          */
@@ -3692,11 +3716,11 @@ export type ListingsQueryAvailableData = {
         /**
          * Category Code
          */
-        category_code?: string | null;
+        category_code?: Array<string>;
         /**
          * Condition Code
          */
-        condition_code?: string | null;
+        condition_code?: Array<string>;
         /**
          * Negotiable
          */
@@ -5137,6 +5161,22 @@ export type SearchListOpenWantedRequestsData = {
          * Page Size
          */
         page_size?: 20 | 50 | 100;
+        /**
+         * Q
+         */
+        q?: string | null;
+        /**
+         * Category Code
+         */
+        category_code?: Array<string>;
+        /**
+         * Min Budget Paise
+         */
+        min_budget_paise?: number | null;
+        /**
+         * Max Budget Paise
+         */
+        max_budget_paise?: number | null;
     };
     url: '/wanted-requests';
 };

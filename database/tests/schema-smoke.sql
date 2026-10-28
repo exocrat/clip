@@ -74,9 +74,9 @@ BEGIN
 
     INSERT INTO listings.sale_listings
         (id, owner_id, title, description, category_id, condition_code,
-            asking_price_paise, negotiable, pickup_area, availability)
+            asking_price_paise, original_price_paise, negotiable, pickup_area, availability)
         VALUES (item, seller, 'Synthetic books', 'Controlled database fixture', category,
-            'good', 0, true, 'Synthetic pickup area', 'available');
+            'good', 0, 12500, true, 'Synthetic pickup area', 'available');
     INSERT INTO listings.image_uploads
         (id, owner_id, object_key, operation_id, state, created_at, expires_at, confirmed_at,
             confirmed_media_type, confirmed_size_bytes)
@@ -91,10 +91,10 @@ BEGIN
     -- command result and its removal at retirement without touching a thread.
     INSERT INTO listings.sale_listings
         (id, owner_id, title, description, category_id, condition_code,
-            asking_price_paise, negotiable, pickup_area, availability,
+            asking_price_paise, original_price_paise, negotiable, pickup_area, availability,
             created_at, available_from, available_until)
         VALUES (retirement_item, seller, 'Receipt cleanup fixture',
-            'Synthetic receipt cleanup test', category, 'good', 0, true,
+            'Synthetic receipt cleanup test', category, 'good', 0, 25000, true,
             'Synthetic pickup area', 'unavailable',
             statement_timestamp() - INTERVAL '200 days',
             statement_timestamp() - INTERVAL '200 days',
@@ -157,7 +157,8 @@ BEGIN
         WHERE id = retirement_image;
     UPDATE listings.sale_listings SET retired_at = statement_timestamp(),
         title = NULL, description = NULL, category_id = NULL, condition_code = NULL,
-        asking_price_paise = NULL, negotiable = NULL, pickup_area = NULL,
+        asking_price_paise = NULL, original_price_paise = NULL,
+        negotiable = NULL, pickup_area = NULL,
         proof_available = NULL, selected_buyer_id = NULL
         WHERE id = retirement_item;
     SET CONSTRAINTS ALL IMMEDIATE;
@@ -213,6 +214,28 @@ BEGIN
     END;
     IF NOT rejected THEN RAISE EXCEPTION 'Fractional-rupee price was accepted'; END IF;
 
+    IF (SELECT original_price_paise FROM listings.sale_listings WHERE id = item) <> 12500 THEN
+        RAISE EXCEPTION 'Seller-stated Original price was not stored';
+    END IF;
+    rejected := false;
+    BEGIN
+        UPDATE listings.sale_listings SET original_price_paise = 0 WHERE id = item;
+    EXCEPTION WHEN check_violation THEN rejected := true;
+    END;
+    IF NOT rejected THEN RAISE EXCEPTION 'Zero Original price was accepted'; END IF;
+    rejected := false;
+    BEGIN
+        UPDATE listings.sale_listings SET original_price_paise = 1000000100 WHERE id = item;
+    EXCEPTION WHEN check_violation THEN rejected := true;
+    END;
+    IF NOT rejected THEN RAISE EXCEPTION 'Over-limit Original price was accepted'; END IF;
+    rejected := false;
+    BEGIN
+        UPDATE listings.sale_listings SET asking_price_paise = 1000000100 WHERE id = item;
+    EXCEPTION WHEN check_violation THEN rejected := true;
+    END;
+    IF NOT rejected THEN RAISE EXCEPTION 'Over-limit asking price was accepted'; END IF;
+
     rejected := false;
     BEGIN
         DELETE FROM listings.images WHERE id = image;
@@ -225,6 +248,13 @@ BEGIN
     INSERT INTO search.wanted_requests (id, author_id, title, description, category_code, budget_paise, status)
         VALUES (gen_random_uuid(), buyer, 'Synthetic wanted books', 'Controlled request fixture', 'books', NULL, 'open'),
             (gen_random_uuid(), buyer, 'Synthetic free books', 'Controlled free request fixture', 'books', 0, 'open');
+    rejected := false;
+    BEGIN
+        UPDATE search.wanted_requests SET budget_paise = 1000000100
+            WHERE title = 'Synthetic free books';
+    EXCEPTION WHEN check_violation THEN rejected := true;
+    END;
+    IF NOT rejected THEN RAISE EXCEPTION 'Over-limit Wanted budget was accepted'; END IF;
     INSERT INTO search.saved_listings (user_id, listing_id) VALUES (buyer, item);
     rejected := false;
     BEGIN

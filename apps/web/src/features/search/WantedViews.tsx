@@ -1,12 +1,12 @@
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router';
 import type {
   DraftMatchResult,
   PageResultSavedListingView,
   PageResultWantedRequestOwnerView,
   PageResultWantedRequestPublic,
 } from '../../../../../contracts/generated/types.gen';
-import { Button } from '../../shared/ui';
+import { Button, MultiChoiceDropdown } from '../../shared/ui';
 import { discoveryPrice, readDiscoveryCatalogue, type ListingSummary } from './discoveryApi';
 import { SaleListingCard } from './SaleListingCard';
 import {
@@ -32,6 +32,15 @@ import {
   type WantedRequestPublic,
 } from './wantedApi';
 import './wanted.css';
+import {
+  applyWantedDiscoveryForm,
+  DEFAULT_WANTED_QUERY,
+  parseWantedDiscoveryRouteQuery,
+  wantedDiscoveryForm,
+  wantedDiscoveryRouteParams,
+  type WantedDiscoveryForm,
+  type WantedDiscoveryQuery,
+} from './wantedDiscoveryQuery';
 
 /** Local request state is keyed to its inputs so stale/private results never flash on navigation. */
 function useRead<T>(key: string, load: (signal: AbortSignal) => Promise<T>) {
@@ -115,30 +124,148 @@ function RequestCard({ item, children }: { item: WantedRequestPublic; children?:
 
 /** Authenticated public requests contain no author identity or private contact information. */
 export function WantedBrowse() {
-  const [number, setNumber] = useState(1);
-  const result = useRead<PageResultWantedRequestPublic>(`public:${number}`, (signal) =>
-    browseWanted(number, signal),
+  const [params, setParams] = useSearchParams();
+  const key = params.toString();
+  const parsed = useMemo(() => {
+    try { return { query: parseWantedDiscoveryRouteQuery(new URLSearchParams(key)) }; }
+    catch (error) { return { message: error instanceof Error ? error.message : 'Check the Wanted Request filters.' }; }
+  }, [key]);
+  const query = parsed.query ?? DEFAULT_WANTED_QUERY;
+  const [draft, setDraft] = useState<WantedDiscoveryForm>(() => wantedDiscoveryForm(query));
+  const [formError, setFormError] = useState('');
+  const catalogue = useRead('wanted-discovery-catalogue', readDiscoveryCatalogue);
+  const result = useRead<PageResultWantedRequestPublic>(`public:${key}`, (signal) =>
+    parsed.query ? browseWanted(query, signal) : Promise.reject(new Error('Invalid Wanted Request filters.')),
   );
+
+  // Browser back/forward restores the applied search controls as well as results.
+  useEffect(() => {
+    setDraft(wantedDiscoveryForm(parsed.query ?? DEFAULT_WANTED_QUERY));
+    setFormError('');
+  }, [key, parsed]);
+
+  function change<Key extends keyof WantedDiscoveryForm>(field: Key, value: WantedDiscoveryForm[Key]) {
+    setDraft((previous) => ({ ...previous, [field]: value }));
+    setFormError('');
+  }
+
+  function navigate(next: WantedDiscoveryQuery) {
+    const nextParams = new URLSearchParams();
+    params.forEach((value, name) => {
+      if (!name.startsWith('wanted_')) nextParams.append(name, value);
+    });
+    wantedDiscoveryRouteParams(next).forEach((value, name) => nextParams.append(name, value));
+    if (nextParams.toString() === key) result.retry();
+    else setParams(nextParams);
+  }
+
+  function submit(event: FormEvent) {
+    event.preventDefault();
+    try {
+      const next = applyWantedDiscoveryForm(draft);
+      setFormError('');
+      navigate(next);
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : 'Check the Wanted Request filters.');
+    }
+  }
+
+  const ready = parsed.query ? result.data : undefined;
   return (
-    <section className="wanted-feature">
+    <section className="wanted-feature wanted-discovery">
       <PreviewNotice />
       <h2>Wanted requests</h2>
       <p>
         Open requests from the campus community. <Link to="/my/listings">Manage your wanted requests</Link>.
       </p>
-      <ReadState error={result.error} retry={result.retry}>
-        {result.data && (
-          <>
-            {!result.data.items.length && <p>No open wanted requests.</p>}
-            {!!result.data.items.length && <ul className="wanted-grid">
-              {result.data.items.map((item) => (
-                <li key={item.request_id}><RequestCard item={item} /></li>
-              ))}
-            </ul>}
-            <Pages number={number} hasNext={result.data.has_next} onChange={setNumber} />
-          </>
-        )}
-      </ReadState>
+      <Link className="ui-button ui-button--primary wanted-new-request" to="/my/listings?view=wanted&create=wanted">New Wanted Request</Link>
+      <form className="wanted-discovery__form" onSubmit={submit} noValidate>
+        <div className="wanted-discovery__search">
+          <label htmlFor="wanted-discovery-query">Search wanted requests
+            <input id="wanted-discovery-query" type="search" value={draft.q} maxLength={240}
+              placeholder="Search titles and descriptions" onChange={(event) => change('q', event.target.value)}
+              aria-describedby="wanted-discovery-query-help" />
+          </label>
+          <Button type="submit">Search</Button>
+        </div>
+        <p id="wanted-discovery-query-help" className="wanted-discovery__hint">
+          Search titles and descriptions. All words may appear across either field; up to 120 characters.
+        </p>
+        <div className="wanted-discovery__filters">
+          <MultiChoiceDropdown
+            emptyLabel="All categories"
+            label="Item category"
+            onValuesChange={(values) => change('category_code', values)}
+            options={[
+              ...(catalogue.data?.categories ?? []).map((category) => ({ value: category.code, label: category.label })),
+              ...draft.category_code.filter((code) => !catalogue.data?.categories.some((category) => category.code === code))
+                .map((code) => ({ value: code, label: `Unavailable category · ${code}` })),
+            ]}
+            values={draft.category_code}
+          />
+          <label htmlFor="wanted-discovery-min">Minimum budget (₹)
+            <input id="wanted-discovery-min" type="text" inputMode="numeric" maxLength={8} value={draft.min_rupees}
+              placeholder="No minimum" onChange={(event) => change('min_rupees', event.target.value)} />
+          </label>
+          <label htmlFor="wanted-discovery-max">Maximum budget (₹)
+            <input id="wanted-discovery-max" type="text" inputMode="numeric" maxLength={8} value={draft.max_rupees}
+              placeholder="No maximum" onChange={(event) => change('max_rupees', event.target.value)} />
+          </label>
+          <label htmlFor="wanted-discovery-size">Requests per page
+            <select id="wanted-discovery-size" value={draft.page_size}
+              onChange={(event) => change('page_size', Number(event.target.value) as WantedDiscoveryForm['page_size'])}>
+              <option value={20}>20</option><option value={50}>50</option><option value={100}>100</option>
+            </select>
+          </label>
+        </div>
+        <div className="wanted-discovery__actions">
+          <Button type="submit" variant="secondary">Apply filters</Button>
+          <Button variant="secondary" onClick={() => {
+            setDraft(wantedDiscoveryForm(DEFAULT_WANTED_QUERY));
+            setFormError('');
+            navigate(DEFAULT_WANTED_QUERY);
+          }}>Reset</Button>
+          <span className="wanted-discovery__hint">Budgets use whole rupees up to ₹1,00,00,000. A budget filter excludes requests with no stated budget.</span>
+        </div>
+        {formError && <p role="alert" className="wanted-discovery__error">{formError}</p>}
+        {catalogue.error && <p role="alert">Category choices could not be loaded. <Button variant="secondary" onClick={catalogue.retry}>Retry categories</Button></p>}
+        {!catalogue.error && !catalogue.data && <p role="status">Loading category choices…</p>}
+      </form>
+      <div className="wanted-discovery__results" aria-live="polite" aria-busy={!ready && !result.error}>
+        {parsed.message && <div role="alert" className="wanted-discovery__state">
+          <h3>Check your search</h3><p>{parsed.message}</p>
+          <Button variant="secondary" onClick={() => {
+            setDraft(wantedDiscoveryForm(DEFAULT_WANTED_QUERY));
+            navigate(DEFAULT_WANTED_QUERY);
+          }}>Reset filters</Button>
+        </div>}
+        {!parsed.message && result.error && <div role="alert" className="wanted-discovery__state">
+          <h3>Could not load wanted requests</h3><p>{result.error}</p>
+          <Button variant="secondary" onClick={result.retry}>Retry</Button>
+        </div>}
+        {!parsed.message && !result.error && !ready && <p role="status" className="wanted-discovery__state">Loading wanted requests…</p>}
+        {ready && <>
+          <p className="wanted-discovery__count">Page {ready.page} · {ready.items.length} {ready.items.length === 1 ? 'request' : 'requests'} on this page</p>
+          {!ready.items.length ? <div className="wanted-discovery__state">
+            <h3>No wanted requests found</h3><p>Try different words or fewer filters.</p>
+            <Button variant="secondary" onClick={() => {
+              setDraft(wantedDiscoveryForm(DEFAULT_WANTED_QUERY));
+              navigate(DEFAULT_WANTED_QUERY);
+            }}>Clear filters</Button>
+          </div> : <ul className="wanted-grid">
+            {ready.items.map((item) => (
+              <li key={item.request_id}><RequestCard item={item} /></li>
+            ))}
+          </ul>}
+          <nav aria-label="Wanted request result pages">
+            <Button variant="secondary" disabled={query.page <= 1}
+              onClick={() => navigate({ ...query, page: query.page - 1 })}>Previous</Button>
+            <span>Page {query.page}</span>
+            <Button variant="secondary" disabled={!ready.has_next}
+              onClick={() => navigate({ ...query, page: query.page + 1 })}>Next</Button>
+          </nav>
+        </>}
+      </div>
     </section>
   );
 }
@@ -273,17 +400,21 @@ function WantedEditor({
         <fieldset disabled={busy}>
           <label>
             Title
-            <input value={title} onChange={(e) => setTitle(e.target.value)} required />
+            <input value={title} maxLength={240} onChange={(e) => setTitle(e.target.value)} required aria-describedby="wanted-title-count" />
           </label>
+          <p id="wanted-title-count" className="wanted-discovery__hint">{[...title.trim()].length}/120 characters</p>
           <label>
             Description
             <textarea
               value={description}
+              maxLength={10000}
               onChange={(e) => setDescription(e.target.value)}
               required
               rows={5}
+              aria-describedby="wanted-description-count"
             />
           </label>
+          <p id="wanted-description-count" className="wanted-discovery__hint">{[...description.trim()].length}/5,000 characters</p>
           <label>
             Category
             <select value={category} onChange={(e) => setCategory(e.target.value)} required>
@@ -308,13 +439,13 @@ function WantedEditor({
             Optional budget (whole ₹)
             <input
               inputMode="numeric"
-              maxLength={16}
+              maxLength={8}
               value={budget}
               onChange={(e) => setBudget(e.target.value)}
               aria-describedby="wanted-budget-help"
             />
           </label>
-          <p id="wanted-budget-help">Leave blank for no stated budget; enter 0 for free.</p>
+          <p id="wanted-budget-help">Leave blank for no stated budget; enter 0 for free. Maximum ₹1,00,00,000.</p>
           {error && <p role="alert">{error}</p>}
           <Button type="submit">{busy ? 'Saving…' : initial ? 'Save changes' : 'Publish request'}</Button>
           {onCancel && (
@@ -330,15 +461,18 @@ function WantedEditor({
 }
 
 /** The private owner list is the only UI source of edit/availability controls. */
-export function MyWantedRequests() {
+export function MyWantedRequests({ startCreating = false }: { startCreating?: boolean } = {}) {
   const [number, setNumber] = useState(1);
   const [version, setVersion] = useState(0);
   const [editing, setEditing] = useState<WantedRequestOwnerView>();
-  const [creating, setCreating] = useState(false);
+  const [creating, setCreating] = useState(startCreating);
   const [message, setMessage] = useState('');
   const result = useRead<PageResultWantedRequestOwnerView>(`own:${number}:${version}`, (signal) =>
     ownWanted(number, signal),
   );
+  useEffect(() => {
+    if (startCreating) setCreating(true);
+  }, [startCreating]);
   function saved() {
     setEditing(undefined);
     setCreating(false);

@@ -1,10 +1,10 @@
-import { Suspense, lazy, useState, type PropsWithChildren } from 'react';
-import { useLocation, useParams } from 'react-router';
+import { Suspense, lazy, useEffect, useState, type PropsWithChildren } from 'react';
+import { useLocation, useParams, useSearchParams } from 'react-router';
 import { ConversationDetailPage as ConnectedConversationDetail, ConversationInboxPage, ConversationsPlaceholder } from '../features/conversations';
 import { MicrosoftCallback, ContactsEditor, SignIn, AccountStateBoundary, SellerEligibilityGate, IdentityPlaceholder as IdentityFeaturePlaceholder } from '../features/identity';
 import { ListingsPlaceholder as ListingsFeaturePlaceholder } from '../features/listings';
 import { CreateListing, ListingDetail, ListingEdit, MyListings, StartListingConversationAction } from '../features/listings';
-import { WantedBrowse, MyWantedRequests, WantedDetail, SavedListings, SaveListingAction } from '../features/search';
+import { WantedBrowse, MyWantedRequests, WantedDetail, SavedListings, SaveListingAction, SaleListingPreview } from '../features/search';
 import { SaleDiscovery } from '../features/search';
 import { PageFrame, SegmentedControl } from '../shared/ui';
 import { isLocalConversationDemoAllowed } from './conversationDemoGate';
@@ -94,7 +94,7 @@ export function ListingCreatePage() {
   return (
     <RoutePage title="Create a sale listing" sessionScoped={false}>
       <SellerEligibilityGate>
-        <CreateListing />
+        <CreateListing renderPreview={(draft) => <SaleListingPreview draft={draft} />} />
       </SellerEligibilityGate>
     </RoutePage>
   );
@@ -122,7 +122,15 @@ export function ListingEditPage() {
 }
 
 export function MyListingsPage() {
-  const [view, setView] = useState<View>('sales');
+  const [params, setParams] = useSearchParams();
+  const startCreatingWanted = params.get('create') === 'wanted';
+  const view: View = params.get('view') === 'wanted' || startCreatingWanted ? 'wanted' : 'sales';
+  useEffect(() => {
+    if (!startCreatingWanted) return;
+    const next = new URLSearchParams(params);
+    next.delete('create');
+    setParams(next, { replace: true });
+  }, [startCreatingWanted, params, setParams]);
   return (
     <RoutePage title="My listings">
       <SegmentedControl
@@ -132,12 +140,17 @@ export function MyListingsPage() {
           { value: 'wanted', label: 'Wanted Requests' },
         ]}
         value={view}
-        onValueChange={setView}
+        onValueChange={(nextView) => {
+          const next = new URLSearchParams(params);
+          next.set('view', nextView);
+          next.delete('create');
+          setParams(next);
+        }}
       />
       {view === 'sales' ? (
         <SellerEligibilityGate action="manage"><MyListings /></SellerEligibilityGate>
       ) : (
-        <MyWantedRequests />
+        <MyWantedRequests startCreating={startCreatingWanted} />
       )}
     </RoutePage>
   );

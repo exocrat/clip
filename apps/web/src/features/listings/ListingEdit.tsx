@@ -32,6 +32,7 @@ function listingValues(listing: ListingManagementView): ListingFormValues {
     category_code: listing.category_code,
     condition_code: listing.condition_code,
     price_rupees: String(listing.asking_price_paise / 100),
+    original_price_rupees: listing.original_price_paise === null ? '' : String(listing.original_price_paise / 100),
     negotiable: listing.negotiable,
     pickup_area: listing.pickup_area ?? '',
     available_from: localDateTime(listing.available_from),
@@ -143,10 +144,18 @@ export function ListingEdit({ listingId }: { listingId?: string }) {
     }
   }
 
-  const invalid = (field: keyof ListingFormErrors) => ({
+  const invalid = (field: keyof ListingFormErrors) => {
+    const ids = [
+      field === 'title' ? 'edit-title-count' : '',
+      field === 'description' ? 'edit-description-count' : '',
+      field === 'pickup_area' ? 'edit-pickup-count' : '',
+      errors[field] ? `listing-${field}-error` : '',
+    ].filter(Boolean).join(' ');
+    return {
     'aria-invalid': errors[field] ? true as const : undefined,
-    'aria-describedby': errors[field] ? `listing-${field}-error` : undefined,
-  });
+    'aria-describedby': ids || undefined,
+    };
+  };
   const fieldError = (field: keyof ListingFormErrors) => errors[field]
     ? <p id={`listing-${field}-error`} className="listings-error">{errors[field]}</p> : null;
 
@@ -181,11 +190,13 @@ export function ListingEdit({ listingId }: { listingId?: string }) {
           <fieldset disabled={saving}>
             <legend>Listing details</legend>
             <label htmlFor="edit-listing-title">Title <span>(required)</span></label>
-            <input id="edit-listing-title" value={values.title} onChange={(event) => change('title', event.target.value)} {...invalid('title')} />
+            <input id="edit-listing-title" maxLength={240} value={values.title} onChange={(event) => change('title', event.target.value)} {...invalid('title')} />
             {fieldError('title')}
+            <p id="edit-title-count" className="listings-muted">{[...values.title.trim()].length}/120 characters</p>
             <label htmlFor="edit-listing-description">Description <span>(required)</span></label>
-            <textarea id="edit-listing-description" rows={5} value={values.description} onChange={(event) => change('description', event.target.value)} {...invalid('description')} />
+            <textarea id="edit-listing-description" rows={5} maxLength={10000} value={values.description} onChange={(event) => change('description', event.target.value)} {...invalid('description')} />
             {fieldError('description')}
+            <p id="edit-description-count" className="listings-muted">{[...values.description.trim()].length}/5,000 characters</p>
             <div className="listings-fields">
               <div>
                 <label htmlFor="edit-listing-category">Item category <span>(required)</span></label>
@@ -206,12 +217,18 @@ export function ListingEdit({ listingId }: { listingId?: string }) {
               </div>
             </div>
             <label htmlFor="edit-listing-price">Asking price in rupees <span>(required; 0 means free)</span></label>
-            <input id="edit-listing-price" type="text" inputMode="numeric" value={values.price_rupees} onChange={(event) => change('price_rupees', event.target.value)} {...invalid('price_rupees')} />
+            <input id="edit-listing-price" type="text" inputMode="numeric" maxLength={8} value={values.price_rupees} onChange={(event) => change('price_rupees', event.target.value)} {...invalid('price_rupees')} />
             {fieldError('price_rupees')}
+            <p className="listings-muted">Maximum ₹1,00,00,000.</p>
+            <label htmlFor="edit-listing-original-price">Original price <span>(optional, whole ₹)</span></label>
+            <input id="edit-listing-original-price" type="text" inputMode="numeric" maxLength={8} value={values.original_price_rupees} onChange={(event) => change('original_price_rupees', event.target.value)} {...invalid('original_price_rupees')} />
+            {fieldError('original_price_rupees')}
+            <p className="listings-muted">Seller-provided and not independently verified.</p>
             <label className="listings-check"><input type="checkbox" checked={values.negotiable} onChange={(event) => change('negotiable', event.target.checked)} />Price is negotiable</label>
             <label htmlFor="edit-listing-pickup">Pickup area <span>(optional)</span></label>
-            <input id="edit-listing-pickup" value={values.pickup_area} onChange={(event) => change('pickup_area', event.target.value)} {...invalid('pickup_area')} />
+            <input id="edit-listing-pickup" maxLength={240} value={values.pickup_area} onChange={(event) => change('pickup_area', event.target.value)} {...invalid('pickup_area')} />
             {fieldError('pickup_area')}
+            <p id="edit-pickup-count" className="listings-muted">{[...values.pickup_area.trim()].length}/120 characters</p>
             <p className="listings-muted">Leave blank if you don’t want to specify a pickup area.</p>
             <div className="listings-fields">
               <div><label htmlFor="edit-listing-start">Available from <span>(required)</span></label><input id="edit-listing-start" type="datetime-local" value={values.available_from} onChange={(event) => change('available_from', event.target.value)} {...invalid('available_from')} />{fieldError('available_from')}</div>
@@ -240,7 +257,7 @@ export function ListingEdit({ listingId }: { listingId?: string }) {
             disabled={saving}
             error={errors.images}
           />
-          <p role="status">{saving ? 'Saving your changes…' : imagePending ? 'Checking and saving selected photos…' : imageUnresolved ? 'Retry or remove unfinished photos before saving.' : `${images.length} of 8 confirmed photos selected.`}</p>
+          <p role="status">{saving ? 'Saving your changes…' : imagePending ? 'Uploading your photos…' : imageUnresolved ? 'Retry or remove unfinished photos before saving.' : `${images.length} photo${images.length === 1 ? '' : 's'} selected.`}</p>
           <div className="listings-form-actions">
             <Button type="submit" disabled={saving || imagePending || imageUnresolved}>{saving ? 'Saving…' : 'Save changes'}</Button>
             <Link to="/my/listings">Cancel and return to My Listings</Link>

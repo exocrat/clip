@@ -169,14 +169,14 @@ use no category filter unless an explicitly reviewed context says otherwise:
 
 | Category | Queries |
 |---|---|
-| Mobile phones | `android smartphone`; `mobile phone` |
+| Mobile Phones | `android smartphone`; `mobile phone` |
 | Laptops | `student laptop`; `portable computer` |
 | Electronics | `desk monitor`; `computer display` |
 | Furniture | `study desk`; `work table` |
 | Books | `linear algebra textbook`; `mathematics book` |
 | Bicycles | `campus bicycle`; `two wheeled vehicle` |
-| Home appliances | `electric kettle`; `water boiler` |
-| Sports & fitness | `badminton racket`; `sports racket` |
+| Home Appliances | `electric kettle`; `water boiler` |
+| Sports & Fitness | `badminton racket`; `sports racket` |
 | Other | `backpack`; `student carrying bag` |
 
 The four broader cases are `student computer`, `folding cycle`, `kitchen

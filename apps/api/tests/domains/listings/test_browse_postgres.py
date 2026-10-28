@@ -407,8 +407,8 @@ async def exercise_filters_and_sorts(
             and row["price"] <= 3000
             and row["negotiable"] is False,
         ),
-        ({"max_price_paise": 10**100}, lambda row: True),
-        ({"min_price_paise": 10**100}, lambda row: False),
+        ({"max_price_paise": 1_000_000_000}, lambda row: True),
+        ({"min_price_paise": 1_000_000_000}, lambda row: False),
     ]
     for filters, accept in cases:
         selected = [row for row in fixtures if accept(row)]

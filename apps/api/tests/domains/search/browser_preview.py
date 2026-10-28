@@ -37,19 +37,19 @@ from app.core.errors import (
 )  # noqa: E402
 
 CATEGORIES = (
-    ("mobile_phone", "Mobile phones"),
+    ("mobile_phone", "Mobile Phones"),
     ("laptop", "Laptops"),
     ("electronics", "Electronics"),
     ("furniture", "Furniture"),
-    ("books", "Books and study materials"),
+    ("books", "Books and Study Materials"),
     ("bicycles", "Bicycles"),
-    ("appliances", "Home appliances"),
-    ("sports_fitness", "Sports & fitness"),
+    ("appliances", "Home Appliances"),
+    ("sports_fitness", "Sports & Fitness"),
     ("other", "Other"),
 )
 CONDITIONS = (
-    ("new", "New / unused"),
-    ("like_new", "Like new"),
+    ("new", "New / Unused"),
+    ("like_new", "Like New"),
     ("good", "Good"),
     ("fair", "Fair"),
 )
@@ -98,6 +98,7 @@ def fixture_rows() -> list[ListingSummary]:
                 condition_code=condition,
                 condition_label=condition_label,
                 asking_price_paise=0 if index == 0 else (index + 1) * 10000,
+                original_price_paise=None,
                 negotiable=bool(index % 2),
                 pickup_area="Synthetic campus area",
                 available_from=datetime(2026, 1, 1, tzinfo=UTC),
@@ -149,7 +150,11 @@ def create_preview_app() -> FastAPI:
     ) -> PageResult[ListingSummary] | dict[str, bool]:
         """Select named UI scripts; this deliberately has no general text-search engine."""
         nonlocal attempts
-        values: dict[str, str | int] = dict(request.query_params)
+        values: dict[str, str | int | list[str]] = dict(request.query_params)
+        for name in ("category_code", "condition_code"):
+            selected = request.query_params.getlist(name)
+            if selected:
+                values[name] = selected
         try:
             for name in ("page", "page_size"):
                 if name in values:
@@ -183,13 +188,9 @@ def create_preview_app() -> FastAPI:
             if text in {"", "slow", "retry", "hybrid-down"}
             else [row for row in rows if row.category_code == groups.get(text)]
         )
-        if query.category_code is not None and query.category_code not in dict(
-            CATEGORIES
-        ):
+        if any(code not in dict(CATEGORIES) for code in query.category_code):
             raise PublicError(ERRORS[422])
-        if query.condition_code is not None and query.condition_code not in dict(
-            CONDITIONS
-        ):
+        if any(code not in dict(CONDITIONS) for code in query.condition_code):
             raise PublicError(ERRORS[422])
         if (
             query.min_price_paise is not None
@@ -200,10 +201,10 @@ def create_preview_app() -> FastAPI:
         selected = [
             row
             for row in selected
-            if (query.category_code is None or row.category_code == query.category_code)
+            if (not query.category_code or row.category_code in query.category_code)
             and (
-                query.condition_code is None
-                or row.condition_code == query.condition_code
+                not query.condition_code
+                or row.condition_code in query.condition_code
             )
             and (
                 query.min_price_paise is None

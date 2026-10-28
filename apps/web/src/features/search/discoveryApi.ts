@@ -1,4 +1,5 @@
 import type { CatalogueView, ListingSummary, PageResultListingSummary } from '../../../../../contracts/generated/types.gen';
+import { MAX_MARKETPLACE_PRICE_PAISE } from '../../shared/money';
 import { discoveryParams, type DiscoveryQuery } from './discoveryQuery';
 
 export type { CatalogueView, ListingSummary, PageResultListingSummary };
@@ -55,11 +56,12 @@ const instant = (value: unknown): value is string => typeof value === 'string' &
 
 /** Check every reviewed public field before exposing it to the UI; no private extras. */
 function summary(value: unknown): value is ListingSummary {
-  if (!record(value) || !keys(value, ['listing_id', 'title', 'description', 'category_code', 'category_label', 'condition_code', 'condition_label', 'asking_price_paise', 'negotiable', 'pickup_area', 'available_from', 'available_until', 'availability', 'sensitive_purchase', 'image_ids'])) return false;
+  if (!record(value) || !keys(value, ['listing_id', 'title', 'description', 'category_code', 'category_label', 'condition_code', 'condition_label', 'asking_price_paise', 'original_price_paise', 'negotiable', 'pickup_area', 'available_from', 'available_until', 'availability', 'sensitive_purchase', 'image_ids'])) return false;
   return uuid(value.listing_id) && typeof value.title === 'string' && value.title.trim().length > 0 && [...value.title].length <= 120
     && typeof value.description === 'string' && [...value.description].length <= 5000
     && ['category_code', 'category_label', 'condition_code', 'condition_label'].every((key) => typeof value[key] === 'string' && value[key] !== '')
-    && typeof value.asking_price_paise === 'number' && Number.isSafeInteger(value.asking_price_paise) && value.asking_price_paise >= 0 && value.asking_price_paise % 100 === 0
+    && typeof value.asking_price_paise === 'number' && Number.isSafeInteger(value.asking_price_paise) && value.asking_price_paise >= 0 && value.asking_price_paise <= MAX_MARKETPLACE_PRICE_PAISE && value.asking_price_paise % 100 === 0
+    && (value.original_price_paise === null || (typeof value.original_price_paise === 'number' && Number.isSafeInteger(value.original_price_paise) && value.original_price_paise > 0 && value.original_price_paise <= MAX_MARKETPLACE_PRICE_PAISE && value.original_price_paise % 100 === 0))
     && typeof value.negotiable === 'boolean' && (value.pickup_area === null || typeof value.pickup_area === 'string')
     && instant(value.available_from) && (value.available_until === null || instant(value.available_until))
     && value.availability === 'available' && typeof value.sensitive_purchase === 'boolean'
@@ -78,6 +80,9 @@ export async function readDiscoveryCatalogue(signal: AbortSignal): Promise<Catal
 /** Validate page coordinates, public summaries and lookahead semantics against the query. */
 export async function readDiscoveryPage(query: DiscoveryQuery, signal: AbortSignal): Promise<PageResultListingSummary> {
   const params = discoveryParams(query);
+  // The API default remains newest-first; send automatic match ordering for
+  // nonblank website searches when the bookmark leaves sort implicit.
+  if (query.q && query.sort === 'relevance' && !params.has('sort')) params.set('sort', 'relevance');
   // UI defaults differ from the public API default: always send the chosen mode.
   params.set('search_mode', query.search_mode);
   const suffix = params.toString();

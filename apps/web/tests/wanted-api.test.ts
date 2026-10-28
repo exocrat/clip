@@ -16,6 +16,7 @@ import {
   SearchIntent,
   unsaveListing,
 } from '../src/features/search/wantedApi';
+import { parseWantedDiscoveryQuery } from '../src/features/search/wantedDiscoveryQuery';
 const id = '20000000-0000-4000-8000-000000000001';
 const operation_id = '20000000-0000-4000-8000-000000000002';
 const time = '2026-01-01T00:00:00.000000Z';
@@ -39,6 +40,7 @@ const listing = {
   condition_code: 'good',
   condition_label: 'Good',
   asking_price_paise: 0,
+  original_price_paise: null,
   negotiable: false,
   pickup_area: null,
   available_from: time,
@@ -69,6 +71,16 @@ describe('wanted forms and private API transport', () => {
     const privateFetch = stub(page([owner]));
     await ownWanted(1, signal());
     expect(privateFetch.mock.calls[0][0]).toBe('/api/me/wanted-requests?page=1&page_size=20');
+  });
+  it('sends repeated category and exact whole-rupee budget discovery filters', async () => {
+    const query = parseWantedDiscoveryQuery(new URLSearchParams(
+      'q=physics&category_code=books&category_code=bicycles&min_budget_paise=0&max_budget_paise=250000&page=2&page_size=50',
+    ));
+    const fetch = stub({ items: [], page: 2, page_size: 50, has_next: false });
+    await browseWanted(query, signal());
+    expect(fetch.mock.calls[0][0]).toBe(
+      '/api/wanted-requests?q=physics&category_code=bicycles&category_code=books&min_budget_paise=0&max_budget_paise=250000&page=2&page_size=50',
+    );
   });
   it('keeps unavailable owner detail, but refuses private fields on public browse', async () => {
     stub({ ...owner, state: 'unavailable' });
@@ -212,7 +224,11 @@ describe('exact budget and unknown-outcome retries', () => {
     ['  ', null],
     ['0', 0],
     ['125', 12500],
+    ['10000000', 1000000000],
   ])('maps %j without rounding', (input, result) => expect(budgetPaise(input)).toBe(result));
+  it('rejects amounts above the inclusive ₹1 crore marketplace cap', () =>
+    expect(() => budgetPaise('10000001')).toThrow('₹1,00,00,000'),
+  );
   it.each(['1.5', '-1', '1e3', 'Infinity', '90071992547410'])('rejects %s', (input) =>
     expect(() => budgetPaise(input)).toThrow(),
   );
