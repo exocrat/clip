@@ -188,7 +188,8 @@ def test_inbox_membership_filters_unread_and_summary_privacy():
         ).items
         assert (
             await service.list_mine(
-                caller(alice), ConversationQuery(view="origin_owner", origin_id=[origin])
+                caller(alice),
+                ConversationQuery(view="origin_owner", origin_id=[origin]),
             )
         ).items
         assert not (

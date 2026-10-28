@@ -202,10 +202,7 @@ def create_preview_app() -> FastAPI:
             row
             for row in selected
             if (not query.category_code or row.category_code in query.category_code)
-            and (
-                not query.condition_code
-                or row.condition_code in query.condition_code
-            )
+            and (not query.condition_code or row.condition_code in query.condition_code)
             and (
                 query.min_price_paise is None
                 or row.asking_price_paise >= query.min_price_paise
