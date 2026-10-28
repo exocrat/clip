@@ -241,7 +241,7 @@
       "sha256": "54703498140a0bbaef9cd687953b5d39bd57754e297c7af2ad3f9b0567b8fb7a"
     }
   ],
-  "updated_at_utc": "2026-10-28 05:10:38 UTC",
+  "updated_at_utc": "2026-10-28 08:19:32 UTC",
   "secret_access_scope": {
     "references": [
       "/clip/test/database-master-password",
@@ -1118,7 +1118,7 @@
   },
   "micro_build_and_inspection_proposal": {
     "prepared_at_utc": "2026-10-28 05:10:38 UTC",
-    "approved": false,
+    "approved": true,
     "human_direction": "Aditya verified diagnostics, requested preparation, and selected t3.micro native AMD64 build because local AMD64 is unavailable",
     "source": {
       "source_commit": "3433ae7773206c762209c08d3ca00a23ed776e9f",
@@ -1144,7 +1144,7 @@
     "helper_hashes": [
       {
         "path": "scripts/identity_build_transfer.py",
-        "sha256": "4e2d9c1cc13cec687e5b120341cf10f91a1a800340610806b783dff117333b92"
+        "sha256": "02e3536c04090e102d9da653c1630210e39cf53cc9b29f7986e7e36533f9eee0"
       },
       {
         "path": "scripts/identity_amd64_build.sh",
@@ -1152,7 +1152,7 @@
       },
       {
         "path": "tests/test_identity_build_transfer.py",
-        "sha256": "cb860bb6436a1844c15791eeadf2c262fdcbfb72c9e6186a4df2b107b92ce19e"
+        "sha256": "0c7a0e5bb369aa3a41a8a38219bdd950eeb315824bd831d3f7db175c6d43a981"
       }
     ],
     "plan": "docs/evaluation/identity/id-01-step-13/build-and-database-window.md",
@@ -1185,13 +1185,152 @@
     "ecr_push_requires_window_approval": true,
     "cloud_action_executed": false,
     "local_checks": {
-      "transfer_tests": 3,
+      "transfer_tests": 4,
       "shell_syntax": true,
       "embedded_python_parse": true,
       "local_help_no_bootstrap": true,
-      "secret_scan": "Gitleaks8.30.1 source snapshot passed",
-      "whitespace": true
+      "whitespace": true,
+      "python39_grammar": true,
+      "gitleaks_result": "passed"
     },
-    "rollback": "Close owned sessions, terminate only owned host/root, restore ASG0/max1, stop exclusive retained RDS, remove owned scheduled action/private temporary artifacts; retain verified image and shared infrastructure"
+    "rollback": "Close owned sessions, terminate only owned host/root, restore ASG0/max1, stop exclusive retained RDS, remove owned scheduled action/private temporary artifacts; retain verified image and shared infrastructure",
+    "compatibility_correction": {
+      "path": "scripts/identity_build_transfer.py",
+      "previous_sha256": "4e2d9c1cc13cec687e5b120341cf10f91a1a800340610806b783dff117333b92",
+      "reason": "Black Python3.14 formatting removed grouped exception parentheses; host Python3.9 requires them",
+      "behavior_change": false,
+      "corrected_sha256": "02e3536c04090e102d9da653c1630210e39cf53cc9b29f7986e7e36533f9eee0"
+    },
+    "approval_source": "Aditya: commit. approved"
+  },
+  "micro_build_window_execution": {
+    "private_directory": "/tmp/clip-id01-build-window-o4en6hbj",
+    "started_at_utc": "2026-10-28 05:17:07 UTC",
+    "deadline_utc": "2026-10-28 09:17:07 UTC",
+    "instance_id": "i-0290e52b43cb084ce",
+    "private_ipv4": "10.64.1.39",
+    "cpu_credits": "standard",
+    "application_source_commit": "3433ae7773206c762209c08d3ca00a23ed776e9f",
+    "operator_tool_commit": "e51f5fa",
+    "native_build_command_id": "21eedb2a-fd61-4377-a19c-9937a59f446f",
+    "native_build_submissions": 1,
+    "status": "user_canceled_build_resources_restored",
+    "sql_executed": false,
+    "ecr_published": false,
+    "compatibility_correction": {
+      "path": "scripts/identity_build_transfer.py",
+      "previous_sha256": "4e2d9c1cc13cec687e5b120341cf10f91a1a800340610806b783dff117333b92",
+      "reason": "Black Python3.14 formatting removed grouped exception parentheses; host Python3.9 requires them",
+      "behavior_change": false,
+      "corrected_sha256": "02e3536c04090e102d9da653c1630210e39cf53cc9b29f7986e7e36533f9eee0"
+    },
+    "cleanup": {
+      "cleanup_instance_state": "terminated",
+      "cleanup_asg_instances": 0,
+      "rds_status": "stopped",
+      "cleanup_complete": true,
+      "scheduled_action_removed": true,
+      "observed_at_utc": "2026-10-28 05:29:12 UTC"
+    }
+  },
+  "resumed_window": {
+    "human_direction": "Aditya requested restart/continue after limits reset",
+    "private_directory": "/tmp/clip-id01-resume-window-h4fkz0do",
+    "started_at_utc": "2026-10-28 08:00:40 UTC",
+    "original_deadline_retained": "2026-10-28 09:17:07 UTC",
+    "cost_threshold_unchanged_usd": 2,
+    "local_tls_readonly_test": "1passed; installed psycopg pgconn.ssl_in_use, verify-full TLS and server write refusal",
+    "transfer_tests": 4,
+    "status": "catalog_complete_build_heap_oom_resources_restored",
+    "instance_id": "i-04d77a0a4fc1853dc",
+    "private_ipv4": "10.64.1.149",
+    "catalog_snapshot": {
+      "migration_count": 17,
+      "head": "20261025013000",
+      "matches_reviewed_first17_versions": true,
+      "tables": 37,
+      "functions": 33,
+      "triggers": 43,
+      "schemas": [
+        "conversations",
+        "identity",
+        "listings",
+        "search"
+      ],
+      "project_role_count": 5,
+      "application_role_flags_basic_restricted": true,
+      "effective_acl_acceptance": false,
+      "other_client_sessions": 0,
+      "tls_verified": true,
+      "logging_verified": true,
+      "read_only": true,
+      "application_rows_read": false,
+      "schema_changed": false,
+      "secret_reference": "/clip/test/database-master-password",
+      "secret_version": 1,
+      "private_receipt_sha256": "70cd408fce72f9b06f7f0af4ad5060767cabd1d79f234de58de6b101dd777f41"
+    },
+    "build_failure": {
+      "class": "Node JavaScript heap out of memory during TypeScript compilation",
+      "image_published": false,
+      "build_canceled_after_failure": true,
+      "automatic_retry": false,
+      "operating_system_oom_proven": false
+    },
+    "cleanup": {
+      "cleanup_instance_state": "terminated",
+      "cleanup_asg_instances": 0,
+      "rds_status": "stopped",
+      "cleanup_complete": true,
+      "scheduled_action_removed": true,
+      "observed_at_utc": "2026-10-28 08:18:15 UTC"
+    }
+  },
+  "node_heap_retry_proposal": {
+    "approved": false,
+    "source_tree_sha256": "6d59f6bb5dba3fff10f56850fe102409fd941d2640f59e63079f2282adeaf043",
+    "source_commit_binding_pending_human_commit_approval": true,
+    "source_files": 233,
+    "source_tree_inventory_private_path": "/tmp/clip-id01-resume-window-h4fkz0do/proposed-source-tree.json",
+    "ecr_repository": "335523638354.dkr.ecr.ap-south-1.amazonaws.com/clip-shared-test-api",
+    "ecr_new_tag": "id01-step13-heap768-6d59f6bb5dba",
+    "changes": [
+      {
+        "path": "apps/api/Dockerfile",
+        "sha256": "759deb20430b398e2a9914823fc4696728a9a7309cd213e6792e43a8f07ce065"
+      },
+      {
+        "path": "scripts/identity_amd64_build.sh",
+        "sha256": "88a2eb3d4251a7cef4e802b423b963ce2fed29925111e85f53ed5516f677adc9"
+      },
+      {
+        "path": "scripts/identity_build_transfer.py",
+        "sha256": "02e3536c04090e102d9da653c1630210e39cf53cc9b29f7986e7e36533f9eee0"
+      },
+      {
+        "path": "tests/test_identity_build_transfer.py",
+        "sha256": "0c7a0e5bb369aa3a41a8a38219bdd950eeb315824bd831d3f7db175c6d43a981"
+      }
+    ],
+    "web_build_node_options": "--max-old-space-size=768",
+    "runtime_node_options_changed": false,
+    "instance_type": "t3.micro",
+    "hosts": 1,
+    "build_ram_limit_mib": 512,
+    "build_ram_plus_swap_limit_mib": 1536,
+    "existing_root_swap_gib": 2,
+    "maximum_build_minutes": 45,
+    "rds_start_required": false,
+    "sql_or_secret_read_required": false,
+    "original_deadline_utc": "2026-10-28 09:17:07 UTC",
+    "operator_total_threshold_usd": 2,
+    "automatic_extension": false,
+    "checks": {
+      "local_arm64_web_typecheck_and_bundle_with_heap768": "passed",
+      "native_amd64_memory_limited_success": "not yet tested",
+      "transfer_and_python39_grammar_tests": 4,
+      "gitleaks_result": "passed",
+      "whitespace": true
+    }
   }
 }

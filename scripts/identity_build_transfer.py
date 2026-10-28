@@ -67,7 +67,10 @@ def transfer_server(directory: Path, source_hash: str, port: int = 18765) -> HTT
                 temporary.rename(directory / "source.tar")
                 self.send_response(201)
                 self.end_headers()
-            except OSError, ValueError:
+            except (OSError, ValueError) as failure:
+                # Binding preserves parentheses under Black/Python3.14 for the
+                # Amazon Linux host Python3.9 parser; never log the exception.
+                del failure
                 temporary.unlink(missing_ok=True)
                 self.send_error(400)
 

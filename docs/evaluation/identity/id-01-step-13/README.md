@@ -281,3 +281,47 @@ AWS window, ECR publication or SQL ran. New master-secret use for read-only SQL,
 source/image transfer, publication and bounded startup/cleanup need the exact
 combined window approval. This prepares current-image and catalog findings only;
 bootstrap/reset and all deployed acceptance remain separately pending.
+
+## User stop checkpoint — 2026-10-28 05:24:12 UTC
+
+Aditya requested stop before context reset. Committed preparation at e51f5fa;
+application source3433ae7. Current private run directory:
+`/tmp/clip-id01-build-window-o4en6hbj`. Owned host i-0290e52b43cb084ce,
+private10.64.1.39; do not reuse address after termination. Build command
+21eedb2a-fd61-4377-a19c-9937a59f446f was InProgress at stop: cancellation
+requested and both owned SSM tunnels terminated. Cleanup is underway. No ECR
+publication or application deployment occurred.
+
+Transfer initially failed because project Black emitted Python3.14 grouped-except
+syntax unsupported on host3.9. Corrected to a bound exception with parentheses,
+verified actual host compile and4local tests including3.9 grammar; correction
+and test are uncommitted. Source upload hash verified; one build was submitted.
+
+Read-only inspection used exactly one approved master parameter version1 read,
+then failed at verified_tls_connect with AttributeError before catalog queries.
+Likely connection-info API compatibility; investigate safely before another
+approved attempt. No application rows or DDL ran; no raw credential/error details
+were persisted. Private result/attempt marker retain safe stage metadata. Do not
+repeat the credential-read attempt or build automatically. Stop/cleanup only now.
+
+## Resumed live findings and proposed correction
+
+Read-only catalog inspection now passes using the installed psycopg TLS API.
+Observed17-version prefix/head20261025013000,37tables/33functions/43triggers,
+all four project schemas,0other client sessions, basic application-role flags
+restricted. Effective grants are not accepted by these catalog flags. Target
+23-file clean bootstrap still requires separate exact destructive/DDL review.
+
+Native Micro build hit V8 heap OOM in TypeScript compilation and was canceled,
+without publication/retry. Prepared an optional build-stage Node heap argument
+and helper flag; same RAM/swap/VM limits. Local web typecheck+bundle pass with
+heap768,4transfer/host-grammar tests pass; actual native success is pending.
+[Proposed retry, exact source-tree/hash and target](build-and-database-window.md).
+No new build has run with this correction. Current local changes await review
+and commit; cleanup result is recorded in work log/structured evidence.
+
+Cleanup reached stopped at2026-10-28 08:18:15UTC: owned host terminated,
+ASG0/empty, retained RDS stopped, owned fallback removed, tunnels closed.
+No image was published. Final preparation scan initially matched explanatory
+check-result metadata; shortened that field without scanner/rule exemptions.
+Gitleaks8.30.1 source scan and whitespace checks now pass.

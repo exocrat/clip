@@ -47,7 +47,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PD-19 | Integration owner (current branch) | done | Steps 1–9 and combined foundation handoff complete | Steps 1–9 performed | User confirms all work before PRE-00 is complete | PR #8 merged at `2cd83e7` from head `18c966e` against base `68d9da9`; [Foundation quality gates passed](https://github.com/exocrat/clip/actions/runs/39323851584) for that exact head/base; `make test` (395 Python, 63 data, 16 web), Black, contract freshness and 10 `make check` gates passed; [handoff](foundation-handoff.md) | No open PD-19 work per user confirmation. Linux AMD64/macOS results remain user-confirmed without raw outputs. PR #8 has no submitted GitHub review; independent-review completion is user-confirmed, with no separate review artifact linked. Refresh cloud snapshot before any operation. | 2026-10-19 21:09:05 UTC |
 | PRE-00 | Integration owner | done | Foundation gate audit accepted; DL-00 is unblocked | performed | verified/accepted by user | Reviewed handoff PR #8 merged to `main` at `2cd83e7`; hosted Foundation quality gates passed for head `18c966e` against base `68d9da9` (run `39323851584`); clean-checkout evidence at `0747be6`; see [PD-19 handoff](foundation-handoff.md) | None. PR #8 has no GitHub review event; independent-review completion remains user-reported without a separate artifact. | 2026-10-19 21:20:55 UTC |
 | DL-00 | Shared-core/contract coordinator; all domains review | done | Steps 1–13 and task-wide audit complete; accepted and merged | Steps 1–13 performed; accepted by user | User confirmed full acceptance and merge on 2026-10-22 05:30:49 UTC | PR #9 merged to `main` at `f5576ef`; current `main` is `44cd8ff`; Step 13 check evidence is recorded below and was not rerun for this update | None for DL-00; cleanup implementation remains separately gated; real providers/integrations and crypto/worker implementation remain downstream | 2026-10-22 05:30:49 UTC |
-| ID-01 | A | in progress | Step13 Micro build/transfer and read-only DB inspection proposal prepared | Prior window human-verified/cleaned;3transfer tests, shell/embedded Python/help/format checks pass;233file hash-bound source archive prepared | Aditya selected t3.micro build and authorized local prep; exact combined cloud/ECR/read-only-secret-use scope awaits approval | `task/id-01-runtime-preparation` at3433ae7 plus local operator tools/docs; [Next exact window](../evaluation/identity/id-01-step-13/build-and-database-window.md) | Approve bounded native build/publication and read-only catalog session; no SQL/reset/deploy/provider acceptance yet; ID-READY incomplete | 2026-10-28 05:10:38 UTC |
+| ID-01 | A | in progress | Step13 real catalog inspection complete; build heap fix prepared; resources restored; await verification/retry approval | Live17-version prefix,37tables/33functions/43triggers; TLS/privacy/read-only passed; Node OOM stopped; local heap768 web build/4tests/real TLS fixture pass; Gitleaks/whitespace pass | No publication/DDL/deployment; proposed build-only retry not approved; no RDS/secret use needed for retry | e51f5fa plus uncommitted Dockerfile/build/transfer/test/docs; A reserved narrow shared Dockerfile build ARG; [Step13 proposal](../evaluation/identity/id-01-step-13/build-and-database-window.md) | Verify result; approve commit and bounded same-Micro build-only retry; bootstrap/grants/HTTPS/provider/retention still pending; ID-READY incomplete | 2026-10-28 08:19:32 UTC |
 | LI-01 | B | in progress | Finish the remaining Step 7 browser states and current-head Step 11 checks/reviews; prepare a progress PR without claiming LI-CORE. Steps 12–13 remain integration-gated. | Steps 1–6 and 8–10 implemented and locally checked; Step 7 partial (create/detail/edit/My Listings/gallery). | Suraj verified the multi-image edit/gallery checkpoint, seller-only selected-buyer visibility, and Step 10. No LI-01 phone-device result is claimed. | domain/listings at 6ffbe0b; focused Listings suite: 61 passed, one database-only test skipped outside the wrapper; disposable PostgreSQL workflow passed; current worktree `make check` passed 2026-10-23 (573 Python, 63 data, 42 web tests; remaining contract, type, boundary, database, safety, formatting, lint, and build checks passed). | LI-CORE not accepted. Remaining Step 7 states; Step 11 query-plan, current aggregate, and affected-owner review; native schema check; five pre-existing backend boundary findings; real Identity, Conversations, storage, and Search integration; Steps 12–13. | 2026-10-23 10:38:31 UTC |
 | LI-02 | B | in progress | Step 12 demo is tested and stopped; record final evidence, then begin intake of the Search owner's PR under the review workflow. | Steps 1–11 and 1.5 verified; Step 12 ran on ECS and was tested on desktop/mobile. Read-only app checks found the synthetic listing and its S3 image; teardown is complete. | User approved and applied teardown plan `3703bb7b23405a5a23a1ac6c39fa8870e682dddf3a1a8272183f4642f8f0db81` (0 add, 1 change to LI-02 bucket CORS, 20 LI-02 deletes). Post-stop inventory confirms disposable RDS/ALB/service/host/root volume/run S3 objects/URL parameter/log streams absent; shared RDS is stopped, shared ECS cluster remains, LI-02 ASG desired 0/no instances. Two run ECR images are retained (105,624,604 bytes total) per user direction. | `task/li-02-isolated-runtime` at `f0bf6c6`; earlier 11 focused tests, Black, Python compilation, Terraform fmt/validate, CLI help and diff checks. Start plans: infrastructure `a2b8cbeaa6cc4fc2d13ff8c8696cfa133d8134280de89f719e0d6f2b91668f55`; app start `b6a3fbd4812c965a5830780f337997d13b4b362c7eb1a73f2b3e70f5946b5bd4`. Stop-path corrections are currently uncommitted in `scripts/li02-demo`, `infra/terraform/domains/listings/test/database_tasks.tf`, both LI-02 operator guides, and this work log. `git diff --check` passed; no tests rerun. Existing untracked `data/runs/` and `database/migrations.zip` remain untouched. | Compute/ingress/disposable-database charges from the demo have ended. Retained run images add about 101 MiB of ECR storage; Step 4 bucket/IAM/log group and shared VPC/NAT/ECS/RDS remain. No manual RDS snapshot remains. | 2026-10-25 09:29:55 UTC |
 | SE-01 | Mohit (C); peer Suraj (B), Identity review | in progress | PR15 hosted Python/web/database gates pass; checksum-evidence scanner false positive corrected locally | 47714cc fixes readiness; subsequent CI reaches final secret scanner; two verified SHA256 fingerprints reformatted without scanner exemptions | Mohit verified Hybrid-default UI and requested branch push/PR | Search PR #11 worktree `task/search-evidence-reduction` at `864e53b`; new listing `194a32d4-64bb-491b-b4ec-68403e26f7f3` produced one title and one description vector (384 dimensions each), then matched in both modes through API and Vite proxy; session `/tmp/clip-listings-browser-v6e1f01t`; UI `http://127.0.0.1:5173/`  [Hybrid default UI](../evaluation/domain/se-01/hybrid-default-ui/result.json): lint86/web289pass/3skip/types/build pass;  [PR15 correction](../evaluation/domain/se-01/pr15-ci-readiness/result.json): unit11/native21/3skip/17migrations/Black2/boundaries/diff pass;  [Hosted rerun](https://github.com/exocrat/clip/actions/runs/40382575520) functional/database gates pass; evidence-format rerun pending. | Formal SE-CORE/DATA-READY and final NFR/hosted-CI acceptance remain outside this merge step | 2026-10-26 19:06:47 UTC |
@@ -8372,3 +8372,44 @@ use; all later bootstrap/deployment/HTTPS/provider/retention gates remain pendin
 
 Final preparation Gitleaks8.30.1 source snapshot and whitespace checks pass;
 source/helper hashes verified. No new runtime window started.
+
+### ID-01 Step13 interrupted window cleanup and explicit resume — 2026-10-28 08:01:30 UTC
+
+User stop canceled the first build before publication and closed both tunnels.
+Owned host terminated; ASG0/RDS stopped and owned fallback removed, confirmed
+2026-10-28 05:29:12UTC. Catalog inspection had failed before queries because
+ConnectionInfo lacks ssl_in_use in installed psycopg3.3.6; fixed the private
+procedure to pgconn.ssl_in_use. A real disposable local TLS/read-only test passes,
+including server write refusal;4transfer tests pass. Saved first-run progress
+shows TypeScript compilation and bounded swap use, not a successful build.
+
+A explicitly requested restart after limits reset. Rechecked exact account,
+zero/stopped targets and absent ECR tag; restarted one owned Micro plus retained
+RDS at08:00:40UTC, retaining original09:17:07UTC deadline and$2 threshold. No new
+four-hour allowance, source or resource scope. [Structured checkpoint](../evaluation/identity/id-01-step-13/preflight-and-proposal.json).
+All schema/deploy/provider acceptance remains pending.
+
+### ID-01 Step13 real baseline, native heap failure and reviewed-fix preparation — 2026-10-28 08:19:32 UTC
+
+Corrected read-only inspection passed against exact private protected target:
+verify-full TLS, logging/privacy/read-only gates,0other client sessions,17versions
+matching reviewed prefix/head20261025013000,37tables/33functions/43triggers.
+Used one master version1 read for the explicitly resumed attempt; no app rows or
+DDL. Basic app-role flags are restricted; effective grants are not accepted.
+Clean23-file bootstrap/reset still needs its separate exact plan/approval.
+
+Native Micro build hit JavaScript heap OOM during TypeScript compilation.
+Canceled, no automatic retry or publication. OS/kernel OOM was not established.
+Closed both tunnels, terminated owned host, restored zero ASG and stopped RDS;
+cleanup complete08:18:15UTC and owned fallback removed. Shared data preserved.
+
+Prepared apps/api/Dockerfile optional web-build-only Node options (empty default,
+no runtime ENV), scripts/identity_amd64_build.sh heap768 flag with identical
+512MiB RAM/1536MiB combined/2GiB swap/Micro limits. Existing transfer syntax fix
+and host-grammar test remain uncommitted. Local NODE_OPTIONS heap768 typecheck
+and complete Vite bundle pass;4transfer/grammar tests, real local TLS/read-only
+fixture, shell/format and whitespace pass. Final Gitleaks first matched a verbose
+result field; shortened metadata, no rule changes/exemptions, corrected scan passes.
+[Bound source-tree/recipe and exact proposed retry](../evaluation/identity/id-01-step-13/preflight-and-proposal.json).
+No retry yet: result verification/commit/changed-build approval pending. Build-only
+retry keeps RDS off and needs no secret/SQL. ID-READY/Step13 remain incomplete.

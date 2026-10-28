@@ -64,6 +64,7 @@ timeout --signal=TERM --kill-after=30s 2700s env DOCKER_BUILDKIT=0 \
   docker build --platform linux/amd64 --memory=512m --memory-swap=1536m \
   --rm --force-rm --build-arg VITE_LISTINGS_PUBLIC_DEMO=false \
   --build-arg VITE_MICROSOFT_SIGN_IN_ENABLED=true \
+  --build-arg CLIP_WEB_BUILD_NODE_OPTIONS=--max-old-space-size=768 \
   --file "$run_dir/context/apps/api/Dockerfile" --tag "$image" "$run_dir/context"
 docker run --rm --network none --memory=256m --memory-swap=256m \
   --entrypoint python "$image" -c \

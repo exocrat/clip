@@ -1,5 +1,6 @@
 """Exercise the real loopback transfer boundary without Docker, AWS or secrets."""
 
+import ast
 from contextlib import closing
 import hashlib
 from http.client import HTTPConnection
@@ -69,3 +70,9 @@ def test_no_browsing_query_paths_or_symlinks(endpoint, tmp_path):
     (directory / "result.json").write_text("{}")
     (directory / "image.tar").symlink_to(outside)
     assert request(port, "GET", "/image.tar")[0] == 404
+
+
+def test_host_python39_grammar():
+    """Guard host compatibility even when project Black targets Python3.14."""
+    source = Path(__file__).resolve().parents[1] / "scripts/identity_build_transfer.py"
+    ast.parse(source.read_text(), feature_version=(3, 9))

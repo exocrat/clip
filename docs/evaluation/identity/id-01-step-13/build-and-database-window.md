@@ -1,6 +1,6 @@
 # ID-01 Step13 — Micro build and read-only database window
 
-Prepared by Aditya's agent, 2026-10-28 05:09:13 UTC. **Not executed or approved.**
+Prepared by Aditya's agent, 2026-10-28 05:09:13 UTC. **Original scope subsequently approved and partially executed; see outcomes below.**
 Aditya selected a native AMD64 `t3.micro` build; no local AMD64 execution is assumed.
 This is an internal Step13 checkpoint, not readiness acceptance or schema approval.
 
@@ -159,3 +159,28 @@ runtime roles, HTTPS, provider/browser and retention acceptance stay pending.
 Primary references: [AWS Session Manager forwarding](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-sessions-start.html),
 [Docker legacy build limits](https://docs.docker.com/reference/cli/docker/image/build/),
 [Docker memory/swap](https://docs.docker.com/engine/containers/resource_constraints/).
+
+## Results and pending build-only retry
+
+The resumed catalog inspection passed TLS/privacy/read-only gates and found the
+exact17-version prefix,37tables/33functions/43triggers and0other client sessions.
+No app rows or DDL. Full effective-ACL/bootstrap acceptance is still pending.
+The native build hit Node's JavaScript heap ceiling during TypeScript compilation;
+canceled without publication or automatic retry. Kernel OOM was not established.
+
+Prepared correction: API Dockerfile accepts optional CLIP_WEB_BUILD_NODE_OPTIONS
+only in the web build stage. Empty default preserves ordinary builds; no runtime
+ENV changes. Micro helper requests --max-old-space-size=768 while retaining
+512MiB RAM/1536MiB RAM+swap limits and the existing2GiB encrypted-root swap.
+Heap can use that swap; this is a proposed bounded trial, not measured native
+success. Real local ARM64 typecheck and Vite bundle pass with this allowance.
+Transfer/helper host-grammar regressions4pass. The earlier Python3.9 syntax
+correction and test are included in the pending code review.
+
+Retry needs human verification/commit and exact changed-build approval. Bind the
+new commit/archive to the source-tree hash in adjacent JSON. Publish only its new
+heap768 tag, never the old source tag. One private Micro, Standard CPU credits,
+45minute build maximum, same original09:17:07UTC deadline/$2 threshold, guarded
+cleanup; do not start if remaining time cannot fit build/transfer/cleanup. No
+automatic extension/retry. RDS stays stopped: no SQL or secret read is needed for
+this build-only retry. No API/proxy/deployment/provider change.
