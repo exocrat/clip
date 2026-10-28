@@ -1,8 +1,0 @@
-{
-  "database/migrations/20261023173439_identity_account_profile_integrity.sql": "50dcb7949fdb16591c0543138196b621a149995c8be6564289b2e5ace26686d3",
-  "database/tests/identity-schema-smoke.sql": "5a683e6c5e5238b971fe10e5b702b01976e9bd4c36d38a62ed6a21bff008c4d4",
-  "database/tests/identity-upgrade-seed.sql": "dca808697a521392c524543c99d0231c8031bf71acd5c233594b747a47eae8eb",
-  "database/tests/identity-upgrade-check.sql": "b511330f2f81e5fdb991800b9611a1f1c59fb11c3d91f8bba99ca1909e3a1251",
-  "scripts/check_database.py": "82dbccc1fcddeba0346366f7118f98cdbdc6dec7d54a0e7f91f1fd9438115b67",
-  "database/tests/native-checks.sh": "91e7c0da5f0a155e4092a643c05a3dc85c2bcac1678faba911c2aec5fad06231"
-}

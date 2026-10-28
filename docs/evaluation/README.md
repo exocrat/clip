@@ -2,15 +2,27 @@
 
 **Canonical path:** `docs/evaluation/README.md`
 
-This supplied index is documentation only; no measurements have been run. Actual evidence is created by its owning task and indexed in the work log and the [foundation requirement traceability map](../architecture/foundation-traceability.md), created by PD-01.
+Past task check results are summarized in the task status and work log; they do
+not establish final integrated NFR acceptance. Historical setup and domain run
+receipts have been removed from the checkout and remain recoverable from Git history.
+No ECS-only versus ECS+Lambda measured comparison has been run. The
+[foundation requirement traceability map](../architecture/foundation-traceability.md)
+links requirements to their remaining checks.
 
 | Evidence home | Creator / contents |
 |---|---|
-| `docs/evaluation/foundation/` | PD tasks: clean-checkout/local/CI/cloud-readiness/approval results |
-| `docs/evaluation/domain/<task-id>/` | Domain FR/local/cloud tests and privacy-safe results |
+| Routine domain checks | Concise result and open gates in the owning task status/work-log entry; keep raw output only when an open acceptance gate requires it |
 | `docs/evaluation/nfr/<nfr-id>/<run-id>/` | SE-01/CN-01/INT-01: manifests, safe raw outputs, calculations, settings/revisions, validity and cleanup |
 | `docs/evaluation/experiment/<run-id>/` | EXP tasks: approved manifest/config A/B, data/workload/route versions, warm/measured intervals, raw metrics, validity/cost/analysis and cleanup |
 | `docs/evaluation/closeout/` | CLOSE-00: final regressions/revalidation/cost/resources/report/demo/package proofs |
+
+The early architecture experiment design is in
+[`ecs-only-vs-ecs-lambda-task-list.md`](ecs-only-vs-ecs-lambda-task-list.md);
+its required method is in the
+[`experiment-definition guidelines`](ecs-lambda-experiment-guidelines.md).
+The [reference dataset recipe](../../data/evaluation/reference-dataset-design.md)
+and [NFR measurement procedures](nfr/measurement-design.md) are design inputs,
+not generated data or measured results.
 
 Evaluation tool source belongs under `scripts/evaluation/`; versioned workload
 profiles and reviewed labels belong under `data/evaluation/` (the current label
@@ -20,11 +32,17 @@ tool command in `docs/environment/commands.md` and the profile path. Per-run man
 results stay in the NFR evidence home above; measured values must not be
 silently substituted by a static workload profile.
 
-PD-13 local setup run: [commands, statuses, and outputs](foundation/pd-13/README.md).
-
 Before every measurement create a manifest with actual values: task/NFR/run ID and owner; source/build/image/frontend/migration/configuration fingerprints; target account/role/region/resources/deployed path; generator seed/counts/labels/data fingerprint; exact commands/tools/version; workload/routes/request distribution/success checks; timing boundary/clock method/warm-up/measured duration/sample/repetition/run order/cold-warm policy; offered-rate/timeout/failure/drop handling; resource/concurrency/duration/cost caps and stop thresholds; human-approved version; telemetry/evidence outputs; rollback/cleanup/retention. Unknown consequential values require a question before the run. Register the command/tool creator task explicitly.
 
-Preserve raw and invalid/incomplete results; keep calculations/interpretation separate. Expected status alone is insufficient when response meaning is wrong. Evidence excludes tokens/private keys/full contacts/private conversation plaintext/ciphertext. Use synthetic accounts and controlled approved recipients.
+Keep raw per-operation results for final NFR and architecture measurements, and
+retain failed/incomplete results when they support an unresolved check or are
+needed to interpret the outcome. For completed local setup and diagnostic checks,
+a concise record of command, revision and result is usually enough; retire verbose
+transcripts once no current decision or check relies on them. Git history retains
+the prior files when historical detail is needed. Keep calculations separate
+from interpretation. Expected status alone is insufficient when response meaning
+is wrong. Evidence excludes tokens/private keys/full contacts/private conversation
+plaintext/ciphertext. Use synthetic accounts and controlled approved recipients.
 
 Affected changes invalidate earlier evidence until rerun or a documented equivalence review proves reuse appropriate. Do not average per-run p95s and call that a pooled p95. Measure offline NFR-04 with fixed human-reviewed labels; cloud latency/recovery evidence needs the normal deployed path. Final full-project budget belongs to CLOSE-00 after experiment costs, with billing delay/estimates identified.
 

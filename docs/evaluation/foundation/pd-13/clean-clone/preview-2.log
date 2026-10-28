@@ -1,7 +1,0 @@
-npm run preview
-
-> campus-marketplace@0.0.0 preview
-> vite preview apps/web
-
-  ➜  Local:   http://127.0.0.1:4173/
-make: *** [Makefile:39: preview-web] Interrupt

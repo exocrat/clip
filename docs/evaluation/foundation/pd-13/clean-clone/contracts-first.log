@@ -1,2 +1,0 @@
-uv run --locked python scripts/generate_contracts.py generate
-Contract generate: 3 registered artifacts current (format 1)

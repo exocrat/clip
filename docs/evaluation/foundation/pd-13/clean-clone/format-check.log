@@ -1,3 +1,0 @@
-uv run --locked black --check --diff .
-All done! ✨ 🍰 ✨
-59 files would be left unchanged.

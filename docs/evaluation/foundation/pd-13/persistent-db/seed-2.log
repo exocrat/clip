@@ -1,3 +1,0 @@
-bash database/local-db.sh migrate
-Local PostgreSQL authenticated connectivity is ready.
-Foundation seed: existing eight categories/four conditions applied through migrations.
