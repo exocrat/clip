@@ -6,9 +6,11 @@ and [work log](../../status/work-log.md). Use the [Identity provider setup](../.
 and [cloud inventory](../../environment/cloud-inventory.md) for operational
 instructions and recorded cloud state; refresh state before any cloud action.
 
-Past run receipts, source hashes, proposals and detailed reports were removed from
-the working tree. Git history retains them if a specific historical detail is
-needed. Do not reuse an old approval or proposed cloud input for a new operation.
+Past run receipts, source hashes, proposals and most detailed reports were removed
+from the working tree. The dated [ID-01 demo postmortem](id-01-step-12/demo-postmortem-20261026.md)
+remains because NEXT-04 directly uses its workaround-removal and deployment handoff.
+Git history retains other historical detail if needed. Do not reuse an old approval
+or proposed cloud input for a new operation.
 
 The two diagnostic scripts under `id-01-step-2/` remain because Identity's
 offline tests import them. Their tests do not call AWS or send email; running a

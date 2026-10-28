@@ -8,7 +8,7 @@
 
 This document proposes the complete MVP data inventory and its relational boundaries. It creates no tables or domain behavior. Names, types, constraints and indexes below are proposals unless identified as already approved. The review gates at the end must be resolved before dependent initial migrations. After approval, versioned migrations in `database/migrations/` become the executable schema source; this document explains their intent and must stay consistent with them.
 
-**Step 3 continuation, authorized by Mohit:** Mohit explicitly directed proceeding before remaining affected-owner review, allowing later corrections while staying within Stream 3 paths. Migrations live in [database/migrations](../../database/migrations/), with combined expected dbmate head `20261025013000`; [database/README.md](../../database/README.md) records the files and verification provenance. The additive LI-01 migrations add seller-command results, create-retry receipts, the selected-conversation reference and verified-image metadata. Migration `20261020142319` adds retirement retry/marker storage and removes cross-domain business-table access from the named triggers. The selected-conversation reference and retirement interface still require affected-owner review; image metadata awaits LI-02 verification-flow implementation. The sequencing exception did not waive required checks. The user later confirmed the carried PD-08 checks and owner acceptance complete. Historical platform evidence and its limits are recorded in the work log. This does not accept future domain contracts, cryptographic implementation, or cloud action.
+**Step 3 continuation, authorized by Mohit:** Mohit explicitly directed proceeding before remaining affected-owner review, allowing later corrections while staying within Stream 3 paths. At that integration checkpoint the combined dbmate head was `20261025013000`; the [database guide](../../database/README.md) records the current branch head and migration list. The additive LI-01 migrations add seller-command results, create-retry receipts, the selected-conversation reference and verified-image metadata. Migration `20261020142319` adds retirement retry/marker storage and removes cross-domain business-table access from the named triggers. The selected-conversation reference and retirement interface still require affected-owner review; image metadata awaits LI-02 verification-flow implementation. The sequencing exception did not waive required checks. The user later confirmed the carried PD-08 checks and owner acceptance complete. Historical platform evidence and its limits are recorded in the work log. This does not accept future domain contracts, cryptographic implementation, or cloud action.
 
 Identity migrations additionally implement reviewed profile/contact bounds, OTP
 transactions and session/login state; original migration histories are retained.
@@ -27,15 +27,17 @@ migration and does not mark the new objects installed or accepted.
 
 ## Sources and approved boundaries
 
-**Continuation phase:** Mohit transferred unfinished PD-08 checks/reviews to
-pre-domain integration on 2026-10-18. The
-[handoff decision](../decisions/database-integration-handoff.md) preserves original
-checkpoint IDs and outstanding real checks/affected-owner acceptance. Native
-results remain verified; the phase change does not accept this schema or waive
-PD-19/PRE-00 gates. Integration coordinates the continuation with Mohit's handoff.
+**Continuation history:** Mohit transferred unfinished PD-08 checks/reviews to
+integration on 2026-10-18. The
+[handoff decision](../decisions/database-integration-handoff.md) preserves their
+original checkpoint IDs and acceptance criteria. The carried checks were later
+confirmed complete, and PRE-00 was accepted; see the [work log](../status/work-log.md)
+and [foundation handoff](../status/foundation-handoff.md). This schema reference
+describes the original design; current migrations and task-linked decisions govern
+later changes.
 
 - [Submitted PRD](../source/ICC_Project_PRD_FINAL.pdf), especially FR-01–17 and §§5–6; [product reference](../product/product-reference-and-architecture-decisions.md).
-- [Shared conventions](../conventions/shared-conventions-and-cross-domain-contract-rules.md), [domain tasks](../tasks/domain-task-list.md), and [PD-08 procedure](../tasks/pre-domain-task-list.md).
+- [Shared conventions](../conventions/shared-conventions-and-cross-domain-contract-rules.md), [domain tasks](../tasks/domain-task-list.md), and the current [database/migration guide](../../database/README.md).
 - Mohit's approved directions: [Listings-owned search](../decisions/search-listing-data-boundary.md), [wanted conversation lifecycle](../decisions/wanted-conversation-lifecycle.md), [private payloads](../decisions/private-offer-and-contact-payloads.md), [notification durability](../decisions/notification-intent-durability.md), and [encryption storage](../decisions/encryption-storage-boundary.md).
 - Step 2 Identity direction: [application-owned OTP and session storage](../decisions/temporary-authentication-storage.md), approved by Mohit; affected-owner review and detailed security policy remain pending.
 - Step 2 Listings/Search direction: [item category, availability window and saved visibility](../decisions/listing-discovery-semantics.md): Mohit approved the original availability/saved rules; the PR #5 reviewer corrected item-category terminology. Affected-owner schema review remains pending.
@@ -112,17 +114,18 @@ Mohit confirmed that the seller must supply an asking-price value. The mandatory
 
 ### Initial catalogue and field limits — Mohit-approved
 
-Mohit approved the following Step 2 catalogue and limits; no seed data or constraints have been implemented yet. Use stable catalogue codes with editable labels and an active flag, rather than PostgreSQL enums. Listings (B) owns category/condition writes and the public catalogue read/validation boundary; Search (C) uses the same categories for Wanted Requests and discovery. Code changes or sensitive-category reclassification require affected-owner review. Deactivation prevents new assignment without deleting or invalidating historical references; deletion remains restricted.
+The initial Step 2 catalogue was seeded by `20261018094332_initial_catalogue.sql`. The NEXT-03 catalogue below was approved on 2026-10-28 and is added through a forward migration. Use stable catalogue codes with editable labels and an active flag, rather than PostgreSQL enums. Listings (B) owns category/condition writes and the public catalogue read/validation boundary; Search (C) uses the same categories for Wanted Requests and discovery. Existing codes and assignments remain valid; the new `sports_fitness` code is additive. Deactivation prevents new assignment without deleting or invalidating historical references; deletion remains restricted.
 
 | Category code | Display label | Sensitive-category flag |
 |---|---|---|
 | `mobile_phone` | Mobile phones | true (FR-17) |
 | `laptop` | Laptops | true (FR-17) |
-| `electronics` | Other electronics | false |
+| `electronics` | Electronics | false |
 | `furniture` | Furniture | false |
 | `books` | Books and study materials | false |
 | `bicycles` | Bicycles | false |
-| `appliances` | Appliances | false |
+| `appliances` | Home appliances | false |
+| `sports_fitness` | Sports & fitness | false |
 | `other` | Other | false |
 
 The mobile-phone/laptop branches must remain explicit for FR-17. A false category flag does not exempt a listing from the independent price-threshold rule. Category assignment is a seller declaration; no platform verification is implied.
@@ -438,7 +441,7 @@ Review this consolidated document and its linked decisions using the applicable 
 
 For each affected area, report the exact reviewed artifact, acceptance or concrete findings, and any required contract/constraint clarification. Missing public transaction/locking or crypto compatibility decisions must be resolved before dependent migration acceptance; do not substitute a fake contract. Storage review does not approve an unselected cryptographic protocol or replace CN-01's security design/tests.
 
-Mohit authorized Step 3 before this owner review; later corrections remained in the reviewed source paths. The user subsequently confirmed PD-08 owner acceptance and executable checks complete; specific other-machine run artifacts are unavailable in this checkout. Full cryptographic protocol design/testing remains with CN-01, and cloud actions retain their separate approvals. PD-08 is user-confirmed complete; PRE-00 still requires PD-19 and the combined reviewed/main-merged PD-17–19 handoff.
+Mohit authorized Step 3 before this owner review; later corrections remained in the reviewed source paths. The user subsequently confirmed PD-08 owner acceptance and executable checks complete; specific other-machine run artifacts are unavailable in this checkout. Full cryptographic protocol design/testing remains with CN-01, and cloud actions retain their separate approvals. PD-08 and PRE-00 are accepted; current schema changes belong to their named domain task and must be checked against the migrations and approved contracts.
 
 ## ID-01 Step3 branch-local schema verification
 

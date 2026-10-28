@@ -119,8 +119,10 @@ helper failures/no fallback, idle connection, cancellation and controlled HTTP.
 The shared test fixture helper now accepts an optional fixed creation instant
 at INSERT time. The first native run attempted to rewrite immutable created_at;
 that fixture mistake was fixed without weakening the existing origin guard.
-Failed logs and successful runs are retained. [Source-bound evidence](../evaluation/domain/se-01/hybrid-read/result.json),
-[exact commands](../environment/commands.md).
+Failed logs and successful runs were recorded in the historical receipt,
+removed from the checkout; see the [evaluation retrieval guidance](../evaluation/README.md).
+Current focused HTTP and native Hybrid read commands are in the
+[command index](../environment/commands.md#se-01-hybrid-read-checks).
 
 ## Remaining gates
 

@@ -22,38 +22,36 @@ Native-mobile feasibility is deferred research only; no native build is selected
 
 ## Execution source and phase routing
 
-This index supplies the next-work route and readiness definitions. Detailed numbered procedures remain in the linked task lists. Root `CONTRIBUTING.md` is the Git/PR workflow; `docs/prompts/reusable-task-prompt.md` is the mandatory human-verification loop. Status/evidence are actual execution facts, not claims made by this planning document.
+This index supplies the current work route and readiness definitions. The
+remaining-work plan sets the order; active task sources hold detailed steps.
+Root `CONTRIBUTING.md` is the Git/PR workflow and
+`docs/prompts/reusable-task-prompt.md` is the human-verification loop. Status
+and evidence come from the work log and current repository checks.
 
 | Stage | Task source / route | Gate for advancing |
 |---|---|---|
-| Initial repository | `docs/tasks/bootstrap-task-list.md`: BOOT-00 | Verified documentation/Git seed committed on local `main`, source provenance, actual roster and local/remote status recorded; pending publication does not block PD-00 in this clone |
-| Foundation | `docs/tasks/pre-domain-task-list.md`: PD-00–PD-19 | PRE-00: every required foundation check passes, human verification, accepted PD-19/main handoff |
+| Initial repository | BOOT-00 seed and provenance in the [work log](../status/work-log.md) | Complete; use the existing clone and current work plan |
+| Foundation | [Accepted PD-19/PRE-00 handoff](../status/foundation-handoff.md) | Complete; use current environment/database/cloud guides for operations |
 | Contracts and domains | `docs/tasks/domain-task-list.md`: DL-00, readiness checkpoints, required domain tasks, INT-01 | Full required FR and NFR-01–07 verification; budget-to-date/reserve; accepted INT-01 revision |
 | Primary comparison | `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md`: EXP-01–EXP-08 | Reviewed parity/design/implementation, valid results/analysis and cleanup |
 | Final closeout | `docs/tasks/final-closeout-task-list.md`: CLOSE-00 | Current regression/evidence, final NFR-08/cost/resources, report/demo/package and honest submission status |
 | Selected optional work | Domain task list OPT-01–03 | Own prerequisites plus OPTIONAL-OK; does not replace required stages |
 
-Pre-domain execution uses one PD-00–PD-03 kickoff owner, four dependency-aware
-streams, then one integration owner. See the stream/path map in
-`docs/tasks/pre-domain-task-list.md` and the companion
-`docs/prompts/pre-domain-contributor-prompt.md`; those documents do not assign
-people by name. Frontend contributors also follow the human-verified page
-ownership, composition, and public feature-entry map in
+PD-19/PRE-00 were accepted. The [foundation handoff](../status/foundation-handoff.md)
+and [work log](../status/work-log.md) retain the accepted result and limits;
+the original detailed PD procedures remain in Git history. The
+[database integration handoff](../decisions/database-integration-handoff.md)
+records how carried PD-08 checks were completed. Refresh the
+[cloud inventory](../environment/cloud-inventory.md) and follow current
+Terraform runbooks before any cloud action. Frontend work follows the
+human-verified ownership and public-entry map in
 `docs/architecture/frontend-collaboration.md`.
-
-Mohit moved unfinished PD-08 checks/reviews to pre-domain integration on
-2026-10-18; [the handoff decision](../decisions/database-integration-handoff.md)
-preserves original checkpoint IDs, owners, dependencies and real acceptance
-checks. Integration must sequence the continuation and consumer prerequisites;
-phase transfer is not task completion or permission to bypass a gate.
-PD-19/PRE-00 cannot pass with these obligations unresolved.
-The [bounded foundation staging decision](../decisions/shared-foundation-dependency-staging.md) permits named PD-16 operational increments and, after user-accepted operational closeout, PD-17 documentation work against recorded inputs. Deferred original checks remain required at final integration/PD-19/PRE-00 acceptance; the dependency table below is not evidence that those checks passed.
 
 ## Readiness milestone definitions
 
 | Milestone | Creating checkpoint and acceptance |
 |---|---|
-| PRE-00 | PD-19 plus every required foundation gate; reviewed merged handoff and human acceptance. Defined in pre-domain list. |
+| PRE-00 | PD-19 plus every required foundation gate; accepted per the [foundation handoff](../status/foundation-handoff.md). |
 | ID-READY | ID-01 step 12 reviewed/merged usable auth/capability/contact interfaces, schema/config/provider safety and local/API/UI checks. Later full consumer matrix is pending. |
 | LI-CORE | LI-01 step 11 reviewed/merged listing/owner/read/availability/selection and listing-offer-command interfaces with local tests against a reviewed Conversations double. ID-READY is required before real auth/FK/migration integration is accepted; real Conversations offer writes, images and discovery end-to-end completion remain pending their owning tasks. |
 | SE-CORE | SE-01 step 10 reviewed/merged functional search/browse/filter/sort/pagination, supported listing-data boundary and validated local workload tooling. Final cloud NFR results are pending. |
@@ -63,23 +61,17 @@ The [bounded foundation staging decision](../decisions/shared-foundation-depende
 
 Milestone acceptance requires actual capabilities/checks, step verification, peer review and merged main revision/evidence. Task status stays in progress/blocked until remaining required steps pass. A missing/failed check or a required blocker cannot be counted as accepted readiness/full completion.
 
-## Task starts and dependency-sensitive continuation
+## Selecting and resuming current work
 
-After real PRE-00/DL-00, all eight required domains may begin their documented isolated checkpoints using reviewed test doubles under `docs/architecture/stubs-and-integration-gates.md`. Domain-list named milestones remain real integration/acceptance gates. The agent explains the mode, exact checks and pending real obligations before human verification; a stub-only PR is not a readiness milestone. Within-task later checkpoints have additional prerequisites:
-
-- ID-01 step 14 needs implemented consumer paths from LI-01/LI-02, SE-CORE/SE-02 and CN-CORE/CN-02; policy helper tests alone are not the final FR-03 matrix.
-- LI-01 step 13 needs LI-02 and SE-CORE for full image-backed publication and unavailable discovery. LI-CORE has separate acceptance before these checks.
-- LI-02 step 12 may perform its isolated public ECS/RDS/S3 demo before LI-CORE/ID-READY, but only after step 11's local quality/security gate and approval of the exact cloud plan. It uses a dedicated disposable private RDS instance, the isolated test profile, fixed synthetic Identity fixture, and test-only ten-listing cap defined in the task. The public URL is unauthenticated while the demo is on; only synthetic data is allowed. The one-command stop deletes only LI-02-owned runtime/entry resources, disposable database/data and run objects while preserving shared RDS/VPC/NAT and other domains' resources. This does not accept either readiness milestone; LI-02 step 13 and final acceptance still require real LI-CORE/ID-READY and shared-integration checks.
-- SE-01 cloud-preparation step 12 needs LI-01/LI-02, ID-READY and final validated data. DATA-READY is required for the complete measurement/evaluation evidence.
-- CN-01 Steps 11–12 may measure the actual deployed encrypted chat path before email delivery when the approved real-path conditions in Document 2 Step 8 pass. Final CN-01/FR-13 acceptance still needs CN-03 integration; recheck timing if later changes materially affect it.
-- Full CN-01 request-response integration also needs SE-02's real public Wanted Request read/state interfaces; CN-02's request-response inbox work needs both SE-02 and CN-01. CN-CORE remains an earlier listing-origin conversation milestone and does not imply request-origin integration is complete.
-- INT-01 needs all eight required domain tasks fully passing. EXP-06 may run earlier with DATA-READY, EXP-05 and the approved actual read-path, parity, pilot, resource and action gates in Document 2 Step 8. This does not accept INT-01 or Notifications. NFR-08 final reconciliation occurs in CLOSE-00 after EXP-08, not before later experiment spend.
-
-Preserve numbered step order except the explicit staged-checkpoint route in the stub guide: human-verified isolated portions may advance while real subchecks remain pending under their original step IDs. As real prerequisites arrive, resume the earliest pending integration checkpoint before new isolated work. If the next checkpoint is non-substitutable, record the blocker and propose another owned unblocked task. The human verifies that new task understanding before switching. Do not restart an executed step or skip its human-verification gate.
+Follow the [remaining-work plan](remaining-project-plan.md) for NEXT-00–10,
+Notifications timing and CLOSE-00. Use the domain task list and experiment
+design for detailed dependencies, and reconcile each dependency with the
+current work log and repository state. Do not restart a completed foundation
+task or treat a planned output as already verified.
 
 ## Four-person assignment and peer review
 
-Map A/B/C/D to actual people in the work-log roster during BOOT-00/PD-03. Shared roles use those same four humans; no extra staff are required. Initial allocation balances broad work packages, but actual effort must be inspected and future assignments adjusted through a recorded human decision if needed.
+Roles A/B/C/D map to the people in the [work-log roster](../status/work-log.md). Shared roles use those same four humans; no extra staff are required. Adjust future assignments through a recorded human decision when actual effort calls for it.
 
 | Contributor | Implementation ownership | Primary peer | Shared review/support |
 |---|---|---|---|
@@ -98,23 +90,9 @@ Read roster and actual main plus active assigned branch/PR checkpoints. Respect 
 
 The claim and shared-path coordination workflow is in CONTRIBUTING.md; the branch work log carries live checkpoints and the coordinator serializes shared main-status updates. Refresh relevant remote branches/PRs so old main status is not treated as proof of availability. Update the repository registry for ownership changes before dependent work. Reports always show expected versus observed evidence; humans verify and decide, agents investigate and execute.
 
-## Command and artifact responsibility
+## Commands
 
-| Required output | Creator / readiness |
-|---|---|
-| Canonical docs/prompt/checklists/status and Git entry points | BOOT-00; PD-01/03 reconcile and extend |
-| Pinned Black/install/format/check | PD-02/04, documented actual targets before consumers |
-| Safe local setup/start/stop/migrate/seed/test/check | PD-05/07/08/12/13; PRE-00 validation |
-| Generator tooling / final schema loaders and labels | PD-09 framework; SE-01/DATA-READY final domain data |
-| Core/provider fixtures; schema-specific/domain fixtures | PD-10 core; named domain implementation tasks |
-| Contract generator/stale check and actual editable source | PD-11 initial tooling; DL-00/domain tasks public contracts |
-| Terraform plan/apply/deploy/verify/rollback/teardown route | PD-15/16 shared, each domain/EXP-03 scoped additions |
-| Provider setup and recipient/read-state interfaces | ID-01/CN-01/CN-03, with approved access/secret references |
-| NFR workload/manifest/evaluator/recovery/restore tooling | SE-01, CN-01, INT-01 before their accurate runs |
-| Lambda packaging/routing/parity/resource plan | EXP-03; approved actual deployment EXP-04 |
-| Report/demo/viva/artifact hashes/submission handoff | CLOSE-00 |
-
-PD-03 initializes `docs/environment/commands.md`; creator tasks record actual command spellings, arguments, target/effects/readiness, expected output and safe failure. Missing outputs explicitly assigned to the current step are implemented there; missing prerequisite commands are blocking inputs. Do not invent executed commands or imply an example is configured.
+Use the [common command index](../environment/commands.md) for shared entry points and each owning guide for exact inputs, targets, expected output, and safe failure behavior. An output assigned to the active step is work; a missing prerequisite is a blocker.
 
 ## Completion-dependency registry
 
@@ -122,28 +100,7 @@ The graph is derived from the following acceptance dependencies. For multi-stage
 
 | Accepted task/milestone | Prerequisites for that acceptance |
 |---|---|
-| BOOT-00 | Approved supplied bundle and human-verified bootstrap scope |
-| PD-00 | BOOT-00 |
-| PD-01 | PD-00 |
-| PD-02 | PD-01 |
-| PD-03 | PD-02 |
-| PD-04 | PD-02 |
-| PD-05 | PD-02, PD-04 |
-| PD-06 | PD-05 |
-| PD-07 | PD-02 |
-| PD-08 | PD-02, PD-04, PD-05, PD-06 |
-| PD-09 | PD-06, PD-08 |
-| PD-10 | PD-04, PD-05, PD-06 |
-| PD-11 | PD-05, PD-06, PD-07 |
-| PD-12 | PD-04, PD-05, PD-06, PD-07, PD-08, PD-09, PD-10, PD-11 |
-| PD-13 | PD-04, PD-05, PD-06, PD-07, PD-08, PD-09, PD-10, PD-11, PD-12 |
-| PD-14 | PD-01, PD-02, PD-03 |
-| PD-15 | PD-14 |
-| PD-16 | PD-04, PD-05, PD-06, PD-07, PD-08, PD-09, PD-10, PD-11, PD-12, PD-13, PD-14, PD-15 |
-| PD-17 | PD-14, PD-15, PD-16 |
-| PD-18 | PD-01, PD-02, PD-03, PD-04, PD-05, PD-06, PD-07, PD-08, PD-09, PD-10, PD-11, PD-12, PD-13, PD-14, PD-15, PD-16, PD-17 |
-| PD-19 | PD-00, PD-01, PD-02, PD-03, PD-04, PD-05, PD-06, PD-07, PD-08, PD-09, PD-10, PD-11, PD-12, PD-13, PD-14, PD-15, PD-16, PD-17, PD-18 |
-| PRE-00 | PD-19 |
+| PRE-00 | Foundation handoff accepted; see work log and handoff summary |
 | DL-00 | PRE-00 |
 | ID-READY | DL-00 |
 | LI-CORE | DL-00, ID-READY |
@@ -175,8 +132,9 @@ The graph is derived from the following acceptance dependencies. For multi-stage
 
 `docs/architecture/task-dependencies.dot` is the derived Graphviz view; update it with this index if dependencies change. Detailed task steps and observed evidence determine actual readiness.
 
-## Startup and parallel-start registry
+## Startup and parallel work
 
-Existing target: exocrat/clip; existing WSL is reused. BOOT-00 creates the actual clone/docs seed/workstation facts under `docs/environment/wsl-and-first-session.md`; PD-02/13 extend verified tool/startup commands. The prompt explicitly reads both supplied checklists from the first session.
-
-DL-00 plus reviewed contract/test-double readiness enables the isolated parts of ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02 and CN-03. OPTIONAL-OK also remains necessary for a selected optional isolated start. Dashed graph edges show this early-start allowance; solid edges/registry above are real acceptance dependencies. No task completion row is removed by an isolated start.
+Follow the active task's current dependency and ownership instructions. WSL is
+optional; use its setup guide only when the contributor is working in WSL.
+Notifications may proceed independently when its owner is ready, as described
+in the remaining-work plan.

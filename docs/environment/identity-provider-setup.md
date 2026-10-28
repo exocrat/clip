@@ -1,7 +1,8 @@
 # ID-01 provider setup
 
-Current handoff: [integration](../evaluation/identity/integration.md).
-Completed cloud/test chronology: [provider history](../evaluation/identity/provider-history.md).
+Current status: the [ID-01 work-log summary](../status/work-log.md) and this
+setup guide. Historical cloud/test chronology can be recovered through the
+[evaluation history guide](../evaluation/README.md).
 Canonical choices: [Microsoft/initial SES](../decisions/identity-provider-setup.md)
 and [dual-provider email](../decisions/identity-email-routing.md).
 This guide contains current setup facts and pending actions, not new approval.
@@ -112,13 +113,14 @@ configuration and safety checks. No provider failure activates an account.
    affected-owner review, current CI and authorized milestone merge are complete.
 
 Public DMARC was observed2026-10-24 15:34:02 UTC as v=DMARC1; p=none;. Preserve
-DKIM/SPF setup; verify authentication before tightening policy. See the
-[development cleanup release gate](../evaluation/identity/provider-history.md#development-cleanup).
+DKIM/SPF setup; verify authentication before tightening policy. Check current
+DNS/provider state before any live change; historical checks are not authorization.
 
 Offline checks and effects are registered in
 [commands](commands.md#identity-provider-offline-checks--id-01-step-2).
-Historical image/task/plan manifests and diagnostic scripts remain under
-[retained artifacts](../evaluation/identity/provider-history.md#retained-artifacts).
+Most old run manifests and receipts were pruned; the two diagnostic helpers still
+used by offline tests remain in `docs/evaluation/identity/id-01-step-2/`. See the
+[Identity handoff index](../evaluation/identity/README.md).
 
 ## API image database trust
 
@@ -135,6 +137,6 @@ Shared cookie/CSRF transport now connects Identity and marketplace wrappers loca
 normal Identity uses /api, with unprefixed routing only in its explicit preview.
 Protected writes fail before dispatch when fresh preflight fails; no client demo
 bypass or automatic transport replay. See the
-[decision](../decisions/browser-session-transport.md) and
-[actual local integration result](../evaluation/identity/integration.md#shared-browser-transport-result--2026-10-25-190023-utc).
+[decision](../decisions/browser-session-transport.md) and the
+[current ID-01 status](../status/work-log.md).
 Real provider/browser/proxy configuration and current image deployment remain gated.

@@ -72,8 +72,9 @@ HTTP coverage checks; it is test setup, not changed production retry policy.
 The probe uses <=6min/40windows,1simultaneous helper and sampled512MiB API/helper
 RSS, excluding native DB; it stops/reaps all owned resources and retains logs.
 Only identity is a test override; bootstrap is explicit fixture setup outside
-app startup. [Evidence](../evaluation/domain/se-01/worker-dispatch/result.json)
-records source hashes, failed-probe correction, real results and remaining gates.
+app startup. The historical receipt records source hashes, failed-probe
+correction, real results and remaining gates; see the
+[evaluation retrieval guidance](../evaluation/README.md).
 Actual upstream/auth/images, controlled bootstrap, Linux/resources/final corpus,
 20+human labels/NFR/full CI/secret scan/independent review remain pending.
 

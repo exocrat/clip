@@ -39,7 +39,6 @@ No isolated PR in this table accepts ID-READY, LI-CORE, SE-CORE, CN-CORE or DATA
 
 | Work | Permitted preparation | Gate that cannot be skipped |
 |---|---|---|
-| BOOT-00 / pre-domain | Documentation, command/framework implementation and synthetic fixtures at their named steps. | Actual repo/access/clone, runnable foundation/toolchain/CI and approved shared cloud readiness for PRE-00 cannot be asserted from simulated outputs. |
 | DL-00 | Generate types and test-double scaffolding after reviewed decisions. | Missing/ambiguous contracts, ownership, auth/contact/private-data policy or cryptographic decisions require human resolution; no guessed interface. |
 | INT-01 | A task owner can build integrated workload/recovery/restore tooling in advance within explicitly selected scope. | Required domain passes, real integrated journeys, accurate deployed NFR-03/06/07 and real spend/caps; no fake infrastructure/recovery/restore result. |
 | EXP-01–08 | EXP-01 experiment design may be approved before INT-01; reuse registered workload tools and scope other early helpers explicitly. Design approval does not establish measured experiment completion. | The approved real read-specific gate in Document 2 Step 8, DATA-READY, approved design, actual ECS/Lambda routing/parity/deployments, bounded measured pairs, valid analysis and cleanup cannot be replaced by mocks. INT-01/FR-13 remain required for final project acceptance. |

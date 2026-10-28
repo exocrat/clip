@@ -31,9 +31,10 @@ categories, schema or search behavior must be reconciled before final generation
   of `SHA-256("42:<assignment-name>:<listing-id>")`, breaking a digest tie by
   ID. Use assignment names `category`, `condition`, `price`, `negotiable`,
   `proof` and `availability` respectively. Partition that order into consecutive
-  groups of the specified sizes in table order. The category assignment and
-  topic mapping must be selected after NEXT-03 finalizes the categories; record
-  the resulting exact counts and mapping before final data generation. Sort the 4,800 regular user IDs using
+  groups of the specified sizes in table order. Use the approved NEXT-03
+  category codes and verified counts below. Record final counts and item
+  mapping before data generation.
+  Sort the 4,800 regular user IDs using
   `SHA-256("42:owner:<user-id>")` and assign the first 1,000 in order to
   listing IDs sorted using `SHA-256("42:listing-owner:<listing-id>")`.
 
@@ -62,13 +63,12 @@ in retained evidence.
 ## Sale listings
 
 Generate **1,000 live listing records**, each with one valid confirmed image
-and a distinct synthetic ID. NEXT-03 will select the final categories and then
-review and record the category counts, mappings and content mix before NEXT-06
-generates the data. Do not assume today's category names or equal distribution.
-The following are examples of item topics and synonym text to review against
-the final catalogue; they do not fix category names, counts or allocations:
+and a distinct synthetic ID. Suraj verified the category list, balanced test
+counts and proposed item topics below on 2026-10-28. The mix is not a claim
+about marketplace demand. NEXT-06 still generates and validates the data;
+search relevance labels receive their separate human review.
 
-| Current category code | Five controlled item descriptions and synonym text |
+| Category code | Five verified proposed item descriptions and synonym text |
 |---|---|
 | `mobile_phone` | Android smartphone → Android cell phone; iPhone → Apple mobile phone; basic mobile phone → simple cell phone; dual-SIM smartphone → dual SIM cell phone; refurbished smartphone → used mobile phone |
 | `laptop` | Student laptop → student portable computer; office laptop → work portable computer; compact laptop → small portable computer; refurbished laptop → used portable computer; gaming laptop → gaming portable computer |
@@ -77,27 +77,47 @@ the final catalogue; they do not fix category names, counts or allocations:
 | `books` | Linear algebra textbook → mathematics book; chemistry textbook → science study book; biology textbook → life science book; economics textbook → economics study book; computing textbook → computer science book |
 | `bicycles` | Campus bicycle → two wheeled vehicle; commuter bicycle → daily travel cycle; mountain bicycle → off road cycle; road bicycle → road riding cycle; folding bicycle → folding cycle |
 | `appliances` | Electric kettle → kitchen water boiler; toaster → kitchen bread toaster; rice cooker → kitchen rice appliance; table fan → desktop cooling fan; kitchen mixer → food mixing appliance |
-| `other` | Badminton racket → racket sports equipment; yoga mat → exercise floor mat; dumbbells → hand weights; football → sports ball; backpack → student carrying bag |
+| `sports_fitness` | Badminton racket → racket sports equipment; yoga mat → exercise floor mat; dumbbells → hand weights; football → sports ball; tennis racket → tennis equipment |
+| `other` | Backpack → student carrying bag; umbrella → rain cover; water bottle → reusable drink container; stationery kit → pens and notebooks; storage box → plastic storage container |
 
 For each item, construct a title `Synthetic <item description> <four-digit
 ordinal>` and a description `Synthetic <item description>. <synonym text>.
 Condition: <condition label>. For campus use.` using the corresponding table
-values and final approved condition label. Store these 40 text/synonym pairs as
-versioned generator input; do not pull uncontrolled real listings. Use the same
-text for both versions.
-Apply the current 120-character title and 5,000-character description limits,
-and recheck them after NEXT-03. The owner must review and update the proposed
-topic/synonym set and its category mapping after NEXT-03, then freeze the exact
-set and counts with the dataset. Avoid claiming that any proposed synonym is
-a human relevance judgment.
+values and final approved condition label. Store these 45 verified proposed
+text/synonym pairs as versioned generator input; do not pull uncontrolled real
+listings. Use the same text for both versions.
+Apply the current 120-character title and 5,000-character description limits.
+Review the proposed topic/synonym set and mapping against the approved NEXT-03
+categories, then freeze the exact set and counts with the dataset. Avoid
+claiming that any proposed synonym is a human relevance judgment.
 
-Assign independently, with exact totals:
+Assign independently, with exact totals. Suraj verified the category mix below
+on 2026-10-28. It is a balanced test corpus, not a claim about real marketplace
+demand. Its one-item remainder is assigned to Mobile phones so the recipe is
+deterministic.
+
+| Category code | Approved listing count |
+|---|---:|
+| `mobile_phone` | 112 |
+| `laptop` | 111 |
+| `electronics` | 111 |
+| `furniture` | 111 |
+| `books` | 111 |
+| `bicycles` | 111 |
+| `appliances` | 111 |
+| `sports_fitness` | 111 |
+| `other` | 111 |
+
+These counts sum to 1,000 and give every category at least 111 listings for
+filtered-browse and query cases.
+
+Assign the other attributes independently, with exact totals:
 
 | Attribute | Proposed distribution |
 |---|---|
 | Condition | 250 each of `new`, `like_new`, `good`, `fair`, subject to the final approved catalogue. |
 | Price | 100 listings each at ₹0, ₹250, ₹500, ₹1,000, ₹2,000, ₹3,000, ₹5,000, ₹8,000, ₹12,000 and ₹20,000; store whole rupees as integer paise. |
-| Negotiable | 500 true and 500 false; whether it remains a filter is governed by NEXT-03. |
+| Negotiable | 500 true and 500 false; retain it as a listing property, not a search filter. |
 | Proof declaration | 334 omitted, 333 yes, 333 no where the final schema permits; verify sensitive flags against the actual configured threshold and categories. |
 | Availability | 800 available at the comparison time, 100 explicitly unavailable, 50 future and 50 expired. |
 
@@ -112,8 +132,8 @@ tie-breaker; verify pagination across ties. Assign pickup areas `Synthetic Zone 
 `Synthetic Zone B`, `Synthetic Zone C` and `Synthetic Zone D` in equal groups of
 250 using the `pickup` hash assignment. Recheck these values against the final
 schema; no pickup location represents a real address. Recheck all
-constraints and the final category mapping after NEXT-03; do not silently map an
-obsolete category or invent the final category counts.
+constraints and the approved category mapping before data generation; do not
+silently map an obsolete category or use unreviewed category counts.
 
 ## Images, indexes and search model
 
@@ -142,9 +162,9 @@ the existing registered commands only after their target and later plan are appr
 
 ## Search cases and human review
 
-Propose these **20 query texts** as initial examples, two per current topic
-group plus four broader cases. NEXT-03 must revisit them against the final
-categories and dataset content before they are reviewed and frozen. The rows
+Propose these **22 query texts** as initial examples, two per category plus
+four broader cases. Review them against the approved categories and proposed
+dataset content before they are frozen. The rows
 use no category filter unless an explicitly reviewed context says otherwise:
 
 | Category | Queries |
@@ -155,8 +175,9 @@ use no category filter unless an explicitly reviewed context says otherwise:
 | Furniture | `study desk`; `work table` |
 | Books | `linear algebra textbook`; `mathematics book` |
 | Bicycles | `campus bicycle`; `two wheeled vehicle` |
-| Appliances | `electric kettle`; `water boiler` |
-| Other | `badminton racket`; `racket sports` |
+| Home appliances | `electric kettle`; `water boiler` |
+| Sports & fitness | `badminton racket`; `sports racket` |
+| Other | `backpack`; `student carrying bag` |
 
 The four broader cases are `student computer`, `folding cycle`, `kitchen
 appliance` and `study furniture`. These are proposed inputs, not claims that

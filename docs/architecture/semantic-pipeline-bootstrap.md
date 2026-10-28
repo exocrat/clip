@@ -78,7 +78,8 @@ Hybrid recovery. All tasks/helpers/pools/cluster stop with retained evidence.
 
 Probe bounds:10min/40windows,1simultaneous helper, sampled512MiB API/helper; native
 DB and short operator CLI processes are outside that RSS measurement. Only trusted
-caller/eligibility are test overrides. [Evidence](../evaluation/domain/se-01/bootstrap/result.json)
-records real CLI/SQL/model results, resources, unit checks and remaining gates.
+caller/eligibility are test overrides. The historical receipt records real
+CLI/SQL/model results, resources, unit checks and remaining gates; see the
+[evaluation retrieval guidance](../evaluation/README.md).
 Actual upstream/identity/images, Linux/deployment/capacity, final corpus20+human
 labels/NFR/full CI/secret scanning/independent review remain incomplete.

@@ -159,7 +159,7 @@ def main() -> int:
             ],
             extra={"DATABASE_URL": database_url},
         )
-        if sql("SELECT max(version) FROM public.schema_migrations") != "20261027112205":
+        if sql("SELECT max(version) FROM public.schema_migrations") != "20261028090000":
             raise RuntimeError(
                 "the disposable database is not at the current migration head"
             )

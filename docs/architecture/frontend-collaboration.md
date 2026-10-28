@@ -1,54 +1,11 @@
 # Frontend page inventory and collaboration map
 
-## CN-01 listing-to-chat integration reservation
+## Shared page and interface edits
 
-Rahul (D), `task/cn-01-conversations`, is the bounded writer from
-2026-10-26 14:51:33 UTC for `src/pages/ScaffoldPages.tsx`'s Listing detail
-conversation slot, the corresponding public Listings feature action/export,
-and any necessary `ConversationRuntime.tsx`/`App.tsx` integration correction.
-Existing Identity/Search/Listings page behavior and public feature boundaries
-are preserved. This reservation follows Rahul's verification of the six-step
-[integration checkpoint](../evaluation/domain/conversations-integration.md).
-Suraj reviews Listings changes, Aditya reviews shared/session composition, and
-Mohit reviews any Search impact before merge. It does not reserve or modify the
-separate `task/cn-01-two-person-demo` worktree's demo files. Application edits
-start only at the verified next implementation step; this increment records scope.
-
-Step2's page-slot reservation was released at2026-10-26 18:21:27 UTC after
-implementation and local checks (Conversations DB107, web385/3skip, contract/
-Listings regressions118). P05 now composes the public Listings chat action.
-Further shared application/page changes need a renewed bounded reservation.
-
-## Bounded browser-Origin correction writer (released)
-
-Rahul (D), on `task/cn-01-conversations`, is the local correction writer for
-`src/shared/http/sessionFetch.ts`, its transport tests and this map under the
-ongoing human-authorized browser fix. Scope: preserve an actual Origin on
-same-origin API writes while limiting Referer to the origin alone. Aditya retains
-shared transport ownership and reviews the correction; affected consumer review
-remains required before merge. No page composition is reserved by this correction.
-Reservation released after web checks and an isolated real Firefox156 header
-probe passed at2026-10-26 09:45:53 UTC. See the work log for results and correction
-of the earlier opaque-document diagnosis.
-
-## Current bounded Conversations integration writer
-
-Rahul (D) is the sole local integration writer for `App.tsx`,
-`pages/ScaffoldPages.tsx` and the new `pages/ConversationRuntime.tsx` on
-`task/cn-01-conversations`, following the human-authorized main integration.
-Existing Identity/Listings/Search public page compositions are preserved.
-The new runtime connects public `useIdentity`, public Conversations exports and
-the shared `sessionFetch` transport; it imports no other feature's private code.
-This reservation covers local reconciliation only, not owner approval, push,
-merge to main or deployment. A/B/C review their affected composition under the
-normal PR process. Reservation released after the local checks at
-2026-10-26 07:12:12 UTC; checks and pending review are recorded in the work log.
-
-**Status:** Human-verified frontend foundation map. It records the approved
-routes, contributor roles, public feature entry points, shared-page coordination
-rule, shared UI baseline, and implemented scaffold connections. These are not
-completed domain features or frozen business/API contracts; current step and
-verification state is recorded in the [work log](../status/work-log.md).
+This file records approved routes, feature owners and public entry points; it
+does not hold an active writer reservation. Before a shared page/interface edit,
+check the current task and work-log checkpoint, name one writer, and coordinate
+affected feature owners. Historical reservations and walkthroughs are omitted.
 
 ## Sources and interpretation
 
@@ -214,62 +171,6 @@ composition at a time; feature contributions remain in their owning feature
 roots. The current writer records the affected page and coordinates with the
 involved domain contributors before changing a public component connection.
 
-### SE-01 Step 7 first UI checkpoint — 2026-10-24
-
-Mohit (C) is the recorded writer for `ScaffoldPages.tsx`'s **DiscoveryPage sale
-view only**, the owned Search root/public export and this map update. Other
-page bodies, shared controls and other domains' private UI remain untouched.
-The actual discovery scaffold matched the map before editing. `SaleDiscovery`
-is a new public Search export; existing `SearchPlaceholder` props/exports remain
-for wanted/saved/other composition points. Search removed only its own `.gitkeep`.
-
-Text summaries use the owner-reviewed generated `ListingSummary` fields; no
-unpublished B component, private file, owner/selection data or image-body fetch
-is assumed. B's detail route and real image/provider integration retain their
-existing boundaries and affected-owner review. The initial local preview uses
-an explicitly labelled test-only HTTP fixture harness, not real SQL/auth/saved
-behavior. No browser verification is claimed until Mohit reports observations.
-
-App composition lives in `src/app/` and `src/pages/`. Pages import feature
-components only through these public entry points:
-
-- `src/features/identity/index.ts` — A / Identity and notifications.
-- `src/features/listings/index.ts` — B / Listings and images.
-- `src/features/search/index.ts` — C / Search, Wanted Requests, and Saved Listings.
-- `src/features/conversations/index.ts` — D / Conversations and Offers.
-
-Each domain owns its feature implementation and exports only components
-intended for page composition from its entry point. A feature must not import
-another feature's private files. Pages may compose several public components,
-including through a supplied action/child area, so a save or contact action can
-appear in a listing/request view without moving ownership into that feature.
-Exact prop, event, data, session, and refresh contracts remain with DL-00 and
-the domain tasks; the entry-point paths do not freeze business APIs.
-
-PD-07 creates a tracked `.gitkeep` in each of the four feature roots. Each
-feature marker records a later owner's implementation boundary; it remains in
-the PD-07 handoff even when scaffold placeholder files are added. At the first
-authorized implementation write, that feature's owner removes only their own
-marker. Do not remove another domain's marker or treat the markers as feature
-implementations.
-
-A owns the cross-cutting app shell/navigation and shared presentation area:
-`src/shared/ui/` and `src/shared/styles/`. The initial controls are `Button`
-(primary/secondary presentation, native disabled state, and button type defaults
-to `button`), `PageFrame` (shared main-content width and spacing), and
-`SegmentedControl` (a controlled single-choice switch whose caller owns the
-selected value and content). They are exported from `src/shared/ui/index.ts`.
-`src/shared/styles/tokens.css` defines the common typography, spacing, color,
-content-width, and control-radius values. `global.css` applies those values,
-base document styling, and visible keyboard focus. Shared controls/styles have
-one maintained source so a central change reaches all consumers. Detailed
-screen behavior and styling remain with the features.
-
-For a bounded shared UI/interface edit, the current writer identifies affected
-consumers and gets review from the relevant feature contributors. A page or
-route addition still requires human approval. No contributor edits another
-feature's private implementation as an integration shortcut.
-
 ## Significant cross-domain connections
 
 This table identifies the connection and its eventual contract work. It does
@@ -336,190 +237,14 @@ lists must define the business contracts before implementation depends on them.
 Step 9 updates downstream task and agent instructions to the implemented
 scaffold and reviewed contracts.
 
-## ID-01 Step11 first UI checkpoint
+## Current integration status
 
-Aditya is the reserved current writer on task/id-01-identity for Identity feature
-exports and bounded Identity page/shell composition. `/sign-in` now uses public
-`SignIn`; `App` supplies public `IdentityProvider` and the shell uses public
-`IdentitySessionControl`. The existing IdentityPlaceholder export remains for
-unchanged marketplace compositions. No route/private feature boundary changes.
-The first visible increment supplies temporary sign-in/registration/OTP and
-session/logout controls. `/auth/callback`, password reset and `/account/contacts`
-remain original Step11 pending checkpoints. Human desktop/phone-layout checks
-are pending; actual-phone keyboard/provider/deployed acceptance remains open.
-
-The explicit development-only identity-preview mode uses a fixed loopback proxy
-and synthetic test inbox with actual disposable Identity SQL/HTTP. It rejects
-build/deployment of that mode; normal builds eliminate the test inbox module.
-Normal development does not enable this proxy; unconfigured backend main is
-still health-only. See [first checkpoint evidence](../evaluation/identity/implementation.md#step-11).
-
-### ID-01 Step11 recovery increment
-
-After Aditya verified the first sign-in screen, the same reserved Identity writer
-adds forgot-password/request-code/reset states inside `/sign-in`; no new route,
-page composition or public feature prop change. API requests use the reviewed
-reset-specific operations, generic acknowledgement and single-use proof; reset
-issues no new session. Human recovery/portrait/landscape verification remains
-pending. Microsoft callback and private contact editor remain later Step11 work.
-
-### ID-01 Step11 private contact editor increment
-
-Aditya continues as sole reserved Identity/page writer after verified recovery
-checkpointbcfff32. AccountContactsPage now composes public ContactsEditor on its
-existing route. Existing Identity placeholder/props/session exports remain
-compatible; other feature/private/page connections are unchanged. Contact values
-stay inside an actor-keyed own editor, with CSRF writes and confirmed refetch;
-known logout/account changes unmount private drafts and fence late responses.
-There is no general profile/directory or Conversation contact-sharing endpoint
-or client bypass. Actual CN-02 deliberate sharing remains its original gate.
-Human contact-editor desktop/phone/browser verification is pending.
-
-### ID-01 Step11 Microsoft UI increment
-
-Aditya remains reserved Identity/shared-page writer. SignIn composes its private
-Microsoft button through the shared submission guard; AuthCallbackPage now uses
-public MicrosoftCallback. Existing public feature exports and all approved routes
-remain. New own-controller lazily selects only the real pinned SDK, with explicit
-origin/build activation and unconditional synthetic-preview disablement. Callback
-success requires one server exchange; safe status recovery uses IdentityProvider's
-generation fence. The provider refresh result now returns a current SessionView
-or null while existing callers may ignore it. No other feature private imports.
-The app's no-referrer HTML metadata protects redirect material; shared-owner/peer
-review remains before integration. Live provider activation is separately gated.
-
-
-### SE-01 mode/relevance feature increment
-
-SaleDiscovery now owns Keyword/Hybrid selection and both-mode Relevance inside
-its existing Search boundary, with no shared page/composition/public export change.
-Mode selection is immediate/outside drafts; it retains applied inputs and unsaved
-edits while resetting page1. History restores URL inputs. Associated visible help,
-blank relevance prevention and explicit Hybrid503 Retry/Use Keyword recovery
-follow the human-verified specification. The existing labelled fixture app adds
-hybrid-down recovery and accepts registered inputs without claiming real ranking.
-Automated checks pass; new Safari responsive/history/draft/error/keyboard behavior
-awaits human verification. No other feature private implementation is imported.
-
-### SE-02 Step7 composition reservation — 2026-10-25 08:13:02 UTC
-
-Mohit (C) is the current writer for Search composition in `ScaffoldPages.tsx`: Wanted discovery, My Wanted Requests, Saved Listings, Wanted detail and the existing ListingDetail save-action child slot. Search public components consume reviewed HTTP contracts, including Identity `GET /me`; other feature internals, routes and shared shell are outside this reservation. Human authorized Step7; release after implementation checks.
-
-Reservation released 2026-10-25 08:26:59 UTC after local checks. Search public components now fill the reserved slots using reviewed HTTP types; no other feature internals/routes changed. Browser verification and actual-provider integration remain pending.
-
-### ID-01 Step12 shared HTTP integration — 2026-10-25
-
-Aditya(A) is the bounded integration writer for shared/http/sessionFetch.ts,
-Identity's adapter and transport-only adoption in Listings listingsApi.ts and
-Search wantedApi.ts. Suraj/Mohit keep feature ownership and review these changes;
-no page composition, public component export, UI behavior or business payload is
-reassigned. Feature validators/status text/operation keys stay local. No feature
-imports Identity-private code. Presigned upload bytes remain outside this helper.
-Normal Identity uses the existing /api proxy; only explicit Identity preview uses
-unprefixed routes. Existing isolated harnesses implement the reviewed CSRF response
-as test doubles instead of introducing a client-side fallback. See the
-[shared session transport decision](../decisions/browser-session-transport.md).
-Human browser/device and real runtime/provider checks remain separate.
-
-### ID-01 Step12 seller-eligibility integration — 2026-10-26
-
-Aditya(A) is the bounded current writer after explicit human authorization for
-Identity's new public SellerEligibilityGate and only ListingCreatePage composition,
-shared application's guarded isolated-demo `/me`, tests and this map. Suraj keeps
-Listings implementation ownership and affected-owner review. Normal create page
-uses IdentityProvider's real `/me` session; no feature-private import or client-side
-demo bypass. Loading/unavailable/missing/expired/temporary sessions never mount the
-seller form. A regular actor switch remounts the form to discard prior drafts.
-The backend retains authoritative regular/owner/lifecycle checks on every write.
-
-Existing local browser demos already expose their reviewed synthetic `/me`.
-Shared isolated cloud rehearsal gains the same response only under its existing
-exact test/development/dedicated DB/bucket guards, before SPA fallback; it reuses
-the existing fixed server actor and rejects normal/production configuration. No
-real sessions are issued and no client actor headers are accepted. This preserves
-isolated demo compatibility and proves no real Identity acceptance for that mode.
-Frontend/backend checks and human regular/temporary page walkthrough are recorded
-in the work log; owner review and live cloud/device checks remain separate.
-See [connection audit](../evaluation/identity/cross-owner-review.md#identity-connection-audit--2026-10-26).
-
-### ID-01 Step12 marketplace account lifecycle integration — 2026-10-26
-
-After human authorization, Aditya(A) is the bounded shared composition writer for
-public AccountStateBoundary, RoutePage integration, edit/sale-management seller
-gates and AppShell's seller-only navigation. No Listings/Search private component
-is edited. B/C affected review remains required. Marketplace children unmount when
-session ends, expires or cannot be verified; keys by actor/class reset private
-content/drafts and invoke each feature's abort/cleanup on account changes. Stable
-same-actor refreshes preserve state. Create/edit pages use their seller gate;
-sign-in/callback and not-found remain outside account-scoped remounting. A
-StrictMode callback test uses the real page to ensure accepting a login does not
-restart its consumed callback. No API permission or backend policy is weakened.
-
-The Sale Listings tab is regular-only; the Wanted Requests tab remains available
-to temporary users. New/edit navigation links are hidden unless the current
-regular session is valid. Direct URLs retain the same UI gate and server guards.
-Focused actual Listings/Search page tests cover logout/actor reset, stable refresh,
-late-response discard, expiry, dependency failure and Wanted draft preservation/
-removal. Actual TS/HTTP/SQL tests cover saved CRUD/idempotency/account isolation/
-unavailable records, and expired/revoked sessions are denied for checked domain
-reads/writes. Full Step14/Conversations/cloud/phone acceptance remains pending.
-
-Explicit follow-up approval extended this bounded integration to Listings' private
-CreateListing/ListingEdit components: mounted refs prevent an old completed save
-from navigating/updating UI after account-scoped unmount. B retains review; no
-save payload/validation/retry/idempotency/server behavior changes. Four controlled
-form/router cases verify mounted navigation and late-completion suppression.
-Aditya verified the requested seller/logout/Wanted states; exact checks/results
-are in the work log. Writer reservation released2026-10-26 05:22:07UTC.
-
-### ID-01 Step12 Firefox transport correction — 2026-10-26 19:31:52 UTC
-
-Aditya is the human-authorized bounded writer for shared/http/sessionFetch.ts and
-its tests: pin origin-only referrer policy on API/preflight requests to preserve
-Firefox Origin validation under the unchanged no-referrer HTML metadata. Existing
-Listings/Search consumers inherit transport behavior only; their feature code and
-page composition are unchanged. Suraj/Mohit affected-owner review remains pending.
-
-## CN-02 Step 5 seller-selection composition reservation (released)
-
-Rahul (D) is the bounded current writer for CN-02 Step 5: the public Listings
-selection API export, `pages/ConversationRuntime.tsx` adapter, seller-only
-selection panel on the existing Conversation page, and the bounded local
-two-browser test harness/walkthrough, with focused tests and this map. The
-Conversations feature receives a narrow injected Listings capability;
-it does not import Listings private files or call Listings storage directly.
-Listings retains owner, eligibility, exact-thread membership, availability,
-revision, and retry enforcement. Step 6 availability controls, other Routes and
-app-shell composition are outside this reservation. Suraj reviews the public
-Listings boundary; Aditya reviews the shared runtime/session composition. This
-reservation does not authorize push, merge, or deployment.
-
-Released at 2026-10-27 10:18:54 UTC after Rahul confirmed the updated selection
-and unavailable behavior works in the local preview at `e103562`. Step6 requires
-its own bounded writer scope before shared frontend edits.
-
-## CN-02 Step6 done-deal composition reservation (released)
-
-Rahul (D) is the verified bounded writer for the public Listings availability
-export, `pages/ConversationRuntime.tsx` adapter, seller-only action beside Sale
-Listing inbox group headings, focused tests, and local browser walkthrough.
-Listings owns the availability transaction; Conversations receives a narrow
-injected capability. Preserve the current window and selected buyer, use stable
-operation IDs for uncertain outcomes, and refresh owner state after success.
-Suraj reviews the Listings boundary and Aditya reviews session composition.
-Other routes/app-shell changes, contact sharing and cloud work are outside scope.
-
-Released at 2026-10-27 10:31:38 UTC after Rahul verified the local browser
-checkpoint at `396a0c9`. Further shared composition edits require their own
-bounded writer scope.
-
-## CN-02 Step7 contact preparation checkpoint
-
-Rahul (D) is the verified writer for Conversations-owned contact preparation,
-its existing Conversation page slot/API client, tests and local browser helper.
-The component reads availability only after the user opens the flow and submits
-selected field names only after a separate confirmation. Returned own values
-are transient and are neither displayed nor retained while Step8 publication is
-absent. Identity calls use its public interface and server-only scoped claims;
-Aditya reviews that integration. Shared page routes/runtime/core/generated files
-are unchanged. Step8 encryption/storage/cleanup remain outside this increment.
+Use the [domain task list](../tasks/domain-task-list.md) for required feature
+behavior and the [work log](../status/work-log.md) for current owners, checkpoints
+and verification. The Search product has no visible mode selector and defaults
+to Hybrid; legacy Keyword URLs/API handling remain for compatibility. Current
+Conversations and Identity integration details are in their retained
+[CN-01 handoff](../evaluation/domain/conversations-integration.md),
+[CN-02 handoff](../evaluation/domain/conversations-offers.md), and
+[ID-01 provider guide](../environment/identity-provider-setup.md). No historical
+reservation below should be treated as current authorization.

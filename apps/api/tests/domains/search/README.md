@@ -34,6 +34,6 @@ pagination corpus still runs last after bounded mathematical bootstrap checks.
 
 The response endpoint and200 body were corrected in the approved implementation checkpoint.
 Tests do not count the explicit C fixture as a real Conversations implementation.
-The [original coverage evidence](../../../../../docs/evaluation/domain/se-02/test-coverage/result.json)
-preserves the original gaps; [response correction evidence](../../../../../docs/evaluation/domain/se-02/wanted-response/result.json)
-records the resolved local inventory and remaining real gates.
+The [evaluation history guide](../../../../../docs/evaluation/README.md) explains
+how to recover older coverage receipts; current acceptance and open gates are in
+the [domain task list](../../../../../docs/tasks/domain-task-list.md).

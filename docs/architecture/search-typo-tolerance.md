@@ -84,8 +84,9 @@ original misspelled source and nonadjacent phrase matches, visibility, price/
 negotiability filters, UUID-stable pages at20/50/100 and GIN eligibility.
 Existing expansion/vocabulary tests remain regression evidence.
 
-[Native/unit/source evidence](../evaluation/domain/se-01/typo-tolerance/result.json).
-The first native run found a test-fixture reset omission: selective price/negotiable
+The native/unit/source receipt is in Git history; see the
+[evaluation retrieval guidance](../evaluation/README.md). The first native run
+found a test-fixture reset omission: selective price/negotiable
 checks correctly hid two rows from the later all-row pagination check. Resetting
 those fields before that matrix fixed the fixture; no product filtering or test
 expectation was weakened. Failed and subsequent successful runs remain retained.

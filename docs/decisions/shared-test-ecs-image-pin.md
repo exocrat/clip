@@ -21,8 +21,9 @@ preserving it. This preserves the current account/region-specific
 image; it does not select a new image, restart hosts or bypass Terraform refresh.
 
 ## Rationale
-The [non-applying plan](../evaluation/identity/provider-history.md#setup-and-permissions)
-refreshed the recommendation to `ami-08e0d7fb58f08ac36`, unexpectedly proposing
+The historical non-applying plan, recoverable through the
+[evaluation history guide](../evaluation/README.md), refreshed the recommendation
+to `ami-08e0d7fb58f08ac36`, unexpectedly proposing
 launch-template and ASG updates alongside an SES IAM policy. Aditya approved
 preserving the existing image instead of expanding this permission-only change.
 

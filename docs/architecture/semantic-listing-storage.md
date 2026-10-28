@@ -286,8 +286,9 @@ only new objects. Runtime slot/state races are rechecked after obtaining listing
 generation locks. Native fixture definitions exercise old/new source and lease
 fences, deferred publication/rollback, retry exhaustion, guarded down and two
 server-observed publication races with edit/retirement. These assertions subsequently ran on this Mac's fresh PostgreSQL 18.6 test
-cluster; the [native checkpoint evidence](../evaluation/domain/se-01/native-postgres/result.json)
-records seven passing adapter-suite checks (four database cases and three pre-connect guards) and the schema round trip. This does not
+cluster; its historical receipt records seven passing adapter-suite checks
+(four database cases and three pre-connect guards) and the schema round trip;
+see the [evaluation retrieval guidance](../evaluation/README.md). This does not
 accept production helper/read integration or the entire future matrix.
 
 The registered database runners now include `embedding-smoke.sql` and the new
@@ -328,8 +329,8 @@ UTF-8/C and no-ICU/TLS build is not the production locale/security configuration
 
 ## Remaining pipeline matrix follow-up — native verified
 
-The [expanded native result](../evaluation/domain/se-01/native-pipeline-switch/result.json)
-now covers bootstrap/registry-switch mutation scenarios. The matrix uses explicit
+The historical expanded native result covers bootstrap/registry-switch mutation
+scenarios; see the [evaluation retrieval guidance](../evaluation/README.md). The matrix uses explicit
 mathematical pipeline spaces/coordinate vectors, never installs its synthetic
 runtime version tags and leaves public application behavior inactive. It bounds
 the private fixture corpus to <30 retained rows and work to <=60 jobs.

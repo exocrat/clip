@@ -72,7 +72,8 @@ The model probe is bounded to30 windows, ten minutes, one worker/one live helper
 and512MiB sampled host/helper RSS. It uses fixed existing local model/interpreter
 paths and guarded owner-private Unix-socket test databases only.
 
-[Retained scoped result](../evaluation/domain/se-01/worker-bridge/result.json).
+The raw scoped result was removed from the checkout; see the
+[evaluation history guidance](../evaluation/README.md) to retrieve it from Git.
 The first run skipped the model opt-in because the API isolation fixture clears
 CLIP_ variables. A test-only LISTINGS_TEST_ name fixed that without weakening the
 fixture. The next run exposed fixture-only lease-expiry SQL touching an unleased

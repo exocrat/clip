@@ -11,7 +11,7 @@
   [NFR measurement design](../evaluation/nfr/measurement-design.md) alongside
   the owning numbered steps below. Its pending human review and action gates
   remain explicit; a design is not evidence that a check has run.
-- Start only after the pre-domain completion gate is satisfied (`docs/tasks/pre-domain-task-list.md`, PRE-00). Read the current repository status and work log before choosing a task.
+- Start only after the accepted foundation gate recorded in the [foundation handoff](../status/foundation-handoff.md). Read current repository evidence and the work log before choosing a task.
 - After real PRE-00 and DL-00, use `docs/architecture/stubs-and-integration-gates.md`: independent domain implementation may run in parallel with reviewed test doubles before upstream implementation is ready. Named real prerequisites still gate integration/readiness/final acceptance. Never count stub evidence as completion.
 - A task is a work package, not a demand to create many tiny task IDs. Follow the numbered actions in order, with only the explicit human-verified staged-checkpoint exception in the stub guide. Split a numbered action only when the repository, a failure, or an unresolved decision makes it necessary; do not split actions into extra steps that add no decision, artifact, check, or safe handoff.
 - Before each task, inspect the current repository and verify its prerequisites. Reuse valid existing artifacts and record their paths and checks. If an upstream implementation is absent but the reviewed contract and stub table permit this checkpoint, propose its documented isolated mode and record pending real checks. Missing/uncertain contracts, conflicting requirements and non-substitutable gates still require a question or the actual prerequisite; never silently invent a replacement.
@@ -36,7 +36,7 @@ Read these repository copies before starting and revisit the relevant sections w
 | `docs/product/product-reference-and-architecture-decisions.md` | Required/optional scope, FR/NFR summaries, architecture, information ownership, and approved project direction. |
 | `docs/conventions/shared-conventions-and-cross-domain-contract-rules.md` | Shared types, errors, authorization, domain ownership, transactions/retries, contracts, privacy, and logging. |
 | `docs/architecture/repository-structure.md` | Canonical paths and artifact responsibilities. |
-| `docs/tasks/pre-domain-task-list.md` | PRE-00, shared local/cloud foundation, datasets, work log, tooling, checklists, and handoff. |
+| `docs/status/foundation-handoff.md` | Accepted PRE-00 result and evidence limits. Current setup, data, database and cloud details live in their owner guides. |
 | `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | Experiment boundary and its own tasks. |
 | `docs/status/work-log.md`, `docs/decisions/`, and current environment inventory | Actual status, approved decisions, and verified infrastructure facts. |
 | `contracts/README.md`, `contracts/source/`, and registered generated outputs | Exact contract source and generated paths. DL-00 defined 50 domain HTTP operations; CN-01 adds three E2EE prekey operations in its Conversations contract. Four domain `public.py` modules and shared contract types remain generated declarations without domain behavior; providers remain with their named tasks. |
@@ -57,7 +57,7 @@ Use source authority by subject rather than treating every document as one flat 
 
 If a team decision explicitly clarifies an interpretation, use its current canonical record while preserving the submitted PRD. If two current sources still conflict on behavior, requirement intent, ownership, or a gate, stop, quote the conflicting rules and affected task, and ask for a decision. Do not use stale drafts or prior chat as execution-time sources.
 
-The [future FR/NFR traceability table](../architecture/foundation-traceability.md#future-frnfr-ownership-and-evidence) is the canonical per-requirement owner, path, and evidence index. Use [`contracts/README.md`](../../contracts/README.md) for exact contract/generated paths and [`docs/evaluation/README.md`](../evaluation/README.md) for evidence homes; do not duplicate those registries here.
+The [future FR/NFR traceability table](../architecture/foundation-traceability.md#frnfr-ownership-and-evidence) is the canonical per-requirement owner, path, and evidence index. Use [`contracts/README.md`](../../contracts/README.md) for exact contract/generated paths and [`docs/evaluation/README.md`](../evaluation/README.md) for evidence homes; do not duplicate those registries here.
 
 Unless a task or NFR manifest names a narrower location, domain evidence belongs in `docs/evaluation/domain/<task-id>/`; link it from the work log. For requirement artifacts and their exact planned paths, use the traceability table above rather than inventing alternate locations.
 

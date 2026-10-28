@@ -2,17 +2,17 @@
 
 **Canonical path:** `docs/checklists/human-checklist.md`
 
-**Version:** 1.0 (first explicitly versioned PD-18 reconciliation)
+**Version:** 1.1 (active-task cleanup)
 
-**Updated:** 2026-10-20 (Asia/Kolkata)
+**Updated:** 2026-10-28 (UTC)
 
-**Sources:** [`AGENTS.md`](../../AGENTS.md), [`README.md`](../../README.md), [`docs/README.md`](../README.md), [source provenance](../source/README.md), the [PRD copy](../source/ICC_Project_PRD_FINAL.pdf), [product reference](../product/product-reference-and-architecture-decisions.md), the [reusable prompt](../prompts/reusable-task-prompt.md), [project task index](../tasks/project-task-index.md), [pre-domain tasks](../tasks/pre-domain-task-list.md), [domain tasks](../tasks/domain-task-list.md), [Document 2](../evaluation/ecs-only-vs-ecs-lambda-task-list.md), [final closeout task list](../tasks/final-closeout-task-list.md), [foundation traceability](../architecture/foundation-traceability.md), [shared conventions](../conventions/shared-conventions-and-cross-domain-contract-rules.md), [command registry](../environment/commands.md), [work log](../status/work-log.md), [`CONTRIBUTING.md`](../../CONTRIBUTING.md), the [peer-review prompt](../prompts/peer-review-prompt.md), [stub guide](../architecture/stubs-and-integration-gates.md), and [frontend collaboration map](../architecture/frontend-collaboration.md). Follow task-linked decisions, contracts and evidence for the selected work.
+**Sources:** [`AGENTS.md`](../../AGENTS.md), [`README.md`](../../README.md), [`docs/README.md`](../README.md), [source provenance](../source/README.md), the [PRD copy](../source/ICC_Project_PRD_FINAL.pdf), [product reference](../product/product-reference-and-architecture-decisions.md), the [reusable prompt](../prompts/reusable-task-prompt.md), [project task index](../tasks/project-task-index.md), [domain tasks](../tasks/domain-task-list.md), [Document 2](../evaluation/ecs-only-vs-ecs-lambda-task-list.md), [final closeout task list](../tasks/final-closeout-task-list.md), [foundation traceability](../architecture/foundation-traceability.md), [shared conventions](../conventions/shared-conventions-and-cross-domain-contract-rules.md), [command index](../environment/commands.md), [work log](../status/work-log.md), [`CONTRIBUTING.md`](../../CONTRIBUTING.md), the [peer-review prompt](../prompts/peer-review-prompt.md), [stub guide](../architecture/stubs-and-integration-gates.md), and [frontend collaboration map](../architecture/frontend-collaboration.md). Follow task-linked decisions, contracts and evidence for the selected work.
 
 The agent runs routine commands and prepares evidence; you verify understandable results, answer genuine unresolved questions and approve specific actions. Peer-review roles follow `CONTRIBUTING.md`.
 
 ## Start or resume
 
-- [ ] Give the reusable prompt, optionally task/member/scope. For first setup, supply the document bundle and ask for BOOT-00; pre-domain tasks follow its verified documentation/Git bootstrap.
+- [ ] Give the reusable prompt and identify the task/member/scope. The foundation seed and PRE-00 are complete; use the current task index and remaining-work plan for active work.
 - [ ] Verify the agent's read-only summary of the entire task and its numbered steps in order, plus actual checkpoint, executed versus human-verified state, dependencies, owner/reviewer, boundaries, expected outputs/checks, gates, and proposed first/resumed action.
 - [ ] Verify the agent audited the task steps against the task purpose, prerequisites, outputs, acceptance checks, and canonical requirements; review any reported gap before authorizing implementation.
 - [ ] Confirm current work-log state and available branch/PR evidence were checked; unavailable remote evidence is reported as unknown, not assumed.
@@ -33,60 +33,13 @@ The agent runs routine commands and prepares evidence; you verify understandable
 
 You may inspect evidence, but the agent must summarize what makes it acceptable and what you are deciding. You should not need to find files, reconstruct test criteria or perform routine implementation/Git commands.
 
-## PD-04 Python tooling verification
-
-- [ ] Verify the agent's evidence that `uv sync --locked` installs the pinned tools into an ignored local environment, and that `make format-python` followed by `make check-python-format` works. Check-only must detect formatting drift without rewriting source; plain `make` is check-only.
-- [ ] Confirm `uv run --locked black --version` reports 26.10.1 and `uv run --locked pytest --version` reports 9.1.1. The test command is `uv run --locked pytest`; no collected tests (exit 5) does not prove application behavior. Python lint/type tools are deferred.
-- [ ] Confirm [CONTRIBUTING](../../CONTRIBUTING.md#local-python-tooling-pd-04) and the [command registry](../environment/commands.md) agree with the Makefile/root configuration. PD-12 owns CI; distinguish the implemented workflow from its current hosted result. Review the agent's summarized evidence; you do not need to run routine commands yourself.
-
-## PD-05 API foundation verification
-
-- [ ] Verify the agent's evidence for the [documented local API command](../../apps/api/README.md), health-only response and clean shutdown without database/cloud credentials. `{"status":"ok"}` is process liveness, not domain or dependency readiness.
-- [ ] Review `uv run --locked pytest apps/api/tests -q -W error` results and formatting checks. Confirm tests cover health in test mode and safe configuration failures, use synthetic data, and avoid exposing supplied values. The agent runs routine checks; you verify the summarized evidence.
-- [ ] Confirm shared-core/domain placeholders reflect the approved PD-06 conventions. Distinguish local checks from the user-confirmed PD-08 runtime/platform/owner gates and retain the recorded limits on unavailable other-machine artifacts. Setup/start/test instructions must match CONTRIBUTING and the command registry; local checks do not prove hosted acceptance.
-
-## PD-12 CI and merge-gate verification
-
-- [ ] For PR-only CI, verify latest main is incorporated and the successful run covers the recorded head/base. If main advances before merge, update and rerun; superseded/cancelled runs do not pass.
-- [ ] Verify pinned Black hook installation/configuration and format/block/review/restage behavior; generated contracts remain excluded and CI formatting is independent. See [hook setup](../../CONTRIBUTING.md#black-pre-commit-hook-pd-12).
-- [ ] Review `make check` and current hosted **CI / Foundation quality gates** evidence, including run URL and PR head/base revisions. Missing/skipped/cancelled/failed required checks do not pass.
-- [ ] Follow [the approved manual fallback](../../CONTRIBUTING.md#approved-manual-fallback). It preserves PR-only merging, independent human/affected-owner approval and separate exact-revision merge authorization, but cannot technically prevent bypass.
-- [ ] Recheck the exact current revision before authorizing merge; require renewed checks/review after relevant changes. Do not treat local checks or AI findings as hosted success or independent human approval.
-- [ ] Hosting changes retain separate approval. Checklist coverage does not accept unrun checks; record open checks under their original task/step IDs. The user confirmed the previously pending PD-08/09/12/13/15 gates complete on 2026-10-19. PD-19 and PRE-00 are complete; PRE-00 acceptance and its evidence are recorded in the work log.
-
 ## Task-wide closeout
 
 - [ ] At task/milestone handoff, check the complete change against the task's acceptance conditions, relevant checklist items, tests/checks, documentation/evidence, privacy/secret handling, and work-log status. The agent should present failures and blockers plainly; you need not reconstruct acceptance from separate files.
 
-## Pre-domain task evidence
+## Completed foundation
 
-Use the task-specific acceptance checks in `docs/tasks/pre-domain-task-list.md`; this map identifies the evidence to inspect and does not replace those checks.
-
-| Task | Verify the task evidence and boundary |
-|---|---|
-| BOOT-00 | Approved source bundle/checksum, preserved local Git seed, provenance, roster and actual local/remote state; no implementation task marked complete without evidence. |
-| PD-00 | Starting-state inventory matches repository/layout; existing changes are preserved and work-log corrections cite evidence. |
-| PD-01 | Canonical source copies and PRD provenance, documentation index, and source-to-task/output/evidence traceability. |
-| PD-02 | One selected toolchain/layout and exact manifest/lockfile homes; compatibility claims match recorded machine evidence. |
-| PD-03 | README/contributor/agent entry points, roster and reserved paths, command/secret-reference homes, tracked ownership roots, audited kickoff handoff. |
-| PD-04 | Locked Python install, pinned Black, format and check-only commands, drift detection, one canonical configuration. |
-| PD-05 | Local API health/configuration and tests; no claim of dependency readiness or domain behavior. |
-| PD-06 | Canonical shared decisions/helpers and applicable tests for boundary, errors, pagination, trusted context, retries and privacy-safe logs. |
-| PD-07 | Human-approved routes/pages, all four feature markers, public component entry points, local install/start/checks, ownership and handoff. |
-| PD-08 | Review schema/migrations and retained lifecycle evidence; record the user's confirmation of Linux AMD64/macOS checks on other machines, noting their raw commands/results are unavailable here and not independently reproduced. |
-| PD-09 | Deterministic synthetic generator/manifest, safe retention and label-review format; final schema-aware data and reviewed labels remain SE-01/DATA-READY. |
-| PD-10 | Reusable synthetic fixtures, explicit test-only fakes, production rejection, failure/retry/auth cases and redacted output. |
-| PD-11 | Editable contract source, OpenAPI/type consistency and backend/frontend boundary checks; verify `uv run --locked python scripts/generate_contracts.py generate` and `uv run --locked python scripts/generate_contracts.py check` evidence. |
-| PD-12 | PR-only CI result for current head/base, superseded-run cancellation, local/CI Black, independent review and exact-revision merge gates. |
-| PD-13 | `make setup`, exact registry-backed start/stop/test/check commands including `make check`, local aggregate parity, safe failures and Terraform portability checks. |
-| PD-14 | Account/access, owner, budget, alert and secret-reference evidence; no credentials exposed or cloud change inferred. |
-| PD-15 | State ownership/locking/recovery/module boundaries, private artifacts ignored, non-mutating static checks. |
-| PD-16 | Exact approved shared-resource inventory, plan/apply/runtime/stop evidence and retained operational gates; no domain-specific duplicate resources or domain/NFR acceptance implied. |
-| PD-17 | One authoritative domain task list and its FR/NFR, dependency, owner, evidence, resource and contract consistency checks. |
-| PD-18 | Both current checklists map to every task and actionable evidence, with valid links, exact commands, checkpoint rules, and source/version metadata. |
-| PD-19 | Full task/check audit, current revision, accurate evidence/blockers and usable foundation handoff; no required unresolved gate counted as passed. |
-| PRE-00 | All required checks/reviews, human acceptance, accepted merged revision and handoff before any domain feature work starts. |
-| DL-00 | Affected domain owners reviewed the shared contracts; generated declarations match the editable source and contain no behavior; consumer-double type-check and registered checks pass; independent review and exact-revision merge remain separate gates; real integrations and cleanup implementation approval stay pending where recorded. |
+BOOT-00 and PD-00–PD-19/PRE-00 are complete. Review the accepted result and evidence limits in the [foundation handoff](../status/foundation-handoff.md) and current task-by-task [work log](../status/work-log.md); use the active task sources for remaining work.
 
 ## Decisions and separate approvals
 
@@ -97,8 +50,7 @@ Use the task-specific acceptance checks in `docs/tasks/pre-domain-task-list.md`;
 
 ## Peer review and merging
 
-- [ ] Each contributor uses an isolated branch/clone/worktree. After the full PD-00–PD-03 audit confirms all four tasks' outputs and checks with no gaps, integrate that handoff directly into `main` without a PR. BOOT-00's documentation seed keeps its separate direct-to-main rule. Later changes use task/milestone PRs.
-- [ ] For pre-domain work, verify the kickoff/stream/integration ownership slot and reserved path scope from the task list. Confirm the PD-00–PD-03 handoff is merged before streams clone, and that each owner removes only their own `.gitkeep` markers; cross-stream changes are coordinated before editing.
+- [ ] Each contributor uses an isolated branch/clone/worktree. The BOOT-00 documentation seed and PD-00–PD-03 direct-to-main handoffs are complete; later changes use task/milestone PRs and the normal review gates.
 - [ ] For PRs, a different designated human peer reviews, with AI assistance if useful; affected owners approve shared surfaces. Author verification does not replace peer approval.
 - [ ] Use `docs/prompts/peer-review-prompt.md` as a thorough, scope-adapted review aid. Review findings yourself, verify the latest head/target, required checks and affected-owner approvals, and explicitly authorize the exact PR/revision before merge. AI review is not approval and the prompt grants no merge or deployment authority.
 - [ ] Required local/CI checks, dependency milestones and conflict-resolution review pass before authorizing the concrete merge. The author agent cannot approve or autonomously merge its PR.
@@ -120,11 +72,8 @@ Use the task-specific acceptance checks in `docs/tasks/pre-domain-task-list.md`;
 
 **Loop:** agent explains the whole task → you verify → before each numbered step, agent explains that step → you say okay → agent executes only that step and reports evidence → you verify → repeat. A new task needs a new understanding verification.
 
-## Environment, startup and stub evidence
+## Environment and integration boundaries
 
-- [ ] For a contributor using WSL, the agent reuses the existing setup and works in the verified WSL clone; otherwise it uses that contributor's verified environment. Confirm source staging is distinct from the clone and no redundant setup was done.
-- [ ] The agent reports actual workstation/tool/container/credential-route facts and shows that commands use the selected toolchain for that environment, with relevant connectivity evidence.
-- [ ] Before isolated work, verify that real PRE-00/DL-00 and frozen contracts exist, or that the exact isolated step is permitted by the stub guide. The agent must identify reviewed stub scenarios and pending real obligations; unknown semantics/security decisions still require a question.
-- [ ] Every staged real subcheck retains its original step ID, owner, dependency/revision, resume trigger and acceptance test in the work log. Human verification authorizes only the reported isolated increment; readiness/FR/NFR/full completion remains pending.
-- [ ] Review evidence that deployed config rejects test doubles and fake auth, with no public bypass or fallback to fake success. Isolated PRs are labeled and reviewed without claiming readiness.
-- [ ] Verify that the earliest pending integration checkpoint resumes when its upstream revision arrives and that original real checks pass before acceptance. Final integration/NFR/experiment/closeout cannot rely on stub-only evidence.
+- [ ] Confirm the agent checked the actual repository and contributor environment. The WSL guide applies only when the contributor uses WSL.
+- [ ] Before accepting isolated evidence, verify that the selected task step permits the stub and that its contract is reviewed. Keep the corresponding real integration and acceptance checks open until they pass.
+- [ ] Confirm test doubles are rejected in production and do not create fake success. Cloud, hosting and paid actions still need their separate exact-scope approvals.

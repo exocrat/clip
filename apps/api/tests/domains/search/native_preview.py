@@ -73,6 +73,11 @@ SOURCES = (
         "Small kitchen appliance for storing milk, vegetables and groceries at a low temperature.",
         "appliances",
     ),
+    (
+        "Badminton racket",
+        "Synthetic sports equipment for badminton practice.",
+        "sports_fitness",
+    ),
 )
 
 

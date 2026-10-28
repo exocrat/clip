@@ -66,7 +66,7 @@ image flow; no separate camera/gallery acceptance gate is added here.
 
 For the Step 9 local desktop review, the agent starts the built UI at
 `http://127.0.0.1:5174/listings/new` using the explicit isolated Listings
-browser command in the [command registry](commands.md#li-01-step-7-isolated-postgresql-browser-checkpoint).
+browser command in the [command registry](commands.md#li-02-step-9--isolated-postgresql-browser-checkpoint).
 That page uses a fixed synthetic seller, a separate real local PostgreSQL
 container, and temporary in-memory photo storage; its banner states that no AWS
 is used. The agent first checks uploads, retry, saved rows, galleries and

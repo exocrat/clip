@@ -20,9 +20,9 @@ do not bypass the scan. Scanner execution has no network and a read-only mount.
 
 ## Rationale
 Upstream rules cover common credential formats without a paid action or token.
-The existing bundle manifest triggers a generic-key false positive for the
-historical SHA-256 of `secret-handling.md`. The only project exception requires
-both that exact checksum and its exact manifest path; no file or rule is disabled.
+The original source bundle required one exact checksum exception; that bundle
+manifest has been removed after bootstrap. Current allowlists are limited to exact
+public evaluation identifiers and integrity fingerprints in `.gitleaks.toml`.
 
 ## Implications
 CI/local commands use the same pinned scanner. Findings/tool errors fail.

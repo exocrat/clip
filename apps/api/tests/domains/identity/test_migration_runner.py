@@ -28,8 +28,8 @@ DIRECTORY = ROOT / "database/migrations"
 def reviewed_migration_package(tmp_path, monkeypatch):
     """Test the pinned 17-file runner package, not a newer unreviewed chain.
 
-    The live runner must keep rejecting the expanded Conversations chain until
-    its manifest and source receive a separate exact-target review.
+    The live runner must keep rejecting the expanded repository chain until its
+    manifest and source receive a separate exact-target review.
     """
     directory = tmp_path / "reviewed-migrations"
     directory.mkdir()

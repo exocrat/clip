@@ -47,7 +47,7 @@ DECLARE
     sequence_head bigint;
     blocked_sequence bigint;
 BEGIN
-    IF (SELECT count(*) FROM listings.categories) <> 8
+    IF (SELECT count(*) FROM listings.categories) <> 9
         OR (SELECT count(*) FROM listings.conditions) <> 4 THEN
         RAISE EXCEPTION 'Expected the approved initial catalogue';
     END IF;

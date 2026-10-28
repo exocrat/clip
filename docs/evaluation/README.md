@@ -4,10 +4,22 @@
 
 Past task check results are summarized in the task status and work log; they do
 not establish final integrated NFR acceptance. Historical setup and domain run
-receipts have been removed from the checkout and remain recoverable from Git history.
+receipts have been removed from the checkout and remain recoverable from Git
+history. To locate an older receipt, list the evaluation files at
+`f36ce3d^` with `git ls-tree -r --name-only f36ce3d^ docs/evaluation`, then read
+one with `git show f36ce3d^:<path-from-repository-root>`. Historical output does
+not prove current cloud state or authorize an action.
 No ECS-only versus ECS+Lambda measured comparison has been run. The
-[foundation requirement traceability map](../architecture/foundation-traceability.md)
+[FR/NFR owner and evidence map](../architecture/foundation-traceability.md)
 links requirements to their remaining checks.
+
+The task-specific handoffs still needed by NEXT-03/NEXT-04 remain available:
+[CN-01 integration](domain/conversations-integration.md),
+[CN-02 offers](domain/conversations-offers.md), and the
+[ID-01 demo postmortem](identity/id-01-step-12/demo-postmortem-20261026.md).
+Use them as dated context; check current code, accepted revisions and live cloud
+state before relying on their status. Other completed setup and branch-specific
+reports were removed and remain recoverable from Git history.
 
 | Evidence home | Creator / contents |
 |---|---|

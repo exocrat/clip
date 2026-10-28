@@ -40,11 +40,12 @@ from model execution and remains active during imports/inference.
 
 ## Reproduce within the verified local probe scope
 
-Use the existing repository-local uv/root Python, fixed artifact tree and exact
-root commands registered in [commands](../../../docs/environment/commands.md).
-Before another network/setup run, verify the same scope/limits under the normal
-protocol. No system installer, global executable link, shell activation or project
-Python change is needed. The original local run used Python 3.13.12 from uv's
+Use the existing repository-local uv/root Python and fixed artifact tree. This
+procedure documents the completed bounded Mac feasibility probe; it is not an
+NFR or release workflow. Use the current task and approved measurement design
+before planning any new run. No system installer, global executable link, shell
+activation or project Python change is needed. The original local run used
+Python 3.13.12 from uv's
 20260211 managed build with `--no-bin`; that older probe pin is not the deployment
 patch selection.
 
@@ -73,10 +74,12 @@ on disk. No final data, human labels, HTTP latency or cloud acceptance follows.
 `ipc_probe.py` uses the API3.14 private client and actual helper3.13 model via
 owned local pipes. Unlike the original single-process arithmetic/model probe,
 it tests process handshake, serialization, repeated output and child crash/restart.
-Run only with the explicit opt-in/identified preview PID in the command registry;
-its watchdog samples the probe host/helper/preview API RSS within512MiB and stops
-only owned helpers. No DB/worker/public route is created. [Protocol](../../../docs/architecture/semantic-helper-protocol.md)
-and [retained result](../../../docs/evaluation/domain/se-01/helper-ipc/result.json).
+The supervisor requires an explicit opt-in and identified preview PID; it never
+guesses which API process to inspect. Its watchdog samples the probe
+host/helper/preview API RSS within512MiB and stops only owned helpers. No
+DB/worker/public route is created. See the
+[protocol](../../../docs/architecture/semantic-helper-protocol.md) and current
+[evaluation task](../../../docs/evaluation/README.md) before planning further work.
 
 ## Development calibration follow-up
 
@@ -88,5 +91,6 @@ strictly bound matrix. It does not implement production ranking or use final
 labels. Eight listings/eleven queries use exactly30model windows in the retained
 run; one helper,10min and512MiB host/helper bounds apply. A preserved failure
 shows that full long-source coverage does not ensure semantic relevance.
-[Proposal/evidence](../../../docs/architecture/hybrid-search-calibration.md),
-[exact commands](../../../docs/environment/commands.md).
+[Proposal and limits](../../../docs/architecture/hybrid-search-calibration.md).
+This development calibration is distinct from the approved NEXT-01 comparison
+and later NEXT-07 measurement runs.

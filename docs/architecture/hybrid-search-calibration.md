@@ -48,9 +48,9 @@ they are not measurements of the public route's default recency ordering.
 The complete denominator is eleven queries. The proposed comparison has9hits
 in those11cases; the empty-intent case has no possible relevant hit and is also
 reported separately. These are development counts, **not NFR-04 Success@5**.
-[All90comparisons and query outcomes](../evaluation/domain/se-01/calibration/analysis.json)
-and [native score matrix](../evaluation/domain/se-01/calibration/matrix.json)
-retain unwanted matches and misses.
+The historical analysis and native score matrix record all 90 comparisons,
+query outcomes, unwanted matches and misses. Their receipts are in Git history;
+see the [evaluation retrieval guidance](../evaluation/README.md).
 
 Threshold0.25 admits a phone for the absent guitar. Threshold0.45 and above miss
 `keep food cold`→fridge, leaving8/10positives. At0.35,max aggregation also admits
@@ -100,16 +100,11 @@ mode/sort/generated-type/UI work and dispatch/bootstrap remain later gates.
 
 ## Reproduction and evidence limits
 
-[Command registry](../environment/commands.md) records the explicit native flag
-and analysis-only CLI. The fresh native runner performs migration/smoke/down/
-reapply checks, then the calibration case. Bounds: one live helper,30model windows,
-10minutes,512MiB sampled test-host/helper RSS,3s SQL statements/1s lock waits.
-The model is already local; no download/install/global setting changes occur.
-Safe output contains fixture IDs, flags, scores and aggregate metrics, never
-vectors/customer queries. [Evidence manifest](../evaluation/domain/se-01/calibration/result.json)
-binds code/data/model/vocabulary and exact retained runs. Host sampling is not
-production cgroup/NFR evidence. The comparison analyzes measured native scores;
-it is not a production hybrid read implementation or full-corpus benchmark.
+This small native calibration is a completed development probe, not an NFR run
+or a current reproduction procedure. Its settings and observed outcomes are not
+final ranking policy. Use the current task and approved measurement design for
+any new experiment. The helper tool's bounded-use notes are in
+[its README](../../scripts/evaluation/semantic/README.md).
 
 ## Subsequent human direction
 

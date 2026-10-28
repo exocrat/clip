@@ -255,7 +255,7 @@ def main():
         actual = sql(
             "SELECT version FROM public.schema_migrations ORDER BY version"
         ).splitlines()
-        if not expected or actual != expected or actual[-1] != "20261027112205":
+        if not expected or actual != expected or actual[-1] != "20261028090000":
             raise RuntimeError("Migration history differs from the expected head")
         migrate()
         for filename in (

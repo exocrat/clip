@@ -1,14 +1,16 @@
 # Campus Marketplace — Contributor Start Prompt
 
-Use this short prompt from the repository root. Fill in the contributor and task before sending it to your coding agent. For PD-00–PRE-00, also use `docs/prompts/pre-domain-contributor-prompt.md` to identify the verified phase/stream scope and path boundaries.
+Use this short prompt from the repository root. Fill in the contributor and task before sending it to your coding agent. BOOT-00/PRE-00 are complete; use the current task index and remaining-work plan for active work.
 
 ```text
 I am [name] ([A/B/C/D or role]). Work on [TASK-ID] in this repository.
 
 Follow AGENTS.md and the complete protocol in
-docs/prompts/reusable-task-prompt.md. Read the task index, current work log,
-the selected task's canonical list, CONTRIBUTING.md, applicable checklists,
-and relevant source/decision/contract/environment/evidence files.
+docs/prompts/reusable-task-prompt.md. Read the task index, the selected task's
+canonical list, its relevant status rows and related work-log history,
+CONTRIBUTING.md, applicable checklist items, and relevant
+source/decision/contract/environment/evidence files. Do not read the full
+chronological work log unless the task needs it.
 
 First inspect the repository and current task state read-only. Audit the task's
 ordered steps against its purpose, prerequisites, outputs, acceptance checks,

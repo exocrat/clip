@@ -221,7 +221,8 @@ fixtures use actual activation/expiry/revocation. The existing guarded scripted
 auth provider is test-only and cannot install a browser session or run in
 production. Additional real local HTTP/SQL checks connect contact/profile edits
 to reset, relogin, deletion, revocation and bounded cleanup/concurrent denied
-writes. See [Step10 coverage/evidence](../../../../../docs/evaluation/identity/implementation.md#step-10).
+writes. Detailed Step10 receipts are recoverable through the
+[evaluation history guide](../../../../../docs/evaluation/README.md).
 These are synthetic controlled provider tests; actual deployed/browser/CN and
 ID-READY gates remain open. No production implementation changed in Step10.
 
@@ -238,7 +239,7 @@ routes and middleware once in the actual Listings app, sharing cookies/caller
 scope and public eligibility while preserving its lifespan. Standalone tests and
 synthetic preview retain their old factory signature. Default startup stays
 unbound; production/demo composition is refused until reviewed runtime wiring.
-[Current integration evidence](../../../../../docs/evaluation/identity/integration.md#local-api-composition).
+[Current ID-01 status](../../../../../docs/status/work-log.md).
 
 ### Explicit local real-runtime command
 

@@ -20,8 +20,8 @@ from .preview import _cli_integer, generate_preview
 
 ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_VERSION = "search-preview-1"
-# Catalogue codes come from the existing initial_catalogue migration. Text is
-# controlled fixture content, not a relevance judgment or imported user data.
+# Catalogue codes follow the approved catalogue and its NEXT-03 migration.
+# Text is controlled fixture content, not a relevance judgment or imported data.
 TOPICS = (
     ("mobile_phone", "mobile phone", "Android handset charger"),
     ("laptop", "laptop computer", "Portable computer keyboard"),
@@ -30,7 +30,8 @@ TOPICS = (
     ("books", "linear algebra textbook", "Mathematics vectors matrices"),
     ("bicycles", "campus bicycle", "Cycle pedals wheels helmet"),
     ("appliances", "electric kettle", "Kitchen water boiler"),
-    ("other", "sports racket", "Badminton sports equipment"),
+    ("sports_fitness", "sports racket", "Badminton sports equipment"),
+    ("other", "backpack", "Student carrying bag umbrella water bottle"),
 )
 CONDITIONS = ("new", "like_new", "good", "fair")
 

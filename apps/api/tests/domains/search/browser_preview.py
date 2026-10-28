@@ -39,11 +39,12 @@ from app.core.errors import (
 CATEGORIES = (
     ("mobile_phone", "Mobile phones"),
     ("laptop", "Laptops"),
-    ("electronics", "Other electronics"),
+    ("electronics", "Electronics"),
     ("furniture", "Furniture"),
     ("books", "Books and study materials"),
     ("bicycles", "Bicycles"),
-    ("appliances", "Appliances"),
+    ("appliances", "Home appliances"),
+    ("sports_fitness", "Sports & fitness"),
     ("other", "Other"),
 )
 CONDITIONS = (
@@ -72,12 +73,20 @@ def require_preview_settings(isolated: bool) -> None:
 def fixture_rows() -> list[ListingSummary]:
     """Return public synthetic text-only fixture summaries, with no real image keys."""
     rows = []
+    example_titles = {
+        "mobile_phone": "mobile phone",
+        "laptop": "student laptop",
+        "electronics": "desk monitor",
+        "furniture": "study desk",
+        "books": "linear algebra textbook",
+        "bicycles": "campus bicycle",
+        "appliances": "electric kettle",
+        "sports_fitness": "badminton racket",
+        "other": "student backpack",
+    }
     for index in range(42):
-        code, label, title = (
-            ("bicycles", "Bicycles", "campus bicycle"),
-            ("books", "Books and study materials", "linear algebra textbook"),
-            ("furniture", "Furniture", "study desk"),
-        )[index % 3]
+        code, label = CATEGORIES[index % len(CATEGORIES)]
+        title = example_titles[code]
         condition, condition_label = CONDITIONS[index % 4]
         rows.append(
             ListingSummary(

@@ -167,8 +167,8 @@ plan is not a latency or natural-planner-choice result. No native pass is claime
 
 ## Native query verification follow-up
 
-The [native checkpoint](../evaluation/domain/se-01/native-postgres/result.json)
-now verifies real English normalization/expansion, directional vehicle/cycle and
+The historical native checkpoint verifies real English normalization/expansion,
+directional vehicle/cycle and
 book/textbook matching, phrases, ambiguity/unknown cases, updates, visibility,
 filters and all page sizes. GIN eligibility is checked against the compiled text
 predicate; the full browse query may correctly choose recency for a broad set.

@@ -9,7 +9,8 @@ The earlier `/tmp/clip-pd08-native.pKC5jz` tools were gone. No global/Homebrew
 service, Docker, PATH/system Python edit or cloud action. The native harness's
 fresh TCP-disabled private clusters were stopped; logs/data remain under printed
 `/tmp/clip-pd08-native-check.*` directories. Four real database cases, three pre-connect guards and the
-schema round trip passed; [evidence](../evaluation/domain/se-01/native-postgres/result.json).
+schema round trip passed; its raw receipt is in Git history, described in the
+[evaluation retrieval guidance](../evaluation/README.md).
 This is Mac UTF-8/C/no-ICU scope, not production/Linux/TLS/resource equivalence.
 
 

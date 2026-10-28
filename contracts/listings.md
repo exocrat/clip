@@ -30,7 +30,7 @@ conversation content.
 | Listing ID | Server-generated UUIDv4, exposed as the shared canonical UUID string. It is opaque and conveys no permission. |
 | Title | Required on every live listing; trim outer whitespace and allow 1–120 Unicode code points. |
 | Description | Required on every live listing; trim outer whitespace and allow 1–5,000 Unicode code points. Preserve internal whitespace. |
-| Item category | Required stable active category code from the Listings-owned catalogue: `mobile_phone`, `laptop`, `electronics`, `furniture`, `books`, `bicycles`, `appliances`, or `other`. It is independent of the Sale Listings/Wanted Requests view toggle. |
+| Item category | Required stable active category code from the Listings-owned catalogue: `mobile_phone`, `laptop`, `electronics`, `furniture`, `books`, `bicycles`, `appliances`, `sports_fitness`, or `other`. It is independent of the Sale Listings/Wanted Requests view toggle. |
 | Condition | Required active seller-declared code: `new`, `like_new`, `good`, or `fair`. It is not a platform quality/functionality guarantee. |
 | Asking price | Required nonnegative integer paise, a multiple of 100. Zero is valid; floats and fractional-rupee amounts are rejected. No upper monetary cap is selected here. |
 | Negotiable | Required boolean, independent of price. Missing and `null` are invalid for a live listing. |
