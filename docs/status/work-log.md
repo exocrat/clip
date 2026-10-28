@@ -25,6 +25,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | Task ID | Owner role | Task status | Current checkpoint / immediate next action | Execution state | Human verification | Branch/revision/evidence | Blockers | Last UTC update |
 |---|---|---|---|---|---|---|---|---|
 | NEXT-00 | Suraj — requested planning coordinator | done | Planning output verified; NEXT-01 Step 1 authorized. | performed; planning only | verified by Suraj | `task/integrated-marketplace-rollout`, based on main `5e8d264`; [remaining-work plan](../tasks/remaining-project-plan.md), linked from project task index | No blocker for the accepted planning output; implementation and measured-run gates remain separate. | 2026-10-27 18:42:09 UTC |
+| NEXT-01 | Suraj — requested planning coordinator; C retains EXP-01 ownership | done | Design and task-wide review verified; NEXT-02 is next. | Steps 1–9 performed | Steps 1–9 verified | Planning baseline `c869f33`; [design and approved gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md#next-01-step-8--proposed-changes-to-measurement-gates); [NEXT-07 references](../tasks/remaining-project-plan.md#experiment-protocol-reference) | No blocker for the design handoff. Real implementations, data, tools, cost anchors, project AWS identity/spend and run approvals remain NEXT-07 prerequisites. | 2026-10-28 06:24:24 UTC |
 | BOOT-00 | B / Suraj (initial contributor) | done | Local documentation seed verified; publication pushed and verified | performed | verified | Current `origin/main` verified at `cfbf9352c03302990e6ffda09521f0a5450572d7`; includes seed `7fb9bfed79b45614a17de1bf2f9c50dbb3981b3f` and publication record | None | 2026-10-15 07:18 UTC |
 | PD-00 | Kickoff owner — Suraj (B) | done | Steps 1–6 complete; task-wide closeout reviewed | performed | verified | `task/pre-domain-foundation` at base `cfbf9352c03302990e6ffda09521f0a5450572d7`; work-log task table, initial inventory, Document 4 comparison, and `git diff --check` | None | 2026-10-16 07:02 UTC |
 | PD-01 | Kickoff owner — Suraj (B) | done | Steps 1–8 and task-wide acceptance review complete; published handoff confirmed | performed | verified | `docs/architecture/foundation-traceability.md`; handoff `d29c02b` is in remote `main` at `4754e97fdaf4284e84062a926eb1864fab745036`, confirmed by `git ls-remote` | None | 2026-10-17 06:26:36 UTC |
@@ -58,7 +59,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | CN-02 | Rahul (D); Aditya/Suraj review | in progress | Step11 local aggregate checks passed; obtain human verification, then complete real dependency/owner review gates | 1930 Python passed/153 skipped; 94 data; 433 web/3 skipped; build/types/lint, Black 296 files, mypy, contract generation (8 artifacts), boundaries, DB lifecycle PostgreSQL18.6, Conversations harness167, DB safety35, Gitleaks8.30.1 passed | Step10 verified; Step11 local result pending Rahul verification | `task/cn-02-offers-contact-sharing`; [checkpoint](../evaluation/domain/conversations-offers.md); [browser walkthrough](../environment/conversation-browser-test.md) | Formal CN-CORE/ID-READY/LI-CORE acceptance, affected-owner review and hosted CI remain required for full CN-02 acceptance; later real-session/deployment gates remain | 2026-10-27 15:15:10 UTC |
 | CN-03 | A; D producer review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | CN-CORE, ID-READY | — |
 | INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
-| EXP-01 | C | not started | Design may begin before integration; see `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md`. | not started | pending | No experiment outputs in initial inventory | No INT-01 blocker for early design; the current measured-run gate still requires INT-01. | 2026-10-27 18:16:24 UTC |
+| EXP-01 | C; Suraj coordinates selected NEXT-01 design | in progress | Early design and scoped measurement gates documented; NEXT-01 handoff awaits verification. | early design prepared | NEXT-01 Steps 1–8 verified; Step 9 pending | [Design and gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md#next-01-step-8--proposed-changes-to-measurement-gates), source main `5e8d264` | Real implementation feasibility, final data and tooling, actual project account and budget, and action approvals remain to be checked. | 2026-10-28 05:48:25 UTC |
 | EXP-02 | C | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-01 | — |
 | EXP-03 | B | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-02 | — |
 | EXP-04 | B | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-03 | — |
@@ -1587,6 +1588,268 @@ client navigation/state updates are suppressed. B affected review remains pendin
 Reservation released2026-10-26 05:22:07UTC after implementation and checks.
 
 ## Dated history entries
+
+### NEXT-01 — Design accepted and reporting scope — 2026-10-28 06:24:24 UTC
+
+Suraj verified NEXT-01 Step 9 and asked that every planned measurement be
+reported even when it is not scored. EXP-07 now explicitly requires all
+manifest measurements, including class/phase outcomes, cold/warm observations,
+runtime/database signals and cost at each load; unavailable results need a
+reason. The task-wide audit found the early design, dataset recipe, NFR
+procedures, comparison protocol, scoped gates and NEXT-07 references in place.
+Numeric cost anchors remain a required human-reviewed NEXT-07 pre-result gate
+because they depend on the actual reviewed topology and prices. `git diff
+--check` passed; no runtime tests or cloud actions apply to this documentation
+update. NEXT-01 is complete; NEXT-02 is next and remains unstarted.
+
+### NEXT-01 — Scoring clarification and NEXT-07 gate — 2026-10-28 06:21:59 UTC
+
+Suraj asked where p95 was scored and requested a pre-result cost endpoint rule.
+Named p95 inputs as tail latency, stated p50/p95/p99 and per-class reporting,
+and specified median cost per 1,000 correct normal-load operations across the
+three runs. Added the requirement in NEXT-07 to price the reviewed A/B topology,
+record cost anchors/formula/price sources and obtain human verification before
+final comparative results. Added per-run values, median, min/max range and paired
+score differences for variation. Numeric cost anchors remain to be calculated
+from the actual plan. No runs or cloud actions occurred; Step 9 awaits human
+verification.
+
+### NEXT-01 — Cost and load rationale revision — 2026-10-28 06:10:57 UTC
+
+Suraj agreed to replace the illustrative daily-cost score with whole-system cost
+per 1,000 correct operations for each low, normal and burst workload; the normal
+workload value feeds the weighted cost score, while the other two remain reported
+for comparison. Removed the unsupported daily traffic mix and clarified that
+the PRD's 10 requests/s search and 50 requests/s peak targets ground test points,
+not actual campus usage estimates. The user's year-start turnover scenario
+supports testing a brief increase but does not establish its exact rate/duration.
+Added that limitation. Rechecked arithmetic: each round/configuration has 12 low,
+600 normal and 600 burst-warm-up requests; the 7,272 total warm-up, 115,632
+scheduled A/B requests and 57,816 for B are correct. Made the breakdown explicit;
+no request-cap increase is needed. Step 9 remains pending human verification.
+
+### NEXT-01 — Step 9 design handoff — 2026-10-28 05:48:25 UTC
+
+Suraj verified the scoped read-comparison and chat-measurement gates. Applied
+them across the experiment tasks, index, dependency graph, domain tasks,
+integration guidance and traceability while retaining final Notifications,
+INT-01 and project acceptance. NEXT-07 now links the dataset, each NFR design,
+comparison rules, workload, costs, gates and separate guidelines. The design is
+not a claim that implementations, data, tooling or approved cloud actions are
+ready. The verified cost scoring range needs review against actual topology
+before final results because the example two-host daily cost can exceed its
+upper anchor. Local relative-link and whitespace checks passed; the repository
+source-snapshot secret scan passed. Graphviz was unavailable for graph rendering.
+Step 9 awaits human verification.
+
+### NEXT-01 — Step 8 measurement-gate proposal — 2026-10-28 05:41:12 UTC
+
+Suraj verified Step 7, considered the estimate within budget and directed that
+the app be stopped after experimentation until needed for the demo. Recorded
+the shutdown/restart direction without treating it as cloud-action approval;
+actual project spend remains unverified. Rechecked the current INT-01/EXP-06
+and CN-01/CN-03 gates, main-line notification-intent transactions and live GitHub
+main/open PRs. Document 2 proposes exact scoped prerequisites and canonical
+index/graph/domain/stub-guide edits for an independent real read comparison and
+chat measurement, preserving full Notifications/INT-01/CLOSE-00 acceptance and
+affected rechecks. The existing gates remain in force until this proposal is
+verified and applied. No cloud or measurement action occurred.
+Proposal link and whitespace checks passed; the change list includes the
+traceability and reusable-prompt references found during the dependency scan.
+
+### NEXT-01 — Step 7 costs and limits — 2026-10-28 05:37:13 UTC
+
+Suraj verified Step 6. Reviewed AWS public Mumbai on-demand price lists and the
+project inventory/budget decision; Document 2 now proposes whole-system cost
+accounting, an illustrative partial estimate, resource/request/time/spend caps,
+telemetry, stop and cleanup rules. Read-only STS returned account `484394572488`
+rather than recorded project account `335523638354`; no project live spend or
+resources were inspected and no AWS change was made. Current project identity,
+headroom, complete prices/topology and operator remain pre-run checks. Cost and
+limit values are proposals pending verification and exact action-plan approval.
+The two-host 24-hour illustration exceeds Step 3's USD 5/day score ceiling;
+Document 2 flags a possible wider scale for human review before final results.
+Cost examples, request counts, local links and `git diff --check` passed.
+
+### NEXT-01 — Optional Lambda reset observation — 2026-10-28 05:32:34 UTC
+
+Suraj requested a Lambda execution-environment loss check if quick. Reviewed AWS
+Lambda lifecycle and Fault Injection Service documentation. Added a conditional
+short controlled crash/timeout observation to the proposed NFR design, with
+test-only isolation, a separately approved exact cloud plan, log/telemetry
+attribution and an inconclusive result when reset cannot be verified. Feasibility,
+setup time and cost are checked when EXP-03/04 build the actual Lambda path;
+an FIS invocation error alone is not evidence of runtime loss. Required ECS
+NFR-06 and comparative scoring remain separate. No cloud test or change ran.
+
+### NEXT-01 — NFR-06 recovery clarification — 2026-10-28 05:30:30 UTC
+
+After Suraj questioned the proposed Lambda recovery issue, rechecked PRD NFR-06
+and INT-01 Step 7. Both proposed architectures retain ECS; the requirement
+calls for losing a serving runtime and restoring configured capacity, and the
+owning procedure specifies an ECS task-loss check. Corrected the NFR design to
+measure ECS recovery and affected routes, including Lambda-routed reads in the
+mixed configuration, without adding a separate forced Lambda-environment-loss
+gate. Lambda cold starts/failures remain comparison observations. No recovery
+test or cloud action ran; Step 6 remains pending verification.
+
+### NEXT-01 — NFR coverage for both architectures — 2026-10-28 05:29:33 UTC
+
+Suraj asked whether the NFR designs explicitly specify coverage for both
+architectures. The procedures contained general reuse rules but did not spell
+out each NFR's trigger clearly enough. Added a per-NFR matrix to the proposed
+measurement design: repeat changed/affected browse, search, peak, chat and
+recovery paths; compare search-quality results; reuse unchanged shared database
+restore evidence only when valid; account for both configurations in the final
+budget. Lambda-runtime recovery coverage still needs a reviewed resolution.
+Step 6 remains pending human verification; no measurement or cloud action ran.
+
+### NEXT-01 — Step 6 NFR procedures — 2026-10-28 05:25:31 UTC
+
+Suraj verified the corrected Step 5 recipe and asked that NEXT-07 reference the
+finished NEXT-01 design. Added that handoff to Step 9 and prepared the
+[NFR measurement design](../evaluation/nfr/measurement-design.md) for human
+review, linked from the domain task list. It specifies planned inputs, tool
+ownership, workloads/actions, denominators, checks, outputs and gates for all
+eight NFRs. NFR-03's proposed mix includes real synthetic writes; NFR-05 measures
+two-client display; recovery and restore retain separate exact-plan approvals.
+No tool was implemented, data generated or cloud action executed. Step 6 result
+awaits verification; Step 7 determines actual cost and resource-cap proposals.
+Checks passed for NFR coverage, workload totals and thresholds, local links and
+`git diff --check`.
+
+### NEXT-01 — Category and account correction — 2026-10-28 05:19:09 UTC
+
+Suraj pointed out that NEXT-03 may change the categories and questioned the
+50-account workload proposal. The PRD specifies 5,000 synthetic user records,
+not 50 authenticated accounts. Withdrew that account count; propose starting
+with one existing authorized regular account for reads, verifying actual rate
+limits and reporting the account mix, and use two participants for chat. Replaced
+fixed per-category counts/mappings with a required NEXT-03 review after the
+taxonomy decision and before dataset generation. The corrected account plan and
+Step 5 recipe await verification; no accounts, data or cloud resources were created.
+
+### NEXT-01 — Step 5 dataset recipe — 2026-10-28 05:14:39 UTC
+
+Suraj verified Step 4, retained three paired repetitions and authorized Step 5.
+Inspected the PRD, current schema/catalogue, preview generator/loader, label
+format and evaluator. Added a proposed final dataset recipe with 5,000 synthetic
+users, 1,000 varied listings and image objects, deterministic seed/time and
+distributions, model/index checks, 20 query texts and human-label procedure.
+Real test sessions are a separate prerequisite; synthetic rows do not establish
+valid sign-in. Existing preview tools are reusable but do not provide final
+data, image objects or reviewed labels. NEXT-03 schema changes, test account
+availability and real generator/loader checks remain pending in their tasks.
+Dataset counts/distribution sums, query count, local links and whitespace checks
+passed. Step 5 awaits human verification; no data generation or cloud action occurred.
+
+### NEXT-01 — Step 4 workload and preparation proposal — 2026-10-28 05:01:01 UTC
+
+Suraj verified Step 3 and authorized Step 4. Rechecked the PRD, experiment
+guidelines, current read contracts and existing local-only k6 runner. Document 2
+now proposes low/normal/burst arrival rates and fixed request mix, response/auth
+checks, three alternating pairs, timing and failure accounting, verified cold
+observations, illustrative daily-cost mix and estimated minimum run duration.
+Mapped needed outputs to NEXT-03/04/06 and EXP-02–04/08; no planned output is
+treated as complete and no redundant task is asserted. Dataset recipe, detailed
+NFR procedures, actual limits/cost and reviewed gates remain in Steps 5–8.
+Checks passed for phase operation totals, daily-cost time mix, request shares,
+local Document 2 links and `git diff --check`. No load, deployment, data generation
+or cloud action occurred; Step 4 awaits human verification.
+
+### NEXT-01 — Preparation checked against the future schedule — 2026-10-28 04:58:12 UTC
+
+Suraj clarified that the design should identify what will still be missing at
+each measurement checkpoint, considering work already scheduled before it.
+Updated NEXT-01 Steps 4/6 and the preparation checklist to distinguish verified
+outputs, outputs assigned to earlier tasks and uncovered gaps, with owners,
+acceptance checks and recheck triggers. Scheduled work is not treated as already
+complete, and missing-now outputs do not automatically become duplicate tasks.
+The Step 3 proposal still awaits verification; no experiment work was executed.
+
+### NEXT-01 — Complete measurement preparation scope — 2026-10-28 04:56:21 UTC
+
+Suraj clarified that the implementation-ready design must cover everything
+needed for the NFRs and comparison, not only synthetic data. Rechecked the PRD,
+experiment guidelines, SE-01/CN-01/INT-01 NFR procedures, CLOSE-00 and existing
+evaluation tool locations. Expanded NEXT-01 Steps 4 and 6 and added a per-NFR
+and comparison preparation checklist: deployed paths/auth, data/model/indexes,
+workloads, tools/telemetry, clients, recovery/restore, billing, evidence, owners,
+acceptance and action gates. Existing pilot tooling and manifest templates do not
+establish real-run readiness. This is planning; detailed designs and actual
+implementation/runs remain pending.
+
+### NEXT-01 — Dataset, NFR and reliability scope — 2026-10-28 04:52:48 UTC
+
+Suraj requested explicit traffic definitions, an implementation-ready synthetic
+dataset recipe and NFR procedures usable by a lower-reasoning implementation
+agent, and asked whether the score needs more measures. Re-read the PRD and
+experiment guidelines: PRD fixes the individual NFR loads but leaves the
+comparative normal/burst traffic mix and durations to design. Expanded NEXT-01
+with dataset-design Step 5 and NFR-procedure Step 6 in existing owning homes,
+renumbering later steps; actual generation and runs remain in NEXT-06/07.
+Revised the unapproved Step 3 proposal to score reliability separately because
+a 95% success floor can hide differences in failure rates. Weights and bounds
+remain proposals for human review. Checks passed for weights, scoring-scale
+endpoints/midpoints, local plan/experiment links and `git diff --check`. No
+experiment execution or cloud change occurred.
+
+### NEXT-01 — Step 3 eligibility and scoring proposal — 2026-10-27 18:55:17 UTC
+
+Suraj verified Step 2 and directed a fair comparison using the experiment
+guidelines. Re-read the guidelines and PRD; proposed correctness, failure and
+normal-load guards, required FR/NFR evidence, weighted burst/whole-system-cost/
+normal-response points, fixed scoring anchors, a practical tie and paired-run
+uncertainty/sensitivity checks in Document 2. The numbers are recommendations
+pending human verification and later workload/pricing confirmation, not results
+or approved run limits. Final FR-13/INT-01 and project-budget acceptance remain
+pending. No experiment, deployment or cloud change occurred.
+Checks passed: score weights, interpolation endpoints/midpoints and caps;
+seven local Document 2 links; and `git diff --check`.
+
+### NEXT-01 — Step 2 deployment alternatives — 2026-10-27 18:52:03 UTC
+
+Suraj verified Step 1, authorized Step 2 and directed the comparison to follow
+the PRD using a rigorous, quick protocol. Checked PRD section 7, the current
+read routes/generated contract and Search runtime. Document 2 now records ECS
+versus selected Lambda read offload, candidate browse/search/detail operations,
+unchanged ECS writes/conversations/offers, and the need to reproduce real Hybrid
+search, authorization, data and response behavior. Lambda packaging and parity
+are pending EXP-03; route selection, workload, scoring and caps remain later
+design steps. No deployment, data generation or measured experiment occurred.
+Seven Document 2 local links and `git diff --check` passed; application tests were
+not needed for this documentation-only step. Step 2 awaits human verification.
+
+### NEXT-01 — Step 1 question and requirements — 2026-10-27 18:45:03 UTC
+
+After Suraj verified the task understanding and authorized Step 1, reviewed the
+original PRD sections 4–7, Document 1, experiment tasks/guidelines, relevant
+decisions, generated contract, current composition/read routes and existing load
+tooling. Recorded the comparison question, final-architecture decision, required
+FR/NFR baseline and deployment/data/tooling assumptions in
+[Document 2](../evaluation/ecs-only-vs-ecs-lambda-task-list.md#next-01-step-1--question-and-requirement-framing).
+GitHub main remains `5e8d264`; original PRD checksum matches recorded provenance.
+Current code binds real Conversations services; equivalent search work must
+follow the intended Hybrid product behavior and NEXT-03 ranking changes. Existing k6
+preparation is bounded/local, not a runnable final cloud experiment. Design is
+partial; result awaits verification before Step 2. No cloud change or run occurred.
+Checks passed: eight local Document 2 links, unchanged PRD provenance, candidate
+GET operations against generated OpenAPI, `git diff --check`, and pinned
+Gitleaks 8.30.1 source-snapshot scan. Application tests were not needed for this
+documentation-only checkpoint.
+
+### NEXT-01 — Step 1 search clarification — 2026-10-27 18:49:08 UTC
+
+Suraj clarified that the product should expose only Hybrid search, with direct
+word matches before the other scored matches. Read-only inspection of exocrat's
+merged PR #15, current website query handling, Hybrid reader and its native SQL
+tests found that the mode selector is gone and Hybrid is the website default.
+The reader supports original-word, expanded/typo and meaning-based tiers when
+relevance is selected, but the website defaults to newest-first. Existing legacy
+Keyword URL/API support remains in code; it is not a second product choice.
+Updated NEXT-03 Step 3 to address the observed default-order gap and inspect
+compatibility; updated the experiment framing to compare the intended Hybrid
+behavior. This was a source inspection, not a new application or hosted test.
 
 ### NEXT-00 — Planning accepted — 2026-10-27 18:42:09 UTC
 

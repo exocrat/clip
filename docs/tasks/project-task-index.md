@@ -9,10 +9,15 @@ changes; then NEXT-04 audits readiness and verifies the integrated app on HTTPS,
 so the cloud walkthrough does not need to be repeated after those changes. Notifications
 joins when ready, followed by final synthetic data, required NFR/experiment runs,
 deployment of the measured eligible architecture, final usability/security work,
-optional work if time remains, and CLOSE-00. Suraj verified NEXT-00 and authorized
-NEXT-01 Step 1 on 2026-10-27. Use the original task sources for detailed
+optional work if time remains, and CLOSE-00. Suraj verified NEXT-00 and the
+NEXT-01 experiment design. Use the original task sources for detailed
 implementation and acceptance. The experiment method is in the separate
 [ECS/Lambda experiment guidelines](../evaluation/ecs-lambda-experiment-guidelines.md).
+[Dataset recipe](../../data/evaluation/reference-dataset-design.md),
+[NFR measurement design](../evaluation/nfr/measurement-design.md) and
+[comparison design and gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md#next-01-step-1--question-and-requirement-framing)
+provide the reviewed early-design handoff; actual run readiness and peer-reviewed
+merge remain pending.
 Native-mobile feasibility is deferred research only; no native build is selected.
 
 ## Execution source and phase routing
@@ -66,9 +71,9 @@ After real PRE-00/DL-00, all eight required domains may begin their documented i
 - LI-01 step 13 needs LI-02 and SE-CORE for full image-backed publication and unavailable discovery. LI-CORE has separate acceptance before these checks.
 - LI-02 step 12 may perform its isolated public ECS/RDS/S3 demo before LI-CORE/ID-READY, but only after step 11's local quality/security gate and approval of the exact cloud plan. It uses a dedicated disposable private RDS instance, the isolated test profile, fixed synthetic Identity fixture, and test-only ten-listing cap defined in the task. The public URL is unauthenticated while the demo is on; only synthetic data is allowed. The one-command stop deletes only LI-02-owned runtime/entry resources, disposable database/data and run objects while preserving shared RDS/VPC/NAT and other domains' resources. This does not accept either readiness milestone; LI-02 step 13 and final acceptance still require real LI-CORE/ID-READY and shared-integration checks.
 - SE-01 cloud-preparation step 12 needs LI-01/LI-02, ID-READY and final validated data. DATA-READY is required for the complete measurement/evaluation evidence.
-- CN-01 cloud-preparation step 11 needs CN-03's final producer/notification/read-state path. CN-CORE unblocks CN-02/CN-03 before final NFR-05.
+- CN-01 Steps 11–12 may measure the actual deployed encrypted chat path before email delivery when the approved real-path conditions in Document 2 Step 8 pass. Final CN-01/FR-13 acceptance still needs CN-03 integration; recheck timing if later changes materially affect it.
 - Full CN-01 request-response integration also needs SE-02's real public Wanted Request read/state interfaces; CN-02's request-response inbox work needs both SE-02 and CN-01. CN-CORE remains an earlier listing-origin conversation milestone and does not imply request-origin integration is complete.
-- INT-01 needs all eight required domain tasks fully passing. EXP-01 design may be done early; measured experiment runs retain the current verified/merged INT-01 gate unless it is separately revised. NFR-08 final reconciliation occurs in CLOSE-00 after EXP-08, not before later experiment spend.
+- INT-01 needs all eight required domain tasks fully passing. EXP-06 may run earlier with DATA-READY, EXP-05 and the approved actual read-path, parity, pilot, resource and action gates in Document 2 Step 8. This does not accept INT-01 or Notifications. NFR-08 final reconciliation occurs in CLOSE-00 after EXP-08, not before later experiment spend.
 
 Preserve numbered step order except the explicit staged-checkpoint route in the stub guide: human-verified isolated portions may advance while real subchecks remain pending under their original step IDs. As real prerequisites arrive, resume the earliest pending integration checkpoint before new isolated work. If the next checkpoint is non-substitutable, record the blocker and propose another owned unblocked task. The human verifies that new task understanding before switching. Do not restart an executed step or skip its human-verification gate.
 
@@ -163,7 +168,7 @@ The graph is derived from the following acceptance dependencies. For multi-stage
 | EXP-03 | EXP-02 |
 | EXP-04 | EXP-03 |
 | EXP-05 | EXP-04 |
-| EXP-06 | EXP-05, verified/merged INT-01 for measured runs under the current gate |
+| EXP-06 | EXP-05, DATA-READY and the approved real read-path/action gates in Document 2 Step 8 |
 | EXP-07 | EXP-06 |
 | EXP-08 | EXP-07 |
 | CLOSE-00 | INT-01, EXP-08 |

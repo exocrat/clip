@@ -3,7 +3,7 @@
 **Planning branch:** task/integrated-marketplace-rollout based on remote `main` at `5e8d264018c85475fbe13809316616b63a40886e`
 (PR #18), 2026-10-27. **Coordinator:** Suraj for this planning request; domain
 ownership and independent review remain as recorded in the project index.
-**State:** NEXT-00 planning verified by Suraj on 2026-10-27; NEXT-01 Step 1 authorized. NEXT-01 is early experiment design. All implementation,
+**State:** NEXT-00 planning and NEXT-01 experiment design verified by Suraj. NEXT-01 is early experiment design. All implementation,
 deployment, dataset generation, research, measurements, and cleanup below are
 future work. This document records the user's requested sequence and decisions;
 it does not claim those tasks or existing readiness milestones are complete.
@@ -68,10 +68,10 @@ dataset generation is authorized by this planning increment.
 implementation. **Scope:** design/documentation only; no code, cloud deployment
 or measured run. Follow the separate
 [experiment-definition guidelines](../evaluation/ecs-lambda-experiment-guidelines.md).
-Document 2 now permits EXP-01 design before INT-01. Check assumptions affected
-by later work and freeze the final approved rules before comparative results.
-The current measured-run gate still requires verified/merged INT-01; any change
-to that separate gate follows the review described below.
+Document 2 permits EXP-01 design and the scoped read comparison before full
+INT-01 under the approved real-path gates. Check assumptions affected by later
+work and freeze the final approved rules before comparative results. Full
+INT-01/Notifications acceptance remains required for project closeout.
 
 1. Read the submitted PRD, Document 1, current experiment task, product decisions,
    actual main architecture and NFR requirements. State the exact question and
@@ -89,27 +89,88 @@ to that separate gate follows the review described below.
 4. Define equivalent correct work, candidate routes, authorization/response
    checks, data/index requirements, representative workloads, arrival model,
    timing endpoints, cold/warm treatment, retries/failures, repetitions and
-   stopping rules. Mark assumptions the NEXT-03 product changes and NEXT-04
-   completion audit must confirm before final freeze;
+   stopping rules. Specify the complete implementation and preparation needed
+   for both alternatives: exact routing and real search/model dependencies,
+   deployed revision and identity, parity checks, generator and outcome checks,
+   configuration and resource settings, measurement/evidence tooling, paired run
+   order, telemetry, cost inputs and cleanup. Check current evidence and the
+   tasks scheduled before each run; identify what those tasks are expected to
+   deliver and any remaining uncovered work, with owner and acceptance checks.
+   Mark assumptions the
+   NEXT-03 product changes and NEXT-04 completion audit must confirm before final freeze;
    do not postpone decision rules until NEXT-07.
-5. Define raw outputs, latency/throughput/failure metrics, telemetry, whole-system
+5. Design the [final synthetic dataset](../../data/evaluation/reference-dataset-design.md) in implementation-ready detail: exact
+   proposed counts and distributions, deterministic seed, user/account classes,
+   listing fields/states/images, search cases, relationships, data safety,
+   reviewed relevance labels, generation/load/index/vector steps, validation and
+   fingerprinting. Inspect existing tools and current schema first; preserve the
+   PRD minimums and mark fields affected by NEXT-03 for later reconfirmation.
+   Define the recipe now; NEXT-06 generates and verifies the actual data.
+6. Specify implementation-ready procedures for NFR-01–08 in their existing
+   owning task or linked canonical evidence homes. For each, map prerequisites,
+   exact inputs/target and version checks, application/runtime setup, controlled
+   identities and client setup, data, indexes/model, workload or fault action,
+   measurement tools and telemetry, timing and success denominators, calculations,
+   repetitions, outputs, failure/stop rules, resource/cost caps, cleanup, owner
+   and approval gates. For every prerequisite, check current evidence and the
+   outputs of the existing tasks scheduled before its measurement; identify
+   what is already available, what an assigned task is expected to supply, and
+   only work still uncovered by that schedule. Specify the responsible task,
+   expected behavior, inputs/outputs, acceptance check and point of recheck.
+   Give executable commands only where they
+   exist, otherwise define the command/tool work required. A contributor should
+   be able to implement and verify the procedure from these instructions without
+   inventing missing technical decisions. Keep NFR-04 human labels and NFR-06/07
+   cloud fault/restore approvals explicit. Separate these NFR tests from the
+   architecture comparison and preserve their existing owners.
+7. Define raw outputs, latency/throughput/failure metrics, telemetry, whole-system
    cost method, region/pricing date, duration/spend/resource/concurrency caps,
    stop conditions, operator and cleanup.
-6. Inspect current task gates. Selected browse/search comparisons do not
+8. Inspect current task gates. Selected browse/search comparisons do not
    technically need email delivery; chat send-to-visible timing does not wait
    for email. Current message/thread code already writes notification intents in
    the owning transaction. Propose the precise update to the broad INT-01/EXP
    entry gate so an agreed independent comparison can run without falsely
    accepting FR-13 or full INT-01. Preserve final integration/Notifications
    acceptance. Obtain human verification of canonical gate changes first.
-7. Record the reviewed design in Document 2 or its experiment manifest; update
-   task-index/dependency links. Freeze decision rules before results. Reopen only
+9. Record the reviewed design in Document 2 or its experiment manifest; update
+   task-index/dependency links. Update NEXT-07 to directly reference the final
+   dataset recipe, each NFR procedure and the comparison protocol so an executing
+   agent can find all of them. Freeze decision rules before results. Reopen only
    for documented material requirement, implementation or validity changes,
    never to favor a result.
 
+### Required preparation coverage for Steps 4–7
+
+This is a design checklist, not a claim that the tools or environment are ready.
+Inspect actual implementations before writing each detailed procedure.
+
+| Check | Preparation the design must cover |
+|---|---|
+| NFR-01/02 | Real authorized browse/search paths and response checks; reference data, applicable indexes/model; load generator, workload, clock, failure accounting, telemetry and deployed versions. Browse excludes image bodies; the search denominator follows SE-01. |
+| NFR-03 | Integrated API routes, controlled users and realistic route mix; 50 requests/s for the required measurement period; a generator that reports missed arrivals, correct outcomes and resource/DB signals. |
+| NFR-04 | Fixed representative queries and listing data; human-reviewed relevance labels; evaluator, calculation, query-level results and dataset/model fingerprints. |
+| NFR-05 | Two authorized clients with working encrypted messaging and polling; a clock and observer that measure sender submission through recipient display, including undisplayed or failed messages; defined normal load and sample policy. |
+| NFR-06 | At least two healthy serving runtimes, verified health/routing; a controlled request stream and recovery observer; the exact separately approved runtime-loss action, time boundaries, restoration checks and cleanup. |
+| NFR-07 | A known latest managed backup, approved isolated restore target, restoration observer, representative integrity/smoke checks, timing boundaries, cost limit and approved deletion or retention. |
+| NFR-08 | Project-wide cost scope, spend-to-date and delayed billing, current prices/estimates, run and resource limits, reserve, stop rules and final CLOSE-00 reconciliation below USD 200. |
+| ECS/Lambda comparison | Two correctly deployed and routed implementations with equivalent real authentication/search/data and verified results; fixed normal/burst workloads and generator; warm/cold and scaling observations; paired repetitions, raw results, telemetry, whole-system cost and scoring; exact operator, approvals and cleanup. |
+
+For each row, distinguish (1) verified available outputs, (2) outputs assigned to
+an existing task that should be ready by the measurement checkpoint, and
+(3) genuine gaps not covered by that schedule. Link the owning task and its
+acceptance check and identify when each expected output will be rechecked. Do
+not create duplicate work for a scheduled output; do not treat a planned output
+as already verified. For uncovered tooling, specify concrete file homes,
+inputs/outputs and safe failure behavior; confirm exact run commands once the
+owning task has implemented them. Preserve all required checks even when the
+same preparation can be shared between a test and the comparison.
+
 **Complete when:** The question/alternatives and measurable rules are approved;
-cost/resource limits and cleanup are defined; source-task/gate updates are
-reviewed; and NEXT-07 can execute this design. This does not mean data,
+an implementable dataset recipe, NFR procedures and complete comparison
+preparation are defined in their owning homes; cost/resource limits and cleanup
+are defined; source-task/gate updates are reviewed; and NEXT-07 can execute this
+design once its implementation and operational prerequisites are met. This does not mean data,
 alternatives or measurements are ready.
 
 ## NEXT-02 — Repository cleanup first
@@ -166,7 +227,9 @@ Implement related increments with automated checks before each human walkthrough
    electronics. Present the proposed taxonomy and map existing codes/data first.
    Assess actual schema/contract/filter/migration impact rather than assuming a
    label-only change. Preserve existing sale/wanted/saved data and URLs; update
-   generated contracts and affected fixtures deliberately.
+   generated contracts and affected fixtures deliberately. After the final
+   taxonomy is agreed, review and update the dataset recipe's category counts,
+   item mappings and search cases before NEXT-06 generates or labels data.
 2. Define and implement multi-selection where requested: multiple categories
    (e.g. appliances or bicycles) and conditions (e.g. Like New or better).
    Specify OR within one filter and combination across different filters,
@@ -177,7 +240,14 @@ Implement related increments with automated checks before each human walkthrough
    discovery cards before the user opens full detail and on the detail page.
    Remove the visible **Sort by Relevance** control while retaining the correct
    default ranking; review any remaining sort choices rather than silently
-   deleting unrelated sorting capabilities. Preserve Hybrid as the default.
+   deleting unrelated sorting capabilities. Use Hybrid for the product search.
+   For a nonblank search, make the default ordering put direct word matches
+   first, expanded/typo matches next, and other meaning-based matches after
+   them, ordered by the existing score within each group. The reader already
+   supports this relevance ordering, but the website currently defaults to
+   newest first. Preserve normal browsing and deliberate price/recency choices;
+   assess existing links and API compatibility before changing legacy mode
+   handling. Verify ordering with representative results across pages.
 4. Replace technical image wording such as **1 out of 8 confirmed** with plain
    photo-count/status text that still explains failures or in-progress uploads.
    Add a pre-publication sale-listing preview using the normal discovery-card
@@ -317,12 +387,10 @@ their actual branch/checkpoint before claiming work or duplicating implementatio
    blanket repeat of every test. If a workload is intended to represent the
    complete running app, include its representative background work or state
    the limitation and defer that full-system claim.
-5. Existing CN-01/NFR-05 and INT-01-to-EXP entry wording broadly waits for CN-03.
-   During NEXT-01/NEXT-04, propose the precise scheduling correction:
-   permit independent real-path measurements and a clearly scoped comparison;
-   preserve final integrated FR-13/INT-01 acceptance. Obtain human verification
-   of the revised procedure before executing a run that relies on it. This
-   planning document alone does not silently erase those original gates.
+5. NEXT-01 Steps 8–9 reviewed and applied the scheduling correction: permit
+   independent real-path measurements and a scoped comparison under their
+   specific gates, while preserving final FR-13/INT-01 acceptance. Recheck the
+   actual paths and approved run procedure before relying on these gates.
 
 ## NEXT-06 — Generate the missing final synthetic data
 
@@ -370,7 +438,13 @@ as the execution home; this group preserves new planning requirements.
    earliest real verification point. Reuse valid evidence; route gaps into the
    owning original task. Keep required NFR evidence distinct from comparative
    performance results. Review Notifications dependencies as NEXT-05 specifies.
-3. Execute the already designed NEXT-01 experiment under the separate
+3. Before final comparative results are collected, price the exact reviewed A/B
+   topology and normal workload, calculate and document the numeric good/poor
+   cost-score endpoints, per-run allocation formula, price sources and
+   assumptions, and obtain human verification of those frozen endpoints. Do not
+   choose endpoints from final A/B outcomes. If topology or prices materially
+   change, review and verify revised endpoints before replacement final results.
+   Then execute the already designed NEXT-01 experiment under the separate
    [experiment-definition guidelines](../evaluation/ecs-lambda-experiment-guidelines.md).
    Do not change scoring or workload after seeing comparative final results; a
    material validity change needs documented human approval.
@@ -379,6 +453,9 @@ as the execution home; this group preserves new planning requirements.
    analyze with uncertainty and costs, preserve evidence, and verify cleanup.
    NEXT-01 defines the method early; NEXT-07 runs it only after the data and
    measured paths are ready.
+   After the approved runs and cleanup, turn off app/experiment compute until
+   the demo or another separately approved necessary check; retain required data,
+   evidence and a reviewed restart path, and account for any remaining costs.
 5. Report the eligible winner, practical tie, inconclusive result or neither
    eligible. State what the data supports. Carry the selected architecture and
    any required follow-up into NEXT-08; do not merely write a report and leave
@@ -401,12 +478,19 @@ Reference data is at least 5,000 users/1,000 listings; performance measurements
 last at least five minutes after warm-up and distinguish relevant cold/warm
 behavior. Read the original PRD before freezing operational definitions. A
 different final architecture must still meet applicable mandatory requirements;
-resolve any mismatch with a requirement such as runtime recovery explicitly.
+check recovery and affected user paths on the actual selected configuration.
 
 ### Experiment protocol reference
 
-NEXT-07 executes the approved NEXT-01 design and follows the full
-[experiment-definition guidelines](../evaluation/ecs-lambda-experiment-guidelines.md).
+NEXT-07 executes the reviewed NEXT-01 design using the
+[reference dataset recipe](../../data/evaluation/reference-dataset-design.md),
+[NFR-01–08 measurement procedures](../evaluation/nfr/measurement-design.md),
+[comparison question and alternatives](../evaluation/ecs-only-vs-ecs-lambda-task-list.md#next-01-step-1--question-and-requirement-framing),
+[decision rules](../evaluation/ecs-only-vs-ecs-lambda-task-list.md#next-01-step-3--proposed-eligibility-and-decision-rules),
+[workload](../evaluation/ecs-only-vs-ecs-lambda-task-list.md#next-01-step-4--proposed-workload-and-preparation),
+[costs and limits](../evaluation/ecs-only-vs-ecs-lambda-task-list.md#next-01-step-7--proposed-costs-limits-and-evidence),
+[measurement gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md#next-01-step-8--proposed-changes-to-measurement-gates),
+and [experiment-definition guidelines](../evaluation/ecs-lambda-experiment-guidelines.md).
 It covers required NFR measurements at accurate integration points and the
 predefined comparison. It does not wait until this stage to invent weights,
 score ranges or a decision rule. If a material code/requirement change invalidates
