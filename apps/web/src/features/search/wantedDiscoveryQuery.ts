@@ -115,7 +115,9 @@ export function wantedDiscoveryRouteParams(query: WantedDiscoveryQuery): URLSear
     min_budget_paise: 'wanted_min_budget_paise', max_budget_paise: 'wanted_max_budget_paise',
     page: 'wanted_page', page_size: 'wanted_page_size',
   };
-  api.forEach((value, key) => route.append(names[key], value));
+  api.forEach((value, key) => {
+    route.append(names[key], value);
+  });
   return route;
 }
 

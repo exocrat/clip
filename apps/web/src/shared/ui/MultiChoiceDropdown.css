@@ -25,6 +25,7 @@
 .ui-multi-choice[data-disabled] > summary {
   cursor: not-allowed;
   opacity: .65;
+  pointer-events: none;
 }
 
 .ui-multi-choice__label { font-weight: 600; }

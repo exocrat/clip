@@ -19,7 +19,6 @@ export type SaleListingPreviewData = {
 };
 
 type SaleCardViewProps = {
-  title: string;
   description: string;
   categoryLabel: string;
   conditionLabel: string;
@@ -36,7 +35,7 @@ type SaleCardViewProps = {
 
 /** Shared markup keeps the browse card and draft preview visually in sync. */
 function SaleCardView({
-  title, description, categoryLabel, conditionLabel, askingPricePaise, originalPricePaise, negotiable,
+  description, categoryLabel, conditionLabel, askingPricePaise, originalPricePaise, negotiable,
   pickupArea, image, titleContent, actions, availabilityLabel, sensitivePurchase = false,
 }: SaleCardViewProps) {
   return (
@@ -71,7 +70,6 @@ export function SaleListingCard({
 }) {
   return (
     <SaleCardView
-      title={listing.title}
       description={listing.description}
       categoryLabel={listing.category_label}
       conditionLabel={listing.condition_label}
@@ -104,7 +102,6 @@ export function SaleListingCard({
 export function SaleListingPreview({ draft }: { draft: SaleListingPreviewData }) {
   return (
     <SaleCardView
-      title={draft.title}
       description={draft.description}
       categoryLabel={draft.categoryLabel}
       conditionLabel={draft.conditionLabel}

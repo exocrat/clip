@@ -154,7 +154,9 @@ export function WantedBrowse() {
     params.forEach((value, name) => {
       if (!name.startsWith('wanted_')) nextParams.append(name, value);
     });
-    wantedDiscoveryRouteParams(next).forEach((value, name) => nextParams.append(name, value));
+    wantedDiscoveryRouteParams(next).forEach((value, name) => {
+      nextParams.append(name, value);
+    });
     if (nextParams.toString() === key) result.retry();
     else setParams(nextParams);
   }

@@ -43,7 +43,7 @@ export function MultiChoiceDropdown({
 
   return (
     <details className="ui-multi-choice" data-disabled={disabled || undefined}>
-      <summary aria-disabled={disabled} onClick={(event) => { if (disabled) event.preventDefault(); }}>
+      <summary aria-disabled={disabled} tabIndex={disabled ? -1 : undefined}>
         <span className="ui-multi-choice__label">{label}</span>
         <span className="ui-multi-choice__selection">{summary}</span>
       </summary>

@@ -51,7 +51,9 @@ describe('Wanted Request discovery URL and form state', () => {
     });
     expect(params.toString()).toBe('wanted_q=physics&wanted_category_code=books&wanted_page=2');
     const combined = new URLSearchParams('q=bicycle&category_code=bicycles');
-    params.forEach((value, key) => combined.append(key, value));
+    params.forEach((value, key) => {
+      combined.append(key, value);
+    });
     expect(parseWantedDiscoveryRouteQuery(combined)).toMatchObject({
       q: 'physics', category_code: ['books'], page: 2,
     });
