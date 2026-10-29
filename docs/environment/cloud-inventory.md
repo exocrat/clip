@@ -473,3 +473,18 @@ and tunnel removed. New parameter absent; provisioning blocked in preflight
 before any master/SQL/SSM operation. Retain task8/scoped policy and shared
 NAT/network/storage/data/keys/images. Existing retention charges continue.
 [Resume/result](../evaluation/identity/id-01-step-14/provisioning-window-result.json).
+
+### ID-01 Step14 role retry cleanup — 2026-10-29 04:14:41 UTC
+
+Approved retry created the reviewed Conversations login and SecureString v1.
+Owned i-0fecb5c82b2569f92/root, tunnel and fallback removed; API/ASG0, RDS
+stopped. Role/parameter retained for integration; shared NAT/storage remain.
+[Result](../evaluation/identity/id-01-step-14/provisioning-window-retry-result.json).
+
+### ID-01 Step14 real integration cleanup — 2026-10-29 05:10:26 UTC
+
+Approved teardown complete: API0/task10, ASG0, RDS stopped; owned private/proxy
+hosts and roots, EIP, tunnel and fallback removed. User confirmed DNS deletion.
+Synthetic listing/image and narrow catalogue grants retained; Suraj review and
+durable grant restoration pending. Shared NAT/storage continue accruing charges.
+[Result](../evaluation/identity/id-01-step-14/s3-conversations-teardown-result.json).

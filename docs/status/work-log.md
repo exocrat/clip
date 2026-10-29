@@ -47,7 +47,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PD-19 | Integration owner (current branch) | done | Steps 1–9 and combined foundation handoff complete | Steps 1–9 performed | User confirms all work before PRE-00 is complete | PR #8 merged at `2cd83e7` from head `18c966e` against base `68d9da9`; [Foundation quality gates passed](https://github.com/exocrat/clip/actions/runs/39323851584) for that exact head/base; `make test` (395 Python, 63 data, 16 web), Black, contract freshness and 10 `make check` gates passed; [handoff](foundation-handoff.md) | No open PD-19 work per user confirmation. Linux AMD64/macOS results remain user-confirmed without raw outputs. PR #8 has no submitted GitHub review; independent-review completion is user-confirmed, with no separate review artifact linked. Refresh cloud snapshot before any operation. | 2026-10-19 21:09:05 UTC |
 | PRE-00 | Integration owner | done | Foundation gate audit accepted; DL-00 is unblocked | performed | verified/accepted by user | Reviewed handoff PR #8 merged to `main` at `2cd83e7`; hosted Foundation quality gates passed for head `18c966e` against base `68d9da9` (run `39323851584`); clean-checkout evidence at `0747be6`; see [PD-19 handoff](foundation-handoff.md) | None. PR #8 has no GitHub review event; independent-review completion remains user-reported without a separate artifact. | 2026-10-19 21:20:55 UTC |
 | DL-00 | Shared-core/contract coordinator; all domains review | done | Steps 1–13 and task-wide audit complete; accepted and merged | Steps 1–13 performed; accepted by user | User confirmed full acceptance and merge on 2026-10-22 05:30:49 UTC | PR #9 merged to `main` at `f5576ef`; current `main` is `44cd8ff`; Step 13 check evidence is recorded below and was not rerun for this update | None for DL-00; cleanup implementation remains separately gated; real providers/integrations and crypto/worker implementation remain downstream | 2026-10-22 05:30:49 UTC |
-| ID-01 | A | in progress | Step14 provisioning interrupted by user; all owned compute cleaned; current changes ready for requested commit |42consumer/6operator/7mock passes; task8 wiring applied; host/root gone/API0/ASG0/RDS stopped | CLI preflight cause unresolved before master/SQL/SSM; new role/parameter not created | [Resume/cleanup result](../evaluation/identity/id-01-step-14/provisioning-window-result.json) | Diagnose CLI preflight read-only; fresh approval before restart; real S3/Hybrid/hosted matrix and acceptance still pending | 2026-10-28 20:31:28 UTC |
+| ID-01 | A | in progress | Step14 real S3/listing/temporary conversation and cleanup verified | Upload201/confirm200/listing201/conversation201; API0/ASG0/RDS stopped | Remaining authorization matrix, Suraj review and durable catalogue-grant restoration | [Live result](../evaluation/identity/id-01-step-14/s3-conversations-live-result.json); [cleanup](../evaluation/identity/id-01-step-14/s3-conversations-teardown-result.json) | Audit remaining authorization evidence and resolve catalogue grant ownership; Hybrid deployment belongs to Search | 2026-10-29 05:12:58 UTC |
 | LI-01 | B | in progress | Finish the remaining Step 7 browser states and current-head Step 11 checks/reviews; prepare a progress PR without claiming LI-CORE. Steps 12–13 remain integration-gated. | Steps 1–6 and 8–10 implemented and locally checked; Step 7 partial (create/detail/edit/My Listings/gallery). | Suraj verified the multi-image edit/gallery checkpoint, seller-only selected-buyer visibility, and Step 10. No LI-01 phone-device result is claimed. | domain/listings at 6ffbe0b; focused Listings suite: 61 passed, one database-only test skipped outside the wrapper; disposable PostgreSQL workflow passed; current worktree `make check` passed 2026-10-23 (573 Python, 63 data, 42 web tests; remaining contract, type, boundary, database, safety, formatting, lint, and build checks passed). | LI-CORE not accepted. Remaining Step 7 states; Step 11 query-plan, current aggregate, and affected-owner review; native schema check; five pre-existing backend boundary findings; real Identity, Conversations, storage, and Search integration; Steps 12–13. | 2026-10-23 10:38:31 UTC |
 | LI-02 | B | in progress | Step 12 demo is tested and stopped; record final evidence, then begin intake of the Search owner's PR under the review workflow. | Steps 1–11 and 1.5 verified; Step 12 ran on ECS and was tested on desktop/mobile. Read-only app checks found the synthetic listing and its S3 image; teardown is complete. | User approved and applied teardown plan `3703bb7b23405a5a23a1ac6c39fa8870e682dddf3a1a8272183f4642f8f0db81` (0 add, 1 change to LI-02 bucket CORS, 20 LI-02 deletes). Post-stop inventory confirms disposable RDS/ALB/service/host/root volume/run S3 objects/URL parameter/log streams absent; shared RDS is stopped, shared ECS cluster remains, LI-02 ASG desired 0/no instances. Two run ECR images are retained (105,624,604 bytes total) per user direction. | `task/li-02-isolated-runtime` at `f0bf6c6`; earlier 11 focused tests, Black, Python compilation, Terraform fmt/validate, CLI help and diff checks. Start plans: infrastructure `a2b8cbeaa6cc4fc2d13ff8c8696cfa133d8134280de89f719e0d6f2b91668f55`; app start `b6a3fbd4812c965a5830780f337997d13b4b362c7eb1a73f2b3e70f5946b5bd4`. Stop-path corrections are currently uncommitted in `scripts/li02-demo`, `infra/terraform/domains/listings/test/database_tasks.tf`, both LI-02 operator guides, and this work log. `git diff --check` passed; no tests rerun. Existing untracked `data/runs/` and `database/migrations.zip` remain untouched. | Compute/ingress/disposable-database charges from the demo have ended. Retained run images add about 101 MiB of ECR storage; Step 4 bucket/IAM/log group and shared VPC/NAT/ECS/RDS remain. No manual RDS snapshot remains. | 2026-10-25 09:29:55 UTC |
 | SE-01 | Mohit (C); peer Suraj (B), Identity review | in progress | PR15 hosted Python/web/database gates pass; checksum-evidence scanner false positive corrected locally | 47714cc fixes readiness; subsequent CI reaches final secret scanner; two verified SHA256 fingerprints reformatted without scanner exemptions | Mohit verified Hybrid-default UI and requested branch push/PR | Search PR #11 worktree `task/search-evidence-reduction` at `864e53b`; new listing `194a32d4-64bb-491b-b4ec-68403e26f7f3` produced one title and one description vector (384 dimensions each), then matched in both modes through API and Vite proxy; session `/tmp/clip-listings-browser-v6e1f01t`; UI `http://127.0.0.1:5173/`  [Hybrid default UI](../evaluation/domain/se-01/hybrid-default-ui/result.json): lint86/web289pass/3skip/types/build pass;  [PR15 correction](../evaluation/domain/se-01/pr15-ci-readiness/result.json): unit11/native21/3skip/17migrations/Black2/boundaries/diff pass;  [Hosted rerun](https://github.com/exocrat/clip/actions/runs/40382575520) functional/database gates pass; evidence-format rerun pending. | Formal SE-CORE/DATA-READY and final NFR/hosted-CI acceptance remain outside this merge step | 2026-10-26 19:06:47 UTC |
@@ -9017,3 +9017,100 @@ owned host/root absent, API0/ASG0/empty, fallback removed, RDS confirmed stopped
 [Resume receipt](../evaluation/identity/id-01-step-14/provisioning-window-result.json)
 records exact blocker and retained resources.42consumer/6operator/7mock passes
 remain latest. Diagnose before any fresh approved restart; Step14 incomplete.
+
+### ID-01 — Step14 private AWS transport correction — 2026-10-29 03:57:53 UTC
+
+A traced the previous CLI preflight to stdin JSON parsing; AWS login was also
+renewed. Added Linux anonymous-memory CLI transport with exact secret-write
+scope and child-process privacy tests.10 transport/role tests pass; actual
+read-only identity and absent-parameter metadata pass. Black, boundaries and
+Gitleaks pass. Stopped resources rechecked. [Retry plan](../evaluation/identity/id-01-step-14/provisioning-window-retry-plan.json)
+binds the new transport hash; no secret reads, writes or starts. Await separate
+cloud-window approval. Step14 remains incomplete.
+
+### ID-01 — Step14 approved role-window retry — 2026-10-29 03:59:04 UTC
+
+Aditya approved exact retry plan9d9af4b1…08db4. Rechecked source/idle targets;
+installed owned deadline for04:44:04UTC and started retained RDS and one private
+t3.micro. API remains0; no SQL/credential write yet. Startup abort04:19:04,
+stop new work04:29:04. Continue to role/SSM proof and owned cleanup.
+
+### ID-01 — Step14 role and credential provisioned — 2026-10-29 04:14:41 UTC
+
+A executed Aditya-approved retry9d9af4b1…08db4. The reviewed separate
+Conversations login/grants and Standard SecureString version1 were created;
+actual login/denials and private readback passed. No existing credential,
+schema or business data changed. Owned host/root/tunnel/fallback removed;
+API0/ASG0 and RDS stopped. [Result](../evaluation/identity/id-01-step-14/provisioning-window-retry-result.json).
+Await verification; real S3/Hybrid/hosted matrix and Step14 acceptance remain.
+
+### ID-01 — Step14 S3/Conversations host preparation — 2026-10-29 04:36:32 UTC
+
+After Aditya verified role provisioning, A rechecked stopped resources and
+credential metadata. Prepared [45-minute host-only plan](../evaluation/identity/id-01-step-14/s3-conversations-host-window-plan.json)
+to obtain the private IP for a separately reviewed API/HTTPS plan; RDS remains
+stopped in phase1. Real S3/Conversations checks need human sign-ins; Hybrid
+requires its own image/pipeline/grant work. No resources started, secrets read
+or tests rerun. Await exact cloud approval; Step14 remains incomplete.
+
+### ID-01 — Step14 host-only preparation window — 2026-10-29 04:37:34 UTC
+
+Aditya approved host plan f9970751…32b696b9. Deadline action installed for
+05:22:34UTC before starting one private host. RDS/API remain stopped. Stop new
+work by05:07:34 and clean up owned host/root/fallback; next prepare exact
+separately approved API/HTTPS plan using its observed private IP.
+
+### ID-01 — Step14 exact S3/Conversations HTTPS plan — 2026-10-29 04:43:22 UTC
+
+Approved host-only window produced healthy private i-06ef704f13db82f6d at
+10.64.1.98. Aditya separately approved two memory-only credential reads for
+non-applying Terraform plan0a6551e3…c482e707. [Sanitized plan review](../evaluation/identity/id-01-step-14/s3-conversations-enabled-plan-review.json)
+records11 resource actions, public80/443, ASG min1→0/desired1, RDS-start and
+cleanup gates, source hashes, fixture and deadline. No RDS/API/proxy/DNS
+change yet. Exact hosting/cloud apply plus repeated ephemeral-input reads
+needs separate approval; host fallback05:22:34UTC, stop new work05:07:34UTC.
+Hybrid/remaining full matrix acceptance pending.
+
+### ID-01 — Step14 approved API/HTTPS window — 2026-10-29 04:44:26 UTC
+
+Aditya approved exact saved plan0a6551e3…c482e707, retained RDS start and
+repeat memory-only master/probe reads for apply. Source/account/state/host
+gates passed; RDS start requested. No Terraform apply yet. Host fallback
+05:22:34UTC; stop new work05:07:34UTC. [Plan review](../evaluation/identity/id-01-step-14/s3-conversations-enabled-plan-review.json).
+
+### ID-01 — Step14 live catalogue lock failure — 2026-10-29 04:56:35 UTC
+
+During the approved HTTPS window, real upload intent201 and confirmation200
+passed, but listing create returned500. Sanitized PostgreSQL logs show
+`permission denied for table categories`; Listings uses FOR SHARE on category
+and condition, requiring UPDATE on one column. Local PostgreSQL proof passed
+for the [two-column proposal](../evaluation/identity/id-01-step-14/catalogue-lock-grant-plan.json).
+No live SQL change or extra credential read. Exact grant/master-read approval
+and affected-owner review remain; listing display and full matrix still pending.
+
+### ID-01 — Step14 live S3/Conversations and catalogue grant — 2026-10-29 05:01:34 UTC
+
+Real S3 intent201/confirm200 passed. Listing create initially500 due to
+PostgreSQL catalogue FOR SHARE lacking UPDATE privilege. Aditya approved
+UPDATE only on categories.created_at and conditions.label; transaction and
+privilege checks passed. Listing retry201/image visible and temporary-account
+conversation201 were confirmed. [Result](../evaluation/identity/id-01-step-14/s3-conversations-live-result.json).
+Suraj review/durable grant handling, Hybrid and full matrix remain pending.
+[Exact teardown](../evaluation/identity/id-01-step-14/s3-conversations-teardown-review.json)
+awaits DNS deletion and separate approval before the owned deadline.
+
+### ID-01 — Step14 real integration cleanup — 2026-10-29 05:10:26 UTC
+
+Aditya confirmed DNS deletion and approved exact teardown5aca183e…4787d.
+Backend29; API0/task10, ASG0, RDS stopped; owned private/proxy hosts/roots,
+EIP, tunnel and fallback absent. Synthetic listing/image and the two approved
+catalogue column grants retained. [Cleanup](../evaluation/identity/id-01-step-14/s3-conversations-teardown-result.json).
+Suraj review/durable restoration, Hybrid and full matrix remain. Await result
+verification; no commit/publication.
+
+### ID-01 — Step14 scope clarification — 2026-10-29 05:12:58 UTC
+
+Aditya verified the S3/Conversations window and cleanup, and directed that
+Hybrid deployment remain Search-owned rather than an additional ID-01 gate.
+Step14 still requires the real authorization matrix, Suraj review and durable
+handling of the two catalogue column grants.

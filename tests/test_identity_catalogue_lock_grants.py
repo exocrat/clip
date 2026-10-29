@@ -1,0 +1,51 @@
+"""Disposable SQL proof for reviewed marketplace catalogue lock privileges."""
+
+import pytest
+from psycopg.errors import InsufficientPrivilege
+
+from apps.api.tests.domains.identity.postgres_fixtures import disposable_database
+
+
+def test_column_grants_enable_catalogue_locks_without_table_update(disposable_database):
+    """FOR SHARE needs one UPDATE column; assert narrowly scoped effective ACLs."""
+    with disposable_database() as c:
+        c.execute("CREATE ROLE clip_catalogue_lock_probe NOLOGIN")
+        c.execute("GRANT USAGE ON SCHEMA listings TO clip_catalogue_lock_probe")
+        c.execute(
+            "GRANT SELECT ON listings.categories, listings.conditions TO clip_catalogue_lock_probe"
+        )
+        for table, code in (("categories", "books"), ("conditions", "good")):
+            with pytest.raises(InsufficientPrivilege):
+                with c.transaction():
+                    c.execute("SET LOCAL ROLE clip_catalogue_lock_probe")
+                    c.execute(
+                        "SELECT code FROM listings."
+                        + table
+                        + " WHERE code=%s FOR SHARE",
+                        (code,),
+                    )
+        c.execute(
+            "GRANT UPDATE (created_at) ON listings.categories TO clip_catalogue_lock_probe"
+        )
+        c.execute(
+            "GRANT UPDATE (label) ON listings.conditions TO clip_catalogue_lock_probe"
+        )
+        for table, code in (("categories", "books"), ("conditions", "good")):
+            with c.transaction():
+                c.execute("SET LOCAL ROLE clip_catalogue_lock_probe")
+                assert c.execute(
+                    "SELECT code FROM listings." + table + " WHERE code=%s FOR SHARE",
+                    (code,),
+                ).fetchone() == (code,)
+        assert not c.execute(
+            "SELECT has_table_privilege('clip_catalogue_lock_probe','listings.categories','UPDATE')"
+        ).fetchone()[0]
+        assert not c.execute(
+            "SELECT has_table_privilege('clip_catalogue_lock_probe','listings.conditions','UPDATE')"
+        ).fetchone()[0]
+        assert not c.execute(
+            "SELECT has_column_privilege('clip_catalogue_lock_probe','listings.categories','active','UPDATE')"
+        ).fetchone()[0]
+        assert not c.execute(
+            "SELECT has_column_privilege('clip_catalogue_lock_probe','listings.conditions','active','UPDATE')"
+        ).fetchone()[0]

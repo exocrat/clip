@@ -196,3 +196,11 @@ exact plan/approval. Existing master/probe values were held only in memory for
 unchanged Terraform write-only inputs, versions preserved; no credentials in
 repo/CLI/output and no new secret generated or stored by this apply.
 [Applied configuration](../evaluation/identity/id-01-step-14/stopped-config-result.json).
+
+### ID-01 Step14 Conversations credential provisioned — 2026-10-29 04:14:41 UTC
+
+`/clip/test/conversations/database-url` now exists as Standard SecureString
+version1 under aws/ssm; exact execution-role read permission was previously
+applied. Aditya operates it; manual rotation/deletion requires separate approval.
+Actual separate database login and private parameter readback passed. No secret
+values are recorded. [Result](../evaluation/identity/id-01-step-14/provisioning-window-retry-result.json).

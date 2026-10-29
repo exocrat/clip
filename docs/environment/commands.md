@@ -2077,3 +2077,13 @@ Stored runtime DSN uses `sslrootcert=system`, matching the existing image's pinn
 RDS roots; operator transport uses the reviewed public CA files. The helper
 also accepts an explicit absolute CA path and rejects query-based user/options
 overrides. This documentation authorizes no start or credential operation.
+
+`uv run --locked pytest tests/test_identity_private_aws.py tests/test_identity_conversations_role.py -q`
+checks the Linux RAM-backed AWS CLI payload transport and role guards locally.
+The CLI helper never runs on import; cloud writes require explicit opt-in and
+the separately approved window. Responses may contain secrets and stay in memory.
+
+`uv run --locked pytest tests/test_identity_catalogue_lock_grants.py -q` proves
+the two column-level FOR SHARE grants against disposable PostgreSQL; it never
+changes a shared database. The live grants require affected-owner review and
+durable restoration handling before task acceptance.

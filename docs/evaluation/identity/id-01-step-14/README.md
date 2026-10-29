@@ -1,10 +1,8 @@
 # ID-01 Step14 — direct-API capability matrix
 
-**Current checkpoint:** user stopped the provisioning window; cleanup complete
-2026-10-28 20:31:28UTC.42consumer tests,6operator tests and7Terraform mocks
-passed. Task8 wiring applied. New login/credential not created: CLI preflight
-failure remains unresolved. Resume from the [window result](provisioning-window-result.json),
-not from an assumed successful provisioning. Step14/FR-03 remain incomplete.
+**Current checkpoint:** real S3 upload/display and temporary conversation passed;
+approved teardown is complete. Remaining authorization matrix, Suraj review and durable catalogue-grant
+handling remain; Hybrid deployment is Search-owned. Step14/FR-03 remain incomplete.
 
 Recorded2026-10-28 16:09:06UTC; Aditya(A), source `c2d7b43`.
 Owner/primary peer: Aditya(A)/Rahul(D); affected owners Suraj(B) Listings/images,
@@ -736,3 +734,90 @@ No schema/data/provider/image change. Shared retained NAT/storage still incur
 costs. Next session: inspect safe CLI preflight diagnostics offline/read-only,
 then review a fresh bounded window before restarting resources. Real S3/Hybrid/
 hosted principal and remaining matrix/acceptance gates remain open.
+
+## Approved role provisioning retry completed
+
+Aditya approved retry plan9d9af4b1…08db4. The actual separate login and
+reviewed grants were created; actual login, privacy defaults and denied
+cross-domain/DDL privileges passed. The new Standard SecureString at
+`/clip/test/conversations/database-url` is version1; private readback matched.
+No existing credentials, schema or application data changed.
+
+The owned host/root, tunnel and fallback were removed; ASG/API0 and RDS stopped.
+[Sanitized result](provisioning-window-retry-result.json). Await human result
+verification. Real S3/Hybrid and the hosted consumer matrix remain pending.
+
+## S3/Conversations integration preparation — host-only first phase
+
+Aditya verified role provisioning. Fresh read-only checks confirm task8/API0,
+ASG0, stopped RDS and Conversations SecureString v1. The existing image and
+real S3 configuration can test S3/Conversations; Hybrid requires its separate
+AMD64 image, reviewed embedding permissions and pipeline activation.
+
+[Exact host-only plan](s3-conversations-host-window-plan.json) requests one
+private t3.micro for at most45minutes with a USD1operator stop threshold and
+owned deadline. It gathers the host IP needed to prepare the exact subsequent
+API/HTTPS plan. RDS remains stopped in this phase, avoiding database compute
+while that plan awaits review. No app task, proxy, DNS, secret read, SQL write
+or image action is authorized by this first-phase plan. Cleanup restores ASG0
+and deletes the owned host/root; retained resources stay untouched.
+
+The later separately approved window needs real human sign-ins and may require
+DNS changes. Test synthetic images/associated listings together: do not delete
+objects behind retained database rows. Hybrid and full matrix acceptance remain
+separate. No resource start, commit or provider message in this preparation.
+
+## Exact S3/Conversations API and HTTPS plan
+
+Aditya approved the host-only window and separately approved memory-only reads
+of existing master/probe inputs for a non-applying plan. The sole private
+host i-06ef704f13db82f6d is healthy at10.64.1.98; API0/RDS stopped.
+[Exact plan review](s3-conversations-enabled-plan-review.json) records the
+saved plan, source hashes, allowed actions, public exposure and synthetic PNG.
+It proposes starting the retained RDS, applying only plan0a6551e3…c482e707
+(API1, private proxy route, temporary public t3.micro/EIP/80/443), then real
+S3/Conversations tests with human sign-ins and an explicitly supplied DNS A
+record. No DNS propagation polling or email sending. Hybrid remains disabled.
+
+ASG minimum changes1→0 while desired remains1; abort if the existing host/IP
+changes. Stop new work05:07:34UTC and clean up by05:22:34UTC; the existing
+USD1operator threshold applies to the whole window. Host fallback stops only
+the private host; proxy OS fallback is240minutes, so the operator must prepare
+a separately approved teardown promptly and stop the exclusive RDS. The
+synthetic object and listing stay together unless a safe cleanup is reviewed.
+The saved plan needs the same two credentials read into memory again at apply;
+this requires explicit approval beyond the earlier plan-only approval. No
+resource has been deployed by this preparation.
+
+## Live S3 and Conversations result
+
+Actual image intent201/confirmation200 passed. Listing creation initially
+returned500: PostgreSQL denied catalogue FOR SHARE because the marketplace
+role lacked any UPDATE column. PostgreSQL18 requires one UPDATE column for a
+row lock. Aditya approved two locally tested column grants; the role now has
+UPDATE on categories.created_at and conditions.label only, with no table-wide
+UPDATE or active-column write. Grant committed04:57:55UTC. Retry created the
+listing201 and Aditya confirmed image display; temporary-account conversation
+creation201 was also confirmed. [Result](s3-conversations-live-result.json).
+
+Suraj review and durable grant/restore handling remain pending; rebootstrap must
+not silently erase these grants. No full matrix or nonblank Hybrid pass claimed.
+Exact [teardown plan](s3-conversations-teardown-review.json) awaits approval and
+DNS A-record deletion. Synthetic listing and image are retained together.
+
+## S3/Conversations window cleanup
+
+Aditya confirmed DNS deletion and approved exact teardown5aca183e…4787d.
+Apply succeeded; backend29/API task10 desired/running0. Both owned hosts/roots,
+proxy EIP, tunnel and scheduled fallback are gone; ASG0 and RDS stopped.
+Synthetic listing/image and approved catalogue grants remain together.
+[Cleanup result](s3-conversations-teardown-result.json). Await verification;
+Hybrid, remaining matrix, Suraj review and durable grant restoration remain.
+
+## Scope clarification — 2026-10-29 05:12:58 UTC
+
+Aditya verified the live S3/Conversations result and cleanup, and directed that
+Hybrid deployment remain Search-owned, not an extra ID-01 gate. Step14 still
+requires the real authorization matrix, Suraj review and durable catalogue
+grant handling. Keyword already exercises the listing-search authorization
+path; no Hybrid deployment success is claimed here.
