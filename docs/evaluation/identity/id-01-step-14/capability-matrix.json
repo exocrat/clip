@@ -1,0 +1,1723 @@
+{
+  "recorded_at_utc": "2026-10-28 16:09:06 UTC",
+  "task": "ID-01",
+  "canonical_step": 14,
+  "local_checkpoint": "42 local cases passed; Rahul SQL approval reported; live preparation pending",
+  "state": "partial_local_execution_pending_human_verification",
+  "source_revision": "c2d7b43e446182996301a16ab2a85bcdb6cfd4ad",
+  "observed_remote_main": "5e8d264018c85475fbe13809316616b63a40886e",
+  "observed_open_pr_count": 0,
+  "definition_audit": "No task-list correction required; implementation/evidence/dependency gaps remain explicit. No new permission or stub exception invented.",
+  "inventory_counts": {
+    "listings": 15,
+    "search": 11,
+    "conversations": 16,
+    "identity": 5
+  },
+  "operations": 47,
+  "base_expectation_cells": 188,
+  "base_cell_note": "47operations \u00d7 regular/temporary/expired/revoked; this is planned coverage, not188executed/passed tests. Terminal variants/resource conditions add scenarios.",
+  "path_prefix": "Unprefixed app routes shown; hosted same-origin API uses /api. Health/static and auth protocol issuance/recovery routes are outside47business operations, with prior Step13 evidence and replay controls retained.",
+  "evidence_legend": {
+    "A1": {
+      "path": "apps/api/tests/domains/identity/test_application_composition.py",
+      "function": "test_real_cookie_enables_existing_listings_and_own_contact_routes",
+      "scope_limit": "Real regular cookie/catalogue/profile/contact flow; controlled signer/mail."
+    },
+    "A2": {
+      "path": "apps/api/tests/domains/identity/test_application_composition.py",
+      "function": "test_temporary_cookie_does_not_authorize_seller_endpoints",
+      "scope_limit": "Real temporary cookie: catalogue/empty own-list read, create-upload/create-sale403."
+    },
+    "A3": {
+      "path": "apps/api/tests/domains/identity/test_application_composition.py",
+      "function": "test_listing_routes_recheck_real_session_lifecycle",
+      "scope_limit": "Actual catalogue/own-list reads deny terminal regular sessions; not all Listings operations."
+    },
+    "A4": {
+      "path": "apps/api/tests/domains/identity/test_application_composition.py",
+      "function": "test_untrusted_origin_and_csrf_cannot_mutate_listings",
+      "scope_limit": "Existing transport/CSRF rejection; not every mutation."
+    },
+    "A5": {
+      "path": "apps/api/tests/domains/identity/test_application_composition.py",
+      "function": "test_real_session_reaches_accepted_search_routes",
+      "scope_limit": "Real regular/temporary Wanted/Saved empty-page reads only."
+    },
+    "A6": {
+      "path": "apps/api/tests/domains/identity/test_application_composition.py",
+      "function": "test_marketplace_saved_and_wanted_reject_terminal_real_sessions",
+      "scope_limit": "Regular/temporary terminal reads and selected writes; not full endpoint matrix."
+    },
+    "C1": {
+      "path": "apps/api/tests/test_conversation_identity_integration.py",
+      "function": "test_signed_listing_publication_to_temporary_buyer_conversation",
+      "scope_limit": "Real cookie/SQL image-intent/listing/chat/offer/own-contact flow; image storage controlled; opaque synthetic envelopes do not prove encryption."
+    },
+    "C2": {
+      "path": "apps/api/tests/test_conversation_identity_integration.py",
+      "function": "test_signed_wanted_origin_to_messages_and_read_state",
+      "scope_limit": "Real Wanted regular/temporary author, regular response/temp response denial, member/nonmember and terminal message/read-state flows; opaque payloads."
+    },
+    "C3": {
+      "path": "apps/api/tests/test_conversation_identity_integration.py",
+      "function": "test_real_session_and_csrf_authorize_conversation_key_writes",
+      "scope_limit": "Real regular cookie/key registration/read/logout checks; not all cohorts/key operations."
+    },
+    "I1": {
+      "path": "apps/api/tests/domains/identity/test_contacts_http.py",
+      "function": "test_own_http_crud_security_and_no_session_disclosure",
+      "scope_limit": "Real Identity own-field HTTP checks; expand field/lifecycle/cross-domain combinations."
+    },
+    "P1": {
+      "path": "apps/api/tests/domains/identity/test_capabilities_postgres.py",
+      "function": "test_regular_temporary_matrix_with_trusted_real_callers",
+      "scope_limit": "Policy-only real SQL with constructed trusted callers; not consumer HTTP evidence."
+    },
+    "D1": {
+      "path": "apps/api/tests/test_conversation_contact_preparation.py",
+      "function": "test_real_own_contact_selection_no_writes_and_current_field_removal",
+      "scope_limit": "Real SQL/Identity contact boundary, synthetic request authentication; not real-cookie full matrix."
+    },
+    "D2": {
+      "path": "apps/api/tests/test_conversation_contact_share_cleanup.py",
+      "function": "test_offer_selection_and_contact_share_work_together_through_real_apis",
+      "scope_limit": "Real SQL/domain operations with synthetic request authentication; not full Identity-session proof."
+    },
+    "D3": {
+      "path": "apps/api/tests/test_conversation_directory.py",
+      "function": "test_prekey_batches_atomic_retry_reservation_depletion_and_target_conflict",
+      "scope_limit": "Directory/prekey SQL/domain cases with synthetic callers; not full cookie matrix."
+    },
+    "D4": {
+      "path": "apps/api/tests/domains/search/test_saved_postgres.py",
+      "function": null,
+      "scope_limit": "Real saved SQL/HTTP but explicit upstream Listing fixtures; not full real integration."
+    },
+    "E13": {
+      "path": "docs/evaluation/identity/id-01-step-13/closeout-review.json",
+      "function": null,
+      "scope_limit": "Human-accepted hosted Identity flows; not consumer-wide FR-03 matrix."
+    }
+  },
+  "source_hashes": [
+    {
+      "path": "apps/api/app/domains/listings/browse_routes.py",
+      "sha256": "dcdba1eb3f2ff871aaea16a5665baab2aaf529e8a8c03888613665b4806d6b37"
+    },
+    {
+      "path": "apps/api/app/domains/listings/routes.py",
+      "sha256": "4900186182265fe2ce55d80886acb18766451ac50bb10e498c4894a3d2d3e549"
+    },
+    {
+      "path": "apps/api/app/domains/search/wanted_routes.py",
+      "sha256": "89c066ada4f946ce59cb08fb65e0c7d7412454fdf949b5fe29d2204ca37f3667"
+    },
+    {
+      "path": "apps/api/app/domains/search/saved_routes.py",
+      "sha256": "a8ad083cb1ff18a6d820066482279ccf17c917c589c1b415b18be535db3fd3c8"
+    },
+    {
+      "path": "apps/api/app/domains/conversations/routes.py",
+      "sha256": "60f578d9e0147fe9705d2462b0f43693e71aa36e2c8d2320a63588d49391fd83"
+    },
+    {
+      "path": "apps/api/app/domains/identity/http.py",
+      "sha256": "273c02724a00175f52b18dea15a3c09c598ffaf7037d604c090088ca8575a6c3"
+    },
+    {
+      "path": "apps/api/app/application.py",
+      "sha256": "cf778e2c6665fc2490b66b9682a4f935a833560c38014921cbaebfd91b6451aa"
+    },
+    {
+      "path": "apps/api/app/domains/identity/capabilities.py",
+      "sha256": "ff4ab67cdbb8f5bcaefdf9eab4a2c7548d0f1e1f2ce11f557e07316eeb2ab7a1"
+    },
+    {
+      "path": "contracts/identity.md",
+      "sha256": "eeeec60810dba0091c3786fca3bf0df56140c3342e78e690f5e7268d0d56e35f"
+    },
+    {
+      "path": "contracts/listings.md",
+      "sha256": "96d117bec0ef75e529588bdd62e19c7dab79d0a4555e82be4f88ff954cb49f62"
+    },
+    {
+      "path": "contracts/search.md",
+      "sha256": "e9fce24612058b23b85f1ddcb8dad0879700fd365bb1c6df6867d58808938a76"
+    },
+    {
+      "path": "contracts/conversations.md",
+      "sha256": "7eadce468de9382e03cb5bcd920f6c8ff56b1a1a0f8b6d4a9b7fd550dfb9689b"
+    }
+  ],
+  "global_invariants": [
+    "Use real Identity cookie/CSRF middleware and actual domain implementations/SQL; no dependency-overridden caller or policy-fixture route as consumer proof.",
+    "Use valid request bodies/resources before testing authorization;401invalid/terminal identity,403class/CSRF denial,404hidden nonowner/nonmember resources,409state conflicts follow reviewed route contract.",
+    "Check nonempty successful responses/durable effects and absence of denied side effects;503unavailable is not a positive permission pass.",
+    "Split account expiry from session expiry, account revocation from logout/reset revocation; stale unexpired cookie cannot restore authority.",
+    "User/class/owner/eligibility flags in headers/body/query cannot grant access; own-contact/profile edits never alter login or temporary lifetime.",
+    "No raw token/OTP/password/private contact/ciphertext/key values in public evidence.",
+    "No new consumer stub permitted for Step14. Prior controlled signer/mail/storage and synthetic-caller evidence remains partial and cannot silently substitute required real checks.",
+    "No new crypto/FR14/NFR/full-task claim from authorization fixtures; owners retain their acceptance."
+  ],
+  "rows": [
+    {
+      "id": "M01",
+      "domain": "listings",
+      "owner": "Suraj (B)",
+      "method": "GET",
+      "path": "/listings",
+      "operation_id": "listings_query_available",
+      "source": "apps/api/app/domains/listings/browse_routes.py",
+      "source_line": 75,
+      "policy": "Active account; supported mode, current visible listing projection",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "A6"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Keyword filters/sorts/paging/nonempty/empty cases passed for both classes; real Hybrid-positive runtime and remaining resource variants still pending.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions",
+      "resource_followup_evidence": "Relevant cases in test_keyword_filters_draft_matches_and_closed_wanted_visibility passed for regular/temporary actors."
+    },
+    {
+      "id": "M02",
+      "domain": "listings",
+      "owner": "Suraj (B)",
+      "method": "POST",
+      "path": "/listings/{listing_id}/conversations",
+      "operation_id": "listings_start_conversation",
+      "source": "apps/api/app/domains/listings/routes.py",
+      "source_line": 96,
+      "policy": "Active eligible buyer; not seller; real listing/pair/state",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "C1"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Both classes actual nonself/closed existing-pair reuse/new-pair404 and owner403 now pass. Additional retirement and ownership-race variants remain.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions",
+      "resource_state_evidence": "See local_execution.resource_state_additions and current test module; full integration acceptance remains pending."
+    },
+    {
+      "id": "M03",
+      "domain": "listings",
+      "owner": "Suraj (B)",
+      "method": "GET",
+      "path": "/catalogue",
+      "operation_id": "listings_read_catalogue",
+      "source": "apps/api/app/domains/listings/routes.py",
+      "source_line": 120,
+      "policy": "Active account; active catalogue only",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "A1",
+        "A2",
+        "A3"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Complete lifecycle/cohort and forged-caller coverage; preserve no-store.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions"
+    },
+    {
+      "id": "M04",
+      "domain": "listings",
+      "owner": "Suraj (B)",
+      "method": "POST",
+      "path": "/image-uploads",
+      "operation_id": "listings_create_image_upload",
+      "source": "apps/api/app/domains/listings/routes.py",
+      "source_line": 135,
+      "policy": "Active regular seller; own bounded upload intent",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "deny403",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "A2",
+        "C1",
+        "A4"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Real storage-backed regular intent; all terminal/replay/CSRF cases; no temporary ownership fabrication.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions"
+    },
+    {
+      "id": "M05",
+      "domain": "listings",
+      "owner": "Suraj (B)",
+      "method": "POST",
+      "path": "/image-uploads/{upload_id}/confirm",
+      "operation_id": "listings_confirm_image_upload",
+      "source": "apps/api/app/domains/listings/routes.py",
+      "source_line": 152,
+      "policy": "Active account; own valid intent and real object metadata",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "owner_only_standard_temp_nonowner404",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "C1"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Real object/type/size/expiry; foreign temporary/regular404 and terminal cases. Not a blanket class403.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions"
+    },
+    {
+      "id": "M06",
+      "domain": "listings",
+      "owner": "Suraj (B)",
+      "method": "DELETE",
+      "path": "/image-uploads/{upload_id}",
+      "operation_id": "listings_cancel_image_upload",
+      "source": "apps/api/app/domains/listings/routes.py",
+      "source_line": 168,
+      "policy": "Active account; own cancellable unattached intent",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "owner_only_standard_temp_nonowner404",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Own/foreign/attached/expired/retry state cases; assert durable intent/object state and no cross-user effect.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions",
+      "increment4_evidence": "Additional ownership/replay cases passed; see local_execution.increment4 and README. Other active/resource conditions remain pending.",
+      "sale_owner_followup_evidence": "test_regular_owner_sale_commands_and_public_selection_privacy passed; active regular SQL lifecycle only; image bytes/storage still pending."
+    },
+    {
+      "id": "M07",
+      "domain": "listings",
+      "owner": "Suraj (B)",
+      "method": "GET",
+      "path": "/images/{image_id}/delivery",
+      "operation_id": "listings_get_image_delivery",
+      "source": "apps/api/app/domains/listings/routes.py",
+      "source_line": 185,
+      "policy": "Active account; attached image of a visible/owner-readable listing",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Real S3 delivery authorization, foreign-hidden image404 and terminal denial; signed URL lifetime is a separate contract limit.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions"
+    },
+    {
+      "id": "M08",
+      "domain": "listings",
+      "owner": "Suraj (B)",
+      "method": "POST",
+      "path": "/listings",
+      "operation_id": "listings_create",
+      "source": "apps/api/app/domains/listings/routes.py",
+      "source_line": 201,
+      "policy": "Active regular seller; valid confirmed own images",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "deny403",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "A2",
+        "C1"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Real confirmed images and durable create; expired/revoked/forged flags; denied create cannot publish.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions",
+      "increment4_evidence": "Additional ownership/replay cases passed; see local_execution.increment4 and README. Other active/resource conditions remain pending.",
+      "sale_owner_followup_evidence": "test_regular_owner_sale_commands_and_public_selection_privacy passed; active regular SQL lifecycle only; image bytes/storage still pending.",
+      "validation_privacy_evidence": "test_cross_domain_validation_errors_never_reflect_private_input passed for regular/temporary actors;422/no-store/no reflection/no state changes."
+    },
+    {
+      "id": "M09",
+      "domain": "listings",
+      "owner": "Suraj (B)",
+      "method": "GET",
+      "path": "/listings/{listing_id}",
+      "operation_id": "listings_read_detail",
+      "source": "apps/api/app/domains/listings/routes.py",
+      "source_line": 218,
+      "policy": "Active account; visible listing or documented owner exception",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Regular/temp public-safe detail, unavailable/retired owner/nonowner cases and no owner-only/contact fields.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions",
+      "sale_owner_followup_evidence": "test_regular_owner_sale_commands_and_public_selection_privacy passed; active regular SQL lifecycle only; image bytes/storage still pending."
+    },
+    {
+      "id": "M10",
+      "domain": "listings",
+      "owner": "Suraj (B)",
+      "method": "GET",
+      "path": "/me/listings",
+      "operation_id": "listings_list_mine",
+      "source": "apps/api/app/domains/listings/routes.py",
+      "source_line": 234,
+      "policy": "Active account; trusted actor own management projection",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow_empty_for_standard_temporary",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "A1",
+        "A2",
+        "A3",
+        "A6"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Nonempty regular owner view; temporary empty200 is valid, no arbitrary owner ID accepted.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions",
+      "sale_owner_followup_evidence": "test_regular_owner_sale_commands_and_public_selection_privacy passed; active regular SQL lifecycle only; image bytes/storage still pending."
+    },
+    {
+      "id": "M11",
+      "domain": "listings",
+      "owner": "Suraj (B)",
+      "method": "PUT",
+      "path": "/listings/{listing_id}",
+      "operation_id": "listings_replace",
+      "source": "apps/api/app/domains/listings/routes.py",
+      "source_line": 250,
+      "policy": "Active regular owner; valid revision/images",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "deny403",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Stale revision409 and foreign-owner denial passed; image ownership/replacement cases still need actual storage-backed integration.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions",
+      "increment4_evidence": "Additional ownership/replay cases passed; see local_execution.increment4 and README. Other active/resource conditions remain pending.",
+      "sale_owner_followup_evidence": "test_regular_owner_sale_commands_and_public_selection_privacy passed; active regular SQL lifecycle only; image bytes/storage still pending.",
+      "binding_extension_evidence": "See current test source and local_execution.binding_revision_concurrency_retirement. Full real-integration acceptance pending."
+    },
+    {
+      "id": "M12",
+      "domain": "listings",
+      "owner": "Suraj (B)",
+      "method": "PUT",
+      "path": "/listings/{listing_id}/availability",
+      "operation_id": "listings_change_availability",
+      "source": "apps/api/app/domains/listings/routes.py",
+      "source_line": 267,
+      "policy": "Active regular owner; authoritative state/revision",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "deny403",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "C1"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Full owner/nonowner/terminal/replay table; denied writes preserve listing and discovery state.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions",
+      "increment4_evidence": "Additional ownership/replay cases passed; see local_execution.increment4 and README. Other active/resource conditions remain pending.",
+      "sale_owner_followup_evidence": "test_regular_owner_sale_commands_and_public_selection_privacy passed; active regular SQL lifecycle only; image bytes/storage still pending."
+    },
+    {
+      "id": "M13",
+      "domain": "listings",
+      "owner": "Suraj (B)",
+      "method": "PUT",
+      "path": "/listings/{listing_id}/selection",
+      "operation_id": "listings_set_selected_buyer",
+      "source": "apps/api/app/domains/listings/routes.py",
+      "source_line": 284,
+      "policy": "Active regular owner; real valid listing-thread buyer relationship",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "deny403",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "D2"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Actual wrong-thread/wrong-buyer404, self403, stale409, correct selection and clearing-without-reopen passed. Additional live resource cases remain.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions",
+      "increment4_evidence": "Additional ownership/replay cases passed; see local_execution.increment4 and README. Other active/resource conditions remain pending.",
+      "sale_owner_followup_evidence": "test_regular_owner_sale_commands_and_public_selection_privacy passed; active regular SQL lifecycle only; image bytes/storage still pending.",
+      "binding_extension_evidence": "See current test source and local_execution.binding_revision_concurrency_retirement. Full real-integration acceptance pending."
+    },
+    {
+      "id": "M14",
+      "domain": "listings",
+      "owner": "Suraj (B)",
+      "method": "PUT",
+      "path": "/listings/{listing_id}/conversations/{conversation_id}/offer",
+      "operation_id": "listings_submit_offer",
+      "source": "apps/api/app/domains/listings/routes.py",
+      "source_line": 301,
+      "policy": "Active eligible buyer; real listing-thread member, origin/revision/state",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "C1"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Both classes actual offer revision/replay, altered409, nonmember404, terminal and unavailable409 pass; wrong-origin/seller variants remain.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions",
+      "increment4_evidence": "Additional ownership/replay cases passed; see local_execution.increment4 and README. Other active/resource conditions remain pending.",
+      "resource_state_evidence": "See local_execution.resource_state_additions and current test module; full integration acceptance remains pending."
+    },
+    {
+      "id": "M15",
+      "domain": "listings",
+      "owner": "Suraj (B)",
+      "method": "POST",
+      "path": "/listings/{listing_id}/conversations/{conversation_id}/offer-withdrawals",
+      "operation_id": "listings_withdraw_offer",
+      "source": "apps/api/app/domains/listings/routes.py",
+      "source_line": 319,
+      "policy": "Active eligible buyer; own offer and valid listing/thread",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "C1"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Both classes actual withdrawal/replay, nonmember404, terminal and withdrawal after ordinary closure pass; retired-sale variants remain.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions",
+      "increment4_evidence": "Additional ownership/replay cases passed; see local_execution.increment4 and README. Other active/resource conditions remain pending.",
+      "resource_state_evidence": "See local_execution.resource_state_additions and current test module; full integration acceptance remains pending."
+    },
+    {
+      "id": "M16",
+      "domain": "search",
+      "owner": "Mohit (C)",
+      "method": "POST",
+      "path": "/wanted-requests/draft-matches",
+      "operation_id": "search_match_draft_title",
+      "source": "apps/api/app/domains/search/wanted_routes.py",
+      "source_line": 100,
+      "policy": "Active account; real supported listing match provider, transient title",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Both classes actual nonempty/no-match draft results, no state mutation and terminal/CSRF pass. No real Hybrid claim: draft matching uses Keyword.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions",
+      "resource_followup_evidence": "Relevant cases in test_keyword_filters_draft_matches_and_closed_wanted_visibility passed for regular/temporary actors.",
+      "resource_state_evidence": "See local_execution.resource_state_additions and current test module; full integration acceptance remains pending."
+    },
+    {
+      "id": "M17",
+      "domain": "search",
+      "owner": "Mohit (C)",
+      "method": "GET",
+      "path": "/wanted-requests",
+      "operation_id": "search_list_open_wanted_requests",
+      "source": "apps/api/app/domains/search/wanted_routes.py",
+      "source_line": 116,
+      "policy": "Active account; current open non-pending public projections",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "A5",
+        "A6",
+        "C2"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Nonempty regular/temp browse and pagination; private author/contact fields absent.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions"
+    },
+    {
+      "id": "M18",
+      "domain": "search",
+      "owner": "Mohit (C)",
+      "method": "GET",
+      "path": "/me/wanted-requests",
+      "operation_id": "search_list_my_wanted_requests",
+      "source": "apps/api/app/domains/search/wanted_routes.py",
+      "source_line": 128,
+      "policy": "Active account; trusted actor own rows only",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "A5",
+        "A6"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Nonempty ownership pages, both classes, hidden/retired semantics and terminal cohorts.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions"
+    },
+    {
+      "id": "M19",
+      "domain": "search",
+      "owner": "Mohit (C)",
+      "method": "POST",
+      "path": "/wanted-requests",
+      "operation_id": "search_create_wanted_request",
+      "source": "apps/api/app/domains/search/wanted_routes.py",
+      "source_line": 140,
+      "policy": "Active account; author derived from caller",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "C2",
+        "A6"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Both classes durable creation and denial side-effect checks; missing/forged actor and terminal/CSRF.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions",
+      "validation_privacy_evidence": "test_cross_domain_validation_errors_never_reflect_private_input passed for regular/temporary actors;422/no-store/no reflection/no state changes."
+    },
+    {
+      "id": "M20",
+      "domain": "search",
+      "owner": "Mohit (C)",
+      "method": "GET",
+      "path": "/wanted-requests/{request_id}",
+      "operation_id": "search_read_wanted_request",
+      "source": "apps/api/app/domains/search/wanted_routes.py",
+      "source_line": 155,
+      "policy": "Active account; open public or documented owner exception",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Both classes actual owner/other closed and retired reads verified; retired content scrub proven via real service on aged zero-thread fixture. Threaded retirement remains separate.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions",
+      "resource_followup_evidence": "Relevant cases in test_keyword_filters_draft_matches_and_closed_wanted_visibility passed for regular/temporary actors.",
+      "resource_state_evidence": "See local_execution.resource_state_additions and current test module; full integration acceptance remains pending."
+    },
+    {
+      "id": "M21",
+      "domain": "search",
+      "owner": "Mohit (C)",
+      "method": "PATCH",
+      "path": "/wanted-requests/{request_id}",
+      "operation_id": "search_update_wanted_request",
+      "source": "apps/api/app/domains/search/wanted_routes.py",
+      "source_line": 169,
+      "policy": "Active account; own request, expected revision/operation",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Both classes actual edit exact retry and stale conflict, foreign denial and retired author409/other404 passed.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions",
+      "increment4_evidence": "Additional ownership/replay cases passed; see local_execution.increment4 and README. Other active/resource conditions remain pending.",
+      "resource_state_evidence": "See local_execution.resource_state_additions and current test module; full integration acceptance remains pending.",
+      "binding_extension_evidence": "See current test source and local_execution.binding_revision_concurrency_retirement. Full real-integration acceptance pending."
+    },
+    {
+      "id": "M22",
+      "domain": "search",
+      "owner": "Mohit (C)",
+      "method": "PUT",
+      "path": "/wanted-requests/{request_id}/availability",
+      "operation_id": "search_change_wanted_request_state",
+      "source": "apps/api/app/domains/search/wanted_routes.py",
+      "source_line": 183,
+      "policy": "Active account; own request, current revision",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Both classes actual close/reopen and foreign/terminal/retired author409/other404 passed.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions",
+      "increment4_evidence": "Additional ownership/replay cases passed; see local_execution.increment4 and README. Other active/resource conditions remain pending.",
+      "resource_state_evidence": "See local_execution.resource_state_additions and current test module; full integration acceptance remains pending.",
+      "binding_extension_evidence": "See current test source and local_execution.binding_revision_concurrency_retirement. Full real-integration acceptance pending."
+    },
+    {
+      "id": "M23",
+      "domain": "search",
+      "owner": "Mohit (C)",
+      "method": "POST",
+      "path": "/wanted-requests/{request_id}/conversations",
+      "operation_id": "search_start_wanted_response",
+      "source": "apps/api/app/domains/search/wanted_routes.py",
+      "source_line": 210,
+      "policy": "Active regular non-author responder; valid real Wanted origin",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "deny403",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "C2"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Regular create/reuse, temporary403, self403, closed existing-only/new-pair404, pending/retired404 and terminal denials verified.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions",
+      "increment4_evidence": "Additional ownership/replay cases passed; see local_execution.increment4 and README. Other active/resource conditions remain pending.",
+      "resource_followup_evidence": "Relevant cases in test_keyword_filters_draft_matches_and_closed_wanted_visibility passed for regular/temporary actors.",
+      "resource_state_evidence": "See local_execution.resource_state_additions and current test module; full integration acceptance remains pending.",
+      "binding_extension_evidence": "See current test source and local_execution.binding_revision_concurrency_retirement. Full real-integration acceptance pending."
+    },
+    {
+      "id": "M24",
+      "domain": "search",
+      "owner": "Mohit (C)",
+      "method": "GET",
+      "path": "/me/saved-listings",
+      "operation_id": "search_list_saved_listings",
+      "source": "apps/api/app/domains/search/saved_routes.py",
+      "source_line": 39,
+      "policy": "Active account; caller own saves and current safe listing state",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "A5",
+        "A6",
+        "D4"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Nonempty actual Listing resolver/cookies both classes; unavailable/retired/hidden projections, terminal states.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions"
+    },
+    {
+      "id": "M25",
+      "domain": "search",
+      "owner": "Mohit (C)",
+      "method": "PUT",
+      "path": "/me/saved-listings/{listing_id}",
+      "operation_id": "search_save_listing",
+      "source": "apps/api/app/domains/search/saved_routes.py",
+      "source_line": 53,
+      "policy": "Active account; real eligible listing; caller-bound unique pair",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "A6",
+        "D4"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Regular/temp real nonempty save/duplicate; never fake Listing resolver; denied attempts preserve state.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions"
+    },
+    {
+      "id": "M26",
+      "domain": "search",
+      "owner": "Mohit (C)",
+      "method": "DELETE",
+      "path": "/me/saved-listings/{listing_id}",
+      "operation_id": "search_unsave_listing",
+      "source": "apps/api/app/domains/search/saved_routes.py",
+      "source_line": 67,
+      "policy": "Active account; caller own saved pair; idempotent absence",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "A6",
+        "D4"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Both classes own remove, foreign pair unaffected, retries and all terminal states.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions"
+    },
+    {
+      "id": "M27",
+      "domain": "conversations",
+      "owner": "Rahul (D)",
+      "method": "GET",
+      "path": "/conversations/{conversation_id}/contact-options",
+      "operation_id": "conversations_read_contact_options",
+      "source": "apps/api/app/domains/conversations/routes.py",
+      "source_line": 104,
+      "policy": "Active thread member; only own availability flags",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "C1",
+        "D1"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Both actor classes, nonmember/missing hide existence, retired state, no source contact values.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions"
+    },
+    {
+      "id": "M28",
+      "domain": "conversations",
+      "owner": "Rahul (D)",
+      "method": "POST",
+      "path": "/conversations/{conversation_id}/contact-preparations",
+      "operation_id": "conversations_prepare_own_contact_share",
+      "source": "apps/api/app/domains/conversations/routes.py",
+      "source_line": 123,
+      "policy": "Active thread member; explicit selected OWN fields; current field recheck",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "C1",
+        "D1"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Both classes, exact selected values only, post-deletion immediate absence, wrong actor/context, terminal/CSRF, no persistence.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions"
+    },
+    {
+      "id": "M29",
+      "domain": "conversations",
+      "owner": "Rahul (D)",
+      "method": "POST",
+      "path": "/conversations/{conversation_id}/messages",
+      "operation_id": "conversations_submit_message",
+      "source": "apps/api/app/domains/conversations/routes.py",
+      "source_line": 143,
+      "policy": "Active authorized thread member; correct key/envelope/thread state",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "C1",
+        "C2"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Both classes actual create/exact retry200/altered operation409, terminal/nonmember/CSRF, safe input errors and retired participant409 verified; opaque fixture is not encryption proof.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions",
+      "validation_privacy_evidence": "test_cross_domain_validation_errors_never_reflect_private_input passed for regular/temporary actors;422/no-store/no reflection/no state changes.",
+      "binding_extension_evidence": "See current test source and local_execution.binding_revision_concurrency_retirement. Full real-integration acceptance pending."
+    },
+    {
+      "id": "M30",
+      "domain": "conversations",
+      "owner": "Rahul (D)",
+      "method": "POST",
+      "path": "/conversations/{conversation_id}/contact-shares",
+      "operation_id": "conversations_submit_contact_share",
+      "source": "apps/api/app/domains/conversations/routes.py",
+      "source_line": 165,
+      "policy": "Active authorized member; selected fields/encrypted payload bound to thread/keys",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "D2"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Real-cookie both classes, selected-field/key binding, nonmember/terminal/CSRF/replay; do not equate opaque fixture with SDK encryption proof.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions"
+    },
+    {
+      "id": "M31",
+      "domain": "conversations",
+      "owner": "Rahul (D)",
+      "method": "GET",
+      "path": "/conversations/{conversation_id}/entries",
+      "operation_id": "conversations_read_entries",
+      "source": "apps/api/app/domains/conversations/routes.py",
+      "source_line": 189,
+      "policy": "Active member; safe bounded encrypted entry projection",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "C1",
+        "C2"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Both classes/all terminal and unrelated user; no plaintext contact/offer-note leakage and correct pagination.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions"
+    },
+    {
+      "id": "M32",
+      "domain": "conversations",
+      "owner": "Rahul (D)",
+      "method": "GET",
+      "path": "/conversations/{conversation_id}/read-state",
+      "operation_id": "conversations_read_state",
+      "source": "apps/api/app/domains/conversations/routes.py",
+      "source_line": 209,
+      "policy": "Active member; authorized two-member read-state",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "C2"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Both classes/terminal/nonmember and fetch-does-not-acknowledge; no third-party directory.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions"
+    },
+    {
+      "id": "M33",
+      "domain": "conversations",
+      "owner": "Rahul (D)",
+      "method": "GET",
+      "path": "/me/conversation-key",
+      "operation_id": "conversations_read_own_key",
+      "source": "apps/api/app/domains/conversations/routes.py",
+      "source_line": 224,
+      "policy": "Active account; own key or reviewed first-use null",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "C3"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Temporary class/terminal/revoked cases, safe null vs corruption and no private key material.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions"
+    },
+    {
+      "id": "M34",
+      "domain": "conversations",
+      "owner": "Rahul (D)",
+      "method": "PUT",
+      "path": "/conversations/{conversation_id}/read-state",
+      "operation_id": "conversations_acknowledge_read",
+      "source": "apps/api/app/domains/conversations/routes.py",
+      "source_line": 240,
+      "policy": "Active member; valid committed display watermark",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "C2"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Both classes/terminal/stranger/CSRF, bounded monotonic acknowledgements; denied writes do not advance marker.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions"
+    },
+    {
+      "id": "M35",
+      "domain": "conversations",
+      "owner": "Rahul (D)",
+      "method": "GET",
+      "path": "/conversations",
+      "operation_id": "conversations_list_mine",
+      "source": "apps/api/app/domains/conversations/routes.py",
+      "source_line": 256,
+      "policy": "Active account; only caller memberships and permitted filters",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "C2",
+        "C3"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Nonempty regular/temp own inbox, unrelated user isolation, pagination/offer filters and all terminal states.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions"
+    },
+    {
+      "id": "M36",
+      "domain": "conversations",
+      "owner": "Rahul (D)",
+      "method": "GET",
+      "path": "/conversations/{conversation_id}",
+      "operation_id": "conversations_read_summary",
+      "source": "apps/api/app/domains/conversations/routes.py",
+      "source_line": 271,
+      "policy": "Active member; permitted thread summary",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "C2"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Both classes/all terminal/nonmember, hidden missing equivalence and safe participant projection.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions"
+    },
+    {
+      "id": "M37",
+      "domain": "conversations",
+      "owner": "Rahul (D)",
+      "method": "GET",
+      "path": "/conversations/{conversation_id}/offer",
+      "operation_id": "conversations_read_offer",
+      "source": "apps/api/app/domains/conversations/routes.py",
+      "source_line": 288,
+      "policy": "Active appropriate listing-thread member; current/history offer visibility",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "C1"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Both classes, no-offer/wrong thread kind, stranger/terminal cases and no plaintext encrypted note.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions"
+    },
+    {
+      "id": "M38",
+      "domain": "conversations",
+      "owner": "Rahul (D)",
+      "method": "GET",
+      "path": "/conversations/{conversation_id}/keys",
+      "operation_id": "conversations_read_member_keys",
+      "source": "apps/api/app/domains/conversations/routes.py",
+      "source_line": 305,
+      "policy": "Active member; only current/referenced public keys for that thread",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "C2"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Both classes/terminal/stranger, version binding/rotation and no unrelated/private keys.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions"
+    },
+    {
+      "id": "M39",
+      "domain": "conversations",
+      "owner": "Rahul (D)",
+      "method": "PUT",
+      "path": "/me/conversation-key",
+      "operation_id": "conversations_register_own_key",
+      "source": "apps/api/app/domains/conversations/routes.py",
+      "source_line": 322,
+      "policy": "Active account; only caller own valid public SDK bundle",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "C1",
+        "C3"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Temporary/terminal/CSRF and duplicate/rotation failures; no client-selected user binding.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions"
+    },
+    {
+      "id": "M40",
+      "domain": "conversations",
+      "owner": "Rahul (D)",
+      "method": "GET",
+      "path": "/me/conversation-prekeys",
+      "operation_id": "conversations_read_own_prekey_inventory",
+      "source": "apps/api/app/domains/conversations/routes.py",
+      "source_line": 337,
+      "policy": "Active account; only own public prekey inventory",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "D3"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Real-cookie both classes and terminal states; no foreign inventory or private key content.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions"
+    },
+    {
+      "id": "M41",
+      "domain": "conversations",
+      "owner": "Rahul (D)",
+      "method": "POST",
+      "path": "/me/conversation-prekeys",
+      "operation_id": "conversations_publish_own_prekeys",
+      "source": "apps/api/app/domains/conversations/routes.py",
+      "source_line": 350,
+      "policy": "Active account; valid own key version and bounded public batch",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "D3"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Real-cookie both classes/terminal/CSRF; key-version/duplicate/conflict semantics and no foreign writes.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions"
+    },
+    {
+      "id": "M42",
+      "domain": "conversations",
+      "owner": "Rahul (D)",
+      "method": "POST",
+      "path": "/conversations/{conversation_id}/prekey-bundle",
+      "operation_id": "conversations_consume_member_prekeys",
+      "source": "apps/api/app/domains/conversations/routes.py",
+      "source_line": 367,
+      "policy": "Active member; bound peer/version and one-time reservation",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "D3"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Both classes actual nonmember/terminal/CSRF, depletion, exact retry, rotation and two simultaneous HTTP reservation requests passed under shipped one-connection Conversations pool; not a multi-connection stress/NFR result.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions",
+      "resource_state_evidence": "See local_execution.resource_state_additions and current test module; full integration acceptance remains pending.",
+      "binding_extension_evidence": "See current test source and local_execution.binding_revision_concurrency_retirement. Full real-integration acceptance pending."
+    },
+    {
+      "id": "M43",
+      "domain": "identity",
+      "owner": "Aditya (A)",
+      "method": "GET",
+      "path": "/me",
+      "operation_id": "identity_read_me",
+      "source": "apps/api/app/domains/identity/http.py",
+      "source_line": 517,
+      "policy": "Active account; own safe profile/session summary",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "A1",
+        "A2",
+        "E13"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Every terminal/replay cohort; no raw contacts/session token and no client-selected actor.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions"
+    },
+    {
+      "id": "M44",
+      "domain": "identity",
+      "owner": "Aditya (A)",
+      "method": "PATCH",
+      "path": "/me/profile",
+      "operation_id": "identity_update_own_profile",
+      "source": "apps/api/app/domains/identity/http.py",
+      "source_line": 540,
+      "policy": "Active account; own display-name validation and lifetime unchanged",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "I1"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Both classes/terminal/CSRF and field validation; no email/login or expiry renewal via profile edits.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions",
+      "validation_privacy_evidence": "test_cross_domain_validation_errors_never_reflect_private_input passed for regular/temporary actors;422/no-store/no reflection/no state changes."
+    },
+    {
+      "id": "M45",
+      "domain": "identity",
+      "owner": "Aditya (A)",
+      "method": "GET",
+      "path": "/me/contacts",
+      "operation_id": "identity_read_own_contacts",
+      "source": "apps/api/app/domains/identity/http.py",
+      "source_line": 550,
+      "policy": "Active account; own source fields only",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "A1",
+        "I1",
+        "E13"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Both classes/all terminal; no general public lookup; every supported contact kind separately.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions"
+    },
+    {
+      "id": "M46",
+      "domain": "identity",
+      "owner": "Aditya (A)",
+      "method": "PUT",
+      "path": "/me/contacts/{contact_kind}",
+      "operation_id": "identity_set_own_contact",
+      "source": "apps/api/app/domains/identity/http.py",
+      "source_line": 559,
+      "policy": "Active account; valid own supported field only",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "A1",
+        "I1",
+        "E13"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Both classes/terminal/CSRF and each field kind; sign-in identity/lifetime unchanged; no cross-user edits.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions"
+    },
+    {
+      "id": "M47",
+      "domain": "identity",
+      "owner": "Aditya (A)",
+      "method": "DELETE",
+      "path": "/me/contacts/{contact_kind}",
+      "operation_id": "identity_delete_own_contact",
+      "source": "apps/api/app/domains/identity/http.py",
+      "source_line": 574,
+      "policy": "Active account; own field immediate/idempotent removal",
+      "regular": "allow_when_resource_conditions_hold",
+      "temporary": "allow",
+      "expired": 401,
+      "revoked": 401,
+      "terminal_variants": [
+        "expired_session",
+        "expired_temporary_account",
+        "revoked_account_with_unexpired_cookie",
+        "logged_out_or_revoked_session_replay",
+        "temporary_password_reset_prior_session_replay"
+      ],
+      "existing_evidence": [
+        "C1",
+        "I1",
+        "E13"
+      ],
+      "existing_evidence_status": "source_inspected_not_rerun_not_full_matrix_acceptance",
+      "missing_or_incomplete_cases": "Both classes/terminal/CSRF and each field kind; immediate subsequent preparation omission, without falsely erasing copied encrypted shares.",
+      "step14_execution": "terminal_real_session_cases_passed; active_and_resource_conditions_partial",
+      "step14_acceptance": "pending",
+      "local_terminal_cases_passed": 8,
+      "execution_evidence": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py::test_all47_endpoints_reject_terminal_real_sessions"
+    }
+  ],
+  "inventory_verification": {
+    "by": "Aditya (A)",
+    "recorded_at_utc": "2026-10-28 16:24:14 UTC"
+  },
+  "dependency_reconciliation": "dependency-reconciliation.json",
+  "owner_readiness_status": "owner acceptance reported for LI-CORE/SE-CORE/CN-CORE; exact revision/reviewer details pending",
+  "execution_recorded_at_utc": "2026-10-28 19:36:11 UTC",
+  "local_execution": {
+    "tests": 42,
+    "passed": 42,
+    "duration_seconds": 71.54,
+    "terminal_requests": 376,
+    "terminal_scenarios": [
+      "regular session expired",
+      "regular account revoked",
+      "regular logout replay",
+      "temporary session expired",
+      "temporary account expired",
+      "temporary account revoked",
+      "temporary logout replay",
+      "temporary password-reset old-cookie replay"
+    ],
+    "test_path": "apps/api/tests/domains/identity/test_consumer_capability_matrix.py",
+    "test_sha256": "051a7d61fc07c0f81512de07ae970676bf1c5a877c0dbdefe151228d015d7f0a",
+    "limits": "Actual services/SQL/cookies; controlled signer/mail/clock; fixture image metadata only. No S3, Hybrid, hosted grants, provider delivery or SDK encryption proof. Full matrix acceptance remains pending.",
+    "increment4": "Five added cases: regular/temporary offer revision, exact retry, altered replay409, withdrawal/retry and nonmember404; regular Wanted response/reuse and temporary403; foreign Wanted author404; foreign image cancellation404 and seller commands403; forged ownership body422. Denials preserve business-state fingerprints.",
+    "sale_owner_followup": "Actual cancellation, replacement, close/reopen, buyer selection, public selection privacy and sale create pass using SQL fixture image metadata. No actual S3 object/upload evidence.",
+    "resource_followup": "Regular/temporary keyword filters/sorts/paging and empty filter page; actual nonempty draft match with no mutation; author-only closed Wanted read/list, peer read/response404; malformed bodies across Listings/Wanted/Conversations/Identity422 with no private input reflection or state mutation.",
+    "separate_principal": {
+      "test_path": "apps/api/tests/domains/identity/test_conversation_runtime_principal.py",
+      "test_sha256": "9961aca45473595f716cd0dae7bb2ba8a904c813333971cc5196d4c66d540c3f",
+      "proposal": "docs/evaluation/identity/id-01-step-14/conversations-runtime.sql.proposed",
+      "proposal_sha256": "6822fd82bc1d75c262d55227a385c8ca63a7aca155c8dc1b4df3c19dd73eee13",
+      "cases_passed": 2,
+      "limits": "Disposable DB only, distinct actual tuple-pool login; does not prove hosted ACLs, retention or every recovery/concurrency path. Owner review pending."
+    },
+    "resource_state_additions": "Eight regular/temporary cases: Wanted self403, closed existing-pair reuse/new-pair404; actual zero-thread retirement with content scrub, retired reads404, owner writes409/nonowner404; closed sale existing-pair reuse/new-pair404/self403/offer409/withdraw200; empty draft matches; prekey depletion, exact retry, rotation and stale-batch409.",
+    "binding_revision_concurrency_retirement": "Seven added cases: selection thread/candidate/self/stale denials and clear-without-reopen; Wanted exact edit retry/stale conflict/reopen; message exact retry/altered reuse409; two simultaneous real HTTP prekey requests reserve each OTP once; pending and threaded retirement through separate Conversations login preserves membership/reads and blocks writes."
+  },
+  "increment3_human_verified": true,
+  "increment4_human_verified": true,
+  "sale_owner_followup_human_verified": true,
+  "runtime_preparation_human_verified": true,
+  "shared_config_human_verified": true,
+  "inventory_note": "Original missing-case descriptions are an inventory; executed annotations/current local receipts narrow them. No blanket completed-cell acceptance is inferred from source-only older fixtures.",
+  "resource_state_extension_human_verified": true
+}

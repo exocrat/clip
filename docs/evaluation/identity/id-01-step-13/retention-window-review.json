@@ -1,0 +1,55 @@
+{
+  "prepared_at_utc": "2026-10-28 15:35:35 UTC",
+  "state": "review_only_not_installed",
+  "host": "i-012c79d8ef66d51f9",
+  "task_revision": 6,
+  "image": "335523638354.dkr.ecr.ap-south-1.amazonaws.com/clip-shared-test-api@sha256:bfa7316c26f683654f5c4b3f40e9817876db5afd79f8f13af978a8841fbde8f8",
+  "deadline_utc": "2026-10-28 19:03:57 UTC",
+  "apply_approved": false,
+  "schedule_approved": false,
+  "dry_run_counts": {
+    "otp_challenges": 0,
+    "sessions": 0,
+    "temporary_credentials": 0,
+    "microsoft_login_attempts": 0,
+    "auth_source_events": 0,
+    "otp_send_reservations": 0,
+    "otp_verification_windows": 0,
+    "password_login_windows": 0,
+    "contacts": 0,
+    "profiles": 0
+  },
+  "batch_per_category": 100,
+  "first_timer_tick": "1 minute after activation",
+  "cadence": "1 hour after previous activation; no retries",
+  "source_hashes": [
+    {
+      "path": "scripts/identity_retention_job.py",
+      "sha256": "ac7df1e32756d2b5206fb8e2a22ac71e34476f90a4f0f554f0f95fdc431418c1"
+    },
+    {
+      "path": "scripts/identity_cleanup.py",
+      "sha256": "99fb7fafc385a9292e5986d1100bee64de63c985951def181083a7ed75452304"
+    },
+    {
+      "path": "scripts/identity_retention.service.proposed",
+      "sha256": "d6b7eaef4a99d6bb2547678ec48fc5a9afc4ec1816672a0a28fd66fc4697ed10"
+    },
+    {
+      "path": "scripts/identity_retention.timer.proposed",
+      "sha256": "758ce4e597540f0c1be671e439678aac60a6655e2b14249fcff460830d4a470b"
+    },
+    {
+      "path": "tests/test_identity_retention_job.py",
+      "sha256": "91d4d0dc632b658212008590c984e44eb3f917dc19cee3e244425d0f4f4f6b78"
+    }
+  ],
+  "checks": {
+    "focused_tests": 4,
+    "strict_mypy": "passed",
+    "Black": "passed",
+    "host_python39_grammar": "passed",
+    "child_payload_compile": "passed"
+  },
+  "cleanup_plan_sha256": "a3da1773dea736d90f70b21553cde814a1d3a247cc598966e6cbf5c2ef20887e"
+}

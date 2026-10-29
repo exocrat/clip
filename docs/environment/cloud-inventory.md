@@ -450,3 +450,41 @@ API desired/running/pending0, ASG0/empty, no active sessions. Owned host
 i-0be3743fe59a127bf terminated and rootvol-0806db641df31317b deleted. Guarded
 scale-in accepted with honor-cooldown. NAT/data/parameters/state retained; baseline
 retention costs continue. [Successful probe record](../evaluation/identity/id-01-step-12/logging-probe-20261025T052229Z.json).
+
+### ID-01 Step14 stopped consumer wiring — 2026-10-28 19:54:52 UTC
+
+Account335523638354/Mumbai, shared/test backend25; approved plan1ae7c926…5636
+applied. API `clip-test-api-ap-south-1-pd16:8` has separate Conversations DSN
+injection; execution-role policy `clip-shared-test-api-conversations-secret`
+reads only `/clip/test/conversations/database-url`. Service desired/running/
+pending0, ASG0/empty/max1, RDS stopped/private/protected. Prior image and
+256CPU/512MiB retained; Hybrid off. No resource starts/new compute, bucket, DB,
+network or data changes. Role/parameter provisioning remains separate; new
+parameter metadata absent. Retain stopped definition/policy for next reviewed
+window; removal/rollback requires a fresh reviewed plan. Aditya owns cleanup;
+existing retained NAT/storage charges continue.
+[Exact plan/result](../evaluation/identity/id-01-step-14/stopped-config-result.json).
+
+### ID-01 Step14 role window stopped — 2026-10-28 20:31:28 UTC
+
+User-requested cleanup complete: i-036a77b684c9ba694 terminated,
+vol-083ee1bd19529468f absent, ASG0/empty/max1, API0, RDS stopped; owned deadline
+and tunnel removed. New parameter absent; provisioning blocked in preflight
+before any master/SQL/SSM operation. Retain task8/scoped policy and shared
+NAT/network/storage/data/keys/images. Existing retention charges continue.
+[Resume/result](../evaluation/identity/id-01-step-14/provisioning-window-result.json).
+
+### ID-01 Step14 role retry cleanup — 2026-10-29 04:14:41 UTC
+
+Approved retry created the reviewed Conversations login and SecureString v1.
+Owned i-0fecb5c82b2569f92/root, tunnel and fallback removed; API/ASG0, RDS
+stopped. Role/parameter retained for integration; shared NAT/storage remain.
+[Result](../evaluation/identity/id-01-step-14/provisioning-window-retry-result.json).
+
+### ID-01 Step14 real integration cleanup — 2026-10-29 05:10:26 UTC
+
+Approved teardown complete: API0/task10, ASG0, RDS stopped; owned private/proxy
+hosts and roots, EIP, tunnel and fallback removed. User confirmed DNS deletion.
+Synthetic listing/image and narrow catalogue grants retained; Suraj review and
+durable grant restoration pending. Shared NAT/storage continue accruing charges.
+[Result](../evaluation/identity/id-01-step-14/s3-conversations-teardown-result.json).

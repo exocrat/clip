@@ -1,0 +1,12 @@
+# Window-only hourly schedule; no activation by merely checking out this file.
+[Unit]
+Description=Hourly CLIP Identity retention during approved ID-01 window
+
+[Timer]
+OnActiveSec=1min
+OnUnitActiveSec=1h
+AccuracySec=1s
+Unit=clip-id01-retention.service
+
+[Install]
+WantedBy=timers.target

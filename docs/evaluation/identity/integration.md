@@ -1902,3 +1902,127 @@ convergence or ID-READY. A future deployment requires a fresh full normal plan,
 valid controlled provider inputs, durable HTTPS/proxy design and real application
 acceptance. Aditya's DNS deletion remains human-reported, propagation intentionally
 not checked. Evidence/docs updates uncommitted; JSON/link/whitespace checks pass.
+
+## Step12 current-main reconciliation — 2026-10-27 18:25:58 UTC
+
+Aditya(A) authorized Step12 preparation and merging accepted main. The merge at
+479a09c integrates5e8d264(PR17/18) and has exactly its accepted file tree. The two
+conflicts were equivalent Firefox-safe transport formatting/comments and the
+collaboration record; accepted main versions preserve the origin policy and all
+Conversations reservations. No feature-private implementation was rewritten.
+Aditya is the bounded writer for the owned runner/tests, migration candidate,
+current handoff and affected command/provider/status documentation. No contract,
+SQL, Terraform, cloud or provider operation is part of this increment.
+
+The accepted main baseline passes all12local gates, including1930Python/153skips,
+94data,433web/3skips, Conversations167 and actual PostgreSQL18.6 lifecycle.
+The skipped general Python cases include separately executed Conversations SQL
+checks; those skips are not counted as passes. Actual cookie/CSRF/SQL contact
+preparation already exists in test_conversation_identity_integration.py: own
+selected fields only, wrong-origin/missing-CSRF denial, deleted-field refusal and
+per-actor separation. External signing/mail/image ports remain controlled; this
+is not a new live-provider or encrypted-chat acceptance claim.
+
+### Strict migration candidate and source-binding gate
+
+The old runner intentionally pinned17files, head20261025013000and37/33/43
+objects. The new candidate pins the accepted23unchanged files through
+20261027112205and40tables/36functions/46triggers. The runner, private package
+fixtures, JSON manifest and candidate postconditions must agree. New regressions
+retain refusal of the archived17-file package and a synthetic17-version tracker
+prefix without replay or mutation; the live-review regression targets the actual
+live target, not an isolated fixture where the23-file package is now permitted.
+No automatic prefix/resume/adoption mode was added. In particular this package
+**cannot upgrade the recorded17-file shared database**; Step13 needs a separately
+reviewed forward-only upgrade procedure after exact target inspection.
+
+Both manifest and candidate remain unreviewed/non-executable. The runner source
+has uncommitted changes, so its source fields currently identify the preparation
+base479a09c, with source_commit_binding_pending=true. The offline audit correctly
+reports only reviewed_source_unchanged=false; all other checks pass. After explicit
+commit approval, bind the candidate to the actual runner commit and rerun the
+unchanged audit; do not remove its uncommitted-source rejection to get a green
+result. No historical executed manifest/receipt or published SQL was changed.
+
+### Provider status and remaining boundary
+
+At2026-10-27 18:25:58UTC Aditya confirmed revocation of the exposed Resend key and
+replacement in SSM. This clears the rotation action on human evidence; no secret
+value/version or live account was inspected. New deployed loading/delivery still
+requires verification. The exact verify@ SES sender-condition update was already
+recorded applied2026-10-26, so it is not another unapplied source-only change.
+SES production access remains separate; approved Resend use does not wait on it.
+
+Step12 preparation finishes with candidate source binding, current check/review
+evidence and the usable interface handoff; ID-READY acceptance still awaits the
+required Step13 runtime evidence. Step13 is the reviewed HTTPS/proxy route,
+current image and runtime configuration, exact shared-schema forward upgrade and
+effective role checks, operational retention cadence, controlled regular/email
+browser flows and test cleanup. Full image/Search/Hybrid/Conversations feature
+acceptance and Step14's exhaustive capability matrix retain their own scope.
+Historical runtime plans above are context, not fresh execution approval.
+
+### Local verification — 2026-10-27 18:33:45 UTC
+
+Final focused candidate safety suite32passed; strict mypy2files passed. All12
+aggregate gates passed:1932Python/153explicit skips,94data,433web/3opt-in skips,
+Conversations167, Black296files, boundaries/contracts/double types/build,
+wrapper35, real PostgreSQL18.6 lifecycle and Gitleaks8.30.1. Initial focused run
+had one legacy isolated-chain expectation failure; changing its target to the
+actual live-review guard preserves the test's stated purpose. Existing source
+and input validation were not weakened. Logs and pending source-binding result
+are recorded in the work log. Accepted main was fetched again and remains5e8d264.
+This is local preparation pending human verification, not ID-READY acceptance.
+
+### Disposable-data direction — 2026-10-27 18:44:48 UTC
+
+Aditya verified Step12 local preparation and reports no application data requiring
+preservation. For Step13, prefer a reviewed clean bootstrap/reset; do not spend
+work implementing a data-preserving17→23upgrade unless the requirement changes.
+Earlier forward-upgrade obligations above describe the previous preservation
+assumption and are superseded by this direction. The current runner still refuses
+an existing17-file tracker: empty application tables do not remove schemas or
+migration history. A fresh baseline therefore needs a separately reviewed exact
+reset/replacement scope and shared-owner/cloud approval. No live inspection,
+reset, schema change or cloud action was performed; source safeguards are unchanged.
+
+### Source binding verified — 2026-10-27 19:17:44 UTC
+
+Aditya explicitly approved the verified implementation and source-bound metadata
+commits. Candidate and manifest now reference39bfb4b; source_commit_binding_pending
+is false and the manifest checksum was recomputed. The unchanged offline audit
+passes9/9checks, consistent=true, ready_for_live=false;12regressions pass. This
+supersedes the earlier uncommitted-source blocker. Image/live review guards,
+private data handling and prefix refusal remain unchanged. New source review,
+hosted CI/merge and actual Step13 runtime acceptance remain required; no cloud,
+SQL/provider action or ID-READY acceptance occurred. The clean bootstrap/reset
+preference above remains the next database-planning input.
+
+## Step13 bounded HTTPS and planning preparation — 2026-10-28 03:42:11 UTC
+
+Aditya requested starting the test setup, renewed the non-root AWS login and
+approved private non-applying planning with the two fixed DB password inputs.
+Read-only preflight confirms stopped/private RDS, zero tasks/hosts in both ECS
+clusters, ASG0/max1, no nonterminated Mumbai EC2, available x86_64AMI and an issued
+unused/non-exportable ACM certificate. No declined DNS propagation check was run.
+[Current proposal, exact source files, tests and planning gates](id-01-step-13/README.md)
+and [safe metadata/draft hashes](id-01-step-13/preflight-and-proposal.json).
+
+The new shared-root proxy proposal defaults off: dedicated Micro node and scoped
+SSM-agent role without parameter reads. Forwarded headers are trusted only from
+`10.64.0.10`; port18000remains private and raw request logging is disabled.
+Caddy obtains separate ACME TLS. The shared ECS type
+default is unchanged; Micro is a per-run sizing proposal, with512MiB tasks
+sequential and actual memory/build/Hybrid limits unaccepted. Local6transport SQL
+checks,3isolated mock plans, pinned Caddy validation, all4Terraform roots and all
+12application gates passed (Python1938/153skip, data94, web433/3skip, CN167).
+
+The first private baseline/Micro plans use state18and keep services off. They
+contain an unintended SES sandbox-recipient resource omission. Reusing its exact
+private ARN as unchanged input was rejected by automatic approval review as
+outside the two-password sensitive-input scope. Additional explicit approval is
+pending; drafts are not for apply. No source ignore/targeting or workaround was
+used. User reconfirmed correct Resend replacement storage; provider value unread.
+No infrastructure mutation, SQL/reset, application deployment, provider send,
+commit/push or ID-READY acceptance occurred. The local code/proposal await human
+verification and later exact-plan gates.

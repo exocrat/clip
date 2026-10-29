@@ -1,0 +1,132 @@
+{
+  "prepared_at_utc": "2026-10-28 13:10:37 UTC",
+  "source_revision": "39bfb4beedd0d8f7c303046099210b82ef4780a6",
+  "recorded_upstream_revision": "5e8d264018c85475fbe13809316616b63a40886e",
+  "tool": "dbmate 2.36.0",
+  "image_tag": "ghcr.io/amacneil/dbmate:2.36.0",
+  "image_digest_review_pending": false,
+  "migration_count": 23,
+  "head": "20261027112205",
+  "live_apply_authorized": true,
+  "migrations": [
+    {
+      "path": "database/migrations/20261018094330_mvp_tables.sql",
+      "version": "20261018094330",
+      "sha256": "ddcff1e44fd2da9c9b2574dfc3b1604f1603033609b66b7e8497460ef4b2966f"
+    },
+    {
+      "path": "database/migrations/20261018094331_mvp_integrity.sql",
+      "version": "20261018094331",
+      "sha256": "81e06b30ee6a31f9fb66f0681c706fa7b9a9857d06e76469791b86afce0391b6"
+    },
+    {
+      "path": "database/migrations/20261018094332_initial_catalogue.sql",
+      "version": "20261018094332",
+      "sha256": "45a1bc9b9df74afd95bf1131c274a07da7c14f1d3a657645e16a2980b78d020c"
+    },
+    {
+      "path": "database/migrations/20261018152702_reject_retired_origin_entries.sql",
+      "version": "20261018152702",
+      "sha256": "7ec9d5c503e5935074b5dc02ca02ab1c29f5b0df7b267280546323c71a1b12e1"
+    },
+    {
+      "path": "database/migrations/20261020102224_listing_owner_command_results.sql",
+      "version": "20261020102224",
+      "sha256": "659b5944b77c0fd3d6c69ced3f7a2c4800efb6ea7b05ab8e6995bd44f30c0fe3"
+    },
+    {
+      "path": "database/migrations/20261020111741_listing_create_command_results.sql",
+      "version": "20261020111741",
+      "sha256": "1d3aca84d2c19b20f4c113c31a4c1750a5b765a4fd346dd2efb2467df9a74415"
+    },
+    {
+      "path": "database/migrations/20261020113531_listing_selection_and_confirmed_image_metadata.sql",
+      "version": "20261020113531",
+      "sha256": "4ed6dd898c044ad003ef215f4850791b91a949e2a9bdcd08e390c3e349f62e51"
+    },
+    {
+      "path": "database/migrations/20261020142319_api_owned_retirement_and_trigger_boundaries.sql",
+      "version": "20261020142319",
+      "sha256": "bfa1032a35dd3ff1769439e9b6052478400862d5ab14383a2568dc1d9229044b"
+    },
+    {
+      "path": "database/migrations/20261021105546_optional_listing_pickup_area.sql",
+      "version": "20261021105546",
+      "sha256": "f2069d09d88aa68f1ef41a7e6f35e7ef4eea6d630ac57c16366570cf45e15952"
+    },
+    {
+      "path": "database/migrations/20261022050000_listing_image_upload_intents.sql",
+      "version": "20261022050000",
+      "sha256": "2b702957c311faeaa462946a5bac2639790a2c6176a506f721c1786d54b8289c"
+    },
+    {
+      "path": "database/migrations/20261022062357_listing_image_cleanup_retries.sql",
+      "version": "20261022062357",
+      "sha256": "8fd571308dbc45a67c5bfe0c85dbf8e071652a0632904f3996399fdfaaa8d461"
+    },
+    {
+      "path": "database/migrations/20261023173439_identity_account_profile_integrity.sql",
+      "version": "20261023173439",
+      "sha256": "50dcb7949fdb16591c0543138196b621a149995c8be6564289b2e5ace26686d3"
+    },
+    {
+      "path": "database/migrations/20261023192856_identity_otp_transactions.sql",
+      "version": "20261023192856",
+      "sha256": "c84cc79abb5ded9982aba48d3a1c1c782d1a726d1ae79e6df5c735502250e113"
+    },
+    {
+      "path": "database/migrations/20261023202807_identity_sessions_and_login.sql",
+      "version": "20261023202807",
+      "sha256": "11fca117f8204edc4f1b3283bc8132ea211d786401be1e65e01d7dd087406c4c"
+    },
+    {
+      "path": "database/migrations/20261024153316_listing_embedding_generations.sql",
+      "version": "20261024153316",
+      "sha256": "e85b87f2cbe8eb05a4af4c958a7d344f37ba6b7dbd99226d3e9093d6d073a0db"
+    },
+    {
+      "path": "database/migrations/20261025012200_wanted_category_code_reference.sql",
+      "version": "20261025012200",
+      "sha256": "f6940e5eddb5360c8fd1d9d5253876289f4e38edcd3fcfefe0d6415825e642f6"
+    },
+    {
+      "path": "database/migrations/20261025013000_wanted_command_results.sql",
+      "version": "20261025013000",
+      "sha256": "c23984cd903e6fce17106d235cc4e40de7c68c1a7521fe0dd896b98912224955"
+    },
+    {
+      "path": "database/migrations/20261026090000_conversation_retirement_hardening.sql",
+      "version": "20261026090000",
+      "sha256": "a60d0a8319dd8ea53d89d3d617b5b75949c5ad96482d1c3095d628b776069587"
+    },
+    {
+      "path": "database/migrations/20261026090100_conversation_message_transport.sql",
+      "version": "20261026090100",
+      "sha256": "e501421f793e9d0e8c723a28963f5c1922c76a6842b853950a6419352de9dd5d"
+    },
+    {
+      "path": "database/migrations/20261026090200_conversation_public_key_directory.sql",
+      "version": "20261026090200",
+      "sha256": "9588b27d9cd73b7b41c45d66721875bfe41fc22d0b7d4ccd7711386ce0d53b40"
+    },
+    {
+      "path": "database/migrations/20261026090300_conversation_recovery_storage.sql",
+      "version": "20261026090300",
+      "sha256": "3b44c216535e8c0117c7287bbbadb6456fd5cb62f36869e4ec31ceacf823cf11"
+    },
+    {
+      "path": "database/migrations/20261027064000_conversation_offer_requests.sql",
+      "version": "20261027064000",
+      "sha256": "d90b6234914b72348dbe43ce25b02e1b4d553dad0f6982750b25341665678cef"
+    },
+    {
+      "path": "database/migrations/20261027112205_contact_share_initial_prekey_envelopes.sql",
+      "version": "20261027112205",
+      "sha256": "392a1644e8a2ddd3b5a96de866ca53b9aee7a850c4130fc1440fdd9ef377a897"
+    }
+  ],
+  "locally_tested_image_digest": "ghcr.io/amacneil/dbmate@sha256:520c740c6e0ad73fde2cd1ea7e2b779aaf789d22aca8858f87a478e7094535fb",
+  "locally_tested_platform": "Linux ARM64",
+  "image_digest": "ghcr.io/amacneil/dbmate@sha256:520c740c6e0ad73fde2cd1ea7e2b779aaf789d22aca8858f87a478e7094535fb",
+  "review_basis": "Exact digest approved in current plan; local digest/version reverified; historical image review receipt retained"
+}

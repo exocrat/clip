@@ -1144,7 +1144,8 @@ certificates/passwords. Unlike the networkless socket fixtures, this fixture use
 Docker bridge plus loopback publication to test real TLS. Deletes its own container
 and synthetic private key afterward; no AWS/shared URL or real credential is used.
 
-Expected: full17file clean/repeat, real TLS hostname mismatch rejection, no secret
+Expected: pinned23file clean/repeat (head20261027112205;40tables/36functions/46triggers),
+real TLS hostname mismatch rejection, no secret
 in Docker config/args, hash/image/namespace/prefix/target refusals, real partial-DDL
 preservation and no replay, client-success structural postconditions, timed-out
 version-client cleanup, and rollback-only logging role/default checks. Full
@@ -1156,7 +1157,11 @@ requires the reviewed manifest/image, fixed target and trusted private connectio
 live use rejects the current image-review-pending manifest. `probe_logging`
 creates only a passwordless NOLOGIN probe role inside a rolled-back transaction
 and checks absence/defaults through a fresh connection. Neither function retrieves
-AWS secrets or grants cloud authorization. Read-only preflight is not permission
+AWS secrets or grants cloud authorization. The recorded17-file shared target is
+still refused: preparing this candidate does not add an incremental upgrade mode.
+That target requires a reviewed Step13 reset/bootstrap (Aditya reports no
+application data requiring preservation), or a separately approved upgrade.
+Read-only preflight is not permission
 to call these write-capable tools; exact window, SQL/role probe, metadata/secret
 access, shared-schema review and cleanup approvals remain mandatory.
 
@@ -1944,3 +1949,141 @@ never supply a real cookie or retained/hosted target. Ordinary npm checks skip i
 This automation is not actual browser/device, deployment or full Step14 evidence.
 The second command proves normal/production runtime exposes no synthetic CSRF
 route and existing isolated local/hosted profiles retain their transport gates.
+
+### Identity HTTPS proxy preparation — ID-01 Step13
+
+`TERRAFORM_BIN=/path/to/terraform-1.15.9 uv run --locked python scripts/check_identity_https_proxy.py`
+runs the fixed mock plans in a temporary copy without a backend, state/plan/tfvars,
+AWS configuration/credentials or metadata credentials. Readonly provider schema
+installation may contact the public registry; no AWS resource API or live plan is
+performed. Expected3passes: defaults off, exact trust/no secret-read role, missing
+upstream/date refusal. Cleanup removes only the private copy.
+
+`uv run --locked pytest apps/api/tests/domains/identity/test_proxy_transport.py -q -W error`
+uses the existing disposable PostgreSQL/controlled signer fixture. Expected6passes
+for actual Identity HTTPS/origin/cookie gates behind exact Uvicorn peer trust.
+No provider, cloud, retained database or DNS query is involved.
+
+`make terraform-check` remains the backend-free all-root format/schema check;
+`make check` includes the Python transport cases but not the mock-plan wrapper.
+[Reviewed scope and remaining approval gates](../evaluation/identity/id-01-step-13/README.md).
+
+## ID-01 Step13 — native Micro build preparation
+
+These operator helpers require the separately approved exact
+[build/database window](../evaluation/identity/id-01-step-13/build-and-database-window.md).
+They are not `make check`, an application startup path or authorization to start AWS.
+
+| Command | Effects and expected result |
+| --- | --- |
+| `uv run --locked pytest -q tests/test_identity_build_transfer.py` | Four real disposable loopback HTTP/host-grammar tests; synthetic bytes only, no AWS/Docker/provider/SQL. Tests hash/size/overwrite boundaries and completed-artifact-only downloads; local sockets require the ordinary test permission. |
+| `uv run --locked python scripts/identity_build_transfer.py --help` | Help only; does not create a directory, listen or bootstrap. The script is stdlib-compatible with the host Python3. |
+| `python3 scripts/identity_build_transfer.py --directory "$ID01_BUILD_DIR" --source-sha256 "$ID01_SOURCE_SHA256"` | Only on the reviewed disposable private build host: creates a fresh owner-only directory and loopback18765 server for at most two hours of request admission. One exact ≤100MiB source upload; completed image/result downloads only. No extraction, AWS APIs, credentials or build. Stop owned process/session and terminate host at cleanup. |
+| `bash scripts/identity_amd64_build.sh "$ID01_BUILD_DIR" "$ID01_SOURCE_SHA256" "$ID01_SOURCE_COMMIT"` | Only root on approved native x86_64 disposable host with Docker25 and completed source upload. Validates fixed run path/archive; adds2GiB temporary encrypted-root swap; bounded sequential45minute build,512MiB RAM/1536MiB RAM+swap, Microsoft button true/demo false, optional web-build Node heap768 (requires exact-window approval); non-root/platform/loopback health/UI smoke and hash-bound image export. No AWS API/push/SQL/provider. Exit0 exposes completed image.tar/result.json; failures stop the trial, never resize automatically. Owned swap/container cleanup on exit; final host termination is required even after failure. |
+
+Live transfer uses the approved SSM forwarding document, never public ingress or
+a remote Docker socket. Local Docker may load/store/push AMD64 without executing
+it; publication still needs the reviewed account/repository/tag approval.
+
+## ID-01 Step13 — bootstrap review preparation
+
+`uv run --locked pytest -q tests/test_identity_bootstrap_review.py` runs three
+owned disposable local PostgreSQL18.6/TLS review cases: cross-schema FK/view
+dependency detection, live-target predicate refusal and historical-grant
+insufficiency for current invoker triggers/Conversations. It applies only the
+unchanged23-file package to its fixture and removes its container; no shared
+SQL, AWS, provider, credential lookup or live reset.
+
+`docs/evaluation/identity/id-01-step-13/bootstrap-inventory.sql` is a pinned-target
+repeatable-read/read-only review input, not an automatic live command. Proposed
+live counts/window/master read need the separate approval in the linked
+[bootstrap plan](../evaluation/identity/id-01-step-13/bootstrap-and-grants-plan.md).
+The destructive coordinator/grants package is still gated, not registered as
+an executable route.
+
+## ID-01 Step13 — guarded bootstrap preparation
+
+| Command | Effect and evidence limit |
+|---|---|
+| `uv run --locked python scripts/identity_bootstrap.py` | Inert documentation entry; does not connect or reset. Actual execution is an operator API requiring reviewed bound inputs and separate live approval, not an unattended CLI. |
+| `uv run --locked pytest -q tests/test_identity_bootstrap.py tests/test_identity_bootstrap_review.py` | Thirteen disposable local TLS tests covering guarded17→23 bootstrap, lock/role preservation, refusal/rollback and restricted trigger grants. Requires Docker; never supply a shared database. Not hosted acceptance. |
+
+[Exact proposed live target, grants, failure behavior and60minute/$1 window](../evaluation/identity/id-01-step-13/bootstrap-live-review.md). No live execution is authorized by these commands.
+
+## ID-01 Step13 — window-only retention launcher
+
+`uv run --locked python scripts/identity_retention_job.py --help` is inert.
+`uv run --locked pytest -q tests/test_identity_retention_job.py` runs four offline
+safety checks; no cloud/DB. `--image`, `--revision` and `--deadline-utc` bind the
+operator job; default is dry-run. `--apply` and installing the inactive proposed
+service/timer require the [exact live approval](../evaluation/identity/id-01-step-13/retention-window-review.md).
+The launcher uses unchanged identity_cleanup.py inside the actual container,
+returns counts only and never installs scheduling itself. No build is needed.
+
+For an SSM-shell invocation of the retention launcher, supply the actual root
+account HOME only to that process (resolve it with pwd); SSM omits HOME. The
+reviewed service has User=root and its actual automatic run supplies the proper
+account environment. Do not change system-wide environment or job source to
+work around that caller context. [First scheduled run](../evaluation/identity/id-01-step-13/retention-window-result.json).
+
+## ID-01 Step14 — actual consumer authorization matrix
+
+`uv run --locked pytest apps/api/tests/domains/identity/test_consumer_capability_matrix.py -q`
+runs the mounted HTTP routes with real cookie/CSRF middleware and actual domain
+services on a fresh, network-isolated disposable PostgreSQL18.6 database. The
+Identity fixture owns and removes its container; never supply a shared DSN.
+Controlled signer/mail/clock and ordinary SQL listing/image metadata are test
+inputs. This command does not access AWS, actual S3 objects, Hybrid serving,
+provider delivery or hosted database roles, and cannot accept those gates.
+
+`uv run --locked pytest apps/api/tests/domains/identity/test_consumer_capability_matrix.py apps/api/tests/domains/identity/test_conversation_runtime_principal.py -q`
+also exercises the opt-in proposed Conversations login in a separate disposable
+fixture database. The proposal lives in the Step14 evidence directory and is
+never applied by application startup or migrations. Only that owned test cluster
+creates/drops the login and revokes its database's PUBLIC TEMP/schema CREATE;
+never run these fixture operations against a retained/shared database. Actual
+consumer flows and privilege denials do not accept live grants/SSM provisioning.
+
+## ID-01 Step14 shared consumer runtime mock plans
+
+Use pinned Terraform1.15.9. In a new private temporary directory, copy only
+`infra/terraform/shared/test/*.tf`, `.terraform.lock.hcl`, `tests/` and `scripts/`
+(no `.terraform`, state, tfvars or credentials). Clear ambient cloud/TF_CLI_ARGS
+settings. Run `terraform init -backend=false -input=false -lockfile=readonly`,
+`terraform validate`, then `terraform test` in that disposable copy. Both test
+files use `mock_provider "aws"`; no AWS API, shared backend or real secret values.
+Four consumer tests cover unchanged defaults, exact separate-secret injection/
+permission, explicit Hybrid capacity/flags and invalid opt-in refusals; three
+HTTPS tests retain existing proxy checks. No mock result authorizes deployment,
+creates the proposed SQL login/SSM parameter or proves measured resource fit.
+
+## ID-01 Step14 role-only operator preparation
+
+`uv run --locked pytest tests/test_identity_conversations_role.py -q` creates
+only a network-isolated fixture database/role, checks refusals/rollback and
+removes its cluster. `scripts/identity_conversations_role.py` is an import-only
+operator library; it has no default DSN/CLI/cloud client or startup hook.
+`provision` requires a private connection callback, SecretStr password and
+explicit approved SQL hash. Live use requires the exact separately approved
+role/credential plan; the default live guard rejects the fixture target.
+`credential_uri` returns a masked SecretStr only; never print/serialize its
+private value to logs, argv or ordinary Terraform input/state. SSM storage is
+separate; no rotation, repair or automatic unknown-outcome retry.
+
+Step14 role-window connections use the approved private SSM remote-host tunnel
+on local loopback5432 so the fixed RDS host/port guard and verify-full certificate
+name remain intact (`hostaddr=127.0.0.1`). Recheck port availability before start.
+Stored runtime DSN uses `sslrootcert=system`, matching the existing image's pinned
+RDS roots; operator transport uses the reviewed public CA files. The helper
+also accepts an explicit absolute CA path and rejects query-based user/options
+overrides. This documentation authorizes no start or credential operation.
+
+`uv run --locked pytest tests/test_identity_private_aws.py tests/test_identity_conversations_role.py -q`
+checks the Linux RAM-backed AWS CLI payload transport and role guards locally.
+The CLI helper never runs on import; cloud writes require explicit opt-in and
+the separately approved window. Responses may contain secrets and stay in memory.
+
+`uv run --locked pytest tests/test_identity_catalogue_lock_grants.py -q` proves
+the two column-level FOR SHARE grants against disposable PostgreSQL; it never
+changes a shared database. The live grants require affected-owner review and
+durable restoration handling before task acceptance.

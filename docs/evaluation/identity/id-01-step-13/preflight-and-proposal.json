@@ -1,0 +1,1433 @@
+{
+  "recorded_at_utc": "2026-10-28 03:20:57 UTC",
+  "mode": "step13_preparation_and_bounded_live_evidence",
+  "source_base": "1d244350e35172d65415a8258d6c156cab0c695f",
+  "source_changes_committed": true,
+  "target": {
+    "account": "335523638354",
+    "profile": "adityalaxmi1",
+    "operator_arn": "arn:aws:iam::335523638354:user/adityalaxmi1",
+    "region": "ap-south-1",
+    "root": "infra/terraform/shared/test",
+    "backend_bucket": "clip-tfstate-335523638354-ap-south-1-20261019-0e51ca0",
+    "state_key": "shared/test/terraform.tfstate",
+    "workspace": "default"
+  },
+  "observed": {
+    "rds": {
+      "id": "clip-shared-test-postgres",
+      "resource_id": "db-PYRRZJPVKPGHIXDAHUWATXGH7A",
+      "status": "stopped",
+      "class": "db.t4g.micro",
+      "engine": "18.6",
+      "az": "ap-south-1a",
+      "public": false,
+      "deletion_protection": true
+    },
+    "clusters": [
+      {
+        "name": "clip-shared-test",
+        "running": 0,
+        "pending": 0,
+        "instances": 0
+      },
+      {
+        "name": "clip-test-listings-ap-south-1-li02",
+        "running": 0,
+        "pending": 0,
+        "instances": 0
+      }
+    ],
+    "service": {
+      "name": "clip-test-api-ap-south-1-pd16",
+      "desired": 0,
+      "running": 0,
+      "pending": 0,
+      "revision": 2,
+      "memory_mib": 512,
+      "cpu_units": 256,
+      "load_balancer": false,
+      "image": "335523638354.dkr.ecr.ap-south-1.amazonaws.com/clip-shared-test-api@sha256:50de5b7d8f27ca41c89b9617d8fc1d53e267110481648468c7cf48bb49c3f881"
+    },
+    "asg": {
+      "name": "clip-shared-test-ecs-host",
+      "desired": 0,
+      "min": 0,
+      "max": 1,
+      "instances": []
+    },
+    "nonterminated_ec2_ap_south_1": 0,
+    "vpc": "vpc-04b0cc01cbf93cd17",
+    "public_subnet": "subnet-00ee97c5207bd15f7",
+    "private_subnet": "subnet-0c9df7ababd0154bc",
+    "ecs_security_group": "sg-0a3c8d683731470b4",
+    "ecs_ingress": [],
+    "proposed_proxy_ip": "10.64.0.10",
+    "interfaces_using_proposed_ip": 0,
+    "ami": {
+      "id": "ami-0c10ee7b040aa465e",
+      "state": "available",
+      "architecture": "x86_64"
+    },
+    "acm": {
+      "id": "a9775d00-2af5-4b12-990d-1ce9795f1859",
+      "status": "ISSUED",
+      "in_use": false,
+      "export": "DISABLED"
+    },
+    "fixed_ssm_parameters": [
+      {
+        "name": "/clip/test/database-master-password",
+        "type": "SecureString",
+        "version": 1
+      },
+      {
+        "name": "/clip/test/database-probe-password",
+        "type": "SecureString",
+        "version": 1
+      },
+      {
+        "name": "/clip/test/identity/authentication-keys",
+        "type": "SecureString",
+        "version": 1
+      },
+      {
+        "name": "/clip/test/identity/database-url",
+        "type": "SecureString",
+        "version": 1
+      },
+      {
+        "name": "/clip/test/identity/email-delivery",
+        "type": "SecureString",
+        "version": 1
+      },
+      {
+        "name": "/clip/test/listings-database-url",
+        "type": "SecureString",
+        "version": 1
+      }
+    ],
+    "email_parameter_last_modified": "2026-10-24 14:15:25.735 UTC"
+  },
+  "guardrails": {
+    "secret_values_read": true,
+    "sql_connected": true,
+    "dns_propagation_checked": false,
+    "resource_mutated": true,
+    "terraform_remote_state_read": true,
+    "live_plan_created": true,
+    "resource_started": true,
+    "provider_email_sent": false,
+    "terraform_apply_executed": true,
+    "sql_read_only": true,
+    "schema_changed": false,
+    "task_deployed": false
+  },
+  "proposed_proxy": {
+    "default_enabled": false,
+    "aws_resources_when_enabled": 8,
+    "instance": "t3.micro",
+    "cpu_credits": "standard",
+    "private_ip": "10.64.0.10",
+    "public_ingress_tcp": [
+      80,
+      443
+    ],
+    "private_upstream_port": 18000,
+    "upstream": "must be observed after approved host launch; currently unset",
+    "instance_metadata": "IMDSv2 required",
+    "root_volume_gib": 30,
+    "root_encrypted": true,
+    "root_delete_on_termination": true,
+    "auto_stop_after_minutes": 240,
+    "auto_stop_does_not_release_ip_or_disk": true,
+    "api_forwarded_header_trust": "exact10.64.0.10 only",
+    "api_raw_access_logs": false,
+    "proxy_raw_logs": false,
+    "node_role": "custom SSM agent/channels without parameter reads or wildcard actions",
+    "caddy": {
+      "release": "v2.11.7",
+      "release_date": "2026-10-03",
+      "image": "docker.io/library/caddy@sha256:eb4d35b7452d1ab6171fbdbe8d9275b2301dad6dad92115d91e19fb9b24d510f"
+    },
+    "certificate": "Caddy-managed ACME; retained non-exportable ACM cannot be mounted on EC2"
+  },
+  "sizing_proposal": {
+    "shared_default_unchanged": "c7i-flex.large",
+    "test_variant": "t3.micro",
+    "t3_vcpus": 2,
+    "t3_memory_mib": 1024,
+    "c7i_vcpus": 2,
+    "c7i_memory_mib": 4096,
+    "micro_acceptance_pending": [
+      "actual ECS allocatable memory",
+      "actual512MiB API headroom",
+      "only one512MiB task at a time",
+      "image build memory/route",
+      "no Hybrid/model/load claim"
+    ]
+  },
+  "public_list_prices": {
+    "source": "AWS Price List GetProducts, public metadata through us-east-1",
+    "effective_date": "2026-10-01",
+    "target_region": "ap-south-1",
+    "unit": "USD/hour",
+    "ec2_linux_shared_t3_micro": 0.0112,
+    "ec2_linux_shared_c7i_flex_large": 0.08479,
+    "rds_postgresql_single_az_db_t4g_micro": 0.021,
+    "four_hours_two_micro_plus_rds_compute": 0.1736,
+    "four_hours_c7i_plus_micro_plus_rds_compute": 0.46796,
+    "exclusions": [
+      "CPU surplus credits",
+      "public IPv4",
+      "EBS and retained RDS storage/backups",
+      "NAT/data transfer",
+      "ECR/log storage",
+      "taxes"
+    ],
+    "credits_or_discount_assumed": false,
+    "billing_account_queried": false
+  },
+  "next_planning_request": {
+    "approved": true,
+    "plans": [
+      "stopped-state preserving current ECS host type",
+      "stopped-state t3.micro host-type variant"
+    ],
+    "requires": [
+      "read-only shared/test backend/state and resource refresh",
+      "temporary S3 backend plan lock",
+      "in-memory decrypted reads of only the two fixed database password parameters",
+      "private saved plans outside repository",
+      "human-approved unchanged private SES recipient ARN reused in memory and protected saved plans only"
+    ],
+    "secret_references": [
+      "/clip/test/database-master-password",
+      "/clip/test/database-probe-password"
+    ],
+    "keep_password_versions": 1,
+    "api_service_enabled": false,
+    "identity_https_proxy_enabled": false,
+    "apply_authorized": false,
+    "sql_authorized": false,
+    "resource_start_authorized": false,
+    "secret_or_state_output_authorized": false,
+    "approval_source": "Aditya said start it after the in-memory database-password planning scope was explained"
+  },
+  "source_hashes": [
+    {
+      "path": "infra/terraform/shared/test/identity-https-proxy.tf",
+      "sha256": "430698f9da34a4e5cb84663c37ce6fcac336ed1e6bb7794c5c43b8d7c8d7b37c"
+    },
+    {
+      "path": "infra/terraform/shared/test/service.tf",
+      "sha256": "8b31faa810781533ba12a036badf2b4df7486e6ad8cde21bd9e27d4907119f8d"
+    },
+    {
+      "path": "infra/terraform/shared/test/scripts/identity-proxy-user-data.sh.tftpl",
+      "sha256": "3dfef0af3e0fada448337bcb2f7efe34316c7860849c38af1f033af0dcfa5e27"
+    },
+    {
+      "path": "infra/terraform/shared/test/scripts/identity-proxy.Caddyfile.tftpl",
+      "sha256": "6680a3d99ad1ff0d9392256173078fb43374dbd0ee4a00e04a2b9a909801a251"
+    },
+    {
+      "path": "infra/terraform/shared/test/tests/identity_https_proxy.tftest.hcl",
+      "sha256": "5047f74e0d5ce1c57dde62ddcb1a9e57a5fe9d18761d2ab3b0882920936f050c"
+    },
+    {
+      "path": "scripts/check_identity_https_proxy.py",
+      "sha256": "3ee3de74dc8c76a1af8e82436bd852aae5cbb68fe285f2788b03b96c3542757c"
+    },
+    {
+      "path": "apps/api/tests/domains/identity/test_proxy_transport.py",
+      "sha256": "54703498140a0bbaef9cd687953b5d39bd57754e297c7af2ad3f9b0567b8fb7a"
+    }
+  ],
+  "updated_at_utc": "2026-10-28 09:16:44 UTC",
+  "secret_access_scope": {
+    "references": [
+      "/clip/test/database-master-password",
+      "/clip/test/database-probe-password"
+    ],
+    "versions": [
+      1,
+      1
+    ],
+    "storage": "transient subprocess memory and ephemeral Terraform input only",
+    "not_present_in_state_or_show_json": true,
+    "email_or_auth_key_read": false
+  },
+  "email_key_location_confirmation": "Aditya confirms the replacement was saved correctly to the configured parameter; value not read",
+  "private_planning_result": {
+    "state_serial_before": 18,
+    "private_directory": "/tmp/clip-id01-step13-plans-z3pe8zic",
+    "apply_executed": false,
+    "rds_changes": false,
+    "proxy_resources_planned": false,
+    "findings": [
+      "Existing exact SES recipient ARN preserved privately; no IAM policy changes remain",
+      "15 resource addresses change in each plan: stopped API task-definition replacement, service reference/expiry tag alignment, launch-template and default-tag normalization",
+      "Micro variant additionally changes future host type to t3.micro; services and capacity stay zero; no proxy creation",
+      "No DB, SSM parameter or ACM certificate changes; no apply, SQL, send or start performed"
+    ],
+    "automatic_approval_review": {
+      "action": "reuse existing private SES recipient ARN from approved state as unchanged sensitive Terraform input",
+      "decision": "rejected",
+      "reason": "Approved sensitive-input scope covered only two database passwords; ARN contains a private email address",
+      "requested_additional_user_approval": true,
+      "approved": false,
+      "additional_user_approval_received": true,
+      "approval_source": "Aditya: approved. commit before doing anything; then continue"
+    },
+    "superseded_draft_plans": [
+      {
+        "name": "stopped-baseline",
+        "path": "/tmp/clip-id01-step13-plans-z3pe8zic/stopped-baseline.tfplan",
+        "sha256": "1f5e0a3f6ad0136d3e57ef78e87f8cac2e6190ea34b10d2e233d9b2fe776a8d0",
+        "host_type": "c7i-flex.large",
+        "returncode": 2,
+        "resource_changes": [
+          {
+            "address": "aws_autoscaling_group.ecs_host[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "launch_template"
+            ]
+          },
+          {
+            "address": "aws_cloudwatch_log_group.api[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_ecr_repository.api[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_ecs_capacity_provider.shared[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_ecs_cluster.shared[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_ecs_service.api[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags",
+              "tags_all",
+              "task_definition"
+            ]
+          },
+          {
+            "address": "aws_ecs_task_definition.api[0]",
+            "actions": [
+              "delete",
+              "create"
+            ],
+            "changed_attributes": [
+              "arn",
+              "arn_without_revision",
+              "container_definitions",
+              "enable_fault_injection",
+              "id",
+              "ipc_mode",
+              "pid_mode",
+              "revision",
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_iam_instance_profile.ecs_instance[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_iam_role.api_execution[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_iam_role.api_task[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_iam_role.ecs_instance[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_iam_role_policy.api_identity_email[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "policy"
+            ]
+          },
+          {
+            "address": "aws_launch_template.ecs_host[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "latest_version",
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_security_group.ecs_host[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_subnet.workload_private[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_vpc.shared[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          }
+        ],
+        "new_proxy_resources_planned": false,
+        "api_enabled": false,
+        "proxy_enabled": false,
+        "apply_approved": false,
+        "review_status": "draft_not_for_apply_missing_private_recipient_input"
+      },
+      {
+        "name": "stopped-t3-trial",
+        "path": "/tmp/clip-id01-step13-plans-z3pe8zic/stopped-t3-trial.tfplan",
+        "sha256": "db478b96bd7d3e3eadbb90a240acfcb43355440a18fa8931ec0da9ed75042e11",
+        "host_type": "t3.micro",
+        "returncode": 2,
+        "resource_changes": [
+          {
+            "address": "aws_autoscaling_group.ecs_host[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "launch_template"
+            ]
+          },
+          {
+            "address": "aws_cloudwatch_log_group.api[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_ecr_repository.api[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_ecs_capacity_provider.shared[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_ecs_cluster.shared[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_ecs_service.api[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags",
+              "tags_all",
+              "task_definition"
+            ]
+          },
+          {
+            "address": "aws_ecs_task_definition.api[0]",
+            "actions": [
+              "delete",
+              "create"
+            ],
+            "changed_attributes": [
+              "arn",
+              "arn_without_revision",
+              "container_definitions",
+              "enable_fault_injection",
+              "id",
+              "ipc_mode",
+              "pid_mode",
+              "revision",
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_iam_instance_profile.ecs_instance[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_iam_role.api_execution[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_iam_role.api_task[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_iam_role.ecs_instance[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_iam_role_policy.api_identity_email[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "policy"
+            ]
+          },
+          {
+            "address": "aws_launch_template.ecs_host[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "instance_type",
+              "latest_version",
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_security_group.ecs_host[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_subnet.workload_private[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_vpc.shared[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          }
+        ],
+        "new_proxy_resources_planned": false,
+        "api_enabled": false,
+        "proxy_enabled": false,
+        "apply_approved": false,
+        "review_status": "draft_not_for_apply_missing_private_recipient_input"
+      }
+    ],
+    "plans": [
+      {
+        "name": "stopped-baseline-final",
+        "path": "/tmp/clip-id01-step13-plans-z3pe8zic/stopped-baseline-final.tfplan",
+        "sha256": "73694804e9b76abc2295b3274b2b616290714c96b8da7e1129ef3f7369d9d6d4",
+        "host_type": "c7i-flex.large",
+        "returncode": 2,
+        "resource_changes": [
+          {
+            "address": "aws_autoscaling_group.ecs_host[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "launch_template"
+            ]
+          },
+          {
+            "address": "aws_cloudwatch_log_group.api[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_ecr_repository.api[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_ecs_capacity_provider.shared[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_ecs_cluster.shared[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_ecs_service.api[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags",
+              "tags_all",
+              "task_definition"
+            ]
+          },
+          {
+            "address": "aws_ecs_task_definition.api[0]",
+            "actions": [
+              "delete",
+              "create"
+            ],
+            "changed_attributes": [
+              "arn",
+              "arn_without_revision",
+              "container_definitions",
+              "enable_fault_injection",
+              "id",
+              "ipc_mode",
+              "pid_mode",
+              "revision",
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_iam_instance_profile.ecs_instance[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_iam_role.api_execution[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_iam_role.api_task[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_iam_role.ecs_instance[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_launch_template.ecs_host[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "latest_version",
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_security_group.ecs_host[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_subnet.workload_private[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_vpc.shared[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          }
+        ],
+        "new_proxy_resources_planned": false,
+        "api_enabled": false,
+        "proxy_enabled": false,
+        "apply_approved": false,
+        "review_status": "superseded_do_not_apply"
+      },
+      {
+        "name": "stopped-t3-trial-final",
+        "path": "/tmp/clip-id01-step13-plans-z3pe8zic/stopped-t3-trial-final.tfplan",
+        "sha256": "927ac404dc4c48ed2566d6d6724d1bcab65682168181f11d68f726fbe30b1fb7",
+        "host_type": "t3.micro",
+        "returncode": 2,
+        "resource_changes": [
+          {
+            "address": "aws_autoscaling_group.ecs_host[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "launch_template"
+            ]
+          },
+          {
+            "address": "aws_cloudwatch_log_group.api[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_ecr_repository.api[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_ecs_capacity_provider.shared[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_ecs_cluster.shared[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_ecs_service.api[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags",
+              "tags_all",
+              "task_definition"
+            ]
+          },
+          {
+            "address": "aws_ecs_task_definition.api[0]",
+            "actions": [
+              "delete",
+              "create"
+            ],
+            "changed_attributes": [
+              "arn",
+              "arn_without_revision",
+              "container_definitions",
+              "enable_fault_injection",
+              "id",
+              "ipc_mode",
+              "pid_mode",
+              "revision",
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_iam_instance_profile.ecs_instance[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_iam_role.api_execution[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_iam_role.api_task[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_iam_role.ecs_instance[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_launch_template.ecs_host[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "instance_type",
+              "latest_version",
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_security_group.ecs_host[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_subnet.workload_private[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          },
+          {
+            "address": "aws_vpc.shared[0]",
+            "actions": [
+              "update"
+            ],
+            "changed_attributes": [
+              "tags"
+            ]
+          }
+        ],
+        "new_proxy_resources_planned": false,
+        "api_enabled": false,
+        "proxy_enabled": false,
+        "apply_approved": true,
+        "review_status": "applied"
+      }
+    ],
+    "existing_private_ses_recipient_preserved": true,
+    "baseline_plan_superseded_by_state_change": true
+  },
+  "source_commit": "3433ae7",
+  "applied_stopped_plan": {
+    "approved_plan_sha256": "927ac404dc4c48ed2566d6d6724d1bcab65682168181f11d68f726fbe30b1fb7",
+    "state_serial_before": 18,
+    "state_serial_after": 19,
+    "apply_executed": true,
+    "resource_start": false,
+    "sql_connected": false,
+    "asg_desired": 0,
+    "asg_instances": 0,
+    "service_desired": 0,
+    "service_running": 0,
+    "service_pending": 0,
+    "rds_status": "stopped",
+    "rds_protected": true,
+    "host_type": "t3.micro",
+    "launch_template_version": 3,
+    "task_definition": "arn:aws:ecs:ap-south-1:335523638354:task-definition/clip-test-api-ap-south-1-pd16:4",
+    "verified_at_utc": "2026-10-28 04:46:45 UTC",
+    "approval_source": "Aditya approved the exact stopped t3.micro plan after review"
+  },
+  "bounded_startup_proposal": {
+    "prepared_at_utc": "2026-10-28 04:48:19 UTC",
+    "approved": true,
+    "account": "335523638354",
+    "profile": "adityalaxmi1",
+    "region": "ap-south-1",
+    "environment": "shared/test",
+    "operator": "Aditya",
+    "maximum_duration_hours": 4,
+    "incremental_operating_ceiling_usd": 2,
+    "ceiling_is_not_automatic_billing_limit": true,
+    "targets": {
+      "rds": "clip-shared-test-postgres",
+      "asg": "clip-shared-test-ecs-host",
+      "cluster": "clip-shared-test",
+      "launch_template_id": "lt-0327bb81cb3269f0b",
+      "launch_template_version": 3,
+      "instance_type": "t3.micro",
+      "maximum_hosts": 1
+    },
+    "authorized_if_approved": [
+      "Recheck exclusive target/no other-owner active workloads and expected template before mutation",
+      "Create one-off ASG scheduled scale-down at actual window start plus four hours, setting min0/max1/desired0",
+      "Start retained RDS and temporarily set shared ASG min1/max1/desired1",
+      "Set only newly launched owned instance CPU credits to standard before diagnostic workloads",
+      "Observe ECS/SSM registration, exact private IP and allocatable CPU/memory",
+      "Run SSM diagnostic commands only: uname -m, free -m, df -h /, docker version, docker info, systemctl is-active ecs amazon-ssm-agent; sanitize captured output",
+      "On completion, failure or deadline: restore ASG min0/max1/desired0, verify own host termination, stop RDS after confirming no other-owner use, remove owned one-off scheduled action after zero-capacity confirmation"
+    ],
+    "not_authorized": [
+      "API or proxy enablement",
+      "SQL connections, schema reset or migration",
+      "Provider/auth secret reads or email sends",
+      "Image build/publication",
+      "New IAM/network exposure",
+      "Actions on Listings isolated cluster"
+    ],
+    "security": {
+      "host_public_ip": false,
+      "inbound_rules_added": false,
+      "ssh": false,
+      "existing_iam_preserved": true,
+      "root_volume_gib": 30,
+      "root_encrypted": true,
+      "root_delete_on_termination": true,
+      "metadata_v2": true
+    },
+    "cost": {
+      "four_hour_host_and_rds_compute_usd": 0.1288,
+      "excludes": [
+        "NAT and retained storage costs",
+        "new host EBS pro-rata",
+        "logs/data/tax"
+      ],
+      "prices_reference": "Existing public price metadata in this evidence file; not refreshed billing data",
+      "surplus_credits": "Standard on the new host; no unlimited-credit workload trial"
+    },
+    "stop_conditions": [
+      "Unexpected target/configuration drift or other-owner usage",
+      "More than one host or any unexpected task",
+      "Registration or memory check failure",
+      "Any need for more resources, broader access or costs beyond reviewed scope",
+      "Four-hour deadline or projected incremental ceiling breach"
+    ],
+    "rollback": "Restore original zero ASG bounds/capacity and stopped RDS; preserve shared network, policies, parameters, existing images, certificate and database contents. Scheduled ASG action is a fallback for EC2 only; RDS cleanup remains operator responsibility."
+  },
+  "bounded_startup_execution": {
+    "approved": true,
+    "account": "335523638354",
+    "region": "ap-south-1",
+    "profile": "adityalaxmi1",
+    "asg": "clip-shared-test-ecs-host",
+    "rds": "clip-shared-test-postgres",
+    "mutations": [
+      "owned_one_off_asg_scale_down_created",
+      "retained_rds_start_requested",
+      "asg_min1_max1_desired1_requested",
+      "owned_host_cpu_credit_standard",
+      "restore_asg_min0_max1_desired0",
+      "retained_rds_stop_requested"
+    ],
+    "started_at_utc": "2026-10-28 04:50:53 UTC",
+    "deadline_utc": "2026-10-28 08:50:53 UTC",
+    "scheduled_action": "id01-step13-stop-20261028T045053Z",
+    "stage": "diagnostics_complete_resources_restored",
+    "instance_id": "i-03d4b9d603b260361",
+    "private_ipv4": "10.64.1.247",
+    "cpu_credits": "standard",
+    "rds_status": "stopped",
+    "observed_at_utc": "2026-10-28 05:02:50 UTC",
+    "diagnostic_command_id": "652dc658-e0b8-43e6-ad33-bfe3e3572091",
+    "diagnostic_status": "Success",
+    "diagnostic_exit_code": 0,
+    "cleanup_asg_instances": 0,
+    "cleanup_instance_state": "terminated",
+    "scheduled_action_removed": true,
+    "cleanup_complete": true,
+    "final_verified_asg": {
+      "min": 0,
+      "max": 1,
+      "desired": 0,
+      "instances": 0
+    },
+    "final_api_counts": {
+      "desired": 0,
+      "running": 0,
+      "pending": 0
+    },
+    "scheduled_action_absent_verified": true,
+    "diagnostic_observations": {
+      "host_instances_count": 1,
+      "instance_state": "running",
+      "asg_lifecycle": "InService",
+      "ssm_status": "Online",
+      "ecs": {
+        "status": "ACTIVE",
+        "agentConnected": true,
+        "runningTasksCount": 0,
+        "pendingTasksCount": 0,
+        "registered": {
+          "CPU": 2048,
+          "MEMORY": 916
+        },
+        "remaining": {
+          "CPU": 2048,
+          "MEMORY": 916
+        }
+      }
+    },
+    "final_verified_at_utc": "2026-10-28 05:03:07 UTC",
+    "sql_connected": false,
+    "provider_email_sent": false,
+    "actual_runtime_acceptance": false
+  },
+  "host_sizing_observation": {
+    "architecture": "x86_64",
+    "ecs_registered_memory_mib": 916,
+    "ecs_registered_cpu_units": 2048,
+    "os_idle_available_memory_mib": 537,
+    "os_total_memory_mib": 916,
+    "swap_mib": 0,
+    "docker_server_version": "25.0.16",
+    "root_free_gib": 28,
+    "ssm_diagnostic_exit_code": 0,
+    "task_runtime_acceptance": false,
+    "interpretation": "One 512MiB task is schedulable by advertised ECS memory; actual API memory stability and build suitability remain untested. Two 512MiB tasks cannot fit."
+  },
+  "micro_build_and_inspection_proposal": {
+    "prepared_at_utc": "2026-10-28 05:10:38 UTC",
+    "approved": true,
+    "human_direction": "Aditya verified diagnostics, requested preparation, and selected t3.micro native AMD64 build because local AMD64 is unavailable",
+    "source": {
+      "source_commit": "3433ae7773206c762209c08d3ca00a23ed776e9f",
+      "source_archive_path": "/tmp/clip-id01-build-plan-7xddjfnq/source.tar",
+      "source_archive_sha256": "09b9a396929d50a9667e7ef7e7f274cbea7251ad5772a8dfc8a3523580a2b14c",
+      "source_archive_bytes": 2488320,
+      "tracked_archive_paths": [
+        "pyproject.toml",
+        "uv.lock",
+        "package.json",
+        "package-lock.json",
+        "apps/api/app",
+        "apps/api/Dockerfile",
+        "apps/api/Dockerfile.dockerignore",
+        "apps/web",
+        "contracts/generated"
+      ],
+      "files": 233,
+      "future_host_directory": "/var/tmp/clip-id01-build-3433ae777320",
+      "future_image_tag": "clip-api:id01-3433ae777320",
+      "remote_publication_tag": "id01-step13-3433ae777320"
+    },
+    "helper_hashes": [
+      {
+        "path": "scripts/identity_build_transfer.py",
+        "sha256": "02e3536c04090e102d9da653c1630210e39cf53cc9b29f7986e7e36533f9eee0"
+      },
+      {
+        "path": "scripts/identity_amd64_build.sh",
+        "sha256": "3120a96b117eeb8b30fe3300efa397e386644029a72101e610a19e6f220996a2"
+      },
+      {
+        "path": "tests/test_identity_build_transfer.py",
+        "sha256": "0c7a0e5bb369aa3a41a8a38219bdd950eeb315824bd831d3f7db175c6d43a981"
+      }
+    ],
+    "plan": "docs/evaluation/identity/id-01-step-13/build-and-database-window.md",
+    "account": "335523638354",
+    "profile": "adityalaxmi1",
+    "region": "ap-south-1",
+    "environment": "shared/test",
+    "maximum_hosts": 1,
+    "instance_type": "t3.micro",
+    "cpu_credits": "standard",
+    "maximum_window_hours": 4,
+    "maximum_build_minutes": 45,
+    "operator_cost_threshold_usd": 2,
+    "hard_billing_cap": false,
+    "swap_gib": 2,
+    "swap_on_existing_encrypted_root": true,
+    "build_memory_mib": 512,
+    "build_ram_plus_swap_mib": 1536,
+    "new_iam_permissions": false,
+    "new_public_ingress": false,
+    "provider_or_auth_secret_read": false,
+    "database_secret_reference": "/clip/test/database-master-password",
+    "new_secret_use_requires_approval": "read-only local TLS SQL inspection, not previous Terraform-only use",
+    "read_only_inspection": true,
+    "application_rows_read": false,
+    "schema_changes": false,
+    "api_or_proxy_enabled": false,
+    "ecr_repository": "335523638354.dkr.ecr.ap-south-1.amazonaws.com/clip-shared-test-api",
+    "ecr_new_tag": "id01-step13-3433ae777320",
+    "ecr_push_requires_window_approval": true,
+    "cloud_action_executed": false,
+    "local_checks": {
+      "transfer_tests": 4,
+      "shell_syntax": true,
+      "embedded_python_parse": true,
+      "local_help_no_bootstrap": true,
+      "whitespace": true,
+      "python39_grammar": true,
+      "gitleaks_result": "passed"
+    },
+    "rollback": "Close owned sessions, terminate only owned host/root, restore ASG0/max1, stop exclusive retained RDS, remove owned scheduled action/private temporary artifacts; retain verified image and shared infrastructure",
+    "compatibility_correction": {
+      "path": "scripts/identity_build_transfer.py",
+      "previous_sha256": "4e2d9c1cc13cec687e5b120341cf10f91a1a800340610806b783dff117333b92",
+      "reason": "Black Python3.14 formatting removed grouped exception parentheses; host Python3.9 requires them",
+      "behavior_change": false,
+      "corrected_sha256": "02e3536c04090e102d9da653c1630210e39cf53cc9b29f7986e7e36533f9eee0"
+    },
+    "approval_source": "Aditya: commit. approved"
+  },
+  "micro_build_window_execution": {
+    "private_directory": "/tmp/clip-id01-build-window-o4en6hbj",
+    "started_at_utc": "2026-10-28 05:17:07 UTC",
+    "deadline_utc": "2026-10-28 09:17:07 UTC",
+    "instance_id": "i-0290e52b43cb084ce",
+    "private_ipv4": "10.64.1.39",
+    "cpu_credits": "standard",
+    "application_source_commit": "3433ae7773206c762209c08d3ca00a23ed776e9f",
+    "operator_tool_commit": "e51f5fa",
+    "native_build_command_id": "21eedb2a-fd61-4377-a19c-9937a59f446f",
+    "native_build_submissions": 1,
+    "status": "user_canceled_build_resources_restored",
+    "sql_executed": false,
+    "ecr_published": false,
+    "compatibility_correction": {
+      "path": "scripts/identity_build_transfer.py",
+      "previous_sha256": "4e2d9c1cc13cec687e5b120341cf10f91a1a800340610806b783dff117333b92",
+      "reason": "Black Python3.14 formatting removed grouped exception parentheses; host Python3.9 requires them",
+      "behavior_change": false,
+      "corrected_sha256": "02e3536c04090e102d9da653c1630210e39cf53cc9b29f7986e7e36533f9eee0"
+    },
+    "cleanup": {
+      "cleanup_instance_state": "terminated",
+      "cleanup_asg_instances": 0,
+      "rds_status": "stopped",
+      "cleanup_complete": true,
+      "scheduled_action_removed": true,
+      "observed_at_utc": "2026-10-28 05:29:12 UTC"
+    }
+  },
+  "resumed_window": {
+    "human_direction": "Aditya requested restart/continue after limits reset",
+    "private_directory": "/tmp/clip-id01-resume-window-h4fkz0do",
+    "started_at_utc": "2026-10-28 08:00:40 UTC",
+    "original_deadline_retained": "2026-10-28 09:17:07 UTC",
+    "cost_threshold_unchanged_usd": 2,
+    "local_tls_readonly_test": "1passed; installed psycopg pgconn.ssl_in_use, verify-full TLS and server write refusal",
+    "transfer_tests": 4,
+    "status": "catalog_complete_build_heap_oom_resources_restored",
+    "instance_id": "i-04d77a0a4fc1853dc",
+    "private_ipv4": "10.64.1.149",
+    "catalog_snapshot": {
+      "migration_count": 17,
+      "head": "20261025013000",
+      "matches_reviewed_first17_versions": true,
+      "tables": 37,
+      "functions": 33,
+      "triggers": 43,
+      "schemas": [
+        "conversations",
+        "identity",
+        "listings",
+        "search"
+      ],
+      "project_role_count": 5,
+      "application_role_flags_basic_restricted": true,
+      "effective_acl_acceptance": false,
+      "other_client_sessions": 0,
+      "tls_verified": true,
+      "logging_verified": true,
+      "read_only": true,
+      "application_rows_read": false,
+      "schema_changed": false,
+      "secret_reference": "/clip/test/database-master-password",
+      "secret_version": 1,
+      "private_receipt_sha256": "70cd408fce72f9b06f7f0af4ad5060767cabd1d79f234de58de6b101dd777f41"
+    },
+    "build_failure": {
+      "class": "Node JavaScript heap out of memory during TypeScript compilation",
+      "image_published": false,
+      "build_canceled_after_failure": true,
+      "automatic_retry": false,
+      "operating_system_oom_proven": false
+    },
+    "cleanup": {
+      "cleanup_instance_state": "terminated",
+      "cleanup_asg_instances": 0,
+      "rds_status": "stopped",
+      "cleanup_complete": true,
+      "scheduled_action_removed": true,
+      "observed_at_utc": "2026-10-28 08:18:15 UTC"
+    }
+  },
+  "node_heap_retry_proposal": {
+    "approved": true,
+    "source_tree_sha256": "6d59f6bb5dba3fff10f56850fe102409fd941d2640f59e63079f2282adeaf043",
+    "source_commit_binding_pending_human_commit_approval": false,
+    "source_files": 233,
+    "source_tree_inventory_private_path": "/tmp/clip-id01-resume-window-h4fkz0do/proposed-source-tree.json",
+    "ecr_repository": "335523638354.dkr.ecr.ap-south-1.amazonaws.com/clip-shared-test-api",
+    "ecr_new_tag": "id01-step13-heap768-6d59f6bb5dba",
+    "changes": [
+      {
+        "path": "apps/api/Dockerfile",
+        "sha256": "759deb20430b398e2a9914823fc4696728a9a7309cd213e6792e43a8f07ce065"
+      },
+      {
+        "path": "scripts/identity_amd64_build.sh",
+        "sha256": "88a2eb3d4251a7cef4e802b423b963ce2fed29925111e85f53ed5516f677adc9"
+      },
+      {
+        "path": "scripts/identity_build_transfer.py",
+        "sha256": "02e3536c04090e102d9da653c1630210e39cf53cc9b29f7986e7e36533f9eee0"
+      },
+      {
+        "path": "tests/test_identity_build_transfer.py",
+        "sha256": "0c7a0e5bb369aa3a41a8a38219bdd950eeb315824bd831d3f7db175c6d43a981"
+      }
+    ],
+    "web_build_node_options": "--max-old-space-size=768",
+    "runtime_node_options_changed": false,
+    "instance_type": "t3.micro",
+    "hosts": 1,
+    "build_ram_limit_mib": 512,
+    "build_ram_plus_swap_limit_mib": 1536,
+    "existing_root_swap_gib": 2,
+    "maximum_build_minutes": 45,
+    "rds_start_required": false,
+    "sql_or_secret_read_required": false,
+    "original_deadline_utc": "2026-10-28 09:17:07 UTC",
+    "operator_total_threshold_usd": 2,
+    "automatic_extension": false,
+    "checks": {
+      "local_arm64_web_typecheck_and_bundle_with_heap768": "passed",
+      "native_amd64_memory_limited_success": "passed; built once, corrected UI smoke on same image, archive and registry config verified",
+      "transfer_and_python39_grammar_tests": 4,
+      "gitleaks_result": "passed",
+      "whitespace": true
+    },
+    "approval_source": "Aditya verified and approved fix commit and same-Micro build-only retry",
+    "source_commit": "2b292adc8c6e9d7841f43cf9b1d9a2c1b7bc0efd",
+    "source_archive_sha256": "d946daaeba1a1ee2dca1ee6726c542befbcccb196f86cc0dcb3e42a4ebc8f719"
+  },
+  "heap_retry_execution": {
+    "private_directory": "/tmp/clip-id01-heap-retry-vdu_p8xm",
+    "started_at_utc": "2026-10-28 08:32:32 UTC",
+    "deadline_utc": "2026-10-28 09:17:07 UTC",
+    "rds_start": false,
+    "status": "image_publication_and_cleanup_human_verified",
+    "c7i_flex_large_fallback": "Aditya authorizes considering C7i if OOM repeats; exact saved Terraform change plan still requires review before apply",
+    "native_artifact": {
+      "source_commit": "2b292adc8c6e9d7841f43cf9b1d9a2c1b7bc0efd",
+      "source_archive_sha256": "d946daaeba1a1ee2dca1ee6726c542befbcccb196f86cc0dcb3e42a4ebc8f719",
+      "image_id": "sha256:3cfa4f5f4a43ab388e72edbb3adc9e76c41e8b165c57295a62fca716e5451767",
+      "architecture": "amd64",
+      "os": "linux",
+      "user": "10001:10001",
+      "image_size_bytes": 210709633,
+      "archive_sha256": "bf58fb173780df4ed5a280c7eb300b2e7c8283de0d45e144793854f458fc5a1b",
+      "health_and_ui": true,
+      "identity_runtime_tested": false,
+      "registry_published": false
+    },
+    "native_archive_bytes": 219055616,
+    "native_build_command": "99055bbc-47eb-4bc7-bd52-3ff8fdccc72f",
+    "initial_smoke_command_status": "failed_missing_explicit_serve_web_flag",
+    "corrected_smoke_export_command": "a29764db-9d3e-4b0e-8ce9-43381fafd6e5",
+    "corrected_smoke_export_status": "Success",
+    "smoke_correction": {
+      "source_image_unchanged": true,
+      "source_commit": "2b292adc8c6e9d7841f43cf9b1d9a2c1b7bc0efd",
+      "changed_configuration": "explicit CLIP_SERVE_WEB_APP=true for intended bundled-UI smoke only",
+      "identity_runtime_enabled": false,
+      "provider_credentials": false,
+      "corrected_operator_helper_sha256": "0b58b8660109267dc40c65361cf45b5655647eb52ff88d24a23ed48bee13f586",
+      "smoke_export_script_sha256": "3f022fdc558eb6821c96d7a629a14cbb5644520ad3dbcf2a803ded08b70c64a6"
+    },
+    "native_image_rebuild_after_smoke_correction": false,
+    "c7i_fallback_used": false,
+    "transfer_recovery": {
+      "first_copy_result": "TimeoutError before ECR attempt",
+      "first_incomplete_copy_removed": true,
+      "fresh_ssm_tunnel": true,
+      "read_timeout_seconds": 180,
+      "new_build_submitted": false,
+      "publication_attempted_before_copy_verified": false,
+      "deadline_extended": false
+    },
+    "publication": {
+      "published": true,
+      "executed_locally": false,
+      "remote_tag": "335523638354.dkr.ecr.ap-south-1.amazonaws.com/clip-shared-test-api:id01-step13-heap768-6d59f6bb5dba",
+      "archive_sha256": "bf58fb173780df4ed5a280c7eb300b2e7c8283de0d45e144793854f458fc5a1b",
+      "archive_bytes": 219055616,
+      "local_image_id": "sha256:3cfa4f5f4a43ab388e72edbb3adc9e76c41e8b165c57295a62fca716e5451767",
+      "registry_digest": "sha256:bfa7316c26f683654f5c4b3f40e9817876db5afd79f8f13af978a8841fbde8f8",
+      "immutable_uri": "335523638354.dkr.ecr.ap-south-1.amazonaws.com/clip-shared-test-api@sha256:bfa7316c26f683654f5c4b3f40e9817876db5afd79f8f13af978a8841fbde8f8",
+      "remote_config_matches_tested_image": true,
+      "health_and_ui": true,
+      "transfer_archive_removed": true
+    },
+    "cleanup": {
+      "cleanup_instance_state": "terminated",
+      "cleanup_asg_instances": 0,
+      "rds_status": "stopped",
+      "cleanup_complete": true,
+      "scheduled_action_removed": true,
+      "observed_at_utc": "2026-10-28 09:04:45 UTC",
+      "final_asg": {
+        "min": 0,
+        "max": 1,
+        "desired": 0,
+        "instances": 0
+      },
+      "final_api": {
+        "desired": 0,
+        "running": 0,
+        "pending": 0
+      },
+      "owned_schedule_absent": true,
+      "owned_tunnel_closed": true,
+      "temporary_docker_auth_removed": true
+    },
+    "no_sql_or_secret_read_in_build_only_retry": true,
+    "identity_runtime_acceptance": false,
+    "verified_at_utc": "2026-10-28 09:06:27 UTC",
+    "final_checks": {
+      "gitleaks_result": "passed",
+      "shell_syntax": "passed",
+      "whitespace": "passed",
+      "json_and_executed_helper_binding": "passed"
+    },
+    "human_verified_at_utc": "2026-10-28 09:16:44 UTC"
+  }
+}

@@ -1,0 +1,461 @@
+{
+  "recorded_at_utc": "2026-10-28 16:24:14 UTC",
+  "task": "ID-01",
+  "canonical_step": 14,
+  "local_checkpoint": "2: dependency/owner evidence reconciliation",
+  "state": "human_verified",
+  "source_revision": "c2d7b43e446182996301a16ab2a85bcdb6cfd4ad",
+  "observed_remote_main": "5e8d264018c85475fbe13809316616b63a40886e",
+  "prior_observed_open_prs": 0,
+  "new_tests_run": 0,
+  "application_or_contract_changes": false,
+  "aws_queried_or_changed": false,
+  "owner_contacted": false,
+  "matrix_inventory_human_verified": {
+    "by": "Aditya (A)",
+    "recorded_at_utc": "2026-10-28 16:24:14 UTC"
+  },
+  "owner_readiness_report": {
+    "source": "Aditya selected Owners accepted them \u2014 I\u2019ll provide the details",
+    "milestones": [
+      "LI-CORE",
+      "SE-CORE",
+      "CN-CORE"
+    ],
+    "owner_acceptance_reported": true,
+    "exact_accepted_revisions_and_reviewer_details": "awaiting promised human details; not inferred from available merge commits",
+    "work_log_milestone_rows": "left unchanged; reconciliation recorded only in Identity-owned row/history and evidence",
+    "manual_review_note": "Earlier user-reported Suraj review/merge is preserved; no repeated approval request or conversion of AI comments to peer approval."
+  },
+  "merged_pr_evidence": [
+    {
+      "number": 10,
+      "url": "https://github.com/exocrat/clip/pull/10",
+      "state": "MERGED",
+      "merge_commit": "defec38f59d4acb683f7b51950860f458aacfdd1",
+      "merged_at": "2026-10-23T10:55:14Z",
+      "recorded_check": {
+        "name": "Foundation quality gates",
+        "conclusion": "SUCCESS"
+      },
+      "github_review_events": [],
+      "interpretation": "Historical check/review evidence only; merge is not automatic readiness acceptance. Missing GitHub review events do not negate existing human-reported manual review."
+    },
+    {
+      "number": 11,
+      "url": "https://github.com/exocrat/clip/pull/11",
+      "state": "MERGED",
+      "merge_commit": "e315c9df3e0e11d6e9c8d7d244d676204d3af7e8",
+      "merged_at": "2026-10-25T15:12:11Z",
+      "recorded_check": {
+        "name": "Foundation quality gates",
+        "conclusion": "SUCCESS"
+      },
+      "github_review_events": [],
+      "interpretation": "Historical check/review evidence only; merge is not automatic readiness acceptance. Missing GitHub review events do not negate existing human-reported manual review."
+    },
+    {
+      "number": 14,
+      "url": "https://github.com/exocrat/clip/pull/14",
+      "state": "MERGED",
+      "merge_commit": "3d6c2709d93f42bda0b4a6645c633780387c99b8",
+      "merged_at": "2026-10-26T06:21:56Z",
+      "recorded_check": {
+        "name": "Foundation quality gates",
+        "conclusion": "SUCCESS"
+      },
+      "github_review_events": [
+        {
+          "author": "suraj-username",
+          "state": "APPROVED",
+          "submitted_at": "2026-10-26T06:20:35Z"
+        }
+      ],
+      "interpretation": "Historical check/review evidence only; merge is not automatic readiness acceptance. Missing GitHub review events do not negate existing human-reported manual review."
+    },
+    {
+      "number": 15,
+      "url": "https://github.com/exocrat/clip/pull/15",
+      "state": "MERGED",
+      "merge_commit": "d7afc8b128c8b2caae368589573dabc133e3008a",
+      "merged_at": "2026-10-26T19:36:05Z",
+      "recorded_check": {
+        "name": "Foundation quality gates",
+        "conclusion": "SUCCESS"
+      },
+      "github_review_events": [],
+      "interpretation": "Historical check/review evidence only; merge is not automatic readiness acceptance. Missing GitHub review events do not negate existing human-reported manual review."
+    },
+    {
+      "number": 16,
+      "url": "https://github.com/exocrat/clip/pull/16",
+      "state": "MERGED",
+      "merge_commit": "7612fd8747ee053701a7316ef9b93dedc5d10cdb",
+      "merged_at": "2026-10-26T19:50:35Z",
+      "recorded_check": {
+        "name": "Foundation quality gates",
+        "conclusion": "SUCCESS"
+      },
+      "github_review_events": [],
+      "interpretation": "Historical check/review evidence only; merge is not automatic readiness acceptance. Missing GitHub review events do not negate existing human-reported manual review."
+    },
+    {
+      "number": 17,
+      "url": "https://github.com/exocrat/clip/pull/17",
+      "state": "MERGED",
+      "merge_commit": "b09978e91620ae3877a77c5bea8a4f12df7a8907",
+      "merged_at": "2026-10-27T05:43:33Z",
+      "recorded_check": {
+        "name": "Foundation quality gates",
+        "conclusion": "SUCCESS"
+      },
+      "github_review_events": [
+        {
+          "author": "copilot-pull-request-reviewer",
+          "state": "COMMENTED",
+          "submitted_at": "2026-10-26T21:13:35Z"
+        }
+      ],
+      "interpretation": "Historical check/review evidence only; merge is not automatic readiness acceptance. Missing GitHub review events do not negate existing human-reported manual review."
+    },
+    {
+      "number": 18,
+      "url": "https://github.com/exocrat/clip/pull/18",
+      "state": "MERGED",
+      "merge_commit": "5e8d264018c85475fbe13809316616b63a40886e",
+      "merged_at": "2026-10-27T15:37:53Z",
+      "recorded_check": {
+        "name": "Foundation quality gates",
+        "conclusion": "SUCCESS"
+      },
+      "github_review_events": [],
+      "interpretation": "Historical check/review evidence only; merge is not automatic readiness acceptance. Missing GitHub review events do not negate existing human-reported manual review."
+    }
+  ],
+  "core_source_parity_with_merged_main": [
+    {
+      "path": "apps/api/app/application.py",
+      "sha256": "cf778e2c6665fc2490b66b9682a4f935a833560c38014921cbaebfd91b6451aa",
+      "identical": true
+    },
+    {
+      "path": "apps/api/app/domains/identity/http.py",
+      "sha256": "273c02724a00175f52b18dea15a3c09c598ffaf7037d604c090088ca8575a6c3",
+      "identical": true
+    },
+    {
+      "path": "apps/api/app/domains/identity/capabilities.py",
+      "sha256": "ff4ab67cdbb8f5bcaefdf9eab4a2c7548d0f1e1f2ce11f557e07316eeb2ab7a1",
+      "identical": true
+    },
+    {
+      "path": "apps/api/app/domains/listings/search_access.py",
+      "sha256": "60a1cb399e26b759ae00fc40b5af7ad3de80b8b89c960cee5ddfa4b3c590f9ca",
+      "identical": true
+    },
+    {
+      "path": "apps/api/app/domains/listings/integrations.py",
+      "sha256": "90a22007b05cd353bc01cb47af1905169dbd896ccf14d3f8b2c46c0575c564f9",
+      "identical": true
+    },
+    {
+      "path": "apps/api/app/domains/conversations/provider.py",
+      "sha256": "387f0bf6ea2f0dbfe839d0803e89fe71e7dc08502180b27a5d4d89cdfd0f721a",
+      "identical": true
+    },
+    {
+      "path": "apps/api/app/domains/conversations/routes.py",
+      "sha256": "60f578d9e0147fe9705d2462b0f43693e71aa36e2c8d2320a63588d49391fd83",
+      "identical": true
+    },
+    {
+      "path": "apps/api/app/domains/search/wanted_routes.py",
+      "sha256": "89c066ada4f946ce59cb08fb65e0c7d7412454fdf949b5fe29d2204ca37f3667",
+      "identical": true
+    },
+    {
+      "path": "apps/api/app/domains/search/saved_routes.py",
+      "sha256": "a8ad083cb1ff18a6d820066482279ccf17c917c589c1b415b18be535db3fd3c8",
+      "identical": true
+    }
+  ],
+  "application_code_not_in_main": [
+    "apps/api/app/domains/identity/migration_runner.py"
+  ],
+  "unmerged_scope_note": "Beyond main, the application-domain delta is the strict migration runner; Docker build heap argument, HTTPS infra/operator tools and their tests/docs also await publication. No unmerged change to the47business route implementations was identified.",
+  "dependencies": [
+    {
+      "id": "Identity/ID-READY",
+      "owner": "Aditya (A); peer Rahul (D)",
+      "implementation": "Real cookie/CSRF/current-eligibility/contact services and merged PR14/16; Step13 real hosted/provider/retention checks human-accepted.",
+      "available_evidence": [
+        "docs/evaluation/identity/id-01-step-13/closeout-review.json",
+        "apps/api/app/domains/identity/http.py",
+        "apps/api/app/domains/identity/public.py"
+      ],
+      "remaining": "Formal ID-READY exact revision/readiness closeout remains separately unaccepted in table; new migration/operator/HTTPS source publication pending. Do not infer ID-READY from Step13.",
+      "technical_consumer_implementation_present": true
+    },
+    {
+      "id": "LI-01/LI-02/LI-CORE",
+      "owner": "Suraj (B)",
+      "implementation": "Merged PR10 implementation, concrete S3 adapter, real Listings/Search provider from PR11, offer/selection changes from PR18;15routes exist.",
+      "available_evidence": [
+        "apps/api/app/domains/listings/service.py",
+        "apps/api/app/domains/listings/s3_storage.py",
+        "apps/api/app/domains/listings/search_access.py",
+        "apps/api/tests/test_conversation_identity_integration.py"
+      ],
+      "remaining": "Owner acceptance reported; exact bound revision/review details pending. Complete actual current Identity/S3 image positive and full owner/terminal matrix; old isolated synthetic-caller demo is not that proof.",
+      "technical_consumer_implementation_present": true
+    },
+    {
+      "id": "SE-CORE/SE-02",
+      "owner": "Mohit (C)",
+      "implementation": "PR11 implements all five Listings query/category/save resolver methods and actual Wanted/Saved stores/bindings; PR15 carries Hybrid-default UI;11routes exist.",
+      "available_evidence": [
+        "apps/api/app/domains/listings/search_access.py",
+        "apps/api/app/domains/search/wanted_routes.py",
+        "apps/api/app/domains/search/saved_routes.py",
+        "docs/evaluation/domain/search-handoff/README.md"
+      ],
+      "remaining": "SE-CORE owner acceptance reported; exact accepted revision/review details pending. SE-02 required paths exist but full current nonempty real-provider matrix remains. Nonblank Hybrid needs actual helper/model/serving data. Final dataset/relevance/NFR acceptance is not invented as an auth prerequisite.",
+      "technical_consumer_implementation_present": true
+    },
+    {
+      "id": "CN-CORE/CN-01/CN-02",
+      "owner": "Rahul (D); Identity peer Aditya (A)",
+      "implementation": "PR17 provides concrete shared provider/pool/route integration; PR18 offers/selection/contacts;16routes and partial real-cookie/SQL workflow tests exist.",
+      "available_evidence": [
+        "apps/api/app/domains/conversations/provider.py",
+        "apps/api/app/domains/conversations/routes.py",
+        "docs/evaluation/domain/conversations-integration.md",
+        "docs/evaluation/domain/conversations-offers.md"
+      ],
+      "remaining": "CN-CORE owner acceptance reported; exact bound revision/review details pending. Full member/nonmember/lifecycle/contact-share/key/prekey matrix and separately approved persistent DB principal binding remain. CN-03/NFR completion is not added as a Step14 gate.",
+      "technical_consumer_implementation_present": true
+    }
+  ],
+  "runtime_and_evidence_gaps": [
+    {
+      "id": "G1",
+      "kind": "persistent_runtime_binding",
+      "owner": "Rahul (D), shared operator; affected owners",
+      "facts": "application_lifespan uses settings.database_dsn or settings.database_url. Existing test service sets only marketplace CLIP_DATABASE_URL; preserved marketplace role has no Conversations USAGE.",
+      "source": [
+        "apps/api/app/application.py",
+        "apps/api/app/core/config.py",
+        "infra/terraform/shared/test/service.tf",
+        "docs/evaluation/identity/id-01-step-13/bootstrap-retry-result.json"
+      ],
+      "next": "Review the exact Conversations principal/DSN/grants using existing separate tuple-pool seam. No automatic new role/SSM/grants or widening marketplace rights.",
+      "blocks": "Persistent positive Conversations/offer/selection/contact checks; no claim that current stopped runtime could pass them."
+    },
+    {
+      "id": "G2",
+      "kind": "real_storage_evidence",
+      "owner": "Suraj (B), Aditya (A)",
+      "facts": "S3 implementation/config exists, but combined image/listing cookie fixture controls object storage; prior isolated demo used synthetic caller.",
+      "source": [
+        "apps/api/app/domains/listings/s3_storage.py",
+        "apps/api/tests/test_conversation_identity_integration.py"
+      ],
+      "next": "Plan approved real S3 positive image states with actual Identity; negative authorization tests must use real handlers and assert no side effects.",
+      "blocks": "Full real-storage positive acceptance; do not fake an image confirmation to claim it."
+    },
+    {
+      "id": "G3",
+      "kind": "supported_hybrid_runtime",
+      "owner": "Mohit (C), Suraj (B)",
+      "facts": "Real helper lifecycle is explicit opt-in; Step13 service has no Hybrid interpreter/model inputs. Nonblank Hybrid without serving runtime returns503.",
+      "source": [
+        "apps/api/app/domains/listings/search_runtime.py",
+        "apps/api/app/core/config.py",
+        "contracts/search.md",
+        "infra/terraform/shared/test/service.tf"
+      ],
+      "next": "Owner supplies reviewed real helper/model/serving configuration for Hybrid-positive cases; keep Keyword and unavailable-mode behavior separately scoped.",
+      "blocks": "Positive nonblank Hybrid coverage, not evidence that every Search implementation is absent."
+    },
+    {
+      "id": "G4",
+      "kind": "coverage",
+      "owner": "Aditya (A), affected owners",
+      "facts": "47operation matrix has partial real-cookie tests plus policy-only/synthetic-caller/storage-controlled cases. No complete per-route cohort table has run.",
+      "source": [
+        "docs/evaluation/identity/id-01-step-14/capability-matrix.json"
+      ],
+      "next": "Implement missing cases against actual services/SQL, record per-row/scenario outcomes and fixture limits; no consumer double in place of missing integration.",
+      "blocks": "Final Step14/FR-03 acceptance."
+    },
+    {
+      "id": "G5",
+      "kind": "revision_and_acceptance_records",
+      "owner": "Aditya (A) with B/C/D acceptance details",
+      "facts": "Current milestone table is stale per user owner-acceptance report. Exact accepted revisions/reviewer details not yet provided; new operator branch unpublished.",
+      "source": [
+        "docs/status/work-log.md",
+        "docs/evaluation/identity/id-01-step-13/closeout-review.json"
+      ],
+      "next": "Bind promised milestone/revision/reviewer details and separately close ID-READY/publication; preserve existing human reports and other owners rows.",
+      "blocks": "Formal revision-bound readiness/FR acceptance, not a claim that merged controllers are unimplemented."
+    }
+  ],
+  "superseded_historical_claims": [
+    {
+      "claim": "Listings query/save resolver implementation missing",
+      "current_fact": "All five real methods are implemented and wired in merged PR11; old Search handoff text remains historical.",
+      "source": "apps/api/app/domains/listings/search_access.py"
+    },
+    {
+      "claim": "Conversations public functions are declaration-only and Listing thread operations unavailable",
+      "current_fact": "application_lifespan installs concrete PostgresConversationServices on the actual tuple pool; old comment/docs do not describe the final composition.",
+      "source": "apps/api/app/application.py"
+    },
+    {
+      "claim": "Current shared migration target is17files with37tables",
+      "current_fact": "Human-accepted Step13 bootstrap applied23files/head20261027112205,40tables/36functions/46triggers.",
+      "source": "docs/evaluation/identity/id-01-step-13/bootstrap-retry-result.json"
+    },
+    {
+      "claim": "Identity database roles/provider configuration/SES production are merely proposed or absent",
+      "current_fact": "Step13 roles/logins and actual hosted Identity flows verified; SES prod/test receipt confirmed; keys/provider order preserved.",
+      "source": "docs/evaluation/identity/id-01-step-13/runtime-enabled-result.json"
+    }
+  ],
+  "next_increment_proposal": {
+    "scope": "Missing direct-API test design/implementation against the actual already-implemented services and disposable PostgreSQL, after this result is verified; fixture/provider limits remain explicit.",
+    "not_authorized_now": [
+      "run tests",
+      "change application/contracts/other-owner source",
+      "new consumer stub",
+      "cloud/S3/provider/secret/grant action",
+      "publish/merge",
+      "accept FR-03 or milestone automatically"
+    ],
+    "formal_acceptance_waits_for": "Bound owner readiness details, actual required integrations and complete executed matrix; this document does not waive canonical gates."
+  },
+  "verification_recorded_at_utc": "2026-10-28 18:25:56 UTC",
+  "runtime_preparation_audit": {
+    "recorded_at_utc": "2026-10-28 18:52:03 UTC",
+    "source_only": true,
+    "aws_queried": false,
+    "proposal_not_applied": true,
+    "conversations_existing_setting": "CLIP_DATABASE_DSN",
+    "proposed_principal": "clip_test_conversations_app",
+    "proposed_parameter": "/clip/test/conversations/database-url",
+    "hybrid_artifacts_present_locally": false,
+    "next": "SQL owner approval reported and bound; prepare exact role/SSM/runtime saved plans and caps. Live execution still requires separate approval.",
+    "local_principal_proposal_tested_at_utc": "2026-10-28 19:02:48 UTC"
+  },
+  "runtime_preparation_human_verified": true,
+  "local_principal_human_verified": true,
+  "shared_config_preparation": {
+    "recorded_at_utc": "2026-10-28 19:08:08 UTC",
+    "remote_main": "5e8d264018c85475fbe13809316616b63a40886e",
+    "open_pr_count": 0,
+    "reservation_owner": "Aditya (A)",
+    "reservation_state": "released_after_local_checks",
+    "mock_tests_passed": 7,
+    "terraform_version": "1.15.9",
+    "backend_free_validate": "passed",
+    "aws_access": false,
+    "applied": false,
+    "files": [
+      {
+        "path": "infra/terraform/shared/test/consumer-runtime.tf",
+        "sha256": "e8873184d3fda598bd1d5284760aa6cd00ed8a854bf9b1c42ffcc56a36439b3e"
+      },
+      {
+        "path": "infra/terraform/shared/test/service.tf",
+        "sha256": "f245aa92d29386df44db576172676dc1e2728206c69188ff66a2085a3c77db5c"
+      },
+      {
+        "path": "infra/terraform/shared/test/tests/consumer_runtime.tftest.hcl",
+        "sha256": "7a51268e196eb09c14774787d20b6a710e52a9c821de1d0371783d93fe0b481b"
+      },
+      {
+        "path": "infra/terraform/shared/test/README.md",
+        "sha256": "fd9fd2f4f36cf7c86fba479d9e94b5b3ce7b0f69cafed9d10eeec754251db102"
+      }
+    ],
+    "pending": "Human verification, SQL/affected-owner review, live exact target/capacity/cost/cleanup plan and separate approval."
+  },
+  "shared_config_human_verified": true,
+  "conversations_sql_owner_review": {
+    "recorded_at_utc": "2026-10-28 19:36:11 UTC",
+    "reviewer": "Rahul (D)",
+    "reported_by": "Aditya (A)",
+    "report": "User states Rahul approved the exact proposal and instructs recording/continuation.",
+    "proposal": "docs/evaluation/identity/id-01-step-14/conversations-runtime.sql.proposed",
+    "sha256": "6822fd82bc1d75c262d55227a385c8ca63a7aca155c8dc1b4df3c19dd73eee13",
+    "direct_review_reference": null,
+    "scope": "Exact local SQL proposal; not cloud execution, unrelated config review or whole-task acceptance."
+  },
+  "current_runtime_readonly": {
+    "recorded_at_utc": "2026-10-28 19:36:11 UTC",
+    "profile": "adityalaxmi1",
+    "account": "335523638354",
+    "region": "ap-south-1",
+    "rds": {
+      "identifier": "clip-shared-test-postgres",
+      "status": "stopped",
+      "class": "db.t4g.micro",
+      "engine": "18.6",
+      "public": false,
+      "deletion_protection": true
+    },
+    "ecs": {
+      "cluster": "clip-shared-test",
+      "service": "clip-test-api-ap-south-1-pd16",
+      "desired": 0,
+      "running": 0,
+      "pending": 0,
+      "task_revision": 7
+    },
+    "asg": {
+      "name": "clip-shared-test-ecs-host",
+      "min": 0,
+      "max": 1,
+      "desired": 0,
+      "instances": []
+    },
+    "conversations_ssm_parameter_present": false,
+    "secrets_read": false,
+    "mutations": false
+  },
+  "binding_extension_human_verified": true,
+  "operator_preparation": {
+    "recorded_at_utc": "2026-10-28 19:50:23 UTC",
+    "tests_passed": 5,
+    "duration_seconds": 2.32,
+    "files": [
+      {
+        "path": "scripts/identity_conversations_role.py",
+        "sha256": "7294edbdce860eae131024c8ef6d40aa828b2a4676afd8c15364d5d56b023915"
+      },
+      {
+        "path": "tests/test_identity_conversations_role.py",
+        "sha256": "93c4b1baecde95c501ebf275e4055691069e29d316c4ba8b20709ae6cea5b864"
+      }
+    ],
+    "live_role_applied": false,
+    "stopped_plan_review": "docs/evaluation/identity/id-01-step-14/stopped-config-plan-review.json"
+  },
+  "stopped_config_applied": {
+    "recorded_at_utc": "2026-10-28 19:54:52 UTC",
+    "state_serial_after": 25,
+    "task_revision": 8,
+    "result": "docs/evaluation/identity/id-01-step-14/stopped-config-result.json",
+    "human_result_verification": "Aditya verified",
+    "sql_and_ssm_provisioned": false
+  },
+  "provisioning_window_prepared": {
+    "recorded_at_utc": "2026-10-28 20:03:57 UTC",
+    "plan": "docs/evaluation/identity/id-01-step-14/provisioning-window-plan.json",
+    "sha256": "9f48802d7e77e39dbc355ccfcf61bb87eab1beafb6569e62c61a63d775ea6848",
+    "approved": false,
+    "executed": false,
+    "operator_tests_passed": 6
+  }
+}

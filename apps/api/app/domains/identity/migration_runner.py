@@ -67,14 +67,14 @@ def _target(c: Database, target: MigrationTarget) -> None:
 def validate_manifest(
     directory: Path, manifest: Path, image: str, target: MigrationTarget
 ) -> list[str]:
-    """Refuse edited/extra SQL and unreviewed live images before credential use."""
+    """Pin the accepted-main 23-file chain; refuse edited SQL and unreviewed live images."""
     if not re.fullmatch(r"ghcr.io/amacneil/dbmate@sha256:[0-9a-f]{64}", image):
         raise ValueError
     row = json.loads(manifest.read_text())
     if (
         row["tool"] != "dbmate 2.36.0"
-        or row["head"] != "20261025013000"
-        or row["migration_count"] != 17
+        or row["head"] != "20261027112205"
+        or row["migration_count"] != 23
     ):
         raise ValueError
     if not target.isolated and (
@@ -84,7 +84,7 @@ def validate_manifest(
         raise ValueError
     files = sorted(directory.glob("*.sql"))
     expected = row["migrations"]
-    if len(files) != 17 or len(expected) != 17 or any(p.is_symlink() for p in files):
+    if len(files) != 23 or len(expected) != 23 or any(p.is_symlink() for p in files):
         raise ValueError
     versions = []
     for path, item in zip(files, expected, strict=True):
@@ -106,6 +106,7 @@ def _baseline(c: Database, target: MigrationTarget, versions: list[str]) -> None
     """Permit only a fresh four-namespace baseline or this exact complete chain.
 
     Never auto-adopt manual schemas or resume an applied prefix after a failure.
+    Recorded 17-file targets are never adopted or automatically upgraded here.
     Hold the owning wrapper's lock separately from the SQL per-migration key.
     """
     _target(c, target)
@@ -144,7 +145,7 @@ def _baseline(c: Database, target: MigrationTarget, versions: list[str]) -> None
                 (list(SCHEMAS),),
             ).fetchone(),
         )
-        if inventory != ((37,), (33,), (43,)):
+        if inventory != ((40,), (36,), (46,)):
             raise ValueError
     else:
         raise ValueError

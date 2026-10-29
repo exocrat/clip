@@ -1,0 +1,52 @@
+{
+  "reviewed_at_utc": "2026-10-28 15:55:36 UTC",
+  "task": "ID-01",
+  "step": 13,
+  "scope": "Real Identity cloud verification; ID-READY formal acceptance and full ID-01/Step14 not inferred",
+  "definition_audit": "Step13 checks/cleanup complete and human-verified; full ID-01 and formal ID-READY acceptance remain separate",
+  "sources": [
+    "docs/tasks/domain-task-list.md ID-01 Step13",
+    "docs/prompts/reusable-task-prompt.md",
+    "docs/checklists/agent-checklist.md",
+    "docs/checklists/human-checklist.md",
+    "CONTRIBUTING.md",
+    "docs/decisions/private-data-retention.md"
+  ],
+  "review": {
+    "exact_account_region_source_plan_budget_approvals": "recorded and followed",
+    "build_migrate_deploy": "real native AMD64 image,23migrations, verified running digest/task6",
+    "fake_auth_or_provider_bypass": false,
+    "microsoft_real_browser": "human pass",
+    "temporary_registration_verification_signin_reset": "human pass with actual email receipt",
+    "sessions_logout_contacts": "human save/refresh/delete/logout pass",
+    "phone_browser": "requested check human all-success; desktop browser/version not supplied",
+    "tls_anonymous_auth_attempt_cookie": "actual verification passed; raw values discarded",
+    "ses": "production/sender/DKIM verified; standalone real message received, not claimed as an ECS fallback test",
+    "provider_order_keys_unchanged": true,
+    "retention": "actual first automatic apply tick exit0/counts0, next hourly scheduled; only one tick observed; window-only timer removed",
+    "test_accounts": "retained under approved normal retention; no arbitrary deletion/cascade",
+    "budget": "within approved4hour/$2 operator threshold; no account bill query or actual-cost claim",
+    "source_ownership": "Identity operator/tests/docs; no other owner application source changed",
+    "checks": "4focused launcher safety tests/host3.9 and child grammar, strict mypy, Black and secret/whitespace scan; unaffected full suites not repeated",
+    "cleanup": "Passed exact approved teardown and independent API0/ASG0/hosts terminated/RDS stopped/private/protected/EIP and fallback absent checks",
+    "secrets_privacy": "no tokens/codes/password/contact values retained; blocked Resend credential lookup never executed",
+    "remaining_formal_gates": "New source independent/affected review and publication; full ID-01 Step14 and formal ID-READY acceptance not inferred",
+    "full_id01": "Step14/full consumer matrix and final task acceptance remain outside this scope"
+  },
+  "formal_human_closeout_accepted": true,
+  "task_complete": false,
+  "step13_checks_complete": true,
+  "cleanup_complete": true,
+  "final_evidence": [
+    "runtime-enabled-result.json",
+    "retention-window-result.json",
+    "runtime-cleanup-result.json"
+  ],
+  "human_verification": {
+    "by": "Aditya (A)",
+    "recorded_at_utc": "2026-10-28 15:57:07 UTC",
+    "source": "verified. commit",
+    "scope": "ID-01 Step13 cloud verification and cleanup only"
+  },
+  "step13_state": "complete_human_verified"
+}
