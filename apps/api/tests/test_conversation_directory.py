@@ -806,3 +806,109 @@ def test_http_endpoints_round_trip_through_real_postgres_with_test_identity():
             assert client.get(f"/conversations/{thread}/keys").status_code == 404
 
     run_scenario(scenario)
+
+
+def test_marketplace_modes_group_bounds_and_unread_aggregate():
+    async def scenario(pool):
+        alice, bob, origin, thread, *_ = await seed_thread(pool)
+        service = PostgresConversationQueries(pool)
+        await PostgresMessageOperations(pool).submit_message(
+            caller(alice), thread, message_request()
+        )
+        # Wanted authors are buying; responders are selling, regardless of initiation.
+        buying = await service.list_mine(
+            caller(alice), ConversationQuery(marketplace_mode="buying", group_by="item")
+        )
+        assert [row.conversation_id for row in buying.items] == [thread]
+        assert not (
+            await service.list_mine(
+                caller(alice),
+                ConversationQuery(marketplace_mode="selling", group_by="person"),
+            )
+        ).items
+        assert (
+            await service.list_mine(
+                caller(bob),
+                ConversationQuery(marketplace_mode="selling", group_by="person"),
+            )
+        ).items
+        assert (await service.unread_count(caller(bob))).unread_count == 1
+        assert (await service.unread_count(caller(alice))).unread_count == 0
+        assert (await service.unread_count(caller(uuid4()))).unread_count == 0
+        # Identity's projection contains only the claimed Handle and safe class.
+        async with pool.connection() as connection:
+            await connection.execute(
+                "UPDATE identity.users SET display_name='peer_handle',handle_ready=true WHERE id=%s",
+                (alice,),
+            )
+        summary = await service.read_summary(caller(bob), thread)
+        assert summary.counterparty_handle == "peer_handle"
+        assert summary.counterparty_account_class == "regular"
+        extra_responders = []
+        async with pool.connection() as connection:
+            for _ in range(21):
+                responder, extra = uuid4(), uuid4()
+                extra_responders.append((responder, extra))
+                await connection.execute(
+                    "INSERT INTO identity.users(id,account_class,status) VALUES (%s,'regular','active')",
+                    (responder,),
+                )
+                await connection.execute(
+                    "INSERT INTO conversations.threads(id,wanted_request_id,initiator_id,counterparty_id) VALUES (%s,%s,%s,%s)",
+                    (extra, origin, responder, alice),
+                )
+                await connection.execute(
+                    "INSERT INTO conversations.members(conversation_id,user_id) VALUES (%s,%s),(%s,%s)",
+                    (extra, responder, extra, alice),
+                )
+        messages = PostgresMessageOperations(pool)
+        keys = PostgresKeyDirectory(pool)
+        for responder, extra in extra_responders:
+            await keys.register_own_key(caller(responder), public_bundle())
+            await messages.submit_message(caller(responder), extra, message_request())
+        grouped = await service.list_mine(
+            caller(alice), ConversationQuery(group_by="item")
+        )
+        assert len(grouped.items) == 20 and not grouped.has_next
+        assert all(row.group_has_more for row in grouped.items)
+        assert all(row.group_unread_count == 21 for row in grouped.items)
+        continuation = await service.list_mine(
+            caller(alice), ConversationQuery(origin_id=[origin], page=2)
+        )
+        assert len(continuation.items) == 2 and not continuation.has_next
+
+    run_scenario(scenario)
+
+
+def test_unread_backlog_is_bounded_and_read_watermark_is_account_scoped():
+    async def scenario(pool):
+        from app.contracts.domain_types import EntryQuery, ReadAcknowledgement
+
+        author, responder, _, thread, *_ = await seed_thread(pool)
+        messages = PostgresMessageOperations(pool)
+        queries = PostgresConversationQueries(pool)
+        for _ in range(25):
+            await messages.submit_message(caller(author), thread, message_request())
+        assert (await queries.unread_count(caller(responder))).unread_count == 25
+        first = await messages.read_entries(caller(responder), thread, EntryQuery())
+        assert len(first.items) == 20 and first.has_more
+        assert (await queries.unread_count(caller(responder))).unread_count == 25
+        await messages.acknowledge_read(
+            caller(responder), thread, ReadAcknowledgement(last_read_sequence=9)
+        )
+        assert (await queries.unread_count(caller(responder))).unread_count == 16
+        opening = await messages.read_entries(
+            caller(responder), thread, EntryQuery(after_sequence=4)
+        )
+        assert opening.items[0].sequence == 5 and opening.items[-1].sequence == 24
+        assert len(opening.items) == 20 and opening.has_more
+        last = await messages.read_entries(
+            caller(responder), thread, EntryQuery(after_sequence=24)
+        )
+        assert len(last.items) == 1 and not last.has_more
+        assert (await queries.unread_count(caller(author))).unread_count == 0
+        assert (
+            await messages.read_state(caller(author), thread)
+        ).own_last_read_sequence == 0
+
+    run_scenario(scenario)

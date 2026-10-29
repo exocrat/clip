@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { Button, MultiChoiceDropdown } from '../../shared/ui';
 import { type DiscoveryApiError, discoveryPreviewBackend,
@@ -22,7 +22,13 @@ function withWantedRouteState(sale: URLSearchParams, current: URLSearchParams): 
 }
 
 /** Own discovery state inside Search; other domains supply only reviewed public data. */
-export function SaleDiscovery() {
+export function SaleDiscovery({
+  createListingAction,
+  renderListingActions,
+}: {
+  createListingAction?: ReactNode;
+  renderListingActions?: (listingId: string) => ReactNode;
+}) {
   const [params, setParams] = useSearchParams();
   const key = params.toString();
   const parsed = useMemo(() => {
@@ -107,7 +113,8 @@ export function SaleDiscovery() {
         </aside>
       )}
       <p className="discovery-intro">Find what you need, right here on campus.</p>
-      <form className="discovery-form" onSubmit={submit} noValidate>
+      {createListingAction ? <div className="discovery-page-actions">{createListingAction}</div> : null}
+      <details open className="search-controls"><summary>Search &amp; filters — {query.q || "All items"} · {query.category_code.length ? query.category_code.map((code) => catalogue.categories.find((item) => item.code === code)?.label ?? code).join(", ") : "All categories"} · {query.condition_code.length ? query.condition_code.map((code) => catalogue.conditions.find((item) => item.code === code)?.label ?? code).join(", ") : "Any condition"}{query.min_price_paise || query.max_price_paise ? " · Price bounds applied" : ""}</summary><form className="discovery-form" onSubmit={submit} noValidate>
         <div className="discovery-search">
           <label htmlFor="discovery-query">Search listings
             <input id="discovery-query" type="search" value={draft.q} maxLength={240}
@@ -169,7 +176,7 @@ export function SaleDiscovery() {
           <span className="discovery-hint">Whole rupees only. ₹0 includes free items.</span>
         </div>
         {formError && <p className="discovery-error" role="alert">{formError}</p>}
-      </form>
+      </form></details>
       <div className="discovery-results" aria-live="polite" aria-busy={result.kind === 'loading'}>
         {result.kind === 'loading' && <p className="discovery-state" role="status">Loading current listings…</p>}
         {result.kind === 'invalid' && <div className="discovery-state" role="alert"><h2>Check your search</h2><p>{result.message}</p></div>}
@@ -183,7 +190,9 @@ export function SaleDiscovery() {
           <p className="discovery-results-heading">Page {ready.page} · {ready.items.length} {ready.items.length === 1 ? 'listing' : 'listings'} on this page</p>
           {ready.items.length === 0 ? <div className="discovery-state"><h2>No listings found</h2><p>Try fewer filters or different search words.</p><Button variant="secondary" onClick={() => { setDraft(discoveryForm(DEFAULT_QUERY)); setFormError(''); navigate(DEFAULT_QUERY); }}>Clear filters</Button></div> : (
             <ul className="discovery-grid">
-              {ready.items.map((listing) => <li key={listing.listing_id}><SaleListingCard listing={listing} /></li>)}
+              {ready.items.map((listing) => <li key={listing.listing_id}>
+                <SaleListingCard listing={listing}>{renderListingActions?.(listing.listing_id)}</SaleListingCard>
+              </li>)}
             </ul>
           )}
           <nav className="discovery-pagination" aria-label="Listing result pages">

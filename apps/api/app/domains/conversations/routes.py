@@ -18,6 +18,7 @@ from app.contracts.domain_types import (
     ReadState,
     ConversationQuery,
     ConversationSummary,
+    ConversationUnreadCount,
     PageResult,
     MemberKeyBundles,
     KeyBundle,
@@ -266,6 +267,19 @@ async def list_mine(
 ) -> PageResult[ConversationSummary]:
     """Return an authorized, filtered inbox without reading origin-domain content."""
     return await PostgresConversationQueries(_pool(request)).list_mine(caller, query)
+
+
+@router.get(
+    "/conversations/unread-count",
+    response_model=ConversationUnreadCount,
+    operation_id="conversations_read_unread_count",
+    summary="conversations_read_unread_count",
+)
+async def unread_count(
+    request: Request, caller: CallerContext = Depends(require_caller)
+) -> ConversationUnreadCount:
+    """Read the current account's aggregate; no peer receipt or message data."""
+    return await PostgresConversationQueries(_pool(request)).unread_count(caller)
 
 
 @router.get(

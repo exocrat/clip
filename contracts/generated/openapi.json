@@ -481,6 +481,32 @@
             "title": "Conversation Id",
             "type": "string"
           },
+          "counterparty_account_class": {
+            "anyOf": [
+              {
+                "enum": [
+                  "regular",
+                  "temporary"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Counterparty Account Class"
+          },
+          "counterparty_handle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Counterparty Handle"
+          },
           "counterparty_user_id": {
             "format": "uuid",
             "title": "Counterparty User Id",
@@ -495,6 +521,17 @@
                 "type": "null"
               }
             ]
+          },
+          "group_has_more": {
+            "default": false,
+            "title": "Group Has More",
+            "type": "boolean"
+          },
+          "group_unread_count": {
+            "default": 0,
+            "minimum": 0.0,
+            "title": "Group Unread Count",
+            "type": "integer"
           },
           "initiator_user_id": {
             "format": "uuid",
@@ -542,6 +579,22 @@
           "unread_count"
         ],
         "title": "ConversationSummary",
+        "type": "object"
+      },
+      "ConversationUnreadCount": {
+        "additionalProperties": false,
+        "description": "Account-scoped count of unread peer messages, excluding controls and offers.",
+        "properties": {
+          "unread_count": {
+            "minimum": 0.0,
+            "title": "Unread Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "unread_count"
+        ],
+        "title": "ConversationUnreadCount",
         "type": "object"
       },
       "CreateListingRequest": {
@@ -3118,6 +3171,11 @@
             ],
             "title": "Display Name"
           },
+          "handle_ready": {
+            "default": false,
+            "title": "Handle Ready",
+            "type": "boolean"
+          },
           "user_id": {
             "format": "uuid",
             "title": "User Id",
@@ -4652,6 +4710,41 @@
         "parameters": [
           {
             "in": "query",
+            "name": "marketplace_mode",
+            "required": false,
+            "schema": {
+              "default": "all",
+              "enum": [
+                "all",
+                "buying",
+                "selling"
+              ],
+              "title": "Marketplace Mode",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "group_by",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "item",
+                    "person"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Group By"
+            }
+          },
+          {
+            "in": "query",
             "name": "view",
             "required": false,
             "schema": {
@@ -4912,6 +5005,118 @@
           }
         },
         "summary": "conversations_list_mine",
+        "tags": [
+          "conversations"
+        ]
+      }
+    },
+    "/conversations/unread-count": {
+      "get": {
+        "description": "Reject accidental use; declarations never return fake success.",
+        "operationId": "conversations_read_unread_count",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationUnreadCount"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "conversations_read_unread_count",
         "tags": [
           "conversations"
         ]

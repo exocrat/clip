@@ -132,6 +132,7 @@ class SessionView(ContractModel):
     account_class: AccountClass
     valid_until: UtcInstant
     display_name: str | None = None
+    handle_ready: bool = False
 
 
 class MicrosoftLoginAttempt(ContractModel):
@@ -765,6 +766,12 @@ class SavedListingView(ContractModel):
     retired: bool
 
 
+class ConversationUnreadCount(ContractModel):
+    """Account-scoped count of unread peer messages, excluding controls and offers."""
+
+    unread_count: int = Field(ge=0)
+
+
 class ConversationSummary(ContractModel):
     """Participant-scoped conversation row and current offer summary."""
 
@@ -774,9 +781,13 @@ class ConversationSummary(ContractModel):
     initiator_user_id: UserId
     caller_role: Literal["initiator", "origin_owner"]
     counterparty_user_id: UserId
+    group_has_more: bool = False
+    counterparty_handle: str | None = None
+    counterparty_account_class: AccountClass | None = None
     last_activity_at: UtcInstant
     own_last_read_sequence: int = Field(ge=0)
     unread_count: int = Field(ge=0)
+    group_unread_count: int = Field(ge=0, default=0)
     current_offer: CurrentOfferSummary | None = None
 
 
@@ -1125,6 +1136,8 @@ class ConversationQuery(ContractModel):
     and represent independent OR selections.
     """
 
+    marketplace_mode: Literal["all", "buying", "selling"] = "all"
+    group_by: Literal["item", "person"] | None = None
     view: Literal["initiated", "origin_owner", "all"] = "all"
     origin_kind: OriginKind | None = None
     origin_id: Annotated[list[UUID], BeforeValidator(_selection_list)] = Field(

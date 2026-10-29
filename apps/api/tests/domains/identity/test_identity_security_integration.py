@@ -45,7 +45,7 @@ def test_temporary_lifecycle_fixture_uses_real_fresh_authorization(
             lambda: state.service.contacts.read_contacts(grant.identity.caller),
             lambda: state.service.contacts.update_profile(
                 grant.identity.caller,
-                ProfilePatch(display_name="Synthetic stale change"),
+                ProfilePatch(display_name="Synthetic_stale_change"),
             ),
         ):
             with pytest.raises(PublicError) as error:
@@ -107,7 +107,7 @@ def test_http_contact_source_survives_reset_without_login_or_lifetime_change(
             browser.patch(
                 "/me/profile",
                 headers=headers,
-                json={"display_name": "Synthetic retained name"},
+                json={"display_name": "Synthetic_retained_name"},
             ).status_code
             == 200
         )
@@ -167,7 +167,7 @@ def test_http_contact_source_survives_reset_without_login_or_lifetime_change(
             "phone": None,
             "upi_id": None,
         }
-        assert browser.get("/me").json()["display_name"] == "Synthetic retained name"
+        assert browser.get("/me").json()["display_name"] == "Synthetic_retained_name"
         # The old session's CSRF token cannot authorize writes in the new session.
         assert browser.delete("/me/contacts/email", headers=headers).status_code == 403
         headers = protected_headers(browser)
@@ -236,7 +236,7 @@ def test_profile_contact_cleanup_batch_excludes_active_and_is_repeat_safe(
             caller, "email", "synthetic-batch@example.com"
         )
         state.service.contacts.update_profile(
-            caller, ProfilePatch(display_name="Synthetic batch name")
+            caller, ProfilePatch(display_name="Synthetic_" + caller.user_id.hex[:12])
         )
     for caller in retired:
         state.service.revoke_account(caller.user_id)
@@ -252,7 +252,7 @@ def test_profile_contact_cleanup_batch_excludes_active_and_is_repeat_safe(
         assert c.execute(
             "SELECT display_name,profile_removed_at FROM identity.users WHERE id=%s",
             (active.user_id,),
-        ).fetchone() == ("Synthetic batch name", None)
+        ).fetchone() == ("Synthetic_" + active.user_id.hex[:12], None)
         assert c.execute("SELECT count(*) FROM identity.users").fetchone()[0] == 3
         assert (
             c.execute("SELECT count(*) FROM identity.temporary_enrollments").fetchone()[
@@ -267,7 +267,7 @@ def test_terminal_cleanup_race_cannot_restore_profile_or_contacts(identity_runti
     caller = activate(state).identity.caller
     state.service.contacts.set_contact(caller, "phone", "+919876543210")
     state.service.contacts.update_profile(
-        caller, ProfilePatch(display_name="Synthetic retired name")
+        caller, ProfilePatch(display_name="Synthetic_retired_name")
     )
     state.service.revoke_account(caller.user_id)
     state.clock[0] += timedelta(days=30)
@@ -282,7 +282,7 @@ def test_terminal_cleanup_race_cannot_restore_profile_or_contacts(identity_runti
                 caller, "phone", "+919876543210"
             ),
             lambda: state.service.contacts.update_profile(
-                caller, ProfilePatch(display_name="Synthetic forbidden restoration")
+                caller, ProfilePatch(display_name="Forbidden_restoration")
             ),
         ):
             with pytest.raises(PublicError) as error:

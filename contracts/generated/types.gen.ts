@@ -287,10 +287,26 @@ export type ConversationSummary = {
      */
     conversation_id: string;
     /**
+     * Counterparty Account Class
+     */
+    counterparty_account_class?: 'regular' | 'temporary' | null;
+    /**
+     * Counterparty Handle
+     */
+    counterparty_handle?: string | null;
+    /**
      * Counterparty User Id
      */
     counterparty_user_id: string;
     current_offer?: CurrentOfferSummary | null;
+    /**
+     * Group Has More
+     */
+    group_has_more?: boolean;
+    /**
+     * Group Unread Count
+     */
+    group_unread_count?: number;
     /**
      * Initiator User Id
      */
@@ -311,6 +327,18 @@ export type ConversationSummary = {
      * Own Last Read Sequence
      */
     own_last_read_sequence: number;
+    /**
+     * Unread Count
+     */
+    unread_count: number;
+};
+
+/**
+ * ConversationUnreadCount
+ *
+ * Account-scoped count of unread peer messages, excluding controls and offers.
+ */
+export type ConversationUnreadCount = {
     /**
      * Unread Count
      */
@@ -1806,6 +1834,10 @@ export type SessionView = {
      */
     display_name?: string | null;
     /**
+     * Handle Ready
+     */
+    handle_ready?: boolean;
+    /**
      * User Id
      */
     user_id: string;
@@ -2648,6 +2680,14 @@ export type ConversationsListMineData = {
     path?: never;
     query?: {
         /**
+         * Marketplace Mode
+         */
+        marketplace_mode?: 'all' | 'buying' | 'selling';
+        /**
+         * Group By
+         */
+        group_by?: 'item' | 'person' | null;
+        /**
          * View
          */
         view?: 'initiated' | 'origin_owner' | 'all';
@@ -2740,6 +2780,63 @@ export type ConversationsListMineResponses = {
 };
 
 export type ConversationsListMineResponse = ConversationsListMineResponses[keyof ConversationsListMineResponses];
+
+export type ConversationsReadUnreadCountData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/conversations/unread-count';
+};
+
+export type ConversationsReadUnreadCountErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorEnvelope;
+    /**
+     * Unauthorized
+     */
+    401: ErrorEnvelope;
+    /**
+     * Forbidden
+     */
+    403: ErrorEnvelope;
+    /**
+     * Not Found
+     */
+    404: ErrorEnvelope;
+    /**
+     * Conflict
+     */
+    409: ErrorEnvelope;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorEnvelope;
+    /**
+     * Too Many Requests
+     */
+    429: ErrorEnvelope;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorEnvelope;
+    /**
+     * Service Unavailable
+     */
+    503: ErrorEnvelope;
+};
+
+export type ConversationsReadUnreadCountError = ConversationsReadUnreadCountErrors[keyof ConversationsReadUnreadCountErrors];
+
+export type ConversationsReadUnreadCountResponses = {
+    /**
+     * Successful Response
+     */
+    200: ConversationUnreadCount;
+};
+
+export type ConversationsReadUnreadCountResponse = ConversationsReadUnreadCountResponses[keyof ConversationsReadUnreadCountResponses];
 
 export type ConversationsReadSummaryData = {
     body?: never;

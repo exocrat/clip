@@ -8,6 +8,9 @@ export default mergeConfig(viteConfig({ command: 'serve', mode: 'test' }), {
   test: {
     include: ['tests/**/*.test.ts', 'tests/**/*.test.tsx'],
     environment: 'node',
+    // Bound concurrent jsdom/crypto processes on local and CI machines. This
+    // preserves the assertions and timeouts while avoiding worker starvation.
+    maxWorkers: 4,
     environmentOptions: { jsdom: { url: 'http://localhost:5173' } },
     passWithNoTests: false,
   },

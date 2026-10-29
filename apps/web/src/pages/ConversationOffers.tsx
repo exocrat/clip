@@ -4,6 +4,7 @@ import { ConversationApi } from '../features/conversations';
 import { ListingsApiError, submitListingOffer, withdrawListingOffer } from '../features/listings';
 import { sessionFetch } from '../shared/http/sessionFetch';
 import { Button } from '../shared/ui';
+import './ConversationOffers.css';
 
 const api = new ConversationApi(sessionFetch);
 type Pending = { kind: 'submit'; body: OfferRevisionRequest } | { kind: 'withdraw'; body: OfferWithdrawalRequest };
@@ -82,15 +83,17 @@ export function ConversationOffers({ conversationId }: { conversationId: string 
   }
 
   if (summary?.origin_kind !== 'sale_listing') return message ? <p role="status">{message}</p> : null;
-  return <section aria-label="Sale offer">
+  return <section aria-label="Sale offer" className="conversation-offers">
     <h3>Offer</h3>
     {offer ? <p>₹{(offer.amount_paise / 100).toLocaleString('en-IN')} · {offer.status === 'submitted' ? 'Submitted' : 'Withdrawn'}</p> : <p>No offer yet.</p>}
     {summary.caller_role === 'initiator' && loaded ? <>
-      <label>Offer amount (₹)<input inputMode="numeric" value={amount} disabled={busy || pending !== null} onChange={(event) => setAmount(event.target.value)} /></label>
-      <Button disabled={busy} onClick={() => void write()}>{busy ? 'Updating…' : pending ? 'Retry offer change' : offer ? 'Update offer' : 'Submit offer'}</Button>
-      {offer?.status === 'submitted' && !pending ? <Button disabled={busy} variant="secondary" onClick={() => void write(true)}>Withdraw offer</Button> : null}
+      <label className="conversation-offers__amount">Offer amount (₹)<input inputMode="numeric" value={amount} disabled={busy || pending !== null} onChange={(event) => setAmount(event.target.value)} /></label>
+      <div className="conversation-offers__actions">
+        <Button disabled={busy} onClick={() => void write()}>{busy ? 'Updating…' : pending ? 'Retry offer change' : offer ? 'Update offer' : 'Submit offer'}</Button>
+        {offer?.status === 'submitted' && !pending ? <Button variant="secondary" disabled={busy} onClick={() => void write(true)}>Withdraw offer</Button> : null}
+      </div>
     </> : null}
-    <Button disabled={busy || pending !== null} variant="secondary" onClick={() => void refresh().catch(() => setMessage('Couldn’t refresh the offer. Try again.'))}>Refresh offer</Button>
+    <div className="conversation-offers__actions"><Button disabled={busy || pending !== null} variant="secondary" onClick={() => void refresh().catch(() => setMessage('Couldn’t refresh the offer. Try again.'))}>Refresh offer</Button></div>
     {message ? <p role="status">{message}</p> : null}
   </section>;
 }

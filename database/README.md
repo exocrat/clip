@@ -1,8 +1,8 @@
 # Coordinated database migrations
 
 **Current planning branch:** 21 previously published migrations, two prior
-forward corrections and the NEXT-03 catalogue/search/amount migrations: 27 migrations,
-head `20261028181500`, 40 domain tables, 36 functions and 46 triggers. All 22
+forward corrections and the NEXT-03 catalogue/search/amount migrations: 28 migrations,
+head `20261029043000`, 40 domain tables, 36 functions and 46 triggers. All 22
 previously published SQL files are unchanged. Older isolated
 Identity/Listings sections below retain selected historical context; old PR10
 deferral/counts do not describe this combined checkout. See the [current work-log
@@ -78,6 +78,7 @@ was changed. [Tool rationale](../docs/decisions/database-migration-tool.md).
 | `20261028100200_wanted_discovery_text_search.sql` | Add a partial GIN index for English-normalized title/description keyword search over open, visible Wanted Requests. |
 | `20261028120000_sale_original_price_and_marketplace_amount_cap.sql` | Add optional seller-stated Original price and enforce the ₹1 crore cap on listing prices and Wanted budgets. |
 | `20261028181500_private_buyer_selection.sql` | Decouple private seller buyer-tracking from availability, including tracking on unavailable non-retired records. |
+| `20261029043000_unique_handles_and_participant_projection.sql` | Stage required case-insensitive unique Handle claims without rewriting legacy names; expose the safe Identity participant view. |
 
 Four superseded branch-only SQL files are preserved byte-for-byte in
 [`archived/cn-01-pre-main`](archived/cn-01-pre-main/README.md), outside the executable
@@ -91,7 +92,7 @@ The optional-pickup forward migration is under Listings writer scope; affected
 consumer/schema review and exact shared-database apply remain pending. Local
 isolated checks do not authorize shared/Compose/cloud migration.
 
-Expected planning-branch migration version: **20261028181500**. One integrator allocates
+Expected planning-branch migration version: **20261029043000**. One integrator allocates
 later timestamp identifiers; no parallel heads or uncoordinated edits to initial
 DDL. Published/applied migrations are corrected forward, not rewritten.
 
@@ -176,7 +177,7 @@ password and are visible to administrators of the local Docker engine.
 | `bash database/local-db.sh start` | Validate local context/configuration/resource ownership, create/start only PostgreSQL, then wait for authenticated TCP `SELECT 1`. Exit 0 means connectivity, not migrations. |
 | `bash database/local-db.sh wait` | Up to 30 authenticated connection attempts with a 2-second connection timeout and 2-second pauses; nonzero on timeout/absent container. Final sanitized connection diagnostic is retained. |
 | `bash database/local-db.sh migrate` | Wait for connectivity, then run pinned dbmate 2.36.0 `migrate` with strict ordering and no schema dump. Applies pending migrations only to `clip_local`. Nonzero aborts; inspect sanitized output before recovery. |
-| `bash database/local-db.sh status` | Wait for connectivity and show dbmate migration status. A successful listing can still contain pending migrations; compare to expected branch head `20261028181500`, not merely process exit status. |
+| `bash database/local-db.sh status` | Wait for connectivity and show dbmate migration status. A successful listing can still contain pending migrations; compare to expected branch head `20261029043000`, not merely process exit status. |
 | `bash database/local-db.sh stop` | Stop only the validated service container, retaining its container and named data volume. An absent container is a successful no-op. |
 | `bash database/local-db.sh reset --confirm-delete-local-data` | **Permanently delete all local database data.** Warn, validate labels/clone/image/port/mount, stop/remove only the service container, then remove only `clip-local_clip_local_postgres_data`, without force. Leaves the database stopped. Explicitly review/approve this destructive invocation before using it; then run `start` and `migrate` to recreate. |
 | `bash database/local-db.sh --help` | Show fixed usage without password/Docker setup. |
@@ -317,3 +318,5 @@ defines acceptance; the [command index](../docs/environment/commands.md) links
 common commands and owner guides. The [work log](../docs/status/work-log.md) has
 current status; detailed prior platform/run receipts are recoverable through the
 [evaluation history guide](../docs/evaluation/README.md).
+
+The `20261029043000_unique_handles_and_participant_projection.sql` migration adds staged Handle claims and an Identity-owned `participant_profiles` view. Existing names and account IDs are preserved; valid unambiguous names are claimed, while invalid/colliding names require setup. The view exposes only user ID, claimed Handle and active account class. An integrated Conversations runtime needs `USAGE ON SCHEMA identity` and `SELECT ON identity.participant_profiles`; it needs no direct access to Identity contacts or provider tables. Apply/grant changes on shared/cloud targets remain separately approved. The pinned Identity17 migration review package is unchanged and is not the complete integrated marketplace release migration set.

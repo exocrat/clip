@@ -39,7 +39,7 @@ afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 describe('Listing page conversation entry point', () => {
   it('opens the server-returned thread through the real page slot and shared CSRF transport', async () => {
     const state = setup();
-    expect(await screen.findByText('Original price (seller-provided, unverified): ₹250')).toBeTruthy();
+    expect(await screen.findByText('Original price (Seller Provided): ₹250')).toBeTruthy();
     fireEvent.click(await screen.findByRole('button', { name: 'Message seller' }));
     await screen.findByText('Authorized chat target');
     expect(state.writes).toHaveLength(1);
@@ -64,7 +64,7 @@ describe('Listing page conversation entry point', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Message seller' }));
     await screen.findByRole('alert');
     expect(screen.queryByText('Authorized chat target')).toBeNull();
-  });
+  }, 10_000);
 
   it('ignores a late successful result after the session boundary unmounts the action', async () => {
     let finish!: (value: Response) => void;

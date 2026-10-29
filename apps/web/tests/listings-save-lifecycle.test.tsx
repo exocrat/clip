@@ -46,7 +46,7 @@ describe('Listings draft preview', () => {
     expect(screen.getAllByText('Books').length).toBeGreaterThan(1);
     expect(screen.getByText('Condition: Good')).toBeTruthy();
     expect(screen.getByText('₹125')).toBeTruthy();
-    expect(screen.getByText('Original price (seller-provided, unverified): ₹200')).toBeTruthy();
+    expect(screen.getByText('Original price (Seller Provided): ₹200')).toBeTruthy();
     expect(screen.getByText('Negotiable')).toBeTruthy();
     expect(screen.getByAltText('Photo of Synthetic item').getAttribute('src')).toBe('blob:synthetic-photo');
     expect(fetcher.mock.calls.filter(([path]) => path !== '/api/catalogue')).toHaveLength(0);

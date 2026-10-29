@@ -54,7 +54,7 @@ describe('Private marketplace state across Identity transitions', () => {
     state.view();
     if (mode === 'wanted') fireEvent.click(await screen.findByRole('button', { name: 'Wanted Requests' }));
     await screen.findByText('Synthetic private A');
-    if (mode === 'sales') expect(screen.getByText('Original price (seller-provided, unverified): ₹125')).toBeTruthy();
+    if (mode === 'sales') expect(screen.getByText('Original price (Seller Provided): ₹125')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'End local session' }));
     expect(screen.queryByText('Synthetic private A')).toBeNull();
     expect(screen.queryByRole('button', { name: 'Create wanted request' })).toBeNull();

@@ -41,18 +41,27 @@ function SaleCardView({
   return (
     <article className="discovery-card">
       {image}
-      <p className="discovery-category">{categoryLabel || 'Choose a category'}</p>
+      <div className="discovery-card__body">
+      <div className="discovery-card__badges">
+        <span className="discovery-category">{categoryLabel || 'Choose a category'}</span>
+        <span className="discovery-negotiability">{negotiable ? 'Negotiable' : 'Fixed price'}</span>
+      </div>
       <h2>{titleContent}</h2>
       <p className="discovery-price">
         {askingPricePaise === null ? 'Add a price' : askingPricePaise === 0 ? 'Free' : discoveryPrice(askingPricePaise)}
       </p>
-      {originalPricePaise !== null && <p className="discovery-card-meta">Original price (seller-provided, unverified): {discoveryPrice(originalPricePaise)}</p>}
-      <p className="discovery-negotiability">{negotiable ? 'Negotiable' : 'Fixed price'}</p>
+      <p
+        className="discovery-card-meta discovery-card__original-price"
+        aria-hidden={originalPricePaise === null ? true : undefined}
+      >
+        {originalPricePaise === null ? null : `Original price (Seller Provided): ${discoveryPrice(originalPricePaise)}`}
+      </p>
       <p className="discovery-description">{description || 'Add a description'}</p>
       <p className="discovery-card-meta">Condition: {conditionLabel || 'Choose a condition'}</p>
       {pickupArea && <p className="discovery-card-meta">Pickup: {pickupArea}</p>}
       {sensitivePurchase && <p className="discovery-sensitive">Sensitive purchase</p>}
       {availabilityLabel && <p className="discovery-card-meta">{availabilityLabel}</p>}
+      </div>
       {actions ? <div className="discovery-card__actions">{actions}</div> : null}
     </article>
   );

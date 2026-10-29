@@ -23,16 +23,19 @@
 .listings-photo figcaption { margin-block-start: var(--space-2); }
 .listings-description { white-space: pre-wrap; }
 .listings-status { color: var(--color-muted); }
-.listings-card dl { display: grid; grid-template-columns: minmax(8rem, 1fr) minmax(0, 2fr); gap: var(--space-3); }
+.listings-card dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 var(--space-4); margin-block: var(--space-5); border-top: 1px solid var(--color-border); }
 .listings-card dt { font-weight: 650; }
-.listings-card dd { margin: 0; }
+.listings-card dd { margin: 0; color: var(--color-muted); }
 .listings-id { font-size: var(--font-size-small); }
 .listings-list { display: grid; gap: var(--space-4); padding: 0; list-style: none; }
 .listings-filter { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); margin-block: var(--space-4); }
 .listings-filter select { min-width: min(100%, 15rem); min-height: 2.75rem; padding: var(--space-2) var(--space-3); color: var(--color-text); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-control); }
 .listings-list-card, .listings-empty { gap: var(--space-4); padding: var(--space-4); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-control); }
+.listings-owner-actions, .listings-owner-detail-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); margin-top: var(--space-4); }
+.listings-owner-detail-actions[role="alert"] { display: grid; justify-items: start; color: #9a3412; }
 .listings-list-card { display: grid; grid-template-columns: 8rem minmax(0, 1fr) auto; align-items: center; }
 .listings-list-card > div { min-width: 0; }
+.listings-card dl > div { display: grid; grid-template-columns: minmax(7rem, .8fr) minmax(0, 1.2fr); gap: var(--space-3); align-items: baseline; padding-block: var(--space-3); border-bottom: 1px solid var(--color-border); }
 .listings-empty { display: flex; justify-content: space-between; align-items: center; }
 .listings-list-card h2 { margin-block: var(--space-2); font-size: 1.15rem; }
 .listings-list-card p { margin-block: var(--space-2); }
@@ -72,7 +75,7 @@
 }
 @media (max-width: 36rem) {
   .listings-fields, .listings-card dl { grid-template-columns: minmax(0, 1fr); }
-  .listings-card dd { margin-block-end: var(--space-2); }
+  .listings-card dl > div { grid-template-columns: minmax(7rem, .8fr) minmax(0, 1.2fr); }
   .listings-form fieldset, .listings-card { padding: var(--space-3); }
   .listings-list-card { grid-template-columns: minmax(0, 1fr); align-items: flex-start; }
   .listings-list-photo { width: min(100%, 12rem); }
@@ -80,3 +83,8 @@
   .listings-gallery { grid-template-columns: minmax(0, 1fr); }
   .listings-gallery__thumbnails { grid-template-columns: repeat(4, minmax(0, 1fr)); max-height: 12rem; }
 }
+
+/* Owner collections use the same available grid width as public discovery. */
+.listings-feature--collection { max-width: var(--content-width); }
+.listings-feature--collection .discovery-grid.listings-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 48rem) { .listings-feature--collection .discovery-grid.listings-list { grid-template-columns: minmax(0, 1fr); } }

@@ -117,6 +117,7 @@ def session_view(identity: SessionIdentity) -> SessionView:
         account_class=identity.caller.account_class,
         valid_until=identity.caller.valid_until,
         display_name=identity.display_name,
+        handle_ready=identity.handle_ready,
     )
 
 

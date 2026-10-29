@@ -27,7 +27,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | NEXT-00 | Suraj — requested planning coordinator | done | Planning output verified; NEXT-01 Step 1 authorized. | performed; planning only | verified by Suraj | `task/integrated-marketplace-rollout`, based on main `5e8d264`; [remaining-work plan](../tasks/remaining-project-plan.md), linked from project task index | No blocker for the accepted planning output; implementation and measured-run gates remain separate. | 2026-10-27 18:42:09 UTC |
 | NEXT-01 | Suraj — requested planning coordinator; C retains EXP-01 ownership | done | Design and task-wide review verified; NEXT-02 is next. | Steps 1–9 performed | Steps 1–9 verified | Planning baseline `c869f33`; [design and approved gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md#next-01-step-8--proposed-changes-to-measurement-gates); [NEXT-07 references](../tasks/remaining-project-plan.md#experiment-protocol-reference) | No blocker for the design handoff. Real implementations, data, tools, cost anchors, project AWS identity/spend and run approvals remain NEXT-07 prerequisites. | 2026-10-28 06:24:24 UTC |
 | NEXT-02 | Suraj — planning coordinator | done | Evaluation and documentation cleanup completed; test/fixture and app/infrastructure audits found no safe deletions. | Cleanup review and checks complete; its changes are included in the current commit. NEXT-02 itself changed no executable test or application code. | User accepted the cleanup and directed committing the combined changes on 2026-10-28. | `task/integrated-marketplace-rollout`; [NEXT-02 cleanup criteria](../tasks/remaining-project-plan.md); [command index](../environment/commands.md) | No cleanup blocker; documentation references and `git diff --check` passed. No tests/app checks, AWS actions, or paid runs for NEXT-02. | 2026-10-28 09:26:47 UTC |
-| NEXT-03 | Suraj — planning coordinator | in progress | The authorized code and plan commit is recorded; next resume at human verification of the Conversations demo before starting the remaining correction batch. | Real-browser encryption/contact/offer/selection/reopen/account-switch/reload checks passed. Final `make check` passed: Python1934/154 skipped, data94, web475/3 skipped, Conversations167; store/migration workflow22/3 skipped. | Conversations functional demo verification remains pending. Handle migration, participant naming, grouped inbox redesign and other visual corrections remain in the later batch. | `task/integrated-marketplace-rollout`; [feedback plan](../tasks/next-03-visual-feedback-plan.md), [focused demo steps](../tasks/next-03-step-10-visual-checklist.md#current-checkpoint-conversations-functional-repair); live PID2346525 | Handle migration, later UI batch, peer/owner review and merge/cloud gates remain. No shared/cloud apply. Selection trigger migration is forward-only authoring with disposable rollback/reapply checks; pinned Identity17 review package unchanged. | 2026-10-28 19:15:20 UTC |
+| NEXT-03 | Suraj — planning coordinator | in progress | Step 0.5 layout fixes are implemented and locally checked; next reconcile this branch with current `origin/main`, run post-integration gates, perform the requested read-only NEXT-04 audit, then prepare the PR package. | Prior full local aggregate, supplemental migration/privacy checks, 24-group real-app sweep, responsive Chromium review and clean reseed remain recorded; Step 0.5 targeted tests: 12 passed; full frontend check: 496 passed/3 skipped, 2 files skipped; lint, both TypeScript projects and production build passed. | Initial visual inspection performed; Step 0.5 fixes await renewed desktop/phone visual review. | `task/integrated-marketplace-rollout` at `1fdca96` plus working changes; [walkthrough](../tasks/next-03-step-10-visual-checklist.md), [implementation/check report](../tasks/next-03-visual-feedback-implementation-report.md) | Current `origin/main` not yet fetched; Identity 17-migration live package still needs separate owner review; no cloud apply/deploy or hosted acceptance. | 2026-10-29 10:56:18 UTC |
 | BOOT-00 | B / Suraj (initial contributor) | done | Local documentation seed verified; publication pushed and verified | performed | verified | Current `origin/main` verified at `cfbf9352c03302990e6ffda09521f0a5450572d7`; includes seed `7fb9bfed79b45614a17de1bf2f9c50dbb3981b3f` and publication record | None | 2026-10-15 07:18 UTC |
 | PD-00 | Kickoff owner — Suraj (B) | done | Steps 1–6 complete; task-wide closeout reviewed | performed | verified | `task/pre-domain-foundation` at base `cfbf9352c03302990e6ffda09521f0a5450572d7`; work-log task table, initial inventory, Document 4 comparison, and `git diff --check` | None | 2026-10-16 07:02 UTC |
 | PD-01 | Kickoff owner — Suraj (B) | done | Steps 1–8 and task-wide acceptance review complete; published handoff confirmed | performed | verified | `docs/architecture/foundation-traceability.md`; handoff `d29c02b` is in remote `main` at `4754e97fdaf4284e84062a926eb1864fab745036`, confirmed by `git ls-remote` | None | 2026-10-17 06:26:36 UTC |
@@ -593,6 +593,165 @@ was changed. NEXT-04 retains cloud/configuration/promotion verification and exac
 action gates. No application, infrastructure or provider files changed; no tests
 needed for this documentation update. `git diff --check` passed.
 
+**2026-10-28 19:24:42 UTC — NEXT-03 feedback batch released.** Suraj confirms the
+committed Conversations functional demo was visually completed and authorizes the
+remaining in-scope correction plan as one uninterrupted batch. Exclusions are
+Buying/Selling conversation modes, unread counts and first-unread positioning,
+unique Handle collection/uniqueness/database migration, cloud work, and unselected
+optional OPT-04/OPT-05. The visual feedback plan now has a per-task status ledger;
+each task must be checked against it and its status updated before proceeding.
+This confirmation supersedes the older “demo verification pending” checkpoint.
+
+**2026-10-28 19:28:33 UTC — A2 shared sale-card consistency.** My Listings now
+uses the Search public `SaleListingCard` through the ScaffoldPages composition
+callback, retaining owner Edit and availability actions. Wanted draft matches now
+render the same shared card as Discover, Saved and the listing preview. Web
+typecheck passed; targeted tests passed (14 across `identity-marketplace-state`
+and `discovery-controls`). Full-card navigation is tracked separately in A4.
+
+**2026-10-28 19:29:42 UTC — A3 Wanted card hierarchy.** Wanted cards now place
+their budget (including “Budget not stated”) after the title, use the neutral
+surface/category treatment, and clamp long descriptions on browse/owner cards.
+Wanted detail keeps its full description. `git diff --check` passed; compiled
+browser presentation and viewport review remain part of batch closeout.
+
+**2026-10-28 19:31:22 UTC — A4 card and group navigation.** Sale and Wanted
+title links now provide a full-card pointer target via an overlay while their
+separate action regions remain interactive. Conversation origin groups similarly
+target origin details; conversation row buttons still open individual threads.
+Added a regression check for group-detail versus thread navigation. Focused tests
+passed (12 across Conversations inbox, sale-card and Wanted controls);
+`git diff --check` passed. Actual pointer/keyboard behavior remains in final
+browser review.
+
+**2026-10-28 19:33:26 UTC — A5 bounded forms and action spacing.** Wanted
+creation now sits in a bounded card, first-device key setup has centered margins
+and a clear consent/action row, the Offer panel has a sized amount field and
+spaced/wrapping controls, and contact choices/actions now have readable rows and
+gaps. TypeScript checks passed; targeted KeySetup/Offer/Contact UI tests passed
+(12 across three files). `git diff --check` passed; mobile/desktop viewport review
+remains for batch closeout.
+
+**2026-10-28 19:26:33 UTC — A1 multi-select layout.** The nested label rules in
+sale and Wanted discovery were overriding the shared checkbox-row flex layout.
+The feature selectors now exclude dropdown option labels, preserve a horizontal
+checkbox/text row, use a 44px minimum target, and constrain the options panel to
+the viewport height/width. `git diff --check` passed; final browser viewport
+inspection is included in batch closeout.
+
+**2026-10-28 19:35:36 UTC — A6 shell navigation.** The shell now shows only
+product navigation, with Sign in visible for anonymous users and sale creation
+restricted to eligible regular accounts. Account/sign-out controls sit in the
+top-right header row. Regression tests cover anonymous, regular and temporary
+sessions (3 passed); both application and test TypeScript checks passed.
+`git diff --check` passed; responsive browser review remains at batch closeout.
+
+**2026-10-28 19:37:00 UTC — A7 sale discovery creation action.** The shared
+route composition now supplies a New Listing action to sale discovery only for
+an eligible regular account; the public Search component renders it above the
+filters, parallel to New Wanted Request. Search-controls regression tests passed
+(5), and application/test typecheck passed. An initial direct Biome invocation
+from the repository root hit the repo's nested-config guard; use the repository
+lint script (which runs in `apps/web`) for final lint verification. Browser
+visibility and responsive review remain for batch closeout.
+
+**2026-10-28 19:37:41 UTC — A9 modest Conversations presentation.** The thread is
+now centered within a readable width, messages sit in a distinct scroll panel,
+message bubbles and timestamps have clearer separation, and the composer is a
+separate responsive panel. Key setup, contact and offer layout were already
+corrected under A5. TypeScript checks passed; 12 existing KeySetup/Offer/Contact
+tests passed. This repository has no focused ConversationThread test file;
+mobile/desktop browser review remains for batch closeout.
+
+**2026-10-28 19:38:26 UTC — A10 system dark appearance.** Added a compact
+`prefers-color-scheme: dark` token override in `tokens.css` for text, surfaces,
+borders, primary/focus and disabled controls, including native form-control
+color-scheme. TypeScript checks and `git diff --check` passed. Actual page contrast
+and visual behavior remain in the final browser review.
+
+**2026-10-28 19:41:22 UTC — B2 browse actions.** Sale discovery now composes
+compact Save/Unsave and Message seller controls inside each shared sale card;
+anonymous visitors get sign-in links and temporary accounts cannot start seller
+conversations. Wanted cards now offer Contact requester using the Search public
+action and one page-scoped session read; the server remains authoritative and no
+author identity/contact value is exposed. Focused Search/Wanted tests passed
+(48), TypeScript checks passed, and `git diff --check` passed. Browser action and
+phone review remain at batch closeout.
+
+**2026-10-28 19:43:00 UTC — B3 sale detail owner controls.** Added an owner-only
+detail action component that checks the current eligible session against the
+private Listings management endpoint before showing Edit or Mark unavailable/
+Mark available. Availability changes use the current revision and a stable
+operation ID; successful changes refresh the public detail and owner projection,
+while conflicts require reloading current state. TypeScript checks passed and
+the listing-conversation composition tests passed (4); `git diff --check` passed.
+Browser owner/non-owner review remains for batch closeout.
+
+**2026-10-28 19:44:07 UTC — B4 Wanted detail owner controls.** Wanted detail
+now checks its request ID against the signed-in caller's private Wanted pages
+before exposing inline Edit and Mark unavailable/Reopen controls. The existing
+revision-guarded editor and availability operation are reused; successful writes
+refresh both public detail and private owner state. Anonymous/non-owner details
+show no owner controls. TypeScript checks passed; 53 focused Wanted and Identity
+tests passed; `git diff --check` passed. Browser ownership review remains pending.
+
+**2026-10-28 19:45:40 UTC — B5 Wanted draft matches before publish.** The
+Possible sale matches panel now sits inside the Wanted editor form before its
+Publish/Save action, so draft matches are visible before submission. It still
+uses the shared Search-owned sale card, stays attached to the unsaved title, and
+retains the existing non-blocking failure/retry behavior. Added a rendering-order
+regression test. TypeScript checks passed; 44 focused Wanted tests passed;
+`git diff --check` passed. Browser layout/error-state review remains pending.
+
+**2026-10-28 19:48:42 UTC — D3 simplify inbox controls.** Removed the visible
+participation/type selectors, origin/partner multi-selects and global offer
+status/range/sort controls. Recent activity remains the default; API and URL
+query compatibility remains, with a collapsed Sort & Filter disclosure that
+can clear legacy saved filters. Updated inbox rendering tests: 41 Conversations
+tests passed, TypeScript checks passed, and `git diff --check` passed. Browser
+phone/desktop inspection remains for batch closeout.
+
+**2026-10-28 19:51:04 UTC — D5 Enter-to-send.** An unmodified Enter now sends
+through the same pending/encrypted callback as the visible Send button; Shift+
+Enter keeps a newline. IME composition, repeated key events, unready encryption,
+blank drafts and concurrent sends are ignored. The lock prevents rapid duplicate
+submits, and a failed send retries with its original operation ID. Added seven
+interaction tests for these safeguards and stable retry. TypeScript checks and
+`git diff --check` passed. Phone keyboard/browser inspection remains pending.
+
+**2026-10-28 19:54:28 UTC — C4 peer account-class contract audit.** The reviewed
+`ConversationSummary` and its HTTP response contain the counterparty UUID only;
+Identity currently exposes no reviewed participant-profile/account-class
+projection. A browser-side guess or direct query against Identity-owned tables
+would cross the recorded domain boundary, so the temporary-account marker stays
+pending until that public projection is reviewed. No email or raw ID is used as
+a substitute.
+
+**2026-10-28 19:54:28 UTC — D1 recognizable conversation origins.** Conversation
+groups now resolve public listing/Wanted titles and prices, show a sale thumbnail
+when present, and keep origin-detail navigation while removing displayed listing,
+request, conversation and participant UUIDs. Sale detail no longer prints its
+listing UUID. The display is wired only through public Listings/Search exports at
+the ScaffoldPages composition boundary. TypeScript passed; 51 focused
+Conversations, Listings and Wanted tests passed; `git diff --check` passed.
+Participant Handle is excluded and the Temporary badge remains pending under C4.
+Browser context/card review remains for batch closeout.
+
+**2026-10-28 20:11:16 UTC — NEXT-03 full local verification.** Installed pinned
+uv 0.10.7 and the locked Python test environment under `/tmp`, leaving the clone's
+`.venv` untouched. `make check` passed: Python 1,934 passed/154 skipped; data 94
+passed; web 488 passed/3 skipped across 42 passing and two skipped files; 137
+files linted; application/test TypeScript and production build passed; boundary,
+8 generated-contract, and 2 contract-type checks passed; 35 database wrapper
+safety cases passed; PostgreSQL 18.6 clean/head/repeat, seven smokes, Identity
+upgrade/atomicity/rollback, protected-retirement rollback and full reapply passed;
+Conversations PostgreSQL 167 passed; Gitleaks 8.30.1 source snapshot passed.
+The first aggregate attempt had one 5-second Microsoft callback UI timeout; that
+test passed alone, and the full aggregate passed on a clean rerun. The build
+reports its existing large-chunk advisory. A fresh 21-action synthetic inspection
+run passed against real local SQL and Hybrid inference on 5175; the final seeded
+server remains live as the handoff. Human visual review remains pending.
+
 DEC-12's approximate PD-16 run cost is not an invoice or final NFR-08 result;
 CLOSE-00 still reconciles total project spend against the strict USD 200 limit.
 
@@ -668,3 +827,21 @@ current domain integration, DATA-READY, any NFR, or the ECS/Lambda experiment.
 Exact old check records remain in Git history; see the current task rows and
 [foundation traceability](../architecture/foundation-traceability.md) for the
 remaining obligations.
+
+**2026-10-29 04:25:25 UTC — NEXT-03 full visual-feedback batch resumed.** Suraj authorized all remaining feedback work in one run, explicitly including the previously queued higher-reasoning tasks. Added outside-click/Escape dropdown dismissal, compact shared sale-card geometry, bounded shell content, collapsible mobile navigation and discovery forms, Wanted matches above Description, Seller Provided labels, distinct inbox surfaces and thread spacing. Updated obsolete UI assertions. `npm run check` passed: lint, 488 tests passed/3 skipped, typecheck, production build (existing bundle-size advisory). No cloud actions. Full batch remains in progress; do not treat the old inspection URL/checklist as the final handoff for these changes.
+
+Intermediate verification: added `multi-choice-dismissal.test.tsx` covering outside dismissal, Escape/focus return and retained selection. `npm run check` passed with 489 tests passed and 3 skipped. Full `make check` is running with output at `/tmp/clip-full-visual-check.log`; no full result is claimed. The first attempt stopped at sandbox socket permission, then was rerun with local process/socket access. The batch and final visual handoff are incomplete.
+
+**2026-10-29 05:05:29 UTC — NEXT-03 full visual-feedback implementation.** C3/C4, D2/D4 and D6 now implemented with the new forward Handle migration, Identity public participant view, canonical/generated contract updates, onboarding and profile editor, safe Handle/Temporary participant labels, marketplace-intent modes, item/person group paging, global unread aggregate and bounded first-unread/history presentation. Identity17 review manifest is unchanged. Real PostgreSQL Conversations checks passed (168 tests); combined clean/head/repeat, seven smokes, Identity upgrade/rollback and full clean reapply passed. Frontend lint/tests/typecheck/build passed with 493 tests and 3 skipped. Corrected obsolete fixture/profile/schema assertions; a final full check is underway. Expanded seeded action sweep and final inspection handoff remain pending.
+
+**2026-10-29 05:35:44 UTC — NEXT-03 complete local feedback handoff, human inspection pending.** All feedback groups now include the formerly queued Handle/participant, marketplace modes/group pagination and unread tasks. Full `make check` passed: Python 1,936 passed/155 skipped, data 94 passed, frontend 493 passed/3 skipped plus lint/typecheck/build, contracts/boundaries/types, 35 wrapper-safety cases, complete disposable migration checks, 168 PostgreSQL Conversations tests and Gitleaks. Added final unread account-isolation test and reran frontend: 494 passed/3 skipped. Added a multi-page unread/read-watermark scenario and reran real PostgreSQL Conversations: 169 passed. Supplemental Handle migration checks preserve valid/invalid/missing/colliding names and IDs through down/reapply, enforce uniqueness and prove public-view access while denying private users/contacts. Restricted frontend workers to four after two existing tests timed out under unrestricted parallel load; assertions and timeouts are unchanged. Chromium passed phone/desktop/ultrawide layout, actual group continuation and Handle setup, real encrypted keyboard messaging, unread/divider and selective encrypted contacts. Clean replacement inspection app (PID 2833284) runs at `127.0.0.1:5176`; all 23 seeded action groups passed with 28 sale fixtures, 26 requests, 77 conversations, new-member onboarding and pagination peers. Browser-test keys/database were discarded. Updated plan, walkthrough, architecture/contracts and file-by-file report. Task-wide local review complete; human visual acceptance, independent review/merge and cloud release remain separate. No cloud or paid experiments occurred.
+
+**2026-10-29 07:00:44 UTC — NEXT-03 reopened after mobile/desktop visual inspection.** Suraj reported that shared browse cards remain too tall with stretched badges and misplaced actions; listing detail facts do not read as the requested table; conversation mode axes are visually ambiguous, group row density/separation is insufficient, and phone pagination stacks vertically. He also refined unread behavior (open with preceding message, clear marker after sending, date separators, compact per-message time, count contact-sharing entries), requested a mandatory missing-key-first Account flow, and asked that `inspection_buyer` own sample listing and Wanted records. Added A18/A19, C6, D9–D11 and S1 to the decision plan; the previous clean inspection handoff is no longer final. Current implementation owner is the integrator for this single shared batch, coordinating only through the recorded public feature boundaries; no cloud work. Update the plan and this checkpoint after each correction group, then rebuild/seed a fresh local inspection environment for Suraj.
+
+**2026-10-29 10:56:18 UTC — NEXT-03 Step 0.5 visual correction.** After reviewing the local inspection screenshots, Suraj asked for balanced desktop navigation, a reserved sale-card Original price row when the value is absent, and a single left-aligned conversation/thread/offer layout with spacing after Open listing. Updated AppShell navigation, shared sale-card markup/styles, and conversation page composition/styles; added regression checks. The targeted frontend suite passed 12 tests; the full frontend check passed lint, both TypeScript projects, production build and 496 tests (3 skipped across 2 files); `git diff --check` passed. The build retains the existing large-chunk advisory. Human review of these corrections remains pending. Suraj reordered the handoff so the NEXT-04 read-only deployment audit follows integration checks and precedes PR preparation; no cloud mutation is authorized.
+
+**2026-10-29 09:08:58 UTC — Additional visual corrections recorded.** Suraj requested four more adjustments after reviewing the refreshed sale card and inbox: center Save/Message/View in one row below the card content; collapse each Item/Person conversation group by default; show its total unread count while collapsed; and scroll the conversation to the bottom after a successful send. The group unread total must include every authorized conversation in that group, including continuation pages, rather than summing only the first 20 loaded rows. Added A20 and D12–D14 to the feedback plan. Existing tests and action sweep apply to the preceding UI only; implement and verify these additions before the final human inspection handoff.
+
+**2026-10-29 09:23:22 UTC — NEXT-03 inbox/card correction implementation.** D12 now collapses item/person groups by default while retaining their context/action headers. D13 exposes an authorized group-wide unread aggregate in the conversation summary; the query computes it before the 20-row cap, and the inbox displays it beside the group title even when collapsed. Its fresh PostgreSQL regression places 21 unread messages across the group and verifies the displayed 20 rows each carry the full count. D14 now scrolls to the transcript bottom after both a successful send and retry; the focused UI regression verifies a new entry reaches the bottom. `vitest` on the inbox and thread-interaction files passed (12 tests); the disposable PostgreSQL Conversations suite passed (169 tests). A20’s actions have been moved to a centered full-width row below card content with tighter phone controls; browser geometry verification and full aggregate remain next. Contract source and generated artifacts include the group aggregate; no cloud action occurred.
+
+**2026-10-29 09:54:02 UTC — NEXT-03 full local verification and visual handoff refreshed.** The full `make check` passed (Python 1,936 passed/155 skipped; data 94 passed; frontend 493 passed/3 skipped; all contracts, boundaries, types, lint/build, database safety, disposable migration checks, Conversations PostgreSQL 168 passed, and Gitleaks). After the final compact browse-card label, `npm run check` passed with 495 tests and three opt-in HTTP skips; the expanded Conversations PostgreSQL suite passed 169 tests. Supplemental Handle migration/rollback/reapply and public-view privilege checks passed. All 24 seeded local action groups passed against real sessions, PostgreSQL stores and Hybrid inference; final records include 29 photo-backed sale listings, 27 Wanted Requests and 77 conversations. Chromium measured Save/Message/View together in one centered row at 360px, 390px and 1440px; all tested pages had no horizontal overflow or console errors, inbox groups started collapsed with their headers visible, and phone pagination remained horizontal. The clean inspection environment is running at `http://127.0.0.1:5176/__inspection` (launcher PID `3122258`; synthetic photos under `/tmp/clip-marketplace-inspection-nocf1mhm/`). The plan, walkthrough and file-by-file report are updated. Human visual acceptance remains pending. No cloud action, paid run, or external provider call occurred.

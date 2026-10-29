@@ -45,3 +45,20 @@ h2,
 h3 {
   line-height: 1.2;
 }
+
+/* Shared bounded frame keeps reading and action widths usable on wide displays. */
+.app-shell > :not(header) { width: min(calc(100% - 2rem), var(--content-width)); margin-inline: auto; }
+main { min-width: 0; max-width: var(--content-width); margin-inline: auto; }
+a { overflow-wrap: anywhere; }
+a.ui-button { text-decoration: none; }
+
+.search-controls { min-width: 0; margin-bottom: var(--space-4); }
+.search-controls > summary { cursor: pointer; width: fit-content; max-width: 100%; padding: var(--space-3); margin-bottom: var(--space-2); border: 1px solid var(--color-border); border-radius: var(--radius-control); background: var(--color-surface); overflow-wrap: anywhere; }
+/* Navigation remains anchors, with the same readable target treatment as actions. */
+a:not(.app-shell__brand):not(.discovery-card h2 a):not(.wanted-card h3 a) { text-decoration: none; }
+main a:not(.ui-button):not(.discovery-card h2 a):not(.wanted-card h3 a) { display: inline-flex; align-items: center; gap: .4rem; min-height: 2.75rem; padding: .5rem .75rem; border: 1px solid var(--color-border); border-radius: var(--radius-control); background: var(--color-surface); color: var(--color-text); }
+@media (prefers-color-scheme: dark) {
+  [role="alert"], .discovery-error, .wanted-discovery__error, .listings-error { color: #fca5a5; }
+  .conversation-thread__key-state, .discovery-preview { background: #422006; color: #fde68a; }
+  .discovery-sensitive, .conversation-inbox__notice { color: #fcd34d; }
+}

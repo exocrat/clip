@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ConversationListingDoneDeal, type ListingAvailabilityPort } from '../src/features/conversations/ConversationListingDoneDeal';
 import { ConversationInbox, type ConversationInboxItem } from '../src/features/conversations/ConversationInbox';
@@ -83,10 +84,10 @@ describe('seller done-deal availability', () => {
     const item: ConversationInboxItem = { conversation_id: 'one', label: 'Test chat', role: 'seller',
       origin_kind: 'sale_listing', origin_id: listingId, unread_count: 0, last_activity_at: '2026-01-01T00:00:00Z' };
     const action = vi.fn((_originId: string) => <span>Seller action</span>);
-    render(<ConversationInbox conversations={[item, { ...item, conversation_id: 'two' },
+    render(<MemoryRouter><ConversationInbox conversations={[item, { ...item, conversation_id: 'two' },
       { ...item, conversation_id: 'buyer', origin_id: 'other', role: 'buyer' },
       { ...item, conversation_id: 'request', origin_kind: 'wanted_request', role: 'request author' }]}
-      onRefresh={vi.fn()} onOpen={vi.fn()} renderSellerListingAction={action} />);
+      onRefresh={vi.fn()} onOpen={vi.fn()} renderSellerListingAction={action} /></MemoryRouter>);
     expect(action.mock.calls.map(([value]) => value)).toContain(listingId);
     expect(screen.getAllByText('Seller action')).toHaveLength(1);
   });

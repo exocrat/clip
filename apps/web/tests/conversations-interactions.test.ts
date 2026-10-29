@@ -118,7 +118,7 @@ function runtime(userId: string, summary: () => Promise<unknown>): ConversationP
       kind: 'message', created_at: '2026-10-25T00:00:00Z', content_deleted: false, envelope: null }],
       scanned_through_sequence: 1, has_more: false })),
     listMine: vi.fn(async () => ({ items: [{ conversation_id: 'thread', initiator_user_id: userId,
-      counterparty_user_id: 'bob', caller_role: 'initiator', origin_kind: 'sale_listing', unread_count: 1 }], has_next: false })),
+      counterparty_user_id: 'bob', caller_role: 'initiator', origin_kind: 'sale_listing', unread_count: 1, group_unread_count: 1 }], has_next: false })),
   } as unknown as ConversationApi };
 }
 
@@ -286,7 +286,8 @@ describe('conversation account lifecycle', () => {
     const view = (value: ConversationPageRuntime) => createElement(MemoryRouter, {},
       createElement(ConversationPageRuntimeProvider, { runtime: value }, createElement(ConversationInboxPage)));
     await act(async () => root.render(view(alice)));
-    expect(host.querySelectorAll('.conversation-inbox__item')).toHaveLength(1);
+    expect(host.querySelectorAll('.conversation-inbox__group')).toHaveLength(1);
+    expect(host.textContent).toContain('1 unread');
     const carol = runtime('carol', async () => null);
     vi.mocked(carol.api.listMine).mockImplementation(() => new Promise(() => undefined));
     await act(async () => root.render(view(carol)));

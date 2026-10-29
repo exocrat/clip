@@ -228,7 +228,7 @@ class IdentityCleanup:
                     )
                     counts["profiles"] += int(
                         c.execute(
-                            "UPDATE identity.users SET display_name=NULL,profile_removed_at=COALESCE(profile_removed_at,%s),revision=revision+1 WHERE id=%s AND (display_name IS NOT NULL OR profile_removed_at IS NULL) RETURNING id",
+                            "UPDATE identity.users SET display_name=NULL,handle_ready=false,profile_removed_at=COALESCE(profile_removed_at,%s),revision=revision+1 WHERE id=%s AND (display_name IS NOT NULL OR profile_removed_at IS NULL) RETURNING id",
                             (now, user),
                         ).fetchone()
                         is not None

@@ -1,15 +1,14 @@
 import { useEffect, useRef, useState, type PropsWithChildren } from 'react';
-import { Link, useLocation } from 'react-router';
 import { Button } from '../../shared/ui';
 import { sessionFetch } from '../../shared/http/sessionFetch';
 import { ConversationApi } from './api';
 import { openIndexedDbConversationSession } from './relay';
 import { ConversationKeyStateLostError, KEY_REGISTRATION_WARNING, KeyRegistrationAcknowledgementRequiredError } from './crypto';
+import './ConversationKeySetup.css';
 
-/** First-device setup publishes real SDK keys before normal marketplace use.
- * Returning logins quietly resume existing keys. Lost keys are never replaced;
- * contact editing remains reachable while setup is pending. The shell supplies
- * logout, so an outage never traps an account in a private feature.
+/** Key readiness gates marketplace use after sign-in on this browser.
+ * Existing local keys resume quietly. If this browser has lost them, a new key
+ * can be published only after an explicit history-loss acknowledgement.
  */
 export function ConversationKeySetup({ userId, children }: PropsWithChildren<{ userId: string | null }>) {
   return userId ? <AccountKeySetup key={userId} userId={userId}>{children}</AccountKeySetup> : children;
@@ -19,14 +18,22 @@ function AccountKeySetup({ userId, children }: PropsWithChildren<{ userId: strin
   const [consent, setConsent] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const approved = useRef(false);
-  const location = useLocation();
+  const replaceMissingIdentity = useRef(false);
   useEffect(() => {
     let active = true;
     setState('checking');
     void openIndexedDbConversationSession(userId, null, new ConversationApi(sessionFetch),
-      approved.current ? { acknowledgeUnrecoverableHistoryRisk: true } : {}).then(async (session) => {
+      approved.current ? {
+        acknowledgeUnrecoverableHistoryRisk: true,
+        ...(replaceMissingIdentity.current ? { allowUnrecoverableKeyReplacement: true } : {}),
+      } : {}).then(async (session) => {
         await session.stop();
-        if (active) setState('ready');
+        if (active) {
+          approved.current = false;
+          replaceMissingIdentity.current = false;
+          setConsent(false);
+          setState('ready');
+        }
       }).catch((error: unknown) => {
         if (active) setState(error instanceof KeyRegistrationAcknowledgementRequiredError ? 'consent' :
           error instanceof ConversationKeyStateLostError ? 'lost' : 'error');
@@ -34,18 +41,20 @@ function AccountKeySetup({ userId, children }: PropsWithChildren<{ userId: strin
     return () => { active = false; };
   }, [userId, attempt]);
   if (state === 'ready') return children;
-  return <>
-    <section className="route-page" aria-label="Account encryption setup">
-      <h2>Set up private messaging</h2>
-      {state === 'checking' ? <p role="status">Checking this browser’s encryption setup…</p> : state === 'lost' ? <p role="alert">This browser is missing your account’s encryption keys. Use the browser where you set up messaging. CLIP cannot restore lost keys; they have not been replaced.</p> : state === 'error' ? <p role="alert">Couldn’t complete encryption setup. Your existing keys have been preserved. Try again in this browser.</p> : <>
-        <p>{KEY_REGISTRATION_WARNING}</p>
-        <label><input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} /> I understand that lost browser key data cannot be restored.</label>
-        <Button disabled={!consent} onClick={() => { approved.current = true; setAttempt((value) => value + 1); }}>Create encryption key</Button>
+  const lost = state === 'lost';
+  const createKey = () => {
+    approved.current = true;
+    replaceMissingIdentity.current = lost;
+    setAttempt((value) => value + 1);
+  };
+  return <section className="conversation-key-setup" aria-label="Account encryption setup">
+      <h2>{lost ? 'Create a new encryption key' : 'Set up private messaging'}</h2>
+      {state === 'checking' ? <p role="status">Checking this browser’s encryption setup…</p> : lost ? <p role="alert">This browser does not have your current encryption key. CLIP cannot restore it. Creating a new key lets you use the platform again, but old encrypted conversations and contact shares cannot be recovered. Other members may need to accept your new key.</p> : state === 'error' ? <p role="alert">Couldn’t complete encryption setup. Your existing keys have been preserved. Try again in this browser.</p> : <p>{KEY_REGISTRATION_WARNING}</p>}
+      {(state === 'consent' || lost) && <>
+        <label className="conversation-key-setup__consent"><input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} /> <span>I understand that lost browser key data cannot be restored.</span></label>
+        <Button className="conversation-key-setup__create" disabled={!consent} onClick={createKey}>{lost ? 'Create a new encryption key' : 'Create encryption key'}</Button>
       </>}
       {state === 'error' ? <Button onClick={() => setAttempt((value) => value + 1)}>Retry encryption setup</Button> : null}
-      <p>You only set this up once in this browser. It lets people message you without waiting for you to open a conversation.</p>
-      <Link className="ui-button ui-button--secondary" to="/account/contacts">Set up contact details (optional)</Link>
-    </section>
-    {location.pathname === '/account/contacts' ? children : null}
-  </>;
+      {state !== 'checking' && state !== 'error' && <p>Private messaging must be ready before you use the marketplace on this browser. Encryption keys stay on this device; CLIP cannot restore lost keys.</p>}
+    </section>;
 }

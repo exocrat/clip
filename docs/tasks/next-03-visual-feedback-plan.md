@@ -2,20 +2,22 @@
 
 **Source:** Suraj's desktop inspection feedback, including four screenshots and
 his follow-up about My Listings card consistency, search, identity, optional work
-and an unattended overnight correction batch, 2026-10-28 UTC.
-**State:** Suraj authorized Conversations functional repair first, a live demo for
-his inspection, then a commit after verification. The handle/database change and
-remaining visual batch follow afterward when released. Later screenshots added
-chat presentation, keyboard/unread behaviour and simpler buying/selling controls.
-This increment updates documentation only; do not resume application or cloud
-changes. Functional-demo human verification and the commit checkpoint remain pending.
+and an unattended overnight correction batch, 2026-10-28 UTC; mobile visual
+inspection feedback and the global width constraint, 2026-10-29 UTC.
+**State:** The Conversations repair and inspection environment are committed at
+`1fdca96`; Suraj confirms the functional visual demo is complete. The full remaining correction list is authorized by Suraj’s latest “Do everything until my visual inspection in one go” instruction, including Buying/Selling modes, group pagination, unread counts/positioning and unique Handle migration. Cloud deployment/configuration
+and optional OPT-04/OPT-05 remain deferred. This batch ends at an updated, tested
+local inspection handoff for Suraj, not a cloud operation.
 
-**Current checkpoint scope:** repair actual encryption/account-store and message
-history failures, first-device setup, contact sharing/navigation, offers, private
-buyer selection, selected-offer context and reopened availability freshness.
-Handle-dependent participant naming and the broader inbox grouping/presentation
-redesign remain in the subsequent batch. Preserve and consult all groups below
-before every step; do not claim those remaining UI items are complete.
+**Current execution scope:** Suraj's first visual inspection found that several
+implemented behaviors still fail the requested presentation and that account
+key setup needs a clearer missing-key entry flow. NEXT-03 is reopened for the
+post-inspection corrections below. The inspection server at
+http://127.0.0.1:5176/__inspection remains the intended final visual review
+surface, but must be rebuilt/reseeded after corrections. Cloud work and
+unselected optional work remain deferred. All content remains bounded on
+ultrawide screens; mobile is the primary layout target. Raw email and UUIDs are
+not participant display labels.
 
 ## Mandatory execution discipline
 
@@ -27,30 +29,114 @@ and update the checkpoint/coverage evidence. Every new correction must trace to
 this plan or explicit subsequent user direction. Preserve the grouped scope;
 there are no intermediate human confirmation stops during the authorized batch.
 The final stop is a rebuilt, checked, seeded environment ready for human visual
-inspection. The current stop for this increment is the Conversations demo for human
-verification, before committing or starting the remaining batch.
+inspection. Keep the per-task status ledger below current; after each task, update
+both this plan and the work-log checkpoint before moving to the next one.
+
+## Per-task status ledger
+
+Statuses reflect current implementation and evidence. A task marked done may
+still receive regression coverage when a related shared surface changes. Update
+each row when work begins and when it is complete.
+
+| ID | Feedback task | Current status | Scope note |
+|---|---|---|---|
+| A1 | Fix multi-select checkbox/label layout, scrolling and phone sizing | implemented and locally checked; human visual review pending | Sale/Wanted category controls now keep checkbox/text on one row; 44px row targets and viewport-bounded scrolling menus. Old conversation origin/partner pickers are addressed in D3. |
+| A2 | Reuse sale card in Discover, Saved, My Listings, preview and matches | implemented and locally checked; human visual review pending | The shared component is wired, but screenshots show My Listings width/visual density still needs to match Discover. A12 owns the compact responsive geometry. |
+| A3 | Align Wanted card/detail styling, price placement, compact/clamped description | implemented and locally checked; human visual review pending | Neutral treatment and budget hierarchy are implemented; recheck compactness and consistency with sale cards under A12. |
+| A4 | Make sale/Wanted cards navigate from their main area safely | implemented and locally checked; human visual review pending | Sale/Wanted title anchors cover their card body; action areas stay above the link. Conversation origin groups link across the box; row buttons still open threads. |
+| A5 | Bound wide forms and improve responsive spacing/buttons | implemented and locally checked; human visual review pending | Wanted/key/offer/contact forms received bounds and spacing, but A11 now applies the maximum-width rule globally and A15 covers button sizing/alignment. |
+| A6 | Clean navigation and place account controls well | implemented and locally checked; human visual review pending | Desktop route set and account placement remain; A16 adds a sticky collapsible mobile navigation. |
+| A7 | Add symmetric New Listing action in sale discovery | implemented and locally checked; human visual review pending | Sale discovery accepts the composition-supplied New Listing action; the route supplies it only for an eligible regular seller. |
+| A8 | Preserve Best Match only for nonblank text search | implemented and locally checked; human visual review pending | Existing logic and URL behavior are implemented; add no unrelated sort change. |
+| A9 | Modest conversation/key/contact/offer presentation pass | implemented and locally checked; human visual review pending | Key/contact/offer spacing exists, but Suraj reports that the thread and inbox still look poor; revisit the compact responsive hierarchy under D8 without expanding into NEXT-09. |
+| A10 | Consider small token-based dark mode | implemented and locally checked; human visual review pending | A compact `prefers-color-scheme: dark` override switches the shared color tokens and native control scheme; final browser review will check real screens and contrast. |
+| A11 | Bound page content and layouts on very wide screens | implemented and locally checked; human visual review pending | No page, form, card, reading column or action row should stretch indefinitely with viewport width. Use a shared maximum content width and responsive grids; preserve usable widths on phones. |
+| A12 | Compact horizontal listing and Wanted cards with responsive multi-column browse | implemented and locally checked; human visual review pending | Use a larger, useful image at the left and title/price/status/actions at the right on phones; use multiple cards per desktop row. Keep My Listings on the same card/grid geometry as Discover, Saved and preview. |
+| A13 | Close multi-choice dropdowns on outside click | implemented and locally checked; human visual review pending | Any pointer/touch outside the open dropdown closes it; Escape closes it too. Clicking an option still changes the selection, and closing does not clear selected values. |
+| A14 | Let people collapse search and filter controls | implemented and locally checked; human visual review pending | Expanded on first visit. After search/filtering, allow explicit hide/show while keeping a visible Search & filters label and readable active-query/filter summary. Do not erase or silently change the URL-backed search state. |
+| A15 | Make links and creation actions visually consistent | implemented and locally checked; human visual review pending | All navigational links use the agreed button-like styling while remaining links semantically; New Listing and New Wanted Request use matching compact sizing. Put actions side by side whenever the available width supports it. |
+| A16 | Replace the tall mobile navigation wrap with a sticky menu | implemented and locally checked; human visual review pending | On narrow screens, keep a compact sticky menu button available during scroll and reveal navigation on demand. Keep the full desktop navigation at wider sizes. |
+| A17 | Present listing details as compact labelled facts | correction required | After the description, lay out remaining facts in a visibly divided, table-like responsive presentation: multiple labelled columns where they fit and stacked rows on phones, preserving definition-list semantics. A19 records the post-inspection correction. |
+| B1 | Original price on all approved sale surfaces | implemented and locally checked; human visual review pending | Create/edit, browse and detail/My Listings are implemented and checked. |
+| B2 | Browse Save and Contact actions | implemented and locally checked; human visual review pending | Sale cards now compose compact Save/Unsave and Message seller actions; Wanted cards provide Contact requester for eligible regular sessions. Existing APIs remain authoritative and no email is exposed. |
+| B3 | Owner edit/availability actions on sale detail | implemented and locally checked; human visual review pending | Load owner-only management state for the signed-in account; show actions only after ownership is confirmed. |
+| B4 | Owner availability/edit actions on Wanted detail | implemented and locally checked; human visual review pending | Confirm ownership through the caller's private Wanted pages before showing Edit, Mark unavailable or Reopen; never trust the public detail ID. |
+| B5 | Show Possible campus matches before Wanted submission | implemented and locally checked; human visual review pending | Reuse sale-card presentation; suggestions now appear before Publish and preserve draft/error behavior. |
+| B6 | Move Possible campus matches above description with a hide/show control | implemented and locally checked; human visual review pending | B5 moved matches before Publish but did not meet the requested prominence. Show them above Description by default when available; keep a labelled match count/control visible when collapsed and preserve the draft. |
+| B7 | Simplify the buyer-facing Original price qualifier | implemented and locally checked; human visual review pending | On browse cards and listing details, show the concise label `Seller Provided`; remove the repeated “unverified” qualifier there. Do not change the separate proof-of-purchase meaning. |
+| C1 | First-device encryption setup and account-isolated key storage | done | Committed and real-browser checked; Suraj confirms the functional demo. |
+| C2 | Private buyer tracking separate from availability/done deal | done | Committed migration and local workflow checks; no cloud apply. |
+| C3 | Unique Handle capture, uniqueness and migration | implemented and locally checked; human visual review pending | Previously excluded from the earlier correction batch. This remains on the task list: capture required Handle during first setup; edit it later; enforce trimmed 3–30 ASCII letters/digits/underscore and case-insensitive uniqueness in API and database; safely transition legacy/colliding accounts without changing IDs; verify concurrent claims, migration/reapply/rollback on disposable PostgreSQL; expose Handle through a reviewed Identity participant projection for conversation and selected-buyer context. |
+| C4 | Temporary-account conversation marker | implemented and locally checked; human visual review pending | Suraj clarified the existing identity rule: a verified peer email outside the exact `iisc.ac.in` domain identifies a temporary account. Use authoritative Identity account class or a server-computed safe class based on that validator; expose only the Temporary badge, never the email. ConversationSummary now carries safe participant Handle/class from Identity’s public participant_profiles projection; private Identity tables are not read. |
+| C5 | Contact settings setup/return path and encrypted selective sharing | done | Committed and covered by functional checks; retain regression coverage. |
+| D1 | Recognizable conversation origin, contextual links and modest layout | implemented and locally checked; human visual review pending | Titles/prices/photos and origin links are wired, but screenshots show the groups lack distinct boxes, have excess vertical space and undersized sale photos. A12 and D8 require compact recognizable group cards. Show participant Handle after C3 and the Temporary badge after C4 projection; keep IDs internal. |
+| D2 | Buying/Selling and Item/Person conversation modes | implemented and locally checked; human visual review pending | Newly included in the full remaining batch. Implement All/Buying/Selling semantics and Item/Person grouping from the settled D4 decision; derive roles from trusted membership/origin context and retain server authorization. |
+| D3 | Remove visible origin/partner multi-selects; compact existing controls | implemented and locally checked; human visual review pending | Visible pickers and the empty disclosure are removed. A working Clear saved filters control remains only for legacy filter state; default recent-activity ordering is preserved. |
+| D4 | Group-preserving inbox pagination and advanced grouping redesign | implemented and locally checked; human visual review pending | Page origin/person groups as units; initially show five conversation rows per group with independent Show more/Hide controls. Keep message-history pagination separate. Define stable activity ordering, counts and page resets in reviewed contracts/tests. |
+| D5 | Enter sends; Shift+Enter newline with IME/readiness/retry safeguards | implemented and locally checked; human visual review pending | Enter sends through the existing encrypted send path; Shift+Enter, IME composition, repeat keys, unready state and concurrent sends are guarded. Failed sends retain their stable retry operation. |
+| D6 | Navigation unread count and unread message positioning | correction required | Keep the authorized account-scoped count and display-based acknowledgements. Open with the preceding text message when available, then the `X unread messages` divider; count contact-sharing entries, remove the opening divider after the current user sends, and use one centered date separator per day plus compact time-only message labels. Keep bounded history and do not force jumps while reading older messages. D11 records the refined behavior. |
+| D8 | Distinct, compact conversation group cards | implemented and locally checked; human visual review pending | Give each origin a bounded card surface with a clear title, larger useful sale image, price/budget, origin action and contained conversation rows; remove the large empty gaps. Show selected buyer Handle/current offer/thread action once C3 is available. Wanted groups need equally clear title/budget and visual separation without a fake photo. |
+| D7 | Offer and seller-selection presentation/actions | done | Core flow, seller context and availability separation are committed and browser checked. |
+| A18 | Correct post-inspection browse-card density and badges | implemented and locally checked; human visual review pending | Shared cards now keep the image/details side by side on phones, use content-sized chips, and place the centered Save/Message/View actions below the full card content. Phone/desktop Chromium measurements confirm one action row at 360px, 390px and 1440px without horizontal overflow. |
+| A19 | Make listing facts visibly tabular after description | implemented and locally checked; human visual review pending | Uses a labelled, divided fact layout with responsive columns/rows; the 390px browser check confirms it has no horizontal overflow. |
+| C6 | Make Account handle missing encryption-key state first | correction required | Rename Contact settings to Account. On login/device use, detect absent local key material and make key setup the first required account action before marketplace features; hide marketplace navigation while the gate is active. Explain that a lost key cannot restore old encrypted data. Allow creating a fresh key when absent without claiming it restores old threads. Keep Handle setup in first-account onboarding and provide account-level key creation when absent. |
+| D9 | Clarify conversation mode/group controls and compact per-group rows | implemented and locally checked; human visual review pending | View and Group by remain separate, groups are distinct and collapsed by default, expansion begins with five rows, and separators are thicker with more space. Inbox unit tests verify the collapsed header and expansion behavior. |
+| D10 | Compact phone pagination controls | implemented and locally checked; human visual review pending | Previous, Page and Next remain in one responsive row; the 390px browser check measures a single 40px-high row. |
+| D11 | Refine unread boundary and message timestamps | implemented and locally checked; human visual review pending | The preceding-message/unread boundary, send-to-clear behavior, contact-share unread count, centered date separators and compact time labels are covered by the prior browser and current full-suite checks. |
+| S1 | Make inspection data cover buyer-owned records | implemented and locally checked; human visual review pending | The fresh launcher seeds buyer-owned sale and Wanted records; its current sweep confirms 29 sale listings, 27 Wanted Requests and the buyer-owned request in My Wanted Requests. The checklist asks Suraj to verify both My Listings tabs. |
+| A20 | Put sale-card actions in one centered row beneath the image and details | implemented and locally checked; human visual review pending | Save, Message (compact phone label with the accessible name “Message seller”) and View listing sit together in one centered full-card row below the photo and listing details. This keeps all three labeled actions on one line at 360px, 390px and desktop width, replacing the former two-row phone stack and saving a row of vertical space. |
+| A21 | Finish desktop navigation, sale-card price-row alignment, and conversation detail alignment | implemented and locally checked; human visual review pending | Added by Suraj after reviewing the local handoff on 2026-10-29. Center desktop navigation links within the full bounded shell width; reserve the Original price row when absent so descriptions align; place listing context, thread, tools and offers in one left-aligned route column with visible context spacing. |
+| D12 | Start item/person conversation groups collapsed | implemented and locally checked; human visual review pending | Groups default closed; the header remains visible, and opening one starts with five rows. The inbox UI tests cover the default and expansion. |
+| D13 | Show each group’s total unread messages while collapsed | implemented and locally checked; human visual review pending | The summary contract returns the authorized group aggregate across all conversations before the per-group 20-row display cap. A fresh PostgreSQL regression seeds 21 unread conversation rows and verifies all 20 returned rows report the full total of 21. The inbox badge stays in the visible header when collapsed. |
+| D14 | Scroll the thread to a newly sent message | implemented and locally checked; human visual review pending | A successful send scrolls the transcript to its bottom after updated entries render; the same is done after a successful retry. Failed sends keep the draft/position and existing retry behavior. A focused UI test verifies the new entry is in view. |
+| E1 | Keep search qualification stable under sort and verify cutoff behavior | done | Existing tests and programmatic search checks passed. |
+| E2 | Search relevance refinement/common-word tuning | deferred | OPT-05 is unselected; fix only a demonstrated correctness defect. |
+| G1 | Cloud deployment/readiness actions | deferred | User explicitly said leave cloud deployment now. |
 
 ## A. Shared presentation and mobile layout
 
 - Fix every multi-select: checkbox and left-aligned text on one row, consistent
   spacing, accessible labels, touch targets, scrolling and narrow-screen sizing.
-  Restyle remaining consumers; do not retain obsolete inbox multi-selects just
-  to restyle them (D supersedes their earlier inclusion).
+  Clicking/tapping outside closes an open picker; Escape closes it too. Preserve
+  selections when the panel closes. Restyle remaining consumers; do not retain
+  obsolete inbox multi-selects just to restyle them (D supersedes their earlier
+  inclusion).
+- **Global width rule:** no page, form, card, text line, filter panel or action row
+  should expand indefinitely on an ultrawide display. Use a shared maximum content
+  width and responsive multi-column layouts. Keep individual cards/forms bounded
+  within that frame, use available width side by side, and avoid horizontal page
+  scrolling on narrow screens. Review every route, not just discovery.
 - Share the core sale card across Discover, Saved, My Listings, draft preview and
   possible matches. Owner views may add status/actions without a separate design.
 - Align Wanted cards/details with sale styling; remove garish blue treatment;
-  place budget or Budget not stated in the amount position. Compact cards in both
-  dimensions; clamp long descriptions and retain condition, price and status.
+  place budget or Budget not stated in the amount position. Use a compact
+  horizontal phone card with photo on the left and details/actions on the right;
+  use multiple cards per desktop row. Keep My Listings at the same card/grid width
+  as Discover. Clamp long descriptions and retain condition, price and status.
 - Make the main area of cards/groups navigate, with independently usable action
   buttons and keyboard access; avoid nested interactive elements or accidental
-  navigation on Save/Contact. Navigation can be styled as a button while retaining
-  link semantics, open-in-new-tab and browser history.
+  navigation on Save/Contact. Every navigational link should look like the agreed
+  button style while retaining link semantics, open-in-new-tab and browser history;
+  do not leave underlined text links where the agreed button-like treatment applies.
+- Keep New Listing and New Wanted Request actions visually symmetric and compact.
+  Put independent actions side by side whenever the viewport has room; let them
+  wrap cleanly on a phone instead of stretching one CTA across the page.
+- Keep search and filters expanded on initial discovery. Let users collapse them
+  after searching, with a clear persistent “Search & filters” control and a
+  visible summary of the active query/filter state while collapsed. The hidden
+  state must not hide or reset the search itself.
+- On phones, replace the tall wrapping navigation with a compact sticky menu
+  button available during scroll. Its expanded menu must be easy to dismiss and
+  must not consume the whole screen after selection. Retain the normal desktop nav.
+- Bound listing detail content. After the full description, use compact responsive
+  labelled key/value rows for remaining facts: columns where they fit, stacked on
+  phones. Prefer definition-list semantics to a literal table.
 - Bound Wanted form widths like sale forms. Review all over-wide forms, large
   full-width buttons, excessive spacing and headers. Mobile is the primary target;
   verify portrait/landscape, tablet and desktop without reducing usable tap sizes.
 - Move Sign out/account controls to the top right. Remove sample ID/detail links.
   Agreed navigation: Discover, New Listing, New Wanted Request, My Listings,
-  Saved, Conversations, Contact Settings; Sign in only when signed out. Auth
+  Saved, Conversations, Account; Sign in only when signed out. Auth
   callback remains a route without a navigation item. Saved access is retained (D6).
 - Add New Listing within the sale discovery view, parallel to New Wanted Request.
 - Best Match remains relevant only for nonblank search; retain the approved query/
@@ -61,7 +147,7 @@ verification, before committing or starting the remaining batch.
   than appending a button immediately after a sentence. Offer amount/actions need
   consistent input sizing, label spacing, button gaps and responsive wrapping.
   Contact-sharing choices need readable checkbox rows and separated actions.
-- Give the chat page a modest usability pass now: clear message/composer/offer/
+- Give the chat page a modest usability pass now (A9): clear message/composer/offer/
   contact hierarchy, comfortable margins and spacing, readable message bubbles/
   timestamps and usable small-screen composition. Keep effort bounded; the wider
   final visual refresh is NEXT-09 (NEXT-10 is optional-work review). Do not turn
@@ -82,8 +168,14 @@ verification, before committing or starting the remaining batch.
   unavailable/Reopen and preserve owner history, conversations and safe saved
   references (D3). Apply relevant owner actions to Wanted details as well.
 - Move Possible campus matches to a visible pre-submission position during Wanted
-  composition, using the shared browse card. Preserve unsaved input and valid
-  submission after match errors. Align Wanted/detail/creation styling and budget.
+  composition, above the description, using the shared sale card. Show matches
+  expanded when available and provide an explicit, labelled hide/show control;
+  retain the match heading/count while collapsed. Preserve unsaved input and
+  valid submission after match errors. Align Wanted/detail/creation styling and
+  budget.
+- On buyer-facing browse cards and listing detail, label Original price simply
+  **Seller Provided**. Remove the repeated unverifiable qualifier from that public
+  label; do not change the separate proof-of-purchase declaration.
 
 ## C. Identity, encryption and contacts — functional blocker
 
@@ -144,8 +236,9 @@ verification, before committing or starting the remaining batch.
   context or expose private email. Preserve safe unavailable/retired states.
 - Remove origin and partner multi-selects from the visible inbox. Keep existing
   API query compatibility unless an explicit contract retirement is reviewed.
-  Show any retained advanced controls behind **Sort & Filter**, collapsed by
-  default; on phones avoid a control panel pushing the chats below the fold.
+  Do not show an empty **Sort & Filter** control. If an audit finds real, useful
+  controls to retain, put them behind a collapsed disclosure; on phones avoid a
+  control panel pushing the chats below the fold.
   Audit existing controls and keep only justified ones: default recent activity;
   seller offer comparisons (status/highest/lowest) only where meaningful for a
   seller's sale-listing box. Do not carry every existing control into the new UI
@@ -161,7 +254,8 @@ verification, before committing or starting the remaining batch.
   selected-buyer context understandable without silently overriding filters.
 - Pagination has three layers. Current inbox pages flat conversations and then
   groups that page, which can split a box; replace it with paging over the boxes
-  themselves. Bound rows within a large box with Show more/load-more. Message
+  themselves. Initially show five rows per large box with independent Show more
+  and Hide conversations controls. Message
   history within one thread is separately paginated; keep bounded loading of older
   history. Do not fetch all groups, all conversations or all message history to
   fake complete grouping. Stable ordering, changed-mode/filter page resets and
@@ -177,9 +271,13 @@ verification, before committing or starting the remaining batch.
   offer/protocol events. Fetch it through an
   authorized aggregate/read contract (not just the current inbox page), bound its
   refresh, and clear private state on logout/account change.
-- Open a thread at its **first unread message**, with an **X unread messages**
-  divider. If fully read, open at the latest messages. Capture a stable opening
+- Open a thread around the first unread message, starting at the preceding text
+  when available, with an **X unread messages** divider before the first unread
+  entry. If fully read, open at the latest messages. Capture a stable opening
   read boundary so acknowledgements do not move the divider or jump the viewport.
+  Hide the opening divider after the user sends a message. Contact-sharing entries
+  count as unread. Show one centered date per local calendar day and only hour,
+  minute and AM/PM for individual entries.
   Acknowledge only actually displayed entries. Do not auto-scroll someone reading
   older history when a new message arrives. Load the necessary bounded message
   window around unread state, including more than one page of unread messages;
@@ -290,12 +388,140 @@ image deployment, paid runs or removal of production safeguards.
 | D1 | What identity replaces email/UUID labels? | Settled: Handle only, reusing `display_name`; required at first setup and editable in profile/contact settings. 3–30 ASCII letters/digits/underscores, surrounding whitespace trimmed, case-insensitive database-enforced uniqueness. No separate display name or new username field; preserve IDs/references and provide a safe legacy setup transition. No public email disclosure. |
 | D2 | What exactly does Select buyer mean? | Private tracking only, no availability change or buyer notification/disclosure; pin/highlight selected buyer and live offer; allow change/clear for valid non-retired origins before/after done deal; retain on reopen. Only Mark as done deal changes availability. |
 | D3 | What should Remove listing do? | Settled by Suraj: no removal/deletion/archive feature. Mark unavailable/Reopen only; preserve history and conversations. |
-| D4 | Inbox modes, grouping and controls? | Revised by later feedback: All/Buying/Selling buttons (Buying=sale initiator or Wanted author; Selling=sale owner or Wanted responder), compact Item/Person grouping, default recent activity, recognizable origin/handle context. Remove visible origin/partner multi-selects and redundant participation/type selectors. Retained useful controls behind collapsed Sort & Filter; no new title/handle search or Unread filter. Page boxes and bound expanded rows; message-history paging stays separate. |
+| D4 | Inbox modes, grouping and controls? | Revised by later feedback: All/Buying/Selling buttons (Buying=sale initiator or Wanted author; Selling=sale owner or Wanted responder), compact Item/Person grouping, default recent activity, recognizable origin/handle context. Remove visible origin/partner multi-selects and redundant participation/type selectors. Remove Sort & Filter while empty; only show it collapsed when real, useful controls exist. No new title/handle search or Unread filter. Page boxes and bound expanded rows; message-history paging stays separate. |
 | D5 | When must encryption setup finish? | Settled: first-sign-in setup, not repeated at every login. Require ready keys before publishing a sale or starting/responding in chat; contacts optional. Existing incomplete accounts get a setup prompt; missing device keys require explicit recovery/setup, never silent replacement. |
 | D6 | Keep access to Saved? | Keep Saved in navigation (compact icon/button allowed); remove sample links and hide Auth callback from navigation while retaining its route. |
-| D7 | Execution scope and operating rules? | Settled scope: execute A–D, E correctness checks and F/G deferrals in one batch; fix failures, run agreed checks, refresh all inspection data/instructions and stop ready for human inspection. Consult this plan before every step and again before reporting completion. No intermediate confirmations. Dark mode only if small; OPT-04/05 planning only. No cloud, paid work, merge or deployment. Current instruction: documentation updates only. Priority when resumed: Conversations functional checkpoint first, live human demo and verification, then commit; remaining batch awaits release. |
-| D8 | Chat interaction and unread presentation? | Enter sends, Shift+Enter newline with IME/pending-send safeguards. Add navigation unread indicator, first-unread opening anchor and stable X unread messages divider; display-based read acknowledgement, latest position when fully read, no forced jump during older reading. Add modest chat/onboarding/offer/contact spacing now; broader final polish remains NEXT-09. |
+| D7 | Execution scope and operating rules? | Current batch authorization (2026-10-28), expanded by the screenshot follow-up (2026-10-29): complete the listed non-deferred visual and functional corrections, perform local verification, prepare inspection data/instructions and stop for Suraj's visual review. C3 Handle, D2 modes, D4 box pagination and D6 unread/first-unread were included by the later full-batch authorization and are now implemented and locally checked. Consult this plan before every implementation task and update its status plus the work-log checkpoint after each. No intermediate confirmations. No cloud, paid work, merge or deployment. |
+| D8 | Chat interaction and unread presentation? | Enter sends, Shift+Enter newline with IME/pending-send safeguards. The navigation unread indicator, first-unread opening anchor and stable X unread messages divider are implemented as D6 using display-based read acknowledgement, latest position when fully read and no forced jump during older reading. Add modest chat/onboarding/offer/contact spacing now; broader final polish remains NEXT-09. |
 | D9 | Cloud/SES work now? | Deferred at Suraj’s instruction. SES production access is user-reported as newly granted; application restrictions still need later reviewed promotion. Preserve G’s audit findings and real email behaviour, but perform no cloud/configuration/deployment changes in this batch. |
+
+## Full remaining task list and status
+
+This list keeps the already-authorized visual corrections and the three
+higher-reasoning follow-ups visible together. “Corrective visual pass requested”
+means code exists but the screenshots showed a specific gap; it is not considered
+verified until corrected and inspected. “Queued” means the task remains required
+in this plan but was excluded from the earlier batch. The newest screenshot
+feedback expands the pending work; it does not mark any new visual item complete.
+
+### 1. Shared layout, cards, forms and navigation — A1–A17
+
+- **A1** Fix every multi-select row layout, touch sizing, scrolling and mobile
+  behavior; close on outside click or Escape without clearing selections.
+- **A2–A4** Use the same sale card across Discover, Saved, My Listings, preview
+  and matches; align Wanted cards/details; make card bodies navigate while
+  keeping their Save/Contact/owner actions independently usable.
+- **A5, A11** Bound every route, form, card, reading column, filter area and
+  action row with a shared maximum content width so ultrawide screens never
+  create indefinitely long lines. Reflow gracefully on narrow screens without
+  horizontal page scrolling.
+- **A12** Make cards compact and horizontal on phones, with a useful left image
+  and right-side details/actions; show multiple cards per desktop row. Match My
+  Listings geometry to Discover, Saved and preview; clamp long descriptions and
+  retain price, condition and status.
+- **A6, A16** Clean the desktop navigation/account placement and replace the
+  tall mobile link wrap with a compact sticky, dismissible navigation menu.
+- **A7, A15** Give New Listing and New Wanted Request matching compact actions;
+  place them side by side when there is room. Style all navigational links as
+  buttons while preserving link semantics/history and make action spacing
+  consistent.
+- **A8** Keep Best Match available only for nonblank searches and preserve
+  search/filter/sort state transitions.
+- **A14** Keep search and filters open initially; let users collapse them later
+  while the control and active query/filter summary remain visible.
+- **A17** Put listing detail facts after the description in an accessible,
+  responsive labelled definition-list/grid, with columns when space permits.
+- **A9** Improve chat, encryption setup, offer and contact-sharing presentation
+  with clear hierarchy, margins, readable controls and mobile wrapping.
+- **A10** Check the implemented token-based dark mode for contrast; keep it only
+  if it remains a small, usable change, otherwise defer it.
+- Review bounded forms, headers, account/key setup, offers and contacts; place
+  independent controls side by side whenever the viewport has room. Keep mobile
+  the primary target. Check dark mode only if it remains a small token-based
+  change (A10); otherwise defer it.
+
+### 2. Sale listing and Wanted Request surfaces — B1–B7
+
+- **B1, B7** Keep Original price optional through creation/editing and visible
+  on browse and detail surfaces. Its concise buyer-facing label is **Seller
+  Provided**; do not imply proof or independent verification.
+- **B2–B4** Provide eligible Save/Unsave and Contact actions on browse cards;
+  provide owner Edit and availability actions on sale and Wanted details, with
+  authoritative ownership checks and consistent state refresh. There is no
+  remove/delete/archive feature; use Mark unavailable/Reopen.
+- **B5–B6** Show possible campus matches as shared sale cards above the Wanted
+  description by default. Add a labelled hide/show control that retains the
+  match heading/count when collapsed and preserves the draft through errors.
+
+### 3. Identity, encryption and contact sharing — C1–C5
+
+- **C1, C5** Preserve first-device encrypted messaging setup, account-isolated
+  keys, optional contact setup, selective encrypted sharing, and a direct setup
+  route back to the conversation when contact details are missing.
+- **C2** Preserve private selected-buyer tracking separately from availability;
+  only Mark as done deal changes listing availability.
+- **C3 — implemented high-reasoning task:** reuse `display_name` as a required,
+  editable Handle; enforce the approved validation and case-insensitive unique
+  database/API constraint; stage legacy accounts safely without changing IDs;
+  expose it through a reviewed Identity participant projection. Verify
+  concurrency and migration/rollback/reapply on disposable PostgreSQL.
+- **C4** Add a Temporary account marker using the authoritative Identity
+  participant classification/projection. Show only the badge, never peer email;
+  do not query private Identity tables from Conversations.
+
+### 4. Conversations — D1–D8
+
+- **D1, D8** Make each listing/request origin a distinct compact bounded box with
+  recognizable title, useful sale image and price/budget, origin-detail action,
+  counterpart Handle when C3 is available, and clear contained thread rows.
+  Remove excessive whitespace; Wanted boxes should be distinct without a fake
+  photo. Keep IDs internal. Place selected buyer and current offer/thread action
+  in the seller's relevant box.
+- **D2 — implemented high-reasoning task:** add **All / Buying / Selling** modes with
+  the approved sale and Wanted role meanings, plus **Item / Person** grouping.
+  Derive roles from trusted origin and membership context; keep authorization
+  server-side. The mode and grouping controls should be compact buttons.
+- **D3** Remove the currently empty Sort & Filter disclosure and the old visible
+  origin/partner multi-selects. Preserve most-recent-activity ordering. Add a
+  collapsed sort/filter area only if it contains real, useful, working controls.
+- **D4 — implemented with D2:** paginate origin/person boxes as units, bound the
+  conversation rows inside a large box, and keep message-history pagination
+  separate. Define stable ordering, counts and reset behavior in reviewed
+  contracts; do not fetch every conversation/history entry to fake grouping.
+- **D5** Keep Enter-to-send and Shift+Enter newline behavior with IME, readiness,
+  retry and pending-send safeguards.
+- **D6 — implemented high-reasoning task:** show an authorized global unread count in
+  navigation and open a thread at its first unread message with a stable **X
+  unread messages** divider, bounded history loading and display-based read
+  acknowledgement. Do not add an Unread filter or force-scroll someone reading
+  older history.
+- **D7** Keep offer submit/revise/withdraw/resubmit and seller selection usable;
+  selection is private tracking, sends no buyer notification and does not change
+  availability. Only Mark as done deal does that.
+
+### 5. Search behavior and optional work — E1–E2, F
+
+- **E1** Preserve verified qualification/cutoff behavior when sorting sale
+  results; Wanted search remains its own strict all-terms behavior. Search quality
+  can be revisited later if this remains a relevance-tuning issue.
+- **E2 / OPT-05** Defer search relevance/common-word refinement. Keep the measured
+  cutoff and sorting evidence recorded above; a reproduced correctness failure
+  is still a required fix, not optional tuning.
+- **OPT-04** Chat image sharing is not implemented. Keep it as future work with
+  actual end-to-end encryption, storage, UI, limits, retention and failure-state
+  requirements; it is not part of the current correction scope.
+- **G1** Cloud deployment/readiness remains deferred. No cloud changes, migration
+  applies or paid experiments are authorized by this plan update.
+
+### 6. Final local visual inspection handoff
+
+After the authorized implementation and verification work, create or refresh
+sample data that exercises all relevant surfaces and provide a step-by-step
+visual checklist covering responsive discovery and cards, filters/search state,
+sale and Wanted creation/detail/ownership actions, Original price, possible
+matches, key/contact setup, both conversation roles, offers, buyer tracking,
+availability, unread presentation and navigation. Stop for Suraj's inspection;
+do not treat programmatic checks as visual approval. The three higher-reasoning groups above are now implemented and locally verified; their visual behavior is included in this same human inspection.
 
 ## Execution contract — Conversations first, remaining batch afterward
 
@@ -317,8 +543,7 @@ Human visual inspection remains required; do not mark it passed automatically.
 
 Suraj settled the handle decision and accepted the correction scope. Conversations
 functional repair was authorized and performed, with human verification pending.
-The latest instruction authorizes this documentation update only; resume code
-work only when Suraj releases the next increment. Routine implementation,
+Suraj released the full remaining list through the local visual-inspection handoff. Routine implementation,
 reversible fixes and local tool setup are within that released batch.
 Consult this plan before every step and after every context reset. Investigate
 unexpected failures and continue independent work rather than waiting on routine
@@ -388,3 +613,37 @@ selected-buyer tracking and chat-image deferral explicit.
 | Groups must immediately identify the item/person | D: title, sale photo/price, handle and unread/selected context; no raw UUID labels |
 | Audit local-to-cloud compatibility, especially encryption | G: repository findings, implemented components and exact unverified deployment gates |
 | SES production access was granted today; defer cloud now | G/D9: user-reported access recorded, separate app guard promotion deferred, no cloud actions |
+
+### 2026-10-29 screenshot-feedback audit
+
+| New feedback | Accounted for |
+|---|---|
+| Multi-select dropdown options align checkbox and text; click outside should close | A1/A13: one-row options, outside pointer/touch and Escape dismissal, retained choices |
+| Search should be collapsible after use but visible by default | A14: initially expanded, labelled reopen control and active-state summary |
+| Sale cards are too tall/space-heavy; My Listings differs from Discover; use a product-style horizontal card, but not one card per desktop row | A2/A12: shared responsive card, larger useful left image on phones, multi-column desktop grid, My Listings parity and clamped descriptions |
+| Never let page content grow without bound on ultrawide screens; use side-by-side layout when there is room | A11/A15/A17 and the global width rule: shared maximum content width and responsive columns/action rows, while remaining mobile-friendly |
+| Wanted creation CTA is oversized/asymmetric | A15: matching compact New Listing/New Wanted actions, side by side when possible |
+| Mobile navigation consumes too much space | A16: compact sticky menu available while scrolling |
+| Original price label should be “Seller Provided” | B7: concise public-facing label; no change to evidence/proof meaning |
+| Listing details facts could be tabular after description | A17: accessible responsive definition-list/grid, columns where useful rather than a rigid table |
+| Possible matches should be above description and hideable | B6: above description, open by default, labelled collapse/show and retained count |
+| Conversation groups need real boxes, useful image size, less empty space and origin detail navigation | D1/D8: compact bounded origin cards, contextual link, image/price or Wanted title/budget, distinct thread rows |
+| Temporary status can use the existing verified-email classification, without exposing email | C4: authoritative safe Identity classification; badge only, no private email/table access |
+| Participant Handle should appear when the unique Handle work is ready | C3/D1/D8: Handle and the safe participant projection are implemented and wired into the inbox, thread and selected-buyer context |
+| Empty Sort & Filter is confusing; mode buttons are enough until real controls exist | D3/D4: remove empty disclosure; do not retain controls merely because APIs support them |
+| General layout should use two columns/side-by-side controls when space allows | A11/A12/A15/A17: bounded responsive grid and row behavior; no unbounded horizontal stretch |
+| Previously deferred high-reasoning tasks should remain on the plan | C3, D2, D4 and D6 are included, implemented and locally checked; human visual review is pending |
+
+### Active full-batch checkpoint — 2026-10-29 04:25:25 UTC
+
+Suraj authorized all remaining tasks through the visual inspection handoff, including C3, D2/D4 and D6. The earlier batch exclusions are historical, not current authorization limits. Presentation changes now include outside-click/Escape dropdown dismissal, compact shared horizontal sale cards, bounded page content, mobile menu, collapsible discovery controls, matches above description, simplified Original price labels, distinct inbox group cards and thread spacing. Frontend lint, 488 tests, type checking and production build passed (3 tests skipped); the overall task remains in progress. Handle/participant projection, modes/group pagination, unread behavior, comprehensive final verification and refreshed inspection handoff remain pending.
+
+Presentation verification update: `npm run check` passed with 489 tests passed and 3 skipped after adding outside-dismissal/Escape coverage. A full `make check` run was started with local socket permission after a sandbox-denied formatter attempt; its output is `/tmp/clip-full-visual-check.log` and no final result has yet been recorded. These are intermediate checks, not full-batch completion.
+
+### Full-batch implementation checkpoint — 2026-10-29 05:05:29 UTC
+
+Implemented staged Handle claims and safe participant projection with regenerated contracts, required onboarding/editing, account-change cancellation, participant Handle/Temporary labels and selected-buyer Handle. Implemented All/Buying/Selling and Item/Person inbox controls, SQL group-first pagination with bounded group continuations, authorized aggregate unread navigation, stable first-unread divider/positioning and bounded history windows with earlier/newer controls. Added real PostgreSQL role/group/unread tests, concurrent case-insensitive Handle claims, schema/boundary regressions and frontend onboarding/divider tests. Latest frontend run passed 493 tests (3 skipped); the expanded focused Identity/contract run passed 183 tests with one obsolete operation-count assertion subsequently fixed. PostgreSQL full migration/rollback/reapply passed. Final full check and refreshed live action sweep are running; no final handoff is yet claimed.
+
+### Local visual-inspection handoff — 2026-10-29 05:35:44 UTC
+
+All authorized A–E corrections, including previously queued C3/C4, D2/D4 and D6, are implemented and locally checked. `make check` passed all 12 stages (Python 1,936 passed/155 skipped; data 94 passed; web 493 passed/3 skipped; 168 PostgreSQL Conversations tests). Final frontend check including the new unread isolation regression: 494 passed/3 skipped. Supplemental PostgreSQL checks passed for legacy Handle staging/collisions/rollback/reapply and least-privilege public projection; added unread-backlog regression brings the focused Conversations suite to 169 passed. Chromium checked responsive widths, 20-to-24 group continuation, required/taken Handle setup, actual encrypted Enter-send/read, unread count/divider and selected encrypted contacts. The previous browser-test database was removed. Clean human inspection data is serving at http://127.0.0.1:5176/__inspection (PID 2833284): 23 action groups passed; 28 sale fixtures, 26 Wanted Requests, 77 threads, six main actors and downloadable photos. Human visual approval, owner/peer review and cloud release are not inferred.

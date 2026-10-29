@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router';
 import { Button } from '../../shared/ui';
 import { ListingNotice } from './ListingNotice';
 import { ListingPhotoGallery } from './ListingPhotoGallery';
+import { ListingDetailOwnerActions } from './ListingDetailOwnerActions';
 import { listingPrice, readListing, type ListingDetail as Detail } from './listingsApi';
 import './listings.css';
 
@@ -40,23 +41,23 @@ export function ListingDetail({ listingId, children }: PropsWithChildren<{ listi
               <p className="listings-status">{listing.availability === 'available' ? 'Seller marked available' : 'Seller marked unavailable'}</p>
               <h2>{listing.title}</h2>
               <p className="listings-price">{listingPrice(listing.asking_price_paise)}{listing.negotiable ? ' · Negotiable' : ' · Fixed asking price'}</p>
-              {listing.original_price_paise !== null && <p>Original price (seller-provided, unverified): {listingPrice(listing.original_price_paise)}</p>}
+              {listing.original_price_paise !== null && <p>Original price (Seller Provided): {listingPrice(listing.original_price_paise)}</p>}
               <ListingPhotoGallery imageIds={listing.image_ids} />
               <p className="listings-description">{listing.description}</p>
-              <dl>
-                <dt>Item category</dt><dd>{listing.category_label}</dd>
-                <dt>Condition (seller stated)</dt><dd>{listing.condition_label}</dd>
-                <dt>Pickup area</dt><dd>{listing.pickup_area ?? 'Not specified'}</dd>
-                <dt>Available from</dt><dd>{new Date(listing.available_from).toLocaleString()}</dd>
-                <dt>Available until</dt><dd>{listing.available_until ? new Date(listing.available_until).toLocaleString() : 'No end date stated'}</dd>
-                <dt>Proof of purchase (unverified)</dt><dd>{listing.proof_available === null ? 'Not stated' : listing.proof_available ? 'Seller says available' : 'Seller says unavailable'}</dd>
+              <dl className="listings-facts" aria-label="Listing details">
+                <div><dt>Item category</dt><dd>{listing.category_label}</dd></div>
+                <div><dt>Condition (seller stated)</dt><dd>{listing.condition_label}</dd></div>
+                <div><dt>Pickup area</dt><dd>{listing.pickup_area ?? 'Not specified'}</dd></div>
+                <div><dt>Available from</dt><dd>{new Date(listing.available_from).toLocaleString()}</dd></div>
+                <div><dt>Available until</dt><dd>{listing.available_until ? new Date(listing.available_until).toLocaleString() : 'No end date stated'}</dd></div>
+                <div><dt>Proof of purchase (unverified)</dt><dd>{listing.proof_available === null ? 'Not stated' : listing.proof_available ? 'Seller says available' : 'Seller says unavailable'}</dd></div>
               </dl>
               {listing.sensitive_purchase && <p className="listings-alert">Sensitive purchase: this item is flagged by its category or asking price. Check its details and any proof directly with the seller.</p>}
-              <p className="listings-id">Listing ID: <code>{listing.listing_id}</code></p>
               <Link to="/listings/new">Create another listing</Link>
               {children}
             </article>
           )}
+      {listing && <ListingDetailOwnerActions listingId={listing.listing_id} onChanged={() => setRetry((value) => value + 1)} />}
     </section>
   );
 }

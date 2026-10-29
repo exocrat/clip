@@ -181,9 +181,10 @@ export function assertConversationKeyState(
   hasLocalIdentity: boolean,
   hasDirectoryIdentity: boolean,
   acknowledgedHistoryLossRisk = false,
+  allowUnrecoverableKeyReplacement = false,
 ): void {
   if (hasLocalIdentity) return;
-  if (hasDirectoryIdentity) throw new ConversationKeyStateLostError(userId);
+  if (hasDirectoryIdentity && !allowUnrecoverableKeyReplacement) throw new ConversationKeyStateLostError(userId);
   if (!acknowledgedHistoryLossRisk) throw new KeyRegistrationAcknowledgementRequiredError();
 }
 

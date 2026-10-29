@@ -50,6 +50,7 @@ def test_registration_activation_session_cookie_and_safe_summary(identity_runtim
             "account_class",
             "valid_until",
             "display_name",
+            "handle_ready",
         }
         cookie = result.headers["set-cookie"]
         assert "__Host-clip_session=" in cookie

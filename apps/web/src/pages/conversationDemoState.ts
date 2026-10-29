@@ -69,12 +69,14 @@ export function createConversationDemoState() {
       return conversations.map((conversation) => {
         const thread = threads.get(conversation.conversation_id);
         const lastEntry = thread?.entries.at(-1);
+        const unreadCount = thread?.entries.filter((entry) =>
+          entry.sender_user_id !== DEMO_USER_ID && entry.sequence > (thread.lastReadSequence ?? 0),
+        ).length ?? 0;
         return {
           ...conversation,
           last_activity_at: lastEntry?.created_at ?? conversation.last_activity_at,
-          unread_count: thread?.entries.filter((entry) =>
-            entry.sender_user_id !== DEMO_USER_ID && entry.sequence > (thread.lastReadSequence ?? 0),
-          ).length ?? 0,
+          unread_count: unreadCount,
+          group_unread_count: unreadCount,
         };
       });
     },

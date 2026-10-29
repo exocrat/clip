@@ -1,12 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { Button } from '../../shared/ui';
 import { ListingNotice } from './ListingNotice';
-import { ListingImagePreview } from './ListingImagePreview';
-import { ListingPhotoPlaceholder } from './ListingPhotoPlaceholder';
 import {
   changeListingAvailability,
-  listingPrice,
   ListingsApiError,
   readMyListings,
   type AvailabilityChange,
@@ -18,8 +15,10 @@ import './listings.css';
 type AvailabilityFilter = 'all' | 'available' | 'unavailable';
 type AvailabilityAttempt = { intent: string; body: AvailabilityChange };
 
-/** Show and manage this signed-in seller's listings through the owner-only API. */
-export function MyListings() {
+/** Show and manage this seller's owner-only rows using a page-composed public card renderer. */
+export function MyListings({ renderListingCard }: {
+  renderListingCard: (listing: ListingManagementView, ownerActions: ReactNode) => ReactNode;
+}) {
   const [pages, setPages] = useState<Record<number, ListingManagementView[]>>({});
   const [page, setPage] = useState(1);
   const [hasNext, setHasNext] = useState(false);
@@ -146,7 +145,7 @@ export function MyListings() {
   }
 
   return (
-    <section className="listings-feature">
+    <section className="listings-feature listings-feature--collection">
       <ListingNotice />
       <p>Listings you created with this account appear here.</p>
       <div className="listings-filter">
@@ -193,33 +192,11 @@ export function MyListings() {
         </p>
       ) : null}
       {visibleListings.length > 0 ? (
-        <ul className="listings-list">
+        <ul className="discovery-grid listings-list">
           {visibleListings.map((listing) => (
-            <li className="listings-list-card" key={listing.listing_id}>
-              <figure className="listings-list-photo" aria-label={`Photo preview for ${listing.title}`}>
-                {listing.image_ids[0]
-                  ? <ListingImagePreview imageId={listing.image_ids[0]} alt={`First photo of ${listing.title}`} compact />
-                  : <ListingPhotoPlaceholder compact />}
-              </figure>
-              <div>
-                <p className="listings-status">
-                  {listing.availability === 'available' ? 'Available' : 'Unavailable'}
-                </p>
-                <h2><Link to={`/listings/${encodeURIComponent(listing.listing_id)}`}>{listing.title}</Link></h2>
-                <p className="listings-price">
-                  {listingPrice(listing.asking_price_paise)}
-                  {listing.negotiable ? ' · Negotiable' : ' · Fixed asking price'}
-                </p>
-                {listing.original_price_paise !== null && <p>Original price (seller-provided, unverified): {listingPrice(listing.original_price_paise)}</p>}
-                <p>{listing.category_label} · {listing.condition_label}</p>
-                <p className="listings-muted">{listing.image_ids.length} photo{listing.image_ids.length === 1 ? '' : 's'}</p>
-                <p className="listings-muted">
-                  Updated {new Date(listing.updated_at).toLocaleDateString()}
-                </p>
-              </div>
-              <div className="listings-list-card__links">
-                <Link to={`/listings/${encodeURIComponent(listing.listing_id)}/edit`}>Edit listing</Link>
-                <Link to={`/listings/${encodeURIComponent(listing.listing_id)}`}>View listing</Link>
+            <li key={listing.listing_id}>
+              {renderListingCard(listing, <div className="listings-owner-actions">
+                <Link className="ui-button ui-button--secondary" to={`/listings/${encodeURIComponent(listing.listing_id)}/edit`}>Edit listing</Link>
                 <Button
                   variant="secondary"
                   disabled={busyListing !== '' || reloadRequired}
@@ -229,7 +206,7 @@ export function MyListings() {
                     ? 'Saving…'
                     : listing.availability === 'available' ? 'Mark unavailable' : 'Mark available'}
                 </Button>
-              </div>
+              </div>)}
             </li>
           ))}
         </ul>

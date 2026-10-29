@@ -38,8 +38,11 @@
   inset-inline: 0;
   display: grid;
   gap: var(--space-2);
-  max-height: 18rem;
-  min-width: min(18rem, calc(100vw - 2rem));
+  max-height: min(18rem, 50dvh);
+  width: max(100%, min(18rem, calc(100vw - 2rem)));
+  max-width: calc(100vw - 2rem);
+  min-width: 0;
+  min-inline-size: min(18rem, calc(100vw - 2rem));
   overflow-y: auto;
   margin: 0;
   border: 1px solid var(--color-border);
@@ -53,9 +56,10 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  min-height: 2.25rem;
+  min-height: 2.75rem;
   cursor: pointer;
   font-weight: 400;
+  text-align: left;
 }
 
 .ui-multi-choice__option input { width: 1.1rem; height: 1.1rem; margin: 0; accent-color: var(--color-primary); }

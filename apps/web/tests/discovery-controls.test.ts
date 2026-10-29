@@ -1,6 +1,6 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { MemoryRouter } from 'react-router';
+import { Link, MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
 import { SaleDiscovery } from '../src/features/search/SaleDiscovery';
 import { SaleListingCard } from '../src/features/search/SaleListingCard';
@@ -38,7 +38,18 @@ describe('mode and relevance controls', () => {
   it('shows the complete negotiability state as a card badge', () => {
     const html = renderToStaticMarkup(createElement(MemoryRouter, null,
       createElement(SaleListingCard, { listing })));
-    expect(html).toContain('<p class="discovery-negotiability">Negotiable</p>');
+    expect(html).toContain('<span class="discovery-negotiability">Negotiable</span>');
     expect(html).toContain('Condition: Good');
+  });
+  it('reserves the original-price row when a listing has no original price', () => {
+    const html = renderToStaticMarkup(createElement(MemoryRouter, null,
+      createElement(SaleListingCard, { listing })));
+    expect(html).toContain('class="discovery-card-meta discovery-card__original-price" aria-hidden="true"></p>');
+  });
+  it('accepts the eligible seller creation action above the search controls', () => {
+    const html = renderToStaticMarkup(createElement(MemoryRouter, null,
+      createElement(SaleDiscovery, { createListingAction: createElement(Link, { to: '/listings/new', className: 'ui-button ui-button--primary' }, 'New Listing') })));
+    expect(html.indexOf('New Listing')).toBeLessThan(html.indexOf('Search listings'));
+    expect(html).toContain('href="/listings/new"');
   });
 });

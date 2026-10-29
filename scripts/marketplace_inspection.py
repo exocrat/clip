@@ -46,7 +46,8 @@ from apps.api.tests.domains.listings.browser_image_preview import install_image_
 
 ORIGIN = "http://127.0.0.1:5174"
 HEADERS = {"Origin": ORIGIN, "X-CLIP-Request": "1"}
-ACTORS = ("seller", "buyer", "other-seller", "other-buyer")
+ACTORS = ("seller", "buyer", "other-seller", "other-buyer", "new-member")
+PAGINATION_ACTORS = tuple(f"pagination-{number:02d}" for number in range(1, 23))
 TEMP_EMAIL = "inspection-newcomer@example.com"
 TEMP_PASSWORD = "synthetic-inspection-passphrase"
 
@@ -149,7 +150,7 @@ def make_app(connect):
     @outer.post("/__inspection/login/{actor}")
     async def switch_actor(actor: str):
         """Exchange a fresh synthetic signed assertion through real Identity routes."""
-        if actor not in ACTORS + ("temporary",):
+        if actor not in ACTORS + PAGINATION_ACTORS + ("temporary",):
             raise HTTPException(404)
         async with httpx.AsyncClient(
             transport=httpx.ASGITransport(app=inner, client=("127.0.0.1", 41000)),
@@ -239,7 +240,7 @@ def make_app(connect):
                 for number in range(1, 10)
             )
             + "</p>"
-            + '<p><a href="/">Discover</a> · <a href="/my/listings">My Listings</a> · <a href="/my/conversations">Conversations</a> · <a href="/account/contacts">Contacts</a></p><details><summary>All synthetic record IDs and sample-photo path</summary><pre>'
+            + '<p><a href="/">Discover</a> · <a href="/my/listings">My Listings</a> · <a href="/my/conversations">Conversations</a> · <a href="/account/contacts">Account</a></p><details><summary>All synthetic record IDs and sample-photo path</summary><pre>'
             + html.escape(json.dumps(outer.state.records, indent=2))
             + "</pre></details>"
         )
@@ -383,6 +384,13 @@ def exercise_and_seed(app):
             c.cookies.clear()
             c.headers.pop("X-CSRF-Token", None)
             expect("POST", "/__inspection/login/" + actor, 303)
+            c.headers["X-CSRF-Token"] = expect("GET", "/api/auth/csrf")["csrf_token"]
+            if actor != "new-member":
+                expect(
+                    "PATCH",
+                    "/api/me/profile",
+                    json={"display_name": "inspection_" + actor.replace("-", "_")},
+                )
             user = expect("GET", "/api/me")
             actors[actor] = {"cookies": httpx.Cookies(c.cookies), "user": user}
         use("seller")
@@ -445,8 +453,35 @@ def exercise_and_seed(app):
                     "condition": conditions[index % len(conditions)],
                 }
             )
+        use("buyer")
+        buyer_listing_title = "Inspection buyer-owned desk lamp"
+        buyer_listing = expect(
+            "POST",
+            "/api/listings",
+            201,
+            json={
+                "title": buyer_listing_title,
+                "description": "Synthetic item owned by the inspection buyer for My Listings visual review.",
+                "category_code": categories[0],
+                "condition_code": conditions[1 % len(conditions)],
+                "asking_price_paise": 45000,
+                "original_price_paise": 90000,
+                "negotiable": True,
+                "image_upload_ids": [upload()],
+                "operation_id": str(uuid4()),
+            },
+        )
+        records["listings"].append(
+            {
+                "id": buyer_listing["listing_id"],
+                "title": buyer_listing_title,
+                "owner": "buyer",
+                "category": categories[0],
+                "condition": conditions[1 % len(conditions)],
+            }
+        )
         checks.append(
-            "28 photo-backed listings: upload bytes, confirm/retry and publish"
+            "29 photo-backed listings: upload bytes, confirm/retry and publish, including a buyer-owned listing"
         )
         use("seller")
         bike = records["listings"][0]["id"]
@@ -530,6 +565,27 @@ def exercise_and_seed(app):
                     "buyer": "buyer",
                 }
             )
+        buyer_wanted_title = "Inspection buyer wants a lab coat"
+        buyer_wanted = expect(
+            "POST",
+            "/api/wanted-requests",
+            201,
+            json={
+                "title": buyer_wanted_title,
+                "description": "Synthetic buyer-owned request for My Wanted Requests visual review.",
+                "category_code": categories[1 % len(categories)],
+                "budget_paise": 125000,
+                "operation_id": str(uuid4()),
+            },
+        )
+        records["wanted"].append(
+            {
+                "id": buyer_wanted["request_id"],
+                "title": buyer_wanted_title,
+                "owner": "buyer",
+            }
+        )
+        checks.append("buyer-owned Wanted Request appears in My Wanted Requests")
         assert expect("GET", "/api/conversations?page_size=20")["has_next"]
         assert expect("GET", "/api/conversations?page=2&page_size=20")["items"]
         checks.append("conversation pagination over sale and Wanted origins")
@@ -706,7 +762,7 @@ def exercise_and_seed(app):
             for _ in range(120):
                 coverage = c.portal.call(current_vectors)
                 if coverage.complete:
-                    assert coverage.ready == 28 and coverage.failed == 0
+                    assert coverage.ready == 29 and coverage.failed == 0
                     return
                 time.sleep(0.25)
             raise AssertionError("Actual Hybrid generations did not become current")
@@ -840,8 +896,8 @@ def exercise_and_seed(app):
             (x["asking_price_paise"] for x in descending), reverse=True
         )
         all_rows = expect("GET", "/api/listings?page_size=100")["items"]
-        assert len(all_rows) == 27
-        assert len({x["listing_id"] for x in all_rows}) == 27
+        assert len(all_rows) == 28
+        assert len({x["listing_id"] for x in all_rows}) == 28
         checks.append(
             "sale OR category/condition, AND groups and inclusive prices; both price sorts and cleared filters"
         )
@@ -863,7 +919,7 @@ def exercise_and_seed(app):
         expect("DELETE", "/api/image-uploads/" + intent["upload_id"], 204)
         expect("DELETE", "/api/image-uploads/" + intent["upload_id"], 204)
         checks.append("missing photo confirmation and cancel/retry")
-        expect("PATCH", "/api/me/profile", json={"display_name": "Inspection Seller"})
+        expect("PATCH", "/api/me/profile", json={"display_name": "inspection_seller"})
         expect(
             "PUT",
             "/api/me/contacts/email",
@@ -908,7 +964,7 @@ def exercise_and_seed(app):
         )
         wait_vectors()
         checks.append(
-            "all 28 real Hybrid generations current, including the edited bicycle"
+            "all 29 real Hybrid generations current, including buyer-owned item and edited bicycle"
         )
         expect("DELETE", "/api/auth/session", 204)
         assert c.get("/api/me").status_code == 401
@@ -930,6 +986,11 @@ def exercise_and_seed(app):
                 "password": TEMP_PASSWORD,
             },
         )
+        c.headers["X-CSRF-Token"] = expect("GET", "/api/auth/csrf")["csrf_token"]
+        expect(
+            "PATCH", "/api/me/profile", json={"display_name": "inspection_temporary"}
+        )
+        newcomer = expect("GET", "/api/me")
         assert newcomer["account_class"] == "temporary"
         actors["temporary"] = {"cookies": httpx.Cookies(c.cookies), "user": newcomer}
         use("temporary")
@@ -951,7 +1012,7 @@ def exercise_and_seed(app):
             ).status_code
             == 403
         )
-        expect(
+        newcomer_wanted = expect(
             "POST",
             "/api/wanted-requests",
             201,
@@ -972,6 +1033,126 @@ def exercise_and_seed(app):
         checks.append(
             "temporary OTP activation/login/logout; Wanted allowed, sale/respond denied"
         )
+        # Earlier logout assertions intentionally revoke the stored sessions.
+        # Issue fresh real sessions before exercising the new feedback features.
+        for actor in ACTORS + ("temporary",):
+            c.cookies.clear()
+            c.headers.pop("X-CSRF-Token", None)
+            expect("POST", "/__inspection/login/" + actor, 303)
+            actors[actor]["cookies"] = httpx.Cookies(c.cookies)
+            actors[actor]["user"] = expect("GET", "/api/me")
+        use("buyer")
+        expect(
+            "PATCH", "/api/me/profile", 409, json={"display_name": "INSPECTION_SELLER"}
+        )
+        expect("PATCH", "/api/me/profile", 422, json={"display_name": "bad handle"})
+        expect("PATCH", "/api/me/profile", json={"display_name": "inspection_buyer"})
+        assert expect("GET", "/api/me")["handle_ready"] is True
+        newcomer_thread = expect(
+            "POST",
+            f"/api/wanted-requests/{newcomer_wanted['request_id']}/conversations",
+            201,
+            json={"operation_id": str(uuid4())},
+        )
+        peer = expect("GET", f"/api/conversations/{newcomer_thread['conversation_id']}")
+        assert (
+            peer["counterparty_handle"] == "inspection_temporary"
+            and peer["counterparty_account_class"] == "temporary"
+        )
+        records["conversations"].append(
+            {
+                "id": newcomer_thread["conversation_id"],
+                "buyer": "buyer",
+                "wanted": newcomer_wanted["request_id"],
+                "label": "Temporary requester conversation",
+            }
+        )
+        records["wanted"].append(
+            {
+                "id": newcomer_wanted["request_id"],
+                "title": "Inspection newcomer needs a bicycle",
+            }
+        )
+        use("buyer")
+        for listing_record in records["listings"]:
+            if listing_record["owner"] == "buyer":
+                continue
+            read = c.get(f"/api/listings/{listing_record['id']}")
+            assert read.status_code in (200, 404)
+            if (
+                read.status_code == 404
+            ):  # Deliberate retirement fixture from the earlier sweep.
+                continue
+            listing = read.json()
+            if listing["availability"] == "available":
+                response = c.post(
+                    f"/api/listings/{listing_record['id']}/conversations",
+                    json={"operation_id": str(uuid4())},
+                )
+                assert response.status_code in (200, 201)
+        # Extra accounts exist solely to exercise the visible within-group pager.
+        # They have safe Handles but no browser keys; use the named main actors
+        # for interactive encrypted messaging, and these rows for paging/setup states.
+        for actor in PAGINATION_ACTORS:
+            c.cookies.clear()
+            c.headers.pop("X-CSRF-Token", None)
+            expect("POST", "/__inspection/login/" + actor, 303)
+            c.headers["X-CSRF-Token"] = expect("GET", "/api/auth/csrf")["csrf_token"]
+            expect(
+                "PATCH",
+                "/api/me/profile",
+                json={"display_name": actor.replace("-", "_")},
+            )
+            thread = expect(
+                "POST",
+                f"/api/listings/{bike}/conversations",
+                201,
+                json={"operation_id": str(uuid4())},
+            )
+            records["conversations"].append(
+                {"id": thread["conversation_id"], "listing": bike, "buyer": actor}
+            )
+        use("seller")
+        group_page = expect("GET", "/api/conversations?group_by=item&page_size=20")
+        bicycle_group = [
+            item for item in group_page["items"] if item["origin_id"] == bike
+        ]
+        assert len(bicycle_group) == 20 and all(
+            item["group_has_more"] for item in bicycle_group
+        )
+        more = expect("GET", f"/api/conversations?origin_id={bike}&page=2")
+        assert len(more["items"]) == 4 and not more["has_next"]
+        if group_page["has_next"]:
+            next_page = expect(
+                "GET", "/api/conversations?group_by=item&page_size=20&page=2"
+            )
+            assert {item["origin_id"] for item in group_page["items"]}.isdisjoint(
+                {item["origin_id"] for item in next_page["items"]}
+            )
+        for actor in ACTORS + ("temporary",):
+            use(actor)
+            total = expect("GET", "/api/conversations/unread-count")["unread_count"]
+            assert isinstance(total, int) and total >= 0
+            for mode in ("all", "buying", "selling"):
+                for grouping in ("item", "person"):
+                    page = expect(
+                        "GET",
+                        f"/api/conversations?marketplace_mode={mode}&group_by={grouping}",
+                    )
+                    assert len(page["items"]) <= 400
+                    for item in page["items"]:
+                        buying = (item["origin_kind"] == "sale_listing") == (
+                            item["caller_role"] == "initiator"
+                        )
+                        assert mode == "all" or buying == (mode == "buying")
+                        assert "email" not in item
+        checks.append(
+            "unique Handle claim/edit/conflict and completed setup; participant Handle and Temporary badge projection"
+        )
+        checks.append(
+            "all Buying/Selling and Item/Person combinations; authorized global unread aggregate"
+        )
+
     records["actors"] = {
         label: actor["user"]["user_id"] for label, actor in actors.items()
     }
@@ -988,7 +1169,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--synthetic-inspection", action="store_true", required=True)
     parser.add_argument("--check-only", action="store_true")
-    parser.add_argument("--port", type=int, choices=(5174, 5175), default=5174)
+    parser.add_argument("--port", type=int, choices=(5174, 5175, 5176), default=5174)
     args = parser.parse_args()
     global ORIGIN, HEADERS
     ORIGIN = f"http://127.0.0.1:{args.port}"

@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState, type PropsWithChildren } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type PropsWithChildren, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { Button } from '../../shared/ui';
 import type { ConversationEntry, ConversationSummary, KeyBundle, SelectedOwnContacts } from '../../../../../contracts/generated/types.gen';
@@ -23,14 +23,18 @@ export function ConversationPageRuntimeProvider({ runtime, children }: PropsWith
   return <RuntimeContext.Provider value={runtime}>{children}</RuntimeContext.Provider>;
 }
 
-export function ConversationInboxPage() {
+export function ConversationInboxPage(props: {
+  renderOriginContext?: (kind: 'sale_listing' | 'wanted_request', originId: string) => ReactNode;
+} = {}) {
   const runtime = useContext(RuntimeContext);
   if (!runtime) return <p role="status">Sign in to load your conversations. The authenticated session is not connected here yet.</p>;
   // A new account gets fresh page state before its first asynchronous read.
-  return <ConversationInboxSession key={runtime.userId} />;
+  return <ConversationInboxSession key={runtime.userId} renderOriginContext={props.renderOriginContext} />;
 }
 
-function ConversationInboxSession() {
+function ConversationInboxSession({ renderOriginContext }: {
+  renderOriginContext?: (kind: 'sale_listing' | 'wanted_request', originId: string) => ReactNode;
+}) {
   const runtime = useContext(RuntimeContext);
   const navigate = useNavigate();
   const [items, setItems] = useState<ConversationInboxItem[]>([]);
@@ -39,13 +43,17 @@ function ConversationInboxSession() {
   const [pageNumber, setPageNumber] = useState(1);
   const [filters, setFilters] = useState<ConversationInboxFilters>({
     view: 'all',
+    marketplace_mode: 'all',
+    group_by: 'item',
     sort: 'last_activity_desc',
   });
   const [hasNextPage, setHasNextPage] = useState(false);
   const activeRequest = useRef<AbortController | null>(null);
   const requestGeneration = useRef(0);
+  const groupExpanded = useRef(false);
   const refresh = useCallback(async (options: { silent?: boolean } = {}) => {
-    if (!runtime || (options.silent && activeRequest.current)) return;
+    if (!runtime || (options.silent && (activeRequest.current || groupExpanded.current))) return;
+    if (!options.silent) groupExpanded.current = false;
     activeRequest.current?.abort();
     const controller = new AbortController();
     activeRequest.current = controller;
@@ -120,6 +128,22 @@ function ConversationInboxSession() {
   if (!runtime) return <p role="status">Sign in to load your conversations. The authenticated session is not connected here yet.</p>;
   return <ConversationInbox conversations={items} loading={loading} loadError={loadError} onRefresh={refresh}
     renderSellerListingAction={(listingId) => <ConversationListingDoneDeal listingId={listingId} availability={runtime.listingAvailability} renderSelectedBuyer={(id) => <SelectedBuyerContext conversationId={id} api={runtime.api} />} />}
+    renderOriginContext={renderOriginContext}
+    onLoadMoreGroup={async (item) => {
+      groupExpanded.current = true;
+      const person = filters.group_by === 'person';
+      const loaded = items.filter((row) => person ? row.counterparty_user_id === item.counterparty_user_id : row.origin_id === item.origin_id);
+      try {
+        const result = await runtime.api.listMine({ ...filters, group_by: undefined,
+          ...(person ? { counterparty_user_id: item.counterparty_user_id ? [item.counterparty_user_id] : [] } : { origin_id: item.origin_id ? [item.origin_id] : [] }),
+          page: Math.floor(loaded.length / 20) + 1, page_size: 20 });
+        setItems((previous) => {
+          const next = previous.map((row) => loaded.some((old) => old.conversation_id === row.conversation_id) ? { ...row, group_has_more: result.has_next } : row);
+          for (const summary of result.items) if (!next.some((row) => row.conversation_id === summary.conversation_id)) next.push({ ...toInboxItem(summary, runtime.userId), group_has_more: result.has_next });
+          return next;
+        });
+      } catch { setLoadError(true); }
+    }}
     filters={filters} onFiltersChange={changeFilters}
     page={pageNumber} hasNextPage={hasNextPage} onPageChange={setPageNumber}
     onOpen={(id) => navigate(`/my/conversations/${encodeURIComponent(id)}`)} />;
@@ -141,7 +165,7 @@ function SelectedBuyerContext({ conversationId, api }: { conversationId: string;
     return () => { controller.abort(); clearInterval(timer); };
   }, [conversationId, api]);
   if (summary?.caller_role !== 'origin_owner') return null;
-  return <p><strong>Selected buyer</strong> · {summary.current_offer ? `₹${(summary.current_offer.amount_paise / 100).toLocaleString('en-IN')} · ${summary.current_offer.status}` : 'No offer'} · <Link to={`/my/conversations/${conversationId}`}>Open selected conversation</Link></p>;
+  return <p><strong>Selected buyer{summary.counterparty_handle ? ` @${summary.counterparty_handle}` : " — Member completing setup"}</strong> · {summary.current_offer ? `₹${(summary.current_offer.amount_paise / 100).toLocaleString('en-IN')} · ${summary.current_offer.status}` : 'No offer'} · <Link to={`/my/conversations/${conversationId}`}>Open selected conversation</Link></p>;
 }
 
 function toInboxItem(summary: ConversationSummary, userId: string): ConversationInboxItem {
@@ -154,6 +178,10 @@ function toInboxItem(summary: ConversationSummary, userId: string): Conversation
     role, last_activity_at: summary.last_activity_at, unread_count: summary.unread_count,
     origin_kind: summary.origin_kind, origin_id: summary.origin_id,
     counterparty_user_id: summary.counterparty_user_id,
+    group_has_more: summary.group_has_more,
+    group_unread_count: summary.group_unread_count,
+    counterparty_handle: summary.counterparty_handle,
+    counterparty_account_class: summary.counterparty_account_class,
     current_offer: summary.current_offer
       ? { amount_paise: summary.current_offer.amount_paise, status: summary.current_offer.status }
       : null };
@@ -188,19 +216,23 @@ export async function processProtocolControlEntry(
 
 type ReadyConversation = { summary: ConversationSummary; session: ConversationSession; ownKey: KeyBundle; peerId: string; peerKeyVersion: number };
 
-export function ConversationDetailPage({ conversationId }: { conversationId: string | undefined }) {
+export function ConversationDetailPage({ conversationId, renderOriginContext }: { conversationId: string | undefined; renderOriginContext?: (kind: "sale_listing" | "wanted_request", originId: string) => ReactNode }) {
   const runtime = useContext(RuntimeContext);
   if (!runtime) return <p role="status">Sign in to view this conversation. The authenticated session is not connected here yet.</p>;
   // Remount on account/thread change to discard decrypted UI state, drafts and
   // late asynchronous updates. Session cleanup closes crypto; stored keys remain.
-  return <ConversationDetailSession key={`${runtime.userId}:${conversationId ?? ''}`} conversationId={conversationId} />;
+  return <ConversationDetailSession key={`${runtime.userId}:${conversationId ?? ''}`} conversationId={conversationId} renderOriginContext={renderOriginContext} />;
 }
 
-function ConversationDetailSession({ conversationId }: { conversationId: string | undefined }) {
+function ConversationDetailSession({ conversationId, renderOriginContext }: { conversationId: string | undefined; renderOriginContext?: (kind: "sale_listing" | "wanted_request", originId: string) => ReactNode }) {
   const runtime = useContext(RuntimeContext);
   const [ready, setReady] = useState<ReadyConversation | null>(null);
   const [authorizedSummary, setAuthorizedSummary] = useState<ConversationSummary | null>(null);
   const [entries, setEntries] = useState<ConversationDisplayEntry[]>([]);
+  const entryCount = useRef(0);
+  entryCount.current = entries.length;
+  const [historyBusy, setHistoryBusy] = useState(false);
+  const [historyError, setHistoryError] = useState(false);
   const decryptionFailureIds = useRef(new Set<string>());
   const [recoveredPending, setRecoveredPending] = useState<{ operationId: string; text: string } | null>(null);
   const [readSequence, setReadSequence] = useState(0);
@@ -254,9 +286,13 @@ function ConversationDetailSession({ conversationId }: { conversationId: string 
         await session.crypto.establishParticipantSession(bundle, { userId: peerId, keyVersion: bundle.key_bundle.key_version });
       }
       if (generation.current !== token) { await session.stop(); return; }
-      setKeyState({ kind: 'ready' });
       const state = await runtime.api.readState(conversationId);
+      if (generation.current !== token) return;
       setReadSequence(state.own_last_read_sequence);
+      cursor.current = Math.max(0, state.own_last_read_sequence - 5);
+      // Publish readiness only after the opening cursor is established: a poll
+      // must never race initialization and restart an already-read transcript.
+      setKeyState({ kind: 'ready' });
       setLoading(false);
     } catch (error) {
       if (generation.current !== token) return;
@@ -305,7 +341,7 @@ function ConversationDetailSession({ conversationId }: { conversationId: string 
       }
       return;
     }
-    if (!runtime || !conversationId || !ready?.session.history || keyState.kind !== 'ready') return;
+    if (!runtime || !conversationId || !ready?.session.history || keyState.kind !== 'ready' || entryCount.current > 380) return;
     // A response may arrive after logout/navigation closed this session. Do not
     // read its history or process protocol traffic after that boundary changes.
     const token = generation.current;
@@ -314,7 +350,7 @@ function ConversationDetailSession({ conversationId }: { conversationId: string 
     const observedDecryptionFailureIds = new Set(decryptionFailureIds.current);
     let after = cursor.current;
     const visible: ConversationDisplayEntry[] = [];
-    for (let pageCount = 0; pageCount < 100; pageCount++) {
+    for (let pageCount = 0; pageCount < 1; pageCount++) {
       const page = await runtime.api.readEntries(conversationId, after);
       if (!isCurrent()) return;
       const local = await history.read();
@@ -355,7 +391,7 @@ function ConversationDetailSession({ conversationId }: { conversationId: string 
           byId.set(id, { ...original, delivery_notice: 'recipient_unable_to_decrypt' });
         }
       }
-      return [...byId.values()].sort((a, b) => a.sequence - b.sequence);
+      return [...byId.values()].sort((a, b) => a.sequence - b.sequence).slice(0, 400);
     });
   }, [conversationId, initialize, keyState.kind, ready, runtime]);
 
@@ -427,9 +463,47 @@ function ConversationDetailSession({ conversationId }: { conversationId: string 
   return <section aria-label="Conversation page">
     <p><Link to="/my/conversations">Back to conversations</Link></p>
     {pageSummary ? <Link className="ui-button ui-button--secondary" to={`${pageSummary.origin_kind === 'sale_listing' ? '/listings/' : '/wanted/'}${pageSummary.origin_id}`}>Open {pageSummary.origin_kind === 'sale_listing' ? 'listing' : 'Wanted Request'}</Link> : null}
+    {pageSummary && renderOriginContext?.(pageSummary.origin_kind, pageSummary.origin_id)}
     <h2>{pageSummary?.origin_kind === 'sale_listing' ? 'Sale listing conversation' : pageSummary ? 'Wanted request conversation' : 'Private conversation'}</h2>
+    {pageSummary && <p>{pageSummary.counterparty_handle ? `@${pageSummary.counterparty_handle}` : 'Member completing setup'}{pageSummary.counterparty_account_class === 'temporary' ? ' · Temporary account' : ''}</p>}
+    {keyState.kind === 'error' ? <Button disabled={loading} onClick={() => void initialize().catch(() => undefined)} variant="secondary">Retry loading conversation</Button> : null}
+    {historyError && <p role="status">Earlier messages could not be loaded. Try again.</p>}
+    {ready && (entries.length ? entries[0].sequence > 1 : cursor.current > 0) && <Button variant="secondary" disabled={historyBusy || keyState.kind !== 'ready'} onClick={async () => {
+      if (!ready?.session.history) return;
+      setHistoryBusy(true); setHistoryError(false);
+      const token = generation.current;
+      try {
+        const first = entries[0]?.sequence ?? cursor.current + 1;
+        const page = await runtime.api.readEntries(conversationId, Math.max(0, first - 101), undefined, 100);
+        const history = ready.session.history;
+        const local = await history.read();
+        const older: ConversationDisplayEntry[] = [];
+        for (const entry of page.items.filter((item) => item.sequence < first && item.kind !== 'protocol_control')) {
+          const display = await decryptEntry(entry, runtime.userId, ready, local.sent, local.received,
+            (context) => ready.session.receiveText(context),
+            (context) => ready.session.crypto.receiveContactShare(context, history));
+          if (display) older.push(display);
+        }
+        if (token === generation.current) setEntries((current) => [...older, ...current].slice(0, 400));
+      } catch { if (token === generation.current) setHistoryError(true); }
+      finally { if (token === generation.current) setHistoryBusy(false); }
+    }}>Load earlier messages</Button>}
+    {entries.length > 380 && <Button variant="secondary" onClick={() => {
+      const tail = entries.slice(-20);
+      cursor.current = tail.at(-1)?.sequence ?? 0;
+      setEntries(tail);
+    }}>Load newer messages</Button>}
+    <ConversationThread current_user_id={runtime.userId} entries={entries} key_state={keyState}
+      opening_read_sequence={pageSummary?.own_last_read_sequence} opening_unread_count={pageSummary?.unread_count ?? 0}
+      last_read_sequence={readSequence} loading={loading} onRefresh={refresh} onSend={send} onRetry={retry}
+      recoveredPending={recoveredPending}
+      onAcknowledgeDisplayed={acknowledge} onAcknowledgeKeyRegistration={() => initialize(true)}
+      onAcceptChangedKey={keyState.kind === 'key_change' ? acceptChangedKey : undefined} />
+    {authorizedSummary && <details className="conversation-thread__tools"><summary>Share contact details</summary>
     {authorizedSummary ? <ConversationContactPreparation key={conversationId} conversationId={conversationId} api={runtime.api}
       canShare={keyState.kind === 'ready' && ready !== null} onShare={shareContacts} onRetry={retryContactShare} /> : null}
+    </details>}
+    {authorizedSummary && isSellerSaleListingConversation(authorizedSummary) && <details className="conversation-thread__tools"><summary>Buyer tracking</summary>
     {authorizedSummary && isSellerSaleListingConversation(authorizedSummary) ? (
       <ConversationListingSelection
         key={`${authorizedSummary.origin_id}:${authorizedSummary.conversation_id}`}
@@ -439,12 +513,7 @@ function ConversationDetailSession({ conversationId }: { conversationId: string 
         selection={runtime.listingSelection}
       />
     ) : null}
-    {keyState.kind === 'error' ? <Button disabled={loading} onClick={() => void initialize().catch(() => undefined)} variant="secondary">Retry loading conversation</Button> : null}
-    <ConversationThread current_user_id={runtime.userId} entries={entries} key_state={keyState}
-      last_read_sequence={readSequence} loading={loading} onRefresh={refresh} onSend={send} onRetry={retry}
-      recoveredPending={recoveredPending}
-      onAcknowledgeDisplayed={acknowledge} onAcknowledgeKeyRegistration={() => initialize(true)}
-      onAcceptChangedKey={keyState.kind === 'key_change' ? acceptChangedKey : undefined} />
+    </details>}
   </section>;
 }
 

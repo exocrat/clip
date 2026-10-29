@@ -113,33 +113,37 @@ describe('ConversationInbox UI', () => {
       role: 'buyer',
       last_activity_at: '2026-10-23T00:00:00Z',
       unread_count: 2,
+      group_unread_count: 2,
     };
     const html = renderToStaticMarkup(
-      createElement(ConversationInbox, {
+      createElement(MemoryRouter, null, createElement(ConversationInbox, {
         conversations: [item],
         onRefresh: vi.fn(async () => undefined),
         onOpen: vi.fn(),
-      }),
+      })),
     );
-    expect(html).toContain('Your conversations');
-    expect(html).toContain('aria-label="Open A bicycle listing"');
-    expect(html).toContain('>2 unread</span>');
+    expect(html).toContain('Inbox');
+    expect(html).toContain('aria-expanded="false"');
+    expect(html).toContain('2 unread messages');
+    expect(html).toContain('Show conversations');
     expect(html).toContain('Private messages are encrypted on your device.');
   });
 
-  it('groups the current server page by origin and shows only safe shortened identifiers', () => {
+  it('groups by origin with public context and no visible UUID labels', () => {
     const sharedOrigin = {
       origin_kind: 'sale_listing' as const,
       origin_id: '11111111-1111-4111-8111-111111111111',
     };
     const html = renderToStaticMarkup(
-      createElement(ConversationInbox, {
+      createElement(MemoryRouter, null, createElement(ConversationInbox, {
         conversations: [
           { conversation_id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', label: 'Sale listing conversation',
             role: 'seller', last_activity_at: '2026-10-23T00:00:00Z', unread_count: 1,
+            group_unread_count: 1,
             counterparty_user_id: '22222222-2222-4222-8222-222222222222', current_offer: { amount_paise: 125000, status: 'submitted' }, ...sharedOrigin },
           { conversation_id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', label: 'Sale listing conversation',
             role: 'seller', last_activity_at: '2026-10-22T00:00:00Z', unread_count: 0,
+            group_unread_count: 1,
             counterparty_user_id: '33333333-3333-4333-8333-333333333333', current_offer: null, ...sharedOrigin },
           { conversation_id: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc', label: 'Wanted request conversation',
             role: 'request author', last_activity_at: '2026-10-21T00:00:00Z', unread_count: 0,
@@ -149,18 +153,21 @@ describe('ConversationInbox UI', () => {
         onFiltersChange: vi.fn(),
         onRefresh: vi.fn(async () => undefined),
         onOpen: vi.fn(),
-      }),
+        renderOriginContext: (kind) => createElement('span', null, kind === 'sale_listing' ? 'Synthetic bicycle · ₹1,250' : 'Synthetic Wanted request · Budget not stated'),
+      })),
     );
-    expect(html).toContain('Sale listing · 11111111…1111');
-    expect(html).toContain('2 conversations on this page');
-    expect(html).toContain('Wanted request · 44444444…4444');
-    expect(html).toContain('Partner 22222222…2222');
-    expect(html).toContain('₹1,250 · submitted');
-    expect(html).toContain('Each group shows only conversations on this page');
+    expect(html).toContain('Sale listing');
+    expect(html).toContain('2 conversations');
+    expect(html).toContain('Synthetic bicycle · ₹1,250');
+    expect(html).toContain('Synthetic Wanted request · Budget not stated');
+    expect(html).not.toContain('Partner 22222222');
+    expect(html).not.toContain('11111111…1111');
+    expect(html).toContain('Show conversations');
+    expect(html).toContain('Most recent activity first.');
     expect(html).not.toContain('Partner · 22222222-2222-4222-8222-222222222222');
   });
 
-  it('renders bounded view, origin, partner and offer controls only when connected to a query owner', () => {
+  it('omits an empty Sort & Filter disclosure and obsolete selectors', () => {
     const html = renderToStaticMarkup(
       createElement(ConversationInbox, {
         conversations: [],
@@ -170,12 +177,12 @@ describe('ConversationInbox UI', () => {
         onOpen: vi.fn(),
       }),
     );
-    expect(html).toContain('Filter and sort conversations');
-    expect(html).toContain('Buyer or responder · I started it');
-    expect(html).toContain('Conversation partner');
-    expect(html).toContain('Listing or request');
-    expect(html).toContain('Minimum offer (₹)');
-    expect(html).toContain('Offer filters apply to Sale Listings');
+    expect(html).not.toContain('<details class="conversation-inbox__sort-filter">');
+    expect(html).not.toContain('Sort &amp; Filter');
+    expect(html).not.toContain('Participation');
+    expect(html).not.toContain('Conversation partner');
+    expect(html).not.toContain('Listing or request');
+    expect(html).not.toContain('Minimum offer');
   });
 });
 

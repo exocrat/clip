@@ -8,59 +8,26 @@ The synthetic account switch and fixture endpoints exist only in this launcher;
 they are absent from the normal application and deployment image.
 
 
-## Current checkpoint: Conversations functional repair
+## Current checkpoint: post-inspection corrections implemented, awaiting a second human inspection
 
-Suraj requested this checkpoint before the handle migration and broader visual
-redesign. The fresh demo remains **http://127.0.0.1:5174/__inspection**. Use this
-sequence first; existing card/layout/handle feedback is still pending.
+The corrected build includes compact shared sale cards with Save/Message/View in
+one centered row below the photo and listing details, visibly tabular listing facts, separate
+View/Group by conversation controls, collapsed item/person groups with a visible
+group unread badge, stronger conversation separators, five-row per-group
+expansion, horizontal phone pagination, date separators, revised unread
+positioning and scroll-to-bottom after a successful send.
+Account setup gates marketplace use when this browser lacks an encryption key
+and offers an explicit new-key action with a data-loss warning. `inspection_buyer`
+owns a photo-backed listing and Wanted Request for My Listings review.
 
-1. In one browser/profile choose **seller**. Complete the first-time messaging
-   setup: read the warning, tick acknowledgement, click Create encryption key.
-   Go back to the inspection controls and open the first prepared conversation
-   (the bicycle). Ordinary subsequent visits must not ask to create keys again.
-2. In a **different browser/profile** choose **buyer**, complete setup and open
-   that same first conversation. Two ordinary tabs share a session cookie and
-   cannot be two simultaneous actors. A private window is temporary: closing it
-   destroys its local keys. Use persistent profiles/browsers for retained history.
-3. Send a synthetic message each way. Reload both pages and check both sent and
-   received history remains. Once setup is complete, one participant can stay on
-   Discover or close the thread while the other sends; opening the thread later
-   must show the message. Never clear site storage to work around an error.
-4. As seller choose contact details, select Email, Review, Confirm and send.
-   Buyer should receive only the synthetic selected email. For an account with
-   no contacts, Set up contact details leads to settings and Back to conversation
-   returns safely. Check cancel once before confirming. As buyer update/withdraw/
-   resubmit an offer; seller can Refresh offer to see it.
-5. As seller Select this buyer. **Availability must stay unchanged**; this is
-   private tracking, with no buyer notification. Clear/change it if desired.
-   In the inbox the seller group shows Selected buyer, current/no/withdrawn offer
-   and an Open selected conversation shortcut. Origin links exist on groups/threads.
-6. Use Mark as done deal on that seller group: only this action makes unavailable.
-   Reopen the same item in My Listings, then return to the existing inbox/thread.
-   Focus/visible polling must update seller controls without a manual reload.
-   Selection remains usable on valid unavailable records and survives reopening.
-
-The account-specific store preserves matching legacy keys/history and keeps new
-accounts in separate namespaces. Missing keys for an already-registered account
-are reported; keys are never silently replaced. Fresh fixture accounts have no
-pre-generated private keys, so complete setup in your chosen profiles.
-
-The verified browser regression used actual Chromium/IndexedDB, real SDK crypto,
-real local SQL/session APIs and synthetic external providers. It passed both-way
-and offline-recipient messaging, encrypted selected-field contact delivery,
-offer changes, private selection, live reopen, account switching and reload.
-Final conversation-repair `make check` passed: Python1,934/154 skipped; data94;
-web475/three skipped; Conversations167; contracts/types/lint/build/database safety,
-full disposable migration/rollback/reapply and secret gates passed. Separate
-store checks:22 passed/three gated skips. No shared/cloud DB apply occurred.
-
-This is not human visual verification. Handle collection/uniqueness/migration,
-new group pagination/People mode, participant naming and the general UI refresh
-remain in the following batch. Chat images remain optional OPT-04.
+Use the fresh environment at **http://127.0.0.1:5176/__inspection**. Browser
+verification uses a separate disposable run; the final handoff starts with clean
+server key state so your own browser can perform first-device encryption setup.
+No chat images or Notifications are included. Cloud deployment remains separate.
 
 ## Open the prepared environment
 
-Open **http://127.0.0.1:5174/__inspection**. The prepared session is running (2026-10-28 UTC), process **2346525**.
+Open **http://127.0.0.1:5176/__inspection**. The launcher PID and photo directory are printed in the latest handoff. Use the download links on the page. IDs and paths change on restart.
 The page provides account-switch buttons, useful record links, all synthetic IDs,
 and the current sample-photo path. All pages use this one origin. Use this exact
 address rather than mixing `localhost` and `127.0.0.1`, which have separate cookies.
@@ -70,10 +37,19 @@ The inspection page offers these synthetic accounts:
 | Button | Use |
 |---|---|
 | seller | Owns the bicycle, the kettle, sale history and Wanted Requests; select buyers, mark deals unavailable, and share test contacts. |
-| buyer | Has conversations with both sellers and responds to Wanted Requests; can save listings and submit/revise/withdraw offers. |
+| buyer | Has conversations with both sellers and responds to Wanted Requests; can save listings and submit/revise/withdraw offers. Also owns a photo-backed desk-lamp listing and a Wanted Request for checking both My Listings tabs. |
 | other-seller | Provides a second listing/request owner and a second partner for filtering. |
 | other-buyer | Has a second conversation about the bicycle; compare and select buyers. |
+| new-member | Deliberately incomplete regular account: verify required unique Handle collection, then first-device encryption setup. |
 | temporary | A real temporary-account session created through synthetic OTP delivery; can browse, save, and create Wanted Requests, but cannot publish sale listings or respond to Wanted Requests. |
+
+Each main actor must have encryption ready in that browser before normal
+marketplace pages appear. New actors first ask for consent and **Create
+encryption key**. If an actor has a server key but this browser has lost its local
+key, Account setup explains that CLIP cannot restore old messages and offers an
+explicitly acknowledged **Create a new encryption key** action. Complete
+**new-member** to check required Handle setup after key setup; returning accounts
+with a present key go straight to the marketplace.
 
 Clicking a button issues a real local session and opens Discover. The banner on
 application pages links back to the inspection controls. Switching accounts resets
@@ -82,12 +58,13 @@ browser profiles** (for example a regular window and one private window), with
 seller in one and buyer in the other. Two ordinary tabs share one account cookie.
 Keep each actor in its own profile while testing chat to preserve device keys.
 
-The prepared data contains **28 sale listings** (27 available and one unavailable),
-**26 Wanted Requests**, and **54 conversations** across sale and Wanted origins.
+The prepared data contains **29 photo-backed sale fixtures** (including the
+buyer-owned desk lamp and deliberately unavailable/retired seller cases),
+**27 Wanted Requests** (including the buyer-owned request), and **77
+conversations** across sale and Wanted origins.
 It includes all approved categories/conditions, both negotiability badges,
 Original price present/absent, zero and absent budgets, multiple partners, an
-existing offer, real photos, and enough results for page 2. No opaque fake message
-keys are seeded: first opening a conversation initializes the real browser crypto.
+    existing offer, real photos, and enough results for page 2. No opaque fake message keys are seeded: account setup creates real browser keys and the first conversation establishes its encrypted session. Create your own test messages using step 24; this keeps unread examples readable with your own keys.
 
 ## Inspect Discovery and listings
 
@@ -96,6 +73,8 @@ Use **buyer** initially. Tick each item only after observing its result.
 1. [ ] Open `/`. Verify Sale Listings and Wanted Requests views, New listing,
    New Wanted Request, Saved, My Listings and Conversations navigation. Open
    New Wanted Request and confirm it opens the existing creation form directly.
+    Check that New Listing is available from sale discovery, and the account and
+    sign-out controls sit at the upper right. Sign in should only appear signed out.
 2. [ ] In Sale Listings, search **Inspection campus bicycle**. The bicycle should
    appear. Then search **wheeled vehicle**; it should appear through Hybrid search.
    Try **zzzxqnevermatchzzzxq** and verify an empty result state.
@@ -115,16 +94,27 @@ Use **buyer** initially. Tick each item only after observing its result.
    Back/Forward after applying different searches/filters and check restored state.
 7. [ ] Check ascending/descending price order and Newest. Inspect cards with
    **Negotiable** and **Fixed price** badges; there must be no negotiability filter.
-   The bicycle has seller-provided Original price; the kettle omits it. No empty
-   Original price row or inferred discount should appear on the omitted case.
-8. [ ] Open the bicycle and kettle from the inspection page links. Check their
-   detail values and photo against their cards. Save the bicycle, open Saved,
-   verify the shared card, remove it, and confirm it disappears. Save it again
-   if you want to inspect unavailable saved state later.
+    The bicycle has seller-provided Original price; the kettle omits it. Open both
+    details: the bicycle's Original price appears there too, and the kettle has no
+    empty row or inferred discount. Save the bicycle directly from its browse card.
+    Contact the seller from that card; the action should not accidentally open the
+    card. Open Saved, confirm the same sale-card presentation, and unsave it there.
+8. [ ] Click the main area of a listing card and confirm it opens that listing;
+    use the card's Save and Message seller controls separately. Repeat on a Wanted
+    card with Contact requester. Long card descriptions should clamp while
+    condition, price/budget and status stay visible. At 360px and 390px wide,
+    confirm Save, Message and View listing are centered in one row below the photo
+    and item details instead of adding two stacked action rows to the card.
 9. [ ] Switch to **seller**. Open My Listings. Verify the unavailable history
-   record is retained although it is absent from public discovery. Verify
-   Original price present/omitted cases and the edit links. Switch the My Listings
-   view between Sale Listings and Wanted Requests: this remains single choice.
+    record is retained although absent from public discovery. Compare its sale
+    card with Discover and Saved, including Original price present/omitted cases.
+    Open a listing detail as its owner and check Edit and availability controls;
+    open another account's detail and confirm owner controls are absent. Switch
+    My Listings between Sale Listings and Wanted Requests (one view at a time).
+10. [ ] Switch to **buyer**. In My Listings, confirm the desk-lamp card appears
+    under Sale Listings and the lab-coat request appears under Wanted Requests.
+    Open both and verify owner actions are visible only for this account. Switch
+    back to seller before continuing seller-specific checks.
 
 ## Inspect creation, photos, preview and editing
 
@@ -145,7 +135,7 @@ until you delete them. Use those downloads in the browser file chooser.
     text file should be rejected even if you override the file-picker filter.
 12. [ ] Use `progress-photo.png` with browser network throttling to see upload and
     confirmation states. For a deliberate retryable failure, use DevTools request
-    blocking for `*://127.0.0.1:5174/__listings_demo/storage/*`, select a new photo,
+    blocking for `*://127.0.0.1:5176/__listings_demo/storage/*`, select a new photo,
     and observe failure. Remove the block and click Retry. The same intent should
     recover. Remove an unneeded photo and confirm the remaining count is correct.
 13. [ ] Open the draft preview. Change title, condition, price, negotiability,
@@ -166,6 +156,8 @@ until you delete them. Use those downloads in the browser file chooser.
 
 16. [ ] As seller, use New Wanted Request. Enter **Inspection campus bicycle** as
     the draft title: the available bicycle should appear among possible matches.
+    Possible campus matches should appear **above Description**, expanded initially, with a labelled hide/show control that retains the match heading/count. They use the same sale
+    card as browsing, with image/price/status where available.
     Enter **zzzxqnevermatchzzzxq**: no matches should appear. Editing the draft
     must not save a request. Block `*/api/wanted-requests/draft-matches*` in DevTools,
     change the title, and verify an error preserves the draft and does not block
@@ -184,63 +176,132 @@ until you delete them. Use those downloads in the browser file chooser.
     page 1. Test Back/Forward, and switch Sale/Wanted views: each view keeps its own
     applied URL filter state. Verify page-size controls where present.
 20. [ ] Open a public request as buyer. It must not reveal private author contacts.
-    Contact requester opens/reopens a private conversation. As the temporary
-    account, browsing is allowed but responding is denied; check the explanation.
+    Contact requester works from the browse card and detail. Open your own request
+    detail as seller and check Edit, Mark unavailable and Reopen; check that they
+    do not appear on another person's request. As the temporary account,
+    browsing is allowed but responding is denied; check the explanation.
 
 ## Inspect Conversations, offers, buyer selection and contacts
 
 These are the normal `/my/conversations` pages. Do **not** add
-`?demo=conversations`; that old presentation fixture is not used by this walkthrough.
-The inspection page provides direct links to the first conversations. The first
-is buyer ↔ seller about the bicycle, the second is about the kettle, and a separate
-other-buyer conversation also concerns the bicycle. IDs are shown because current
-inbox labels use shortened IDs; the inspection page maps full actor/record IDs.
+`?demo=conversations`. The first prepared conversations are buyer ↔ seller about
+the bicycle and kettle; another buyer also has a bicycle conversation. The
+inspection page maps generated records and provides shortcuts; application
+conversation labels should not show opaque IDs.
 
-21. [ ] As buyer, open Conversations. Check buyer/responder context. As seller,
-    check seller/request-author context. Participation is single choice; Type is
-    single choice. Sale and Wanted origins should group appropriately.
-22. [ ] Select multiple Listing or request values and multiple Conversation partner
-    values. Apply them together: OR within either selection and AND between them.
-    Clear them. Check offer status, minimum/maximum offer and amount sorting for
-    sale conversations; switching to Wanted disables/clears inappropriate offer
-    controls. Page through the prepared inbox and check a changed filter resets
-    to page 1. Refresh must preserve the applied filters.
-23. [ ] Open the bicycle conversation as seller and buyer in separate profiles.
-    Follow the explicit first-device key-registration acknowledgement. If it says
-    the other participant has no key yet, open that conversation in the other
-    profile, finish registration there, then refresh the first. Check loading,
-    retry and key-state messages rather than assuming the composer is ready.
-24. [ ] Send a synthetic message in each direction. Verify ordering, refresh and
-    persistence. Keep the recipient inbox open while a new message arrives to
-    inspect unread counts, then open/display the thread and confirm read state.
-    Reload the same profiles and check history. Do not clear browser storage
-    during this check; loss of local keys intentionally has a separate warning.
-25. [ ] As buyer, inspect the bicycle's prepared offer. Change its whole-rupee
-    amount and submit, refresh the seller's offer panel, and confirm the amount.
-    Withdraw it, inspect Withdrawn on the seller side, then resubmit. Seller can
-    read offers but cannot submit a buyer offer. Wanted conversations have no
-    offer panel. Offers do not confirm payment, handover or an accepted deal.
-26. [ ] As seller, open the bicycle conversation and **Select this buyer**. Confirm
-    the buyer is selected privately and availability stays unchanged. Selection
-    alone must not remove it from discovery; existing conversations stay readable.
-    You can change/clear selection before or after making it unavailable. This is
-    independent of accepting an offer or confirming payment.
-27. [ ] In the seller inbox, use the kettle group's **Mark as done deal** action.
-    Confirm it marks that listing unavailable without inventing a selected buyer.
-    Existing conversations remain open. Buyer and Wanted groups must not show
-    that seller action. Reopen through My Listings if repeating this check.
-28. [ ] Open Account contacts as seller. A synthetic example email is prepared;
-    add a synthetic phone such as `+919876543210` if desired. Save/delete fields
-    and inspect validation. In a ready conversation, open contact-sharing options,
-    choose only the email, review/confirm, and verify the buyer receives only that
-    selected field. Cancel once before confirming: cancellation must not publish.
-    Messages and contact shares use the real browser encryption/session path.
-29. [ ] Log out. Private conversations, contacts and owner records must disappear
-    or require sign-in. Old pages must not authorize new writes. Switch to
-    temporary from the inspection controls: check browsing/saving/Wanted creation
-    and the sale-publication/response restrictions. The actual temporary
-    registration, password login and logout routes were also exercised by the
-    programmatic sweep with a captured synthetic mailbox.
+21. [ ] Open Conversations as buyer, then seller. Recent activity is the default.
+    Check sale and Wanted conversations are grouped by their origin, and the
+    seller/buyer or request-author/responder context is understandable. Each group
+    shows the origin title and budget/price, with a sale photo when available, and
+    has a link back to its listing/request detail. Groups begin collapsed. If a
+    group has unread activity, its total unread badge stays visible in the header
+    while the conversation rows are hidden. No conversation, origin or
+    participant UUID should appear as visible copy.
+22. [ ] Check the separately labelled **View** (All/Buying/Selling) and
+    **Group by** (Item/Person) choices. Pick one option in each group; both
+    choices remain active. Buying means your sale enquiries or your Wanted
+    Requests. Selling means your sale listings or your responses to other
+    people's Wanted Requests. Switching either choice resets paging. By Item
+    gives distinct origin boxes; By Person groups threads with the same Handle.
+    Each item keeps its own context and detail link. Page 2 contains different
+    groups rather than splitting one group across pages. Old origin/partner
+    multi-selects and empty Sort & Filter panels are absent.
+    Prepared regular peers show their Handles. As buyer, open the prepared
+    temporary-requester conversation and check its **Temporary account** marker.
+23. [ ] Open the bicycle conversation as seller and buyer in separate persistent
+    browser profiles. Complete first-device key setup once for each profile. Two
+    ordinary tabs share one session and cannot act as separate accounts. Never
+    clear browser storage during the chat checks; local keys are not recoverable.
+24. [ ] Send a synthetic message each way. Enter sends; Shift+Enter inserts a
+    newline. Check the button still works on touch, spacing around the composer,
+    message readability and conversation refresh. After sending, confirm the
+    thread scrolls to the new message at the bottom. Keep the seller's bicycle
+    group collapsed while the buyer sends several messages; the seller's group
+    badge should show the total unread count without expanding it. Expand the
+    group and compare with the per-thread unread indicators. Once setup is complete, a
+    recipient need not keep the thread open or be online to receive a later
+    message. Reload the same profiles and check history.
+25. [ ] As buyer, revise the bicycle's prepared offer, submit, withdraw and
+    resubmit. Refresh the seller's offer panel and check the current status and
+    amount. Seller can read offers but cannot submit a buyer offer. Wanted
+    conversations have no offer panel. Offers do not confirm payment or handover.
+26. [ ] As seller, expand **Buyer tracking** below the composer and select a bicycle buyer and inspect the seller's listing group:
+    it should surface the selected buyer Handle/current offer and a direct conversation
+    action. Selection is private tracking and does not change availability or
+    notify the buyer. Change/clear the selection if useful. Use Mark as done deal
+    on the kettle group; that action alone makes it unavailable. Reopen in My
+    Listings and return to Conversations: the seller controls should refresh,
+    and selected buyer state should remain useful across the availability change.
+27. [ ] Open **Account** as seller. Use the synthetic contact values only.
+    In a ready conversation, expand **Share contact details** below the composer, click Choose contact details, select one contact type, Review, then Confirm and
+    send. The buyer should receive only that selected field. Cancel once before
+    confirming. For an account without contacts, Set up contact details should
+    lead to settings and return to the same conversation safely.
+28. [ ] Check Sign out at the top-right, then sign out. Private records should
+    require sign-in. Switch to the temporary account from the inspection controls:
+    confirm the explanatory restriction on sale creation and Wanted responses.
+    Temporary registration/login/logout and authorization denials also passed in
+    the programmatic sweep.
+
+## Inspect the new feedback corrections
+
+29. [ ] Start as **new-member**. Complete encryption setup first, then verify
+    marketplace pages require a Handle.
+    Try `inspection_seller`: the safe taken-name error preserves your draft. Try
+    spaces/punctuation and fewer than three characters. Save `my_campus_handle`;
+    the server confirms it and opens the marketplace. Reload/sign out and back in:
+    normal returning use should resume. Account lets you edit the Handle later; changing only its case must
+    not collide with your own claim. Do not clear browser storage during inspection.
+30. [ ] On a phone-width page, the compact sticky **Menu** opens/closes navigation
+    and closes after choosing a route. Account and Sign out remain at the top.
+    At desktop width normal navigation is available. Try a very wide window:
+    content stays bounded rather than stretching indefinitely across the screen.
+31. [ ] Compare Discover, Saved, My Listings, preview and possible-match sale
+    cards. Phones use compact image-left/details-right cards; desktop has several
+    cards per row. Long titles/descriptions clamp; price, condition and actions
+    remain visible. Wanted cards use consistent neutral styling and budget placement.
+    New Listing and New Wanted Request actions have matching compact sizing.
+32. [ ] Open category/condition menus. Checkbox and label share a row. Select
+    several choices, then click outside or press Escape: the panel closes and
+    choices remain. Search & filters starts expanded in both discovery views;
+    collapse it and check that the applied query/categories/bounds remain clear.
+    Reopen without losing the draft or changing the applied URL state.
+33. [ ] Original price uses **Seller Provided** on cards and details. Listing
+    details show facts in a divided, labelled table layout after the description,
+    with columns when they fit and stacked rows on a phone. Wanted
+    creation is bounded like sale creation; matches are above Description and
+    can be hidden/shown without losing any draft input.
+34. [ ] Inspect the chat itself: recognizable item context and peer Handle,
+    readable message bubbles, usable composer, separated buttons and responsive
+    offer controls. **Share contact details** and seller **Buyer tracking** are
+    labelled sections below the composer. The inbox has distinct bounded origin
+    boxes, useful photos and no large empty gaps. Check both light and dark mode.
+35. [ ] With seller and buyer encryption set up in their separate browser
+    profiles, keep seller on Discover and send three new bicycle-thread messages
+    as buyer. Seller's navigation unread count should increase within about five
+    seconds. Open that thread: it starts at the text immediately before the first
+    unread message when available, then shows an **X unread messages** divider.
+    Contact-sharing entries count as unread too. Only displayed entries are
+    acknowledged; sending a message clears the opening divider. Leave/reopen after reading:
+    the thread opens at the latest messages without an unread divider. While
+    reading older messages, a new arrival must not force a jump. **Load earlier
+    messages** retrieves bounded history; a full history window offers **Load
+    newer messages**. Message pagination is separate from inbox/group pagination.
+36. [ ] Each group initially shows at most five conversations. Use **Show 5 more
+    conversations** and **Hide conversations** on one group without affecting
+    another; rows have clear, heavier separators. The group unread total stays in
+    the heading while collapsed and expanded. Previous, Page and Next stay on one line
+    at phone width. In By Person, check every included item still has its own detail link and
+    the correct seller controls. Selected buyer/current offer stays in the
+    relevant listing context. The bicycle box has 24 threads, including 22 `pagination_XX` fixture peers. Click **Show 5 more conversations** repeatedly to reveal the remaining threads. Those peers intentionally have no browser keys; use the named main actors for real encrypted chat. The extra rows exercise pagination and waiting-for-setup states. The API regression separately verifies that the group unread total includes messages beyond the first 20 rows.
+37. [ ] In a longer thread, confirm one centered date separator appears when the
+    local calendar day changes. Each message shows only local hours and minutes
+    with AM/PM, without repeating the date or showing seconds.
+38. [ ] After completing encrypted-chat checks, clear only the seller actor's
+    site data for this inspection origin and sign in again as seller. Account
+    setup should explain that the local key is missing, old encrypted data cannot
+    be recovered and peers may need to accept a new key. Create a fresh key only
+    if you accept losing access to prior ciphertext; do not do this before chat checks.
 
 ## Narrow layouts and reporting observations
 
@@ -257,17 +318,18 @@ You can request changes at this point. NEXT-03 remains open pending this review.
 
 ## Restart and cleanup
 
-For this session, **`kill -INT 2346525`**
-from another terminal stops the server, removes only its own disposable PostgreSQL
-container, and deletes its temporary photos/records. Browser IndexedDB/local keys
-remain until you clear site data for `http://127.0.0.1:5174`; clear those only after
-finishing the inspection. No retained developer database is reset.
+For this session, use the launcher PID printed in the latest handoff or press
+Ctrl+C in its foreground terminal. This stops the server,
+removes only its disposable PostgreSQL container, and deletes its temporary
+photos/records. Browser IndexedDB/local keys remain until you clear site data for
+`http://127.0.0.1:5176`; clear those only after finishing the inspection. No
+retained developer database is reset.
 
 To recreate the entire dataset and run the sweep before serving it again:
 
 ```bash
 cd /home/suraj/src/clip-planning-main
-CLIP_ENVIRONMENT=test .venv/bin/python scripts/marketplace_inspection.py --synthetic-inspection
+PATH=/home/suraj/src/.clip-tools/uv-0.10.7:$PATH UV_CACHE_DIR=/tmp/clip-uv-cache CLIP_ENVIRONMENT=test .venv/bin/python scripts/marketplace_inspection.py --synthetic-inspection --port 5176
 ```
 
 Ctrl+C stops a foreground restart. To run the sweep and clean up immediately,
@@ -303,4 +365,12 @@ local Docker and the pinned local semantic model/interpreter.
   informational large-bundle warning. No shared/cloud database apply, real
   provider call, paid experiment, deployment, or notification action occurred.
 
+The current 2026-10-28 run repeated all **21 action groups** against the built
+app with the real local database and Hybrid model; all passed. It is serving on
+5176 with fresh data. A prior attempt on 5174 also passed its action sweep but
+could not bind because that port was already in use, then cleaned up its fixture.
 These are automated/programmatic results. Human visual observations are pending.
+
+## Current verification receipt
+
+See the [file-by-file implementation and verification report](next-03-visual-feedback-implementation-report.md). The fresh handoff action sweep passed all 24 groups. The complete `make check` passed, followed by final frontend verification (495 passed/3 skipped), supplemental legacy Handle migration/privilege checks and the expanded PostgreSQL Conversations suite (169 passed). Chromium checked the three centered sale-card actions at 360px, 390px and 1440px; collapsed conversation group headers; responsive listing facts and inbox pagination; no horizontal overflow or console errors. Browser messaging/key checks used a discarded preflight database. This fresh dataset starts without browser-published encryption keys so you can inspect first-device setup yourself. Your visual review is the remaining local gate.

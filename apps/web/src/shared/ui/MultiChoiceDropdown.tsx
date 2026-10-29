@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { useEffect, useId, useRef } from 'react';
 import './MultiChoiceDropdown.css';
 
 export type MultiChoiceOption = { value: string; label: string };
@@ -26,6 +26,25 @@ export function MultiChoiceDropdown({
   disabled = false,
 }: MultiChoiceDropdownProps) {
   const id = useId();
+  const panel = useRef<HTMLDetailsElement>(null);
+  // Native details keeps keyboard behavior; dismiss only the panel, never choices.
+  useEffect(() => {
+    const outside = (event: PointerEvent) => {
+      if (panel.current && !panel.current.contains(event.target as Node)) panel.current.open = false;
+    };
+    const dismissOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && panel.current?.open) {
+        panel.current.open = false;
+        panel.current.querySelector('summary')?.focus();
+      }
+    };
+    document.addEventListener('pointerdown', outside);
+    document.addEventListener('keydown', dismissOnEscape);
+    return () => {
+      document.removeEventListener('pointerdown', outside);
+      document.removeEventListener('keydown', dismissOnEscape);
+    };
+  }, []);
   const selected = new Set(values);
   const selectedLabels = options.filter((option) => selected.has(option.value)).map((option) => option.label);
   const summary = selectedLabels.length === 0
@@ -42,7 +61,7 @@ export function MultiChoiceDropdown({
   }
 
   return (
-    <details className="ui-multi-choice" data-disabled={disabled || undefined}>
+    <details ref={panel} className="ui-multi-choice" data-disabled={disabled || undefined}>
       <summary aria-disabled={disabled} tabIndex={disabled ? -1 : undefined}>
         <span className="ui-multi-choice__label">{label}</span>
         <span className="ui-multi-choice__selection">{summary}</span>

@@ -8,8 +8,8 @@ import {
   type PreKeyUpload,
   type SignalProtocolRelayServer,
 } from '@open-e2ee/signal-protocol-sdk';
-import { compositeIdentitiesEqual, createCompositeIdentityV1 } from '@open-e2ee/signal-protocol-sdk/keys';
-import type { AccountIdentityProvisioning, IdentityType, PreKeyInventory, PreKeyPublicationPlan } from '@open-e2ee/signal-protocol-sdk/remote/relay/types';
+import { compositeIdentitiesEqual, createCompositeIdentityV1, deriveIdentityCommitment } from '@open-e2ee/signal-protocol-sdk/keys';
+import type { AccountIdentityProvisioning, AccountIdentityRotation, IdentityType, PreKeyInventory, PreKeyPublicationPlan } from '@open-e2ee/signal-protocol-sdk/remote/relay/types';
 import type { SignalProtocolLocalStore } from '@open-e2ee/signal-protocol-sdk/local/store';
 import { openAccountConversationStore, CONVERSATION_STORE_OWNER } from './accountStore';
 import type { ContactShareRequest, KeyBundle, MessageRequest, PublicKeyBundleRequest } from '../../../../../contracts/generated/types.gen';
@@ -106,6 +106,7 @@ export class ConversationRelay implements SignalProtocolRelayServer, Conversatio
   // client, a failed fetch retries its UUID; a restarted client may reserve a
   // fresh pair, leaving an unused server reservation instead of reusing an OTP.
   private readonly reservationScope = crypto.randomUUID();
+  private approvedRotationCommitment: Uint8Array | null = null;
   readonly relayConnectionState = { state: 'stopped' as const, since: Date.now() };
 
   constructor(
@@ -114,6 +115,7 @@ export class ConversationRelay implements SignalProtocolRelayServer, Conversatio
     private readonly api: ConversationApi,
     private readonly storage: SignalProtocolLocalStore,
     private readonly history?: ConversationLocalHistory,
+    private readonly allowUnrecoverableKeyReplacement = false,
   ) {}
 
   private thread(): string {
@@ -191,7 +193,8 @@ export class ConversationRelay implements SignalProtocolRelayServer, Conversatio
     }
     const published = await this.ownBundle();
     if (published && (published.registration_id !== request.registrationId ||
-      !compositeIdentitiesEqual(this.sdkBundle(published).identity, request.identity))) {
+      !compositeIdentitiesEqual(this.sdkBundle(published).identity, request.identity)) &&
+      !this.allowUnrecoverableKeyReplacement) {
       throw new ConversationCryptoError('Existing account identity cannot be replaced implicitly');
     }
   }
@@ -287,8 +290,11 @@ export class ConversationRelay implements SignalProtocolRelayServer, Conversatio
     if (!local) throw new ConversationCryptoError('Local identity unavailable');
     const identity = createCompositeIdentityV1(local);
     const current = await this.ownBundle();
-    if (current && (current.registration_id !== local.registrationId ||
-      !compositeIdentitiesEqual(this.sdkBundle(current).identity, identity))) {
+    const identityChanged = current && (current.registration_id !== local.registrationId ||
+      !compositeIdentitiesEqual(this.sdkBundle(current).identity, identity));
+    const approvedCurrent = current && this.approvedRotationCommitment &&
+      deriveIdentityCommitment(this.sdkBundle(current).identity).every((byte, index) => byte === this.approvedRotationCommitment?.[index]);
+    if (identityChanged && (!this.allowUnrecoverableKeyReplacement || !approvedCurrent)) {
       throw new ConversationCryptoError('Existing account identity cannot be replaced implicitly');
     }
     const signed = keys.find((key) => key.type === 'ecSignedPreKey');
@@ -307,6 +313,7 @@ export class ConversationRelay implements SignalProtocolRelayServer, Conversatio
       JSON.stringify(current[key as keyof KeyBundle]) === JSON.stringify(value));
     const version = unchanged ? current.key_version : (await this.journal('registration', body,
       (request) => this.api.registerOwnKey(request as PublicKeyBundleRequest), false)).key_version;
+    if (identityChanged) this.approvedRotationCommitment = null;
     const prekeys = keys.filter((key) => key.type === 'ecPreKey' || key.type === 'kemOneTimePreKey').map((key) => ({
       key_type: key.type as 'ecPreKey' | 'kemOneTimePreKey', key_id: key.keyId,
       public_key_base64: key.publicKey, ...(key.signature ? { signature_base64: key.signature } : {}),
@@ -613,7 +620,6 @@ export class ConversationRelay implements SignalProtocolRelayServer, Conversatio
   subscribe(): never { throw new ConversationCryptoError('Use CLIP entry polling instead of relay subscriptions'); }
   subscribeRelayConnectionState() { return () => undefined; }
   removeDevice = unsupported;
-  rotateIdentityKey = unsupported;
   clearStaleKemPreKeys = unsupported;
   createGroupState = unsupported;
   getGroupState = unsupported;
@@ -621,6 +627,22 @@ export class ConversationRelay implements SignalProtocolRelayServer, Conversatio
   getGroupChanges = unsupported;
   submitGroupChange = unsupported;
   issueAuthCredential = unsupported;
+
+  /** Stage a user-approved identity change; publication replaces the complete
+   * signed bundle in one authenticated API operation once the SDK has generated it.
+   */
+  async rotateIdentityKey(request: AccountIdentityRotation): Promise<void> {
+    this.own(request.userId, request.deviceId, request.identityType);
+    if (!this.allowUnrecoverableKeyReplacement) throw new ConversationCryptoError('Key replacement was not approved');
+    const local = await this.storage.getIdentityKey();
+    const current = await this.ownBundle();
+    if (!local || !current || local.registrationId !== request.registrationId ||
+      !compositeIdentitiesEqual(createCompositeIdentityV1(local), request.identity) ||
+      !deriveIdentityCommitment(this.sdkBundle(current).identity).every((byte, index) => byte === request.expectedCurrentCommitment[index])) {
+      throw new ConversationCryptoError('Account encryption key changed; refresh setup before replacing it');
+    }
+    this.approvedRotationCommitment = request.expectedCurrentCommitment.slice();
+  }
 }
 
 export type ConversationSession = {
@@ -639,17 +661,19 @@ export type ConversationSession = {
  */
 export async function createConversationSession(
   userId: string, conversationId: string | null, api: ConversationApi, storage: SignalProtocolLocalStore,
-  options: { acknowledgeUnrecoverableHistoryRisk?: true } = {},
+  options: { acknowledgeUnrecoverableHistoryRisk?: true; allowUnrecoverableKeyReplacement?: true } = {},
 ): Promise<ConversationSession> {
   const published = await api.readOwnKey();
   if (published && published.user_id !== userId) throw new ConversationCryptoError('Own key owner mismatch');
   const local = await storage.getIdentityKey();
   const owner = await storage.getMetadata(OWNER_KEY);
   if (owner !== null && owner !== userId) throw new ConversationCryptoError('Browser keys belong to a different account');
-  assertConversationKeyState(userId, local !== null, published !== null, options.acknowledgeUnrecoverableHistoryRisk === true);
-  if (local && published && (local.registrationId !== published.registration_id || !compositeIdentitiesEqual(createCompositeIdentityV1(local),
+  assertConversationKeyState(userId, local !== null, published !== null,
+    options.acknowledgeUnrecoverableHistoryRisk === true, options.allowUnrecoverableKeyReplacement === true);
+  const localIdentityChanged = local && published && (local.registrationId !== published.registration_id || !compositeIdentitiesEqual(createCompositeIdentityV1(local),
     toOpenE2eePreKeyBundle({ key_bundle: published, registration_id: published.registration_id, device_id: 1 },
-      { userId, keyVersion: published.key_version }).identity))) {
+      { userId, keyVersion: published.key_version }).identity));
+  if (localIdentityChanged && !options.allowUnrecoverableKeyReplacement) {
     throw new ConversationCryptoError('Local identity differs from the account directory');
   }
   if (owner === null) {
@@ -658,12 +682,25 @@ export async function createConversationSession(
     if (await storage.getMetadata(OWNER_KEY) !== userId) throw new ConversationCryptoError('Browser account binding changed');
   }
   const history = conversationId === null ? null : new ConversationLocalHistory(userId, conversationId, storage);
-  const relay = new ConversationRelay(userId, conversationId, api, storage, history ?? undefined);
+  const relay = new ConversationRelay(userId, conversationId, api, storage, history ?? undefined,
+    options.allowUnrecoverableKeyReplacement === true);
   const client = await createSignalProtocolClient({
     identity: { userId, deviceId: 1 }, adapters: { storage, relay },
     protocol: { postQuantum: PostQuantumPolicy.Required, braid: BraidPolicy.Required, contentRecovery: { mode: 'off' } },
     logger: {}, deliveryReceipts: 'off',
   });
+  const generatedIdentity = options.allowUnrecoverableKeyReplacement && published
+    ? await storage.getIdentityKey() : null;
+  const generatedIdentityChanged = generatedIdentity && published &&
+    (generatedIdentity.registrationId !== published.registration_id || !compositeIdentitiesEqual(
+      createCompositeIdentityV1(generatedIdentity),
+      toOpenE2eePreKeyBundle({ key_bundle: published, registration_id: published.registration_id, device_id: 1 },
+        { userId, keyVersion: published.key_version }).identity));
+  if (client.syncStatus === 'failed' && options.allowUnrecoverableKeyReplacement && published && generatedIdentityChanged) {
+    await client.rotateAccountIdentity(deriveIdentityCommitment(toOpenE2eePreKeyBundle(
+      { key_bundle: published, registration_id: published.registration_id, device_id: 1 },
+      { userId, keyVersion: published.key_version }).identity));
+  }
   if (client.syncStatus !== 'synced') {
     await client.stop();
     throw new ConversationCryptoError('Encryption key publication did not complete');
@@ -695,7 +732,7 @@ export async function createConversationSession(
 /** Browser entry point; no additional service or crypto setup is required. */
 export async function openIndexedDbConversationSession(
   userId: string, conversationId: string | null, api: ConversationApi,
-  options: { acknowledgeUnrecoverableHistoryRisk?: true } = {},
+  options: { acknowledgeUnrecoverableHistoryRisk?: true; allowUnrecoverableKeyReplacement?: true } = {},
 ): Promise<ConversationSession> {
   const storage = await openAccountConversationStore(userId);
   try {
