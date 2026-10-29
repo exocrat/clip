@@ -16,7 +16,7 @@ import type { ContactShareRequest, KeyBundle, MessageRequest, PublicKeyBundleReq
 import type { ConversationApi } from './api';
 import {
   CLIP_ENVELOPE_VERSION, CLIP_PROTOCOL_ID, CLIP_PROTOCOL_VERSION,
-  ConversationCrypto, ConversationCryptoError, assertConversationKeyState,
+  ConversationCrypto, ConversationCryptoError, ConversationKeyStateLostError, assertConversationKeyState,
   toOpenE2eePreKeyBundle,
   type ConversationEnvelopeRoute, type ConversationRouteRegistry,
   type SendConversationMessage,
@@ -674,7 +674,10 @@ export async function createConversationSession(
     toOpenE2eePreKeyBundle({ key_bundle: published, registration_id: published.registration_id, device_id: 1 },
       { userId, keyVersion: published.key_version }).identity));
   if (localIdentityChanged && !options.allowUnrecoverableKeyReplacement) {
-    throw new ConversationCryptoError('Local identity differs from the account directory');
+    // An unbound legacy store may belong to another account; never offer to
+    // publish its keys as this user's replacement.
+    if (owner !== userId) throw new ConversationCryptoError('Unbound browser identity differs from the account directory');
+    throw new ConversationKeyStateLostError(userId);
   }
   if (owner === null) {
     if (local && !published) throw new ConversationCryptoError('Unbound browser identity cannot be assigned to an account');

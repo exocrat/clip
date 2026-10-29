@@ -1,5 +1,14 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### PR #20 review corrections — 2026-10-29 12:55:31 UTC
+
+At Aditya's request, prepared local Conversations corrections for bound-device
+key mismatch recovery and inbox continuation polling. Relay, inbox and
+composition tests passed (17); the added stale-key relay regression passed (8
+relay tests); TypeScript and focused Biome lint passed. Continuation polling
+still needs a targeted regression and Rahul's review. The candidate is
+uncommitted and unpublished; no cloud action occurred.
+
 **Canonical path:** `docs/status/work-log.md`
 
 Read this status before work and reconcile it with the repository and active branch evidence. Keep each task's status row current after every step and human verification so the current checkpoint and execution/verification state are unambiguous. Use dated history entries for meaningful outcomes, decisions, check results, blockers, consequential human direction, and task/merge closeout. Related steps may share an entry when their outcomes belong together; routine “verified; proceed” acknowledgements and repeated navigation updates do not need separate entries. Do not add history entries solely to record a commit, push, or the act of updating this work log; Git history is the evidence for publication. Record the substantive task outcome and its checks once, and record merge or acceptance only when it changes task status. Record enough to resume and verify the work without repeating background or copying long command output. Keep check results and decisions concise, and link existing evidence where useful. New entries use exact UTC date and time; preserve the precision of historical timestamps and never infer missing times. Do not create a separate report just to duplicate the work log. Preserve useful prior facts and other contributors' entries. No implementation, cloud provisioning, PR approval, or test pass is complete until actual evidence supports it.

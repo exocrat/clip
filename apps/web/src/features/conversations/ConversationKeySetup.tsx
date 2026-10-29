@@ -49,10 +49,10 @@ function AccountKeySetup({ userId, children }: PropsWithChildren<{ userId: strin
   };
   return <section className="conversation-key-setup" aria-label="Account encryption setup">
       <h2>{lost ? 'Create a new encryption key' : 'Set up private messaging'}</h2>
-      {state === 'checking' ? <p role="status">Checking this browser’s encryption setup…</p> : lost ? <p role="alert">This browser does not have your current encryption key. CLIP cannot restore it. Creating a new key lets you use the platform again, but old encrypted conversations and contact shares cannot be recovered. Other members may need to accept your new key.</p> : state === 'error' ? <p role="alert">Couldn’t complete encryption setup. Your existing keys have been preserved. Try again in this browser.</p> : <p>{KEY_REGISTRATION_WARNING}</p>}
+      {state === 'checking' ? <p role="status">Checking this browser’s encryption setup…</p> : lost ? <p role="alert">This browser does not have your current encryption key. CLIP cannot restore it. Replacing the account key lets you use this browser again, but encrypted conversations and contact shares may become inaccessible on other devices. Other members may need to accept your replacement key.</p> : state === 'error' ? <p role="alert">Couldn’t complete encryption setup. Your existing keys have been preserved. Try again in this browser.</p> : <p>{KEY_REGISTRATION_WARNING}</p>}
       {(state === 'consent' || lost) && <>
         <label className="conversation-key-setup__consent"><input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} /> <span>I understand that lost browser key data cannot be restored.</span></label>
-        <Button className="conversation-key-setup__create" disabled={!consent} onClick={createKey}>{lost ? 'Create a new encryption key' : 'Create encryption key'}</Button>
+        <Button className="conversation-key-setup__create" disabled={!consent} onClick={createKey}>{lost ? 'Replace account encryption key' : 'Create encryption key'}</Button>
       </>}
       {state === 'error' ? <Button onClick={() => setAttempt((value) => value + 1)}>Retry encryption setup</Button> : null}
       {state !== 'checking' && state !== 'error' && <p>Private messaging must be ready before you use the marketplace on this browser. Encryption keys stay on this device; CLIP cannot restore lost keys.</p>}

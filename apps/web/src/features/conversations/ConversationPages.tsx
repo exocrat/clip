@@ -51,8 +51,10 @@ function ConversationInboxSession({ renderOriginContext }: {
   const activeRequest = useRef<AbortController | null>(null);
   const requestGeneration = useRef(0);
   const groupExpanded = useRef(false);
+  const itemsRef = useRef<ConversationInboxItem[]>([]);
+  itemsRef.current = items;
   const refresh = useCallback(async (options: { silent?: boolean } = {}) => {
-    if (!runtime || (options.silent && (activeRequest.current || groupExpanded.current))) return;
+    if (!runtime || (options.silent && activeRequest.current)) return;
     if (!options.silent) groupExpanded.current = false;
     activeRequest.current?.abort();
     const controller = new AbortController();
@@ -61,8 +63,37 @@ function ConversationInboxSession({ renderOriginContext }: {
     if (!options.silent) setLoading(true);
     try {
       const result = await runtime.api.listMine({ ...filters, page: pageNumber }, controller.signal);
+      // Refresh loaded continuation pages as well as the first group page, so
+      // expanded groups retain their rows and do not freeze unread state.
+      const extra: ConversationInboxItem[] = [];
+      const hasMore = new Map<string, boolean>();
+      if (options.silent && groupExpanded.current && filters.group_by) {
+        const person = filters.group_by === 'person';
+        const groups = new Map<string, ConversationInboxItem[]>();
+        for (const item of itemsRef.current) {
+          const key = person ? item.counterparty_user_id : `${item.origin_kind}:${item.origin_id}`;
+          if (key) groups.set(key, [...(groups.get(key) ?? []), item]);
+        }
+        for (const group of groups.values()) {
+          if (group.length <= 20) continue;
+          const item = group[0];
+          for (let page = 2; page <= Math.ceil(group.length / 20); page += 1) {
+            const continuation = await runtime.api.listMine({ ...filters, group_by: undefined,
+              ...(person ? { counterparty_user_id: item.counterparty_user_id ? [item.counterparty_user_id] : [] } : { origin_id: item.origin_id ? [item.origin_id] : [] }),
+              page, page_size: 20 }, controller.signal);
+            hasMore.set(person ? item.counterparty_user_id ?? '' : `${item.origin_kind}:${item.origin_id}`, continuation.has_next);
+            extra.push(...continuation.items.map((summary) => ({ ...toInboxItem(summary, runtime.userId), group_has_more: continuation.has_next })));
+          }
+        }
+      }
       if (controller.signal.aborted || generation !== requestGeneration.current) return;
-      setItems(result.items.map((summary) => toInboxItem(summary, runtime.userId)));
+      const first = result.items.map((summary) => {
+        const item = toInboxItem(summary, runtime.userId);
+        const key = filters.group_by === 'person' ? item.counterparty_user_id : `${item.origin_kind}:${item.origin_id}`;
+        return key && hasMore.has(key) ? { ...item, group_has_more: hasMore.get(key) } : item;
+      });
+      const groupKeys = new Set(first.map((item) => filters.group_by === 'person' ? item.counterparty_user_id : `${item.origin_kind}:${item.origin_id}`));
+      setItems([...first, ...extra.filter((item) => groupKeys.has(filters.group_by === 'person' ? item.counterparty_user_id : `${item.origin_kind}:${item.origin_id}`) && !first.some((row) => row.conversation_id === item.conversation_id))]);
       setHasNextPage(result.has_next);
       setLoadError(false);
     } catch {
