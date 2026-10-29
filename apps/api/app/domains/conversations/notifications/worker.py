@@ -6,6 +6,7 @@ the reviewed Conversations and Identity ports and a separately reviewed sender.
 
 from collections.abc import Awaitable, Callable
 from datetime import datetime
+import logging
 from typing import Protocol
 from uuid import UUID
 
@@ -23,6 +24,8 @@ from app.domains.conversations.notifications.provider import (
     NotificationDeliveryFailure,
     NotificationSender,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class DeliveryPort(Protocol):
@@ -67,8 +70,12 @@ async def process_batch(
         try:
             recipient = await resolve(context, claim.recipient_id)
             if recipient is None or recipient.recipient_id != claim.recipient_id:
+                logger.info("notification_skip reason=recipient_unavailable")
                 continue
             if allowed is None or await allowed(claim.recipient_id) is not True:
+                logger.info(
+                    "notification_skip reason=preference_unavailable_or_disabled"
+                )
                 continue
             now = clock()
             if now >= claim.lease_expires_at:
@@ -82,6 +89,7 @@ async def process_batch(
                 ),
             )
             if check.decision != "send" or check.recipient_id != claim.recipient_id:
+                logger.info("notification_skip reason=dispatch_not_authorized")
                 continue
             if clock() >= claim.lease_expires_at:
                 continue
@@ -101,9 +109,11 @@ async def process_batch(
                     attempted_at=clock(),
                 ),
             )
+            logger.info("notification_delivery outcome=%s", outcome)
             processed += 1
         except Exception:
             # Never log exceptions: dependencies may include addresses or content.
             # A failed or uncertain fenced transition is recovered by the owner.
+            logger.warning("notification_work_error reason=dependency_or_transition")
             continue
     return processed

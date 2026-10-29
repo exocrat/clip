@@ -181,6 +181,7 @@ def main() -> int:
                 "apps/api/tests/test_conversation_recovery_storage.py",
                 "apps/api/tests/test_conversation_messages.py",
                 "apps/api/tests/test_notification_delivery.py",
+                "apps/api/tests/test_notification_cleanup.py",
                 "apps/api/tests/test_conversation_message_contract.py",
                 "apps/api/tests/test_conversation_message_routes.py",
                 "apps/api/tests/test_conversation_directory.py",
