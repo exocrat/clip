@@ -24,6 +24,7 @@ from pydantic import SecretStr
 
 from app.contracts.domain_types import NotificationClaim, NotificationRecipient
 from app.domains.conversations.notifications.provider import NotificationDeliveryFailure
+from app.domains.conversations.notifications.templates import render_notification
 
 SENDER = "updates@clip-iisc.site"
 REFRESH_SECONDS = 4 * 60 * 60
@@ -140,6 +141,7 @@ class NotificationEmailSender:
                     or opener is not None
                     or not isinstance(load, SsmNotificationConfiguration)
                     or load._client is not None
+                    or render is not render_notification
                 )
             )
         ):

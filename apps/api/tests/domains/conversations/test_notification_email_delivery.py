@@ -171,6 +171,12 @@ def test_production_rejects_injected_provider_and_secret_fakes():
             profile="production",
             ses_client=Ses(),
         )
+    with pytest.raises(ValueError):
+        NotificationEmailSender(
+            SsmNotificationConfiguration("/clip/test/email"),
+            lambda job: ("Unreviewed subject", "Unreviewed body"),
+            profile="production",
+        )
 
 
 def test_failed_refresh_never_uses_stale_provider_configuration():
