@@ -164,6 +164,12 @@ remain acyclic; unresolved orchestration/call cycles require a design decision.
 Composition exceptions must identify the exact module, importing file and
 reason before use; none is implicitly granted by this table.
 
+CN-03 Step 9 explicitly permits `app/application.py` to import
+`app.domains.conversations.notifications.runtime` solely to own startup and
+shutdown of the default-off notification worker. The worker receives a narrow
+Identity recipient resolver from trusted application composition; no raw Identity
+database connection, credentials or session crosses into Conversations.
+
 A runtime consumer must not read, join, update or delete another domain's private
 tables through SQL, ORM mappings, shared sessions, views or helpers. Request the
 owning public operation. The approved Listings-owned search query boundary

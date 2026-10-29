@@ -92,6 +92,10 @@ class Settings(BaseSettings):
     # Hybrid is opt-in; explicit paths never download/discover a model or interpreter.
     hybrid_search_enabled: bool = False
     hybrid_worker_enabled: bool = False
+    # Notifications never start unless the controlled real test runtime is explicit.
+    notification_worker_enabled: bool = False
+    notification_batch_size: int = Field(default=20, ge=1, le=50)
+    notification_poll_seconds: int = Field(default=60, ge=1, le=3600)
     hybrid_search_interpreter: Path | None = Field(default=None, repr=False)
     hybrid_search_model_dir: Path | None = Field(
         default=None, repr=False, validate_default=True
@@ -176,6 +180,26 @@ class Settings(BaseSettings):
                 "Test providers and development authentication are forbidden in production"
             )
         return value
+
+    @model_validator(mode="after")
+    def validate_notification_worker(self) -> Self:
+        """Reject unsafe fake, production, or unbound notification startup."""
+        if self.environment == "production" and self.ses_test_recipients:
+            raise ValueError("Test recipients are forbidden in production")
+        if self.notification_worker_enabled and (
+            self.environment != "test"
+            or not self.identity_runtime_enabled
+            or self.identity_provider != "microsoft"
+            or self.email_provider != "dual"
+            or not self.ses_test_recipients
+            or self.development_auth
+            or self.isolated_listings_test_caller
+            or (self.database_dsn is None and self.database_url is None)
+        ):
+            raise ValueError(
+                "Notification worker requires the controlled real test runtime"
+            )
+        return self
 
     @model_validator(mode="after")
     def restrict_microsoft_integration(self) -> Self:

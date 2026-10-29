@@ -249,8 +249,9 @@ def test_real_read_acknowledgement_suppresses_a_leased_reminder():
     run_scenario(scenario)
 
 
-def test_real_preference_suppresses_due_unread_reminder():
-    """The current Identity opt-out prevents a real due reminder from dispatching."""
+@pytest.mark.parametrize("enabled,fail", [(False, False), (True, False), (True, True)])
+def test_due_unread_reminder_delivery_and_primary_write_independence(enabled, fail):
+    """A due reminder respects preference and failures preserve its message."""
 
     async def scenario(pool):
         async with pool.connection() as c:
@@ -273,8 +274,8 @@ def test_real_preference_suppresses_due_unread_reminder():
                     ),
                 )
                 await c.execute(
-                    "UPDATE identity.users SET conversation_email_enabled=false WHERE id=%s",
-                    (responder,),
+                    "UPDATE identity.users SET conversation_email_enabled=%s WHERE id=%s",
+                    (enabled, responder),
                 )
                 # Age only the synthetic source and its matching immutable deadline.
                 await c.execute("SET LOCAL session_replication_role='replica'")
@@ -299,23 +300,37 @@ def test_real_preference_suppresses_due_unread_reminder():
 
         async def send(claim, destination):
             sent.append(True)
+            if fail:
+                raise TimeoutError("synthetic provider failure")
 
-        assert (
-            await run_batch(
-                delivery, recipient, permit, lambda: datetime.now(UTC), send
-            )
-            == 0
-        )
+        assert await run_batch(
+            delivery, recipient, permit, lambda: datetime.now(UTC), send
+        ) == int(enabled)
         async with pool.connection() as c:
+            row = await (
+                await c.execute(
+                    "SELECT state,attempts,last_result_outcome FROM conversations.notification_intents WHERE conversation_id=%s",
+                    (conversation,),
+                )
+            ).fetchone()
+            assert row == (
+                ("pending", 1, "ambiguous")
+                if fail
+                else (
+                    ("sent", 1, "delivered")
+                    if enabled
+                    else ("suppressed", 0, "preference_suppressed")
+                )
+            )
             assert (
                 await (
                     await c.execute(
-                        "SELECT state,attempts,last_result_outcome FROM conversations.notification_intents WHERE conversation_id=%s",
-                        (conversation,),
+                        "SELECT count(*) FROM conversations.entries WHERE id=%s",
+                        (message.entry.entry_id,),
                     )
                 ).fetchone()
-            ) == ("suppressed", 0, "preference_suppressed")
-        assert sent == []
+            )[0] == 1
+        assert sent == ([True] if enabled else [])
 
     run_scenario(scenario)
 
@@ -364,5 +379,76 @@ def test_message_read_before_due_is_suppressed():
                     )
                 ).fetchone()
             )[0] == "suppressed"
+
+    run_scenario(scenario)
+
+
+@pytest.mark.parametrize("terminal", [False, True])
+def test_real_failure_retries_are_bounded_and_terminal(terminal):
+    """Real fenced outcomes use the selected backoffs and stop at the limit."""
+
+    async def scenario(pool):
+        async with pool.connection() as c:
+            await c.execute("DELETE FROM conversations.notification_intents")
+        author, _, _, conversation, _, _ = await seed_thread(pool)
+        intent = uuid4()
+        async with pool.connection() as c:
+            await c.execute(
+                "INSERT INTO conversations.notification_intents(id,conversation_id,recipient_id,event_kind,deduplication_key,due_at,expires_at) "
+                "SELECT %s,id,%s,'new_conversation',%s,created_at,created_at+interval '24 hours' FROM conversations.threads WHERE id=%s",
+                (
+                    intent,
+                    author,
+                    f"new_conversation:{conversation}:{author}",
+                    conversation,
+                ),
+            )
+        permit, context = object(), NotificationWorkerContext()
+        port = PostgresNotificationDelivery(pool, permit)
+        with runtime_claims({"conversations.notification_worker": permit}):
+            for attempt in range(1, 2 if terminal else 6):
+                claims = await port.claim_due_notification_intents(
+                    context, NotificationClaimRequest(now_utc=datetime.now(UTC))
+                )
+                assert len(claims.claims) == 1
+                token = claims.claims[0].fencing_token
+                check = NotificationDispatchCheck(
+                    intent_id=intent, fencing_token=token, now_utc=datetime.now(UTC)
+                )
+                assert (
+                    await port.read_notification_dispatch_context(context, check)
+                ).decision == "send"
+                result = NotificationAttemptResult(
+                    intent_id=intent,
+                    fencing_token=token,
+                    outcome="terminal_failure" if terminal else "transient_failure",
+                    attempted_at=datetime.now(UTC),
+                )
+                state = await port.record_notification_attempt(context, result)
+                assert state.attempt_count == attempt
+                if terminal or attempt == 5:
+                    assert state.state == "terminal"
+                else:
+                    assert state.state == "pending"
+                    async with pool.connection() as c:
+                        seconds = (
+                            await (
+                                await c.execute(
+                                    "SELECT extract(epoch FROM next_attempt_at-updated_at) FROM conversations.notification_intents WHERE id=%s",
+                                    (intent,),
+                                )
+                            ).fetchone()
+                        )[0]
+                        assert seconds == (60, 300, 900, 3600)[attempt - 1]
+                        # Synthetic clock advancement; no production timing change.
+                        await c.execute(
+                            "UPDATE conversations.notification_intents SET next_attempt_at=clock_timestamp()-interval '1 second' WHERE id=%s",
+                            (intent,),
+                        )
+            assert (
+                await port.claim_due_notification_intents(
+                    context, NotificationClaimRequest(now_utc=datetime.now(UTC))
+                )
+            ).claims == []
 
     run_scenario(scenario)

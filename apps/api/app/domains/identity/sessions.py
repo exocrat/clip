@@ -34,7 +34,10 @@ from app.domains.identity.temporary_challenges import (
     VerifiedOtp,
 )
 from app.domains.identity.temporary_crypto import TemporaryKeys, normalize_login
-from app.domains.identity.notification_address import NotificationAddressCipher
+from app.domains.identity.notification_address import (
+    NotificationAddressCipher,
+    NotificationRecipientResolver,
+)
 from app.domains.identity.temporary_passwords import TemporaryPasswords
 
 ABSOLUTE = timedelta(days=7)
@@ -118,6 +121,14 @@ class IdentitySessions:
         self._activation = TemporaryActivation(self.challenges)
         self._passwords = TemporaryPasswords()
         self._dummy = self._passwords.hash(SecretStr(secrets.token_urlsafe(32)))
+
+    def notification_recipient_resolver(
+        self, permit: object
+    ) -> NotificationRecipientResolver:
+        """Provide the worker's narrow Identity port without exposing connections or keys."""
+        return NotificationRecipientResolver(
+            self._connect, self._clock, self._keys, permit
+        )
 
     @contextmanager
     def transaction(self) -> Iterator[Database]:

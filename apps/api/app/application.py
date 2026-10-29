@@ -20,6 +20,7 @@ from app.core.errors import install_error_handlers
 from app.core.logging import RequestLoggingMiddleware
 import app.domains.conversations.public as conversations_public
 import app.domains.conversations.routes as conversations_routes
+from app.domains.conversations.notifications.runtime import notification_runtime
 from app.core.database import PoolFactory, create_async_connection_pool
 from app.domains.listings.routes import router as listings_router
 from app.domains.listings.integrations import PublicListingsIdentity
@@ -160,7 +161,12 @@ async def application_lifespan(
                 services = conversations_routes.create_public_provider(pool)
                 application.state.conversations_public = services
                 application.state.listings_conversations = services
-            yield
+            async with notification_runtime(
+                settings,
+                pool,
+                getattr(application.state, "identity_dependencies", None),
+            ):
+                yield
     finally:
         application.state.database_pool = None
         application.state.conversations_public = None
@@ -219,6 +225,7 @@ def create_app(
         openapi_url=None,
         lifespan=lifespan,
     )
+    app.state.identity_dependencies = identity
 
     install_error_handlers(app)
     if identity is not None:
