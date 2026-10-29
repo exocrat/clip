@@ -16,6 +16,7 @@
   "postcheck": "Retry the existing listing once only after commit; no application deployment or session change.",
   "rollback": "Both grants roll back on transaction failure. If committed and later reversal is needed, separately review exact REVOKE actions.",
   "local_test": "tests/test_identity_catalogue_lock_grants.py:1 passed on disposable PostgreSQL18.6",
-  "owner_review": "Suraj affected-owner review remains required for durable integration/PR.",
-  "deadline": "Stop new work 2026-10-29 05:07:34 UTC; cleanup deadline 05:22:34 UTC."
+  "owner_review": "Suraj approved the exact two grants, reported by Aditya",
+  "deadline": "Stop new work 2026-10-29 05:07:34 UTC; cleanup deadline 05:22:34 UTC.",
+  "owner_review_recorded_utc": "2026-10-29 05:14:13 UTC"
 }

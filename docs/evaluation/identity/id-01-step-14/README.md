@@ -1,8 +1,11 @@
 # ID-01 Step14 — direct-API capability matrix
 
-**Current checkpoint:** real S3 upload/display and temporary conversation passed;
-approved teardown is complete. Remaining authorization matrix, Suraj review and durable catalogue-grant
-handling remain; Hybrid deployment is Search-owned. Step14/FR-03 remain incomplete.
+**Current checkpoint:** Aditya reports all remaining Step14 parts verified and accepts
+them. Real S3 upload/display and temporary conversation passed; teardown is complete.
+Suraj approved the two grants and a guarded restoration helper was tested locally.
+Detailed additional test receipts were not provided. Formal task closeout requires
+independent review, current-head checks and the reviewed merge. Hybrid deployment
+is Search-owned. Earlier pending statements below describe historical checkpoints.
 
 Recorded2026-10-28 16:09:06UTC; Aditya(A), source `c2d7b43`.
 Owner/primary peer: Aditya(A)/Rahul(D); affected owners Suraj(B) Listings/images,
@@ -821,3 +824,26 @@ Hybrid deployment remain Search-owned, not an extra ID-01 gate. Step14 still
 requires the real authorization matrix, Suraj review and durable catalogue
 grant handling. Keyword already exercises the listing-search authorization
 path; no Hybrid deployment success is claimed here.
+
+## Catalogue grant restoration — 2026-10-29 05:16:05 UTC
+
+Aditya reports Suraj approved the exact two column grants.
+`scripts/identity_catalogue_grants.py` supplies an explicit operator-only,
+transactional restoration for those grants on the fixed test role and database;
+it checks target, migration head, logging and existing privileges, and refuses
+unreviewed access. It is not automatically invoked by bootstrap or deployment.
+Live restoration requires separate exact authorization. Disposable PostgreSQL
+checks cover locks, least privilege, idempotence and rollback on unexpected access.
+Remaining authorization-matrix evidence and owner revision bindings are not
+claimed complete. The teardown above has been verified by Aditya.
+
+## User verification and closeout review — 2026-10-29 05:23:09 UTC
+
+Aditya reports verifying all remaining parts of Step14 and requests ID-01
+closeout. This is recorded as user-reported verification, not as newly observed
+per-cell automated results: no additional commands, receipts, or exact owner
+revision bindings were supplied. Existing evidence and its stated limits remain
+intact. FR-01 and FR-02 have the Step13 hosted Identity verification; FR-03
+has the recorded local and live consumer evidence plus Aditya's verification.
+Formal task closeout still requires independent peer review, current-head checks
+and a reviewed merge. The user did not authorize a cloud operation or merge.

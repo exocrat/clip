@@ -49,3 +49,39 @@ def test_column_grants_enable_catalogue_locks_without_table_update(disposable_da
         assert not c.execute(
             "SELECT has_column_privilege('clip_catalogue_lock_probe','listings.conditions','active','UPDATE')"
         ).fetchone()[0]
+
+
+def test_guarded_restore_is_idempotent_and_refuses_unreviewed_access(
+    disposable_database,
+):
+    """Only the two reviewed ACLs return; unexpected broader privileges stop work."""
+    from scripts import identity_catalogue_grants as restore
+
+    with disposable_database() as c:
+        c.execute("CREATE ROLE clip_test_marketplace_app NOLOGIN")
+        c.execute("GRANT USAGE ON SCHEMA listings TO clip_test_marketplace_app")
+        c.execute(
+            "GRANT SELECT ON listings.categories, listings.conditions TO clip_test_marketplace_app"
+        )
+    first = restore.restore(disposable_database, isolated=True)
+    assert set(first["changed"]) == {
+        "listings.categories.created_at",
+        "listings.conditions.label",
+    }
+    assert restore.restore(disposable_database, isolated=True)["changed"] == []
+    with disposable_database() as c:
+        c.execute(
+            "REVOKE UPDATE (created_at) ON listings.categories FROM clip_test_marketplace_app"
+        )
+        c.execute(
+            "GRANT UPDATE (active) ON listings.conditions TO clip_test_marketplace_app"
+        )
+    with pytest.raises(restore.GrantRestoreFailure):
+        restore.restore(disposable_database, isolated=True)
+    with disposable_database() as c:
+        assert not c.execute(
+            "SELECT has_column_privilege('clip_test_marketplace_app','listings.categories','created_at','UPDATE')"
+        ).fetchone()[0]
+        assert c.execute(
+            "SELECT has_column_privilege('clip_test_marketplace_app','listings.conditions','active','UPDATE')"
+        ).fetchone() == (True,)
