@@ -540,7 +540,7 @@ class PostgresMessageOperations:
             "VALUES (%s, %s, %s, %s, 'unread_reminder', %s, %s, %s, %s, %s) "
             "ON CONFLICT (deduplication_key) DO UPDATE SET "
             "unread_through_sequence = EXCLUDED.unread_through_sequence, updated_at = clock_timestamp() "
-            "WHERE conversations.notification_intents.state = 'pending' "
+            "WHERE conversations.notification_intents.state IN ('pending', 'leased') "
             "AND conversations.notification_intents.unread_through_sequence < EXCLUDED.unread_through_sequence",
             (
                 uuid4(),

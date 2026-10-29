@@ -312,6 +312,17 @@ def test_message_retry_ordering_private_controls_and_display_read_state():
                 (conversation,),
             )
             assert (await cursor.fetchone())[0] == before_activity
+            cursor = await connection.execute(
+                "SELECT m.last_read_sequence,m.reminder_episode_start_sequence,"
+                "n.unread_through_sequence FROM conversations.members m "
+                "JOIN conversations.notification_intents n ON n.conversation_id=m.conversation_id "
+                "AND n.recipient_id=m.user_id AND n.event_kind='unread_reminder' "
+                "WHERE m.conversation_id=%s AND m.user_id=%s",
+                (conversation, bob),
+            )
+            # Acknowledgement clears the member episode but leaves the durable
+            # intent for the eventual worker to suppress against the watermark.
+            assert await cursor.fetchone() == (1, None, 1)
 
     run_scenario(scenario)
 

@@ -120,10 +120,16 @@ in Step 9.
 Identity operation callable only from the Conversations-owned CN-03 delivery
 path. It is not `get_shareable_contact_options`,
 `get_selected_own_contacts`, or a broad profile read. For an eligible regular
-or temporary account, it returns only the current verified delivery
+or temporary account, it returns only the current authorized login delivery
 destination needed by the worker; for an ineligible/removed recipient, it
 returns no destination. The destination is ephemeral to dispatch and is never
-copied into a notification-intent record. Exact typed request/result,
+copied into notification intents. Per Aditya's 2026-10-29 decision, Identity
+retains the authenticated account login address encrypted for this purpose.
+Microsoft uses the signed IISc email claim under the previously approved domain
+policy; it does not independently prove mailbox control. Temporary accounts
+use their verified or password-authenticated login email. An existing account
+without a stored destination must authenticate again before resolution succeeds.
+Exact typed request/result,
 eligibility recheck, safe outcome codes and dependency behavior are finalized
 in Step 9 and owner-reviewed in Step 10. Its typed request includes the
 server-injected `NotificationWorkerContext`; the value is not a credential and

@@ -30,6 +30,7 @@ CATEGORIES = {
     "otp_verification_windows",
     "password_login_windows",
     "contacts",
+    "notification_destinations",
     "profiles",
 }
 

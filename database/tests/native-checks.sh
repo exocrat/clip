@@ -83,9 +83,9 @@ migrate() {
 
 # Check clean apply, repeat application and schema inventory at both clean heads.
 check_head() {
-  [[ $(sql --command 'SELECT max(version) FROM public.schema_migrations') == 20261029043000 ]]
-  [[ $(sql --command 'SELECT count(*) FROM public.schema_migrations') == 29 ]]
-  [[ $(sql --command "SELECT count(*) FROM pg_tables WHERE schemaname IN ('identity','listings','search','conversations')") == 40 ]]
+  [[ $(sql --command 'SELECT max(version) FROM public.schema_migrations') == 20261029134500 ]]
+  [[ $(sql --command 'SELECT count(*) FROM public.schema_migrations') == 31 ]]
+  [[ $(sql --command "SELECT count(*) FROM pg_tables WHERE schemaname IN ('identity','listings','search','conversations')") == 41 ]]
   [[ $(sql --command 'SELECT count(*) FROM listings.categories') == 9 ]]
   [[ $(sql --command 'SELECT count(*) FROM listings.conditions') == 4 ]]
   [[ $(sql --command 'SHOW server_version_num') == 180006 ]]

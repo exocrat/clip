@@ -283,7 +283,7 @@ class AccountEligibility(ContractModel):
 
 
 class NotificationRecipient(ContractModel):
-    """Ephemeral verified delivery address resolved for the worker only."""
+    """Ephemeral authorized login destination resolved for the worker only."""
 
     recipient_id: UserId
     email: str = Field(repr=False)
@@ -1267,7 +1267,7 @@ class NotificationClaim(ContractModel):
     intent_id: UUID
     conversation_id: ConversationId
     recipient_id: UserId
-    event_kind: Literal["unread_message"]
+    event_kind: Literal["new_conversation", "unread_reminder"]
     due_at: UtcInstant
     target_sequence: int | None = Field(default=None, ge=1)
     fencing_token: UUID

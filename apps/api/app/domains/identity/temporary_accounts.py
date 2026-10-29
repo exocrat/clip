@@ -23,6 +23,7 @@ from app.domains.identity.temporary_challenges import (
     VerifiedOtp,
 )
 from app.domains.identity.temporary_passwords import TemporaryPasswords
+from app.domains.identity.notification_address import NotificationAddressCipher
 
 T = TypeVar("T")
 
@@ -118,6 +119,9 @@ class TemporaryActivation:
             connection.execute(
                 "UPDATE identity.otp_challenges SET user_id=%s WHERE id=%s",
                 (user_id, proof.challenge_id),
+            )
+            NotificationAddressCipher(self._challenges._keys).save_in(
+                connection, user_id, proof.email
             )
             return apply(connection, TemporaryAccount(user_id, activated, expires))
 

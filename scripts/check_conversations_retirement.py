@@ -159,7 +159,7 @@ def main() -> int:
             ],
             extra={"DATABASE_URL": database_url},
         )
-        if sql("SELECT max(version) FROM public.schema_migrations") != "20261029043000":
+        if sql("SELECT max(version) FROM public.schema_migrations") != "20261029134500":
             raise RuntimeError(
                 "the disposable database is not at the current migration head"
             )
@@ -180,6 +180,7 @@ def main() -> int:
                 "apps/api/tests/test_thread_creation.py",
                 "apps/api/tests/test_conversation_recovery_storage.py",
                 "apps/api/tests/test_conversation_messages.py",
+                "apps/api/tests/test_notification_delivery.py",
                 "apps/api/tests/test_conversation_message_contract.py",
                 "apps/api/tests/test_conversation_message_routes.py",
                 "apps/api/tests/test_conversation_directory.py",
