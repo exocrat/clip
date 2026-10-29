@@ -5,14 +5,19 @@ import secrets
 from pydantic import SecretStr
 import pytest
 
-from apps.api.tests.domains.identity.postgres_fixtures import disposable_database
+from apps.api.tests.domains.identity.migration_fixtures import (
+    reviewed_migration_directory,
+)
+from apps.api.tests.domains.identity.postgres_fixtures import (
+    reviewed_disposable_database,
+)
 from scripts import identity_conversations_role as operator
 
 
 @pytest.fixture
-def connect(disposable_database):
+def connect(reviewed_disposable_database):
     """Normalize only this owned database's PUBLIC baseline; preserve schema/data."""
-    with disposable_database() as c:
+    with reviewed_disposable_database() as c:
         c.execute("REVOKE CONNECT,TEMPORARY ON DATABASE clip_test_identity FROM PUBLIC")
         c.execute("REVOKE CREATE ON SCHEMA public FROM PUBLIC")
         (
@@ -23,7 +28,7 @@ def connect(disposable_database):
             else None
         )
         c.execute("DROP ROLE IF EXISTS clip_test_conversations_app")
-    return disposable_database
+    return reviewed_disposable_database
 
 
 def test_exact_proposal_creates_only_scoped_role_and_refuses_rotation(connect):

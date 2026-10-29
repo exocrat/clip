@@ -66,7 +66,7 @@ describe('shared conversation route composition', () => {
     expect(screen.queryByText('Development demo · synthetic data only')).toBeNull();
   });
 
-  it('sends inbox filters and paging through the authenticated Conversations API', async () => {
+  it('shows public origin details and pages recent conversations without obsolete filters', async () => {
     const paths: string[] = [];
     const conversation = {
       caller_role: 'initiator',
@@ -88,6 +88,16 @@ describe('shared conversation route composition', () => {
           account_class: 'regular', valid_until: '2099-01-01T00:00:00Z' }),
         { headers: { 'Content-Type': 'application/json' } });
       }
+      if (requestPath === '/api/listings/33333333-3333-4333-8333-333333333333') {
+        return new Response(JSON.stringify({
+          listing_id: '33333333-3333-4333-8333-333333333333', title: 'Inspection campus bicycle',
+          description: 'A bicycle for campus.', asking_price_paise: 100000, original_price_paise: null,
+          negotiable: false, availability: 'available', available_from: '2026-01-01T00:00:00Z',
+          available_until: null, category_code: 'bicycles', category_label: 'Bicycles',
+          condition_code: 'good', condition_label: 'Good', image_ids: [], pickup_area: null,
+          proof_available: null, sensitive_purchase: false,
+        }), { headers: { 'Content-Type': 'application/json' } });
+      }
       if (requestPath.startsWith('/api/conversations?')) {
         paths.push(requestPath);
         const url = new URL(requestPath, 'http://local.test');
@@ -99,32 +109,17 @@ describe('shared conversation route composition', () => {
     });
     vi.stubGlobal('fetch', transport);
     mount('/my/conversations');
-    await screen.findByRole('heading', { name: 'Sale listing · 33333333…3333' });
+    expect(await screen.findByText('Inspection campus bicycle')).toBeTruthy();
     await waitFor(() => expect(paths.length).toBeGreaterThan(0));
-
-    fireEvent.change(screen.getByLabelText('Type'), { target: { value: 'sale_listing' } });
-    await waitFor(() => expect(paths.some((path) => {
-      const query = new URL(path, 'http://local.test').searchParams;
-      return query.get('origin_kind') === 'sale_listing' && query.get('page') === '1';
-    })).toBe(true));
-
-    fireEvent.change(screen.getByLabelText('Listing or request ID'), {
-      target: { value: '33333333-3333-4333-8333-333333333333' },
-    });
-    await waitFor(() => expect(paths.some((path) =>
-      new URL(path, 'http://local.test').searchParams.get('origin_id') === '33333333-3333-4333-8333-333333333333',
-    )).toBe(true));
+    expect(screen.queryByLabelText('Type')).toBeNull();
+    expect(screen.queryByLabelText('Participation')).toBeNull();
+    expect(screen.queryAllByRole('checkbox')).toHaveLength(0);
+    expect(screen.queryByText('33333333-3333-4333-8333-333333333333')).toBeNull();
 
     fireEvent.click(screen.getByRole('button', { name: 'Next' }));
     await waitFor(() => expect(paths.some((path) => {
       const query = new URL(path, 'http://local.test').searchParams;
-      return query.get('origin_id') === '33333333-3333-4333-8333-333333333333' && query.get('page') === '2';
-    })).toBe(true));
-
-    fireEvent.change(screen.getByLabelText('Participation'), { target: { value: 'initiated' } });
-    await waitFor(() => expect(paths.some((path) => {
-      const query = new URL(path, 'http://local.test').searchParams;
-      return query.get('view') === 'initiated' && query.get('page') === '1';
+      return query.get('sort') === 'last_activity_desc' && query.get('page') === '2';
     })).toBe(true));
   });
 
@@ -205,7 +200,11 @@ describe('shared conversation route composition', () => {
     mountDetail(`/my/conversations/${conversationId}`);
     fireEvent.click(await screen.findByRole('button', { name: 'Select this buyer' }));
 
-    expect(await screen.findByText('This buyer is selected; the listing is unavailable.')).toBeTruthy();
+    expect(await screen.findByText('This buyer is selected for your private tracking.')).toBeTruthy();
+    const detailLayout = document.querySelector('.conversation-detail-layout');
+    expect(detailLayout?.querySelector('.conversation-thread')).toBeTruthy();
+    expect(detailLayout?.querySelector('.conversation-offers')).toBeTruthy();
+    expect(detailLayout?.querySelector('.conversation-thread__origin-context')).toBeTruthy();
     const selectionWrite = requests.find((request) => request.path === `/api/listings/${listingId}/selection`);
     expect(selectionWrite?.init?.method).toBe('PUT');
     expect(JSON.parse(String(selectionWrite?.init?.body))).toEqual({ buyer_id: buyerId,

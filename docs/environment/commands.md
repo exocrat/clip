@@ -1,247 +1,133 @@
 # Runtime Command Registry
 
-## SE-01 Step 8 — functional contract checks
+This file lists the common project commands and points to the current owner
+guides for specialized workflows. Keep command-specific inputs, effects, safety
+limits and recovery beside the tool or feature they operate. The work log keeps
+task outcomes; it is not a second command history.
 
-| Command | Coverage/evidence limit |
-|---|---|
-| `uv run --locked pytest apps/api/tests/domains/listings/test_browse.py apps/api/tests/domains/listings/test_browse_contract.py apps/api/tests/domains/listings/test_browse_postgres.py apps/api/tests/domains/search data/tests tests/contracts -q -W error` | Current isolated browse/validation/transport, reviewed OpenAPI/source response conformance, Search fixtures/data and existing contract tests. Node/npm must be on process PATH for contract tooling. Real SQL remains skipped without the disposable runner. |
-| `npm run check` | Includes `discovery-contract.test.ts`: generated request/response typing, reviewed OpenAPI public property sets and handwritten reader compatibility, plus existing lint/types/build/behavior tests. No Python subprocess added to web-only checks. |
+## Common local commands
 
-Use repository-local Node/uv PATH/cache prefixes from the workstation guide
-where appropriate. See the [functional coverage ledger](../evaluation/domain/se-01/README.md)
-for every pending real check. Test fixtures and metadata conformance do not
-accept ranking, SQL/auth, NFRs or readiness. No generated file is hand-edited.
+Run these from the repository root. The [environment setup guide](README.md)
+covers prerequisites, local targets, expected results and safe recovery.
 
-## SE-01 Step 7 — initial discovery UI preview
-
-Creator/current scoped writer: Mohit (C). Uses the existing root package lock;
-no new dependency or product route. [Web checkpoint](../../apps/web/README.md#se-01-step-7--first-discovery-ui-checkpoint).
-
-| Command | Target/effect and evidence limit |
-|---|---|
-| `CLIP_ENVIRONMENT=test CLIP_DEVELOPMENT_AUTH=true .venv/bin/python apps/api/tests/domains/search/browser_preview.py --isolated-search-ui` | Foreground fixed loopback 8000, explicit synthetic read-only UI scripts, no DB/auth/storage. Rejects default/production/ambient DB/AWS and non-opt-in/cross-origin clients; Ctrl+C stops it. Never a real provider or NFR check. |
-| `PATH="$PWD/.tools/node/bin:$PATH" NPM_CONFIG_CACHE="$PWD/.tools/npm-cache" NPM_CONFIG_USERCONFIG=/dev/null VITE_SEARCH_UI_PREVIEW=true .tools/node/bin/npm run dev` | Existing loopback 5173 Vite server with explicit development fixture disclosure/header. Open `http://127.0.0.1:5173/`; Ctrl+C stops it. No global PATH edits or public exposure. Production builds omit the preview branch. |
-| `PATH="$PWD/.tools/node/bin:$PATH" NPM_CONFIG_CACHE="$PWD/.tools/npm-cache" NPM_CONFIG_USERCONFIG=/dev/null .tools/node/bin/npm run check` | Registered lint/Vitest/type/build suite using repo-local Node/npm; replaces ignored dist only. Does not complete human desktop/phone/browser or real SQL/auth integration checks. |
-
-Pause at the first usable screen for human observations/version/viewports per
-the browser procedure. Future visible increments need renewed checks. The normal
-app still calls the real API when the development fixture flag is absent.
-
-## SE-01 Steps 3–6 — browse/search checks
-
-| Command | Behavior and evidence limit |
-|---|---|
-| `uv run --locked pytest apps/api/tests/domains/listings/test_browse.py apps/api/tests/domains/search data/tests -q -W error` | Isolated HTTP/auth/privacy, current-read/cache-header behavior, strict query/filter checks, Search-owned saved boundary fixtures, SQL parameterization, corpus and loader refusals. Scripted pages/states do not prove SQL or real saved behavior. |
-| `uv run --locked python scripts/check_database.py --listings-store` | Existing pinned Docker/PostgreSQL runner executes `test_browse_postgres.py`: real availability/time/retirement predicates and state transitions, title/description/stemming/plain-text search, generated-vector updates, GIN eligibility, filters/catalogue and stable paging. Fixtures force rollback. Planner diagnostic is not performance evidence; no real saved API is supplied. Requires Docker; not run successfully here. |
-| `uv run --locked pytest apps/api/tests/domains/listings/test_browse_postgres.py -q -W error` | Skips explicitly without the runner's `LISTINGS_TEST_DATABASE_URL`; a skip is not SQL acceptance. Do not supply a shared/cloud/application database. |
-
-Runtime entry: reviewed Listings-owned `GET /listings`; Step 4 adds plain-text
-`q` through native English full-text matching. Step 5 adds the reviewed filters
-and recency/price sorts with UUID ties. Invalid ranges/types/bounds/codes use
-shared 422 errors. No new monetary cap or request-rate quota is invented.
-Existing vector/GIN definitions are reused, with no new migration or search service. Real
-Identity/SQL/index checks and affected-owner review remain pending. Step 6 sets
-discovery responses to `private, no-store`; current eligibility/storage is
-rechecked. Retained unavailable saved summaries/content-free retired markers are
-distinct SE-02 behavior, still awaiting actual providers, API and privacy checks.
-
-## SE-01 Step 2 — isolated schema-shaped data
-
-Creator/current writer for this bounded registry addition: Mohit (C),
-`task/se-01-search`. Existing Make/PD-09 commands remain unchanged. With locked
-dependencies installed, `.venv/bin/python` may replace `uv run --locked python`
-on the repository-local setup. [Format](../../data/formats/search-preview.md)
-and [local prerequisites](../../data/README.md#se-01-isolated-schema-shaped-corpus).
-
-| Command | Target/effect | Success/failure |
+| Purpose | Command | Notes |
 |---|---|---|
-| `uv run --locked python -m data.generators.search_preview generate --name <fresh-name> --seed 42 --users 5000 --listings 1000 --logical-time 2026-10-24T09:00:00.000000Z` | Creates only `data/runs/<fresh-name>/dataset.json` and `manifest.json`; schema-shaped preview with explicit logical clock. | Prints fingerprint, exit 0; exit 2 on invalid/unsafe/existing targets. No overwrite or database writes. |
-| `uv run --locked python -m data.generators.search_preview validate --name <name>` | Verifies closed schema, current source binding, counts, fingerprint and retained manifest. | Prints fingerprint, exit 0; altered/stale/unsafe data exits 2. |
-| `CLIP_ENVIRONMENT=test uv run --locked python -m data.generators.search_loader --name <name> --socket-dir <canonical-local-directory> --isolated-preview` | Fixed Unix-socket `clip_test_search_preview` database / `clip_search_preview` role, empty migrated fixture tables only; atomic user/listing/image-metadata insertion. No provisioning, credentials, storage calls or deletes. | Exit 0 only after SQL constraints/counts/commit; otherwise safe exit 2. Real PostgreSQL execution remains unverified. Refuses ambient DB/libpq overrides and nonempty/mismatched targets. |
-| `uv run --locked pytest data/tests -q -W error` | Existing plus schema-shaped corpus/contract and loader refusal tests; local synthetic data only. | Passing tests are isolated evidence, not SQL/FK/index/image integration. |
+| Install locked dependencies | `make setup` | Local Python and web dependencies; no cloud login. |
+| Show available targets | `make help` | Lists the Make front door. |
+| Run shared checks | `make check` | Python, web, database, contracts and secret checks. Terraform is separate. |
+| Start local API/web | `make start-api`; `make start-web` | Foreground loopback services; stop each with Ctrl+C. |
+| Start/check the local database | `make start-db`; `make seed`; `make migration-status` | Uses the retained local Compose database. Do not reset it as a recovery step. |
+| Stop the local database | `make stop-db` | Stops the service and retains its data. |
+| Generate/validate preview data | `make data-generate RUN_NAME=preview-42 SEED=42 USERS=3 LISTINGS=2`; `make data-validate RUN_NAME=preview-42` | Choose a fresh name. These files are scaffolding, not final domain data. |
+| Static Terraform checks | `make terraform-check` | Backend-free formatting/validation; does not plan or apply cloud changes. |
 
-Reset is intentionally unsupported. Use no truncate/drop/reset workaround;
-destructive cleanup requires a separately approved exact target. Final real
-schema/count/FK/image/index checks and human labels remain SE-01 steps 2/4/9.
+The [API](../../apps/api/README.md), [web](../../apps/web/README.md),
+[database](../../database/README.md) and [data](../../data/README.md) guides
+own their detailed commands and limits.
 
-**Canonical path:** `docs/environment/commands.md`
+## Feature and evaluation commands
 
-This registry contains implemented commands and planned outputs, distinguished in the table below. Each command-creating task populates exact spellings/arguments/script paths and verifies safe behavior; a planned row is not proof of implementation. The normal front door is root Makefile, unless PD-02 explicitly approves an equivalent and records actual mappings. Root README/CONTRIBUTING/CI must match this registry after PRE-00.
-
-For EACH command record: creator task, exact invocation and required inputs, supported shell/runtime, target/environment, effects and destructive/billable behavior, prerequisite milestone, expected output/exit status, failure/recovery, tests/evidence. Commands must reject unspecified or wrong targets rather than guessing an AWS account/region/database.
-
-**Status reconciliation (2026-10-19):** The user confirmed all previously pending PD-08/09/12/13/15 acceptance gates. Step-specific notes below retain checkpoint-time status; see the work log for current acceptance. PD-19 Step 2 reran the clean local command path. Final schema-aware data loading remains SE-01/DATA-READY.
-
-| Required command outcome | Creator | Current state |
-|---|---|---|
-| Install/setup | PD-02/04/07/13 | Python: `uv sync --locked` implemented/verified in PD-04; web: root `npm ci` implemented/verified in PD-07. `make setup` and clean-checkout verification passed in PD-13/PD-19 Step 2. |
-| Local start/stop/readiness | PD-05/07/08/13 | API and web loopback checks plus the PD-08/13 lifecycle gates are complete; user confirmed the previously pending acceptance on 2026-10-19. PD-19 Step 2 repeated API/web/DB start and stop locally. |
-| Local migration/status/reset and small seed | PD-08/13 | PostgreSQL 18.6/dbmate 2.36.0 wrapper, migrations and small catalogue seed are verified; user confirmed the previously pending PD-08/13 acceptance on 2026-10-19. Reset remains local-only with an explicit deletion flag; no final domain data loader exists. |
-| Generator framework/tests | PD-09 | All six local steps/audit and final acceptance were user-confirmed on 2026-10-19; 63 data tests and pinned Black passed. No domain loader/evaluator. |
-| Final reference generate/load/validate/fingerprint | SE-01/DATA-READY | Not implemented; requires domain schemas/configuration |
-| Python format and non-mutating pinned Black check | PD-04 | Implemented and human-verified at step 3; exact commands and verification below |
-| Test/lint/type/build/aggregate CI-equivalent | PD-05/07/12/13 | `make check` runs the shared Python/web/database/contracts/secret gates used by CI; it passed in PD-19 Step 2. PD-12/13 hosted acceptance and lifecycle front door were user-confirmed complete on 2026-10-19. |
-| Contract regenerate/stale-check | PD-11/DL-00 | Health generation/check and actual API schema/consumer regression checks implemented in PD-11; full domain declarations remain DL-00. Exact commands below. |
-| Terraform static format/validate (no remote state mutation) | PD-15/13 | `make terraform-check` with Terraform 1.15.9: format check and backend-free validation, readonly provider lock; individual targets documented below. Public provider downloads may be needed; no cloud login or apply. |
-| Plan/apply/build-release/deploy/verify/rollback/teardown | PD-15/16; domain/EXP additions | PD-15 documents reviewed plan/apply/verify/cleanup. PD-16 per-run ECS capacity plans and RDS stop/start templates are in `infra/terraform/shared/test/README.md`; select exact targets and review/approve each cloud operation. These are not local/CI checks. |
-| Isolated Listings demo lifecycle | LI-02 Step 12 | Implemented locally as `make li02-demo-start AWS_PROFILE=<approved-profile>` and `make li02-demo-stop AWS_PROFILE=<approved-profile>`. Start continues a recorded partial run from its saved phase; there is no separate resume command. The driver gates image publication, database operations, exact Terraform plans, public app start, and teardown. |
-| Search evaluator/load workload/NFR manifests | SE-01 | Not implemented |
-| Two-client chat/read-state/latency measurement | CN-01/CN-03 | Not implemented |
-| Integrated peak/runtime-loss/DB-restore checks | INT-01 | Not implemented |
-| Mixed Lambda package/routing/parity/deploy/workloads/analysis | EXP-02/03–08 | Not implemented |
-| Final regression/export/demo/package verification | CLOSE-00 | Not implemented |
-
-An absent command assigned to the selected creation step is an expected output; the agent creates/registers/tests it. An absent prerequisite or uncertain expected effect blocks the dependent action and requires a question. No cloud operation belongs in the generic local/CI aggregate target.
-
-## LI-02 Step 12 demo lifecycle
-
-Run from the repository root with Python 3, AWS CLI, Terraform 1.15.9, Docker
-Buildx and an explicitly approved AWS profile. The command fixes the target to
-account `335523638354`, Region `ap-south-1`, the dedicated LI-02 ECS cluster and
-ASG, disposable LI-02 RDS, and existing shared API ECR repository. The VPC,
-private workload subnet and NAT are shared dependencies; the shared ECS cluster,
-capacity provider, ASG and host security group are neither queried for workload
-state nor changed. Start refuses modified LI-02 build inputs and requires a
-committed source revision. No credentials, URL values, or database passwords
-are printed or written to Terraform state. Local baseline metadata is ignored
-by Git and contains only resource IDs/status, run ID and image digests.
-
-| Exact command | Effects and gates | Expected result / recovery |
-|---|---|---|
-| `.venv/bin/pytest apps/api/tests/domains/listings/test_demo_database_lifecycle.py -q` | Runs the actual Listings lifecycle shell script with a controlled local psql process. Checks metadata capture, empty/existing/owned/mismatched states, invalid/failed queries, idle clients, private diagnostics and bounded client settings. No AWS, database or Docker access. | 27 passing regression cases, including the URL-only seed secret contract and admin-secret/invalid-URL rejection; these do not prove real PostgreSQL bootstrap, migrations or cleanup. |
-| `.venv/bin/pytest apps/api/tests/domains/listings/test_li02_demo_driver.py -q` | Exercises the cloud driver's AZ retry decision, partial-RDS refusal, exact AWS capacity-error classification, absent-provider handling, dedicated cluster/task target, ASG/root-volume teardown target, durable bridge-task metadata block, and single run-level authorization persistence. It does not call AWS, Terraform plans/applies, Docker, or a database. | 11 passing local lifecycle-driver cases; these do not prove a real EC2 boot, AWS capacity response, or cloud cleanup. |
-| `make li02-demo-start AWS_PROFILE=<approved-profile>` | One command checks account/budget/state, builds and pushes immutable UI/API and database images, creates the run URL SecureString, owner-checks/resets only `clip_test_listings`, migrates/seeds it, creates the private LI-02 ECS cluster/ASG/host plus temporary public ALB and disposable encrypted RDS, then starts one app task. It asks once for `START LI02 DEMO <run-id>` before run writes. Every Terraform plan still displays its saved plan and requires that exact SHA-256; if AWS explicitly returns `InsufficientDBInstanceCapacity` for `ap-south-1b`, the driver confirms no partial RDS remains and prepares a separate hash-gated plan for `ap-south-1a`. Shared RDS and shared ECS resources are untouched. | Exit 0 prints the generated HTTP URL for desktop and phone checks. On failure, retain `.demo-baseline.json` and rerun start to continue or stop to clean up. No HTTPS/domain is configured. |
-| `make li02-demo-stop AWS_PROFILE=<approved-profile>` | One `STOP LI02 DEMO <run-id>` confirmation authorizes stop of the app, owner-checked deletion of only `clip_test_listings`/its login, removal of this run's S3 prefix and URL parameter, temporary ALB/subnet/route/service/tasks/disposable RDS, log streams, and termination of the dedicated EC2 host/root volume. Run ECR images are retained for reproducible restart. The Terraform removal plan still needs its own exact hash approval. | Exit 0 leaves the empty LI-02 cluster/provider/ASG and host IAM/SG, Step 4 bucket/IAM/log group/state backend, shared RDS/database, VPC/NAT and shared ECS resources intact. The baseline remains if cleanup fails, so retry the same command. |
-
-The disposable RDS adds about USD 0.021 per available hour for compute in
-`ap-south-1`, plus 20 GiB of gp3 storage while it exists; RDS bills in one-second
-increments with a 10-minute minimum. The exact run cost also includes the
-temporary ALB, one `c7i-flex.large` private LI-02 EC2 host, its 30-GiB gp3
-root disk, and shared NAT data transfer; check current billing data before
-apply. Stop removes the host and root disk as well as disposable LI-02 RDS.
-The empty LI-02 ECS/ASG control resources remain but have no running compute.
-This driver has not yet completed an AWS run with the separate cluster and
-database. Refresh the
-current account inventory before using it. If interrupted, keep the local
-baseline file, then rerun `start` to continue or
-`stop` to clean up; the script refuses to guess an account, resource, or
-database target. Cloud actions still require review of the current exact plans,
-cost and public exposure.
-
-## PD-07 Step 1 — local web bootstrap
-
-Run these commands from the repository root with Node.js 24 LTS and npm 11 on
-PATH. The first verified runtime is Node 24.22.0/npm 11.19.1. These commands use
-the one root Node manifest and lockfile; they do not invoke the root Makefile.
-PD-13 integrates the common front door later. See
-[web instructions](../../apps/web/README.md) and the
-[build-tool decision](../decisions/web-build-tooling.md).
-
-| Exact command | Inputs and effects | Success | Failure and recovery |
-|---|---|---|---|
-| `npm ci` | Requires the Step 1 manifest/lockfile and public npm-registry access; replaces this checkout's generated `node_modules/` and uses the contributor's npm cache. No cloud resources or private application data. | Exit 0; dependencies match the lockfile. | Resolve runtime/network or manifest/lock mismatch; do not hide it with unrelated upgrades or a second lockfile. |
-| `npm run dev` | Starts foreground Vite on `127.0.0.1:5173`; may write ignored dependency caches. LI-01 create/detail calls `/api`, forwarded only in development to local API `127.0.0.1:8000`. No test auth is activated by this command. | Exact loopback URL serves the app; Listings API success requires its configured dependencies. | An occupied port fails. Stop only the owned foreground process with Ctrl+C. |
-| `npm run build` | Type-checks the app and test/config TypeScript, then bundles into ignored `apps/web/dist/`, replacing that generated output. | Exit 0 from both TypeScript and Vite, with built assets. | Preserve the error and fix the owned source/configuration; a failed check is not deployment evidence. |
-| `npm run preview` | Requires the completed local build; starts a foreground loopback server on `127.0.0.1:4173` to inspect `apps/web/dist/`. | Exact preview URL serves the built HTML/assets. | Build first if output is missing; investigate occupied ports. Stop with Ctrl+C. This command does not deploy. |
-
-Each command is local and requires no AWS credentials, database, account, or
-production endpoint. The development/preview processes do not detach or create
-a persistent service. An unwritable npm cache can be redirected to a writable
-contributor-local location with `NPM_CONFIG_CACHE`; do not change credentials or
-use a privileged install merely to write the cache. Step 1 checks install,
-build, bootstrap rendering, and HTTP start/stop. Step 8 records full scaffold
-acceptance after running the registered checks against the implemented routes.
-
-## PD-07 Step 7 — web lint, type, test, build, and aggregate checks
-
-Run from the repository root with Node.js 24 LTS and npm 11. Tool versions are
-exactly pinned in the root manifest/lockfile. These commands are local; none
-reads cloud credentials, contacts a production endpoint, or requires an
-external account. `npm run dev` and `npm run preview` remain foreground,
-loopback-only processes stopped with Ctrl+C.
-
-| Exact command | Inputs and effects | Success | Failure and recovery |
-|---|---|---|---|
-| `npm run lint` | Runs the pinned Biome linter on `apps/web/src/`, `apps/web/tests/`, and the Vite/Vitest configs using `apps/web/biome.json`. Does not rewrite files. | Exit 0 with no lint findings. | Read the reported file/rule, correct the owned code or discuss a rule change; do not suppress unrelated findings. |
-| `npm run typecheck` | Runs TypeScript with the app config, then with `apps/web/tests/tsconfig.json` for tests and Vite/Vitest configs. Both configs have `noEmit`; no generated JavaScript is written. | Exit 0 for both projects. | Fix the reported type/config issue, then rerun the command. |
-| `npm test` | Runs Vitest once using `apps/web/vitest.config.ts`. It checks the actual route configuration against the approved paths and matches representative static/dynamic/unknown URLs. It also parses source imports to enforce public feature entry points for pages and prevent private cross-domain imports. It does not assert placeholder labels or `.gitkeep` files. | Exit 0 with architecture tests passing. | Use the failing route or import report to fix the route tree/boundary; update expected paths only after an approved route change. |
-| `npm run build` | Runs the app/test TypeScript checks, then Vite production bundling into ignored `apps/web/dist/`, replacing generated output. | Exit 0 with built assets. | Resolve TypeScript or bundler errors. Build output is local and is not deployed. |
-| `npm run check` | Runs lint, Vitest architecture tests, and production build in sequence; the build includes both TypeScript checks. May replace local ignored `apps/web/dist/`. | Exit 0 only when all checks pass. | Fix the first failing command and rerun the aggregate command. |
-
-The route test's approved-path list is a product-structure assertion and changes
-only after a route is approved. It deliberately avoids assertions tied to
-placeholder wording/appearance. Page composition connections and the continuing
-handoff markers are reviewed during PD-07 Step 8; there is no marker-presence
-automated test. PD-12 later wires the agreed web checks into CI, and PD-13 later
-adds them to the shared repository command front door.
-
-## Local Python/API commands (PD-04–PD-06)
-
-Run from the repository root on Linux/macOS with GNU Make, uv and Python `>=3.14,<3.15`. The root `pyproject.toml` and `uv.lock` pin dependencies, Black 26.10.1 and pytest 9.1.1. Initial setup may need network access; uv commands may synchronize the ignored `.venv` and local caches. No command below provisions cloud resources or calls a database/provider.
-
-| Purpose / creator | Invocation | Expected result / effects |
-|---|---|---|
-| Setup — PD-04 | `uv sync --locked` | Install locked runtime/development dependencies; uv may obtain a compatible interpreter. |
-| Format — PD-04 | `make format-python` | Runs `uv run --locked black .`; rewrites discovered Python source. Review the diff. |
-| Check format — PD-04 | `make check-python-format` (also plain `make`) | Runs `uv run --locked black --check --diff .`; exit 0 when formatted, nonzero on drift/tool failure. Leaves source unchanged. |
-| Start API — PD-05 | `uv run --locked uvicorn app.main:app --app-dir apps/api --host 127.0.0.1 --port 8000` | Foreground loopback listener; stop with Ctrl+C. |
-| Health — PD-05 | `curl --fail http://127.0.0.1:8000/health` | Exit 0, HTTP 200, `{"status":"ok"}`. Process liveness only. |
-| All tests — PD-04/05 | `uv run --locked pytest -q -W error` | Collect API and shared fixture tests; warnings fail the run. |
-| API tests — PD-05 | `uv run --locked pytest apps/api/tests -q -W error` | API/configuration and shared-core checks. |
-
-For setup/start failures, inspect the dependency, import, configuration or occupied-port error. If choosing another local port, update both start and health invocations. For formatting drift, run the formatter, review changes and rerun the check. Locked commands do not rewrite an outdated lockfile; resolve dependency/configuration errors before retrying.
-
-Tests use synthetic data, in-memory ASGI requests, temporary files and bounded local subprocesses; they may write local caches and restore changed environment/logger settings. They need no external services or credentials. Pytest exit 0 means collected tests passed; exit 1 means failure; exit 5 (no tests) is not a pass. Investigate failures. Root pytest configuration supplies import paths; TestClient uses pinned development-only httpx2.
-
-Settings, request IDs, JSON logging and production provider guards are documented in the [API guide](../../apps/api/README.md) and [core guide](../../apps/api/app/core/README.md). No dotenv file is loaded automatically. PD-12/13 provide CI wiring and combined lifecycle/test Make targets; Python lint/type tooling remains deferred. Tool choices: [test tooling decision](../decisions/python-test-tooling.md); verification evidence: [work log](../status/work-log.md).
-
-## Focused core/fixture checks (PD-06/PD-10)
-
-These subsets use the same prerequisites, effects and exit rules above; the full test command includes all of them.
-
-| Coverage / creator | Invocation |
+| Work | Current command source |
 |---|---|
-| Shared conventions — PD-06 | `uv run --locked pytest apps/api/tests/core -q -W error` |
-| Security boundaries — PD-06 | `uv run --locked pytest apps/api/tests/core/test_security_boundaries.py -q -W error` |
-| Shared fixtures and API usage — PD-10 | `uv run --locked pytest tests/fixtures/core apps/api/tests/core/test_shared_fixtures.py -q -W error` |
-| Fixture library/scripted providers — PD-10 | `uv run --locked pytest tests/fixtures/core -q -W error` |
-| Production provider matrix — PD-10 | `uv run --locked pytest apps/api/tests/core/test_provider_settings.py apps/api/tests/core/test_security_boundaries.py -q -W error` |
-| Retry/duplicate/concurrency/failure/validation scenarios — PD-10 | `uv run --locked pytest apps/api/tests/core/test_shared_scenarios.py -q -W error` |
-| Redacted diagnostics — PD-10 | `uv run --locked pytest tests/fixtures/core/test_privacy.py -q -W error` |
+| Search/Listings focused checks and isolated preview | [Search test guide](../../apps/api/tests/domains/search/README.md), [API guide](../../apps/api/README.md), and the browser procedure below |
+| Schema-shaped search data | [Data generator guide](../../data/README.md#se-01-isolated-schema-shaped-corpus); these are not the final NEXT-06 dataset commands |
+| Load-runner tools and bounded local pilot | [k6 tool guide](../../scripts/evaluation/k6/README.md) |
+| NFR measures and final-run requirements | [NFR measurement design](../evaluation/nfr/measurement-design.md) and the approved [ECS/Lambda experiment design](../evaluation/ecs-only-vs-ecs-lambda-task-list.md) |
+| Disposable database and SQL diagnostics | [Database guide](../../database/README.md) |
+| Identity provider setup and real-run gates | [Identity setup guide](identity-provider-setup.md) |
+| Cloud plans, targets and lifecycle | [Cloud inventory](cloud-inventory.md), the relevant [Terraform runbook](../../infra/terraform/shared/test/README.md), and the owning task's reviewed plan |
 
-Security checks include request-ID spoofing and credential-free entry-point children (10-second timeout). Production rejects fake identity/email/storage selections and development auth; empty/unsupported provider selections fail. Safe configurations supply positive controls. Test-only scripts follow the [reviewed adapter interfaces](../../tests/fixtures/core/adapter-interfaces.md); domain retry/deduplication/transaction and OTP behavior remain with their owning contracts.
+The k6 pilot is loopback-only and cannot accept an NFR. Draft profiles are not
+approved full-run inputs. NEXT-06 and NEXT-07 must register their final exact
+commands, inputs and evidence locations after the owning tools and data are
+ready; do not infer readiness from an example or local pilot.
 
-The privacy check launches a credential-free pytest child (15-second timeout) that intentionally fails; the parent passes only when the failure report is correctly redacted. See [fixture usage and snapshot limits](../../tests/fixtures/core/README.md). Fixtures do not establish real provider/domain integration or cloud/NFR acceptance.
+## SE-01 isolated discovery preview
 
-## PD-16 database-task deadlines
+Use only for the synthetic local Search screen. The API fixture listens on
+loopback 8000 and the web app on 5173; both require the explicit preview flags.
+They use no database, cloud, sign-in provider or storage. Ctrl+C stops each
+foreground process.
 
-The fixed ECS task definitions embed `infra/terraform/shared/test/scripts/setup-db-role.sh` and `probe-db.sh`. Their pinned Linux PostgreSQL client image must contain GNU `timeout`. Each script sets `PGCONNECT_TIMEOUT=10` and `PGOPTIONS='-c statement_timeout=30000 -c lock_timeout=30000'`, then runs its single psql process with `timeout --signal=TERM --kill-after=5s 60s`. Total client execution stops within 60 seconds plus up to 5 seconds for forced termination; this excludes ECS scheduling. Missing tools, failed SQL and timeouts exit nonzero with safe messages. No raw client diagnostics or credentials are emitted. Inspect before retrying; a timeout does not establish whether earlier work committed. The setup script also checks effective logging in the same connection before ACL/role/password changes and aborts on unsafe settings, including error-statement logging; the approved DEC-05 correction applies and verifies only transaction-local suppression beforehand, restoring prior settings on commit/rollback. Denied permissions or remaining unsafe settings abort without grants, global changes or retries.
+```bash
+CLIP_ENVIRONMENT=test CLIP_DEVELOPMENT_AUTH=true .venv/bin/python apps/api/tests/domains/search/browser_preview.py --isolated-search-ui
+PATH="$PWD/.tools/node/bin:$PATH" NPM_CONFIG_CACHE="$PWD/.tools/npm-cache" NPM_CONFIG_USERCONFIG=/dev/null VITE_SEARCH_UI_PREVIEW=true .tools/node/bin/npm run dev
+PATH="$PWD/.tools/node/bin:$PATH" NPM_CONFIG_CACHE="$PWD/.tools/npm-cache" NPM_CONFIG_USERCONFIG=/dev/null .tools/node/bin/npm run check
+```
 
-Local regression command: `uv run --locked pytest tests/architecture/test_db_task_timeouts.py -q -W error`. Controlled client stand-ins exercise success, private-error suppression, a stuck process that ignores TERM, caller timeout overrides and a missing timeout tool. A real GNU timeout uses shortened test deadlines. No database/cloud access occurs; the check also runs in the root test suite. See the [runbook](../../infra/terraform/shared/test/README.md#database-task-deadlines) and [approved decision](../decisions/database-task-deadlines-and-manual-image-cleanup.md).
+This preview is not real auth, SQL integration or an NFR result. Follow the
+[browser procedure](browser-verification.md) for human review.
 
-## PD-16 Step 12 read-only review
+## SE-01 Hybrid read checks
 
-Use the approved non-root profile/account. `aws budgets describe-budget`, `describe-notifications-for-budget` and `describe-subscribers-for-notification` target budget `CLIP-Account-Actual-Spend-From-2026-10-17` in account `335523638354`, endpoint `us-east-1`; capture subscriber output privately and report only counts/matches. Project resources remain Mumbai. No notification-send/update command is part of this review. `aws cloudwatch get-metric-statistics` reads standard ECS/EC2/RDS metrics for a bounded run window in `ap-south-1` (300-second periods, Average/Maximum/Minimum); no custom metric or load is created. [Recorded inputs/results, billing lag and query-cost boundary](../evaluation/foundation/pd-16/step12-cost-review.md).
+Portable HTTP/binding/error checks:
 
-## PD-16 Step 7 publication evidence
+```bash
+uv run --locked pytest apps/api/tests/domains/listings/test_hybrid_read.py -q -W error
+```
 
-The authorized one-off [ECR publication](../evaluation/foundation/pd-16/ecr-publication.md) used `sudo docker` login with temporary auth and the AWS CLI layer/manifest APIs to preserve the verified OCI bytes. Its evidence records the exact immutable source tag, remote digest, verification, limits and API sequence; no reusable upload wrapper was introduced. Repeat uploads need their own exact artifact/target approval.
+The owned native PostgreSQL/helper probe uses the existing pinned local tools:
+
+```bash
+LC_ALL=C bash database/tests/native-checks.sh "$PWD/.tools/native-db/pgsql" "$PWD/.tools/native-db/downloads/dbmate-macos-arm64" --hybrid-read
+```
+
+The native run creates and stops its own database/helper and retains private
+results. It uses the already-local model, makes no cloud call and does not
+measure NFR performance. On macOS, native process/shared-memory access may need
+the contributor's local system approval.
+
+## Shared aggregate — PD-12 Step 6
+
+`make check` runs the shared local quality gates and is the ordinary project
+verification command. See [local setup and checks](README.md#checks-and-data-tooling)
+for coverage and skipped-check limits. It makes no cloud changes.
+
+## PD-11 boundary checks
+
+`make check` includes the repository's executable architecture and contract
+checks. See the [shared boundary rules](../conventions/shared-conventions-and-cross-domain-contract-rules.md)
+and the relevant test README for exact focused commands. A focused pass does not
+replace the full check or owner review.
+
+## Identity provider offline checks — ID-01 Step 2
+
+From the repository root, after `uv sync --locked`:
+
+```bash
+uv run --locked pytest apps/api/tests/domains/identity/test_email.py apps/api/tests/core/test_provider_settings.py apps/api/tests/test_config.py -q -W error
+```
+
+These checks use controlled clients and synthetic recipients. They create no
+AWS client, send, listener or database. Passing them does not establish provider
+delivery, real sign-in or ID-READY. See the
+[Identity setup record](identity-provider-setup.md) for real gates.
+
+## Explicit real local Identity bootstrap — ID-01 Step12 preparation
+
+This is operator preparation only. Running it needs separate review and
+approval for the exact secret/database access, recipients, network path and
+time window. The acknowledgement flag is not approval.
+
+```bash
+uv run --locked python scripts/identity_runtime.py --help
+uv run --locked python scripts/identity_runtime.py --check --approved-bootstrap
+uv run --locked python scripts/identity_runtime.py --serve --approved-bootstrap
+```
+
+`--check` opens no listener. `--serve` may create real Identity state and send
+mail; do not exercise auth flows without the reviewed recipients and cleanup.
+Neither mode changes cloud infrastructure. See the
+[Identity setup guide](identity-provider-setup.md#real-verification-and-approvals).
 
 ## Local API container image — PD-16 Step 4
 
-Run from the repository root with Docker Engine. Record `git rev-parse HEAD`,
-`git status --short`, and the engine architecture with the local check: it
-builds the current worktree, including uncommitted API changes. The later
-registry image must be rebuilt from the exact reviewed commit.
-
-The current engine has only the legacy builder, which ignores the
-Dockerfile-specific ignore file and would send the repository's 1.7 GB context.
-The Dockerfile avoids BuildKit-only instructions, and this procedure stages an
-allowlisted context under `/tmp` containing the Python and web lockfiles, API
-and web source, generated frontend types, Dockerfile and its ignore file. The
-image serves the built website and API from one process; the demo disclosure is
-enabled only with `--build-arg VITE_LISTINGS_PUBLIC_DEMO=true`. The Docker build
-uses the host's native architecture and never contacts AWS:
+Build from the repository root with Docker. Record the current revision, dirty
+state and engine architecture. This stages an allowlisted context under
+`/tmp`, builds for the local architecture, starts the container on loopback,
+checks health and removes only the container/image/context created by this
+invocation. It does not contact AWS. The published ECS image must instead be
+built from the exact reviewed commit for `linux/amd64`.
 
 ```sh
 (
@@ -250,7 +136,6 @@ build_context=$(mktemp -d /tmp/clip-api-pd16.XXXXXX)
 image_tag="clip-api:pd16-local-${build_context##*.}"
 container_id=
 image_id=
-# Only clean artifacts created by this invocation; preserve its exit status.
 cleanup() {
   result=$?
   trap - EXIT
@@ -275,7 +160,6 @@ sudo docker build --file "$build_context/Dockerfile" --tag "$image_tag" "$build_
 image_id=$(sudo docker image inspect --format '{{.Id}}' "$image_tag")
 container_id=$(sudo docker create --publish 127.0.0.1:8000:8000 "$image_tag")
 sudo docker start "$container_id" >/dev/null
-# A port conflict fails this run; never stop another process to free the port.
 curl --retry 20 --retry-all-errors --retry-delay 1 --max-time 2 --fail http://127.0.0.1:8000/health
 attempt=0
 health=starting
@@ -288,7 +172,11 @@ done
 )
 ```
 
-The native ARM64 check is sufficient for Step 4. The user later confirmed the previously pending PD-08/PD-13 native-platform and database compatibility gates (2026-10-19); see the work log. PD-16 Step 7 subsequently built, uploaded and verified the `linux/amd64` image from its reviewed commit; see [PD-16 publication evidence](../evaluation/foundation/pd-16/README.md). The approved local procedure uses `sudo docker` on this host.
+The source-only staging is deliberate: do not replace it with a repository-wide
+Docker context. The [API guide](../../apps/api/README.md) describes the image
+boundary and the separate Linux AMD64 publication gate.
+
+The native ARM64 check is sufficient for Step 4. The user later confirmed the previously pending PD-08/PD-13 native-platform and database compatibility gates (2026-10-19); see the work log. PD-16 Step 7 subsequently built, uploaded and verified the `linux/amd64` image from its reviewed commit; see [PD-16 publication evidence](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/foundation/pd-16/README.md). The approved local procedure uses `sudo docker` on this host.
 
 PD-16's ECS scale-to-zero and RDS stop/start procedures are documented in the
 [shared test Terraform runbook](../../infra/terraform/shared/test/README.md#ecs-capacity-lifecycle).
@@ -297,7 +185,7 @@ image build or `make check`.
 
 ## Native AMD64 API-image validation — PD-16 Step 7 local check
 
-The [native validation evidence](../evaluation/foundation/pd-16/native-amd64-image-validation.md) records the exact clean source SHA, allowlisted `git archive` inputs, `DOCKER_BUILDKIT=0 docker build --platform linux/amd64` command, platform/non-root/runtime check and loopback HTTP/Docker-health checks. That run used Docker directly because the contributor already had local socket access; it did not require sudo or emulation. The archive excludes ignored/untracked files as well as all credentials, Git metadata and dependency caches.
+The [native validation evidence](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/foundation/pd-16/native-amd64-image-validation.md) records the exact clean source SHA, allowlisted `git archive` inputs, `DOCKER_BUILDKIT=0 docker build --platform linux/amd64` command, platform/non-root/runtime check and loopback HTTP/Docker-health checks. That run used Docker directly because the contributor already had local socket access; it did not require sudo or emulation. The archive excludes ignored/untracked files as well as all credentials, Git metadata and dependency caches.
 
 Unlike the temporary Step 4 smoke image above, this successfully validated image is deliberately retained under its commit-derived local tag for later handoff. Remove only the owned smoke container and temporary context after recording the outcome; do not overwrite an existing tag or prune unrelated images. Public image/package downloads can occur. Building and retaining a local image does not authorize Git publication, ECR upload, deployment or a cloud action; the local image ID is not proof of a remote registry manifest digest. Follow the separate exact-upload approval before publishing.
 
@@ -1391,7 +1279,7 @@ logs and manifest stay under `.tools/native-db/`; no global executable/PATH edit
 
 Native execution result: final fresh run `/tmp/clip-pd08-native-check.oLISmK`
 passed the schema round trip and seven adapter-suite checks (four actual DB
-cases, three pre-connect guards); cluster stop succeeded. [Retained evidence](../evaluation/domain/se-01/native-postgres/result.json).
+cases, three pre-connect guards); cluster stop succeeded. [Retained evidence](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/domain/se-01/native-postgres/result.json).
 Two earlier failed runs remain for the corrected GIN diagnostic, fixture
 retirement publication/age and browse marker ordering. Production constraints
 were preserved. These native tool/configuration results do not accept real
@@ -1399,7 +1287,7 @@ providers, final corpus/labels, full pipeline-switch coverage or FR/NFR gates.
 
 The same native command subsequently passed the expanded bootstrap/switch matrix:
 `/tmp/clip-pd08-native-check.4FB6Mb`, eight adapter checks (five DB/three guards),
-schema round trip and successful cluster stop. [Expanded evidence](../evaluation/domain/se-01/native-pipeline-switch/result.json).
+schema round trip and successful cluster stop. [Expanded evidence](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/domain/se-01/native-pipeline-switch/result.json).
 No new command/dependency/service is introduced; all mathematical fixture state
 changes remain inside the fresh disposable runner database.
 
@@ -1609,7 +1497,7 @@ remain unchanged. Refresh the page at `http://127.0.0.1:5173/`; `hybrid-down` wi
 Hybrid scripts503, and explicit Use Keyword recovers; `slow` scripts delay and
 `retry` scripts one failure per fixture-app instance. All are transport fixtures,
 not real auth/SQL/semantic ranking. Human checks in
-[the evidence](../evaluation/domain/se-01/frontend-modes/result.json) remain pending.
+[the evidence](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/domain/se-01/frontend-modes/result.json) remain pending.
 
 
 ## SE-01 actual native HTTP/model preview
@@ -1878,64 +1766,92 @@ React interaction, Safari/device behavior or final SE-02 acceptance.
 
 ### API image RDS root trust — ID-01 Step12
 
-The ordinary API Dockerfile installs the three vendored public ap-south-1 RDS
-roots into the existing system store. No CA download occurs during build; use the
-registered allowlisted source-only build procedure above, never the legacy
-builder's unrestricted repository context. `apps/api/app/**` includes the reviewed
-public certificate files/manifest. Build for the local native platform; publication
-for ECS still requires a reviewed linux/amd64 build and separate approval.
-The optional Hybrid image must use the newly corrected ordinary API image as its
-explicit API_IMAGE input; an old parent image retains its old trust store.
-
-Public-data integrity test (no Docker/network):
+Public certificate integrity check (no Docker or network):
 
 ```bash
 uv run --locked pytest apps/api/tests/domains/identity/test_image_trust.py::test_public_regional_roots_match_pinned_manifest_and_are_current -q -W error
 ```
 
-After a local native ordinary image has been built, explicitly select its tag
-(the verifier accepts `clip-api:id-ready-rds-ca-...` tags or immutable local image
-IDs and never pulls):
+To check a previously built local image, select its exact local tag or immutable
+image ID; the test never pulls:
 
 ```bash
 CLIP_IDENTITY_TEST_IMAGE=clip-api:id-ready-rds-ca-arm64-local uv run --locked pytest apps/api/tests/domains/identity/test_image_trust.py -q -W error
 ```
 
-Requires locked development dependencies, a local Unix-socket Docker daemon and
-cached PostgreSQL18.6/dbmate2.36.0 images. Verifies pinned/root-only/current X.509
-metadata, exact current root fingerprints in the image, retained distribution
-roots, non-root/default production metadata and the exact shipped
-SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt setting. A read-only
-container tests the default health/protected API without external networking.
-Another uses only the fixture-owned PostgreSQL TLS network namespace. Unknown CA
-must fail; a temporary container-only copy of the default system CA file permits actual SQL;
-a wrong hostname must still fail with verify-full/system. No real database,
-credentials, SSM/provider call, schema migration or email is used. Temporary SQL
-and image-check containers are removed; the selected image remains for review.
-The synthetic root never enters the source certificates or image layers. No
-test-only SSL_CERT_FILE/SSL_CERT_DIR or PostgreSQL TLS environment override is
-used; the test exercises the image's actual configured system CA path.
+This verifies the selected local image and fixture-owned PostgreSQL TLS only.
+It does not prove AMD64, Hybrid-image or deployed RDS readiness. See the
+[trust decision](../decisions/identity-rds-system-trust.md) and
+[Identity setup guide](identity-provider-setup.md#api-image-database-trust).
 
-Without CLIP_IDENTITY_TEST_IMAGE the three actual-image checks skip explicitly;
-make check still runs the public-certificate integrity check. Explicit image
-verification is required for this checkpoint. ARM64 success does not establish
-AMD64/Hybrid or deployed RDS acceptance; retain those separate evidence/approval gates.
+## LI-02 Step 9 — isolated PostgreSQL browser checkpoint
 
-### Shared browser CSRF transport — ID-01 Step12
-
-`npm run check` runs shared transport and feature tests, types/lint and build.
-Focused: `npm test -- session-fetch.test.ts listings-api.test.ts listings-image-api.test.ts wanted-api.test.ts`.
-The focused helpers use reviewed synthetic CSRF responses; no provider/network
-access. Public auth endpoints still require the marker, protected writes require
-successful fresh CSRF, no automatic transport retry is added, and upload bytes
-use their existing separate S3 transport.
-
-Actual local TypeScript/HTTP/SQL verification:
+For the local Listings browser review, use the locked Python environment, Node
+24/npm 11 and a local Unix-socket Docker daemon. This starts an owned synthetic
+PostgreSQL database and the real Listings routes on loopback. It uses no cloud,
+shared database, real sign-in or object storage; Ctrl+C stops only its owned
+process/container and preserves the labelled rows for an explicit resume.
 
 ```bash
-uv run --locked pytest apps/api/tests/domains/identity/test_browser_transport.py -q -W error
-uv run --locked pytest apps/api/tests/domains/identity/test_browser_csrf_fixtures.py -q -W error
+npm run build
+CLIP_ENVIRONMENT=test CLIP_DEVELOPMENT_AUTH=true uv run --locked python apps/api/tests/domains/listings/browser_demo.py --isolated-listings-browser --image-ui-preview
 ```
+
+The page is served at `http://127.0.0.1:5174/listings/new`. See the
+[human browser procedure](browser-verification.md) for the actions and viewport
+checks. To inspect or resume a retained fixture, use only the exact private
+session path printed by the tool and its documented `--inspect`/`--resume`
+options; do not substitute a shared or cloud target.
+
+## LI-02 demo lifecycle
+
+These commands operate a separate temporary cloud demo. They can publish images,
+create resources and data, send no general safety guarantee from this index, and
+must not be run without reviewing the current account, inventory, costs, exact
+plans, public exposure and cleanup.
+
+```bash
+make li02-demo-start AWS_PROFILE=<approved-profile>
+make li02-demo-stop AWS_PROFILE=<approved-profile>
+```
+
+The start command continues its own recorded partial run; stop cleans only its
+run-owned resources and retains published images. Read the current
+[cloud inventory](cloud-inventory.md) and
+[shared-test Terraform runbook](../../infra/terraform/shared/test/README.md)
+before considering either command. Past human approval does not authorize a new
+run.
+
+### SE-01 isolated semantic-helper typing correction
+
+From the repository root, the helper's separate Python 3.13 environment and
+fixed module path are required:
+
+```sh
+MYPYPATH=apps/api/app/domains/listings .venv/bin/mypy --no-incremental --python-version 3.13 --python-executable .tools/semantic/venv/bin/python apps/api/app/domains/listings/embedding_helper.py
+```
+
+This installs nothing. It checks the helper against its actual pinned runtime;
+it does not replace CI, inference checks or platform acceptance.
+
+## NEXT-03 complete local inspection
+
+After building the normal web bundle with pinned Node/npm, run:
+
+```bash
+CLIP_ENVIRONMENT=test .venv/bin/python scripts/marketplace_inspection.py --synthetic-inspection
+```
+
+This creates only its own disposable PostgreSQL18.6 database, runs the actual
+authenticated app action sweep, seeds synthetic inspection records and serves
+the normal built application at `http://127.0.0.1:5174/__inspection`. It uses the
+pinned local Hybrid model/interpreter and synthetic external signing/mail/photo
+storage. No AWS, real mail, or retained database is used. Account switching stays
+in the loopback-only launcher and is absent from deployed code. Ctrl+C removes
+its database and temporary photos; `--check-only` checks and cleans up without
+serving. `--port 5175` starts an independent debugging fixture while preserving
+the default5174 inspection session; ports outside5174/5175 are rejected. Full steps and sample-account guidance are in the
+[NEXT-03 visual checklist](../tasks/next-03-step-10-visual-checklist.md).
 
 Requires locked Python/Node dependencies and local Docker, using only owned
 disposable PostgreSQL. The first command starts one loopback ephemeral HTTP port,

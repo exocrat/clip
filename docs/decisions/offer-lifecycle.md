@@ -15,10 +15,10 @@ How are structured offers revised/withdrawn, and how do they relate to selection
 - Status is `submitted` or `withdrawn`. Only the offer's buyer may create/revise/withdraw it; resubmission after withdrawal appends a new submitted revision to the same logical offer.
 - Preserve amount/note change and withdrawal revisions under the later approved retention policy. Withdrawal retains the prior amount in its new revision. Optional notes remain client-encrypted. Use expected-revision checks and operation keys for stale-update/retry handling.
 - When approved retention removes history, preserve the minimal logical offer ID/pair and monotonically allocated next-revision counter; clear the current pointer under an explicit history-deleted marker. A later new revision reuses the same logical offer rather than creating a duplicate pair or resurrecting deleted content. Exact deferred cleanup constraints remain affected-owner review.
-- Seller selection is a Listings-owned action, not an offer acceptance/payment/reservation state. Setting an eligible buyer from an existing Sale Listing conversation atomically marks the listing unavailable; authorized seller views include no-offer conversations and current submitted/withdrawn offers.
+- Seller selection is a Listings-owned action, not an offer acceptance/payment/reservation state. Setting an eligible buyer from an existing Sale Listing conversation is private tracking and preserves availability (2026-10-28 revision below); authorized seller views include no-offer conversations and current submitted/withdrawn offers.
 - Structured offers initially apply to Sale Listing conversations. Wanted Request response conversations support discussion/contact sharing; adding offers there requires explicit buyer-role and amount semantics first.
 - Mohit's later lifecycle approval requires listing availability/window eligibility and both participants' eligibility for create/revise/resubmit. The eligible buyer may withdraw after listing unavailability; existing authorized discussion/contact sharing remains usable, subject to separate retention/retirement.
-- An eligible seller may select an eligible buyer from an existing listing conversation even without an offer, while the listing is available/in-window. Listings atomically persists the buyer/conversation and marks the listing unavailable, preserving its time window. Clearing the selected buyer does not reopen the listing. Existing account/participant checks remain mandatory.
+- An eligible seller may privately select an eligible buyer from a valid non-retired listing conversation even without an offer, including while unavailable. Set/change/clear preserves availability and the time window; owner, revision and participant checks remain mandatory. See the 2026-10-28 revision.
 
 ## Rationale
 Keeps the current offer unambiguous while preserving negotiations and avoiding an implied platform-verified transaction.
@@ -72,3 +72,14 @@ Mohit (C), explicit approval of the five-part offer-lifecycle proposal. The user
 
 ## Supersedes
 None.
+
+### Private seller tracking — 2026-10-28 revision approved by Suraj
+
+Supersedes the 2026-10-27 selection/availability coupling above. Selecting, changing
+or clearing a buyer is private seller tracking and never changes availability or
+the time window. Valid participants may be selected on any non-retired owned sale,
+including unavailable records. Preserve selection on reopening; Mark as done deal
+uses the separate availability operation. Selection does not accept an offer,
+notify/disclose to the buyer, or confirm payment/handover. Owner/revision/participant
+and idempotent retry checks remain mandatory. The forward migration updates only
+the Listings trigger; the pinned Identity migration review package is unchanged.

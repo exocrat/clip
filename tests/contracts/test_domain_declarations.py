@@ -223,6 +223,7 @@ def test_only_implemented_domain_http_routes_are_installed():
     paths = set(app.openapi()["paths"])
     assert paths == {
         "/conversations",
+        "/conversations/unread-count",
         "/conversations/{conversation_id}",
         "/conversations/{conversation_id}/entries",
         "/conversations/{conversation_id}/messages",

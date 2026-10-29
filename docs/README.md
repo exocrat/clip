@@ -1,90 +1,72 @@
 # Campus Marketplace — Document Index
 
+Start with the [project overview](../README.md), then follow [AGENTS.md](../AGENTS.md)
+and the [reusable task prompt](prompts/reusable-task-prompt.md). The
+[task index](tasks/project-task-index.md) selects the work; the selected task
+links to the detailed requirements and evidence it needs. Do not read every
+document here for every task.
 
-The root [README](../README.md) describes the project. Agents start from [AGENTS.md](../AGENTS.md) and follow the canonical task and review instructions below. Use the project task index to select/resume work; this index locates canonical sources. Detailed Git/review workflow is [CONTRIBUTING.md](../CONTRIBUTING.md).
+## Work order and current status
 
-- [Document 1 — Product/reference and decisions](product/product-reference-and-architecture-decisions.md)
-- [Document 2 — Primary experiment task list](evaluation/ecs-only-vs-ecs-lambda-task-list.md)
-- [Document 3 — Shared conventions](conventions/shared-conventions-and-cross-domain-contract-rules.md)
-- [Document 4 — Repository structure](architecture/repository-structure.md)
-- [Terraform ownership and state boundaries](architecture/terraform-ownership.md)
-- [Terraform change workflow](../infra/terraform/README.md)
-- [Foundation requirement traceability](architecture/foundation-traceability.md)
-- [MVP database schema proposal and review gates](architecture/mvp-database-schema.md)
-- [Database migration files, ownership and verification state](../database/README.md)
-- [Future database backup/restore handoff and approval gates](../database/backup-and-restore.md)
-- [PD-08 unfinished-work transfer to pre-domain integration](decisions/database-integration-handoff.md)
-- [Synthetic-data preview tooling and final dataset prerequisites](../data/README.md)
-- [Document 5 — Pre-domain task list](tasks/pre-domain-task-list.md)
-- [Single domain task list](tasks/domain-task-list.md)
-- [Gated hybrid listing-search amendment](decisions/hybrid-listing-search.md)
-- [Provisional hybrid development calibration](architecture/hybrid-search-calibration.md)
-- [Private single-snapshot hybrid read](architecture/hybrid-listing-read.md)
-- [Private keyword relevance](architecture/keyword-listing-relevance.md)
-- [Draft public Keyword/Hybrid contract and both-mode relevance](../contracts/search-mode-proposal.md)
-- [Combined Listings/Search deployment wiring and optional Hybrid image](architecture/listings-search-deployment.md)
-- [Frontend page inventory and collaboration map](architecture/frontend-collaboration.md)
-- [Human browser, mobile layout and camera verification](environment/browser-verification.md)
-- [Responsive UI and camera verification decision](decisions/responsive-ui-and-camera-verification.md)
-- [Provisional sensitive-purchase price threshold](decisions/sensitive-purchase-threshold.md)
-- [Initial repository bootstrap](tasks/bootstrap-task-list.md)
-- [Project phase/milestone/owner index](tasks/project-task-index.md)
-- [Final regression/cost/delivery tasks](tasks/final-closeout-task-list.md)
-- [Reusable execution prompt](prompts/reusable-task-prompt.md)
-- [Pre-domain contributor prompt and stream workflow](prompts/pre-domain-contributor-prompt.md)
-- [Contributor start prompt](prompts/contributor-start-prompt.md)
-- [Peer review prompt](prompts/peer-review-prompt.md)
-- [Agent execution checklist](checklists/agent-checklist.md)
-- [Human verification checklist](checklists/human-checklist.md)
-- [Status/checkpoint template](status/work-log.md)
-- [Pre-domain foundation handoff (PD-19)](status/foundation-handoff.md)
-- [Command registry](environment/commands.md)
-- [Secret-reference/access template](environment/secret-handling.md)
-- [PD-16 shared test foundation proposal](environment/shared-test-foundation-proposal.md)
-- [PD-16 evidence and native AMD64 handoff](evaluation/foundation/pd-16/README.md)
-- [PD-16 operational closeout and carried integration gates](evaluation/foundation/pd-16/closeout-review.md)
-- [PD-16 approximate recent-run cost acceptance](decisions/foundation-cost-review-precision.md)
-- [PD-16 RDS stop/resume operation plan](environment/shared-test-rds-operations.md)
-- [PD-16 image handoff/publication preparation](environment/pd16-image-publication.md)
-- [PD-16 service-plan preparation](environment/pd16-service-plan-preparation.md)
-- [PD-16 broad human-operator exception](decisions/broad-human-operator-access.md)
-- [PD-16 private PostgreSQL probe-login decision](decisions/private-postgresql-probe-login.md)
-- [Database-task deadlines and manual image cleanup](decisions/database-task-deadlines-and-manual-image-cleanup.md)
-- [Development workstation record](environment/development-workstation.md)
-- [Evidence/measurement manifest index](evaluation/README.md)
-- [Accepted optional-scheduling change](decisions/optional-work-scheduling.md)
-- [Wanted-request discovery and response decision](decisions/wanted-request-discovery-and-response.md)
-- [Frontend ownership and page-composition decision](decisions/frontend-ownership-and-composition.md)
-- [Web route scaffold decision](decisions/web-routing.md)
-- [Derived Graphviz dependencies](architecture/task-dependencies.dot)
-- [Unchanged submitted PRD](source/ICC_Project_PRD_FINAL.pdf)
-- [Source/version/checksum record](source/README.md)
-- [Revision consistency check](source/revision-check.md)
+- [Project task index](tasks/project-task-index.md) — phases, ownership,
+  dependencies and readiness gates.
+- [Remaining-work plan](tasks/remaining-project-plan.md) — ordered NEXT-00–10
+  work.
+- Active task procedures: [domain](tasks/domain-task-list.md) and
+  [final closeout](tasks/final-closeout-task-list.md). BOOT-00 and PRE-00 are
+  complete; see the task index and work log for their accepted status.
+- [Work log](status/work-log.md) — current status rows, pending real-integration
+  checks and concise project history. Older detailed entries remain in Git.
+- [PD-19 foundation handoff](status/foundation-handoff.md) — short historical
+  acceptance summary; active work is in the task plan and work log.
 
-Code, scripts, manifests, generated contracts, migrations, actual provider/environment configuration and run evidence not present yet are outputs of the named tasks. Expected uncreated outputs are not missing source inputs.
+## Product, requirements and shared rules
 
-## Development setup and early parallel work
+- [Product reference and architecture decisions](product/product-reference-and-architecture-decisions.md)
+- [Submitted PRD](source/ICC_Project_PRD_FINAL.pdf) and
+  [submitted PRD provenance](source/README.md)
+- [Shared conventions and cross-domain contracts](conventions/shared-conventions-and-cross-domain-contract-rules.md)
+- [Decision-record process](decisions/README.md); task lists link the decisions
+  that apply to their work.
+- [FR/NFR ownership and evidence](architecture/foundation-traceability.md)
+- [Repository structure](architecture/repository-structure.md),
+  [frontend ownership and composition](architecture/frontend-collaboration.md),
+  and [test-double/integration gates](architecture/stubs-and-integration-gates.md)
+- [Terraform ownership](architecture/terraform-ownership.md) and the
+  [Terraform workflow](../infra/terraform/README.md)
+- [Database and migration record](../database/README.md),
+  [backup/restore handoff](../database/backup-and-restore.md), and
+  [synthetic-data tooling](../data/README.md)
 
-- [Existing WSL, Codex, cloning, folders and first session](environment/wsl-and-first-session.md)
-- [Stub-enabled checkpoints and non-substitutable integration gates](architecture/stubs-and-integration-gates.md)
+## Evaluation and task handoffs
 
-Both checklists are present in this bundle and apply from BOOT-00. Workstation facts are produced at `docs/environment/development-workstation.md` during BOOT-00/PD-02; do not fabricate them in planning.
+- [Evaluation evidence index](evaluation/README.md) — evidence homes and
+  retention rules.
+- [ECS-only versus ECS+Lambda experiment tasks](evaluation/ecs-only-vs-ecs-lambda-task-list.md)
+  and [experiment-definition guidelines](evaluation/ecs-lambda-experiment-guidelines.md)
+- [NFR measurement design](evaluation/nfr/measurement-design.md) and the
+  [reference dataset recipe](../data/evaluation/reference-dataset-design.md)
+- Active handoffs used by later integration work:
+  [Identity](evaluation/identity/README.md),
+  [CN-01 Conversations integration](evaluation/domain/conversations-integration.md),
+  [CN-02 offers and contact sharing](evaluation/domain/conversations-offers.md),
+  and the [Identity demo postmortem](evaluation/identity/id-01-step-12/demo-postmortem-20261026.md).
+- NEXT-03 handoff artifacts: [change summary](tasks/next-03-change-summary.md),
+  [implementation and verification report](tasks/next-03-visual-feedback-implementation-report.md),
+  and the [next-agent PR/cloud-readiness prompt](prompts/next-03-pr-and-cloud-readiness-handoff.md).
 
-- [Identity evidence and current integration handoff](evaluation/identity/README.md)
-- [Identity provider setup and pending real checks](environment/identity-provider-setup.md)
-- [Identity provider setup decision](decisions/identity-provider-setup.md)
-- [Identity dual-provider email routing and four-hour refresh](decisions/identity-email-routing.md)
-- [Identity test-runtime activation](decisions/identity-test-runtime-activation.md)
-- [Identity contact sharing and source-data cleanup](decisions/identity-contact-sharing-and-cleanup.md)
+## Setup and contributor process
 
-- [Shared test ECS image pin](decisions/shared-test-ecs-image-pin.md)
-
-Normal API Search runtime: [opt-in helper/read-pool lifecycle and pending gates](architecture/normal-api-search-runtime.md).
-
-Embedding dispatcher: [default-off existing-job processing, limits and cleanup](architecture/semantic-embedding-dispatcher.md).
-
-Pipeline bootstrap: [explicit target-bound status, preparation, queueing and activation](architecture/semantic-pipeline-bootstrap.md).
-
-Search load preparation: [local k6 runner and limits](../scripts/evaluation/k6/README.md), [versioned workloads](../data/evaluation/workloads/README.md).
-- [Shared API RDS system trust](decisions/identity-rds-system-trust.md)
-- [Shared browser cookie/CSRF transport](decisions/browser-session-transport.md)
+- [Environment index](environment/README.md),
+  [command registry](environment/commands.md),
+  [secret-handling rules](environment/secret-handling.md), and
+  [cloud inventory](environment/cloud-inventory.md). Refresh live cloud state
+  before any cloud action.
+- [WSL first-session guide](environment/wsl-and-first-session.md) applies only
+  to contributors who use WSL.
+- [Contribution and Git workflow](../CONTRIBUTING.md),
+  [contributor start prompt](prompts/contributor-start-prompt.md),
+  and [peer-review prompt](prompts/peer-review-prompt.md).
+- [Agent checklist](checklists/agent-checklist.md) and
+  [human checklist](checklists/human-checklist.md) — use the items relevant to
+  the selected task and complete the task-wide review at closeout.

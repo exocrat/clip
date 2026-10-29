@@ -68,7 +68,11 @@ class LocalPreviewStorage:
 
 
 def install_image_preview(
-    application: FastAPI, settings: Settings, web_root: Path
+    application: FastAPI,
+    settings: Settings,
+    web_root: Path,
+    *,
+    notice_html: str | None = None,
 ) -> None:
     """Serve the built app with a conspicuous local-only storage/identity label."""
     if settings.environment != "test" or not settings.development_auth:
@@ -118,7 +122,7 @@ def install_image_preview(
 
     async def preview_page() -> HTMLResponse:
         """Return the built SPA for its approved Listings UI entry paths."""
-        banner = (
+        banner = notice_html or (
             '<aside role="note" style="padding:12px;background:#fef3c7;color:#422006">'
             "Local Listings image preview: synthetic seller, isolated PostgreSQL, "
             "temporary local image storage. No AWS. Files disappear when this server stops."

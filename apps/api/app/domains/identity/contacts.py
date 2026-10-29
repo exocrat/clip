@@ -16,6 +16,7 @@ from uuid import UUID
 
 from email_validator import EmailNotValidError, validate_email
 from psycopg.pq import TransactionStatus
+from psycopg.errors import UniqueViolation
 
 from app.contracts.domain_types import (
     ContactField,
@@ -127,25 +128,31 @@ class PostgresContacts:
         return (row[0], row[1], row[2]) if row is not None else (None, None, None)
 
     def update_profile(self, caller: CallerContext, patch: ProfilePatch) -> ProfileView:
-        """Omission unchanged; explicit null clears; valid names trim without renewal."""
+        """Claim/edit a trimmed unique Handle without changing account lifetime.
+
+        Omission preserves the profile; null and invalid Handles are rejected.
+        Database uniqueness serializes concurrent case-insensitive claims.
+        """
         provided = "display_name" in patch.model_fields_set
         name = patch.display_name
-        if provided and name is not None:
-            name = name.strip()
-            try:
-                if not 1 <= len(name) <= 80:
-                    raise ValueError
-                name.encode("utf-8")
-            except ValueError, UnicodeError:
+        if provided:
+            name = name.strip() if name is not None else None
+            if name is None or re.fullmatch(r"[A-Za-z0-9_]{3,30}", name) is None:
                 raise PublicError(
                     ERRORS[422], (FieldError("display_name", "invalid_value"),)
-                ) from None
+                )
         with self._own(caller, Capability.MANAGE_OWN_PROFILE) as (c, row, now):
             if provided:
-                c.execute(
-                    "UPDATE identity.users SET display_name=%s,revision=revision+1 WHERE id=%s AND display_name IS DISTINCT FROM %s",
-                    (name, caller.user_id, name),
-                )
+                # A savepoint turns concurrent unique claims into a safe conflict
+                # while keeping the owning profile transaction usable.
+                try:
+                    with c.transaction():
+                        c.execute(
+                            "UPDATE identity.users SET display_name=%s,handle_ready=true,revision=revision+1 WHERE id=%s",
+                            (name, caller.user_id),
+                        )
+                except UniqueViolation:
+                    raise PublicError(ERRORS[409]) from None
             return ProfileView(
                 user_id=caller.user_id, display_name=name if provided else row[6]
             )

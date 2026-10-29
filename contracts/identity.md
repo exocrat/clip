@@ -59,11 +59,20 @@ for subsequent requests. No domain queries Identity's private tables.
 
 ## Own profile and source contacts
 
-Only the authenticated user may read or change their own profile. The current
-schema provides optional `display_name`; this contract adds no public profile
-lookup or other profile fields. Display-name updates trim to 1–80 Unicode code points; omission preserves the
-current name and explicit null clears it. The request remains bounded at 80
-code points before trimming.
+Only the authenticated user may change their own profile. NEXT-03 reuses
+`display_name` as the required, editable Handle: trim surrounding whitespace,
+accept 3–30 ASCII letters/digits/underscores, and enforce case-insensitive
+uniqueness in the API and database, including concurrent claims. Omission leaves
+it unchanged; explicit null, empty or invalid input returns 422; a taken Handle
+returns a safe 409. `SessionView.handle_ready` marks a completed claim. Legacy
+invalid/colliding names remain stored, with setup required before completing
+normal UI onboarding; IDs, authentication and existing references are preserved.
+The Identity-owned `identity.participant_profiles` public view exposes only user
+ID, claimed Handle and active account class. Conversations may SELECT that view
+for already-authorized members; it may not read private Identity tables, source
+contacts, provider identifiers or email. Missing/retired profiles expose no name.
+The deployment role needs explicit SELECT on this view, separately from private
+Identity role permissions. No public arbitrary-profile HTTP lookup is added.
 
 The authenticated user may collect, update or delete their own shareable
 `email`, `phone` and `upi_id` values. Temporary login email/password identity is

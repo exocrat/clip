@@ -101,6 +101,7 @@ function summary(value: unknown): boolean {
     uuid(value.initiator_user_id) && uuid(value.counterparty_user_id) &&
     ['initiator', 'origin_owner'].includes(String(value.caller_role)) &&
     instant(value.last_activity_at) && natural(value.own_last_read_sequence) && natural(value.unread_count) &&
+    natural(value.group_unread_count ?? 0) &&
     (offer == null || (record(offer) && uuid(offer.offer_id) && positive(offer.revision) &&
       natural(offer.amount_paise) && offer.amount_paise % 100 === 0 &&
       ['submitted', 'withdrawn'].includes(String(offer.status)) && instant(offer.updated_at)));
@@ -215,7 +216,11 @@ export class ConversationApi {
   async listMine(query: ConversationListQuery = {}, signal?: AbortSignal): Promise<PageResultConversationSummary> {
     const parameters = new URLSearchParams();
     for (const [key, value] of Object.entries(query)) {
-      if (value !== undefined && value !== null) parameters.set(key, String(value));
+      if (Array.isArray(value)) {
+        for (const item of value) parameters.append(key, String(item));
+      } else if (value !== undefined && value !== null) {
+        parameters.set(key, String(value));
+      }
     }
     const suffix = parameters.size ? `?${parameters}` : '';
     return this.request(`/conversations${suffix}`, 'GET', (value) => record(value) &&
@@ -230,9 +235,9 @@ export class ConversationApi {
       undefined, signal);
   }
 
-  readEntries(conversationId: string, afterSequence = 0, signal?: AbortSignal): Promise<EntryPage> {
+  readEntries(conversationId: string, afterSequence = 0, signal?: AbortSignal, pageSize: 20 | 50 | 100 = 20): Promise<EntryPage> {
     if (!natural(afterSequence)) throw new RangeError('Invalid entry cursor');
-    return this.request(`${this.threadPath(conversationId)}/entries?after_sequence=${afterSequence}`, 'GET',
+    return this.request(`${this.threadPath(conversationId)}/entries?after_sequence=${afterSequence}${pageSize === 20 ? "" : `&page_size=${pageSize}`}`, 'GET',
       (value) => record(value) && Array.isArray(value.items) && value.items.every(entry) &&
         natural(value.scanned_through_sequence) && value.scanned_through_sequence >= afterSequence &&
         typeof value.has_more === 'boolean' &&

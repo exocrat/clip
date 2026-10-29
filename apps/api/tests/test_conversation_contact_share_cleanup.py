@@ -179,11 +179,30 @@ def test_offer_selection_and_contact_share_work_together_through_real_apis():
             selected = await state.client.put(selection_url, json=selection_body)
             assert selected.status_code == 200
             assert selected.json()["selected_buyer_id"] == str(state.buyer)
-            assert selected.json()["availability"] == "unavailable"
+            assert selected.json()["availability"] == "available"
             assert (
                 await state.client.put(selection_url, json=selection_body)
             ).json() == selected.json()
 
+            state.app.dependency_overrides[require_caller] = lambda: caller(state.buyer)
+            assert (
+                await state.client.put(offer_url, json=offer_body)
+            ).status_code == 200
+            assert await snapshot(pool, state.thread) == after_offer
+            # Private tracking is independent: explicitly close the deal before
+            # verifying the unavailable-offer gate and still-allowed contact flow.
+            state.app.dependency_overrides[require_caller] = lambda: caller(state.owner)
+            closed = await state.client.put(
+                f"/listings/{state.listing}/availability",
+                json={
+                    "availability": "unavailable",
+                    "expected_revision": selected.json()["revision"],
+                    "available_from": selected.json()["available_from"],
+                    "available_until": selected.json()["available_until"],
+                    "operation_id": str(uuid4()),
+                },
+            )
+            assert closed.status_code == 200
             state.app.dependency_overrides[require_caller] = lambda: caller(state.buyer)
             unavailable_offer = await state.client.put(offer_url, json=offer_body)
             assert unavailable_offer.status_code == 409
@@ -252,7 +271,7 @@ def test_selection_dependency_failure_does_not_change_listing_and_same_command_r
             selected = await state.client.put(url, json=command)
             assert selected.status_code == 200
             assert selected.json()["selected_buyer_id"] == str(state.buyer)
-            assert selected.json()["availability"] == "unavailable"
+            assert selected.json()["availability"] == "available"
             selected_state = await state.store.read_listing(state.listing)
             selected_thread = await snapshot(pool, state.thread)
 

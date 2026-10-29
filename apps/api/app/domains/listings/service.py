@@ -280,11 +280,10 @@ class ListingsStore(Protocol):
         request: SelectionChange,
         now: datetime,
     ) -> ListingManagementView:
-        """Select a buyer and atomically take the listing off the market.
+        """Set/clear private seller tracking without changing availability/window.
 
-        A set must recheck availability/window in the same write transaction;
-        it also marks the listing unavailable without changing its time window.
-        A clear may proceed while ordinarily unavailable but never reopens it.
+        Both operations may proceed on ordinarily unavailable records; existing
+        owner, participant, revision and retirement protections remain enforced.
         Operation-ID replay, owner checking, stale-revision conflict and
         retirement rejection are storage responsibilities. The original result
         is saved atomically; retirement removes it with the listing content.
@@ -820,8 +819,8 @@ class ListingsService:
     ) -> ListingOwnerView:
         """Set or clear the selected buyer through the owner's guarded command.
 
-        Setting a buyer also marks the listing unavailable in the same Listings
-        transaction; clearing does not reopen it.
+        Selection is private seller tracking; setting/clearing never changes
+        availability and is permitted for valid non-retired owner records.
         """
         await _require_regular_eligible(caller, self._identity)
         prior = await self._store.previous_owner_command_result(
@@ -844,8 +843,6 @@ class ListingsService:
         if request.buyer_id is not None and request.conversation_id is not None:
             if request.buyer_id == caller.user_id:
                 raise PublicError(ERRORS[403])
-            if not self._is_discoverable(current):
-                raise PublicError(ERRORS[409])
             if not await self._identity.account_is_eligible(request.buyer_id):
                 raise PublicError(ERRORS[403])
             conversations = self._require_conversations()
@@ -869,7 +866,7 @@ class ListingsService:
             if not membership.is_participant:
                 raise PublicError(ERRORS[404])
 
-        # The store repeats owner, revision and (when setting) availability checks
+        # The store repeats owner and revision checks
         # inside its transaction so a prior read or Conversations call cannot win
         # a race against a concurrent seller change.
         view = await self._store.set_selected_buyer(

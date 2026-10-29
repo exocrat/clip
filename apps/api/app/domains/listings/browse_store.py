@@ -19,7 +19,8 @@ _SUMMARY_SELECT_SQL = """
 SELECT listing.id AS listing_id, listing.title, listing.description,
     category.code AS category_code, category.label AS category_label,
     listing_condition.code AS condition_code, listing_condition.label AS condition_label,
-    listing.asking_price_paise, listing.negotiable, listing.pickup_area,
+    listing.asking_price_paise, listing.original_price_paise,
+    listing.negotiable, listing.pickup_area,
     listing.available_from, listing.available_until, listing.availability,
     (category.sensitive_category OR listing.asking_price_paise > %s) AS sensitive_purchase,
     COALESCE((SELECT array_agg(image.id ORDER BY image.position, image.id)
@@ -102,14 +103,14 @@ def browse_statement(
         else:
             statement += " AND listing.search_vector @@ " + text_query.sql + "\n"
             parameters += text_query.parameters
-    for value, predicate in (
-        (query.category_code, "category.code = %s"),
-        (query.condition_code, "listing_condition.code = %s"),
+    for values, predicate in (
+        (query.category_code, "category.code = ANY(%s)"),
+        (query.condition_code, "listing_condition.code = ANY(%s)"),
         (query.negotiable, "listing.negotiable = %s"),
     ):
-        if value is not None:
+        if values is not None and values != []:
             statement += " AND " + predicate + "\n"
-            parameters += (value,)
+            parameters += (values,)
     if query.min_price_paise is not None:
         if query.min_price_paise > _STORAGE_MAX_PRICE:
             statement += " AND FALSE\n"
@@ -150,19 +151,19 @@ async def validate_catalogue_filters(
 
     Shared only inside Listings; no matching query or model work is performed.
     """
-    if request.category_code is not None or request.condition_code is not None:
+    if request.category_code or request.condition_code:
         # Validate against current owned catalogues, not a hard-coded code list
         # or the mere presence of matching listings. Empty valid filters are OK.
         checks = await connection.execute(
             """SELECT
-            (%s::text IS NULL OR EXISTS(SELECT 1 FROM listings.categories
-                WHERE code=%s AND active)) AS category_valid,
-            (%s::text IS NULL OR EXISTS(SELECT 1 FROM listings.conditions
-                WHERE code=%s AND active)) AS condition_valid""",
+            NOT EXISTS(SELECT 1 FROM unnest(%s::text[]) AS requested(code)
+                WHERE NOT EXISTS(SELECT 1 FROM listings.categories
+                    WHERE code=requested.code AND active)) AS category_valid,
+            NOT EXISTS(SELECT 1 FROM unnest(%s::text[]) AS requested(code)
+                WHERE NOT EXISTS(SELECT 1 FROM listings.conditions
+                    WHERE code=requested.code AND active)) AS condition_valid""",
             (
                 request.category_code,
-                request.category_code,
-                request.condition_code,
                 request.condition_code,
             ),
         )

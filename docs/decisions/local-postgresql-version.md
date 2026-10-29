@@ -52,7 +52,7 @@ evidence is valid only for that route. The user later confirmed the previously
 pending PD-08 platform, owner and CI acceptance gates complete on 2026-10-19;
 see the [work-log reconciliation](../status/work-log.md#resolved-integration-evidence).
 The retained Linux/ARM64 evidence remains route-specific. See
-[database verification](../../database/README.md#native-macos-checkpoint--2026-10-18).
+[historical database verification details](../evaluation/README.md).
 
 ## Approver
 Implementation selection within Mohit's verified PD-08 Step 4 scope. The user

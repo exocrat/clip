@@ -219,8 +219,9 @@ local checks, not container/cloud/provider or schema/grant readiness evidence.
 The API README now describes all four domains, existing pool/factory bindings,
 same-logical-database requirement, full reviewed migration chain and separate
 grant/Identity/TLS/proxy gates, lazy tuple-pool/liveness limits, normal bundle/image
-composition and absent CN-02/CN-03 workers. The command registry records the local
-checks. Removed one redundant overlapping API test paragraph; preserved unique test
+composition and absent CN-02/CN-03 workers. Local commands now live with the API
+and database guides; `make check` is the shared regression entry point. Removed
+one redundant overlapping API test paragraph; preserved unique test
 coverage/evidence. No new worker, startup migration, schema probe, secret path,
 grant or production-auth activation was introduced. Step5 full regressions and
 isolated-demo lifecycle remain next, after human verification.

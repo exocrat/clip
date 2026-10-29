@@ -11,19 +11,20 @@ import pytest
 from app.domains.identity import migration_runner as runner
 from apps.api.tests.domains.identity.migration_fixtures import (
     migration_case,
+    reviewed_migration_directory,
     tls_database,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def migrate(case):
+def migrate(case, directory):
     """Only the existing isolated fixture may apply the reviewed 23-file source."""
     runner.run_migrations(
         case.connect,
         case.password,
         case.target,
-        directory=ROOT / "database/migrations",
+        directory=directory,
         manifest=ROOT
         / "docs/evaluation/identity/id-01-step-12/shared-migration-manifest.json",
         ca=case.ca,
@@ -31,9 +32,11 @@ def migrate(case):
     )
 
 
-def test_inventory_sees_external_fk_and_internal_view_owner(migration_case):
+def test_inventory_sees_external_fk_and_internal_view_owner(
+    migration_case, reviewed_migration_directory
+):
     """Catch the two distinct cross-schema CASCADE paths without executing DROP."""
-    migrate(migration_case)
+    migrate(migration_case, reviewed_migration_directory)
     with migration_case.connect() as c:
         c.execute("CREATE SCHEMA outside_review")
         c.execute(
@@ -83,9 +86,10 @@ def test_inventory_sees_external_fk_and_internal_view_owner(migration_case):
 
 def test_historical_grants_do_not_cover_current_listing_trigger_or_conversations(
     migration_case,
+    reviewed_migration_directory,
 ):
     """Prove the old receipt is insufficient, not that live ACLs equal that receipt."""
-    migrate(migration_case)
+    migrate(migration_case, reviewed_migration_directory)
     role = "clip_test_marketplace_app"
     receipt = json.loads(
         (

@@ -28,6 +28,9 @@ DIRECTORY = ROOT / "database/migrations"
 def reviewed_migration_package(tmp_path, monkeypatch):
     """Test only the pinned 23-file candidate, preserving its separate live review gate.
 
+    The live runner must keep rejecting the expanded repository chain until its
+    manifest and source receive a separate exact-target review.
+
     Exact clean/repeat success does not authorize applying to the recorded older
     shared target; prefix replay and unreviewed live images remain rejected.
     """

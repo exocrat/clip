@@ -79,7 +79,8 @@ rollback-only65-visible/5-hidden fixture set and actual generated vectors:
   space and current fixture jobs marked failed. Keyword still returns the same
  65rows. No inference/model artifact is used; failed metadata is test setup only.
 
-[Source-bound native/unit evidence](../evaluation/domain/se-01/keyword-relevance/result.json)
-and [commands](../environment/commands.md). This is not final usefulness, full-
+Source-bound native/unit evidence is in Git history; see the
+[evaluation retrieval guidance](../evaluation/README.md) and current
+[commands](../environment/commands.md). This is not final usefulness, full-
 corpus latency/concurrency, real Identity integration, browser or FR/NFR/readiness
 acceptance. No public website mode control is activated by these private checks.

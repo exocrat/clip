@@ -40,21 +40,21 @@ def test_own_http_crud_security_and_no_session_disclosure(
             browser.patch(
                 "/me/profile",
                 headers=headers,
-                json={"display_name": "  Synthetic 名  "},
+                json={"display_name": "  Synthetic_Name  "},
             ).json()["display_name"]
-            == "Synthetic 名"
+            == "Synthetic_Name"
         )
         assert (
             browser.patch("/me/profile", headers=headers, json={}).json()[
                 "display_name"
             ]
-            == "Synthetic 名"
+            == "Synthetic_Name"
         )
         assert (
             browser.patch(
                 "/me/profile", headers=headers, json={"display_name": None}
-            ).json()["display_name"]
-            is None
+            ).status_code
+            == 422
         )
         for field, value in VALUES.items():
             assert (

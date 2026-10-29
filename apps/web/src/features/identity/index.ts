@@ -11,3 +11,5 @@ export { MicrosoftCallback } from './MicrosoftSignIn';
 export { SellerEligibilityGate } from './SellerEligibilityGate';
 
 export { AccountStateBoundary } from './AccountStateBoundary';
+
+export { HandleSetup, HandleEditor } from './HandleSetup';

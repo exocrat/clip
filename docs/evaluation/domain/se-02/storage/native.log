@@ -1,7 +1,0 @@
-bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8): No such file or directory
-Native check evidence: /tmp/clip-pd08-native-check.UQB7Op
-CREATE ROLE
-.........s..ss                                                           [100%]
-11 passed, 3 skipped in 2.26s
-PASS: native clean apply/head, repeat migrate, four smoke suites twice, twelve down migrations, clean reapply and identical runtime schema inventory.
-Native checks exit: 0; evidence retained at /tmp/clip-pd08-native-check.UQB7Op

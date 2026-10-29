@@ -257,6 +257,21 @@ def inspect_source(path, source):
             text = literal(node)
             for pattern in (SQL_TABLE, SEARCH_PATH):
                 for match in pattern.finditer(text):
+                    # Reviewed Identity-owned projection exposes only Handle/class.
+                    # Only Conversations SELECTs may cross this exact view boundary;
+                    # private Identity tables and all cross-domain writes stay denied.
+                    projection = re.fullmatch(
+                        r"(?:FROM|JOIN)\s+identity\.participant_profiles",
+                        match.group(0),
+                        re.IGNORECASE,
+                    )
+                    if (
+                        pattern is SQL_TABLE
+                        and domain == "conversations"
+                        and not public
+                        and projection
+                    ):
+                        continue
                     table_owner(node, match.group(1).lower())
     return sorted(findings), edges
 

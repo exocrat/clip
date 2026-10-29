@@ -13,6 +13,7 @@ from app.contracts.domain_types import (
     SavedListingAck,
     SavedListingView,
     StartWantedResponse,
+    WantedDiscoveryQuery,
     WantedRequestId,
     WantedRequestOwnerView,
     WantedRequestPatch,
@@ -25,7 +26,7 @@ HTTP_OPERATIONS = (
         "method": "GET",
         "path": "/wanted-requests",
         "operation_id": "search_list_open_wanted_requests",
-        "query": PageQuery,
+        "query": WantedDiscoveryQuery,
         "response": PageResult[WantedRequestPublic],
     },
     {

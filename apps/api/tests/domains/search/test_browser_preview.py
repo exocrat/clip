@@ -43,7 +43,7 @@ def test_fixture_catalogue_and_pages_follow_generated_transport_shapes():
     with TestClient(create_preview_app()) as client:
         catalogue = client.get("/catalogue", headers=HEADERS)
         options = CatalogueView.model_validate(catalogue.json())
-        assert len(options.categories) == 8 and len(options.conditions) == 4
+        assert len(options.categories) == 9 and len(options.conditions) == 4
         for number, count, has_next in ((1, 20, True), (2, 20, True), (3, 2, False)):
             response = client.get("/listings", params={"page": number}, headers=HEADERS)
             page = PageResult[ListingSummary].model_validate(response.json())

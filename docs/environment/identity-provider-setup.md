@@ -1,7 +1,8 @@
 # ID-01 provider setup
 
-Current handoff: [integration](../evaluation/identity/integration.md).
-Completed cloud/test chronology: [provider history](../evaluation/identity/provider-history.md).
+Current status: the [ID-01 work-log summary](../status/work-log.md) and this
+setup guide. Historical cloud/test chronology can be recovered through the
+[evaluation history guide](../evaluation/README.md).
 Canonical choices: [Microsoft/initial SES](../decisions/identity-provider-setup.md)
 and [dual-provider email](../decisions/identity-email-routing.md).
 This guide contains current setup facts and pending actions, not new approval.
@@ -12,7 +13,7 @@ This guide contains current setup facts and pending actions, not new approval.
 | --- | --- | --- |
 | Microsoft | Real local IISc sign-in and non-IISc denial human-verified2026-10-26 04:48:20UTC after SPA correction guidance; validator/SQL and controlled browser tests passed. | Hosted origin, mobile-browser and remaining session/cache acceptance; local Chrome/Firefox sign-in verified; default build flag remains disabled. |
 | Resend | Domain human-reported verified; corrected adapter delivered from verify@; real local Gmail temporary registration/login/forgot-password human-verified. Aditya confirms exposed-key revocation and replacement in SSM on2026-10-27 18:25:58UTC. | Current deployed secret access/configuration, cloud/browser/device and delivery checks. |
-| SES | Recorded domain/DKIM verification, real sandbox application-role delivery/inbox and owned cleanup passed2026-10-23. | Production access/configuration, current provider-state refresh; verify-sender IAM update is already recorded applied2026-10-26. |
+| SES | Production access/sending, domain DKIM success and a standalone receipt were recorded2026-10-28; sandbox application-role delivery was verified earlier. | Refresh current runtime role/recipient policy and provider preference before deployment. Source still limits SES to the explicit test profile and controlled recipients; no production send is authorized by this record. |
 
 No new resource-state inspection was performed for this documentation cleanup.
 Provider acceptance/Delivered is not proof of inbox placement. Previous no-reply
@@ -100,9 +101,14 @@ The local SDK lacked optional AWS-login CRT support in recorded tests, so CLI
 exported short-lived credentials were captured only in process memory. Do not
 write credential files or treat that workaround as deployed runtime evidence.
 
-General SES use needs production grant and reviewed guard/recipient/IAM transition.
-Resend can be the active real provider while SES waits, after its own actual
-configuration and safety checks. No provider failure activates an account.
+SES production access and a standalone send were subsequently recorded on
+2026-10-28, superseding the earlier pending-access statement above. That account
+status alone does not enable general application delivery: the route is selected
+through a private versioned parameter, the current provider preference has not
+been read by this agent, the source adapter is test-profile and controlled-
+recipient only, and the deployed role/recipient policy must be refreshed. Any
+production source/configuration change, permission change or live send requires
+its own review and approval. No provider failure activates an account.
 
 ## Real verification and approvals
 
@@ -116,13 +122,14 @@ configuration and safety checks. No provider failure activates an account.
    affected-owner review, current CI and authorized milestone merge are complete.
 
 Public DMARC was observed2026-10-24 15:34:02 UTC as v=DMARC1; p=none;. Preserve
-DKIM/SPF setup; verify authentication before tightening policy. See the
-[development cleanup release gate](../evaluation/identity/provider-history.md#development-cleanup).
+DKIM/SPF setup; verify authentication before tightening policy. Check current
+DNS/provider state before any live change; historical checks are not authorization.
 
 Offline checks and effects are registered in
 [commands](commands.md#identity-provider-offline-checks--id-01-step-2).
-Historical image/task/plan manifests and diagnostic scripts remain under
-[retained artifacts](../evaluation/identity/provider-history.md#retained-artifacts).
+Most old run manifests and receipts were pruned; the two diagnostic helpers still
+used by offline tests remain in `docs/evaluation/identity/id-01-step-2/`. See the
+[Identity handoff index](../evaluation/identity/README.md).
 
 ## API image database trust
 
@@ -139,6 +146,6 @@ Shared cookie/CSRF transport now connects Identity and marketplace wrappers loca
 normal Identity uses /api, with unprefixed routing only in its explicit preview.
 Protected writes fail before dispatch when fresh preflight fails; no client demo
 bypass or automatic transport replay. See the
-[decision](../decisions/browser-session-transport.md) and
-[actual local integration result](../evaluation/identity/integration.md#shared-browser-transport-result--2026-10-25-190023-utc).
+[decision](../decisions/browser-session-transport.md) and the
+[current ID-01 status](../status/work-log.md).
 Real provider/browser/proxy configuration and current image deployment remain gated.

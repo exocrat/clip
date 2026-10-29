@@ -1,11 +1,13 @@
 # Coordinated database migrations
 
-**Current Conversations integration checkout:** 21 published migrations plus two
-forward corrections, head `20261027112205`, 40 domain tables, 36 functions and 46 triggers.
-All 21 previously published SQL files are unchanged. Older isolated
-Identity/Listings sections below retain their historical checkpoints; their
-former PR10 deferral/counts do not describe this combined checkout. See the
-[merge evidence](../docs/evaluation/identity/integration.md#main-reconciliation).
+**Current planning branch:** 21 previously published migrations, two prior
+forward corrections and the NEXT-03 catalogue/search/amount migrations: 29 migrations,
+head `20261029043000`, 40 domain tables, 36 functions and 46 triggers. All 22
+previously published SQL files are unchanged. Older isolated
+Identity/Listings sections below retain selected historical context; old PR10
+deferral/counts do not describe this combined checkout. See the [current work-log
+status](../docs/status/work-log.md); detailed old receipts are recoverable through
+the [evaluation history guide](../docs/evaluation/README.md).
 
 CN-02 Step2 reuses the existing offer/revision/contact tables and installed local
 guards; it adds no migration. The registered Conversations checker includes
@@ -71,22 +73,28 @@ was changed. [Tool rationale](../docs/decisions/database-migration-tool.md).
 | `20261026090300_conversation_recovery_storage.sql` | Typed encrypted protocol-control storage; client content recovery remains disabled. |
 | `20261027064000_conversation_offer_requests.sql` | Original expected-revision metadata on retained offer revisions for exact retries, including null after history purge. Legacy rows remain readable without claiming exact replay. Down refuses while recorded request metadata exists; approved history cleanup removes it with revisions. |
 | `20261027112205_contact_share_initial_prekey_envelopes.sql` | Permit OpenE2EE's encrypted first-send `prekey_bundle` for contact shares, while still rejecting recovery/control envelopes; down restores the previous entry-kind guard. |
+| `20261028090000_marketplace_category_catalogue.sql` | Rename the Electronics and Home appliances labels and add Sports & fitness, retaining stable existing codes and assignments. |
+| `20261028100100_marketplace_title_case_labels.sql` | Update only category and condition display labels to title case, including Like New; rollback restores the preceding labels. |
+| `20261028100200_wanted_discovery_text_search.sql` | Add a partial GIN index for English-normalized title/description keyword search over open, visible Wanted Requests. |
+| `20261028120000_sale_original_price_and_marketplace_amount_cap.sql` | Add optional seller-stated Original price and enforce the ₹1 crore cap on listing prices and Wanted budgets. |
+| `20261028181500_private_buyer_selection.sql` | Decouple private seller buyer-tracking from availability, including tracking on unavailable non-retired records. |
+| `20261029043000_unique_handles_and_participant_projection.sql` | Stage required case-insensitive unique Handle claims without rewriting legacy names; expose the safe Identity participant view. |
 
 Four superseded branch-only SQL files are preserved byte-for-byte in
 [`archived/cn-01-pre-main`](archived/cn-01-pre-main/README.md), outside the executable
 chain. A target containing any archived version requires a separately reviewed
-upgrade plan; do not apply this fresh-chain procedure to it. Aditya's
-Identity runner and unreviewed manifest candidate now pin this23-file chain.
-The recorded17-file shared target is still rejected by its fresh/repeat-only
-baseline guard. Aditya reports no application data needs preservation; the next
-target plan may use a reviewed clean bootstrap/reset. Neither this candidate nor local checks authorize a
-shared apply.
+upgrade plan; do not apply this fresh-chain procedure to it. The current Identity
+runner pins an unreviewed 23-file candidate and rejects an expanded chain; prior
+evidence also records a 17-file live package whose separate owner review remains
+open. This branch contains 29 SQL migrations. Neither candidate nor local checks
+authorize a shared apply; prepare and review an exact target/package before any
+database operation.
 
 The optional-pickup forward migration is under Listings writer scope; affected
 consumer/schema review and exact shared-database apply remain pending. Local
 isolated checks do not authorize shared/Compose/cloud migration.
 
-Expected combined migration version: **20261027112205**. One integrator allocates
+Expected planning-branch migration version: **20261029043000**. One integrator allocates
 later timestamp identifiers; no parallel heads or uncoordinated edits to initial
 DDL. Published/applied migrations are corrected forward, not rewritten.
 
@@ -171,7 +179,7 @@ password and are visible to administrators of the local Docker engine.
 | `bash database/local-db.sh start` | Validate local context/configuration/resource ownership, create/start only PostgreSQL, then wait for authenticated TCP `SELECT 1`. Exit 0 means connectivity, not migrations. |
 | `bash database/local-db.sh wait` | Up to 30 authenticated connection attempts with a 2-second connection timeout and 2-second pauses; nonzero on timeout/absent container. Final sanitized connection diagnostic is retained. |
 | `bash database/local-db.sh migrate` | Wait for connectivity, then run pinned dbmate 2.36.0 `migrate` with strict ordering and no schema dump. Applies pending migrations only to `clip_local`. Nonzero aborts; inspect sanitized output before recovery. |
-| `bash database/local-db.sh status` | Wait for connectivity and show dbmate migration status. A successful listing can still contain pending migrations; compare to expected branch head `20261022062357`, not merely process exit status. |
+| `bash database/local-db.sh status` | Wait for connectivity and show dbmate migration status. A successful listing can still contain pending migrations; compare to expected branch head `20261029043000`, not merely process exit status. |
 | `bash database/local-db.sh stop` | Stop only the validated service container, retaining its container and named data volume. An absent container is a successful no-op. |
 | `bash database/local-db.sh reset --confirm-delete-local-data` | **Permanently delete all local database data.** Warn, validate labels/clone/image/port/mount, stop/remove only the service container, then remove only `clip-local_clip_local_postgres_data`, without force. Leaves the database stopped. Explicitly review/approve this destructive invocation before using it; then run `start` and `migrate` to recreate. |
 | `bash database/local-db.sh --help` | Show fixed usage without password/Docker setup. |
@@ -285,463 +293,32 @@ IDs use PostgreSQL's built-in UUIDv4 generator. Text checks bound stored charact
 length/nonblank content; domain APIs still normalize outer Unicode whitespace
 consistently before binding.
 
-## Verification state and later checks
+## Current verification commands
 
-Step 3 statically parses every up/down section and PL/pgSQL body using a pinned
-temporary pglast 7.10 installation outside the project. That checks syntax,
-not PostgreSQL object resolution, migration application or transaction races.
-It adds no project dependency or production parser requirement.
-
-`tests/schema-smoke.sql` is a rollback-only synthetic test, with a database-name
-guard requiring the `clip_test_` prefix. It exercises zero/required/fractional
-prices, last-image protection, optional budgets, saved uniqueness, membership,
-key-owner binding, operation replay/order, read bounds, zero offers and purged
-history uniqueness. Fake public/envelope bytes prove storage shape only, never
-crypto interoperability. This smoke passed twice against native PostgreSQL 18.6
-in Step 6. The Step 5 Compose wrapper still has only simulated-Docker checks.
-
-Native Step 6 passed clean apply/head, repeat migrate, smoke, down/up in an
-isolated empty test database and runtime schema inventory repeatability. It must
-still add/run multi-connection concurrency cases for final-image deletion/count,
-origin closure/creation, sequence allocation, offer revision/retention and
-read/reminder/cleanup races. No concurrency or full acceptance is claimed yet.
-
-### PR #5 corrective verification
-
-`tests/retired-origin-smoke.sql` is a second rollback-only administrator test
-restricted to an isolated `clip_test_` database. It proves ordinary listing
-unavailability/request closure still allow messages and contact shares, then
-sets the Conversations-owned no-write marker and checks both origin types
-reject those same entries without advancing thread sequence/activity. To model
-a historical closure, it briefly uses session-local replica mode only while
-backdating that fixture's closure instant; origin mode is restored before
-retirement and the marker guard are tested. The test does not exercise the
-public API's activity check or concurrent ordering; those remain service
-integration checks. It is not an application bypass or a production script.
-`native-checks.sh` now expects nine migrations and runs both smoke suites before
-and after rollback/reapply. The original native results below describe the
-initial three-migration checkpoint, not a run of the revised harness.
-
-The lifecycle safety suite now has **35 simulated cases**, including passwords
-that overlap metadata, nonfatal diagnostic stderr, and secret-bearing stdout
-on success/failure. These additions fail against the original wrapper. The SQL
-regression likewise fails against the original entry guard and passes with the
-forward correction. The full four-migration SQL round-trip and runtime inventory
-comparison were checked separately on an isolated PostgreSQL 18.6 ARM64 image;
-exact results are recorded in the work log. At this 2026-10-18 checkpoint, real
-Compose persistence, authenticated lifecycle/reset, broader concurrency/query
-plans and revised native macOS/dbmate/CI checks remained integration obligations.
-The later user-confirmed status is recorded in the platform matrix below; missing
-other-machine logs are not reconstructed.
-
-### Native macOS checkpoint — 2026-10-18
-
-Mohit selected native macOS checks now and explicitly deferred the other checks.
-This is a bounded Step 6 checkpoint, not replacement of Compose/CI acceptance.
-No VM or system service was created. The native tools live only under
-`/tmp/clip-pd08-native.pKC5jz`; no Homebrew/global installation was changed.
-
-`tests/native-checks.sh` accepts a PostgreSQL installation prefix and dbmate
-binary path, verifies exact versions **18.6 / 2.36.0**, then creates its own
-private `/tmp/clip-pd08-native-check.*` cluster and `clip_test_native` database.
-It accepts no existing data directory or database target. Child processes have
-a clean environment. TCP listening is disabled; local trust is bounded by an
-owner-only Unix-socket directory, with all host authentication rejected. It
-always attempts to stop only that cluster on exit and retains logs/data for
-review. It never resets the Compose volume.
-
-Exact invocation for this session:
-
-```bash
-bash database/tests/native-checks.sh /tmp/clip-pd08-native.pKC5jz/pgsql /tmp/clip-pd08-native.pKC5jz/bin/dbmate
-```
-
-`clean_env` isolates runtime settings, `sql` fixes the new test database/socket,
-`migrate` applies version-correct command flags, `check_head` verifies the applied
-versions/counts, and `inventory` compares ordered runtime columns/defaults,
-constraints, indexes, functions and triggers across down/reapply. `cleanup`
-stops the owned cluster and fails the run if shutdown fails. The generated
-`schema.sql` stays in temporary evidence; it is not a hand-maintained source.
-
-Passed: three migrations to head `20261018094332`, status Applied 3/Pending 0,
-no-op repeat migrate, 23 tables/20 functions/32 triggers, eight categories/four
-conditions, synthetic smoke twice, all three down migrations, clean reapply,
-identical runtime inventories and clean shutdown. Final evidence:
-`/tmp/clip-pd08-native-check.0buobO`; both inventory SHA-256 values are
-`886207fdd1ac8d7cf7791c234807ccf864dc786bedff03315dd9cb90959d496e`.
-
-Native build uses UTF-8 with `C` locale and `--without-icu --without-readline
---without-zlib`; Compose uses Debian/C.UTF-8. These checks do not establish
-locale/platform equivalence, image compatibility, SCRAM/TCP readiness, container
-lifecycle/persistence/reset, concurrency safety, query-plan performance or CI
-success. Those checks retain their original Step 6/integration gates. Tools and
-evidence under `/tmp` are temporary and may be removed by the OS; rerun with
-verified tools if they disappear.
-
-The first sandboxed initdb was denied shared memory. Approved retry outside the
-sandbox succeeded. Native execution also caught an introspection query using
-the removed `lc_collate` setting and a wrapper error placing `--strict` globally.
-Both were corrected: collation comes from `pg_database`, and dbmate 2.36.0 uses
-`migrate --strict` while `status`/`rollback` omit it. The Compose wrapper and its
-22 simulated safety cases were corrected/retested; real Compose execution is
-still pending. These failed-run logs remain in the work-log evidence paths.
-
-### Integration Compose checkpoint — 2026-10-18
-
-Real Linux/ARM64 Docker execution verified PostgreSQL **18.6** and dbmate
-**2.36.0**, UTF-8/C.UTF-8, UTC, five SCRAM host rules and no host-trust rules.
-The existing local wrapper passed startup/authenticated TCP readiness, all four
-migrations to `20261018152702`, status (Applied 4/Pending 0), repeat migrate,
-stop/start and final stop. Both rollback-only SQL smoke suites passed in the
-separate synthetic `clip_test_integration` database. Its four migration records
-and 23 domain tables remained after restart. This supersedes historical
-Compose-not-run statements for this Linux/ARM64 checkpoint only. At that
-checkpoint macOS/AMD64 compatibility and CI parity were not proved; later
-user-confirmed status is described below.
-
-Evidence: `/tmp/clip-pd08-compose-3ej1goas` (temporary local files; the synthetic
-password file is private and must not be published). The owned service is
-stopped; its container, network and named volume remain. No reset, volume
-removal, down migration or cloud operation was performed in this checkpoint.
-At that time, reset/recreate, concurrency/query plans, affected-owner
-acceptance and CI/common-command integration remained pending; the user later
-confirmed the carried PD-08 gates complete.
-
-### Required platform verification matrix
-
-Each row must run the same lifecycle, authenticated connectivity, migration,
-smoke, persistence, reset/recreate and wrapper-refusal checks. An image manifest
-or emulated run does not establish native host compatibility. Record runtime,
-architecture and evidence for each actual run; PD-12 owns CI wiring.
-
-| Host | Container platform | State / evidence |
-|---|---|---|
-| Linux ARM64 | `linux/arm64` | Local storage checkpoint passed: lifecycle/reset, seven concurrency cases and five index diagnostics; exact evidence is recorded below. |
-| Linux AMD64 | `linux/amd64` | User-confirmed pass on another machine (2026-10-20 Asia/Kolkata); exact host, commands, and outputs are not retained here. |
-| macOS (architecture not specified) | `linux/arm64` or `linux/amd64` | User-confirmed macOS check passed on another machine (2026-10-20 Asia/Kolkata); the report does not identify Apple Silicon versus Intel or retain commands/outputs. |
-
-This table combines recorded local evidence with the user's confirmation; only
-the Linux ARM64 result has its detailed run evidence in this repository. A
-reusable verification harness is planned work, not an implemented command.
-Do not cite the unavailable run details as independently inspected platform
-evidence.
-
-### Approved reset/recreate checkpoint — 2026-10-18
-
-With explicit contributor approval, the local wrapper deleted only
-`clip-local_clip_local_postgres_data` and its validated service container.
-The volume was confirmed absent before recreation; the old synthetic test
-database was absent afterward. Fresh startup/authentication, four migrations
-(Applied 4/Pending 0), repeat migrate and both SQL smoke suites in
-`clip_test_reset` passed. Inventory: four migration records, 23 domain tables.
-The service was stopped; the recreated synthetic volume remains. Evidence:
-`/tmp/clip-pd08-compose-3ej1goas/reset-*.log`.
-
-This closes reset/recreate for the Linux ARM64 row only. Concurrency/query
-plans, other platform rows, affected-owner acceptance and CI/common-command
-integration remain pending. No cloud or unrelated resource was changed.
+`uv run --locked python scripts/check_database.py` is the disposable migration
+gate used by the repository checks. It creates a fresh `clip_test_ci` database
+with the pinned PostgreSQL/dbmate tools and removes only its own container.
+Never point it at a retained or shared database.
 
 ### Storage concurrency and index diagnostics
 
-With the local synthetic password exported, run from the repository root:
+Run the isolated local concurrency harness from the repository root:
 
 ```bash
 uv run --locked python database/tests/concurrency-checks.py
 ```
 
-The standard-library harness validates/starts the existing local Compose target,
-creates a fresh `clip_test_races_*` database, applies pinned migrations, and uses
-independent psql sessions. It observes actual lock contention before releasing
-the first transaction. Statement/lock/idle-transaction timeouts bound server
-work. It checks final-image protection under READ COMMITTED and REPEATABLE READ,
-the eight-image ceiling, unique Sale Listing and Wanted Request conversation
-pairs, sequence allocation, and competing offer revisions with aborted-sequence
-rollback. Expected SQLSTATEs and final stored state must both match.
+It creates a fresh `clip_test_races_*` database and uses independent PostgreSQL
+sessions with bounded timeouts. It covers database integrity races and checks
+whether key indexes can be used on small fixtures. It does not establish real
+service workflows, production query plans, scale, latency or NFR results. It
+retains its test database and does not reset local data. Do not run while another
+operator is using the local database lifecycle.
 
-Natural JSON plans are retained for owner feeds, images, entry pagination,
-full-text search and due notifications. A separate diagnostic disables sequential
-scans to verify index eligibility on tiny fixtures; it is not production plan,
-scale, latency or NFR evidence. Representative domain workload/plans remain with
-owning domain tasks.
+This guide contains the current database commands. The [domain task list](../docs/tasks/domain-task-list.md)
+defines acceptance; the [command index](../docs/environment/commands.md) links
+common commands and owner guides. The [work log](../docs/status/work-log.md) has
+current status; detailed prior platform/run receipts are recoverable through the
+[evaluation history guide](../docs/evaluation/README.md).
 
-Exit 0 means these checks passed; any other exit needs investigation. Evidence
-and the new synthetic database name are printed. Evidence is temporary; test
-databases are retained. The validated local service is stopped on exit; no
-volume reset/drop or cloud action occurs. Existing local data is not removed.
-Run only with no other operator using the local lifecycle; CI wiring is PD-12.
-
-Approved scope: database integrity only. Application transaction/locking
-contracts for closure/create, offer retention and read/reminder/lease/replay or
-cleanup races remain DL-00/domain-owner review and real integration obligations;
-these tests do not establish those workflows or cryptographic correctness.
-
-Latest Linux ARM64 run: seven concurrency cases and five index diagnostics
-passed; evidence `/tmp/clip-pd08-races-j6takuzv`, retained database
-`clip_test_races_36a74120a8aa`. The first run expected the wrong offer-revision
-SQLSTATE; PostgreSQL correctly returned unique violation `23505`. The assertion
-was corrected and final state/aborted-sequence rollback checked on the rerun.
-
-## Disposable CI migration gate — PD-12
-
-`uv run --locked python scripts/check_database.py` uses the same PostgreSQL
-18.6 image and dbmate 2.36.0 as local development, with a new `clip_test_ci`
-database, no published port and temporary memory-backed storage. The current
-checker requires clean apply/exact combined head (`20261027112205`), repeated
-application, seven SQL smoke suites, the40-table inventory, preserved Identity
-upgrades/rollback and full rollback of all23 migrations with a clean reapply, then removes only its own container. The
-`--listings-store` option additionally mounts one private temporary Unix-socket
-directory and runs the focused Listings adapter workflow against that same
-disposable database. It uses synthetic test rows and Identity/Conversations test
-doubles; it does not call object storage or touch the shared Compose database.
-The checker prints a compact SQL-selected sample listing row before removing
-the disposable container.
-Historical checkpoint: earlier head `20261020111741` passed locally at
-2026-10-20 11:22:17 UTC. Head `20261020113531` passed the disposable check,
-including seven rollbacks and clean reapply. At that historical checkpoint, the API-owned retirement migration
-was the expected head. Its disposable check passed clean apply, exact head,
-repeat apply, both smoke suites, refusal to roll back while a synthetic
-retirement result exists, full empty-state rollback, and clean reapply. The
-shared Compose database remains untouched. This is local evidence, not hosted
-CI. The macOS native schema-inventory run, other platform rows and affected-owner
-acceptance remain pending. See the [command registry](../docs/environment/commands.md).
-
-## ID-01 Step3 isolated Identity schema
-
-Aditya is the current writer for migration20261023173439 and its Identity storage
-checks on task/id-01-identity. This branch contains the four foundation migrations
-plus this forward correction. PR10's seven additional accepted migrations are
-explicitly deferred by Aditya; a higher branch version is not proof those ran.
-Before ID-READY review/merge, incorporate current main and verify the entire
-ordered chain and affected-domain checks. Do not apply this isolated chain to a
-retained/shared environment ahead of that integration: strict dbmate would reject
-later introducing earlier timestamped migrations. No persistent database was
-migrated by this step.
-
-Run `uv run --locked python scripts/check_database.py`. Its fresh network-isolated
-PostgreSQL18.6/dbmate2.36.0 test checks clean/repeat apply, three rollback-only
-smokes and unchanged23 domain tables. It then rolls back only the new guards,
-seeds synthetic regular/temporary/provider/contact rows at the old head, verifies
-a failed incompatible-data upgrade leaves no version/partial constraints/data
-rewrite, and exercises successful upgrade/down/reapply with fixture preservation.
-The runner accepts no database target and removes only its own disposable container.
-The seeded rows exist only in that new tmpfs database; they are not user data.
-
-Existing Identity UUID/provider-tuple/expiry indexes remain; no duplicate index,
-new table, raw credential storage or authentication behavior is introduced.
-The migration validates existing rows and fails atomically if they violate the
-new limits/revocation pairing; it does not truncate data or infer timestamps.
-The native macOS harness is wired to the fifth migration,21 functions/33 triggers
-and new smoke. Bash syntax is checked here; execution of this revised native
-harness is not claimed on this Linux ARM64 machine. Historical macOS evidence
-above remains evidence only for its original revision.
-
-## ID-01 Step5 isolated OTP transactions
-
-Migration20261023192856 adds four Identity-owned tables (27 domain tables total)
-and nullable protected fields to the existing OTP table. Legacy rows remain
-unchanged and cannot be verified by the new service. Minimal operation markers
-contain a keyed request digest, key version, public challenge ID and expiry;
-they contain no target/IP digest, email, code or verifier. Aditya approved
-service-lifetime marker retention; the canonical private-data retention decision
-records the exception. The migration implements no cleanup job; other private
-state retains its separate windows and cleanup-design gate.
-
-`otp_send_reservations` stores protected target/source identifiers for send
-limits, including suppressed requests. `otp_verification_windows` holds three
-failed verifications per target/purpose through the latest code's expiry.
-`otp_key_binding` stores only SHA-256 commitments to three high-entropy keys;
-the service rejects accidental key/version changes or unreviewed legacy-state
-adoption. Keys themselves are never stored here.
-
-Down takes exclusive locks and refuses occupied security state instead of
-silently deleting deduplication/attempt/key guards. A deployed rollback with
-state needs a reviewed migration/reset plan. Empty OTP down/up and legacy-row
-preservation are exercised by `scripts/check_database.py`, which pins Step3's
-older round trip separately so that adding this migration cannot invalidate its
-original proof. Four SQL smoke suites now run. The native harness source expects
-six migrations,27 tables,21 functions/33 triggers; only Bash syntax is checked
-on this contributor's Linux ARM64 environment. PR10/current-main integration
-and affected-owner review remain pending before ID-READY/shared application.
-
-## ID-01 Step7 sessions, sign-in and cleanup state
-
-Forward migration20261023202807 adds `last_seen_at` to sessions without inventing
-legacy activity; unbound legacy sessions cannot silently authenticate. Three
-Identity tables add password target windows (five failures), protected auth
-source events and ten-minute single-use Microsoft attempts.30 domain tables and
-seven migrations on this isolated branch. Down locks and refuses occupied state.
-Existing Step3/5 round trips remain pinned to their historical heads; the
-checker now tests five SQL smokes and session empty down/up. Native source
-expects seven migrations/30 tables with unchanged21 functions/33 triggers; only
-Bash syntax is checked here, no new native macOS evidence.
-
-Identity cleanup operates only on OTP/session/credential and obsolete rate/
-attempt state under the approved decision, preserving enrollment/operation/key
-markers. CLI defaults to dry-run and requires actual database name matching its
-explicit --expected-database; DSN is environment-only and errors/counts exclude
-credentials and identifiers. Apply is bounded, per-item transactional and safe
-to rerun after partial failure; it is not a blanket cascade or scheduled job.
-No retained/shared database apply or cleanup occurred. PR10/current-main ordered
-migration reconciliation and affected-owner review remain mandatory before
-shared deployment/readiness. A higher branch head does not prove earlier main
-migrations were installed.
-
-## SE-01 semantic storage migration — prepared, unapplied
-
-[Migration 20261024153316](migrations/20261024153316_listing_embedding_generations.sql)
-implements the [reviewed storage plan](../docs/architecture/semantic-listing-storage.md):
-three private Listings-owned tables, source hashing, vector validation/exact cosine,
-registry limits, atomic source/retirement invalidation and deferred complete-vector
-publication guards. Registry starts empty; no automatic backfill or worker.
-Existing migrations/base tables/GIN are preserved. Down refuses populated derived
-storage and removes only new empty objects under locks. Mohit approved preparing
-the exact derived-content deletion mechanism; no database apply/cleanup run occurred.
-
-Expected source inventory: 12 migrations, 29 domain tables, 30 functions and 40
-triggers. Native wrapper counts/rollback loop were updated from stale values;
-these are expected values, not a native-run result. The registered container
-checker includes `embedding-smoke.sql` in both clean cycles and
-`test_embedding_postgres.py` with `--listings-store`. The test file has real
-integrity/rollback/race assertions and portable pre-connect refusals; native tests
-skip when the disposable runner URL is absent. No alternate external DB target or
-ambient PG settings are accepted. PostgreSQL/Docker remains absent here, so this
-migration's broader production checks remain pending. The subsequent native
-checkpoint below provides scoped disposable SQL evidence.
-
-## SE-01 native macOS checkpoint C — passed, isolated scope
-
-`tests/native-checks.sh` now supports `--listings-store`. It first runs the existing
-fresh `clip_test_native` schema round trip, then creates a second new `clip_test_ci`
-database/clip_ci role inside the same owned cluster and runs the actual Listings,
-browse/vocabulary and embedding adapter files through another private Unix socket.
-The embedding test target gate permits the fixed native port 55438 as well as
-the disposable container's 5432; it still refuses other names/paths/ambient PG
-settings before connecting. No existing data directory/DB URL is accepted.
-
-Tools are under `.tools/native-db/` (about 300 MiB), rebuilt from checksum-verified
-PostgreSQL 18.6 source with the historical no-ICU/readline/zlib flags and the
-checksum-verified dbmate 2.36.0 ARM64 release binary. No global/Homebrew service,
-Docker installation, system/Python edit or cloud access.
-
-Final run `/tmp/clip-pd08-native-check.oLISmK` passed: 12 migrations to
-`20261024153316`, repeated apply, three smokes twice, all 12 downs and reapply;
-29 tables/30 functions/40 triggers; identical inventories; seven adapter checks (four native database cases and three pre-connect
-guards). The cluster stopped successfully and logs/data remain.
-[Retained result](../docs/evaluation/domain/se-01/native-postgres/result.json)
-and raw migration/adapter/stop logs identify the exact uncommitted source.
-Failed runs `Wqe42G` and `6HqtAw` are retained for fixture/diagnostic corrections.
-No production schema, Identity/Conversations integration, full data/image check,
-Linux/TLS/locale equivalence, model fusion or FR/NFR/readiness acceptance follows.
-
-## SE-02 Step2 wanted/saved storage verification
-
-The existing MVP migration already supplies `search.wanted_requests` and
-`search.saved_listings`, their content/budget/state constraints, restrictive
-foreign keys and access indexes. The API-owned retirement migration supplies
-paired pending fields; `closed_at` is the request's continuous-unavailability
-anchor. Step2 reuses these migrations without another schema version.
-
-`tests/search-storage-smoke.sql` tests null/zero budget, field/FK rejection,
-closure preservation and reset, immutable authors, paired pending state, duplicate
-save timestamps, reference survival after unavailability, restrictive save FKs
-and indexes. Every fixture rolls back; the target must be named `clip_test_*`.
-Both native and Docker runners invoke this fourth smoke before and after their
-full migration down/reapply. Existing retirement smoke covers retired-content
-constraints. This proves storage only, not API privacy/auth or real providers.
-
-Native Step2 checks passed at `/tmp/clip-pd08-native-check.UQB7Op`, with all12
-migrations, four smokes twice, identical schema inventory and successful stop;
-optional adapter suite11passed/3skipped. [Evidence](../docs/evaluation/domain/se-02/storage/result.json).
-Docker/hosted acceptance remains pending. Request command/idempotency persistence
-is developed with Step3; no command, cleanup or UI behavior is activated here.
-
-## SE-02 category-reference correction
-
-Migration13, `20261025012200_wanted_category_code_reference.sql`, corrects the
-previous storage-only audit: wanted categories now reference Listings' unique
-immutable code, matching the reviewed public catalogue interface. The migration
-converts existing assignments without firing request-update triggers, preserves
-NULL retired references, FK protection, the live/retired check and category index,
-and reverses populated data back to UUIDs on rollback. Sale categories are unchanged.
-
-The native runner now rolls back all13 revisions. The optional adapter check
-includes `test_category_migration_postgres.py`, whose rollback-only fixtures prove
-open/unavailable/pending/retired data, revisions, timestamps and inactive category
-assignments survive down/up. Conversion functions leave no runtime objects.
-[Decision](../docs/decisions/wanted-category-code-reference.md);
-[evidence](../docs/evaluation/domain/se-02/category-reference/result.json).
-No existing/shared database or deployment was migrated.
-
-## SE-02 Step3 wanted command retry storage
-
-Head `20261025013000` adds private wanted-command receipts (14migrations,
-30tables/32functions/42triggers). Author/request-scoped keys and normalized intent
-protect retries; immutable original responses are committed with request writes.
-Local triggers prevent other-author receipts, rewritten key/outcome data, retired
-receipt content and origin retirement with remaining payloads. They delete nothing.
-Rollback refuses populated receipt storage rather than discarding retry identity.
-Concrete request cleanup is [approved separately](../docs/architecture/wanted-request-retirement.md)
-and now implemented as explicit internal transactions; it is not scheduled.
-
-`test_wanted_postgres.py` uses real HTTP/service/SQL/locking in the owned native
-database, with explicit upstream eligibility/catalogue doubles. Committed synthetic
-origins remain in the stopped disposable database because immutable reference
-guards correctly prohibit physical deletion. Do not disable guards for teardown.
-[Evidence](../docs/evaluation/domain/se-02/wanted-api/result.json). Docker and real
-upstream/retirement integration remain pending. No shared/live migration was run.
-
-### SE-02 Step3 approved local retirement checks
-
-No new migration is needed. The native/Docker optional adapter suite now includes
-`test_wanted_retirement_postgres.py`: exact180day eligibility/reset/pair fences,
-unknown marker replay, recent-activity preservation, content-free retained keys,
-retired visibility, forced SQL failure after receipt clearing (full rollback)
-and competing attempts with blocked owner edits. Conversations is a reviewed
-explicit test double. One server-selected origin is processed per internal call;
-there is no external target selector, cleanup HTTP route or automatic job.
-[Retained evidence](../docs/evaluation/domain/se-02/wanted-retirement/result.json).
-
-### SE-02 Step4 real draft-query verification
-
-The optional adapter suite includes `test_draft_matches_postgres.py`. It runs real
-Listings availability/native query/order/pagination behind the public signature,
-checks Search table counts before/after draft matching and outages, then verifies
-wanted submission remains independent. Fixtures include21 tied-time available
-items plus unavailable/future/ended/pending/retired cases. Only this fixture's
-retired test image/upload metadata is removed after the check (no storage object
-was created); immutable parent/user references stay in the owned disposable DB.
-This avoids contaminating unrelated cleanup tests without weakening their checks.
-No migration, new database resource or private-table read in Search application
-code is added. [Evidence](../docs/evaluation/domain/se-02/draft-matches/result.json).
-
-### SE-02 Step5 saved pair persistence
-
-No migration is required: `search.saved_listings` already has the unique pair,
-restrictive foreign keys and own-list recency index. Search's new saved store
-uses only that table, with actor scope and pair advisory-lock serialization for
-save/unsave. It stores no listing title/description/image state.
-
-`test_saved_postgres.py` runs real Search SQL/HTTP with explicit public Listings
-fixture scripts. Controlled source changes and real parent retirement validate
-reference retention; returned summary states are scripts, not an implemented
-upstream resolver. Native tests prove duplicate timestamps, private multi-user
-rows, tied pagination/own-page-only batch IDs, unavailable/retired views, outage
-behavior and the allowed change-after-target-check race. Only its retired fixture
-image/upload metadata is removed; no real object existed and parent refs remain.
-
-Both wrappers run the large committed saved-pagination fixture **last**, after the
-earlier mathematical bootstrap test's intentionally small corpus/batch budget.
-Keep that guard and bound intact. [Evidence](../docs/evaluation/domain/se-02/saved-listings/result.json).
-Real providers, Docker/hosted and final acceptance remain pending.
-
-### SE-02 Step6 response origin lock
-
-No migration is required. `test_wanted_response_postgres.py` verifies response
-capability/privacy and exact pair retry through real Search HTTP/SQL. Its real
-row-lock race observes owner closure waiting and then completing after response;
-closure-first can only look up existing state. The observer refreshes activity
-snapshots before each poll. An independent schema-only C thread/member fixture
-commits under the origin guard, proving FOR NO KEY UPDATE allows its parent FK
-check. C public-service behavior still uses a reviewed explicit double. Retain
-immutable metadata and close only owned public wanted fixtures after testing.
-[Evidence](../docs/evaluation/domain/se-02/wanted-response/result.json).
+The `20261029043000_unique_handles_and_participant_projection.sql` migration adds staged Handle claims and an Identity-owned `participant_profiles` view. Existing names and account IDs are preserved; valid unambiguous names are claimed, while invalid/colliding names require setup. The view exposes only user ID, claimed Handle and active account class. An integrated Conversations runtime needs `USAGE ON SCHEMA identity` and `SELECT ON identity.participant_profiles`; it needs no direct access to Identity contacts or provider tables. Apply/grant changes on shared/cloud targets remain separately approved. The pinned Identity17 migration review package is unchanged and is not the complete integrated marketplace release migration set.

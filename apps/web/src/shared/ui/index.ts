@@ -9,3 +9,5 @@ export type {
   SegmentedControlOption,
   SegmentedControlProps,
 } from './SegmentedControl';
+export { MultiChoiceDropdown } from './MultiChoiceDropdown';
+export type { MultiChoiceDropdownProps, MultiChoiceOption } from './MultiChoiceDropdown';

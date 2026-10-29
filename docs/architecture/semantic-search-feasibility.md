@@ -196,10 +196,9 @@ Retained from PyPI metadata; not downloaded-file verification or a transitive lo
 
 ## Actual isolated Mac probe — 2026-10-24
 
-[Retained local result](../evaluation/domain/se-01/semantic-probe/result.json),
-[supervisor bounds](../evaluation/domain/se-01/semantic-probe/supervisor.json) and
-[preflight metadata](../evaluation/domain/se-01/semantic-probe/preflight.json)
-record the approved probe. Helper Python 3.13.12 and 24 locked packages are under
+The approved probe's local result, supervisor bounds and preflight metadata are
+in historical receipts; see the [evaluation retrieval guidance](../evaluation/README.md).
+Helper Python 3.13.12 and 24 locked packages are under
 `.tools/semantic/`; API Python remains 3.14.3 and the root lock hash is unchanged.
 Official release metadata now identifies 3.13.12 as superseded by 3.13.17; this
 older exact probe pin is not a deployment/security-support selection. Revisit
@@ -270,21 +269,23 @@ human-label gates remain pending.
 
 ## Native persistence follow-up
 
-After storage preparation was verified, the [native checkpoint result](../evaluation/domain/se-01/native-postgres/result.json)
-passed the scoped SQL migration/math/trigger/rollback/query/race tests on this
-Mac's fresh private PostgreSQL 18.6 cluster. All clusters were stopped and logs
+After storage preparation was verified, the native checkpoint passed the
+scoped SQL migration/math/trigger/rollback/query/race tests on this Mac's fresh
+private PostgreSQL 18.6 cluster. Its raw receipt is in Git history; see the
+[evaluation retrieval guidance](../evaluation/README.md). All clusters were stopped and logs
 retained. This discharges those prepared native assertions, not pipeline-switch/
 full-data/production-helper/read/Linux or relevance/fusion/FR/NFR gates.
 
-The [native bootstrap/switch matrix](../evaluation/domain/se-01/native-pipeline-switch/result.json)
-also passed after that checkpoint: resumable coverage, limits, atomic switch and
+The native bootstrap/switch matrix also passed after that checkpoint:
+resumable coverage, limits, atomic switch and
 concurrent-source invalidation. Real inference/IPC/public-query integration and
 production deployment/data/evaluation gates remain separate.
 
 ## Actual private IPC follow-up
 
-[Private protocol](semantic-helper-protocol.md) and [retained IPC result](../evaluation/domain/se-01/helper-ipc/result.json)
-now record the same pinned local model through a real owned helper process,
+[Private protocol](semantic-helper-protocol.md) and the historical IPC result
+(see [evaluation retrieval guidance](../evaluation/README.md)) record the same
+pinned local model through a real owned helper process,
 including bounded queue/deadlines, complete source windows, repeatability and
 crash/restart. This extends the original model probe; it does not activate public
 hybrid search, generate DB vectors, accept Linux/cgroups or replace final relevance

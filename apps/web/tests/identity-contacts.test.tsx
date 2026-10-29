@@ -60,7 +60,7 @@ describe('Private own-contact editor', () => {
   it('does not fetch contact values for an anonymous caller or browser-supplied actor', async () => {
     const fetcher = mock(() => response({}, 401));
     view();
-    await screen.findByRole('heading', { name: 'Sign in to edit your contact details' });
+    await screen.findByRole('heading', { name: 'Sign in to open Account' });
     expect(fetcher.mock.calls.map((row) => row[0])).toEqual(['/api/me']);
     expect(screen.queryByLabelText('Contact email')).toBeNull();
   });
@@ -195,7 +195,7 @@ describe('Private own-contact editor', () => {
     await act(async () => {
       finish?.(response(values));
     });
-    await screen.findByRole('heading', { name: 'Sign in to edit your contact details' });
+    await screen.findByRole('heading', { name: 'Sign in to open Account' });
     expect(screen.queryByDisplayValue(values.email)).toBeNull();
   });
 
@@ -295,7 +295,7 @@ describe('Private own-contact editor', () => {
     await screen.findByDisplayValue(values.email);
     denied = true;
     await user.click(screen.getByRole('button', { name: 'Refresh contacts' }));
-    await screen.findByRole('heading', { name: 'Sign in to edit your contact details' });
+    await screen.findByRole('heading', { name: 'Sign in to open Account' });
     expect(screen.queryByDisplayValue(values.email)).toBeNull();
   });
 

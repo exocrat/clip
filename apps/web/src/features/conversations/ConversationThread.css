@@ -1,8 +1,12 @@
 .conversation-thread {
   display: grid;
   gap: var(--space-4);
-  max-width: 54rem;
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
 }
+
+.conversation-thread__origin-context { margin-block-start: var(--space-3); }
 
 .conversation-thread__privacy,
 .conversation-thread__key-state,
@@ -38,30 +42,33 @@
 
 .conversation-thread__messages {
   display: grid;
-  min-height: 14rem;
-  max-height: 60vh;
+  min-height: 18rem;
+  max-height: min(62vh, 42rem);
   gap: var(--space-3);
   overflow-y: auto;
   margin: 0;
-  padding: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-muted);
   list-style: none;
 }
 
 .conversation-thread__message,
 .conversation-thread__pending {
   width: fit-content;
-  max-width: min(90%, 42rem);
+  max-width: min(84%, 38rem);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-control);
-  padding: var(--space-3);
+  border-radius: 1rem;
+  padding: var(--space-3) var(--space-4);
   background: var(--color-surface);
 }
 
 .conversation-thread__message--own,
 .conversation-thread__pending {
   justify-self: end;
-  border-color: #93c5fd;
-  background: #eff6ff;
+  border-color: var(--color-focus);
+  background: var(--color-surface);
 }
 
 .conversation-thread__message p,
@@ -73,8 +80,11 @@
 
 .conversation-thread__message time,
 .conversation-thread__pending span {
+  display: block;
+  margin-top: var(--space-2);
   color: var(--color-muted);
   font-size: var(--font-size-small);
+  text-align: end;
 }
 
 .conversation-thread__deleted {
@@ -113,8 +123,10 @@
 .conversation-thread__composer {
   display: grid;
   gap: var(--space-2);
-  border-top: 1px solid var(--color-border);
-  padding-top: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
 }
 
 .conversation-thread__composer textarea {
@@ -130,3 +142,25 @@
 .conversation-thread__composer button {
   justify-self: end;
 }
+
+@media (max-width: 38rem) {
+  .conversation-thread__messages { min-height: 14rem; padding: var(--space-3); }
+  .conversation-thread__message, .conversation-thread__pending { max-width: 94%; }
+  .conversation-thread__composer button { width: 100%; }
+}
+
+/* Keep the conversation workspace cohesive without crowding touch controls. */
+.conversation-thread { padding-block: var(--space-4); }
+.conversation-thread__messages { min-height: 14rem; gap: var(--space-2); border-radius: .85rem; }
+.conversation-thread__message { box-shadow: 0 1px 2px rgb(0 0 0 / .06); }
+.conversation-thread button { max-width: 100%; }
+.conversation-thread form { min-width: 0; }
+.conversation-thread textarea { border-radius: .7rem; }
+
+.conversation-thread__unread-divider { text-align: center; list-style: none; color: var(--color-primary); font-weight: 650; padding: var(--space-2); border-block: 1px solid var(--color-border); }
+.conversation-thread__date-divider { justify-self: center; list-style: none; padding: .25rem .75rem; border: 1px solid var(--color-border); border-radius: 999px; background: var(--color-surface); color: var(--color-muted); font-size: var(--font-size-small); }
+.conversation-thread__date-divider time { white-space: nowrap; }
+
+.conversation-thread__tools { max-width: none; margin: 0; border: 1px solid var(--color-border); border-radius: var(--radius-control); padding: var(--space-3); background: var(--color-surface); }
+.conversation-thread__tools > summary { cursor: pointer; min-height: 2.75rem; align-content: center; font-weight: 600; }
+.conversation-thread__tools .conversation-contact-preparation { border: 0; padding: 0; margin: var(--space-3) 0 0; }

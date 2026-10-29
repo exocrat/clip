@@ -3,7 +3,13 @@
 import pytest
 from psycopg.errors import InsufficientPrivilege
 
-from apps.api.tests.domains.identity.postgres_fixtures import disposable_database
+from apps.api.tests.domains.identity.migration_fixtures import (
+    reviewed_migration_directory,
+)
+from apps.api.tests.domains.identity.postgres_fixtures import (
+    disposable_database,
+    reviewed_disposable_database,
+)
 
 
 def test_column_grants_enable_catalogue_locks_without_table_update(disposable_database):
@@ -52,24 +58,24 @@ def test_column_grants_enable_catalogue_locks_without_table_update(disposable_da
 
 
 def test_guarded_restore_is_idempotent_and_refuses_unreviewed_access(
-    disposable_database,
+    reviewed_disposable_database,
 ):
     """Only the two reviewed ACLs return; unexpected broader privileges stop work."""
     from scripts import identity_catalogue_grants as restore
 
-    with disposable_database() as c:
+    with reviewed_disposable_database() as c:
         c.execute("CREATE ROLE clip_test_marketplace_app NOLOGIN")
         c.execute("GRANT USAGE ON SCHEMA listings TO clip_test_marketplace_app")
         c.execute(
             "GRANT SELECT ON listings.categories, listings.conditions TO clip_test_marketplace_app"
         )
-    first = restore.restore(disposable_database, isolated=True)
+    first = restore.restore(reviewed_disposable_database, isolated=True)
     assert set(first["changed"]) == {
         "listings.categories.created_at",
         "listings.conditions.label",
     }
-    assert restore.restore(disposable_database, isolated=True)["changed"] == []
-    with disposable_database() as c:
+    assert restore.restore(reviewed_disposable_database, isolated=True)["changed"] == []
+    with reviewed_disposable_database() as c:
         c.execute(
             "REVOKE UPDATE (created_at) ON listings.categories FROM clip_test_marketplace_app"
         )
@@ -77,8 +83,8 @@ def test_guarded_restore_is_idempotent_and_refuses_unreviewed_access(
             "GRANT UPDATE (active) ON listings.conditions TO clip_test_marketplace_app"
         )
     with pytest.raises(restore.GrantRestoreFailure):
-        restore.restore(disposable_database, isolated=True)
-    with disposable_database() as c:
+        restore.restore(reviewed_disposable_database, isolated=True)
+    with reviewed_disposable_database() as c:
         assert not c.execute(
             "SELECT has_column_privilege('clip_test_marketplace_app','listings.categories','created_at','UPDATE')"
         ).fetchone()[0]

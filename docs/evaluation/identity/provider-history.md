@@ -2,7 +2,7 @@
 
 Historical evidence, consolidated from the44report archive at `890adb1`.
 Current operational instructions are in [provider setup](../../environment/identity-provider-setup.md).
-Exact old requests/results are recoverable using [archive-map.json](archive-map.json);
+Exact old requests/results are recoverable using [archive-map.json](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/identity/archive-map.json);
 none of their approvals authorizes a new action. No private inbox/key/OTP values.
 
 ## Setup and permissions
@@ -39,7 +39,7 @@ prices and caps are historical; do not reuse them as authorization.
 | 2026-10-23 09:12:58 | Registration preflight stopped for concurrent RDS activity; no database action. Revised scope explicitly excluded RDS. |
 | 2026-10-23 09:27:10 | Exact smoke task revision1 registered; unused temporary builder IAM/profile/group resources removed. No send yet. |
 
-[Published image](id-01-step-2/published-image.json) retains full source/image/
+[Published image](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/identity/id-01-step-2/published-image.json) retains full source/image/
 config/manifest digests. Registry digest3ef8b13d…eddd1d identifies the historical
 smoke image, not current authentication deployment. Task family:
 clip-test-identity-email-ap-south-1-id01:1 (256CPU units/512MiB), disabled defaults.
@@ -58,7 +58,7 @@ Original template/proposal files and source hashes stay unchanged for audit.
 | 2026-10-23 17:23:48 | Aditya verified the SES fix/delivery/cleanup and approved staged progression while production-access/configuration remained pending. |
 
 Raw provider text, addresses, bodies and credentials were omitted. Exact applied
-recipient correction is in [the saved review](id-01-step-2/sandbox-recipient-fix-review.json).
+recipient correction is in [the saved review](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/identity/id-01-step-2/sandbox-recipient-fix-review.json).
 Two retained diagnostic wrappers are loaded by offline tests: runtime_diagnostic.py
 and runtime_authorization_diagnostic.py. Do not delete/move them as prose cleanup.
 No historical snapshot establishes current resource state or safe rerun authority.

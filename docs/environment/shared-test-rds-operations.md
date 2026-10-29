@@ -1,8 +1,10 @@
-# PD-16 test RDS stop and resume plan
+# Shared test RDS stop and resume procedure
 
-**Current status — 2026-10-19 18:23:35 UTC:** RDS is stopped after the authorized live setup/probe run. ECS tasks and ASG desired/hosts are zero; original EC2 host terminated through managed scaling. [Current shutdown evidence](../evaluation/foundation/pd-16/compute-stop-result.json). DB data, credentials and images retained. No automatic scheduled shutdown was installed; separate restart/enable-plan approval still required.
-
-**Historical initial-stop status:** User authorized the exact stop; AWS confirmed `stopped` with matching resource ID on 2026-10-19 12:52:26 UTC. The current contributor volunteered as operator and selected stopping RDS while retaining an easy restart. Preflight verified non-root caller/account, private/encrypted/protected DB with one-day retention, zero running/pending ECS tasks and zero ASG hosts. The installed CLI rejected the nonexistent stopped waiter; bounded read-only status polling confirmed completion without repeating stop. Resume has not run and needs its separate action approval. At that historical checkpoint the personal name/contact and holding deadline were not yet recorded. The current operator is now explicitly Aditya and the accepted deadline is recorded below. Existing cleanup review date: 2026-10-23.
+This procedure describes the former PD-16 target, `clip-shared-test-postgres`.
+Its last recorded state is in the [cloud inventory](cloud-inventory.md), not a
+live view. Verify caller, exact resource, current users and ECS capacity before
+acting. Each stop or start needs its own exact approval; this procedure and any
+older deadline or plan do not authorize an operation.
 
 ## Target and boundary
 
@@ -57,8 +59,12 @@ aws rds describe-db-instances --profile adityalaxmi1 --region ap-south-1 --db-in
 
 Starting retains the same database/storage/credentials; no recreation or secret rotation is intended. Availability is not an authenticated SQL check. ECS remains at zero until the separately approved service plan with `deployment_phase=service` and `api_service_enabled=true` is applied. Record each run's operator, hours/expiry and budget before resuming. An approved stop does not preapprove a later start.
 
-## Remaining cost and expiry
+## Cost and cleanup
 
-Stopping removes the DB compute portion while stopped, not NAT, allocated storage, backups/logs or backend costs. Using the proposal's recorded reference rates, 96 idle hours with compute off is approximately USD 6.21 before variable charges and scale-in tail; this is not a current bill or spending cap. RDS may automatically restart after seven consecutive stopped days. The existing policy calls for separately reviewed full-stack teardown after 96 idle hours; the user accepted the idle clock **2026-10-19 18:23:35 UTC → 2026-10-23 18:23:35 UTC** (23:53:35 IST on October 23), anchored to the last confirmed full shutdown. This supersedes the earlier unaccepted first-apply-based proposal. **Aditya** is the current operator and initiates separately reviewed cleanup by this deadline if no new approved run occurs. A new approved run updates the clock; this is not automatic deletion or advance destroy approval.
-
-No automatic teardown/cron or restart-loop suppression is installed. The operator must review retained cost and expiry. Full teardown retains its separate start-if-needed, deletion-protection-change and fresh destroy-plan approvals, and must preserve the PD-15 backend and state versions.
+Stopping removes DB compute cost, not NAT, storage, backups, logs or backend costs.
+RDS may automatically restart after seven consecutive stopped days. The old
+PD-16 96-hour cleanup deadline expired in 2026; it is not a current expiry. Use
+the active task's reviewed budget/window and the [DEC-12 cost note](../decisions/foundation-cost-review-precision.md)
+for planning. Teardown still needs separate approvals for starting a stopped DB,
+changing deletion protection and applying a fresh destroy plan. Preserve the
+PD-15 backend and its state versions. No automatic teardown or restart is set up.

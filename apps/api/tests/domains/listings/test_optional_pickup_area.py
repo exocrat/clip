@@ -16,6 +16,7 @@ def request_fields():
         category_code="books",
         condition_code="good",
         asking_price_paise=0,
+        original_price_paise=None,
         negotiable=False,
         image_upload_ids=[uuid4()],
         operation_id=uuid4(),

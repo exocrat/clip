@@ -5,7 +5,7 @@ import { validateProfile, validPage, scenarios, SUMMARY_FIELDS } from './core.js
 const root = new URL('../../../', import.meta.url);
 const profile = JSON.parse(readFileSync(new URL('data/evaluation/workloads/local-search-pilot-v1.json',root)));
 const item = profile.cases[0];
-const row = {listing_id:item.expected_ids[0],title:'Controlled bicycle',description:'Controlled load response',category_code:'bicycles',category_label:'Bicycles',condition_code:'good',condition_label:'Good',asking_price_paise:0,negotiable:false,pickup_area:null,available_from:'2026-01-01T00:00:00.000000Z',available_until:null,availability:'available',sensitive_purchase:false,image_ids:[]};
+const row = {listing_id:item.expected_ids[0],title:'Controlled bicycle',description:'Controlled load response',category_code:'bicycles',category_label:'Bicycles',condition_code:'good',condition_label:'Good',asking_price_paise:0,original_price_paise:null,negotiable:false,pickup_area:null,available_from:'2026-01-01T00:00:00.000000Z',available_until:null,availability:'available',sensitive_purchase:false,image_ids:[]};
 const page = () => ({items:[{...row}],page:1,page_size:20,has_next:false});
 test('profile caps, default/mode query vocabulary and drift against generated summary', () => {
   assert.equal(validateProfile(profile),profile);

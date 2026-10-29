@@ -199,6 +199,14 @@ def matrix_case(identity_runtime, signed_tokens, request):
                     / "docs/evaluation/identity/id-01-step-14/conversations-runtime.sql.proposed"
                 ).read_text()
             )
+            # NEXT-03's participant projection is the only Identity data the
+            # isolated Conversations principal needs for safe handle display.
+            connection.execute(
+                "GRANT USAGE ON SCHEMA identity TO clip_test_conversations_app"
+            )
+            connection.execute(
+                "GRANT SELECT ON identity.participant_profiles TO clip_test_conversations_app"
+            )
         parts = urlsplit(settings.database_url.get_secret_value())
         query = dict(parse_qsl(parts.query)) | {"user": role, "password": password}
         conversation_dsn = (
@@ -345,6 +353,7 @@ def request_spec(case, identifier):
         | {
             "expected_revision": 1,
             "pickup_area": None,
+            "original_price_paise": None,
             "available_from": datetime(2020, 1, 1, tzinfo=UTC).isoformat(),
             "available_until": None,
             "proof_available": None,
@@ -404,7 +413,10 @@ def request_spec(case, identifier):
             "operation_id": operation,
         },
         "M42": {"operation_id": operation},
-        "M44": {"display_name": "Synthetic step14 profile"},
+        "M44": {
+            "display_name": "user_"
+            + case.actor.summary["user_id"].replace("-", "")[:16]
+        },
         "M46": {"value": "step14-contact@example.invalid"},
     }
     body = payloads.get(identifier)
@@ -1165,7 +1177,7 @@ def test_selection_binding_stale_revision_and_clear_without_reopen(matrix_case):
     assert fingerprint(case.state) == before
     selected = case.browser.request(method, path, headers=headers, json=body)
     assert selected.status_code == 200
-    assert selected.json()["availability"] == "unavailable"
+    assert selected.json()["availability"] == "available"
     cleared = case.browser.request(
         method,
         path,
@@ -1180,7 +1192,7 @@ def test_selection_binding_stale_revision_and_clear_without_reopen(matrix_case):
     assert cleared.status_code == 200
     assert cleared.json()["selected_buyer_id"] is None
     assert cleared.json()["selected_conversation_id"] is None
-    assert cleared.json()["availability"] == "unavailable"
+    assert cleared.json()["availability"] == "available"
 
 
 @pytest.mark.parametrize("matrix_case", ["regular", "temporary"], indirect=True)

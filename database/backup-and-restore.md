@@ -14,7 +14,7 @@ here. NFR-07 and PRE-00 remain separate gates.
 
 | Task / owner | Required later output |
 |---|---|
-| [PD-16](../docs/tasks/pre-domain-task-list.md#pd-16--review-and-provision-the-shared-cloud-test-foundation), integration owner with cloud-preparation owner | Record approved DB/infrastructure capabilities, access, retention and cost. Configure backup support only if included in the exact approved foundation plan; otherwise record the later INT-01 prerequisite. Foundation readiness does not accept an NFR. |
+| [Accepted foundation handoff](../docs/status/foundation-handoff.md), integration owner with cloud-preparation owner | The shared environment and its current access, retention and cost notes are in the [Terraform runbook](../infra/terraform/shared/test/README.md) and [cloud inventory](../docs/environment/cloud-inventory.md). Foundation readiness does not accept an NFR. |
 | [INT-01 Step 8](../docs/tasks/domain-task-list.md#int-01--verify-integrated-journeys-remaining-nfrs-recovery-and-total-cost), integration/release owner | After final domain migrations are integrated, configure/verify backup availability/retention, implement and validate restore/integrity/smoke tooling and its timed manifest, obtain approval, and run the real isolated restore. |
 | A/B/C/D domain owners | Supply schema-aware integrity/privacy/smoke assertions for their owned records and review recovery compatibility, expiry, deletion, historical keys and side effects. Mohit supplies the coordinated migration/head evidence. |
 | Named shared-cloud operator, selected before the run | Execute only the exact approved restore/cleanup window; serialize shared changes and record target identity and results. No operator is assigned by this document. |

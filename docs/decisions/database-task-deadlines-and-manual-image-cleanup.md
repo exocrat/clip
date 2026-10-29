@@ -20,7 +20,7 @@ Keep accumulated ECR images during normal stop/start cycles, monitor storage, an
 Database checks must stop rather than hold an EC2 host indefinitely. Manual image cleanup is sufficient for the project's expected image volume and retains control over deletion.
 
 ## Implications
-The [runbook](../../infra/terraform/shared/test/README.md), [command registry](../environment/commands.md), [proposal](../environment/shared-test-foundation-proposal.md) and [PD-16 steps](../tasks/pre-domain-task-list.md#pd-16--review-and-provision-the-shared-cloud-test-foundation) carry these rules. Test normal, unavailable and blocked database behavior. No AWS operation, secret access, image deletion/publication or environment teardown is authorized by this decision.
+The [shared Terraform runbook](../../infra/terraform/shared/test/README.md), [command index](../environment/commands.md) and [accepted foundation handoff](../status/foundation-handoff.md) carry these rules. Test normal, unavailable and blocked database behavior. No AWS operation, secret access, image deletion/publication or environment teardown is authorized by this decision.
 
 ## Approver
 Suraj (B), current session: agreed to DB deadlines and verified the manual-cleanup/full-teardown clarification. Numeric limits implement the proposed local smoke-check window; implementation result remains subject to step verification.

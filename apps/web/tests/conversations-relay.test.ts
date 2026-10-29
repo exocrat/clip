@@ -396,6 +396,12 @@ describe('CLIP SDK relay adapter', () => {
       expect(inventory.ecOneTimePreKeyCount > 0).toBe(true);
       expect(inventory.kemOneTimePreKeyCount > 0).toBe(true);
       expect(inventory.ecSignedPreKey?.createdAt).toBeGreaterThan(0);
+      const current = server.keys.get(alice)?.[0];
+      if (!current) throw new Error('Missing published key');
+      server.keys.set(alice, [{ ...current, registration_id: current.registration_id + 1 }]);
+      await expect(createConversationSession(alice, thread, server.api(alice), store))
+        .rejects.toBeInstanceOf(ConversationKeyStateLostError);
+      server.keys.set(alice, [current]);
       await expect(createConversationSession(alice, thread, server.api(alice), inMemoryStore(), { acknowledgeUnrecoverableHistoryRisk: true }))
         .rejects.toBeInstanceOf(ConversationKeyStateLostError);
       await expect(createConversationSession(bob, thread, server.api(bob), store, { acknowledgeUnrecoverableHistoryRisk: true }))

@@ -141,8 +141,9 @@ owned-child SIGKILL/restart and absence of leftover helpers. The watchdog reads
 only declared PIDs/PPIDs/RSS, not process arguments/environment. No database/cloud
 access, dependency install, model download or public route is involved.
 
-[Retained result](../evaluation/domain/se-01/helper-ipc/result.json) and source
-fingerprints identify the exact local probe. The initial real startup exposed
+The historical result and source fingerprints identify the exact local probe;
+see the [evaluation retrieval guidance](../evaluation/README.md). The initial
+real startup exposed
 the interpreter-symlink bug, fixed with a launch regression. Python3.13 compile
 also caught Black's3.14-only multi-except syntax; shared/helper exception handling
 now remains3.13-compatible without changing root formatter settings.

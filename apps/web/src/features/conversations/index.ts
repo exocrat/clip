@@ -46,3 +46,7 @@ export type { ConversationPageRuntime } from './ConversationPages';
 export type { ListingSelectionAttempt, ListingSelectionPort, ListingSelectionView } from './ConversationListingSelection';
 export { isSellerSaleListingConversation } from './ConversationListingSelection';
 export type { ListingAvailabilityPort } from './ConversationListingDoneDeal';
+
+export { ConversationKeySetup } from './ConversationKeySetup';
+
+export { ConversationUnreadBadge, useConversationUnreadCount } from './ConversationUnreadBadge';

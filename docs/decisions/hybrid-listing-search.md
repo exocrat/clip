@@ -314,7 +314,8 @@ browse HTTP service. Both real HTTP and website-proxy checks pass; synthetic
 Identity/image metadata remain explicit. The native backend is distinguished from
 scripted UI fixtures through response metadata/disclosure. No production app
 startup or provider/cloud integration is enabled. Bounded session and cleanup
-checks are in the [source-bound evidence](../evaluation/domain/se-01/native-http-model/result.json).
+checks were recorded in a historical run receipt; see the
+[evaluation history guidance](../evaluation/README.md) to retrieve it from Git.
 Original data/labels/evaluation/Linux/upstream/review/FR/NFR gates still apply.
 
 

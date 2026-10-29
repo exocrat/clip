@@ -4,9 +4,14 @@ PD-16 owns the shared test-environment root and state key `shared/test/terraform
 
 ## RDS stop and easy resume
 
-The [target-specific RDS operation plan](../../../../docs/environment/shared-test-rds-operations.md) has identity/capacity preflight, stop/wait/status and start/wait/status commands. Aditya is the current operator. RDS was stopped, restarted for successful fixed setup/probe checks, then verified stopped again on 2026-10-19 18:23:35 UTC with the same resource ID; the ECS host terminated and capacity is zero. The accepted idle-review deadline is 2026-10-23 18:23:35 UTC; cleanup still requires separate exact approvals. Starting reuses the database and credentials and does not enable ECS or require infrastructure recreation. Each mutation still needs its exact action approval.
-
-Current approved stopped inputs are [pd16-stop-plan-inputs.json](../../../../docs/environment/pd16-stop-plan-inputs.json). The historical run-input file enables the API; do not use it for a no-change/stopped-state plan. Neither file contains credentials; DEC-11 requires unchanged values ephemerally for active write-only resources. [Current outputs/evidence](../../../../docs/evaluation/foundation/pd-16/README.md).
+The [RDS operation guide](../../../../docs/environment/shared-test-rds-operations.md)
+contains its target checks and stop/start command sequence. The last recorded cloud
+state is in the [cloud inventory](../../../../docs/environment/cloud-inventory.md);
+it is not a live view. The prior idle deadline and saved plan inputs are no longer
+current evidence. Treat the checked-in PD-16 JSON inputs as historical templates:
+refresh every target and value, prepare a new plan, and obtain approval for the
+exact action before any operation. Starting RDS reuses the database and credentials
+but does not enable ECS or require infrastructure recreation.
 
 ## ECS capacity lifecycle
 
@@ -107,7 +112,8 @@ an explicitly approved existing SES sender-condition update to verify@; no other
 resource actions. The certificate is now retained in shared state. Future plans
 must preserve `https_certificate_enabled=true` and its reviewed date unless
 certificate removal is deliberately reviewed; omission/default false is not a
-safe continuation input. See the [current certificate evidence](../../../../docs/evaluation/identity/id-01-step-12/https-certificate-apply-result.json).
+safe continuation input. See the last recorded certificate state in the
+[cloud inventory](../../../../docs/environment/cloud-inventory.md).
 
 
 ## Retained Identity and image runtime preparation

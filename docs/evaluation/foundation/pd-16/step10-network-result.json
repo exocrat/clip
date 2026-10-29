@@ -1,8 +1,0 @@
-{
-  "host_has_no_public_ip": true,
-  "host_security_groups_have_no_inbound_rules": true,
-  "rds_ingress_only_host_security_group_tcp5432": true,
-  "private_subnet_default_route_existing_nat": true,
-  "api_cloudwatch_stream_present": true,
-  "log_message_redaction_acceptance": "pending database task safe logs; stream presence alone is not complete redaction evidence"
-}

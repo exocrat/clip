@@ -35,7 +35,7 @@ Initial13failures (old route assumption/expired test sessions) and later stale
 native inventory24/36 assumption were corrected; no checks disabled/migration
 rewrites. Final raw log /tmp/clip-id12-merge-verified-check.log, initial failures
 /tmp/clip-id12-merge-check.log and /tmp/clip-id12-merge-inventory.log.
-[32source/migration hashes](id-01-step-12/merge-source-hashes.json).
+[32source/migration hashes](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/identity/id-01-step-12/merge-source-hashes.json).
 
 ## Email routing
 
@@ -53,7 +53,7 @@ primary once, then alternate once on any exception; same message/OTP, duplicates
 possible after uncertainty; no third attempt/fake fallback. Current adapters
 retain at most five controlled recipients and SES sandbox/production guards.
 SSM path is provisioned for operator access, not verified for ECS task access.
-[Snapshot](id-01-step-12/email-routing-source-hashes.json),
+[Snapshot](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/identity/id-01-step-12/email-routing-source-hashes.json),
 [routing decision](../../decisions/identity-email-routing.md),
 [current setup](../../environment/identity-provider-setup.md).
 
@@ -145,7 +145,7 @@ old regular-only offer test expectation. Preserved main exports by moving the
 reusable factory out of the default-entry module; expanded the approved offer
 regression to cover eligible/ineligible temporary buyers and existing seller
 eligibility recheck. No auth or seller-eligibility guard removed.
-[Seven source hashes](id-01-step-12/composition-source-hashes.json) pin the local
+[Seven source hashes](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/identity/id-01-step-12/composition-source-hashes.json) pin the local
 implementation. Final full checks are recorded below; user verification and
 explicit commit approval remain pending.
 
@@ -215,7 +215,7 @@ actual certificate chain, proxy/cookies/browser and provider delivery; finish de
 independent/affected-owner review and hosted CI. No such action is authorized by
 this local result. ID-READY and Step12 remain incomplete; Step14 stays outside scope.
 
-[Runtime source snapshot](id-01-step-12/runtime-source-hashes.json). Focused suite:
+[Runtime source snapshot](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/identity/id-01-step-12/runtime-source-hashes.json). Focused suite:
 32 passed; raw log `/tmp/clip-id12-runtime-focused-2.log`. Strict mypy passed both
 new modules (`/tmp/clip-id12-runtime-types-final.log`). Full local gate result is
 recorded below after completion.
@@ -374,7 +374,7 @@ new implementation. Focused log `/tmp/clip-id12-database-setup-focused.log`;
 full gates passed in `/tmp/clip-id12-database-setup-check.log`. No RDS/cloud/secret
 read or mutation occurred during this implementation. Aditya verified the local result and authorized commit/continuation; this does not prove RDS-admin permissions or TLS.
 
-[Setup source snapshot](id-01-step-12/database-setup-source-hashes.json) pins the
+[Setup source snapshot](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/identity/id-01-step-12/database-setup-source-hashes.json) pins the
 implementation, tests and reviewed SQL proposal.
 
 Final setup checks — 2026-10-24 21:24:08 UTC: `make check` exited0/all11gates;
@@ -406,7 +406,7 @@ sg-02f98707f8e43d2ea already allows5432 from that host SG. No ingress change.
    provider `clip-shared-test-capacity` (weight1/base0), count1, no service:
    `clip-test-identity-email-ap-south-1-id01:1`. Its existing digest is
    sha256:3ef8b13d3b102dc97e67d79d91e43eb8d4b2cc02fbabb45cf6001c8a93eddd1d.
-   Use exactly [these overrides](id-01-step-12/database-preflight-task-overrides.json):
+   Use exactly [these overrides](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/identity/id-01-step-12/database-preflight-task-overrides.json):
    `python -c 'import time; time.sleep(1800)'`. The overridden command never imports
    the email sender/API, and the definition has no injected secrets or ports.
    Existing task/execution roles stay unchanged. No task registration, image build,
@@ -499,7 +499,7 @@ rechecked idle guards and successfully submitted it with honor-cooldown. RDS sto
 accepted; original RDS confirmed stopped by 2026-10-24 21:59:41 UTC. Final
 cluster hosts/running/pending0, shared API desired/running/pending0 and no active
 SSM sessions. Owned host/root deletion and ASG0 confirmed; cleanup complete
-within the one-hour window. [Sanitized execution record](id-01-step-12/database-preflight-result.json).
+within the one-hour window. [Sanitized execution record](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/identity/id-01-step-12/database-preflight-result.json).
 No email, deployment, IAM/network or secret provisioning action occurred. Retain
 existing NAT, data, credentials/state and task definition; task-wide acceptance pending.
 
@@ -533,7 +533,7 @@ Focused log `/tmp/clip-id12-database-metadata-focused.log`; full gates passed in
 A new exact window and master-secret-read approval is required before live use;
 previous window is closed and RDS/host remain at verified stopped/zero baseline.
 
-[Collector source snapshot](id-01-step-12/database-metadata-source-hashes.json).
+[Collector source snapshot](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/identity/id-01-step-12/database-metadata-source-hashes.json).
 
 Final collector checks — 2026-10-24 22:06:46 UTC: `make check` exited0/all11gates;
 1031Python passed/1existing DB-only skip,63data/118web, Black151files, zero boundary
@@ -589,7 +589,7 @@ Safe metadata collection completed, target matched, no failed phase:
   attempted SET/ALTER test or proof of all RDS special-administrator behavior.
   Audit/auto-explain checks match the disabled requirement.
 
-[Sanitized report](id-01-step-12/database-preflight-followup-result.json) preserves
+[Sanitized report](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/identity/id-01-step-12/database-preflight-followup-result.json) preserves
 these completed observations. No setup readiness: first prepare an exact,
 affected-owner-reviewed migration plan for the already tested combined chain and
 review safe logging/permission handling before login/URL provisioning. Tracker
@@ -746,7 +746,7 @@ Local tested image: dbmate@sha256:520c740c6e0ad73fde2cd1ea7e2b779aaf789d22aca885
 Linux ARM64; live image review remains pending. No migration SQL, deployed image,
 AWS/IAM/network/provider or shared-database change. No native macOS/AMD64 claim.
 
-[Runner/probe source snapshot](id-01-step-12/migration-runner-source-hashes.json).
+[Runner/probe source snapshot](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/identity/id-01-step-12/migration-runner-source-hashes.json).
 
 Final local runner/probe result — 2026-10-24 23:07:15 UTC:17focused tests pass
 (`/tmp/clip-id12-migration-runner-focused-complete.log`), strict mypy passes the
@@ -773,7 +773,7 @@ manifest's14file chain/head20261023202807. No new source edit or AWS call here.
 
 Bounded independent review package: branch task/id-01-identity, headca935b9,
 baseorigin/main@defec38f, [manifest](id-01-step-12/shared-migration-manifest.json),
-[runner source hashes](id-01-step-12/migration-runner-source-hashes.json),
+[runner source hashes](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/identity/id-01-step-12/migration-runner-source-hashes.json),
 [17case/full-gate result](#local-migration-runner-and-rollback-logging-probe).
 Rahul(D) is Aditya's primary human peer; affected B/C/D schema owners review their
 shared surfaces using the [peer review prompt](../../prompts/peer-review-prompt.md).
@@ -795,7 +795,7 @@ chain. Exact proposed scope, awaiting explicit fresh approval:
   window before mutation; record a new UTC anchor/deadline.
 - Same bounded infrastructure as the completed preflights: start only that RDS;
   one existing task clip-test-identity-email-ap-south-1-id01:1, exact unchanged
-  [sleep1800 overrides](id-01-step-12/database-preflight-task-overrides.json),
+  [sleep1800 overrides](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/identity/id-01-step-12/database-preflight-task-overrides.json),
   digest3ef8b13d3b102dc97e67d79d91e43eb8d4b2cc02fbabb45cf6001c8a93eddd1d,
   capacity providerclip-shared-test-capacity and ASGclip-shared-test-ecs-host min0/
   max1. Verify sole actual private host/VPC/SG/SSM before the same ten-minute
@@ -846,7 +846,7 @@ account/idle guards passed. Recorded anchor04:05:35/deadline05:05:35 UTC, then o
 RDS start request was rejected with InsufficientDBInstanceCapacity (db.t4g.micro,
 ap-south-1a). Original RDS confirmed still stopped. No task/tunnel/secret read,
 probe SQL or resource creation; no cleanup required. No automatic retry or class/
-AZ change. [Sanitized result](id-01-step-12/logging-probe-start-result.json).
+AZ change. [Sanitized result](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/identity/id-01-step-12/logging-probe-start-result.json).
 Probe remains unexecuted; current source is unchanged and readiness incomplete.
 
 Logging-only retry state — 2026-10-25 04:37:19 UTC: Aditya explicitly requested retry.
@@ -856,7 +856,7 @@ tunnel/secret read. Asked whether to extend readiness wait to35minutes inside th
 same overall05:05:35UTC/1USD limits; unanswered, no consent inferred. Approved
 cleanup stop attempted after fresh idle checks, rejected InvalidDBInstanceState
 because RDS is still starting. Monitoring only for stoppable state; no class/AZ
-or alternative infrastructure change. [Sanitized retry record](id-01-step-12/logging-probe-retry-result.json).
+or alternative infrastructure change. [Sanitized retry record](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/identity/id-01-step-12/logging-probe-retry-result.json).
 Cleanup is not complete; subsequent status must supersede this snapshot explicitly.
 
 Recovery failure confirmed — 2026-10-25 04:42:09 UTC: original instance now stopping.
@@ -873,7 +873,7 @@ probe/migration/permanent role change. Cleanup completed inside the original
 05:05:35UTC deadline. AWS capacity recovery failed; actual logging permissions
 remain untested. Wait-extension question is moot, not an approval or pending
 requirement. Source unchanged; Gitleaks8.30.1 snapshot, JSON/links/whitespace pass.
-[Final retry evidence](id-01-step-12/logging-probe-retry-result.json). Human result
+[Final retry evidence](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/identity/id-01-step-12/logging-probe-retry-result.json). Human result
 verification pending; docs uncommitted; ID-READY remains incomplete.
 
 
@@ -892,7 +892,7 @@ were accepted. Role absence and unchanged original settings were verified throug
 a fresh connection. This resolves the earlier RDS-specific setting/default
 permission uncertainty despite false catalog SET flags. No global parameter change,
 permanent role/password/grant, data/migration/provider operation, or key/email-secret
-read. [Sanitized result](id-01-step-12/logging-probe-20261025T052229Z.json).
+read. [Sanitized result](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/identity/id-01-step-12/logging-probe-20261025T052229Z.json).
 
 Owned tunnel/task stopped, host terminated/ASG0 and root deletion confirmed;
 original RDS stop accepted and confirmed stopped by 2026-10-25 05:41:05 UTC. Final
@@ -968,7 +968,7 @@ proxy/TLS deployment, providers/browser/device/peer/CI acceptance remain later
 gates. Current review candidate is complete as a review artifact, not as an apply
 artifact. No AWS call/change or new SQL execution in this preparation increment.
 
-Owner-facing change/reason/check handoff: [cross-owner review](cross-owner-review.md),
+Owner-facing change/reason/check handoff: [cross-owner review](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/identity/cross-owner-review.md),
 covering the full Identity branch plus direct Listings/shared impacts.
 
 
@@ -1223,7 +1223,7 @@ No task-definition gap: this implements the existing verify-full/system runtime
 requirement, not a provider/URI/security-policy redesign. Peer/affected-owner and
 human result verification remain pending. [Shared decision](../../decisions/identity-rds-system-trust.md),
 [public roots/provenance](../../../apps/api/app/domains/identity/certificates/README.md),
-and [sanitized image/check evidence](id-01-step-12/image-trust-local.json).
+and [sanitized image/check evidence](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/identity/id-01-step-12/image-trust-local.json).
 
 Changed code/configuration:
 
@@ -1284,7 +1284,7 @@ normal Identity unprefixed requests missed Vite's /api proxy, and isolated demos
 needed a reviewed CSRF response double. Both are handled without client fallback
 or private-feature imports. Suraj/Mohit retain ownership and review of their narrow
 adapter/test-fixture changes. [Decision](../../decisions/browser-session-transport.md),
-[exact source/check evidence](id-01-step-12/browser-transport-local.json).
+[exact source/check evidence](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/identity/id-01-step-12/browser-transport-local.json).
 
 Changed implementation and its relationships:
 
@@ -1560,7 +1560,7 @@ runtime window each retain their separate scoped execution approval.
 
 Aditya explicitly approved the15minute metadata-only scope. Completed in under
 three minutes against confirmed account335523638354/profileadityalaxmi1/Mumbai;
-[source-bound sanitized evidence](id-01-step-12/cloud-metadata-20261026T064141Z.json).
+[source-bound sanitized evidence](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/identity/id-01-step-12/cloud-metadata-20261026T064141Z.json).
 The sandbox's first network check failed; the network-enabled account check and
 resource queries succeeded. No resource was started, stopped or modified.
 
@@ -1689,7 +1689,7 @@ non-applying planning. Verified both SecureString references at version1; values
 went only to process memory/ephemeral Terraform environment, never arguments or
 files/logs. Correct account confirmed, original version counters unchanged.
 Full Terraform1.15.9 plan completed successfully (detailed exit2 = changes).
-[Sanitized exact review](id-01-step-12/https-certificate-plan-review.json).
+[Sanitized exact review](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/identity/id-01-step-12/https-certificate-plan-review.json).
 
 Private saved plan `/tmp/clip-id01-https-plan-us1a7pkp/https-certificate.tfplan`,0600,
 SHA256 `9f7d85f76e72a4d955d2224e11086a9909d79c134f37827d7d4159f71c04c741`.
@@ -1732,7 +1732,7 @@ Aditya explicitly approved the exact saved two-action plan and fresh one-time
 master/probe reads for apply. Rechecked plan/certificate-source hashes and account;
 passwords used only in process memory/ephemeral Terraform inputs. Applied saved
 SHA2569f7d85f76e72a4d955d2224e11086a9909d79c134f37827d7d4159f71c04c741
-successfully, with no automatic retry/replan. [Sanitized result](id-01-step-12/https-certificate-apply-result.json).
+successfully, with no automatic retry/replan. [Sanitized result](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/identity/id-01-step-12/https-certificate-apply-result.json).
 
 Certificate `arn:aws:acm:ap-south-1:335523638354:certificate/a9775d00-2af5-4b12-990d-1ce9795f1859`
 for clip-iisc.site is PENDING_VALIDATION, export DISABLED. Applied task-role sender
@@ -1760,7 +1760,7 @@ DNS follow-up2026-10-26 07:08:19 UTC: Aditya reports the CNAME added. Public
 DNS-over-HTTPS lookup returned the exact ACM-required CNAME target (TTL1800).
 ACM remained PENDING_VALIDATION in two checks, with no listener association.
 No record correction is indicated by this evidence; issuance remains pending,
-not a failure or completed HTTPS endpoint. [Updated safe result](id-01-step-12/https-certificate-apply-result.json).
+not a failure or completed HTTPS endpoint. [Updated safe result](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/identity/id-01-step-12/https-certificate-apply-result.json).
 No DNS/resource change, secret read or send in this verification. Retain the
 record for renewal; later recheck issuance before listener deployment.
 
@@ -1809,7 +1809,7 @@ increments. No live DB connection occurred during this preparation.
 
 ACM recheck2026-10-26 07:13:33 UTC: certificate **ISSUED**, DNS validation
 SUCCESS, expiration2027-05-11 23:59:59 UTC, no resource association. Updated
-[certificate evidence](id-01-step-12/https-certificate-apply-result.json) and cloud
+[certificate evidence](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/identity/id-01-step-12/https-certificate-apply-result.json) and cloud
 inventory. No secret reads/resource writes for this check; HTTPS listener and
 application deployment remain pending. Database/runtime preparation is documentation
 and proposed configuration only; no code behavior changed or full tests rerun.
@@ -1856,7 +1856,7 @@ He directed continuing to state reconciliation. Verified account and stopped liv
 service revision2/desired-running-pending0. Prepared a saved **refresh-only** plan
 for aws_ecs_service.api[0] plus its dependency closure, using pinned1.15.9 and
 provider6.69.1/existing shared-test backend/default workspace. No state write.
-[Exact plan and scope](id-01-step-12/ecs-state-reconciliation-review.json).
+[Exact plan and scope](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/identity/id-01-step-12/ecs-state-reconciliation-review.json).
 
 The local dependency graph excludes SSM-parameter and RDS resources. This matters:
 pinned provider SSM reads request decryption even during refresh; a broad refresh
@@ -1890,7 +1890,7 @@ References: [HashiCorp refresh-only mode](https://developer.hashicorp.com/terraf
 
 Aditya explicitly approved saved refresh-only plan44693eb7. Rechecked full plan/
 source/provider-lock hashes, account, prior serial17 and live stopped service2;
-applied only that saved plan, no automatic replan/retry. [Safe result](id-01-step-12/ecs-state-reconciliation-result-20261026T182852Z.json).
+applied only that saved plan, no automatic replan/retry. [Safe result](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/identity/id-01-step-12/ecs-state-reconciliation-result-20261026T182852Z.json).
 State serial17→18, service record now revision2/desired0 and matches live desired/
 running/pending0. Existing dependency metadata was recorded; no AWS configuration
 mutation. Verified original RDS stopped and ASG0/empty. No application start,

@@ -1,2 +1,0 @@
-uv run --locked python -m data.generators.files validate --name "$CLIP_PREVIEW_NAME"
-sha256:85ef55c26bc440ca8fa687b0c6b048203092053ecf145088e6b4211f87d69a33

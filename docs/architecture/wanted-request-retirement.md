@@ -87,6 +87,7 @@ retired visibility/late keys, injected SQL failure rollback and competing
 attempts while an owner edit is rejected. Public Conversations behavior is an
 explicit reviewed test double, not real locking/integration proof.
 
-[Checks, source hashes and raw evidence](../evaluation/domain/se-02/wanted-retirement/result.json).
+The detailed check receipt was removed from the checkout; see the
+[evaluation history guidance](../evaluation/README.md) to retrieve it from Git.
 Real Identity/Listings/Conversations readiness, final cross-domain race checks,
 Docker/hosted acceptance and independent affected-owner review remain pending.

@@ -32,4 +32,4 @@ A separate human role adds configuration, assumption steps and ongoing maintenan
 User in the current session; personal name not recorded. Explicitly selected broad human-operator access as a PD-16 exception after the scoped-role recommendation.
 
 ## Supersedes
-PD-16's narrow-human-operator prerequisite for this shared test environment. Application/execution/instance role requirements, privacy rules and cloud approval gates remain in force. See [the service-plan audit](../environment/pd16-service-plan-preparation.md), [DEC-04](ssm-port-forwarding-for-pd16-health-check.md), [DEC-05](private-postgresql-probe-login.md) and [DEC-06](terraform-planning-identity.md).
+PD-16's narrow-human-operator prerequisite for this shared test environment. Application/execution/instance role requirements, privacy rules and cloud approval gates remain in force. The accepted scope and gates are recorded here, in the [shared-test Terraform runbook](../../infra/terraform/shared/test/README.md), [DEC-04](ssm-port-forwarding-for-pd16-health-check.md), [DEC-05](private-postgresql-probe-login.md) and [DEC-06](terraform-planning-identity.md).

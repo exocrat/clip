@@ -55,8 +55,8 @@ describe('ConversationApi', () => {
     const page = { items: [summary], page: 1, page_size: 20, has_next: false };
     const { api, transport } = setup(page);
     const controller = new AbortController();
-    expect(await api.listMine({ view: 'initiated', origin_id: null, page: 1 }, controller.signal)).toEqual(page);
-    expect(transport).toHaveBeenCalledWith('/conversations?view=initiated&page=1', expect.objectContaining({
+    expect(await api.listMine({ view: 'initiated', origin_id: [operation, thread], counterparty_user_id: [bob, alice], page: 1 }, controller.signal)).toEqual(page);
+    expect(transport).toHaveBeenCalledWith(`/conversations?view=initiated&origin_id=${operation}&origin_id=${thread}&counterparty_user_id=${bob}&counterparty_user_id=${alice}&page=1`, expect.objectContaining({
       method: 'GET', signal: controller.signal, cache: 'no-store', redirect: 'error',
     }));
     const init = transport.mock.calls[0][1];

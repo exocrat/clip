@@ -215,7 +215,7 @@ async def exercise(value):
                 and query.page_size == 20
             )
             assert (
-                query.category_code is None
+                not query.category_code
                 and query.min_price_paise is None
                 and query.max_price_paise is None
             )

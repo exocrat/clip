@@ -4,6 +4,11 @@ import re
 
 _RUPEES = re.compile(r"-?[0-9]+", re.ASCII)
 
+# User-facing listing prices and Wanted Request budgets stop at ₹1 crore.
+# This generous marketplace cap keeps every amount exact across browser JSON,
+# API validation and bigint storage while rejecting implausibly large typos.
+MAX_LISTING_PRICE_PAISE = 1_000_000_000
+
 
 def validate_paise(value: int) -> int:
     """Require integral whole rupees; domains separately enforce allowed ranges."""

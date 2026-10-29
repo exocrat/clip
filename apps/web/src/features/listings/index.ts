@@ -7,7 +7,10 @@ export { MyListings } from './MyListings';
 /** Public image renderer for other feature cards displaying Listings-owned photos. */
 export { ListingImagePreview } from './ListingImagePreview';
 export { StartListingConversationAction } from './StartListingConversationAction';
+export { readListing, listingPrice } from './listingsApi';
 export {
+  submitListingOffer,
+  withdrawListingOffer,
   ListingsApiError,
   readOwnedListing,
   setSelectedListingBuyer,

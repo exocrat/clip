@@ -56,6 +56,7 @@ function session(value: unknown): SessionView {
     account_class: row.account_class as SessionView['account_class'],
     valid_until: row.valid_until,
     display_name: row.display_name as string | null | undefined,
+    ...(typeof row.handle_ready === "boolean" ? { handle_ready: row.handle_ready } : {}),
   };
 }
 
@@ -65,10 +66,11 @@ export async function request(
   method = 'GET',
   body?: unknown,
   protectedWrite = false,
+  signal?: AbortSignal,
 ): Promise<unknown> {
   try {
     const response = await sessionFetch(path, {
-      method,
+      method, signal,
       ...(body !== undefined ? { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {}),
     }, {
       prefix: import.meta.env.MODE === 'identity-preview' ? '' : '/api',

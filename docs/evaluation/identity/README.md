@@ -1,18 +1,31 @@
-# ID-01 evidence and handoff
+# Identity handoff
 
-Owner: Aditya(A). Scope: ID-READY; ID-01 remains in progress.
-Consolidated2026-10-24 from the reports at `890adb1`; decisions, acceptance
-criteria and action approvals still come from their canonical sources.
+ID-01 remains in progress. Current status and open gates are in the [domain task
+list](../../tasks/domain-task-list.md#id-01--implement-identity-eligibility-and-temporary-accounts)
+and [work log](../../status/work-log.md). Use the [Identity provider setup](../../environment/identity-provider-setup.md)
+and [cloud inventory](../../environment/cloud-inventory.md) for operational
+instructions and recorded cloud state; refresh state before any cloud action.
+
+Most past run receipts, source hashes, proposals and detailed reports were removed
+from the working tree. Two historical Step12 receipts were restored byte-for-byte
+from `f36ce3d^` because upstream migration and grant tests require them. The dated
+[ID-01 demo postmortem](id-01-step-12/demo-postmortem-20261026.md) remains because
+NEXT-04 directly uses its workaround-removal and deployment handoff.
+Git history retains other historical detail if needed. Do not reuse an old approval
+or proposed cloud input for a new operation.
+
+The two diagnostic scripts under `id-01-step-2/` remain because Identity's
+offline tests import them. Their tests do not call AWS or send email; running a
+live command still requires its separately reviewed approval.
 
 | Read | Contents |
 | --- | --- |
-| [Cross-owner review](cross-owner-review.md) | What changed, why, affected paths, pending integration and checks for Suraj/Rahul/Mohit. |
-| [Implementation](implementation.md) | Steps3–11 behavior, checks, corrections and source snapshots. |
+| [Evaluation history guide](../README.md) | Earlier cross-owner review and Steps3–11 implementation records can be recovered from Git history. |
 | [Provider history](provider-history.md) | Completed SES/builder/runtime investigation, delivery outcomes and development cleanup gate. |
 | [Integration handoff](integration.md) | Current Step12 result, email routing and remaining work for ID-READY. |
 | [Hosted demo postmortem](id-01-step-12/demo-postmortem-20261026.md) | What worked/failed in the local and hosted demo, stale IISc DNS, cleanup results, and remaining shared resources. |
 | [Step13 live preparation](id-01-step-13/README.md) | Verified native AMD64 image, successful23-migration bootstrap, hosted human auth/email/HTTPS checks, retention tick and cleanup evidence. |
-| [Step14 permission matrix](id-01-step-14/README.md) |47business API operations, source-bound evidence, reconciled merged providers and user-reported owner acceptance with exact revision/runtime gaps; no Step14 test run yet. |
+| [Step14 permission matrix](id-01-step-14/README.md) | 47 business API operations, recorded local and live evidence, and Aditya's later reported verification; formal review and revision closeout remain. |
 | [Live work log](../../status/work-log.md) | Verification state, exact dated outcomes, ownership and pending integration ledger. |
 
 ## Current state
@@ -82,7 +95,7 @@ not current executable approval. Old hashes identify old source revisions and ne
 not match current code. Private recipient/key/OTP values are not part of evidence.
 
 The44superseded narrative reports were combined here. Their exact contents remain
-in Git at the archived revision; [archive-map.json](archive-map.json) records each
+in Git at the archived revision; [archive-map.json](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/identity/archive-map.json) records each
 original path, SHA256, Git blob and replacement section. For exact old plan text:
 
 ```bash
@@ -120,7 +133,7 @@ review/image/live flags remain pending. Original worktree unchanged; no push.
 Ordinary native ARM64 image now installs pinned regional RDS roots and selects
 the actual OS CA file for bundled libpq. Four actual-image checks and17runner
 regressions passed; all11aggregate gates passed (1792Python/24skip,94data,
-223web/2skip). [Evidence/limits](id-01-step-12/image-trust-local.json) and
+223web/2skip). [Evidence/limits](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/identity/id-01-step-12/image-trust-local.json) and
 [implementation result](integration.md#rds-image-trust-correction--2026-10-25-180039-utc).
 AMD64/Hybrid and live TLS/peer/provider/browser/retention gates remain pending.
 
@@ -130,7 +143,7 @@ Local Listings/Search CSRF headers and normal Identity /api routing are integrat
 through one shared technical helper. Full11gates passed:1800Python/24skip,
 94data,257web/3skip. Real TS/HTTP/SQL writes/denials passed with synthetic upstream
 ports; no actual browser/device/provider acceptance. [Result](integration.md#shared-browser-transport-result--2026-10-25-190023-utc)
-and [exact source/check evidence](id-01-step-12/browser-transport-local.json).
+and [exact source/check evidence](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/identity/id-01-step-12/browser-transport-local.json).
 Aditya verified this local result. Affected-owner review and current deployed/
 runtime/image gates remain.
 

@@ -1,12 +1,12 @@
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router';
 import type {
   DraftMatchResult,
   PageResultSavedListingView,
   PageResultWantedRequestOwnerView,
   PageResultWantedRequestPublic,
 } from '../../../../../contracts/generated/types.gen';
-import { Button } from '../../shared/ui';
+import { Button, MultiChoiceDropdown } from '../../shared/ui';
 import { discoveryPrice, readDiscoveryCatalogue, type ListingSummary } from './discoveryApi';
 import { SaleListingCard } from './SaleListingCard';
 import {
@@ -32,6 +32,15 @@ import {
   type WantedRequestPublic,
 } from './wantedApi';
 import './wanted.css';
+import {
+  applyWantedDiscoveryForm,
+  DEFAULT_WANTED_QUERY,
+  parseWantedDiscoveryRouteQuery,
+  wantedDiscoveryForm,
+  wantedDiscoveryRouteParams,
+  type WantedDiscoveryForm,
+  type WantedDiscoveryQuery,
+} from './wantedDiscoveryQuery';
 
 /** Local request state is keyed to its inputs so stale/private results never flash on navigation. */
 function useRead<T>(key: string, load: (signal: AbortSignal) => Promise<T>) {
@@ -97,16 +106,16 @@ function Pages({
   );
 }
 /** Render the public request fields and optional owner actions in one card. */
-function RequestCard({ item, children }: { item: WantedRequestPublic; children?: ReactNode }) {
+function RequestCard({ item, children, detail = false }: { item: WantedRequestPublic; children?: ReactNode; detail?: boolean }) {
   return (
-    <article className="wanted-card">
+    <article className={`wanted-card${detail ? ' wanted-card--detail' : ''}`}>
       <div className="wanted-card__head">
         <span className="wanted-card__category">Wanted · {item.category_label}</span>
-        <span className="wanted-card__budget">
-          {item.budget_paise == null ? 'Budget not stated' : discoveryPrice(item.budget_paise)}
-        </span>
       </div>
       <h3><Link to={`/wanted/${item.request_id}`}>{item.title}</Link></h3>
+      <p className="wanted-card__budget">
+        {item.budget_paise == null ? 'Budget not stated' : discoveryPrice(item.budget_paise)}
+      </p>
       <p className="wanted-description">{item.description}</p>
       {children}
     </article>
@@ -115,30 +124,155 @@ function RequestCard({ item, children }: { item: WantedRequestPublic; children?:
 
 /** Authenticated public requests contain no author identity or private contact information. */
 export function WantedBrowse() {
-  const [number, setNumber] = useState(1);
-  const result = useRead<PageResultWantedRequestPublic>(`public:${number}`, (signal) =>
-    browseWanted(number, signal),
+  const [params, setParams] = useSearchParams();
+  const key = params.toString();
+  const parsed = useMemo(() => {
+    try { return { query: parseWantedDiscoveryRouteQuery(new URLSearchParams(key)) }; }
+    catch (error) { return { message: error instanceof Error ? error.message : 'Check the Wanted Request filters.' }; }
+  }, [key]);
+  const query = parsed.query ?? DEFAULT_WANTED_QUERY;
+  const [draft, setDraft] = useState<WantedDiscoveryForm>(() => wantedDiscoveryForm(query));
+  const [formError, setFormError] = useState('');
+  const catalogue = useRead('wanted-discovery-catalogue', readDiscoveryCatalogue);
+  const session = useRead('session', readSearchSession);
+  const result = useRead<PageResultWantedRequestPublic>(`public:${key}`, (signal) =>
+    parsed.query ? browseWanted(query, signal) : Promise.reject(new Error('Invalid Wanted Request filters.')),
   );
+
+  // Browser back/forward restores the applied search controls as well as results.
+  useEffect(() => {
+    setDraft(wantedDiscoveryForm(parsed.query ?? DEFAULT_WANTED_QUERY));
+    setFormError('');
+  }, [key, parsed]);
+
+  function change<Key extends keyof WantedDiscoveryForm>(field: Key, value: WantedDiscoveryForm[Key]) {
+    setDraft((previous) => ({ ...previous, [field]: value }));
+    setFormError('');
+  }
+
+  function navigate(next: WantedDiscoveryQuery) {
+    const nextParams = new URLSearchParams();
+    params.forEach((value, name) => {
+      if (!name.startsWith('wanted_')) nextParams.append(name, value);
+    });
+    wantedDiscoveryRouteParams(next).forEach((value, name) => {
+      nextParams.append(name, value);
+    });
+    if (nextParams.toString() === key) result.retry();
+    else setParams(nextParams);
+  }
+
+  function submit(event: FormEvent) {
+    event.preventDefault();
+    try {
+      const next = applyWantedDiscoveryForm(draft);
+      setFormError('');
+      navigate(next);
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : 'Check the Wanted Request filters.');
+    }
+  }
+
+  const ready = parsed.query ? result.data : undefined;
   return (
-    <section className="wanted-feature">
+    <section className="wanted-feature wanted-discovery">
       <PreviewNotice />
       <h2>Wanted requests</h2>
       <p>
         Open requests from the campus community. <Link to="/my/listings">Manage your wanted requests</Link>.
       </p>
-      <ReadState error={result.error} retry={result.retry}>
-        {result.data && (
-          <>
-            {!result.data.items.length && <p>No open wanted requests.</p>}
-            {!!result.data.items.length && <ul className="wanted-grid">
-              {result.data.items.map((item) => (
-                <li key={item.request_id}><RequestCard item={item} /></li>
-              ))}
-            </ul>}
-            <Pages number={number} hasNext={result.data.has_next} onChange={setNumber} />
-          </>
-        )}
-      </ReadState>
+      <Link className="ui-button ui-button--primary wanted-new-request" to="/my/listings?view=wanted&create=wanted">New Wanted Request</Link>
+      <details open className="search-controls"><summary>Search &amp; filters — {query.q || "All requests"} · {query.category_code.length ? query.category_code.map((code) => catalogue.data?.categories.find((item) => item.code === code)?.label ?? code).join(", ") : "All categories"}{query.min_budget_paise || query.max_budget_paise ? " · Budget bounds applied" : ""}</summary><form className="wanted-discovery__form" onSubmit={submit} noValidate>
+        <div className="wanted-discovery__search">
+          <label htmlFor="wanted-discovery-query">Search wanted requests
+            <input id="wanted-discovery-query" type="search" value={draft.q} maxLength={240}
+              placeholder="Search titles and descriptions" onChange={(event) => change('q', event.target.value)}
+              aria-describedby="wanted-discovery-query-help" />
+          </label>
+          <Button type="submit">Search</Button>
+        </div>
+        <p id="wanted-discovery-query-help" className="wanted-discovery__hint">
+          Search titles and descriptions. All words may appear across either field; up to 120 characters.
+        </p>
+        <div className="wanted-discovery__filters">
+          <MultiChoiceDropdown
+            emptyLabel="All categories"
+            label="Item category"
+            onValuesChange={(values) => change('category_code', values)}
+            options={[
+              ...(catalogue.data?.categories ?? []).map((category) => ({ value: category.code, label: category.label })),
+              ...draft.category_code.filter((code) => !catalogue.data?.categories.some((category) => category.code === code))
+                .map((code) => ({ value: code, label: `Unavailable category · ${code}` })),
+            ]}
+            values={draft.category_code}
+          />
+          <label htmlFor="wanted-discovery-min">Minimum budget (₹)
+            <input id="wanted-discovery-min" type="text" inputMode="numeric" maxLength={8} value={draft.min_rupees}
+              placeholder="No minimum" onChange={(event) => change('min_rupees', event.target.value)} />
+          </label>
+          <label htmlFor="wanted-discovery-max">Maximum budget (₹)
+            <input id="wanted-discovery-max" type="text" inputMode="numeric" maxLength={8} value={draft.max_rupees}
+              placeholder="No maximum" onChange={(event) => change('max_rupees', event.target.value)} />
+          </label>
+          <label htmlFor="wanted-discovery-size">Requests per page
+            <select id="wanted-discovery-size" value={draft.page_size}
+              onChange={(event) => change('page_size', Number(event.target.value) as WantedDiscoveryForm['page_size'])}>
+              <option value={20}>20</option><option value={50}>50</option><option value={100}>100</option>
+            </select>
+          </label>
+        </div>
+        <div className="wanted-discovery__actions">
+          <Button type="submit" variant="secondary">Apply filters</Button>
+          <Button variant="secondary" onClick={() => {
+            setDraft(wantedDiscoveryForm(DEFAULT_WANTED_QUERY));
+            setFormError('');
+            navigate(DEFAULT_WANTED_QUERY);
+          }}>Reset</Button>
+          <span className="wanted-discovery__hint">Budgets use whole rupees up to ₹1,00,00,000. A budget filter excludes requests with no stated budget.</span>
+        </div>
+        {formError && <p role="alert" className="wanted-discovery__error">{formError}</p>}
+        {catalogue.error && <p role="alert">Category choices could not be loaded. <Button variant="secondary" onClick={catalogue.retry}>Retry categories</Button></p>}
+        {!catalogue.error && !catalogue.data && <p role="status">Loading category choices…</p>}
+      </form></details>
+      <div className="wanted-discovery__results" aria-live="polite" aria-busy={!ready && !result.error}>
+        {parsed.message && <div role="alert" className="wanted-discovery__state">
+          <h3>Check your search</h3><p>{parsed.message}</p>
+          <Button variant="secondary" onClick={() => {
+            setDraft(wantedDiscoveryForm(DEFAULT_WANTED_QUERY));
+            navigate(DEFAULT_WANTED_QUERY);
+          }}>Reset filters</Button>
+        </div>}
+        {!parsed.message && result.error && <div role="alert" className="wanted-discovery__state">
+          <h3>Could not load wanted requests</h3><p>{result.error}</p>
+          <Button variant="secondary" onClick={result.retry}>Retry</Button>
+        </div>}
+        {!parsed.message && !result.error && !ready && <p role="status" className="wanted-discovery__state">Loading wanted requests…</p>}
+        {ready && <>
+          <p className="wanted-discovery__count">Page {ready.page} · {ready.items.length} {ready.items.length === 1 ? 'request' : 'requests'} on this page</p>
+          {!ready.items.length ? <div className="wanted-discovery__state">
+            <h3>No wanted requests found</h3><p>Try different words or fewer filters.</p>
+            <Button variant="secondary" onClick={() => {
+              setDraft(wantedDiscoveryForm(DEFAULT_WANTED_QUERY));
+              navigate(DEFAULT_WANTED_QUERY);
+            }}>Clear filters</Button>
+          </div> : <ul className="wanted-grid">
+            {ready.items.map((item) => (
+              <li key={item.request_id}><RequestCard item={item}>
+                <div className="wanted-card__actions">
+                  <WantedContactAction requestId={item.request_id} compact session={session} />
+                </div>
+              </RequestCard></li>
+            ))}
+          </ul>}
+          <nav aria-label="Wanted request result pages">
+            <Button variant="secondary" disabled={query.page <= 1}
+              onClick={() => navigate({ ...query, page: query.page - 1 })}>Previous</Button>
+            <span>Page {query.page}</span>
+            <Button variant="secondary" disabled={!ready.has_next}
+              onClick={() => navigate({ ...query, page: query.page + 1 })}>Next</Button>
+          </nav>
+        </>}
+      </div>
     </section>
   );
 }
@@ -185,14 +319,9 @@ function DraftSuggestions({ title }: { title: string }) {
       ) : (
         <>
           {!current.data.items.length && <p>No possible matches found.</p>}
-          <ul>
+          <ul className="discovery-grid wanted-match-grid">
             {current.data.items.map((item) => (
-              <li key={item.listing_id}>
-                <Link to={`/listings/${item.listing_id}`} target="_blank" rel="noreferrer">
-                  {item.title} (opens in new tab)
-                </Link>{' '}
-                · {discoveryPrice(item.asking_price_paise)}
-              </li>
+              <li key={item.listing_id}><SaleListingCard listing={item} /></li>
             ))}
           </ul>
           {current.data.has_more && <p>More matches may be available in discovery.</p>}
@@ -267,23 +396,28 @@ function WantedEditor({
     }
   }
   return (
-    <section>
+    <section className="wanted-editor">
       <h3>{initial ? 'Edit wanted request' : 'Create wanted request'}</h3>
       <form onSubmit={submit}>
         <fieldset disabled={busy}>
           <label>
             Title
-            <input value={title} onChange={(e) => setTitle(e.target.value)} required />
+            <input value={title} maxLength={240} onChange={(e) => setTitle(e.target.value)} required aria-describedby="wanted-title-count" />
           </label>
+          <p id="wanted-title-count" className="wanted-discovery__hint">{[...title.trim()].length}/120 characters</p>
+          <details open className="wanted-matches"><summary>Possible campus matches — show or hide</summary><DraftSuggestions title={title} /></details>
           <label>
             Description
             <textarea
               value={description}
+              maxLength={10000}
               onChange={(e) => setDescription(e.target.value)}
               required
               rows={5}
+              aria-describedby="wanted-description-count"
             />
           </label>
+          <p id="wanted-description-count" className="wanted-discovery__hint">{[...description.trim()].length}/5,000 characters</p>
           <label>
             Category
             <select value={category} onChange={(e) => setCategory(e.target.value)} required>
@@ -308,13 +442,13 @@ function WantedEditor({
             Optional budget (whole ₹)
             <input
               inputMode="numeric"
-              maxLength={16}
+              maxLength={8}
               value={budget}
               onChange={(e) => setBudget(e.target.value)}
               aria-describedby="wanted-budget-help"
             />
           </label>
-          <p id="wanted-budget-help">Leave blank for no stated budget; enter 0 for free.</p>
+          <p id="wanted-budget-help">Leave blank for no stated budget; enter 0 for free. Maximum ₹1,00,00,000.</p>
           {error && <p role="alert">{error}</p>}
           <Button type="submit">{busy ? 'Saving…' : initial ? 'Save changes' : 'Publish request'}</Button>
           {onCancel && (
@@ -324,21 +458,24 @@ function WantedEditor({
           )}
         </fieldset>
       </form>
-      <DraftSuggestions title={title} />
     </section>
   );
 }
 
 /** The private owner list is the only UI source of edit/availability controls. */
-export function MyWantedRequests() {
+export function MyWantedRequests(props: { startCreating?: boolean } = {}) {
+  const { startCreating = false } = props;
   const [number, setNumber] = useState(1);
   const [version, setVersion] = useState(0);
   const [editing, setEditing] = useState<WantedRequestOwnerView>();
-  const [creating, setCreating] = useState(false);
+  const [creating, setCreating] = useState(startCreating);
   const [message, setMessage] = useState('');
   const result = useRead<PageResultWantedRequestOwnerView>(`own:${number}:${version}`, (signal) =>
     ownWanted(number, signal),
   );
+  useEffect(() => {
+    if (startCreating) setCreating(true);
+  }, [startCreating]);
   function saved() {
     setEditing(undefined);
     setCreating(false);
@@ -449,10 +586,86 @@ export function WantedDetail({ requestId }: { requestId?: string }) {
     <p role="alert">This wanted request link is invalid.</p>
   );
 }
+
+/** Compact public-card action; the regular-member requirement is still checked by the API. */
+type WantedActionSession = { data?: Awaited<ReturnType<typeof readSearchSession>>; error?: string };
+export function WantedContactAction({ requestId, compact = false, session }: {
+  requestId?: string;
+  compact?: boolean;
+  session?: WantedActionSession;
+}) {
+  return validSearchId(requestId)
+    ? session
+      ? <WantedContactActionRecord key={requestId} requestId={requestId} compact={compact} session={session} />
+      : <WantedContactActionWithSession key={requestId} requestId={requestId} compact={compact} />
+    : null;
+}
+
+function WantedContactActionWithSession({ requestId, compact }: { requestId: string; compact: boolean }) {
+  const session = useRead('session', readSearchSession);
+  return <WantedContactActionRecord requestId={requestId} compact={compact} session={session} />;
+}
+
+function WantedContactActionRecord({ requestId, compact, session }: {
+  requestId: string;
+  compact: boolean;
+  session: WantedActionSession;
+}) {
+  const navigate = useNavigate();
+  const intent = useRef(new SearchIntent());
+  const active = useRef<AbortController | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [expired, setExpired] = useState(false);
+  useEffect(() => () => active.current?.abort(), []);
+  useEffect(() => {
+    if (!session.data) return;
+    const timer = window.setTimeout(
+      () => setExpired(true),
+      Math.max(0, Math.min(2147483647, Date.parse(session.data.valid_until) - Date.now())),
+    );
+    return () => window.clearTimeout(timer);
+  }, [session.data]);
+  const eligible = !expired && session.data?.account_class === 'regular'
+    && Date.parse(session.data.valid_until) > Date.now();
+  async function contact() {
+    if (busy || !eligible) return;
+    const controller = new AbortController();
+    active.current = controller;
+    setBusy(true);
+    setError('');
+    try {
+      const value = await contactRequester(requestId, intent.current.key({ requestId }), controller.signal);
+      if (!controller.signal.aborted) navigate(`/my/conversations/${value.conversation_id}`);
+    } catch (failure) {
+      if (!controller.signal.aborted) setError((failure as Error).message);
+    } finally {
+      if (!controller.signal.aborted) setBusy(false);
+    }
+  }
+  return (
+    <div className={compact ? 'wanted-contact wanted-contact--compact' : 'wanted-contact'}>
+      <Button disabled={!eligible || busy} onClick={() => void contact()}>
+        {busy ? 'Opening conversation…' : 'Contact requester'}
+      </Button>
+      {!session.data && session.error && <p><Link to="/sign-in">Sign in</Link> with a regular account to respond.</p>}
+      {session.data && !eligible && <p>{expired ? 'Your session has expired.' : 'A regular account is required to respond.'}</p>}
+      {error && <p role="alert">{error}</p>}
+    </div>
+  );
+}
+
 /** Load current detail/session, expire capability and navigate only on confirmed success. */
 function WantedDetailRecord({ requestId }: { requestId: string }) {
-  const result = useRead(`request:${requestId}`, (signal) => readWanted(requestId, signal));
+  const [detailVersion, setDetailVersion] = useState(0);
+  const [ownerVersion, setOwnerVersion] = useState(0);
+  const [editing, setEditing] = useState(false);
+  const result = useRead(`request:${requestId}:${detailVersion}`, (signal) => readWanted(requestId, signal));
   const session = useRead('session', readSearchSession);
+  const owner = useRead<WantedRequestOwnerView | null>(
+    `owner-request:${requestId}:${session.data?.user_id ?? 'signed-out'}:${ownerVersion}`,
+    (signal) => session.data ? readOwnedWantedRequest(requestId, signal) : Promise.resolve(null),
+  );
   const navigate = useNavigate();
   const intent = useRef(new SearchIntent());
   const active = useRef<AbortController | null>(null);
@@ -488,13 +701,30 @@ function WantedDetailRecord({ requestId }: { requestId: string }) {
     }
   }
   const unavailable = result.data && 'state' in result.data && result.data.state === 'unavailable';
+  function refreshOwnedDetail() {
+    setEditing(false);
+    setOwnerVersion((value) => value + 1);
+    setDetailVersion((value) => value + 1);
+  }
   return (
     <section className="wanted-feature">
       <PreviewNotice />
       <ReadState error={result.error} retry={result.retry}>
         {result.data && (
           <>
-            <RequestCard item={result.data} />
+            <RequestCard item={result.data} detail />
+            {owner.data && (editing ? (
+              <WantedEditor initial={owner.data} onSaved={refreshOwnedDetail} onCancel={() => setEditing(false)} />
+            ) : (
+              <section className="wanted-detail-owner" aria-label="Your wanted request controls">
+                <p>Status: {owner.data.state === 'open' ? 'Open' : 'Unavailable'}</p>
+                <div className="wanted-card__actions">
+                  <Button variant="secondary" onClick={() => setEditing(true)}>Edit request</Button>
+                  <Availability item={owner.data} onChanged={refreshOwnedDetail} />
+                </div>
+              </section>
+            ))}
+            {owner.error && <div role="alert"><p>Could not verify your request controls.</p><Button variant="secondary" onClick={owner.retry}>Retry owner check</Button></div>}
             {unavailable ? (
               <p>
                 This request is unavailable. You can manage it in{' '}
@@ -526,12 +756,27 @@ function WantedDetailRecord({ requestId }: { requestId: string }) {
   );
 }
 
+/** A public detail ID never grants ownership; resolve it only through the caller's private pages. */
+async function readOwnedWantedRequest(requestId: string, signal: AbortSignal) {
+  for (let page = 1; ; page += 1) {
+    try {
+      const owned = await ownWanted(page, signal);
+      const match = owned.items.find((item) => item.request_id === requestId);
+      if (match) return match;
+      if (!owned.has_next) return null;
+    } catch (failure) {
+      if (failure instanceof WantedApiError && (failure.status === 401 || failure.status === 403)) return null;
+      throw failure;
+    }
+  }
+}
+
 /** Save controls acknowledge only a confirmed server result; identical uncertain retries reuse their key. */
-export function SaveListingAction({ listingId }: { listingId?: string }) {
-  return validSearchId(listingId) ? <SaveAction key={listingId} listingId={listingId} /> : null;
+export function SaveListingAction({ listingId, compact = false }: { listingId?: string; compact?: boolean }) {
+  return validSearchId(listingId) ? <SaveAction key={listingId} listingId={listingId} compact={compact} /> : null;
 }
 /** One route-scoped in-memory save intent; a lost response leaves an explicit retry. */
-function SaveAction({ listingId }: { listingId: string }) {
+function SaveAction({ listingId, compact }: { listingId: string; compact: boolean }) {
   const intent = useRef(new SearchIntent());
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -580,6 +825,29 @@ function SaveAction({ listingId }: { listingId: string }) {
       if (!controller.signal.aborted) setBusy(false);
     }
   }
+  async function unsave() {
+    if (busy || checkingSaved || !saved) return;
+    const controller = new AbortController();
+    active.current = controller;
+    setBusy(true);
+    setError('');
+    try {
+      await unsaveListing(listingId, controller.signal);
+      if (!controller.signal.aborted) setSaved(false);
+    } catch (failure) {
+      if (!controller.signal.aborted) setError((failure as Error).message);
+    } finally {
+      if (!controller.signal.aborted) setBusy(false);
+    }
+  }
+  if (compact) return (
+    <div className="wanted-save-compact">
+      <Button disabled={checkingSaved || busy || unavailable} variant="secondary" onClick={() => void (saved ? unsave() : save())}>
+        {checkingSaved ? 'Checking…' : busy ? (saved ? 'Removing…' : 'Saving…') : saved ? 'Unsave' : unavailable ? 'Unavailable' : error ? 'Retry save' : 'Save'}
+      </Button>
+      {error && <p role="alert">{error}</p>}
+    </div>
+  );
   return (
     <section className="wanted-save-card" aria-label="Save this listing">
       <div>

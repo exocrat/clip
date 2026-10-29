@@ -115,6 +115,7 @@ def _listing(*, availability: str = "available") -> ListingManagementView:
         condition_code="good",
         condition_label="Good",
         asking_price_paise=10_000,
+        original_price_paise=None,
         negotiable=True,
         pickup_area="Fixture area",
         available_from=NOW - timedelta(days=1),

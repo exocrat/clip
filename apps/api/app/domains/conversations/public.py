@@ -13,6 +13,7 @@ from app.contracts.domain_types import (
     ConversationQuery,
     ConversationStartResult,
     ConversationSummary,
+    ConversationUnreadCount,
     EntryPage,
     EntryQuery,
     ExistingWantedConversationLookup,
@@ -53,6 +54,12 @@ from app.contracts.domain_types import (
 )
 
 HTTP_OPERATIONS = (
+    {
+        "method": "GET",
+        "path": "/conversations/unread-count",
+        "operation_id": "conversations_read_unread_count",
+        "response": ConversationUnreadCount,
+    },
     {
         "method": "GET",
         "path": "/conversations",

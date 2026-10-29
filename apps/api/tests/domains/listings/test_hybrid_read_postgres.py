@@ -14,6 +14,7 @@ import time
 from uuid import uuid4
 
 import pytest
+from pydantic import ValidationError
 
 from app.contracts.domain_types import ListingQuery, ListingSummary
 from app.core.errors import ERRORS, PublicError
@@ -271,7 +272,7 @@ async def exercise_math(value):
             with pytest.raises(PublicError) as raised:
                 await read(ListingQuery(q="vehicle", category_code="invalid"))
             assert raised.value.spec == ERRORS[422]
-            maximum = ((2**63 - 1) // 100) * 100
+            maximum = 1_000_000_000
             await connection.execute(
                 "UPDATE listings.sale_listings SET asking_price_paise=%s WHERE id=%s",
                 (maximum, rows[0]),
@@ -282,16 +283,23 @@ async def exercise_math(value):
                 and type(large.items[0].asking_price_paise) is int
             )
             assert (
-                await read(ListingQuery(q="vehicle", min_price_paise=10**100))
-            ).items == ()
+                len(
+                    (
+                        await read(ListingQuery(q="vehicle", min_price_paise=maximum))
+                    ).items
+                )
+                == 1
+            )
             assert (
                 len(
                     (
-                        await read(ListingQuery(q="vehicle", max_price_paise=10**100))
+                        await read(ListingQuery(q="vehicle", max_price_paise=maximum))
                     ).items
                 )
                 == 4
             )
+            with pytest.raises(ValidationError):
+                ListingQuery(q="vehicle", max_price_paise=10**100)
             await connection.execute(
                 "UPDATE listings.sale_listings SET asking_price_paise=100 WHERE id=%s",
                 (rows[0],),

@@ -39,6 +39,14 @@ class BrowseQuery(ListingQuery):
         """Reuse shared money validation; the generated field also enforces >=0."""
         return validate_paise(value) if value is not None else None
 
+    @field_validator("category_code", "condition_code")
+    @classmethod
+    def valid_selection_values(cls, values: list[str]) -> list[str]:
+        """Reject blank/oversized codes before catalogue validation or SQL use."""
+        if any(not value.strip() or len(value) > 100 for value in values):
+            raise ValueError("Invalid catalogue selection")
+        return values
+
     @field_validator("q", mode="before")
     @classmethod
     def trimmed_query(cls, value: Any) -> Any:

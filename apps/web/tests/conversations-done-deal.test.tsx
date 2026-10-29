@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ConversationListingDoneDeal, type ListingAvailabilityPort } from '../src/features/conversations/ConversationListingDoneDeal';
 import { ConversationInbox, type ConversationInboxItem } from '../src/features/conversations/ConversationInbox';
@@ -30,6 +31,15 @@ describe('seller done-deal availability', () => {
     });
     expect(screen.getByText(/Existing conversations remain open/)).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Mark as done deal' })).toBeNull();
+  });
+
+  it('reloads reopened availability on focus without remounting the group', async () => {
+    let unavailable = true;
+    mount({ readOwnedListing: vi.fn(async () => state({ availability: unavailable ? 'unavailable' : 'available' })), markUnavailable: vi.fn() });
+    await screen.findByText('Listing unavailable');
+    unavailable = false;
+    fireEvent(window, new Event('focus'));
+    expect(await screen.findByRole('button', { name: 'Mark as done deal' })).toBeTruthy();
   });
 
   it('keeps the exact command after an uncertain commit', async () => {
@@ -73,12 +83,12 @@ describe('seller done-deal availability', () => {
   it('renders one action per seller listing group and none for buyer or Wanted groups', () => {
     const item: ConversationInboxItem = { conversation_id: 'one', label: 'Test chat', role: 'seller',
       origin_kind: 'sale_listing', origin_id: listingId, unread_count: 0, last_activity_at: '2026-01-01T00:00:00Z' };
-    const action = vi.fn(() => <span>Seller action</span>);
-    render(<ConversationInbox conversations={[item, { ...item, conversation_id: 'two' },
+    const action = vi.fn((_originId: string) => <span>Seller action</span>);
+    render(<MemoryRouter><ConversationInbox conversations={[item, { ...item, conversation_id: 'two' },
       { ...item, conversation_id: 'buyer', origin_id: 'other', role: 'buyer' },
       { ...item, conversation_id: 'request', origin_kind: 'wanted_request', role: 'request author' }]}
-      onRefresh={vi.fn()} onOpen={vi.fn()} renderSellerListingAction={action} />);
-    expect(action).toHaveBeenCalledTimes(1);
-    expect(action).toHaveBeenCalledWith(listingId);
+      onRefresh={vi.fn()} onOpen={vi.fn()} renderSellerListingAction={action} /></MemoryRouter>);
+    expect(action.mock.calls.map(([value]) => value)).toContain(listingId);
+    expect(screen.getAllByText('Seller action')).toHaveLength(1);
   });
 });

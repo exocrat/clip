@@ -39,7 +39,8 @@ def test_rank_tiers_bound_queries_private_projection_and_no_cutoff():
     assert "THEN 1 ELSE 0 END DESC" in order
     assert order.count("ts_rank_cd(listing.search_vector,") == 2
     assert ", 0)" in order and "END DESC, listing.id ASC" in order
-    assert "category.code = %s" in before and "listing_condition.code = %s" in before
+    assert "category.code = ANY(%s)" in before
+    assert "listing_condition.code = ANY(%s)" in before
     assert (
         "listing.negotiable = %s" in before
         and "asking_price_paise >= %s" in before

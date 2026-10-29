@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '../../shared/ui';
 import { createDisplayedReadAcknowledger } from './read-state';
 import {
@@ -32,6 +32,8 @@ export type ConversationThreadProps = {
   entries: ConversationDisplayEntry[];
   key_state: ConversationKeyUiState;
   last_read_sequence: number;
+  opening_read_sequence?: number;
+  opening_unread_count?: number;
   /** Changes only the privacy/call-to-action copy for a loopback synthetic demo. */
   presentationMode?: 'live' | 'local-demo';
   loading?: boolean;
@@ -60,6 +62,8 @@ export function ConversationThread({
   entries,
   key_state,
   last_read_sequence,
+  opening_read_sequence,
+  opening_unread_count = 0,
   presentationMode = 'live',
   loading = false,
   recoveredPending = null,
@@ -76,7 +80,36 @@ export function ConversationThread({
   const [refreshError, setRefreshError] = useState(false);
   const [actionBusy, setActionBusy] = useState(false);
   const [acknowledgedRegistration, setAcknowledgedRegistration] = useState(false);
+  const [showOpeningUnreadBoundary, setShowOpeningUnreadBoundary] = useState(true);
   const messageListRef = useRef<HTMLOListElement>(null);
+  const scrollToBottomAfterSend = useRef(false);
+  // Freeze the opening boundary: read acknowledgements must not move the divider.
+  const opening = useRef<number | null>(null);
+  const positioned = useRef(false);
+  if (opening.current === null && opening_read_sequence !== undefined) opening.current = opening_read_sequence;
+  const firstUnread = entries.find((entry) => entry.sequence > (opening.current ?? last_read_sequence) && entry.sender_user_id !== current_user_id);
+  const firstUnreadIndex = firstUnread ? entries.findIndex((entry) => entry.entry_id === firstUnread.entry_id) : -1;
+  const precedingText = firstUnreadIndex > 0
+    ? [...entries.slice(0, firstUnreadIndex)].reverse().find((entry) => entry.text !== null && !entry.content_deleted)
+    : undefined;
+  useEffect(() => {
+    const list = messageListRef.current;
+    if (!list || positioned.current || key_state.kind !== 'ready' || entries.length === 0) return;
+    if (opening_unread_count > 0 && !firstUnread) return;
+    const targetSequence = precedingText?.sequence ?? firstUnread?.sequence;
+    const target = targetSequence ? list.querySelector<HTMLElement>(`[data-sequence="${targetSequence}"]`) : null;
+    if (target) list.scrollTop = target.offsetTop - list.offsetTop;
+    else list.scrollTop = list.scrollHeight;
+    positioned.current = true;
+  }, [entries, firstUnread, key_state.kind, opening_unread_count, precedingText]);
+  useEffect(() => {
+    if (!scrollToBottomAfterSend.current || pending?.state === 'sending') return;
+    const list = messageListRef.current;
+    if (!list) return;
+    list.scrollTop = list.scrollHeight;
+    scrollToBottomAfterSend.current = false;
+  }, [entries, pending]);
+  const sendLock = useRef(false);
   const canSend = key_state.kind === 'ready' && !pending && !actionBusy;
 
   useEffect(() => {
@@ -154,9 +187,9 @@ export function ConversationThread({
     return () => observer.disconnect();
   }, [acknowledgeDisplayed, entries, key_state.kind, last_read_sequence]);
 
-  const submit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!canSend || !draft.trim()) return;
+  const sendDraft = async () => {
+    if (!canSend || !draft.trim() || sendLock.current) return;
+    sendLock.current = true;
     const operationId = globalThis.crypto.randomUUID();
     const text = draft;
     setDraft('');
@@ -164,11 +197,27 @@ export function ConversationThread({
     setSendError(false);
     try {
       await onSend(text, operationId);
+      scrollToBottomAfterSend.current = true;
       setPending(null);
+      setShowOpeningUnreadBoundary(false);
     } catch {
       setPending({ operationId, text, state: 'failed' });
       setSendError(true);
+    } finally {
+      sendLock.current = false;
     }
+  };
+
+  const submit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    void sendDraft();
+  };
+
+  const handleComposerKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key !== 'Enter' || event.shiftKey || event.repeat || event.nativeEvent.isComposing) return;
+    if (!canSend || !draft.trim()) return;
+    event.preventDefault();
+    void sendDraft();
   };
 
   const retry = async () => {
@@ -176,6 +225,7 @@ export function ConversationThread({
     setActionBusy(true);
     try {
       await onRetry(pending.operationId);
+      scrollToBottomAfterSend.current = true;
       setPending(null);
       setSendError(false);
     } catch {
@@ -235,7 +285,11 @@ export function ConversationThread({
         className="conversation-thread__messages"
         ref={messageListRef}
       >
-        {entries.map((entry) => (
+        {entries.map((entry, index) => (
+          <Fragment key={entry.entry_id}>
+          {(!index || messageDay(entries[index - 1].created_at) !== messageDay(entry.created_at)) &&
+            <li className="conversation-thread__date-divider"><time dateTime={entry.created_at}>{formatMessageDate(entry.created_at)}</time></li>}
+          {showOpeningUnreadBoundary && firstUnread?.entry_id === entry.entry_id && opening_unread_count > 0 && <li className="conversation-thread__unread-divider">{opening_unread_count} unread messages</li>}
           <li
             className={
               entry.sender_user_id === current_user_id
@@ -264,6 +318,7 @@ export function ConversationThread({
             ) : null}
             <time dateTime={entry.created_at}>{formatMessageTime(entry.created_at)}</time>
           </li>
+          </Fragment>
         ))}
         {pending ? (
           <li aria-live="polite" className="conversation-thread__pending">
@@ -293,6 +348,7 @@ export function ConversationThread({
           disabled={!canSend}
           id="conversation-message-draft"
           maxLength={4000}
+          onKeyDown={handleComposerKeyDown}
           onChange={(event) => setDraft(event.currentTarget.value)}
           value={draft}
         />
@@ -327,7 +383,7 @@ function KeyStatePanel({
   if (keyState.kind === 'waiting_for_peer_key') {
     return <div className="conversation-thread__key-state" role="status">
       <h2>Waiting for the other participant to set up encryption</h2>
-      <p>They need to open a conversation and complete encryption setup before you can send messages.</p>
+      <p>They need to finish their account’s messaging setup before you can send messages. Once set up, they do not need to be online.</p>
       <p>Sending is paused. We’ll check automatically while this page is visible. This is not a conversation acceptance request.</p>
     </div>;
   }
@@ -381,5 +437,15 @@ function KeyStatePanel({
 
 function formatMessageTime(value: string): string {
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? '' : date.toLocaleString();
+  return Number.isNaN(date.getTime()) ? '' : date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', hourCycle: 'h12' });
+}
+
+function messageDay(value: string): string {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? '' : `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+}
+
+function formatMessageDate(value: string): string {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? 'Date unavailable' : date.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 }

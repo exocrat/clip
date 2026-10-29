@@ -77,6 +77,7 @@ class SessionIdentity:
     caller: CallerContext
     session_id: UUID
     display_name: str | None = field(repr=False)
+    handle_ready: bool = False
 
 
 @dataclass(frozen=True)
@@ -153,7 +154,7 @@ class IdentitySessions:
     def _account(c: Database, user: UUID, now: datetime) -> tuple[Any, ...]:
         """Lock and validate current user before any session read/write."""
         row = c.execute(
-            "SELECT account_class,status,expires_at,profile_removed_at,display_name,activated_at FROM identity.users WHERE id=%s FOR UPDATE",
+            "SELECT account_class,status,expires_at,profile_removed_at,display_name,activated_at,handle_ready FROM identity.users WHERE id=%s FOR UPDATE",
             (user,),
         ).fetchone()
         if (
@@ -181,7 +182,10 @@ class IdentitySessions:
             (identifier, user, digest(token, "clip-session-v1"), now, expires, now),
         )
         identity = SessionIdentity(
-            CallerContext(user, row[0], min(expires, now + IDLE)), identifier, row[4]
+            CallerContext(user, row[0], min(expires, now + IDLE)),
+            identifier,
+            row[4],
+            row[6],
         )
         return SessionGrant(identity, SecretStr(token), expires)
 
@@ -304,7 +308,10 @@ class IdentitySessions:
                 else min(row[0], now + IDLE)
             )
             return SessionIdentity(
-                CallerContext(initial[1], account[0], deadline), initial[0], account[4]
+                CallerContext(initial[1], account[0], deadline),
+                initial[0],
+                account[4],
+                account[6],
             )
 
     def logout(self, token: str | None) -> None:

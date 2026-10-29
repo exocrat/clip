@@ -28,6 +28,7 @@ function Navigation() {
       <Link to="/sign-in">Sign in</Link>
       <Link to="/listings/new">New listing</Link>
       <Link to="/my/listings">My listings</Link>
+      <Link to="/my/listings?view=wanted&create=wanted">New Wanted Request</Link>
     </nav>
   );
 }
@@ -114,6 +115,9 @@ describe('app-level identity and seller workflows with synthetic HTTP fixtures',
     await screen.findByRole('button', { name: 'Sale Listings' });
     await user.click(screen.getByRole('button', { name: 'Wanted Requests' }));
     expect(await screen.findByRole('button', { name: 'Create wanted request' })).toBeTruthy();
+    await user.click(screen.getByRole('link', { name: 'New Wanted Request' }));
+    expect(await screen.findByRole('heading', { name: 'Create wanted request' })).toBeTruthy();
+    expect(await screen.findByLabelText('Title')).toBeTruthy();
 
     const registration = requests.find(({ path }) => path.endsWith('/registration-challenges'));
     expect(registration?.init.body).toContain('synthetic@example.invalid');

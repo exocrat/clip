@@ -481,6 +481,32 @@
             "title": "Conversation Id",
             "type": "string"
           },
+          "counterparty_account_class": {
+            "anyOf": [
+              {
+                "enum": [
+                  "regular",
+                  "temporary"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Counterparty Account Class"
+          },
+          "counterparty_handle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Counterparty Handle"
+          },
           "counterparty_user_id": {
             "format": "uuid",
             "title": "Counterparty User Id",
@@ -495,6 +521,17 @@
                 "type": "null"
               }
             ]
+          },
+          "group_has_more": {
+            "default": false,
+            "title": "Group Has More",
+            "type": "boolean"
+          },
+          "group_unread_count": {
+            "default": 0,
+            "minimum": 0.0,
+            "title": "Group Unread Count",
+            "type": "integer"
           },
           "initiator_user_id": {
             "format": "uuid",
@@ -544,11 +581,28 @@
         "title": "ConversationSummary",
         "type": "object"
       },
+      "ConversationUnreadCount": {
+        "additionalProperties": false,
+        "description": "Account-scoped count of unread peer messages, excluding controls and offers.",
+        "properties": {
+          "unread_count": {
+            "minimum": 0.0,
+            "title": "Unread Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "unread_count"
+        ],
+        "title": "ConversationUnreadCount",
+        "type": "object"
+      },
       "CreateListingRequest": {
         "additionalProperties": false,
         "description": "Complete new listing command; owner and timestamps are server-derived.",
         "properties": {
           "asking_price_paise": {
+            "maximum": 1000000000.0,
             "minimum": 0.0,
             "multipleOf": 100.0,
             "title": "Asking Price Paise",
@@ -611,6 +665,20 @@
             "title": "Operation Id",
             "type": "string"
           },
+          "original_price_paise": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "maximum": 1000000000.0,
+                "multipleOf": 100.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Original Price Paise"
+          },
           "pickup_area": {
             "anyOf": [
               {
@@ -662,6 +730,7 @@
           "budget_paise": {
             "anyOf": [
               {
+                "maximum": 1000000000.0,
                 "minimum": 0.0,
                 "multipleOf": 100.0,
                 "type": "integer"
@@ -1065,6 +1134,7 @@
         "description": "Sale listing detail with the optional seller proof declaration.",
         "properties": {
           "asking_price_paise": {
+            "maximum": 1000000000.0,
             "minimum": 0.0,
             "multipleOf": 100.0,
             "title": "Asking Price Paise",
@@ -1132,6 +1202,20 @@
             "title": "Negotiable",
             "type": "boolean"
           },
+          "original_price_paise": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "maximum": 1000000000.0,
+                "multipleOf": 100.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Original Price Paise"
+          },
           "pickup_area": {
             "anyOf": [
               {
@@ -1172,6 +1256,7 @@
           "condition_code",
           "condition_label",
           "asking_price_paise",
+          "original_price_paise",
           "negotiable",
           "pickup_area",
           "available_from",
@@ -1189,6 +1274,7 @@
         "description": "Owner-only listing view with revision and selection state.",
         "properties": {
           "asking_price_paise": {
+            "maximum": 1000000000.0,
             "minimum": 0.0,
             "multipleOf": 100.0,
             "title": "Asking Price Paise",
@@ -1260,6 +1346,20 @@
           "negotiable": {
             "title": "Negotiable",
             "type": "boolean"
+          },
+          "original_price_paise": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "maximum": 1000000000.0,
+                "multipleOf": 100.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Original Price Paise"
           },
           "owner_id": {
             "format": "uuid",
@@ -1340,6 +1440,7 @@
           "condition_code",
           "condition_label",
           "asking_price_paise",
+          "original_price_paise",
           "negotiable",
           "pickup_area",
           "available_from",
@@ -1361,6 +1462,7 @@
         "description": "Owner command response; same privacy boundary as management view.",
         "properties": {
           "asking_price_paise": {
+            "maximum": 1000000000.0,
             "minimum": 0.0,
             "multipleOf": 100.0,
             "title": "Asking Price Paise",
@@ -1432,6 +1534,20 @@
           "negotiable": {
             "title": "Negotiable",
             "type": "boolean"
+          },
+          "original_price_paise": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "maximum": 1000000000.0,
+                "multipleOf": 100.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Original Price Paise"
           },
           "owner_id": {
             "format": "uuid",
@@ -1512,6 +1628,7 @@
           "condition_code",
           "condition_label",
           "asking_price_paise",
+          "original_price_paise",
           "negotiable",
           "pickup_area",
           "available_from",
@@ -1533,6 +1650,7 @@
         "description": "Replace listing details and its ordered keep/add image selection.",
         "properties": {
           "asking_price_paise": {
+            "maximum": 1000000000.0,
             "minimum": 0.0,
             "multipleOf": 100.0,
             "title": "Asking Price Paise",
@@ -1606,6 +1724,20 @@
             "title": "Operation Id",
             "type": "string"
           },
+          "original_price_paise": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "maximum": 1000000000.0,
+                "multipleOf": 100.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Original Price Paise"
+          },
           "pickup_area": {
             "anyOf": [
               {
@@ -1644,6 +1776,7 @@
           "category_code",
           "condition_code",
           "asking_price_paise",
+          "original_price_paise",
           "negotiable",
           "pickup_area",
           "available_from",
@@ -1660,6 +1793,7 @@
         "description": "Discovery-safe sale listing summary without owner or selection fields.",
         "properties": {
           "asking_price_paise": {
+            "maximum": 1000000000.0,
             "minimum": 0.0,
             "multipleOf": 100.0,
             "title": "Asking Price Paise",
@@ -1727,6 +1861,20 @@
             "title": "Negotiable",
             "type": "boolean"
           },
+          "original_price_paise": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "maximum": 1000000000.0,
+                "multipleOf": 100.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Original Price Paise"
+          },
           "pickup_area": {
             "anyOf": [
               {
@@ -1756,6 +1904,7 @@
           "condition_code",
           "condition_label",
           "asking_price_paise",
+          "original_price_paise",
           "negotiable",
           "pickup_area",
           "available_from",
@@ -3022,6 +3171,11 @@
             ],
             "title": "Display Name"
           },
+          "handle_ready": {
+            "default": false,
+            "title": "Handle Ready",
+            "type": "boolean"
+          },
           "user_id": {
             "format": "uuid",
             "title": "User Id",
@@ -3139,6 +3293,7 @@
           "budget_paise": {
             "anyOf": [
               {
+                "maximum": 1000000000.0,
                 "minimum": 0.0,
                 "multipleOf": 100.0,
                 "type": "integer"
@@ -3215,6 +3370,7 @@
           "budget_paise": {
             "anyOf": [
               {
+                "maximum": 1000000000.0,
                 "minimum": 0.0,
                 "multipleOf": 100.0,
                 "type": "integer"
@@ -3287,6 +3443,7 @@
           "budget_paise": {
             "anyOf": [
               {
+                "maximum": 1000000000.0,
                 "minimum": 0.0,
                 "multipleOf": 100.0,
                 "type": "integer"
@@ -4553,6 +4710,41 @@
         "parameters": [
           {
             "in": "query",
+            "name": "marketplace_mode",
+            "required": false,
+            "schema": {
+              "default": "all",
+              "enum": [
+                "all",
+                "buying",
+                "selling"
+              ],
+              "title": "Marketplace Mode",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "group_by",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "item",
+                    "person"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Group By"
+            }
+          },
+          {
+            "in": "query",
             "name": "view",
             "required": false,
             "schema": {
@@ -4591,16 +4783,12 @@
             "name": "origin_id",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "format": "uuid",
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Origin Id"
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "title": "Origin Id",
+              "type": "array"
             }
           },
           {
@@ -4608,16 +4796,12 @@
             "name": "counterparty_user_id",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "format": "uuid",
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Counterparty User Id"
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "title": "Counterparty User Id",
+              "type": "array"
             }
           },
           {
@@ -4821,6 +5005,118 @@
           }
         },
         "summary": "conversations_list_mine",
+        "tags": [
+          "conversations"
+        ]
+      }
+    },
+    "/conversations/unread-count": {
+      "get": {
+        "description": "Reject accidental use; declarations never return fake success.",
+        "operationId": "conversations_read_unread_count",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationUnreadCount"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "conversations_read_unread_count",
         "tags": [
           "conversations"
         ]
@@ -6834,15 +7130,11 @@
             "name": "category_code",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Category Code"
+              "items": {
+                "type": "string"
+              },
+              "title": "Category Code",
+              "type": "array"
             }
           },
           {
@@ -6850,15 +7142,11 @@
             "name": "condition_code",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Condition Code"
+              "items": {
+                "type": "string"
+              },
+              "title": "Condition Code",
+              "type": "array"
             }
           },
           {
@@ -6884,6 +7172,7 @@
             "schema": {
               "anyOf": [
                 {
+                  "maximum": 1000000000,
                   "minimum": 0,
                   "multipleOf": 100,
                   "type": "integer"
@@ -6902,6 +7191,7 @@
             "schema": {
               "anyOf": [
                 {
+                  "maximum": 1000000000,
                   "minimum": 0,
                   "multipleOf": 100,
                   "type": "integer"
@@ -9911,6 +10201,73 @@
               ],
               "title": "Page Size",
               "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 120,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "in": "query",
+            "name": "category_code",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Category Code",
+              "type": "array"
+            }
+          },
+          {
+            "in": "query",
+            "name": "min_budget_paise",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maximum": 1000000000,
+                  "minimum": 0,
+                  "multipleOf": 100,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Min Budget Paise"
+            }
+          },
+          {
+            "in": "query",
+            "name": "max_budget_paise",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maximum": 1000000000,
+                  "minimum": 0,
+                  "multipleOf": 100,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Max Budget Paise"
             }
           }
         ],

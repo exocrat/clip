@@ -23,6 +23,7 @@ import app.domains.listings.public as listings_public
 from app.domains.listings.public import ListingsPublic
 from app.domains.search.wanted_models import (
     WantedCreate,
+    WantedDiscoveryPage,
     WantedPage,
     WantedPatch,
     WantedState,
@@ -195,10 +196,26 @@ class WantedService:
         return public_view(view) if row["status"] == "open" else view
 
     async def listing(
-        self, caller: CallerContext, page: WantedPage, *, own: bool = False
+        self,
+        caller: CallerContext,
+        page: WantedPage | WantedDiscoveryPage,
+        *,
+        own: bool = False,
     ) -> PageResult[WantedRequestPublic] | PageResult[WantedRequestOwnerView]:
         """Paginate after visibility filtering; no author/private fields returned."""
         await self.authorize(caller)
+        if not own and isinstance(page, WantedDiscoveryPage) and page.category_code:
+            try:
+                async with asyncio.timeout(2):
+                    active = await self.dependencies.active_categories()
+            except NotImplementedError, TimeoutError, OSError:
+                raise PublicError(ERRORS[503]) from None
+            active_codes = {item.code for item in active}
+            if not set(page.category_code) <= active_codes:
+                raise PublicError(
+                    ERRORS[422],
+                    (FieldError("category_code", "active_category_required"),),
+                )
         rows, has_next = await self.store.listing(caller.user_id if own else None, page)
         labels = await self.labels(
             tuple(dict.fromkeys(row["category_code"] for row in rows))

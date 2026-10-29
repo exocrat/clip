@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, cleanup, configure, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, configure, fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { IdentityProvider, useIdentity } from '../src/features/identity';
@@ -24,7 +24,7 @@ function setup(post = vi.fn(async () => response({ conversation_id: threadId, cr
     if (path === '/api/me') return response({ user_id: '11111111-2222-4333-8444-555555555555', account_class: 'regular', valid_until: '2100-01-01T00:00:00Z' });
     if (path.endsWith('/conversations') && init.method === 'POST') { writes.push(init); return post(); }
     if (path.startsWith('/api/me/saved-listings')) return response({ items: [], page: 1, page_size: Number(new URL(path, 'http://localhost').searchParams.get('page_size')), has_next: false });
-    if (path === `/api/listings/${listingId}`) return response({ listing_id: listingId, title: 'Synthetic listing', description: 'Fixture only', category_code: 'books', category_label: 'Books', condition_code: 'good', condition_label: 'Good', asking_price_paise: 100, negotiable: false, pickup_area: null, available_from: '2026-01-01T00:00:00Z', available_until: null, availability: 'available', proof_available: null, sensitive_purchase: false, image_ids: [] });
+    if (path === `/api/listings/${listingId}`) return response({ listing_id: listingId, title: 'Synthetic listing', description: 'Fixture only', category_code: 'books', category_label: 'Books', condition_code: 'good', condition_label: 'Good', asking_price_paise: 100, original_price_paise: 25000, negotiable: false, pickup_area: null, available_from: '2026-01-01T00:00:00Z', available_until: null, availability: 'available', proof_available: null, sensitive_purchase: false, image_ids: [] });
     throw new Error('Unexpected fixture path');
   }));
   render(<MemoryRouter initialEntries={[`/listings/${listingId}`]}><IdentityProvider><EndSession /><Routes>
@@ -39,6 +39,7 @@ afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 describe('Listing page conversation entry point', () => {
   it('opens the server-returned thread through the real page slot and shared CSRF transport', async () => {
     const state = setup();
+    expect(await screen.findByText('Original price (Seller Provided): ₹250')).toBeTruthy();
     fireEvent.click(await screen.findByRole('button', { name: 'Message seller' }));
     await screen.findByText('Authorized chat target');
     expect(state.writes).toHaveLength(1);
@@ -50,8 +51,11 @@ describe('Listing page conversation entry point', () => {
     const post = vi.fn(async () => response({ conversation_id: threadId, created: false }));
     post.mockResolvedValueOnce(response({ private: 'withheld' }, 503));
     const state = setup(post);
-    fireEvent.click(await screen.findByRole('button', { name: 'Message seller' }));
-    await screen.findByText('A required service is unavailable. Your form has been kept; try again later.');
+    const messageButton = await screen.findByRole('button', { name: 'Message seller' });
+    const action = messageButton.parentElement;
+    if (!action) throw new Error('Message action container missing');
+    fireEvent.click(messageButton);
+    await within(action).findByText('A required service is unavailable. Your form has been kept; try again later.');
     expect(screen.queryByText('Authorized chat target')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Message seller' }));
     await screen.findByText('Authorized chat target');
@@ -60,10 +64,13 @@ describe('Listing page conversation entry point', () => {
 
   it('rejects an invalid returned target without navigating', async () => {
     setup(vi.fn(async () => response({ conversation_id: '../sign-in', created: true })));
-    fireEvent.click(await screen.findByRole('button', { name: 'Message seller' }));
-    await screen.findByRole('alert');
+    const messageButton = await screen.findByRole('button', { name: 'Message seller' });
+    const action = messageButton.parentElement;
+    if (!action) throw new Error('Message action container missing');
+    fireEvent.click(messageButton);
+    await within(action).findByRole('alert');
     expect(screen.queryByText('Authorized chat target')).toBeNull();
-  });
+  }, 10_000);
 
   it('ignores a late successful result after the session boundary unmounts the action', async () => {
     let finish!: (value: Response) => void;

@@ -5,15 +5,15 @@ import { Button } from '../../shared/ui';
 import { ListingsApiError, startListingConversation } from './listingsApi';
 
 /** Public Listings action: the origin owner authorizes creation before navigation. */
-export function StartListingConversationAction({ listingId }: { listingId?: string }) {
+export function StartListingConversationAction({ listingId, compact = false }: { listingId?: string; compact?: boolean }) {
   const { status, user } = useIdentity();
   if (status !== 'ready' || !user) return <p role="status">Sign in to message the seller.</p>;
   if (!listingId) return null;
-  return <StartAction key={`${user.user_id}:${listingId}`} listingId={listingId} />;
+  return <StartAction key={`${user.user_id}:${listingId}`} listingId={listingId} compact={compact} />;
 }
 
 /** One actor/origin intent; cancellation prevents late results from navigating. */
-function StartAction({ listingId }: { listingId: string }) {
+function StartAction({ listingId, compact }: { listingId: string; compact: boolean }) {
   const navigate = useNavigate();
   const operation = useRef<string | null>(null);
   const request = useRef<AbortController | null>(null);
@@ -40,7 +40,9 @@ function StartAction({ listingId }: { listingId: string }) {
     }
   };
   return <div>
-    <Button disabled={busy} onClick={() => { void open(); }}>{busy ? 'Opening conversation…' : 'Message seller'}</Button>
+    <Button aria-label={busy ? 'Opening conversation…' : 'Message seller'} disabled={busy} onClick={() => { void open(); }}>
+      {busy ? 'Opening conversation…' : compact ? 'Message' : 'Message seller'}
+    </Button>
     {error ? <p role="alert">{error}</p> : null}
   </div>;
 }

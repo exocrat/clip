@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router';
 import type { ContactOptionsView, SelectedOwnContacts } from '../../../../../contracts/generated/types.gen';
 import { Button } from '../../shared/ui';
 import type { ContactField, ConversationApi } from './api';
+import './ConversationContactPreparation.css';
 
 const choices = [
   { field: 'email', flag: 'email_available', label: 'Email' },
@@ -9,7 +11,7 @@ const choices = [
   { field: 'upi_id', flag: 'upi_available', label: 'UPI ID' },
 ] as const;
 
-/** Explicit selection/confirmation only. Encrypted publication belongs to Step8.
+/** Explicit selection/confirmation only. The thread publishes the selected values through its actual E2EE session.
  * Returned values are deliberately never placed in UI, storage, or diagnostics.
  */
 export function ConversationContactPreparation({ conversationId, api, canShare, onShare, onRetry }: {
@@ -99,29 +101,36 @@ export function ConversationContactPreparation({ conversationId, api, canShare, 
       setMessage('The share is still unconfirmed. Retry this same share or refresh the conversation.');
     } finally { setBusy(false); }
   }
-  return <section aria-label="Prepare own contact details">
-    <h3>Contact details</h3>
-    <p>Choose your own details and confirm before they are encrypted and shared with the other participant.</p>
+  return <section aria-label="Prepare own contact details" className="conversation-contact-preparation">
+    <div className="conversation-contact-preparation__intro">
+      <h3>Contact details</h3>
+      <p>Choose your own details and confirm before they are encrypted and shared with the other participant.</p>
+    </div>
     {!canShare ? <p role="status">Set up encryption in this conversation before sharing contact details.</p> : null}
-    {retryOperationId ? <Button disabled={busy || !canShare} onClick={() => void retryShare()} variant="secondary">Retry this contact share</Button> : null}
-    {!options ? <Button disabled={busy} onClick={() => void load()}>Choose contact details</Button> : review ? <>
-      <p>Confirm for this conversation: {choices.filter((choice) => fields.includes(choice.field)).map((choice) => choice.label).join(', ')}.</p>
-      <Button disabled={busy || !canShare} onClick={() => void confirm()}>Confirm and send encrypted details</Button>
-      <Button disabled={busy} onClick={() => setReview(false)} variant="secondary">Back</Button>
+    {retryOperationId ? <div className="conversation-contact-preparation__actions"><Button disabled={busy || !canShare} onClick={() => void retryShare()} variant="secondary">Retry this contact share</Button></div> : null}
+    {!options ? <div className="conversation-contact-preparation__actions"><Button disabled={busy} onClick={() => void load()}>Choose contact details</Button></div> : review ? <>
+      <p className="conversation-contact-preparation__review">Confirm for this conversation: {choices.filter((choice) => fields.includes(choice.field)).map((choice) => choice.label).join(', ')}.</p>
+      <div className="conversation-contact-preparation__actions">
+        <Button disabled={busy || !canShare} onClick={() => void confirm()}>Confirm and send encrypted details</Button>
+        <Button disabled={busy} onClick={() => setReview(false)} variant="secondary">Back</Button>
+        <Button disabled={busy} onClick={cancel} variant="secondary">Cancel</Button>
+      </div>
     </> : <>
-      <fieldset disabled={busy}>
+      <fieldset className="conversation-contact-preparation__choices" disabled={busy}>
         <legend>Your available contact types</legend>
-        {choices.map(({ field, flag, label }) => <label key={field}>
+        {choices.map(({ field, flag, label }) => <label className="conversation-contact-preparation__choice" key={field}>
           <input type="checkbox" disabled={!options[flag]} checked={fields.includes(field)}
             onChange={(event) => setFields(event.target.checked ? [...fields, field] : fields.filter((value) => value !== field))} />
-          {label}{options[flag] ? '' : ' (not set)'}
+          <span>{label}{options[flag] ? '' : ' (not set)'}</span>
         </label>)}
       </fieldset>
-      {!choices.some(({ flag }) => options[flag]) ? <p>Add contact details in Contact settings first.</p> : null}
-      <Button disabled={!fields.length || busy} onClick={() => setReview(true)}>Review selected details</Button>
-      <Button disabled={busy} onClick={() => void load()} variant="secondary">Reload contact options</Button>
+      {!choices.some(({ flag }) => options[flag]) ? <Link className="ui-button ui-button--secondary conversation-contact-preparation__settings" to={`/account/contacts?conversation=${encodeURIComponent(conversationId)}`}>Open Account to add contact details</Link> : null}
+      <div className="conversation-contact-preparation__actions">
+        <Button disabled={!fields.length || busy} onClick={() => setReview(true)}>Review selected details</Button>
+        <Button disabled={busy} onClick={() => void load()} variant="secondary">Reload contact options</Button>
+        <Button disabled={busy} onClick={cancel} variant="secondary">Cancel</Button>
+      </div>
     </>}
-    {options ? <Button disabled={busy} onClick={cancel} variant="secondary">Cancel</Button> : null}
     {busy ? <p role="status">Checking your contact details…</p> : null}
     {message ? <p role="status">{message}</p> : null}
   </section>;

@@ -70,6 +70,7 @@ def application(*, authenticated=True, eligible=True, stored=True, failure=None)
         condition_code="good",
         condition_label="Good",
         asking_price_paise=0,
+        original_price_paise=None,
         negotiable=False,
         pickup_area=None,
         available_from=datetime(2026, 1, 1, tzinfo=UTC),

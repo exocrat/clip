@@ -75,8 +75,9 @@ inference and does not replace it. The probe runs at most6min/40windows with
 one simultaneous child and a sampled512MiB API/helper ceiling; native PostgreSQL
 RSS is separate. No live listener or existing/shared target is accepted.
 
-[Evidence](../evaluation/domain/se-01/normal-api-lifecycle/result.json) records
-source hashes, actual run/cleanup/resource observations and focused checks.
+The historical receipt records source hashes, actual run/cleanup/resource
+observations and focused checks; see the
+[evaluation retrieval guidance](../evaluation/README.md).
 Worker scheduling is now implemented in its subsequent checkpoint, awaiting
 result verification. Controlled bootstrap/backfill/activation, real upstream and
 Linux/deployment checks remain subsequent verified checkpoints. Final counts,

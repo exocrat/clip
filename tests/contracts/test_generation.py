@@ -249,6 +249,7 @@ def test_actual_api_schema_matches_generated_contract():
     assert actual["paths"]["/health"] == declared["paths"]["/health"]
     implemented_paths = {
         "/conversations",
+        "/conversations/unread-count",
         "/conversations/{conversation_id}",
         "/conversations/{conversation_id}/entries",
         "/conversations/{conversation_id}/messages",
@@ -330,7 +331,7 @@ def test_actual_api_schema_matches_generated_contract():
         for operation in path.values()
         if isinstance(operation, dict) and "operationId" in operation
     }
-    assert len(contract_operation_ids) == 57
+    assert len(contract_operation_ids) == 58
     assert {
         "identity_start_microsoft_login_attempt",
         "identity_read_csrf_token",
@@ -373,7 +374,7 @@ def test_schema_build_does_not_import_real_application(monkeypatch):
     monkeypatch.setitem(sys.modules, "app.main", None)
     health, domains = generator.load_sources()
     schema = generator.declared_schema(health, domains)
-    assert len(schema["paths"]) == 48
+    assert len(schema["paths"]) == 49
     assert "/auth/microsoft/login-attempts" in schema["paths"]
     assert "/auth/csrf" in schema["paths"]
 

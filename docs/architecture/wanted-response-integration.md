@@ -81,5 +81,6 @@ including lost response followed by closure/read-only lookup, closed-first and
 response-first order, and actual server-observed owner lock waiting. A separate
 C schema-only thread/member fixture commits under the guard to verify FK lock
 compatibility; it does not implement or accept real C service behavior.
-[Evidence](../evaluation/domain/se-02/wanted-response/result.json). Human result
+The detailed receipt is in Git history; see the
+[evaluation retrieval guidance](../evaluation/README.md). Human result
 verification remains; Step6 real provider checks remain Step8/INT-01 obligations.

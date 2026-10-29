@@ -12,9 +12,8 @@ reversed inputs through shared 422 errors; unknown/inactive catalogue codes are
 validated by the owned store. Discovery responses are `private, no-store` and
 each request rechecks eligibility/storage. Saved-item retrieval remains separate
 SE-02 work, including retained unavailable summaries and retired-content privacy.
-Real PostgreSQL execution/index checks remain
-pending here. See the
-[browse implementation and pending SQL checks](app/domains/listings/README.md#se-01-step-3-collection-browse).
+Isolated PostgreSQL checks are available; integrated hosted readiness and final Search acceptance remain separate gates. See the
+[browse implementation and current checks](app/domains/listings/README.md).
 
 The API serves process health and Listings create, detail, owner-list,
 replacement, availability, buyer-selection, offer-command, and image-upload
@@ -111,11 +110,11 @@ is not used.
 
 Exit 0 means the collected suite passed; a failure must be investigated, and exit 5 (no tests collected) is not a pass. The development-only `httpx2` pin supports the installed Starlette TestClient. Individual tests label controlled signer/mail/storage ports or caller doubles. Do not mistake these for live providers, deployed readiness or performance evidence.
 
-See the [command registry](../../docs/environment/commands.md) for effects and readiness. The [common setup guide](../../docs/environment/README.md#local-foundation-setup) documents shared Make targets. The user later confirmed the previously pending PD-13 clean-environment gates on 2026-10-19; PD-19 Step 2 reran setup on Linux ARM64.
+See the [command index](../../docs/environment/commands.md) for common commands and links to current owner guides. The [common setup guide](../../docs/environment/README.md#local-foundation-setup) documents shared Make targets. The user later confirmed the previously pending PD-13 clean-environment gates on 2026-10-19; PD-19 Step 2 reran setup on Linux ARM64.
 
 ## Local container image (PD-16 Step 4)
 
-The [PD-16 image commands](../../docs/environment/commands.md#local-api-container-image--pd-16-step-4) build the API for the local Docker host's native architecture from the repository root, start it on loopback for a health check, and stop/remove the local container. The Dockerfile uses the locked runtime dependencies, runs as a non-root user with production-safe settings, and includes only the API application source. Record the host architecture, current worktree revision, and dirty state with the local check. The user later confirmed the previously pending PD-08/PD-13 platform and database compatibility gates on 2026-10-19; this local image check does not replace their recorded evidence. The later ECR image must be rebuilt for `linux/amd64` from the exact reviewed commit because the ECS host is x86_64.
+The [PD-16 image command](../../docs/environment/commands.md#local-api-container-image--pd-16-step-4) stages the API, web source, generated contracts and locked manifests into a local build context, builds for the Docker host's native architecture, starts the container on loopback for a health check, and removes only its own container/image/context. The Dockerfile uses locked runtime dependencies and runs as a non-root user with production-safe settings. Record the host architecture, current worktree revision, and dirty state with the local check. The user later confirmed the previously pending PD-08/PD-13 platform and database compatibility gates on 2026-10-19; this local image check does not replace their recorded evidence. The later ECR image must be rebuilt for `linux/amd64` from the exact reviewed commit because the ECS host is x86_64.
 
 ## Shared conventions (PD-06 step 3)
 
@@ -144,132 +143,16 @@ generated runtime module. The handler still returns only `{"status":"ok"}`.
 Generation and public schema publication are separate; no schema endpoint or
 marketplace feature is enabled.
 
-## Identity provider setup (ID-01 Step 2)
+## Identity provider setup and current status
 
-The [setup record](../../docs/environment/identity-provider-setup.md) documents
-Microsoft registration inputs, sandbox SES configuration and pending approvals.
-`CLIP_EMAIL_PROVIDER=ses` requires explicit controlled recipients through the
-JSON-array setting `CLIP_SES_TEST_RECIPIENTS`; production rejects SES until its
-separate configuration review. Defaults remain disabled. Fixed non-secret
-settings are `CLIP_SES_REGION=ap-south-1` and
-`CLIP_SES_SENDER=verify@clip-iisc.site`. The Identity-owned transport has no
-public route and does not generate/verify OTPs or authenticate anyone.
-
-The Identity one-shot runtime test is documented in the
-[command registry](../../docs/environment/commands.md#identity-one-shot-email-command--id-01-step-2).
-Its separate approval, task-role checks and single-message/deadline guards keep
-it outside normal API startup; no live delivery has yet been tested.
-
-## ID-01 Step4 private Microsoft preparation
-
-Identity owns microsoft.py and microsoft_accounts.py. PyJWT2.15.1 with its crypto
-extra validates actual RSA assertions; psycopg3.3.6 binary supports transactional
-local account persistence. Construction/import does not fetch keys or connect.
-The real factory permits only explicit microsoft selection in local/test, with
-disabled default and production refusal until complete session integration.
-
-The validator uses fixed public-cloud v2 discovery/JWKS, registered client-ID
-audience, RS256-only signatures, key-issuer/tenant binding, required/time claims,
-trusted expected nonce and exact signed-email domain iisc.ac.in. There is no
-username/client-email fallback, extra regular-user OTP or tenant allowlist.
-Only provider/issuer/subject are persisted; token/email/nonce are not copied to
-account/profile/session tables. Existing eligible accounts are reused; revoked,
-pending, wrong-class or profile-removed records are denied without reactivation.
-
-The private service returns an account record only. It does not issue a cookie,
-SessionView or CallerContext, register HTTP routes or implement browser PKCE/
-state/nonce consumption. Expected nonce must originate from a reviewed trusted
-server-bound login attempt; no browser-supplied expected value may be wired.
-That design and real Microsoft/browser/database-role integration remain required
-before ID-READY. Do not treat the public-metadata read as an actual sign-in test.
-
-Offline RSA/key tests and isolated real-PostgreSQL checks:
-
-```bash
-uv run --locked pytest apps/api/tests/domains/identity/test_microsoft.py apps/api/tests/domains/identity/test_microsoft_postgres.py -q -W error
-uv run --locked mypy --no-incremental apps/api/app/domains/identity/microsoft.py apps/api/app/domains/identity/microsoft_accounts.py apps/api/app/core/config.py
-```
-
-Network fetches are synchronous with bounded size/socket timeout; future async
-HTTP wiring must move blocking operations off the event loop and enforce an
-overall request deadline. Public endpoint/clock-skew/session policy is not
-implicitly authorized by this private implementation.
-
-## Temporary activation — ID-01 Step6 (private)
-
-Identity now composes real PostgreSQL OTP consumption with salted Argon2id
-hashing and atomic temporary user/credential/enrollment creation. Runtime library
-argon2-cffi25.1.0 and bindings26.1.0 are pinned in the root manifest/lock.
-[Identity module documentation](app/domains/identity/README.md) explains the
-approved parameters,14-day lifetime, no-renewal guard and fresh account-state
-gate. This private increment adds no HTTP route or session/cookie behavior.
-Public activation/session and actual protected-operation wiring remain pending.
-
-## Explicit Identity HTTP composition — ID-01 Step7
-
-`app.domains.identity.http.create_identity_app` implements auth/GET /me endpoints
-with explicit trusted session/store/key/sender/validator dependencies, origin/
-CSRF and cookie guards. Default `app.main` retains health/Listings while Identity waits for approved
-runtime wiring is supplied. Local HTTP tests use actual disposable PostgreSQL,
-Argon2id and real RSA validation with synthetic keys; no provider is contacted.
-Deployment must review TLS/forwarded peer trust, runtime secret references/DB
-permissions and provider/browser behavior before enabling real authentication.
-The [session decision](../../docs/decisions/identity-sessions-and-cleanup.md) and
-[command registry](../../docs/environment/commands.md) define checks and cleanup
-boundaries. No cloud resources, real send or enabled cleanup schedule is added.
-
-## Capability/eligibility binding — ID-01 Step8
-
-Identity now applies the approved regular/temporary rules against fresh account
-state and binds its actual boolean eligibility provider per explicit HTTP runtime
-scope. Generated public eligibility dispatch preserves the reviewed signature
-without business/private imports; unconfigured calls fail503. Default app.main
-serves health/Listings with Identity runtime still unbound. [Identity module details](app/domains/identity/README.md)
-explain the matrix and ownership limits; [the decision](../../docs/decisions/identity-capabilities-and-runtime-binding.md)
-records scoped binding. No new marketplace/lookup route or runtime/cloud
-activation is added. Existing own-session summary uses fresh capability checks.
-
-## Own profile/contact implementation — ID-01 Step9
-
-The explicit Identity HTTP factory now implements reviewed PATCH /me/profile,
-GET /me/contacts and PUT/DELETE /me/contacts/{contact_kind} with current session,
-origin/CSRF and no-store controls. Contact values stay out of /me and general
-responses. The private contact provider uses the actual Identity schema and
-scoped selected-contact public adapters; its trusted membership/confirmation
-preconditions remain Conversations-owned. The normal app.main still exposes
-health/Listings with unbound Identity. [Step9 evidence](../../docs/evaluation/identity/implementation.md#step-9)
-records local SQL/HTTP tests and pending runtime/browser/consumer gates.
-
-[Step10 security coverage](../../docs/evaluation/identity/implementation.md#step-10)
-maps Identity requirements to actual local tests. Explicit JWT-time fixtures keep
-real signature/date validation enabled; lifecycle/reset/contact/cleanup journeys
-use disposable SQL and actual HTTP. Existing guarded test identity providers and
-production-startup rejection tests are reused. This does not enable public auth
-in app.main or replace provider/browser/readiness acceptance.
-
-## Explicit Identity and Listings composition — ID-01 Step12
-
-`app.application.create_app(settings, identity=bindings)` (also re-exported from
-app.main) can install real Identity
-routes/session middleware into the same application that owns Listings' pool,
-state and routes. `IdentityHttpDependencies` requires actual session service,
-BrowserPolicy, sender, Microsoft validator and clock. Installation performs no
-provider/secret/DB discovery; the existing lifespan opens/closes the explicitly
-configured Listings database pool. No mounted sub-app or fixed test caller is
-used to authenticate cross-domain requests.
-
-The trusted factory requires explicit local/test bindings and database settings;
-it refuses production, development-auth and isolated hosted-demo combinations.
-Default `app.main:app` remains Identity-unbound, with its accepted health/Listings
-surface unchanged. This is a local composition building block, not live website
-authentication. Persistent keys, least-privilege DB/SSM access, source/proxy/TLS,
-provider/browser checks and reviewed production startup remain pending.
-
-The approved Listings adapter now asks Identity for current account eligibility
-without forcing regular class on every lookup. Listings' own regular-only guards
-still deny temporary sale/image creation; browsing is permitted. See the
-[handoff and checks](../../docs/evaluation/identity/integration.md#local-api-composition)
-and [registered test command](../../docs/environment/commands.md#shared-identitylistings-api-composition--id-01-step12).
+Current Microsoft/email configuration, secret references and live gates are in
+[ID-01 provider setup](../../docs/environment/identity-provider-setup.md) and
+[secret handling](../../docs/environment/secret-handling.md). The normal API
+remains Identity-unbound unless the reviewed composition is explicitly selected;
+a provider setting alone does not activate deployed sign-in. Use the
+[ID-01 task/status](../../docs/tasks/domain-task-list.md) and
+[work-log row](../../docs/status/work-log.md) for current acceptance; older
+step-by-step receipts are in Git history.
 
 ## Combined Conversations runtime — CN-01 integration
 
@@ -349,6 +232,15 @@ is bounded/dry-run by default and has no automatically installed schedule. These
 are concrete follow-ons, not claims that chat cannot be reviewed/merged now.
 
 
+## Combined Conversations runtime — CN-01 integration
+
+The combined API connects domains through their public interfaces. The current
+CN-01 integration result and remaining real checks are in the
+[Conversations handoff](../../docs/evaluation/domain/conversations-integration.md)
+and [domain task list](../../docs/tasks/domain-task-list.md). Use those current
+gates when changing shared runtime composition; this guide's former checkpoint
+details were removed.
+
 ## Normal API Hybrid read lifecycle (SE-01)
 
 The combined merge now supplies an optional Linux AMD64 container extension with
@@ -389,6 +281,15 @@ and exact approved target/pipeline binding. Existing live listings, including
 unavailable ones, need complete current vectors before activation. Concurrent
 edits can invalidate readiness afterward, so request guards remain. No shared
 or cloud target was run/approved here. See [the bootstrap contract](../../docs/architecture/semantic-pipeline-bootstrap.md).
+
+## Normal API Hybrid read lifecycle (SE-01)
+
+The current helper, worker and pipeline limits are documented in the
+[normal API lifecycle](../../docs/architecture/normal-api-search-runtime.md),
+[dispatcher](../../docs/architecture/semantic-embedding-dispatcher.md) and
+[pipeline bootstrap](../../docs/architecture/semantic-pipeline-bootstrap.md)
+designs. Local/default startup does not turn on Hybrid work. The SE-01 task and
+work log distinguish isolated checks from hosted readiness and NFR acceptance.
 
 ## SE-02 wanted-request author/read API checkpoint
 
@@ -443,6 +344,14 @@ Retired/pending/missing requests fail404, self403, unavailable dependencies503.
 Normal public providers remain unimplemented defaults, so no successful thread
 is fabricated. Native tests use explicit C scripts; real integration and Step7
 UI remain pending. No scheduler, resource or migration was added.
+
+## Wanted requests and saved listings (SE-02)
+
+Feature-specific request, save and response behavior is in
+[Search API documentation](app/domains/search/README.md). The current local and
+real-integration gates are in the [SE-02 task](../../docs/tasks/domain-task-list.md)
+and [work-log row](../../docs/status/work-log.md). Older step-by-step details are
+recoverable from Git history; they are not a current readiness claim.
 
 ## RDS system trust in the shared image
 

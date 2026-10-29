@@ -175,6 +175,7 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
             category_code="books",
             condition_code="good",
             asking_price_paise=0,
+            original_price_paise=15_000,
             negotiable=True,
             pickup_area="Synthetic pickup area",
             available_from=now,
@@ -200,6 +201,7 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
         assert stored.title == "Synthetic textbook"
         assert stored.pickup_area == "Synthetic pickup area"
         assert stored.asking_price_paise == 0
+        assert stored.original_price_paise == 15_000
         assert len(stored.image_ids) == 1
         assert stored.sensitive_purchase is False
 
@@ -249,6 +251,7 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
             category_code="books",
             condition_code="good",
             asking_price_paise=1_000,
+            original_price_paise=27_500,
             negotiable=True,
             pickup_area=None,
             available_from=now,
@@ -264,6 +267,7 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
         assert edited.title == "Revised synthetic textbook"
         assert edited.pickup_area is None
         assert edited.sensitive_purchase is False
+        assert edited.original_price_paise == 27_500
         assert edited.proof_available is True
         assert len(edited.image_ids) == 2
         assert edited.image_ids[1] == stored.image_ids[0]
@@ -350,14 +354,14 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
         )
         assert selected.selected_buyer_id == buyer_id
         assert selected.selected_conversation_id == conversation_id
-        assert selected.availability == "unavailable"
+        assert selected.availability == "available"
         assert selected.available_from == edited.available_from
         assert selected.available_until == edited.available_until
         assert conversations.calls == 1
         unavailable_owner_view = await store.read_listing(created.listing_id)
         assert unavailable_owner_view is not None
         assert unavailable_owner_view.selected_buyer_id == buyer_id
-        assert unavailable_owner_view.availability == "unavailable"
+        assert unavailable_owner_view.availability == "available"
 
         # Retrying the old selection returns its saved response, not a new write.
         replayed_selection = await service.set_selected_buyer(
@@ -386,14 +390,14 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
         )
         assert cleared.selected_buyer_id is None
         assert cleared.selected_conversation_id is None
-        assert cleared.availability == "unavailable"
+        assert cleared.availability == "available"
         assert cleared.available_from == selected.available_from
         assert cleared.available_until == selected.available_until
 
         mine = await service.list_mine(owner, PageQuery(page=1, page_size=20))
         assert len(mine.items) == 1
         assert mine.items[0].listing_id == created.listing_id
-        assert mine.items[0].availability == "unavailable"
+        assert mine.items[0].availability == "available"
 
         with pytest.raises(PublicError) as wrong_owner:
             await service.change_availability(
@@ -430,7 +434,7 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
             final_row = await saved.fetchone()
         assert final_row == {
             "title": "Revised synthetic textbook",
-            "availability": "unavailable",
+            "availability": "available",
             "revision": 5,
             "selected_buyer_id": None,
             "selected_conversation_id": None,
@@ -452,6 +456,7 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
                     category_code="books",
                     condition_code="good",
                     asking_price_paise=2_000,
+                    original_price_paise=None,
                     negotiable=True,
                     pickup_area=None,
                     available_from=now,
@@ -747,7 +752,7 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
         async with pool.connection() as connection:
             retired = await connection.execute(
                 """
-                SELECT title, description, asking_price_paise, pickup_area,
+                SELECT title, description, asking_price_paise, original_price_paise, pickup_area,
                     selected_buyer_id, selected_conversation_id, retired_at,
                     retirement_pending_operation_id, retirement_pending_cutoff_utc
                 FROM listings.sale_listings WHERE id = %s
@@ -772,6 +777,7 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
         assert retired_row["title"] is None
         assert retired_row["description"] is None
         assert retired_row["asking_price_paise"] is None
+        assert retired_row["original_price_paise"] is None
         assert retired_row["pickup_area"] is None
         assert retired_row["selected_buyer_id"] is None
         assert retired_row["selected_conversation_id"] is None
@@ -848,14 +854,17 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
                 create_request.model_dump(exclude={"pickup_area"})
                 | {
                     "image_upload_ids": [optional_area_upload_id],
+                    "original_price_paise": None,
                     "operation_id": uuid4(),
                 }
             )
         )
         optional_listing = await service.create(owner, without_area)
         assert optional_listing.pickup_area is None
+        assert optional_listing.original_price_paise is None
         reread = await service.read_detail(owner, optional_listing.listing_id)
         assert reread.pickup_area is None
+        assert reread.original_price_paise is None
         down = (
             (
                 Path(__file__).resolve().parents[5]

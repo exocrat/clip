@@ -244,3 +244,20 @@ def test_cli_drift_and_recovery(tmp_path):
 def test_repository_boundaries():
     """Keep the actual foundation covered by the normal root pytest command."""
     assert checker.scan(ROOT) == []
+
+
+def test_identity_participant_view_is_a_narrow_read_boundary():
+    path = "apps/api/app/domains/conversations/queries.py"
+    for statement in (
+        "SELECT handle FROM identity.participant_profiles",
+        "SELECT p.handle FROM conversations.members m JOIN identity.participant_profiles p ON true",
+    ):
+        findings, _ = checker.inspect_source(path, "sql=" + repr(statement))
+        assert findings == []
+    for statement in (
+        "UPDATE identity.participant_profiles SET handle='x'",
+        "SELECT * FROM identity.users",
+        "SELECT * FROM identity.contacts",
+    ):
+        findings, _ = checker.inspect_source(path, "sql=" + repr(statement))
+        assert any(row.rule == "private-table-access" for row in findings)

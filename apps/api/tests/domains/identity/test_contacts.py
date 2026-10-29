@@ -98,20 +98,21 @@ def test_own_profile_and_independent_contacts(identity_runtime, signed_tokens, k
     assert service.read_contacts(caller).model_dump() == dict.fromkeys(VALUES)
     assert (
         service.update_profile(
-            caller, ProfilePatch(display_name="  Synthetic 名  ")
+            caller, ProfilePatch(display_name="  Synthetic_Name  ")
         ).display_name
-        == "Synthetic 名"
+        == "Synthetic_Name"
     )
-    assert service.update_profile(caller, ProfilePatch()).display_name == "Synthetic 名"
+    assert (
+        service.update_profile(caller, ProfilePatch()).display_name == "Synthetic_Name"
+    )
     for field, value in VALUES.items():
         service.set_contact(caller, field, " " + value + " ")
         service.set_contact(caller, field, value)  # Repeat-safe field-only upsert.
     assert service.read_contacts(caller).model_dump() == VALUES
     assert service.read_contacts(other).model_dump() == dict.fromkeys(VALUES)
-    assert (
-        service.update_profile(caller, ProfilePatch(display_name=None)).display_name
-        is None
-    )
+    with pytest.raises(PublicError) as missing:
+        service.update_profile(caller, ProfilePatch(display_name=None))
+    assert missing.value.spec.status == 422
     service.delete_contact(caller, "phone")
     assert service.read_contacts(caller).model_dump() == VALUES | {"phone": None}
     for field in VALUES:
@@ -138,19 +139,17 @@ def test_profile_invalid_trim_or_encoding(identity_runtime, name):
     assert error.value.spec.status == 422
 
 
-def test_profile_unicode_boundary(identity_runtime):
+def test_profile_handle_boundary(identity_runtime):
     caller = activate(identity_runtime).identity.caller
     service = identity_runtime.service.contacts
     assert (
-        service.update_profile(
-            caller, ProfilePatch(display_name="名" * 80)
-        ).display_name
-        == "名" * 80
+        service.update_profile(caller, ProfilePatch(display_name="A" * 30)).display_name
+        == "A" * 30
     )
-    from pydantic import ValidationError
-
-    with pytest.raises(ValidationError):
-        ProfilePatch(display_name="名" * 81)
+    for name in ("A" * 31, "名", "a-b", "ab"):
+        with pytest.raises(PublicError) as invalid:
+            service.update_profile(caller, ProfilePatch(display_name=name))
+        assert invalid.value.spec.status == 422
 
 
 @pytest.mark.parametrize(
@@ -294,13 +293,13 @@ def test_parallel_field_updates_preserve_each_other_and_profile(identity_runtime
 
     def write(field):
         service.set_contact(caller, field, VALUES[field])
-        service.update_profile(caller, ProfilePatch(display_name="Synthetic " + field))
+        service.update_profile(caller, ProfilePatch(display_name="Synthetic_" + field))
 
     with ThreadPoolExecutor(max_workers=3) as pool:
         list(pool.map(write, VALUES))
     assert service.read_contacts(caller).model_dump() == VALUES
     assert service.update_profile(caller, ProfilePatch()).display_name in {
-        "Synthetic " + field for field in VALUES
+        "Synthetic_" + field for field in VALUES
     }
 
 
@@ -392,3 +391,33 @@ def test_dependency_errors_do_not_expose_contact_values(identity_runtime):
     with pytest.raises(PublicError) as error:
         service.read_contacts(caller)
     assert error.value.spec.status == 503 and VALUES["email"] not in str(error.value)
+
+
+def test_handle_case_insensitive_claims_are_atomic(identity_runtime):
+    state = identity_runtime
+    first = activate(state, email="handle-one@example.invalid").identity.caller
+    second = activate(state, email="handle-two@example.invalid").identity.caller
+
+    def claim(actor):
+        try:
+            return state.service.contacts.update_profile(
+                actor, ProfilePatch(display_name="Shared_Handle")
+            ).display_name
+        except PublicError as error:
+            return error.spec.status
+
+    with ThreadPoolExecutor(max_workers=2) as workers:
+        outcomes = list(workers.map(claim, (first, second)))
+    assert outcomes.count("Shared_Handle") == 1 and outcomes.count(409) == 1
+    loser = first if outcomes[0] == 409 else second
+    with pytest.raises(PublicError) as conflict:
+        state.service.contacts.update_profile(
+            loser, ProfilePatch(display_name="shared_handle")
+        )
+    assert conflict.value.spec.status == 409
+    assert (
+        state.service.contacts.update_profile(
+            loser, ProfilePatch(display_name="Other_Handle")
+        ).display_name
+        == "Other_Handle"
+    )

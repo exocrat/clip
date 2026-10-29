@@ -616,3 +616,7 @@ retention. Isolated stubs cannot establish real cross-domain acceptance.
   typed signatures, result/error shapes, retry behavior, focused tests and
   frontend connections. Step 10 owner review is reported approved. NFR-05 requires
   the real two-client path and CN-03 producer/delivery integration.
+
+## NEXT-03 visual-feedback extensions
+
+The approved current contract is extended by the [combined registry](combined.md#next-03-participant-identity-and-grouped-inbox-extension): marketplace All/Buying/Selling roles, Item/Person grouping with group-first paging and at most twenty initial rows per group, flat member-filtered continuation, safe participant Handle/account-class projection, and `GET /conversations/unread-count`. The count covers this caller's unread peer messages across all memberships, excluding offers/control events; no peer receipt or private Identity field is exposed. Session/participant authorization remains required independently of UI controls. Message history is separately bounded; initial loading starts near the caller's own read boundary, with explicit older/newer windows and a stable opening unread divider.

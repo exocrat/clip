@@ -24,6 +24,7 @@ success does not establish real provider or complete feature coverage.
 | No offer on retired/request origin | Public policy and retained marker boundary; no Search offer implementation | CN-01/CN-02 participant/offer enforcement integration |
 | Saved retired-content privacy | Native saved parent retirement + explicit placeholder fixture; inconsistent response rejected | Actual public resolver retirement behavior |
 | Pagination | Step6 wanted tied owner/public pages and hidden-before-page; saved tied pages/own IDs/reordered provider; draft first20/has_more | Real provider/API/UI integration |
+| Wanted public discovery filters | `test_wanted_discovery_postgres.py` exercises real English full-text SQL/index, repeated category OR, AND composition, inclusive whole-rupee bounds, unstated-budget exclusion, unavailable exclusion, empty results and privacy-safe public shape | Final disposable-migration/native suite, generated contract freshness and visual Discovery walkthrough |
 | Dependency failures and retry ambiguity | Saved/draft unit/native and retirement timeout/cancel/lost-result/rollback tests | Response lost-result/closed lookup tested locally; actual providers pending |
 
 `test_step6_postgres.py` closes only its own public fixture requests on exit so
@@ -34,6 +35,6 @@ pagination corpus still runs last after bounded mathematical bootstrap checks.
 
 The response endpoint and200 body were corrected in the approved implementation checkpoint.
 Tests do not count the explicit C fixture as a real Conversations implementation.
-The [original coverage evidence](../../../../../docs/evaluation/domain/se-02/test-coverage/result.json)
-preserves the original gaps; [response correction evidence](../../../../../docs/evaluation/domain/se-02/wanted-response/result.json)
-records the resolved local inventory and remaining real gates.
+The [evaluation history guide](../../../../../docs/evaluation/README.md) explains
+how to recover older coverage receipts; current acceptance and open gates are in
+the [domain task list](../../../../../docs/tasks/domain-task-list.md).

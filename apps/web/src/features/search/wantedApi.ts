@@ -13,6 +13,8 @@ import type {
   WantedRequestPublic,
   WantedRequestStateChange,
 } from '../../../../../contracts/generated/types.gen';
+import { wantedDiscoveryParams, type WantedDiscoveryQuery } from './wantedDiscoveryQuery';
+import { MAX_MARKETPLACE_PRICE_PAISE, MAX_MARKETPLACE_RUPEES } from '../../shared/money';
 export type { WantedRequestOwnerView, WantedRequestPublic };
 
 /** Fixed messages keep rejected input and provider diagnostics out of the UI. */
@@ -25,7 +27,7 @@ export class WantedApiError extends Error {
           403: 'This action is not available to this account.',
           404: 'This item is no longer available to you.',
           409: 'This request changed. Reload it before editing again.',
-          422: 'Check the fields and try again.',
+          422: 'Use a title up to 120 characters, description up to 5,000, a current category, and an optional whole-rupee budget up to ₹1,00,00,000.',
           503: 'This service is temporarily unavailable. Please retry.',
         } as Record<number, string>
       )[status] ?? 'The request could not be confirmed. Please retry.',
@@ -44,7 +46,7 @@ const instant = (v: unknown) =>
 const exact = (v: Record<string, unknown>, fields: string[]) =>
   Object.keys(v).length === fields.length && fields.every((k) => Object.hasOwn(v, k));
 const money = (v: unknown) =>
-  v === null || (typeof v === 'number' && Number.isSafeInteger(v) && v >= 0 && v % 100 === 0);
+  v === null || (typeof v === 'number' && Number.isSafeInteger(v) && v >= 0 && v <= MAX_MARKETPLACE_PRICE_PAISE && v % 100 === 0);
 const text = (v: unknown, max: number) =>
   typeof v === 'string' && v.trim().length > 0 && [...v].length <= max;
 
@@ -139,12 +141,21 @@ export const readWanted = (id: string, signal: AbortSignal) =>
     signal,
     (v) => isWanted(v) || isWanted(v, true),
   );
-export const browseWanted = (number: number, signal: AbortSignal) =>
-  request<PageResultWantedRequestPublic>(
-    `/wanted-requests?page=${number}&page_size=20`,
+/** Read a public wanted page using API filter names; numbers preserve legacy paging calls. */
+export const browseWanted = (query: WantedDiscoveryQuery | number, signal: AbortSignal) => {
+  const values = typeof query === 'number'
+    ? { page: query, page_size: 20 as const }
+    : query;
+  const params = typeof query === 'number'
+    ? new URLSearchParams({ page: String(query), page_size: '20' })
+    : wantedDiscoveryParams(query);
+  const suffix = params.toString();
+  return request<PageResultWantedRequestPublic>(
+    `/wanted-requests${suffix ? `?${suffix}` : ''}`,
     signal,
-    page(number, (v) => isWanted(v), 'request_id'),
+    page(values.page, (v) => isWanted(v), 'request_id', values.page_size),
   );
+};
 export const ownWanted = (number: number, signal: AbortSignal) =>
   request<PageResultWantedRequestOwnerView>(
     `/me/wanted-requests?page=${number}&page_size=20`,
@@ -202,6 +213,7 @@ export function isSearchListing(v: unknown): boolean {
       'condition_code',
       'condition_label',
       'asking_price_paise',
+      'original_price_paise',
       'negotiable',
       'pickup_area',
       'available_from',
@@ -219,6 +231,9 @@ export function isSearchListing(v: unknown): boolean {
     ) &&
     money(v.asking_price_paise) &&
     v.asking_price_paise !== null &&
+    (v.original_price_paise === null || (typeof v.original_price_paise === 'number'
+      && Number.isSafeInteger(v.original_price_paise) && v.original_price_paise > 0
+      && v.original_price_paise <= MAX_MARKETPLACE_PRICE_PAISE && v.original_price_paise % 100 === 0)) &&
     typeof v.negotiable === 'boolean' &&
     typeof v.sensitive_purchase === 'boolean' &&
     (v.pickup_area === null || typeof v.pickup_area === 'string') &&
@@ -290,10 +305,10 @@ export const unsaveListing = (id: string, signal: AbortSignal) =>
 export function budgetPaise(input: string): number | null {
   const value = input.trim();
   if (!value) return null;
-  if (value.length > 16 || !/^\d+$/.test(value))
+  if (value.length > 8 || !/^\d+$/.test(value))
     throw new Error('Enter a budget in whole rupees, or leave it blank.');
   const paise = BigInt(value) * 100n;
-  if (paise > BigInt(Number.MAX_SAFE_INTEGER)) throw new Error('This budget is too large.');
+  if (paise > BigInt(MAX_MARKETPLACE_PRICE_PAISE)) throw new Error(`Enter a budget up to ₹${MAX_MARKETPLACE_RUPEES.toLocaleString('en-IN')}, or leave it blank.`);
   return Number(paise);
 }
 

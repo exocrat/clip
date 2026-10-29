@@ -13,7 +13,7 @@ const stamp = '2026-10-25T13:00:00.000000Z';
 const session = (user_id = idA, account_class: 'regular' | 'temporary' = 'regular', valid_until = '2100-01-01T00:00:00.000000Z') => ({ user_id, account_class, valid_until, display_name: null });
 function response(value: unknown, status = 200) { return new Response(JSON.stringify(value), { status }); }
 function listing(title: string) {
-  return { listing_id: listingId, title, description: 'Synthetic fixture only', category_code: 'books', category_label: 'Books', condition_code: 'good', condition_label: 'Good', asking_price_paise: 0, negotiable: false, pickup_area: null, available_from: stamp, available_until: null, availability: 'available', sensitive_purchase: false, image_ids: [] };
+  return { listing_id: listingId, title, description: 'Synthetic fixture only', category_code: 'books', category_label: 'Books', condition_code: 'good', condition_label: 'Good', asking_price_paise: 0, original_price_paise: 12500, negotiable: false, pickup_area: null, available_from: stamp, available_until: null, availability: 'available', sensitive_purchase: false, image_ids: [] };
 }
 function Controls({ switchActor }: { switchActor: () => ReturnType<typeof session> }) {
   const { accept, clear, refresh } = useIdentity();
@@ -54,6 +54,7 @@ describe('Private marketplace state across Identity transitions', () => {
     state.view();
     if (mode === 'wanted') fireEvent.click(await screen.findByRole('button', { name: 'Wanted Requests' }));
     await screen.findByText('Synthetic private A');
+    if (mode === 'sales') expect(screen.getByText('Original price (Seller Provided): ₹125')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'End local session' }));
     expect(screen.queryByText('Synthetic private A')).toBeNull();
     expect(screen.queryByRole('button', { name: 'Create wanted request' })).toBeNull();

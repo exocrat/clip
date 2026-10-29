@@ -17,8 +17,8 @@ Reconciled from approved deployment records through `cc04a23`; no parameter valu
 | Cost/limits | AWS lists Standard parameters as having no additional Parameter Store charge, with a 4 KB value limit and up to 10,000 standard parameters per account/Region. KMS/key choices or other associated services may have separate costs; check before setup. See [Parameter Store pricing](https://aws.amazon.com/systems-manager/pricing/) and [tier limits](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html). |
 | Encryption/access warning | **Selected by Rahul on 2026-10-17:** use the AWS-managed `aws/ssm` KMS key. AWS documents that this key's policy allows all IAM principals in the account to use KMS Decrypt; a principal still needs the relevant Systems Manager permission to retrieve a parameter. This is account-wide decryption capability, not per-secret separation. PD-14 created no key or policy; PD-16 later records base IAM roles/policies. Effective IAM permissions have not been independently verified. See [restricting access to SecureString parameters](https://docs.aws.amazon.com/systems-manager/latest/userguide/ps-restrict-decryption.html). |
 | Parameter path/reference names | **Convention selected by Rahul on 2026-10-17:** simple parameter names beneath `/clip/`, using the previously selected shape `/<project>/<environment>/<parameter-name>`, concretely `/clip/{dev|test|staging|prod}/{lower-kebab-case-name}`. For example, `/clip/dev/database-url` is a name example only; no parameter exists. Keep names non-secret. |
-| PD-16 test parameters | Both `/clip/test/database-master-password` and `/clip/test/database-probe-password` exist at recorded parameter/write-only version 1. Setup revision 3 and probe revision 1 ran successfully; setup execution uses both references, probe execution only its own, and both application task roles have no inline/attached policies. Exact registered policies/references were checked; broad human access is the explicit DEC-10 exception. Terraform uses ephemeral/write-only inputs; no values are recorded here. See [live checks](../evaluation/foundation/pd-16/database-retry-result.json). |
-| Secret references | Recorded master reference: `/clip/test/database-master-password`, account `335523638354`, `ap-south-1`, test environment, PD-16. Probe reference `/clip/test/database-probe-password` is also provisioned; application/provider database URLs and other domain references remain unconfigured. Manual rotation/versioning and unavailable-access rules below apply. Aditya is the current PD-16 operator; registered task-reference/policy and runtime checks passed, while account-wide/all-user effective-access claims remain unverified; see the [inventory](cloud-inventory.md#pd-1516-recorded-deployment--2026-10-19). |
+| PD-16 test parameters | Both `/clip/test/database-master-password` and `/clip/test/database-probe-password` exist at recorded parameter/write-only version 1. Setup revision 3 and probe revision 1 ran successfully; setup execution uses both references, probe execution only its own, and both application task roles have no inline/attached policies. Exact registered policies/references were checked; broad human access is the explicit DEC-10 exception. Terraform uses ephemeral/write-only inputs; no values are recorded here. Older run receipts are recoverable through the [evaluation history guide](../evaluation/README.md). |
+| Secret references | Recorded master reference: `/clip/test/database-master-password`, account `335523638354`, `ap-south-1`, test environment, PD-16. Probe reference `/clip/test/database-probe-password` is also provisioned; application/provider database URLs and other domain references remain unconfigured. Manual rotation/versioning and unavailable-access rules below apply. Aditya is the current PD-16 operator; registered task-reference/policy and runtime checks passed, while account-wide/all-user effective-access claims remain unverified; see the [inventory](cloud-inventory.md). |
 | Manager ownership | Shared responsibility: all four current team members—Aditya, Suraj, Mohit, and Rahul—are intended to read, write, and manage Parameter Store secrets. Aditya is explicitly the current PD-16 change-window operator; this does not replace shared ownership or establish a primary for every future provider. |
 | Intended human access group | Rahul explicitly directed that all four team members—Aditya, Suraj, Mohit, and Rahul—have read/write/manage access to project parameters. Current AWS evidence identifies IAM users `rahulkoyye`, `surajs2`, and `mohitmahapa1` in `DS252-Project-Developers`; At that October 17 checkpoint Aditya was reported to use root. PD-16 later STS-verified IAM profile `adityalaxmi1` and approved it for non-root operations; see [DEC-06](../decisions/terraform-planning-identity.md). This does not prove its effective least privilege. |
 | Access role and permissions | On 2026-10-17, read-only inspection found Rahul's user had attached `IAMFullAccess` and belonged to `DS252-Project-Developers`, which had attached `PowerUserAccess`; Suraj and Mohit were in that group and each had `IAMUserChangePassword` attached directly. Policy simulation returned `allowed` for the checked SSM actions on an example `/clip/dev/` ARN and KMS encrypt/decrypt actions for these three IAM users; this was not a live operation test. Aditya later reported that all four users retain `PowerUserAccess`, `IAMFullAccess` was removed, and `CLIPParameterStoreTeamAccess` was added. The latest attachments and effective permissions for all four are not independently verified. Rahul accepted broad `PowerUserAccess` as intentional and skipped least-privilege checks. All-four SSM read/write/manage access remains an intent, not a tested capability. Aditya's reported root access was not exercised. |
@@ -87,15 +87,19 @@ The user approved [DEC-10](../decisions/broad-human-operator-access.md), retaini
 
 ## Current setup status
 
-PD-16 records the master reference provisioned; the probe reference remains planned and application/provider references are deferred to their owning tasks. Reported team access and runtime permission boundaries have not been independently verified. PD-14 itself created no parameter/key/resource; later PD-16 provisioning is recorded in the [inventory](cloud-inventory.md#pd-1516-recorded-deployment--2026-10-19).
+PD-16 records the master reference provisioned; the probe reference remains planned and application/provider references are deferred to their owning tasks. Reported team access and runtime permission boundaries have not been independently verified. PD-14 itself created no parameter/key/resource; later PD-16 provisioning is recorded in the [inventory](cloud-inventory.md).
 
-## ID-01 SES runtime access — setup partial
+## ID-01 SES runtime access — current recorded status
 
 SES uses the task role in ECS and the operator's approved non-root profile locally;
 no static SES/SMTP credential. Sender-scoped policy applied2026-10-23 06:17:00 UTC;
-corrected sandbox task-role delivery/inbox/cleanup passed17:17:30. Production access
-and the live verify@ sender update remain pending. See [current setup](identity-provider-setup.md)
-and [historical permissions/delivery](../evaluation/identity/provider-history.md).
+corrected sandbox task-role delivery/inbox/cleanup passed17:17:30. Later evidence
+records SES production access/sending, DKIM success and a standalone receipt on
+2026-10-28. Current application route preference and effective runtime permissions
+were not read by this agent; production application delivery remains gated by the
+source's test-only recipient rules and a reviewed configuration/permission plan.
+See [current setup](identity-provider-setup.md) and the [evaluation history
+guide](../evaluation/README.md) for dated receipts.
 
 ## ID-01 SES controlled-recipient input
 
@@ -125,8 +129,9 @@ live use. No credential value is recorded here; the key supplied in chat must be
 rotated privately through an approved path. Do not request keys in chat or print
 values in CLI arguments/logs/files. The local SDK's optional AWS-login dependency
 was unavailable; CLI-exported temporary credentials stayed only in process memory.
-This establishes operator access, not deployed runtime permission. Full outcomes
-and current gates are consolidated in [provider history](../evaluation/identity/provider-history.md#resend-and-sender-outcome).
+This establishes operator access, not deployed runtime permission. Current gates
+are in [ID-01 setup](identity-provider-setup.md); older outcomes can be recovered
+through the [evaluation history guide](../evaluation/README.md).
 
 
 ### ID-01 persistent runtime references — local preparation only
@@ -155,6 +160,8 @@ actual certificate chain before live use. The
 [role proposal](../../database/roles/identity-runtime.sql.proposed) does not create
 or change a shared role. Public grants, credential generation, role logging,
 scoped SSM permissions and rollback require a concrete separately approved plan.
+See the current [ID-01 setup and status](identity-provider-setup.md).
+
 See the [runtime handoff](../evaluation/identity/integration.md#secure-runtime-preparation).
 
 ### ID-01 email-key rotation confirmation — 2026-10-27 18:25:58 UTC
@@ -175,7 +182,9 @@ Real hosted Identity startup succeeded with existing fixed SSM references and
 stable keys/DSNs; no credential/parameter value/version rotated. Actual temporary
 registration/reset email and Microsoft sessions work, confirmed by Aditya. SES
 Mumbai production access and sending are enabled; verified domain DKIM SUCCESS,
-standalone test receipt confirmed. Application email order/keys unchanged.
+standalone test receipt confirmed. Application email order/keys were unchanged
+at that checkpoint. Current application route preference was not independently
+read; production Identity email remains test-profile/recipient guarded in source.
 [Safe runtime receipt](../evaluation/identity/id-01-step-13/runtime-enabled-result.json).
 Retention job reads only the fixed Identity DSN inside the reviewed container
 through existing task role, memory-only; no keys/credentials on host/config/output.

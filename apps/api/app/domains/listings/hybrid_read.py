@@ -125,8 +125,10 @@ def hybrid_statement(
         + text_query.sql
         + """ AS expanded
     ), catalogue AS MATERIALIZED (SELECT
-        (%s::text IS NULL OR EXISTS(SELECT 1 FROM listings.categories WHERE code=%s AND active)) AS category_valid,
-        (%s::text IS NULL OR EXISTS(SELECT 1 FROM listings.conditions WHERE code=%s AND active)) AS condition_valid
+        NOT EXISTS(SELECT 1 FROM unnest(%s::text[]) AS requested(code)
+          WHERE NOT EXISTS(SELECT 1 FROM listings.categories WHERE code=requested.code AND active)) AS category_valid,
+        NOT EXISTS(SELECT 1 FROM unnest(%s::text[]) AS requested(code)
+          WHERE NOT EXISTS(SELECT 1 FROM listings.conditions WHERE code=requested.code AND active)) AS condition_valid
     ), pipeline AS MATERIALIZED (
         SELECT pipeline.pipeline_id FROM listings.embedding_pipelines AS pipeline,input
         WHERE pipeline.state='serving' AND pipeline.pipeline_id=input.pipeline_id AND pipeline.encoding=input.encoding
@@ -134,7 +136,7 @@ def hybrid_statement(
         SELECT listing.id AS listing_id,listing.title,listing.description,
         category.code AS category_code,category.label AS category_label,
         listing_condition.code AS condition_code,listing_condition.label AS condition_label,
-        listing.asking_price_paise,listing.negotiable,listing.pickup_area,
+        listing.asking_price_paise,listing.original_price_paise,listing.negotiable,listing.pickup_area,
         listing.available_from,listing.available_until,listing.availability,
         (category.sensitive_category OR listing.asking_price_paise>input.sensitive_threshold) AS sensitive_purchase,
         listing.created_at,listing.search_vector
@@ -161,18 +163,16 @@ def hybrid_statement(
         query.q,
         *text_query.parameters,
         query.category_code,
-        query.category_code,
-        query.condition_code,
         query.condition_code,
     )
-    for value, predicate in (
-        (query.category_code, "category.code=%s"),
-        (query.condition_code, "listing_condition.code=%s"),
+    for values, predicate in (
+        (query.category_code, "category.code=ANY(%s)"),
+        (query.condition_code, "listing_condition.code=ANY(%s)"),
         (query.negotiable, "listing.negotiable=%s"),
     ):
-        if value is not None:
+        if values is not None and values != []:
             statement += " AND " + predicate
-            parameters += (value,)
+            parameters += (values,)
     if query.min_price_paise is not None:
         if query.min_price_paise > _STORAGE_MAX_PRICE:
             statement += " AND FALSE"
@@ -226,7 +226,8 @@ def hybrid_statement(
           'listing_id',page_window.listing_id,'title',page_window.title,'description',page_window.description,
           'category_code',page_window.category_code,'category_label',page_window.category_label,
           'condition_code',page_window.condition_code,'condition_label',page_window.condition_label,
-          'asking_price_paise',page_window.asking_price_paise,'negotiable',page_window.negotiable,'pickup_area',page_window.pickup_area,
+          'asking_price_paise',page_window.asking_price_paise,'original_price_paise',page_window.original_price_paise,
+          'negotiable',page_window.negotiable,'pickup_area',page_window.pickup_area,
           'available_from',page_window.available_from,'available_until',page_window.available_until,'availability',page_window.availability,
           'sensitive_purchase',page_window.sensitive_purchase,
           'image_ids',COALESCE((SELECT array_agg(image.id ORDER BY image.position,image.id) FROM listings.images AS image

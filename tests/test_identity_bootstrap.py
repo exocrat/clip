@@ -13,6 +13,7 @@ import pytest
 
 from apps.api.tests.domains.identity.migration_fixtures import (
     migration_case,
+    reviewed_migration_directory,
     tls_database,
 )
 from app.domains.identity.database_setup import LOGGING
@@ -30,6 +31,7 @@ class Case:
     connect: object
     plan: dict
     passwords: dict
+    migration_directory: Path
 
     def run(self):
         return boot.bootstrap(
@@ -37,7 +39,7 @@ class Case:
             self.database.password,
             self.database.target,
             plan=self.plan,
-            directory=ROOT / "database/migrations",
+            directory=self.migration_directory,
             manifest=MANIFEST,
             ca=self.database.ca,
             image=self.database.image,
@@ -45,7 +47,7 @@ class Case:
 
 
 @pytest.fixture
-def case(migration_case):
+def case(migration_case, reviewed_migration_directory):
     """Build old17 baseline and real retained logins in this disposable server."""
 
     def connect():
@@ -116,7 +118,9 @@ def case(migration_case):
             row["version"]
             for row in json.loads(MANIFEST.read_text())["migrations"][:17]
         ]
-        yield Case(migration_case, connect, plan, passwords)
+        yield Case(
+            migration_case, connect, plan, passwords, reviewed_migration_directory
+        )
     finally:
         with connect() as c:
             for role in passwords:

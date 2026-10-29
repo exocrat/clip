@@ -106,7 +106,7 @@ def test_real_cookie_enables_existing_listings_and_own_contact_routes(
         result = regular(browser, signed_tokens)
         catalogue = browser.get("/catalogue")
         assert catalogue.status_code == 200
-        assert len(catalogue.json()["categories"]) == 8
+        assert len(catalogue.json()["categories"]) == 9
         assert catalogue.headers["cache-control"] == "no-store"
         assert catalogue.headers.get("x-request-id")
         listings = browser.get("/me/listings")

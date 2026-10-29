@@ -47,7 +47,7 @@ export function ContactsEditor() {
   if (identity.status === 'anonymous' || (!identity.user && identity.status !== 'unavailable')) {
     return (
       <section className="identity-card">
-        <h2>Sign in to edit your contact details</h2>
+        <h2>Sign in to open Account</h2>
         <Link to="/sign-in">Go to sign in</Link>
       </section>
     );

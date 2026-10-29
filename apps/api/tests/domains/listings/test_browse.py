@@ -44,6 +44,7 @@ def summary() -> ListingSummary:
         condition_code="good",
         condition_label="Good",
         asking_price_paise=0,
+        original_price_paise=None,
         negotiable=False,
         pickup_area=None,
         available_from=NOW - timedelta(days=1),
@@ -104,8 +105,8 @@ def test_denials_precede_data_access(expired, eligible, status):
 @pytest.mark.parametrize(
     "filters",
     [
-        {"category_code": "bicycles"},
-        {"condition_code": "good"},
+        {"category_code": ["bicycles", "books"]},
+        {"condition_code": ["good", "like_new"]},
         {"min_price_paise": 0},
         {"max_price_paise": 100},
         {"negotiable": False},
@@ -119,6 +120,25 @@ def test_reviewed_filters_and_sorts_are_forwarded(filters):
     asyncio.run(subject.query_available_listings(caller(), ListingQuery(**filters)))
     received = store.browse_available_listings.await_args.args[0]
     assert all(getattr(received, field) == value for field, value in filters.items())
+
+
+def test_legacy_single_catalogue_values_normalize_to_one_selection():
+    """Existing links and internal callers remain valid with list filters."""
+    query = ListingQuery(category_code="bicycles", condition_code="good")
+    assert query.category_code == ["bicycles"]
+    assert query.condition_code == ["good"]
+
+
+def test_multiple_catalogue_values_are_independent_selections():
+    """Repeated category and condition values remain separate OR groups."""
+    query = ListingQuery(
+        category_code=["bicycles", "books"], condition_code=["new", "good"]
+    )
+    statement, parameters = browse_statement(query, NOW, 500000)
+    assert "category.code = ANY(%s)" in statement
+    assert "listing_condition.code = ANY(%s)" in statement
+    assert ["bicycles", "books"] in parameters
+    assert ["new", "good"] in parameters
 
 
 def test_whitespace_query_is_browse_and_huge_offset_is_safe():
@@ -380,18 +400,21 @@ def test_http_combined_filters_keep_zero_false_and_reviewed_sort():
     )
 
 
-def test_trimmed_unicode_query_limit_and_no_selected_price_cap():
-    """Count Unicode code points after trimming; do not invent a monetary cap."""
+def test_trimmed_unicode_query_limit_and_marketplace_price_cap():
+    """Trim text and enforce the shared inclusive marketplace amount cap."""
     assert BrowseQuery(q="  " + "🙂" * 120 + "  ").q == "🙂" * 120
     assert BrowseQuery(q=" \t ").q is None
-    assert BrowseQuery(max_price_paise=10**100).max_price_paise == 10**100
+    assert BrowseQuery(max_price_paise=1_000_000_000).max_price_paise == 1_000_000_000
+    with pytest.raises(ValidationError):
+        BrowseQuery(max_price_paise=1_000_000_100)
 
 
-def test_all_filter_values_are_bound_and_large_amounts_preserve_storage_semantics():
-    """SQL-looking codes stay parameters; values outside bigint cannot overflow SQL."""
+def test_all_filter_values_are_bound_and_marketplace_amount_cap_is_exact():
+    """SQL-looking code lists stay parameters and the inclusive cap fits storage."""
     code = "books' OR true --"
+    other_code = "bicycles"
     query = BrowseQuery(
-        category_code=code,
+        category_code=[code, other_code],
         condition_code="good",
         negotiable=False,
         min_price_paise=0,
@@ -399,18 +422,14 @@ def test_all_filter_values_are_bound_and_large_amounts_preserve_storage_semantic
         sort="price_asc",
     )
     statement, parameters = browse_statement(query, NOW, 500000)
-    assert code not in statement and code in parameters
+    assert code not in statement and [code, other_code] in parameters
     assert any(value is False for value in parameters)
     assert statement.count("%s") == len(parameters)
-    large = 10**100
-    empty_sql, empty_parameters = browse_statement(
-        BrowseQuery(min_price_paise=large), NOW, 500000
+    cap = 1_000_000_000
+    _, cap_parameters = browse_statement(
+        BrowseQuery(min_price_paise=cap, max_price_paise=cap), NOW, 500000
     )
-    assert "AND FALSE" in empty_sql and large not in empty_parameters
-    _, all_parameters = browse_statement(
-        BrowseQuery(max_price_paise=large), NOW, 500000
-    )
-    assert large not in all_parameters
+    assert cap in cap_parameters
 
 
 def test_unknown_catalogue_error_is_safe_at_http_boundary():
@@ -450,7 +469,8 @@ def test_catalogue_preflight_refuses_invalid_or_missing_result_without_fetching_
     assert failure.value.spec.status == expected
     connection.execute.assert_awaited_once()
     sql, parameters = connection.execute.await_args.args
-    assert "synthetic-missing" not in sql and "synthetic-missing" in parameters
+    assert "synthetic-missing" not in sql
+    assert parameters == (["synthetic-missing"], ["good"])
 
 
 def test_internal_reversed_range_is_shared_error_before_store():

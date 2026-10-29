@@ -129,7 +129,7 @@ final task review remain separate gates.
 ## Current records
 
 - [Development workstation](development-workstation.md): verified facts for the contributor's local machine.
-- [Command registry](commands.md): project commands and their owners, targets, and readiness.
+- [Command registry](commands.md): common project commands and links to current owner guides.
 - [Local API foundation setup and tests](../../apps/api/README.md): API-specific commands/settings; the common setup path is above.
 - [Secret handling](secret-handling.md): approved references and access procedures, without secret values.
 - [Cloud inventory](cloud-inventory.md): shared account, region, resource, and cost status. Update it from approved plans and actual outputs; do not infer or invent cloud facts.

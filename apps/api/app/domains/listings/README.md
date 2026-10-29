@@ -230,7 +230,7 @@ valid recency plan. Retirement fixtures use an already-ended 199-day window and
 restore the existing deferred parent/image publication checks; production checks
 were not weakened. The race helper drains its owned publication task on failures.
 
-[Native evidence](../../../../../docs/evaluation/domain/se-01/native-postgres/result.json)
+[Native run receipt in Git history](../../../../../docs/evaluation/README.md)
 records source hashes and limits. Actual native success does not activate the
 store/expanded public route, run a background worker or replace pending public
 hybrid contracts/read integration, full corpus/labels and upstream provider gates.
@@ -244,7 +244,8 @@ and concurrent text invalidation. `test_embedding_store.py` checks those fixture
 keys are distinct from the real candidate without SQL or model calls. Native
 suite: eight checks (five DB cases/three guards) passed; source/store/migrations
 required no behavior change. Public read coverage checks and real helper
-orchestration are still future implementation. [Evidence](../../../../../docs/evaluation/domain/se-01/native-pipeline-switch/result.json).
+orchestration are still future implementation. Its original receipt is recoverable
+through the [evaluation history guide](../../../../../docs/evaluation/README.md).
 
 ## Private real helper boundary — not startup-bound
 
@@ -261,7 +262,7 @@ between query and listing output; no ML package enters the root API environment.
 failures without pretending to run a model. The separate `ipc_probe.py` ran the
 actual model through pipes, including an owned-child crash/restart. See the
 [private protocol](../../../../../docs/architecture/semantic-helper-protocol.md)
-and [actual result](../../../../../docs/evaluation/domain/se-01/helper-ipc/result.json).
+and the [historical run receipt](../../../../../docs/evaluation/README.md).
 No controller is constructed by app/routes and no DB-generation loop or public
 503/coverage/read/fusion path is implemented here. Those retain their own gates.
 
@@ -282,7 +283,7 @@ fault pipes and, by explicit native runner opt-in, the actual pinned local model
 `native-checks.sh --embedding-worker` additionally verifies real crash/restart,
 long-text publication and mutation fencing. The ordinary Docker database runner
 includes the portable native fault test; it does not require/download the optional
-local model. [Evidence](../../../../../docs/evaluation/domain/se-01/worker-bridge/result.json).
+local model. Its original receipt is recoverable through the [evaluation history guide](../../../../../docs/evaluation/README.md).
 
 ## Vocabulary-only typo preparation
 

@@ -256,7 +256,7 @@ def test_contacts_profile_exact_thirty_day_boundary_and_guards(
     caller = grant.identity.caller
     service = state.service.contacts
     service.update_profile(
-        caller, ProfilePatch(display_name="Synthetic retained profile")
+        caller, ProfilePatch(display_name="Synthetic_retained_profile")
     )
     service.set_contact(caller, "email", "synthetic-retention@example.com")
     start = state.clock[0]

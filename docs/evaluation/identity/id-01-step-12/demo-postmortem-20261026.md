@@ -3,7 +3,9 @@
 Owner: Aditya(A). Source branch: `task/id-01-runtime-readiness`, based on
 main `3d6c270`; last committed preparation `1bb0eb9`. This handoff consolidates
 the local retrospective and emergency hosted demo notes. **ID-READY remains
-incomplete.** Cloud facts include the [read-only follow-up](cleanup-verification-20261026T180723Z.json) at2026-10-26 18:09:02UTC; older demo outcomes remain historical.
+incomplete.** Cloud facts include the read-only follow-up (historical receipt: `cleanup-verification-20261026T180723Z.json`) at2026-10-26 18:09:02UTC; older demo outcomes remain historical.
+
+Exact JSON receipts cited below are preserved in the parent of cleanup commit `f36ce3d`; retrieve one with `git show `f36ce3d^:docs/evaluation/identity/id-01-step-12/<filename>`. They record past actions and state only; NEXT-04 must refresh current cloud state.
 
 ## Local demo outcome
 
@@ -28,29 +30,29 @@ instance quota. No replacement database was created and the account was not
 upgraded. The original later started successfully. Keep these executed results,
 rather than the expired planning requests:
 
-- [Original capacity failure](shared-database-preflight-20261026T071912Z.json).
-- [Micro restore rejection](database-recovery-apply-20261026T073215Z.json),
-  [small restriction](database-recovery-small-apply-20261026T073928Z.json),
-  [t3 quota rejection](database-recovery-t3-apply-20261026T075358Z.json).
-- [Original RDS start](database-original-rds-start-20261026T090330Z.json),
-  [real schema preflight](shared-database-preflight-result-20261026T095424Z.json),
-  [logging/session follow-up](shared-database-followup-result-20261026T100459Z.json).
+- Original capacity failure (historical receipt: `shared-database-preflight-20261026T071912Z.json`).
+- Micro restore rejection (historical receipt: `database-recovery-apply-20261026T073215Z.json`),
+  small restriction (historical receipt: `database-recovery-small-apply-20261026T073928Z.json`),
+  t3 quota rejection (historical receipt: `database-recovery-t3-apply-20261026T075358Z.json`).
+- Original RDS start (historical receipt: `database-original-rds-start-20261026T090330Z.json`),
+  real schema preflight (historical receipt: `shared-database-preflight-result-20261026T095424Z.json`),
+  logging/session follow-up (historical receipt: `shared-database-followup-result-20261026T100459Z.json`).
 
 The approved strict runner then applied all 17 migrations to original `clip_test`,
 head `20261025013000`, with 37 tables/33 functions/43 triggers verified. Separate
 Identity and marketplace logins/URLs were provisioned and checked:
 
-- [Migration result](shared-migration-apply-result-20261026T102702Z.json).
-- [Identity role/URL](identity-runtime-role-result-20261026T103522Z.json).
-- [Marketplace role/URL and precise privileges](marketplace-runtime-role-result-20261026T104412Z.json).
+- Migration result (historical receipt: `shared-migration-apply-result-20261026T102702Z.json`).
+- Identity role/URL (historical receipt: `identity-runtime-role-result-20261026T103522Z.json`).
+- Marketplace role/URL and precise privileges (historical receipt: `marketplace-runtime-role-result-20261026T104412Z.json`).
 
 The marketplace role covers the reviewed Listings/Wanted/Saved operations but
 has **no Hybrid embedding-table privileges**. Hybrid/pipeline/model/worker setup
 still requires the Search owner's review. Keep Identity's private-table role
 separate; do not reuse the isolated Listings database-owner bootstrap.
 
-The exact applied manifest is [archived byte-for-byte](shared-migration-manifest-applied-20261026T102702Z.json)
-for checksum provenance, with a separate [completed-run review receipt](shared-migration-apply-review-executed-20261026T102702Z.json). The canonical reusable manifest is reset to its unreviewed,
+The exact applied manifest is archived byte-for-byte (historical receipt: `shared-migration-manifest-applied-20261026T102702Z.json`)
+for checksum provenance, with a separate completed-run review receipt (historical receipt: `shared-migration-apply-review-executed-20261026T102702Z.json`). The canonical reusable manifest is reset to its unreviewed,
 not-authorized state. The completed window's approval is consumed; the archive is
 historical evidence and is not permission for a new live run.
 
@@ -61,7 +63,7 @@ An AMD64 image with Microsoft sign-in enabled was published at digest
 Health and bundled web-root smoke checks passed. The approved Terraform operation
 retained scoped task IAM, the private ID-01 image bucket and API task revision2,
 but AWS rejected load-balancer creation account-wide. See
-[deployment/partial-apply evidence](demo-deploy-attempt-20261026T111441Z.json).
+deployment/partial-apply evidence (historical receipt: `demo-deploy-attempt-20261026T111441Z.json`).
 
 A separately approved temporary EC2/Caddy HTTPS proxy and task revision3 served
 the app after a forwarded-protocol correction. Public resolvers returned
@@ -69,7 +71,7 @@ the app after a forwarded-protocol correction. Public resolvers returned
 A direct HTTPS check to the intended IP succeeded. These observations are
 consistent with stale IISc DNS; they do not validate the complete application.
 No human hosted sign-in, listing publication/photo upload or Search journey
-was accepted. [Temporary proxy evidence](demo-proxy-bypass-20261026T112213Z.json).
+was accepted. Temporary proxy evidence (historical receipt: `demo-proxy-bypass-20261026T112213Z.json`).
 
 ## Recorded cleanup and remaining operator actions
 
@@ -94,11 +96,12 @@ cloud resources or reconcile remote state.
 
 Retain the Docker Microsoft build switch, scoped task/execution IAM, private S3
 configuration and gated runtime composition: these support unfinished real
-integration and describe retained cloud resources. Keep actual approval/result
-records for executed actions. Keep the work-log history and concise current state.
-Remove expired restore/preflight planning JSON, the superseded runtime proposal
-and the duplicate local retrospective;
-meaningful outcomes/limitations are preserved here and in their result evidence.
+integration and describe retained cloud resources. This postmortem and the
+work log keep the useful outcomes and limitations. Exact approval/result JSON
+is recoverable from Git history, but does not establish current state or authorize
+a new action. The cleanup removed expired restore/preflight proposals, superseded
+runtime proposals, the duplicate local retrospective and verbose machine output
+from the checkout. Keep concise current state in the work log.
 
 | Retained source | Purpose and merge disposition |
 |---|---|
@@ -149,11 +152,11 @@ credential values or SQL were read. State was pulled in memory only; no refresh.
 The two unresolved items are public apex resolution to the releasedIP and live/
 state ECS service revision mismatch. No resources or DNS changed; application
 journeys cannot be validated while stopped and require their separate approved run.
-[Sanitized evidence](cleanup-verification-20261026T180723Z.json).
+Sanitized evidence (historical receipt: `cleanup-verification-20261026T180723Z.json`).
 
 
 User follow-up18:20:44UTC: released-IP apex A deletion reported complete; do not
-recheck propagation at Aditya's direction. [Refresh-only state plan](ecs-state-reconciliation-review.json)
+recheck propagation at Aditya's direction. Refresh-only state plan (historical receipt: `ecs-state-reconciliation-review.json`)
 was applied with explicit approval at18:29UTC. State/live service now both revision2,
 shared compute remains0and RDS stopped. No secrets, DNS or infrastructure action.
-[Safe apply result](ecs-state-reconciliation-result-20261026T182852Z.json).
+Safe apply result (historical receipt: `ecs-state-reconciliation-result-20261026T182852Z.json`).

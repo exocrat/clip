@@ -255,7 +255,7 @@ def main():
         actual = sql(
             "SELECT version FROM public.schema_migrations ORDER BY version"
         ).splitlines()
-        if not expected or actual != expected or actual[-1] != "20261027112205":
+        if not expected or actual != expected or actual[-1] != "20261029043000":
             raise RuntimeError("Migration history differs from the expected head")
         migrate()
         for filename in (
@@ -268,6 +268,72 @@ def main():
             "search-storage-smoke.sql",
         ):
             sql((ROOT / "database/tests" / filename).read_text())
+        # Exercise the Handle forward against retained legacy names, not just an
+        # empty install. Down/reapply must preserve names and stable account IDs.
+        migrate(rollback=True)
+        sql("""
+            INSERT INTO identity.users(id,account_class,status,display_name) VALUES
+            ('e2900000-0000-4000-8000-000000000001','regular','active','HandleUpgradeUnique'),
+            ('e2900000-0000-4000-8000-000000000002','regular','active','HandleUpgradeDuplicate'),
+            ('e2900000-0000-4000-8000-000000000003','regular','active','handleupgradeduplicate'),
+            ('e2900000-0000-4000-8000-000000000004','regular','active','Invalid legacy name'),
+            ('e2900000-0000-4000-8000-000000000005','regular','active',NULL)
+        """)
+        retained_names = sql(
+            "SELECT id,display_name FROM identity.users WHERE id::text LIKE 'e2900000-%' ORDER BY id"
+        )
+        migrate()
+        for repeat in range(2):
+            if (
+                sql(
+                    "SELECT string_agg(handle_ready::text, ',' ORDER BY id) FROM identity.users WHERE id::text LIKE 'e2900000-%'"
+                )
+                != "true,false,false,false,false"
+            ):
+                raise RuntimeError(
+                    "Legacy Handle staging differs from the approved transition"
+                )
+            if (
+                sql(
+                    "SELECT id,display_name FROM identity.users WHERE id::text LIKE 'e2900000-%' ORDER BY id"
+                )
+                != retained_names
+            ):
+                raise RuntimeError("Handle migration changed retained names or IDs")
+            if not repeat:
+                migrate(rollback=True)
+                migrate()
+        sql("""
+            DO $$ BEGIN
+                UPDATE identity.users SET display_name='HANDLEUPGRADEUNIQUE',handle_ready=true
+                WHERE id='e2900000-0000-4000-8000-000000000002';
+                RAISE EXCEPTION 'Duplicate Handle claim unexpectedly succeeded';
+            EXCEPTION WHEN unique_violation THEN NULL; END $$;
+        """)
+        # Prove a consumer can read the public view without private Identity
+        # grants. The probe role and its privileges disappear with this rollback.
+        sql("""
+            BEGIN;
+            CREATE ROLE clip_handle_projection_probe NOLOGIN;
+            GRANT USAGE ON SCHEMA identity TO clip_handle_projection_probe;
+            GRANT SELECT ON identity.participant_profiles TO clip_handle_projection_probe;
+            SET LOCAL ROLE clip_handle_projection_probe;
+            DO $$ BEGIN
+                PERFORM handle,account_class FROM identity.participant_profiles LIMIT 1;
+                BEGIN
+                    PERFORM 1 FROM identity.users;
+                    RAISE EXCEPTION 'Private Identity access unexpectedly succeeded';
+                EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+                BEGIN
+                    PERFORM 1 FROM identity.contacts;
+                    RAISE EXCEPTION 'Private contact access unexpectedly succeeded';
+                EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+            END $$;
+            ROLLBACK;
+        """)
+        # Remove only these five unreferenced, invocation-owned test fixtures
+        # before the older Identity harness checks its exact two-row inventory.
+        sql("DELETE FROM identity.users WHERE id::text LIKE 'e2900000-%'")
         if (
             sql(
                 "SELECT count(*) FROM pg_tables WHERE schemaname IN ('identity','listings','search','conversations')"
@@ -495,6 +561,7 @@ def main():
                     "apps/api/tests/domains/search/test_draft_matches_postgres.py",
                     "apps/api/tests/domains/search/test_wanted_retirement_postgres.py",
                     "apps/api/tests/domains/search/test_wanted_postgres.py",
+                    "apps/api/tests/domains/search/test_wanted_discovery_postgres.py",
                     "apps/api/tests/domains/search/test_step6_postgres.py",
                     "apps/api/tests/domains/search/test_wanted_response_postgres.py",
                     "apps/api/tests/domains/search/test_category_migration_postgres.py",
@@ -551,7 +618,7 @@ def main():
                 )
             print(f"POSTGRES_LISTING_SAMPLE_ROW {sample}")
         print(
-            "PASS: PostgreSQL 18.6; combined clean/head/repeat, seven smokes, Identity upgrade/atomicity/rollback, protected retirement rollback and full clean reapply"
+            "PASS: PostgreSQL 18.6; combined clean/head/repeat, seven smokes, Handle legacy/collision/rollback/reapply, Identity upgrade/atomicity/rollback, protected retirement rollback and full clean reapply"
         )
     except (subprocess.TimeoutExpired, OSError, ValueError) as error:
         raise RuntimeError(

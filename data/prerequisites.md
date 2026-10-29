@@ -22,7 +22,7 @@ while PD-08's deferred checks and affected-owner acceptance remain open.
 
 | Source | Requirement for the framework / later consumer |
 |---|---|
-| [PD-09](../docs/tasks/pre-domain-task-list.md#pd-09--prepare-deterministic-synthetic-data-tooling) | Explicit seed/counts, fictitious values, reserved test domains, stable IDs, validation hooks and reproducible logical data. Versioned manifests contain requested/observed counts, UTC run time and a fingerprint excluding variable run-time metadata. |
+| [Current data tooling](README.md#setup-and-commands) | Explicit seed/counts, fictitious values, reserved test domains, stable IDs, validation hooks and reproducible logical data. Versioned manifests contain requested/observed counts, UTC run time and a fingerprint excluding variable run-time metadata. |
 | [Shared conventions](../docs/conventions/shared-conventions-and-cross-domain-contract-rules.md) and [UUID decision](../docs/decisions/identifiers.md) | IDs are lowercase hyphenated UUIDv4 strings. Deterministic synthetic IDs must preserve the approved shape and remain test-only; no UUIDv5 substitution or shared-helper edit. IDs never establish authorization. |
 | [Timestamp decision](../docs/decisions/timestamps.md) | Aware UTC; wire format has six fractional digits and `Z`. A recorded generation time must not perturb logical-data fingerprints. Any synthetic logical clock must be an explicit reproducible input, not wall-clock-dependent record content. |
 | [Money decision](../docs/decisions/money.md) | Future adapters use integer paise, reject bool/float money and preserve whole-rupee multiples of 100. Seller price is required, budget optional and negotiability separate; final field mapping belongs to real adapters. |

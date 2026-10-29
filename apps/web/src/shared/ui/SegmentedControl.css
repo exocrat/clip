@@ -14,3 +14,6 @@
   color: var(--color-primary-contrast);
   background: var(--color-primary);
 }
+@media (max-width: 38rem) {
+  .segmented-control__option { font-size: .875rem; padding-inline: .65rem; }
+}

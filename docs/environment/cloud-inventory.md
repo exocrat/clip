@@ -1,85 +1,94 @@
 # Cloud environment inventory
 
-Non-secret status record. Update only from approved plans and verified outputs. Never record credentials, tokens, or secret values here. This is an observed snapshot, not an authorization to use existing resources or create/change/delete cloud infrastructure.
+Non-secret handoff of the last recorded cloud state. This is not a live view or
+permission to create, change, or delete resources. Before any cloud operation,
+verify the caller and refresh AWS and Terraform state; review and approve the
+exact operation separately. Never record credentials, tokens, or secret values.
 
-## Verified cleanup snapshot — 2026-10-26 18:09:02 UTC
+## NEXT-04 read-only refresh — 2026-10-29 12:08 UTC
 
-Approved read-only checks confirm original RDS **stopped**, deletion protection on;
-shared ECS/API/ASG0/empty. Demo EIP65.0.49.162 is not allocated to this account;
-demo SG/target group absent, exact terminated-instance IDs return no retained
-records and proxy task revision3is inactive. ACM issued/unused. Identity parameter
-metadata remains version1; no values decrypted and no SQL/start/stop performed.
+Using the renewed `surajs2` profile, STS confirmed non-root user `surajs2` in
+project account `335523638354`, region `ap-south-1`. SES reports production
+access and sending enabled. The shared ECS service is task revision 10 with
+desired/running/pending all zero; its host ASG is at desired zero with no
+instances. Shared RDS is stopped and private. One NAT gateway remains available
+and may incur charges. No `clip` EventBridge rules were returned; this does not
+prove that every other scheduler or retained resource was inventoried.
 
-Aditya reports the released-IP apex A deleted at18:20:44UTC and explicitly
-requests no further propagation check. This human report supersedes the action
-item below; retain the ACM validation CNAME. No new DNS query was performed.
-The service mismatch observed in this snapshot was resolved by the approved
-refresh-only apply at18:29:50UTC: state serial18now records revision2, matching live
-revision2/desired-running-pending0. Original RDS stopped and ASG0reverified; no
-infrastructure action. [Reconciliation result](../evaluation/identity/id-01-step-12/ecs-state-reconciliation-result-20261026T182852Z.json).
-[Safe snapshot](../evaluation/identity/id-01-step-12/cleanup-verification-20261026T180723Z.json).
-Older unconfirmed-stop statements below are superseded by this snapshot only.
+The stopped task is configured for the test Identity profile, dual email and S3,
+with both Hybrid search and the worker disabled; its browser origin is exactly
+`https://clip-iisc.site`. The Identity image bucket blocks all public access, its
+bucket policy is not public, and CORS permits GET/HEAD/PUT from that HTTPS origin.
+The API task role's inline policy lists SES send, SSM parameter read and S3 object
+operations. Its sender condition includes `verify@clip-iisc.site`, its three SSM
+references match the documented Identity test parameters, and its S3 scope is
+the ID-01 object prefix; effective permissions and secret values were not tested. An ACM
+certificate for the domain is issued. Route53 returned no exact hosted zone for
+the domain in this account. Google and Cloudflare public DNS returned no A record;
+public NS records point to `launch1.spaceship.net` and `launch2.spaceship.net`.
+The hostname did not resolve from this environment; IISc resolver behavior and
+the current DNS operator remain unverified.
 
-## Latest recorded demo cleanup handoff — 2026-10-26
+NEXT-03 adds a participant projection used by Conversations: its dedicated runtime
+role needs reviewed `USAGE` on the Identity schema and `SELECT` on that view.
+The local role fixture verifies the narrow grant, but no shared grant or migration
+was applied. Current Terraform state/drift, Identity's real general-recipient
+production path, Hybrid model/worker and automatic vectors, trusted ingress,
+retention scheduling, budget and hosted end-to-end behavior remain deployment
+gates. The user deferred the broader SES production source change. No resource
+was started, changed or deleted and no email was sent in this refresh.
 
-This is a repository-evidence reconciliation, **not a fresh AWS inspection**.
-The [consolidated demo handoff](../evaluation/identity/id-01-step-12/demo-postmortem-20261026.md)
-contains exact outcomes, resource identifiers and remaining operator actions.
+Source inspection confirms that product discovery defaults to Hybrid, whose SQL
+accepts eligible original/expanded keyword matches or semantic matches without
+duplicating listing rows. Listing insert/text-edit triggers invalidate old
+embeddings and enqueue generations for active pipelines; the configured helper,
+model, serving pipeline and worker are still required to process them. These
+source paths do not establish a working hosted vector pipeline.
 
-- Original shared DB successfully received17migrations through20261025013000;
-  Identity and marketplace runtime roles/secure URLs were provisioned and checked.
-- Scoped task/execution IAM, private ID-01 image bucket, AMD64 image and ACM
-  certificate were retained. The alternate RDS candidates were never created.
-- Managed load-balancer creation was rejected by the account. The temporary EC2
-  TLS proxy/EIP/ingress were later removed, and shared API/host capacity returned
-  to zero. Human hosted sign-in/image/Search acceptance was not obtained.
-- RDS was last observed **stopping** at13:27UTC; final stopped state is unconfirmed.
-  The user-managed A record pointing to the released65.0.49.162 needs removal/
-  verification; preserve the ACM validation CNAME.
-- Recorded remote service state still revision1 while live stopped service was
-  revision2. A separately reviewed refresh/reconciliation is required before apply.
-- Shared VPC/NAT, DB storage/backups/data, IAM/SSM, image/S3/log resources and
-  certificate remain. Git cleanup neither changes them nor eliminates their costs.
+## Shared foundation — historical inspection 2026-10-26
 
-Older snapshots below retain their historical timestamps and can be superseded
-by this handoff. Do not use them as authorization or proof of current cloud state.
+An approved read-only inspection finished at **2026-10-26 18:09:02 UTC**. A
+refresh-only Terraform apply at **18:29:50 UTC** reconciled state serial 18 with
+the live API service at revision 2; it changed no cloud resources. The newer
+dated records in this inventory supersede this snapshot where they differ.
 
-
-Certificate issuance verified2026-10-26 07:13:33 UTC: ACM certificate
-`a9775d00-2af5-4b12-990d-1ce9795f1859` is **ISSUED**, validation SUCCESS,
-not yet associated with a listener. No HTTPS app deployment implied.
-[Issuance evidence](../evaluation/identity/id-01-step-12/https-certificate-apply-result.json).
-
-## HTTPS certificate and sender update — 2026-10-26 07:04:31 UTC
-
-Approved saved plan9f7d85f7 applied: one non-exportable ACM certificate for
-clip-iisc.site (`a9775d00-2af5-4b12-990d-1ce9795f1859`, Mumbai) pending public DNS
-validation; SES task-role FromAddress now verify@clip-iisc.site. No HTTPS listener,
-DNS write or application deployment. Original shared RDS remains stopped, shared
-API0tasks; separate Listings demo remains1host/1task. Certificate retained for
-integration, review date2026-10-27. [Public validation/result evidence](../evaluation/identity/id-01-step-12/https-certificate-apply-result.json).
-This supersedes older no-reply/no-regional-certificate observations below only;
-remaining runtime/DB/HTTPS setup is not complete.
-
-## Latest Identity connection snapshot — 2026-10-26 06:44:03 UTC
-
-Approved read-only inspection confirmed account335523638354/ap-south-1. Shared RDS
-is stopped; shared ECS/API/ASG have zero hosts/tasks/desired capacity. **Separate
-Listings demo is active**: clip-test-listings-ap-south-1-li02 has one host/task,
-clip-li02-demo HTTP listener has a healthy target. Preserve this other-owner work;
-older demo-stopped records below are historical. Images bucket remains private/
-AES256 and CORS names only that demo origin. Identity DB URL is not listed; keys/
-email/Listings URL metadata are present. No secret values or SQL were read.
-Apex domain has no public A/AAAA answers, nameservers are Spaceship, and no matching
-Route53 zone/ACM regional certificate was listed. Shared task remains the original
-foundation configuration; runtime/IAM/HTTPS connection work is pending.
-[Detailed snapshot](../evaluation/identity/id-01-step-12/cloud-metadata-20261026T064141Z.json).
-No cloud mutation or authority for future changes is implied.
-
-## Earlier foundation inventory (historical)
-
-| Fact | Current status |
+| Area | State at that inspection |
 |---|---|
+| Account and region | Account `335523638354`, `ap-south-1` (Mumbai). Aditya is the named operator by user direction; verify the actual caller before an approved action. |
+| ECS | Shared cluster `clip-shared-test` remains. API service is revision 2 with desired, running and pending task counts at zero. Capacity provider/ASG has desired zero and no host. |
+| Database | `clip-shared-test-postgres`, resource ID `db-PYRRZJPVKPGHIXDAHUWATXGH7A`, was stopped, private, encrypted and deletion-protected. Database data, storage and automated backups remain. No SQL or secret values were read during the cleanup inspection. |
+| Network and state | The retained foundation includes its dedicated VPC/NAT and versioned Terraform backend. The 2026-10-19 inventory recorded VPC `10.64.0.0/20`, NAT `nat-0d7fefbad586f4bce`, and backend bucket `clip-tfstate-335523638354-ap-south-1-20261019-0e51ca0`. Refresh before relying on these identifiers. Preserve the backend and its state versions. |
+| Identity demo cleanup | Temporary proxy, released EIP, demo security group and target group were removed; temporary API revision 3 is inactive. Certificate `a9775d00-2af5-4b12-990d-1ce9795f1859` is issued and validated but has no listener. Identity parameter metadata was version 1; values were not decrypted. |
+| Domain | Aditya reported removal of the apex A record at 18:20:44 UTC. At his direction, DNS propagation was not checked. Preserve the ACM validation CNAME. |
+| Retained resources and possible costs | Shared VPC/NAT, RDS storage/backups/data, ECS cluster, ECR, private image bucket, IAM roles, SSM parameters, logs, Terraform state and ACM certificate were recorded as retained. They may continue to incur charges. |
+
+The **ID-01 demo postmortem** has the detailed deployment and cleanup outcomes.
+It records that hosted sign-in, listing publication/photo upload and Search were
+not accepted. ID-READY remains incomplete. Check current state before reusing any
+of its resource details.
+
+## Separate LI-02 demo
+
+The last recorded post-stop inventory, from **2026-10-25**, found its disposable
+RDS, load balancer, service, host/root volume, run S3 objects, URL parameter and
+log streams absent. Two ECR run images remain by user direction
+(105,624,604 bytes total, about 101 MiB). The shared RDS and ECS cluster remain
+separate resources. Recheck before relying on this older snapshot.
+
+## Cost and future work
+
+DEC-12 accepted approximate cost estimates for the bounded PD-16 runs; they are
+not an invoice or the final NFR-08 result. The account's USD 200 budget reference
+is not a spending cap. Track later cloud spend and reserve, and complete the
+project-wide reconciliation in CLOSE-00.
+
+NEXT-04 directly uses this inventory and the [ID-01 demo postmortem](../evaluation/identity/id-01-step-12/demo-postmortem-20261026.md).
+For current provider references, see [secret handling](secret-handling.md) and
+[ID-01 setup](identity-provider-setup.md). Existing resource naming exceptions
+are covered by the [resource naming decision](../decisions/cloud-resource-naming-and-tags.md).
+The [shared/test Terraform README](../../infra/terraform/shared/test/README.md)
+describes that module; it does not replace a fresh plan or approval.
+
 | Account or project | `335523638354` — last checked 2026-10-19 20:27:40 UTC as IAM user `adityalaxmi1` with the approved non-root profile; account alias not determined |
 | Region | `ap-south-1` (Asia Pacific — Mumbai), selected for the project and used by identity and inventory checks |
 | Contributor CLI sign-in | Current operator Aditya used `adityalaxmi1`; verify the caller with STS before each approved action. The older `clip-project` profile observation below is historical; see [AWS CLI sign-in](README.md#aws-cli-sign-in). |
@@ -106,7 +115,7 @@ The following October 17 inventory and PD-14 closeout are historical snapshots. 
 
 ### Step 8 prerequisite refresh — 2026-10-19 16:49:57 UTC
 
-User selected a two-hour test window and volunteered previously as operator. Official ARM64 Session Manager plugin 1.2.896.0 is installed locally. Approved root read-only billing returned five enabled eligible credits: USD 179.54 remaining / USD 179.49 estimated, expiry 2027-08-14; see [summary](../evaluation/foundation/pd-16/step8-credit-summary.json). Root was not used for provisioning or IAM review. Current operator IAM metadata, read with `adityalaxmi1`, shows direct IAMFullAccess and developer-group PowerUserAccess/CLIPParameterStoreTeamAccess; no inline/attached policies exist on the three application task roles. This updates historical reported-policy facts for this operator only. The user resolved the Step 8 mismatch by approving [DEC-10 broad-human-operator access](../decisions/broad-human-operator-access.md); no additional human role or policy change is proposed; [preparation record](pd16-service-plan-preparation.md). No service plan, IAM change, RDS restart or live SSM session ran.
+User selected a two-hour test window and volunteered previously as operator. Official ARM64 Session Manager plugin 1.2.896.0 is installed locally. Approved root read-only billing returned five enabled eligible credits: USD 179.54 remaining / USD 179.49 estimated, expiry 2027-08-14; see [summary](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/foundation/pd-16/step8-credit-summary.json). Root was not used for provisioning or IAM review. Current operator IAM metadata, read with `adityalaxmi1`, shows direct IAMFullAccess and developer-group PowerUserAccess/CLIPParameterStoreTeamAccess; no inline/attached policies exist on the three application task roles. This updates historical reported-policy facts for this operator only. The user resolved the Step 8 mismatch by approving [DEC-10 broad-human-operator access](../decisions/broad-human-operator-access.md); no additional human role or policy change is proposed; [preparation record](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/environment/pd16-service-plan-preparation.md). No service plan, IAM change, RDS restart or live SSM session ran.
 
 ## Step 4 read-only inventory — 2026-10-17 UTC
 
@@ -213,23 +222,23 @@ Historical read-only IAM inspection on 2026-10-17 succeeded for Rahul's identity
 
 ### Step 9 service apply — 2026-10-19 17:18:01 UTC
 
-Approved checksum applied after commit `2978461`: seven resources created (API service, three task definitions, probe SecureString and two execution-role policies), no changes/deletions. [Result](../evaluation/foundation/pd-16/service-apply-result.json). RDS still stopped; immediate API snapshot desired 1/pending 1/running 0, ASG desired/hosts 0 while managed scaling starts. This supersedes the base-only capacity/credential inventory above. Window ends **2026-10-19 19:17:08 UTC**; no automatic shutdown. Actual runtime readiness and SSM/SQL remain pending.
+Approved checksum applied after commit `2978461`: seven resources created (API service, three task definitions, probe SecureString and two execution-role policies), no changes/deletions. [Result](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/foundation/pd-16/service-apply-result.json). RDS still stopped; immediate API snapshot desired 1/pending 1/running 0, ASG desired/hosts 0 while managed scaling starts. This supersedes the base-only capacity/credential inventory above. Window ends **2026-10-19 19:17:08 UTC**; no automatic shutdown. Actual runtime readiness and SSM/SQL remain pending.
 
 ### Step 10 live database check — 2026-10-19 17:36:32 UTC
 
-User authorized RDS start and fixed setup/probe sequence. Original RDS now available (start 17:30:03 UTC, available 17:34:25); one host/API still running. Setup revision 2 failed its logging guard before mutation; probe skipped. [Execution](../evaluation/foundation/pd-16/database-action-result.json). This supersedes prior stopped status. Compute/NAT/storage remain billable; original window expires 19:17:08 UTC, no automatic shutdown. No logging changes or automatic repair; await decision.
+User authorized RDS start and fixed setup/probe sequence. Original RDS now available (start 17:30:03 UTC, available 17:34:25); one host/API still running. Setup revision 2 failed its logging guard before mutation; probe skipped. [Execution](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/foundation/pd-16/database-action-result.json). This supersedes prior stopped status. Compute/NAT/storage remain billable; original window expires 19:17:08 UTC, no automatic shutdown. No logging changes or automatic repair; await decision.
 
 ### Step 10 successful database verification — 2026-10-19 17:51:23 UTC
 
-[Setup revision 3 and probe revision 1 passed](../evaluation/foundation/pd-16/database-retry-result.json); restricted `clip_test_probe` login and test DB ACL hardening now exist. Transaction-local logging checks/suppression succeeded without global parameter changes. Both one-shot tasks stopped; API/one host and RDS remain running. Initial revision-2 failure is historical. Web hosting needs a separately approved target/access; no domain/NFR acceptance. Window expires 19:17:08 UTC; no automatic shutdown.
+[Setup revision 3 and probe revision 1 passed](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/foundation/pd-16/database-retry-result.json); restricted `clip_test_probe` login and test DB ACL hardening now exist. Transaction-local logging checks/suppression succeeded without global parameter changes. Both one-shot tasks stopped; API/one host and RDS remain running. Initial revision-2 failure is historical. Web hosting needs a separately approved target/access; no domain/NFR acceptance. Window expires 19:17:08 UTC; no automatic shutdown.
 
 ### Current compute status — 2026-10-19 18:24:12 UTC
 
-**Compute off:** API desired/running/pending 0, cluster tasks 0, ASG desired/hosts 0; original host terminated 18:17:10 UTC. Original RDS resource `db-PYRRZJPVKPGHIXDAHUWATXGH7A` verified stopped **18:23:35 UTC**. [Shutdown evidence](../evaluation/foundation/pd-16/compute-stop-result.json). Supersedes preceding running snapshots. DB storage, ECR images, task definitions, network and state retained; NAT/storage/backups/logs remain billable. Resume needs separate RDS-start and fresh service-enable-plan approvals. Cleanup review date 2026-10-23 and unresolved exact idle-deadline/contact gates remain unchanged; RDS may auto-restart after seven stopped days.
+**Compute off:** API desired/running/pending 0, cluster tasks 0, ASG desired/hosts 0; original host terminated 18:17:10 UTC. Original RDS resource `db-PYRRZJPVKPGHIXDAHUWATXGH7A` verified stopped **18:23:35 UTC**. [Shutdown evidence](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/foundation/pd-16/compute-stop-result.json). Supersedes preceding running snapshots. DB storage, ECR images, task definitions, network and state retained; NAT/storage/backups/logs remain billable. Resume needs separate RDS-start and fresh service-enable-plan approvals. Cleanup review date 2026-10-23 and unresolved exact idle-deadline/contact gates remain unchanged; RDS may auto-restart after seven stopped days.
 
 ### Step 12 read-only budget/utilization review — 2026-10-19
 
-Five USD 50/80/100/120/130 alerts and all four historical subscriber routes reverified; no email sent. Budget actual USD 0.04/forecast USD 1.232 was last updated at 13:42:11 UTC, before the run; run-charge reconciliation awaits refreshed billing. [Review and utilization limits](../evaluation/foundation/pd-16/step12-cost-review.md). No Cost Explorer request/root fallback or resource change; compute remains off. Corrected period timezone description: actual API boundaries are midnight UTC, 05:30 IST.
+Five USD 50/80/100/120/130 alerts and all four historical subscriber routes reverified; no email sent. Budget actual USD 0.04/forecast USD 1.232 was last updated at 13:42:11 UTC, before the run; run-charge reconciliation awaits refreshed billing. [Review and utilization limits](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/foundation/pd-16/step12-cost-review.md). No Cost Explorer request/root fallback or resource change; compute remains off. Corrected period timezone description: actual API boundaries are midnight UTC, 05:30 IST.
 
 ### Accepted operator and idle deadline — 2026-10-19 UTC
 
@@ -379,7 +388,7 @@ pending0, ASG desired0/empty, owned i-00c9b68c7757c8da2 terminated and root
 vol-0161f12c2748b1dc7 deleted; no active SSM sessions. Guarded early scale-in initially
 rejected ScalingActivityInProgress, later accepted with honor-cooldown and fresh
 idle checks. NAT/data/SSM/IAM/task definitions/state retained; ongoing retained
-costs continue. No network or shared-policy change. [Sanitized record](../evaluation/identity/id-01-step-12/database-preflight-result.json).
+costs continue. No network or shared-policy change. [Sanitized record](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/identity/id-01-step-12/database-preflight-result.json).
 
 
 ### ID-01 renewed metadata and cleanup — 2026-10-24 22:27:20 UTC
@@ -397,7 +406,7 @@ stopped; sleep task1f26b751601944c4a0fcf7d88e179f32 stopped; SSM session closed;
 ASG0/empty; cluster hosts/tasks0; API desired/running/pending0. Owned host
 i-09708de46c0fa931a terminated and rootvol-00c3b7f86b1613fed deleted. Guarded
 scale-in accepted with cooldown honored. NAT/data/parameters/state/IAM/task
-retention unchanged; existing retained costs continue. [Sanitized report](../evaluation/identity/id-01-step-12/database-preflight-followup-result.json).
+retention unchanged; existing retained costs continue. [Sanitized report](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/identity/id-01-step-12/database-preflight-followup-result.json).
 
 
 ### Logging probe start rejected — 2026-10-25 04:06:31 UTC
@@ -406,7 +415,7 @@ Authenticated operator/idle guards passed under explicit logging-only approval.
 Original RDS start rejected: InsufficientDBInstanceCapacity for db.t4g.micro in
 ap-south-1a. Resource db-PYRRZJPVKPGHIXDAHUWATXGH7A rechecked stopped. No task,
 host, session or secret read was started; no SQL, IAM/network/class/AZ change or
-cleanup operation. Existing retained NAT/storage/etc. remain unchanged. [Result](../evaluation/identity/id-01-step-12/logging-probe-start-result.json).
+cleanup operation. Existing retained NAT/storage/etc. remain unchanged. [Result](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/identity/id-01-step-12/logging-probe-start-result.json).
 
 
 ### Logging retry startup/cleanup pending — 2026-10-25 04:37:19 UTC
@@ -418,7 +427,7 @@ No host/task/tunnel/secret read/probe SQL. Approved stop request rejected
 InvalidDBInstanceState (requires available); cleanup pending. Shared API/ASG/tasks/
 sessions rechecked zero/empty. No class/AZ/role/grant/IAM/network/schema change;
 no automatic retry or unapproved wait extension. Original window ends05:05:35UTC.
-[Retry record](../evaluation/identity/id-01-step-12/logging-probe-retry-result.json).
+[Retry record](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/identity/id-01-step-12/logging-probe-retry-result.json).
 
 
 ### Logging-only retry stopped baseline restored — 2026-10-25 04:53:05 UTC
@@ -431,7 +440,7 @@ Original resource db-PYRRZJPVKPGHIXDAHUWATXGH7A now confirmed stopped. Cluster
 hosts/tasks0, API desired/running/pending0, ASG0/empty and active sessions0. No
 child resources launched, credential retrieved, SQL probe/data/schema/role write,
 class/AZ/IAM/network change or alternative infrastructure. Retained NAT/storage/
-parameters/state unchanged; their ongoing costs remain. [Final record](../evaluation/identity/id-01-step-12/logging-probe-retry-result.json).
+parameters/state unchanged; their ongoing costs remain. [Final record](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/identity/id-01-step-12/logging-probe-retry-result.json).
 
 
 ### Live logging probe passed; stopped baseline restored — 2026-10-25 05:41:05 UTC
@@ -449,7 +458,7 @@ owned task8d71d4f672504d10b94c713c647b0fce stopped, tunnel closed; cluster hosts
 API desired/running/pending0, ASG0/empty, no active sessions. Owned host
 i-0be3743fe59a127bf terminated and rootvol-0806db641df31317b deleted. Guarded
 scale-in accepted with honor-cooldown. NAT/data/parameters/state retained; baseline
-retention costs continue. [Successful probe record](../evaluation/identity/id-01-step-12/logging-probe-20261025T052229Z.json).
+retention costs continue. [Successful probe record](https://github.com/exocrat/clip/blob/a60c83f21f285ec0d32d72108035c9d159194b24/docs/evaluation/identity/id-01-step-12/logging-probe-20261025T052229Z.json).
 
 ### ID-01 Step14 stopped consumer wiring — 2026-10-28 19:54:52 UTC
 

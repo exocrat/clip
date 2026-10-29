@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import type { AvailabilityChange } from '../../../../../contracts/generated/types.gen';
 import { Button } from '../../shared/ui';
 import type { ListingSelectionView } from './ConversationListingSelection';
@@ -13,8 +13,8 @@ export type ListingAvailabilityPort = {
 };
 
 /** Owner-only group action; ambiguous writes keep their exact operation for retry. */
-export function ConversationListingDoneDeal({ listingId, availability }: {
-  listingId: string; availability: ListingAvailabilityPort;
+export function ConversationListingDoneDeal({ listingId, availability, renderSelectedBuyer }: {
+  listingId: string; availability: ListingAvailabilityPort; renderSelectedBuyer?: (conversationId: string) => ReactNode;
 }) {
   const [listing, setListing] = useState<ListingSelectionView | null>(null);
   const [loading, setLoading] = useState(true);
@@ -24,11 +24,11 @@ export function ConversationListingDoneDeal({ listingId, availability }: {
   const pending = useRef<AvailabilityChange | null>(null);
   const alive = useRef(true);
   const readController = useRef<AbortController | null>(null);
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (silent = false) => {
     readController.current?.abort();
     const controller = new AbortController();
     readController.current = controller;
-    setLoading(true);
+    if (!silent) setLoading(true);
     setLoadError(false);
     try {
       const current = await availability.readOwnedListing(listingId, controller.signal);
@@ -44,6 +44,16 @@ export function ConversationListingDoneDeal({ listingId, availability }: {
     void refresh();
     return () => { alive.current = false; readController.current?.abort(); };
   }, [refresh]);
+
+  // Another page may reopen or select this listing. Refresh visible state without
+  // discarding the exact command after an uncertain write.
+  useEffect(() => {
+    const update = () => { if (document.visibilityState === 'visible' && !(busy || pending.current)) void refresh(true); };
+    const timer = setInterval(update, 2000);
+    window.addEventListener('focus', update);
+    document.addEventListener('visibilitychange', update);
+    return () => { clearInterval(timer); window.removeEventListener('focus', update); document.removeEventListener('visibilitychange', update); };
+  }, [refresh, busy]);
 
   async function markDone() {
     if (!listing || busy) return;
@@ -85,6 +95,7 @@ export function ConversationListingDoneDeal({ listingId, availability }: {
   }
 
   return <div>
+    {listing?.selected_conversation_id ? renderSelectedBuyer?.(listing.selected_conversation_id) : null}
     {loading ? <span role="status">Checking listing availability…</span> : loadError ? <>
       <span role="alert">Couldn’t check listing availability.</span>
       <Button onClick={() => void refresh()} variant="secondary">Retry listing check</Button>
