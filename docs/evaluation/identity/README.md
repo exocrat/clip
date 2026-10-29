@@ -12,6 +12,7 @@ criteria and action approvals still come from their canonical sources.
 | [Integration handoff](integration.md) | Current Step12 result, email routing and remaining work for ID-READY. |
 | [Hosted demo postmortem](id-01-step-12/demo-postmortem-20261026.md) | What worked/failed in the local and hosted demo, stale IISc DNS, cleanup results, and remaining shared resources. |
 | [Step13 live preparation](id-01-step-13/README.md) | Verified native AMD64 image, successful23-migration bootstrap, hosted human auth/email/HTTPS checks, retention tick and cleanup evidence. |
+| [Step14 permission matrix](id-01-step-14/README.md) |47business API operations, source-bound evidence, reconciled merged providers and user-reported owner acceptance with exact revision/runtime gaps; no Step14 test run yet. |
 | [Live work log](../../status/work-log.md) | Verification state, exact dated outcomes, ownership and pending integration ledger. |
 
 ## Current state

@@ -2025,3 +2025,55 @@ account HOME only to that process (resolve it with pwd); SSM omits HOME. The
 reviewed service has User=root and its actual automatic run supplies the proper
 account environment. Do not change system-wide environment or job source to
 work around that caller context. [First scheduled run](../evaluation/identity/id-01-step-13/retention-window-result.json).
+
+## ID-01 Step14 — actual consumer authorization matrix
+
+`uv run --locked pytest apps/api/tests/domains/identity/test_consumer_capability_matrix.py -q`
+runs the mounted HTTP routes with real cookie/CSRF middleware and actual domain
+services on a fresh, network-isolated disposable PostgreSQL18.6 database. The
+Identity fixture owns and removes its container; never supply a shared DSN.
+Controlled signer/mail/clock and ordinary SQL listing/image metadata are test
+inputs. This command does not access AWS, actual S3 objects, Hybrid serving,
+provider delivery or hosted database roles, and cannot accept those gates.
+
+`uv run --locked pytest apps/api/tests/domains/identity/test_consumer_capability_matrix.py apps/api/tests/domains/identity/test_conversation_runtime_principal.py -q`
+also exercises the opt-in proposed Conversations login in a separate disposable
+fixture database. The proposal lives in the Step14 evidence directory and is
+never applied by application startup or migrations. Only that owned test cluster
+creates/drops the login and revokes its database's PUBLIC TEMP/schema CREATE;
+never run these fixture operations against a retained/shared database. Actual
+consumer flows and privilege denials do not accept live grants/SSM provisioning.
+
+## ID-01 Step14 shared consumer runtime mock plans
+
+Use pinned Terraform1.15.9. In a new private temporary directory, copy only
+`infra/terraform/shared/test/*.tf`, `.terraform.lock.hcl`, `tests/` and `scripts/`
+(no `.terraform`, state, tfvars or credentials). Clear ambient cloud/TF_CLI_ARGS
+settings. Run `terraform init -backend=false -input=false -lockfile=readonly`,
+`terraform validate`, then `terraform test` in that disposable copy. Both test
+files use `mock_provider "aws"`; no AWS API, shared backend or real secret values.
+Four consumer tests cover unchanged defaults, exact separate-secret injection/
+permission, explicit Hybrid capacity/flags and invalid opt-in refusals; three
+HTTPS tests retain existing proxy checks. No mock result authorizes deployment,
+creates the proposed SQL login/SSM parameter or proves measured resource fit.
+
+## ID-01 Step14 role-only operator preparation
+
+`uv run --locked pytest tests/test_identity_conversations_role.py -q` creates
+only a network-isolated fixture database/role, checks refusals/rollback and
+removes its cluster. `scripts/identity_conversations_role.py` is an import-only
+operator library; it has no default DSN/CLI/cloud client or startup hook.
+`provision` requires a private connection callback, SecretStr password and
+explicit approved SQL hash. Live use requires the exact separately approved
+role/credential plan; the default live guard rejects the fixture target.
+`credential_uri` returns a masked SecretStr only; never print/serialize its
+private value to logs, argv or ordinary Terraform input/state. SSM storage is
+separate; no rotation, repair or automatic unknown-outcome retry.
+
+Step14 role-window connections use the approved private SSM remote-host tunnel
+on local loopback5432 so the fixed RDS host/port guard and verify-full certificate
+name remain intact (`hostaddr=127.0.0.1`). Recheck port availability before start.
+Stored runtime DSN uses `sslrootcert=system`, matching the existing image's pinned
+RDS roots; operator transport uses the reviewed public CA files. The helper
+also accepts an explicit absolute CA path and rejects query-based user/options
+overrides. This documentation authorizes no start or credential operation.

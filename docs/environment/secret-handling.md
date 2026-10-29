@@ -182,3 +182,17 @@ through existing task role, memory-only; no keys/credentials on host/config/outp
 The window-only job was verified then removed; future active runtime needs an
 approved cadence deployment. These facts supersede earlier pending runtime/SES
 status, without rewriting historical approvals or disclosing secret values.
+
+### ID-01 Step14 Conversations credential reference — 2026-10-28 19:54:52 UTC
+
+`/clip/test/conversations/database-url` is the proposed test SecureString DSN
+for the separate Conversations login; **parameter not yet created**, verified
+by metadata only. Approved stopped configuration now binds `CLIP_DATABASE_DSN`
+and scopes `ssm:GetParameters` to that exact ARN on
+`clip-shared-test-api-execution`. Application task role gains no read permission
+for it. Proposed storage remains Standard/aws-ssm key, manual rotation only.
+Aditya is the current operator; live role/parameter creation needs its separate
+exact plan/approval. Existing master/probe values were held only in memory for
+unchanged Terraform write-only inputs, versions preserved; no credentials in
+repo/CLI/output and no new secret generated or stored by this apply.
+[Applied configuration](../evaluation/identity/id-01-step-14/stopped-config-result.json).

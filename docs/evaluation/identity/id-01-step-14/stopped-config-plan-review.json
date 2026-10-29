@@ -1,0 +1,144 @@
+{
+  "state_serial": 24,
+  "plan_sha256": "1ae7c9262dc192166fbf938eda4ba9f0549be1e1afd60e9a4b706dabfd6c5636",
+  "plan_path": "/tmp/clip-step14-stopped-plan-syetoapp/stopped.tfplan",
+  "changes": [
+    {
+      "address": "aws_ecs_service.api[0]",
+      "actions": [
+        "update"
+      ]
+    },
+    {
+      "address": "aws_ecs_task_definition.api[0]",
+      "actions": [
+        "delete",
+        "create"
+      ]
+    },
+    {
+      "address": "aws_iam_role_policy.api_conversations_secret[0]",
+      "actions": [
+        "create"
+      ]
+    }
+  ],
+  "desired_count": 0,
+  "hybrid_enabled": false,
+  "conversations_secret_path": "/clip/test/conversations/database-url",
+  "old_image_preserved": true,
+  "master_probe_versions_preserved": true,
+  "state_asg_desired_was_stale": true,
+  "live_asg_desired": 0,
+  "cloud_applied": false,
+  "critical_fields_verified": true,
+  "task_cpu": 256,
+  "task_memory_mib": 512,
+  "new_parameter_created": false,
+  "db_or_host_start": false,
+  "resource_drift": [
+    {
+      "address": "aws_autoscaling_group.ecs_host[0]",
+      "actions": [
+        "update"
+      ]
+    },
+    {
+      "address": "aws_db_instance.shared[0]",
+      "actions": [
+        "update"
+      ]
+    },
+    {
+      "address": "aws_ecs_task_definition.api[0]",
+      "actions": [
+        "update"
+      ]
+    },
+    {
+      "address": "aws_security_group.ecs_host[0]",
+      "actions": [
+        "update"
+      ]
+    }
+  ],
+  "source_hashes": [
+    {
+      "path": "infra/terraform/shared/test/base.tf",
+      "sha256": "014fd912c57ec8870756b01a5f121578e2250de4173741b4855ffb0b858aad46"
+    },
+    {
+      "path": "infra/terraform/shared/test/consumer-runtime.tf",
+      "sha256": "e8873184d3fda598bd1d5284760aa6cd00ed8a854bf9b1c42ffcc56a36439b3e"
+    },
+    {
+      "path": "infra/terraform/shared/test/https-certificate.tf",
+      "sha256": "8a1b12c14af14bb0a5cf303ed4f6d8963336429c5e438edaca17f4e34335b30a"
+    },
+    {
+      "path": "infra/terraform/shared/test/identity-email.tf",
+      "sha256": "466ef2fef48dd6268a21be9b5e5c784115699f90055cd3028994dd001ffcc76f"
+    },
+    {
+      "path": "infra/terraform/shared/test/identity-https-proxy.tf",
+      "sha256": "430698f9da34a4e5cb84663c37ce6fcac336ed1e6bb7794c5c43b8d7c8d7b37c"
+    },
+    {
+      "path": "infra/terraform/shared/test/listings-images.tf",
+      "sha256": "3dd67d86f5485be065063200885ed2e6b6a395bdc7aef2e86fa36d99ea2cdf65"
+    },
+    {
+      "path": "infra/terraform/shared/test/locals.tf",
+      "sha256": "92b1dd0e50adbc0937e845acc2b4476f67bd2d1a20c4a26b65a5e3a7649d374e"
+    },
+    {
+      "path": "infra/terraform/shared/test/network.tf",
+      "sha256": "cc22c15bb83d0ef3cff78db5059f52e26c42a3fc4fa1ff01351b4f885dc9b008"
+    },
+    {
+      "path": "infra/terraform/shared/test/outputs.tf",
+      "sha256": "b252fcac10aae837f8525b9ba11db2ba188ec1ff5db4bf2e31c1d23ff9faf4ce"
+    },
+    {
+      "path": "infra/terraform/shared/test/service.tf",
+      "sha256": "f245aa92d29386df44db576172676dc1e2728206c69188ff66a2085a3c77db5c"
+    },
+    {
+      "path": "infra/terraform/shared/test/variables.tf",
+      "sha256": "bb044febdf21a61965757cd0dda6612b7ad4db44651d503f251f4f425c71beb9"
+    },
+    {
+      "path": "infra/terraform/shared/test/versions.tf",
+      "sha256": "85378f9c60b449e27a7d8fe68661c2d359fd088f620d34c541177abe76ddb332"
+    }
+  ],
+  "drift_review": [
+    {
+      "address": "aws_autoscaling_group.ecs_host[0]",
+      "review": "desired capacity1 to0 after prior shutdown"
+    },
+    {
+      "address": "aws_db_instance.shared[0]",
+      "review": "available to stopped; backup restore timestamp advanced"
+    },
+    {
+      "address": "aws_ecs_task_definition.api[0]",
+      "review": "task tag metadata changed"
+    },
+    {
+      "address": "aws_security_group.ecs_host[0]",
+      "review": "prior proxy ingress removed; current ingress empty"
+    }
+  ],
+  "recorded_at_utc": "2026-10-28 19:50:23 UTC",
+  "account": "335523638354",
+  "region": "ap-south-1",
+  "profile": "adityalaxmi1",
+  "root": "infra/terraform/shared/test",
+  "state_key": "shared/test/terraform.tfstate",
+  "approval": "Aditya explicitly approved this exact saved plan before apply",
+  "apply_scope": "Only stopped config: exact Conversations execution-role SSM policy, replacement task definition and stopped service reference. No role/parameter/DB/host/proxy/image changes.",
+  "stop_conditions": "Changed source/state/secret versions, unexpected actions or any resource start: do not apply; prepare/review a fresh plan.",
+  "rollback": "Disable Conversations option, generate a fresh stopped plan and obtain separate approval; do not assume old deregistered task revision can be reused.",
+  "applied_result": "docs/evaluation/identity/id-01-step-14/stopped-config-result.json"
+}

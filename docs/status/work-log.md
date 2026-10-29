@@ -47,7 +47,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PD-19 | Integration owner (current branch) | done | Steps 1–9 and combined foundation handoff complete | Steps 1–9 performed | User confirms all work before PRE-00 is complete | PR #8 merged at `2cd83e7` from head `18c966e` against base `68d9da9`; [Foundation quality gates passed](https://github.com/exocrat/clip/actions/runs/39323851584) for that exact head/base; `make test` (395 Python, 63 data, 16 web), Black, contract freshness and 10 `make check` gates passed; [handoff](foundation-handoff.md) | No open PD-19 work per user confirmation. Linux AMD64/macOS results remain user-confirmed without raw outputs. PR #8 has no submitted GitHub review; independent-review completion is user-confirmed, with no separate review artifact linked. Refresh cloud snapshot before any operation. | 2026-10-19 21:09:05 UTC |
 | PRE-00 | Integration owner | done | Foundation gate audit accepted; DL-00 is unblocked | performed | verified/accepted by user | Reviewed handoff PR #8 merged to `main` at `2cd83e7`; hosted Foundation quality gates passed for head `18c966e` against base `68d9da9` (run `39323851584`); clean-checkout evidence at `0747be6`; see [PD-19 handoff](foundation-handoff.md) | None. PR #8 has no GitHub review event; independent-review completion remains user-reported without a separate artifact. | 2026-10-19 21:20:55 UTC |
 | DL-00 | Shared-core/contract coordinator; all domains review | done | Steps 1–13 and task-wide audit complete; accepted and merged | Steps 1–13 performed; accepted by user | User confirmed full acceptance and merge on 2026-10-22 05:30:49 UTC | PR #9 merged to `main` at `f5576ef`; current `main` is `44cd8ff`; Step 13 check evidence is recorded below and was not rerun for this update | None for DL-00; cleanup implementation remains separately gated; real providers/integrations and crypto/worker implementation remain downstream | 2026-10-22 05:30:49 UTC |
-| ID-01 | A | in progress | Step13 complete and human-verified; source ready for peer review/publication | Real Microsoft/temp email/reset/contact/logout/phone/HTTPS and scheduled retention checks pass; full approved cleanup independently verified | Aditya verified final Step13 result; API/ASG0, RDS stopped, both hosts/EIP/timer/fallback removed | [Accepted Step13 review](../evaluation/identity/id-01-step-13/closeout-review.json); Git history records closeout commit | Source peer/affected review/publication; formal ID-READY acceptance and Step14/full ID-01 remain separate | 2026-10-28 15:57:07 UTC |
+| ID-01 | A | in progress | Step14 provisioning interrupted by user; all owned compute cleaned; current changes ready for requested commit |42consumer/6operator/7mock passes; task8 wiring applied; host/root gone/API0/ASG0/RDS stopped | CLI preflight cause unresolved before master/SQL/SSM; new role/parameter not created | [Resume/cleanup result](../evaluation/identity/id-01-step-14/provisioning-window-result.json) | Diagnose CLI preflight read-only; fresh approval before restart; real S3/Hybrid/hosted matrix and acceptance still pending | 2026-10-28 20:31:28 UTC |
 | LI-01 | B | in progress | Finish the remaining Step 7 browser states and current-head Step 11 checks/reviews; prepare a progress PR without claiming LI-CORE. Steps 12–13 remain integration-gated. | Steps 1–6 and 8–10 implemented and locally checked; Step 7 partial (create/detail/edit/My Listings/gallery). | Suraj verified the multi-image edit/gallery checkpoint, seller-only selected-buyer visibility, and Step 10. No LI-01 phone-device result is claimed. | domain/listings at 6ffbe0b; focused Listings suite: 61 passed, one database-only test skipped outside the wrapper; disposable PostgreSQL workflow passed; current worktree `make check` passed 2026-10-23 (573 Python, 63 data, 42 web tests; remaining contract, type, boundary, database, safety, formatting, lint, and build checks passed). | LI-CORE not accepted. Remaining Step 7 states; Step 11 query-plan, current aggregate, and affected-owner review; native schema check; five pre-existing backend boundary findings; real Identity, Conversations, storage, and Search integration; Steps 12–13. | 2026-10-23 10:38:31 UTC |
 | LI-02 | B | in progress | Step 12 demo is tested and stopped; record final evidence, then begin intake of the Search owner's PR under the review workflow. | Steps 1–11 and 1.5 verified; Step 12 ran on ECS and was tested on desktop/mobile. Read-only app checks found the synthetic listing and its S3 image; teardown is complete. | User approved and applied teardown plan `3703bb7b23405a5a23a1ac6c39fa8870e682dddf3a1a8272183f4642f8f0db81` (0 add, 1 change to LI-02 bucket CORS, 20 LI-02 deletes). Post-stop inventory confirms disposable RDS/ALB/service/host/root volume/run S3 objects/URL parameter/log streams absent; shared RDS is stopped, shared ECS cluster remains, LI-02 ASG desired 0/no instances. Two run ECR images are retained (105,624,604 bytes total) per user direction. | `task/li-02-isolated-runtime` at `f0bf6c6`; earlier 11 focused tests, Black, Python compilation, Terraform fmt/validate, CLI help and diff checks. Start plans: infrastructure `a2b8cbeaa6cc4fc2d13ff8c8696cfa133d8134280de89f719e0d6f2b91668f55`; app start `b6a3fbd4812c965a5830780f337997d13b4b362c7eb1a73f2b3e70f5946b5bd4`. Stop-path corrections are currently uncommitted in `scripts/li02-demo`, `infra/terraform/domains/listings/test/database_tasks.tf`, both LI-02 operator guides, and this work log. `git diff --check` passed; no tests rerun. Existing untracked `data/runs/` and `database/migrations.zip` remain untouched. | Compute/ingress/disposable-database charges from the demo have ended. Retained run images add about 101 MiB of ECR storage; Step 4 bucket/IAM/log group and shared VPC/NAT/ECS/RDS remain. No manual RDS snapshot remains. | 2026-10-25 09:29:55 UTC |
 | SE-01 | Mohit (C); peer Suraj (B), Identity review | in progress | PR15 hosted Python/web/database gates pass; checksum-evidence scanner false positive corrected locally | 47714cc fixes readiness; subsequent CI reaches final secret scanner; two verified SHA256 fingerprints reformatted without scanner exemptions | Mohit verified Hybrid-default UI and requested branch push/PR | Search PR #11 worktree `task/search-evidence-reduction` at `864e53b`; new listing `194a32d4-64bb-491b-b4ec-68403e26f7f3` produced one title and one description vector (384 dimensions each), then matched in both modes through API and Vite proxy; session `/tmp/clip-listings-browser-v6e1f01t`; UI `http://127.0.0.1:5173/`  [Hybrid default UI](../evaluation/domain/se-01/hybrid-default-ui/result.json): lint86/web289pass/3skip/types/build pass;  [PR15 correction](../evaluation/domain/se-01/pr15-ci-readiness/result.json): unit11/native21/3skip/17migrations/Black2/boundaries/diff pass;  [Hosted rerun](https://github.com/exocrat/clip/actions/runs/40382575520) functional/database gates pass; evidence-format rerun pending. | Formal SE-CORE/DATA-READY and final NFR/hosted-CI acceptance remain outside this merge step | 2026-10-26 19:06:47 UTC |
@@ -8745,3 +8745,275 @@ result. Step13 is complete and human-verified; [acceptance/evidence](../evaluati
 and current status updated. Source independent/affected-owner review and
 publication remain separate; formal ID-READY acceptance and full ID-01/Step14
 are not inferred. No further implementation, cloud startup, push or merge.
+
+### ID-01 Step14 — capability matrix and evidence inventory — 2026-10-28 16:13:04 UTC
+
+Aditya(A) verified the read-only audit/six-increment plan. Completed only local
+increment1 within canonical ID-01.14: [human-readable audit](../evaluation/identity/id-01-step-14/README.md)
+and [editable source-bound matrix](../evaluation/identity/id-01-step-14/capability-matrix.json)
+record15Listings/images,11Search/Wanted/Saved,16Conversations and5own-profile/
+contact operations.188base regular/temporary/expired/revoked expectations are
+planned cells, not executed tests; terminal/replay/ownership variants add cases.
+Mapped16existing test/evidence references and their controlled-provider/storage/
+synthetic-caller/empty-page limits. No prior partial test is relabelled full FR-03.
+
+No task-definition correction needed. Preserved nuanced owner-scoped upload
+confirm/cancel checks and permitted temporary empty own-list reads rather than
+inventing blanket seller denials. All per-row execution/acceptance states pending.
+Static validation passes47unique route operations, source hashes, referenced test
+functions, local Markdown links, row counts and pending-only states. System
+Python3.13 could not parse existing3.14syntax; reran documentation parser using
+repo .venv3.14 without editing source. Whitespace/secret checks apply to this
+documentation increment; no application tests, code/contracts, AWS, provider or
+source publication actions. Evidence index/current task row updated.
+
+Dependency records remain distinct from actual code: remote main5e8d264/no open
+PR, current branch contains merged Conversations routes/provider and partial real
+Identity integration. Formal ID-READY/LI-CORE/SE-CORE/CN-CORE and owner acceptance
+remain recorded unaccepted. Current persistent Conversations DSN/grants gap was
+intentionally preserved in Step13; no grant/secret change or new consumer stub
+authorized. Primary peer Rahul(D); affected Listings Suraj(B)/Search Mohit(C).
+Await increment1 result verification; next is evidence/owner prerequisite
+reconciliation, not automatic test execution or cloud startup. Step14/FR-03/full
+ID-01 remain incomplete; prior human-verified Step13 remains complete.
+
+### ID-01 Step14 — verified matrix and reconciled prerequisites — 2026-10-28 16:28:06 UTC
+
+Aditya(A) verified increment1 matrix; completed only increment2 source/owner/
+merge-evidence reconciliation. Read-only GitHub confirms PR10/11/14/15/16/17/18
+MERGED and recorded Foundation checks SUCCESS. PR14 has human APPROVED; PR17
+AI COMMENTED is not peer approval. Other absent review events do not negate
+existing human-reported manual review/merge. Merge ancestry and9core provider/
+policy/router/composition files match merged main5e8d264; concrete Listings
+query/category/save methods and Conversations final provider are implemented.
+Only app-domain diff beyond main is strict Identity migration runner; build/
+HTTPS/operator/docs source also await publication, not new47endpoint controllers.
+
+Aditya explicitly reports LI-CORE/SE-CORE/CN-CORE accepted by their owners and
+will provide details. Positive owner acceptance is recorded; exact accepted
+revision/reviewer bindings are pending, not inferred from merge SHAs. Only the
+Identity row/history/evidence changed; other-owner milestone rows are preserved.
+Historical Search missing-provider/Conversations declaration-only/17-file DB/
+proposed-role/SES claims were reconciled against current concrete source and
+accepted Step13 receipts, not rewritten in other-owner files.
+
+[Reconciliation](../evaluation/identity/id-01-step-14/dependency-reconciliation.json)
+separates persistent Conversations principal/DSN/grants, actual Identity/S3 image
+positives, supported real Hybrid helper/model/serving inputs, full matrix and
+formal revision closeout gaps. No contract/task-definition gap or new CN-03/
+DATA-READY/NFR prerequisite was invented. Existing core paths permit planning
+actual-service tests; no dependency stub can stand in for missing real evidence.
+Static47row pending-state/source/hash/link checks,7PR receipts/ancestry and9file
+main parity pass. No application tests, app/contracts, AWS/secrets/providers,
+owner messages, new stubs, commit/push/merge or milestone acceptance performed.
+Await increment2 result verification; next proposed increment is missing-case
+test design/implementation against actual services and disposable PostgreSQL,
+with formal readiness and actual integration gates still required for acceptance.
+
+### ID-01 — Step14 increment3 actual consumer checks — 2026-10-28 18:25:56 UTC
+
+A implemented the missing direct-API test module after Aditya verified dependency
+reconciliation. All47 business routes reject eight real terminal-session cases
+(376requests); regular/temporary consumer, CSRF, nonmember, selected/deleted
+contact and exact contact-share retry checks pass:15tests in31.03s. New
+`test_consumer_capability_matrix.py` composes actual services/SQL/middleware;
+controlled signing/mail/clock and fixture image metadata do not prove S3,
+Hybrid, hosted grants or SDK encryption. Test-harness failures were corrected
+without production changes. Black, boundaries0 and Gitleaks8.30.1 passed.
+[Matrix evidence](../evaluation/identity/id-01-step-14/README.md), per-row terminal
+results and registered command updated. No cloud/commit/publication; increment3
+awaits verification. Remaining resource/ownership/replay and real integration
+checks keep Step14/FR-03/ID-01 incomplete; owner acceptance is reported, with
+exact revision details still promised.
+
+### ID-01 — Step14 increment4 ownership/replay — 2026-10-28 18:40:08 UTC
+
+A extended the Identity-owned consumer matrix after increment3 verification.
+Five new cases cover regular/temporary offer revisions, exact/conflicting
+retries, withdrawal, other-buyer denial; Wanted response class gates/reuse and
+foreign-author denial; foreign seller commands and forged ownership bodies.
+Denied operations preserve business-state fingerprints. Combined20tests pass
+in35.79s; Black, boundaries0, Gitleaks8.30.1 and whitespace checks pass. Two
+initial assertion failures were corrected to existing Wanted replay and
+Listings owner-error contracts; production code unchanged.
+[Evidence and per-row annotations](../evaluation/identity/id-01-step-14/README.md)
+updated; no cloud or commit. Await increment4 verification. Remaining active
+resource conditions, real S3/Hybrid, hosted Conversations database binding and
+revision-bound acceptance keep Step14/FR-03/ID-01 incomplete.
+
+### ID-01 — Step14 positive sale-owner follow-up — 2026-10-28 18:43:08 UTC
+
+A added the Identity-owned sale-owner lifecycle check after increment4
+verification. Actual HTTP/SQL cancellation, replacement, close/reopen, selected
+buyer and sale creation pass; public detail omits management/selection fields.
+Fixtures contain image metadata only, with no S3 integration claim. Initial
+public-response assertion corrected to use the existing owner-management API;
+no production change. Focused1passed, combined21passed in38.92s; Black,
+boundaries0, Gitleaks8.30.1 and whitespace checks pass.
+[Evidence/matrix](../evaluation/identity/id-01-step-14/README.md) updated and
+stale plan-only summary corrected. Await follow-up verification. No cloud or
+commit; resource/mode, S3/Hybrid, hosted Conversations binding and revision
+acceptance gates keep Step14/FR-03 incomplete.
+
+### ID-01 — Step14 keyword/resource/error follow-up — 2026-10-28 18:45:16 UTC
+
+A added four regular/temporary cases after verified sale-owner continuation:
+actual keyword filters/sorts/paging, read-only nonempty draft matches, closed
+Wanted author/public/peer boundaries, cross-domain422 errors without private
+input reflection or state changes. Focused4passed; combined25passed in44.79s.
+Black, boundaries0, whitespace, Gitleaks8.30.1 and12recorded production/contract
+source hashes pass. [Evidence/matrix](../evaluation/identity/id-01-step-14/README.md)
+updated. No production/cloud/commit change; await verification. Remaining
+resource variants, real S3/Hybrid, hosted Conversations binding and exact owner
+acceptance revisions keep Step14/FR-03 incomplete. Next authorized increment
+should inspect configuration and prepare the concrete runtime integration plan
+without applying cloud/privilege changes.
+
+### ID-01 — Step14 runtime configuration preparation — 2026-10-28 18:52:03 UTC
+
+After verified resource/error continuation, A inspected actual composition,
+shared task/S3/IAM, bootstrap grants and existing Hybrid deployment procedure.
+S3 wiring exists; Conversations falls back to a marketplace principal without
+its schema rights; optional Hybrid image exists but local artifact contexts
+are absent and pipeline activation remains explicit.
+[Prepared ordered sequence](../evaluation/identity/id-01-step-14/README.md) proposes
+separate Conversations login/SSM/DSN, local privilege proof/owner review, then
+exact gated AMD64 runtime plan, real matrix and cleanup. Proposed names are
+not claimed provisioned. Source-only: no AWS/secrets/artifact access, production
+changes or tests rerun;25tests remain latest evidence. Await verification; next
+is local role/grant/testing and shared reservation, not cloud execution.
+Step14/FR-03 remains incomplete.
+
+### ID-01 — Step14 separate Conversations principal local proof — 2026-10-28 19:02:48 UTC
+
+After runtime-plan verification, A added a local-only explicit SQL proposal
+in Step14 evidence, opt-in distinct-login matrix fixture and
+`test_conversation_runtime_principal.py`. Actual user flows pass with no direct
+Identity/Listings/Search reads, DDL/TEMP/TRUNCATE/DELETE, role memberships or
+object ownership; proposal includes private statement/error logging defaults.
+Initial503 was malformed fixture URI, not missing grants; corrected without
+widening privileges. Focused2passed; combined27passed in53.18s. Black2,
+boundaries0, Gitleaks8.30.1 and whitespace pass; commands/hashes/evidence updated.
+[Exact proposal/limits](../evaluation/identity/id-01-step-14/README.md) awaits human
+verification and Rahul review. No production/shared Terraform, AWS/SSM/grant,
+credential or commit changes; shared reservation remains untaken pending active
+work inspection. Real runtime and remaining matrix gates keep Step14 incomplete.
+
+### ID-01 — Step14 shared runtime configuration reservation — 2026-10-28 19:05:11 UTC
+
+Current writer Aditya(A), branch `task/id-01-runtime-preparation`: bounded edits
+to `infra/terraform/shared/test/service.tf`, new `consumer-runtime.tf`, new
+mock test and shared root README for opt-in Conversations DSN injection, exact
+execution-role SSM permission and configurable Hybrid task sizing. Remote main
+remains5e8d264; no open PRs observed immediately before reservation. No other
+active writer found in records; no role/schema/provider/controller changes.
+Human authorized preparation; SQL peer review and any cloud plan/apply remain
+separate. Reservation ends after this local result is reported.
+
+### ID-01 — Step14 shared runtime configuration prepared — 2026-10-28 19:08:08 UTC
+
+A prepared reserved shared Terraform options after local-principal verification.
+New `consumer-runtime.tf` scopes execution-role SSM access to the proposed exact
+Conversations DSN and supplies opt-in flags/bounded capacity; `service.tf` binds
+those inputs and refuses incomplete Identity/Hybrid sizing. New mock tests and
+README/commands explain safe defaults and live prerequisites. Remote main stays
+5e8d264; no open PRs. Shared reservation released after local checks.
+Pinned Terraform1.15.9 backend-free validation and7mock cases pass; format,
+whitespace/Gitleaks8.30.1 pass. Initial system-version refusal corrected by using
+existing pinned binary; no version change. No Python rerun; previous27pass.
+[Hashes/evidence](../evaluation/identity/id-01-step-14/dependency-reconciliation.json)
+recorded. No AWS/secret/SQL/SSM writes, resource start or commit. Await verification
+and affected-owner review; exact live plan/caps/cleanup approval still required.
+Step14/FR-03 incomplete.
+
+### ID-01 — Step14 actual closure/retirement/key-state extension — 2026-10-28 19:14:36 UTC
+
+After shared config verification, A added8regular/temporary cases for Wanted
+self/closed-pair behavior, actual zero-thread retirement/content scrub and
+author409/foreign404, closed sale existing-only chat/offer denial/withdrawal,
+empty draft matches and prekey depletion/rotation/retry. Initial retired-write
+assertions corrected to existing owner409 contract; production unchanged.
+Combined35passed in61.32s; Black2, boundaries0, Gitleaks8.30.1 and whitespace
+pass. [Evidence/per-row conditions](../evaluation/identity/id-01-step-14/README.md)
+updated; threaded/pending/cross-origin/selection/revision/concurrency variations
+and real S3/Hybrid/hosted principal/review/cloud gates remain explicit. No AWS,
+secret, Terraform change, commit or owner message. Await result verification;
+Step14/FR-03 remains incomplete.
+
+### ID-01 — Step14 binding cases, reported SQL approval and runtime preflight — 2026-10-28 19:36:11 UTC
+
+A recovered the interrupted run:42passed in71.54s, Black2/boundaries0 and
+Gitleaks/12source hashes pass. Seven cases add selection/cross-resource/stale
+denials, Wanted/message replay, concurrent HTTP prekeys and actual pending/
+threaded retirement through the distinct login. Fixture thread/member inserts
+made atomic; no schema guard disabled or production change.
+Aditya reports Rahul approved the exact Conversations SQL proposal;
+[record/hash](../evaluation/identity/id-01-step-14/dependency-reconciliation.json)
+binds that approval without inventing a direct review link or cloud approval.
+Fresh read-only approved-profile AWS preflight confirms335523638354/Mumbai,
+RDS stopped/private/protected, API0/ASG0/no hosts and proposed SSM absent. No
+secret reads or mutations. Updated staged exact-plan/provision/build/test/
+cleanup sequence; operator caps remain proposed, not execution approval. Next
+is concrete saved plans/operator preparation, with live changes separately
+gated. Step14/FR-03 remains incomplete; no commit/publication.
+
+### ID-01 — Step14 operator artifact and exact stopped plan prepared — 2026-10-28 19:50:23 UTC
+
+A added guarded role-only operator/credential-URI helper plus5disposable SQL
+tests (5passed in2.32s); Black2/boundaries0, whitespace and Gitleaks pass.
+Helper refuses wrong hash/target, existing role, unsafe inherited ACL/logging
+and rolls back grant mismatches; no API/SSM/bootstrap behavior change.
+Prepared pinned1.15.9 non-applying shared/test plan from backend24 with preserved
+existing write-only inputs held privately in memory. Exact3resource actions:
+new scoped execution policy, replacement definition and service reference at0.
+[Plan SHA/actions/source/drift review](../evaluation/identity/id-01-step-14/stopped-config-plan-review.json)
+is ready; saved capacity and tag-input assumptions corrected before planning.
+Refresh drift matches prior shutdown/metadata; no ASG/RDS/SG actions. No apply,
+role/SSM creation, resource start or commit. Current42consumer result verified;
+new artifact/result and exact plan await human verification/separate apply
+approval. Later runtime/role/credential/pipeline gates keep Step14 incomplete.
+
+### ID-01 — Step14 approved stopped consumer configuration applied — 2026-10-28 19:54:52 UTC
+
+Aditya approved exact saved plan1ae7c926…5636. Hash/source/account/backend24
+and existing secret versions matched; apply succeeded, backend25. Verified
+revision8/unchanged image/capacity/auth/S3/safe command, exact execution-role
+parameter permission and separate DSN reference. Service0/ASG0/no hosts/RDS
+stopped/private/protected; new parameter absent. No role/secret creation,
+resource start, email, DNS, schema/data or commit/publication.
+[Plan/result](../evaluation/identity/id-01-step-14/stopped-config-result.json) and
+cloud/secret inventories updated. No tests rerun; actual resource checks passed.
+Await result verification; role/SSM/start/pipeline and real matrix gates keep
+Step14 incomplete.
+
+### ID-01 — Step14 exact role/credential window prepared — 2026-10-28 20:03:57 UTC
+
+After stopped-apply verification, A prepared45min/one-private-t3.micro/
+USD1threshold action plan with exact retained targets, Standard-credit/deadline
+guard, master/new-SSM memory-only scope, role/credential proof and owned cleanup.
+[Plan/hash](../evaluation/identity/id-01-step-14/provisioning-window-plan.json)
+awaits separate approval; no resource start or credential write. AWS public
+list-rate estimate45min compute0.02415USD excludes storage/network/taxes.
+Fixed operator URI compatibility with existing image system CA trust while
+retaining full verification;6tests passed in2.11s, Black2/boundaries0. Exact
+SQL approval unchanged. Other runtime/image/pipeline/task-start gates remain.
+
+### ID-01 — Step14 approved role window started — 2026-10-28 20:11:00 UTC
+
+Aditya approved exact action plan9f48802d…6848. Hash/source/idle target gates
+passed; owned ASG deadline installed first for20:56:00UTC. Started retained
+RDS and requested one private LT3 t3.micro (min1/max1/desired1), API remains0.
+No SQL/new parameter/provider/image action yet. Startup abort20:31, stop new
+work20:41, cleanup deadline20:56UTC; USD1operator threshold. Next ready-node/
+Standard-credit/TLS verification, exact role/SSM provisioning and owned cleanup.
+
+### ID-01 — Step14 interrupted provisioning and requested shutdown — 2026-10-28 20:31:28 UTC
+
+Aditya requested stop/commit. Window startup succeeded (private owned host,
+Standard credits, RDS/SSM ready), but procedure never passed preflight: launcher
+venv issue fixed, SDK login dependency isolated, CLI preflight cause unresolved.
+No master read, SQL role/SSM creation or data/schema change. Closed tunnel;
+owned host/root absent, API0/ASG0/empty, fallback removed, RDS confirmed stopped.
+[Resume receipt](../evaluation/identity/id-01-step-14/provisioning-window-result.json)
+records exact blocker and retained resources.42consumer/6operator/7mock passes
+remain latest. Diagnose before any fresh approved restart; Step14 incomplete.
