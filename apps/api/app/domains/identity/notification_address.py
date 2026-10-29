@@ -152,3 +152,24 @@ class NotificationRecipientResolver:
                 raise PublicError(ERRORS[503]) from None
 
         return await asyncio.to_thread(read)
+
+    async def allows(self, recipient_id: UUID) -> bool:
+        """Check fresh account eligibility and email preference for trusted worker use."""
+        if runtime_claim("identity.notification_worker") is not self._permit:
+            raise PublicError(ERRORS[403])
+
+        def read():
+            try:
+                with self._connect() as c:
+                    row = c.execute(
+                        "SELECT account_class,status,created_at,activated_at,expires_at,profile_removed_at,conversation_email_enabled FROM identity.users WHERE id=%s",
+                        (recipient_id,),
+                    ).fetchone()
+                    return bool(
+                        PostgresCapabilities._active(row, as_utc(self._clock()))
+                        and row[6]
+                    )
+            except Exception:
+                raise PublicError(ERRORS[503]) from None
+
+        return await asyncio.to_thread(read)

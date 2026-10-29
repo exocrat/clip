@@ -289,6 +289,12 @@ class NotificationRecipient(ContractModel):
     email: str = Field(repr=False)
 
 
+class ConversationEmailPreference(ContractModel):
+    """Own-account setting for both conversation email events."""
+
+    enabled: bool = Field(strict=True)
+
+
 class Category(ContractModel):
     """Active category code/label used for new assignment."""
 
@@ -1301,7 +1307,13 @@ class NotificationAttemptResult(ContractModel):
 
     intent_id: UUID
     fencing_token: UUID
-    outcome: Literal["delivered", "transient_failure", "terminal_failure", "ambiguous"]
+    outcome: Literal[
+        "delivered",
+        "transient_failure",
+        "terminal_failure",
+        "ambiguous",
+        "preference_suppressed",
+    ]
     attempted_at: UtcInstant
 
 

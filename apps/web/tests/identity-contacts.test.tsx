@@ -23,7 +23,9 @@ function response(body: unknown, status = 200) {
   return new Response(status === 204 ? null : JSON.stringify(body), { status });
 }
 function mock(handler: (path: string, init: RequestInit) => Response | Promise<Response>) {
-  const fetcher = vi.fn((path: string, init: RequestInit) => Promise.resolve(handler(path, init)));
+  const fetcher = vi.fn((path: string, init: RequestInit) => Promise.resolve(
+    path === '/api/me/conversation-email-preference' ? response({ enabled: true }) : handler(path, init),
+  ));
   vi.stubGlobal('fetch', fetcher);
   return fetcher;
 }

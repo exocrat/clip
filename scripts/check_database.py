@@ -255,7 +255,7 @@ def main():
         actual = sql(
             "SELECT version FROM public.schema_migrations ORDER BY version"
         ).splitlines()
-        if not expected or actual != expected or actual[-1] != "20261029134500":
+        if not expected or actual != expected or actual[-1] != "20261029182500":
             raise RuntimeError("Migration history differs from the expected head")
         migrate()
         for filename in (
@@ -274,6 +274,7 @@ def main():
         migrate(
             rollback=True
         )  # Step past the newer notification-destination migration.
+        migrate(rollback=True)
         migrate(rollback=True)
         sql("""
             INSERT INTO identity.users(id,account_class,status,display_name) VALUES
@@ -305,6 +306,7 @@ def main():
             ):
                 raise RuntimeError("Handle migration changed retained names or IDs")
             if not repeat:
+                migrate(rollback=True)
                 migrate(rollback=True)
                 migrate(rollback=True)
                 migrate(rollback=True)

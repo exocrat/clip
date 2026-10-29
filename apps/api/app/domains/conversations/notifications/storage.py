@@ -228,6 +228,20 @@ class PostgresNotificationDelivery:
                             ),
                             attempt_count=job[7],
                         )
+                    if request.outcome == "preference_suppressed":
+                        if (
+                            job[6] != "leased"
+                            or job[8] != request.fencing_token
+                            or job[9] <= now
+                        ):
+                            raise PublicError(ERRORS[409])
+                        await connection.execute(
+                            "UPDATE conversations.notification_intents SET state='suppressed',completed_at=%s,lease_token=NULL,lease_until=NULL,dispatch_started_at=NULL,last_result_token=%s,last_result_outcome=%s,updated_at=%s WHERE id=%s",
+                            (now, request.fencing_token, request.outcome, now, job[0]),
+                        )
+                        return NotificationIntentState(
+                            state="suppressed", attempt_count=job[7]
+                        )
                     if (
                         job[6] != "leased"
                         or job[8] != request.fencing_token

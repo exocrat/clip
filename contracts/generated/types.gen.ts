@@ -223,6 +223,18 @@ export type ContactValueRequest = {
 };
 
 /**
+ * ConversationEmailPreference
+ *
+ * Own-account setting for both conversation email events.
+ */
+export type ConversationEmailPreference = {
+    /**
+     * Enabled
+     */
+    enabled: boolean;
+};
+
+/**
  * ConversationEntry
  *
  * Ordered message/control/share envelope metadata; content may be retired.
@@ -4636,6 +4648,120 @@ export type IdentitySetOwnContactResponses = {
 };
 
 export type IdentitySetOwnContactResponse = IdentitySetOwnContactResponses[keyof IdentitySetOwnContactResponses];
+
+export type IdentityReadConversationEmailPreferenceData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/me/conversation-email-preference';
+};
+
+export type IdentityReadConversationEmailPreferenceErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorEnvelope;
+    /**
+     * Unauthorized
+     */
+    401: ErrorEnvelope;
+    /**
+     * Forbidden
+     */
+    403: ErrorEnvelope;
+    /**
+     * Not Found
+     */
+    404: ErrorEnvelope;
+    /**
+     * Conflict
+     */
+    409: ErrorEnvelope;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorEnvelope;
+    /**
+     * Too Many Requests
+     */
+    429: ErrorEnvelope;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorEnvelope;
+    /**
+     * Service Unavailable
+     */
+    503: ErrorEnvelope;
+};
+
+export type IdentityReadConversationEmailPreferenceError = IdentityReadConversationEmailPreferenceErrors[keyof IdentityReadConversationEmailPreferenceErrors];
+
+export type IdentityReadConversationEmailPreferenceResponses = {
+    /**
+     * Successful Response
+     */
+    200: ConversationEmailPreference;
+};
+
+export type IdentityReadConversationEmailPreferenceResponse = IdentityReadConversationEmailPreferenceResponses[keyof IdentityReadConversationEmailPreferenceResponses];
+
+export type IdentitySetConversationEmailPreferenceData = {
+    body: ConversationEmailPreference;
+    path?: never;
+    query?: never;
+    url: '/me/conversation-email-preference';
+};
+
+export type IdentitySetConversationEmailPreferenceErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorEnvelope;
+    /**
+     * Unauthorized
+     */
+    401: ErrorEnvelope;
+    /**
+     * Forbidden
+     */
+    403: ErrorEnvelope;
+    /**
+     * Not Found
+     */
+    404: ErrorEnvelope;
+    /**
+     * Conflict
+     */
+    409: ErrorEnvelope;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorEnvelope;
+    /**
+     * Too Many Requests
+     */
+    429: ErrorEnvelope;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorEnvelope;
+    /**
+     * Service Unavailable
+     */
+    503: ErrorEnvelope;
+};
+
+export type IdentitySetConversationEmailPreferenceError = IdentitySetConversationEmailPreferenceErrors[keyof IdentitySetConversationEmailPreferenceErrors];
+
+export type IdentitySetConversationEmailPreferenceResponses = {
+    /**
+     * Successful Response
+     */
+    200: ConversationEmailPreference;
+};
+
+export type IdentitySetConversationEmailPreferenceResponse = IdentitySetConversationEmailPreferenceResponses[keyof IdentitySetConversationEmailPreferenceResponses];
 
 export type ConversationsReadOwnKeyData = {
     body?: never;

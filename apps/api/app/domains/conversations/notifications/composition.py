@@ -5,13 +5,12 @@ from app.domains.conversations.notifications.worker import process_batch
 
 
 async def run_batch(
-    delivery, recipients, permit, clock, send, allowed, *, max_items=20
+    delivery, recipients, permit, clock, send, allowed=None, *, max_items=20
 ):
     """Run one batch under a private permit; never enable a scheduler or provider.
 
-    The caller supplies reviewed destination and preference handling. Until the
-    preference provider and actual mail adapter exist, this entry point is used
-    only by explicitly composed synthetic tests.
+    The recipient provider supplies fresh preference handling by default. This
+    function installs no scheduler or email provider.
     """
     if permit is None:
         raise ValueError("Worker permit required")
@@ -27,5 +26,5 @@ async def run_batch(
             send,
             clock,
             max_items=max_items,
-            allowed=allowed,
+            allowed=allowed if allowed is not None else recipients.allows,
         )

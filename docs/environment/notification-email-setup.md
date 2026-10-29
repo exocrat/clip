@@ -18,8 +18,9 @@ require their own exact approved plans. No separate mailbox is assumed.
 
 The sender requires an explicit test or production profile; test is limited to
 up to five configured recipients, and production rejects injected provider/SSM
-test doubles. No profile is enabled by this file. Actual account preferences,
-worker scheduling, general-recipient runtime permissions and bounded
+test doubles. No profile is enabled by this file. The default-on account
+preference and polling loop are implemented locally but not yet started in the
+deployed runtime. General-recipient runtime permissions and bounded
 cloud/inbox verification remain later CN-03 checkpoints. A provider exception
 can be ambiguous; fallback and later retries may cause duplicate delivery.
 

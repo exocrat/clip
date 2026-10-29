@@ -107,6 +107,135 @@ def test_missing_preference_provider_cannot_send():
     asyncio.run(scenario())
 
 
+@pytest.mark.parametrize("kind", ["new_conversation", "unread_reminder"])
+def test_disabled_preference_suppresses_without_sending(kind):
+    """An explicit opt-out suppresses both kinds before any provider call."""
+
+    async def scenario():
+        user = uuid4()
+        claim = NotificationClaim(
+            intent_id=uuid4(),
+            conversation_id=uuid4(),
+            recipient_id=user,
+            event_kind=kind,
+            due_at=NOW,
+            fencing_token=uuid4(),
+            lease_expires_at=NOW + timedelta(minutes=1),
+        )
+        calls = []
+
+        class Port:
+            async def claim_due_notification_intents(self, context, request):
+                return NotificationClaimResult(claims=[claim])
+
+            async def record_notification_attempt(self, context, request):
+                calls.append(request.outcome)
+                return NotificationIntentState(state="suppressed", attempt_count=0)
+
+        async def resolve(context, recipient):
+            return NotificationRecipient(
+                recipient_id=user, email="synthetic@example.invalid"
+            )
+
+        async def allowed(user_id):
+            return False
+
+        async def send(job, recipient):
+            calls.append("sent")
+
+        await process_batch(Port(), resolve, send, lambda: NOW, allowed=allowed)
+        assert calls == ["preference_suppressed"]
+
+    asyncio.run(scenario())
+
+
+def test_unknown_preference_defers_without_suppression():
+    """Malformed or unavailable preference data cannot authorize or suppress."""
+
+    async def scenario():
+        user = uuid4()
+        calls = []
+        claim = NotificationClaim(
+            intent_id=uuid4(),
+            conversation_id=uuid4(),
+            recipient_id=user,
+            event_kind="new_conversation",
+            due_at=NOW,
+            fencing_token=uuid4(),
+            lease_expires_at=NOW + timedelta(minutes=1),
+        )
+
+        class Port:
+            async def claim_due_notification_intents(self, context, request):
+                return NotificationClaimResult(claims=[claim])
+
+            async def record_notification_attempt(self, context, request):
+                calls.append("suppressed")
+
+        async def resolve(context, recipient):
+            return NotificationRecipient(
+                recipient_id=user, email="synthetic@example.invalid"
+            )
+
+        async def unknown(user_id):
+            return None
+
+        async def send(job, recipient):
+            calls.append("sent")
+
+        assert (
+            await process_batch(Port(), resolve, send, lambda: NOW, allowed=unknown)
+            == 0
+        )
+        assert calls == []
+
+    asyncio.run(scenario())
+
+
+def test_preference_change_after_read_check_prevents_send():
+    """A last-moment opt-out is checked again after dispatch reservation."""
+
+    async def scenario():
+        user, checks, outcomes = uuid4(), [], []
+        claim = NotificationClaim(
+            intent_id=uuid4(),
+            conversation_id=uuid4(),
+            recipient_id=user,
+            event_kind="unread_reminder",
+            due_at=NOW,
+            fencing_token=uuid4(),
+            lease_expires_at=NOW + timedelta(minutes=1),
+        )
+
+        class Port:
+            async def claim_due_notification_intents(self, context, request):
+                return NotificationClaimResult(claims=[claim])
+
+            async def read_notification_dispatch_context(self, context, request):
+                return NotificationDispatchContext(decision="send", recipient_id=user)
+
+            async def record_notification_attempt(self, context, request):
+                outcomes.append(request.outcome)
+                return NotificationIntentState(state="suppressed", attempt_count=1)
+
+        async def resolve(context, recipient):
+            return NotificationRecipient(
+                recipient_id=user, email="synthetic@example.invalid"
+            )
+
+        async def allowed(user_id):
+            checks.append(True)
+            return len(checks) == 1
+
+        async def send(job, recipient):
+            outcomes.append("sent")
+
+        await process_batch(Port(), resolve, send, lambda: NOW, allowed=allowed)
+        assert len(checks) == 2 and outcomes == ["preference_suppressed"]
+
+    asyncio.run(scenario())
+
+
 @pytest.mark.parametrize("failure", ["recipient", "expired", "sender"])
 def test_worker_fails_closed_or_records_ambiguous_send(failure):
     """Missing recipient or lease cannot send; an uncertain send is not success."""

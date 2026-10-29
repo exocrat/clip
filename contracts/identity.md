@@ -129,6 +129,10 @@ Microsoft uses the signed IISc email claim under the previously approved domain
 policy; it does not independently prove mailbox control. Temporary accounts
 use their verified or password-authenticated login email. An existing account
 without a stored destination must authenticate again before resolution succeeds.
+Authenticated `GET` and `PUT /me/conversation-email-preference` read and set
+only the current actor's `{enabled: boolean}` value, which defaults to true. PUT
+uses the normal account origin and CSRF protections. Before delivery, the
+Identity-owned trusted worker check rechecks current eligibility and preference.
 Exact typed request/result,
 eligibility recheck, safe outcome codes and dependency behavior are finalized
 in Step 9 and owner-reviewed in Step 10. Its typed request includes the

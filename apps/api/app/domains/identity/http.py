@@ -44,6 +44,7 @@ from app.contracts.domain_types import (
     TemporarySessionRequest,
     ContactField,
     ContactValueRequest,
+    ConversationEmailPreference,
     OwnContacts,
     ProfilePatch,
     ProfileView,
@@ -556,6 +557,33 @@ def install_identity_http(
     def own_contacts(request: Request) -> OwnContacts:
         """Expose source values only to their authenticated current owner."""
         return sessions.contacts.read_contacts(current(request).caller)
+
+    @app.get(
+        route("/me/conversation-email-preference"),
+        operation_id="identity_read_conversation_email_preference",
+        response_model=ConversationEmailPreference,
+    )
+    def read_conversation_email_preference(
+        request: Request,
+    ) -> ConversationEmailPreference:
+        """Read only the authenticated actor's own email-notification setting."""
+        return sessions.contacts.read_conversation_email_preference(
+            current(request).caller
+        )
+
+    @app.put(
+        route("/me/conversation-email-preference"),
+        operation_id="identity_set_conversation_email_preference",
+        response_model=ConversationEmailPreference,
+    )
+    def set_conversation_email_preference(
+        payload: ConversationEmailPreference, request: Request
+    ) -> ConversationEmailPreference:
+        """Apply only the authenticated actor's validated setting with CSRF protection."""
+        json_body(request)
+        return sessions.contacts.set_conversation_email_preference(
+            current(request).caller, payload
+        )
 
     @app.put(
         route("/me/contacts/{contact_kind}"),

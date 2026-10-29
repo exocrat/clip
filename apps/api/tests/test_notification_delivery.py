@@ -32,8 +32,10 @@ from test_conversation_messages import (
 )
 
 
-@pytest.mark.parametrize("failure", [False, True])
-def test_real_new_conversation_delivery_is_claimed_once(failure):
+@pytest.mark.parametrize(
+    "failure,enabled", [(False, True), (True, True), (False, False)]
+)
+def test_real_new_conversation_delivery_is_claimed_once(failure, enabled):
     """Two workers race a real intent while Identity resolves only its own address."""
 
     async def scenario(pool):
@@ -43,6 +45,10 @@ def test_real_new_conversation_delivery_is_claimed_once(failure):
         keys = TemporaryKeys("v1", b"a" * 32, b"b" * 32, b"c" * 32)
         cipher = NotificationAddressCipher(keys)
         async with pool.connection() as c:
+            await c.execute(
+                "UPDATE identity.users SET conversation_email_enabled=%s WHERE id=%s",
+                (enabled, author),
+            )
             await c.execute(
                 "INSERT INTO identity.notification_destinations(user_id,ciphertext,key_version) VALUES(%s,%s,%s)",
                 (author, cipher.encrypt(author, "test@example.invalid"), "v1"),
@@ -64,9 +70,6 @@ def test_real_new_conversation_delivery_is_claimed_once(failure):
             if failure:
                 raise TimeoutError("synthetic uncertain delivery")
 
-        async def allowed(user_id):
-            return True
-
         async def execute():
             permit = object()
             port = PostgresNotificationDelivery(pool, permit)
@@ -77,7 +80,7 @@ def test_real_new_conversation_delivery_is_claimed_once(failure):
                 permit,
             )
             return await run_batch(
-                port, recipient, permit, lambda: datetime.now(UTC), send, allowed
+                port, recipient, permit, lambda: datetime.now(UTC), send
             )
 
         counts = await asyncio.gather(execute(), execute())
@@ -88,9 +91,14 @@ def test_real_new_conversation_delivery_is_claimed_once(failure):
                     (conversation,),
                 )
             ).fetchone()
-            assert sum(counts) == 1, (counts, len(calls), row)
-            assert row == (("pending" if failure else "sent"), 1)
-        assert calls == [("new_conversation", "test@example.invalid")]
+            assert sum(counts) == (1 if enabled else 0), (counts, len(calls), row)
+            assert row == (
+                ("pending" if failure else "sent") if enabled else "suppressed",
+                1 if enabled else 0,
+            )
+        assert calls == (
+            [("new_conversation", "test@example.invalid")] if enabled else []
+        )
         if failure:
             assert await execute() == 0
             assert len(calls) == 1
@@ -234,6 +242,125 @@ def test_real_read_acknowledgement_suppresses_a_leased_reminder():
                     await c.execute(
                         "SELECT state FROM conversations.notification_intents WHERE id=%s",
                         (claim.intent_id,),
+                    )
+                ).fetchone()
+            )[0] == "suppressed"
+
+    run_scenario(scenario)
+
+
+def test_real_preference_suppresses_due_unread_reminder():
+    """The current Identity opt-out prevents a real due reminder from dispatching."""
+
+    async def scenario(pool):
+        async with pool.connection() as c:
+            await c.execute("DELETE FROM conversations.notification_intents")
+        author, responder, _, conversation, _, _ = await seed_thread(pool)
+        keys = TemporaryKeys("v1", b"a" * 32, b"b" * 32, b"c" * 32)
+        message = await PostgresMessageOperations(pool).submit_message(
+            caller(author), conversation, message_request()
+        )
+        async with pool.connection() as c:
+            async with c.transaction():
+                await c.execute(
+                    "INSERT INTO identity.notification_destinations(user_id,ciphertext,key_version) VALUES(%s,%s,%s)",
+                    (
+                        responder,
+                        NotificationAddressCipher(keys).encrypt(
+                            responder, "synthetic@example.invalid"
+                        ),
+                        "v1",
+                    ),
+                )
+                await c.execute(
+                    "UPDATE identity.users SET conversation_email_enabled=false WHERE id=%s",
+                    (responder,),
+                )
+                # Age only the synthetic source and its matching immutable deadline.
+                await c.execute("SET LOCAL session_replication_role='replica'")
+                await c.execute(
+                    "UPDATE conversations.entries SET created_at=created_at-interval '16 minutes' WHERE id=%s",
+                    (message.entry.entry_id,),
+                )
+                await c.execute(
+                    "UPDATE conversations.notification_intents SET due_at=due_at-interval '16 minutes',expires_at=expires_at-interval '16 minutes' WHERE conversation_id=%s",
+                    (conversation,),
+                )
+                await c.execute("SET LOCAL session_replication_role='origin'")
+        permit = object()
+        delivery = PostgresNotificationDelivery(pool, permit)
+        recipient = NotificationRecipientResolver(
+            lambda: psycopg.connect(TEST_DATABASE_DSN),
+            lambda: datetime.now(UTC),
+            keys,
+            permit,
+        )
+        sent = []
+
+        async def send(claim, destination):
+            sent.append(True)
+
+        assert (
+            await run_batch(
+                delivery, recipient, permit, lambda: datetime.now(UTC), send
+            )
+            == 0
+        )
+        async with pool.connection() as c:
+            assert (
+                await (
+                    await c.execute(
+                        "SELECT state,attempts,last_result_outcome FROM conversations.notification_intents WHERE conversation_id=%s",
+                        (conversation,),
+                    )
+                ).fetchone()
+            ) == ("suppressed", 0, "preference_suppressed")
+        assert sent == []
+
+    run_scenario(scenario)
+
+
+def test_message_read_before_due_is_suppressed():
+    """Acknowledging an unread message before its due time prevents its email."""
+
+    async def scenario(pool):
+        async with pool.connection() as c:
+            await c.execute("DELETE FROM conversations.notification_intents")
+        author, responder, _, conversation, _, _ = await seed_thread(pool)
+        messages = PostgresMessageOperations(pool)
+        message = await messages.submit_message(
+            caller(author), conversation, message_request()
+        )
+        await messages.acknowledge_read(
+            caller(responder), conversation, ReadAcknowledgement(last_read_sequence=1)
+        )
+        async with pool.connection() as c:
+            async with c.transaction():
+                # Age the already-acknowledged synthetic source and matching deadline.
+                await c.execute("SET LOCAL session_replication_role='replica'")
+                await c.execute(
+                    "UPDATE conversations.entries SET created_at=created_at-interval '16 minutes' WHERE id=%s",
+                    (message.entry.entry_id,),
+                )
+                await c.execute(
+                    "UPDATE conversations.notification_intents SET due_at=due_at-interval '16 minutes',expires_at=expires_at-interval '16 minutes' WHERE conversation_id=%s",
+                    (conversation,),
+                )
+                await c.execute("SET LOCAL session_replication_role='origin'")
+        permit, context = object(), NotificationWorkerContext()
+        with runtime_claims({"conversations.notification_worker": permit}):
+            claims = await PostgresNotificationDelivery(
+                pool, permit
+            ).claim_due_notification_intents(
+                context, NotificationClaimRequest(now_utc=datetime.now(UTC))
+            )
+            assert claims.claims == []
+        async with pool.connection() as c:
+            assert (
+                await (
+                    await c.execute(
+                        "SELECT state FROM conversations.notification_intents WHERE conversation_id=%s",
+                        (conversation,),
                     )
                 ).fetchone()
             )[0] == "suppressed"

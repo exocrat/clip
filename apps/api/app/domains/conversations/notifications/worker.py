@@ -72,10 +72,26 @@ async def process_batch(
             if recipient is None or recipient.recipient_id != claim.recipient_id:
                 logger.info("notification_skip reason=recipient_unavailable")
                 continue
-            if allowed is None or await allowed(claim.recipient_id) is not True:
+            if allowed is None:
                 logger.info(
                     "notification_skip reason=preference_unavailable_or_disabled"
                 )
+                continue
+            preference = await allowed(claim.recipient_id)
+            if type(preference) is not bool:
+                logger.warning("notification_work_error reason=invalid_preference")
+                continue
+            if not preference:
+                await port.record_notification_attempt(
+                    context,
+                    NotificationAttemptResult(
+                        intent_id=claim.intent_id,
+                        fencing_token=claim.fencing_token,
+                        outcome="preference_suppressed",
+                        attempted_at=clock(),
+                    ),
+                )
+                logger.info("notification_delivery outcome=preference_suppressed")
                 continue
             now = clock()
             if now >= claim.lease_expires_at:
@@ -90,6 +106,26 @@ async def process_batch(
             )
             if check.decision != "send" or check.recipient_id != claim.recipient_id:
                 logger.info("notification_skip reason=dispatch_not_authorized")
+                continue
+            if clock() >= claim.lease_expires_at:
+                continue
+            # The preference may change during the read-state check. Recheck it
+            # at the last safe point; unknown state never authorizes delivery.
+            final_preference = await allowed(claim.recipient_id)
+            if type(final_preference) is not bool:
+                logger.warning("notification_work_error reason=invalid_preference")
+                continue
+            if not final_preference:
+                await port.record_notification_attempt(
+                    context,
+                    NotificationAttemptResult(
+                        intent_id=claim.intent_id,
+                        fencing_token=claim.fencing_token,
+                        outcome="preference_suppressed",
+                        attempted_at=clock(),
+                    ),
+                )
+                logger.info("notification_delivery outcome=preference_suppressed")
                 continue
             if clock() >= claim.lease_expires_at:
                 continue

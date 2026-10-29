@@ -13,7 +13,9 @@ Which conversation emails are required, when are reminders due, and how are fail
 ## Selected choice
 - Aditya selected one account setting for both conversation email types on
   2026-10-29. It defaults on; users may turn both emails off and back on.
-  Recheck the current setting immediately before dispatch. This setting does
+  Recheck the current setting immediately before dispatch; suppress a claimed
+  intent when disabled and do not replay it if the user later enables email.
+  An unavailable preference check defers. This setting does
   not change Identity verification or password-reset emails.
 - On 2026-10-29 13:30:07 UTC Aditya selected the address used for account
   creation and login as the notification destination. Identity must retain it

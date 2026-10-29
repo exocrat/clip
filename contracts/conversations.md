@@ -473,7 +473,10 @@ Offer/contact-share writes do not independently send email.
 
 One account setting controls both conversation email types, defaults on, and
 can be turned off or on by the user. Check the current setting immediately
-before sending. It does not control Identity verification or password resets.
+before sending. A disabled preference suppresses the claimed intent; re-enabling
+does not resend it. An unavailable preference check defers instead of sending.
+An opt-out concurrent with an already-started provider submission cannot recall
+that email. It does not control Identity verification or password resets.
 
 Before sending a reminder, CN-03 reads the authorized recipient watermark and
 asks Identity for that currently eligible recipient's delivery destination.
