@@ -1,0 +1,112 @@
+{
+  "complete": true,
+  "apply_executed": true,
+  "proxy_public_ip": "15.252.60.239",
+  "state_serial_before": 20,
+  "state_serial_after": 22,
+  "task_definition": "arn:aws:ecs:ap-south-1:335523638354:task-definition/clip-test-api-ap-south-1-pd16:6",
+  "image": "335523638354.dkr.ecr.ap-south-1.amazonaws.com/clip-shared-test-api@sha256:bfa7316c26f683654f5c4b3f40e9817876db5afd79f8f13af978a8841fbde8f8",
+  "api_desired": 1,
+  "api_running": 1,
+  "api_pending": 0,
+  "proxy_created": true,
+  "approved_plan_sha256": "246c529444a63364c24e39ef6bd71c8e195b33ea6bb86d977321558064ef11f8",
+  "secret_versions_preserved": true,
+  "recorded_at_utc": "2026-10-28 15:18:09 UTC",
+  "api_health": "HEALTHY",
+  "running_image_digest_verified": true,
+  "https": {
+    "direct_ip": "15.252.60.239",
+    "hostname": "clip-iisc.site",
+    "certificate_validation": "passed",
+    "health_status": 200,
+    "anonymous_api_me_status": 401,
+    "dns_propagation_polled": false,
+    "a_record_human_confirmed": true,
+    "post_dns_proxy_restarts": 1
+  },
+  "microsoft_browser_signin": {
+    "human": "Aditya",
+    "result": "works",
+    "recorded_at_utc": "2026-10-28 15:18:09 UTC"
+  },
+  "cookie_transport": {
+    "status": 201,
+    "tls_verified": true,
+    "host_attempt_cookie": true,
+    "secure": true,
+    "httponly": true,
+    "samesite_lax": true,
+    "path_root": true,
+    "no_domain": true,
+    "no_store": true,
+    "raw_response_retained": false,
+    "email_sent": false
+  },
+  "temporary_browser_flow": {
+    "registration_verification_signin": "human confirmed success",
+    "reset_email": "received in Gmail, human confirmed on phone",
+    "reset_new_password_signin": "human confirmed success",
+    "recorded_at_utc": "2026-10-28 15:35:35 UTC"
+  },
+  "retention": {
+    "dry_run": true,
+    "complete": true,
+    "database": "clip_test",
+    "role": "clip_test_identity_app",
+    "counts": {
+      "otp_challenges": 0,
+      "sessions": 0,
+      "temporary_credentials": 0,
+      "microsoft_login_attempts": 0,
+      "auth_source_events": 0,
+      "otp_send_reservations": 0,
+      "otp_verification_windows": 0,
+      "password_login_windows": 0,
+      "contacts": 0,
+      "profiles": 0
+    },
+    "writes": false,
+    "scheduled": false
+  },
+  "window_deadline_utc": "2026-10-28 19:03:57 UTC",
+  "operator_email_sends": 0,
+  "provider_send_approval": {
+    "approved": true,
+    "maximum_intentional_messages": 6,
+    "sender": "verify@clip-iisc.site",
+    "recipients": "Recorded Aditya test allowlist only"
+  },
+  "pending": [
+    "new source independent/affected peer review and publication",
+    "formal ID-READY acceptance and full ID-01/Step14 outside this closeout"
+  ],
+  "contact_session_browser": {
+    "save_refresh_delete_logout": "all success per Aditya",
+    "phone_browser": "requested check included in all-success confirmation",
+    "desktop_browser_version": "not supplied"
+  },
+  "ses_production_test": {
+    "accepted": true,
+    "provider": "ses",
+    "sender": "verify@clip-iisc.site",
+    "test": "standalone delivery test",
+    "intentional_messages": 1,
+    "message_id": "010901a1831cc543-c810754b-f939-4ac1-ad34-9c3db9b7d534-000000",
+    "human_receipt": "received in Gmail, confirmed after checking phone"
+  },
+  "email_diagnosis": {
+    "aggregate_temporary_accounts": 1,
+    "eligible_reset_challenges": 1,
+    "registration_consumed": 1,
+    "provider_preference_changed": false,
+    "resend_key_read_or_transmitted": false,
+    "resend_metadata_lookup": "auto-review rejected before execution; skipped after human receipt confirmation",
+    "rate_rule": "60second cooldown shared across purposes; precise initial429 cause not proven"
+  },
+  "window_closed": true,
+  "resources_active": false,
+  "final_cleanup_result": "runtime-cleanup-result.json",
+  "human_step13_verified": true,
+  "verification_recorded_at_utc": "2026-10-28 15:57:07 UTC"
+}

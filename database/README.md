@@ -1,7 +1,7 @@
 # Coordinated database migrations
 
 **Current planning branch:** 21 previously published migrations, two prior
-forward corrections and the NEXT-03 catalogue/search/amount migrations: 28 migrations,
+forward corrections and the NEXT-03 catalogue/search/amount migrations: 29 migrations,
 head `20261029043000`, 40 domain tables, 36 functions and 46 triggers. All 22
 previously published SQL files are unchanged. Older isolated
 Identity/Listings sections below retain selected historical context; old PR10
@@ -83,10 +83,12 @@ was changed. [Tool rationale](../docs/decisions/database-migration-tool.md).
 Four superseded branch-only SQL files are preserved byte-for-byte in
 [`archived/cn-01-pre-main`](archived/cn-01-pre-main/README.md), outside the executable
 chain. A target containing any archived version requires a separately reviewed
-upgrade plan; do not apply this fresh-chain procedure to it. Aditya's pinned
-17-file Identity manifest remains unchanged and intentionally rejects the
-expanded branch migration chain until a new candidate is reviewed. No shared
-apply is authorized here.
+upgrade plan; do not apply this fresh-chain procedure to it. The current Identity
+runner pins an unreviewed 23-file candidate and rejects an expanded chain; prior
+evidence also records a 17-file live package whose separate owner review remains
+open. This branch contains 29 SQL migrations. Neither candidate nor local checks
+authorize a shared apply; prepare and review an exact target/package before any
+database operation.
 
 The optional-pickup forward migration is under Listings writer scope; affected
 consumer/schema review and exact shared-database apply remain pending. Local

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, cleanup, configure, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, configure, fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { IdentityProvider, useIdentity } from '../src/features/identity';
@@ -51,8 +51,11 @@ describe('Listing page conversation entry point', () => {
     const post = vi.fn(async () => response({ conversation_id: threadId, created: false }));
     post.mockResolvedValueOnce(response({ private: 'withheld' }, 503));
     const state = setup(post);
-    fireEvent.click(await screen.findByRole('button', { name: 'Message seller' }));
-    await screen.findByText('A required service is unavailable. Your form has been kept; try again later.');
+    const messageButton = await screen.findByRole('button', { name: 'Message seller' });
+    const action = messageButton.parentElement;
+    if (!action) throw new Error('Message action container missing');
+    fireEvent.click(messageButton);
+    await within(action).findByText('A required service is unavailable. Your form has been kept; try again later.');
     expect(screen.queryByText('Authorized chat target')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Message seller' }));
     await screen.findByText('Authorized chat target');
@@ -61,8 +64,11 @@ describe('Listing page conversation entry point', () => {
 
   it('rejects an invalid returned target without navigating', async () => {
     setup(vi.fn(async () => response({ conversation_id: '../sign-in', created: true })));
-    fireEvent.click(await screen.findByRole('button', { name: 'Message seller' }));
-    await screen.findByRole('alert');
+    const messageButton = await screen.findByRole('button', { name: 'Message seller' });
+    const action = messageButton.parentElement;
+    if (!action) throw new Error('Message action container missing');
+    fireEvent.click(messageButton);
+    await within(action).findByRole('alert');
     expect(screen.queryByText('Authorized chat target')).toBeNull();
   }, 10_000);
 

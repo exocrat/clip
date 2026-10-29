@@ -2,8 +2,8 @@
 
 **Updated:** 2026-10-29 UTC
 **Branch at handoff:** `task/integrated-marketplace-rollout`
-**Last commit at handoff:** `1fdca96` (`fix: repair conversations and prepare NEXT-03 inspection`)
-**Working tree:** NEXT-03 application, contract, migration, test and documentation changes are uncommitted. Inspect `git status` and the full diff before changing or integrating anything.
+**Committed batch:** `6700cb2` (`feat: complete NEXT-03 marketplace correction batch`)
+**Working tree:** A no-commit integration of `origin/main` at `a60c83f` is in progress, with integration fixes and handoff updates uncommitted. Inspect `git status` and the full diff before committing. Suraj confirms the complete NEXT-03 visual walkthrough is done.
 
 This document summarizes the intended product changes and current evidence. The
 [visual-feedback plan](next-03-visual-feedback-plan.md) is the detailed behavior
@@ -73,6 +73,9 @@ has the file-by-file change inventory and verification evidence. The
 - Shared UI updates cover aligned multi-select labels, outside-click/Escape
   dismissal, bounded layouts, phone navigation, button/link treatment, collapsible
   search controls, dark color-token support and improved spacing.
+- Step 0.5 balances desktop navigation, reserves the Original price row on sale
+  cards when no price is supplied, aligns conversation context, thread and offer
+  surfaces to the left, and adds spacing after Open listing.
 - Local synthetic inspection provides sale/Wanted fixtures, buyer-owned records,
   photos, pagination peers and six account types. The latest clean run passed 24
   real local action groups against real sessions, PostgreSQL stores and the
@@ -80,6 +83,9 @@ has the file-by-file change inventory and verification evidence. The
   Requests and 77 conversations.
 
 ## Verification and limits at handoff
+
+The checks below predate the origin integration; current results are recorded in
+the implementation report and work log.
 
 - Full `make check` passed: Python 1,936 passed/155 skipped; data 94 passed;
   frontend 493 passed/3 skipped plus lint, typecheck and production build;
@@ -90,10 +96,8 @@ has the file-by-file change inventory and verification evidence. The
   Handle migration/privilege checks passed. Chromium checked 360px, 390px and
   1440px layouts; all three sale actions fit one centered row, inbox groups are
   initially collapsed, and there was no horizontal overflow or console error.
-- The final local handoff was presented to the user, who then said “we are
-  done.” The last recorded work-log row still said visual review pending; the
-  next agent should reconcile that explicit closeout and update the status
-  without claiming PR review or merge. The inspection app was handed off at
+- Suraj confirmed the complete NEXT-03 visual walkthrough is done, including
+  the Step 0.5 corrections. PR review and merge remain separate. The inspection app was handed off at
   `http://127.0.0.1:5176/__inspection`; its launcher PID and temporary photo
   directory are listed in the implementation report. Do not assume the server
   survives a session restart.
@@ -102,7 +106,7 @@ has the file-by-file change inventory and verification evidence. The
   Chat image attachments and optional search-relevance refinement remain
   unselected optional work.
 - `database/migrations/20261029043000_unique_handles_and_participant_projection.sql`
-  is part of the uncommitted NEXT-03 change set. The pinned Identity 17-migration
+  is part of the committed NEXT-03 batch. The pinned Identity 17-migration
   live-review package is unchanged and still requires separate owner review.
   Check both migration histories against current remote `main` before preparing
   a PR or any future deployment.

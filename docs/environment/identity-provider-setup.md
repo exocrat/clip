@@ -11,9 +11,9 @@ This guide contains current setup facts and pending actions, not new approval.
 
 | Provider/path | Verified | Still pending |
 | --- | --- | --- |
-| Microsoft | Real local IISc sign-in and non-IISc denial human-verified2026-10-26 04:48:20UTC after SPA correction guidance; validator/SQL and controlled browser tests passed. | Cloud/domain deployment, phone and remaining session/cache/browser acceptance; default build flag remains disabled. |
-| Resend | Domain human-reported verified; corrected adapter delivered from verify@; real local Gmail temporary registration/login/forgot-password human-verified. | ECS wiring, task-role secret access, cloud/browser/device checks, key rotation and general configuration acceptance. |
-| SES | Recorded domain/DKIM verification, real sandbox application-role delivery/inbox and owned cleanup passed2026-10-23. | Production access/configuration, current provider-state refresh and exact live verify-sender IAM update. |
+| Microsoft | Real local IISc sign-in and non-IISc denial human-verified2026-10-26 04:48:20UTC after SPA correction guidance; validator/SQL and controlled browser tests passed. | Hosted origin, mobile-browser and remaining session/cache acceptance; local Chrome/Firefox sign-in verified; default build flag remains disabled. |
+| Resend | Domain human-reported verified; corrected adapter delivered from verify@; real local Gmail temporary registration/login/forgot-password human-verified. Aditya confirms exposed-key revocation and replacement in SSM on2026-10-27 18:25:58UTC. | Current deployed secret access/configuration, cloud/browser/device and delivery checks. |
+| SES | Production access/sending, domain DKIM success and a standalone receipt were recorded2026-10-28; sandbox application-role delivery was verified earlier. | Refresh current runtime role/recipient policy and provider preference before deployment. Source still limits SES to the explicit test profile and controlled recipients; no production send is authorized by this record. |
 
 No new resource-state inspection was performed for this documentation cleanup.
 Provider acceptance/Delivered is not proof of inbox placement. Previous no-reply
@@ -67,8 +67,11 @@ No bounce/webhook-triggered retry or automatic permanent promotion is included.
 `/clip/test/identity/email-delivery`, Standard SecureString, alias/aws/ssm,
 account335523638354/ap-south-1. Version1 was created/read back by approved operator
 adityalaxmi1. Private JSON fields: version(integer1), primary(resend/ses),
-resend_api_key. Key/recipients/OTPs must stay out of chat/repo/logs. The key supplied
-in chat must be rotated privately. Operator access is not ECS task-role access.
+resend_api_key. Key/recipients/OTPs must stay out of chat/repo/logs. On
+2026-10-27 18:25:58UTC Aditya confirmed the chat-exposed key was revoked and its
+replacement stored in SSM. This is human-reported; no value/version was retrieved
+and no post-rotation delivery tested in this checkpoint. Operator access is not
+ECS task-role access.
 
 Current adapters accept at most five explicitly controlled recipients. The default
 application composition remains Identity-unbound. An explicit
@@ -87,9 +90,10 @@ and the controlled recipient identity needed by the observed sandbox denial.
 The private ses_sandbox_recipient_identity_arn Terraform input must be preserved
 until its deliberate production transition review; do not broaden identity scope.
 
-Desired source in infra/terraform/shared/test/identity-email.tf now uses exact
-verify@ FromAddress. Deployed policy still uses historical no-reply until a new
-exact reviewed Terraform plan/apply. No local edit changes AWS. SES sandbox
+Source in infra/terraform/shared/test/identity-email.tf uses exact verify@
+FromAddress. The approved2026-10-26 07:04:31UTC apply recorded that sender-condition
+update; it is not still an unperformed change. Current effective permissions and
+delivery need verification in the separately approved deployment window. SES sandbox
 recipients must remain verified; Resend fallback cannot bypass that restriction.
 SES uses task-role credentials, not static access keys/SMTP passwords. Local
 operators use their own approved non-root profile; review actual identity first.
@@ -97,9 +101,14 @@ The local SDK lacked optional AWS-login CRT support in recorded tests, so CLI
 exported short-lived credentials were captured only in process memory. Do not
 write credential files or treat that workaround as deployed runtime evidence.
 
-General SES use needs production grant and reviewed guard/recipient/IAM transition.
-Resend can be the active real provider while SES waits, after its own actual
-configuration and safety checks. No provider failure activates an account.
+SES production access and a standalone send were subsequently recorded on
+2026-10-28, superseding the earlier pending-access statement above. That account
+status alone does not enable general application delivery: the route is selected
+through a private versioned parameter, the current provider preference has not
+been read by this agent, the source adapter is test-profile and controlled-
+recipient only, and the deployed role/recipient policy must be refreshed. Any
+production source/configuration change, permission change or live send requires
+its own review and approval. No provider failure activates an account.
 
 ## Real verification and approvals
 

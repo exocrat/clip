@@ -1,0 +1,23 @@
+{
+  "recorded_at_utc": "2026-10-29 05:01:34 UTC",
+  "regular_signin_and_image_upload_user_confirmed": true,
+  "upload_intent_status": 201,
+  "upload_confirmation_status": 200,
+  "listing_initial_status": 500,
+  "initial_error": "permission denied for table categories during FOR SHARE",
+  "approved_column_grants": {
+    "listings.categories": "created_at",
+    "listings.conditions": "label"
+  },
+  "grant_committed_at_utc": "2026-10-29 04:57:55 UTC",
+  "table_wide_update": false,
+  "active_column_update": false,
+  "listing_retry_status": 201,
+  "image_display_user_confirmed": true,
+  "temporary_conversation_start_status": 201,
+  "temporary_conversation_user_confirmed": true,
+  "hybrid_tested": false,
+  "full_matrix_complete": false,
+  "suraj_review_and_durable_grant_handling": "pending",
+  "cleanup": "awaiting exact teardown approval and DNS removal"
+}

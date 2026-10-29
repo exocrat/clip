@@ -1,0 +1,32 @@
+{
+  "complete": true,
+  "apply_executed": true,
+  "state_serial_before": 19,
+  "state_serial_after": 20,
+  "task_definition": "arn:aws:ecs:ap-south-1:335523638354:task-definition/clip-test-api-ap-south-1-pd16:5",
+  "image": "335523638354.dkr.ecr.ap-south-1.amazonaws.com/clip-shared-test-api@sha256:bfa7316c26f683654f5c4b3f40e9817876db5afd79f8f13af978a8841fbde8f8",
+  "api_desired": 0,
+  "api_running": 0,
+  "api_pending": 0,
+  "proxy_created": false,
+  "approved_plan_sha256": "b531b9bad72885a99f1003f21533e2de2471dab824ebc9c2c75dba8f45042159",
+  "secret_versions_preserved": true,
+  "recorded_at_utc": "2026-10-28 15:03:57 UTC",
+  "window": {
+    "approved": true,
+    "account": "335523638354",
+    "region": "ap-south-1",
+    "profile": "adityalaxmi1",
+    "asg": "clip-shared-test-ecs-host",
+    "rds": "clip-shared-test-postgres",
+    "mutations": [
+      "owned_one_off_asg_scale_down_created",
+      "retained_rds_start_requested",
+      "asg_min1_max1_desired1_requested"
+    ],
+    "started_at_utc": "2026-10-28 15:03:57 UTC",
+    "deadline_utc": "2026-10-28 19:03:57 UTC",
+    "scheduled_action": "id01-step13-stop-20261028T150357Z",
+    "stage": "waiting_for_registration"
+  }
+}

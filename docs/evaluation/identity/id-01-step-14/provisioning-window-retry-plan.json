@@ -1,0 +1,173 @@
+{
+  "recorded_at_utc": "2026-10-29 03:57:37 UTC",
+  "task": "ID-01 Step14",
+  "state": "prepared_not_approved_not_executed",
+  "operator": "Aditya (A)",
+  "target": {
+    "account": "335523638354",
+    "region": "ap-south-1",
+    "profile": "adityalaxmi1",
+    "asg": "clip-shared-test-ecs-host",
+    "launch_template": {
+      "LaunchTemplateId": "lt-0327bb81cb3269f0b",
+      "LaunchTemplateName": "clip-shared-test-98860da02488807ec963cdaec4",
+      "Version": "3"
+    },
+    "instance_type": "t3.micro",
+    "image_id": "ami-0c10ee7b040aa465e",
+    "root_ebs": [
+      {
+        "DeviceName": "/dev/xvda",
+        "Ebs": {
+          "Encrypted": true,
+          "DeleteOnTermination": true,
+          "VolumeSize": 30,
+          "VolumeType": "gp3"
+        }
+      }
+    ],
+    "instance_profile": {
+      "Name": "clip-shared-test-ecs-instance"
+    },
+    "security_groups": [
+      "sg-0a3c8d683731470b4"
+    ],
+    "subnets": "subnet-0c9df7ababd0154bc",
+    "rds_identifier": "clip-shared-test-postgres",
+    "rds_resource_id": "db-PYRRZJPVKPGHIXDAHUWATXGH7A",
+    "rds_host": "clip-shared-test-postgres.cnsu8kgiimug.ap-south-1.rds.amazonaws.com",
+    "rds_port": 5432,
+    "rds_class": "db.t4g.micro",
+    "t3_default_credits": "unlimited",
+    "local_loopback_5432_available": true,
+    "resources_started": false
+  },
+  "backend_serial": 25,
+  "baseline_task_definition": "clip-test-api-ap-south-1-pd16:8",
+  "sql_database": "clip_test",
+  "sql_admin": "clip_test_admin",
+  "new_role": "clip_test_conversations_app",
+  "connection_limit": 2,
+  "sql_sha256": "6822fd82bc1d75c262d55227a385c8ca63a7aca155c8dc1b4df3c19dd73eee13",
+  "source_hashes": [
+    {
+      "path": "scripts/identity_conversations_role.py",
+      "sha256": "57acb01a8bc257ebe19fcc0d90895cac3448d176e7cd47ee82777ede8ae74309"
+    },
+    {
+      "path": "docs/evaluation/identity/id-01-step-14/conversations-runtime.sql.proposed",
+      "sha256": "6822fd82bc1d75c262d55227a385c8ca63a7aca155c8dc1b4df3c19dd73eee13"
+    },
+    {
+      "path": "apps/api/Dockerfile",
+      "sha256": "759deb20430b398e2a9914823fc4696728a9a7309cd213e6792e43a8f07ce065"
+    },
+    {
+      "path": "apps/api/app/domains/identity/certificates/rds-ap-south-1-ecc384-g1.crt",
+      "sha256": "e5573405b7769511b587edd9f397e8f1c7a9aeb5c7c4f5600e6fe029dcde0b70"
+    },
+    {
+      "path": "apps/api/app/domains/identity/certificates/rds-ap-south-1-rsa2048-g1.crt",
+      "sha256": "01089c5776c43f27d6257d3de3ae443ed25a68a401003299fad227b61ed902ba"
+    },
+    {
+      "path": "apps/api/app/domains/identity/certificates/rds-ap-south-1-rsa4096-g1.crt",
+      "sha256": "0cd60badf1d3ea55d2361d55c218b420502707810fc214f30c04f7865d0af90d"
+    },
+    {
+      "path": "scripts/identity_private_aws.py",
+      "sha256": "48fddcdffa6feedc903d0f26f04a11180fad40024c42e70879fd75ba1a1c6a3a"
+    }
+  ],
+  "caps": {
+    "window_minutes": 45,
+    "stop_new_work_after_minutes": 30,
+    "startup_abort_after_minutes": 20,
+    "operator_incremental_usd_stop_threshold": 1,
+    "max_hosts": 1,
+    "api_tasks": 0,
+    "builds": 0,
+    "public_endpoints": 0
+  },
+  "cost": {
+    "source": "AWS Price List GetProducts; exact region/type/engine filters; metadata only, no account billing query",
+    "observed_at_utc": "2026-10-28 20:03:57 UTC",
+    "ec2_linux_t3_micro_usd_per_hour": "0.0112",
+    "rds_postgres_single_az_db_t4g_micro_usd_per_hour": "0.021",
+    "compute_45min_usd": "0.02415",
+    "rds_running_sku": "GUT9JVEQBEMZ2FC7",
+    "ec2_sku": "9NX7BP9ZGC9GB8AX",
+    "excludes": [
+      "new30GiBgp3 prorated storage",
+      "retained NAT/RDS storage/backups/logs",
+      "data transfer",
+      "taxes"
+    ],
+    "budget_is_not_billing_cap": true,
+    "project_budget_forecast": "Human-owned/deferred per prior direction; not queried",
+    "sources": [
+      "https://aws.amazon.com/ec2/pricing/on-demand/",
+      "https://aws.amazon.com/rds/postgresql/pricing/"
+    ]
+  },
+  "ordered_actions": [
+    {
+      "step": 1,
+      "action": "Read-only identity/source/ASG/LT/RDS/service/SSM preflight; refuse any changed target, other workload, unsafe state or occupied local loopback5432."
+    },
+    {
+      "step": 2,
+      "action": "Before starting, create only clip-id01-step14-role-deadline scheduled action on clip-shared-test-ecs-host: StartTime=T0+45min, MinSize0 MaxSize1 DesiredCapacity0; refuse preexisting conflicting action."
+    },
+    {
+      "step": 3,
+      "action": "Start retained RDS once; update existing ASG MinSize1 MaxSize1 DesiredCapacity1. Use only LTlt-0327bb81cb3269f0b version3/t3.micro/AMIami-0c10ee7b040aa465e, no LT change. Validate newly observed owned private instance/profile/SG/root and set its CPU credits to standard (account default is unlimited). API stays0."
+    },
+    {
+      "step": 4,
+      "action": "Use AWS-StartPortForwardingSessionToRemoteHost on the verified owned SSM node: remote fixed RDS host/5432, local loopback5432. Read exactly /clip/test/database-master-password once into memory. Build reviewed public regional CA bundle; connect host=fixedRDS,hostaddr=127.0.0.1,port5432,dbname=clip_test,admin=clip_test_admin,sslmode=verify-full. Never forward plaintext SQL or credentials through shell commands."
+    },
+    {
+      "step": 5,
+      "action": "Verify no other DB clients/role/parameter,23migrations/head20261027112205, inherited PUBLIC ACL and logging baseline. Generate one strong random password in memory; call the exact-hash provision helper, which atomically creates login/CONNECT/logging/table grants and validates effective ACLs. No schema/user/table-row/reset/migration or existing-role change."
+    },
+    {
+      "step": 6,
+      "action": "Prove actual new login/session role/logging and intended table privileges/forbidden reads/DDL/TEMP; no business-row reads. Store only this new fixed-host DSN with sslmode=verify-full&sslrootcert=system using the fixed RAM-backed CLI transport and PutParameter, name=/clip/test/conversations/database-url,Type=SecureString,Tier=Standard,KeyId=alias/aws/ssm,Overwrite=false. Read back this exact value once in memory to compare and record metadata/version only. No overwrite/rotation."
+    },
+    {
+      "step": 7,
+      "action": "Close owned SQL/SSM sessions, restore ASG min0/max1/desired0, remove only owned protection if present, terminate only the window-owned host with deleting root, stop exclusive RDS when AWS permits, then remove owned scheduled action after zero-host verification. Keep service0, task8, new reviewed role and SecureString for subsequent integration."
+    }
+  ],
+  "ssm": {
+    "new_reference": "/clip/test/conversations/database-url",
+    "type": "SecureString",
+    "tier": "Standard",
+    "kms_key": "alias/aws/ssm",
+    "overwrite": false,
+    "retention": "Retain successful role/parameter for reviewed future runtime; manual rotation/deletion only."
+  },
+  "exposure": "Existing private SG/subnet only, no public IP/ingress/SSH/proxy/DNS. Existing RDS stays private/protected. No IAM/resource-policy change in this window.",
+  "failure_handling": "Refuse unsafe preconditions without repair. SQL failures roll back its transaction. Ambiguous commit/SSM result: stop dependent work, do not retry/rotate/delete blindly; keep API0, preserve sanitized outcome and obtain reviewed recovery. Cleanup only owned compute/tunnel/fallback; no automatic credential deletion. Shared RDS stops only with no other clients and when AWS allows; monitor cleanup if startup/stop transitions exceed deadline.",
+  "not_authorized_by_this_plan": [
+    "app task start",
+    "Hybrid build/download/pipeline activation",
+    "provider/email send",
+    "migrations or data deletion",
+    "existing credential rotation",
+    "Terraform apply",
+    "commit/push/merge"
+  ],
+  "validation": {
+    "operator_tests_passed": 6,
+    "operator_test_seconds": 2.11,
+    "black": "passed2files",
+    "boundaries": 0,
+    "resources_started": false,
+    "transport_and_operator_tests_passed": 10,
+    "real_cli_identity_and_parameter_metadata": "passed read-only",
+    "resources_stopped": "rechecked"
+  },
+  "revision": "Retry using tested anonymous-memory AWS CLI transport"
+}

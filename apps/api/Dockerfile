@@ -11,7 +11,10 @@ ARG VITE_LISTINGS_PUBLIC_DEMO=false
 ARG VITE_MICROSOFT_SIGN_IN_ENABLED=false
 ENV VITE_LISTINGS_PUBLIC_DEMO=${VITE_LISTINGS_PUBLIC_DEMO} \
     VITE_MICROSOFT_SIGN_IN_ENABLED=${VITE_MICROSOFT_SIGN_IN_ENABLED}
-RUN npm run build
+# Optional operator allowance for swap-backed small native builders. The default
+# leaves ordinary builds unchanged; this value never reaches the runtime image.
+ARG CLIP_WEB_BUILD_NODE_OPTIONS=""
+RUN NODE_OPTIONS="${CLIP_WEB_BUILD_NODE_OPTIONS}" npm run build
 
 FROM python:3.14.8-slim-trixie AS build
 

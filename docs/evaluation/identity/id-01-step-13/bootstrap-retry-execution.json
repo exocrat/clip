@@ -1,0 +1,310 @@
+{
+  "prepared_at_utc": "2026-10-28 11:06:21 UTC",
+  "state": "approved_corrected_single_retry",
+  "discard_confirmed": true,
+  "discard_confirmation_source": "Aditya: existing records can be discarded; finish Step13 ASAP",
+  "discard_scope": "All observed database records, including users/sessions/enrollment/key-binding/authentication bookkeeping and upload references; no cloud-object deletion or key/password rotation",
+  "isolated_rehearsal_only": false,
+  "live_ddl_approved": true,
+  "affected_owner_reviewed": true,
+  "independent_reviewed": true,
+  "dependency_closure_reviewed": true,
+  "coordinator_path": "scripts/identity_bootstrap.py",
+  "coordinator_sha256": "740dd1f7e4e548fc00f7462c77cfe361676e77d65eca47392fdcdf02bc5f0dc9",
+  "inventory_sha256": "146e106c646c4fe755088aedc9b1400ba9cc0ff50120926408c9d9e473e86387",
+  "manifest_path": "docs/evaluation/identity/id-01-step-13/bootstrap-execution-manifest.json",
+  "manifest_sha256": "cfbb10d485d2eac76ea28c843f4c38615f0c6d5f3206b56c5e1e64bfba1e8a11",
+  "manifest_live_review_pending": true,
+  "migration_image": "ghcr.io/amacneil/dbmate@sha256:520c740c6e0ad73fde2cd1ea7e2b779aaf789d22aca8858f87a478e7094535fb",
+  "expected_catalogue_sha256": "6de44ed172b01e6b272767584356d63f8b369796e0af0c71dd981450284af03e",
+  "expected_counts": {
+    "conversations.contact_shares": 0,
+    "conversations.encrypted_payloads": 0,
+    "conversations.entries": 0,
+    "conversations.members": 0,
+    "conversations.notification_intents": 0,
+    "conversations.offer_revisions": 0,
+    "conversations.offers": 0,
+    "conversations.origin_retirement_operations": 0,
+    "conversations.public_key_versions": 0,
+    "conversations.threads": 0,
+    "identity.auth_source_events": 15,
+    "identity.contacts": 0,
+    "identity.external_identities": 2,
+    "identity.microsoft_login_attempts": 8,
+    "identity.otp_challenges": 1,
+    "identity.otp_key_binding": 1,
+    "identity.otp_operations": 1,
+    "identity.otp_send_reservations": 1,
+    "identity.otp_verification_windows": 1,
+    "identity.password_login_windows": 0,
+    "identity.sessions": 6,
+    "identity.temporary_credentials": 1,
+    "identity.temporary_enrollments": 1,
+    "identity.users": 3,
+    "listings.categories": 8,
+    "listings.conditions": 4,
+    "listings.create_command_results": 0,
+    "listings.embedding_chunks": 0,
+    "listings.embedding_generations": 0,
+    "listings.embedding_pipelines": 0,
+    "listings.image_uploads": 2,
+    "listings.images": 0,
+    "listings.owner_command_results": 0,
+    "listings.sale_listings": 0,
+    "search.saved_listings": 0,
+    "search.wanted_command_results": 0,
+    "search.wanted_requests": 0
+  },
+  "grants": {
+    "clip_test_identity_app": {
+      "identity.auth_source_events": [
+        "SELECT",
+        "INSERT",
+        "UPDATE",
+        "DELETE"
+      ],
+      "identity.contacts": [
+        "SELECT",
+        "INSERT",
+        "UPDATE",
+        "DELETE"
+      ],
+      "identity.external_identities": [
+        "SELECT",
+        "INSERT"
+      ],
+      "identity.microsoft_login_attempts": [
+        "SELECT",
+        "INSERT",
+        "UPDATE",
+        "DELETE"
+      ],
+      "identity.otp_challenges": [
+        "SELECT",
+        "INSERT",
+        "UPDATE",
+        "DELETE"
+      ],
+      "identity.otp_key_binding": [
+        "SELECT",
+        "INSERT"
+      ],
+      "identity.otp_operations": [
+        "SELECT",
+        "INSERT"
+      ],
+      "identity.otp_send_reservations": [
+        "SELECT",
+        "INSERT",
+        "UPDATE",
+        "DELETE"
+      ],
+      "identity.otp_verification_windows": [
+        "SELECT",
+        "INSERT",
+        "UPDATE",
+        "DELETE"
+      ],
+      "identity.password_login_windows": [
+        "SELECT",
+        "INSERT",
+        "UPDATE",
+        "DELETE"
+      ],
+      "identity.sessions": [
+        "SELECT",
+        "INSERT",
+        "UPDATE",
+        "DELETE"
+      ],
+      "identity.temporary_credentials": [
+        "SELECT",
+        "INSERT",
+        "UPDATE",
+        "DELETE"
+      ],
+      "identity.temporary_enrollments": [
+        "SELECT",
+        "INSERT"
+      ],
+      "identity.users": [
+        "SELECT",
+        "INSERT",
+        "UPDATE"
+      ],
+      "public.schema_migrations": [
+        "SELECT"
+      ]
+    },
+    "clip_test_marketplace_app": {
+      "listings.categories": [
+        "SELECT"
+      ],
+      "listings.conditions": [
+        "SELECT"
+      ],
+      "listings.sale_listings": [
+        "SELECT",
+        "INSERT",
+        "UPDATE"
+      ],
+      "listings.images": [
+        "SELECT",
+        "INSERT",
+        "UPDATE",
+        "DELETE"
+      ],
+      "listings.image_uploads": [
+        "SELECT",
+        "INSERT",
+        "UPDATE",
+        "DELETE"
+      ],
+      "listings.create_command_results": [
+        "SELECT",
+        "INSERT",
+        "UPDATE"
+      ],
+      "listings.owner_command_results": [
+        "SELECT",
+        "INSERT",
+        "DELETE"
+      ],
+      "search.wanted_requests": [
+        "SELECT",
+        "INSERT",
+        "UPDATE"
+      ],
+      "search.wanted_command_results": [
+        "SELECT",
+        "INSERT",
+        "UPDATE"
+      ],
+      "search.saved_listings": [
+        "SELECT",
+        "INSERT",
+        "DELETE"
+      ],
+      "listings.embedding_pipelines": [
+        "SELECT"
+      ],
+      "listings.embedding_generations": [
+        "SELECT",
+        "INSERT",
+        "DELETE"
+      ],
+      "listings.embedding_chunks": [
+        "SELECT"
+      ]
+    }
+  },
+  "target": {
+    "account": "335523638354",
+    "profile": "adityalaxmi1",
+    "region": "ap-south-1",
+    "rds": "clip-shared-test-postgres",
+    "resource_id": "db-PYRRZJPVKPGHIXDAHUWATXGH7A",
+    "database": "clip_test",
+    "admin": "clip_test_admin",
+    "endpoint": "clip-shared-test-postgres.cnsu8kgiimug.ap-south-1.rds.amazonaws.com",
+    "master_reference": "/clip/test/database-master-password"
+  },
+  "expected_after": {
+    "migrations": 23,
+    "head": "20261027112205",
+    "tables": 40,
+    "functions": 36,
+    "triggers": 46,
+    "roles": "same OIDs/passwords/memberships/logging/database grants",
+    "marketplace_identity_and_conversations_usage": false
+  },
+  "proposed_live_window": {
+    "approved": true,
+    "maximum_minutes": 60,
+    "startup_limit_minutes": 20,
+    "stop_new_work_after_minutes": 40,
+    "operator_threshold_usd": 1,
+    "hard_billing_cap": false,
+    "maximum_private_micro_hosts": 1,
+    "rds_start": true,
+    "application_service_desired": 0,
+    "proxy_enabled": false,
+    "master_reads": 1,
+    "additional_secret_references": [
+      "/clip/test/identity/database-url",
+      "/clip/test/listings-database-url"
+    ],
+    "secret_use": "Master in memory for coordinator/dbmate stdin; current app DSNs parsed/checked and used only for before/after restricted-role TLS login verification",
+    "provider_or_auth_key_reads": false,
+    "secret_or_password_writes": false,
+    "migration_timeout_seconds": 300,
+    "reset_statement_timeout_seconds": 30,
+    "lock_timeout_seconds": 3,
+    "row_values_read": false,
+    "backup_or_snapshot_created": false,
+    "stop_condition": "Any source/target/role/metadata/count/approval drift or failure: preserve current committed state, keep API off, no automatic retry/reset/restore",
+    "cleanup": "Close owned connections/tunnel, terminate only owned Micro/root, ASG0/max1, stop exclusive retained RDS, remove owned timed fallback; preserve shared infrastructure, roles, secrets, S3 and verified images"
+  },
+  "api_image_retained": "335523638354.dkr.ecr.ap-south-1.amazonaws.com/clip-shared-test-api@sha256:bfa7316c26f683654f5c4b3f40e9817876db5afd79f8f13af978a8841fbde8f8",
+  "operator_changes_require_api_rebuild": false,
+  "no_provider_or_deploy_authorization": true,
+  "expected_versions": [
+    "20261018094330",
+    "20261018094331",
+    "20261018094332",
+    "20261018152702",
+    "20261020102224",
+    "20261020111741",
+    "20261020113531",
+    "20261020142319",
+    "20261021105546",
+    "20261022050000",
+    "20261022062357",
+    "20261023173439",
+    "20261023192856",
+    "20261023202807",
+    "20261024153316",
+    "20261025012200",
+    "20261025013000"
+  ],
+  "source_binding_pending_commit": false,
+  "review_guide": "docs/evaluation/identity/id-01-step-13/bootstrap-live-review.md",
+  "local_rehearsal_tests": 12,
+  "review_source_hashes": [
+    {
+      "path": "scripts/identity_bootstrap.py",
+      "sha256": "740dd1f7e4e548fc00f7462c77cfe361676e77d65eca47392fdcdf02bc5f0dc9"
+    },
+    {
+      "path": "tests/test_identity_bootstrap.py",
+      "sha256": "79d0f22bb0501bbb4a9f00f08f34208453e18f7b3e0380b975f041e2bfcbab2f"
+    },
+    {
+      "path": "docs/evaluation/identity/id-01-step-13/bootstrap-inventory.sql",
+      "sha256": "146e106c646c4fe755088aedc9b1400ba9cc0ff50120926408c9d9e473e86387"
+    },
+    {
+      "path": "docs/evaluation/identity/id-01-step-13/bootstrap-live-review.md",
+      "sha256": "dc802cfbbdc149e6e91ed5dda225e5a601048c53d0c73ffa726f2e1bb1438d0f"
+    }
+  ],
+  "human_approval": {
+    "at_utc": "2026-10-28 13:01:22 UTC",
+    "by": "Aditya (A)",
+    "scope": "Exact reset/grant/cloud candidate approved; independent/affected-owner/dependency and tool/source review gates remain pending; window has not started"
+  },
+  "review_confirmation": {
+    "by": "Aditya (A)",
+    "at_utc": "2026-10-28 13:10:37 UTC",
+    "basis": "User directly confirmed required independent/affected-owner reviews complete in response to exact pending-review question; reviewer names not supplied"
+  },
+  "source_binding_note": "Reviewed working source SHA256 binding; no new commit claimed; immutable operator snapshot retained privately",
+  "retry_approval": {
+    "by": "Aditya (A)",
+    "at_utc": "2026-10-28 13:41:16 UTC",
+    "scope": "Corrected retry plan, same fixed reset/grants/cloud bounds"
+  },
+  "operator_caller_sha256": "f64294a21c3810449ae4c399a340a7be38b6399a50096288b0d30d3d1ed4c06a",
+  "private_window_directory": "/tmp/clip-id01-bootstrap-retry-nwti77p4"
+}

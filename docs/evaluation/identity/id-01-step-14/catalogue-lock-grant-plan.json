@@ -1,0 +1,22 @@
+{
+  "recorded_at_utc": "2026-10-29 04:56:35 UTC",
+  "state": "prepared_not_approved",
+  "account": "335523638354",
+  "region": "ap-south-1",
+  "database": "clip_test",
+  "rds": "clip-shared-test-postgres",
+  "role": "clip_test_marketplace_app",
+  "sql": [
+    "GRANT UPDATE (created_at) ON TABLE listings.categories TO clip_test_marketplace_app",
+    "GRANT UPDATE (label) ON TABLE listings.conditions TO clip_test_marketplace_app"
+  ],
+  "risk": "These column-level privileges permit the role itself to modify category creation timestamps and condition labels; they do not grant table-wide UPDATE or changes to active/code fields. No API catalogue edit is added.",
+  "preflight": "Verify exact target/admin/TLS, 23 migrations, existing SELECT grants and absence of these UPDATE privileges; stop on any mismatch.",
+  "execution": "Read existing master credential once into memory; use private SSM tunnel and verify-full TLS; execute both grants atomically, verify effective privileges, and never print the credential.",
+  "postcheck": "Retry the existing listing once only after commit; no application deployment or session change.",
+  "rollback": "Both grants roll back on transaction failure. If committed and later reversal is needed, separately review exact REVOKE actions.",
+  "local_test": "tests/test_identity_catalogue_lock_grants.py:1 passed on disposable PostgreSQL18.6",
+  "owner_review": "Suraj approved the exact two grants, reported by Aditya",
+  "deadline": "Stop new work 2026-10-29 05:07:34 UTC; cleanup deadline 05:22:34 UTC.",
+  "owner_review_recorded_utc": "2026-10-29 05:14:13 UTC"
+}

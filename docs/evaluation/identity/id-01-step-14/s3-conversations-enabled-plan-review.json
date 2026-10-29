@@ -1,0 +1,190 @@
+{
+  "recorded_at_utc": "2026-10-29 04:43:22 UTC",
+  "state": "prepared_not_approved",
+  "account": "335523638354",
+  "region": "ap-south-1",
+  "profile": "adityalaxmi1",
+  "backend_serial": 25,
+  "terraform_plan_path": "/tmp/clip-step14-https-plan-4c5idt5d/stopped.tfplan",
+  "terraform_plan_sha256": "0a6551e371c1c95f71a694c0abda598151407162c76b7c0db5407cf6c482e707",
+  "terraform_source_hashes": [
+    {
+      "path": "infra/terraform/shared/test/base.tf",
+      "sha256": "014fd912c57ec8870756b01a5f121578e2250de4173741b4855ffb0b858aad46"
+    },
+    {
+      "path": "infra/terraform/shared/test/consumer-runtime.tf",
+      "sha256": "e8873184d3fda598bd1d5284760aa6cd00ed8a854bf9b1c42ffcc56a36439b3e"
+    },
+    {
+      "path": "infra/terraform/shared/test/https-certificate.tf",
+      "sha256": "8a1b12c14af14bb0a5cf303ed4f6d8963336429c5e438edaca17f4e34335b30a"
+    },
+    {
+      "path": "infra/terraform/shared/test/identity-email.tf",
+      "sha256": "466ef2fef48dd6268a21be9b5e5c784115699f90055cd3028994dd001ffcc76f"
+    },
+    {
+      "path": "infra/terraform/shared/test/identity-https-proxy.tf",
+      "sha256": "430698f9da34a4e5cb84663c37ce6fcac336ed1e6bb7794c5c43b8d7c8d7b37c"
+    },
+    {
+      "path": "infra/terraform/shared/test/listings-images.tf",
+      "sha256": "3dd67d86f5485be065063200885ed2e6b6a395bdc7aef2e86fa36d99ea2cdf65"
+    },
+    {
+      "path": "infra/terraform/shared/test/locals.tf",
+      "sha256": "92b1dd0e50adbc0937e845acc2b4476f67bd2d1a20c4a26b65a5e3a7649d374e"
+    },
+    {
+      "path": "infra/terraform/shared/test/network.tf",
+      "sha256": "cc22c15bb83d0ef3cff78db5059f52e26c42a3fc4fa1ff01351b4f885dc9b008"
+    },
+    {
+      "path": "infra/terraform/shared/test/outputs.tf",
+      "sha256": "b252fcac10aae837f8525b9ba11db2ba188ec1ff5db4bf2e31c1d23ff9faf4ce"
+    },
+    {
+      "path": "infra/terraform/shared/test/service.tf",
+      "sha256": "f245aa92d29386df44db576172676dc1e2728206c69188ff66a2085a3c77db5c"
+    },
+    {
+      "path": "infra/terraform/shared/test/variables.tf",
+      "sha256": "bb044febdf21a61965757cd0dda6612b7ad4db44651d503f251f4f425c71beb9"
+    },
+    {
+      "path": "infra/terraform/shared/test/versions.tf",
+      "sha256": "85378f9c60b449e27a7d8fe68661c2d359fd088f620d34c541177abe76ddb332"
+    },
+    {
+      "path": "infra/terraform/shared/test/scripts/identity-proxy-user-data.sh.tftpl",
+      "sha256": "3dfef0af3e0fada448337bcb2f7efe34316c7860849c38af1f033af0dcfa5e27"
+    },
+    {
+      "path": "infra/terraform/shared/test/scripts/identity-proxy.Caddyfile.tftpl",
+      "sha256": "6680a3d99ad1ff0d9392256173078fb43374dbd0ee4a00e04a2b9a909801a251"
+    }
+  ],
+  "actions": [
+    {
+      "address": "aws_autoscaling_group.ecs_host[0]",
+      "actions": [
+        "update"
+      ]
+    },
+    {
+      "address": "aws_ecs_service.api[0]",
+      "actions": [
+        "update"
+      ]
+    },
+    {
+      "address": "aws_ecs_task_definition.api[0]",
+      "actions": [
+        "delete",
+        "create"
+      ]
+    },
+    {
+      "address": "aws_eip.identity_https_proxy[0]",
+      "actions": [
+        "create"
+      ]
+    },
+    {
+      "address": "aws_eip_association.identity_https_proxy[0]",
+      "actions": [
+        "create"
+      ]
+    },
+    {
+      "address": "aws_iam_instance_profile.identity_https_proxy[0]",
+      "actions": [
+        "create"
+      ]
+    },
+    {
+      "address": "aws_iam_role.identity_https_proxy[0]",
+      "actions": [
+        "create"
+      ]
+    },
+    {
+      "address": "aws_iam_role_policy.identity_https_proxy_ssm[0]",
+      "actions": [
+        "create"
+      ]
+    },
+    {
+      "address": "aws_instance.identity_https_proxy[0]",
+      "actions": [
+        "create"
+      ]
+    },
+    {
+      "address": "aws_security_group.identity_https_proxy[0]",
+      "actions": [
+        "create"
+      ]
+    },
+    {
+      "address": "aws_vpc_security_group_ingress_rule.identity_api_from_https_proxy[0]",
+      "actions": [
+        "create"
+      ]
+    }
+  ],
+  "asg_minimum_change": "1 to 0; desired capacity remains 1; stop if existing host or private IP changes",
+  "private_host": "i-06ef704f13db82f6d",
+  "private_host_ip": "10.64.1.98",
+  "host_deadline_utc": "2026-10-29 05:22:34 UTC",
+  "stop_new_work_utc": "2026-10-29 05:07:34 UTC",
+  "proxy_private_ip": "10.64.0.10",
+  "proxy_public_ports": [
+    80,
+    443
+  ],
+  "proxy_type": "t3.micro",
+  "proxy_root": "30GiB gp3 encrypted delete-on-termination",
+  "api_private_ingress": "18000 only from proxy security group",
+  "api_desired": 1,
+  "api_image": "335523638354.dkr.ecr.ap-south-1.amazonaws.com/clip-shared-test-api@sha256:bfa7316c26f683654f5c4b3f40e9817876db5afd79f8f13af978a8841fbde8f8",
+  "api_cpu": 256,
+  "api_memory_mib": 512,
+  "hybrid_enabled": false,
+  "conversation_dsn_reference": "arn:aws:ssm:ap-south-1:335523638354:parameter/clip/test/conversations/database-url",
+  "proxy_role_can_read_secrets": false,
+  "additional_authorized_actions": [
+    "Start only retained RDS clip-shared-test-postgres once, with protected/private settings unchanged.",
+    "Read existing master/probe parameters only into Terraform subprocess memory again, verify unchanged versions, and apply only the saved plan.",
+    "Read-only health, TLS and target checks; ask user to set exact DNS A record once the proxy IP is known; never poll DNS propagation.",
+    "With user sign-in, use one synthetic PNG and a synthetic listing to test real S3 upload/confirm/display and class/ownership denials; verify actual hosted Conversations with the separate login.",
+    "Preserve synthetic listing and object together; prepare an exact teardown plan and obtain its separate approval, then stop exclusive RDS and remove only window-owned proxy/host resources."
+  ],
+  "caps": {
+    "host_window_start": "2026-10-29 04:37:34 UTC",
+    "stop_new_work": "2026-10-29 05:07:34 UTC",
+    "host_deadline": "2026-10-29 05:22:34 UTC",
+    "max_private_hosts": 1,
+    "max_proxy_hosts": 1,
+    "api_tasks": 1,
+    "incremental_operator_stop_threshold_usd": 1,
+    "approval_latest_utc": "2026-10-29 04:47:34 UTC"
+  },
+  "fixture": {
+    "path": "/tmp/clip-step14-host-window-u5lbqpgy/synthetic-test.png",
+    "size_bytes": 208,
+    "sha256": "46eb43a1dd62c90c2ef1c8a14b817fd8390287d59b3e07578523667b2b3f2c64"
+  },
+  "budget_note": "Existing host window USD1 threshold for the entire window; not a billing cap. Retained NAT/storage continue to accrue. Proxy public IPv4 and root volume incur additional prorated costs.",
+  "not_authorized": [
+    "Hybrid build/pipeline activation",
+    "email send or new account registration",
+    "credential rotation",
+    "unrelated SQL/data deletion",
+    "DNS propagation polling",
+    "commit/push/merge"
+  ],
+  "cleanup_limit": "ASG scheduled action stops only private EC2; proxy currently has a240-minute OS fallback, while operator owns earlier proxy/EIP cleanup and stopping RDS. No automatic complete teardown is claimed.",
+  "prior_secret_read_for_plan": "Master/probe values read once with explicit user approval, memory-only, unchanged versions; apply requires the same two values again."
+}

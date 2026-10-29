@@ -58,10 +58,13 @@ real deployment is enabled by this decision. Resend account/domain/API-key setup
 exact SSM provisioning/IAM, live sends, DNS and deployed rollout need their separate
 reviewable approvals. Verify Resend DNS while preserving existing SES records;
 turn off tracking for OTP mail and review provider content retention. Never paste
-keys or real OTPs in chat. A verified Resend path may satisfy active-provider
-readiness; SES production access remains pending and must pass before general
-SES fallback/preference is enabled. Restricted SES may reject an ordinary fallback
-recipient until then; this is not extra quota or a sandbox bypass.
+keys or real OTPs in chat. A verified Resend path may satisfy active-provider readiness. Later hosted
+evidence recorded SES production access, DKIM success and a standalone receipt
+on 2026-10-28; that supersedes the older pending-access status but does not enable
+unrestricted application sends. The source still limits Identity/SES to the bounded
+test profile and controlled recipients, and the deployed route preference/effective
+role policy require a reviewed refresh. Do not treat account-level production
+access as permission for a live send or cloud policy change.
 
 CN-03 may adopt this design through its own public transport/owner review; it must
 not import Identity-private modules or claim its notification worker is ready.

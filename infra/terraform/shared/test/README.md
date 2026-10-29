@@ -136,3 +136,41 @@ and preserve the retained certificate flag/date and original write-only versions
 Neither these local changes nor a successful local check authorizes state refresh,
 remote apply, DNS changes or runtime restart. See the
 [consolidated demo handoff](../../../../docs/evaluation/identity/id-01-step-12/demo-postmortem-20261026.md).
+
+
+## Optional Identity HTTPS test proxy — local proposal
+
+`identity-https-proxy.tf` defaults off. It declares one dedicated t3.micro public
+proxy, fixed private peer10.64.0.10, private API SG rule, EIP/association and a
+custom SSM-only role/profile with no parameter/secret reads. It requires the
+observed ECS host address and explicit review date; no guessed upstream or DNS
+mutation. The new API command is activated only with Identity runtime enabled:
+raw access logs off, exact proxy trust if present, no forwarded trust otherwise.
+Default Identity-off container command and shared instance-type default are
+unchanged. The proxy schedules a compute stop after240minutes; its IP/volume and
+shared ECS/RDS still need operator-reviewed cleanup. A direct proxy uses Caddy
+ACME, not the retained non-exportable ACM certificate. This adds no SSH listener.
+
+Run the registered safe mock wrapper plus normal Terraform checks before review.
+No real plan/apply/start/reset is authorized by passing them. See the
+[Step13 preparation and planning request](../../../../docs/evaluation/identity/id-01-step-13/README.md).
+
+## ID-01 Step14 consumer runtime preparation — not applied
+
+`conversations_runtime_enabled=false` and `hybrid_runtime_enabled=false` preserve
+the prior default task capacity (256CPU/512MiB). Opt-in Conversations injects
+`CLIP_DATABASE_DSN` from the exact SecureString
+`/clip/test/conversations/database-url`; a dedicated execution-role policy reads
+only that parameter. This configuration does not create the parameter/login,
+set a password or grant SQL rights. Review the Step14 local SQL proposal with
+Rahul before a separate exact provisioning plan.
+
+Hybrid requires the reviewed optional AMD64 image, offline artifact contexts,
+and explicit flags. Set reviewed `api_task_cpu`/`api_task_memory_mib` inputs
+(at least512/2048 for Hybrid), inspect host fit and total pool connections, then
+prepare/queue/activate the serving pipeline through the approved operator path.
+These caps are preparation guards, not measured sizing or NFR evidence. Both
+options require the real Identity profile. Existing service count, networking,
+S3 scope, credentials and retained stopped resources are unchanged until an
+exact cloud plan is approved and applied. No runtime startup auto-creates SQL
+roles or activates a pipeline. Backend-free mock plans are local checks only.

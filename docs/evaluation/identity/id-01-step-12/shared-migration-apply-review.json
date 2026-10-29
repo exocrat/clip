@@ -1,15 +1,15 @@
 {
-  "prepared_at_utc": "2026-10-26 19:40:49 UTC",
+  "prepared_at_utc": "2026-10-27 19:17:03 UTC",
   "state": "review_candidate_not_executable",
-  "source_head": "1bb0eb9d8ffb486d444d4055e0032be0f5701a6b",
-  "runner_source_commit": "1bb0eb9d8ffb486d444d4055e0032be0f5701a6b",
-  "upstream_base": "d7afc8b128c8b2caae368589573dabc133e3008a",
+  "source_head": "39bfb4beedd0d8f7c303046099210b82ef4780a6",
+  "runner_source_commit": "39bfb4beedd0d8f7c303046099210b82ef4780a6",
+  "upstream_base": "5e8d264018c85475fbe13809316616b63a40886e",
   "manifest_path": "docs/evaluation/identity/id-01-step-12/shared-migration-manifest.json",
-  "manifest_sha256": "fa7d71f96218a73e06796077738926c65083991ac30f2291b5519d3231365fb9",
-  "migration_count": 17,
-  "head": "20261025013000",
+  "manifest_sha256": "069b1ae0387ba6b051e8da23c2d3c0f6b863466cccee515afbbeba91cabd5d0b",
+  "migration_count": 23,
+  "head": "20261027112205",
   "image_to_review": "ghcr.io/amacneil/dbmate@sha256:520c740c6e0ad73fde2cd1ea7e2b779aaf789d22aca8858f87a478e7094535fb",
-  "upstream_migrations_unchanged": 17,
+  "upstream_migrations_unchanged": 23,
   "new_identity_migrations": 0,
   "review_gates": {
     "independent_human": "PR14 implementation review is recorded; new branch/runtime changes require their own review",
@@ -50,11 +50,11 @@
     "public AWS CA and verify-full TLS; one approved private master-secret read"
   ],
   "expected_postconditions": {
-    "versions": 17,
-    "head": "20261025013000",
-    "domain_tables": 37,
-    "domain_functions": 33,
-    "domain_triggers": 43
+    "versions": 23,
+    "head": "20261027112205",
+    "domain_tables": 40,
+    "domain_functions": 36,
+    "domain_triggers": 46
   },
   "recovery": "preserve committed prefix; no automatic down/drop/reset/restore or retry; inspect and obtain a forward-recovery plan",
   "cleanup": "only owned task/session/host/root; guarded zero capacity, original RDS stopped when operator window remains exclusive",
@@ -72,9 +72,9 @@
     "reviewer": "Suraj",
     "evidence": "Aditya confirms review and merge; source acceptance is not image or live DDL approval"
   },
-  "recorded_upstream_base_note": "Current main already contains all17SQL files; source/manifest consistency does not authorize a future live execution.",
+  "recorded_upstream_base_note": "Accepted PR17/18 main contains all23SQL files; no published SQL changes. This candidate is fresh/repeat only, not an approved upgrade from the previously applied17-file prefix.",
   "source_hashes": {
-    "apps/api/app/domains/identity/migration_runner.py": "51cf916bd60624377dcb3bd67a14419eaa2805d714a31f3123057458e8f20d11",
+    "apps/api/app/domains/identity/migration_runner.py": "a70c34386ea336d381e601e0d6fbd50939f4812e185439c553b2023417c37cab",
     "apps/api/app/domains/identity/database_setup.py": "2d88017e729698b4c8565debfee1fdddb96973a9bf726db2d58a31bd00d34669",
     "apps/api/app/domains/identity/runtime_database.py": "dce0a0dfe40d7cb90ae7676cc0444280b1f48d4d932513e2709a1a32884f1a62",
     "database/roles/identity-runtime.sql.proposed": "19bf55d3bc1d8fc9e89a236e50ed9c5b53057a0a2dd93801a2c3729ca5e82d69"
@@ -82,5 +82,25 @@
   "identity_migrations_in_chain": 3,
   "prior_execution_receipt": "docs/evaluation/identity/id-01-step-12/shared-migration-apply-review-executed-20261026T102702Z.json",
   "prior_execution_manifest_archive": "docs/evaluation/identity/id-01-step-12/shared-migration-manifest-applied-20261026T102702Z.json",
-  "reusable_manifest_note": "No new live authorization; completed apply is recorded separately with its exact manifest checksum."
+  "reusable_manifest_note": "No new live authorization; completed apply is recorded separately with its exact manifest checksum.",
+  "source_commit_binding_pending": false,
+  "source_commit_binding_note": "Bound to the human-verified local implementation commit39bfb4b. Source consistency is separate from independent/affected-owner review, image review and exact live-target approval.",
+  "recorded_shared_database_baseline": {
+    "evidence": "docs/evaluation/identity/id-01-step-12/shared-migration-apply-result-20261026T102702Z.json",
+    "versions": 17,
+    "head": "20261025013000",
+    "current_live_state_reverified": false,
+    "candidate_accepts_this_prefix": false,
+    "separate_target_change_plan_required": true,
+    "preferred_step13_strategy": "Reviewed clean bootstrap/reset; Aditya reports no application data worth preserving. Existing schemas/tracker are not assumed absent."
+  },
+  "target_state_note": "Historical target metadata only; no current AWS/SQL inspection. Reverify exact target and workload state under a separately approved Step13 window.",
+  "limits_note": "Retained proposal bounds, not fresh cost or execution approval. Review current costs, capacity and exact window before any live request.",
+  "data_preservation_direction": {
+    "recorded_at_utc": "2026-10-27 18:44:48 UTC",
+    "source": "Aditya reports no data exists and does not require data preservation across migration changes",
+    "independently_inspected": false,
+    "live_reset_or_replacement_performed": false,
+    "exact_target_and_cloud_approval_still_required": true
+  }
 }

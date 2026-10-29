@@ -1,0 +1,27 @@
+-- LOCAL REVIEW PROPOSAL ONLY: no migration/startup/shared target execution.
+-- Explicitly provision the proposed login and CONNECT in its separate reviewed
+-- plan; no password in this file. Disposable tests create their own login.
+-- API-only scope: no retention worker/role management/DDL or other schema rights.
+-- Prevent submitted ciphertext/private parameters from entering statement/error logs.
+ALTER ROLE clip_test_conversations_app SET log_statement = 'none';
+ALTER ROLE clip_test_conversations_app SET log_min_duration_statement = '-1';
+ALTER ROLE clip_test_conversations_app SET log_min_duration_sample = '-1';
+ALTER ROLE clip_test_conversations_app SET log_transaction_sample_rate = '0';
+ALTER ROLE clip_test_conversations_app SET log_min_error_statement = 'panic';
+ALTER ROLE clip_test_conversations_app SET log_parameter_max_length_on_error = '0';
+
+GRANT USAGE ON SCHEMA conversations TO clip_test_conversations_app;
+GRANT SELECT, INSERT, UPDATE ON
+  conversations.threads, conversations.members, conversations.public_key_versions,
+  conversations.entries, conversations.offers, conversations.public_prekeys,
+  conversations.notification_intents
+TO clip_test_conversations_app;
+GRANT SELECT, INSERT ON
+  conversations.encrypted_payloads, conversations.offer_revisions,
+  conversations.contact_shares, conversations.recovery_families,
+  conversations.key_directory_operations, conversations.origin_retirement_operations
+TO clip_test_conversations_app;
+-- Trigger reads/updates stay inside Conversations under final installed schema.
+-- Foreign-key enforcement does not require granting Identity/Listings/Search reads.
+-- No ALL TABLES/default grants, DELETE/TRUNCATE/REFERENCES/TRIGGER/MAINTAIN,
+-- schema CREATE, sequence or cross-domain grants. Owner review remains required.

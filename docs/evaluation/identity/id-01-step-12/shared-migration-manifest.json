@@ -1,12 +1,12 @@
 {
-  "prepared_at_utc": "2026-10-26 19:40:49 UTC",
-  "source_revision": "1bb0eb9d8ffb486d444d4055e0032be0f5701a6b",
-  "recorded_upstream_revision": "d7afc8b128c8b2caae368589573dabc133e3008a",
+  "prepared_at_utc": "2026-10-27 19:17:03 UTC",
+  "source_revision": "39bfb4beedd0d8f7c303046099210b82ef4780a6",
+  "recorded_upstream_revision": "5e8d264018c85475fbe13809316616b63a40886e",
   "tool": "dbmate 2.36.0",
   "image_tag": "ghcr.io/amacneil/dbmate:2.36.0",
   "image_digest_review_pending": true,
-  "migration_count": 17,
-  "head": "20261025013000",
+  "migration_count": 23,
+  "head": "20261027112205",
   "live_apply_authorized": false,
   "migrations": [
     {
@@ -93,6 +93,36 @@
       "path": "database/migrations/20261025013000_wanted_command_results.sql",
       "version": "20261025013000",
       "sha256": "c23984cd903e6fce17106d235cc4e40de7c68c1a7521fe0dd896b98912224955"
+    },
+    {
+      "path": "database/migrations/20261026090000_conversation_retirement_hardening.sql",
+      "version": "20261026090000",
+      "sha256": "a60d0a8319dd8ea53d89d3d617b5b75949c5ad96482d1c3095d628b776069587"
+    },
+    {
+      "path": "database/migrations/20261026090100_conversation_message_transport.sql",
+      "version": "20261026090100",
+      "sha256": "e501421f793e9d0e8c723a28963f5c1922c76a6842b853950a6419352de9dd5d"
+    },
+    {
+      "path": "database/migrations/20261026090200_conversation_public_key_directory.sql",
+      "version": "20261026090200",
+      "sha256": "9588b27d9cd73b7b41c45d66721875bfe41fc22d0b7d4ccd7711386ce0d53b40"
+    },
+    {
+      "path": "database/migrations/20261026090300_conversation_recovery_storage.sql",
+      "version": "20261026090300",
+      "sha256": "3b44c216535e8c0117c7287bbbadb6456fd5cb62f36869e4ec31ceacf823cf11"
+    },
+    {
+      "path": "database/migrations/20261027064000_conversation_offer_requests.sql",
+      "version": "20261027064000",
+      "sha256": "d90b6234914b72348dbe43ce25b02e1b4d553dad0f6982750b25341665678cef"
+    },
+    {
+      "path": "database/migrations/20261027112205_contact_share_initial_prekey_envelopes.sql",
+      "version": "20261027112205",
+      "sha256": "392a1644e8a2ddd3b5a96de866ca53b9aee7a850c4130fc1440fdd9ef377a897"
     }
   ],
   "locally_tested_image_digest": "ghcr.io/amacneil/dbmate@sha256:520c740c6e0ad73fde2cd1ea7e2b779aaf789d22aca8858f87a478e7094535fb",

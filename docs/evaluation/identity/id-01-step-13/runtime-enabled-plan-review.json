@@ -1,0 +1,269 @@
+{
+  "prepared_at_utc": "2026-10-28 15:06:34 UTC",
+  "target": {
+    "account": "335523638354",
+    "profile": "adityalaxmi1",
+    "region": "ap-south-1",
+    "environment": "shared/test",
+    "state_serial": 20
+  },
+  "source_commit": "c82dc28",
+  "plan": {
+    "path": "/tmp/clip-id01-runtime-plan-sz7ld_se/runtime-enabled.tfplan",
+    "sha256": "246c529444a63364c24e39ef6bd71c8e195b33ea6bb86d977321558064ef11f8",
+    "resource_changes": [
+      {
+        "address": "aws_autoscaling_group.ecs_host[0]",
+        "actions": [
+          "update"
+        ],
+        "changed_attributes": [
+          "min_size"
+        ]
+      },
+      {
+        "address": "aws_ecs_service.api[0]",
+        "actions": [
+          "update"
+        ],
+        "changed_attributes": [
+          "desired_count",
+          "task_definition"
+        ]
+      },
+      {
+        "address": "aws_ecs_task_definition.api[0]",
+        "actions": [
+          "delete",
+          "create"
+        ],
+        "changed_attributes": [
+          "arn",
+          "arn_without_revision",
+          "container_definitions",
+          "enable_fault_injection",
+          "id",
+          "ipc_mode",
+          "pid_mode",
+          "revision",
+          "tags"
+        ]
+      },
+      {
+        "address": "aws_eip.identity_https_proxy[0]",
+        "actions": [
+          "create"
+        ],
+        "changed_attributes": [
+          "domain",
+          "region",
+          "tags",
+          "tags_all"
+        ]
+      },
+      {
+        "address": "aws_eip_association.identity_https_proxy[0]",
+        "actions": [
+          "create"
+        ],
+        "changed_attributes": [
+          "region"
+        ]
+      },
+      {
+        "address": "aws_iam_instance_profile.identity_https_proxy[0]",
+        "actions": [
+          "create"
+        ],
+        "changed_attributes": [
+          "name",
+          "path",
+          "role",
+          "tags",
+          "tags_all"
+        ]
+      },
+      {
+        "address": "aws_iam_role.identity_https_proxy[0]",
+        "actions": [
+          "create"
+        ],
+        "changed_attributes": [
+          "assume_role_policy",
+          "force_detach_policies",
+          "max_session_duration",
+          "name",
+          "path",
+          "tags",
+          "tags_all"
+        ]
+      },
+      {
+        "address": "aws_iam_role_policy.identity_https_proxy_ssm[0]",
+        "actions": [
+          "create"
+        ],
+        "changed_attributes": [
+          "name",
+          "policy",
+          "role"
+        ]
+      },
+      {
+        "address": "aws_instance.identity_https_proxy[0]",
+        "actions": [
+          "create"
+        ],
+        "changed_attributes": [
+          "ami",
+          "associate_public_ip_address",
+          "credit_specification",
+          "force_destroy",
+          "get_password_data",
+          "iam_instance_profile",
+          "instance_initiated_shutdown_behavior",
+          "instance_type",
+          "launch_template",
+          "metadata_options",
+          "private_ip",
+          "region",
+          "root_block_device",
+          "source_dest_check",
+          "subnet_id",
+          "tags",
+          "tags_all",
+          "user_data",
+          "user_data_replace_on_change"
+        ]
+      },
+      {
+        "address": "aws_security_group.identity_https_proxy[0]",
+        "actions": [
+          "create"
+        ],
+        "changed_attributes": [
+          "description",
+          "egress",
+          "ingress",
+          "name",
+          "region",
+          "revoke_rules_on_delete",
+          "tags",
+          "tags_all",
+          "vpc_id"
+        ]
+      },
+      {
+        "address": "aws_vpc_security_group_ingress_rule.identity_api_from_https_proxy[0]",
+        "actions": [
+          "create"
+        ],
+        "changed_attributes": [
+          "description",
+          "from_port",
+          "ip_protocol",
+          "region",
+          "security_group_id",
+          "tags",
+          "tags_all",
+          "to_port"
+        ]
+      }
+    ],
+    "api_enabled": true,
+    "proxy_enabled": true,
+    "identity_runtime_enabled": true,
+    "apply_approved": false
+  },
+  "source_hashes": [
+    {
+      "path": "infra/terraform/shared/test/versions.tf",
+      "sha256": "85378f9c60b449e27a7d8fe68661c2d359fd088f620d34c541177abe76ddb332"
+    },
+    {
+      "path": "infra/terraform/shared/test/base.tf",
+      "sha256": "014fd912c57ec8870756b01a5f121578e2250de4173741b4855ffb0b858aad46"
+    },
+    {
+      "path": "infra/terraform/shared/test/identity-email.tf",
+      "sha256": "466ef2fef48dd6268a21be9b5e5c784115699f90055cd3028994dd001ffcc76f"
+    },
+    {
+      "path": "infra/terraform/shared/test/locals.tf",
+      "sha256": "92b1dd0e50adbc0937e845acc2b4476f67bd2d1a20c4a26b65a5e3a7649d374e"
+    },
+    {
+      "path": "infra/terraform/shared/test/.terraform.lock.hcl",
+      "sha256": "8e943f65218efc74b64233304fcea1a642c1c394452dcc1a4c0e138a20d78b5d"
+    },
+    {
+      "path": "infra/terraform/shared/test/outputs.tf",
+      "sha256": "b252fcac10aae837f8525b9ba11db2ba188ec1ff5db4bf2e31c1d23ff9faf4ce"
+    },
+    {
+      "path": "infra/terraform/shared/test/https-certificate.tf",
+      "sha256": "8a1b12c14af14bb0a5cf303ed4f6d8963336429c5e438edaca17f4e34335b30a"
+    },
+    {
+      "path": "infra/terraform/shared/test/variables.tf",
+      "sha256": "bb044febdf21a61965757cd0dda6612b7ad4db44651d503f251f4f425c71beb9"
+    },
+    {
+      "path": "infra/terraform/shared/test/network.tf",
+      "sha256": "cc22c15bb83d0ef3cff78db5059f52e26c42a3fc4fa1ff01351b4f885dc9b008"
+    },
+    {
+      "path": "infra/terraform/shared/test/listings-images.tf",
+      "sha256": "3dd67d86f5485be065063200885ed2e6b6a395bdc7aef2e86fa36d99ea2cdf65"
+    },
+    {
+      "path": "infra/terraform/shared/test/service.tf",
+      "sha256": "8b31faa810781533ba12a036badf2b4df7486e6ad8cde21bd9e27d4907119f8d"
+    },
+    {
+      "path": "infra/terraform/shared/test/identity-https-proxy.tf",
+      "sha256": "430698f9da34a4e5cb84663c37ce6fcac336ed1e6bb7794c5c43b8d7c8d7b37c"
+    },
+    {
+      "path": "infra/terraform/shared/test/scripts/setup-db-role.sh",
+      "sha256": "e6e020f709042e8fa754e6634f7a96803269a06f4fab89de8e57a8fad7489aaa"
+    },
+    {
+      "path": "infra/terraform/shared/test/scripts/probe-db.sh",
+      "sha256": "93792cd721574a2ede36efd67ef7dbd9f6c38f43e9186dbc60644967532120c4"
+    },
+    {
+      "path": "infra/terraform/shared/test/scripts/identity-proxy.Caddyfile.tftpl",
+      "sha256": "6680a3d99ad1ff0d9392256173078fb43374dbd0ee4a00e04a2b9a909801a251"
+    },
+    {
+      "path": "infra/terraform/shared/test/scripts/identity-proxy-user-data.sh.tftpl",
+      "sha256": "3dfef0af3e0fada448337bcb2f7efe34316c7860849c38af1f033af0dcfa5e27"
+    }
+  ],
+  "observed_private_host": {
+    "instance_id": "i-012c79d8ef66d51f9",
+    "ip": "10.64.1.179",
+    "type": "t3.micro",
+    "credits": "standard"
+  },
+  "window": {
+    "started_at_utc": "2026-10-28 15:03:57 UTC",
+    "deadline_utc": "2026-10-28 19:03:57 UTC",
+    "stop_new_work_at_utc": "2026-10-28 18:03:57 UTC",
+    "operator_stop_threshold_usd": 2,
+    "billing_cap": false,
+    "maximum_private_hosts": 1,
+    "maximum_proxy_hosts": 1
+  },
+  "provider_test_proposal": {
+    "approved": false,
+    "sender": "verify@clip-iisc.site",
+    "recipient_scope": "Aditya recorded IISc/Gmail test addresses only; private allowlist retained in task input",
+    "maximum_intentional_messages": 6,
+    "no_manual_automatic_resend_loop": true
+  },
+  "apply_executed": false,
+  "preserve": "Migrated RDS/roles, authentication/email keys, SSM versions, S3/shared network/NAT/storage/ACM and images",
+  "approval_guide": "runtime-enabled-plan-review.md"
+}

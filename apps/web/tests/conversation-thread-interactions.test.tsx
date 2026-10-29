@@ -85,7 +85,8 @@ describe('ConversationThread keyboard sending', () => {
     fireEvent.keyDown(screen.getByLabelText('Message'), { key: 'Enter' });
     await vi.waitFor(() => expect(screen.getByText(sent.text)).toBeTruthy());
     await vi.waitFor(() => expect(screen.queryByText('Sending…')).toBeNull());
-    expect(transcript.scrollTop).toBe(540);
+    // Scrolling runs in a React effect after the sent entry is rendered.
+    await vi.waitFor(() => expect(transcript.scrollTop).toBe(540));
   });
 });
 

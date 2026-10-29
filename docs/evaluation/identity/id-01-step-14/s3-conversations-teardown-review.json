@@ -1,0 +1,144 @@
+{
+  "state": "prepared_not_approved",
+  "plan_path": "/tmp/clip-step14-teardown-plan-cvdxhnrc/stopped.tfplan",
+  "plan_sha256": "5aca183eecb008153278bae670fcc51c147120df520237a733eb92d0f1e4787d",
+  "backend_serial": 27,
+  "actions": [
+    {
+      "address": "aws_ecs_service.api[0]",
+      "actions": [
+        "update"
+      ]
+    },
+    {
+      "address": "aws_ecs_task_definition.api[0]",
+      "actions": [
+        "delete",
+        "create"
+      ]
+    },
+    {
+      "address": "aws_eip.identity_https_proxy[0]",
+      "actions": [
+        "delete"
+      ]
+    },
+    {
+      "address": "aws_eip_association.identity_https_proxy[0]",
+      "actions": [
+        "delete"
+      ]
+    },
+    {
+      "address": "aws_iam_instance_profile.identity_https_proxy[0]",
+      "actions": [
+        "delete"
+      ]
+    },
+    {
+      "address": "aws_iam_role.identity_https_proxy[0]",
+      "actions": [
+        "delete"
+      ]
+    },
+    {
+      "address": "aws_iam_role_policy.identity_https_proxy_ssm[0]",
+      "actions": [
+        "delete"
+      ]
+    },
+    {
+      "address": "aws_instance.identity_https_proxy[0]",
+      "actions": [
+        "delete"
+      ]
+    },
+    {
+      "address": "aws_security_group.identity_https_proxy[0]",
+      "actions": [
+        "delete"
+      ]
+    },
+    {
+      "address": "aws_vpc_security_group_ingress_rule.identity_api_from_https_proxy[0]",
+      "actions": [
+        "delete"
+      ]
+    }
+  ],
+  "api_desired": 0,
+  "proxy_instance": "i-037c4d29e50a1560c",
+  "eip": "16.4.101.162",
+  "private_host": "i-06ef704f13db82f6d",
+  "rds": "clip-shared-test-postgres",
+  "source_hashes": [
+    {
+      "path": "infra/terraform/shared/test/base.tf",
+      "sha256": "014fd912c57ec8870756b01a5f121578e2250de4173741b4855ffb0b858aad46"
+    },
+    {
+      "path": "infra/terraform/shared/test/consumer-runtime.tf",
+      "sha256": "e8873184d3fda598bd1d5284760aa6cd00ed8a854bf9b1c42ffcc56a36439b3e"
+    },
+    {
+      "path": "infra/terraform/shared/test/https-certificate.tf",
+      "sha256": "8a1b12c14af14bb0a5cf303ed4f6d8963336429c5e438edaca17f4e34335b30a"
+    },
+    {
+      "path": "infra/terraform/shared/test/identity-email.tf",
+      "sha256": "466ef2fef48dd6268a21be9b5e5c784115699f90055cd3028994dd001ffcc76f"
+    },
+    {
+      "path": "infra/terraform/shared/test/identity-https-proxy.tf",
+      "sha256": "430698f9da34a4e5cb84663c37ce6fcac336ed1e6bb7794c5c43b8d7c8d7b37c"
+    },
+    {
+      "path": "infra/terraform/shared/test/listings-images.tf",
+      "sha256": "3dd67d86f5485be065063200885ed2e6b6a395bdc7aef2e86fa36d99ea2cdf65"
+    },
+    {
+      "path": "infra/terraform/shared/test/locals.tf",
+      "sha256": "92b1dd0e50adbc0937e845acc2b4476f67bd2d1a20c4a26b65a5e3a7649d374e"
+    },
+    {
+      "path": "infra/terraform/shared/test/network.tf",
+      "sha256": "cc22c15bb83d0ef3cff78db5059f52e26c42a3fc4fa1ff01351b4f885dc9b008"
+    },
+    {
+      "path": "infra/terraform/shared/test/outputs.tf",
+      "sha256": "b252fcac10aae837f8525b9ba11db2ba188ec1ff5db4bf2e31c1d23ff9faf4ce"
+    },
+    {
+      "path": "infra/terraform/shared/test/service.tf",
+      "sha256": "f245aa92d29386df44db576172676dc1e2728206c69188ff66a2085a3c77db5c"
+    },
+    {
+      "path": "infra/terraform/shared/test/variables.tf",
+      "sha256": "bb044febdf21a61965757cd0dda6612b7ad4db44651d503f251f4f425c71beb9"
+    },
+    {
+      "path": "infra/terraform/shared/test/versions.tf",
+      "sha256": "85378f9c60b449e27a7d8fe68661c2d359fd088f620d34c541177abe76ddb332"
+    },
+    {
+      "path": "infra/terraform/shared/test/scripts/identity-proxy-user-data.sh.tftpl",
+      "sha256": "3dfef0af3e0fada448337bcb2f7efe34316c7860849c38af1f033af0dcfa5e27"
+    },
+    {
+      "path": "infra/terraform/shared/test/scripts/identity-proxy.Caddyfile.tftpl",
+      "sha256": "6680a3d99ad1ff0d9392256173078fb43374dbd0ee4a00e04a2b9a909801a251"
+    }
+  ],
+  "dns_must_be_deleted_before_eip_release": true,
+  "no_dns_propagation_polling": true,
+  "additional_cleanup": [
+    "Stop the exclusive RDS once API0 and no other clients remain",
+    "Restore ASG min0/max1/desired0 and terminate only the identified private host/root",
+    "Remove the owned deadline after host/root deletion"
+  ],
+  "retained": "Existing DB/data, synthetic listing and image together, roles/SSM, IAM DSN policy, shared NAT/network/storage/images/ACM. Two approved catalogue column grants remain; Suraj review and durable migration/restore handling pending.",
+  "credential_reads": "Re-read unchanged master/probe values into apply process memory; no rotation or printing.",
+  "approval": "Aditya confirmed DNS deletion and approved this exact teardown",
+  "apply_state": "succeeded",
+  "result": "docs/evaluation/identity/id-01-step-14/s3-conversations-teardown-result.json"
+}

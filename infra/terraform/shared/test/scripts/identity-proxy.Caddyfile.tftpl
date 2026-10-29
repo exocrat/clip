@@ -1,0 +1,20 @@
+{
+    admin off
+    persist_config off
+    log default {
+        output discard
+    }
+    servers {
+        protocols h1 h2
+    }
+}
+
+clip-iisc.site {
+    reverse_proxy ${upstream_ipv4}:18000 {
+        lb_retries 0
+        header_up Host clip-iisc.site
+        header_up X-Forwarded-Proto {scheme}
+        header_up X-Forwarded-Host clip-iisc.site
+        header_up X-Forwarded-For {remote_host}
+    }
+}

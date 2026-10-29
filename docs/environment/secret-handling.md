@@ -89,13 +89,17 @@ The user approved [DEC-10](../decisions/broad-human-operator-access.md), retaini
 
 PD-16 records the master reference provisioned; the probe reference remains planned and application/provider references are deferred to their owning tasks. Reported team access and runtime permission boundaries have not been independently verified. PD-14 itself created no parameter/key/resource; later PD-16 provisioning is recorded in the [inventory](cloud-inventory.md).
 
-## ID-01 SES runtime access — setup partial
+## ID-01 SES runtime access — current recorded status
 
 SES uses the task role in ECS and the operator's approved non-root profile locally;
 no static SES/SMTP credential. Sender-scoped policy applied2026-10-23 06:17:00 UTC;
-corrected sandbox task-role delivery/inbox/cleanup passed17:17:30. Production access
-and the live verify@ sender update remain pending. See [current setup](identity-provider-setup.md)
-and the [evaluation history guide](../evaluation/README.md) for older permission/delivery records.
+corrected sandbox task-role delivery/inbox/cleanup passed17:17:30. Later evidence
+records SES production access/sending, DKIM success and a standalone receipt on
+2026-10-28. Current application route preference and effective runtime permissions
+were not read by this agent; production application delivery remains gated by the
+source's test-only recipient rules and a reviewed configuration/permission plan.
+See [current setup](identity-provider-setup.md) and the [evaluation history
+guide](../evaluation/README.md) for dated receipts.
 
 ## ID-01 SES controlled-recipient input
 
@@ -157,3 +161,55 @@ actual certificate chain before live use. The
 or change a shared role. Public grants, credential generation, role logging,
 scoped SSM permissions and rollback require a concrete separately approved plan.
 See the current [ID-01 setup and status](identity-provider-setup.md).
+
+See the [runtime handoff](../evaluation/identity/integration.md#secure-runtime-preparation).
+
+### ID-01 email-key rotation confirmation — 2026-10-27 18:25:58 UTC
+
+Aditya confirms the previously chat-exposed Resend key was revoked and a
+replacement stored in the existing `/clip/test/identity/email-delivery`
+SecureString. This supersedes the outstanding exposed-key rotation action above.
+No key value, parameter version, provider or AWS state was read by the agent;
+new runtime loading/delivery is still a Step13 check. Fixed schema, four-hour
+refresh, recipient restrictions and access approvals are unchanged. This does not
+rotate the stable authentication keys or change database URLs. Database roles and
+URLs previously labelled proposed in the historical preparation section were
+subsequently provisioned; see the recorded [database preparation](../evaluation/identity/id-01-step-12/demo-postmortem-20261026.md#database-preparation).
+
+### ID-01 Step13 real loading/provider check — 2026-10-28 15:47:35 UTC
+
+Real hosted Identity startup succeeded with existing fixed SSM references and
+stable keys/DSNs; no credential/parameter value/version rotated. Actual temporary
+registration/reset email and Microsoft sessions work, confirmed by Aditya. SES
+Mumbai production access and sending are enabled; verified domain DKIM SUCCESS,
+standalone test receipt confirmed. Application email order/keys were unchanged
+at that checkpoint. Current application route preference was not independently
+read; production Identity email remains test-profile/recipient guarded in source.
+[Safe runtime receipt](../evaluation/identity/id-01-step-13/runtime-enabled-result.json).
+Retention job reads only the fixed Identity DSN inside the reviewed container
+through existing task role, memory-only; no keys/credentials on host/config/output.
+The window-only job was verified then removed; future active runtime needs an
+approved cadence deployment. These facts supersede earlier pending runtime/SES
+status, without rewriting historical approvals or disclosing secret values.
+
+### ID-01 Step14 Conversations credential reference — 2026-10-28 19:54:52 UTC
+
+`/clip/test/conversations/database-url` is the proposed test SecureString DSN
+for the separate Conversations login; **parameter not yet created**, verified
+by metadata only. Approved stopped configuration now binds `CLIP_DATABASE_DSN`
+and scopes `ssm:GetParameters` to that exact ARN on
+`clip-shared-test-api-execution`. Application task role gains no read permission
+for it. Proposed storage remains Standard/aws-ssm key, manual rotation only.
+Aditya is the current operator; live role/parameter creation needs its separate
+exact plan/approval. Existing master/probe values were held only in memory for
+unchanged Terraform write-only inputs, versions preserved; no credentials in
+repo/CLI/output and no new secret generated or stored by this apply.
+[Applied configuration](../evaluation/identity/id-01-step-14/stopped-config-result.json).
+
+### ID-01 Step14 Conversations credential provisioned — 2026-10-29 04:14:41 UTC
+
+`/clip/test/conversations/database-url` now exists as Standard SecureString
+version1 under aws/ssm; exact execution-role read permission was previously
+applied. Aditya operates it; manual rotation/deletion requires separate approval.
+Actual separate database login and private parameter readback passed. No secret
+values are recorded. [Result](../evaluation/identity/id-01-step-14/provisioning-window-retry-result.json).

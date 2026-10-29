@@ -11,6 +11,10 @@ import time
 import psycopg
 import pytest
 
+from apps.api.tests.domains.identity.migration_fixtures import (
+    reviewed_migration_directory,
+)
+
 ROOT = Path(__file__).resolve().parents[5]
 
 
@@ -102,13 +106,24 @@ def disposable_database(tmp_path_factory):
         yield connect
 
 
+@pytest.fixture
+def reviewed_disposable_database(tmp_path_factory, reviewed_migration_directory):
+    """Exercise pinned operator guards against their exact 23-migration candidate."""
+    with disposable_identity_database(
+        tmp_path_factory.mktemp("identity-reviewed-postgres"),
+        reviewed_migration_directory,
+    ) as connect:
+        yield connect
+
+
 @contextmanager
-def disposable_identity_database(root):
+def disposable_identity_database(root, migration_directory=None):
     """Reusable owned local test DB only; no caller-selected DSN or retained target.
 
     The explicit UI preview shares the same no-network, ephemeral PostgreSQL and
     migration path as tests; always remove only the container created here.
     """
+    migration_directory = migration_directory or ROOT / "database/migrations"
     root.chmod(0o700)
     socket = root / "socket"
     socket.mkdir()
@@ -205,7 +220,7 @@ def disposable_identity_database(root):
                 "--env",
                 "DATABASE_URL",
                 "--mount",
-                f"type=bind,src={ROOT}/database/migrations,dst=/db/migrations,readonly",
+                f"type=bind,src={migration_directory},dst=/db/migrations,readonly",
                 "ghcr.io/amacneil/dbmate:2.36.0",
                 "--env-file",
                 "/dev/null",

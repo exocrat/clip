@@ -1,0 +1,82 @@
+{
+  "recorded_at_utc": "2026-10-29 04:36:32 UTC",
+  "task": "ID-01 Step14",
+  "state": "prepared_not_approved",
+  "operator": "Aditya (A)",
+  "account": "335523638354",
+  "profile": "adityalaxmi1",
+  "region": "ap-south-1",
+  "backend": "shared/test/terraform.tfstate",
+  "baseline": {
+    "rds": "clip-shared-test-postgres",
+    "rds_resource_id": "db-PYRRZJPVKPGHIXDAHUWATXGH7A",
+    "rds_status": "stopped",
+    "asg": "clip-shared-test-ecs-host",
+    "asg_min": 0,
+    "asg_max": 1,
+    "asg_desired": 0,
+    "api_task_revision": 8,
+    "api_desired": 0,
+    "conversation_parameter_version": 1,
+    "launch_template_id": "lt-0327bb81cb3269f0b",
+    "launch_template_version": "3",
+    "instance_type": "t3.micro"
+  },
+  "source_hashes": [
+    {
+      "path": "infra/terraform/shared/test/service.tf",
+      "sha256": "f245aa92d29386df44db576172676dc1e2728206c69188ff66a2085a3c77db5c"
+    },
+    {
+      "path": "infra/terraform/shared/test/identity-https-proxy.tf",
+      "sha256": "430698f9da34a4e5cb84663c37ce6fcac336ed1e6bb7794c5c43b8d7c8d7b37c"
+    },
+    {
+      "path": "infra/terraform/shared/test/consumer-runtime.tf",
+      "sha256": "e8873184d3fda598bd1d5284760aa6cd00ed8a854bf9b1c42ffcc56a36439b3e"
+    },
+    {
+      "path": "infra/terraform/shared/test/base.tf",
+      "sha256": "014fd912c57ec8870756b01a5f121578e2250de4173741b4855ffb0b858aad46"
+    }
+  ],
+  "duration_minutes": 45,
+  "stop_new_work_after_minutes": 30,
+  "startup_abort_after_minutes": 20,
+  "incremental_usd_operator_stop_threshold": 1,
+  "expected_compute_estimate_usd": 0.0084,
+  "estimate_basis": "45 minutes t3.micro at AWS Price List 2026-10-28 20:02 UTC rate0.0112 USD/h; excludes root EBS, retained NAT/storage, network and taxes; not a billing cap",
+  "max_hosts": 1,
+  "api_tasks": 0,
+  "new_rds": 0,
+  "public_endpoints": 0,
+  "fixed_deadline_action": "clip-id01-step14-integration-deadline",
+  "actions": [
+    "Recheck identity, source hashes, backend/idle baseline and no conflicting scheduled action.",
+    "Install deadline action at T0+45m with ASG min0/max1/desired0, then set existing ASG min1/max1/desired1.",
+    "Verify sole new private t3.micro, LT3/AMI/subnet/SG/30GiB encrypted deleting root, SSM online and Standard CPU credits.",
+    "Prepare and inspect a fresh exact stopped/enabled Terraform plan for private API and HTTPS proxy using the observed host IP. Do not apply it without separate explicit approval.",
+    "If the next plan is not approved in time or a check fails, restore ASG min0/max1/desired0, terminate only this host, verify root deletion and remove the owned scheduled action. RDS remains stopped throughout this first phase."
+  ],
+  "not_authorized": [
+    "RDS start",
+    "ECS API task start",
+    "proxy or public IP creation",
+    "DNS changes",
+    "image uploads or deletion",
+    "SQL writes",
+    "secret reads/writes",
+    "email sending",
+    "Terraform apply",
+    "commit/push/merge"
+  ],
+  "later_checks": [
+    "Actual signed-in regular and temporary callers with selected human test accounts",
+    "S3 intent/upload/confirm/display and resource ownership/terminal denials using synthetic image bytes",
+    "Hosted Conversations login with the new principal and cross-domain matrix",
+    "Separately reviewed Hybrid AMD64 image, pipeline/grants/activation and nonblank query",
+    "Final evidence, owner review, FR-03 and task acceptance"
+  ],
+  "retention": "Keep existing RDS/data/roles/SSM/images/network/NAT/storage. Later synthetic image and its listing must be retained together or removed only by a separately reviewed safe cleanup.",
+  "human_dependencies": "A human must sign in with real accounts and update DNS if the separately approved HTTPS test uses a new proxy IP. No OTP, password or token enters chat."
+}

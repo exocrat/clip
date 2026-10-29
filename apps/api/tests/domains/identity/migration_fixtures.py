@@ -1,7 +1,8 @@
 """Owned loopback TLS PostgreSQL for the explicit local migration transport tests."""
 
 from datetime import UTC, datetime, timedelta
-import json, os, secrets, subprocess, time
+import json, os, secrets, shutil, subprocess, time
+from pathlib import Path
 from types import SimpleNamespace
 
 from cryptography import x509
@@ -13,6 +14,21 @@ from pydantic import SecretStr
 import pytest
 
 from app.domains.identity.migration_runner import MigrationTarget
+
+
+@pytest.fixture
+def reviewed_migration_directory(tmp_path):
+    """Copy the exact reviewed candidate for isolated runner tests only."""
+    root = Path(__file__).resolve().parents[5]
+    manifest = (
+        root / "docs/evaluation/identity/id-01-step-12/shared-migration-manifest.json"
+    )
+    directory = tmp_path / "reviewed-migrations"
+    directory.mkdir()
+    for record in json.loads(manifest.read_text())["migrations"]:
+        source = root / record["path"]
+        shutil.copyfile(source, directory / source.name)
+    return directory
 
 
 @pytest.fixture(scope="module")

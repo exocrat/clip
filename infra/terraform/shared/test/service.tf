@@ -60,8 +60,8 @@ resource "aws_ecs_task_definition" "api" {
   family                   = "clip-test-api-${local.region}-pd16"
   requires_compatibilities = ["EC2"]
   network_mode             = "bridge"
-  cpu                      = "256"
-  memory                   = "512"
+  cpu                      = tostring(var.api_task_cpu)
+  memory                   = tostring(var.api_task_memory_mib)
   execution_role_arn       = aws_iam_role.api_execution[0].arn
   task_role_arn            = aws_iam_role.api_task[0].arn
   runtime_platform {
@@ -69,12 +69,12 @@ resource "aws_ecs_task_definition" "api" {
     cpu_architecture        = "X86_64"
   }
 
-  container_definitions = jsonencode([{
+  container_definitions = jsonencode([merge({
     name      = "api"
     image     = var.api_image_uri
     essential = true
-    cpu       = 256
-    memory    = 512
+    cpu       = var.api_task_cpu
+    memory    = var.api_task_memory_mib
     portMappings = [{
       containerPort = 8000
       hostPort      = 18000
@@ -98,11 +98,16 @@ resource "aws_ecs_task_definition" "api" {
       { name = "CLIP_IMAGE_BUCKET", value = aws_s3_bucket.listings_images[0].bucket },
       { name = "CLIP_IMAGE_REGION", value = local.region },
       { name = "CLIP_IMAGE_KEY_PREFIX", value = "id01" },
+      { name = "CLIP_HYBRID_SEARCH_ENABLED", value = tostring(var.hybrid_runtime_enabled) },
+      { name = "CLIP_HYBRID_WORKER_ENABLED", value = tostring(var.hybrid_runtime_enabled) },
     ] : [])
-    secrets = var.identity_runtime_enabled ? [{
+    secrets = concat(var.identity_runtime_enabled ? [{
       name      = "CLIP_DATABASE_URL"
       valueFrom = "arn:aws:ssm:${local.region}:${local.account_id}:parameter/clip/test/listings-database-url"
-    }] : []
+      }] : [], var.conversations_runtime_enabled ? [{
+      name      = "CLIP_DATABASE_DSN"
+      valueFrom = "arn:aws:ssm:${local.region}:${local.account_id}:parameter/clip/test/conversations/database-url"
+    }] : [])
     healthCheck = {
       command = [
         "CMD",
@@ -123,9 +128,25 @@ resource "aws_ecs_task_definition" "api" {
         "awslogs-stream-prefix" = "api"
       }
     }
-  }])
+    }, var.identity_runtime_enabled ? {
+    # Disable raw URI access logs; trust only the reviewed proxy's exact source IP.
+    command = concat([
+      "uvicorn", "app.main:app", "--app-dir", "apps/api", "--host", "0.0.0.0",
+      "--port", "8000", "--no-access-log",
+      ], var.identity_https_proxy_enabled ? [
+      "--proxy-headers", "--forwarded-allow-ips", local.identity_proxy_private_ip,
+    ] : ["--no-proxy-headers"])
+  } : {})])
 
   lifecycle {
+    precondition {
+      condition     = (!var.conversations_runtime_enabled && !var.hybrid_runtime_enabled) || var.identity_runtime_enabled
+      error_message = "Consumer runtime options require the real Identity profile; fake auth is not an integration path."
+    }
+    precondition {
+      condition     = !var.hybrid_runtime_enabled || (var.api_task_memory_mib >= 2048 && var.api_task_cpu >= 512)
+      error_message = "Hybrid requires an explicitly reviewed task cap of at least2048MiB and512CPUunits; defaults are not combined sizing evidence."
+    }
     precondition {
       condition     = !var.identity_runtime_enabled || length(var.identity_test_recipients) > 0
       error_message = "Explicit Identity runtime requires a reviewed nonempty controlled-recipient input; never deploy the incomplete demo configuration."
@@ -136,7 +157,7 @@ resource "aws_ecs_task_definition" "api" {
     }
   }
 
-  depends_on = [aws_iam_role_policy.api_execution]
+  depends_on = [aws_iam_role_policy.api_execution, aws_iam_role_policy.api_conversations_secret]
 }
 
 resource "aws_ecs_service" "api" {

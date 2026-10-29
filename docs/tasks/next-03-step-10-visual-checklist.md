@@ -7,6 +7,11 @@ email transport, and S3 with explicit synthetic providers. Notifications are exc
 The synthetic account switch and fixture endpoints exist only in this launcher;
 they are absent from the normal application and deployment image.
 
+Suraj visually approved the Step 0.5 desktop navigation, sale-card price-row,
+and conversation alignment corrections in the refreshed local inspection app
+on 2026-10-29. This records that focused approval; it does not complete the
+broader walkthrough below.
+
 
 ## Current checkpoint: post-inspection corrections implemented, awaiting a second human inspection
 
@@ -313,8 +318,7 @@ awkward open dropdowns. Record the browser and viewport actually checked.
 Responsive emulation does not establish actual phone keyboard/camera behavior;
 that needs the later approved reachable cloud environment.
 
-Report a checklist number, account, action, expected result and observed result.
-You can request changes at this point. NEXT-03 remains open pending this review.
+Record any requested change with its checklist number, account, action, expected result and observed result. The current visual-review status is recorded in the plan and work log.
 
 ## Restart and cleanup
 
@@ -369,8 +373,11 @@ The current 2026-10-28 run repeated all **21 action groups** against the built
 app with the real local database and Hybrid model; all passed. It is serving on
 5176 with fresh data. A prior attempt on 5174 also passed its action sweep but
 could not bind because that port was already in use, then cleaned up its fixture.
-These are automated/programmatic results. Human visual observations are pending.
+These are automated/programmatic results. Suraj confirmed the full NEXT-03
+visual walkthrough is complete on 2026-10-29. Per-control observations were not
+transcribed into this checklist; this records the confirmation without inventing
+individual notes.
 
 ## Current verification receipt
 
-See the [file-by-file implementation and verification report](next-03-visual-feedback-implementation-report.md). The fresh handoff action sweep passed all 24 groups. The complete `make check` passed, followed by final frontend verification (495 passed/3 skipped), supplemental legacy Handle migration/privilege checks and the expanded PostgreSQL Conversations suite (169 passed). Chromium checked the three centered sale-card actions at 360px, 390px and 1440px; collapsed conversation group headers; responsive listing facts and inbox pagination; no horizontal overflow or console errors. Browser messaging/key checks used a discarded preflight database. This fresh dataset starts without browser-published encryption keys so you can inspect first-device setup yourself. Your visual review is the remaining local gate.
+See the [file-by-file implementation and verification report](next-03-visual-feedback-implementation-report.md). The fresh handoff action sweep passed all 24 groups. The complete `make check` passed, followed by final frontend verification (495 passed/3 skipped), supplemental legacy Handle migration/privilege checks and the expanded PostgreSQL Conversations suite (169 passed). Chromium checked the three centered sale-card actions at 360px, 390px and 1440px; collapsed conversation group headers; responsive listing facts and inbox pagination; no horizontal overflow or console errors. Browser messaging/key checks used a discarded preflight database. This fresh dataset starts without browser-published encryption keys so you can inspect first-device setup yourself. Suraj confirms the NEXT-03 visual-review gate is complete (2026-10-29).

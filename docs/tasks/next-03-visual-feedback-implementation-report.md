@@ -1,6 +1,11 @@
 # NEXT-03 visual-feedback implementation and verification report
 
-The combined correction diff is implemented and locally checked. Human visual inspection is the remaining NEXT-03 gate; owner/independent peer review, merge and cloud release remain separate. This report includes earlier correction work already present in the working tree, as well as the full follow-up batch.
+The combined correction batch is committed at `6700cb2` and integrated locally
+with fetched `origin/main` at `a60c83f` in a no-commit merge. Suraj confirms the
+full NEXT-03 visual walkthrough is complete, including the Step 0.5 A21 layout
+corrections. The post-integration pinned `make check` passed on 2026-10-29.
+Owner/independent peer review and merge remain pending. This report includes
+earlier correction work as well as the full follow-up batch.
 
 ## Current inspection handoff
 
@@ -10,6 +15,10 @@ The combined correction diff is implemented and locally checked. Human visual in
 - Main messaging actors start without published browser keys in this fresh run. Use separate seller and buyer browser profiles and follow the [walkthrough](next-03-step-10-visual-checklist.md). The preceding browser-test database was discarded.
 
 ## Checks actually run
+
+The following checks were recorded before the origin integration and are
+historical evidence, not substitutes for the passing post-integration aggregate
+below.
 
 | Check | Result |
 |---|---|
@@ -27,6 +36,30 @@ The combined correction diff is implemented and locally checked. Human visual in
 | Seeded application action sweep | All 24 groups passed with actual local sessions, stores and pinned Hybrid inference. Fresh-run evidence `/tmp/clip-next03-corrections-final.log`; 29 sale listings, 27 Wanted Requests, 77 conversations. |
 | Real Chromium | No horizontal overflow at 360/390/1440 pixels; three sale-card actions share one centered row at each width. All visible conversation groups start collapsed; phone pagination stays in one row; no browser console errors. Detailed measurements: `/tmp/clip-next03-visual-check-corrections.log`. |
 | Real browser crypto | Encrypted Enter send, offline-peer setup/resume, global unread count, stable unread divider and selective encrypted contact delivery passed after the final chat rearrangement. Log `/tmp/clip-feedback-crypto-final.log`. |
+
+### Post-integration pinned verification — 2026-10-29
+
+`make check` passed on the integrated working tree after resolving origin/main
+conflicts and repairing affected upstream Identity and conversation tests:
+
+| Stage | Exact result |
+|---|---|
+| Python | 2,019 passed, 156 skipped in 407.64s |
+| Data tests | 94 passed in 1.41s |
+| CI parity / formatting / boundaries / contracts | Passed; Black 316 files unchanged, zero boundary violations, eight generated contracts current |
+| Contract types | Mypy passed on two source files |
+| Web lint and tests | Biome clean on 142 files; 496 passed, 3 skipped; 45 test files passed, 2 skipped |
+| Web typecheck and production build | Passed; Vite reports existing large chunks above 500 kB |
+| Database safety | 35 simulated-wrapper safety/wiring cases passed |
+| Disposable PostgreSQL | PostgreSQL 18.6 clean/head/repeat, seven smokes, Handle legacy/collision/rollback/reapply, Identity upgrade/atomicity/rollback, protected retirement rollback and full clean reapply passed |
+| Conversations retirement | 169 passed against fresh PostgreSQL 18.6 |
+| Secret scan | Gitleaks 8.30.1 source snapshot passed |
+
+Final aggregate log: `/tmp/clip-postintegration-aggregate.log`. The native
+macOS migration script remains syntax-checked but not executed on this WSL host.
+Hosted CI and hosted production/browser behavior are not verified by local
+checks. Current staged/unstaged diff review and owner/independent peer review
+are still required before opening a PR; cloud deployment gates remain open.
 
 Intermediate failures were retained and corrected: old profile/registry/label assertions, synthetic CSRF/session/retirement setup, and supplemental-test fixture isolation. Two full frontend runs each timed out in a different existing test under unrestricted worker concurrency; the affected Microsoft test passed independently. Four-worker concurrency removed the resource contention without increasing timeouts or weakening tests; the later full check and final frontend aggregate passed. The build retains its existing large-bundle advisory.
 
@@ -48,9 +81,10 @@ conversation surfaces consistently. `discovery-controls.test.ts` and
 Verification on Node 24.22.0/npm 11.19.1: the targeted test run passed 12 tests;
 the complete frontend `npm run check` passed lint, 496 tests (3 skipped across 2
 files), both TypeScript projects, and the production build. `git diff --check` passed. Vite
-still reports the existing large-chunk advisory. Desktop/phone visual review of
-the updated inspection build remains pending. NEXT-04 audit is now scheduled
-after post-integration checks and before PR preparation, per Suraj's direction.
+still reports the existing large-chunk advisory. Suraj visually approved the
+Step 0.5 desktop navigation, sale-card price-row and conversation alignment
+corrections in the refreshed synthetic inspection app on 2026-10-29. The complete NEXT-03 walkthrough is confirmed done. NEXT-04 audit is scheduled after
+post-integration checks and before PR preparation, per Suraj's direction.
 
 ## Code and configuration file report
 
@@ -141,8 +175,98 @@ Canonical `contracts/source` files were edited, then registered runtime declarat
 
 ## Acceptance and remaining gates
 
-The visual-feedback plan ledger and walkthrough are current. Local task-wide review covers preserved working-tree changes, public frontend/domain boundaries, regenerated outputs, migration/data preservation and privilege checks, account/session isolation, encrypted contacts/messages, fixtures, mobile/ultrawide layout, failure evidence and secret scanning. Human desktop/phone inspection is pending and is not marked passed.
+The visual-feedback plan ledger records A21 as visually approved and Suraj
+confirms the complete desktop/phone walkthrough is done. Local task-wide review
+covers preserved changes, public frontend/domain boundaries, generated outputs,
+migration/data preservation and privilege checks, account/session isolation,
+encrypted contacts/messages, fixtures, responsive layout, failure evidence and
+secret scanning.
 
-No merge or cloud apply occurred. The eventual NEXT-04 target remains the complete app at https://clip-iisc.site except Notifications for this scope. The separately recorded provider-promotion, Identity17 owner review, exact migrations/grants, HTTPS/origin and hosted-browser checks remain release gates. Arrange independent owner/peer review with [the review prompt](../prompts/peer-review-prompt.md) before any later merge authorization.
+## Origin integration and cloud audit checkpoint — 2026-10-29
 
-Final closeout checks: Black 26.10.1 reported 299 files unchanged; contract check reported all eight artifacts current; final source-snapshot Gitleaks passed; `git diff --check` passed.
+Fetched `origin/main` at `a60c83f` and reconciled it with this branch in a
+no-commit merge. Conflicts were resolved while retaining both branch and current
+upstream documentation/evidence; no migration filename conflict occurred. The
+current tree contains 29 SQL migrations while the upstream Identity runner
+deliberately accepts only its unreviewed exact 23-file candidate. The earlier
+17-file live package still needs separate owner review. Do not apply the shared
+database: owner review and a reviewed exact migration candidate are required.
+
+The first post-integration `make check` found 31 Python failures (1,988 passed,
+156 skipped); the pinned tools were then found in the recorded WSL tool directory.
+Integration fixture repairs passed the affected Identity/Conversations suite
+(42 tests) and migration/operator group (41 tests). A subsequent aggregate retry passed Python (2,019 passed, 156 skipped), data
+(94 passed), parity, Black, boundaries, contracts, contract types and web lint,
+but one D14 scroll interaction test asserted before its React effect. The test
+now waits for the effect and passed its nine-test file three times; a complete
+frontend check and fresh aggregate are pending. The native macOS migration script passed `bash -n` but cannot be run
+on this WSL host. Both cached and unstaged `git diff --check` passed.
+
+The renewed non-root `surajs2` profile identifies the project account. The
+[read-only cloud refresh](../environment/cloud-inventory.md#next-04-read-only-refresh--2026-10-29-1208-utc)
+confirms SES sending enabled, stopped API/ASG and private stopped RDS, issued ACM
+certificate and private image-bucket protections. The target hostname did not
+resolve here; Terraform drift, authoritative/IISc DNS and hosted behavior remain
+unverified. Historical Step13 evidence records
+Microsoft and temporary-account sign-in/reset flows, HTTPS and secure-cookie
+checks; a separate SES test recorded a real submission and inbox receipt, while
+SES production access/sending, DKIM success and a standalone test receipt were
+recorded on 2026-10-28; older pending statements are stale. The current SES
+route preference and effective role/recipient policy were not read. There is a
+source readiness gap for general production email: `config.py` rejects SES and
+Microsoft in `production`, `runtime_configuration.py` only assembles the hosted
+test profile from `/clip/test/...`, and `email.py` only sends to its bounded
+controlled-recipient list. No cloud setting or live send was changed.
+
+Step14's latest closeout says Aditya reports the remaining capability matrix
+verified; the earlier phrase “durable grant handling” referred to restoring two
+narrow PostgreSQL grants after a clean bootstrap: UPDATE on
+`listings.categories.created_at` and `listings.conditions.label`, with no
+table-wide UPDATE. The live grants were applied; the guarded restoration helper
+was tested on disposable PostgreSQL. Aditya's later closeout report says the
+remaining matrix was verified, superseding the earlier pending checkpoint. The
+formal ID-01 record still calls for independent review and current-revision
+closeout; I did not independently repeat those checks. Hybrid is Search-owned
+and has no positive hosted
+pass; helper/model/worker and automatic vector updates remain unverified. The
+latest recorded inventory says the API and ASG are
+stopped, RDS is stopped, DNS deletion was user-confirmed, synthetic listing/
+image and narrow catalogue grants remain, and shared NAT/storage may continue
+to incur charges. These are historical records, not current-state verification.
+No cloud mutation or email send occurred.
+
+### Integration repair files
+
+- `apps/web/tests/conversation-thread-interactions.test.tsx` waits for the
+  post-render scrolling effect before asserting D14; `listing-conversation-start.test.tsx`
+  scopes message-action errors to that action rather than unrelated page alerts.
+
+- `apps/api/tests/domains/identity/test_consumer_capability_matrix.py` updates
+  the listing replacement and Handle fixtures, follows the settled independent
+  buyer-selection/availability behavior, and gives the disposable Conversations
+  principal read access to the safe participant view.
+- `apps/api/tests/domains/identity/migration_fixtures.py` copies the pinned
+  23-file manifest into a temporary test directory; `postgres_fixtures.py`
+  uses that directory for isolated operator tests while ordinary application
+  tests still use the full branch chain.
+- `tests/test_identity_bootstrap.py` and `tests/test_identity_bootstrap_review.py`
+  run their 23-file candidate against that isolated copy; the catalogue-grant
+  and Conversations-role tests use the same pinned disposable database. Live
+  runner and operator guards are unchanged.
+- Two historical Step12 JSON receipts are restored byte-for-byte from Git
+  history because upstream guard/review tests import them. They record past
+  evidence and do not authorize a new operation.
+- `database/tests/native-checks.sh` and `database/README.md` now count and roll
+  back all 29 branch migrations; the native script remains unexecuted on WSL.
+
+The eventual NEXT-04 target remains the complete app at https://clip-iisc.site
+except Notifications for this scope. Provider promotion, Identity migration and
+grant review, HTTPS/origin, Hybrid worker/model/vector flow, image permissions,
+and hosted-browser checks remain release gates. Arrange affected-owner and
+independent peer review with [the review prompt](../prompts/peer-review-prompt.md)
+before any later merge authorization.
+
+Before this origin reconciliation, Black 26.10.1 reported 299 files unchanged;
+contract check reported all eight artifacts current; final source-snapshot
+Gitleaks passed; `git diff --check` passed. Those results do not replace the
+missing post-integration pinned aggregate.
