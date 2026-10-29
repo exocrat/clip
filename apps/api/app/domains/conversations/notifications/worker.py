@@ -11,7 +11,6 @@ from uuid import UUID
 
 from app.contracts.domain_types import (
     NotificationAttemptResult,
-    NotificationClaim,
     NotificationClaimRequest,
     NotificationClaimResult,
     NotificationDispatchCheck,
@@ -19,6 +18,10 @@ from app.contracts.domain_types import (
     NotificationIntentState,
     NotificationRecipient,
     NotificationWorkerContext,
+)
+from app.domains.conversations.notifications.provider import (
+    NotificationDeliveryFailure,
+    NotificationSender,
 )
 
 
@@ -43,7 +46,7 @@ async def process_batch(
     resolve: Callable[
         [NotificationWorkerContext, UUID], Awaitable[NotificationRecipient | None]
     ],
-    send: Callable[[NotificationClaim, NotificationRecipient], Awaitable[None]],
+    send: NotificationSender,
     clock: Callable[[], datetime],
     max_items: int = 20,
     allowed: Callable[[UUID], Awaitable[bool]] | None = None,
@@ -85,6 +88,8 @@ async def process_batch(
             try:
                 await send(claim, recipient)
                 outcome = "delivered"
+            except NotificationDeliveryFailure as failure:
+                outcome = failure.kind
             except Exception:
                 outcome = "ambiguous"
             await port.record_notification_attempt(

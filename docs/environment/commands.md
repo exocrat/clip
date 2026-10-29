@@ -401,6 +401,8 @@ remain required. Migrations/database verification are outside the runtime scan.
 
 ## PD-11 / DL-00 contract generation
 
+CN-03 offline provider checks: `uv run --locked pytest apps/api/tests/domains/conversations -q -W error`. These use synthetic recipients and fake SES/SSM/HTTP dependencies, with no provider send; the threaded adapter requires a local environment that permits worker threads.
+
 Requires `uv sync --locked` and root `npm ci`: Node 24, TypeScript 5.9.3,
 Hey API 0.99.0 (TypeScript-only plugin), and existing locked FastAPI/Pydantic.
 

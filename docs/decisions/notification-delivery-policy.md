@@ -27,6 +27,11 @@ Which conversation emails are required, when are reminders due, and how are fail
   bounded Identity cleanup removes stored destinations within its 30-day
   terminal retention window. Key rotation/re-encryption and runtime role grants
   require review before deployment.
+- On 2026-10-29 13:56:01 UTC Aditya selected `updates@clip-iisc.site` for
+  conversation email, SES as primary and Resend as fallback. Use the existing
+  four-hour configuration refresh and bounded real-provider fallback pattern;
+  an uncertain first submission may produce duplicate mail. This sender requires
+  separately approved runtime permissions and real delivery checks.
 - New conversation: email the other participant promptly after the durable intent commits.
 - Unread-message reminder: due 15 minutes after the episode's first unread text message. Later messages join that reminder without postponing its due time.
 - Suppress when all currently unread messages are acknowledged before dispatch; recheck authorized read state and recipient eligibility immediately before dispatch. Reads acknowledge actual client display, not polling alone.
