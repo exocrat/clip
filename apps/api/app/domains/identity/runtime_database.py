@@ -43,6 +43,9 @@ TABLES = frozenset(
         "microsoft_login_attempts",
     }
 )
+# Keep TABLES as the historical bootstrap grant manifest; current runtime also
+# needs the encrypted notification destination introduced by CN-03.
+RUNTIME_TABLES = TABLES | {"notification_destinations"}
 PRIVILEGES = (
     "SELECT",
     "INSERT",
@@ -197,10 +200,19 @@ def validate_database(connect: Callable[[], Database], keys: TemporaryKeys) -> N
                     "SELECT version FROM public.schema_migrations"
                 ).fetchall()
             }
-            if not {"20261023173439", "20261023192856", "20261023202807"} <= versions:
+            if (
+                not {
+                    "20261023173439",
+                    "20261023192856",
+                    "20261023202807",
+                    "20261029133500",
+                    "20261029182500",
+                }
+                <= versions
+            ):
                 raise ValueError
             phase = "required privileges"
-            for table in TABLES:
+            for table in RUNTIME_TABLES:
                 expected = {"SELECT", "INSERT"}
                 if table not in APPEND_ONLY:
                     expected.add("UPDATE")
@@ -221,7 +233,7 @@ def validate_database(connect: Callable[[], Database], keys: TemporaryKeys) -> N
                   AND n.nspname NOT LIKE 'pg_toast%%' AND n.nspname NOT LIKE 'pg_temp%%'
             """).fetchall()
             for schema, table, oid in others:
-                if schema == "identity" and table in TABLES:
+                if schema == "identity" and table in RUNTIME_TABLES:
                     continue
                 if schema == "public" and table == "schema_migrations":
                     allowed = {"SELECT"}

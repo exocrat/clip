@@ -21,6 +21,7 @@ def controlled_settings(**overrides):
         identity_provider="microsoft",
         email_provider="dual",
         database_url=SecretStr("postgresql://synthetic@localhost/clip"),
+        database_dsn=SecretStr("postgresql://synthetic@localhost/clip"),
         identity_browser_origins=("https://clip-iisc.site",),
         ses_test_recipients=("synthetic@example.invalid",),
         notification_worker_enabled=True,
@@ -38,6 +39,7 @@ def test_notification_runtime_defaults_off_and_rejects_unsafe_configs():
         {"identity_provider": "fake"},
         {"email_provider": "fake"},
         {"ses_test_recipients": ()},
+        {"database_dsn": None},
         {"notification_batch_size": 51},
         {"notification_poll_seconds": 0},
     ):

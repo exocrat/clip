@@ -11,10 +11,18 @@ from psycopg import sql
 from pydantic import SecretStr
 
 from app.core.config import ConfigurationError
-from app.domains.identity.runtime_database import APPEND_ONLY, ROLE, TABLES
+from app.domains.identity.runtime_database import APPEND_ONLY, ROLE, RUNTIME_TABLES
 from app.domains.identity.temporary_challenges import Database
 
-VERSIONS = frozenset({"20261023173439", "20261023192856", "20261023202807"})
+VERSIONS = frozenset(
+    {
+        "20261023173439",
+        "20261023192856",
+        "20261023202807",
+        "20261029133500",
+        "20261029182500",
+    }
+)
 LOGGING = {
     "log_statement": "none",
     "log_min_duration_statement": "-1",
@@ -79,7 +87,7 @@ def _preflight(c: Database, expected_database: str, expected_admin: str) -> None
             SELECT c.relname FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
             WHERE n.nspname='identity' AND c.relkind IN ('r','p')
         """)}
-    if tables != TABLES:
+    if tables != RUNTIME_TABLES:
         raise ValueError
 
 
@@ -148,7 +156,7 @@ def create_identity_role(
             c.execute(
                 sql.SQL("GRANT SELECT ON public.schema_migrations TO {}").format(role)
             )
-            for table in sorted(TABLES):
+            for table in sorted(RUNTIME_TABLES):
                 privileges = ["SELECT", "INSERT"]
                 if table not in APPEND_ONLY:
                     privileges.append("UPDATE")

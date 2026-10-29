@@ -6,6 +6,12 @@ variable "conversations_runtime_enabled" {
   default     = false
 }
 
+variable "notification_worker_enabled" {
+  description = "Enable the bounded notification poller in the controlled Identity and Conversations test runtime."
+  type        = bool
+  default     = false
+}
+
 variable "hybrid_runtime_enabled" {
   description = "Explicitly enable the reviewed AMD64 Hybrid image helper/worker; pipeline activation stays separate."
   type        = bool

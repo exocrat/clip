@@ -1,0 +1,3 @@
+-- CN-03 additive grant for the existing Identity runtime role. Operator review
+-- and explicit database approval are required before applying to any live DB.
+GRANT SELECT, INSERT, UPDATE, DELETE ON identity.notification_destinations TO clip_test_identity_app;

@@ -35,6 +35,7 @@ run "explicit_consumers_use_exact_secret_and_bounded_capacity" {
     identity_runtime_enabled      = true
     identity_test_recipients      = ["synthetic@example.invalid"]
     conversations_runtime_enabled = true
+    notification_worker_enabled   = true
     hybrid_runtime_enabled        = true
     api_task_cpu                  = 512
     api_task_memory_mib           = 2048
@@ -42,6 +43,10 @@ run "explicit_consumers_use_exact_secret_and_bounded_capacity" {
   assert {
     condition     = jsondecode(aws_iam_role_policy.api_conversations_secret[0].policy).Statement[0].Resource == "arn:aws:ssm:ap-south-1:335523638354:parameter/clip/test/conversations/database-url" && jsondecode(aws_iam_role_policy.api_conversations_secret[0].policy).Statement[0].Action == ["ssm:GetParameters"]
     error_message = "Execution-role access must be exact and read-only."
+  }
+  assert {
+    condition     = contains([for setting in jsondecode(aws_ecs_task_definition.api[0].container_definitions)[0].environment : setting.value if setting.name == "CLIP_NOTIFICATION_WORKER_ENABLED"], "true")
+    error_message = "Enable the bounded poller explicitly."
   }
   assert {
     condition     = contains([for secret in jsondecode(aws_ecs_task_definition.api[0].container_definitions)[0].secrets : secret.name], "CLIP_DATABASE_DSN") && aws_ecs_task_definition.api[0].memory == "2048" && aws_ecs_service.api[0].desired_count == 0
@@ -52,6 +57,15 @@ run "explicit_consumers_use_exact_secret_and_bounded_capacity" {
     error_message = "Hybrid flags must be explicit without creating public proxy resources."
   }
 
+}
+run "worker_without_conversations_refused" {
+  command = plan
+  variables {
+    identity_runtime_enabled    = true
+    identity_test_recipients    = ["synthetic@example.invalid"]
+    notification_worker_enabled = true
+  }
+  expect_failures = [aws_ecs_task_definition.api]
 }
 run "consumer_without_identity_refused" {
   command = plan

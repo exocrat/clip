@@ -194,7 +194,7 @@ class Settings(BaseSettings):
             or not self.ses_test_recipients
             or self.development_auth
             or self.isolated_listings_test_caller
-            or (self.database_dsn is None and self.database_url is None)
+            or self.database_dsn is None
         ):
             raise ValueError(
                 "Notification worker requires the controlled real test runtime"
