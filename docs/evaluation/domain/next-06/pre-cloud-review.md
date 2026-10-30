@@ -10,7 +10,12 @@ assumptions. Use [the peer-review prompt](../../../prompts/peer-review-prompt.md
 author/agent findings cannot replace human approval. No review request has been
 sent on Mohit's behalf.
 
-## Proposed PR
+## Published draft PR
+
+[PR #22](https://github.com/exocrat/clip/pull/22) is open on the task branch. The
+complete image/payload archive is included. Hosted CI and independent review
+remain the merge gate; the user has not authorized merging.
+
 
 Title: **Prepare reproducible reference dataset and guarded cloud loading adapter**
 
