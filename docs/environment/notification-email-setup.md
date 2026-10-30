@@ -16,8 +16,13 @@ and egress; never place the key or addresses in logs, source, fixtures or chat.
 The SSM preference/key change, IAM permission, deployment and live provider send
 require their own exact approved plans. No separate mailbox is assumed.
 
-The sender requires an explicit test or production profile; test is limited to
-up to five configured recipients, and production rejects injected provider/SSM
+The sender requires an explicit test or production profile; test defaults to
+up to five configured recipients. Aditya authorized an explicit test-worker
+switch allowing other eligible notification recipients; it is not yet deployed.
+For the next notification deployment, explicitly enable
+`notification_allow_unlisted_recipients` so the worker has no recipient
+allowlist, as Aditya directed on 2026-10-30. Rebuild and testing are deferred.
+Identity test email restrictions are separate. Production rejects injected provider/SSM
 test doubles. The notification worker defaults off; explicit local settings can
 start it only in the existing real Identity test profile with controlled
 recipients. It uses one serial poller per API process, a 1–50 job batch and a

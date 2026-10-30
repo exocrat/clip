@@ -12,6 +12,12 @@ variable "notification_worker_enabled" {
   default     = false
 }
 
+variable "notification_allow_unlisted_recipients" {
+  description = "Allow the explicitly enabled test worker to email eligible accounts outside the Identity test allowlist."
+  type        = bool
+  default     = false
+}
+
 variable "hybrid_runtime_enabled" {
   description = "Explicitly enable the reviewed AMD64 Hybrid image helper/worker; pipeline activation stays separate."
   type        = bool

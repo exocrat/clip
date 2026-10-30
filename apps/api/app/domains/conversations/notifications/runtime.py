@@ -22,7 +22,7 @@ EMAIL_PARAMETER = "/clip/test/identity/email-delivery"
 async def notification_runtime(
     settings: Settings, pool, identity
 ) -> AsyncIterator[None]:
-    """Start one serial controlled-recipient worker only for explicit test config.
+    """Start one serial worker only for explicit hosted-test configuration.
 
     Dependencies are server-owned; no provider or secret is accessed until a
     due eligible job is dispatched. Shutdown stops polling and awaits the active
@@ -41,6 +41,7 @@ async def notification_runtime(
         render_notification,
         profile="test",
         test_recipients=settings.ses_test_recipients,
+        allow_unlisted_recipients=settings.notification_allow_unlisted_recipients,
     )
     stop = asyncio.Event()
 

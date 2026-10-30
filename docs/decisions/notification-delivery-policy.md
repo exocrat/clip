@@ -34,6 +34,11 @@ Which conversation emails are required, when are reminders due, and how are fail
   four-hour configuration refresh and bounded real-provider fallback pattern;
   an uncertain first submission may produce duplicate mail. This sender requires
   separately approved runtime permissions and real delivery checks.
+- On 2026-10-30 Aditya directed removal of the conversation notification test
+  recipient restriction. An explicit, default-off hosted-test switch allows the
+  worker to send to other eligible accounts after a reviewed deployment. Identity
+  verification/reset test-recipient restrictions remain separate. Terminal jobs
+  already rejected by the old allowlist are not automatically replayed.
 - New conversation: email the other participant promptly after the durable intent commits.
 - Unread-message reminder: due 15 minutes after the episode's first unread text message. Later messages join that reminder without postponing its due time.
 - Suppress when all currently unread messages are acknowledged before dispatch; recheck authorized read state and recipient eligibility immediately before dispatch. Reads acknowledge actual client display, not polling alone.

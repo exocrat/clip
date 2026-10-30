@@ -94,6 +94,7 @@ class Settings(BaseSettings):
     hybrid_worker_enabled: bool = False
     # Notifications never start unless the controlled real test runtime is explicit.
     notification_worker_enabled: bool = False
+    notification_allow_unlisted_recipients: bool = False
     notification_batch_size: int = Field(default=20, ge=1, le=50)
     notification_poll_seconds: int = Field(default=60, ge=1, le=3600)
     hybrid_search_interpreter: Path | None = Field(default=None, repr=False)
@@ -186,6 +187,12 @@ class Settings(BaseSettings):
         """Reject unsafe fake, production, or unbound notification startup."""
         if self.environment == "production" and self.ses_test_recipients:
             raise ValueError("Test recipients are forbidden in production")
+        if self.notification_allow_unlisted_recipients and (
+            self.environment != "test" or not self.notification_worker_enabled
+        ):
+            raise ValueError(
+                "Unlisted notification recipients require the enabled test worker"
+            )
         if self.notification_worker_enabled and (
             self.environment != "test"
             or not self.identity_runtime_enabled

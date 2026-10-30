@@ -1,0 +1,26 @@
+{
+  "status": "proposed; explicit approval required",
+  "account": "335523638354",
+  "region": "ap-south-1",
+  "profile": "adityalaxmi1",
+  "host": "i-086045c48487471de",
+  "host_type": "t3.micro, standard credits, protected from scale-in",
+  "resource_limits": "Reuse the existing host and RDS; no additional EC2 host, database, ingress, IAM policy or NAT. Stop new work by 2026-10-30 10:10 UTC, seek direction at deadline 10:30 UTC or USD 3 estimated incremental-spend threshold. There is no automatic shutdown or hard billing cap.",
+  "source_commit": "b95a7a50ecf8f9015dfe89f33f9d1d3b5ccfb12b",
+  "source_archive": {"path": "/tmp/clip-cn03-source-b95a7a50ecf8.tar", "sha256": "68fc1ebc44e8a9e58c2c6d82924984a10936c545d549504606f4781c695a9ae4", "size_bytes": 2723840},
+  "helpers": {
+    "scripts/identity_build_transfer.py": "02e3536c04090e102d9da653c1630210e39cf53cc9b29f7986e7e36533f9eee0",
+    "scripts/identity_amd64_build.sh": "0b58b8660109267dc40c65361cf45b5655647eb52ff88d24a23ed48bee13f586"
+  },
+  "host_directory": "/var/tmp/clip-id01-build-b95a7a50ecf8",
+  "actions": [
+    "Use SSM RunShellScript on this exact host to check x86_64, Docker, Python, free disk of at least 10 GiB, absence of existing swap, and no conflicting build. Stop on unexpected conditions.",
+    "Install only the two hash-checked build helpers in the owned directory, expose the transfer helper on host loopback port 18765, and forward that port over SSM; transfer the exact hash-pinned source archive only.",
+    "Run the reviewed helper once: 2 GiB encrypted-root swap, 512 MiB build RAM and 1536 MiB combined RAM/swap limit, Node heap 768 MiB, 45 minute build timeout. Verify AMD64 image, non-root UID, local health and bundled UI without credentials. If OOM or timeout occurs, stop; no automatic retry or instance resize.",
+    "Download the completed image archive over the private tunnel and verify its hash; import it locally without executing AMD64 code.",
+    "Using an ephemeral owner-only local Docker config and ECR token through stdin, publish only the verified image to immutable existing repository clip-shared-test-api under previously absent tag cn03-b95a7a50ecf8; verify and record its manifest digest.",
+    "Remove only owned temporary smoke container, swap and ephemeral local Docker authentication; preserve the host, RDS, image, source archive and shared resources."
+  ],
+  "limits": "The API service stays stopped; no database mutation, provider secret read, email, task deployment, public ingress or cloud resource destruction. The approved protected host and RDS remain running until separate cleanup approval.",
+  "approval": "Explicit approval of the exact build and ECR publication plan SHA-256 is required before SSM commands or image publication. A deployment requires a separate approved plan."
+}

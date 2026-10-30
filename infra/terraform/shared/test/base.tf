@@ -317,11 +317,13 @@ resource "aws_launch_template" "ecs_host" {
 resource "aws_autoscaling_group" "ecs_host" {
   count = local.base_enabled ? 1 : 0
 
-  name                = "${local.prefix}-ecs-host"
-  min_size            = 0
-  max_size            = 1
-  desired_capacity    = 0
-  vpc_zone_identifier = [aws_subnet.workload_private[0].id]
+  name             = "${local.prefix}-ecs-host"
+  min_size         = 0
+  max_size         = 1
+  desired_capacity = 0
+  # Preserve the active test host until the user approves cleanup.
+  protect_from_scale_in = true
+  vpc_zone_identifier   = [aws_subnet.workload_private[0].id]
 
   launch_template {
     id      = aws_launch_template.ecs_host[0].id

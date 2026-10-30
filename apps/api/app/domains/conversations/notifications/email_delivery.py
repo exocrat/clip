@@ -114,8 +114,8 @@ class NotificationEmailSender:
     """Refresh routes lazily and make at most one attempt per real provider.
 
     Trusted composition supplies a renderer and an explicit delivery profile.
-    Test profiles require an allowlist; unrestricted delivery requires an
-    explicit production selection, independently of fake/test bindings.
+    Test profiles enforce the allowlist unless explicitly configured to send
+    to eligible unlisted accounts; production remains independently guarded.
     """
 
     def __init__(
@@ -125,6 +125,7 @@ class NotificationEmailSender:
         *,
         profile: Literal["test", "production"],
         test_recipients: tuple[str, ...] = (),
+        allow_unlisted_recipients: bool = False,
         ses_client=None,
         opener=None,
         clock: Callable[[], float] = monotonic,
@@ -132,6 +133,8 @@ class NotificationEmailSender:
         """Validate safe delivery profile without touching providers or secrets."""
         if (
             profile not in ("test", "production")
+            or type(allow_unlisted_recipients) is not bool
+            or (profile == "production" and allow_unlisted_recipients)
             or (profile == "test" and not 1 <= len(test_recipients) <= 5)
             or (
                 profile == "production"
@@ -148,6 +151,7 @@ class NotificationEmailSender:
             raise ValueError("Explicit notification delivery profile required")
         self._load, self._render, self._profile = load, render, profile
         self._recipients = frozenset(test_recipients)
+        self._allow_unlisted_recipients = allow_unlisted_recipients
         self._ses, self._opener, self._clock = ses_client, opener, clock
         self._lock, self._configuration, self._expires = Lock(), None, 0.0
 
@@ -216,7 +220,9 @@ class NotificationEmailSender:
     def _send(self, claim: NotificationClaim, recipient: NotificationRecipient) -> None:
         """Render minimal text and try the configured primary then alternate once."""
         if claim.recipient_id != recipient.recipient_id or (
-            self._profile == "test" and recipient.email not in self._recipients
+            self._profile == "test"
+            and not self._allow_unlisted_recipients
+            and recipient.email not in self._recipients
         ):
             raise NotificationDeliveryFailure("terminal_failure")
         try:

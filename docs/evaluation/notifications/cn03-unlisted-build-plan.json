@@ -1,0 +1,36 @@
+{
+  "status": "built and published to ECR at user request; not deployed",
+  "account": "335523638354",
+  "region": "ap-south-1",
+  "profile": "adityalaxmi1",
+  "host": "i-086045c48487471de",
+  "host_type": "existing protected t3.micro, standard credits",
+  "source_base_commit": "b95a7a50ecf8f9015dfe89f33f9d1d3b5ccfb12b",
+  "source_snapshot_sha256": "5d3b8f0a604c76b3f97eb966ede87bbacf4cbf71ff364e4fd6a15f1ea3c9af66",
+  "snapshot": "/tmp/clip-cn03-source-unlisted-20261030.tar; base commit archive with exactly three reviewed, uncommitted application files overlaid",
+  "changed_files_sha256": {
+    "apps/api/app/core/config.py": "99f5da4c5b94fc86288d254f36267d697f4947ce533ac0e7ae4230c64a05c0e6",
+    "apps/api/app/domains/conversations/notifications/email_delivery.py": "9b28e80e840a4ad5048f7187b99c86d59b438aad3d291b6458edf64910ee938a",
+    "apps/api/app/domains/conversations/notifications/runtime.py": "5e49f4494d24b57db5f7377e8e68eadbd05ebde9150c5c3b8b545220a779cad3"
+  },
+  "build_identifier": "5d3b8f0a604c76b3f97eb966ede87bbacf4cbf71",
+  "identifier_note": "This is the first 40 hex digits of the snapshot hash, not a Git commit. The existing helper labels this field source_commit; interpret it as a snapshot identifier.",
+  "helpers": {
+    "scripts/identity_build_transfer.py": "02e3536c04090e102d9da653c1630210e39cf53cc9b29f7986e7e36533f9eee0",
+    "scripts/identity_amd64_build.sh": "0b58b8660109267dc40c65361cf45b5655647eb52ff88d24a23ed48bee13f586"
+  },
+  "host_directory": "/var/tmp/clip-id01-build-5d3b8f0a604c",
+  "ecr_tag": "cn03-unlisted-5d3b8f0a604c",
+  "actions": [
+    "Run preflight on the same host, including sufficient disk and no active build or swap; do not delete prior artifacts.",
+    "Stop only the prior owned transfer-helper process after confirming no active transfer, while retaining its files; start a fresh loopback transfer helper on port 18765 and use the existing reviewed SSM transfer. Use 2 GiB swap, 512 MiB RAM/1536 MiB combined limit, 768 MiB Node heap and a 45-minute timeout. Validate source hash, AMD64, non-root UID and health/UI. Stop on OOM or failure; no automatic resize or retry.",
+    "Privately transfer and hash-check the image, import it locally, and publish once to the exact previously unused immutable ECR tag; verify manifest configuration matches tested image.",
+    "Preserve both existing EC2 instances, RDS, provider configuration, DNS, previous image and user data. No deployment or real notification sends are included; temporary build swap, smoke container and local Docker auth may be removed."
+  ],
+  "deadline": "User requested build, preservation of resources, and stopping compute/database. No deployment, registry publication, or AWS resource deletion authorized.",
+  "cost": "No additional instance; existing host, proxy, RDS, NAT, storage, CloudWatch and data charges continue. Prior list-rate compute estimate is about USD 0.0434/hour for the two t3.micro hosts and db.t4g.micro, excluding other charges and taxes.",
+  "approval": "Aditya explicitly requested ECR publication after the no-deployment build. Deployment remains separately gated.",
+  "image_id": "sha256:4bdd517be73f62595bbbdbebb01dbb606ab5badb16f844e5ab4706cc4ac3f7f2",
+  "image_archive_sha256": "facae66c9df5e6567e22aeef1e1c56581e981fd02fe41ca39e710099437b944a",
+  "published_image": "335523638354.dkr.ecr.ap-south-1.amazonaws.com/clip-shared-test-api@sha256:3faaeb2ebe160868d1e7b194e373051a1bde2fc5d84cef60959a028d3e8f3d00"
+}

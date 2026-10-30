@@ -137,6 +137,30 @@ def test_refresh_and_controlled_recipient_gate():
     assert len(ses.calls) == 3
 
 
+def test_explicit_unlisted_test_recipient_still_requires_matching_identity():
+    """Unlisted accounts may receive only their own intended notification."""
+    claim, recipient = fixture()
+    ses = Ses()
+    sender = NotificationEmailSender(
+        lambda: EmailConfiguration("ses", SecretStr("synthetic-key")),
+        lambda job: ("Subject", "Body"),
+        profile="test",
+        test_recipients=("other@example.invalid",),
+        allow_unlisted_recipients=True,
+        ses_client=ses,
+    )
+    asyncio.run(sender(claim, recipient))
+    assert len(ses.calls) == 1
+    with pytest.raises(NotificationDeliveryFailure):
+        asyncio.run(
+            sender(
+                claim,
+                NotificationRecipient(recipient_id=uuid4(), email=recipient.email),
+            )
+        )
+    assert len(ses.calls) == 1
+
+
 def test_ssm_snapshot_schema_and_secret_redaction():
     """Read one explicit SecureString snapshot and reject malformed versions."""
 

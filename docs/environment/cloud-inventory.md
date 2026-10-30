@@ -5,6 +5,21 @@ permission to create, change, or delete resources. Before any cloud operation,
 verify the caller and refresh AWS and Terraform state; review and approve the
 exact operation separately. Never record credentials, tokens, or secret values.
 
+## CN-03 test shutdown — 2026-10-30 10:27 UTC
+
+Aditya directed stopping the test resources while preserving them. The API ECS
+service has desired/running/pending count zero. Its protected host
+`i-086045c48487471de` and HTTPS proxy `i-0d1947299024cae06` are stopped, not
+terminated; the retained RDS was stopping at this checkpoint. All Auto Scaling
+processes on `clip-shared-test-ecs-host` are suspended to prevent replacement or
+termination and must be deliberately resumed for later use. The existing proxy
+EIP and DNS record remain; the site is offline. NAT, EIP, RDS storage, logs,
+monitoring and other retained resources may still incur charges. No AWS resource
+was deleted. The independently built unlisted-recipient image is retained locally, on
+the host disk, and in ECR at digest
+`sha256:3faaeb2ebe160868d1e7b194e373051a1bde2fc5d84cef60959a028d3e8f3d00`;
+it is not deployed. Recheck all state before future work.
+
 ## NEXT-04 read-only refresh — 2026-10-29 12:08 UTC
 
 Using the renewed `surajs2` profile, STS confirmed non-root user `surajs2` in

@@ -36,6 +36,7 @@ run "explicit_consumers_use_exact_secret_and_bounded_capacity" {
     identity_test_recipients      = ["synthetic@example.invalid"]
     conversations_runtime_enabled = true
     notification_worker_enabled   = true
+    notification_allow_unlisted_recipients = true
     notification_monitoring_enabled = true
     hybrid_runtime_enabled        = true
     api_task_cpu                  = 512
@@ -69,6 +70,16 @@ run "worker_without_conversations_refused" {
     identity_runtime_enabled    = true
     identity_test_recipients    = ["synthetic@example.invalid"]
     notification_worker_enabled = true
+  }
+  expect_failures = [aws_ecs_task_definition.api]
+}
+run "unlisted_without_worker_refused" {
+  command = plan
+  variables {
+    identity_runtime_enabled               = true
+    identity_test_recipients               = ["synthetic@example.invalid"]
+    conversations_runtime_enabled          = true
+    notification_allow_unlisted_recipients = true
   }
   expect_failures = [aws_ecs_task_definition.api]
 }
