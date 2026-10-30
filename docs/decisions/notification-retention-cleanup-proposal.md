@@ -27,3 +27,12 @@ guards prove insufficient, stop and review a bounded guard before deletion.
 This approval is for the local implementation and synthetic tests only. Any
 shared/cloud deletion, scheduler installation or deployment requires a separate
 exact plan and approval. Rahul reviews Conversations state and producer effects.
+
+An offline [role proposal](../../database/roles/conversations-notification-retention.sql.proposed)
+grants SELECT and row-lock permissions on the three required tables and DELETE
+on intents. Its narrow key-column UPDATE grants also permit key changes; this
+residual capability needs review. The DELETE grant covers the whole intent
+table; the reviewed cleanup code, rather than SQL privileges, enforces the age
+and terminal-state restrictions. Disposable PostgreSQL checks prove locks,
+denial of unrelated writes, and successful dry-run and deletion under that role.
+No role, scheduler or cleanup was deployed.

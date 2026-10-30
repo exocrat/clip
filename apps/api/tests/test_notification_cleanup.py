@@ -11,12 +11,81 @@ from app.core.errors import PublicError
 from app.core.runtime_bindings import runtime_claims
 from app.domains.conversations.notifications.cleanup import NotificationCleanup
 from app.domains.conversations.messages import PostgresMessageOperations
+from pathlib import Path
+from psycopg_pool import AsyncConnectionPool
 from test_conversation_messages import (
+    TEST_DATABASE_DSN,
     run_scenario,
     seed_thread,
     caller,
     message_request,
 )
+
+
+def test_cleanup_runs_with_proposed_retention_role():
+    """Run dry-run and delete through a role restricted to the candidate grants."""
+
+    async def scenario(admin_pool):
+        author, _, _, conversation, _, _ = await seed_thread(admin_pool)
+        intent = uuid4()
+        proposal = (
+            Path(__file__).resolve().parents[3]
+            / "database/roles/conversations-notification-retention.sql.proposed"
+        ).read_text()
+        async with admin_pool.connection() as c:
+            async with c.transaction():
+                await c.execute(
+                    "CREATE ROLE clip_test_notification_retention NOLOGIN NOINHERIT"
+                )
+                await c.execute(proposal, prepare=False)
+                await c.execute(
+                    "INSERT INTO conversations.notification_intents(id,conversation_id,recipient_id,event_kind,deduplication_key,due_at,expires_at) "
+                    "SELECT %s,id,%s,'new_conversation',%s,created_at,created_at+interval '24 hours' FROM conversations.threads WHERE id=%s",
+                    (
+                        intent,
+                        author,
+                        f"new_conversation:{conversation}:{author}",
+                        conversation,
+                    ),
+                )
+                await c.execute(
+                    "UPDATE conversations.notification_intents SET state='sent',completed_at=clock_timestamp() WHERE id=%s",
+                    (intent,),
+                )
+                await c.execute("SET LOCAL session_replication_role='replica'")
+                await c.execute(
+                    "UPDATE conversations.notification_intents SET due_at=due_at-interval '32 days',expires_at=expires_at-interval '32 days',completed_at=clock_timestamp()-interval '31 days' WHERE id=%s",
+                    (intent,),
+                )
+
+        async def configure(connection):
+            """Restrict every test pool connection to the candidate role."""
+            await connection.execute("SET ROLE clip_test_notification_retention")
+            await connection.commit()
+
+        restricted = AsyncConnectionPool(
+            conninfo=TEST_DATABASE_DSN,
+            min_size=0,
+            max_size=1,
+            open=False,
+            configure=configure,
+        )
+        try:
+            await restricted.open(wait=True)
+            permit = object()
+            operation = NotificationCleanup(restricted, permit)
+            with runtime_claims({"conversations.notification_worker": permit}):
+                preview = await operation.run(NotificationWorkerContext())
+                assert preview.eligible == 1 and preview.deleted == 0
+                result = await operation.run(NotificationWorkerContext(), apply=True)
+                assert result.eligible == result.deleted == 1
+        finally:
+            await restricted.close()
+            async with admin_pool.connection() as c:
+                await c.execute("DROP OWNED BY clip_test_notification_retention")
+                await c.execute("DROP ROLE clip_test_notification_retention")
+
+    run_scenario(scenario)
 
 
 def test_terminal_cleanup_cutoff_dry_run_and_replay_guard():

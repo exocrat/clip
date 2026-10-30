@@ -68,7 +68,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | MERGE-LI-SE | Suraj (integration); Listings/Search affected owners | done | PR #11 is squash-merged; Search–Listings local merge task is complete | Steps 1–9 performed; approved PR head `2a43066` merged to `main` as `e315c9d`; final hosted CI run `40204621122` passed | Steps 3–8 verified by Suraj; user authorized squash merge of the exact PR revision on 2026-10-25 | PR #11 `https://github.com/exocrat/clip/pull/11`; source head `2a430660d25e7c14cf33d84bd78172db4ec063c7`; squash merge `e315c9df3e0e11d6e9c8d7d244d676204d3af7e8`; hosted CI `40204621122`; local merge commit `29eb6fb`; fallback branch `safety/search-pr11-pre-main-reconciliation-20261025`; stash `af9d7f5`; local checks recorded below | No blocker for the Search–Listings merge. Final dataset, formal NFR/cloud checks, and real Identity/Conversations remain later work. | 2026-10-25 15:17:46 UTC |
 | CN-01 | Rahul (D) | in progress | PR17 integration merged; final CN-01/readiness/NFR obligations remain | Accepted main b09978e contains reviewed head3773931; hosted run40402518748 passed; prior local aggregate1930Python/403web and Conversations114 | Rahul verified local correction and confirmed PR merged; no additional milestone acceptance inferred | [PR17](https://github.com/exocrat/clip/pull/17), merge `b09978e91620ae3877a77c5bea8a4f12df7a8907`; [integration checkpoint](../evaluation/domain/conversations-integration.md) | Formal readiness/remaining device and security checks; CN-03 producer path and final NFR-05; full task acceptance pending | 2026-10-27 06:16:43 UTC |
 | CN-02 | Rahul (D); Aditya/Suraj review | in progress | Step11 local aggregate checks passed; obtain human verification, then complete real dependency/owner review gates | 1930 Python passed/153 skipped; 94 data; 433 web/3 skipped; build/types/lint, Black 296 files, mypy, contract generation (8 artifacts), boundaries, DB lifecycle PostgreSQL18.6, Conversations harness167, DB safety35, Gitleaks8.30.1 passed | Step10 verified; Step11 local result pending Rahul verification | `task/cn-02-offers-contact-sharing`; [checkpoint](../evaluation/domain/conversations-offers.md); [browser walkthrough](../environment/conversation-browser-test.md) | Formal CN-CORE/ID-READY/LI-CORE acceptance, affected-owner review and hosted CI remain required for full CN-02 acceptance; later real-session/deployment gates remain | 2026-10-27 15:15:10 UTC |
-| CN-03 | A; D producer review | in progress | Step 10: real integration and infrastructure inspection | Steps 1–9 local; Step 10 local role/runtime and infrastructure preparation | Steps 1–9 verified; Step 10 partial | `f1c770c` plus Step 10 changes; Identity 49, runtime 4 and Terraform mock 5 passed | Exact cloud/database plan and approval, real integration, retention operations, browser and Rahul review | 2026-10-29 19:01:39 UTC |
+| CN-03 | A; D producer review | in progress | Steps 10–11 offline preparation; real deployment and checks pending | Offline migration, role and monitoring preparations performed | Steps 1–9 and Steps 10–11 offline preparation verified; Aditya reports Rahul approved his part; real checks incomplete | `0e87f3f` plus offline changes; PostgreSQL rehearsals 2, Conversations 184, failure tests 19, Terraform mocks 5 and secret scan passed | Review retention key-update rights and alert destination; exact migration/deployment plan, separate cloud approval and real integration/monitoring/provider checks | 2026-10-30 08:18:00 UTC |
 | INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
 | EXP-01 | C; Suraj coordinates NEXT-01 design | done | NEXT-01 design and gates are approved; actual topology pricing and numeric cost endpoints are NEXT-07 pre-result gates. | Design Steps 1–9 performed; no experiment run | Suraj verified NEXT-01 Steps 1–9 on 2026-10-28. | [Approved design and gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md); [NEXT-07 execution plan](../tasks/remaining-project-plan.md#experiment-protocol-reference) | Implementation, final data/tools, actual account/spend, numeric cost endpoints, and separate run approvals remain before measurement. | 2026-10-28 06:24:24 UTC |
 | EXP-02 | C | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-01 | — |
@@ -298,6 +298,45 @@ ineligible recipients, timeout/rejection, read-before-due, both preferences,
 retention/replay and content/secret redaction. The disposable PostgreSQL suite
 passed 183 tests; Black and diff checks passed. Sends used synthetic callbacks;
 real provider/runtime and browser/owner gates remain. Step 8 awaits verification.
+
+### CN-03 Steps 10–11 offline integration preparation — 2026-10-30 08:15:27 UTC
+
+Aditya requested all non-cloud work from Steps 10 and 11. A disposable
+PostgreSQL rehearsal applied the nine migrations after the historical 23-file
+baseline, preserving a synthetic user and checking the migration ledger and
+new Identity schema. It does not establish the retained database baseline or
+exercise the live migration tool. A separate proposed retention role passed
+local PostgreSQL row-lock and denial checks; its necessary key-column UPDATE
+rights remain a review item. At 2026-10-30 08:16:45 UTC the complete cleanup
+dry-run and deletion passed under that role; the disposable Conversations suite
+passed 184 tests. Added default-off Terraform preparation for four fixed-code notification
+metrics, a dashboard and four actionless alarms. Two PostgreSQL tests and five
+Terraform mock tests passed; Black, diff and Gitleaks source scan passed. The
+first sandboxed secret scan could not access Docker; its local rerun passed.
+No secret values, cloud changes or real email were used. Real migration, provider
+and monitoring verification, alert destination and separate approvals remain.
+
+### CN-03 Step 11 local failure checks — 2026-10-30 08:10:59 UTC
+
+Aditya directed that unfinished Step 10 integration be grouped with Step 11.
+Offline provider/runtime failure-injection checks passed 19, including SES
+fallback, both providers failing and redacted errors. The sandbox blocked worker
+threads on the first attempt; the isolated offline rerun passed outside that
+restriction. Drafted provisional two-hour, one-host/task, two-recipient, 10-send
+and USD 3 stop-threshold bounds for review; these are not cloud approval or a
+hard billing cap. Checked-in Terraform has no notification-specific alert or
+dashboard definition. Actual monitoring, exact migration/deployment/cleanup
+plans and real checks remain pending. No cloud or email action occurred.
+
+### CN-03 Step 10 planning and owner approval — 2026-10-30 08:06:59 UTC
+
+Aditya reported Rahul approved his part. Verified the approved non-root AWS
+profile and read-only current shared API, host, stopped PostgreSQL and
+Conversations parameter metadata. Prepared a [draft integration plan](../environment/cn-03-step-10-integration-plan.md).
+The existing operator migration runner pins the older 23-file chain and cannot
+apply the current 32-file chain; the live baseline and a reviewed upgrade path
+remain necessary. No secret values, SQL changes or cloud mutations occurred.
+Step 10 remains open for the exact plan, approvals and real integration checks.
 
 ### CN-03 Step 10 integration preparation — 2026-10-29 18:48:09 UTC
 
