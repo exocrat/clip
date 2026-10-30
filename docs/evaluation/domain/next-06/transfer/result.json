@@ -1,0 +1,23 @@
+{
+  "task": "NEXT-06",
+  "checkpoint": "Explicitly authorized commit/push/PR with complete images/payload handoff",
+  "recorded_utc": "2026-10-30 13:49:18 UTC",
+  "state": "transfer package and publication-safe input verified; cloud/final acceptance pending",
+  "archive": "data/transfer/next06-reference-20261030.tar.gz",
+  "archive_manifest": "data/transfer/next06-reference-20261030.json",
+  "input_fingerprint": "sha256:7efd142e11c3e8555e1aa08603cbf8dff07de5d74412ccde3c39869b9334ab98",
+  "source_only_rebind": "Known-ancestor validation added so a descendant publication commit alone does not invalidate exact source/schema/config/photo inputs. Three new tests cover descendant behavior and invalid/missing base refusal. New a/b pair has exactly identical users/listings/image_plan arrays to prior human-reviewed December pair. All22judgments preserved and rebound separately; historical inputs/evidence retained.",
+  "checks": {
+    "data_tests": "177passed in9.87s",
+    "native_rebuild": "actual transferred input passes full native load/photo/model/rebuild/dispatcher; row/media/2000vector parts/65indexes match; services stopped",
+    "archive": "52ordinary files,45images,all member bytes/hashes match source;42463902bytes",
+    "archive_sha256": "2c9c88d103f3329c794c1efa857268a7120c7f1549250d3e28278d5e1eb0b2ea",
+    "full_ci": "Run through authorized GitHub PR; local dependencies/platform blockers retained honestly"
+  },
+  "scope": "Copies only approved45photos/synthetic data/config/judgments into explicitly authorized archive. No credentials/sessions/private keys/toolchains/PGDATA/provider sends; originals unchanged. AWS only335523638354; no AWS calls in publication batch.",
+  "pending": [
+    "Independent peer/affected-owner review and hosted required CI",
+    "Operator-owned approved target/cost/permissions/deployment/load",
+    "Actual Identity/S3/IAM/deployed vectors/create-edit/accepted final label/source binding/freeze/DATA-READY"
+  ]
+}

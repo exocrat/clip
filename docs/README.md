@@ -15,6 +15,11 @@ document here for every task.
 - Active task procedures: [domain](tasks/domain-task-list.md) and
   [final closeout](tasks/final-closeout-task-list.md). BOOT-00 and PRE-00 are
   complete; see the task index and work log for their accepted status.
+- [NEXT-06 pre-cloud review package](evaluation/domain/next-06/pre-cloud-review.md) —
+  local adapter implementation, PR description, peer-review focus and check status.
+- [NEXT-06 dataset cloud handoff](evaluation/domain/next-06/cloud-handoff.md) —
+  verified local inputs, external photo transfer, cloud adapter/integration gates
+  and account335523638354-only restriction.
 - [Work log](status/work-log.md) — current status rows, pending real-integration
   checks and concise project history. Older detailed entries remain in Git.
 - [PD-19 foundation handoff](status/foundation-handoff.md) — short historical

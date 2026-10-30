@@ -1,0 +1,215 @@
+{
+  "task": "NEXT-06",
+  "step": 2,
+  "state": "verified by Mohit; Step3 preparation authorized",
+  "recorded_utc": "2026-10-30 11:42:23 UTC",
+  "contributor": "Mohit Mahapatra (C)",
+  "branch": "task/next-06-reference-dataset",
+  "base_revision": "6edb52ba4e5a148386cd81e78b29c15b557193c7",
+  "working_tree_code_binding": "new generator/configuration content hashes supplement base revision; final accepted revision/freeze pending",
+  "human_direction": "Step1 verified; Step2 generation authorized",
+  "code_and_configuration": [
+    {
+      "path": "data/generators/reference.py",
+      "sha256": "ddf26411b2f1638ad6ef81b3829791208694b173c9448747c9932c663b5e8fb9",
+      "purpose": "Local-only deterministic recipe generation/validation and fresh named-run CLI; photo integrity/path guards, independent assignments, provenance and false acceptance rejection."
+    },
+    {
+      "path": "data/evaluation/reference-recipe.json",
+      "sha256": "5858e2f6cd2a209d9129f3745e1f8c74db8233c32d5460cf00335be6a6156cbc",
+      "purpose": "Versioned approved45topic/synonym pairs, category/count/price/condition and optional-field recipe."
+    },
+    {
+      "path": "data/tests/test_reference.py",
+      "sha256": "f75cdf3faf6d2f607ca93ad44d3c9db2bf26c9e3e0efdce01b67b6e6ec2d4459",
+      "purpose": "23 invariant/provenance/path/mutation/IO regression cases with tiny explicit synthetic PNG inputs; no real photos/cloud/SQL needed."
+    }
+  ],
+  "runs": [
+    {
+      "name": "next06-reference-v1-42-20261030-a",
+      "manifest_path": "data/runs/next06-reference-v1-42-20261030-a/manifest.json",
+      "dataset_path": "data/runs/next06-reference-v1-42-20261030-a/dataset.json",
+      "manifest_sha256": "4959f8ae5f7863a469f5b2a39ebc491980ab3ab7624e465f293a40c7507ca6a6",
+      "dataset_sha256": "934ae892e96b0d8c1f8965e8f2c2080a052aa055685f94965936285f6bbe45e5"
+    },
+    {
+      "name": "next06-reference-v1-42-20261030-b",
+      "manifest_path": "data/runs/next06-reference-v1-42-20261030-b/manifest.json",
+      "dataset_path": "data/runs/next06-reference-v1-42-20261030-b/dataset.json",
+      "manifest_sha256": "ea9e32d9a372ad787826ae00452b2c457e6e528df03dc54bca7a826d27e181ba",
+      "dataset_sha256": "6db55c0601e9ff12899487bbfaba213eaaef3dde646609c569b07bff5619097c"
+    }
+  ],
+  "comparison": {
+    "record_arrays_identical": true,
+    "image_plans_identical": true,
+    "logical_fingerprints_identical": true,
+    "only_manifest_difference": "generated_at",
+    "logical_fingerprint": "sha256:a4811b510e9604379945de6dc3717bab3e57b3c3e5d648a7ba89b87ae1020373"
+  },
+  "logical_time": "2026-10-30T00:00:00.000000Z",
+  "measurement_window": {
+    "before": "2026-11-05T00:00:00.000000Z",
+    "from": "2026-10-30T01:00:00.000000Z"
+  },
+  "requested_counts": {
+    "listings": 1000,
+    "planned_images": 1000,
+    "users": 5000
+  },
+  "observed_counts": {
+    "availability_scenarios": {
+      "available": 800,
+      "expired": 50,
+      "future": 50,
+      "unavailable": 100
+    },
+    "categories": {
+      "appliances": 111,
+      "bicycles": 111,
+      "books": 111,
+      "electronics": 111,
+      "furniture": 111,
+      "laptop": 111,
+      "mobile_phone": 112,
+      "other": 111,
+      "sports_fitness": 111
+    },
+    "conditions": {
+      "fair": 250,
+      "good": 250,
+      "like_new": 250,
+      "new": 250
+    },
+    "distinct_regular_owners": 1000,
+    "listings": 1000,
+    "negotiable": {
+      "false": 500,
+      "true": 500
+    },
+    "pickup_areas": {
+      "Synthetic Zone A": 250,
+      "Synthetic Zone B": 250,
+      "Synthetic Zone C": 250,
+      "Synthetic Zone D": 250
+    },
+    "planned_image_bytes": 925881224,
+    "planned_images": 1000,
+    "prices_paise": {
+      "0": 100,
+      "100000": 100,
+      "1200000": 100,
+      "200000": 100,
+      "2000000": 100,
+      "25000": 100,
+      "300000": 100,
+      "50000": 100,
+      "500000": 100,
+      "800000": 100
+    },
+    "proof": {
+      "false": 333,
+      "omitted": 334,
+      "true": 333
+    },
+    "topics": {
+      "android-smartphone": 23,
+      "backpack": 23,
+      "badminton-racket": 23,
+      "basic-mobile-phone": 22,
+      "bed-frame": 22,
+      "biology-textbook": 22,
+      "bookshelf": 22,
+      "camera": 22,
+      "campus-bicycle": 23,
+      "chemistry-textbook": 22,
+      "commuter-bicycle": 22,
+      "compact-laptop": 22,
+      "computing-textbook": 22,
+      "desk-monitor": 23,
+      "dining-table": 22,
+      "dual-sim-smartphone": 22,
+      "dumbbells": 22,
+      "economics-textbook": 22,
+      "electric-kettle": 23,
+      "folding-bicycle": 22,
+      "football": 22,
+      "gaming-laptop": 22,
+      "headphones": 22,
+      "iphone": 23,
+      "kitchen-mixer": 22,
+      "linear-algebra-textbook": 23,
+      "mountain-bicycle": 22,
+      "office-chair": 22,
+      "office-laptop": 22,
+      "projector": 22,
+      "refurbished-laptop": 22,
+      "refurbished-smartphone": 22,
+      "rice-cooker": 22,
+      "road-bicycle": 22,
+      "speaker": 22,
+      "stationery-kit": 22,
+      "storage-box": 22,
+      "student-laptop": 23,
+      "study-desk": 23,
+      "table-fan": 22,
+      "tennis-racket": 22,
+      "toaster": 22,
+      "umbrella": 22,
+      "water-bottle": 22,
+      "yoga-mat": 22
+    },
+    "user_classes": {
+      "regular": 4800,
+      "temporary": 200
+    },
+    "users": 5000
+  },
+  "image_plan": {
+    "source_photos": 45,
+    "distinct_relative_keys": 1000,
+    "planned_bytes": 925881224,
+    "actual_objects_uploaded": 0,
+    "scope": "relative keys plus upload/image/operation IDs and source byte digests; actual bucket/prefix/confirmed rows remain Step3"
+  },
+  "sensitive_purchase_threshold_paise": 500000,
+  "runtime_limit": "value matches inspected repository default; actual target setting recheck remains Step3",
+  "checks": {
+    "new_regressions": "23passed",
+    "all_data_tests": "117passed in3.16s",
+    "two_generate_commands": "pass; both final v1 run names",
+    "two_validate_commands": "pass against current source and real45photo hashes",
+    "black": "2 source files unchanged",
+    "boundaries": "0 violations",
+    "whitespace": "pass"
+  },
+  "superseded_local_runs": {
+    "names": [
+      "next06-reference-42-20261030-a",
+      "next06-reference-42-20261030-b"
+    ],
+    "reason": "Early successful runs preceded explicit requested-count/source-revision manifest completion. Final source change required fresh names under no-overwrite policy; retained as local stale diagnostics, not final pair."
+  },
+  "artifact_safety": "Raw generated datasets ignored; manifests retained. No source photo copied/converted/renamed, credential/session/contact created, private chat fabricated, database loaded/reset, provider send, cloud/upload, install/global change, staging/commit/push/merge.",
+  "acceptance": {
+    "current_vectors_verified": false,
+    "data_ready": false,
+    "human_labels_reviewed": false,
+    "image_objects_uploaded": false,
+    "image_objects_verified": false,
+    "sql_loaded": false
+  },
+  "not_run": [
+    "actual schema load, FK/constraints/index/runtime checks",
+    "real media upload/confirmation/authorized delivery and normal new-listing vector workflow",
+    "actual embedding pipeline preparation/coverage/search results",
+    "20+human judgments and final evaluator result",
+    "isolated reset/reload and freeze",
+    "hosted CI/independent review/cloud checks"
+  ],
+  "next_step": "Human verify Step2, then review and implement Step3 schema-aware isolated loading/media workflow and exact target safeguards; cloud requires separate target/cost/cleanup approval.",
+  "human_verification_recorded_utc": "2026-10-30 11:52:03 UTC",
+  "superseded_by": "../step-03/result.json",
+  "supersession_reason": "Mohit approved regular-only November evaluation corpus through1December; old mixed/week runs retained as historical diagnostics."
+}

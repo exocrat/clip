@@ -2003,3 +2003,49 @@ the separately approved window. Responses may contain secrets and stay in memory
 the two column-level FOR SHARE grants against disposable PostgreSQL; it never
 changes a shared database. The live grants require affected-owner review and
 durable restoration handling before task acceptance.
+
+## NEXT-06 reference generation and isolated local loading
+
+The [reference generator guide](../../data/README.md#next-06-reference-inputs-and-local-loading)
+registers the exact generate/validate/test commands and retained two-run names.
+`data.generators.reference` accepts only generate/validate, fresh named outputs
+under data/runs, explicit UTCmidnight/day/threshold and an external ordinary image
+root. It rechecks45approved photo hashes/magic/sizes and safe paths. No overwrite,
+reset, database/cloud target, provider call, photo modification or session creation.
+The amended2026-10-30runs contain5000regular users/1000listings/1000planned objects.
+The guide also registers `scripts.evaluation.reference_local` with required
+`CLIP_ENVIRONMENT=test` and `--isolated-local-reference`: fresh fixed-role Unix-only
+native PG18.6,29migrations, real local photo bytes and Listings HTTP checks.
+Optional `--embeddings` uses the installed pinned offline model and supported
+pipeline tools; it verifies1000current vectors, searches and automatic vector
+publication in a separate probe clone. No existing/cloud target is accepted;
+owned processes stop and private evidence is retained. Caller/storage fixtures
+do not accept actual Identity/S3; human labels/freeze/DATA-READY remain pending.
+Use a fresh name and current UTCday
+for future generation; old run validation is read-only. Deployment/upload/load
+commands and actual storage prefix/target require separate cloud approval.
+
+The same local command additionally accepts `--rebuild-check` with `--embeddings`
+for Step6. Only the new DB created by that invocation is reset, migrated/reloaded
+and re-encoded; record/media/vector/index fingerprints must match. The ordinary
+loader retains its nonempty-target refusal. No target/prefix URL or forced-drop
+option exists. See the guide for the exact command and local freeze-candidate
+limits; this is not authorization to reset existing/cloud data or accept DATA-READY.
+
+
+## NEXT-06 guarded cloud adapter — offline preparation
+
+The [operator handoff](../evaluation/domain/next-06/cloud-handoff.md#6-review-the-prepared-cloud-adapter-then-load)
+registers exact `data.generators.reference_cloud plan` and `load` forms.
+`plan` is offline and validates inputs; `load` requires an explicit fully reviewed
+JSON target, fresh private ledger, exact TLS process secret and `--execute`, plus
+separate cloud approval. The null target template is not executable. Only account
+335523638354/ap-south-1/non-root identity is permitted. The15minute CLI enforces
+create-only/hash-verified media, exact server/role/schema, empty rows/registry and
+transactional validation. No reset/migrate/grant/delete/start/retry is implemented.
+No live execution or actual session/S3/IAM acceptance has occurred.
+
+```sh
+.venv/bin/python -m data.generators.reference_cloud plan --name next06-transfer-42-20261030-a --image-root /absolute/path/to/clip-dataset-images
+.venv/bin/python -m pytest data/tests/test_reference_cloud.py -q -W error
+```

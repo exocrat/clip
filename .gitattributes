@@ -4,3 +4,6 @@ docs/evaluation/foundation/pd-13/**/*.log -whitespace
 docs/evaluation/foundation/pd-13/*.log -whitespace
 docs/evaluation/foundation/pd-13/**/*.patch -whitespace
 docs/evaluation/foundation/pd-16/amd64-68d6179/build.log -whitespace
+# NEXT-06 retained byte hashes must survive checkout line-ending conversion.
+docs/evaluation/domain/next-06/step-05/listing-catalogue.csv -text -eol whitespace=cr-at-eol
+data/transfer/next06-reference-20261030.tar.gz binary -eol

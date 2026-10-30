@@ -1,0 +1,66 @@
+{
+  "task": "NEXT-06",
+  "step": 6,
+  "recorded_utc": "2026-10-30 12:54:03 UTC",
+  "state": "local reset/reload and freeze candidate prepared; awaiting human verification; task incomplete",
+  "task_definition_audit": "Canonical ordered Step6 requires actual reset/reload, complete reproducibility and final real gates. No material definition gap; local reset limited to this invocation-created target, final gates retained.",
+  "human_direction": "Mohit accepted Step5 judgments and authorized the explained Step6 local increment.",
+  "reset": {
+    "target": "/private/tmp/clip-next06-reference-p0j136wf",
+    "scope": "Same newly owned database rebuilt after initial actual vector build; no adopted target/no forced drop;29migrations reapplied",
+    "source_inputs_unchanged": true,
+    "original_photos_unchanged": true,
+    "rows_media_vectors_indexes_identical": true,
+    "initial_vector_parts": 2000,
+    "reloaded_vector_parts": 2000,
+    "indexes_compared": 65,
+    "helpers_reaped": true,
+    "cluster_stopped": true,
+    "postmaster_pid_absent": true
+  },
+  "receipt": {
+    "path": "docs/evaluation/domain/next-06/step-06/local-rebuild-receipt.json",
+    "sha256": "3740d48972725d240bdb9ebda1acdc04bcfbc8d9120e53996a33622b80d8b317"
+  },
+  "freeze_candidate": {
+    "path": "docs/evaluation/domain/next-06/step-06/freeze-candidate.json",
+    "sha256": "49fff816438ffb5bbe0c8d0e878990c7990e8ce7cd810d334c0e7a923092cae6"
+  },
+  "checks": {
+    "data_tests": "142passed in5.89s; warnings as errors",
+    "black": "Whole repository325Python files unchanged",
+    "boundaries": "0violations",
+    "contract_freshness": "8artifacts current after pinned Node PATH correction",
+    "ci_parity": "12ordered checks match",
+    "input_pair": "both validate with identical logical fingerprint",
+    "whitespace": "pass",
+    "root_initial": "26failed,1674passed,156skipped,319errors in63.70s; not green",
+    "root_retries": "Pinned Node/uv PATH fixed20failures;3cache-dependent tests pass in1.48s with repo-local cache; local-transfer file4tests pass in1.82s after sandbox escalation. Remaining316Docker setup errors plus1Docker-dependent failed test, and2Linux-memfd tests fail on macOS. No unrelated product repairs.",
+    "root_private_log": "/private/tmp/clip-next06-step6-root-check.txt",
+    "secret_scan": "Registered scanner requires absent Docker; not run, remains gate",
+    "web_and_full_aggregate": "Not run for data-only local increment; required before PR; full aggregate blocked by Docker/platform failures",
+    "freeze_hash_and_judgment_check": "All bound source hashes match;22accepted eligible-ID sets retained unchanged; final freeze/DATA-READY flags false"
+  },
+  "task_wide_review": {
+    "ordered_scope": "Steps1-6local preparation/rehearsals checked; original real integration gates retained",
+    "ownership": "Mohit Search/data; no frontend/shared page/domain implementation edits",
+    "code_and_tests": "New runner reset/compare paths documented;5new reset-refusal cases; actual native positive run",
+    "reproducibility": "Seed/schema/config/source/image/text/vector/index fingerprints retained; random audit/job IDs excluded",
+    "human_labels": "All22accepted; no relabeling/exclusions; final canonical binding pending",
+    "privacy": "Synthetic users/listings only, no passwords/sessions/contacts/private message payloads/provider sends; source photos outside Git",
+    "git": "Existing uncommitted changes preserved; no commit/push/merge/staging",
+    "acceptance": "NEXT-06/DATA-READY incomplete; no cloud/real session/S3/final freeze/NFR claim"
+  },
+  "pending": [
+    "Independent review and accepted source/contract revisions, separate commit/push/merge approvals",
+    "Actual Identity/Listing readiness and real session/S3/IAM/cloud normal creation/edit/vector/search checks on approved target",
+    "Bind reviewed labels to accepted final corpus/source/contract and validate; freeze for final runs",
+    "Final DATA-READY acceptance; no score or cloud NFR inferred"
+  ],
+  "verification_follow_up": {
+    "state": "Mohit verified Step6local result and directed continuation",
+    "recorded_utc": "2026-10-30 12:56:56 UTC",
+    "next_checkpoint": "Cloud inspection approved and attempted; stopped on wrong-account/root identity. Correct non-root project profile required; no resource calls."
+  },
+  "cloud_inspection": "cloud-inspection-result.json"
+}

@@ -157,3 +157,163 @@ Unfinished PD-08 work now belongs to pre-domain integration under the
 [handoff decision](../docs/decisions/database-integration-handoff.md). PD-09 still
 requires independent peer review and the accepted upstream/main handoff under the recorded preparation
 exception. No task commit/push/merge is authorized by running these checks.
+
+## NEXT-06 reference inputs and local loading
+
+The approved November-evaluation recipe now contains **5,000 regular users and
+1,000 listings**, stable until **1 December 2026, 00:00 UTC**. Temporary-account
+permission tests use separate fresh fixtures with their unchanged14day lifetime.
+The exact45topic/synonym pairs, category/condition/price/optional-field counts and
+cutoff live in `data/evaluation/reference-recipe.json`. Original photos remain
+external and are bound by `reference-image-inputs.json`; originals are never
+converted, renamed or linked into writable test storage.
+
+`data.generators.reference` reuses stable IDs/canonical hashes/named-run guards.
+Independent SHA256 assignments preserve all distributions; topic assignment cycles
+five topics within each independently ordered category. It generates local record
+bundles and1000relative image plans, not credentials, sessions, database rows,
+objects, vectors or human judgments. `generate` requires today's UTCmidnight,
+fresh run name, explicit image root and threshold; `validate` is read-only and
+rejects altered photos/inputs/source/claims. Exact logical hashes exclude audit
+timestamps/root path but bind base Git revision plus source/config/photo digests.
+Final accepted source revision and freeze remain pending.
+
+```sh
+.venv/bin/python -m data.generators.reference generate --name next06-transfer-42-20261030-a --logical-time 2026-10-30T00:00:00.000000Z --image-root /Users/mohitmahapatra/Desktop/clip-dataset-images --sensitive-threshold-paise 500000
+.venv/bin/python -m data.generators.reference generate --name next06-transfer-42-20261030-b --logical-time 2026-10-30T00:00:00.000000Z --image-root /Users/mohitmahapatra/Desktop/clip-dataset-images --sensitive-threshold-paise 500000
+.venv/bin/python -m data.generators.reference validate --name next06-transfer-42-20261030-a --image-root /Users/mohitmahapatra/Desktop/clip-dataset-images
+.venv/bin/python -m data.generators.reference validate --name next06-transfer-42-20261030-b --image-root /Users/mohitmahapatra/Desktop/clip-dataset-images
+CLIP_ENVIRONMENT=test .venv/bin/python -m scripts.evaluation.reference_local --name next06-transfer-42-20261030-a --image-root /Users/mohitmahapatra/Desktop/clip-dataset-images --isolated-local-reference
+.venv/bin/pytest data/tests -q -W error
+```
+
+The recorded named runs already exist; future generation needs a fresh name and
+that day's UTCmidnight before the cutoff. All earlier next06-reference[-v1]-42
+runs are superseded local diagnostics under the previous mixed-user/week recipe;
+they are not the November-evaluation pair. No generated-input overwrite or
+existing-target reset is supported.
+Raw datasets are ignored; legible completion manifests can be retained in Git.
+
+`reference_load.py` copies45verified sources into new owned immutable blobs and
+backs1000distinct keys with those bytes. It checks the real DB/login/Unix path/
+version/migrations, locks empty tables and inserts schema-adapted users/listings/
+confirmed-image metadata only after byte verification. Deferred constraints,
+full row/image projections, current availability and actual text indexes must pass.
+It refuses a second load. Source photos and existing targets are untouched.
+
+The local runner creates only `/private/tmp/clip-next06-reference-<random>`, using
+repo PG18.6/dbmate2.36.0, no TCP/listener/Docker/AWS. It requires explicit test
+activation, rejects ambient targets, needs2GiBfree and has a ten-minute work cap.
+It stops its cluster and retains evidence on exit. A separate probe clone checks
+real Listings handlers/SQL with a trusted caller/SQL-eligibility and real-file
+storage fixture: eight browse pages,1000owner image deliveries with byte hashes,
+hidden/anonymous denial and normal upload-intent/confirmation/create/detail.
+These do not establish actual Identity session or S3 permissions. Actual new-
+listing vector/search is pending in this default run. PostgreSQL text vectors
+are not semantic embeddings.
+
+Add `--embeddings` to the same local command to exercise the installed pinned
+all-MiniLM-L6-v2 model, supported prepare/queue/worker/activate operations and
+current coverage for all1000nonretired sources (including hidden listings).
+`scripts/evaluation/reference_embeddings.py` checks bounded real HTTP searches
+in both modes, Hybrid keyword inclusion and visible-only unique results. The
+separate normal-publication clone uses the actual background dispatcher; its
+new listing must have a current vector and appear in Hybrid results. Baseline
+rows/coverage remain unchanged. The helper is stopped/reaped, with production
+per-call limits and an additional finite2500window ceiling. No install/download,
+fake inference, external target or human relevance labels are involved.
+
+```sh
+CLIP_ENVIRONMENT=test .venv/bin/python -m scripts.evaluation.reference_local --name next06-transfer-42-20261030-a --image-root /Users/mohitmahapatra/Desktop/clip-dataset-images --isolated-local-reference --embeddings
+```
+
+See [the reviewed load plan](../docs/architecture/reference-dataset-loading.md).
+Cloud use requires a separately approved actual DB/bucket/prefix/IAM/runtime/cost/
+cleanup plan; none of these local commands accepts or writes a cloud target.
+Actual cloud photo delivery/auth/embeddings, human labels, reset/reload and freeze
+remain required. Local vectors do not accept DATA-READY. Code/schema/config changes can still require revalidation; the
+amendment removes expiry-driven regeneration during November, not every recheck.
+
+
+### NEXT-06 Step5 draft human review
+
+The [22query review package](../docs/evaluation/domain/next-06/step-05/review.md)
+links the complete actual1000listing catalogue, independent machine candidate
+suggestions and `data/evaluation/query-labels.draft.json`. Its approved-format
+review/judgment/final-binding fields remain null. Inspect content and policy;
+provide actual human topic/ID corrections before any reviewed labels. Final
+readiness/source/contract/freeze prerequisites still gate acceptance and scoring.
+
+```sh
+.venv/bin/python -m scripts.evaluation.search validate-labels --labels data/evaluation/query-labels.draft.json
+```
+
+Expected: format valid, draft, scoring not allowed, human review not verified.
+
+### NEXT-06 Step6 isolated rebuild and freeze candidate
+
+```sh
+CLIP_ENVIRONMENT=test .venv/bin/python -m scripts.evaluation.reference_local --name next06-transfer-42-20261030-a --image-root /Users/mohitmahapatra/Desktop/clip-dataset-images --isolated-local-reference --embeddings --rebuild-check
+```
+
+`--rebuild-check` requires `--embeddings`. It first encodes1000sources, then drops
+and recreates only the fixed reference database this invocation just created,
+reapplies all migrations, reloads the unchanged bundle/media and re-encodes text.
+It refuses unowned/stopped/mismatched targets; no force/disconnect, existing target
+argument, source-photo deletion or generated-input overwrite is available. Local
+media is retained and all byte bindings are verified again. Logical rows/media,
+actual SQLvector parts/source fingerprints and index definitions must match.
+Random generation IDs and audit times are deliberately excluded from logical
+comparisons. Both helpers and the owned cluster stop; private receipts remain.
+The ordinary loader still refuses nonempty databases.
+
+The [Step6 evidence](../docs/evaluation/domain/next-06/step-06/result.json) and
+[freeze candidate](../docs/evaluation/domain/next-06/step-06/freeze-candidate.json)
+retain exact inputs, counts and fingerprints. This is a locally verified freeze
+candidate, not final DATA-READY acceptance. Accepted22human judgments are retained
+without changes; actual source/contract acceptance, Identity/S3/cloud runtime
+integration and final source binding remain pending. Do not regenerate or alter
+labels merely to improve results; revalidate the binding after material changes.
+
+
+For another contributor loading this corpus into AWS, use the
+[NEXT-06 cloud handoff](../docs/evaluation/domain/next-06/cloud-handoff.md). It
+identifies required external payload/photos, the missing cloud loader, accepted
+judgments, account restriction and pending real integration/final freeze gates.
+
+
+### NEXT-06 prepared cloud adapter (offline preparation complete)
+
+`data.generators.reference_cloud plan` validates a named input and prints an offline
+plan without constructing clients. `load` is explicit/operator-only; no cloud load
+has been executed. `reference-cloud-target.template.json` intentionally contains
+nulls for operator-owned live bindings and cannot execute unchanged. See the
+[cloud handoff](../docs/evaluation/domain/next-06/cloud-handoff.md#6-review-the-prepared-cloud-adapter-then-load)
+for exact commands, approvals, limits and failure/cleanup rules. The prepared
+adapter is account335523638354-only; alternate/root identities are refused.
+
+`reference_rows.py` shares schema-aware insertion/verification between local and
+cloud adapters; the local wrapper's original fixed DB/role/Unix/object guards remain.
+Every cloud object must pass create-only upload and actual bounded GET/hash checks
+before confirmed SQLmetadata. The final transaction checks emptiness under locks.
+SQL/media projections account for target-specific authoritative object keys, so
+cloud key mappings differ from the local reference-local namespace; stable source
+records and the input logical fingerprint must remain unchanged.
+
+Tests use explicit synthetic guard fixtures and Botocore Stubber for request/byte
+semantics; they are not real S3/IAM/session/deployment evidence. The native local
+rebuild checks the actual shared SQL, real photo bytes, model and dispatcher.
+The [pre-cloud review package](../docs/evaluation/domain/next-06/pre-cloud-review.md)
+records the final local checks, remaining environment gates and peer handoff.
+
+
+### Complete published transfer
+
+Mohit explicitly authorized including real images and raw payloads with this PR.
+[Transfer instructions](transfer/README.md) document the tracked42.5MB archive,
+52member hashes, safe extraction and both current payloads. This is the explicit
+exception to earlier outside-Git photo/payload guidance. Active inputs are
+next06-transfer-42-20261030-a/b; earlier dec01/week runs remain historical diagnostics.
+A source-only rebind preserves all records and22accepted judgments. Validation
+accepts the recorded known ancestor plus exact current source/schema/config/photo
+hashes, so publication alone does not invalidate the corpus.

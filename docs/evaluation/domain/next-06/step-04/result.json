@@ -1,0 +1,234 @@
+{
+  "task": "NEXT-06",
+  "step": 4,
+  "recorded_utc": "2026-10-30 12:39:39 UTC",
+  "state": "performed locally; awaiting Mohit verification; real cloud gates pending",
+  "branch": "task/next-06-reference-dataset",
+  "task_definition_audit": "Canonical Step4 matches supported operator/worker/coverage/search path; no material gap. Original Step3 staged local new-listing semantic check returned to and passed; real Identity/S3/cloud checks retained.",
+  "human_verification": "Mohit verified Step3 local result and authorized this Step4; final Step4 result not yet verified.",
+  "reference_input": "next06-dec01-42-20261030-a",
+  "private_receipt": {
+    "path": "/private/tmp/clip-next06-reference-o8baw4ep/result.json",
+    "sha256": "dad727fcffb40772b8e56ad68148a34e49e77cf523d89472db6996ec64bde605"
+  },
+  "receipt": {
+    "phase": "local-sql-and-byte-rehearsal",
+    "input_fingerprint": "sha256:1ffa78c587b48d0a9dc0e878d008d0dd2d5e14a431f0b54f805e13585e693118",
+    "load_audit_utc": "2026-10-30T12:38:23.404226Z",
+    "verified_local_objects": 1000,
+    "logical_object_bytes": 925881224,
+    "mapping_digest": "sha256:6aa1655b8003970f241dc0ecd1b19f75ae982177fc5b51729a4f33644541030b",
+    "scope": "owned local files only; actual S3 pending",
+    "users_verified": 5000,
+    "listings_verified": 1000,
+    "images_verified": 1000,
+    "regular_owners_verified": 1000,
+    "available_verified": 800,
+    "logical_projection_digest": "sha256:92d6a0f9f34a6dc405518b39b688afc7a4cca5eae4530526d3d6e464160138ef",
+    "text_vectors_verified": 1000,
+    "text_search_indexes": [
+      "CREATE INDEX sale_full_text ON listings.sale_listings USING gin (search_vector)"
+    ],
+    "cloud_media_verified": false,
+    "real_session_auth_verified": false,
+    "new_listing_vectors_verified": true,
+    "nonempty_retry": "refused without overwriting",
+    "embedding_rehearsal": {
+      "pipeline": {
+        "queued": 1000,
+        "published": 1000,
+        "coverage": {
+          "pipeline_id": "4b43fc307151933bf5b0fa80ff4e10f8cb4266194905cd2b15a3d01b2386d9ca",
+          "state": "serving",
+          "encoding_matches": true,
+          "conflicting_serving": false,
+          "live": 1000,
+          "ready": 1000,
+          "missing": 0,
+          "stale": 0,
+          "pending": 0,
+          "leased": 0,
+          "failed": 0,
+          "invalid_parts": 0
+        }
+      },
+      "application_probe": {
+        "owner_delivery_hashes_verified": 1000,
+        "real_browse_pages_verified": 8,
+        "real_browse_unique_ids_verified": 800,
+        "hidden_nonowner_status": 404,
+        "anonymous_status": 401,
+        "normal_upload_confirm_create_detail": "pass in separate cloned DB",
+        "normal_new_listing_id": "54031bc8-e72e-46be-bc00-151c261bbb64",
+        "real_session_auth": "not verified; trusted test scope fixture",
+        "cloud_storage": "not verified; real local bytes through typed fixture",
+        "automatic_vectors": {
+          "search_smoke": {
+            "cases": [
+              {
+                "query": "cycle",
+                "keyword_count": 82,
+                "hybrid_count": 82,
+                "hybrid_first_five": [
+                  "e02d4a35-c02d-42a8-8851-6bd00831110b",
+                  "383870b0-660a-4cbf-831d-0f5baf33af9c",
+                  "1a7bbb80-239c-4105-b8f6-43d8d7a93c49",
+                  "73dd9ddd-1e9c-4089-af91-6807e9f2970d",
+                  "d893b30a-44d2-4bf3-85ca-5d4a3c28977b"
+                ]
+              },
+              {
+                "query": "cycel",
+                "keyword_count": 82,
+                "hybrid_count": 82,
+                "hybrid_first_five": [
+                  "e02d4a35-c02d-42a8-8851-6bd00831110b",
+                  "640d9898-b668-4fc0-9c7e-f718842be97f",
+                  "ba33cf89-ea66-4a70-9624-c377707f57e7",
+                  "7c0d04a1-ae82-48fb-bd8b-e76a0d87e2d7",
+                  "60a67306-8beb-424e-8c4f-0f0fe8845b5a"
+                ]
+              },
+              {
+                "query": "vehicle",
+                "keyword_count": 82,
+                "hybrid_count": 82,
+                "hybrid_first_five": [
+                  "a9e1716d-63d7-4051-a3d0-a8d6fec053a8",
+                  "44d27b01-d9e0-4edd-8563-11e260a99168",
+                  "d613569d-b975-4976-bc7a-5573e678ac48",
+                  "ca08aed5-c885-4fb9-b910-519e27995011",
+                  "2a6931de-9bf9-4f15-b7c1-d3c0dbdf1a4a"
+                ]
+              },
+              {
+                "query": "wheeled vehicle",
+                "keyword_count": 17,
+                "hybrid_count": 82,
+                "hybrid_first_five": [
+                  "a9e1716d-63d7-4051-a3d0-a8d6fec053a8",
+                  "d613569d-b975-4976-bc7a-5573e678ac48",
+                  "479512a4-82d8-497e-971c-a80ee78690c1",
+                  "333f8d71-a78b-4cf1-8743-8386223f7267",
+                  "74dca3ad-dd64-4773-95ea-9a4a133321d6"
+                ]
+              },
+              {
+                "query": "books",
+                "keyword_count": 107,
+                "hybrid_count": 107,
+                "hybrid_first_five": [
+                  "fadaedc6-1e6e-42b3-82f6-2a8ec4923cea",
+                  "095a24c6-4a0d-4cf8-8571-baebfa24166f",
+                  "7a6573f8-fa85-4b31-96c6-ca31900c4703",
+                  "f05ed34b-486c-4499-9255-31a831e244b2",
+                  "da4a93c6-a196-4b95-9880-92c0fa1fa4ce"
+                ]
+              },
+              {
+                "query": "office chair",
+                "keyword_count": 19,
+                "hybrid_count": 74,
+                "hybrid_first_five": [
+                  "0fc1afed-f31d-478f-acc3-93daf7c93ffa",
+                  "8893b859-f9cc-4214-9e6d-b184dc83a51d",
+                  "4b553da3-5980-4dc5-88b4-09234ed20910",
+                  "6d66b5d1-44d3-4eac-b0e0-bcce0a99a431",
+                  "9740b71d-0e98-4034-ad4c-d330eea7a2a1"
+                ]
+              }
+            ],
+            "human_relevance_review": "pending; no labels inferred"
+          },
+          "normal_publication_coverage": {
+            "pipeline_id": "4b43fc307151933bf5b0fa80ff4e10f8cb4266194905cd2b15a3d01b2386d9ca",
+            "state": "serving",
+            "encoding_matches": true,
+            "conflicting_serving": false,
+            "live": 1001,
+            "ready": 1001,
+            "missing": 0,
+            "stale": 0,
+            "pending": 0,
+            "leased": 0,
+            "failed": 0,
+            "invalid_parts": 0
+          },
+          "normal_new_listing_hybrid": "pass"
+        }
+      },
+      "helper": {
+        "starts": 1,
+        "windows_started": 2010,
+        "peak_rss_bytes": 265207808,
+        "stopped": true
+      }
+    },
+    "vector_verification_scope": "real local model/SQL/dispatcher; trusted caller and local storage fixtures; cloud acceptance pending",
+    "reference_unchanged_after_probe": {
+      "users_verified": 5000,
+      "listings_verified": 1000,
+      "images_verified": 1000,
+      "regular_owners_verified": 1000,
+      "available_verified": 800,
+      "logical_projection_digest": "sha256:92d6a0f9f34a6dc405518b39b688afc7a4cca5eae4530526d3d6e464160138ef",
+      "text_vectors_verified": 1000,
+      "text_search_indexes": [
+        "CREATE INDEX sale_full_text ON listings.sale_listings USING gin (search_vector)"
+      ]
+    },
+    "state": "local rehearsal passed; cloud/auth/human-label/freeze gates pending",
+    "source_run": "next06-dec01-42-20261030-a",
+    "media": {
+      "verified_local_objects": 1000,
+      "logical_object_bytes": 925881224,
+      "mapping_digest": "sha256:6aa1655b8003970f241dc0ecd1b19f75ae982177fc5b51729a4f33644541030b",
+      "scope": "owned local files only; actual S3 pending"
+    },
+    "cluster_stopped": true
+  },
+  "checks": {
+    "data_tests": "137 passed in5.01s, warnings treated as errors",
+    "black": "7files unchanged",
+    "python_boundaries": 0,
+    "whitespace": "pass",
+    "both_current_input_runs": "validate, same fingerprint",
+    "cluster_postmaster_pid_absent": true,
+    "helper_child": "closed/reaped; starts1",
+    "secrets_full_aggregate_web": "not rerun in this local increment; required before PR/task handoff"
+  },
+  "source_files": [
+    {
+      "path": "scripts/evaluation/reference_local.py",
+      "sha256": "fb0d8f039ddd4ec95e07587f05ca4a68c1eb2ca1e5962143349b3da7395b46fd"
+    },
+    {
+      "path": "scripts/evaluation/reference_embeddings.py",
+      "sha256": "863e61e883f7bf3ebd67a62ac440c97e79216bfe4016484752261125cd1bd1c9"
+    },
+    {
+      "path": "data/tests/test_reference_embeddings.py",
+      "sha256": "0149132c658d6fe5e22ba7732ba6b4fd40b10c5c9177fcf46d2e341d2d708d59"
+    },
+    {
+      "path": "apps/api/app/domains/listings/embedding_pipeline.json",
+      "sha256": "300604ee8a54f130d6c698ae4187238c0fd4f4e45d888b208d23622ed8c393a3"
+    },
+    {
+      "path": "apps/api/app/domains/listings/search_vocabulary.json",
+      "sha256": "fff663b1a325e78e19d39da1d41824e8d06a7aba7f2191e206323447e6b4b743"
+    }
+  ],
+  "pending_original_obligations": [
+    "Step3 actual Identity sessions/S3/IAM and cloud normal creation/edit vector integration on separately approved target",
+    "Step4 actual deployed model/worker/coverage configuration, separately approved cloud actions",
+    "Step5at least20genuine human-reviewed queries with relevant IDs/reviewer/time/inclusion; no labels fabricated from smoke outputs",
+    "Step6 isolated reset/reload, final source binding/freeze and DATA-READY checks"
+  ],
+  "scope_safety": "Fresh owned Unix-only target; real pinned offline model/no downloads; real photographs through typed local transport, trusted SQL eligibility/caller fixture. No external service, global install, cloud operation, source-photo edit, existing-target reset, commit/push/merge. No human relevance or NFR acceptance inferred.",
+  "verification_follow_up": {
+    "state": "Mohit verified local result and directed Step5 preparation",
+    "follow_up": "../step-05/result.json",
+    "real_cloud_obligations": "pending; local verification does not accept DATA-READY"
+  }
+}

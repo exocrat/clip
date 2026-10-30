@@ -1,7 +1,14 @@
 # Proposed reference dataset for NFRs and the architecture comparison
 
-**State:** NEXT-01 Step 5 design verified by Suraj on 2026-10-28; no final dataset has
-been generated or loaded. NEXT-06 and SE-01 own implementation, data creation,
+**State:** NEXT-01 Step 5 design verified by Suraj on 2026-10-28. NEXT-06 Step2
+has generated two reproducible local reference-input runs. Fresh isolated Step3/4
+rehearsals verify actual SQL/local media and pinned model vectors; actual cloud
+media/auth/runtime and final label/source binding/DATA-READY remain pending. Mohit
+accepted all22proposed relevance groups and inclusion policy without corrections.
+Step6 verified an isolated same-target reset/reload with identical record/media/
+vector/index fingerprints; a local freeze candidate is retained, not final acceptance. Immutable input
+manifests retain their original generated-unloaded phase; receipts describe loads.
+NEXT-06 and SE-01 own implementation, data creation,
 human label review and DATA-READY. The [submitted PRD](../../docs/source/ICC_Project_PRD_FINAL.pdf)
 requires at least 5,000 users and 1,000 listings; this recipe proposes exactly
 those counts as the smallest reference corpus. Later changes to the product's
@@ -9,14 +16,15 @@ categories, schema or search behavior must be reconciled before final generation
 
 ## Reproducible inputs
 
-- Use seed **42** and a logical time `T` equal to 00:00:00 UTC on the day the
-  final corpus is generated. Record `T`, source revision, schema and migration
-  versions, configuration and generator version in the manifest. Run the measured
-  comparison in `[T + 1 hour, T + 6 days)` so availability and temporary-user
-  expiry do not change during the comparison. If this window cannot be met,
-  regenerate and revalidate under a new recorded `T` before both configurations;
-  rebind and human-reconfirm labels against the new fingerprint, and recheck
-  model/index readiness. Do not change data between matched measurements.
+- Use seed **42** and logical time `T` at UTC midnight on generation day.
+  **Evaluation amendment approved by Mohit (recorded 2026-10-30 12:26:18 UTC):** the
+  benchmark window is `[T + 1 hour, 2026-12-01T00:00:00Z)`. The reference corpus
+  has 5,000 regular users; temporary-account permission fixtures are separate and
+  retain the actual 14-day lifetime. Listing states stay stable throughout November.
+  Material schema/code/configuration changes still require revalidation; this
+  amendment avoids expiry-driven regeneration, not all possible revalidation.
+  Record exact source/schema/config/image/model state and freeze before matched
+  measurements. Both architectures use the same logical corpus and settings.
 - Reuse the existing stable synthetic identifiers and canonical fingerprinting
   from `data/generators/`. IDs, content and assignments must be deterministic for
   the same seed, `T`, source, schema and configuration. Generate twice in fresh
@@ -34,19 +42,20 @@ categories, schema or search behavior must be reconciled before final generation
   groups of the specified sizes in table order. Use the approved NEXT-03
   category codes and verified counts below. Record final counts and item
   mapping before data generation.
-  Sort the 4,800 regular user IDs using
+  Sort the 5,000 regular user IDs using
   `SHA-256("42:owner:<user-id>")` and assign the first 1,000 in order to
   listing IDs sorted using `SHA-256("42:listing-owner:<listing-id>")`.
 
 ## Users and real test sessions
 
-Generate **4,800 active regular** and **200 active temporary** synthetic user
-records, each created at `T - 1 day`. The 200 temporary users activate at `T` and expire at `T + 14 days`,
-matching the current database rule. Distribute the 1,000 listing owners among
-the regular synthetic users; no temporary user owns a sale listing. Synthetic
-addresses, where required, use reserved `example.invalid` names. Do not create
-real outbound email, imported contact data, passwords, OTPs or private keys in
-the dataset or retained evidence.
+Generate **5,000 active regular synthetic users**, created at `T - 1 day`,
+with valid unique claimed Handles and no activation/expiry dates. This supersedes
+only the original 4,800/200 reference mix. Temporary accounts are tested separately
+with fresh authorized fixtures and their unchanged 14-day product policy; those
+mutations are outside the frozen comparison corpus. No long-lived temporary user
+or future-dated activation is invented. Addresses, if required by another fixture,
+use `example.invalid`. Do not create passwords, OTPs, real contacts, private keys,
+fabricated sessions or outbound sends in bulk reference data.
 
 The 5,000 generated users establish reference-data scale; they do **not** by
 themselves establish valid sign-in sessions. The PRD does not require 50 signed-in
@@ -121,12 +130,12 @@ Assign the other attributes independently, with exact totals:
 | Proof declaration | 334 omitted, 333 yes, 333 no where the final schema permits; verify sensitive flags against the actual configured threshold and categories. |
 | Availability | 800 available at the comparison time, 100 explicitly unavailable, 50 future and 50 expired. |
 
-For the 800 available and 100 unavailable listings set availability start to
-`T - 1 day` and end to `T + 30 days`; set the 100 unavailable records' state to
-unavailable. For the 50 future listings use available state with window
-`[T + 7 days, T + 30 days)`; for the 50 expired use available state with window
-`[T - 30 days, T - 1 day)`. Keep these records non-retired and inspect actual
-retirement/cleanup settings so they remain present for the frozen window.
+Let `C = 2026-12-01T00:00:00Z`. For the 800 available and 100 unavailable
+listings use `[T - 1 day, C + 30 days)`; mark the 100 unavailable explicitly.
+For 50 future listings use available state with `[C + 1 day, C + 30 days)`.
+For 50 expired listings use available state with `[T - 30 days, T - 1 day)`.
+Thus all four cohorts remain stable throughout November. Keep records non-retired
+and verify actual cleanup settings rather than bypassing retention.
 Set created and updated timestamps to `T - 2 days`, with a deterministic ID
 tie-breaker; verify pagination across ties. Assign pickup areas `Synthetic Zone A`,
 `Synthetic Zone B`, `Synthetic Zone C` and `Synthetic Zone D` in equal groups of
@@ -138,18 +147,28 @@ silently map an obsolete category or use unreviewed category counts.
 ## Images, indexes and search model
 
 Create **1,000 distinct confirmed image records and object keys**, one for each
-listing, backed by valid synthetic image objects in the approved test bucket.
-Use eight deterministic 256×256 PNG swatches with solid RGB
-colors `#e34a33`, `#3182bd`, `#756bb1`, `#a6611a`, `#31a354`, `#e6550d`,
-`#6baed6`, `#969696`, allocated independently of category. These generic test images
-exercise media storage; they are not representative product photographs. Use
-the chosen pinned encoder, supported media type, content digest and size;
-record the object manifest and verify every referenced object is readable through
-the real authorized image path. Reusing a small set of synthetic images across
-distinct keys is acceptable; avoid real or copyrighted personal photos. The
-existing preview's image metadata points to no objects and is not sufficient.
-Review storage/upload cost and cleanup with the later cloud plan. Image-body
-transfer stays outside the browse latency measurement.
+listing, backed by valid image objects in the approved test bucket.
+
+**Real-photo amendment (Mohit; recorded 2026-10-30 11:27:31 UTC):** replace the earlier eight
+256×256 solid-colour swatches with45user-supplied product photos, one for each
+approved item topic above. Mohit supplied the folder and replaced two AVIF inputs
+with JPEGs. [The source inventory](reference-image-inputs.json) binds each topic
+and category to a relative source path, exact bytes/digest, type and dimensions.
+The dual-SIM filename typo is an explicit mapping; do not rename source files or
+infer further aliases. Original input files remain external to Git. JPEG/PNG/WebP
+are accepted only within the current10MiB/file limit. Preserve source bytes and
+freeze their digests; the photos are reused across matching item-topic listings
+with distinct per-listing records/keys. This does not require1,000unique photographs.
+
+All other counts, distributions, seed42, timestamps and review requirements remain
+unchanged. The exact deterministic topic assignment and resulting1,000-object
+manifest are Step2 outputs. Verify every referenced object through the real
+authorized image path in Step3, including its byte digest and owner linkage.
+Source-folder metadata checks do not establish full decode/visual validation,
+object upload, application confirmation/delivery or cloud readiness. Earlier
+metadata-only previews remain insufficient. Review exact storage/upload volume,
+cost and cleanup with the later cloud plan before uploading anything. Image-body
+transfer stays outside browse latency measurement.
 
 Apply the accepted migrations and final catalogue; verify counts, foreign keys,
 availability windows, allowed users, image records and the indexed text search
@@ -220,3 +239,21 @@ provide reusable scaffolding, but are preview-only: they do not create real
 sessions, real image objects or final reviewed relevance labels. Final commands
 and acceptance evidence are created and registered by the owning tasks; no
 unimplemented command is implied here.
+
+## NEXT-06 Step2 implementation binding
+
+The versioned topic/configuration input is [reference-recipe.json](reference-recipe.json).
+It preserves the approved45topic/synonym pairs and exact table counts. Category
+and other approved assignment hashes remain unchanged. Within each assigned
+category, order listing IDs using
+`SHA-256("42:topic:<category-code>:<listing-id>")` with ID ties, then cycle its
+five topics in their versioned table order, giving22or23records per topic. Each
+listing takes the exact photo matched to its category/topic in the source inventory.
+
+The local generator and commands are documented in [the data guide](../README.md#next-06-reference-inputs-and-local-loading).
+Its per-listing relative image keys and unique image/upload/operation IDs are
+planned inputs, not evidence of confirmed rows or uploaded objects. Actual approved
+bucket/prefix binding, storage transfer, image confirmation and SQL validation
+remain Step3. Local output has phase generated-unloaded and all acceptance flags
+false. Final source acceptance, model coverage, reviewed labels, reset/reload and
+freeze remain required.
