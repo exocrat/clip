@@ -21,7 +21,7 @@ up to five configured recipients. Aditya authorized an explicit test-worker
 switch allowing other eligible notification recipients; it is not yet deployed.
 For the next notification deployment, explicitly enable
 `notification_allow_unlisted_recipients` so the worker has no recipient
-allowlist, as Aditya directed on 2026-10-30. Rebuild and testing are deferred.
+allowlist, as Aditya directed on 2026-10-30. Deployment and live testing are deferred.
 The image published at digest
 `sha256:3faaeb2ebe160868d1e7b194e373051a1bde2fc5d84cef60959a028d3e8f3d00`
 contains that feature, but predates the later Identity database-metadata checker
