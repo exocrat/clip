@@ -10,7 +10,7 @@ exact operation separately. Never record credentials, tokens, or secret values.
 Aditya directed stopping the test resources while preserving them. The API ECS
 service has desired/running/pending count zero. Its protected host
 `i-086045c48487471de` and HTTPS proxy `i-0d1947299024cae06` are stopped, not
-terminated; the retained RDS was stopping at this checkpoint. All Auto Scaling
+terminated; the retained RDS was verified stopped at 2026-10-30 10:34:06 UTC. All Auto Scaling
 processes on `clip-shared-test-ecs-host` are suspended to prevent replacement or
 termination and must be deliberately resumed for later use. The existing proxy
 EIP and DNS record remain; the site is offline. NAT, EIP, RDS storage, logs,

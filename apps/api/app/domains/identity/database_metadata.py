@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 from typing import Callable
 
 from app.domains.identity.database_setup import LOGGING, VERSIONS
-from app.domains.identity.runtime_database import ROLE, TABLES
+from app.domains.identity.runtime_database import ROLE, RUNTIME_TABLES
 from app.domains.identity.temporary_challenges import Database
 
 MetadataValue = bool | int | list[str] | dict[str, bool]
@@ -84,8 +84,8 @@ def collect_database_metadata(
                 WHERE n.nspname='identity' AND c.relkind IN ('r','p')
             """)}
             result.checks["identity_table_count"] = len(tables)
-            result.checks["identity_table_inventory_matches"] = tables == TABLES
-            result.checks["missing_identity_tables"] = sorted(TABLES - tables)
+            result.checks["identity_table_inventory_matches"] = tables == RUNTIME_TABLES
+            result.checks["missing_identity_tables"] = sorted(RUNTIME_TABLES - tables)
             phase = "role collision"
             result.checks["identity_role_exists"] = (
                 c.execute("SELECT 1 FROM pg_roles WHERE rolname=%s", (ROLE,)).fetchone()

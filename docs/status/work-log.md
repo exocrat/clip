@@ -68,7 +68,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | MERGE-LI-SE | Suraj (integration); Listings/Search affected owners | done | PR #11 is squash-merged; Search–Listings local merge task is complete | Steps 1–9 performed; approved PR head `2a43066` merged to `main` as `e315c9d`; final hosted CI run `40204621122` passed | Steps 3–8 verified by Suraj; user authorized squash merge of the exact PR revision on 2026-10-25 | PR #11 `https://github.com/exocrat/clip/pull/11`; source head `2a430660d25e7c14cf33d84bd78172db4ec063c7`; squash merge `e315c9df3e0e11d6e9c8d7d244d676204d3af7e8`; hosted CI `40204621122`; local merge commit `29eb6fb`; fallback branch `safety/search-pr11-pre-main-reconciliation-20261025`; stash `af9d7f5`; local checks recorded below | No blocker for the Search–Listings merge. Final dataset, formal NFR/cloud checks, and real Identity/Conversations remain later work. | 2026-10-25 15:17:46 UTC |
 | CN-01 | Rahul (D) | in progress | PR17 integration merged; final CN-01/readiness/NFR obligations remain | Accepted main b09978e contains reviewed head3773931; hosted run40402518748 passed; prior local aggregate1930Python/403web and Conversations114 | Rahul verified local correction and confirmed PR merged; no additional milestone acceptance inferred | [PR17](https://github.com/exocrat/clip/pull/17), merge `b09978e91620ae3877a77c5bea8a4f12df7a8907`; [integration checkpoint](../evaluation/domain/conversations-integration.md) | Formal readiness/remaining device and security checks; CN-03 producer path and final NFR-05; full task acceptance pending | 2026-10-27 06:16:43 UTC |
 | CN-02 | Rahul (D); Aditya/Suraj review | in progress | Step11 local aggregate checks passed; obtain human verification, then complete real dependency/owner review gates | 1930 Python passed/153 skipped; 94 data; 433 web/3 skipped; build/types/lint, Black 296 files, mypy, contract generation (8 artifacts), boundaries, DB lifecycle PostgreSQL18.6, Conversations harness167, DB safety35, Gitleaks8.30.1 passed | Step10 verified; Step11 local result pending Rahul verification | `task/cn-02-offers-contact-sharing`; [checkpoint](../evaluation/domain/conversations-offers.md); [browser walkthrough](../environment/conversation-browser-test.md) | Formal CN-CORE/ID-READY/LI-CORE acceptance, affected-owner review and hosted CI remain required for full CN-02 acceptance; later real-session/deployment gates remain | 2026-10-27 15:15:10 UTC |
-| CN-03 | A; D producer review | in progress | Step 12: commit/push then run local quality gates | New unlisted-recipient image built and published but not deployed; ECS/EC2 stopped and RDS stopping | User approved build, ECR copy, stopping resources, commit/push and Step 12 | ECR `sha256:3faaeb2ebe160868d1e7b194e373051a1bde2fc5d84cef60959a028d3e8f3d00`; [cloud shutdown](../environment/cloud-inventory.md) | Confirm RDS stopped, commit/push, local/hosted checks; real unlisted-recipient integration, owner review and cost/retention gates remain | 2026-10-30 10:32:54 UTC |
+| CN-03 | A; D producer review | in progress | Step 12: local/hosted checks and CI drift fixes | First Python suite 2066 passed, 171 skipped, 7 failed; focused corrected checks 51 passed; remaining local gates running | User approved build, ECR copy, shutdown, commit/push and Step 12 | Draft [PR #21](https://github.com/exocrat/clip/pull/21); ECR `sha256:3faaeb2ebe160868d1e7b194e373051a1bde2fc5d84cef60959a028d3e8f3d00`; ECS/EC2/RDS stopped | Push fixes and rerun hosted CI; finish local gates, undeployed general-recipient real integration and owner review | 2026-10-30 10:42:39 UTC |
 | INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
 | EXP-01 | C; Suraj coordinates NEXT-01 design | done | NEXT-01 design and gates are approved; actual topology pricing and numeric cost endpoints are NEXT-07 pre-result gates. | Design Steps 1–9 performed; no experiment run | Suraj verified NEXT-01 Steps 1–9 on 2026-10-28. | [Approved design and gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md); [NEXT-07 execution plan](../tasks/remaining-project-plan.md#experiment-protocol-reference) | Implementation, final data/tools, actual account/spend, numeric cost endpoints, and separate run approvals remain before measurement. | 2026-10-28 06:24:24 UTC |
 | EXP-02 | C | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-01 | — |
@@ -299,6 +299,18 @@ retention/replay and content/secret redaction. The disposable PostgreSQL suite
 passed 183 tests; Black and diff checks passed. Sends used synthetic callbacks;
 real provider/runtime and browser/owner gates remain. Step 8 awaits verification.
 
+### CN-03 Step 12 quality gate corrections — 2026-10-30 10:42:39 UTC
+
+The first local Python run and hosted CI each reported seven failures: the
+Identity metadata checker still expected the historical table inventory, and
+the combined contract and count assertions omitted the two preference endpoints.
+Updated the checker to use the current runtime table set, documented both
+endpoints, and updated the expected generated-schema counts. The focused
+Identity/contract suite passed 51 tests. The initial complete Python run had
+2066 passed and 171 skipped; remaining local checks and refreshed hosted CI
+are pending. These corrections affect metadata/contract documentation and tests;
+the separately built image remains unchanged and undeployed.
+
 ### CN-03 image publication and non-destructive shutdown — 2026-10-30 10:32:54 UTC
 
 Built the user-requested AMD64 image from snapshot SHA-256
@@ -309,7 +321,7 @@ Aditya's subsequent request, published immutable ECR digest
 `sha256:3faaeb2ebe160868d1e7b194e373051a1bde2fc5d84cef60959a028d3e8f3d00`;
 registry configuration matches image ID `sha256:4bdd517be73f62595bbbdbebb01dbb606ab5badb16f844e5ab4706cc4ac3f7f2`.
 The image was not deployed. The API service and both EC2 instances stopped;
-RDS was stopping at this checkpoint. Suspended shared ASG processes to avoid
+RDS was verified stopped at 2026-10-30 10:34:06 UTC. Suspended shared ASG processes to avoid
 replacement/termination; later startup must deliberately resume them. Existing
 NAT, EIP, storage and monitoring remain and may accrue charges; nothing was
 deleted. Step 12 proceeds while the database finishes stopping.
