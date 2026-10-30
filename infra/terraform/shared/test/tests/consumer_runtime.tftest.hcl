@@ -32,15 +32,15 @@ run "defaults_add_no_conversations_secret" {
 run "explicit_consumers_use_exact_secret_and_bounded_capacity" {
   command = plan
   variables {
-    identity_runtime_enabled      = true
-    identity_test_recipients      = ["synthetic@example.invalid"]
-    conversations_runtime_enabled = true
-    notification_worker_enabled   = true
+    identity_runtime_enabled               = true
+    identity_test_recipients               = ["synthetic@example.invalid"]
+    conversations_runtime_enabled          = true
+    notification_worker_enabled            = true
     notification_allow_unlisted_recipients = true
-    notification_monitoring_enabled = true
-    hybrid_runtime_enabled        = true
-    api_task_cpu                  = 512
-    api_task_memory_mib           = 2048
+    notification_monitoring_enabled        = true
+    hybrid_runtime_enabled                 = true
+    api_task_cpu                           = 512
+    api_task_memory_mib                    = 2048
   }
   assert {
     condition     = jsondecode(aws_iam_role_policy.api_conversations_secret[0].policy).Statement[0].Resource == "arn:aws:ssm:ap-south-1:335523638354:parameter/clip/test/conversations/database-url" && jsondecode(aws_iam_role_policy.api_conversations_secret[0].policy).Statement[0].Action == ["ssm:GetParameters"]

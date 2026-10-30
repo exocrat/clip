@@ -22,6 +22,11 @@ switch allowing other eligible notification recipients; it is not yet deployed.
 For the next notification deployment, explicitly enable
 `notification_allow_unlisted_recipients` so the worker has no recipient
 allowlist, as Aditya directed on 2026-10-30. Rebuild and testing are deferred.
+The image published at digest
+`sha256:3faaeb2ebe160868d1e7b194e373051a1bde2fc5d84cef60959a028d3e8f3d00`
+contains that feature, but predates the later Identity database-metadata checker
+correction in the branch. It is not an exact image of the final branch; rebuild
+or explicitly review that difference before any deployment.
 Identity test email restrictions are separate. Production rejects injected provider/SSM
 test doubles. The notification worker defaults off; explicit local settings can
 start it only in the existing real Identity test profile with controlled
