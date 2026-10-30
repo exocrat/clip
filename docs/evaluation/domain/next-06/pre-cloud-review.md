@@ -7,12 +7,12 @@ Publication is authorized; independent peer/CI/cloud acceptance remains separate
 Owner: Mohit Mahapatra (C). Primary independent peer: Suraj (B), per the task
 index/roster. Identity and Listings owners review their record/permission/media
 assumptions. Use [the peer-review prompt](../../../prompts/peer-review-prompt.md);
-author/agent findings cannot replace human approval. No review request has been
-sent on Mohit's behalf.
+author/agent findings cannot replace human approval. Review requested from GitHub user `suraj-username` (the existing Listings PR author).
+The request is not human approval.
 
-## Published draft PR
+## Published PR
 
-[PR #22](https://github.com/exocrat/clip/pull/22) is open on the task branch. The
+[PR #22](https://github.com/exocrat/clip/pull/22) is open and ready for review on the task branch. The
 complete image/payload archive is included. Hosted CI and independent review
 remain the merge gate; the user has not authorized merging.
 
