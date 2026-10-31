@@ -1,5 +1,9 @@
 # NEXT-06 remaining integration and acceptance gates
 
+**Current status:** [Task-wide frozen release review](../task-wide-review.md) supersedes the old pending integration list below. Step3is complete on Mohit's report, Step4reconfirmed, Step5canonical labels verified, and Step6frozen outputs prepared. Remaining gates are human Step6verification, explicit commit/publication, current-headCI and independent review/authorized merge; no new Listings implementation or hosted deployment is assigned.
+
+**Scope correction:** [Ordered Step3 resumption](step-03-runtime-inspection-plan.md) supersedes this document's broad runtime/deployment handoff. A new hosted Hybrid deployment and2GiB allocation are not automatically NEXT-06 deliverables. Earlier dataset evidence remains valid within its recorded scope.
+
 The dataset-owned evidence checkpoint is human-verified. No further cloud action
 is authorized by that verification. Preserve the existing dataset, vectors and
 1,000 S3 images. Both EC2 and RDS were verified stopped at
@@ -30,3 +34,5 @@ restart. Retained storage and baseline resources can still incur charges.
 
 No message has been sent to another contributor. No deployment, resize, additional
 upload, deletion, database reset or scoring is part of this handoff.
+
+Current ordered checkpoint: Mohit reports the narrow Step3 normal listing/vector check was completed by someone else; [attribution](step-03-human-reported-completion.json). Our local operator run did not prove it and made no object writes. Step4actual pipeline evidence was rechecked locally without cloud calls; [recheck](step-04-ordered-recheck.json). Next is Step5canonical labels. Earlier broad deployment/ownership obligations do not reassign Listings to Mohit or automatically require hosted deployment for NEXT-06. Final readiness/source/labels/freeze acceptance remains separate.

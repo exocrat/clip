@@ -1,8 +1,8 @@
 {
   "task": "NEXT-06",
-  "state": "consolidated actual dataset evidence candidate; not final freeze or reviewed label file",
+  "state": "Frozen outputs verified; task-wide review prepared; awaiting human/CI/independent acceptance",
   "recorded_utc": "2026-10-31 10:18:45 UTC",
-  "final_freeze": false,
+  "final_freeze": true,
   "data_ready": false,
   "seed": 42,
   "generator_version": "reference-recipe-v2",
@@ -729,9 +729,12 @@
   "accepted_labels": {
     "queries": 22,
     "reviewer": "Mohit Mahapatra",
+    "reviewed_at": "2026-10-30T12:46:38.764302Z",
     "unchanged": true,
-    "check": "dataset-label-evidence-check.json",
-    "canonical_reviewed_file_not_populated": true
+    "canonical_file": "data/evaluation/query-labels.json",
+    "binding_manifest": "final-label-binding.json",
+    "checks": "step-05-final-labels-result.json",
+    "scoring_executed": false
   },
   "source_artifacts": {
     "archive": "data/transfer/next06-reference-20261030.tar.gz",
@@ -742,9 +745,9 @@
     "from": "2026-10-30T01:00:00.000000Z"
   },
   "pending": [
-    "Recorded accepted source/contract/domain-readiness and final label metadata binding; preserve actual/unknown timestamps",
-    "Owner-managed real normal app/auth/media/new-vector and deployed-runtime verification; no fake-context substitution",
-    "Final human/peer/source/freeze acceptance before DATA-READY or final scoring"
+    "Human Step6 verification",
+    "Current-head CI and independent human peer review",
+    "Explicit merge authorization and recorded accepted revision"
   ],
   "scope_note": "Canonical Step6 isolated reset/reload performed natively with real data/media/model; no additional destructive cloud rebuild is invented as a requirement. Real cloud load/vector publication already retained. HTTP native fixtures are not actual auth/S3/provider acceptance.",
   "cloud_native_rebuild_match": true,
@@ -753,5 +756,15 @@
     "verified_by": "Mohit Mahapatra",
     "recorded_utc": "2026-10-31 10:35:49 UTC",
     "evidence": "Proceed in response to snapshot result and verification request; intervening clarification confirmed images retained"
-  }
+  },
+  "step3_normal_workflow": {
+    "state": "complete_on_human_report",
+    "reported_by": "Mohit Mahapatra",
+    "receipt": "step-03-human-reported-completion.json",
+    "independently_reproduced_by_local_operator": false
+  },
+  "step4_ordered_recheck": "step-04-ordered-recheck.json",
+  "release_manifest": "docs/evaluation/domain/next-06/frozen-dataset.json",
+  "release_sha256": "fcb86edb0412f39cda77cf65be87a2e963783f95842f5080ec0456c0b64f21b4",
+  "dataset_source_accepted_by_owner": "a12f4a31cd5517cacbdbeda4180b971ed9dcba84"
 }

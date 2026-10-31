@@ -1,0 +1,115 @@
+{
+  "task": "NEXT-06 Step6",
+  "state": "Frozen outputs/task-wide review human-verified; commit/publication authorized; CI/peer/merge pending",
+  "recorded_utc": "2026-10-31 15:50:51 UTC",
+  "release": "docs/evaluation/domain/next-06/frozen-dataset.json",
+  "release_sha256": "fcb86edb0412f39cda77cf65be87a2e963783f95842f5080ec0456c0b64f21b4",
+  "source_revision": "a12f4a31cd5517cacbdbeda4180b971ed9dcba84",
+  "search_contract_revision": "6edb52ba4e5a148386cd81e78b29c15b557193c7",
+  "logical_data_fingerprint": "sha256:7efd142e11c3e8555e1aa08603cbf8dff07de5d74412ccde3c39869b9334ab98",
+  "counts": {
+    "users": 5000,
+    "listings": 1000,
+    "images": 1000,
+    "ready_generations": 1000,
+    "vector_parts": 2000,
+    "eligible_listings": 800,
+    "reviewed_queries": 22
+  },
+  "freeze_checks": {
+    "both_generated_records_identical": true,
+    "archive_members": 52,
+    "source_photos": 45,
+    "ledger_objects_verified": 1000,
+    "sql_commits": 1,
+    "real_native_reset_reload": true,
+    "cloud_native_vector_index_hashes_match": true,
+    "actual_pinned_model_files_match": true,
+    "canonical_labels_revalidated": true,
+    "existing_release_overwrite_refused": true
+  },
+  "validation": {
+    "data_evaluation": {
+      "passed": 453,
+      "skipped": 1,
+      "seconds": 19.8,
+      "warnings": "errors"
+    },
+    "web": {
+      "passed": 496,
+      "skipped": 3,
+      "test_files_passed": 45,
+      "test_files_skipped": 2,
+      "lint": "passed",
+      "types": "passed",
+      "build": "passed; pre-existing chunk-size warning"
+    },
+    "black": {
+      "files_unchanged": 355,
+      "sandbox_retry": "Initial multiprocessing listener blocked; exact read-only check rerun with approved escalation passed"
+    },
+    "contract_artifacts_current": 8,
+    "mypy_consumer_files": 2,
+    "boundary_violations": 0,
+    "ci_parity_checks": 12,
+    "full_Docker_API_database_suite": "not run locally; current-head hosted CI required",
+    "gitleaks": {
+      "version": "8.30.1",
+      "findings": 0,
+      "source_files": 1144
+    },
+    "whitespace": "passed"
+  },
+  "skip_provenance": {
+    "calibration": "Real PostgreSQL measurement requires database/tests/native-checks.sh --search-calibration; not NFRmeasurement here",
+    "web": [
+      "session-fetch-http.test.ts explicit shared-API boundary",
+      "wanted-native-http.test.ts explicit native UI/API boundary"
+    ]
+  },
+  "published_ci": {
+    "pr": 23,
+    "head": "a12f4a31cd5517cacbdbeda4180b971ed9dcba84",
+    "Foundation quality gates": "SUCCESS",
+    "run": "https://github.com/exocrat/clip/actions/runs/41193787819",
+    "reviews": [],
+    "covers_uncommitted_update": false
+  },
+  "human_reported_integration": "transfer/step-03-human-reported-completion.json",
+  "code_review_note": "Workflow failure path made Linux-portable and enforces review time cap before native/SDK work; current attempted cloud approval remains consumed",
+  "new_cloud_calls": 0,
+  "new_model_inference": 0,
+  "cloud_data_or_object_changes": 0,
+  "final_freeze": true,
+  "data_ready": false,
+  "scoring_executed": false,
+  "acceptance_pending": [
+    "Human Step6 verification",
+    "Current-head CI and independent human peer review",
+    "Explicit merge authorization and recorded accepted revision"
+  ],
+  "changed_code": [
+    {
+      "path": "scripts/evaluation/reference_release.py",
+      "purpose": "Exclusive immutable freeze/verification of real archive, ledger, data, model, labels and retained reproducibility evidence",
+      "sha256": "bd5d6162d6f69045f4c5ce2aa1756ab1856e6f5b585b2c2345e3201c9115b6cf"
+    },
+    {
+      "path": "data/tests/test_reference_release.py",
+      "purpose": "Synthetic tamper/traversal/ledger refusal controls; no cloud data",
+      "sha256": "5b83a87245f8137f117635e819efe6c9987d2b56fa5abd51f95e4dce55a0518f"
+    },
+    {
+      "path": "scripts/evaluation/reference_workflow_local.py",
+      "purpose": "Task-wide portability and reviewed-duration guard repair; no new live execution",
+      "sha256": "e9993b86a2e8d95623dca79a91baf2bff83168412b3c0106f4dcbefb916af1ba"
+    },
+    {
+      "path": "data/tests/test_reference_workflow_local.py",
+      "purpose": "Assert approval/time guards prevent any native or SDKwork, across OS platforms",
+      "sha256": "b193aaeabbeb7d19bbc08344ec1eb67c00a1c0902501fe1295ad1cecceecef18"
+    }
+  ],
+  "closeout_recorded_utc": "2026-10-31T15:58:08.209824+00:00",
+  "human_verification": "step-06-human-verification.json"
+}

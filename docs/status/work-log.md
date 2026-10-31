@@ -1,5 +1,185 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### NEXT-06 Step6 immutable release and task-wide review — 2026-10-31 15:50:51 UTC
+
+Mohit verified Step5 and directed Step6. Created `reference_release.py` and
+frozen-dataset.json: exact seed42/sourcea12f4a3/contract6edb52b/schema29/fingerprint
+7efd142e/label77442ab3/model/pipeline/index bindings. Reconstructed both actual
+payloads (identical records), verified all52archive members/45photos and original
+1000planned+1000GET-verified object mappings/oneSQLcommit. Real native reset/reload
+and actual cloud/native snapshots reused only after matching source/data/model
+bindings; no extra destructive cloud rebuild or regeneration. Frozen output
+revalidates; second freeze refuses without changing its byte hash. Human/peer/
+CIacceptance is separate from immutable content freeze; DATA-READY stays false.
+
+Task-wide review maps all six canonical steps and relevant agent/human checklist
+items. Step3 closure remains Mohit's report of another executor, not fabricated
+local proof; our five-minute attempt's0writes/stopped/incomplete receipt retained.
+No additional hosted/RAM/Listings feature requirement added. Current PRpackage
+rewritten around final data outputs and replacement of PR23after commit approval.
+New verifier/tests reject archive/ledger tampering. During review, fixed old local
+operator's approval-before-Mac-path ordering and enforced reviewed duration before
+native/SDKwork; failure-path tests assert calls never occur. No product/domain/
+contract/migration source change and no cloud/provider/inference/SQL/object write.
+
+453data/evaluation tests pass19.80s with1dedicated DBcalibration skip;496web pass/
+3explicit live-boundary skips, lint/types/build pass; existing chunk-size warning.
+Black355files passes after sandbox-only multiprocessing retry, contracts8current,
+consumer mypy2files/boundaries0/CIparity12pass. Full DockerAPI/DBsuite not claimed
+locally; PR23a12f4a3hostedCIpasses but does not cover uncommitted update; no reviews.
+[Task-wide review](../evaluation/domain/next-06/task-wide-review.md) and
+[freeze checks](../evaluation/domain/next-06/transfer/step-06-freeze-result.json)
+retain exact evidence and final secret-scan closeout. Await human Step6verification
+and explicit concrete commit; later current-headCI/independent peer/authorized
+merge gates remain. No commit/push/PRreplacement/merge in this increment.
+
+### NEXT-06 Step5 canonical reviewed labels bound — 2026-10-31 15:22:59 UTC
+
+Mohit verified Step4 and directed Step5. Explicitly selected recorded judgment
+acceptance2026-10-30T12:46:38.764302Z as reviewed_at and published dataset source
+a12f4a3/merged contract6edb52b. Earlier inspection time remains unknown; no invented
+review time, source approval, upstream peer review or NFRscore. Read-only GitHub
+inspection confirms PR19/20merged with successful Foundation gates; reviews list
+empty; existing reported manual owner acceptance retained, not negated/inferred.
+
+Created `data/evaluation/query-labels.json` with22reviewed included judgments,
+all query IDs/order/context/relevant IDs/policy byte-logically unchanged. Added
+`reference_labels.py` independent actual-data adapter: reconstruct inputs/photos,
+verify producer/judgment/draft/public-contract committed bytes, real load/vector/
+rebuild receipts, all800eligible IDs and exact label metadata; fixed output write
+is exclusive, later validate changes nothing. Actual binding manifest is separate
+from original generated-unloaded input manifest, whose truthful flags stay intact.
+Initial adapter refused before writing because it wrongly required temporary
+activated_at for regular owners; corrected to actual regular eligibility and
+added regression. No domain/schema/data/ranking change. `search.py` changes are
+documentation only; old test asserting final labels must not exist now checks the
+unchanged draft status. Docs/commands explain the real adapter and remaining gate.
+
+Actual write/revalidation passes; existing-output attempt refuses with hashes
+unchanged.445data/evaluation tests pass10.18s with warnings errors,1DBcalibration
+measurement skipped explicitly; Black4changed Python files/boundaries0/diff pass.
+Secret-scan closeout retained in [Step5 result](../evaluation/domain/next-06/transfer/step-05-final-labels-result.json).
+No AWS/provider/SQL/inference/scoring, corpus regeneration, commit/push/PRreplace
+or Step6execution. Canonical reviewed labels are not DATA-READY; next formal
+freeze/task-wide checks and independent human acceptance remain. Await result
+verification before Step6.
+
+### NEXT-06 Step3 human-reported completion; ordered Step4 recheck — 2026-10-31 15:02:24 UTC
+
+Mohit directed marking the check done because someone else completed it. Recorded
+Step3 normal listing/vector check complete on his report; executor/revision/raw
+external receipt were not supplied and are not invented. Our separate five-minute
+operator run ended incomplete:0users/listings/images in its private target,
+0object-write attempts;5metadata calls only. Native cluster stopped (pg_ctlstatus3),
+frontend process exited and both loopback listeners absent. Preserve raw receipt/
+approved review/executed text sources; consumed authorization, no automatic rerun.
+Reference RDSdata and1000S3objects were not changed by our run.
+
+Continued in order to Step4: locally reconciled actual production prepare/queue/
+worker/activation receipts and stopped cloud/native snapshot.1000current ready
+sources/2000parts, no missing/stale/pending/leased/failed/invalid/conflicting state,
+six unique-visible keyword/Hybridcases; current pinned pipeline and relevant
+source/model/interpreter hashes unchanged. No new AWS/inference or fresh cloud
+state claim. [Step3 attribution](../evaluation/domain/next-06/transfer/step-03-human-reported-completion.json),
+[operator closeout](../evaluation/domain/next-06/transfer/step-03-local-window-20261031/result.json),
+[Step4 recheck](../evaluation/domain/next-06/transfer/step-04-ordered-recheck.json).
+Next Step5canonical labels remains unmodified; DATA-READY/freeze/peer and broader
+readiness acceptance remain pending. No code change/commit/push/PRreplacement in
+this increment. Whitespace check passes; prior315data checks remain relevant.
+
+### NEXT-06 Step3 narrowed to automatic Search vector integration — 2026-10-31 13:46:08 UTC
+
+Mohit verified narrowing after clarifying Listings ownership. No Listings feature/
+product UI change: new operator `reference_search_operator.py`/HTMLautomates public
+APIupload/confirm/create/edit only to verify current Searchvectors before/after.
+User only performs normal real sign-in/Handle setup and starts the check. Existing
+Identity/S3owner evidence retained within its scope; no fabricated caller/session/
+provider assertion or replacement of pending real integration with mock output.
+Original manual Listings walkthrough is superseded by this scoped plan.
+
+Actual fresh native startup passes with real roles/SCRAM/model/worker, exact
+operator photo/HTML200, normal API401without session/private-session-table denial;
+owned cluster stopped. Offline Node driver completed and its generated create/edit
+bodies pass actual public contract validators; mocked HTTPclearly not live evidence.
+Added operator boundary/control tests and offline actual SDKpresign compatibility;315data
+tests pass9.43s; formatting/boundaries/client contract checks pass. Full checks and source hashes recorded in
+[preparation result](../evaluation/domain/next-06/transfer/step-03-search-vector-preparation-result.json).
+Operator consumes only genuine API-issued S3URLs through serialized fixed-host/run-key
+HTTPStransfers (onePUT/twoGETs), hashes every download, forbids redirects/proxies/
+arbitrary bodies and needs no bucketCORSchange. Narrowed hard limits to
+oneimage/onecreate/oneedit; read-only source approval gate
+refuses before SDKconstruction. No cloud/provider calls in preparation.
+
+[Exact live plan](../evaluation/domain/next-06/transfer/step-03-search-vector-plan.md)
+needs separate S3/provider approval: five metadata reads plus one run-prefix image,
+real Microsoft sign-in, new private local SQL/model only; no RDS/EC2start or shared
+DB/policy/CORS/IAM/deployment mutation. Preserve1000referenceobjects/data. Step3
+still awaits actual workflow execution and human verification. No later step,
+commit/push/PRreplacement performed; DATA-READY false.
+
+### NEXT-06 Step3 real local application window prepared — 2026-10-31 13:28:45 UTC
+
+Mohit verified runtime metadata result with next. Prepared new owned native
+clip_test_identity target/restricted actual SCRAMroles and real Identity/model/
+worker composition in `reference_workflow_local.py`, without RDS/EC2changes.
+Uses existing public auth/cookie/CSRF/Microsoftvalidator and production app/store/
+S3adapter; no seeded account/fake signer/copied caller. Two preparation failures
+were adapter tuple-row mismatches; both clusters stopped/no AWS. Fixed adapter
+row_factory only; final actual native startup384dim query/worker/private-session
+access denial passes and cluster stopped. Live success flags remain false.
+
+Prepared bounded Microsoft-only browser/S3window: six exact metadata calls,
+existinglocalhostCORSrequired/no policy edit, new run prefix/two10MiBintents,
+onecreate/twoedits/300HTTP/40SDK/30min limits, safe aggregate source/HTTPwitnesses
+and stopped-native cleanup; no SSMsecret or cloud DBread/write/start/deployment.
+[Exact plan](../evaluation/domain/next-06/transfer/step-03-workflow-live-plan.md)
+requires separate explicit live approval and actual human sign-in/photo check.
+Existingreference1,000objects/rows untouched. No later task step advanced.
+
+Repository-only locked frontend dependencies restored (offline cache missing one
+package, authorized registry retry succeeded); no global installs. Real-signin
+frontend typecheck/build pass (existing chunk-size warning). Focused control tests
+and full data/format/boundary/secret checks retained in preparation result.
+No cloud calls or real provider requests in this increment, no publication.
+
+### NEXT-06 Step3 real runtime metadata inspected — 2026-10-31 13:13:12 UTC
+
+Mohit approved exact bounded inspection with next. Source bindings checked;
+non-root335523638354/mohitmahapa1/ap-south-1 verified. All10metadata operations
+succeeded,0secret values/SQL/mutations/resource starts/provider or application
+requests. Current ECSservice desired/running/pending0,task11realIdentityenabled,
+S3configured,Hybridsearch/workerdisabled,256CPU/512MiB. All five exact Identity/
+Listings/Conversations SecureString references present; values and database-role
+validity were not inspected. Private PG18.6 and existing t3.micro both stopped.
+
+[Actual aggregate result](../evaluation/domain/next-06/transfer/step-03-runtime-inspection-result.json)
+retained. No runtime deployment/capacity change follows automatically. Await
+human verification, then prepare exact normal real app/session/create/edit/image/
+automatic-vector checkpoint using existing source and Mac model where suitable;
+separate resource-start/secret-read/mutation/provider permissions still required.
+Step3 remains incomplete; no later labels/freeze step advanced. No code changes
+in execution;285tests/secret-scan preparation retained; whitespace check passes.
+
+### NEXT-06 ordered Step3 resumption and scope correction — 2026-10-31 13:05:39 UTC
+
+Mohit directed completing remaining work in order after disputing earlier staged
+approval/completion/ownership claims. Resume earliest incomplete Step3; retain
+later outputs without treating them as completion. Step2conditional conversation/
+mutation fixtures belong to owning NFRworkloads under approved dataset design;
+no extra bulk records required by current browse/search corpus. Corrected broad
+claim that a new hostedHybriddeployment/RAMupgrade is automatically a NEXT06step:
+normal app workflow needs real evidence; hosting choice is supporting execution,
+2GiB is a configured guard, not measured requirement. Identity owner has recorded
+real sign-in/S3upload/display; hybrid_tested=false remains a genuine missing check.
+
+Added fixed read-only `reference_runtime_inspection.py` and four controls proving
+exact identity-first refusal,10operation metadata-only scope, suppressed private
+fields and no pagination/approval bypass. Tests4pass0.09s; boundaries0; formatting/
+whitespace pass; no AWS calls. [Exact inspection plan/review](../evaluation/domain/next-06/transfer/step-03-runtime-inspection-plan.md)
+is prepared for separate cloud approval. No later step execution, deployment,
+secret read, commit/push/PRreplacement or resource change in this increment.
+Full data and secret-scan closeout retained with preparation checks.
+
 ### NEXT-06 current cloud-evidence PR package prepared — 2026-10-31 10:38:36 UTC
 
 Mohit requested continued work after dataset checkpoint verification. Refreshed
@@ -881,7 +1061,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | NEXT-01 | Suraj — requested planning coordinator; C retains EXP-01 ownership | done | Design and task-wide review verified; NEXT-02 is next. | Steps 1–9 performed | Steps 1–9 verified | Planning baseline `c869f33`; [design and approved gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md#next-01-step-8--proposed-changes-to-measurement-gates); [NEXT-07 references](../tasks/remaining-project-plan.md#experiment-protocol-reference) | No blocker for the design handoff. Real implementations, data, tools, cost anchors, project AWS identity/spend and run approvals remain NEXT-07 prerequisites. | 2026-10-28 06:24:24 UTC |
 | NEXT-02 | Suraj — planning coordinator | done | Evaluation and documentation cleanup completed; test/fixture and app/infrastructure audits found no safe deletions. | Cleanup review and checks complete; its changes are included in the current commit. NEXT-02 itself changed no executable test or application code. | User accepted the cleanup and directed committing the combined changes on 2026-10-28. | `task/integrated-marketplace-rollout`; [NEXT-02 cleanup criteria](../tasks/remaining-project-plan.md); [command index](../environment/commands.md) | No cleanup blocker; documentation references and `git diff --check` passed. No tests/app checks, AWS actions, or paid runs for NEXT-02. | 2026-10-28 09:26:47 UTC |
 | NEXT-03 | Suraj — planning coordinator | in progress | NEXT-03 batch committed at `6700cb2`; no-commit integration with `origin/main` (`a60c83f`) reconciled. Post-integration pinned `make check` passes; pre-PR diff/package review complete. | 2,019 Python passed/156 skipped; 94 data; 496 web passed/3 skipped; 169 Conversations; 35 database safety; PostgreSQL 18.6 migration lifecycle; Black, boundaries, contracts, mypy, web lint/types/build, Gitleaks all passed. | Suraj confirms the complete NEXT-03 visual walkthrough is done. | `task/integrated-marketplace-rollout`; [walkthrough](../tasks/next-03-step-10-visual-checklist.md), [implementation/check report](../tasks/next-03-visual-feedback-implementation-report.md), [PR draft](../tasks/next-03-pr-package.md) | Shared migration and participant-view grant need separate exact review/approval; hosted DNS/HTTPS, Hybrid and general-recipient Identity email remain deployment gates. Affected-owner and independent peer review remain pending. | 2026-10-29 12:31:12 UTC |
-| NEXT-06 | Mohit (C), Search/data; domain owners review records | in progress | Current cloud-evidence PR update prepared; explicit commit approval next; owner integration remains pending | Actual cloud source,1000generations/2000parts and65indexes match native;281tests;secret scan0 | Mohit verified cloud snapshot; dataset evidence first; deployment stays with owner | [Verified candidate](../evaluation/domain/next-06/transfer/dataset-evidence-candidate.json); [remaining gates](../evaluation/domain/next-06/transfer/remaining-integration-gates.md) | Actual app/auth/media/new-vector/deployed runtime; accepted source/domain readiness, final label metadata/freeze/peer; DATA-READY incomplete | 2026-10-31 10:35:49 UTC |
+| NEXT-06 | Mohit (C), Search/data; domain owners review records | in progress | Step6 human-verified; commit/publication approved; replacement PR/current-head CI/peer next | All six output groups represented;453data/evaluation +496web pass; full new-head CI/peer gates pending | Steps5/6 verified by Mohit; exact commit/publication approved; Step3 external completion human-reported | [Frozen release](../evaluation/domain/next-06/frozen-dataset.json); [task-wide review](../evaluation/domain/next-06/task-wide-review.md); [checks](../evaluation/domain/next-06/transfer/step-06-freeze-result.json) | Current-head CI/independent review/authorized merge before formal DATA-READY | 2026-10-31 15:50:51 UTC |
 | BOOT-00 | B / Suraj (initial contributor) | done | Local documentation seed verified; publication pushed and verified | performed | verified | Current `origin/main` verified at `cfbf9352c03302990e6ffda09521f0a5450572d7`; includes seed `7fb9bfed79b45614a17de1bf2f9c50dbb3981b3f` and publication record | None | 2026-10-15 07:18 UTC |
 | PD-00 | Kickoff owner — Suraj (B) | done | Steps 1–6 complete; task-wide closeout reviewed | performed | verified | `task/pre-domain-foundation` at base `cfbf9352c03302990e6ffda09521f0a5450572d7`; work-log task table, initial inventory, Document 4 comparison, and `git diff --check` | None | 2026-10-16 07:02 UTC |
 | PD-01 | Kickoff owner — Suraj (B) | done | Steps 1–8 and task-wide acceptance review complete; published handoff confirmed | performed | verified | `docs/architecture/foundation-traceability.md`; handoff `d29c02b` is in remote `main` at `4754e97fdaf4284e84062a926eb1864fab745036`, confirmed by `git ls-remote` | None | 2026-10-17 06:26:36 UTC |

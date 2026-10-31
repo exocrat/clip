@@ -1,0 +1,60 @@
+{
+  "task": "NEXT-06 Step4",
+  "state": "retained_actual_pipeline_evidence_reconfirmed",
+  "recorded_utc": "2026-10-31 15:02:24 UTC",
+  "verification_mode": "Read-only local evidence and current relevant source/artifact hash comparison; no new cloud query or inference",
+  "production_receipt": "vector-production-20261031/result.json",
+  "cloud_snapshot_receipt": "dataset-snapshot-20261031/result.json",
+  "current_pipeline_id": "4b43fc307151933bf5b0fa80ff4e10f8cb4266194905cd2b15a3d01b2386d9ca",
+  "coverage": {
+    "pipeline_id": "4b43fc307151933bf5b0fa80ff4e10f8cb4266194905cd2b15a3d01b2386d9ca",
+    "state": "serving",
+    "encoding_matches": true,
+    "conflicting_serving": false,
+    "live": 1000,
+    "ready": 1000,
+    "missing": 0,
+    "stale": 0,
+    "pending": 0,
+    "leased": 0,
+    "failed": 0,
+    "invalid_parts": 0
+  },
+  "parts": [
+    {
+      "part_kind": "description",
+      "count": 1000
+    },
+    {
+      "part_kind": "title",
+      "count": 1000
+    }
+  ],
+  "source_projection_unchanged": true,
+  "representative_query_cases": 6,
+  "native_cloud_vector_index_match": true,
+  "unchanged_relevant_bindings": [
+    "apps/api/app/domains/listings/embedding_pipeline.json",
+    "apps/api/app/domains/listings/search_vocabulary.json",
+    "apps/api/app/domains/listings/embedding_client.py",
+    "apps/api/app/domains/listings/embedding_bootstrap.py",
+    "apps/api/app/domains/listings/embedding_dispatch.py",
+    "apps/api/app/domains/listings/embedding_worker.py",
+    "apps/api/app/domains/listings/embedding_protocol.py",
+    "apps/api/app/domains/listings/embedding_store.py",
+    "apps/api/app/domains/listings/embedding_helper.py",
+    "apps/api/app/domains/listings/embedding_types.py",
+    "apps/api/app/domains/listings/hybrid_read.py",
+    "apps/api/app/domains/listings/lexical_expansion.py",
+    "apps/api/app/domains/listings/typo_tolerance.py",
+    "apps/api/app/domains/listings/vocabulary.py",
+    "apps/api/app/domains/listings/browse_validation.py",
+    ".tools/semantic/venv/bin/python",
+    ".tools/semantic/model/onnx/model.onnx",
+    ".tools/semantic/model/tokenizer.json"
+  ],
+  "cloud_calls_this_recheck": 0,
+  "inference_calls_this_recheck": 0,
+  "notes": "Receipts prove their recorded windows. External check executor/receipt/target not supplied; no fresh live snapshot or later shared state is inferred.",
+  "data_ready": false
+}

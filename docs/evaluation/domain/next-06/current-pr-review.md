@@ -1,63 +1,44 @@
-# NEXT-06 current PR update — actual cloud dataset evidence
+# NEXT-06 completed-output PR replacement package
 
-This update supersedes the pre-cloud publication summary for the uncommitted
-increment. Mohit explicitly requested local branch `images` and authorized committing the
-prepared update. PR22 still points to the old remote branch until a separately
-approved publication action resolves the renamed head. Push and merge are not
-authorized by this local rename/commit.
+Branch **images**; current published head a12f4a3. PR23remains open at that old
+head, CIpassed/no GitHub reviews. Mohit requested replacement after remaining
+NEXT-06work; this package now contains the frozen output and task-wide review.
+Current uncommitted changes await Step6verification and explicit commit approval.
+Publication/replacement is requested; merge remains separately gated.
 
-## Proposed PR title and description
+## Proposed title
 
-**Load and verify the reference dataset, images and serving search vectors**
+**Freeze verified reference dataset, real images and reviewed search labels**
 
-Generate reproducible5,000-user/1,000-listing data with real images. Add guarded
-account-specific operator tooling and retain actual S3/RDS load, serving vector
-publication and read-only cloud/native rebuild comparison receipts. The live
-reference data and1,000images remain retained; owned compute/access is stopped.
+## Proposed description
 
-Current local checks:281data tests passed; Black50data/evaluation files unchanged;
-Python domain boundaries0; previous actual native schema/permissions/SCRAM/model/
-media/reset/reload checks and actual cloud receipts retained. Final secret scan
-and file manifest accompany this package. Full current-head CI is pending publication;
-Docker/Linux aggregate checks are not claimed locally. No global installs.
+Completes NEXT-06's reference-data outputs:5,000regular synthetic users,
+1,000listings with1,000real-image S3objects,1,000serving embedding generations/
+2,000parts,22unchanged human-reviewed query judgments, and an immutable
+source/data/label/model/index release manifest. Both deterministic payloads,
+all52transfer archive members and actual S3load ledger agree with the frozen
+corpus; real isolated reset/reload and cloud/native vector/index hashes match.
 
-DATA-READY remains incomplete. Owner-managed real auth/media/create-edit/new-vector
-and deployedLinuxruntime checks, accepted source/readiness/final label metadata,
-independent human review and final freeze remain gates. No deployment, additional
-cloud action or merge is authorized by publishing these receipts.
+Normal create/edit vector integration is complete on Mohit's report that another
+executor performed it. Our separately recorded five-minute local attempt did not
+complete the workflow and created no object/listing; it is never substituted for
+that external result. Its tool is retained with consumed approval/time/account/
+private-target/key guards for reproducibility. No Listings product feature or
+shared frontend changes are included.
 
-## New or changed executable code
+Validation:453data/evaluation tests passed/1dedicated calibration measurement
+skipped;496web tests passed/3explicit live-boundary skips; frontend lint/types/
+build, Black355files,8contract artifacts, consumer types, boundaries and CIparity
+pass. New-head full CI remains required; Dockeraggregate is not claimed locally.
+Source/label/archive/ledger/model/rebuild/overwrite and pinned secret-scan evidence
+are included. The unchanged45photo/payload archive remains available in Git.
 
-| File | Behavior and relationship |
-|---|---|
-| data/generators/reference_login.py | Bridges the explicit AWS browser-login profile to SDK credentials in memory; bounded CLI export, safe failure diagnostics, no secret output. Actual account/role checks remain with callers. |
-| data/generators/reference_cloud.py | Uses that login bridge and verifies AES256 on downloaded image objects as well as exact bytes/type/hash. |
-| scripts/evaluation/reference_db_inventory.py | Fixed-resource bounded inventory, private connection/source/session checks and aggregate evidence; no arbitrary database target. |
-| scripts/evaluation/reference_admin_inventory.py | Read-only private administrative schema/role inventory without widening application permissions. |
-| scripts/evaluation/reference_database_setup.py | Create-only isolated29migration target and inactive restricted roles; refuses existing target/adoption. |
-| scripts/evaluation/reference_load_access.py | Fixed-target admin guards, ephemeral loader activation/revocation, owned listener validation, storage safety and bounded load outcomes. |
-| scripts/evaluation/reference_setup_local.py | Fresh Unix-only native database/permission/SCRAM rehearsal with optional real vector checks and owned shutdown. |
-| scripts/evaluation/reference_vector_access.py | Dedicated fresh producer with narrow grants/column-only lock rights and OID-bound password clearing; app/loader remain inactive. |
-| scripts/evaluation/reference_vector_pipeline.py | Runs real pinned supported embedding operator/worker and production query diagnostics; preserves source projection and bounded outcome evidence. |
-| scripts/evaluation/reference_vector_local.py | Native permission/negative mutation checks around the real producer/model pipeline. |
-| scripts/evaluation/reference_freeze_snapshot.py | SELECT-only stable vector/index fingerprint; excludes random generation/audit fields and returns no raw coordinates or source text. |
-| scripts/evaluation/reference_local.py | Checks that reader against actual native reset/reload snapshots. |
-| data/tests/test_reference*.py additions | Failure/privilege/authentication/storage/budget/cleanup controls for the new helpers; native/cloud receipts provide real integration evidence beyond doubles. |
+No data regeneration, cloud reset/deployment/policy change or image deletion in
+freeze closeout. Stored images/data/vectors remain retained; no cloud compute
+started by the local check or release verifier. This PRaccepts no NFRscore,
+hosted performance or whole-project completion. Formal DATA-READY requires the
+recorded human Step6acceptance/current-head CI/independent review/authorized merge.
 
-Proposed/executed controllers under transfer are exact scoped operator artifacts,
-not general runtime CLIs. Executed create/load/vector windows are consumed and
-must not be replayed against the populated target. Tool binaries, credentials,
-local clusters and caches remain outside publication. Hash references bind local
-tools; the existing approved photo/payload transfer archive remains unchanged.
-
-## Independent review
-
-Primary peer Suraj(B), with Identity/Listings affected-owner review. Use
-[the peer-review prompt](../../../prompts/peer-review-prompt.md). Review target,
-source/schema guards, ephemeral privilege lifecycle, no-retry/partial-failure
-receipts, cleanup, preservation of judgments and explicit pending integration.
-AI preparation is not human peer approval. Exact commit/push and later exact
-reviewed merge remain separately approved under CONTRIBUTING.md.
-
-[Verified candidate](transfer/dataset-evidence-candidate.json) and
-[remaining gates](transfer/remaining-integration-gates.md) are the current handoff.
+See task-wide-review.md, frozen-dataset.json and transfer/step-06-freeze-result.json.
+Replaces PR23after publication. Arrange independent Suraj/affected-owner review
+using docs/prompts/peer-review-prompt.md; author/agent checks are not peer approval.

@@ -67,3 +67,5 @@ Only account335523638354 is permitted. This bundle does not authorize deployment
 or accept real Identity/S3/IAM/worker/source-contract/final-freeze gates. Both
 matched measurements must finish before2026-12-01T00:00Z. Source changes require
 review/revalidation; don't relabel queries to improve scores.
+
+The archive remains byte-for-byte unchanged after final label/freeze preparation. Current Git now additionally supplies canonical `data/evaluation/query-labels.json`, `docs/evaluation/domain/next-06/frozen-dataset.json` and the release/label verification tools; use them together with this archive. Source/model/index/label bindings and exact remaining acceptance gates are in the [task-wide review](../../docs/evaluation/domain/next-06/task-wide-review.md). No new image download/upload or cloud reset is required merely to verify the retained release.

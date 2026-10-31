@@ -15,8 +15,9 @@ document here for every task.
 - Active task procedures: [domain](tasks/domain-task-list.md) and
   [final closeout](tasks/final-closeout-task-list.md). BOOT-00 and PRE-00 are
   complete; see the task index and work log for their accepted status.
-- [NEXT-06 pre-cloud review package](evaluation/domain/next-06/pre-cloud-review.md) —
-  local adapter implementation, PR description, peer-review focus and check status.
+- [NEXT-06 frozen dataset review](evaluation/domain/next-06/task-wide-review.md) —
+  actual data/image/vector/label/rebuild evidence, provenance and final acceptance gates.
+  The [pre-cloud package](evaluation/domain/next-06/pre-cloud-review.md) is historical.
 - [NEXT-06 dataset cloud handoff](evaluation/domain/next-06/cloud-handoff.md) —
   verified local inputs, external photo transfer, cloud adapter/integration gates
   and account335523638354-only restriction.

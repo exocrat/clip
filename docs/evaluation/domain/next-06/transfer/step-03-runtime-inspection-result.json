@@ -1,0 +1,80 @@
+{
+  "task": "NEXT-06 Step3",
+  "state": "metadata_inspected",
+  "recorded_utc": "2026-10-31T13:12:45.387571+00:00",
+  "account": "335523638354",
+  "profile": "mohitmahapa1",
+  "region": "ap-south-1",
+  "api_calls": 10,
+  "secret_values_read": 0,
+  "mutations": 0,
+  "service": {
+    "taskDefinition": "arn:aws:ecs:ap-south-1:335523638354:task-definition/clip-test-api-ap-south-1-pd16:11",
+    "desiredCount": 0,
+    "runningCount": 0,
+    "pendingCount": 0
+  },
+  "task_configuration": {
+    "cpu": "256",
+    "memory": "512",
+    "containers": [
+      {
+        "name": "api",
+        "image": "335523638354.dkr.ecr.ap-south-1.amazonaws.com/clip-shared-test-api@sha256:97482cb4fb697eee230e66d134c165e557dac7d71a165e6034c88747f1738245",
+        "flags": {
+          "CLIP_STORAGE_PROVIDER": "s3",
+          "CLIP_ENVIRONMENT": "test",
+          "CLIP_IDENTITY_RUNTIME_ENABLED": "true",
+          "CLIP_HYBRID_SEARCH_ENABLED": "false",
+          "CLIP_HYBRID_WORKER_ENABLED": "false"
+        },
+        "secret_setting_names": [
+          "CLIP_DATABASE_DSN",
+          "CLIP_DATABASE_URL"
+        ]
+      }
+    ]
+  },
+  "hosts": [
+    {
+      "id": "i-086045c48487471de",
+      "type": "t3.micro",
+      "state": "stopped"
+    }
+  ],
+  "databases": [
+    {
+      "id": "clip-shared-test-postgres",
+      "state": "stopped",
+      "engine": "18.6",
+      "public": false
+    }
+  ],
+  "parameter_metadata": [
+    {
+      "name": "/clip/test/identity/authentication-keys",
+      "present": true,
+      "type": "SecureString"
+    },
+    {
+      "name": "/clip/test/identity/database-url",
+      "present": true,
+      "type": "SecureString"
+    },
+    {
+      "name": "/clip/test/identity/email-delivery",
+      "present": true,
+      "type": "SecureString"
+    },
+    {
+      "name": "/clip/test/listings-database-url",
+      "present": true,
+      "type": "SecureString"
+    },
+    {
+      "name": "/clip/test/conversations/database-url",
+      "present": true,
+      "type": "SecureString"
+    }
+  ]
+}

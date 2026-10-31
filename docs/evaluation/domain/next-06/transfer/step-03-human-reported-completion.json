@@ -1,0 +1,12 @@
+{
+  "task": "NEXT-06 Step3 normal listing/vector integration check",
+  "state": "complete_on_human_report",
+  "recorded_utc": "2026-10-31 15:02:24 UTC",
+  "reported_by": "Mohit Mahapatra",
+  "human_statement": "Mark the check as done and proceed. Someone else did it.",
+  "executor": "not identified in report",
+  "external_receipt_or_revision": null,
+  "provenance": "Human-reported completion by another person; not independently reproduced or evidenced by our local window. Do not attribute the external check to the local operator run.",
+  "local_operator_closeout": "step-03-local-window-20261031/result.json",
+  "scope": "The remaining normal application listing/vector integration check; not final DATA-READY, full domain acceptance or hosted NFRs."
+}

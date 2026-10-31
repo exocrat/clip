@@ -1,0 +1,25 @@
+{
+  "recorded_utc": "2026-10-31 15:14:27 UTC",
+  "source": "Live read-only GitHub PR metadata",
+  "pull_requests": [
+    {
+      "number": 19,
+      "state": "MERGED",
+      "merged_at": "2026-10-29T05:58:18Z",
+      "merge_commit": "a60c83f21f285ec0d32d72108035c9d159194b24",
+      "head": "7d1e56b719c481d92d2e67d15f80686a57609544",
+      "reviews": [],
+      "Foundation quality gates": "SUCCESS"
+    },
+    {
+      "number": 20,
+      "state": "MERGED",
+      "merged_at": "2026-10-29T13:05:35Z",
+      "merge_commit": "6edb52ba4e5a148386cd81e78b29c15b557193c7",
+      "head": "fba9f339c6e3cf32a87d790fe02c4dfd2b43e96d",
+      "reviews": [],
+      "Foundation quality gates": "SUCCESS"
+    }
+  ],
+  "interpretation": "Merged/check-passing source evidence, not invented independent human peer approval. Existing reported manual owner acceptance retained separately."
+}

@@ -1,5 +1,7 @@
 # Deterministic synthetic-data tooling
 
+**Current NEXT-06:** [Frozen dataset and task-wide review](../docs/evaluation/domain/next-06/task-wide-review.md), with22canonical reviewed queries. Older preparation sections below retain their historical context. Formal human/current-headCI/peer acceptance remains separate.
+
 ## SE-01 isolated schema-shaped corpus
 
 `data.generators.search_preview` reuses PD-09 IDs, hashing and private named-run
@@ -336,3 +338,11 @@ approval. STS uses standard SigV4 while S3 retains S3SigV4. The approved preflig
 verified this bridge with a real project STS request and retained only identity
 metadata, not credential output. See the latest preflight evidence under
 `docs/evaluation/domain/next-06/transfer/` for route/permission observations.
+
+### NEXT-06 current Step5 canonical labels
+
+`data/evaluation/query-labels.json` now contains22unchanged Mohit-reviewed cases, all included, bound to the actual7efd142e corpus, a12f4a3dataset source and6edb52bpublic contracts. Mohit explicitly chose the recorded acceptance timestamp as reviewed_at. Revalidate locally with `.venv/bin/python -m scripts.evaluation.reference_labels validate --image-root /absolute/path/to/clip-dataset-images`; original/restored payload/photos and full accepted Git objects are required. The command reconstructs actual inputs, committed source and recorded cloud/rebuild bindings without network/inference/scoring. `write` refuses existing output. Historical drafts/proposals and old1ffa78freeze candidates remain historical; Step6formal freeze/DATA-READY and final scoring are separate.
+
+### NEXT-06 Step6 frozen release
+
+[The immutable frozen manifest](../docs/evaluation/domain/next-06/frozen-dataset.json) now binds actual5,000users/1,000listings/images,2,000vector parts and22reviewed labels. Verify with `reference_release validate` as indexed in the command registry. Both generated record sets,52archive members/45photos, load ledger, pinned model and real reset/cloud-native hashes match. Step3normal workflow completion is explicitly human-reported from another executor. No data/labels regenerated or cloud objects deleted. [Task-wide review](../docs/evaluation/domain/next-06/task-wide-review.md) lists source/provenance/checks and human/CI/peer/merge acceptance still needed for formal DATA-READY.

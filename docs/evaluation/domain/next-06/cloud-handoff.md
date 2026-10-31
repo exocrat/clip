@@ -1,5 +1,7 @@
 # NEXT-06 dataset cloud handoff
 
+**Current checkpoint:** [Frozen release/task-wide review](task-wide-review.md). All six output/check groups are represented; Step3normal vector check is human-reported complete. Formal Step6human/current-headCI/peer/merge acceptance remains. Earlier broad hosted-runtime handoff statements are historical and do not create new NEXT-06implementation work.
+
 Prepared for the contributor/operator who will load Mohit Mahapatra's reference
 dataset into the shared project environment. This document is a procedure and
 handoff, **not approval to deploy, start resources, upload, grant access or reset
@@ -316,3 +318,5 @@ Current dataset-evidence checkpoint: [plan and owner handoff](transfer/dataset-e
 Actual read-only cloud/native comparison: [receipt and executed sources](transfer/dataset-snapshot-20261031/result.json). Current source projection,1000generations/2000parts and65index hashes match the fresh native rebuild. All dataset roles inactive; SQL/tunnel/session closed and both EC2/RDS verified stopped. No data/role/object changes or deployment. Candidate now includes actual cloud hashes; original owner integration and final acceptance gates remain open.
 
 Mohit verified the actual cloud/native snapshot checkpoint. [Remaining owner and final-acceptance gates](transfer/remaining-integration-gates.md) give the next evidence needed; preserve existing S3images/RDSdata and leave deployment with its owner. Current dataset candidate records human verification; final DATA-READY remains false.
+
+Current ordered status: Step3normal vector check is complete on Mohit's report of another executor; our local attempt remained incomplete/no objects. Step4actual pipeline evidence was reconfirmed. Step5now supplies [canonical reviewed label bindings](transfer/step-05-final-labels-result.json):22unchanged included judgments, exact source/contract and user-chosen recorded review time. Step6formal freeze/task-wide review remains next; DATA-READY false. Broad historical deployment/ownership statements do not add a hosted deployment requirement to this dataset task.

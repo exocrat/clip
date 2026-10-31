@@ -1,5 +1,7 @@
 # NEXT-06 dataset evidence first — labels, reproducibility and remaining owner gates
 
+**Scope correction:** [Ordered Step3 resumption](step-03-runtime-inspection-plan.md) supersedes this document's broad runtime/deployment handoff. A new hosted Hybrid deployment and2GiB allocation are not automatically NEXT-06 deliverables. Earlier dataset evidence remains valid within its recorded scope.
+
 The human selected “Finish dataset evidence first.” Hosted app/auth/media and
 Linuxruntime deployment remain with the deployment/domain owners. This plan
 finishes dataset-owned evidence without changing that selection or calling a

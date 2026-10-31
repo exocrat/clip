@@ -73,7 +73,7 @@ def test_reviewed_binding_and_draft():
         (evaluator.ROOT / "data/evaluation/query-labels.template.json").read_text()
     )
     assert evaluator.validate_labels(document) == ()
-    assert not (evaluator.ROOT / "data/evaluation/query-labels.json").exists()
+    assert document["status"] == "draft"
 
 
 def test_synthetic_review_requires_trusted_binding(reviewed):

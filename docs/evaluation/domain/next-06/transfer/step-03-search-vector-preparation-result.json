@@ -1,0 +1,35 @@
+{
+  "task": "NEXT-06 Step3 narrowed Search vector integration preparation",
+  "recorded_utc": "2026-10-31T14:01:14.733997+00:00",
+  "state": "prepared; actual live integration/human verification pending",
+  "native_receipt": "step-03-search-operator-native-final.json",
+  "native_cluster_stopped": true,
+  "real_model_worker_startup": "passed;384dimensions",
+  "operator_HTTP": 200,
+  "normal_API_anonymous_status": 401,
+  "private_session_table_denied": true,
+  "full_data_tests": {
+    "passed": 315,
+    "seconds": 9.43,
+    "warnings": "errors"
+  },
+  "focused_policy_tests": {
+    "passed": 30,
+    "seconds": 0.5
+  },
+  "black_files_unchanged": 4,
+  "boundary_violations": 0,
+  "offline_driver": "Completed with explicit mocked HTTP; actual public create/edit DTOvalidators accepted bodies; no live result inferred",
+  "SDK_presign_compatibility": "Actual pinned SDKshape tested offline with synthetic credentials; global/regional exact bucket hosts accepted",
+  "gitleaks": {
+    "version": "8.30.1",
+    "findings": 0,
+    "source_files": 1123
+  },
+  "bound_files": 146,
+  "cloud_provider_calls_this_increment": 0,
+  "reference_data_changed": false,
+  "Listings_product_source_changed": false,
+  "later_steps_advanced": false,
+  "data_ready": false
+}
