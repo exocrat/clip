@@ -188,7 +188,7 @@ class IdentityCleanup:
         """
         cutoff = now - timedelta(days=30)
         terminal = "LEAST(revoked_at,CASE WHEN account_class='temporary' THEN expires_at END)<=%s"
-        pending = "(profile_removed_at IS NULL OR display_name IS NOT NULL OR EXISTS(SELECT 1 FROM identity.contacts c WHERE c.user_id=u.id))"
+        pending = "(profile_removed_at IS NULL OR display_name IS NOT NULL OR EXISTS(SELECT 1 FROM identity.contacts c WHERE c.user_id=u.id) OR EXISTS(SELECT 1 FROM identity.notification_destinations n WHERE n.user_id=u.id))"
         with self._connect() as c:
             self._fresh(c)
             with c.transaction():
@@ -197,7 +197,7 @@ class IdentityCleanup:
                     f"SELECT id FROM identity.users u WHERE {terminal} AND {pending} ORDER BY id LIMIT %s",
                     (cutoff, batch_size),
                 ).fetchall()
-        counts = {"contacts": 0, "profiles": 0}
+        counts = {"contacts": 0, "profiles": 0, "notification_destinations": 0}
         for (user,) in candidates:
             with self._connect() as c:
                 self._fresh(c)
@@ -210,6 +210,13 @@ class IdentityCleanup:
                     if row is None:
                         continue
                     if not apply:
+                        counts["notification_destinations"] += int(
+                            c.execute(
+                                "SELECT 1 FROM identity.notification_destinations WHERE user_id=%s",
+                                (user,),
+                            ).fetchone()
+                            is not None
+                        )
                         counts["contacts"] += int(
                             c.execute(
                                 "SELECT 1 FROM identity.contacts WHERE user_id=%s",
@@ -222,6 +229,13 @@ class IdentityCleanup:
                     counts["contacts"] += int(
                         c.execute(
                             "DELETE FROM identity.contacts WHERE user_id=%s RETURNING user_id",
+                            (user,),
+                        ).fetchone()
+                        is not None
+                    )
+                    counts["notification_destinations"] += int(
+                        c.execute(
+                            "DELETE FROM identity.notification_destinations WHERE user_id=%s RETURNING user_id",
                             (user,),
                         ).fetchone()
                         is not None

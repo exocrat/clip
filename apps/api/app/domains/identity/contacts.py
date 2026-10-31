@@ -21,6 +21,7 @@ from psycopg.errors import UniqueViolation
 from app.contracts.domain_types import (
     ContactField,
     ContactSharingContext,
+    ConversationEmailPreference,
     OwnContacts,
     ProfilePatch,
     ProfileView,
@@ -162,6 +163,28 @@ class PostgresContacts:
         with self._own(caller, Capability.MANAGE_OWN_CONTACTS) as (c, row, now):
             email, phone, upi = self._values(c, caller.user_id)
             return OwnContacts(email=email, phone=phone, upi_id=upi)
+
+    def read_conversation_email_preference(
+        self, caller: CallerContext
+    ) -> ConversationEmailPreference:
+        """Read the authenticated account's current conversation-email setting."""
+        with self._own(caller, Capability.MANAGE_OWN_PROFILE) as (c, row, now):
+            value = c.execute(
+                "SELECT conversation_email_enabled FROM identity.users WHERE id=%s",
+                (caller.user_id,),
+            ).fetchone()
+            return ConversationEmailPreference(enabled=value[0])
+
+    def set_conversation_email_preference(
+        self, caller: CallerContext, preference: ConversationEmailPreference
+    ) -> ConversationEmailPreference:
+        """Change only the caller's setting under the same fresh account lock."""
+        with self._own(caller, Capability.MANAGE_OWN_PROFILE) as (c, row, now):
+            c.execute(
+                "UPDATE identity.users SET conversation_email_enabled=%s WHERE id=%s",
+                (preference.enabled, caller.user_id),
+            )
+            return preference
 
     def set_contact(
         self, caller: CallerContext, kind: ContactField, value: str

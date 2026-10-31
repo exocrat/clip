@@ -1,0 +1,43 @@
+{
+  "status": "revised for user instruction: preserve resources; exact approval required",
+  "account": "335523638354",
+  "region": "ap-south-1",
+  "profile": "adityalaxmi1",
+  "source_revision": "b95a7a50ecf8f9015dfe89f33f9d1d3b5ccfb12b",
+  "purpose": "Read-only migration ledger, required schema and effective privilege metadata to prepare a reviewed upgrade; no table contents or credentials logged",
+  "resources": {
+    "existing_asg": "clip-shared-test-ecs-host",
+    "launch_template": "lt-0327bb81cb3269f0b:3",
+    "instance_type": "t3.micro",
+    "subnet": "subnet-0c9df7ababd0154bc",
+    "security_group": "sg-0a3c8d683731470b4",
+    "database": "clip-shared-test-postgres",
+    "database_class": "db.t4g.micro",
+    "api_desired": 0,
+    "maximum_hosts": 1,
+    "host_access": "SSM port forwarding only; no public ingress"
+  },
+  "deadline_utc": "2026-10-30T10:30:00Z",
+  "stop_new_work_utc": "2026-10-30T10:10:00Z",
+  "startup_abort_minutes": 20,
+  "spend_stop_usd": 3,
+  "cost_note": "Stop threshold, not a hard cap. AWS price list on 2026-10-30: t3.micro 0.0112 USD/hour and single-AZ PostgreSQL db.t4g.micro 0.021 USD/hour; under two hours of both compute is approximately 0.0644 USD excluding existing NAT, storage, backup, traffic, EBS, taxes and other usage. Host and RDS continue to incur charges after the deadline until the user approves shutdown; no automatic hard cost cap exists.",
+  "actions": [
+    "Confirm no scheduled action will scale in or terminate the host; preserve existing resources",
+    "Start the retained RDS and scale the existing ASG to one private host; change only that host's T3 credits to standard if necessary",
+    "Use SSM remote-host port forwarding and verify database target and TLS; read only the existing master credential into process memory",
+    "Read migration ledger and catalog/role privileges under a read-only transaction; collect only sanitized counts, versions, and missing/excess privilege categories",
+    "Keep host and database running for separately approved subsequent work; at deadline or spend threshold stop new work and request user direction",
+    "Do not scale in, terminate, delete, stop, or otherwise shut down resources without the user's subsequent explicit approval"
+  ],
+  "excluded": [
+    "SQL mutation",
+    "secret rotation or publication",
+    "image builds or pushes",
+    "provider email",
+    "new ingress",
+    "new NAT or database",
+    "changes to other owners' resources"
+  ],
+  "approval": "Explicit approval of this revised action plan and SHA-256 is required before starting cloud resources. No automatic termination or shutdown will be installed; cleanup requires separate user approval."
+}

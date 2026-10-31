@@ -1,0 +1,6 @@
+-- Proposed additive read access for Conversations' public participant view.
+-- Requires affected-owner review and explicit approval before shared execution.
+-- Schema USAGE exposes object names; SELECT on this view permits enumeration of
+-- public handles/account classes. It grants no access to identity.users.
+GRANT USAGE ON SCHEMA identity TO clip_test_conversations_app;
+GRANT SELECT ON identity.participant_profiles TO clip_test_conversations_app;

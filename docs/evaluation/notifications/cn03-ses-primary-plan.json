@@ -1,0 +1,19 @@
+{
+  "status": "proposed; explicit approval required",
+  "account": "335523638354",
+  "region": "ap-south-1",
+  "profile": "adityalaxmi1",
+  "parameter": "/clip/test/identity/email-delivery",
+  "expected_parameter_version": 1,
+  "expected_type": "SecureString",
+  "kms_key": "alias/aws/ssm",
+  "expected_current_primary": "resend",
+  "new_primary": "ses",
+  "helper": "scripts/cn03_ses_primary.py",
+  "helper_sha256": "860116f01b339a5575c033ce0fcdd8e81340c9086d0f63613fa5646a37964450",
+  "action": "Read the existing parameter in memory, validate its exact format and version twice, update only primary from resend to ses while preserving the Resend key, then verify version 2 and unchanged remaining fields. Submit secret-bearing input via an anonymous memory descriptor. Never print or persist its value.",
+  "effect": "The shared route is used by both notification emails and Identity verification/reset emails. SES becomes primary and Resend stays fallback. Existing verified domain and production SES access were observed. Existing provider caches refresh on their existing schedule, up to four hours.",
+  "safety": "The helper refuses a changed version or unexpected content. SSM does not offer atomic compare-and-swap here; the second read narrows but does not eliminate concurrent-change risk. Stop and investigate any ambiguous write or unexpected result; no automatic retry or key rotation.",
+  "resource_preservation": "Leave all existing host, database and other resources running. No API deployment, email send, DNS change, resource destruction, key rotation or other parameter write is authorized.",
+  "approval": "Explicit approval of this exact plan SHA-256 is required for the SSM parameter write."
+}

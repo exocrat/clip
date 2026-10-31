@@ -34,6 +34,10 @@ from app.domains.identity.temporary_challenges import (
     VerifiedOtp,
 )
 from app.domains.identity.temporary_crypto import TemporaryKeys, normalize_login
+from app.domains.identity.notification_address import (
+    NotificationAddressCipher,
+    NotificationRecipientResolver,
+)
 from app.domains.identity.temporary_passwords import TemporaryPasswords
 
 ABSOLUTE = timedelta(days=7)
@@ -117,6 +121,14 @@ class IdentitySessions:
         self._activation = TemporaryActivation(self.challenges)
         self._passwords = TemporaryPasswords()
         self._dummy = self._passwords.hash(SecretStr(secrets.token_urlsafe(32)))
+
+    def notification_recipient_resolver(
+        self, permit: object
+    ) -> NotificationRecipientResolver:
+        """Provide the worker's narrow Identity port without exposing connections or keys."""
+        return NotificationRecipientResolver(
+            self._connect, self._clock, self._keys, permit
+        )
 
     @contextmanager
     def transaction(self) -> Iterator[Database]:
@@ -238,6 +250,7 @@ class IdentitySessions:
                     row[4] if eligible and row is not None else self._dummy, password
                 )
                 if eligible and valid and row is not None:
+                    NotificationAddressCipher(self._keys).save_in(c, row[0], email)
                     return self._issue(c, row[0], as_utc(self._clock()))
                 failures = prior[1] + 1 if prior is not None and now < prior[0] else 1
                 expires = (
@@ -413,6 +426,9 @@ class IdentitySessions:
             if row is None or row[2] is not None or not row[0] <= now < row[1]:
                 raise PublicError(ERRORS[401])
             account = PostgresMicrosoftAccounts.get_or_create_in(c, identity)
+            NotificationAddressCipher(self._keys).save_in(
+                c, account.user_id, identity.email
+            )
             grant = self._issue(c, account.user_id, now)
             c.execute(
                 "UPDATE identity.microsoft_login_attempts SET consumed_at=%s WHERE token_digest=%s",

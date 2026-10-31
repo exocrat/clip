@@ -331,7 +331,7 @@ def test_actual_api_schema_matches_generated_contract():
         for operation in path.values()
         if isinstance(operation, dict) and "operationId" in operation
     }
-    assert len(contract_operation_ids) == 58
+    assert len(contract_operation_ids) == 60
     assert {
         "identity_start_microsoft_login_attempt",
         "identity_read_csrf_token",
@@ -374,7 +374,7 @@ def test_schema_build_does_not_import_real_application(monkeypatch):
     monkeypatch.setitem(sys.modules, "app.main", None)
     health, domains = generator.load_sources()
     schema = generator.declared_schema(health, domains)
-    assert len(schema["paths"]) == 49
+    assert len(schema["paths"]) == 50
     assert "/auth/microsoft/login-attempts" in schema["paths"]
     assert "/auth/csrf" in schema["paths"]
 

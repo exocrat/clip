@@ -255,7 +255,7 @@ def main():
         actual = sql(
             "SELECT version FROM public.schema_migrations ORDER BY version"
         ).splitlines()
-        if not expected or actual != expected or actual[-1] != "20261029043000":
+        if not expected or actual != expected or actual[-1] != "20261029182500":
             raise RuntimeError("Migration history differs from the expected head")
         migrate()
         for filename in (
@@ -270,6 +270,11 @@ def main():
             sql((ROOT / "database/tests" / filename).read_text())
         # Exercise the Handle forward against retained legacy names, not just an
         # empty install. Down/reapply must preserve names and stable account IDs.
+        migrate(rollback=True)
+        migrate(
+            rollback=True
+        )  # Step past the newer notification-destination migration.
+        migrate(rollback=True)
         migrate(rollback=True)
         sql("""
             INSERT INTO identity.users(id,account_class,status,display_name) VALUES
@@ -301,6 +306,9 @@ def main():
             ):
                 raise RuntimeError("Handle migration changed retained names or IDs")
             if not repeat:
+                migrate(rollback=True)
+                migrate(rollback=True)
+                migrate(rollback=True)
                 migrate(rollback=True)
                 migrate()
         sql("""
@@ -338,9 +346,9 @@ def main():
             sql(
                 "SELECT count(*) FROM pg_tables WHERE schemaname IN ('identity','listings','search','conversations')"
             )
-            != "40"
+            != "41"
         ):
-            raise RuntimeError("Expected 40 domain tables")
+            raise RuntimeError("Expected 41 domain tables")
         # Keep the native harness's merged schema inventory tied to actual SQL,
         # rather than treating textual conflict resolution as platform evidence.
         functions = sql(

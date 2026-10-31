@@ -30,6 +30,8 @@ COMPOSITION_IMPORTS: dict[str, frozenset[str]] = {
             "app.domains.conversations.routes",
             "app.domains.conversations.routes.router",
             "app.domains.conversations.routes.create_public_provider",
+            "app.domains.conversations.notifications.runtime",
+            "app.domains.conversations.notifications.runtime.notification_runtime",
             "app.domains.identity.http",
             "app.domains.identity.http.IdentityHttpDependencies",
             "app.domains.identity.http.install_identity_http",

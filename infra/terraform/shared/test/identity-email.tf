@@ -38,7 +38,7 @@ resource "aws_iam_role_policy" "api_identity_email" {
         ])
         Condition = {
           StringEquals = {
-            "ses:FromAddress" = "verify@clip-iisc.site"
+            "ses:FromAddress" = ["verify@clip-iisc.site", "updates@clip-iisc.site"]
           }
         }
       },

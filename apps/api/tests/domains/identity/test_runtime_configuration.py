@@ -87,6 +87,12 @@ def app_role(disposable_database):
             )
         )
         proposal = (ROOT / "database/roles/identity-runtime.sql.proposed").read_text()
+        proposal += (
+            "\n"
+            + (
+                ROOT / "database/roles/identity-notification-runtime.sql.proposed"
+            ).read_text()
+        )
         c.execute(proposal)
         info = c.info
         dsn = (
@@ -243,6 +249,8 @@ def test_actual_role_denies_ddl_other_data_and_guard_mutations(runtime_case, sta
     "change",
     [
         "REVOKE UPDATE ON identity.users FROM clip_test_identity_app",
+        "REVOKE SELECT ON identity.notification_destinations FROM clip_test_identity_app",
+        "GRANT TRUNCATE ON identity.notification_destinations TO clip_test_identity_app",
         "GRANT TRUNCATE ON identity.contacts TO clip_test_identity_app",
         "GRANT DELETE ON identity.temporary_enrollments TO clip_test_identity_app",
         "GRANT USAGE ON SCHEMA listings TO clip_test_identity_app; GRANT SELECT ON listings.sale_listings TO clip_test_identity_app",

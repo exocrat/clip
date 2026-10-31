@@ -1,0 +1,13 @@
+-- Local review proposal only. Provisioning, scheduling, and shared execution
+-- require a separately approved role, credentials, target, and cleanup plan.
+-- PostgreSQL row locks require UPDATE on at least one column of each table.
+-- These column grants also permit changes to those key columns; review that
+-- residual capability before deployment and never give this role to the API.
+-- DELETE is table-wide: SQL privileges alone do not enforce the cleanup cutoff.
+-- Only reviewed, trusted operator code may use this role.
+GRANT USAGE ON SCHEMA conversations TO clip_test_notification_retention;
+GRANT SELECT ON conversations.threads, conversations.members,
+    conversations.notification_intents TO clip_test_notification_retention;
+GRANT UPDATE (id) ON conversations.threads TO clip_test_notification_retention;
+GRANT UPDATE (conversation_id) ON conversations.members TO clip_test_notification_retention;
+GRANT UPDATE (id), DELETE ON conversations.notification_intents TO clip_test_notification_retention;

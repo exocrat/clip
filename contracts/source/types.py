@@ -282,10 +282,16 @@ class AccountEligibility(ContractModel):
 
 
 class NotificationRecipient(ContractModel):
-    """Ephemeral verified delivery address resolved for the worker only."""
+    """Ephemeral authorized login destination resolved for the worker only."""
 
     recipient_id: UserId
     email: str = Field(repr=False)
+
+
+class ConversationEmailPreference(ContractModel):
+    """Own-account setting for both conversation email events."""
+
+    enabled: bool = Field(strict=True)
 
 
 class Category(ContractModel):
@@ -1266,7 +1272,7 @@ class NotificationClaim(ContractModel):
     intent_id: UUID
     conversation_id: ConversationId
     recipient_id: UserId
-    event_kind: Literal["unread_message"]
+    event_kind: Literal["new_conversation", "unread_reminder"]
     due_at: UtcInstant
     target_sequence: int | None = Field(default=None, ge=1)
     fencing_token: UUID
@@ -1300,7 +1306,13 @@ class NotificationAttemptResult(ContractModel):
 
     intent_id: UUID
     fencing_token: UUID
-    outcome: Literal["delivered", "transient_failure", "terminal_failure", "ambiguous"]
+    outcome: Literal[
+        "delivered",
+        "transient_failure",
+        "terminal_failure",
+        "ambiguous",
+        "preference_suppressed",
+    ]
     attempted_at: UtcInstant
 
 

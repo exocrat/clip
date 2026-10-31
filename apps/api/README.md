@@ -52,7 +52,10 @@ The API reads these values from the process environment at startup:
 | `CLIP_ENVIRONMENT` | `local`, `test`, or `production`; default `local` | Rejects unsupported or empty values. This labels configuration mode, not deployment readiness. |
 | `CLIP_DEBUG` | Boolean; default `false` | Controls FastAPI debug responses; production rejects `true`. Invalid or empty boolean values fail startup. |
 | `CLIP_IDENTITY_PROVIDER` | `disabled`, `fake`, or `microsoft`; default `disabled` | `microsoft` permits private local/test validator construction; production rejects this incomplete integration and all fake auth. No sign-in route/session is installed. |
-| `CLIP_EMAIL_PROVIDER` | `disabled`, `fake`, or `ses`; default `disabled` | Explicit local/test helper selection; production rejects `fake`. No email is sent or claimed delivered. |
+| `CLIP_EMAIL_PROVIDER` | `disabled`, `fake`, `ses`, or `dual`; default `disabled` | Explicit provider selection; the notification worker requires controlled test-mode `dual`. |
+| `CLIP_NOTIFICATION_WORKER_ENABLED` | Boolean; default `false` | Explicitly starts one notification poller only with the real hosted Identity test runtime and controlled recipients. Production is not enabled. |
+| `CLIP_NOTIFICATION_BATCH_SIZE` | Integer 1–50; default `20` | Maximum claimed jobs per serial worker batch. |
+| `CLIP_NOTIFICATION_POLL_SECONDS` | Integer 1–3600; default `60` | Delay between completed batches. Provider attempts remain capped at five per intent. |
 | `CLIP_STORAGE_PROVIDER` | `disabled`, `fake`, or `s3`; default `disabled` | `s3` selects the real private S3 adapter; `fake` is reserved for explicit test helpers and is rejected in production. |
 | `CLIP_IMAGE_BUCKET` | Optional bucket name; default unset | Required with `CLIP_STORAGE_PROVIDER=s3`. It names the private bucket and is not a credential. |
 | `CLIP_IMAGE_REGION` | Optional AWS region; default unset | Required with `CLIP_STORAGE_PROVIDER=s3`; the S3 adapter uses the normal AWS credential provider chain (task role in ECS, selected profile locally). |

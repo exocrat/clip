@@ -4,6 +4,7 @@ import type { OwnContacts } from '../../../../../contracts/generated/types.gen';
 import { Button } from '../../shared/ui';
 import { identityApi, IdentityError, safeError, type ContactKind } from './api';
 import { useIdentity } from './session';
+import { ConversationEmailPreference } from './ConversationEmailPreference';
 import './identity.css';
 
 const fields = [
@@ -181,6 +182,7 @@ function OwnedContactsEditor({ onUnauthorized }: { onUnauthorized: () => void })
 
   return (
     <section aria-label="Own contact editor" className="identity-contacts">
+      <ConversationEmailPreference onUnauthorized={onUnauthorized} />
       {import.meta.env.DEV && import.meta.env.MODE === 'identity-preview' && (
         <p role="note" className="identity-preview">
           Local test preview. Use synthetic contact details only.

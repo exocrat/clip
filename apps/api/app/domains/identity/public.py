@@ -18,6 +18,7 @@ from app.contracts.domain_types import (
     MicrosoftLoginAttempt,
     CsrfToken,
     NotificationRecipient,
+    ConversationEmailPreference,
     NotificationWorkerContext,
     OwnContacts,
     PasswordResetChallengeRequest,
@@ -123,6 +124,19 @@ HTTP_OPERATIONS = (
         "path": "/me/contacts",
         "operation_id": "identity_read_own_contacts",
         "response": OwnContacts,
+    },
+    {
+        "method": "GET",
+        "path": "/me/conversation-email-preference",
+        "operation_id": "identity_read_conversation_email_preference",
+        "response": ConversationEmailPreference,
+    },
+    {
+        "method": "PUT",
+        "path": "/me/conversation-email-preference",
+        "operation_id": "identity_set_conversation_email_preference",
+        "body": ConversationEmailPreference,
+        "response": ConversationEmailPreference,
     },
     {
         "method": "PUT",

@@ -1,8 +1,9 @@
 # Coordinated database migrations
 
 **Current planning branch:** 21 previously published migrations, two prior
-forward corrections and the NEXT-03 catalogue/search/amount migrations: 29 migrations,
-head `20261029043000`, 40 domain tables, 36 functions and 46 triggers. All 22
+forward corrections, NEXT-03 catalogue/search/amount migrations and CN-03's
+encrypted Identity destination, delivery-state and preference migrations: 32
+migrations, head `20261029182500`, 41 domain tables, 36 functions and 46 triggers. All 22
 previously published SQL files are unchanged. Older isolated
 Identity/Listings sections below retain selected historical context; old PR10
 deferral/counts do not describe this combined checkout. See the [current work-log
@@ -79,6 +80,9 @@ was changed. [Tool rationale](../docs/decisions/database-migration-tool.md).
 | `20261028120000_sale_original_price_and_marketplace_amount_cap.sql` | Add optional seller-stated Original price and enforce the ₹1 crore cap on listing prices and Wanted budgets. |
 | `20261028181500_private_buyer_selection.sql` | Decouple private seller buyer-tracking from availability, including tracking on unavailable non-retired records. |
 | `20261029043000_unique_handles_and_participant_projection.sql` | Stage required case-insensitive unique Handle claims without rewriting legacy names; expose the safe Identity participant view. |
+| `20261029133500_identity_notification_destinations.sql` | Identity-owned encrypted login destinations; no plaintext addresses in notification intents. |
+| `20261029134500_notification_delivery_state.sql` | Bounded retry timing, dispatch reservation and fenced outcome replay state. |
+| `20261029182500_identity_notification_preference.sql` | Default-on account preference and fenced preference suppression outcome. |
 
 Four superseded branch-only SQL files are preserved byte-for-byte in
 [`archived/cn-01-pre-main`](archived/cn-01-pre-main/README.md), outside the executable
@@ -86,7 +90,7 @@ chain. A target containing any archived version requires a separately reviewed
 upgrade plan; do not apply this fresh-chain procedure to it. The current Identity
 runner pins an unreviewed 23-file candidate and rejects an expanded chain; prior
 evidence also records a 17-file live package whose separate owner review remains
-open. This branch contains 29 SQL migrations. Neither candidate nor local checks
+open. This branch contains 32 SQL migrations. Neither candidate nor local checks
 authorize a shared apply; prepare and review an exact target/package before any
 database operation.
 
@@ -94,7 +98,7 @@ The optional-pickup forward migration is under Listings writer scope; affected
 consumer/schema review and exact shared-database apply remain pending. Local
 isolated checks do not authorize shared/Compose/cloud migration.
 
-Expected planning-branch migration version: **20261029043000**. One integrator allocates
+Expected planning-branch migration version: **20261029182500**. One integrator allocates
 later timestamp identifiers; no parallel heads or uncoordinated edits to initial
 DDL. Published/applied migrations are corrected forward, not rewritten.
 
@@ -179,7 +183,7 @@ password and are visible to administrators of the local Docker engine.
 | `bash database/local-db.sh start` | Validate local context/configuration/resource ownership, create/start only PostgreSQL, then wait for authenticated TCP `SELECT 1`. Exit 0 means connectivity, not migrations. |
 | `bash database/local-db.sh wait` | Up to 30 authenticated connection attempts with a 2-second connection timeout and 2-second pauses; nonzero on timeout/absent container. Final sanitized connection diagnostic is retained. |
 | `bash database/local-db.sh migrate` | Wait for connectivity, then run pinned dbmate 2.36.0 `migrate` with strict ordering and no schema dump. Applies pending migrations only to `clip_local`. Nonzero aborts; inspect sanitized output before recovery. |
-| `bash database/local-db.sh status` | Wait for connectivity and show dbmate migration status. A successful listing can still contain pending migrations; compare to expected branch head `20261029043000`, not merely process exit status. |
+| `bash database/local-db.sh status` | Wait for connectivity and show dbmate migration status. A successful listing can still contain pending migrations; compare to expected branch head `20261029182500`, not merely process exit status. |
 | `bash database/local-db.sh stop` | Stop only the validated service container, retaining its container and named data volume. An absent container is a successful no-op. |
 | `bash database/local-db.sh reset --confirm-delete-local-data` | **Permanently delete all local database data.** Warn, validate labels/clone/image/port/mount, stop/remove only the service container, then remove only `clip-local_clip_local_postgres_data`, without force. Leaves the database stopped. Explicitly review/approve this destructive invocation before using it; then run `start` and `migrate` to recreate. |
 | `bash database/local-db.sh --help` | Show fixed usage without password/Docker setup. |

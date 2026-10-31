@@ -100,6 +100,8 @@ resource "aws_ecs_task_definition" "api" {
       { name = "CLIP_IMAGE_KEY_PREFIX", value = "id01" },
       { name = "CLIP_HYBRID_SEARCH_ENABLED", value = tostring(var.hybrid_runtime_enabled) },
       { name = "CLIP_HYBRID_WORKER_ENABLED", value = tostring(var.hybrid_runtime_enabled) },
+      { name = "CLIP_NOTIFICATION_WORKER_ENABLED", value = tostring(var.notification_worker_enabled) },
+      { name = "CLIP_NOTIFICATION_ALLOW_UNLISTED_RECIPIENTS", value = tostring(var.notification_allow_unlisted_recipients) },
     ] : [])
     secrets = concat(var.identity_runtime_enabled ? [{
       name      = "CLIP_DATABASE_URL"
@@ -142,6 +144,14 @@ resource "aws_ecs_task_definition" "api" {
     precondition {
       condition     = (!var.conversations_runtime_enabled && !var.hybrid_runtime_enabled) || var.identity_runtime_enabled
       error_message = "Consumer runtime options require the real Identity profile; fake auth is not an integration path."
+    }
+    precondition {
+      condition     = !var.notification_worker_enabled || (var.identity_runtime_enabled && var.conversations_runtime_enabled)
+      error_message = "The notification worker requires the real Identity profile and dedicated Conversations connection."
+    }
+    precondition {
+      condition     = !var.notification_allow_unlisted_recipients || var.notification_worker_enabled
+      error_message = "Unlisted notification recipients require the explicitly enabled worker."
     }
     precondition {
       condition     = !var.hybrid_runtime_enabled || (var.api_task_memory_mib >= 2048 && var.api_task_cpu >= 512)

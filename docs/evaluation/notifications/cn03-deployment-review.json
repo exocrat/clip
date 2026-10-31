@@ -1,0 +1,26 @@
+{
+  "status": "proposed; exact saved-plan approval pending",
+  "account": "335523638354",
+  "region": "ap-south-1",
+  "profile": "adityalaxmi1",
+  "terraform_root": "infra/terraform/shared/test",
+  "state_key": "shared/test/terraform.tfstate",
+  "terraform_version": "1.15.9",
+  "private_saved_plan": "/tmp/clip-cn03-deploy-plan-lif39d34/deploy.tfplan",
+  "saved_plan_sha256": "064570783b10a48b9cc1fb673b24e36abe86a55a4fa0cacc7996e56c1b0a2e49",
+  "source_revision": "b95a7a50ecf8f9015dfe89f33f9d1d3b5ccfb12b plus local base.tf scale-in protection change",
+  "image_digest": "sha256:97482cb4fb697eee230e66d134c165e557dac7d71a165e6034c88747f1738245",
+  "actions": {
+    "new_monitoring": "Four fixed-code CloudWatch log metric filters, four actionless alarms and one dashboard; these alarm states do not send notifications.",
+    "api": "Update the existing ECS service desired count 0 to 1; replace its task definition with the approved image and enable the bounded test notification worker using the two existing private controlled recipients.",
+    "task_definition_replacement": "The saved plan deletes/deregisters the existing ECS task definition revision 10 and creates a new one. This is the only planned existing-resource delete/replacement and requires explicit approval. The existing service has zero running tasks.",
+    "https": "Create one t3.micro HTTPS proxy, EIP and association, dedicated limited SSM role/profile/policy, proxy security group and a narrow proxy-to-API port 18000 ingress rule. Proxy exposes only ports 80 and 443 publicly. Its upstream is existing private host 10.64.1.7. DNS A record change is separate.",
+    "iam": "Update only the existing SES FromAddress condition to include updates@clip-iisc.site alongside verify@clip-iisc.site; other Identity email policy statements are unchanged.",
+    "preserved": "No ASG, existing host, RDS, NAT, database secret, provider configuration or existing cloud data change is in the Terraform plan. Host scale-in protection is preserved."
+  },
+  "ses": "SSM email route was separately approved and changed to SES-first version 2; Resend key and fallback retained. Actual sends remain separately approved.",
+  "cost_and_bounds": "Existing t3.micro host and db.t4g.micro total approximately USD 0.0322/hour compute; new t3.micro proxy approximately USD 0.0112/hour. EIP, EBS, NAT/data, logs, metrics, alarms, dashboard and taxes are additional. The USD 3 incremental operator stop threshold and 2026-10-30 10:30 UTC deadline are not hard billing caps; all resources remain running until user approves cleanup.",
+  "security": "Test mode only; one task, a serial worker, existing controlled-recipient allowlist, 15-minute reminder, bounded retries and private database roles. HTTPS proxy has public TCP 80/443; it has no database/secret permissions. Verify image, readiness, logs and exact target after apply.",
+  "recovery": "Stop on drift, failed apply or changed checksum; inspect state before retry. Old task definition deregistration is explicitly disclosed. No automatic rollback/reset or destruction of test resources is authorized. Separate user approval is required before cleanup, shutdown, DNS change or real test sends.",
+  "approval": "Explicit approval of the exact saved Terraform plan SHA-256 and the disclosed task-definition deregistration is required before apply."
+}

@@ -1,0 +1,26 @@
+{
+  "status": "proposed; explicit approval required",
+  "account": "335523638354",
+  "region": "ap-south-1",
+  "database": "clip_test",
+  "admin_role": "clip_test_admin",
+  "endpoint": "clip-shared-test-postgres.cnsu8kgiimug.ap-south-1.rds.amazonaws.com",
+  "transport": "existing private SSM tunnel, TLS verify-full, local port 15432",
+  "observed_baseline": "23 migration versions ending 20261027112205; matches candidate prefix by version. The database ledger does not prove historical file checksums.",
+  "target_head": "20261029182500",
+  "files": {
+    "scripts/cn03_migration_upgrade.py": "7966bc20d45751fbff791ffd08e3f02c120deae658bbd50bb654ba28238aca1d",
+    "docs/environment/cn-03-candidate-migration-manifest.json": "39759241f0e0e7188c0b16e4ee1c767c9f48de2e19cbc0b54f6c63f672d76a77",
+    "database/roles/identity-notification-runtime.sql.proposed": "9396226df6df7703646d4ac04c649e51d9e52c679c3951b60c54f0cadef3a547"
+  },
+  "effects": [
+    "Apply nine hash-checked SQL migrations, in order, and record their versions. They change shared Listings and Search catalogue labels, index and price constraints, listing trigger; add Identity handle projection and encrypted notification addresses; add Conversations retry fields/index and Identity email preference.",
+    "Grant the existing Identity application role SELECT, INSERT, UPDATE and DELETE only on identity.notification_destinations; no new role, secret, PUBLIC grant, or broader Conversations privilege."
+  ],
+  "execution": "Verify existing non-root AWS identity, target and source hashes; reread existing database master credential only into process memory. Run guarded helper once. A single transaction contains all migrations, ledger inserts and the Identity grant; it refuses an unexpected baseline and rolls back known failures. A lost connection or ambiguous commit requires inspection before any retry.",
+  "validation": "Locally passed PostgreSQL rehearsal on the reviewed 23-file baseline, including retained synthetic data, hash rejection, repeat refusal, and rollback when a later constraint fails. Live checks compare final ledger and effective privileges without exposing user data.",
+  "risks": "The migrations include shared-domain data/schema changes and may reject incompatible existing rows. Applied migration changes are persistent; do not automatically roll back, reset or delete data. Shared owner review remains relevant. One transaction can hold locks; the API is stopped and lock/statement timeouts are enforced.",
+  "cleanup": "Keep existing protected host and RDS running for subsequent approved build and testing; do not stop, scale in, terminate or destroy resources until separately approved by Aditya. Deadline and spend threshold of the baseline window remain.",
+  "excluded": ["new resources", "automatic cleanup", "reset or delete data", "credential rotation", "real provider email", "deployment"],
+  "approval": "Explicit approval of this exact plan SHA-256 is required before SQL mutation."
+}

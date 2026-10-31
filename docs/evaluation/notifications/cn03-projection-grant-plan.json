@@ -1,0 +1,20 @@
+{
+  "status": "proposed; explicit shared-database approval required",
+  "account": "335523638354",
+  "region": "ap-south-1",
+  "database": "clip_test",
+  "admin_role": "clip_test_admin",
+  "recipient_role": "clip_test_conversations_app",
+  "transport": "existing private SSM tunnel with hostname-verified TLS",
+  "observed_problem": "The live Conversations role lacks both Identity schema USAGE and SELECT on identity.participant_profiles. The deployed conversation summary query joins that view; a controlled browser reported GET conversation 503. The permission gap is a strong explanation but must be verified by retry after the grant.",
+  "sql_file": "database/roles/conversations-identity-projection.sql.proposed",
+  "sql_sha256": "14510d65e9187a745b592d66991224c2be433e05fb8ad37f76de532162e6ccb7",
+  "helper_file": "scripts/cn03_projection_grant.py",
+  "helper_sha256": "130c35691a1257c3bf2806ef9eb1b5a6dd2f44b6ee0c88c6769011b623dc82aa",
+  "action": "Read the existing master credential into memory only. After checking exact target, TLS, 32-migration head, hashes and the observed missing permissions, atomically GRANT USAGE on schema identity and GRANT SELECT on identity.participant_profiles to the existing Conversations app role. Verify access to identity.users and identity.notification_destinations remains denied.",
+  "security_effect": "Identity schema USAGE permits object-name visibility. SELECT on the public projection allows the Conversations role to enumerate projected public handles and account classes, not only conversation participants. It grants no access to private Identity base tables or notification destinations. Affected-owner review remains necessary.",
+  "validation": "Disposable PostgreSQL verified missing rights before, view read after, and private Identity table denials; wrong-hash and repeat requests are refused. Retry the real conversation using the existing controlled accounts after applying.",
+  "failure_handling": "If the connection or commit result is ambiguous, inspect current effective privileges before any retry. No role creation, migration, data deletion, provider change or automatic retry.",
+  "resource_retention": "Keep the protected host, HTTPS proxy, database and other resources running until user approves cleanup.",
+  "approval": "Explicit approval of this exact plan SHA-256 and the public-view enumeration capability is required before shared SQL execution."
+}

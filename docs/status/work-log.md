@@ -1093,7 +1093,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | MERGE-LI-SE | Suraj (integration); Listings/Search affected owners | done | PR #11 is squash-merged; Search–Listings local merge task is complete | Steps 1–9 performed; approved PR head `2a43066` merged to `main` as `e315c9d`; final hosted CI run `40204621122` passed | Steps 3–8 verified by Suraj; user authorized squash merge of the exact PR revision on 2026-10-25 | PR #11 `https://github.com/exocrat/clip/pull/11`; source head `2a430660d25e7c14cf33d84bd78172db4ec063c7`; squash merge `e315c9df3e0e11d6e9c8d7d244d676204d3af7e8`; hosted CI `40204621122`; local merge commit `29eb6fb`; fallback branch `safety/search-pr11-pre-main-reconciliation-20261025`; stash `af9d7f5`; local checks recorded below | No blocker for the Search–Listings merge. Final dataset, formal NFR/cloud checks, and real Identity/Conversations remain later work. | 2026-10-25 15:17:46 UTC |
 | CN-01 | Rahul (D) | in progress | PR17 integration merged; final CN-01/readiness/NFR obligations remain | Accepted main b09978e contains reviewed head3773931; hosted run40402518748 passed; prior local aggregate1930Python/403web and Conversations114 | Rahul verified local correction and confirmed PR merged; no additional milestone acceptance inferred | [PR17](https://github.com/exocrat/clip/pull/17), merge `b09978e91620ae3877a77c5bea8a4f12df7a8907`; [integration checkpoint](../evaluation/domain/conversations-integration.md) | Formal readiness/remaining device and security checks; CN-03 producer path and final NFR-05; full task acceptance pending | 2026-10-27 06:16:43 UTC |
 | CN-02 | Rahul (D); Aditya/Suraj review | in progress | Step11 local aggregate checks passed; obtain human verification, then complete real dependency/owner review gates | 1930 Python passed/153 skipped; 94 data; 433 web/3 skipped; build/types/lint, Black 296 files, mypy, contract generation (8 artifacts), boundaries, DB lifecycle PostgreSQL18.6, Conversations harness167, DB safety35, Gitleaks8.30.1 passed | Step10 verified; Step11 local result pending Rahul verification | `task/cn-02-offers-contact-sharing`; [checkpoint](../evaluation/domain/conversations-offers.md); [browser walkthrough](../environment/conversation-browser-test.md) | Formal CN-CORE/ID-READY/LI-CORE acceptance, affected-owner review and hosted CI remain required for full CN-02 acceptance; later real-session/deployment gates remain | 2026-10-27 15:15:10 UTC |
-| CN-03 | A; D producer review | not started | — | not started | pending | No domain implementation outputs in initial inventory; task definition in `docs/tasks/domain-task-list.md` | CN-CORE, ID-READY | — |
+| CN-03 | A; D producer review | in progress | PR #21: migration-fixture CI fix locally verified; hosted CI pending | Full local checks passed: Python 2073/171 skipped, data 331, web 497/3 skipped, Conversations 184, migration and safety checks | Aditya confirmed prior task items done; current fix awaits hosted CI | Draft [PR #21](https://github.com/exocrat/clip/pull/21), branch includes merge `de2c94a` and local fixture fix | Push only after local checks; confirm hosted CI and obtain independent PR review | 2026-10-31 19:43:57 UTC |
 | INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
 | EXP-01 | C; Suraj coordinates NEXT-01 design | done | NEXT-01 design and gates are approved; actual topology pricing and numeric cost endpoints are NEXT-07 pre-result gates. | Design Steps 1–9 performed; no experiment run | Suraj verified NEXT-01 Steps 1–9 on 2026-10-28. | [Approved design and gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md); [NEXT-07 execution plan](../tasks/remaining-project-plan.md#experiment-protocol-reference) | Implementation, final data/tools, actual account/spend, numeric cost endpoints, and separate run approvals remain before measurement. | 2026-10-28 06:24:24 UTC |
 | EXP-02 | C | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-01 | — |
@@ -1116,14 +1116,609 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | Milestone | State | Creating task/checkpoint | Accepted revision/PR/checks | Human verification |
 |---|---|---|---|---|
 | PRE-00 | accepted | PD-19 foundation gate | `main` at `2cd83e7`; PR #8 exact-head hosted CI run `39323851584`; user accepted audit 2026-10-19 21:20:55 UTC | verified/accepted by user |
-| ID-READY | not accepted | ID-01 step 12 | — | pending |
+| ID-READY | accepted (user-reported) | ID-01 step 12 | Identity PR #19 merged to `main` at `a60c83f`; exact milestone acceptance revision not separately recorded | Aditya reports complete and merged |
 | LI-CORE | not accepted | LI-01 step 11 | — | pending |
 | SE-CORE | not accepted | SE-01 step 10 | — | pending |
 | DATA-READY | not accepted | SE-01 steps 2/4/9 | — | pending |
-| CN-CORE | not accepted | CN-01 step 10 | — | pending |
+| CN-CORE | accepted (user-reported) | CN-01 step 10 | Conversations PR #17 merged at `b09978e`; current main `6edb52b`; exact milestone acceptance revision not separately recorded | Aditya reports complete and merged |
 | OPTIONAL-OK | not approved | Each optional task's selection/priority plan | — | pending |
 
 ## Task summaries
+
+### CN-03 Step 1 policy audit — 2026-10-29 13:07:09 UTC
+
+Aditya verified the Step 1 plan and reports ID-READY and CN-CORE completed and
+merged; their milestone rows record his report, with exact milestone acceptance
+revisions not separately established. At main `6edb52b`, the approved policy specifies new-conversation
+email, one 15-minute unread reminder per episode, read-before-send suppression,
+five bounded attempts within 24 hours, and 30-day terminal retention. Reviewed
+Conversations/Identity contracts, provider, privacy and async-failure decisions
+and the PRD. On 2026-10-29 13:09:16 UTC Aditya selected one default-on account
+setting controlling both conversation emails, changeable by the user; current
+preference is checked before send, without affecting Identity OTP emails. The
+decision, contract and Steps 7–8 now record this scope. Step 1 awaits result
+verification. General-recipient
+provider runtime and the Identity recipient implementation still require actual
+integration checks. No code, cloud or external provider action occurred.
+
+### CN-03 Step 2 execution options — 2026-10-29 13:09:47 UTC
+
+Aditya verified Step 1 and authorized Step 2. Repository inspection found an
+existing opt-in Hybrid worker in the API lifecycle and an ECS API service, but
+no configured notification worker or confirmed notification scheduler. Proposed
+an independently configured bounded notification polling loop in the existing
+API process, with durable DB claims/fencing across replicas. It avoids a new
+always-on worker service; mail waits while the API is stopped and actual
+configuration, resource needs, monitoring, cost and cloud apply remain separately
+reviewed. Alternatives are a scheduled ECS task or separate worker service.
+Aditya approved the proposed API-lifecycle loop at 2026-10-29 13:14:28 UTC;
+the [delivery decision](../decisions/notification-delivery-policy.md) records
+it. Polling interval, lease/clock details and real runtime integration remain
+open. No cloud action was approved or performed.
+
+### CN-03 Step 3 contract audit — 2026-10-29 13:18:58 UTC
+
+Aditya verified Step 2 and started Step 3. Existing Conversations producers
+atomically insert new-conversation and coalesced unread-reminder intents; the
+delivery and Identity recipient public functions are declaration-only. The
+canonical `contracts/source/types.py` `NotificationClaim.event_kind` admits only
+`unread_message`, while the Conversations contract and schema require
+`new_conversation` and `unread_reminder`. Proposed correction: change the
+canonical typed declaration to those two values, regenerate the API artifact,
+and check contract/consumers with Rahul's review. Step 3 is partial pending
+human verification; real integration remains required. No code, tests, cloud or
+provider actions occurred in this checkpoint.
+
+Aditya approved the correction; at 2026-10-29 13:23:50 UTC the canonical
+`contracts/source/types.py` and regenerated `apps/api/app/contracts/domain_types.py`
+now expose both existing event kinds. Added `tests/contracts/test_notification_claim.py`
+for both accepted kinds and the rejected old kind. Contract generation and
+freshness passed (8 artifacts); `tests/contracts` passed 67 tests and the new
+focused tests passed 3; Black passed on the new test. Initial generation needed
+a writable temporary UV cache; multi-file Black failed due to sandbox process
+permissions and its single-worker retry was interrupted. No cloud/provider action.
+The remainder of Step 3 and Rahul's shared-contract review remain pending.
+
+Aditya reports Rahul approved the event-kind correction and verified the next
+Step 3 increment. At 2026-10-29 13:25:59 UTC added an isolated, bounded worker
+orchestrator under `apps/api/app/domains/conversations/notifications/` with
+injected Conversations/Identity/sender ports, final fenced read check and
+ambiguous-send handling. It installs no provider, schedule or real mail path;
+preference enforcement and real producer/recipient/read-state integration remain
+pending. Synthetic port tests and event-kind tests passed 9; Black passed on the
+two new Python modules; boundary scan reported 0 violations. The isolated
+result awaits Aditya's verification; no AWS or provider action occurred.
+
+At 2026-10-29 13:28:27 UTC, Aditya verified the isolated increment and requested
+completion of the numbered step without routine intermediate permission prompts.
+The registered disposable PostgreSQL 18.6 Conversations suite passed 169 tests.
+Real recipient integration exposes a missing design prerequisite: Microsoft
+account mapping does not retain the signed email; temporary credentials retain
+only a keyed login digest and the OTP target is removed with the challenge.
+The user-editable contact email is not verified for notifications. Thus the
+contract's verified-recipient resolver cannot recover a delivery address for
+either account class. A reviewed Identity-owned durable destination and its
+retention/key handling are required; do not substitute an unverified contact.
+Step 3 remains partial and real worker/read-state/provider checks remain pending.
+Aditya selected the account creation/login address for notifications at
+2026-10-29 13:30:07 UTC; the notification decision records encrypted
+Identity-owned persistence and excludes editable unverified contact fields.
+At 2026-10-29 13:36:21 UTC implemented account-bound AES-GCM destination storage
+with a purpose-derived existing Identity key, fresh nonce and version binding;
+successful temporary activation/password login and Microsoft session exchange
+save the address in their own transaction. The resolver requires a trusted
+worker permit and fresh Identity eligibility; terminal cleanup removes the row
+under existing 30-day retention. Added forward migration, retention accounting,
+and real acknowledgement/intent parity assertion. Disposable PostgreSQL tests:
+Identity session/activation/cleanup 53, new recipient tests 4, Conversations
+169, migration clean/upgrade/rollback/reapply passed; retention launcher 4,
+Black, boundary scan and diff check passed. The first migration lifecycle run
+failed due to the harness assuming Handle was the latest migration; fixed the
+harness and reran successfully. No database/cloud apply or email occurred.
+Actual runtime role grants, provider configuration, Conversations-owned delivery
+state operations, preference enforcement and resolver composition remain pending.
+
+At 2026-10-29 13:48:30 UTC completed the local Step 3 delivery boundary and
+explicit server-only composition against actual PostgreSQL and Identity;
+provider and preference callbacks remain synthetic. Conversations owns fenced
+60-second claims, final read checks, single dispatch reservations and bounded
+outcome transitions; a forward migration retains retry/reservation state. The
+producer coalesces new messages into a leased unread episode. Tests use synthetic
+addresses and a fake sender: concurrent claim, replay/stale token, ambiguous
+failure/backoff, message coalescing and read-after-lease suppression. The final
+disposable PostgreSQL Conversations harness passed 173 tests; the full migration
+lifecycle passed with both forward migrations, focused worker/contract tests
+passed 10, Black and boundary scan passed. The initial integration test failed
+because its fixture removed the DSN environment variable; fixed the fixture and
+subsequent runs passed. Step 3 local result awaits verification; actual provider,
+preference, production role grants, scheduler/runtime, separate cloud approvals
+and Rahul's producer/schema review remain. No cloud/provider send occurred.
+
+### CN-03 Step 4 provider boundary — 2026-10-29 13:51:37 UTC
+
+Aditya verified Step 3, requested commit and authorized Step 4. Added a private
+typed async sender and sanitized transient/terminal/ambiguous failure categories;
+the worker records those categories and treats unknown exceptions as ambiguous.
+The deterministic fake exists only under tests and accepts only synthetic
+`example.invalid` recipients. Focused notification tests passed 13; Black,
+boundary scan and diff check passed. The existing Identity SES/Resend routing is
+approved for OTP and uses `verify@clip-iisc.site`; its adapters are private and
+limited to controlled recipients. CN-03's sender address and adoption of the
+dual-provider routing require an explicit task decision. No provider configuration,
+secret access, live send or cloud action occurred. Step 4 remains partial.
+At 2026-10-29 13:56:01 UTC Aditya selected SES first, Resend fallback and
+`updates@clip-iisc.site`; the notification policy records the decision. Live
+sender permission, provider configuration and testing remain separately gated.
+At 2026-10-29 13:59:08 UTC added explicit SES/Resend notification adapters,
+fixed sender, four-hour SSM snapshot refresh, bounded alternate-provider
+fallback, safe failure classification and test/production selection guards.
+The existing shared SSM `primary` must be set to SES by a separately approved
+action; it also controls Identity provider order. The current recorded SES role
+sender permission covers `verify@`, not the selected `updates@`. Offline SES,
+Resend and SSM doubles plus worker/provider tests passed 21; Black, boundary
+and diff checks passed. Sandbox worker-thread restrictions required an escalated
+offline test run; no network/provider/secret/cloud action occurred. Exact setup
+and real checks are in [notification email setup](../environment/notification-email-setup.md).
+Step 4 local result awaits verification; live setup and provider delivery remain
+pending at the original real-integration checkpoints.
+
+### CN-03 Step 5 notification templates — 2026-10-29 14:01:20 UTC
+
+Aditya verified Step 4 and authorized commit and Step 5. Added generic
+new-conversation and unread-reminder subjects/text with only a UUID-bound fixed
+`clip-iisc.site` conversation link; production sender configuration accepts only
+the reviewed renderer. Templates reject malformed IDs/unknown events and never
+receive message, listing, contact or authentication content. Local provider and
+template suite passed 24 tests; Black, boundary and diff checks passed. No cloud,
+secret read or real send occurred. Step 5 result awaits verification.
+
+### CN-03 Step 6 delivery and retention proposal — 2026-10-29 14:03:14 UTC
+
+Aditya verified Step 5, requested commit and started Step 6. Existing local
+delivery already has database-fenced duplicate suppression, bounded retries and
+failure independence. Added fixed-code, privacy-safe delivery/skip/error logs
+and a redaction regression. Notification tests passed 25; Black, boundary and
+diff checks passed. Prepared [concrete cleanup proposal](../decisions/notification-retention-cleanup-proposal.md):
+30-day terminal/expired jobs only; server clock, dry-run by default, 100-row
+bound, thread/member/intent locks and recheck, delete only intent rows, prove
+existing source-deadline/member replay guards. Local destructive mechanism needs
+the task's explicit approval before implementation; cloud execution remains a
+separate gate. Step 6 remains partial; no cloud or real delivery occurred.
+Aditya approved the local method; at 2026-10-29 14:06:48 UTC implemented the
+bounded, trusted-permit cleanup operation in `notifications/cleanup.py` with
+dry-run default, server cutoff, lock/recheck and one-candidate transactions.
+Disposable PostgreSQL suite passed 176 including cutoff, dry-run, authorization,
+batch limits, pending/leased exclusions, state-change race, rollback and both
+new-conversation and unread-episode replay guards. Registered its tests in the
+existing Conversations harness. The notification provider/worker suite passed
+25, Black and boundary checks passed. No scheduler, shared database or cloud
+cleanup was installed or executed. Step 6 local result awaits verification.
+
+### CN-03 Step 7 preference and reminder scheduling — 2026-10-29 18:32:45 UTC
+
+Aditya continued after Step 6. Added a default-on Identity account preference,
+strict own-session GET/PUT with CSRF, account-page toggle, trusted fresh
+eligibility/preference check and fenced suppression for both events. Preference
+is checked again after the final read-state reservation; unknown values defer,
+and previously suppressed jobs do not replay when re-enabled. Added an explicit
+cancellable, 60-second default polling loop, not started automatically. Forward
+migration `20261029182500` updates the setting and suppression outcome; its
+rollback fails closed when suppression records require reconciliation. Generated
+contracts were refreshed. Disposable PostgreSQL Conversations suite passed 179,
+Identity/notification tests 33, web tests 22, typecheck, lint, Black, contract
+freshness, boundaries and migration lifecycle passed. The first web run failed
+four contact fixtures that did not handle the new request; updated the fixtures
+and the rerun passed. Step 7 local result awaits verification; human browser,
+runtime activation, real provider/cloud and affected-owner review remain. No
+cloud or real email action occurred.
+
+### CN-03 Step 8 failure and privacy matrix — 2026-10-29 18:35:42 UTC
+
+Aditya verified Step 7 and authorized Step 8. Audited existing notification,
+Identity, producer and retention tests against the task matrix. Added real
+PostgreSQL cases for due unread delivery, opt-out, provider failure preserving
+the original message, terminal failure and all five attempts with exact
+1/5/15/60-minute backoffs. Existing tests cover event/retry deduplication,
+ineligible recipients, timeout/rejection, read-before-due, both preferences,
+retention/replay and content/secret redaction. The disposable PostgreSQL suite
+passed 183 tests; Black and diff checks passed. Sends used synthetic callbacks;
+real provider/runtime and browser/owner gates remain. Step 8 awaits verification.
+
+### CN-03 reference migration test reconciliation — 2026-10-31 19:43:57 UTC
+
+After main was merged into PR #21, CI failed three data-tooling tests because
+the historical reference corpus binds 29 migrations while the combined branch
+contains 32. Updated the tests to construct the exact frozen 29-migration
+snapshot in a temporary directory and added a regression proving an extra
+unbound migration is rejected. The production guard and frozen binding remain
+unchanged. All local checks passed: 2073 Python tests (171 skipped), 331 data
+tests, 497 web tests (3 skipped), 184 Conversations tests, migrations, database
+safety, contracts, type checks, boundaries, formatting and secret scan. Hosted
+CI will run after the requested push.
+
+### CN-03 Step 12 local and hosted checks — 2026-10-30 14:53:12 UTC
+
+Hosted [CI run 41043092943](https://github.com/exocrat/clip/actions/runs/41043092943)
+passed on `4dae91c`: 2073 Python tests passed and 171 skipped; 497 web tests
+passed and 3 skipped. Data, migrations, Conversations, database safety,
+contracts, type checks, boundaries and secret scan passed; pinned Terraform
+backend-free validation passed locally. The initial failures and focused fixes
+are recorded below. Step 12 local/CI execution is complete and awaits human
+verification. General-recipient deployment and real integration, alert
+notification destination, retained-resource costs, affected-owner review and
+independent PR review remain open for CN-03 acceptance; previously waived live
+browser checks are not represented as executed. The ECR image predates the
+metadata-checker correction and requires rebuild or review before deployment.
+ECS, EC2 and RDS were verified stopped; no AWS resources were deleted.
+
+### CN-03 Step 12 quality gate corrections — 2026-10-30 10:42:39 UTC
+
+The first local Python run and hosted CI each reported seven failures: the
+Identity metadata checker still expected the historical table inventory, and
+the combined contract and count assertions omitted the two preference endpoints.
+Updated the checker to use the current runtime table set, documented both
+endpoints, and updated the expected generated-schema counts. The focused
+Identity/contract suite passed 51 tests. The initial complete Python run had
+2066 passed and 171 skipped; remaining local checks and refreshed hosted CI
+were subsequently run: data 94 passed, web 497 passed/3 skipped with build,
+Conversations 184 passed, database safety 35 passed, migration lifecycle,
+contracts, type, boundaries, Terraform backend-free validation and secret scan
+passed. Hosted CI remains pending. The Terraform mock test needed formatting;
+the pinned formatting/validation rerun passed. The published image includes the
+requested recipient feature but predates the metadata-checker correction, so it
+is not an exact final-branch build and must be rebuilt or that difference
+explicitly reviewed before deployment.
+
+### CN-03 image publication and non-destructive shutdown — 2026-10-30 10:32:54 UTC
+
+Built the user-requested AMD64 image from snapshot SHA-256
+`5d3b8f0a604c76b3f97eb966ede87bbacf4cbf71ff364e4fd6a15f1ea3c9af66`
+(base commit `b95a7a5` plus the three documented local application changes).
+Its native smoke succeeded, and the verified image was stored locally. At
+Aditya's subsequent request, published immutable ECR digest
+`sha256:3faaeb2ebe160868d1e7b194e373051a1bde2fc5d84cef60959a028d3e8f3d00`;
+registry configuration matches image ID `sha256:4bdd517be73f62595bbbdbebb01dbb606ab5badb16f844e5ab4706cc4ac3f7f2`.
+The image was not deployed. The API service and both EC2 instances stopped;
+RDS was verified stopped at 2026-10-30 10:34:06 UTC. Suspended shared ASG processes to avoid
+replacement/termination; later startup must deliberately resume them. Existing
+NAT, EIP, storage and monitoring remain and may accrue charges; nothing was
+deleted. Step 12 proceeds while the database finishes stopping.
+
+### CN-03 image build and shutdown direction — 2026-10-30 10:20:32 UTC
+
+Aditya requested the previously deferred updated image build, no deployment,
+then stopping cloud resources, commit/push and Step 12, and approved the
+necessary actions without routine interruptions. The running protected Micro
+passed preflight. Transferred the exact hash-pinned source snapshot (base
+`b95a7a5` plus three local recipient-scope changes) and started native build
+`d337b8a5-27c5-44d5-a1ad-00d086e94ac3`. The build identifier is a source
+snapshot hash prefix, not a Git commit. No deploy or new registry publication
+is authorized. Preserve AWS resources rather than terminate/delete; NAT and
+other resources that cannot be stopped may keep accruing charges.
+
+### CN-03 remaining browser checks waived — 2026-10-30 10:15:20 UTC
+
+Aditya directed that the proposed Suraj fresh-conversation delivery, live
+read-before-due and live unread-reminder opt-out browser checks be treated as
+complete without further testing. Record these as user-waived, not as executed
+or passing evidence. Existing disposable PostgreSQL tests exercise read-before-
+due and preference behavior, and the direct SES test to Suraj was received.
+The user-requested removal of the live allowlist is still undeployed; general
+recipient integration, provider/monitoring operational checks, affected-owner
+review and separately approved resource cleanup remain open.
+
+### CN-03 Step 10 accepted — 2026-10-30 10:13:49 UTC
+
+Aditya accepted Step 10 and directed that the notification allowlist change be
+carried to the next session. The undeployed general-recipient change and real
+read-before-due, reminder opt-out, provider/monitoring and affected-owner checks
+remain open under Step 11/task acceptance; this acceptance does not claim those
+checks passed. Test host, proxy and database remain running until separately
+approved cleanup.
+
+### CN-03 opt-out verified and rebuild deferred — 2026-10-30 10:12:01 UTC
+
+Aditya reported no new-conversation email after opting out. Sanitized live
+notification records show recent new-conversation intents suppressed with
+`preference_suppressed`, consistent with the report. Aditya directed that the
+image not be rebuilt now and testing resume later, with no notification
+recipient allowlist in the next deployment. The explicit local setting to
+allow eligible unlisted recipients remains uncommitted and undeployed;
+Identity auth-email test restrictions remain separate. The former build plan
+is marked deferred and requires a fresh review later. Host, proxy and RDS
+remain running; no shutdown or destruction is authorized without separate
+approval. Read-before-due and reminder opt-out real checks remain pending.
+
+### CN-03 recipient scope and direct SES test — 2026-10-30 10:09:26 UTC
+
+Aditya requested removal of the conversation notification test allowlist and
+a direct SES test to Suraj’s recorded IISc address. SES accepted one message
+from `test@clip-iisc.site`; Aditya reported Suraj received it. Added an explicit
+default-off hosted-test switch for eligible unlisted conversation recipients,
+without changing separate Identity auth-email restrictions. Offline provider
+and runtime tests passed 14; Terraform mock plans passed 6. The deployed image
+still enforces its old allowlist and earlier terminal jobs do not replay.
+Prepared a source-hash-bound [build plan](../evaluation/notifications/cn03-unlisted-build-plan.json),
+SHA-256 `d7a391b9ae61ab73555735ccf6045abd8cb0f5509d25e3a8f88e4b4e8fc6e8e7`,
+proposing an extended window. No new image, deployment, replay or cleanup has
+occurred. User’s opt-out check remains underway; protected resources keep running.
+
+### CN-03 controlled-recipient failure inspection — 2026-10-30 10:01:23 UTC
+
+At Aditya’s request, checked sanitized notification states for the named
+participant: one new-conversation intent and its unread reminder both ended in
+terminal failure on their first attempts. The live test permits only Aditya’s
+two approved addresses; the sender classifies a recipient outside that
+allowlist or an invalid rendered template as terminal before provider submission.
+At 2026-10-30 10:03:39 UTC, the actual generic templates were reconstructed
+in memory and passed validation for both failed intents. The worker rejects
+a mismatched recipient ID before dispatch; given those checks and the deployed
+code’s terminal branches, the controlled-recipient allowlist explains the
+failures. The participant’s actual email was not inspected. No resend or
+allowlist change occurred. Aditya started the
+controlled opt-out check; the test environment remains running.
+
+### CN-03 first live notification receipt — 2026-10-30 09:53:27 UTC
+
+Aditya reported receiving the new-conversation email in IISc junk, around five
+minutes after the 3:09 IST conversation. Sanitized database timing shows the
+corresponding intent was accepted by a provider in approximately three seconds;
+inbox placement and later arrival are downstream of that submission. A later
+separate new-conversation event ended in terminal failure on its first attempt;
+its cause remains unconfirmed. At 2026-10-30 09:55:56 UTC Aditya confirmed the
+3:09 conversation was left unread and its reminder arrived in IISc junk. The
+corresponding intent was sent on its first attempt, 53 seconds after its 15-minute
+due time. Read-before-due, preference and complete provider checks remain pending. Test resources remain running until separately
+approved cleanup.
+
+### CN-03 public projection permission applied — 2026-10-30 09:31:27 UTC
+
+Aditya approved exact grant plan `80289eca69be85f43eaa7b51b62be647c226dcefad9bd2faef32f2c2239e1857`.
+Applied once through the guarded TLS-bound helper; verified Conversations
+schema USAGE and public participant projection SELECT are present while SELECT
+on Identity users and notification destinations remains denied. The grant permits
+enumeration of projected public profiles and requires affected-owner review.
+The controlled browser retry and live notification outcome remain pending;
+all test resources remain running pending separate cleanup approval.
+
+### CN-03 live conversation permission blocker — 2026-10-30 09:29:43 UTC
+
+Aditya reported a controlled-account conversation failed with 503 and a generic
+encryption-not-ready message. Conversation summaries join the Identity-owned
+public participant projection; read-only live ACL inspection confirmed the
+Conversations role has neither Identity schema USAGE nor SELECT on that view.
+Prepared a narrow, hash-guarded [grant plan](../evaluation/notifications/cn03-projection-grant-plan.json),
+SHA-256 `80289eca69be85f43eaa7b51b62be647c226dcefad9bd2faef32f2c2239e1857`;
+disposable PostgreSQL verified access to the view but not private Identity
+tables. Schema USAGE exposes object names and view SELECT permits enumeration
+of projected public profiles; these capabilities need explicit approval and
+affected-owner review. No shared grant has been applied. The protected host,
+proxy and RDS remain running until separately approved cleanup.
+
+### CN-03 live test started — 2026-10-30 09:21:44 UTC
+
+Aditya approved the exact controlled test plan. Verified the deployed API and
+HTTPS, and all four CloudWatch filter patterns matched synthetic fixed-code log
+lines. The current API log aggregate has no startup errors or notification
+worker errors; no live notification delivery is claimed yet. The first
+human-controlled new-conversation email check is pending. The alarms have no
+action destination; host, proxy and RDS remain running pending separate cleanup
+approval.
+
+### CN-03 deployment and controlled test preparation — 2026-10-30 09:20:03 UTC
+
+Aditya approved exact Terraform plan `064570783b10a48b9cc1fb673b24e36abe86a55a4fa0cacc7996e56c1b0a2e49`.
+The two existing pending/leased jobs were beyond their delivery window; no
+unexpired jobs were found before activation. Apply completed; ECS revision 11
+is healthy and rollout completed on the verified ECR image, the HTTPS proxy
+is running at `13.203.234.210`, Aditya reported the DNS record added, and
+HTTPS `/health` passed directly against the proxy. Four notification alarms
+are OK but have actions disabled. Host `i-086045c48487471de` remains protected
+from scale-in and RDS remains running. Prepared [bounded live-test plan](../evaluation/notifications/cn03-live-test-plan.json),
+SHA-256 `882399b5f59b19b9ff9fb4617257cea3f907ec0323de71576b0417e684f0385c`.
+No real test notification or cleanup is claimed; exact test approval is pending.
+
+### CN-03 SES route and exact deployment plan — 2026-10-30 09:12:44 UTC
+
+Aditya approved the SES-first change. The initial local wrapper lacked memfd
+support; read-only inspection confirmed version 1 and Resend-first, so no write
+occurred. Corrected the wrapper using the existing memory-only helper and
+applied the approved change once; version 2 verifies SES-first with the Resend
+key preserved. Refreshed the protected saved Terraform plan, SHA-256
+`064570783b10a48b9cc1fb673b24e36abe86a55a4fa0cacc7996e56c1b0a2e49`;
+[review](../evaluation/notifications/cn03-deployment-review.json) discloses the
+old task-definition deregistration, HTTPS exposure, actionless alarms, cost and
+resource retention. Local temporary disk filled during a copied-provider retry;
+removed the incomplete copy and deduplicated only local provider copies, preserving
+the saved plans. No Terraform apply, live notification or resource cleanup has
+occurred; RDS and protected host stay running. Exact deployment approval pending.
+
+### CN-03 deployment plan and SES route — 2026-10-30 09:09:23 UTC
+
+The approved non-applying plan confirmed the existing email parameter is
+Resend-first (version 1). The first candidate plan would remove host scale-in
+protection; updated local Terraform to preserve it, and five mock tests passed.
+A regenerated plan preserves the host and proposes the API, HTTPS proxy, sender
+permission and actionless monitoring; it replaces the existing ECS task
+definition and has not been applied. Prepared a guarded SES-first route helper
+and [exact SSM update plan](../evaluation/notifications/cn03-ses-primary-plan.json),
+SHA-256 `7cc27d8b3e15c1cf5cf75cd3e093c559fbdd8ce7983e1c88723b7c147d6ec207`;
+two offline tests passed. This shared route also affects Identity emails and
+retains the existing Resend key. No parameter write or deployment occurred.
+Host and RDS remain running; separate cleanup approval is required.
+
+### CN-03 deployment plan preparation — 2026-10-30 09:04:06 UTC
+
+Prepared [non-applying plan preparation scope](../evaluation/notifications/cn03-deployment-plan-preparation.json),
+SHA-256 `1324386809799526f4b7edc7ad28ee672895fbd3843c9a0cd5d68d1e3d6b2f0f`,
+for the verified ECR image, existing private host/RDS, controlled test worker,
+monitoring and a temporary HTTPS proxy. It requests existing master/probe and
+email-route reads in process memory for planning, preserves secrets and resource
+state, and requires a separate exact saved-plan approval before apply. Prior
+private inputs contain two controlled recipients; current host private IP was
+verified. No deployment, provider-config change or real email has occurred.
+
+### CN-03 native build and publication — 2026-10-30 09:02:55 UTC
+
+The approved Micro build passed AMD64, non-root, health and bundled UI checks.
+Source archive SHA-256 `68fc1ebc44e8a9e58c2c6d82924984a10936c545d549504606f4781c695a9ae4`;
+image archive SHA-256 `d5466efbbd3162923b132d8bbf5b8207aab5171333ae3cc4e6aef542f723e950`.
+The immutable ECR tag `cn03-b95a7a50ecf8` has digest
+`sha256:97482cb4fb697eee230e66d134c165e557dac7d71a165e6034c88747f1738245`;
+its manifest configuration matches the tested image. Identity runtime was not
+tested in this smoke. Protected host and RDS remain running; deployment and
+provider actions need separate approval.
+
+### CN-03 native build started — 2026-10-30 08:54:26 UTC
+
+Aditya approved the exact build/publication plan. Reverified the plan, source
+and helper hashes and account; the existing protected Micro passed the build
+preflight. Installed only the approved helpers and transferred the verified
+archive over private SSM. Started bounded native build command
+`a2c31eca-b859-4b22-b7d5-355408d52f87`; image and provider results are pending.
+Host and RDS remain running; cleanup needs separate approval.
+
+### CN-03 AMD64 build plan — 2026-10-30 08:51:58 UTC
+
+Prepared an allowlisted 297-member archive of commit `b95a7a5`, verified its
+SHA-256 and bound the existing Micro build and transfer helper hashes. Existing
+protected host has encrypted 30-GiB root storage; proposed ECR tag is absent and
+the repository enforces immutable tags. The [exact build/publication plan](../evaluation/notifications/cn03-amd64-build-plan.json),
+SHA-256 `f7a66be8884f68804109b824aecb8eb3f9c2ca3b053b56d785d64e91dc75be79`,
+reuses the current host, preserves resources, and stops on OOM or failed
+preflight; no build or registry publication has occurred. Approval is pending.
+
+### CN-03 database upgrade — 2026-10-30 08:51:23 UTC
+
+Aditya approved exact plan `e52ae804071ae8c716f9b7e02b696935ec766b4161fdae13d1e6eb28dad13996`.
+Verified hashes/account, applied the nine migrations and Identity grant once in
+one transaction, then verified the live 32-version ledger at `20261029182500`.
+The Identity role has SELECT/INSERT/UPDATE/DELETE on its notification destination;
+the Conversations intent role has SELECT/INSERT/UPDATE and no DELETE. The
+existing host and RDS remain running and protected; no provider email, image
+publication, deployment, role creation, credential rotation or cleanup occurred.
+
+### CN-03 live baseline and migration plan — 2026-10-30 08:47:53 UTC
+
+Read-only TLS-verified inspection found 23 migration versions ending
+`20261027112205`, matching the candidate prefix by version only; nine migrations
+remain. Identity and Conversations roles exist; Conversations intent permissions
+are SELECT/INSERT/UPDATE, without DELETE. The Identity notification destination
+table is not present. Prepared a hash-bound guarded helper to apply the nine
+migrations and narrow Identity grant in one transaction. Disposable PostgreSQL
+tests passed for successful upgrade, wrong-hash and repeat refusal, and rollback
+of the whole transaction on a later incompatible budget constraint. Prepared
+[exact migration plan](../evaluation/notifications/cn03-migration-upgrade-plan.json),
+SHA-256 `e52ae804071ae8c716f9b7e02b696935ec766b4161fdae13d1e6eb28dad13996`.
+No live SQL mutation occurred; protected host and RDS remain running.
+
+### CN-03 baseline window started — 2026-10-30 08:40:36 UTC
+
+Aditya approved the revised preservation plan. Started the retained RDS and
+one private t3.micro host `i-086045c48487471de`; SSM is online and a private
+tunnel is open. Enabled ASG protection for new instances and confirmed the
+host is protected from scale-in; changed its T3 credits to standard. The ASG
+protection setting is a persistent shared configuration change and must be
+reviewed at separately approved cleanup. RDS is starting; no database credential
+has been read and no SQL, migration, mail or cleanup has occurred. Resources
+remain running until user approval for cleanup.
+
+### CN-03 resource preservation direction — 2026-10-30 08:35:37 UTC
+
+Aditya approved the initial baseline plan and directed that resources must not be
+destroyed without further approval. Its automatic scale-in would terminate the
+host, so it was not installed and no resources were started. Revised the
+[action plan](../evaluation/notifications/cn03-baseline-inspection-plan.json)
+to preserve resources and seek direction at the deadline or spend threshold;
+SHA-256 `5ea2e9d5e3e58800785a3437a4dc51cf2478049fa2e5089063fa326782aedfdb`.
+The revision has no automatic shutdown and can keep incurring cost; approval is
+required for the changed plan and again for any subsequent cleanup.
+
+### CN-03 grouped cloud baseline plan — 2026-10-30 08:32:56 UTC
+
+Aditya requested fast grouped Steps 10–11 cloud testing and authorized resource
+creation as needed. The approved non-root account was verified; current shared
+ASG and API capacity remain zero and the RDS is stopped. The existing private
+t3.micro launch template and retained database support the first metadata-only
+inspection. Prepared the [bounded action plan](../evaluation/notifications/cn03-baseline-inspection-plan.json),
+SHA-256 `64fa791fe338f78d9337d919f147e13cff6ede24add0f376fd2e364c042c8dc7`,
+including a deadline fallback, exact resources, in-memory credential handling,
+price-list rates and cleanup. Local tunnel port and SSM plugin are available.
+No cloud or database mutation occurred; exact action approval remains pending.
+
+### CN-03 Steps 10–11 offline integration preparation — 2026-10-30 08:15:27 UTC
+
+Aditya requested all non-cloud work from Steps 10 and 11. A disposable
+PostgreSQL rehearsal applied the nine migrations after the historical 23-file
+baseline, preserving a synthetic user and checking the migration ledger and
+new Identity schema. It does not establish the retained database baseline or
+exercise the live migration tool. A separate proposed retention role passed
+local PostgreSQL row-lock and denial checks; its necessary key-column UPDATE
+rights remain a review item. At 2026-10-30 08:16:45 UTC the complete cleanup
+dry-run and deletion passed under that role; the disposable Conversations suite
+passed 184 tests. Added default-off Terraform preparation for four fixed-code notification
+metrics, a dashboard and four actionless alarms. Two PostgreSQL tests and five
+Terraform mock tests passed; Black, diff and Gitleaks source scan passed. The
+first sandboxed secret scan could not access Docker; its local rerun passed.
+No secret values, cloud changes or real email were used. Real migration, provider
+and monitoring verification, alert destination and separate approvals remain.
+
+### CN-03 Step 11 local failure checks — 2026-10-30 08:10:59 UTC
+
+Aditya directed that unfinished Step 10 integration be grouped with Step 11.
+Offline provider/runtime failure-injection checks passed 19, including SES
+fallback, both providers failing and redacted errors. The sandbox blocked worker
+threads on the first attempt; the isolated offline rerun passed outside that
+restriction. Drafted provisional two-hour, one-host/task, two-recipient, 10-send
+and USD 3 stop-threshold bounds for review; these are not cloud approval or a
+hard billing cap. Checked-in Terraform has no notification-specific alert or
+dashboard definition. Actual monitoring, exact migration/deployment/cleanup
+plans and real checks remain pending. No cloud or email action occurred.
+
+### CN-03 Step 10 planning and owner approval — 2026-10-30 08:06:59 UTC
+
+Aditya reported Rahul approved his part. Verified the approved non-root AWS
+profile and read-only current shared API, host, stopped PostgreSQL and
+Conversations parameter metadata. Prepared a [draft integration plan](../environment/cn-03-step-10-integration-plan.md).
+The existing operator migration runner pins the older 23-file chain and cannot
+apply the current 32-file chain; the live baseline and a reviewed upgrade path
+remain necessary. No secret values, SQL changes or cloud mutations occurred.
+Step 10 remains open for the exact plan, approvals and real integration checks.
+
+### CN-03 Step 10 integration preparation — 2026-10-29 18:48:09 UTC
+
+Aditya verified Step 9 and authorized Step 10. Inspection of the checked-in
+shared ECS and role definitions found that the Identity runtime lacked access
+to the new encrypted destination table, and the worker could start with only
+the marketplace DSN. Added a separately proposed narrow Identity grant,
+current-schema startup and setup checks, and a dedicated Conversations DSN
+requirement. The historical bootstrap manifest remains unchanged. Local
+disposable PostgreSQL Identity role/setup checks passed 49 and offline worker
+runtime checks passed 4; no shared database or cloud action occurred. The
+[setup record](../environment/notification-email-setup.md) describes remaining
+provider, deployment, permissions and retention gates. Step 10 remains partial
+until the actual infrastructure is inspected and real integration is verified.
+At 2026-10-29 19:01:39 UTC, read-only inventory confirmed the stopped RDS,
+zero ECS service and host capacity, available NAT, SES production access and
+verified domain. Added a default-off Terraform worker flag with dependency guard
+and proposed allowing `updates@` alongside `verify@`. Five local Terraform mock
+plans passed using pinned 1.15.9. No cloud changes were applied. Real integration,
+exact resource/cost/cleanup plan and its separate approval remain pending.
+
+### CN-03 Step 9 bounded worker runtime — 2026-10-29 18:41:36 UTC
+
+Aditya verified Step 8 and authorized Step 9. Connected a default-off API
+lifecycle worker to real Conversations and narrow Identity ports, only under
+explicit hosted-test configuration with real provider selectors and controlled
+recipients. One serial batch per process has a 1–50 item cap and 1–3600 second
+interval; the existing database state caps attempts at five and fences replicas.
+Production activation and production test recipients fail configuration.
+Offline runtime/configuration/lifespan tests passed 79; Black, boundary and
+diff checks passed. Added the application-only composition exception and runtime
+configuration documentation. No live provider, secret read, AWS resource or
+deployment was used. Step 9 result awaits verification; shared SSM/IAM, actual
+same-database composition, hosted delivery, cleanup scheduling and production
+activation remain separate integration/deployment gates.
 
 The detailed chronological log remains recoverable with `git show
 f36ce3d:docs/status/work-log.md`. These summaries explain meaningful outcomes;
@@ -1790,6 +2385,13 @@ DEC-12's approximate PD-16 run cost is not an invoice or final NFR-08 result;
 CLOSE-00 still reconciles total project spend against the strict USD 200 limit.
 
 ## Pending integration ledger
+
+| Task/checkpoint | Isolated boundary | Real prerequisite/trigger | Owner and required checks | Evidence |
+|---|---|---|---|---|
+| CN-03 Step 3 | `notifications/worker.py` with synthetic tests against generated Conversation and Identity contract types; no real sender | Conversations claim/dispatch/attempt implementations, Identity recipient and preference provider, and approved real email configuration | Aditya; Rahul reviews producer/read-state: verify real transactions, fenced claims, read-before-send suppression and acknowledgement parity, provider failure independence and preference checks | Isolated tests passed 9; real integration pending. |
+| CN-03 Step 3 update | Real PostgreSQL Conversations delivery operations and Identity resolver composed; synthetic preference and sender | Actual preference provider and configured real email; approved runtime/roles, deployment and owner review | Aditya; Rahul reviews producer, lease/read-state and migrations; repeat suppression, failure independence and privacy on real deployed path in Steps 10–11 | Disposable PostgreSQL harness passed 173; no real provider delivery claimed. |
+| CN-03 Step 4 | Actual local SES/Resend adapters and SSM loader tested only against synthetic provider doubles | Approved `updates@` sender IAM, SES-first shared SSM configuration, provider verification and approved deployed worker | Aditya/operator; review role and secret access; run controlled real sends and provider/fake parity in Steps 10–12 | 21 local tests passed; no secret read or email sent. |
+| CN-03 Step 7 | Actual local Identity preference and Conversations checks on disposable PostgreSQL; synthetic sender and manually invoked polling | Approved runtime wiring/deployment and actual provider; human desktop/phone account-page verification | Aditya; Rahul reviews read/producer/schema paths; repeat preference changes for both events and real read-before-due suppression in Steps 10–11 | PostgreSQL 179, Identity/notification 33 and web 22 passed; no live delivery or automatically started scheduler. |
 
 | Task/step | Mode, source/version, double and scenarios | Required real dependency | Owner roles | Trigger | Real checks and expected result | Current evidence/state |
 |---|---|---|---|---|---|---|
