@@ -4,6 +4,7 @@ from contextlib import nullcontext
 from copy import deepcopy
 import json
 from pathlib import Path
+import shutil
 from types import SimpleNamespace
 
 import pytest
@@ -12,10 +13,24 @@ from scripts.evaluation import reference_database_setup as setup
 
 
 @pytest.fixture
-def binding():
-    return json.loads(
+def binding(tmp_path, monkeypatch):
+    """Recreate the frozen 29-migration checkout, without changing its binding.
+
+    Newer branch migrations must not alter this historical rehearsal or weaken
+    the production guard that rejects an unreviewed migration set.
+    """
+    source_root = setup.ROOT
+    binding = json.loads(
         Path("data/runs/next06-transfer-42-20261030-a/manifest.json").read_text()
     )["source_binding"]
+    for entry in binding["files"]:
+        if entry["path"].startswith("database/migrations/"):
+            source = source_root / entry["path"]
+            target = tmp_path / entry["path"]
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(source, target)
+    monkeypatch.setattr(setup, "ROOT", tmp_path)
+    return binding
 
 
 def test_only_bound_up_sections_are_prepared(binding):
@@ -36,6 +51,14 @@ def test_changed_migrations_refuse_before_database_access(binding, change):
         value["migration_versions"].pop()
     with pytest.raises(setup.SetupRefused):
         setup.migration_sources(value)
+
+
+def test_unbound_checkout_migration_is_refused(binding):
+    """A newer schema cannot silently enter a frozen reference database."""
+    extra = setup.ROOT / "database/migrations/20990101000000_unreviewed.sql"
+    extra.write_text("-- migrate:up\nSELECT 1;\n-- migrate:down\nSELECT 1;\n")
+    with pytest.raises(setup.SetupRefused, match="migration_set_changed"):
+        setup.migration_sources(binding)
 
 
 class Control:
