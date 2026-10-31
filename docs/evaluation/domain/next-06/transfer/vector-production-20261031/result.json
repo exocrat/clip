@@ -1,0 +1,117 @@
+{
+  "task": "NEXT-06",
+  "checkpoint": "Human-verified staged Step4 actual RDSvector publication; original Step3 app gates pending",
+  "state": "performed successfully; source invariant and access/resource closeout verified; awaiting human verification",
+  "started_utc": "2026-10-31 09:25:35 UTC",
+  "ended_utc": "2026-10-31 09:46:20 UTC",
+  "duration_seconds": 1245,
+  "management_calls": 49,
+  "identity": {
+    "Account": "335523638354",
+    "Arn": "arn:aws:iam::335523638354:user/mohitmahapa1"
+  },
+  "vector_result": {
+    "state": "real_pinned_vectors_serving",
+    "queued": 1000,
+    "published": 1000,
+    "coverage": {
+      "pipeline_id": "4b43fc307151933bf5b0fa80ff4e10f8cb4266194905cd2b15a3d01b2386d9ca",
+      "state": "serving",
+      "encoding_matches": true,
+      "conflicting_serving": false,
+      "live": 1000,
+      "ready": 1000,
+      "missing": 0,
+      "stale": 0,
+      "pending": 0,
+      "leased": 0,
+      "failed": 0,
+      "invalid_parts": 0
+    },
+    "parts": [
+      {
+        "part_kind": "description",
+        "count": 1000
+      },
+      {
+        "part_kind": "title",
+        "count": 1000
+      }
+    ],
+    "search_diagnostics": [
+      {
+        "query": "cycle",
+        "keyword_count": 82,
+        "hybrid_count": 82,
+        "lexical_outcome": "expanded",
+        "unique_visible_union_verified": true
+      },
+      {
+        "query": "cycel",
+        "keyword_count": 82,
+        "hybrid_count": 82,
+        "lexical_outcome": "typo_expanded",
+        "unique_visible_union_verified": true
+      },
+      {
+        "query": "vehicle",
+        "keyword_count": 82,
+        "hybrid_count": 82,
+        "lexical_outcome": "expanded",
+        "unique_visible_union_verified": true
+      },
+      {
+        "query": "wheeled vehicle",
+        "keyword_count": 17,
+        "hybrid_count": 82,
+        "lexical_outcome": "expanded",
+        "unique_visible_union_verified": true
+      },
+      {
+        "query": "books",
+        "keyword_count": 107,
+        "hybrid_count": 107,
+        "lexical_outcome": "expanded",
+        "unique_visible_union_verified": true
+      },
+      {
+        "query": "office chair",
+        "keyword_count": 19,
+        "hybrid_count": 74,
+        "lexical_outcome": "expanded",
+        "unique_visible_union_verified": true
+      }
+    ],
+    "model_windows": 2006,
+    "real_app_auth_media_verified": false,
+    "deployed_linux_runtime_verified": false,
+    "data_ready": false,
+    "helper_peak_rss_bytes": 272596992
+  },
+  "source_projection_unchanged": true,
+  "cleanup": {
+    "required": true,
+    "owned_model_closed": true,
+    "vector_disabled_password_cleared": true,
+    "owned_tunnel_exited": true,
+    "owned_session_terminated": true,
+    "host_stopped": true,
+    "rds_stopped": true
+  },
+  "cross_check": "Cloud coverage, title/description counts and all six productionSQL diagnostic results exactly match real native rehearsal.",
+  "source_binding": "All77approved dependencies match; preserved exact executed Python text snapshots match recorded hashes.",
+  "operations": "Created only dedicated clip_next06_embeddings and reviewed private target grants; actual pinned Mac model read actual RDSsource through normal operator/worker; pipeline activated after complete coverage. No S3calls, source listing/user/image changes, original loader/runtime activation, web/deployedLinux/hosting/IAM/network changes or model download.",
+  "credential_handling": "Ephemeral producer password cleared, NOLOGINverified; model/SQL/tunnel/session closed; both resources stopped. No persistent producer secret stored. Inactive producer/grants and serving pipeline retained for reviewed later integration.",
+  "base_compute_whole_window_estimate_usd": 0.01113583,
+  "cost_limitations": "Conservative existing approved base rates applied to whole window, not actual bill; excludes credits/network/existing storage/baseline/tax.USD1incremental envelope retained; model ran on existing Mac, not a paid inference service.",
+  "rds_stop_review_by_utc": "2026-11-06 09:46:20 UTC",
+  "rds_review_note": "Conservative six-day review before possible seven-day automatic restart; no scheduler; retained storage remains.",
+  "remaining": "OriginalStep3real authenticated app/normal create-edit/new-vector/signed-media checks and deployed Linuxquery/worker integration; final accepted source/22label binding, owned real rebuild/freeze and peer/human DATA-READY acceptance. Existing image/data bulk and stored-vector subchecks are performed.",
+  "data_ready": false,
+  "secret_scan": {
+    "tool": "Gitleaks8.30.1",
+    "findings": 0,
+    "report": "/private/tmp/clip-next06-live-vector-scan-yxr9hev5/scan.json",
+    "scope": "Current tracked/nonignored untracked source and execution evidence; no inline bypass"
+  }
+}

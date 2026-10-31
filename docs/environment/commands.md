@@ -2003,3 +2003,106 @@ the separately approved window. Responses may contain secrets and stay in memory
 the two column-level FOR SHARE grants against disposable PostgreSQL; it never
 changes a shared database. The live grants require affected-owner review and
 durable restoration handling before task acceptance.
+
+## NEXT-06 reference generation and isolated local loading
+
+The [reference generator guide](../../data/README.md#next-06-reference-inputs-and-local-loading)
+registers the exact generate/validate/test commands and retained two-run names.
+`data.generators.reference` accepts only generate/validate, fresh named outputs
+under data/runs, explicit UTCmidnight/day/threshold and an external ordinary image
+root. It rechecks45approved photo hashes/magic/sizes and safe paths. No overwrite,
+reset, database/cloud target, provider call, photo modification or session creation.
+The amended2026-10-30runs contain5000regular users/1000listings/1000planned objects.
+The guide also registers `scripts.evaluation.reference_local` with required
+`CLIP_ENVIRONMENT=test` and `--isolated-local-reference`: fresh fixed-role Unix-only
+native PG18.6,29migrations, real local photo bytes and Listings HTTP checks.
+Optional `--embeddings` uses the installed pinned offline model and supported
+pipeline tools; it verifies1000current vectors, searches and automatic vector
+publication in a separate probe clone. No existing/cloud target is accepted;
+owned processes stop and private evidence is retained. Caller/storage fixtures
+do not accept actual Identity/S3; human labels/freeze/DATA-READY remain pending.
+Use a fresh name and current UTCday
+for future generation; old run validation is read-only. Deployment/upload/load
+commands and actual storage prefix/target require separate cloud approval.
+
+The same local command additionally accepts `--rebuild-check` with `--embeddings`
+for Step6. Only the new DB created by that invocation is reset, migrated/reloaded
+and re-encoded; record/media/vector/index fingerprints must match. The ordinary
+loader retains its nonempty-target refusal. No target/prefix URL or forced-drop
+option exists. See the guide for the exact command and local freeze-candidate
+limits; this is not authorization to reset existing/cloud data or accept DATA-READY.
+
+
+## NEXT-06 guarded cloud adapter — offline preparation
+
+The [operator handoff](../evaluation/domain/next-06/cloud-handoff.md#6-review-the-prepared-cloud-adapter-then-load)
+registers exact `data.generators.reference_cloud plan` and `load` forms.
+`plan` is offline and validates inputs; `load` requires an explicit fully reviewed
+JSON target, fresh private ledger, exact TLS process secret and `--execute`, plus
+separate cloud approval. The null target template is not executable. Only account
+335523638354/ap-south-1/non-root identity is permitted. The15minute CLI enforces
+create-only/hash-verified media, exact server/role/schema, empty rows/registry and
+transactional validation. No reset/migrate/grant/delete/start/retry is implemented.
+No live execution or actual session/S3/IAM acceptance has occurred.
+
+```sh
+.venv/bin/python -m data.generators.reference_cloud plan --name next06-transfer-42-20261030-a --image-root /absolute/path/to/clip-dataset-images
+.venv/bin/python -m pytest data/tests/test_reference_cloud.py -q -W error
+```
+
+
+### NEXT-06 browser-login compatibility
+
+The explicit `reference_cloud load` command now uses `reference_login.sdk_session`.
+For a named `login_session` profile it delegates to the existing AWS CLI process
+credential-export interface, captures credentials only in memory and refreshes
+before expiry; no CRTextra, access keys or global AWSprofile writes are needed.
+Offline `plan` remains client/credential-export free. Existing non-login profiles
+keep their normal SDK chain. Account, non-root, region, target and action gates
+remain unchanged; no live cloud load is accepted by this local compatibility fix.
+
+```sh
+.venv/bin/python -m pytest data/tests/test_reference_login.py data/tests/test_reference_cloud.py -q -W error
+```
+
+
+### NEXT-06 prepared private read-only DBinventory window
+
+The [exact proposal](../evaluation/domain/next-06/transfer/start-access-load-proposal.md)
+records fixed resources, public-price evidence, proposed1USD/60+15min budget,
+conditional ASG safety and cleanup, and separately gated later load phases.
+`scripts/evaluation/reference_db_inventory.py` is inert without its explicit mode
+and is intended only for the approved existing remote host, not the contributor's
+Mac. Its reviewed SSMpayload is prepared but NOT approved/executed. It uses the
+existing instance role/cached pinned APIimage, captures only one named runtime
+connection secret to stdin, enforces fullTLS/readonly/nonsuperuser SQL and reads
+only metadata. No pull/install/grant/schema/data mutation exists. Cleanup checks
+its random label and removes only that owned container ID. Missing tools/image/
+permissions/route cause refusal, not fallback. Do not run this under current
+read-only-metadata approval or use it as a generic remote shell.
+
+```sh
+.venv/bin/python -m pytest data/tests/test_reference_db_inventory.py -q -W error
+```
+
+Prepared local-only [v2 probe diagnostics](../evaluation/domain/next-06/transfer/probe-diagnostic-v2.md) supersede the proposed remote payload. Historical Phase A failed with both resources stopped. A retry is not authorized by local preparation; verify exact hashes and obtain separate cloud-window approval.
+
+NEXT-06 private admin catalog inventory: [exact proposed window](../evaluation/domain/next-06/transfer/admin-inventory-plan.md). Local guard tests: `.venv/bin/python -m pytest data/tests/test_reference_admin_inventory.py -q -W error`. The helper imports inertly; only the separately approved hash-bound controller may connect. Repository-local plugin `.tools/session-manager/1.2.896.0/bin/session-manager-plugin --version` is a local version check, not cloud-session approval.
+
+NEXT-06 isolated database setup: [exact proposed cloud scope](../evaluation/domain/next-06/transfer/database-setup-plan.md). Local unit controls: `.venv/bin/python -m pytest data/tests/test_reference_database_setup.py -q -W error`. Real native permission rehearsal: `.venv/bin/python -m scripts.evaluation.reference_setup_local --local-rehearsal`; creates only a fresh Unix-only cluster under `/private/tmp`, uses existing pinned PG/dbmate, compares full schema and exercises restricted bulk SQL, then stops/retains it. macOS may require sandbox approval for shared memory. No AWS/media/model/provider calls. This command never approves cloud setup; both new cloud roles remain NOLOGIN until separate credential/load authorization.
+
+NEXT-06 exact S3/SQL load package: [proposed scope and recovery](../evaluation/domain/next-06/transfer/cloud-load-plan.md). Local controls: `.venv/bin/python -m pytest data/tests/test_reference_load_access.py data/tests/test_reference_cloud.py -q -W error`. Native authentication/revocation proof: `.venv/bin/python -m scripts.evaluation.reference_setup_local --local-rehearsal --credentials`; only a fresh private Unix cluster, actual SCRAM/bulk SQL then credential clearing and stopped cleanup. Uses existing native tools, no AWS/S3. Proposed cloud controller is not a general CLI and refuses unconfirmed storage review before any AWS call; exact cloud action approval remains separate.
+
+NEXT-06 dedicated vector-producer preparation: [exact proposed cloud window](../evaluation/domain/next-06/transfer/vector-window-plan.md). Unit controls: `.venv/bin/python -m pytest data/tests/test_reference_vector_access.py -q -W error`. Actual local model/role/SQL rehearsal: `.venv/bin/python -m scripts.evaluation.reference_setup_local --local-rehearsal --credentials --vectors`; new private Unix-only PG18.6 cluster, canonical schema/restrictedbulk/SCRAM, dedicated producer/real pinned worker and productionSQLcases, source invariance and password/helper/cluster closeout. Existing tools/model only; no AWS/S3/HTTPfake caller. Cloud execution needs the exact separate approval; raw metadata/APIflags do not enable an app runtime.
+
+NEXT-06 current dataset reproducibility: `CLIP_ENVIRONMENT=test .venv/bin/python -m scripts.evaluation.reference_local --name next06-transfer-42-20261030-a --image-root /Users/mohitmahapatra/Desktop/clip-dataset-images --isolated-local-reference --embeddings --rebuild-check`. Requires existing native tools/model/photos; creates/resets only its new private Unix target and stops it. No AWS. The SELECT-only `reference_freeze_snapshot.py` is a bound reader, not a general target CLI. [Read-only cloud comparison scope](../evaluation/domain/next-06/transfer/dataset-evidence-plan.md) needs separate approval.
+
+NEXT-06 Step3 runtime metadata inspection: `.venv/bin/python -m scripts.evaluation.reference_runtime_inspection --approved-cloud-inspection`; requires separate exact [read-only plan](../evaluation/domain/next-06/transfer/step-03-runtime-inspection-plan.md) approval. Fixed non-root335523638354/Mumbai;10metadata calls maximum, no secret values/starts/writes. Controls: `.venv/bin/python -m pytest data/tests/test_reference_runtime_inspection.py -q -W error`.
+
+NEXT-06 Step3 real workflow: native-only preparation `CLIP_ENVIRONMENT=test .venv/bin/python -m scripts.evaluation.reference_workflow_local --local-rehearsal`. Actual Microsoft/browser/S3mode requires separate [exact live plan](../evaluation/domain/next-06/transfer/step-03-workflow-live-plan.md) approval; no SSMsecret/RDS/EC2 actions. New private SQL/model process stops on exit; reference data untouched. Tests: `.venv/bin/python -m pytest data/tests/test_reference_workflow_local.py -q -W error`.
+
+NEXT-06 Search vector operator: [narrowed automatic Step3 plan](../evaluation/domain/next-06/transfer/step-03-search-vector-plan.md) supersedes the manual Listings exercise. The existing local workflow command now serves a loopback-only operator page after real sign-in; it invokes unchanged public APIs and verifies current vectors before/after one edit. No product UI/feature change; separate live S3/provider approval required. Unit controls: `.venv/bin/python -m pytest data/tests/test_reference_search_operator.py data/tests/test_reference_workflow_local.py -q -W error`.
+
+NEXT-06 Step5 labels: `.venv/bin/python -m scripts.evaluation.reference_labels validate --image-root /absolute/path/to/clip-dataset-images`. Existing canonical22judgments/actual corpus bindings are revalidated, never rewritten; no network/provider/model/SQL/scoring. Requires retained/restored named payload and original45photos/full accepted source Git objects. Initial `write` creates fixed outputs only once and refuses existing files. [Step5 evidence](../evaluation/domain/next-06/transfer/step-05-final-labels-result.json); Step6freeze remains separate.
+
+NEXT-06 frozen release: `.venv/bin/python -m scripts.evaluation.reference_release validate --image-root /absolute/path/to/clip-dataset-images --model-root /absolute/path/to/model`. Verifies both payloads, all52archive members, actual load ledger/model/index/reset/label evidence without extraction/network/inference/SQL. Initial `freeze` exclusively creates the fixed release and refuses overwrite; do not remove a release to bypass versioning. [Task-wide handoff](../evaluation/domain/next-06/task-wide-review.md). Valid content is separate from DATA-READY/CI/peer/run approval.

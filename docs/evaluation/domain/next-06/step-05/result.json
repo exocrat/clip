@@ -1,0 +1,50 @@
+{
+  "task": "NEXT-06",
+  "step": 5,
+  "recorded_utc": "2026-10-30 12:41:47 UTC",
+  "state": "22human judgments accepted; final integration/source/contract/freeze binding pending",
+  "input_fingerprint": "sha256:1ffa78c587b48d0a9dc0e878d008d0dd2d5e14a431f0b54f805e13585e693118",
+  "queries": 22,
+  "catalogue_rows": 1000,
+  "eligible_rows": 800,
+  "reviewer": "Mohit Mahapatra",
+  "reviewed_at": null,
+  "included_reviewed_queries": 22,
+  "audit": "No new task-definition gap. Existing label-format prerequisites block final labels; allowed preparation retains draft metadata/null judgments. Proposed22cases reused from approved dataset design without consulting rankings.",
+  "files": [
+    {
+      "path": "data/evaluation/query-labels.draft.json",
+      "sha256": "2c17f727dc2ad52e4ce97f72b5e0d1c80a65dc8bd8f7957bef99a5d5cba6bc48"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/step-05/candidate-proposals.json",
+      "sha256": "08243a65befb42eed9c5186ab6f9097be9387f96a0feb1a7c6eb2f8d61b3af7f"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/step-05/listing-catalogue.csv",
+      "sha256": "9dff6f7ba20bfac95ae9f9b9eb40e84633c253a16aac421490680397e279b461"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/step-05/review.md",
+      "sha256": "9e0b7f477418c34a5af3981afb4574bee24a4521f088e730c3ef56e2f1f57fba"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/step-05/accepted-judgments.json",
+      "sha256": "978056e15ef31ec0dba69155bd506ac10c0c1c0b45d7c594b1444abcdd8cf7ec"
+    }
+  ],
+  "pending": [
+    "Actual required integration and accepted source/contract/corpus freeze binding",
+    "Final label validation and Step6 reset/reload/DATA-READY gates"
+  ],
+  "checks": {
+    "draft_format": "pass; unreviewed/scoring refused",
+    "catalogue": "1000exact records/800eligible; candidate sets exact eligible topic projections",
+    "diagnostic": "Initial draft page_size5 refused by actual public contract; corrected to allowed20, evaluate only first5. No validator/contract change.",
+    "accepted_judgments": "22accepted included queries; IDs/context exactly match reviewed candidate projections; no exclusions or retrieval-driven relabeling"
+  },
+  "checkpoint_recorded_utc": "2026-10-30 12:42:45 UTC",
+  "confirmation_recorded_at": "2026-10-30T12:46:38.764302Z",
+  "review_time_note": "Inspection timestamp unknown; confirmation recording time retained separately.",
+  "accepted_judgments": "accepted-judgments.json"
+}

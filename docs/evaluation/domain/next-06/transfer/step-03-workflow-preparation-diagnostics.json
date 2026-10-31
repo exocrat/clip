@@ -1,0 +1,19 @@
+{
+  "failed_preparation_attempts": [
+    {
+      "state": "native_preparation_failed",
+      "failure_type": "TypeError",
+      "cluster_stopped": true,
+      "aws_calls": 0,
+      "cause": "New rehearsal adapter used tuple rows where EmbeddingBootstrap requires dictionary rows; fixed adapter, not production code."
+    },
+    {
+      "state": "native_preparation_failed",
+      "failure_type": "TypeError",
+      "cluster_stopped": true,
+      "aws_calls": 0,
+      "cause": "New rehearsal adapter used tuple rows where EmbeddingBootstrap requires dictionary rows; fixed adapter, not production code."
+    }
+  ],
+  "final_pass": "step-03-workflow-native-result.json"
+}

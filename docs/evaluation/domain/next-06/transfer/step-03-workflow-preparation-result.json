@@ -1,0 +1,26 @@
+{
+  "task": "NEXT-06 Step3 live workflow preparation",
+  "recorded_utc": "2026-10-31T13:30:51.580774+00:00",
+  "state": "prepared; exact live S3/provider approval and actual browser verification pending",
+  "native_result": "step-03-workflow-native-result.json",
+  "native_cluster_stopped": true,
+  "native_auth_model_worker": "passed",
+  "full_data_tests_passed": 295,
+  "data_test_seconds": 9.86,
+  "focused_policy_tests_passed": 10,
+  "black_files_unchanged": 2,
+  "boundary_violations": 0,
+  "frontend": "Project-local npm ci, typecheck and real-signin build passed; existing chunk-size warning",
+  "gitleaks": {
+    "version": "8.30.1",
+    "findings": 0,
+    "source_files": 1116,
+    "initial_false_positives": "Plan wording interpreted as key assignments; reworded and rescanned; no scan bypass"
+  },
+  "source_bindings_verified": 133,
+  "aws_calls_in_preparation": 0,
+  "provider_requests_in_preparation": 0,
+  "reference_data_changed": false,
+  "later_task_steps_advanced": false,
+  "data_ready": false
+}

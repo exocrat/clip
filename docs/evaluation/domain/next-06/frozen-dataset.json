@@ -1,0 +1,645 @@
+{
+  "format_version": "1",
+  "task": "NEXT-06",
+  "release_status": "frozen_inputs_verified_acceptance_pending",
+  "final_freeze": true,
+  "data_ready": false,
+  "source_revision": "a12f4a31cd5517cacbdbeda4180b971ed9dcba84",
+  "search_contract_revision": "6edb52ba4e5a148386cd81e78b29c15b557193c7",
+  "logical_data_fingerprint": "sha256:7efd142e11c3e8555e1aa08603cbf8dff07de5d74412ccde3c39869b9334ab98",
+  "schema_version": "reference-v2@20261029043000",
+  "seed": 42,
+  "generator_version": "reference-recipe-v2",
+  "measurement_window": {
+    "before": "2026-12-01T00:00:00.000000Z",
+    "from": "2026-10-30T01:00:00.000000Z"
+  },
+  "distribution_counts": {
+    "availability_scenarios": {
+      "available": 800,
+      "expired": 50,
+      "future": 50,
+      "unavailable": 100
+    },
+    "categories": {
+      "appliances": 111,
+      "bicycles": 111,
+      "books": 111,
+      "electronics": 111,
+      "furniture": 111,
+      "laptop": 111,
+      "mobile_phone": 112,
+      "other": 111,
+      "sports_fitness": 111
+    },
+    "conditions": {
+      "fair": 250,
+      "good": 250,
+      "like_new": 250,
+      "new": 250
+    },
+    "distinct_regular_owners": 1000,
+    "listings": 1000,
+    "negotiable": {
+      "false": 500,
+      "true": 500
+    },
+    "pickup_areas": {
+      "Synthetic Zone A": 250,
+      "Synthetic Zone B": 250,
+      "Synthetic Zone C": 250,
+      "Synthetic Zone D": 250
+    },
+    "planned_image_bytes": 925881224,
+    "planned_images": 1000,
+    "prices_paise": {
+      "0": 100,
+      "100000": 100,
+      "1200000": 100,
+      "200000": 100,
+      "2000000": 100,
+      "25000": 100,
+      "300000": 100,
+      "50000": 100,
+      "500000": 100,
+      "800000": 100
+    },
+    "proof": {
+      "false": 333,
+      "omitted": 334,
+      "true": 333
+    },
+    "topics": {
+      "android-smartphone": 23,
+      "backpack": 23,
+      "badminton-racket": 23,
+      "basic-mobile-phone": 22,
+      "bed-frame": 22,
+      "biology-textbook": 22,
+      "bookshelf": 22,
+      "camera": 22,
+      "campus-bicycle": 23,
+      "chemistry-textbook": 22,
+      "commuter-bicycle": 22,
+      "compact-laptop": 22,
+      "computing-textbook": 22,
+      "desk-monitor": 23,
+      "dining-table": 22,
+      "dual-sim-smartphone": 22,
+      "dumbbells": 22,
+      "economics-textbook": 22,
+      "electric-kettle": 23,
+      "folding-bicycle": 22,
+      "football": 22,
+      "gaming-laptop": 22,
+      "headphones": 22,
+      "iphone": 23,
+      "kitchen-mixer": 22,
+      "linear-algebra-textbook": 23,
+      "mountain-bicycle": 22,
+      "office-chair": 22,
+      "office-laptop": 22,
+      "projector": 22,
+      "refurbished-laptop": 22,
+      "refurbished-smartphone": 22,
+      "rice-cooker": 22,
+      "road-bicycle": 22,
+      "speaker": 22,
+      "stationery-kit": 22,
+      "storage-box": 22,
+      "student-laptop": 23,
+      "study-desk": 23,
+      "table-fan": 22,
+      "tennis-racket": 22,
+      "toaster": 22,
+      "umbrella": 22,
+      "water-bottle": 22,
+      "yoga-mat": 22
+    },
+    "user_classes": {
+      "regular": 5000
+    },
+    "users": 5000
+  },
+  "cloud_target": {
+    "account": "335523638354",
+    "region": "ap-south-1",
+    "database": "clip_next06_reference",
+    "bucket": "clip-test-listings-images-ap-south-1-id01",
+    "prefix": "id01/next06-reference-42-v1"
+  },
+  "image_state": {
+    "objects_verified": 1000,
+    "sql_commits_verified": 1,
+    "logical_object_bytes": 925881224
+  },
+  "transfer": {
+    "archive": "data/transfer/next06-reference-20261030.tar.gz",
+    "bytes": 42463902,
+    "sha256": "2c9c88d103f3329c794c1efa857268a7120c7f1549250d3e28278d5e1eb0b2ea",
+    "members_verified": 52,
+    "source_photos": 45
+  },
+  "model": {
+    "format_version": 1,
+    "model": "sentence-transformers/all-MiniLM-L6-v2",
+    "revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+    "license": "Apache-2.0",
+    "files": [
+      {
+        "filename": "onnx/model.onnx",
+        "kind": "model",
+        "bytes": 90405214,
+        "sha256": "6fd5d72fe4589f189f8ebc006442dbb529bb7ce38f8082112682524616046452"
+      },
+      {
+        "filename": "tokenizer.json",
+        "kind": "model",
+        "bytes": 466247,
+        "sha256": "be50c3628f2bf5bb5e3a7f17b1f74611b2561a3a27eeab05e5aa30f411572037"
+      },
+      {
+        "filename": "tokenizer_config.json",
+        "kind": "model",
+        "bytes": 350,
+        "sha256": "acb92769e8195aabd29b7b2137a9e6d6e25c476a4f15aa4355c233426c61576b"
+      },
+      {
+        "filename": "config.json",
+        "kind": "model",
+        "bytes": 612,
+        "sha256": "953f9c0d463486b10a6871cc2fd59f223b2c70184f49815e7efbcab5d8908b41"
+      },
+      {
+        "filename": "1_Pooling/config.json",
+        "kind": "model",
+        "bytes": 190,
+        "sha256": "4be450dde3b0273bb9787637cfbd28fe04a7ba6ab9d36ac48e92b11e350ffc23"
+      },
+      {
+        "filename": "sentence_bert_config.json",
+        "kind": "model",
+        "bytes": 53,
+        "sha256": "fc1993fde0a95c24ec6c022539d41cf6e2f7c9721e5415d6fb6897472a9cd4b7"
+      },
+      {
+        "filename": "README.md",
+        "kind": "model",
+        "bytes": 10502,
+        "sha256": "dcd602d2fd35c203a247304a06fec6654a12f7941b739f9221a064fe8dc3b7f0"
+      }
+    ]
+  },
+  "pipeline": {
+    "pipeline_id": "4b43fc307151933bf5b0fa80ff4e10f8cb4266194905cd2b15a3d01b2386d9ca",
+    "state": "serving",
+    "encoding_matches": true,
+    "conflicting_serving": false,
+    "live": 1000,
+    "ready": 1000,
+    "missing": 0,
+    "stale": 0,
+    "pending": 0,
+    "leased": 0,
+    "failed": 0,
+    "invalid_parts": 0
+  },
+  "vector_index_snapshot": {
+    "listings": 1000,
+    "vector_parts": 2000,
+    "logical_vectors_sha256": "c14d68a44dfc106bafbe85cc519f9bc6900363df7bfdb1dfac50ae6c75cb53cc",
+    "indexes_sha256": "32d59fb10197685d34294db9eb974b4a02d5341440ad8c1e7f5d0bc4b841cf40",
+    "indexes": [
+      [
+        "identity",
+        "auth_source_events_pkey",
+        "CREATE UNIQUE INDEX auth_source_events_pkey ON identity.auth_source_events USING btree (id)"
+      ],
+      [
+        "identity",
+        "auth_source_window",
+        "CREATE INDEX auth_source_window ON identity.auth_source_events USING btree (source_digest, created_at DESC)"
+      ],
+      [
+        "identity",
+        "contacts_pkey",
+        "CREATE UNIQUE INDEX contacts_pkey ON identity.contacts USING btree (user_id)"
+      ],
+      [
+        "identity",
+        "external_identities_pkey",
+        "CREATE UNIQUE INDEX external_identities_pkey ON identity.external_identities USING btree (id)"
+      ],
+      [
+        "identity",
+        "external_identities_provider_issuer_subject_key",
+        "CREATE UNIQUE INDEX external_identities_provider_issuer_subject_key ON identity.external_identities USING btree (provider, issuer, subject)"
+      ],
+      [
+        "identity",
+        "external_identities_user",
+        "CREATE INDEX external_identities_user ON identity.external_identities USING btree (user_id)"
+      ],
+      [
+        "identity",
+        "microsoft_login_attempts_pkey",
+        "CREATE UNIQUE INDEX microsoft_login_attempts_pkey ON identity.microsoft_login_attempts USING btree (token_digest)"
+      ],
+      [
+        "identity",
+        "otp_challenges_pkey",
+        "CREATE UNIQUE INDEX otp_challenges_pkey ON identity.otp_challenges USING btree (id)"
+      ],
+      [
+        "identity",
+        "otp_expiry",
+        "CREATE INDEX otp_expiry ON identity.otp_challenges USING btree (expires_at)"
+      ],
+      [
+        "identity",
+        "otp_key_binding_key_version_key",
+        "CREATE UNIQUE INDEX otp_key_binding_key_version_key ON identity.otp_key_binding USING btree (key_version)"
+      ],
+      [
+        "identity",
+        "otp_key_binding_pkey",
+        "CREATE UNIQUE INDEX otp_key_binding_pkey ON identity.otp_key_binding USING btree (singleton)"
+      ],
+      [
+        "identity",
+        "otp_operations_challenge_id_key",
+        "CREATE UNIQUE INDEX otp_operations_challenge_id_key ON identity.otp_operations USING btree (challenge_id)"
+      ],
+      [
+        "identity",
+        "otp_operations_pkey",
+        "CREATE UNIQUE INDEX otp_operations_pkey ON identity.otp_operations USING btree (request_digest)"
+      ],
+      [
+        "identity",
+        "otp_send_reservations_pkey",
+        "CREATE UNIQUE INDEX otp_send_reservations_pkey ON identity.otp_send_reservations USING btree (challenge_id)"
+      ],
+      [
+        "identity",
+        "otp_sends_source",
+        "CREATE INDEX otp_sends_source ON identity.otp_send_reservations USING btree (key_version, source_digest, created_at DESC)"
+      ],
+      [
+        "identity",
+        "otp_sends_target",
+        "CREATE INDEX otp_sends_target ON identity.otp_send_reservations USING btree (key_version, target_digest, created_at DESC)"
+      ],
+      [
+        "identity",
+        "otp_target_purpose",
+        "CREATE INDEX otp_target_purpose ON identity.otp_challenges USING btree (target_lookup_digest, purpose, created_at DESC)"
+      ],
+      [
+        "identity",
+        "otp_user",
+        "CREATE INDEX otp_user ON identity.otp_challenges USING btree (user_id)"
+      ],
+      [
+        "identity",
+        "otp_verification_windows_pkey",
+        "CREATE UNIQUE INDEX otp_verification_windows_pkey ON identity.otp_verification_windows USING btree (key_version, target_digest, purpose)"
+      ],
+      [
+        "identity",
+        "password_login_windows_pkey",
+        "CREATE UNIQUE INDEX password_login_windows_pkey ON identity.password_login_windows USING btree (key_version, target_digest)"
+      ],
+      [
+        "identity",
+        "sessions_expiry",
+        "CREATE INDEX sessions_expiry ON identity.sessions USING btree (expires_at)"
+      ],
+      [
+        "identity",
+        "sessions_pkey",
+        "CREATE UNIQUE INDEX sessions_pkey ON identity.sessions USING btree (id)"
+      ],
+      [
+        "identity",
+        "sessions_token_digest_key",
+        "CREATE UNIQUE INDEX sessions_token_digest_key ON identity.sessions USING btree (token_digest)"
+      ],
+      [
+        "identity",
+        "sessions_user_revocation",
+        "CREATE INDEX sessions_user_revocation ON identity.sessions USING btree (user_id, revoked_at)"
+      ],
+      [
+        "identity",
+        "temporary_credentials_login_email_key_key",
+        "CREATE UNIQUE INDEX temporary_credentials_login_email_key_key ON identity.temporary_credentials USING btree (login_email_key)"
+      ],
+      [
+        "identity",
+        "temporary_credentials_pkey",
+        "CREATE UNIQUE INDEX temporary_credentials_pkey ON identity.temporary_credentials USING btree (user_id)"
+      ],
+      [
+        "identity",
+        "temporary_enrollments_digest_key_version_login_digest_key",
+        "CREATE UNIQUE INDEX temporary_enrollments_digest_key_version_login_digest_key ON identity.temporary_enrollments USING btree (digest_key_version, login_digest)"
+      ],
+      [
+        "identity",
+        "temporary_enrollments_pkey",
+        "CREATE UNIQUE INDEX temporary_enrollments_pkey ON identity.temporary_enrollments USING btree (id)"
+      ],
+      [
+        "identity",
+        "temporary_enrollments_user_id_key",
+        "CREATE UNIQUE INDEX temporary_enrollments_user_id_key ON identity.temporary_enrollments USING btree (user_id)"
+      ],
+      [
+        "identity",
+        "users_claimed_handle_unique",
+        "CREATE UNIQUE INDEX users_claimed_handle_unique ON identity.users USING btree (lower(display_name)) WHERE (handle_ready AND (profile_removed_at IS NULL))"
+      ],
+      [
+        "identity",
+        "users_pkey",
+        "CREATE UNIQUE INDEX users_pkey ON identity.users USING btree (id)"
+      ],
+      [
+        "identity",
+        "users_temporary_expiry",
+        "CREATE INDEX users_temporary_expiry ON identity.users USING btree (expires_at) WHERE (account_class = 'temporary'::text)"
+      ],
+      [
+        "listings",
+        "categories_code_key",
+        "CREATE UNIQUE INDEX categories_code_key ON listings.categories USING btree (code)"
+      ],
+      [
+        "listings",
+        "categories_pkey",
+        "CREATE UNIQUE INDEX categories_pkey ON listings.categories USING btree (id)"
+      ],
+      [
+        "listings",
+        "conditions_pkey",
+        "CREATE UNIQUE INDEX conditions_pkey ON listings.conditions USING btree (code)"
+      ],
+      [
+        "listings",
+        "create_command_results_listing_id_key",
+        "CREATE UNIQUE INDEX create_command_results_listing_id_key ON listings.create_command_results USING btree (listing_id)"
+      ],
+      [
+        "listings",
+        "create_command_results_pkey",
+        "CREATE UNIQUE INDEX create_command_results_pkey ON listings.create_command_results USING btree (owner_id, operation_id)"
+      ],
+      [
+        "listings",
+        "embedding_chunks_pkey",
+        "CREATE UNIQUE INDEX embedding_chunks_pkey ON listings.embedding_chunks USING btree (generation_id, part_kind, ordinal)"
+      ],
+      [
+        "listings",
+        "embedding_generation_due",
+        "CREATE INDEX embedding_generation_due ON listings.embedding_generations USING btree (retry_after, listing_id, pipeline_id) WHERE (state = ANY (ARRAY['pending'::text, 'leased'::text]))"
+      ],
+      [
+        "listings",
+        "embedding_generations_generation_id_key",
+        "CREATE UNIQUE INDEX embedding_generations_generation_id_key ON listings.embedding_generations USING btree (generation_id)"
+      ],
+      [
+        "listings",
+        "embedding_generations_pkey",
+        "CREATE UNIQUE INDEX embedding_generations_pkey ON listings.embedding_generations USING btree (listing_id, pipeline_id)"
+      ],
+      [
+        "listings",
+        "embedding_one_serving",
+        "CREATE UNIQUE INDEX embedding_one_serving ON listings.embedding_pipelines USING btree ((true)) WHERE (state = 'serving'::text)"
+      ],
+      [
+        "listings",
+        "embedding_pipelines_pkey",
+        "CREATE UNIQUE INDEX embedding_pipelines_pkey ON listings.embedding_pipelines USING btree (pipeline_id)"
+      ],
+      [
+        "listings",
+        "image_uploads_cleanup_due",
+        "CREATE INDEX image_uploads_cleanup_due ON listings.image_uploads USING btree (expires_at, id) INCLUDE (cleanup_retry_after)"
+      ],
+      [
+        "listings",
+        "image_uploads_object_key_key",
+        "CREATE UNIQUE INDEX image_uploads_object_key_key ON listings.image_uploads USING btree (object_key)"
+      ],
+      [
+        "listings",
+        "image_uploads_pkey",
+        "CREATE UNIQUE INDEX image_uploads_pkey ON listings.image_uploads USING btree (id)"
+      ],
+      [
+        "listings",
+        "images_cleanup_due",
+        "CREATE INDEX images_cleanup_due ON listings.images USING btree (retired_at, id) INCLUDE (cleanup_retry_after) WHERE (retired_at IS NOT NULL)"
+      ],
+      [
+        "listings",
+        "images_listing",
+        "CREATE INDEX images_listing ON listings.images USING btree (listing_id)"
+      ],
+      [
+        "listings",
+        "images_live_position",
+        "CREATE UNIQUE INDEX images_live_position ON listings.images USING btree (listing_id, \"position\") WHERE (retired_at IS NULL)"
+      ],
+      [
+        "listings",
+        "images_object_key_key",
+        "CREATE UNIQUE INDEX images_object_key_key ON listings.images USING btree (object_key)"
+      ],
+      [
+        "listings",
+        "images_pkey",
+        "CREATE UNIQUE INDEX images_pkey ON listings.images USING btree (id)"
+      ],
+      [
+        "listings",
+        "images_upload_id_key",
+        "CREATE UNIQUE INDEX images_upload_id_key ON listings.images USING btree (upload_id)"
+      ],
+      [
+        "listings",
+        "owner_command_results_pkey",
+        "CREATE UNIQUE INDEX owner_command_results_pkey ON listings.owner_command_results USING btree (listing_id, command_kind, operation_id)"
+      ],
+      [
+        "listings",
+        "sale_category",
+        "CREATE INDEX sale_category ON listings.sale_listings USING btree (category_id)"
+      ],
+      [
+        "listings",
+        "sale_condition",
+        "CREATE INDEX sale_condition ON listings.sale_listings USING btree (condition_code)"
+      ],
+      [
+        "listings",
+        "sale_full_text",
+        "CREATE INDEX sale_full_text ON listings.sale_listings USING gin (search_vector)"
+      ],
+      [
+        "listings",
+        "sale_listings_pkey",
+        "CREATE UNIQUE INDEX sale_listings_pkey ON listings.sale_listings USING btree (id)"
+      ],
+      [
+        "listings",
+        "sale_owner",
+        "CREATE INDEX sale_owner ON listings.sale_listings USING btree (owner_id, created_at DESC, id DESC)"
+      ],
+      [
+        "listings",
+        "sale_price",
+        "CREATE INDEX sale_price ON listings.sale_listings USING btree (availability, asking_price_paise, id) WHERE (retired_at IS NULL)"
+      ],
+      [
+        "listings",
+        "sale_recency",
+        "CREATE INDEX sale_recency ON listings.sale_listings USING btree (availability, created_at DESC, id DESC) WHERE (retired_at IS NULL)"
+      ],
+      [
+        "listings",
+        "sale_retirement",
+        "CREATE INDEX sale_retirement ON listings.sale_listings USING btree (retirement_eligible_since) WHERE (retired_at IS NULL)"
+      ],
+      [
+        "listings",
+        "sale_selected_buyer",
+        "CREATE INDEX sale_selected_buyer ON listings.sale_listings USING btree (selected_buyer_id)"
+      ],
+      [
+        "listings",
+        "upload_owner_operation_unique",
+        "CREATE UNIQUE INDEX upload_owner_operation_unique ON listings.image_uploads USING btree (owner_id, operation_id)"
+      ],
+      [
+        "listings",
+        "uploads_expiry",
+        "CREATE INDEX uploads_expiry ON listings.image_uploads USING btree (state, expires_at)"
+      ],
+      [
+        "listings",
+        "uploads_owner_state",
+        "CREATE INDEX uploads_owner_state ON listings.image_uploads USING btree (owner_id, state)"
+      ]
+    ]
+  },
+  "labels": {
+    "path": "data/evaluation/query-labels.json",
+    "sha256": "77442ab33b687fa446436781f85e47f2f1340629c4f19d226997cc19e82b6af7",
+    "queries": 22,
+    "included": 22,
+    "review": {
+      "reviewer": "Mohit Mahapatra",
+      "reviewed_at": "2026-10-30T12:46:38.764302Z",
+      "inclusion_policy": "Review all22cases below, covering all9categories, literal names, synonyms and broader needs. Keep every case included, including failed retrieval or a judged-empty relevant set. Exclude only an explicitly documented out-of-scope/invalid query with human approval; keep at least20included cases. Do not choose or change judgments from measured top-five results.\n\nContext: an eligible regular synthetic user; currently available listings only; no category/condition/price filters; page1, public page size20 (score only the first5), relevance sort, Hybrid mode. Architecture comparisons must preserve these settings and the same labels. Availability is stable until2026-12-01T00:00Z. Relevance concerns item suitability; price, negotiability and condition do not constrain these query texts."
+    }
+  },
+  "reproducibility": {
+    "both_generated_record_sets_identical": true,
+    "real_isolated_reset_reload": true,
+    "cloud_native_vectors_indexes_match": true
+  },
+  "normal_workflow_provenance": "Completed by another executor per explicit Mohit report; not proven by our incomplete local attempt",
+  "last_cloud_snapshot_ended_utc": "2026-10-31 10:33:47 UTC",
+  "fresh_cloud_state_claimed": false,
+  "scoring_executed": false,
+  "inputs": [
+    {
+      "path": "data/evaluation/query-labels.json",
+      "sha256": "77442ab33b687fa446436781f85e47f2f1340629c4f19d226997cc19e82b6af7"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/final-label-binding.json",
+      "sha256": "8ce915ac0913a47ab43230f962f6a0d84f80182223e5612a7b0666dfe887c304"
+    },
+    {
+      "path": "data/runs/next06-transfer-42-20261030-a/manifest.json",
+      "sha256": "b134281617059088a6b5d461891753fe0b05cc466250af39d9ff9cd7fb03edf4"
+    },
+    {
+      "path": "data/runs/next06-transfer-42-20261030-a/dataset.json",
+      "sha256": "da6bd070e177a276a3e23e532cbc9a6406deee30b285141f10ca1de9ccae6a1e"
+    },
+    {
+      "path": "data/runs/next06-transfer-42-20261030-b/manifest.json",
+      "sha256": "4b298fe0926133b64b5839dc6705b9c8312ea3100881bc2a5a015058ecce2111"
+    },
+    {
+      "path": "data/runs/next06-transfer-42-20261030-b/dataset.json",
+      "sha256": "4ba79817ec12adca0c7ca12a0fbb8436dbeaa383e756a82ecff0bdba2b0774ff"
+    },
+    {
+      "path": "data/transfer/next06-reference-20261030.json",
+      "sha256": "545b7a65070f11fd9c847ca50c97dd634e847d46a9439c08b45dc04a6fc09f4c"
+    },
+    {
+      "path": "data/transfer/next06-reference-20261030.tar.gz",
+      "sha256": "2c9c88d103f3329c794c1efa857268a7120c7f1549250d3e28278d5e1eb0b2ea"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/cloud-load-20261031/object-load-ledger.jsonl",
+      "sha256": "20a5f7c4f152b1a9e6c0dca816db88ac8dea2f3e112865868125ee456515a52b"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/cloud-load-20261031/approved-target.json",
+      "sha256": "5a9b3a48ce80a4673ce55a10596aa6c6d332f0ac42399ba7909aa14df16233e3"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/dataset-current-native-rebuild.json",
+      "sha256": "c4d276dc63c0fc8b5c5c4f71a5672aa53ca95b5f09fb8542a38621c0bfcfc2d0"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/dataset-snapshot-20261031/result.json",
+      "sha256": "e2210d7770d1de2a11d4633f431c7821164d9454198d65d8e7ce7354723599c5"
+    },
+    {
+      "path": "scripts/evaluation/semantic/model-manifest.json",
+      "sha256": "7c9776cbc5825c9c036c2027e31eb329c11f17a24c911a1de2adc2ecd4f029c4"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/vector-production-20261031/result.json",
+      "sha256": "d9c0641b683d7a64e6f63937099fc3a55d6abadefd4b02a27cb5f271212a504b"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/step-03-human-reported-completion.json",
+      "sha256": "017547395443dcad25d617869e710c828a4a99f433d2c759927c1edeb95096c4"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/step-05-label-binding-decisions.json",
+      "sha256": "7460a7af524b4e8b5d8aca40e6900643024d014103e029855a29bfff437e4da4"
+    },
+    {
+      "path": "scripts/evaluation/reference_labels.py",
+      "sha256": "6cf4462c16a9b0c12f0e82920e6477f4c42f2b066625c3c5817b7206697927dd"
+    },
+    {
+      "path": "scripts/evaluation/reference_release.py",
+      "sha256": "bd5d6162d6f69045f4c5ce2aa1756ab1856e6f5b585b2c2345e3201c9115b6cf"
+    },
+    {
+      "path": "scripts/evaluation/search.py",
+      "sha256": "6e75e1b0faf0fe48ba1c526b96903bb8362d3baeea64fbe879b57e68bc575df7"
+    }
+  ],
+  "acceptance_pending": [
+    "Human Step6 verification",
+    "Current-head CI and independent human peer review",
+    "Explicit merge authorization and recorded accepted revision"
+  ],
+  "retention": "Keep reference objects/data; no new uploads/reset/cloud policy changes. Recheck dataset/window before measurements. New source/schema/model/data/labels require reviewed revalidation/versioning.",
+  "frozen_recorded_at": "2026-10-31T15:34:55.845224Z"
+}

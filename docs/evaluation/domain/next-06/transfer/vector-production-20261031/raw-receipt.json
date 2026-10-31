@@ -1,0 +1,453 @@
+{
+  "task": "NEXT-06",
+  "checkpoint": "Proposed dedicated vector-producer and RDSpublication",
+  "state": "vectors_published_resources_stopped",
+  "started_utc": "2026-10-31 09:25:35 UTC",
+  "events": [
+    {
+      "utc": "2026-10-31 09:25:38 UTC",
+      "event": "project_identity_verified"
+    },
+    {
+      "utc": "2026-10-31 09:25:39 UTC",
+      "event": "asg_safety_snapshot",
+      "desired": 0,
+      "minimum": 0,
+      "maximum": 1,
+      "instances": [
+        {
+          "id": "i-086045c48487471de",
+          "lifecycle": "InService"
+        }
+      ],
+      "suspended": [
+        "AZRebalance",
+        "AddToLoadBalancer",
+        "AlarmNotification",
+        "HealthCheck",
+        "InstanceRefresh",
+        "Launch",
+        "RemoveFromLoadBalancerLowPriority",
+        "ReplaceUnhealthy",
+        "ScheduledActions",
+        "Terminate"
+      ]
+    },
+    {
+      "utc": "2026-10-31 09:25:39 UTC",
+      "event": "all_preflight_guards_passed"
+    },
+    {
+      "utc": "2026-10-31 09:25:39 UTC",
+      "event": "rds_start_attempt"
+    },
+    {
+      "utc": "2026-10-31 09:25:40 UTC",
+      "event": "waiting_rds_available",
+      "state": "starting"
+    },
+    {
+      "utc": "2026-10-31 09:26:10 UTC",
+      "event": "waiting_rds_available",
+      "state": "starting"
+    },
+    {
+      "utc": "2026-10-31 09:26:40 UTC",
+      "event": "waiting_rds_available",
+      "state": "starting"
+    },
+    {
+      "utc": "2026-10-31 09:27:10 UTC",
+      "event": "waiting_rds_available",
+      "state": "starting"
+    },
+    {
+      "utc": "2026-10-31 09:27:40 UTC",
+      "event": "waiting_rds_available",
+      "state": "starting"
+    },
+    {
+      "utc": "2026-10-31 09:28:10 UTC",
+      "event": "waiting_rds_available",
+      "state": "starting"
+    },
+    {
+      "utc": "2026-10-31 09:28:41 UTC",
+      "event": "waiting_rds_available",
+      "state": "starting"
+    },
+    {
+      "utc": "2026-10-31 09:29:11 UTC",
+      "event": "waiting_rds_available",
+      "state": "configuring-enhanced-monitoring"
+    },
+    {
+      "utc": "2026-10-31 09:29:41 UTC",
+      "event": "waiting_rds_available",
+      "state": "configuring-enhanced-monitoring"
+    },
+    {
+      "utc": "2026-10-31 09:30:12 UTC",
+      "event": "asg_safety_snapshot",
+      "desired": 0,
+      "minimum": 0,
+      "maximum": 1,
+      "instances": [
+        {
+          "id": "i-086045c48487471de",
+          "lifecycle": "InService"
+        }
+      ],
+      "suspended": [
+        "AZRebalance",
+        "AddToLoadBalancer",
+        "AlarmNotification",
+        "HealthCheck",
+        "InstanceRefresh",
+        "Launch",
+        "RemoveFromLoadBalancerLowPriority",
+        "ReplaceUnhealthy",
+        "ScheduledActions",
+        "Terminate"
+      ]
+    },
+    {
+      "utc": "2026-10-31 09:30:12 UTC",
+      "event": "host_start_attempt"
+    },
+    {
+      "utc": "2026-10-31 09:30:13 UTC",
+      "event": "waiting_host_running",
+      "state": "stopped"
+    },
+    {
+      "utc": "2026-10-31 09:30:44 UTC",
+      "event": "asg_safety_snapshot",
+      "desired": 0,
+      "minimum": 0,
+      "maximum": 1,
+      "instances": [
+        {
+          "id": "i-086045c48487471de",
+          "lifecycle": "InService"
+        }
+      ],
+      "suspended": [
+        "AZRebalance",
+        "AddToLoadBalancer",
+        "AlarmNotification",
+        "HealthCheck",
+        "InstanceRefresh",
+        "Launch",
+        "RemoveFromLoadBalancerLowPriority",
+        "ReplaceUnhealthy",
+        "ScheduledActions",
+        "Terminate"
+      ]
+    },
+    {
+      "utc": "2026-10-31 09:30:45 UTC",
+      "event": "owned_private_tunnel_verified"
+    },
+    {
+      "utc": "2026-10-31 09:30:48 UTC",
+      "event": "vector_access_stage",
+      "stage": "vector_role_create_attempt"
+    },
+    {
+      "utc": "2026-10-31 09:30:48 UTC",
+      "event": "vector_access_stage",
+      "stage": "vector_inactive_role_grants_committed",
+      "role_oid": 106523
+    },
+    {
+      "utc": "2026-10-31 09:30:48 UTC",
+      "event": "vector_access_stage",
+      "stage": "vector_activation_attempt",
+      "role_oid": 106523,
+      "expires_utc": "2026-10-31T10:10:47.966690+00:00"
+    },
+    {
+      "utc": "2026-10-31 09:30:49 UTC",
+      "event": "vector_access_stage",
+      "stage": "vector_role_activated",
+      "role_oid": 106523
+    },
+    {
+      "utc": "2026-10-31 09:32:17 UTC",
+      "event": "vector_production_stage",
+      "stage": "vector_queued",
+      "count": 1000
+    },
+    {
+      "utc": "2026-10-31 09:33:10 UTC",
+      "event": "vector_production_stage",
+      "stage": "vector_progress",
+      "published": 100
+    },
+    {
+      "utc": "2026-10-31 09:34:02 UTC",
+      "event": "vector_production_stage",
+      "stage": "vector_progress",
+      "published": 200
+    },
+    {
+      "utc": "2026-10-31 09:34:56 UTC",
+      "event": "vector_production_stage",
+      "stage": "vector_progress",
+      "published": 300
+    },
+    {
+      "utc": "2026-10-31 09:35:49 UTC",
+      "event": "vector_production_stage",
+      "stage": "vector_progress",
+      "published": 400
+    },
+    {
+      "utc": "2026-10-31 09:36:40 UTC",
+      "event": "vector_production_stage",
+      "stage": "vector_progress",
+      "published": 500
+    },
+    {
+      "utc": "2026-10-31 09:37:33 UTC",
+      "event": "vector_production_stage",
+      "stage": "vector_progress",
+      "published": 600
+    },
+    {
+      "utc": "2026-10-31 09:38:25 UTC",
+      "event": "vector_production_stage",
+      "stage": "vector_progress",
+      "published": 700
+    },
+    {
+      "utc": "2026-10-31 09:39:18 UTC",
+      "event": "vector_production_stage",
+      "stage": "vector_progress",
+      "published": 800
+    },
+    {
+      "utc": "2026-10-31 09:40:10 UTC",
+      "event": "vector_production_stage",
+      "stage": "vector_progress",
+      "published": 900
+    },
+    {
+      "utc": "2026-10-31 09:41:03 UTC",
+      "event": "vector_production_stage",
+      "stage": "vector_progress",
+      "published": 1000
+    },
+    {
+      "utc": "2026-10-31 09:41:03 UTC",
+      "event": "vector_production_stage",
+      "stage": "vector_pipeline_serving",
+      "ready": 1000
+    },
+    {
+      "utc": "2026-10-31 09:41:14 UTC",
+      "event": "actual_vectors_and_search_verified"
+    },
+    {
+      "utc": "2026-10-31 09:41:14 UTC",
+      "event": "vector_access_stage",
+      "stage": "vector_revoke_attempt",
+      "role_oid": 106523
+    },
+    {
+      "utc": "2026-10-31 09:41:14 UTC",
+      "event": "vector_access_stage",
+      "stage": "vector_disabled_password_cleared",
+      "role_oid": 106523
+    },
+    {
+      "utc": "2026-10-31 09:41:16 UTC",
+      "event": "asg_safety_snapshot",
+      "desired": 0,
+      "minimum": 0,
+      "maximum": 1,
+      "instances": [
+        {
+          "id": "i-086045c48487471de",
+          "lifecycle": "InService"
+        }
+      ],
+      "suspended": [
+        "AZRebalance",
+        "AddToLoadBalancer",
+        "AlarmNotification",
+        "HealthCheck",
+        "InstanceRefresh",
+        "Launch",
+        "RemoveFromLoadBalancerLowPriority",
+        "ReplaceUnhealthy",
+        "ScheduledActions",
+        "Terminate"
+      ]
+    },
+    {
+      "utc": "2026-10-31 09:41:17 UTC",
+      "event": "waiting_host_stopped",
+      "state": "stopping"
+    },
+    {
+      "utc": "2026-10-31 09:41:48 UTC",
+      "event": "waiting_rds_stopped",
+      "state": "stopping"
+    },
+    {
+      "utc": "2026-10-31 09:42:18 UTC",
+      "event": "waiting_rds_stopped",
+      "state": "stopping"
+    },
+    {
+      "utc": "2026-10-31 09:42:48 UTC",
+      "event": "waiting_rds_stopped",
+      "state": "stopping"
+    },
+    {
+      "utc": "2026-10-31 09:43:19 UTC",
+      "event": "waiting_rds_stopped",
+      "state": "stopping"
+    },
+    {
+      "utc": "2026-10-31 09:43:49 UTC",
+      "event": "waiting_rds_stopped",
+      "state": "stopping"
+    },
+    {
+      "utc": "2026-10-31 09:44:19 UTC",
+      "event": "waiting_rds_stopped",
+      "state": "stopping"
+    },
+    {
+      "utc": "2026-10-31 09:44:49 UTC",
+      "event": "waiting_rds_stopped",
+      "state": "stopping"
+    },
+    {
+      "utc": "2026-10-31 09:45:19 UTC",
+      "event": "waiting_rds_stopped",
+      "state": "stopping"
+    },
+    {
+      "utc": "2026-10-31 09:45:49 UTC",
+      "event": "waiting_rds_stopped",
+      "state": "stopping"
+    },
+    {
+      "utc": "2026-10-31 09:46:20 UTC",
+      "event": "owned_resources_stopped"
+    },
+    {
+      "utc": "2026-10-31 09:46:20 UTC",
+      "event": "window_finished",
+      "state": "vectors_published_resources_stopped"
+    }
+  ],
+  "resource_start_attempts": {
+    "rds": true,
+    "ec2": true
+  },
+  "api_calls": 49,
+  "identity": {
+    "Account": "335523638354",
+    "Arn": "arn:aws:iam::335523638354:user/mohitmahapa1"
+  },
+  "before": {
+    "rds": "stopped",
+    "ec2": "stopped"
+  },
+  "model_closed": true,
+  "vector_result": {
+    "state": "real_pinned_vectors_serving",
+    "queued": 1000,
+    "published": 1000,
+    "coverage": {
+      "pipeline_id": "4b43fc307151933bf5b0fa80ff4e10f8cb4266194905cd2b15a3d01b2386d9ca",
+      "state": "serving",
+      "encoding_matches": true,
+      "conflicting_serving": false,
+      "live": 1000,
+      "ready": 1000,
+      "missing": 0,
+      "stale": 0,
+      "pending": 0,
+      "leased": 0,
+      "failed": 0,
+      "invalid_parts": 0
+    },
+    "parts": [
+      {
+        "part_kind": "description",
+        "count": 1000
+      },
+      {
+        "part_kind": "title",
+        "count": 1000
+      }
+    ],
+    "search_diagnostics": [
+      {
+        "query": "cycle",
+        "keyword_count": 82,
+        "hybrid_count": 82,
+        "lexical_outcome": "expanded",
+        "unique_visible_union_verified": true
+      },
+      {
+        "query": "cycel",
+        "keyword_count": 82,
+        "hybrid_count": 82,
+        "lexical_outcome": "typo_expanded",
+        "unique_visible_union_verified": true
+      },
+      {
+        "query": "vehicle",
+        "keyword_count": 82,
+        "hybrid_count": 82,
+        "lexical_outcome": "expanded",
+        "unique_visible_union_verified": true
+      },
+      {
+        "query": "wheeled vehicle",
+        "keyword_count": 17,
+        "hybrid_count": 82,
+        "lexical_outcome": "expanded",
+        "unique_visible_union_verified": true
+      },
+      {
+        "query": "books",
+        "keyword_count": 107,
+        "hybrid_count": 107,
+        "lexical_outcome": "expanded",
+        "unique_visible_union_verified": true
+      },
+      {
+        "query": "office chair",
+        "keyword_count": 19,
+        "hybrid_count": 74,
+        "lexical_outcome": "expanded",
+        "unique_visible_union_verified": true
+      }
+    ],
+    "model_windows": 2006,
+    "real_app_auth_media_verified": false,
+    "deployed_linux_runtime_verified": false,
+    "data_ready": false,
+    "helper_peak_rss_bytes": 272596992
+  },
+  "source_projection_unchanged": true,
+  "vector_passed": true,
+  "cleanup": {
+    "required": true,
+    "owned_model_closed": true,
+    "vector_disabled_password_cleared": true,
+    "owned_tunnel_exited": true,
+    "owned_session_terminated": true,
+    "host_stopped": true,
+    "rds_stopped": true
+  },
+  "ended_utc": "2026-10-31 09:46:20 UTC"
+}

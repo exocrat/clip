@@ -1,0 +1,49 @@
+{
+  "state": "Prepared locally; new admin-secret/tunnel/cloud window not approved or executed",
+  "files": [
+    {
+      "path": "scripts/evaluation/reference_admin_inventory.py",
+      "sha256": "c94f171cf499605ac3e87d3e5837006c4acd197e4e81c4de55032174415fb368"
+    },
+    {
+      "path": "scripts/evaluation/reference_db_inventory.py",
+      "sha256": "9f7081f77f3dea9fb11389cbb4b8641027262d0d43be59c587e1c647e2a47087"
+    },
+    {
+      "path": "data/generators/reference_login.py",
+      "sha256": "b1044ca6498250a95fb8b042ac0c49d91712e6eef2a1984d6c59c602686d680d"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/admin-inventory-controller.proposed.py.txt",
+      "sha256": "8219c6edf05fd01da828b69a2cc68890d49a373f19522e75dbe2c3dbdb273d18"
+    },
+    {
+      "path": ".tools/session-manager/1.2.896.0/bin/session-manager-plugin",
+      "sha256": "71258c3f7d5c15603a3b75bc8dfd62f595e8ec6ef3b8132ab59a005eebb7fa35"
+    },
+    {
+      "path": ".tools/session-manager/ap-south-1-bundle.pem",
+      "sha256": "ca4a9dc14e06c3f84274eff3ffed0e5d4d3463141593e1159eb4a0904df6cd74"
+    }
+  ],
+  "plugin": {
+    "version": "1.2.896.0",
+    "architecture": "macOS arm64",
+    "package_sha256": "b95139a76cb473654d92185c200ac65205244b20f96aeb240b53837ba4973084",
+    "signature": "AMZN Mobile LLC (94KV3E626L), Apple-notarized; pkgutil outside sandbox verified",
+    "source": "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/mac_arm64/session-manager-plugin.pkg",
+    "installation": "Only user-space payload copied to repository .tools; no installer/LaunchDaemon/global symlink run"
+  },
+  "ca_source": "https://truststore.pki.rds.amazonaws.com/ap-south-1/ap-south-1-bundle.pem",
+  "targets": {
+    "account": "335523638354",
+    "profile": "mohitmahapa1",
+    "region": "ap-south-1",
+    "database": "clip_test",
+    "login": "clip_test_admin",
+    "one_secret": "/clip/test/database-master-password",
+    "ssm_document": "AWS-StartPortForwardingSessionToRemoteHost",
+    "local_port": 15432
+  },
+  "bounds": "Same exact existing RDS/host/idle ASG guards; 60minwork+15mincleanup/160management calls/USD1 incremental envelope; no remote shell command; one owned private port-forward and one secret read; read-only SQL; terminate owned session and stop/verify both resources."
+}

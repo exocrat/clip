@@ -1,5 +1,1029 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### NEXT-06 Step6 immutable release and task-wide review — 2026-10-31 15:50:51 UTC
+
+Mohit verified Step5 and directed Step6. Created `reference_release.py` and
+frozen-dataset.json: exact seed42/sourcea12f4a3/contract6edb52b/schema29/fingerprint
+7efd142e/label77442ab3/model/pipeline/index bindings. Reconstructed both actual
+payloads (identical records), verified all52archive members/45photos and original
+1000planned+1000GET-verified object mappings/oneSQLcommit. Real native reset/reload
+and actual cloud/native snapshots reused only after matching source/data/model
+bindings; no extra destructive cloud rebuild or regeneration. Frozen output
+revalidates; second freeze refuses without changing its byte hash. Human/peer/
+CIacceptance is separate from immutable content freeze; DATA-READY stays false.
+
+Task-wide review maps all six canonical steps and relevant agent/human checklist
+items. Step3 closure remains Mohit's report of another executor, not fabricated
+local proof; our five-minute attempt's0writes/stopped/incomplete receipt retained.
+No additional hosted/RAM/Listings feature requirement added. Current PRpackage
+rewritten around final data outputs and replacement of PR23after commit approval.
+New verifier/tests reject archive/ledger tampering. During review, fixed old local
+operator's approval-before-Mac-path ordering and enforced reviewed duration before
+native/SDKwork; failure-path tests assert calls never occur. No product/domain/
+contract/migration source change and no cloud/provider/inference/SQL/object write.
+
+453data/evaluation tests pass19.80s with1dedicated DBcalibration skip;496web pass/
+3explicit live-boundary skips, lint/types/build pass; existing chunk-size warning.
+Black355files passes after sandbox-only multiprocessing retry, contracts8current,
+consumer mypy2files/boundaries0/CIparity12pass. Full DockerAPI/DBsuite not claimed
+locally; PR23a12f4a3hostedCIpasses but does not cover uncommitted update; no reviews.
+[Task-wide review](../evaluation/domain/next-06/task-wide-review.md) and
+[freeze checks](../evaluation/domain/next-06/transfer/step-06-freeze-result.json)
+retain exact evidence and final secret-scan closeout. Await human Step6verification
+and explicit concrete commit; later current-headCI/independent peer/authorized
+merge gates remain. No commit/push/PRreplacement/merge in this increment.
+
+### NEXT-06 Step5 canonical reviewed labels bound — 2026-10-31 15:22:59 UTC
+
+Mohit verified Step4 and directed Step5. Explicitly selected recorded judgment
+acceptance2026-10-30T12:46:38.764302Z as reviewed_at and published dataset source
+a12f4a3/merged contract6edb52b. Earlier inspection time remains unknown; no invented
+review time, source approval, upstream peer review or NFRscore. Read-only GitHub
+inspection confirms PR19/20merged with successful Foundation gates; reviews list
+empty; existing reported manual owner acceptance retained, not negated/inferred.
+
+Created `data/evaluation/query-labels.json` with22reviewed included judgments,
+all query IDs/order/context/relevant IDs/policy byte-logically unchanged. Added
+`reference_labels.py` independent actual-data adapter: reconstruct inputs/photos,
+verify producer/judgment/draft/public-contract committed bytes, real load/vector/
+rebuild receipts, all800eligible IDs and exact label metadata; fixed output write
+is exclusive, later validate changes nothing. Actual binding manifest is separate
+from original generated-unloaded input manifest, whose truthful flags stay intact.
+Initial adapter refused before writing because it wrongly required temporary
+activated_at for regular owners; corrected to actual regular eligibility and
+added regression. No domain/schema/data/ranking change. `search.py` changes are
+documentation only; old test asserting final labels must not exist now checks the
+unchanged draft status. Docs/commands explain the real adapter and remaining gate.
+
+Actual write/revalidation passes; existing-output attempt refuses with hashes
+unchanged.445data/evaluation tests pass10.18s with warnings errors,1DBcalibration
+measurement skipped explicitly; Black4changed Python files/boundaries0/diff pass.
+Secret-scan closeout retained in [Step5 result](../evaluation/domain/next-06/transfer/step-05-final-labels-result.json).
+No AWS/provider/SQL/inference/scoring, corpus regeneration, commit/push/PRreplace
+or Step6execution. Canonical reviewed labels are not DATA-READY; next formal
+freeze/task-wide checks and independent human acceptance remain. Await result
+verification before Step6.
+
+### NEXT-06 Step3 human-reported completion; ordered Step4 recheck — 2026-10-31 15:02:24 UTC
+
+Mohit directed marking the check done because someone else completed it. Recorded
+Step3 normal listing/vector check complete on his report; executor/revision/raw
+external receipt were not supplied and are not invented. Our separate five-minute
+operator run ended incomplete:0users/listings/images in its private target,
+0object-write attempts;5metadata calls only. Native cluster stopped (pg_ctlstatus3),
+frontend process exited and both loopback listeners absent. Preserve raw receipt/
+approved review/executed text sources; consumed authorization, no automatic rerun.
+Reference RDSdata and1000S3objects were not changed by our run.
+
+Continued in order to Step4: locally reconciled actual production prepare/queue/
+worker/activation receipts and stopped cloud/native snapshot.1000current ready
+sources/2000parts, no missing/stale/pending/leased/failed/invalid/conflicting state,
+six unique-visible keyword/Hybridcases; current pinned pipeline and relevant
+source/model/interpreter hashes unchanged. No new AWS/inference or fresh cloud
+state claim. [Step3 attribution](../evaluation/domain/next-06/transfer/step-03-human-reported-completion.json),
+[operator closeout](../evaluation/domain/next-06/transfer/step-03-local-window-20261031/result.json),
+[Step4 recheck](../evaluation/domain/next-06/transfer/step-04-ordered-recheck.json).
+Next Step5canonical labels remains unmodified; DATA-READY/freeze/peer and broader
+readiness acceptance remain pending. No code change/commit/push/PRreplacement in
+this increment. Whitespace check passes; prior315data checks remain relevant.
+
+### NEXT-06 Step3 narrowed to automatic Search vector integration — 2026-10-31 13:46:08 UTC
+
+Mohit verified narrowing after clarifying Listings ownership. No Listings feature/
+product UI change: new operator `reference_search_operator.py`/HTMLautomates public
+APIupload/confirm/create/edit only to verify current Searchvectors before/after.
+User only performs normal real sign-in/Handle setup and starts the check. Existing
+Identity/S3owner evidence retained within its scope; no fabricated caller/session/
+provider assertion or replacement of pending real integration with mock output.
+Original manual Listings walkthrough is superseded by this scoped plan.
+
+Actual fresh native startup passes with real roles/SCRAM/model/worker, exact
+operator photo/HTML200, normal API401without session/private-session-table denial;
+owned cluster stopped. Offline Node driver completed and its generated create/edit
+bodies pass actual public contract validators; mocked HTTPclearly not live evidence.
+Added operator boundary/control tests and offline actual SDKpresign compatibility;315data
+tests pass9.43s; formatting/boundaries/client contract checks pass. Full checks and source hashes recorded in
+[preparation result](../evaluation/domain/next-06/transfer/step-03-search-vector-preparation-result.json).
+Operator consumes only genuine API-issued S3URLs through serialized fixed-host/run-key
+HTTPStransfers (onePUT/twoGETs), hashes every download, forbids redirects/proxies/
+arbitrary bodies and needs no bucketCORSchange. Narrowed hard limits to
+oneimage/onecreate/oneedit; read-only source approval gate
+refuses before SDKconstruction. No cloud/provider calls in preparation.
+
+[Exact live plan](../evaluation/domain/next-06/transfer/step-03-search-vector-plan.md)
+needs separate S3/provider approval: five metadata reads plus one run-prefix image,
+real Microsoft sign-in, new private local SQL/model only; no RDS/EC2start or shared
+DB/policy/CORS/IAM/deployment mutation. Preserve1000referenceobjects/data. Step3
+still awaits actual workflow execution and human verification. No later step,
+commit/push/PRreplacement performed; DATA-READY false.
+
+### NEXT-06 Step3 real local application window prepared — 2026-10-31 13:28:45 UTC
+
+Mohit verified runtime metadata result with next. Prepared new owned native
+clip_test_identity target/restricted actual SCRAMroles and real Identity/model/
+worker composition in `reference_workflow_local.py`, without RDS/EC2changes.
+Uses existing public auth/cookie/CSRF/Microsoftvalidator and production app/store/
+S3adapter; no seeded account/fake signer/copied caller. Two preparation failures
+were adapter tuple-row mismatches; both clusters stopped/no AWS. Fixed adapter
+row_factory only; final actual native startup384dim query/worker/private-session
+access denial passes and cluster stopped. Live success flags remain false.
+
+Prepared bounded Microsoft-only browser/S3window: six exact metadata calls,
+existinglocalhostCORSrequired/no policy edit, new run prefix/two10MiBintents,
+onecreate/twoedits/300HTTP/40SDK/30min limits, safe aggregate source/HTTPwitnesses
+and stopped-native cleanup; no SSMsecret or cloud DBread/write/start/deployment.
+[Exact plan](../evaluation/domain/next-06/transfer/step-03-workflow-live-plan.md)
+requires separate explicit live approval and actual human sign-in/photo check.
+Existingreference1,000objects/rows untouched. No later task step advanced.
+
+Repository-only locked frontend dependencies restored (offline cache missing one
+package, authorized registry retry succeeded); no global installs. Real-signin
+frontend typecheck/build pass (existing chunk-size warning). Focused control tests
+and full data/format/boundary/secret checks retained in preparation result.
+No cloud calls or real provider requests in this increment, no publication.
+
+### NEXT-06 Step3 real runtime metadata inspected — 2026-10-31 13:13:12 UTC
+
+Mohit approved exact bounded inspection with next. Source bindings checked;
+non-root335523638354/mohitmahapa1/ap-south-1 verified. All10metadata operations
+succeeded,0secret values/SQL/mutations/resource starts/provider or application
+requests. Current ECSservice desired/running/pending0,task11realIdentityenabled,
+S3configured,Hybridsearch/workerdisabled,256CPU/512MiB. All five exact Identity/
+Listings/Conversations SecureString references present; values and database-role
+validity were not inspected. Private PG18.6 and existing t3.micro both stopped.
+
+[Actual aggregate result](../evaluation/domain/next-06/transfer/step-03-runtime-inspection-result.json)
+retained. No runtime deployment/capacity change follows automatically. Await
+human verification, then prepare exact normal real app/session/create/edit/image/
+automatic-vector checkpoint using existing source and Mac model where suitable;
+separate resource-start/secret-read/mutation/provider permissions still required.
+Step3 remains incomplete; no later labels/freeze step advanced. No code changes
+in execution;285tests/secret-scan preparation retained; whitespace check passes.
+
+### NEXT-06 ordered Step3 resumption and scope correction — 2026-10-31 13:05:39 UTC
+
+Mohit directed completing remaining work in order after disputing earlier staged
+approval/completion/ownership claims. Resume earliest incomplete Step3; retain
+later outputs without treating them as completion. Step2conditional conversation/
+mutation fixtures belong to owning NFRworkloads under approved dataset design;
+no extra bulk records required by current browse/search corpus. Corrected broad
+claim that a new hostedHybriddeployment/RAMupgrade is automatically a NEXT06step:
+normal app workflow needs real evidence; hosting choice is supporting execution,
+2GiB is a configured guard, not measured requirement. Identity owner has recorded
+real sign-in/S3upload/display; hybrid_tested=false remains a genuine missing check.
+
+Added fixed read-only `reference_runtime_inspection.py` and four controls proving
+exact identity-first refusal,10operation metadata-only scope, suppressed private
+fields and no pagination/approval bypass. Tests4pass0.09s; boundaries0; formatting/
+whitespace pass; no AWS calls. [Exact inspection plan/review](../evaluation/domain/next-06/transfer/step-03-runtime-inspection-plan.md)
+is prepared for separate cloud approval. No later step execution, deployment,
+secret read, commit/push/PRreplacement or resource change in this increment.
+Full data and secret-scan closeout retained with preparation checks.
+
+### NEXT-06 current cloud-evidence PR package prepared — 2026-10-31 10:38:36 UTC
+
+Mohit requested continued work after dataset checkpoint verification. Refreshed
+GitHub open PRs read-only: datasetPR22 remains8612633 with no review; Notifications
+PR21 remainsdb8a661. Prepared [current PR review](../evaluation/domain/next-06/current-pr-review.md)
+covering actual cloud load/vector/rebuild outcomes and each new helper. Historical
+pre-cloud publication summary now points to current evidence. Removed only the
+accidental generated9.9MBtunnel-tool binary copy from proposed evidence publication;
+original installed tool untouched and approved version/hash retained separately.
+
+Fresh281data tests pass9.72s with warnings errors; Black50data/evaluation files
+unchanged; Python boundaries0. Exact proposed file hashes and secret-scan outcome
+are retained in publication preparation. No code changes in this increment,
+no cloud calls, commit/push/review-request/merge or deployment. Await explicit
+commit authorization for the prepared current PR update. Owner integration and
+source/label/freeze/independent human review remain gates; DATA-READY false.
+
+### NEXT-06 actual cloud/native reproducibility comparison — 2026-10-31 10:34:12 UTC
+
+Mohit approved exact read-only window with Proceed. Non-root335523638354,
+profilemohitmahapa1/Mumbai, stopped-resource/idle-ASG/source57bindings passed.
+One private TLS REPEATABLE READ READ ONLY transaction verified exact29schema,
+original logical corpus/image-key projection, pinned serving registry,
+1000generations/2000parts and all three dataset roles NOLOGIN. Canonical vector
+and65Identity/Listings index hashes exactly match current-fingerprint real native
+reset/reload. No data/role/object mutations, inference or S3calls.
+
+Window 2026-10-31 10:23:17 UTC to 2026-10-31 10:33:47 UTC;630seconds,
+49managementcalls. SQL/owned tunnel/session closed; EC2 and RDS both
+verified stopped. Base-only estimate USD0.005635 is not
+actual billing; exclusions in receipt. Review stopped RDS before seven-day restart.
+[Immutable executed sources/target/review and aggregate receipt](../evaluation/domain/next-06/transfer/dataset-snapshot-20261031/result.json)
+retained; candidate updated with actual cloud hashes. No application code changes;
+previous281tests/native proof remain relevant. Await human result verification.
+Hosted app/auth/media/normal new-vector/Linuxruntime stays with owners; accepted
+source/domain readiness/final label envelope/peer/freeze remain open. DATA-READY
+false. No commit/push/deployment. Closeout whitespace/secret checks recorded separately.
+
+### NEXT-06 current dataset reproducibility and label evidence — 2026-10-31 10:21:36 UTC
+
+Mohit selected “Finish dataset evidence first”; leave hosted app/auth/media/runtime
+deployment with its owners. Current7efd142e fingerprint now has fresh actual
+native reset/reload of one owned Unix target with real photos/model. Records/media,
+2000vector parts and65index definitions agree before/after; cluster stopped.
+Canonical Step6 requires an isolated rebuild, not a second destructive cloud load.
+Real S3/RDS load and serving-vector receipts remain retained independently.
+
+Added `reference_freeze_snapshot.py` SELECT-only canonical vector/index hashing,
+checked its format against the real native snapshot in `reference_local.py`, and
+added two rejection/control tests. All281data tests passed9.38s (warnings errors),
+Black345files unchanged and boundary violations0. Initial missing environment opt-in
+refused before native target creation; rerun explicitly used CLIP_ENVIRONMENT=test.
+All22accepted judgments retain query/context/inclusion/eligible IDs; canonical
+label draft unchanged and no scoring or invented review timestamp. Consolidated
+candidate preserves final_freeze=false/DATA-READY=false and archive checksum.
+
+[Plan](../evaluation/domain/next-06/transfer/dataset-evidence-plan.md) and
+[preparation checks](../evaluation/domain/next-06/transfer/dataset-evidence-preparation-result.json)
+bind57files for a proposed read-only actual RDS/native vector/index comparison.
+Negative approval gate made0AWS calls/no resource starts. No AWS actions in this
+preparation. Exact cloud start/read-master/readonly-SQL/stop window still needs
+separate approval. Original real app/auth/media/new-vector/deployedLinux checks,
+accepted source/domain readiness/final label envelope and peer/freeze remain open.
+Secret-scan/whitespace closeout recorded in preparation evidence. No publication.
+
+### NEXT-06 actual RDSvectors serving; producer revoked/stopped — 2026-10-31 09:49:31 UTC
+
+Mohit approved exact vector window with Proceed with the work after scope/cloud
+clarification.77bindings/non-root335523638354/mohitmahapa1/resource/ASG/private
+loopback/admin-owner/schema/corpus guards passed. Created only dedicated producer
+clip_next06_embeddings with tested column-only listing-id row locks and bounded
+pipeline grants, ephemeral SCRAM. Actual pinned Mac model/normal operator/worker
+queued/published1000RDSgenerations and2000real384-dimensional title/description
+parts; guarded activation reached serving/1000ready/current with0missing/stale/
+pending/leased/failed/invalid parts/conflicts. Production keyword/HybridSQLcases6
+match native exactly:cycle82/82,cycel82/82(typo_expanded),vehicle82/82,wheeled
+vehicle17/82,books107/107,office chair19/74. Unique visible union verified; unchanged
+original logical user/listing/image projections. These are engineering checks,
+not human Success@5/authenticated HTTP/deployedLinuxacceptance.
+
+Window 2026-10-31 09:25:35 UTC–2026-10-31 09:46:20 UTC;1245seconds,
+49management calls;0S3calls,2006modelwindows, helper peak272596992bytes.
+Producer password cleared/NOLOGINverified; owned model/SQL/tunnel/session closed,
+EC2/RDSboth verified stopped. Existing loader/runtime and shared32service remain
+inactive/unchanged. Retain inactive producer/grants and serving data; no reset,
+delete, provider send or deployment. Conservative base compute estimate
+USD0.01113583 (not actual bill; exclusions
+in evidence). Six-day RDSreview by2026-11-06 09:46:20 UTC.
+
+[Actual receipt, approved bindings/target and exact executed sources](../evaluation/domain/next-06/transfer/vector-production-20261031/result.json)
+preserved;77hashes/coverage/count/source-invariant/closeout/cross-native checks pass.
+No application code changed during execution;279data/native/SCRAM/permission
+checks remain relevant; diff/secret scan recorded at closeout. Await result
+verification. OriginalStep3real app/auth/media and Linuxruntime, final source/
+labels/rebuild/freeze/peer DATA-READY remain pending. NEXT-06 incomplete; no
+commit/push or global installation.
+
+### NEXT-06 dedicated vector producer prepared; real native proof — 2026-10-31 08:57:13 UTC
+
+Mohit verified staged Mac-helper/RDSpublication route and authorized local
+preparation. Added `reference_vector_access.py` (fixed fresh dedicated role,
+column UPDATE(id) lock privilege, supported embedding table grants, short-lived
+SCRAM/OIDrevocation), `reference_vector_pipeline.py` (actual target/model/operator/
+worker/full coverage and production keyword/HybridSQL diagnostics), and
+`reference_vector_local.py`; extended native runner with opt-in --vectors and
+added18control tests. No shared API/schema/generator/contract changes or AWS call.
+
+Final fresh native PG18.6 run published1000generations/2000real384-dimensional
+parts via normal worker, activated100%current coverage with0missing/stale/pending/
+leased/failed/invalid parts/conflicts. Production keyword/Hybridcases6pass, including
+cycel typo expansion and wheeled vehicle17keyword/82Hybrid. Column-only row-lock
+privilege works;9unapproved mutations/escalation/identity-change checks denied;
+original logical corpus projection unchanged. Actual SCRAMpassword revoked,
+NOLOGIN/old-password denial, helper closed and owned native cluster stopped.
+2006modelwindows; helper peak265699328bytes. No HTTPfake caller or vector fixtures
+used for this proof; no auth/S3/deployedLinuxacceptance inferred.
+
+[Exact role/actions/limits/recovery proposal](../evaluation/domain/next-06/transfer/vector-window-plan.md)
+and [native/gate/check evidence](../evaluation/domain/next-06/transfer/vector-preparation-result.json).
+77bindings include model/tokenizer/interpreter and frozen source; exact controller
+negative gate proved0AWS calls/no starts without cloud approval. Full279data tests
+passed9.44s with warnings errors; Black343files/boundaries0/current hashes/controller
+syntax/APIoperation set/diff pass; pinned secret-scan result recorded at closeout.
+Await local-result verification and separate exact cloud create/grant/activation/
+prepare/queue/worker/serve/stop approval. OriginalStep3real app/auth/new-listing/
+media and Linuxruntime/source-label/rebuild/freeze remain; NEXT-06/DATA-READY
+incomplete. No commit/push or global install/model download.
+
+### NEXT-06 post-load integration audit and staged vector route — 2026-10-31 08:34:49 UTC
+
+Mohit verified successful loaded/stopped bulk checkpoint and directed continuation.
+Read-only audit of canonicalSteps3–6/contracts/deployment/bootstrap/store/local
+harness confirms normal real caller/media and deployed helper/runtime checks are
+still pending. Existing native HTTP caller/local storage fixtures are not real
+auth/S3acceptance; loader/runtime remain inactive. Public pipeline operator/worker
+and Linuxhybrid Dockerfile/lock already exist; no missing-source claim. Current
+local3.13.12helper, model/tokenizer hashes and onnxruntime1.23.2/tokenizers0.23.3/
+numpy2.5.4match pipeline; no inference/install/download/AWS calls.
+
+[Proposed staged next checkpoint](../evaluation/domain/next-06/transfer/post-load-integration-plan.md):
+prepare/native-test dedicated ephemeral embedding role and bounded existing Mac
+helper producing vectors from actual RDSsources into RDS through supported
+prepare/queue/worker/activate. No Docker requirement merely for data publication;
+no claim of Linuxruntime/auth/media acceptance. Keep originalStep3normal-flow
+pending while staging Step4data coverage; require verification of this route
+before implementation, then separate exact cloud approval. No canonical task gap;
+real runtime/roles/coverage/source/labels/rebuild/freeze are explicit pending
+outputs/gates. Scoped check: artifact/version pins pass, diff check passes;
+code unchanged,261data/native checks remain relevant. NEXT-06/DATA-READY incomplete.
+
+### NEXT-06 real S3 and isolated bulk data loaded; access revoked/stopped — 2026-10-31 08:26:55 UTC
+
+Mohit confirmed the explicitly requested prefix/window scope with Proceed. First
+preflight stopped CliLoginUnavailable before starts/0AWS calls; approved named
+browser login refreshed and unchanged exact load resumed. Non-root335523638354/
+mohitmahapa1 identity,52bindings, resource/idle/ASG/private-loopback/database29/
+owner/empty-role-target and bucket privacy/encryption/empty-prefix guards passed.
+Uploaded and full-byte/type/size/SHA/AES256verified exactly1000real S3objects
+(925881224bytes) under id01/next06-reference-42-v1 in the existing id01bucket.
+Committed5000regular synthetic users,1000listings/uploads/images and verified
+1000regular owners,800discoverable listings,1000text vectors/GINindex and complete
+logical projections. Exact SQLprojection digest equals native rehearsal. No
+synthetic-user credentials/OTP/provider jobs, persistent loader secret or app
+runtime changes. Both runtime and shared32configuration remain unchanged.
+
+Window 2026-10-31 08:05:19 UTC–2026-10-31 08:25:12 UTC;1193seconds,
+50management and2008S3logical calls. Exactly1000planned/verified
+keys match approved source hashes; SQLplanned/committed once; no retry/overwrite/
+delete. Temporary loader password cleared and NOLOGINverified; owned admin/
+tunnel/session closed, host/RDSboth verified stopped. Conservative base compute
+estimate USD0.01067072
+plus request/transfer/storage effects, not actual bill; recurring object storage
+~USD0.0232/month/existing baseline continue. Conservative RDS stopped-state review
+by2026-11-06 08:25:12 UTC (six-day check before possible seven-day restart).
+
+Preserved [raw receipt, exact sources/review/target and upload ledger](../evaluation/domain/next-06/transfer/cloud-load-20261031/result.json),
+including zero-call initial preflight. Scoped acceptance review: current52hashes,
+ledger/count/key/projection/cleanup guards pass; no code changed in execution,
+261tests/native SCRAM/permission checks remain relevant; final pinned Gitleaks
+scan of source/execution evidence found0issues; preserved source hashes and diff
+check pass. Result awaits verification. Real normal app/auth/media and cloud
+semantic pipeline/source-label/reproducibility/freeze/peer acceptance remain;
+Step3 bulk subcheckpoint done, NEXT-06/DATA-READY incomplete. No commit/push.
+
+### NEXT-06 ephemeral loader and exact S3/SQL package prepared — 2026-10-31 08:01:39 UTC
+
+Mohit verified successful isolated setup and repeatedly directed continued local
+load-package preparation. Added `scripts/evaluation/reference_load_access.py`:
+fixed admin/owner/TLS/privacy/fresh-role guards, one ephemeral SCRAMactivation,
+OID-bound NOLOGIN/PASSWORDNULL closeout, private-loopback listener proof and bounded
+exact-owner/key/storage preflight. `reference_cloud.py` now verifies actual GET
+AES256metadata alongside type/size/SHA; tests updated for encryption refusal.
+`reference_setup_local.py --credentials` exercises real native SCRAMauthentication/
+revocation around actual bulk SQL. Added28access/expiry/uncertain/ownership/storage/
+cleanup tests. Proposed exact target/controller and52bindings prepared; new local
+5432tunnel, one existing setup-secret read,40minload/2008S3call/160management/
+60+15min/USD1scope. No static loader secret publication: propose ephemeral
+memory-only password cleared on closeout; runtime remains inactive.
+
+Native success: canonical schema/restricted5000users+1000listings+image references,
+wrong SCRAMpassword refusal, generated password accepted,8negative privilege
+checks, NOLOGIN/NULLverifier and old-password refusal; owned cluster stopped.
+Full261data tests passed9.15s, Black339files, boundaries0, Gitleaks0findings;
+52hashes/controller syntax/diff checks pass. Exact proposed controller run with
+unconfirmed storage approval **refused before any AWS call/start** (0calls);
+this is a local negative control, not a failed cloud attempt. No cloud credentials,
+objects, business rows, source generation or labels changed in this increment.
+
+[Exact action/limits/recovery package](../evaluation/domain/next-06/transfer/cloud-load-plan.md)
+and [local/native/gate evidence](../evaluation/domain/next-06/transfer/cloud-load-preparation-result.json).
+Explicit bucket-maintainer approval for id01/next06-reference-42-v1 remains
+unconfirmed; asked during work, ordinary “Proceed” did not establish a maintainer
+attestation. Controller remains gated false. Await result verification, this
+storage confirmation and exact cloud approval. Source/affected-owner peer and
+real auth/media/ML/vector/source-label/freeze obligations remain; NEXT-06/DATA-READY
+incomplete. No commit/push; latest actual cloud stopped closeout remains19:20UTC
+October30. Public pricing was inspected; existing regional rates plus a clearly
+labelled transfer allowance, no authenticated billing API or invented tariff.
+
+### NEXT-06 isolated database setup passed; stopped closeout — 2026-10-30 19:20:30 UTC
+
+Mohit approved the exact create-only setup window. All37source/dependency hashes,
+non-root335523638354 identity, idle/suspended-ASG and private-tunnel ownership
+checks passed. Real setup session passed TLS/privacy/18.6/authority/autocommit,
+absent DB/role and no other application PUBLIC CONNECT preconditions. Created
+only clip_next06_reference and the two proposed roles;29accepted migrations/
+catalogue seeds and explicit tested loader grants committed. Both loader/runtime
+remain NOLOGIN/no password; runtime no grants. No inherited role membership;
+actual tracker29and negative role flags verified. No business user/listing/image
+rows, credential publication, S3uploads, shared32schema/role changes or deployment.
+
+Window 2026-10-30 19:09:40 UTC–2026-10-30 19:20:00 UTC;620seconds,
+49management calls. Owned SQL/tunnel/session closed and both host/RDS
+verified stopped. Conservative base compute estimate USD0.00554556
+(not actual bill; exclusions in evidence); RDS stopped-state review by
+2026-11-06 19:20:00 UTC. Exact executed source/controller/review and
+[raw receipt/closeout](../evaluation/domain/next-06/transfer/database-setup-20261030/result.json)
+preserved. Receipt guards/current bindings and diff check pass; no code changed,
+so232data tests/native restricted-role/schema checks remain relevant. Result awaits
+human verification; next prepare separate loader credential activation and S3/SQL
+load package. Original real app/media/ML/vector/source-label/freeze checks remain;
+NEXT-06/DATA-READY incomplete. No commit/push performed.
+
+### NEXT-06 isolated setup prepared and native privileges verified — 2026-10-30 19:08:44 UTC
+
+Mohit verified accepted29schema/isolation scope and authorized local setup
+preparation. Added `scripts/evaluation/reference_database_setup.py`: fixed absent
+DB/NOLOGINroles, actual admin/TLS/privacy/autocommit and PUBLIC application-access
+refusal guards; disabled initial connections; ACLs only on new database;29bound UP
+migrations and grants in one transaction; inactive roles/partial artifacts retained,
+no reset/drop/retry. Added `scripts/evaluation/reference_setup_local.py` and ten
+unit controls in `data/tests/test_reference_database_setup.py`. Prepared exact
+hash-bound cloud controller using the existing verified private admin tunnel route;
+cloud management-call expressions unchanged. No AWS or secret read occurred.
+
+Final native PG18.6/dbmate2.36.0 rehearsal passed: complete canonical schema dump
+equality, actual restricted-login bulk5000users/1000listings/1000image references/
+1000owners/800available/1000text vectors/GINindex; eight negative privilege checks,
+other-application CONNECT/TEMP denial and inactive runtime checks. Final owned
+cluster stopped. Native fixture alone activated loader; cloud proposal leaves both
+roles NOLOGIN/no password. Image keys are planned references, not actual S3 proof.
+
+Initial trials preserved: sandbox shared-memory denial; tracker varchar length
+corrected to exact dbmate; restricted connection stopped requesting superuser GUC
+changes and uses assigned role defaults; existing invoker embedding trigger needs
+specific generation SELECT/INSERT/DELETE rights, granted without disabling triggers.
+All initialized trials stopped. Full232data tests passed9.09s with warnings errors;
+Black337files, boundaries0, pinned Gitleaks0findings, all37bindings/controller
+syntax/APIcall comparison and diff check pass. [Exact setup/limits/recovery plan](../evaluation/domain/next-06/transfer/database-setup-plan.md)
+and [final native/preparation evidence](../evaluation/domain/next-06/transfer/database-setup-preparation-result.json).
+Await human verification and separate exact cloud DDL window approval; no upload,
+credential activation, app deployment, commit/push or final DATA-READY claim.
+
+### NEXT-06 schema divergence traced to unmerged Notifications — 2026-10-30 18:54:41 UTC
+
+Mohit verified the admin-inventory checkpoint and directed reconciliation.
+Read-only GitHub inspection confirms main remains6edb52ba with29migrations;
+NEXT-06 PR22 remains open at8612633. Cloud’s three extras are exactly migration
+versions20261029133500/134500/182500 in Aditya’s Notifications PR21 head
+ db8a661a2fb1d3cdc01bfaf15c7186b9b4db7dd5 (open, CI success, no peer review).
+Effects: encrypted notification destinations, retry/reservation state/index,
+conversation-email preference/suppression. This is not stale-main checkout.
+
+[Reconciliation evidence and proposed setup sequence](../evaluation/domain/next-06/transfer/schema-reconciliation.md)
+retain existing accepted29source/corpus for preparation of the previously proposed
+new isolated database; leave shared32untouched. No unreviewed source copied,
+role widening, schema guard bypass, rebind/regeneration or unchanged query
+re-review. Later accepted32Notifications integration still needs source/schema
+binding and affected checks before final readiness. Local/corpus version sets
+match; exact upstream blobs/PRreview/CI metadata inspected; static compatibility
+only, no actual32loader acceptance. No AWS/secret/start/write/upload or Git
+mutation; diff check passed. Preparation result awaits verification; next prepare/
+rehearse exact isolated setup grants and load package before separate cloud
+approval. Original NEXT-06 real integration/freeze and DATA-READY remain pending.
+
+### NEXT-06 private admin inventory passed; stopped closeout — 2026-10-30 18:47:22 UTC
+
+Mohit approved the exact private admin read-only window. Source/dependency hashes,
+non-root335523638354 identity, stopped/idle resource and suspended ASG guards passed.
+Started only existing RDS/host, opened one owned SSM remote-host tunnel, verified
+listener ownership, retrieved the one named setup password into memory and ran
+fixed privacy/TLS/readonly catalog inspection. Inventory succeeded:32cloud
+migrations, all4domain schemas, no proposed clip_next06_reference database and
+neither proposed loader/runtime role. Dataset/local source bind29migrations;
+cloud adds20261029133500,20261029134500,20261029182500. Reconcile accepted
+source/schema before loading; no application-role widening or guard bypass.
+
+Window 2026-10-30 18:36:42 UTC–2026-10-30 18:46:54 UTC;612seconds,
+49management calls; owned tunnel exited and SSMsession terminated,
+both host/RDS verified stopped. Conservative base compute estimate
+USD0.005474 (not actual bill; exclusions in evidence).
+RDS seven-day stopped-state review by2026-11-06 18:46:54 UTC.
+No DDL/grants/migrations/data writes/upload/deploy/IAM/network changes. Preserved
+[exact executed source/review and receipt](../evaluation/domain/next-06/transfer/admin-inventory-20261030/result.json).
+Source hashes and receipt/privacy/success/cleanup guards checked; diff check
+passed. No code changed this increment, so222localdata tests/Black/boundary
+checks remain applicable. Result awaiting verification; next action is source/
+schema reconciliation before separately approved setup/load. NEXT-06/DATA-READY
+remain incomplete.
+
+### NEXT-06 private admin inventory route prepared — 2026-10-30 18:29:06 UTC
+
+Mohit verified the failed/stopped checkpoint and directed continuation. Repository
+review found migration tracker denial is an intentional marketplace runtime-role
+boundary (ID-01 Step12 evidence); preserve it. Prepared fixed read-only admin
+inventory helper `scripts/evaluation/reference_admin_inventory.py` and seven
+transport/privacy/refusal tests in `data/tests/test_reference_admin_inventory.py`.
+Prepared exact hash-bound private-tunnel controller/plan using existing setup
+login and one named master parameter; no admin credential retrieved or AWS call
+made. New cloud access/secret scope awaits separate exact approval.
+
+Approved public download/local setup only: AWS signed macOS ARM64 plugin1.2.896.0
+payload copied under repository `.tools`, no global install/LaunchDaemon. macOS
+signature/notarization verified outside sandbox after trust-service access failed
+inside sandbox. Regional CA bundle parsed as three roots. Checks:222data tests
+passed9.34s with warnings as errors; Black334files; boundaries0; Gitleaks0; controller
+compiled/operation allowlist and all source/dependency hashes pass; diff check
+passed. [Exact proposal](../evaluation/domain/next-06/transfer/admin-inventory-plan.md)
+and [local evidence](../evaluation/domain/next-06/transfer/admin-inventory-preparation-result.json).
+No new cloud start/read/write/secret/upload, commit or push. NEXT-06/DATA-READY
+remain incomplete; latest actual stopped receipt remains18:20:36UTC.
+
+### NEXT-06 revised Phase A identifies SQL metadata denial; stopped — 2026-10-30 18:21:09 UTC
+
+Mohit approved the exact revised Phase A retry. Account335523638354/non-root
+mohitmahapa1 identity, idle shared ECS and already-suspended ASG Launch/Terminate
+checks passed. Started only the existing RDS/host and sent one reviewed v2 probe.
+The probe reached migrations and returned InsufficientPrivilege/SQLSTATE42501 on
+`SELECT version FROM public.schema_migrations`; earlier connection/TLS/readonly/
+privilege checks passed by control flow. No actual identity/roles/migration rows
+were emitted; later schema/proposed-DB checks did not run. No permission repair,
+stronger credential, writes/upload/deployment or automatic retry occurred.
+
+Window 2026-10-30 18:07:54 UTC–2026-10-30 18:20:36 UTC, 762seconds,
+54APIcalls. Both host and RDS verified stopped. Base compute estimate
+USD0.00681567 (not actual bill; exclusions
+in evidence). RDS stopped-state auto-restart review due by
+2026-11-06 18:20:36 UTC; no scheduler created. Preserved exact
+source/controller/request and raw receipt in
+[v2 Phase A evidence](../evaluation/domain/next-06/transfer/phase-a-v2-20261030/result.json).
+Evidence review: source/request/controller hashes match approved v2 binding;
+strict safe-envelope validation passed; no secrets/raw remote errors saved;
+`git diff --check` passed. No code changed during execution, so existing215data
+test/Black/boundary results remain relevant. Result awaits human verification and
+separate next-action approval. NEXT-06/DATA-READY remain incomplete.
+
+### NEXT-06 safe probe diagnostics prepared locally — 2026-10-30 18:02:26 UTC
+
+Mohit approved the local diagnostic correction. Changed
+`scripts/evaluation/reference_db_inventory.py` to emit strictly validated v2
+stage/reason envelopes, retain safe nonzero SQL child classifications, verify owned
+container cleanup before reporting success, and derive window status from verified
+stops. `data/tests/test_reference_db_inventory.py` covers refusal/redaction,
+parameter failure, child SQLSTATE, ownership, timeout, host Python syntax and
+cleanup-state controls. Prepared a revised payload and controller; ordered cloud
+call expressions are unchanged. Executed v1 artifacts/receipts remain unchanged.
+No cloud calls, secret retrieval, starts, retry, upload or publication occurred.
+
+Checks and exact source/request/controller hashes are in the
+[v2 diagnostic review](../evaluation/domain/next-06/transfer/probe-diagnostic-v2.md)
+and [payload binding](../evaluation/domain/next-06/transfer/db-inventory-command-review.json).
+Local outcome awaits human verification; a revised cloud window requires separate
+approval. Original failure cause remains unknown; NEXT-06/DATA-READY incomplete.
+
+### NEXT-06 approved Phase A probe failed; resources stopped — 2026-10-30 17:51:24 UTC
+
+Mohit approved the exact conditional1USD/60+15min private-inventory window.
+One bounded controller verified source/payload hashes, non-root335523638354,
+idle shared resources and exact stopped targets; ASGLaunch/Terminate and other
+processes already suspended. Started only RDSand existinghost, waited available/
+running/SSMOnline, sent exactly the reviewedSSMcommand. It failedexit1with only
+RuntimeError and no usable DBmetadata. Guarded binaries-presence check passed,
+but failure stage/secret or SQLprogress cannot be inferred. No retry, imagepull,
+install, schema/data/grant change, upload, ECSdeploy or ASGchange.
+
+Cleanup polls verify host and RDSbothstopped by2026-10-30 17:48:00 UTC;48APIcalls and582swalltime,
+within approvedlimits. Controller's genericfailure label remained pending after
+cleanup; rawreceipt preserved and explicitflags/owned_resources_stopped event
+establish safe closeout. [Evidence](../evaluation/domain/next-06/transfer/phase-a-20261030/result.json)
+retains exactexecutedsource/command/controller/receipt hashes and base-compute
+estimate, not an actualbill. Retainedstorage/CPU/network/tax caveats remain.
+Prepared local-only [diagnostic correction plan](../evaluation/domain/next-06/transfer/probe-diagnostic-fix-plan.md)
+for fixed safe stage/reason codes and child failure/SQLSTATE propagation without
+secret output; historical execution remains unchanged. Await checkpoint verification
+and localfix approval, then revisedpayload/windowapproval before another attempt.
+No commit/push. OriginalStep3realmetadata/setup/load and otherintegration/freeze/
+DATA-READYgates remain incomplete;189/202previouslocaltests don't replace livecheck.
+
+### NEXT-06 exact timed private-inventory proposal prepared — 2026-10-30 17:31:10 UTC
+
+Mohit verified the SDK/grouped preflight and directed preparation of the exact
+start/access/load proposal. Researched current public official AWSprice tables,
+retaining exact MumbaiSKU/rates/publication/source: RDSmicro0.021USD/h, EC2t3micro
+Linuxshared0.0112USD/h, existingRDSgp3storage0.131USD/GB-month; no authenticated
+account APIcall. Proposed1USDincremental/60minwork+15mincleanup; operational cap,
+not AWSbillinghardlimit, with CPUcredit/continuedstorage/7dayRDSrestart caveats.
+
+Prepared [Phase Aproposal](../evaluation/domain/next-06/transfer/start-access-load-proposal.md)
+and exact secret-free SSMrequest/source hashes. New reference_db_inventory.py
+is inert bydefault: fixed exacthost/instance-role/cached image, no imagepull,
+one named runtime secret via memory-only stdin, fullTLS18.6/nonprivileged role/
+readonly SQLmetadata only, bounded subprocess/SQL calls and label-proved own
+container cleanup. test_reference_db_inventory.py covers13negative/privacy/
+transport controls including a real local synthetic stdin child. New fixture
+length19vs20 corrected; no product transport failure. Exacthelper/request hashes
+match;202data tests pass(9.00s),Black332/boundaries0/nativeGitleaks0findings and proposal links/whitespace pass. No remote or SQL success
+claimed from mocks. [Preparation evidence](../evaluation/domain/next-06/transfer/start-access-proposal-result.json).
+
+Phase Aonly requests conditional existing-host/RDSstart, reviewed metadata probe
+and verified stopped closeout. Refuse before starts if sharedASGdesired0/lifecycle
+could replace/terminate host or another workload/operator is active; no ASGfix,
+new resources or wildcard cleanup. No load/schema/role/IAM/CORS/runtime mutation
+included. Later isolated DB/roles/migrations, run prefix/1,000objects, model/runtime,
+actualsessions/media/create-edit, final22label/source/freeze gates retained.
+Await exact Phase Aapproval; no resources/secrets/SQL/accountAPI or Gitpublication
+executed during this preparation. OriginalNEXT-06/DATA-READY incomplete.
+
+### NEXT-06 SDK browser-login compatibility and grouped preflight — 2026-10-30 17:02:49 UTC
+
+Mohit approved local SDKcompatibility plus one groupedmax18read-only batch.
+Added reference_login.py lazy explicit CLIcredential bridge: bounded20sexports,
+version/expiry validation, in-memory tokens with refresh, safe redaction and
+unchanged non-login profile behavior; no key creation/globalconfig/new CRTextra.
+reference_cloud.py uses it and standard STSSigV4 while retaining S3SigV4 and all
+account/target/empty/TLS/media/transaction gates. test_reference_login.py adds12
+success/refusal/timeout/redaction/lazy/static/refresh checks; guides updated.
+
+44focusedtests pass(3.63s),189data tests(9.16s), Black330/boundaries0/whitespace/
+unchanged input validation pass; pinned native Gitleaks0findings. Live grouped SDKSTS
+proves non-root project identity with no credential values logged. Batch14calls:
+actualhoststopped/t3.micro, SSMno returned managed-node record, runtime IAMpolicy
+listing denied, currentid01bucket private/encrypted/owner-enforced and HTTPSCORS.
+No permissions changed; actual runtime rights not inferred from metadata denial.
+[Receipt](../evaluation/domain/next-06/transfer/load-preflight-current.json) and
+[checkpoint evidence](../evaluation/domain/next-06/transfer/load-preflight-result.json)
+bind source/checks. Prepared nonexecuting [load-plan draft](../evaluation/domain/next-06/transfer/load-plan-draft.md)
+with candidate isolatedDB/run prefix, route/model/role/pricing/time/rollback gates.
+No starts,scaling,session/remote commands,secrets,SQL,uploads,deploy,IAMchange or
+publication. Await result verification, then exact separately approved action
+package; originalSteps3/4/5/6real integration/source-label/freeze/DATA-READY pending.
+
+### NEXT-06 read-only configuration complete and load-preflight gaps — 2026-10-30 16:48:55 UTC
+
+Completed the approved16operation config scope under non-root project identity.
+Shared rev11usesid01bucket/prefix, Hybrid/worker disabled; RDSprivate/stopped18.6,
+db.t4g.micro20GiBgp3singleAZ and5432onlyfromappSG; li02private/encrypted/owner-enforced
+with localhost-onlyCORS. ASGdesired0returns one healthyInServicehost: actual EC2
+state/type/cost not assumed. All metadata calls succeed; no secret/object/SQL read,
+remote command, scale/start/upload/deploy/grant/cleanup. [Configuration evidence](../evaluation/domain/next-06/transfer/cloud-config-current.json)
+and shared inventory updated. Local SDKinspection finds browser-login optional
+support absent; source default Dockerfile does not package separate model/helper,
+so actual runtime model packaging remains a reviewed deployment prerequisite.
+
+User objected to multiple simultaneous execution prompts. Independent parallel
+calls caused one prompt each; future approved reads will use one transparently
+bounded batch. Prepared [load-preflight proposal](../evaluation/domain/next-06/transfer/cloud-load-preflight-plan.md):
+local SDKcompatibility plus max18read-only calls for actual host/SSMroute/task-role
+permissions/current id01bucket metadata. No proposed cloud mutation or key creation;
+asks verification before implementation/execution. Suraj peer approval/accepted
+source and original realSteps3/4/5/6/freeze/DATA-READY gates remain.22judgments,
+source inputs/photos unchanged; no commit/push. Next checkpoint is this grouped
+preflight's explicit approval, then exact target/cost/window/action load proposal.
+
+### NEXT-06 correct-account login and approved resource inspection — 2026-10-30 16:12:47 UTC
+
+Mohit resumed NEXT-06 after browser login. Local profilemohitmahapa1 is now
+available; approved STS confirms non-root usermohitmahapa1/account335523638354.
+Continued the previously approved bounded metadata scope: ECSshared cluster/
+service taskrevision11 desired/running/pending0, RDSstopped/private/encrypted18.6,
+and id01/li02 image plusTerraform-state bucket names. Six successful CLIcalls;
+no failures/retries, secret/object/SQL reads or mutations. [Current evidence](../evaluation/domain/next-06/transfer/cloud-readiness-current.json)
+and cloudinventory updated. Login needs no user-managed access keys; existing
+password/token material was not read, copied or logged.
+
+Prepared the next [read-only configuration scope](../evaluation/domain/next-06/transfer/cloud-config-inspection-plan.md)
+(max16calls, exact shared runtime/RDS-related network/capacity and li02bucket
+metadata) for separate approval, to resolve target/settings/connection route before
+an actual load/cost/window/rollback proposal. Await human verification/approval;
+no start/upload/deployment/SQL/IAM/grant/commit/push/merge. Real integration and
+accepted source/labels/freeze/DATA-READY remain pending;22judgments unchanged.
+
+### NEXT-06 approved credential recheck still fails identity gate — 2026-10-30 15:36:51 UTC
+
+Mohit resumed the task branch, reported new non-root credentials and approved
+bounded read-only default-profile inspection. Read-only repository/PR checks show
+clean8612633, PR22open/unmerged, hosted Foundation quality gates success; Suraj
+review still requested. STSdefault/ap-south-1 nevertheless returns root account
+387743104934, not intended335523638354. Stopped before all ECS/RDS/S3requests.
+Local metadata shows onlydefault sections, no alternate profile/config paths or
+environment access-key/web-identity configuration; no credential values output.
+[Recheck evidence](../evaluation/domain/next-06/transfer/credential-recheck.json)
+retains actual result. Need the human to identify/configure the intended non-root
+profile visible in this environment, then repeat identity gate under the scoped
+plan. No data/code/cloud mutation/commit/push. DATA-READY remains incomplete.
+
+### NEXT-06 complete image/payload handoff and publication-safe validation — 2026-10-30 13:50:03 UTC
+
+Mohit explicitly authorized commit/push/PR including images and all materials
+needed by the receiving operator. Added tracked42,463,902byte transfer archive
+with45unchanged approved photo copies, both complete synthetic payload/manifest
+pairs, recipe/inventory and accepted judgments(52ordinary files), plus external
+per-member/whole-archive checksums and safe extraction instructions. This is the
+explicit human-authorized archive exception to earlier outside-Git photo/payload
+guidance; originals unchanged, raw ignore rule retained, no secrets/PGDATA/tools.
+
+Packaging exposed HEAD-only validation invalidating inputs on publication. Fixed
+reference.py to permit a recorded known Git ancestor while still requiring exact
+current source/schema/config/photo bytes; unknown/malformed bases refused. Three
+new tests;177data tests pass(9.87s). New transfer42-20261030a/b fingerprints match
+7efd142e11c3e8555e1aa08603cbf8dff07de5d74412ccde3c39869b9334ab98.
+Exact users/listings/image_plan arrays equal the prior reviewed December corpus;
+22query IDs/context/judgments unchanged, source-only rebind recorded separately.
+Old manifests/evidence preserved. Actual unpack/hash verification of52files and
+both payload validations against restored photos pass. Full native target
+/private/tmp/clip-next06-reference-zp4w8mnp load/model/reset/reload/publication checks
+pass;2000vector parts/65indexes identical; helpers/cluster stopped.
+
+Updated active commands/operator/PR guides and [transfer evidence](../evaluation/domain/next-06/transfer/result.json).
+Current base main remains6edb52b; GitHub login verified. Concrete commit/push/PR
+is authorized, independent peer/CI/exact merge remains separate. No AWS call,
+resource change or final readiness/NFR acceptance. Hosted CI will run on the PR;
+local npm/Docker/Linux blockers are documented rather than hidden. Only AWSaccount
+335523638354 may be used by the receiving operator under the cloud handoff.
+
+### NEXT-06 pre-cloud adapter and review package — 2026-10-30 13:38:58 UTC
+
+Mohit authorized finishing the remaining non-cloud implementation/tests/review
+preparation as one batch without intermediate verification questions. Cloud/profile/
+live target/cost/deployment stays handed off; only account335523638354 is permitted.
+Implemented reference_cloud.py offline planner/explicit adapter, reference_rows.py
+shared real insertion/projection checks, and reference-cloud-target.template.json
+with unfilled operator fields. Local reference_load.py retains its original fixed
+Unix-only guards and real-byte materialization. No cloud guards weakened into a
+local escape route. Cloud adapter rejects wrong/root identities, bucket-owner/TLS/
+session/schema/role/row/pipeline drift, requires create-only checksummed actual
+PUT/GET/hash media before confirmed SQLmetadata, rechecks state and locks empty
+rows transactionally. Fsynchronised0600create-only ledger retains attempted keys/
+uncertain writes; no retries/reset/delete/migrate/grant/start path. Code review
+corrected TLS inspection to the actual Psycopg PGconn property.
+
+32new cloud tests use scripted refusal fixtures and Botocore Stubber, not live
+cloud success; all174data tests passed after final TLS-property correction(8.50s). Native
+owned target /private/tmp/clip-next06-reference-cm_wkj2s verifies refactored shared
+SQL, actual photos, normal app/dispatcher/model and same-target reset/reload:
+5000users/1000listings/1000backed images/2000vector parts/65indexes match; helpers
+and cluster stopped. Both input runs still validate and22human judgments unchanged.
+Black328, boundaries0, CIparity12 and consumer mypy2passed. Pinned native Gitleaks
+8.30.1 archive verified against published checksum; first876file source snapshot
+has0findings; final881file snapshot also has0findings. Full CI is not claimed green.
+
+Web initially337passed/1failed with18files unable to load missing Signal SDK.
+npm ci offline cache lacks unique-names-generator4.7.1; network registry DNS was
+sandbox-blocked. Escalated calls were interrupted; standing user approval was
+NOT declined. Dependency restoration incomplete; current web/contracts need npm ci
+in a network-authorized environment. Docker-backed and2Linuxmemfd root tests and
+registered Docker scanner remain platform gates; native equivalent security scan
+is separate evidence, not a CI bypass. No frontend/lockfile changes to hide failures.
+
+Updated loading/design/command/data guides and [cloud handoff](../evaluation/domain/next-06/cloud-handoff.md).
+Prepared [PR/independent review package](../evaluation/domain/next-06/pre-cloud-review.md)
+for Suraj(B), with concrete title/body/files/refusal/privacy/checks and operator
+steps; no messages sent. [Pre-cloud evidence](../evaluation/domain/next-06/pre-cloud/result.json)
+and refreshed local freeze candidate bind current source without overwriting
+historical receipts. No AWS call, global install, source-photo edit, staging,
+commit/push/PR/merge in this batch. Local implementation/preparation finished;
+external dependency/CI/security wrapper/human peer approval and real cloud/final
+source-label binding/DATA-READY remain, with no repeated judgment review needed.
+
+### NEXT-06 cloud operator handoff and account restriction — 2026-10-30 13:11:08 UTC
+
+Mohit requested an instruction document for another contributor to add the
+reference corpus to cloud. Prepared [cloud handoff](../evaluation/domain/next-06/cloud-handoff.md),
+indexed from docs/data guides: local verified counts/fingerprints, exact branch/
+uncommitted source state, ignored a/bpayloads and external45photo transfer,
+December cutoff, accepted22judgments, explicit missing cloud adapter and reviewed
+load/media/Identity/model/worker/create-edit/final binding/freeze/cost/cleanup gates.
+Includes ownership, independent review/publication and real evidence requirements;
+local-only loader guards are not to be weakened into a cloud path.
+
+Recorded superseding direction: user halted alternate-account work; only account
+335523638354/ap-south-1 may be used. Earlier root-account387743104934 authorization
+is revoked; its proposed ECS command was interrupted, no successful resource
+inspection established. No AWScall/resource change, upload, code change, install,
+commit/push/merge during document preparation. Relative document links/file paths
+and whitespace checked. NEXT-06 remains incomplete pending the receiving operator's
+approved correct-account implementation/integration/final acceptance. Deliver
+handoff to Mohit; transfer/publication and cloud actions remain separately gated.
+
+### NEXT-06 cloud identity gate stopped inspection — 2026-10-30 12:58:08 UTC
+
+Mohit approved the bounded read-only plan. STSdefault/ap-south-1 initially could
+not reach its endpoint inside sandbox; approved escalated retry returned root
+account387743104934, not expected project account335523638354/non-root principal.
+Stopped before ECS/RDS/S3 exactly as proposed. No resource discovery/change,
+secret/SQL/object read, upload, deployment, IAM action or publication. Local
+verified data/judgments remain unchanged. [Inspection evidence](../evaluation/domain/next-06/step-06/cloud-inspection-result.json)
+records the mismatch and safe stop. Need a correct non-root project profile from
+Mohit/operator before identity recheck and the remaining approved read-only scope;
+no authority to continue in the different account inferred. DATA-READY incomplete.
+
+### NEXT-06 verified local handoff and cloud-inspection proposal — 2026-10-30 12:56:56 UTC
+
+Mohit verified Step6local reset/reload/freeze-candidate result and directed
+continuation. Local numbered work is verified,22human judgments accepted; original
+real integration/final accepted source-contract-label binding/DATA-READY gates
+remain. Registry still lists ID-READY/LI-CORE/SE-CORE/DATA-READY not accepted.
+Prepared [bounded cloud readiness inspection](../evaluation/domain/next-06/step-06/cloud-readiness-plan.md)
+for separate approval: localdefault profile, STSidentity first, expected project
+account/nonroot stop guard, then named shared ECS/RDS and S3bucket-name metadata,
+max12calls. No secret/SQL/object reads or cloud changes. AWSbinary/default Mumbai
+profile existence checked locally only; actual identity/live cloud state unknown.
+No cloud/API call, install, code/data change or publication. Next checkpoint is
+approval of this exact read-only scope, followed by an actual-target/cost/cleanup
+load plan and separate action approval; local verification is not cloud approval.
+
+### NEXT-06 Step6 local reset/reload and freeze candidate — 2026-10-30 12:54:47 UTC
+
+Mohit authorized Step6 after accepting all22query relevance groups/policy.
+reference_local.py adds explicit --rebuild-check requiring real embeddings:
+only its newly created fixed DB may be dropped/recreated; actual DB/login/socket,
+owned paths/start/creation guards precede drop, without forced disconnect/adoption.
+reference_rebuild.py hashes actual source/vector parts and index definitions;
+test_reference_rebuild.py adds5negative guards that must refuse before any process.
+Guides/command index document exact command, reset scope and pending final gates.
+
+Fresh Unix-only target /private/tmp/clip-next06-reference-p0j136wf loaded and encoded
+1000sources, reset its own DB, reapplied29migrations, reloaded unchanged5000users/
+1000listings/1000actual photo bindings and encoded again. Logical row/media hashes,
+2000actual vector parts and65index definitions match exactly. Vectors SHA256
+c14d68a44dfc106bafbe85cc519f9bc6900363df7bfdb1dfac50ae6c75cb53cc.
+Normal clone publication/dispatcher/Hybrid and visibility checks pass again;
+baseline unchanged. Both helpers reaped, cluster stopped, postmaster PID absent.
+[Step6 evidence](../evaluation/domain/next-06/step-06/result.json) retains the receipt
+and local freeze candidate with exact seed/schema/config/model/source/photo/index
+bindings. All22accepted judgments unchanged; final canonical binding remains gated.
+
+142data tests pass(5.89s), whole-repo Black325files, boundaries0, contracts8current,
+CIparity12checks, both input validations, source/judgment hashes and whitespace pass.
+Contract check needed pinned Node PATH. Broad root suite is NOT green: initial
+26failed/1674passed/156skipped/319errors; pinned Node/uv fixed20failures, scoped
+repo-cache retry3passed, sandbox-loopback transfer retry4passed. Remaining316Docker
+setup errors plus1Docker-dependent failure and2Linux-memfd tests incompatible
+with macOS remain. Registered secret scan/full aggregate need absent Docker;
+web not rerun for this data-only increment. No unrelated product test repairs.
+
+Task-wide local scope/ownership/code/docs/privacy/reproducibility review recorded;
+no real personal data/private messages/credentials/provider sends, source-photo
+edit, cloud/reset of existing target, install, staging/commit/push/merge. Await
+human verification of Step6 local result. NEXT-06/DATA-READY remain incomplete:
+actual session/S3/IAM/deployed normal create/edit vectors and accepted source/
+contract/final labels/freeze gates need their own checks and cloud/publication
+approvals; no NFRscore or final data acceptance inferred from local success.
+
+### NEXT-06 Step5 human relevance acceptance — 2026-10-30 12:46:38 UTC
+
+Mohit confirmed all22proposed relevance groups and inclusion policy accepted
+without corrections, following his proceed/reviewed replies. Recorded exact
+accepted IDs/context/inclusion in [accepted judgments](../evaluation/domain/next-06/step-05/accepted-judgments.json),
+bound to the unchanged corpus fingerprint and original candidate-file hash.
+All22included; no exclusions or score-driven changes. Confirmation recording UTC
+is exact; earlier inspection timestamp unknown and not invented. Review package,
+evidence and checkpoint updated. Further confirmation of these unchanged
+judgments is unnecessary. No product code or dataset changed.
+
+Canonical query-labels.draft.json remains valid/unreviewed because actual final
+source/contract/integration/freeze bindings are still pending; accepted judgments
+are retained separately rather than lost or fabricated as final scoring labels.
+22query IDs/text/context/relevant-ID sets match the reviewed proposals; draft
+validation and whitespace pass. No scoring, cloud action or publication. Step5
+human work is accepted; final label binding and Step6 reset/reload/freeze remain.
+
+### NEXT-06 Step5 draft query/content review package — 2026-10-30 12:42:45 UTC
+
+Mohit verified Step4's local result and directed Step5 to proceed. Reused all22
+query texts from the approved reference design, without selecting from measured
+rankings. Added data/evaluation/query-labels.draft.json with stable query IDs and
+actual public Hybrid/relevance/page1/page_size20context; judgments, inclusion,
+reviewer/time and final binding remain null. Step5review.md explains proposed
+inclusion policy/ambiguous topic mappings; candidate-proposals.json expands
+machine suggestions to actual eligible IDs; listing-catalogue.csv retains all
+1000exact content/context rows, including200excluded by availability, independent
+of top-five results. No final query-labels.json, human review or score fabricated.
+
+Actual validator initially refused page_size5; corrected to supported20(first5
+scored later), without changing validator/contract. Draft validation passes with
+scoring/human-review false; all22ID/text/candidate projections and1000catalogue
+rows/800eligible verified; false reviewed state correctly rejected. Whitespace
+passes. No product code, model inference, cloud, reset or publication action.
+[Step5 package](../evaluation/domain/next-06/step-05/review.md) and evidence retain
+human judgments plus required ID/LI readiness/accepted source/contract/final corpus
+binding as gates. Await Mohit's policy/topic-content judgments or corrections;
+final Step5 remains incomplete and Step6 has not started.
+
+### NEXT-06 Step4 real local embedding pipeline and staged Step3 return — 2026-10-30 12:39:39 UTC
+
+Mohit verified the Step3 local result and authorized Step4. Added opt-in
+--embeddings orchestration to reference_local.py and reference_embeddings.py:
+actual installed pinned all-MiniLM-L6-v2 helper, supported operator prepare/queue/
+real worker/guarded activation, complete current coverage and bounded HTTP smoke
+checks. New test_reference_embeddings.py rejects hidden/duplicate/missing-union/
+503 evidence and exhausted work budgets. Guides/command index now describe both
+local modes and retain actual session/S3/cloud/human-label/freeze gates.
+
+Fresh29migration Unix-only target loaded the same5000users/1000listings and real
+1000local photo references. All1000sources encoded and serving, zero missing,
+stale,pending,leased,failed or invalid parts. Six Keyword/Hybrid cases pass exact
+visibility/uniqueness/keyword-union checks; cycel returns82, wheeled vehicle17vs82.
+These are engineering observations, not human relevance labels or Success@5.
+Normal HTTP upload/confirmation/publication in separate clone automatically
+processed by actual dispatcher:1001current vectors and new ID in Hybrid results.
+This closes the staged Step3 local semantic subcheck; baseline remains1000with
+unchanged logical rows and complete coverage. Actual auth/S3/cloud stay pending.
+
+137data tests pass(5.01s, warnings errors), Black7/boundaries0/diff and both input
+validations pass. Final owned target /private/tmp/clip-next06-reference-o8baw4ep
+stopped; helper reaped after1start/2010windows, peak265MB approximately. Initial
+positive target jk6b20gu also stopped; final run corrects local receipt vector
+flag/scope. [Step4 evidence](../evaluation/domain/next-06/step-04/result.json)
+binds final receipt/source. No install, cloud action, source-photo edit, commit,
+push or merge. Full aggregate/secret scan remains a task/PR gate. Await Step4
+verification before Step5's20human-reviewed queries; DATA-READY remains incomplete.
+
+### NEXT-06 December evaluation amendment and Step3 local rehearsal — 2026-10-30 12:30:28 UTC
+
+Mohit approved5000regular users with stable listing states through1December,
+separate fresh temporary fixtures with unchanged14day policy, and execution of
+the already-verified Step3plan. Updated recipe/generator/tests/canonical guidance;
+new dec01-42-20261030 a/b inputs have identical records/plans/fingerprint
+1ffa78c587b48d0a9dc0e878d008d0dd2d5e14a431f0b54f805e13585e693118.
+Future listings start2December; current/unavailable windows end31December;
+comparison cutoff1December00UTC. Original photos/IDs/text reused; no new photos.
+Old mixed/week runs retained as superseded diagnostics. Material changes can
+still require revalidation; no product/schema temporary-lifetime change.
+
+Implemented reference_load.py real-byte/empty-target SQL adapter and isolated
+reference_local.py runner; test_reference_load.py adds14guard cases. New native
+29migration Unix-only DB loaded5000users/1000listings/1000backed photo references.
+All row/owner/Handle/image/FK/availability/text-index checks and duplicate-load
+refusal pass. Real Listings handlers verify eight pages/800unique tied-order IDs,
+1000owner deliveries/hash matches, hidden404/anonymous401 and normal intent/
+inspect/confirm/create/detail in a separate probe clone. Main reference unchanged.
+Caller/SQL eligibility and local signed-file transport are explicit test fixtures,
+not actual session or S3 acceptance. Original new-listing semantic-vector check
+remains pending real Step4pipeline preparation, not replaced by text vectors.
+
+132data tests pass(5.03s), Black5/boundaries0/whitespace/input-pair validation pass.
+Sandbox startup needed escalation. Initial role-safe preflight hit SQL42501 on
+restricted unix_socket_directories; fixed with connection host/port plus public
+SQLidentity/version, without extra role privileges or weakening constraints.
+Final owned target /private/tmp/clip-next06-reference-rb284ij2 stopped cleanly and
+retains receipt/media/logs. [Evidence](../evaluation/domain/next-06/step-03/result.json)
+binds source files, input and receipts. No AWS/upload/cloud DB operation, install,
+source-photo edit, auth bypass in normal runtime, staging/commit/push/merge/reset.
+Await local result verification; actual cloud/auth/media/normal semantic workflow,
+Step4coverage, human labels and final freeze/DATA-READY remain pending.
+
+### NEXT-06 Step3 load/media path review package — 2026-10-30 11:52:03 UTC
+
+Mohit verified Step2 and authorized Step3 preparation. Audited preview loader,
+current Listings storage/confirmation/authorization boundary and canonical loading
+requirements. Preview metadata is not valid media. Prepared the explicit
+[local rehearsal plan](../architecture/reference-dataset-loading.md): new private
+Unix-only target, fixed DB/role/version29migrations, actual45copied source blobs/
+1000backed keys, bounded transactional bulk SQL, owner/lifecycle/Handle/FK/index/
+visibility assertions and honest isolated app-provider limits. No existing target
+or unreviewed cloud prefix/confirmation adopted. Local disk has sufficient headroom.
+
+Normal new-listing vector/search acceptance requires pipeline preparation in Step4;
+proposed retaining the original Step3subcheck until it is rerun there, rather than
+marking it complete from a queue intent. Cloud inventory remains historical:
+shared runtime stopped, Hybrid/worker and hosted prerequisites unverified. No AWS
+query/start/upload/load/role action. No code or generated inputs changed beyond
+Step2verification metadata; no SQL/media creation, reset, install or publication.
+Whitespace pass. Await explicit local path/staged-checkpoint review before
+implementation and execution; required cloud target/cost/cleanup approval remains.
+
+### NEXT-06 Step2 reproducible reference-input generation — 2026-10-30 11:42:23 UTC
+
+Mohit verified Step1 and authorized Step2. Added reference.py (local-only recipe
+builder/validator/CLI) and reference-recipe.json (45approved item/synonym topics,
+exact independent distributions). Reused PD-09IDs/canonical hashing/named-run
+safety; added valid unique Handles, lifecycle windows and1000distinct regular
+owners. Photo bindings use explicit topic paths and checked source hashes; image
+IDs/relative keys are plans, not fake upload confirmations. No credentials,
+sessions, outbound sends or private conversation/offer data generated.
+
+Generated and revalidated two fresh final v1-42-20261030 a/b runs:5000users
+(4800regular/200temporary),1000listings,1000planned images; category112/111mix,
+800available/100unavailable/50future/50expired, all45topics. Records/plans identical;
+only audit generation times differ. Fingerprint a4811b510e9604379945de6dc3717bab3e57b3c3e5d648a7ba89b87ae1020373.
+Actual planned image bytes925881224; actual uploaded objects0. T=2026-10-30UTC;
+measurement window ends2026-11-05T00:00Z. Regenerate/revalidate/rebind/reconfirm
+labels if this window is missed. Base6edb52b plus exact code/config/source digests
+recorded; accepted final revision/freeze remains pending. Early a/b run names
+preceded requested-count manifest completion and remain local stale diagnostics;
+no overwrite/delete or reset performed.
+
+New invariant/safety tests23pass; all data tests117pass(3.16s). Real-photo generate/
+validate commands and pair comparison pass; Black2/boundaries0/whitespace pass.
+Registered exact commands and limits in data guide/command index; linked recipe.
+[Evidence](../evaluation/domain/next-06/step-02/result.json) binds code/configuration,
+retained manifests, counts and pending acceptance flags. Raw dataset bundles remain
+ignored; sources untouched. SQL/media/vector/label/freeze/readiness and cloud checks
+not performed or inferred. No install, global change, staging, commit, push, merge,
+cloud, upload or database action. Await Step2 verification, then Step3 reviewed
+schema-aware load/media path and separate exact target/cost/cleanup approval.
+
+### NEXT-06 Step1 input/tooling audit — 2026-10-30 11:28:15 UTC
+
+Mohit verified the six-step plan, supplied45real topic photos and replaced two
+AVIF files. All45now pass type/size/header-dimension/topic checks, with distinct
+SHA256values; originals untouched and dual-SIM typo explicitly mapped. Updated
+[recipe](../../data/evaluation/reference-dataset-design.md) and added the source
+inventory. Current29migration schema/unique Handles, preview generator/loader,
+model operators and label tooling audited: reusable helpers exist, but final
+recipe/media loading/evaluator binding still need implementation. Both old5000/
+1000corpora are stale previews correctly refused; no final labels. Data tests94
+pass(0.94s); metadata/JSON/hash checks and whitespace pass. No full visual/decode,
+SQL load, cloud media, model coverage or DATA-READY acceptance claimed.
+[Step1 evidence](../evaluation/domain/next-06/step-01/result.json), branch
+`task/next-06-reference-dataset` from6edb52b. No code/config, source photo, existing
+DB, install or cloud/publication action. Await Step1 verification, then Step2
+final deterministic recipe/two local generations; all later real gates retained.
+
 ### PR #20 review corrections — 2026-10-29 12:55:31 UTC
 
 At Aditya's request, prepared local Conversations corrections for bound-device
@@ -37,6 +1061,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | NEXT-01 | Suraj — requested planning coordinator; C retains EXP-01 ownership | done | Design and task-wide review verified; NEXT-02 is next. | Steps 1–9 performed | Steps 1–9 verified | Planning baseline `c869f33`; [design and approved gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md#next-01-step-8--proposed-changes-to-measurement-gates); [NEXT-07 references](../tasks/remaining-project-plan.md#experiment-protocol-reference) | No blocker for the design handoff. Real implementations, data, tools, cost anchors, project AWS identity/spend and run approvals remain NEXT-07 prerequisites. | 2026-10-28 06:24:24 UTC |
 | NEXT-02 | Suraj — planning coordinator | done | Evaluation and documentation cleanup completed; test/fixture and app/infrastructure audits found no safe deletions. | Cleanup review and checks complete; its changes are included in the current commit. NEXT-02 itself changed no executable test or application code. | User accepted the cleanup and directed committing the combined changes on 2026-10-28. | `task/integrated-marketplace-rollout`; [NEXT-02 cleanup criteria](../tasks/remaining-project-plan.md); [command index](../environment/commands.md) | No cleanup blocker; documentation references and `git diff --check` passed. No tests/app checks, AWS actions, or paid runs for NEXT-02. | 2026-10-28 09:26:47 UTC |
 | NEXT-03 | Suraj — planning coordinator | in progress | NEXT-03 batch committed at `6700cb2`; no-commit integration with `origin/main` (`a60c83f`) reconciled. Post-integration pinned `make check` passes; pre-PR diff/package review complete. | 2,019 Python passed/156 skipped; 94 data; 496 web passed/3 skipped; 169 Conversations; 35 database safety; PostgreSQL 18.6 migration lifecycle; Black, boundaries, contracts, mypy, web lint/types/build, Gitleaks all passed. | Suraj confirms the complete NEXT-03 visual walkthrough is done. | `task/integrated-marketplace-rollout`; [walkthrough](../tasks/next-03-step-10-visual-checklist.md), [implementation/check report](../tasks/next-03-visual-feedback-implementation-report.md), [PR draft](../tasks/next-03-pr-package.md) | Shared migration and participant-view grant need separate exact review/approval; hosted DNS/HTTPS, Hybrid and general-recipient Identity email remain deployment gates. Affected-owner and independent peer review remain pending. | 2026-10-29 12:31:12 UTC |
+| NEXT-06 | Mohit (C), Search/data; domain owners review records | in progress | Step6 human-verified; commit/publication approved; replacement PR/current-head CI/peer next | All six output groups represented;453data/evaluation +496web pass; full new-head CI/peer gates pending | Steps5/6 verified by Mohit; exact commit/publication approved; Step3 external completion human-reported | [Frozen release](../evaluation/domain/next-06/frozen-dataset.json); [task-wide review](../evaluation/domain/next-06/task-wide-review.md); [checks](../evaluation/domain/next-06/transfer/step-06-freeze-result.json) | Current-head CI/independent review/authorized merge before formal DATA-READY | 2026-10-31 15:50:51 UTC |
 | BOOT-00 | B / Suraj (initial contributor) | done | Local documentation seed verified; publication pushed and verified | performed | verified | Current `origin/main` verified at `cfbf9352c03302990e6ffda09521f0a5450572d7`; includes seed `7fb9bfed79b45614a17de1bf2f9c50dbb3981b3f` and publication record | None | 2026-10-15 07:18 UTC |
 | PD-00 | Kickoff owner — Suraj (B) | done | Steps 1–6 complete; task-wide closeout reviewed | performed | verified | `task/pre-domain-foundation` at base `cfbf9352c03302990e6ffda09521f0a5450572d7`; work-log task table, initial inventory, Document 4 comparison, and `git diff --check` | None | 2026-10-16 07:02 UTC |
 | PD-01 | Kickoff owner — Suraj (B) | done | Steps 1–8 and task-wide acceptance review complete; published handoff confirmed | performed | verified | `docs/architecture/foundation-traceability.md`; handoff `d29c02b` is in remote `main` at `4754e97fdaf4284e84062a926eb1864fab745036`, confirmed by `git ls-remote` | None | 2026-10-17 06:26:36 UTC |

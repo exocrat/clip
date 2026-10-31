@@ -1,0 +1,275 @@
+{
+  "format_version": "1",
+  "archive": "next06-reference-20261030.tar.gz",
+  "archive_sha256": "2c9c88d103f3329c794c1efa857268a7120c7f1549250d3e28278d5e1eb0b2ea",
+  "archive_bytes": 42463902,
+  "photos": 45,
+  "users": 5000,
+  "listings": 1000,
+  "source_base_revision": "6edb52ba4e5a148386cd81e78b29c15b557193c7",
+  "logical_data_fingerprint": "sha256:7efd142e11c3e8555e1aa08603cbf8dff07de5d74412ccde3c39869b9334ab98",
+  "files": [
+    {
+      "path": "accepted-judgments.json",
+      "bytes": 50588,
+      "sha256": "f27c37493357d7ff92d35f0aabfacdcca3ee8487225b9fe904c701c9921d2f5b"
+    },
+    {
+      "path": "data/evaluation/reference-image-inputs.json",
+      "bytes": 15895,
+      "sha256": "67f09586a377d058e18413f5ac23a9479f222f1e4d3d44fecd37669a84555f78"
+    },
+    {
+      "path": "data/evaluation/reference-recipe.json",
+      "bytes": 7755,
+      "sha256": "d7cb3287d76a2ac9aed1194af67003ba83183c9bf09e17dd97631cec4978e0c1"
+    },
+    {
+      "path": "data/runs/next06-transfer-42-20261030-a/dataset.json",
+      "bytes": 2378504,
+      "sha256": "da6bd070e177a276a3e23e532cbc9a6406deee30b285141f10ca1de9ccae6a1e"
+    },
+    {
+      "path": "data/runs/next06-transfer-42-20261030-a/manifest.json",
+      "bytes": 11859,
+      "sha256": "b134281617059088a6b5d461891753fe0b05cc466250af39d9ff9cd7fb03edf4"
+    },
+    {
+      "path": "data/runs/next06-transfer-42-20261030-b/dataset.json",
+      "bytes": 2378504,
+      "sha256": "4ba79817ec12adca0c7ca12a0fbb8436dbeaa383e756a82ecff0bdba2b0774ff"
+    },
+    {
+      "path": "data/runs/next06-transfer-42-20261030-b/manifest.json",
+      "bytes": 11859,
+      "sha256": "4b298fe0926133b64b5839dc6705b9c8312ea3100881bc2a5a015058ecce2111"
+    },
+    {
+      "path": "images/appliances/electric-kettle.jpg",
+      "bytes": 859413,
+      "sha256": "73d4e3fec18e15745bd975b65ce8f32d59ce6994971266e9da8359280b8d54b7"
+    },
+    {
+      "path": "images/appliances/kitchen-mixer.jpg",
+      "bytes": 449691,
+      "sha256": "78806ce7452dd6033ca685a97333511a93a2e49c66eac49be8d4f7426baadfc3"
+    },
+    {
+      "path": "images/appliances/rice-cooker.jpg",
+      "bytes": 576734,
+      "sha256": "312c5bf1b2bf7807ee6e32f5b7864774a427e561f725ba28d4684a03a23878c6"
+    },
+    {
+      "path": "images/appliances/table-fan.jpg",
+      "bytes": 4409952,
+      "sha256": "e957f56f9521bd57e04bd6d9a9a387e7be9b631a6f0a6a092d11abeb6e8b6257"
+    },
+    {
+      "path": "images/appliances/toaster.jpg",
+      "bytes": 435430,
+      "sha256": "37133c7adfb216fccdbdc38eb6242fcbef556ee1a386b39e9097ef832d82b9ad"
+    },
+    {
+      "path": "images/bicycles/campus-bicycle.jpg",
+      "bytes": 924467,
+      "sha256": "116bd4c79fee827e83c46b3384c59aec1d1f43c5dbd72a74577b113231b8db7f"
+    },
+    {
+      "path": "images/bicycles/commuter-bicycle.jpg",
+      "bytes": 1099131,
+      "sha256": "ebe543fae0ae70168eebddfde118848e75106202d4582e5893e94fd521764951"
+    },
+    {
+      "path": "images/bicycles/folding-bicycle.jpg",
+      "bytes": 7488569,
+      "sha256": "1b724450f550a579fcd5779e437016c029db4ba6312417078297b71905126e2b"
+    },
+    {
+      "path": "images/bicycles/mountain-bicycle.jpg",
+      "bytes": 1233882,
+      "sha256": "9bdccc88a8bc403e5fe6333c35b634860d5adead348c195b32ef205f656b5a9a"
+    },
+    {
+      "path": "images/bicycles/road-bicycle.jpg",
+      "bytes": 5475958,
+      "sha256": "47e1530dcd8244c7ed15e004a2fee1297835580bb43cb33ee5bc35d88877334e"
+    },
+    {
+      "path": "images/books/biology-textbook.jpeg",
+      "bytes": 17994,
+      "sha256": "8c40b408c53d84d0c011748b0115ed046641e4ee14ed2ff65ae34b7b7f8166ad"
+    },
+    {
+      "path": "images/books/chemistry-textbook.jpeg",
+      "bytes": 131396,
+      "sha256": "fab95ed887f4713e4725146ef4231083a4bf82e289ce09cf3f92f8479fc7a88c"
+    },
+    {
+      "path": "images/books/computing-textbook.jpeg",
+      "bytes": 264444,
+      "sha256": "a8d0f0f423f3624475f59531fca9a334feca5a4027077c4de724cb8b8645cb8a"
+    },
+    {
+      "path": "images/books/economics-textbook.jpeg",
+      "bytes": 114539,
+      "sha256": "bb403b7df94ff966a517d742814f72af7efd18c01f422d0c5a5bdee96b696dd2"
+    },
+    {
+      "path": "images/books/linear-algebra-textbook.png",
+      "bytes": 50894,
+      "sha256": "d1b139980845a1230862b2e442c61cc80d901380fefe4c99c885126f29ec1558"
+    },
+    {
+      "path": "images/electronics/camera.jpg",
+      "bytes": 350289,
+      "sha256": "6b5cf44bd9d78e45cebd22a1c811cb1ca4fb3a45f2ad71af9dcc858cab8023b5"
+    },
+    {
+      "path": "images/electronics/desk-monitor.jpg",
+      "bytes": 182796,
+      "sha256": "2cc19ed7d776510567286dddb89bef9343b30d08dce56bd5059c1f276fb08daa"
+    },
+    {
+      "path": "images/electronics/headphones.jpg",
+      "bytes": 151768,
+      "sha256": "6fbfe5d1e06edccd99a8044331d9af6c3cf3ccffbcd7c00c85f8319cadbbcde8"
+    },
+    {
+      "path": "images/electronics/projector.jpg",
+      "bytes": 234938,
+      "sha256": "909b2ceef6e761809e8911861ec71a556f148ee40796110a8e700504b191b441"
+    },
+    {
+      "path": "images/electronics/speaker.jpg",
+      "bytes": 310779,
+      "sha256": "7e688f694bfb45ef7ea6070940e1cec99dff5a05df7d3c15c8c364070dd2b273"
+    },
+    {
+      "path": "images/furniture/bed-frame.jpg",
+      "bytes": 279197,
+      "sha256": "a43fa063463174980d7024e6acee33fa10d32ee14f22d6034ce4f093e8fc1ace"
+    },
+    {
+      "path": "images/furniture/bookshelf.jpg",
+      "bytes": 664925,
+      "sha256": "0126b8e78b5fc153e3e1ee3630a02c3ae6737ad64d6f070afcc302356265383a"
+    },
+    {
+      "path": "images/furniture/dining-table.jpg",
+      "bytes": 342687,
+      "sha256": "a51f80b2fecd47cd7ea90a64cefce1358443c0ffb2ec20bc4acbbdfc1ecc15bc"
+    },
+    {
+      "path": "images/furniture/office-chair.jpg",
+      "bytes": 437065,
+      "sha256": "5e46673adb7e09e3d21ada0df4debc570db48627281c8b5b981b9aed8fd90b39"
+    },
+    {
+      "path": "images/furniture/study-desk.jpg",
+      "bytes": 167318,
+      "sha256": "fc3da4e6ba90f843dc81d19018bc0409097ccac11ad50e7e6b37df4d286dabaf"
+    },
+    {
+      "path": "images/laptop/compact-laptop.jpg",
+      "bytes": 576758,
+      "sha256": "4bf1b37745dba2d0a2350fc2d851c518c00aa7775eacfdc4e724c64ec38fd546"
+    },
+    {
+      "path": "images/laptop/gaming-laptop.jpg",
+      "bytes": 193147,
+      "sha256": "573a6cd9d5b7a60542ed5ca7667c91dc5efdbf196b88e262a00b7e494922c69e"
+    },
+    {
+      "path": "images/laptop/office-laptop.jpg",
+      "bytes": 275420,
+      "sha256": "82110b9635fb3ea7ed9eca3bcbe64ee368a90397992424911fbba5e7405b9a1c"
+    },
+    {
+      "path": "images/laptop/refurbished-laptop.jpg",
+      "bytes": 636789,
+      "sha256": "d3d7e970c7a5b75dc646c1b75467853b0960981b0a8476b2de6c1a307b34f27f"
+    },
+    {
+      "path": "images/laptop/student-laptop.jpg",
+      "bytes": 561498,
+      "sha256": "d95bd505379d67fe94a6ed92c1ed3bf73265e2530dc0a6540c3e3f8d40ee6279"
+    },
+    {
+      "path": "images/mobile_phone/android-smartphone.jpg",
+      "bytes": 428492,
+      "sha256": "64a28b895768cc980ba48c965158c579d3200d17dfd31c5de178557d52c9b496"
+    },
+    {
+      "path": "images/mobile_phone/basic-mobile-phone.jpg",
+      "bytes": 348490,
+      "sha256": "2849ac9278d2d98d118cb07f3fb4bf077d2233f3d7070780d014330fc5537df0"
+    },
+    {
+      "path": "images/mobile_phone/dual-sim-smartophone.jpg",
+      "bytes": 218881,
+      "sha256": "23118b305900f1ed8b51f8a768f96bc460ced91464b2f8ad5302db952f52e0a0"
+    },
+    {
+      "path": "images/mobile_phone/iphone.jpg",
+      "bytes": 241498,
+      "sha256": "f80d9afaf3dfcde2b76119db758912e48c9db2a284e00d07512816dcb964b973"
+    },
+    {
+      "path": "images/mobile_phone/refurbished-smartphone.jpg",
+      "bytes": 234825,
+      "sha256": "34ccc263b7356b34b87502c64e79db5a78d63d453c2b17db26cba98f6517eb34"
+    },
+    {
+      "path": "images/other/backpack.jpeg",
+      "bytes": 626917,
+      "sha256": "4a4d48bf0aade11b83be9f15d708fd155753e73915f08f05c10c8a6db12fc653"
+    },
+    {
+      "path": "images/other/stationery-kit.jpeg",
+      "bytes": 109332,
+      "sha256": "740939cb80802f7fcd3cc1d516ed145bf3d7172fbdb92b5e1b47ae5b3f8f62ea"
+    },
+    {
+      "path": "images/other/storage-box.jpg",
+      "bytes": 12685,
+      "sha256": "0488acbb94f56eb63624d601e278379ea9654f72a076163452255b26a5362fca"
+    },
+    {
+      "path": "images/other/umbrella.jpeg",
+      "bytes": 125199,
+      "sha256": "1cb96de2b08677bfd6b983afe9e7ea094ab4e1fd862328d7cc08d34a2d9acaa5"
+    },
+    {
+      "path": "images/other/water-bottle.jpeg",
+      "bytes": 22496,
+      "sha256": "19681f222600996b2fa8664a01972969cf50c4ea438c494aa48e8a2a7d58f404"
+    },
+    {
+      "path": "images/sports_fitness/badminton-racket.jpg",
+      "bytes": 881455,
+      "sha256": "9ece625ce941987886f3503bf2045be5102405ebc639aa8e51f0fe0be4f4471e"
+    },
+    {
+      "path": "images/sports_fitness/dumbbells.jpg",
+      "bytes": 816409,
+      "sha256": "d9eb725b3d298c4655720e35191c35fe0a166259930dc5ea517d1eb1fcf0dc4f"
+    },
+    {
+      "path": "images/sports_fitness/football.jpg",
+      "bytes": 1246671,
+      "sha256": "a42a7a7e366fb03748d35a9b9607ff456aa26c9a6496e1536328e749bfee206b"
+    },
+    {
+      "path": "images/sports_fitness/tennis-racket.jpg",
+      "bytes": 5983208,
+      "sha256": "d7fcdb5891768e8a9a8d9b6b1570af6e13b9adf5d3ca9be9407f01bc3197de98"
+    },
+    {
+      "path": "images/sports_fitness/yoga-mat.jpg",
+      "bytes": 1667232,
+      "sha256": "a971b87a103b261486a04e8bbfc92d33ff252d2c9e66c2ce25d58aa02cb6679c"
+    }
+  ],
+  "safety": "Only45approved topic images, two synthetic payload/manifest pairs, recipe/inventory and accepted judgments. No credentials/sessions/.tools/PGDATA/private keys/provider configuration. Source photos unmodified.",
+  "binding": "Source-only rebind for publication-safe ancestor validation. Users/listings/image_plan equal prior December pair; all22human judgments unchanged. Final cloud/readiness/source-contract acceptance pending."
+}

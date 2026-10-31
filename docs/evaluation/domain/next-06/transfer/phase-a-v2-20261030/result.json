@@ -1,0 +1,37 @@
+{
+  "task": "NEXT-06",
+  "state": "probe_failed_resources_stopped",
+  "started_utc": "2026-10-30 18:07:54 UTC",
+  "ended_utc": "2026-10-30 18:20:36 UTC",
+  "duration_seconds": 762.0,
+  "api_calls": 54,
+  "command_id": "d2377026-b808-4639-958c-83b16f55f9db",
+  "diagnostic": {
+    "format_version": 2,
+    "state": "refused_or_failed",
+    "stage": "sql_child",
+    "reason": "child_failed",
+    "failure_type": "InsufficientPrivilege",
+    "return_code": 1,
+    "provider_error": null,
+    "child_stage": "migrations",
+    "child_reason": "unexpected_error",
+    "sqlstate": "42501",
+    "cli_version": "2.36.47",
+    "cleanup": "absent",
+    "metadata": null
+  },
+  "cleanup": {
+    "required": true,
+    "host_stopped": true,
+    "rds_stopped": true
+  },
+  "interpretation": "This retry reached the migrations stage and received InsufficientPrivilege SQLSTATE 42501 on SELECT version FROM public.schema_migrations. Earlier host/secret/connect/TLS/readonly/role checks passed by control flow; successful metadata fields were not emitted. Later schema/proposed-database checks did not run. The original v1 failure remains independently unexplained.",
+  "changes": "Only approved starts, one remote probe and stops. No grants, schema writes, uploads, deployments, IAM/network/ASG changes or repair.",
+  "estimate": {
+    "base_compute_upper_estimate_usd": 0.00681567,
+    "basis": "Conservatively both base compute rates for whole window; excludes CPU credits, network, existing storage/baseline, tax; not actual bill."
+  },
+  "rds_stop_review_by_utc": "2026-11-06 18:20:36 UTC",
+  "remaining": "Review/verify failure and a separately approved metadata/access route; real load and original DATA-READY gates remain pending."
+}

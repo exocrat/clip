@@ -1,0 +1,314 @@
+{
+  "task": "NEXT-06",
+  "checkpoint": "Approved bounded cloud configuration inspection",
+  "recorded_utc": "2026-10-30 16:48:55 UTC",
+  "state": "16-operation scope completed; no resource changes",
+  "profile": "mohitmahapa1",
+  "account": "335523638354",
+  "region": "ap-south-1",
+  "identity": "arn:aws:iam::335523638354:user/mohitmahapa1",
+  "observations": {
+    "task": {
+      "exit_code": 0,
+      "data": {
+        "arn": "arn:aws:ecs:ap-south-1:335523638354:task-definition/clip-test-api-ap-south-1-pd16:11",
+        "cpu": "256",
+        "memory": "512",
+        "runtime": {
+          "cpuArchitecture": "X86_64",
+          "operatingSystemFamily": "LINUX"
+        },
+        "taskRole": "arn:aws:iam::335523638354:role/clip-shared-test-api-task",
+        "executionRole": "arn:aws:iam::335523638354:role/clip-shared-test-api-execution",
+        "networkMode": "bridge",
+        "containers": [
+          {
+            "name": "api",
+            "image": "335523638354.dkr.ecr.ap-south-1.amazonaws.com/clip-shared-test-api@sha256:97482cb4fb697eee230e66d134c165e557dac7d71a165e6034c88747f1738245",
+            "environment": [
+              {
+                "name": "CLIP_STORAGE_PROVIDER",
+                "value": "s3"
+              },
+              {
+                "name": "CLIP_ENVIRONMENT",
+                "value": "test"
+              },
+              {
+                "name": "CLIP_HYBRID_SEARCH_ENABLED",
+                "value": "false"
+              },
+              {
+                "name": "CLIP_IMAGE_REGION",
+                "value": "ap-south-1"
+              },
+              {
+                "name": "CLIP_HYBRID_WORKER_ENABLED",
+                "value": "false"
+              },
+              {
+                "name": "CLIP_IMAGE_KEY_PREFIX",
+                "value": "id01"
+              },
+              {
+                "name": "CLIP_IMAGE_BUCKET",
+                "value": "clip-test-listings-images-ap-south-1-id01"
+              }
+            ],
+            "secretReferences": [
+              {
+                "name": "CLIP_DATABASE_URL",
+                "reference": "arn:aws:ssm:ap-south-1:335523638354:parameter/clip/test/listings-database-url"
+              },
+              {
+                "name": "CLIP_DATABASE_DSN",
+                "reference": "arn:aws:ssm:ap-south-1:335523638354:parameter/clip/test/conversations/database-url"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "db": {
+      "exit_code": 0,
+      "data": [
+        {
+          "id": "clip-shared-test-postgres",
+          "status": "stopped",
+          "engine": "postgres",
+          "version": "18.6",
+          "class": "db.t4g.micro",
+          "storageGiB": 20,
+          "storageType": "gp3",
+          "multiAZ": false,
+          "encrypted": true,
+          "public": false,
+          "endpoint": {
+            "Address": "clip-shared-test-postgres.cnsu8kgiimug.ap-south-1.rds.amazonaws.com",
+            "Port": 5432,
+            "HostedZoneId": "Z2VFMSZA74J7XZ"
+          },
+          "ca": "rds-ca-rsa2048-g1",
+          "subnetGroup": {
+            "name": "clip-shared-test-database",
+            "vpc": "vpc-04b0cc01cbf93cd17",
+            "subnets": [
+              "subnet-0e56990b4ae069314",
+              "subnet-0c9df7ababd0154bc"
+            ]
+          },
+          "securityGroups": [
+            "sg-02f98707f8e43d2ea"
+          ]
+        }
+      ]
+    },
+    "cluster": {
+      "exit_code": 0,
+      "data": {
+        "clusters": [
+          {
+            "name": "clip-shared-test",
+            "status": "ACTIVE",
+            "providers": [
+              "clip-shared-test-capacity"
+            ],
+            "defaultStrategy": [
+              {
+                "capacityProvider": "clip-shared-test-capacity",
+                "weight": 1,
+                "base": 1
+              }
+            ]
+          }
+        ],
+        "failures": []
+      }
+    },
+    "security_groups": {
+      "exit_code": 0,
+      "data": [
+        {
+          "id": "sg-02f98707f8e43d2ea",
+          "name": "clip-shared-test-database",
+          "vpc": "vpc-04b0cc01cbf93cd17",
+          "ingress": [
+            {
+              "protocol": "tcp",
+              "from": 5432,
+              "to": 5432,
+              "cidrs": [],
+              "groups": [
+                "sg-0a3c8d683731470b4"
+              ]
+            }
+          ],
+          "egress": []
+        }
+      ]
+    },
+    "subnets": {
+      "exit_code": 0,
+      "data": [
+        {
+          "id": "subnet-0c9df7ababd0154bc",
+          "vpc": "vpc-04b0cc01cbf93cd17",
+          "az": "ap-south-1a",
+          "state": "available",
+          "publicIp": false,
+          "cidr": "10.64.1.0/24"
+        },
+        {
+          "id": "subnet-0e56990b4ae069314",
+          "vpc": "vpc-04b0cc01cbf93cd17",
+          "az": "ap-south-1b",
+          "state": "available",
+          "publicIp": false,
+          "cidr": "10.64.2.0/24"
+        }
+      ]
+    },
+    "capacity": {
+      "exit_code": 0,
+      "data": {
+        "providers": [
+          {
+            "name": "clip-shared-test-capacity",
+            "status": "ACTIVE",
+            "asg": "arn:aws:autoscaling:ap-south-1:335523638354:autoScalingGroup:e2b06153-eaca-438c-ba0f-83a8e0b2b9fa:autoScalingGroupName/clip-shared-test-ecs-host",
+            "scaling": "ENABLED",
+            "protection": "DISABLED"
+          }
+        ],
+        "failures": []
+      }
+    },
+    "s3_head-bucket": {
+      "exit_code": 0,
+      "data": {
+        "BucketArn": "arn:aws:s3:::clip-test-listings-images-ap-south-1-li02",
+        "BucketRegion": "ap-south-1",
+        "AccessPointAlias": false
+      }
+    },
+    "s3_get-bucket-location": {
+      "exit_code": 0,
+      "data": {
+        "LocationConstraint": "ap-south-1"
+      }
+    },
+    "s3_get-bucket-encryption": {
+      "exit_code": 0,
+      "data": {
+        "ServerSideEncryptionConfiguration": {
+          "Rules": [
+            {
+              "ApplyServerSideEncryptionByDefault": {
+                "SSEAlgorithm": "AES256"
+              },
+              "BucketKeyEnabled": false,
+              "BlockedEncryptionTypes": {
+                "EncryptionType": [
+                  "SSE-C"
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    "s3_get-public-access-block": {
+      "exit_code": 0,
+      "data": {
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": true,
+          "IgnorePublicAcls": true,
+          "BlockPublicPolicy": true,
+          "RestrictPublicBuckets": true
+        }
+      }
+    },
+    "s3_get-bucket-policy-status": {
+      "exit_code": 0,
+      "data": {
+        "PolicyStatus": {
+          "IsPublic": false
+        }
+      }
+    },
+    "s3_get-bucket-cors": {
+      "exit_code": 0,
+      "data": {
+        "CORSRules": [
+          {
+            "AllowedHeaders": [
+              "content-type",
+              "if-none-match",
+              "x-amz-*"
+            ],
+            "AllowedMethods": [
+              "GET",
+              "HEAD",
+              "PUT"
+            ],
+            "AllowedOrigins": [
+              "http://127.0.0.1:5173"
+            ],
+            "ExposeHeaders": [
+              "ETag"
+            ],
+            "MaxAgeSeconds": 300
+          }
+        ]
+      }
+    },
+    "s3_get-bucket-versioning": {
+      "exit_code": 0,
+      "data": {
+        "note": "No configuration content returned"
+      }
+    },
+    "s3_get-bucket-ownership-controls": {
+      "exit_code": 0,
+      "data": {
+        "OwnershipControls": {
+          "Rules": [
+            {
+              "ObjectOwnership": "BucketOwnerEnforced"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "asg": {
+    "name": "clip-shared-test-ecs-host",
+    "min": 0,
+    "max": 1,
+    "desired": 0,
+    "instances": [
+      {
+        "id": "i-086045c48487471de",
+        "state": "InService",
+        "health": "Healthy"
+      }
+    ],
+    "launch_template": {
+      "id": "lt-0327bb81cb3269f0b",
+      "version": "3"
+    },
+    "instance_type": "not established; no launch-template read approved"
+  },
+  "sdk_local": {
+    "awscrt_installed": false,
+    "implication": "Validate SDK browser-login compatibility or use the supported CLI credential-process bridge before live adapter use; no credentials exported or copied."
+  },
+  "gaps": [
+    "Shared runtime uses id01 bucket/prefix; inspected li02 bucket has only localhost CORS. Target/prefix/runtime decision and owner review still required.",
+    "Hybrid and dispatcher disabled in existing revision11.",
+    "Private RDS admits5432only from app security group; actual usable managed access route not yet established.",
+    "ASGdesired0but one healthyInService host returned; actual EC2state/cost not established.",
+    "Database roles/schema/current threshold/image contents/effective task-role permissions and accepted peer review remain pending."
+  ],
+  "safety": "All metadata reads only; no secret values, S3objects, SQL, grants, uploads, resource starts/stops/scaling, deployment, cleanup or Git publication."
+}

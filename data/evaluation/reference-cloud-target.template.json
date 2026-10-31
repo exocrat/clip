@@ -1,0 +1,15 @@
+{
+  "account": "335523638354",
+  "region": "ap-south-1",
+  "profile": null,
+  "host": null,
+  "port": 5432,
+  "database": null,
+  "role": null,
+  "server_version_num": null,
+  "bucket": null,
+  "prefix": null,
+  "source_revision": null,
+  "logical_data_fingerprint": null,
+  "sensitive_threshold_paise": null
+}

@@ -1,0 +1,71 @@
+{
+  "task": "NEXT-06 Step5",
+  "state": "canonical reviewed labels created and validated; await human result verification",
+  "recorded_utc": "2026-10-31 15:22:59 UTC",
+  "labels": "data/evaluation/query-labels.json",
+  "label_sha256": "77442ab33b687fa446436781f85e47f2f1340629c4f19d226997cc19e82b6af7",
+  "binding_manifest": "final-label-binding.json",
+  "queries": 22,
+  "included": 22,
+  "excluded": 0,
+  "eligible_reference_listings": 800,
+  "judgments_order_context_and_policy_unchanged": true,
+  "reviewer": "Mohit Mahapatra",
+  "reviewed_at": "2026-10-30T12:46:38.764302Z",
+  "review_time_provenance": "Recorded acceptance time explicitly chosen by Mohit; original earlier inspection time not invented",
+  "dataset_source_revision": "a12f4a31cd5517cacbdbeda4180b971ed9dcba84",
+  "search_contract_revision": "6edb52ba4e5a148386cd81e78b29c15b557193c7",
+  "source_and_judgment_committed_bytes_verified": true,
+  "input_fingerprint": "sha256:7efd142e11c3e8555e1aa08603cbf8dff07de5d74412ccde3c39869b9334ab98",
+  "checks": {
+    "actual_binding_write_and_revalidation": "passed",
+    "existing_output_overwrite": "refused; both output hashes unchanged",
+    "data_and_evaluation_tests": {
+      "passed": 445,
+      "skipped": 1,
+      "seconds": 10.18,
+      "warnings": "errors"
+    },
+    "skipped_check": "PostgreSQL calibration measurement requires native-checks.sh --search-calibration; no NFRmeasurement claimed",
+    "black_changed_python_files": 4,
+    "boundary_violations": 0,
+    "gitleaks": {
+      "version": "8.30.1",
+      "findings": 0,
+      "source_files": 1139
+    },
+    "closeout_recorded_utc": "2026-10-31T15:23:57.045250+00:00"
+  },
+  "initial_adapter_diagnostic": "First materialization refused before output: regular owners have NULL temporary activated_at. Corrected adapter to actual regular class/status/creation eligibility; no source records or domain code changed. Added regression control.",
+  "network": "Read-only GitHub metadata for merged PR19/20; no cloud/provider/SQL/inference calls",
+  "scoring_executed": false,
+  "final_freeze": false,
+  "data_ready": false,
+  "next": "Step6 formal freeze and task-wide acceptance; independent peer/current PR/source gates remain distinct",
+  "changed_code_and_labels": [
+    {
+      "path": "data/evaluation/query-labels.json",
+      "sha256": "77442ab33b687fa446436781f85e47f2f1340629c4f19d226997cc19e82b6af7"
+    },
+    {
+      "path": "scripts/evaluation/reference_labels.py",
+      "sha256": "6cf4462c16a9b0c12f0e82920e6477f4c42f2b066625c3c5817b7206697927dd"
+    },
+    {
+      "path": "scripts/evaluation/search.py",
+      "sha256": "6e75e1b0faf0fe48ba1c526b96903bb8362d3baeea64fbe879b57e68bc575df7"
+    },
+    {
+      "path": "data/tests/test_reference_labels.py",
+      "sha256": "d5cdc0f9c0de3e4addd6c55d0c69f71584f63d09451c95b5ea5c6a3779253ed7"
+    },
+    {
+      "path": "tests/evaluation/test_search.py",
+      "sha256": "e385ce1c0a3da2eb85b1ff1796043f781d127327e0320e5c4d74d29d7ac84230"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/final-label-binding.json",
+      "sha256": "8ce915ac0913a47ab43230f962f6a0d84f80182223e5612a7b0666dfe887c304"
+    }
+  ]
+}

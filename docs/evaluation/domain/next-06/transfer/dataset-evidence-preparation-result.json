@@ -1,0 +1,27 @@
+{
+  "task": "NEXT-06 dataset evidence preparation",
+  "recorded_utc": "2026-10-31 10:21:36 UTC",
+  "state": "local evidence complete; exact read-only cloud window awaiting approval",
+  "tests": {
+    "passed": 281,
+    "warnings": "errors",
+    "seconds": 9.38
+  },
+  "formatting": {
+    "black_files_unchanged": 345
+  },
+  "domain_boundary_violations": 0,
+  "native_reset_reload": "dataset-current-native-rebuild.json",
+  "labels": "dataset-label-evidence-check.json",
+  "candidate": "dataset-evidence-candidate.json",
+  "source_bindings_verified": 57,
+  "controller_syntax": "passed",
+  "negative_approval_gate": "dataset-snapshot-gate-result.json",
+  "aws_calls_in_preparation": 0,
+  "data_ready": false,
+  "secret_scan": {
+    "tool": "gitleaks8.30.1",
+    "findings": 0,
+    "tracked_and_nonignored_untracked": true
+  }
+}

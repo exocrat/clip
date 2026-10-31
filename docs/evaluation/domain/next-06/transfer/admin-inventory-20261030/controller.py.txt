@@ -1,0 +1,221 @@
+"""Execute only the human-approved conditional Phase A; no setup/load/deployment."""
+from pathlib import Path
+from datetime import datetime, UTC
+import hashlib, json, signal, sys, tempfile, time
+import os, socket, subprocess
+
+ROOT=Path('/Users/mohitmahapatra/Desktop/brancher/clip')
+sys.path.insert(0,str(ROOT))
+from data.generators.reference_login import sdk_session
+from scripts.evaluation.reference_db_inventory import window_outcome
+from scripts.evaluation.reference_admin_inventory import connect_and_inspect
+from botocore.config import Config
+from botocore.exceptions import ClientError
+
+ACCOUNT='335523638354'; INSTANCE='i-086045c48487471de'
+DB='clip-shared-test-postgres'; HOST='clip-shared-test-postgres.cnsu8kgiimug.ap-south-1.rds.amazonaws.com'
+CLUSTER='clip-shared-test'; SERVICE='clip-test-api-ap-south-1-pd16'; ASG='clip-shared-test-ecs-host'
+folder=Path(tempfile.mkdtemp(prefix='clip-next06-phase-a-',dir='/private/tmp'));folder.chmod(0o700)
+report={'task':'NEXT-06','checkpoint':'Proposed admin read-only inventory','state':'preflight',
+        'started_utc':datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S UTC'),
+        'events':[],'resource_start_attempts':{'rds':False,'ec2':False},'api_calls':0}
+deadline=time.monotonic()+3600
+clients={}; cleaning=False; tunnel=None; tunnel_session=None
+
+class Refused(RuntimeError): pass
+
+def event(name,**data):
+    report['events'].append({'utc':datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S UTC'),'event':name,**data})
+    (folder/'result.json').write_text(json.dumps(report,indent=2)+'\n')
+    print(name,flush=True)
+
+def call(service,operation,**kwargs):
+    if report['api_calls']>=160: raise Refused('api_budget')
+    if not cleaning and time.monotonic()>=deadline: raise Refused('work_deadline')
+    report['api_calls']+=1
+    return getattr(clients[service],operation)(**kwargs)
+
+def idle():
+    c=call('ecs','describe_clusters',clusters=[CLUSTER])
+    s=call('ecs','describe_services',cluster=CLUSTER,services=[SERVICE])
+    if c.get('failures') or s.get('failures') or len(c.get('clusters',[]))!=1 or len(s.get('services',[]))!=1:
+        raise Refused('shared_snapshot_missing')
+    cluster=c['clusters'][0]; service=s['services'][0]
+    if cluster.get('runningTasksCount') or cluster.get('pendingTasksCount') or any(service.get(k) for k in ('desiredCount','runningCount','pendingCount')):
+        raise Refused('shared_workload_active')
+
+def db_state():
+    values=call('rds','describe_db_instances',DBInstanceIdentifier=DB)['DBInstances']
+    if len(values)!=1: raise Refused('database_ambiguous')
+    d=values[0]
+    if (d['DBInstanceIdentifier']!=DB or d['Engine']!='postgres' or d['EngineVersion']!='18.6'
+        or d['DBInstanceClass']!='db.t4g.micro' or d['AllocatedStorage']!=20 or d['StorageType']!='gp3'
+        or d['MultiAZ'] or d['PubliclyAccessible'] or not d['StorageEncrypted']
+        or d['Endpoint']['Address']!=HOST or d['Endpoint']['Port']!=5432
+        or {g['VpcSecurityGroupId'] for g in d['VpcSecurityGroups']}!={'sg-02f98707f8e43d2ea'}):
+        raise Refused('database_binding_drift')
+    return d['DBInstanceStatus']
+
+def host_state():
+    reservations=call('ec2','describe_instances',InstanceIds=[INSTANCE])['Reservations']
+    instances=[i for r in reservations for i in r['Instances']]
+    if len(instances)!=1: raise Refused('host_ambiguous')
+    i=instances[0]
+    if (i['InstanceId']!=INSTANCE or i['InstanceType']!='t3.micro' or i['Architecture']!='x86_64'
+        or i.get('InstanceLifecycle') or i.get('PlatformDetails')!='Linux/UNIX'
+        or i['VpcId']!='vpc-04b0cc01cbf93cd17' or i['SubnetId']!='subnet-0c9df7ababd0154bc'
+        or {g['GroupId'] for g in i['SecurityGroups']}!={'sg-0a3c8d683731470b4'}
+        or i.get('IamInstanceProfile',{}).get('Arn')!=f'arn:aws:iam::{ACCOUNT}:instance-profile/clip-shared-test-ecs-instance'):
+        raise Refused('host_binding_drift')
+    return i['State']['Name']
+
+def asg_guard():
+    groups=call('autoscaling','describe_auto_scaling_groups',AutoScalingGroupNames=[ASG])['AutoScalingGroups']
+    if len(groups)!=1: raise Refused('asg_ambiguous')
+    g=groups[0]; suspended={p['ProcessName'] for p in g.get('SuspendedProcesses',[])}
+    event('asg_safety_snapshot',desired=g['DesiredCapacity'],minimum=g['MinSize'],maximum=g['MaxSize'],
+          instances=[{'id':i['InstanceId'],'lifecycle':i['LifecycleState']} for i in g['Instances']],suspended=sorted(suspended))
+    if (g['DesiredCapacity']!=0 or g['MinSize']!=0 or g['MaxSize']!=1
+        or {i['InstanceId'] for i in g['Instances']}!={INSTANCE}): raise Refused('asg_membership_or_capacity_drift')
+    if not {'Launch','Terminate'} <= suspended: raise Refused('asg_automation_not_suspended')
+
+def wait_for(label,read,predicate,seconds):
+    until=min(time.monotonic()+seconds,deadline if not cleaning else cleanup_deadline)
+    while True:
+        value=read()
+        if predicate(value): return value
+        if time.monotonic()>=until: raise Refused(label+'_timeout')
+        event('waiting_'+label,state=value)
+        time.sleep(min(30,max(0,until-time.monotonic())))
+
+def ssm_online():
+    rows=call('ssm','describe_instance_information',Filters=[{'Key':'InstanceIds','Values':[INSTANCE]}])['InstanceInformationList']
+    return len(rows)==1 and rows[0].get('PingStatus')=='Online'
+
+def interrupted(*args): raise Refused('window_interrupted')
+
+signal.signal(signal.SIGTERM,interrupted);signal.signal(signal.SIGINT,interrupted)
+try:
+    p=ROOT/'docs/evaluation/domain/next-06/transfer'
+    review=json.loads((p/'admin-inventory-command-review.json').read_text())
+    for binding in review['files']:
+        if hashlib.sha256((ROOT/binding['path']).read_bytes()).hexdigest()!=binding['sha256']:
+            raise Refused('reviewed_source_or_dependency_changed')
+    try:
+        with socket.create_connection(('127.0.0.1',15432),timeout=1):
+            raise Refused('local_port_already_bound')
+    except ConnectionRefusedError: pass
+    session=sdk_session('mohitmahapa1','ap-south-1')
+    config=Config(connect_timeout=5,read_timeout=10,retries={'total_max_attempts':1})
+    clients={name:session.client(name,config=config) for name in ('sts','ecs','ec2','rds','autoscaling','ssm')}
+    identity=call('sts','get_caller_identity')
+    if identity.get('Account')!=ACCOUNT or identity.get('Arn')!=f'arn:aws:iam::{ACCOUNT}:user/mohitmahapa1':
+        raise Refused('project_identity_mismatch')
+    report['identity']={'Account':identity['Account'],'Arn':identity['Arn']}
+    event('project_identity_verified')
+    idle()
+    db_before=db_state();host_before=host_state()
+    report['before']={'rds':db_before,'ec2':host_before}
+    if db_before!='stopped' or host_before!='stopped': raise Refused('resources_not_both_stopped')
+    asg_guard()  # REQUIRED before ALL starts, including the database.
+    event('all_preflight_guards_passed')
+    report['resource_start_attempts']['rds']=True
+    event('rds_start_attempt')
+    call('rds','start_db_instance',DBInstanceIdentifier=DB)
+    wait_for('rds_available',db_state,lambda s:s=='available',1200)
+    idle();asg_guard()
+    report['resource_start_attempts']['ec2']=True
+    event('host_start_attempt')
+    call('ec2','start_instances',InstanceIds=[INSTANCE])
+    wait_for('host_running',host_state,lambda s:s=='running',300)
+    wait_for('ssm_online',ssm_online,bool,300)
+    idle();asg_guard()
+    parameters={'Target':INSTANCE,'DocumentName':'AWS-StartPortForwardingSessionToRemoteHost',
+                'Parameters':{'host':[HOST],'portNumber':['5432'],'localPortNumber':['15432']}}
+    started=call('ssm','start_session',**parameters)
+    tunnel_session=started['SessionId']
+    plugin=ROOT/'.tools/session-manager/1.2.896.0/bin/session-manager-plugin'
+    # Standard AWS plugin interface: ephemeral SSM token only in private child argv.
+    # The database password is never in argv, environment, files or plugin inputs.
+    tunnel=subprocess.Popen([str(plugin),json.dumps(started),'ap-south-1','StartSession',
+                             'mohitmahapa1',json.dumps(parameters),'https://ssm.ap-south-1.amazonaws.com'],
+                            stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,start_new_session=True)
+    until=time.monotonic()+30
+    while True:
+        if tunnel.poll() is not None: raise Refused('owned_tunnel_exited')
+        try:
+            with socket.create_connection(('127.0.0.1',15432),timeout=1): break
+        except OSError:
+            if time.monotonic()>=until: raise Refused('owned_tunnel_timeout')
+            time.sleep(1)
+    # Bind the listener to our process group; never send SQL to someone else's port.
+    listening=subprocess.run(['/usr/sbin/lsof','-nP','-t','-iTCP:15432','-sTCP:LISTEN'],
+                             capture_output=True,timeout=5,check=True)
+    pids=listening.stdout.decode().split()
+    if len(pids)!=1 or not pids[0].isdigit() or os.getpgid(int(pids[0]))!=tunnel.pid:
+        raise Refused('listener_ownership_not_proved')
+    event('owned_private_tunnel_verified')
+    credential=call('ssm','get_parameter',Name='/clip/test/database-master-password',WithDecryption=True)
+    password=credential['Parameter']['Value']
+    report['admin_report']=connect_and_inspect(password,ROOT/'.tools/session-manager/ap-south-1-bundle.pem')
+    del password,credential
+    if report['admin_report'].get('state')!='readonly_admin_metadata_passed':
+        raise Refused('admin_metadata_probe_failed')
+    report['remote_status']={'status':'Success'}
+    report['probe_report']={'state':'readonly_metadata_passed'}
+    report['state']='metadata_passed_pending_cleanup'
+except Exception as error:
+    report['state']='blocked_before_starts' if not any(report['resource_start_attempts'].values()) else 'failed_pending_cleanup'
+    report['failure_type']=type(error).__name__
+    if isinstance(error,Refused): report['refusal_code']=str(error)
+    elif isinstance(error,ClientError): report['error_code']=error.response.get('Error',{}).get('Code')
+    event('window_refused_or_failed',state=report['state'],code=report.get('refusal_code',report.get('error_code')))
+finally:
+    cleaning=True;cleanup_deadline=time.monotonic()+900
+    report['cleanup']={'required':any(report['resource_start_attempts'].values())}
+    if tunnel is not None:
+        try:
+            if tunnel.poll() is None:
+                os.killpg(tunnel.pid,signal.SIGTERM)
+                try: tunnel.wait(timeout=10)
+                except subprocess.TimeoutExpired:
+                    os.killpg(tunnel.pid,signal.SIGKILL);tunnel.wait(timeout=5)
+            report['cleanup']['owned_tunnel_exited']=True
+        except Exception:
+            report['cleanup']['tunnel_close_pending']=True
+    if tunnel_session is not None:
+        try:
+            call('ssm','terminate_session',SessionId=tunnel_session)
+            report['cleanup']['owned_session_terminated']=True
+        except Exception:
+            report['cleanup']['session_close_pending']=True
+    if report['cleanup']['required']:
+        try:
+            idle();asg_guard()
+            if report['resource_start_attempts']['ec2']:
+                state=host_state()
+                if state in ('pending','running'): call('ec2','stop_instances',InstanceIds=[INSTANCE])
+                wait_for('host_stopped',host_state,lambda s:s=='stopped',300)
+                report['cleanup']['host_stopped']=True
+            if report['resource_start_attempts']['rds']:
+                state=wait_for('rds_stoppable',db_state,lambda s:s in ('available','stopped','stopping'),max(0,cleanup_deadline-time.monotonic()))
+                if state=='available': call('rds','stop_db_instance',DBInstanceIdentifier=DB)
+                wait_for('rds_stopped',db_state,lambda s:s=='stopped',max(0,cleanup_deadline-time.monotonic()))
+                report['cleanup']['rds_stopped']=True
+            report['state']=window_outcome(report)
+            event('owned_resources_stopped')
+        except Exception as error:
+            report['cleanup']['pending']=True;report['cleanup']['failure_type']=type(error).__name__
+            if isinstance(error,Refused): report['cleanup']['refusal_code']=str(error)
+            report['state']='cleanup_pending_operator_attention'
+            event('CLEANUP_REQUIRES_OPERATOR_ATTENTION')
+    else:
+        report['cleanup']['no_start_or_stop_calls']=True
+    for client in clients.values(): client.close()
+    if report['cleanup'].get('tunnel_close_pending') or report['cleanup'].get('session_close_pending'):
+        report['cleanup']['pending']=True
+    report['state']=window_outcome(report)
+    report['ended_utc']=datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S UTC')
+    event('window_finished',state=report['state'])
+    print('Receipt: '+str(folder/'result.json'),flush=True)
+sys.exit(0 if report['state']=='phase_a_passed_and_stopped' else 2)

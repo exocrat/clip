@@ -1,0 +1,30 @@
+{
+  "task": "NEXT-06 Step3 preparation",
+  "state": "live_stopped_incomplete",
+  "http_counts": {
+    "other:200": 1,
+    "other:401": 6
+  },
+  "human_verification": "pending",
+  "direct_browser_s3_requests": 0,
+  "preflight": {
+    "calls": 5,
+    "identity_verified": true,
+    "bucket_private": true,
+    "aes256_default": true,
+    "browser_cors_change_required": false
+  },
+  "probe_prefix": "id01/next06-step3-a328088519be44e4ae5174e459adafeb",
+  "local_target": "/private/tmp/clip-next06-reference-62scbszd",
+  "probe_photo_sha256": "64a28b895768cc980ba48c965158c579d3200d17dfd31c5de178557d52c9b496",
+  "operator_http_requests": 1,
+  "http_requests": 7,
+  "final_probe": {
+    "users": 0,
+    "listings": 0,
+    "live_images": 0,
+    "sources": []
+  },
+  "workflow_evidence_complete": false,
+  "cluster_stopped": true
+}

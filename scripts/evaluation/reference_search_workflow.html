@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Local Search vector integration check</title>
+<style>
+body { font: 16px system-ui; max-width: 760px; margin: 3rem auto; padding: 1rem; }
+button { font: inherit; padding: .7rem 1rem; } pre { white-space: pre-wrap; }
+img { max-width: 180px; } a { color: #2258a0; }
+</style>
+<h1>Search vector integration check</h1>
+<p>This local operator check uses the existing listing APIs automatically.
+No Listings feature is being implemented or reviewed here.</p>
+<p><a href="/sign-in">Sign in normally</a> and finish choosing a Handle if prompted,
+then return to this page. Do not paste any credentials or tokens.</p>
+<button id="run" type="button">Run Search integration check</button>
+<pre id="status" role="status">Ready. One probe listing; no reference dataset changes.</pre>
+<img id="photo" alt="Verified probe image" hidden>
+<script>
+// Operator-only browser automation. Every API mutation uses the genuine browser
+// session, normal CSRF endpoint and unchanged public contracts. Never read/log
+// cookies, assertions, signed URLs, private profiles or response/error bodies.
+const button = document.querySelector('#run');
+const status = document.querySelector('#status');
+const photo = document.querySelector('#photo');
+const expectedPhotoHash = '__PHOTO_SHA256__';
+const progress = [];
+const note = (message) => { progress.push(message); status.textContent = progress.join('\n'); };
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const uuid = () => crypto.randomUUID();
+let csrf;
+
+async function request(path, method = 'GET', body = undefined) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 30000);
+  try {
+    const response = await fetch('/api' + path, {
+      method, credentials: 'same-origin', cache: 'no-store', signal: controller.signal,
+      headers: { 'X-CLIP-Request': '1', ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
+        ...(csrf && method !== 'GET' ? { 'X-CSRF-Token': csrf } : {}) },
+      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+    });
+    if (!response.ok) throw new Error(`Request failed (${response.status}); stopped without retrying mutations.`);
+    return response.status === 204 ? null : await response.json();
+  } finally { clearTimeout(timer); }
+}
+
+async function waitForSearch(listingId) {
+  // Only reads are polled, with a finite bound. Record transient503 responses;
+  // no failed query is reclassified as a successful sample or NFR measurement.
+  for (let attempt = 0; attempt < 25; attempt++) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 10000);
+    let response;
+    try {
+      response = await fetch('/api/listings?q=smartphone&search_mode=hybrid&sort=relevance&page=1&page_size=20', {
+        credentials: 'same-origin', cache: 'no-store', headers: { 'X-CLIP-Request': '1' }, signal: controller.signal,
+      });
+    } finally { clearTimeout(timer); }
+    if (response.status === 200) {
+      const page = await response.json();
+      if (page.items.some(item => item.listing_id === listingId)) return;
+    } else if (response.status !== 503) {
+      throw new Error(`Search failed (${response.status}).`);
+    } else {
+      note('Search returned503 while waiting for automatic vector publication.');
+    }
+    await sleep(2000);
+  }
+  throw new Error('Current listing did not appear in Hybrid search within the polling limit.');
+}
+
+async function verifyImage(imageId) {
+  const delivery = await request(`/images/${encodeURIComponent(imageId)}/delivery`);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 30000);
+  try {
+    const response = await fetch('/api/__next06_search_check__/download', {
+      method: 'POST', credentials: 'same-origin', cache: 'no-store', signal: controller.signal,
+      headers: { 'Content-Type': 'application/json', 'X-CLIP-Request': '1', 'X-CSRF-Token': csrf },
+      body: JSON.stringify({ url: delivery.url }),
+    });
+    if (!response.ok) throw new Error(`Probe image download failed (${response.status}).`);
+    const bytes = await response.arrayBuffer();
+    const digest = await crypto.subtle.digest('SHA-256', bytes);
+    const actual = [...new Uint8Array(digest)].map(x => x.toString(16).padStart(2, '0')).join('');
+    if (actual !== expectedPhotoHash) throw new Error('Probe image hash differs from the supplied source.');
+    const url = URL.createObjectURL(new Blob([bytes], { type: 'image/jpeg' }));
+    photo.src = url;
+    photo.hidden = false;
+    await photo.decode();
+  } finally { clearTimeout(timer); }
+}
+
+button.addEventListener('click', async () => {
+  button.disabled = true; // One attempt; uncertain writes must not be replayed.
+  try {
+    if (location.origin !== 'http://localhost:5173') throw new Error('Use the approved localhost:5173 origin.');
+    const account = await request('/me');
+    if (account.account_class !== 'regular' || !account.handle_ready) {
+      throw new Error('Sign in as a regular IISc account and complete Handle setup first.');
+    }
+    csrf = (await request('/auth/csrf')).csrf_token;
+    note('Real signed-in session confirmed.');
+    const source = await fetch('/api/__next06_search_check__/photo', { cache: 'no-store' });
+    if (!source.ok) throw new Error('Owned probe photo is unavailable.');
+    const bytes = await source.blob();
+    const intent = await request('/image-uploads', 'POST', {
+      media_type: 'image/jpeg', size_bytes: bytes.size, operation_id: uuid(),
+    });
+    await request('/__next06_search_check__/upload', 'POST', {
+      url: intent.upload_url, headers: intent.required_headers,
+    });
+    await request(`/image-uploads/${encodeURIComponent(intent.upload_id)}/confirm`, 'POST');
+    const created = await request('/listings', 'POST', {
+      title: 'Next06 vector initial smartphone',
+      description: 'Synthetic smartphone for the Search vector integration check.',
+      category_code: 'mobile_phone', condition_code: 'good', asking_price_paise: 50000,
+      negotiable: false, image_upload_ids: [intent.upload_id], operation_id: uuid(),
+    });
+    await waitForSearch(created.listing_id);
+    await verifyImage(created.image_ids[0]);
+    note('Create → automatic current vectors → Hybrid result passed. Image bytes/decode passed.');
+    const managed = await request('/me/listings?page=1&page_size=20');
+    const own = managed.items.find(row => row.listing_id === created.listing_id);
+    if (!own) throw new Error('Probe owner view is unavailable.');
+    await request(`/listings/${encodeURIComponent(own.listing_id)}`, 'PUT', {
+      expected_revision: own.revision, title: 'Next06 vector updated smartphone',
+      description: 'Updated synthetic phone description for automatic Search vector refresh.',
+      category_code: own.category_code, condition_code: own.condition_code,
+      asking_price_paise: own.asking_price_paise, original_price_paise: own.original_price_paise,
+      negotiable: own.negotiable, pickup_area: own.pickup_area,
+      available_from: own.available_from, available_until: own.available_until,
+      proof_available: own.proof_available,
+      images: own.image_ids.map(image_id => ({ source: 'existing', image_id })), operation_id: uuid(),
+    });
+    await waitForSearch(own.listing_id);
+    const updated = await request(`/listings/${encodeURIComponent(own.listing_id)}`);
+    if (updated.title !== 'Next06 vector updated smartphone') throw new Error('Updated detail differs.');
+    await verifyImage(updated.image_ids[0]);
+    note('Edit → refreshed current vectors → Hybrid result passed.');
+    await request('/__next06_search_check__/result', 'POST', {
+      image_sha256_match: true, image_decode_succeeded: true, create_found: true, edit_found: true,
+    });
+    note('Browser check passed. Server will finalize SQL evidence and stop. Please report this result.');
+  } catch (error) {
+    // Only our fixed messages/statuses are shown; never log upstream bodies,
+    // exception objects or signed URL strings from fetch/network failures.
+    const message = error instanceof Error && !['TypeError', 'AbortError'].includes(error.name)
+      ? error.message : 'Network request failed or timed out. Stopped; no mutation retry.';
+    note(message);
+  }
+});
+</script>
+</html>

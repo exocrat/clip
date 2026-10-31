@@ -1,0 +1,20 @@
+{
+  "task": "NEXT-06 Step5",
+  "state": "accepted22judgments validated; final reviewed-label envelope/freeze/source gates pending",
+  "recorded_utc": "2026-10-31 10:08:34 UTC",
+  "reviewer": "Mohit Mahapatra",
+  "actual_confirmation_recorded_at": "2026-10-30T12:46:38.764302Z",
+  "reviewed_at": null,
+  "time_handling": "Preserve unknown earlier inspection timestamp as null; do not invent one or request unchanged judgments again. Final timestamp binding follows canonical review/acceptance gate.",
+  "input_fingerprint": "sha256:7efd142e11c3e8555e1aa08603cbf8dff07de5d74412ccde3c39869b9334ab98",
+  "included_queries": 22,
+  "excluded_queries": 0,
+  "eligible_reference_listings": 800,
+  "checks": "Every query ID/text/context matches canonical draft; distinct valid relevant IDs are all in exact eligible800; every inclusion decision unchanged. No search output used to alter judgments.",
+  "accepted_judgments_sha256": "f27c37493357d7ff92d35f0aabfacdcca3ee8487225b9fe904c701c9921d2f5b",
+  "canonical_draft_sha256": "2c17f727dc2ad52e4ce97f72b5e0d1c80a65dc8bd8f7957bef99a5d5cba6bc48",
+  "search_contract_sha256": "68c859b8ff6d788ef16a8e67aacdaf8c51e8f8e973aa586315041d287e17841f",
+  "canonical_draft_modified": false,
+  "scoring_allowed": false,
+  "remaining": "Accepted source/contract and actual ID-READY/LI-CORE/final frozen manifest/review metadata binding; keep app/runtime integration handoff explicit."
+}

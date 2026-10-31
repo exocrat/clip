@@ -1,0 +1,334 @@
+{
+  "acceptance": {
+    "current_vectors_verified": false,
+    "data_ready": false,
+    "human_labels_reviewed": false,
+    "image_objects_uploaded": false,
+    "image_objects_verified": false,
+    "sql_loaded": false
+  },
+  "credentials_sessions_provider_sends": "none",
+  "generated_at": "2026-10-30T12:00:59.883217Z",
+  "generator_version": "reference-recipe-v2",
+  "image_source_digest": "sha256:bff86c0c0b88de28cc2ba1b9bda7df64886970af9afcd180151128cca57eccf0",
+  "logical_data_fingerprint": "sha256:1ffa78c587b48d0a9dc0e878d008d0dd2d5e14a431f0b54f805e13585e693118",
+  "logical_time": "2026-10-30T00:00:00.000000Z",
+  "measurement_window": {
+    "before": "2026-12-01T00:00:00.000000Z",
+    "from": "2026-10-30T01:00:00.000000Z"
+  },
+  "media_scope": "relative planned keys only; actual approved bucket/prefix/upload confirmation pending Step3",
+  "observed_counts": {
+    "availability_scenarios": {
+      "available": 800,
+      "expired": 50,
+      "future": 50,
+      "unavailable": 100
+    },
+    "categories": {
+      "appliances": 111,
+      "bicycles": 111,
+      "books": 111,
+      "electronics": 111,
+      "furniture": 111,
+      "laptop": 111,
+      "mobile_phone": 112,
+      "other": 111,
+      "sports_fitness": 111
+    },
+    "conditions": {
+      "fair": 250,
+      "good": 250,
+      "like_new": 250,
+      "new": 250
+    },
+    "distinct_regular_owners": 1000,
+    "listings": 1000,
+    "negotiable": {
+      "false": 500,
+      "true": 500
+    },
+    "pickup_areas": {
+      "Synthetic Zone A": 250,
+      "Synthetic Zone B": 250,
+      "Synthetic Zone C": 250,
+      "Synthetic Zone D": 250
+    },
+    "planned_image_bytes": 925881224,
+    "planned_images": 1000,
+    "prices_paise": {
+      "0": 100,
+      "100000": 100,
+      "1200000": 100,
+      "200000": 100,
+      "2000000": 100,
+      "25000": 100,
+      "300000": 100,
+      "50000": 100,
+      "500000": 100,
+      "800000": 100
+    },
+    "proof": {
+      "false": 333,
+      "omitted": 334,
+      "true": 333
+    },
+    "topics": {
+      "android-smartphone": 23,
+      "backpack": 23,
+      "badminton-racket": 23,
+      "basic-mobile-phone": 22,
+      "bed-frame": 22,
+      "biology-textbook": 22,
+      "bookshelf": 22,
+      "camera": 22,
+      "campus-bicycle": 23,
+      "chemistry-textbook": 22,
+      "commuter-bicycle": 22,
+      "compact-laptop": 22,
+      "computing-textbook": 22,
+      "desk-monitor": 23,
+      "dining-table": 22,
+      "dual-sim-smartphone": 22,
+      "dumbbells": 22,
+      "economics-textbook": 22,
+      "electric-kettle": 23,
+      "folding-bicycle": 22,
+      "football": 22,
+      "gaming-laptop": 22,
+      "headphones": 22,
+      "iphone": 23,
+      "kitchen-mixer": 22,
+      "linear-algebra-textbook": 23,
+      "mountain-bicycle": 22,
+      "office-chair": 22,
+      "office-laptop": 22,
+      "projector": 22,
+      "refurbished-laptop": 22,
+      "refurbished-smartphone": 22,
+      "rice-cooker": 22,
+      "road-bicycle": 22,
+      "speaker": 22,
+      "stationery-kit": 22,
+      "storage-box": 22,
+      "student-laptop": 23,
+      "study-desk": 23,
+      "table-fan": 22,
+      "tennis-racket": 22,
+      "toaster": 22,
+      "umbrella": 22,
+      "water-bottle": 22,
+      "yoga-mat": 22
+    },
+    "user_classes": {
+      "regular": 5000
+    },
+    "users": 5000
+  },
+  "phase": "generated-unloaded",
+  "recipe_digest": "sha256:743799dbd48b01aac38e4b6acb9c1f66bde7b9cf0a7084f12b864b0eeecd8ed5",
+  "requested_counts": {
+    "listings": 1000,
+    "planned_images": 1000,
+    "users": 5000
+  },
+  "schema_version": "reference-v2@20261029043000",
+  "seed": 42,
+  "sensitive_purchase_threshold_paise": 500000,
+  "source_binding": {
+    "base_revision": "6edb52ba4e5a148386cd81e78b29c15b557193c7",
+    "files": [
+      {
+        "path": "database/migrations/20261018094330_mvp_tables.sql",
+        "sha256": "ddcff1e44fd2da9c9b2574dfc3b1604f1603033609b66b7e8497460ef4b2966f"
+      },
+      {
+        "path": "database/migrations/20261018094331_mvp_integrity.sql",
+        "sha256": "81e06b30ee6a31f9fb66f0681c706fa7b9a9857d06e76469791b86afce0391b6"
+      },
+      {
+        "path": "database/migrations/20261018094332_initial_catalogue.sql",
+        "sha256": "45a1bc9b9df74afd95bf1131c274a07da7c14f1d3a657645e16a2980b78d020c"
+      },
+      {
+        "path": "database/migrations/20261018152702_reject_retired_origin_entries.sql",
+        "sha256": "7ec9d5c503e5935074b5dc02ca02ab1c29f5b0df7b267280546323c71a1b12e1"
+      },
+      {
+        "path": "database/migrations/20261020102224_listing_owner_command_results.sql",
+        "sha256": "659b5944b77c0fd3d6c69ced3f7a2c4800efb6ea7b05ab8e6995bd44f30c0fe3"
+      },
+      {
+        "path": "database/migrations/20261020111741_listing_create_command_results.sql",
+        "sha256": "1d3aca84d2c19b20f4c113c31a4c1750a5b765a4fd346dd2efb2467df9a74415"
+      },
+      {
+        "path": "database/migrations/20261020113531_listing_selection_and_confirmed_image_metadata.sql",
+        "sha256": "4ed6dd898c044ad003ef215f4850791b91a949e2a9bdcd08e390c3e349f62e51"
+      },
+      {
+        "path": "database/migrations/20261020142319_api_owned_retirement_and_trigger_boundaries.sql",
+        "sha256": "bfa1032a35dd3ff1769439e9b6052478400862d5ab14383a2568dc1d9229044b"
+      },
+      {
+        "path": "database/migrations/20261021105546_optional_listing_pickup_area.sql",
+        "sha256": "f2069d09d88aa68f1ef41a7e6f35e7ef4eea6d630ac57c16366570cf45e15952"
+      },
+      {
+        "path": "database/migrations/20261022050000_listing_image_upload_intents.sql",
+        "sha256": "2b702957c311faeaa462946a5bac2639790a2c6176a506f721c1786d54b8289c"
+      },
+      {
+        "path": "database/migrations/20261022062357_listing_image_cleanup_retries.sql",
+        "sha256": "8fd571308dbc45a67c5bfe0c85dbf8e071652a0632904f3996399fdfaaa8d461"
+      },
+      {
+        "path": "database/migrations/20261023173439_identity_account_profile_integrity.sql",
+        "sha256": "50dcb7949fdb16591c0543138196b621a149995c8be6564289b2e5ace26686d3"
+      },
+      {
+        "path": "database/migrations/20261023192856_identity_otp_transactions.sql",
+        "sha256": "c84cc79abb5ded9982aba48d3a1c1c782d1a726d1ae79e6df5c735502250e113"
+      },
+      {
+        "path": "database/migrations/20261023202807_identity_sessions_and_login.sql",
+        "sha256": "11fca117f8204edc4f1b3283bc8132ea211d786401be1e65e01d7dd087406c4c"
+      },
+      {
+        "path": "database/migrations/20261024153316_listing_embedding_generations.sql",
+        "sha256": "e85b87f2cbe8eb05a4af4c958a7d344f37ba6b7dbd99226d3e9093d6d073a0db"
+      },
+      {
+        "path": "database/migrations/20261025012200_wanted_category_code_reference.sql",
+        "sha256": "f6940e5eddb5360c8fd1d9d5253876289f4e38edcd3fcfefe0d6415825e642f6"
+      },
+      {
+        "path": "database/migrations/20261025013000_wanted_command_results.sql",
+        "sha256": "c23984cd903e6fce17106d235cc4e40de7c68c1a7521fe0dd896b98912224955"
+      },
+      {
+        "path": "database/migrations/20261026090000_conversation_retirement_hardening.sql",
+        "sha256": "a60d0a8319dd8ea53d89d3d617b5b75949c5ad96482d1c3095d628b776069587"
+      },
+      {
+        "path": "database/migrations/20261026090100_conversation_message_transport.sql",
+        "sha256": "e501421f793e9d0e8c723a28963f5c1922c76a6842b853950a6419352de9dd5d"
+      },
+      {
+        "path": "database/migrations/20261026090200_conversation_public_key_directory.sql",
+        "sha256": "9588b27d9cd73b7b41c45d66721875bfe41fc22d0b7d4ccd7711386ce0d53b40"
+      },
+      {
+        "path": "database/migrations/20261026090300_conversation_recovery_storage.sql",
+        "sha256": "3b44c216535e8c0117c7287bbbadb6456fd5cb62f36869e4ec31ceacf823cf11"
+      },
+      {
+        "path": "database/migrations/20261027064000_conversation_offer_requests.sql",
+        "sha256": "d90b6234914b72348dbe43ce25b02e1b4d553dad0f6982750b25341665678cef"
+      },
+      {
+        "path": "database/migrations/20261027112205_contact_share_initial_prekey_envelopes.sql",
+        "sha256": "392a1644e8a2ddd3b5a96de866ca53b9aee7a850c4130fc1440fdd9ef377a897"
+      },
+      {
+        "path": "database/migrations/20261028090000_marketplace_category_catalogue.sql",
+        "sha256": "2e46aa3c11d269abefaab55f81a8ab0088278aa9e477beeba7dc7ebe22b9d9af"
+      },
+      {
+        "path": "database/migrations/20261028100100_marketplace_title_case_labels.sql",
+        "sha256": "0647ae6687814a39322d4287b26c5759ee576bd4eed0e6fdd61792891d19410a"
+      },
+      {
+        "path": "database/migrations/20261028100200_wanted_discovery_text_search.sql",
+        "sha256": "1801610781ecb1b73a4cbac7bb019cadec61a92cf64f1bb5a674d5d86cf10f39"
+      },
+      {
+        "path": "database/migrations/20261028120000_sale_original_price_and_marketplace_amount_cap.sql",
+        "sha256": "0ed5c9e53ef1b09e5b1d7643c7cb2675cb0041efb325f6280b77e4bbbd659dd3"
+      },
+      {
+        "path": "database/migrations/20261028181500_private_buyer_selection.sql",
+        "sha256": "e383934c052f8a460c7774b18f1ca98aa8599f0714db0213ea9676663c55a38f"
+      },
+      {
+        "path": "database/migrations/20261029043000_unique_handles_and_participant_projection.sql",
+        "sha256": "00cf2d3f03e2f47c14b57b0b343052bf6fe4b2b8054f39b6d8c74f67d110385c"
+      },
+      {
+        "path": "data/evaluation/reference-recipe.json",
+        "sha256": "d7cb3287d76a2ac9aed1194af67003ba83183c9bf09e17dd97631cec4978e0c1"
+      },
+      {
+        "path": "data/generators/reference.py",
+        "sha256": "8837f3b8d1d4c8168ab0276eb6b1d55f9c6b52bad71967048a0c67987df21085"
+      },
+      {
+        "path": "data/generators/preview.py",
+        "sha256": "69b3cb036d3b473b175e095bb662c5c734d70a7d42685aa9af7ccec9659ab3f1"
+      },
+      {
+        "path": "data/generators/manifest.py",
+        "sha256": "8d5c68025721a39f02e1932ffbb0f77d7bdf5282cab9fcace18fa2c1eb5abdce"
+      },
+      {
+        "path": "data/generators/files.py",
+        "sha256": "5ec379b7dec669949e23cb052dc9fd4a74f50ab53e95137bf6f3c8dbc59fdbf5"
+      },
+      {
+        "path": "contracts/source/types.py",
+        "sha256": "117734ce48742585e4794306fd834f55faa0ca77c6da5f967e4b35d453b36b33"
+      },
+      {
+        "path": "contracts/listings.md",
+        "sha256": "0f07635090c0f8f8f7d0efec85c1c9de6b83c0bf611e5d0231c9bacb513d6deb"
+      },
+      {
+        "path": "contracts/search.md",
+        "sha256": "68c859b8ff6d788ef16a8e67aacdaf8c51e8f8e973aa586315041d287e17841f"
+      },
+      {
+        "path": "apps/api/app/domains/listings/embedding_pipeline.json",
+        "sha256": "300604ee8a54f130d6c698ae4187238c0fd4f4e45d888b208d23622ed8c393a3"
+      },
+      {
+        "path": "apps/api/app/domains/listings/search_vocabulary.json",
+        "sha256": "fff663b1a325e78e19d39da1d41824e8d06a7aba7f2191e206323447e6b4b743"
+      }
+    ],
+    "migration_versions": [
+      "20261018094330",
+      "20261018094331",
+      "20261018094332",
+      "20261018152702",
+      "20261020102224",
+      "20261020111741",
+      "20261020113531",
+      "20261020142319",
+      "20261021105546",
+      "20261022050000",
+      "20261022062357",
+      "20261023173439",
+      "20261023192856",
+      "20261023202807",
+      "20261024153316",
+      "20261025012200",
+      "20261025013000",
+      "20261026090000",
+      "20261026090100",
+      "20261026090200",
+      "20261026090300",
+      "20261027064000",
+      "20261027112205",
+      "20261028090000",
+      "20261028100100",
+      "20261028100200",
+      "20261028120000",
+      "20261028181500",
+      "20261029043000"
+    ],
+    "revision_scope": "base revision plus exact file digests; accepted freeze revision pending",
+    "schema_version": "reference-v2@20261029043000",
+    "source_digest": "sha256:a3f60c90d8c696657942fcacd52b5c4b561aedffcfea9addeae227ddd3143d5e"
+  },
+  "source_revision": "6edb52ba4e5a148386cd81e78b29c15b557193c7"
+}

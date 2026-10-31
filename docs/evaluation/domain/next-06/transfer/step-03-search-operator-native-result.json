@@ -1,0 +1,15 @@
+{
+  "task": "NEXT-06 Step3 preparation",
+  "state": "native_auth_roles_model_worker_startup_passed",
+  "aws_calls": 0,
+  "real_signin_verified": false,
+  "real_s3_verified": false,
+  "normal_create_edit_verified": false,
+  "http_counts": {},
+  "operator_page_local_http": 200,
+  "operator_photo_exact_bytes": true,
+  "normal_api_anonymous_status": 401,
+  "real_model_dimensions": 384,
+  "identity_private_table_denial": true,
+  "cluster_stopped": true
+}

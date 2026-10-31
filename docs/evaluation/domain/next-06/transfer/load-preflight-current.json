@@ -1,0 +1,189 @@
+{
+  "task": "NEXT-06",
+  "profile": "mohitmahapa1",
+  "account": "335523638354",
+  "region": "ap-south-1",
+  "state": "approved metadata batch complete; no mutations",
+  "operations": [
+    {
+      "operation": "instance",
+      "exit_code": 0,
+      "data": [
+        {
+          "id": "i-086045c48487471de",
+          "state": "stopped",
+          "type": "t3.micro",
+          "vpc": "vpc-04b0cc01cbf93cd17",
+          "subnet": "subnet-0c9df7ababd0154bc",
+          "privateIP": "10.64.1.7",
+          "profile": "arn:aws:iam::335523638354:instance-profile/clip-shared-test-ecs-instance",
+          "groups": [
+            "sg-0a3c8d683731470b4"
+          ]
+        }
+      ]
+    },
+    {
+      "operation": "managed_node",
+      "exit_code": 0,
+      "data": []
+    },
+    {
+      "operation": "inline_policy_names",
+      "exit_code": 254,
+      "error_code": "AccessDenied"
+    },
+    {
+      "operation": "attached_policy_names",
+      "exit_code": 254,
+      "error_code": "AccessDenied"
+    },
+    {
+      "operation": "id01_head-bucket",
+      "exit_code": 0,
+      "data": {
+        "BucketArn": "arn:aws:s3:::clip-test-listings-images-ap-south-1-id01",
+        "BucketRegion": "ap-south-1",
+        "AccessPointAlias": false
+      }
+    },
+    {
+      "operation": "id01_get-bucket-location",
+      "exit_code": 0,
+      "data": {
+        "LocationConstraint": "ap-south-1"
+      }
+    },
+    {
+      "operation": "id01_get-bucket-encryption",
+      "exit_code": 0,
+      "data": {
+        "ServerSideEncryptionConfiguration": {
+          "Rules": [
+            {
+              "ApplyServerSideEncryptionByDefault": {
+                "SSEAlgorithm": "AES256"
+              },
+              "BucketKeyEnabled": false,
+              "BlockedEncryptionTypes": {
+                "EncryptionType": [
+                  "SSE-C"
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "operation": "id01_get-public-access-block",
+      "exit_code": 0,
+      "data": {
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": true,
+          "IgnorePublicAcls": true,
+          "BlockPublicPolicy": true,
+          "RestrictPublicBuckets": true
+        }
+      }
+    },
+    {
+      "operation": "id01_get-bucket-policy-status",
+      "exit_code": 0,
+      "data": {
+        "PolicyStatus": {
+          "IsPublic": false
+        }
+      }
+    },
+    {
+      "operation": "id01_get-bucket-cors",
+      "exit_code": 0,
+      "data": {
+        "CORSRules": [
+          {
+            "AllowedHeaders": [
+              "content-type",
+              "if-none-match"
+            ],
+            "AllowedMethods": [
+              "GET",
+              "HEAD",
+              "PUT"
+            ],
+            "AllowedOrigins": [
+              "https://clip-iisc.site"
+            ],
+            "ExposeHeaders": [
+              "ETag"
+            ],
+            "MaxAgeSeconds": 300
+          }
+        ]
+      }
+    },
+    {
+      "operation": "id01_get-bucket-versioning",
+      "exit_code": 0,
+      "data": {}
+    },
+    {
+      "operation": "id01_get-bucket-ownership-controls",
+      "exit_code": 0,
+      "data": {
+        "OwnershipControls": {
+          "Rules": [
+            {
+              "ObjectOwnership": "BucketOwnerEnforced"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "operation": "app_security_group",
+      "exit_code": 0,
+      "data": [
+        {
+          "id": "sg-0a3c8d683731470b4",
+          "name": "clip-shared-test-ecs-host",
+          "vpc": "vpc-04b0cc01cbf93cd17",
+          "ingress": [
+            {
+              "protocol": "tcp",
+              "from": 18000,
+              "to": 18000,
+              "cidrs": [],
+              "groups": [
+                "sg-0a16e632606fed162"
+              ]
+            }
+          ],
+          "egress": [
+            {
+              "protocol": "-1",
+              "from": null,
+              "to": null,
+              "cidrs": [
+                "0.0.0.0/0"
+              ],
+              "groups": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "identity": {
+    "Account": "335523638354",
+    "Arn": "arn:aws:iam::335523638354:user/mohitmahapa1"
+  },
+  "sdk_login_bridge": {
+    "method": "clip-cli-login",
+    "identity_request": "passed",
+    "credential_values_logged": false
+  },
+  "calls": 14,
+  "recorded_utc": "2026-10-30 16:54:44 UTC",
+  "scope": "No starts,scaling,uploads,object reads,secrets,SQL,sessions,commands,IAM changes or publication."
+}

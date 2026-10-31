@@ -88,3 +88,15 @@ format and exposes template validation and synthetic arithmetic checks only.
 It cannot attest human review or perform final scoring. The actual final corpus,
 human labels and real binding/retrieval integration remain pending; the template
 is unchanged and no final label set has been created.
+
+## NEXT-06 actual label artifact
+
+The canonical `data/evaluation/query-labels.json` now records22unchanged judgments
+accepted by Mohit, with the recorded acceptance timestamp explicitly chosen as
+reviewed_at and his accepted dataset/contract revisions. The independently
+validated corpus/evidence binding is
+`docs/evaluation/domain/next-06/transfer/final-label-binding.json`.
+`reference_labels.py validate` checks it without scoring or changing metadata.
+This updates the historical preparation state above; final Step6freeze/readiness
+and independent acceptance remain separate. A reviewed label file is not itself
+DATA-READY or an NFR-04 result.
