@@ -1,0 +1,32 @@
+{
+  "task": "NEXT-06",
+  "checkpoint": "Proposed dedicated vector-producer and RDSpublication",
+  "state": "blocked_before_starts",
+  "started_utc": "2026-10-31 08:51:06 UTC",
+  "events": [
+    {
+      "utc": "2026-10-31 08:51:06 UTC",
+      "event": "window_refused_or_failed",
+      "state": "blocked_before_starts",
+      "code": "vector_cloud_window_approval_pending"
+    },
+    {
+      "utc": "2026-10-31 08:51:06 UTC",
+      "event": "window_finished",
+      "state": "blocked_before_starts"
+    }
+  ],
+  "resource_start_attempts": {
+    "rds": false,
+    "ec2": false
+  },
+  "api_calls": 0,
+  "failure_type": "Refused",
+  "refusal_code": "vector_cloud_window_approval_pending",
+  "cleanup": {
+    "required": false,
+    "vector_never_activated": true,
+    "no_start_or_stop_calls": true
+  },
+  "ended_utc": "2026-10-31 08:51:06 UTC"
+}

@@ -1,0 +1,321 @@
+{
+  "task": "NEXT-06",
+  "checkpoint": "Proposed ephemeral credential and create-only S3/SQL load",
+  "state": "cloud_load_passed_resources_stopped",
+  "started_utc": "2026-10-31 08:05:19 UTC",
+  "events": [
+    {
+      "utc": "2026-10-31 08:05:20 UTC",
+      "event": "project_identity_verified"
+    },
+    {
+      "utc": "2026-10-31 08:05:21 UTC",
+      "event": "asg_safety_snapshot",
+      "desired": 0,
+      "minimum": 0,
+      "maximum": 1,
+      "instances": [
+        {
+          "id": "i-086045c48487471de",
+          "lifecycle": "InService"
+        }
+      ],
+      "suspended": [
+        "AZRebalance",
+        "AddToLoadBalancer",
+        "AlarmNotification",
+        "HealthCheck",
+        "InstanceRefresh",
+        "Launch",
+        "RemoveFromLoadBalancerLowPriority",
+        "ReplaceUnhealthy",
+        "ScheduledActions",
+        "Terminate"
+      ]
+    },
+    {
+      "utc": "2026-10-31 08:05:21 UTC",
+      "event": "all_preflight_guards_passed"
+    },
+    {
+      "utc": "2026-10-31 08:05:21 UTC",
+      "event": "rds_start_attempt"
+    },
+    {
+      "utc": "2026-10-31 08:05:22 UTC",
+      "event": "waiting_rds_available",
+      "state": "starting"
+    },
+    {
+      "utc": "2026-10-31 08:05:52 UTC",
+      "event": "waiting_rds_available",
+      "state": "starting"
+    },
+    {
+      "utc": "2026-10-31 08:06:22 UTC",
+      "event": "waiting_rds_available",
+      "state": "starting"
+    },
+    {
+      "utc": "2026-10-31 08:06:52 UTC",
+      "event": "waiting_rds_available",
+      "state": "starting"
+    },
+    {
+      "utc": "2026-10-31 08:07:23 UTC",
+      "event": "waiting_rds_available",
+      "state": "starting"
+    },
+    {
+      "utc": "2026-10-31 08:07:53 UTC",
+      "event": "waiting_rds_available",
+      "state": "starting"
+    },
+    {
+      "utc": "2026-10-31 08:08:23 UTC",
+      "event": "waiting_rds_available",
+      "state": "starting"
+    },
+    {
+      "utc": "2026-10-31 08:08:53 UTC",
+      "event": "waiting_rds_available",
+      "state": "configuring-enhanced-monitoring"
+    },
+    {
+      "utc": "2026-10-31 08:09:23 UTC",
+      "event": "waiting_rds_available",
+      "state": "configuring-enhanced-monitoring"
+    },
+    {
+      "utc": "2026-10-31 08:09:54 UTC",
+      "event": "asg_safety_snapshot",
+      "desired": 0,
+      "minimum": 0,
+      "maximum": 1,
+      "instances": [
+        {
+          "id": "i-086045c48487471de",
+          "lifecycle": "InService"
+        }
+      ],
+      "suspended": [
+        "AZRebalance",
+        "AddToLoadBalancer",
+        "AlarmNotification",
+        "HealthCheck",
+        "InstanceRefresh",
+        "Launch",
+        "RemoveFromLoadBalancerLowPriority",
+        "ReplaceUnhealthy",
+        "ScheduledActions",
+        "Terminate"
+      ]
+    },
+    {
+      "utc": "2026-10-31 08:09:54 UTC",
+      "event": "host_start_attempt"
+    },
+    {
+      "utc": "2026-10-31 08:09:55 UTC",
+      "event": "waiting_host_running",
+      "state": "pending"
+    },
+    {
+      "utc": "2026-10-31 08:10:26 UTC",
+      "event": "asg_safety_snapshot",
+      "desired": 0,
+      "minimum": 0,
+      "maximum": 1,
+      "instances": [
+        {
+          "id": "i-086045c48487471de",
+          "lifecycle": "InService"
+        }
+      ],
+      "suspended": [
+        "AZRebalance",
+        "AddToLoadBalancer",
+        "AlarmNotification",
+        "HealthCheck",
+        "InstanceRefresh",
+        "Launch",
+        "RemoveFromLoadBalancerLowPriority",
+        "ReplaceUnhealthy",
+        "ScheduledActions",
+        "Terminate"
+      ]
+    },
+    {
+      "utc": "2026-10-31 08:10:28 UTC",
+      "event": "owned_private_tunnel_verified"
+    },
+    {
+      "utc": "2026-10-31 08:10:29 UTC",
+      "event": "storage_preflight_passed"
+    },
+    {
+      "utc": "2026-10-31 08:10:30 UTC",
+      "event": "loader_access_stage",
+      "stage": "loader_activation_attempt",
+      "role_oid": 90139,
+      "expires_utc": "2026-10-31T08:50:28.536054+00:00"
+    },
+    {
+      "utc": "2026-10-31 08:10:30 UTC",
+      "event": "loader_access_stage",
+      "stage": "loader_activated",
+      "role_oid": 90139
+    },
+    {
+      "utc": "2026-10-31 08:20:06 UTC",
+      "event": "objects_and_sql_load_verified"
+    },
+    {
+      "utc": "2026-10-31 08:20:07 UTC",
+      "event": "loader_access_stage",
+      "stage": "loader_revoke_attempt",
+      "role_oid": 90139
+    },
+    {
+      "utc": "2026-10-31 08:20:07 UTC",
+      "event": "loader_access_stage",
+      "stage": "loader_disabled_password_cleared",
+      "role_oid": 90139
+    },
+    {
+      "utc": "2026-10-31 08:20:09 UTC",
+      "event": "asg_safety_snapshot",
+      "desired": 0,
+      "minimum": 0,
+      "maximum": 1,
+      "instances": [
+        {
+          "id": "i-086045c48487471de",
+          "lifecycle": "InService"
+        }
+      ],
+      "suspended": [
+        "AZRebalance",
+        "AddToLoadBalancer",
+        "AlarmNotification",
+        "HealthCheck",
+        "InstanceRefresh",
+        "Launch",
+        "RemoveFromLoadBalancerLowPriority",
+        "ReplaceUnhealthy",
+        "ScheduledActions",
+        "Terminate"
+      ]
+    },
+    {
+      "utc": "2026-10-31 08:20:10 UTC",
+      "event": "waiting_host_stopped",
+      "state": "stopping"
+    },
+    {
+      "utc": "2026-10-31 08:20:41 UTC",
+      "event": "waiting_rds_stopped",
+      "state": "stopping"
+    },
+    {
+      "utc": "2026-10-31 08:21:11 UTC",
+      "event": "waiting_rds_stopped",
+      "state": "stopping"
+    },
+    {
+      "utc": "2026-10-31 08:21:41 UTC",
+      "event": "waiting_rds_stopped",
+      "state": "stopping"
+    },
+    {
+      "utc": "2026-10-31 08:22:11 UTC",
+      "event": "waiting_rds_stopped",
+      "state": "stopping"
+    },
+    {
+      "utc": "2026-10-31 08:22:41 UTC",
+      "event": "waiting_rds_stopped",
+      "state": "stopping"
+    },
+    {
+      "utc": "2026-10-31 08:23:11 UTC",
+      "event": "waiting_rds_stopped",
+      "state": "stopping"
+    },
+    {
+      "utc": "2026-10-31 08:23:42 UTC",
+      "event": "waiting_rds_stopped",
+      "state": "stopping"
+    },
+    {
+      "utc": "2026-10-31 08:24:12 UTC",
+      "event": "waiting_rds_stopped",
+      "state": "stopping"
+    },
+    {
+      "utc": "2026-10-31 08:24:42 UTC",
+      "event": "waiting_rds_stopped",
+      "state": "stopping"
+    },
+    {
+      "utc": "2026-10-31 08:25:12 UTC",
+      "event": "owned_resources_stopped"
+    },
+    {
+      "utc": "2026-10-31 08:25:12 UTC",
+      "event": "window_finished",
+      "state": "cloud_load_passed_resources_stopped"
+    }
+  ],
+  "resource_start_attempts": {
+    "rds": true,
+    "ec2": true
+  },
+  "api_calls": 50,
+  "identity": {
+    "Account": "335523638354",
+    "Arn": "arn:aws:iam::335523638354:user/mohitmahapa1"
+  },
+  "before": {
+    "rds": "stopped",
+    "ec2": "stopped"
+  },
+  "storage_preflight": {
+    "state": "storage_preflight_passed",
+    "objects_before": 0,
+    "encryption": "AES256",
+    "public": false
+  },
+  "s3_calls": 2008,
+  "object_ledger": "/private/tmp/clip-next06-phase-a-plv9szre/object-load-ledger.jsonl",
+  "load_result": {
+    "state": "cloud bulk loaded; real auth/delivery/vector/freeze gates pending",
+    "input_fingerprint": "sha256:7efd142e11c3e8555e1aa08603cbf8dff07de5d74412ccde3c39869b9334ab98",
+    "objects_verified": 1000,
+    "logical_object_bytes": 925881224,
+    "users_verified": 5000,
+    "listings_verified": 1000,
+    "images_verified": 1000,
+    "regular_owners_verified": 1000,
+    "available_verified": 800,
+    "logical_projection_digest": "sha256:1d4a2369f53c8415ea6399546c0814d7a02e6bdae0e98f312221a995711efb80",
+    "text_vectors_verified": 1000,
+    "text_search_indexes": [
+      "CREATE INDEX sale_full_text ON listings.sale_listings USING gin (search_vector)"
+    ],
+    "real_session_auth_verified": false,
+    "real_signed_delivery_verified": false,
+    "semantic_pipeline_verified": false,
+    "data_ready": false
+  },
+  "load_passed": true,
+  "cleanup": {
+    "required": true,
+    "loader_disabled_password_cleared": true,
+    "owned_tunnel_exited": true,
+    "owned_session_terminated": true,
+    "host_stopped": true,
+    "rds_stopped": true
+  },
+  "ended_utc": "2026-10-31 08:25:12 UTC"
+}

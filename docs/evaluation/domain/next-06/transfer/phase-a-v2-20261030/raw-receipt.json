@@ -1,0 +1,311 @@
+{
+  "task": "NEXT-06",
+  "checkpoint": "Approved conditional Phase A",
+  "state": "probe_failed_resources_stopped",
+  "started_utc": "2026-10-30 18:07:54 UTC",
+  "events": [
+    {
+      "utc": "2026-10-30 18:07:55 UTC",
+      "event": "project_identity_verified"
+    },
+    {
+      "utc": "2026-10-30 18:07:56 UTC",
+      "event": "asg_safety_snapshot",
+      "desired": 0,
+      "minimum": 0,
+      "maximum": 1,
+      "instances": [
+        {
+          "id": "i-086045c48487471de",
+          "lifecycle": "InService"
+        }
+      ],
+      "suspended": [
+        "AZRebalance",
+        "AddToLoadBalancer",
+        "AlarmNotification",
+        "HealthCheck",
+        "InstanceRefresh",
+        "Launch",
+        "RemoveFromLoadBalancerLowPriority",
+        "ReplaceUnhealthy",
+        "ScheduledActions",
+        "Terminate"
+      ]
+    },
+    {
+      "utc": "2026-10-30 18:07:56 UTC",
+      "event": "all_preflight_guards_passed"
+    },
+    {
+      "utc": "2026-10-30 18:07:56 UTC",
+      "event": "rds_start_attempt"
+    },
+    {
+      "utc": "2026-10-30 18:07:57 UTC",
+      "event": "waiting_rds_available",
+      "state": "starting"
+    },
+    {
+      "utc": "2026-10-30 18:08:27 UTC",
+      "event": "waiting_rds_available",
+      "state": "starting"
+    },
+    {
+      "utc": "2026-10-30 18:08:57 UTC",
+      "event": "waiting_rds_available",
+      "state": "starting"
+    },
+    {
+      "utc": "2026-10-30 18:09:28 UTC",
+      "event": "waiting_rds_available",
+      "state": "starting"
+    },
+    {
+      "utc": "2026-10-30 18:09:58 UTC",
+      "event": "waiting_rds_available",
+      "state": "starting"
+    },
+    {
+      "utc": "2026-10-30 18:10:28 UTC",
+      "event": "waiting_rds_available",
+      "state": "starting"
+    },
+    {
+      "utc": "2026-10-30 18:10:58 UTC",
+      "event": "waiting_rds_available",
+      "state": "starting"
+    },
+    {
+      "utc": "2026-10-30 18:11:28 UTC",
+      "event": "waiting_rds_available",
+      "state": "configuring-enhanced-monitoring"
+    },
+    {
+      "utc": "2026-10-30 18:11:58 UTC",
+      "event": "waiting_rds_available",
+      "state": "configuring-enhanced-monitoring"
+    },
+    {
+      "utc": "2026-10-30 18:12:29 UTC",
+      "event": "asg_safety_snapshot",
+      "desired": 0,
+      "minimum": 0,
+      "maximum": 1,
+      "instances": [
+        {
+          "id": "i-086045c48487471de",
+          "lifecycle": "InService"
+        }
+      ],
+      "suspended": [
+        "AZRebalance",
+        "AddToLoadBalancer",
+        "AlarmNotification",
+        "HealthCheck",
+        "InstanceRefresh",
+        "Launch",
+        "RemoveFromLoadBalancerLowPriority",
+        "ReplaceUnhealthy",
+        "ScheduledActions",
+        "Terminate"
+      ]
+    },
+    {
+      "utc": "2026-10-30 18:12:29 UTC",
+      "event": "host_start_attempt"
+    },
+    {
+      "utc": "2026-10-30 18:12:31 UTC",
+      "event": "waiting_host_running",
+      "state": "pending"
+    },
+    {
+      "utc": "2026-10-30 18:13:01 UTC",
+      "event": "asg_safety_snapshot",
+      "desired": 0,
+      "minimum": 0,
+      "maximum": 1,
+      "instances": [
+        {
+          "id": "i-086045c48487471de",
+          "lifecycle": "InService"
+        }
+      ],
+      "suspended": [
+        "AZRebalance",
+        "AddToLoadBalancer",
+        "AlarmNotification",
+        "HealthCheck",
+        "InstanceRefresh",
+        "Launch",
+        "RemoveFromLoadBalancerLowPriority",
+        "ReplaceUnhealthy",
+        "ScheduledActions",
+        "Terminate"
+      ]
+    },
+    {
+      "utc": "2026-10-30 18:13:01 UTC",
+      "event": "reviewed_remote_probe_send"
+    },
+    {
+      "utc": "2026-10-30 18:13:02 UTC",
+      "event": "waiting_remote_probe",
+      "state": {
+        "Status": "Pending"
+      }
+    },
+    {
+      "utc": "2026-10-30 18:13:32 UTC",
+      "event": "window_refused_or_failed",
+      "state": "failed_pending_cleanup",
+      "code": "remote_metadata_probe_failed"
+    },
+    {
+      "utc": "2026-10-30 18:13:32 UTC",
+      "event": "asg_safety_snapshot",
+      "desired": 0,
+      "minimum": 0,
+      "maximum": 1,
+      "instances": [
+        {
+          "id": "i-086045c48487471de",
+          "lifecycle": "InService"
+        }
+      ],
+      "suspended": [
+        "AZRebalance",
+        "AddToLoadBalancer",
+        "AlarmNotification",
+        "HealthCheck",
+        "InstanceRefresh",
+        "Launch",
+        "RemoveFromLoadBalancerLowPriority",
+        "ReplaceUnhealthy",
+        "ScheduledActions",
+        "Terminate"
+      ]
+    },
+    {
+      "utc": "2026-10-30 18:13:33 UTC",
+      "event": "waiting_host_stopped",
+      "state": "stopping"
+    },
+    {
+      "utc": "2026-10-30 18:14:04 UTC",
+      "event": "waiting_rds_stopped",
+      "state": "stopping"
+    },
+    {
+      "utc": "2026-10-30 18:14:34 UTC",
+      "event": "waiting_rds_stopped",
+      "state": "stopping"
+    },
+    {
+      "utc": "2026-10-30 18:15:04 UTC",
+      "event": "waiting_rds_stopped",
+      "state": "stopping"
+    },
+    {
+      "utc": "2026-10-30 18:15:34 UTC",
+      "event": "waiting_rds_stopped",
+      "state": "stopping"
+    },
+    {
+      "utc": "2026-10-30 18:16:04 UTC",
+      "event": "waiting_rds_stopped",
+      "state": "stopping"
+    },
+    {
+      "utc": "2026-10-30 18:16:35 UTC",
+      "event": "waiting_rds_stopped",
+      "state": "stopping"
+    },
+    {
+      "utc": "2026-10-30 18:17:05 UTC",
+      "event": "waiting_rds_stopped",
+      "state": "stopping"
+    },
+    {
+      "utc": "2026-10-30 18:17:35 UTC",
+      "event": "waiting_rds_stopped",
+      "state": "stopping"
+    },
+    {
+      "utc": "2026-10-30 18:18:05 UTC",
+      "event": "waiting_rds_stopped",
+      "state": "stopping"
+    },
+    {
+      "utc": "2026-10-30 18:18:35 UTC",
+      "event": "waiting_rds_stopped",
+      "state": "stopping"
+    },
+    {
+      "utc": "2026-10-30 18:19:06 UTC",
+      "event": "waiting_rds_stopped",
+      "state": "stopping"
+    },
+    {
+      "utc": "2026-10-30 18:19:36 UTC",
+      "event": "waiting_rds_stopped",
+      "state": "stopping"
+    },
+    {
+      "utc": "2026-10-30 18:20:06 UTC",
+      "event": "waiting_rds_stopped",
+      "state": "stopping"
+    },
+    {
+      "utc": "2026-10-30 18:20:36 UTC",
+      "event": "owned_resources_stopped"
+    },
+    {
+      "utc": "2026-10-30 18:20:36 UTC",
+      "event": "window_finished",
+      "state": "probe_failed_resources_stopped"
+    }
+  ],
+  "resource_start_attempts": {
+    "rds": true,
+    "ec2": true
+  },
+  "api_calls": 54,
+  "identity": {
+    "Account": "335523638354",
+    "Arn": "arn:aws:iam::335523638354:user/mohitmahapa1"
+  },
+  "before": {
+    "rds": "stopped",
+    "ec2": "stopped"
+  },
+  "command_id": "d2377026-b808-4639-958c-83b16f55f9db",
+  "remote_status": {
+    "status": "Failed",
+    "response_code": 1
+  },
+  "probe_report": {
+    "format_version": 2,
+    "state": "refused_or_failed",
+    "stage": "sql_child",
+    "reason": "child_failed",
+    "failure_type": "InsufficientPrivilege",
+    "return_code": 1,
+    "provider_error": null,
+    "child_stage": "migrations",
+    "child_reason": "unexpected_error",
+    "sqlstate": "42501",
+    "cli_version": "2.36.47",
+    "cleanup": "absent",
+    "metadata": null
+  },
+  "failure_type": "Refused",
+  "refusal_code": "remote_metadata_probe_failed",
+  "cleanup": {
+    "required": true,
+    "host_stopped": true,
+    "rds_stopped": true
+  },
+  "ended_utc": "2026-10-30 18:20:36 UTC"
+}

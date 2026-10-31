@@ -214,7 +214,8 @@ def upload_verified(s3, target, bundle, image_root, ledger):
         finally:
             body.close()
         if (
-            response.get("ContentLength") != len(content)
+            response.get("ServerSideEncryption") != "AES256"
+            or response.get("ContentLength") != len(content)
             or response.get("ContentType") != image["media_type"]
             or len(actual) != len(content)
             or hashlib.sha256(actual).hexdigest() != image["sha256"]
@@ -348,7 +349,7 @@ def main(argv=None):
             raise CloudLoadRejected("ambient_target_overrides_forbidden")
         secret = os.environ.get("CLIP_DATABASE_URL", "")
         validate_binding(target, bundle, secret)
-        import boto3
+        from .reference_login import sdk_session
         from botocore.config import Config
         import psycopg
 
@@ -358,7 +359,7 @@ def main(argv=None):
         previous = signal.signal(signal.SIGALRM, deadline)
         signal.alarm(900)
         ledger = Ledger(args.ledger)
-        session = boto3.Session(profile_name=target.profile, region_name=REGION)
+        session = sdk_session(target.profile, REGION)
         config = Config(
             connect_timeout=5,
             read_timeout=30,
@@ -370,7 +371,9 @@ def main(argv=None):
             bundle=bundle,
             image_root=args.image_root,
             secret=secret,
-            sts=session.client("sts", config=config),
+            sts=session.client(
+                "sts", config=config.merge(Config(signature_version="v4"))
+            ),
             s3=session.client("s3", config=config),
             connect=psycopg.connect,
             ledger=ledger,

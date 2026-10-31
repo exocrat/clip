@@ -1,6 +1,9 @@
 # NEXT-06 pre-cloud review and PR package
 
-**State:** implementation and available local verification complete; dependency/
+**Current update:** See [actual cloud evidence and proposed PR update](current-pr-review.md).
+The following pre-cloud package is retained as historical publication context.
+
+**Historical state:** implementation and available local verification complete; dependency/
 platform checks, independent human review and actual cloud integration remain.
 Publication is authorized; independent peer/CI/cloud acceptance remains separate.
 

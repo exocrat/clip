@@ -268,3 +268,51 @@ the registered secret scanner also requires Docker. Receiving operator must run
 applicable full CI/security gates in a suitable environment. Arrange independent
 peer review using `docs/prompts/peer-review-prompt.md`; AI findings do not replace
 human approval. Commit, push, PR merge and cloud actions remain separately gated.
+
+
+## Browser-login and current preflight checkpoint
+
+Mohit's named CLIprofilemohitmahapa1 now verifies as non-root in335523638354.
+The cloud loader supports CLIbrowser-login profiles through an in-memory expiring
+credential bridge (`reference_login.py`), without requiring access keys or a CRT
+extra. CLI's normal login cache remains CLI-managed; no new profile is written.
+The bridge was verified by a real SDKSTSidentity check. New source changes require
+review/commit approval and accepted source binding; earlier snapshots stay historical.
+
+Latest [load preflight](transfer/load-preflight-current.json) reads14scoped calls:
+existing t3.microhost is stopped and noSSMmanaged-node record returned; role policy
+listing denied (effective runtime permissions still unverified); id01bucket private,
+SSE-S3/owner-enforced with projectHTTPSCORS. No grants were changed or required just
+to authenticate. Inspecting IAMpolicy metadata is different from actual runtime
+permission acceptance: obtain owner review/export or verify the real approved path,
+without broadening IAM solely to silence this metadata denial. No SQL connection,
+secret fetch, host/database start, upload or deployment occurred. The exact private
+access and runtime/storage/load/cost/window/rollback plan still needs approval.
+
+Prepared local-only [v2 probe diagnostics](transfer/probe-diagnostic-v2.md) supersede the proposed remote payload. Historical Phase A failed with both resources stopped. A retry is not authorized by local preparation; verify exact hashes and obtain separate cloud-window approval.
+
+Latest Phase A v2 closeout (2026-10-30 18:20:36 UTC): [receipt and exact execution evidence](transfer/phase-a-v2-20261030/result.json). Both existing resources verified stopped. The runtime role reached the migrations query and was denied SQLSTATE42501; no grants or other repairs made. Real load/metadata gates remain pending.
+
+The runtime migration denial is an intentional documented permission boundary. The next reviewed route is [private administrative read-only inventory](transfer/admin-inventory-plan.md), with repository-local signed Session Manager plugin and verified regional CA. No application-role grant widening, admin credential read or new cloud call has occurred in its preparation. Its exact window requires separate approval.
+
+Latest NEXT-06 administrative inventory (2026-10-30 18:46:54 UTC): [executed receipt and binding comparison](transfer/admin-inventory-20261030/result.json). Read-only inventory passed;32migrations/four schemas; proposed NEXT-06 database and roles absent. Cloud adds three migrations beyond local/corpus29; reconcile accepted source before setup/load. Owned tunnel/session closed and both resources verified stopped. No grants, schema/data writes or uploads occurred.
+
+Source/schema reconciliation: [upstream evidence and isolated setup sequence](transfer/schema-reconciliation.md). Remote main/local/corpus remain29; the shared database’s extra three migrations are in still-open Notifications PR21. Continue preparing the proposed new isolated database on accepted29source, leave shared32unchanged, and preserve later accepted Notifications/source/runtime/freeze rechecks. No source merge/rebind or cloud write is authorized by this reconciliation.
+
+Exact [create-only isolated29database setup package](transfer/database-setup-plan.md) is locally rehearsed and awaits separate cloud approval. The native helper matches canonical dbmate and proves actual restricted bulk SQL/negative privileges. Proposed cloud setup creates the new database and two NOLOGINroles; it publishes no credential and uploads/loads no business data. Native-only activation is not a cloud/session/S3 acceptance. Keep original integration and freeze obligations pending.
+
+NEXT-06 isolated setup (2026-10-30 19:20:00 UTC): [actual successful execution and stopped closeout](transfer/database-setup-20261030/result.json). New clip_next06_reference has29accepted migrations and explicit loader grants; clip_next06_loader/clip_next06_runtime remain NOLOGIN/no password, runtime no grants. Shared32database/service unchanged. No business rows, credential publication or S3objects yet. Owned access closed, both resources verified stopped. Next loader credential/S3/SQL load requires its exact prepared approval.
+
+[Exact ephemeral-loader/S3/SQL package](transfer/cloud-load-plan.md) is prepared locally with native SCRAM and actual bulk/revocation proof. This now proposes one-window memory-only loader access and password clearing, no persistent loader parameter. The new local5432tunnel, planned1000objects/925881224bytes, call/deadline/owner/key limits and no-retry recovery are explicit. Storage-maintainer confirmation is not yet recorded, and controller's gate remains false. No AWS calls/uploads happened in preparation. Original real runtime/session/media/vector/final source/freeze gates remain pending.
+
+NEXT-06 live load (2026-10-31 08:25:12 UTC): [actual S3/RDS execution, sources and ledger](transfer/cloud-load-20261031/result.json).1000images/925881224bytes verified in existing id01bucket prefix id01/next06-reference-42-v1;5000users/1000listings+image records loaded into isolated clip_next06_reference29schema,800discoverable; SQLprojection matches native. Loader password cleared/NOLOGIN, runtime inactive, owned access closed, host/RDSverified stopped. Shared32service unchanged. Retain objects/data; no retry/reset. Real app/auth/signed-media/cloud ML/source-label/reproducibility/freeze remain pending; DATA-READY false.
+
+The human-verified staged vector route now has a [native-tested exact producer window](transfer/vector-window-plan.md). Dedicated proposed clip_next06_embeddings role has column-only listing-id row-lock rights, embedding-only mutations and short-lived credentials; loader/runtime remain inactive. Native actual model/worker published1000generations/2000parts and productionSQLdiagnostics passed. No actual cloud vector writes or Linux/ECS/auth/media acceptance yet; exact next cloud approval and original integration/freeze gates remain.
+
+NEXT-06 actual vector publication (2026-10-31 09:46:20 UTC): [execution/coverage/cleanup evidence](transfer/vector-production-20261031/result.json). Isolated clip_next06_reference now has1000current ready generations/2000actual pinned384-dimensional parts and serving pipeline4b43fc30...; six actual keyword/HybridSQLcases match native and source corpus rows remain unchanged. Dedicated producer password cleared/NOLOGIN; model/access closed and EC2/RDSstopped. No S3or original runtime/service changes. Actual authenticated app/media/normal new-vector workflow and deployedLinuxruntime/source-label/rebuild/freeze acceptance remain pending; DATA-READY false.
+
+Current dataset-evidence checkpoint: [plan and owner handoff](transfer/dataset-evidence-plan.md), [consolidated candidate](transfer/dataset-evidence-candidate.json). Current-fingerprint native reset/reload/media/vector/index parity passed;22accepted judgments unchanged and validated. Actual cloud load/vectors retained. Proposed read-only cloud/native hash comparison awaits separate approval; no second destructive cloud reset required by Step6. Hosted runtime remains with its owner per Mohit. Final labels/source/auth/media/new-vector/freeze gates remain open; DATA-READY false.
+
+Actual read-only cloud/native comparison: [receipt and executed sources](transfer/dataset-snapshot-20261031/result.json). Current source projection,1000generations/2000parts and65index hashes match the fresh native rebuild. All dataset roles inactive; SQL/tunnel/session closed and both EC2/RDS verified stopped. No data/role/object changes or deployment. Candidate now includes actual cloud hashes; original owner integration and final acceptance gates remain open.
+
+Mohit verified the actual cloud/native snapshot checkpoint. [Remaining owner and final-acceptance gates](transfer/remaining-integration-gates.md) give the next evidence needed; preserve existing S3images/RDSdata and leave deployment with its owner. Current dataset candidate records human verification; final DATA-READY remains false.

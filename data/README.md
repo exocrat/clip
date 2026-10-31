@@ -317,3 +317,22 @@ next06-transfer-42-20261030-a/b; earlier dec01/week runs remain historical diagn
 A source-only rebind preserves all records and22accepted judgments. Validation
 accepts the recorded known ancestor plus exact current source/schema/config/photo
 hashes, so publication alone does not invalidate the corpus.
+
+
+### Browser-login SDK support
+
+`reference_login.py` bridges a named AWS CLI browser-login profile into the SDK
+using bounded `aws configure export-credentials --format process` capture. Tokens
+stay in memory, preserve their expiry and refresh from that same explicit profile.
+The bridge writes no credential/config files; AWS CLI manages its normal existing
+login cache. It requires no access-key creation, new IAM allowances or optional
+botocore[crt] installation. Existing non-login profiles retain normal SDK behavior.
+Import/session construction performs no export or network request. Export failures,
+timeouts, malformed/expired responses are rejected with fixed safe diagnostics.
+
+The cloud loader still checks the actual account/non-root identity before any
+storage/database operation; compatible credentials never imply target/action
+approval. STS uses standard SigV4 while S3 retains S3SigV4. The approved preflight
+verified this bridge with a real project STS request and retained only identity
+metadata, not credential output. See the latest preflight evidence under
+`docs/evaluation/domain/next-06/transfer/` for route/permission observations.

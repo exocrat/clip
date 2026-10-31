@@ -1,0 +1,29 @@
+{
+  "task": "NEXT-06",
+  "checkpoint": "Remaining Step3 normal-flow and Step4 real vector integration understanding",
+  "recorded_utc": "2026-10-31 08:34:49 UTC",
+  "state": "read-only dependency audit performed; proposed staged next checkpoint awaiting verification",
+  "prior_bulk_load": "Human verified successful S3/isolated RDS bulk load by directing Proceed. Immutable execution receipts unchanged.",
+  "dependencies": {
+    "data": "Actual RDS29schema5000users/1000listings and1000verifiedS3objects loaded; last resources stopped2026-10-31 08:25:12UTC",
+    "pipeline_code": "Existing public operator EmbeddingBootstrap and normal EmbeddingWorker/EmbeddingStore implemented; reference_embeddings adapter is Unix-only and must not accept a cloud URL unmodified",
+    "model": "Local repository-only CPython3.13.12 and pinned model/tokenizer bytes match manifest; no install/download/inference needed for inspection",
+    "runtime_versions": {
+      "onnxruntime": "1.23.2",
+      "tokenizers": "0.23.3",
+      "numpy": "2.5.4"
+    },
+    "worker_privileges": "No activated data-target runtime or embedding operator; exact least-privilege grants/credential and native checks must be prepared before cloud writes",
+    "app_auth_media": "Not verified in isolated target. RuntimeNOLOGIN/no grants, no approved real Identity-session/S3 delivery composition. Existing native HTTP rehearsal explicitly uses trusted-caller/local-storage fixtures; cannot relabel as actual auth/S3 acceptance",
+    "linux_deployed_runtime": "Dockerfile.hybrid and Linux lock/build recipe exist, but cached deployed standard API image does not contain selected helper/model or enable Hybrid. No new cloud metadata inspection in this increment; do not claim missing source tooling."
+  },
+  "proposal": "Prepare a native-tested, dedicated ephemeral embedding operator for clip_next06_reference. Existing Mac helper reads real RDSlisting source through owned verified tunnel, supported prepare/queue/normal worker/activate write current vectors back to RDS. This avoids requiring Docker installation or another image build merely for dataset publication. It is not proof of Linux/ECS deployed runtime or real authenticated app paths.",
+  "cloud_role_candidate": "clip_next06_embeddings (proposal only; existence not checked in AWS)",
+  "pipeline_id": "4b43fc307151933bf5b0fa80ff4e10f8cb4266194905cd2b15a3d01b2386d9ca",
+  "expected_coverage": "1000current source generations; actual exact part counts/finite384-dimensional vectors validated by real worker/database. Native recipe previously produced2000parts; do not fabricate or copy stored vectors.",
+  "audit": "No gap in canonical six task steps. Remaining real caller/media, deployed runtime, grants, coverage and source/freeze items are explicitly pending outputs/gates. A proposed Mac-producer/RDS-publication checkpoint requires human verification; keep Step3normal-flow pending while staging Step4data work under the reviewed integration guide. No fake caller/provider/vector substituted.",
+  "cloud_calls": 0,
+  "inference_calls": 0,
+  "code_changes": false,
+  "next": "Verify the staged route; prepare exact grants/native rehearsal/window controller, then request separate actual cloud mutation approval. Normal authenticated application/media and final runtime/source/labels/rebuild/freeze remain distinct obligations."
+}

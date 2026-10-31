@@ -1,0 +1,87 @@
+{
+  "recorded_utc": "2026-10-30 17:23:29 UTC",
+  "region": "ap-south-1",
+  "currency": "USD",
+  "sources": "Public AWS pricing only; no account/CostExplorer/PricingAPI call",
+  "rates": [
+    {
+      "item": "RDS PostgreSQL db.t4g.micro Single-AZ",
+      "unit": "USD/hour",
+      "rate": "0.0210000000",
+      "rate_code": "GUT9JVEQBEMZ2FC7.JRTCKXETXF.6YS6EN2CT7",
+      "source": "https://b0.p.awsstatic.com/pricing/2.0/meteredUnitMaps/rds/USD/current/rds-postgresql-ondemand.json",
+      "publication": "2026-10-29T07:06:35Z"
+    },
+    {
+      "item": "Existing RDS gp3 storage",
+      "unit": "USD/GB-month",
+      "rate": "0.1310000000",
+      "rate_code": "3YHNB5S2SA97QTVV.JRTCKXETXF.6YS6EN2CT7",
+      "source": "https://b0.p.awsstatic.com/pricing/2.0/meteredUnitMaps/rds/USD/current/rds-storage.json",
+      "publication": "2026-10-29T07:06:35Z"
+    },
+    {
+      "item": "EC2 t3.micro Linux Shared Used on-demand",
+      "unit": "USD/hour",
+      "rate": "0.0112000000",
+      "sku": "9NX7BP9ZGC9GB8AX",
+      "rate_code": "9NX7BP9ZGC9GB8AX.JRTCKXETXF.6YS6EN2CT7",
+      "source": "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonEC2/current/ap-south-1/index.csv",
+      "publication": "2026-10-29T17:56:34Z"
+    },
+    {
+      "item": "Future S3 Standard first50TB",
+      "unit": "GB-Mo",
+      "rate": "0.0250000000",
+      "sku": "USGUTP2JY23N9GH2",
+      "rate_code": "USGUTP2JY23N9GH2.JRTCKXETXF.PGHJ3S3EYE",
+      "source": "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonS3/current/ap-south-1/index.json",
+      "publication": "2026-10-15T17:35:40Z"
+    },
+    {
+      "item": "Future S3 PUT/COPY/POST/LIST",
+      "unit": "Requests",
+      "rate": "0.0000050000",
+      "sku": "UJ844B8DVMQUFJQP",
+      "rate_code": "UJ844B8DVMQUFJQP.JRTCKXETXF.6YS6EN2CT7",
+      "source": "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonS3/current/ap-south-1/index.json",
+      "publication": "2026-10-15T17:35:40Z"
+    },
+    {
+      "item": "Future S3 GET/other",
+      "unit": "Requests",
+      "rate": "0.0000004000",
+      "sku": "SF3QQQMZGA3PPF33",
+      "rate_code": "SF3QQQMZGA3PPF33.JRTCKXETXF.6YS6EN2CT7",
+      "source": "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonS3/current/ap-south-1/index.json",
+      "publication": "2026-10-15T17:35:40Z"
+    }
+  ],
+  "cpu_credit_upper_allowance": {
+    "EC2_Linux_USD_per_vCPU_hour": "0.05",
+    "RDS_T3_T4g_USD_per_vCPU_hour": "0.075",
+    "sources": [
+      "https://aws.amazon.com/ec2/instance-types/t3/",
+      "https://aws.amazon.com/rds/postgresql/pricing/"
+    ]
+  },
+  "next_inventory_window": {
+    "requested_incremental_cap_usd": "1.00",
+    "normal_base_per_hour_usd": "0.0322000000",
+    "base_75minutes_usd": "0.040250000000",
+    "conservative_two_vCPU_full_surplus_75minutes_usd": "0.352750000000",
+    "work_minutes": 60,
+    "cleanup_reserve_minutes": 15,
+    "meaning": "Operational estimated/time stop budget, not an AWS hard billing cap; no tax/credit/free-tier assumed. Existing EBS/RDSstorage/backups/NAT baseline continues, not priced as zero."
+  },
+  "existing_rds_storage_baseline_month_usd": "2.6200000000",
+  "future_load_not_in_next_approval": {
+    "objects": 1000,
+    "logical_bytes": 925881224,
+    "decimal_GB_storage_upper_month_usd": "0.023147030600",
+    "1000PUT_1000GET_base_usd": "0.0054",
+    "excluded": "transfer/NAT/extraGETs/retention/taxes; no actual load approved"
+  },
+  "service_stop_caveat": "RDS starts can take minutes to hours; AWS restart after7stopped days and ongoing storage remain. Stop completion is checked, not guaranteed by a local timer.",
+  "stop_source": "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_StopInstance.html"
+}

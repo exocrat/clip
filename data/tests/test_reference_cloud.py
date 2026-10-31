@@ -210,7 +210,9 @@ def test_no_implicit_execute():
         )
 
 
-@pytest.mark.parametrize("failure", [None, "put_uncertain", "wrong_bytes"])
+@pytest.mark.parametrize(
+    "failure", [None, "put_uncertain", "wrong_bytes", "wrong_encryption"]
+)
 def test_create_only_real_byte_contract_and_failed_put_ledger(
     target, bundle, inputs, tmp_path, failure
 ):
@@ -250,6 +252,9 @@ def test_create_only_real_byte_contract_and_failed_put_ledger(
                     {
                         "Body": stream,
                         "ContentLength": len(content),
+                        "ServerSideEncryption": (
+                            "aws:kms" if failure == "wrong_encryption" else "AES256"
+                        ),
                         "ContentType": image["media_type"],
                     },
                     {

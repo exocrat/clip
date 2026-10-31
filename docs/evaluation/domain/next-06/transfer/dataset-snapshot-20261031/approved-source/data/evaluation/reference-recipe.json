@@ -1,0 +1,349 @@
+{
+  "format_version": "2",
+  "seed": 42,
+  "users": {
+    "regular": 5000,
+    "temporary": 0
+  },
+  "categories": [
+    {
+      "code": "mobile_phone",
+      "count": 112,
+      "topics": [
+        {
+          "slug": "android-smartphone",
+          "item": "Android smartphone",
+          "synonym": "Android cell phone"
+        },
+        {
+          "slug": "iphone",
+          "item": "iPhone",
+          "synonym": "Apple mobile phone"
+        },
+        {
+          "slug": "basic-mobile-phone",
+          "item": "basic mobile phone",
+          "synonym": "simple cell phone"
+        },
+        {
+          "slug": "dual-sim-smartphone",
+          "item": "dual-SIM smartphone",
+          "synonym": "dual SIM cell phone"
+        },
+        {
+          "slug": "refurbished-smartphone",
+          "item": "refurbished smartphone",
+          "synonym": "used mobile phone"
+        }
+      ]
+    },
+    {
+      "code": "laptop",
+      "count": 111,
+      "topics": [
+        {
+          "slug": "student-laptop",
+          "item": "Student laptop",
+          "synonym": "student portable computer"
+        },
+        {
+          "slug": "office-laptop",
+          "item": "office laptop",
+          "synonym": "work portable computer"
+        },
+        {
+          "slug": "compact-laptop",
+          "item": "compact laptop",
+          "synonym": "small portable computer"
+        },
+        {
+          "slug": "refurbished-laptop",
+          "item": "refurbished laptop",
+          "synonym": "used portable computer"
+        },
+        {
+          "slug": "gaming-laptop",
+          "item": "gaming laptop",
+          "synonym": "gaming portable computer"
+        }
+      ]
+    },
+    {
+      "code": "electronics",
+      "count": 111,
+      "topics": [
+        {
+          "slug": "desk-monitor",
+          "item": "Desk monitor",
+          "synonym": "computer display"
+        },
+        {
+          "slug": "headphones",
+          "item": "headphones",
+          "synonym": "personal audio headset"
+        },
+        {
+          "slug": "speaker",
+          "item": "speaker",
+          "synonym": "audio loudspeaker"
+        },
+        {
+          "slug": "camera",
+          "item": "camera",
+          "synonym": "digital photo camera"
+        },
+        {
+          "slug": "projector",
+          "item": "projector",
+          "synonym": "video display projector"
+        }
+      ]
+    },
+    {
+      "code": "furniture",
+      "count": 111,
+      "topics": [
+        {
+          "slug": "study-desk",
+          "item": "Study desk",
+          "synonym": "study work table"
+        },
+        {
+          "slug": "office-chair",
+          "item": "office chair",
+          "synonym": "work seating"
+        },
+        {
+          "slug": "bookshelf",
+          "item": "bookshelf",
+          "synonym": "book storage shelf"
+        },
+        {
+          "slug": "bed-frame",
+          "item": "bed frame",
+          "synonym": "sleeping bed base"
+        },
+        {
+          "slug": "dining-table",
+          "item": "dining table",
+          "synonym": "eating table"
+        }
+      ]
+    },
+    {
+      "code": "books",
+      "count": 111,
+      "topics": [
+        {
+          "slug": "linear-algebra-textbook",
+          "item": "Linear algebra textbook",
+          "synonym": "mathematics book"
+        },
+        {
+          "slug": "chemistry-textbook",
+          "item": "chemistry textbook",
+          "synonym": "science study book"
+        },
+        {
+          "slug": "biology-textbook",
+          "item": "biology textbook",
+          "synonym": "life science book"
+        },
+        {
+          "slug": "economics-textbook",
+          "item": "economics textbook",
+          "synonym": "economics study book"
+        },
+        {
+          "slug": "computing-textbook",
+          "item": "computing textbook",
+          "synonym": "computer science book"
+        }
+      ]
+    },
+    {
+      "code": "bicycles",
+      "count": 111,
+      "topics": [
+        {
+          "slug": "campus-bicycle",
+          "item": "Campus bicycle",
+          "synonym": "two wheeled vehicle"
+        },
+        {
+          "slug": "commuter-bicycle",
+          "item": "commuter bicycle",
+          "synonym": "daily travel cycle"
+        },
+        {
+          "slug": "mountain-bicycle",
+          "item": "mountain bicycle",
+          "synonym": "off road cycle"
+        },
+        {
+          "slug": "road-bicycle",
+          "item": "road bicycle",
+          "synonym": "road riding cycle"
+        },
+        {
+          "slug": "folding-bicycle",
+          "item": "folding bicycle",
+          "synonym": "folding cycle"
+        }
+      ]
+    },
+    {
+      "code": "appliances",
+      "count": 111,
+      "topics": [
+        {
+          "slug": "electric-kettle",
+          "item": "Electric kettle",
+          "synonym": "kitchen water boiler"
+        },
+        {
+          "slug": "toaster",
+          "item": "toaster",
+          "synonym": "kitchen bread toaster"
+        },
+        {
+          "slug": "rice-cooker",
+          "item": "rice cooker",
+          "synonym": "kitchen rice appliance"
+        },
+        {
+          "slug": "table-fan",
+          "item": "table fan",
+          "synonym": "desktop cooling fan"
+        },
+        {
+          "slug": "kitchen-mixer",
+          "item": "kitchen mixer",
+          "synonym": "food mixing appliance"
+        }
+      ]
+    },
+    {
+      "code": "sports_fitness",
+      "count": 111,
+      "topics": [
+        {
+          "slug": "badminton-racket",
+          "item": "Badminton racket",
+          "synonym": "racket sports equipment"
+        },
+        {
+          "slug": "yoga-mat",
+          "item": "yoga mat",
+          "synonym": "exercise floor mat"
+        },
+        {
+          "slug": "dumbbells",
+          "item": "dumbbells",
+          "synonym": "hand weights"
+        },
+        {
+          "slug": "football",
+          "item": "football",
+          "synonym": "sports ball"
+        },
+        {
+          "slug": "tennis-racket",
+          "item": "tennis racket",
+          "synonym": "tennis equipment"
+        }
+      ]
+    },
+    {
+      "code": "other",
+      "count": 111,
+      "topics": [
+        {
+          "slug": "backpack",
+          "item": "Backpack",
+          "synonym": "student carrying bag"
+        },
+        {
+          "slug": "umbrella",
+          "item": "umbrella",
+          "synonym": "rain cover"
+        },
+        {
+          "slug": "water-bottle",
+          "item": "water bottle",
+          "synonym": "reusable drink container"
+        },
+        {
+          "slug": "stationery-kit",
+          "item": "stationery kit",
+          "synonym": "pens and notebooks"
+        },
+        {
+          "slug": "storage-box",
+          "item": "storage box",
+          "synonym": "plastic storage container"
+        }
+      ]
+    }
+  ],
+  "conditions": [
+    {
+      "code": "new",
+      "label": "New / Unused",
+      "count": 250
+    },
+    {
+      "code": "like_new",
+      "label": "Like New",
+      "count": 250
+    },
+    {
+      "code": "good",
+      "label": "Good",
+      "count": 250
+    },
+    {
+      "code": "fair",
+      "label": "Fair",
+      "count": 250
+    }
+  ],
+  "prices_rupees": [
+    0,
+    250,
+    500,
+    1000,
+    2000,
+    3000,
+    5000,
+    8000,
+    12000,
+    20000
+  ],
+  "negotiable_counts": [
+    500,
+    500
+  ],
+  "proof_counts": [
+    334,
+    333,
+    333
+  ],
+  "availability_counts": [
+    800,
+    100,
+    50,
+    50
+  ],
+  "pickup_areas": [
+    "Synthetic Zone A",
+    "Synthetic Zone B",
+    "Synthetic Zone C",
+    "Synthetic Zone D"
+  ],
+  "sensitive_category_codes": [
+    "mobile_phone",
+    "laptop"
+  ],
+  "measurement_before": "2026-12-01T00:00:00.000000Z"
+}

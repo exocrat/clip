@@ -669,6 +669,15 @@ def main(argv=None):
                 from scripts.evaluation.reference_rebuild import vector_snapshot
 
                 after = vector_snapshot(cluster)
+                from scripts.evaluation.reference_freeze_snapshot import (
+                    vector_index_snapshot,
+                )
+
+                with cluster.connection() as snapshot_connection:
+                    comparable_snapshot = vector_index_snapshot(snapshot_connection)
+                if comparable_snapshot != after:
+                    raise ValueError("Read-only cloud/native snapshot encoding differs")
+                result["reset_reload"]["readonly_snapshot_reader_identical"] = True
                 if after != rebuild_before["snapshot"]:
                     raise ValueError("Rebuilt vector/index fingerprints differ")
                 result["reset_reload"].update(

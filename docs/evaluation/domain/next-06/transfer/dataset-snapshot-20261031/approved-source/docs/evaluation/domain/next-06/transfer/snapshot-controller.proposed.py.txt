@@ -1,0 +1,298 @@
+"""Prepared read-only isolated dataset/vector/index evidence snapshot; no mutations."""
+from pathlib import Path
+from datetime import datetime, UTC, timedelta
+import hashlib, json, signal, sys, tempfile, time
+import os, socket, subprocess, asyncio
+from types import SimpleNamespace
+
+ROOT=Path('/Users/mohitmahapatra/Desktop/brancher/clip')
+sys.path.insert(0,str(ROOT))
+sys.path.insert(0,str(ROOT/'apps/api'))
+from data.generators.reference_login import sdk_session
+from scripts.evaluation.reference_load_access import verify_owned_listener, LoadAccessRefused
+from scripts.evaluation.reference_load_access import guard_admin
+from scripts.evaluation.reference_freeze_snapshot import vector_index_snapshot
+from app.domains.listings.embedding_types import default_pipeline_spec
+from data.generators.manifest import canonical_json
+from data.generators.reference_cloud import CloudTarget
+from data.generators.reference_rows import validate_rows
+from data.generators import reference, files
+from scripts.evaluation.reference_database_setup import DATABASE
+from psycopg.rows import dict_row
+from scripts.evaluation.reference_admin_inventory import LOGGING, ADMIN
+PORT=5432
+import psycopg
+from botocore.config import Config
+from botocore.exceptions import ClientError
+
+ACCOUNT='335523638354'; INSTANCE='i-086045c48487471de'
+DB='clip-shared-test-postgres'; HOST='clip-shared-test-postgres.cnsu8kgiimug.ap-south-1.rds.amazonaws.com'
+CLUSTER='clip-shared-test'; SERVICE='clip-test-api-ap-south-1-pd16'; ASG='clip-shared-test-ecs-host'
+folder=Path(tempfile.mkdtemp(prefix='clip-next06-phase-a-',dir='/private/tmp'));folder.chmod(0o700)
+report={'task':'NEXT-06','checkpoint':'Proposed read-only final dataset fingerprint snapshot','state':'preflight',
+        'started_utc':datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S UTC'),
+        'events':[],'resource_start_attempts':{'rds':False,'ec2':False},'api_calls':0}
+deadline=time.monotonic()+3600
+clients={}; cleaning=False; tunnel=None; tunnel_session=None
+admin_connection=None
+
+class Refused(RuntimeError): pass
+
+def event(name,**data):
+    report['events'].append({'utc':datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S UTC'),'event':name,**data})
+    (folder/'result.json').write_text(json.dumps(report,indent=2)+'\n')
+    print(name,flush=True)
+
+def call(service,operation,**kwargs):
+    if report['api_calls']>=160: raise Refused('api_budget')
+    if not cleaning and time.monotonic()>=deadline: raise Refused('work_deadline')
+    report['api_calls']+=1
+    return getattr(clients[service],operation)(**kwargs)
+
+def idle():
+    c=call('ecs','describe_clusters',clusters=[CLUSTER])
+    s=call('ecs','describe_services',cluster=CLUSTER,services=[SERVICE])
+    if c.get('failures') or s.get('failures') or len(c.get('clusters',[]))!=1 or len(s.get('services',[]))!=1:
+        raise Refused('shared_snapshot_missing')
+    cluster=c['clusters'][0]; service=s['services'][0]
+    if cluster.get('runningTasksCount') or cluster.get('pendingTasksCount') or any(service.get(k) for k in ('desiredCount','runningCount','pendingCount')):
+        raise Refused('shared_workload_active')
+
+def db_state():
+    values=call('rds','describe_db_instances',DBInstanceIdentifier=DB)['DBInstances']
+    if len(values)!=1: raise Refused('database_ambiguous')
+    d=values[0]
+    if (d['DBInstanceIdentifier']!=DB or d['Engine']!='postgres' or d['EngineVersion']!='18.6'
+        or d['DBInstanceClass']!='db.t4g.micro' or d['AllocatedStorage']!=20 or d['StorageType']!='gp3'
+        or d['MultiAZ'] or d['PubliclyAccessible'] or not d['StorageEncrypted']
+        or d['Endpoint']['Address']!=HOST or d['Endpoint']['Port']!=5432
+        or {g['VpcSecurityGroupId'] for g in d['VpcSecurityGroups']}!={'sg-02f98707f8e43d2ea'}):
+        raise Refused('database_binding_drift')
+    return d['DBInstanceStatus']
+
+def host_state():
+    reservations=call('ec2','describe_instances',InstanceIds=[INSTANCE])['Reservations']
+    instances=[i for r in reservations for i in r['Instances']]
+    if len(instances)!=1: raise Refused('host_ambiguous')
+    i=instances[0]
+    if (i['InstanceId']!=INSTANCE or i['InstanceType']!='t3.micro' or i['Architecture']!='x86_64'
+        or i.get('InstanceLifecycle') or i.get('PlatformDetails')!='Linux/UNIX'
+        or i['VpcId']!='vpc-04b0cc01cbf93cd17' or i['SubnetId']!='subnet-0c9df7ababd0154bc'
+        or {g['GroupId'] for g in i['SecurityGroups']}!={'sg-0a3c8d683731470b4'}
+        or i.get('IamInstanceProfile',{}).get('Arn')!=f'arn:aws:iam::{ACCOUNT}:instance-profile/clip-shared-test-ecs-instance'):
+        raise Refused('host_binding_drift')
+    return i['State']['Name']
+
+def asg_guard():
+    groups=call('autoscaling','describe_auto_scaling_groups',AutoScalingGroupNames=[ASG])['AutoScalingGroups']
+    if len(groups)!=1: raise Refused('asg_ambiguous')
+    g=groups[0]; suspended={p['ProcessName'] for p in g.get('SuspendedProcesses',[])}
+    event('asg_safety_snapshot',desired=g['DesiredCapacity'],minimum=g['MinSize'],maximum=g['MaxSize'],
+          instances=[{'id':i['InstanceId'],'lifecycle':i['LifecycleState']} for i in g['Instances']],suspended=sorted(suspended))
+    if (g['DesiredCapacity']!=0 or g['MinSize']!=0 or g['MaxSize']!=1
+        or {i['InstanceId'] for i in g['Instances']}!={INSTANCE}): raise Refused('asg_membership_or_capacity_drift')
+    if not {'Launch','Terminate'} <= suspended: raise Refused('asg_automation_not_suspended')
+
+def wait_for(label,read,predicate,seconds):
+    until=min(time.monotonic()+seconds,deadline if not cleaning else cleanup_deadline)
+    while True:
+        value=read()
+        if predicate(value): return value
+        if time.monotonic()>=until: raise Refused(label+'_timeout')
+        event('waiting_'+label,state=value)
+        time.sleep(min(30,max(0,until-time.monotonic())))
+
+def ssm_online():
+    rows=call('ssm','describe_instance_information',Filters=[{'Key':'InstanceIds','Values':[INSTANCE]}])['InstanceInformationList']
+    return len(rows)==1 and rows[0].get('PingStatus')=='Online'
+
+def interrupted(*args): raise Refused('window_interrupted')
+
+def snapshot_outcome(value):
+    attempts=value['resource_start_attempts']
+    if not any(attempts.values()):return 'blocked_before_starts'
+    cleanup=value.get('cleanup',{})
+    if cleanup.get('pending') or any(attempts[k] and cleanup.get({'ec2':'host_stopped','rds':'rds_stopped'}[k]) is not True for k in attempts):
+        return 'cleanup_pending_operator_attention'
+    if value.get('snapshot_passed') is True:return 'snapshot_verified_resources_stopped'
+    return 'snapshot_failed_resources_stopped'
+
+signal.signal(signal.SIGTERM,interrupted);signal.signal(signal.SIGINT,interrupted)
+try:
+    p=ROOT/'docs/evaluation/domain/next-06/transfer'
+    review=json.loads((p/'snapshot-command-review.json').read_text())
+    for binding in review['files']:
+        if hashlib.sha256((ROOT/binding['path']).read_bytes()).hexdigest()!=binding['sha256']:
+            raise Refused('reviewed_source_or_dependency_changed')
+    if review.get('cloud_window_approved') is not True:
+        raise Refused('snapshot_cloud_window_approval_pending')
+    if any(k.startswith(('PG','AWS_','CLIP_')) for k in os.environ):
+        raise Refused('ambient_target_overrides_forbidden')
+    target=CloudTarget(**json.loads((p/'snapshot-target.proposed.json').read_text()))
+    image_root=Path('/Users/mohitmahapatra/Desktop/clip-dataset-images')
+    bundle=files._read_json(ROOT/'data/runs/next06-transfer-42-20261030-a/dataset.json')
+    reference.validate_reference(bundle,image_root=image_root)
+    measurement=bundle['manifest']['measurement_window']
+    now=datetime.now(UTC)
+    if not (datetime.fromisoformat(measurement['from'])<=now
+            and now+timedelta(hours=1)<=datetime.fromisoformat(measurement['before'])):
+        raise Refused('reference_measurement_window_closed_or_too_short')
+    if target.logical_data_fingerprint!=bundle['manifest']['logical_data_fingerprint']:
+        raise Refused('corpus_binding_changed')
+    try:
+        with socket.create_connection(('127.0.0.1',5432),timeout=1):
+            raise Refused('local_port_already_bound')
+    except ConnectionRefusedError: pass
+    session=sdk_session('mohitmahapa1','ap-south-1')
+    config=Config(connect_timeout=5,read_timeout=10,retries={'total_max_attempts':1})
+    clients={name:session.client(name,config=config) for name in ('sts','ecs','ec2','rds','autoscaling','ssm')}
+    identity=call('sts','get_caller_identity')
+    if identity.get('Account')!=ACCOUNT or identity.get('Arn')!=f'arn:aws:iam::{ACCOUNT}:user/mohitmahapa1':
+        raise Refused('project_identity_mismatch')
+    report['identity']={'Account':identity['Account'],'Arn':identity['Arn']}
+    event('project_identity_verified')
+    idle()
+    db_before=db_state();host_before=host_state()
+    report['before']={'rds':db_before,'ec2':host_before}
+    if db_before!='stopped' or host_before!='stopped': raise Refused('resources_not_both_stopped')
+    asg_guard()  # REQUIRED before ALL starts, including the database.
+    event('all_preflight_guards_passed')
+    report['resource_start_attempts']['rds']=True
+    event('rds_start_attempt')
+    call('rds','start_db_instance',DBInstanceIdentifier=DB)
+    wait_for('rds_available',db_state,lambda s:s=='available',1200)
+    idle();asg_guard()
+    report['resource_start_attempts']['ec2']=True
+    event('host_start_attempt')
+    call('ec2','start_instances',InstanceIds=[INSTANCE])
+    wait_for('host_running',host_state,lambda s:s=='running',300)
+    wait_for('ssm_online',ssm_online,bool,300)
+    idle();asg_guard()
+    parameters={'Target':INSTANCE,'DocumentName':'AWS-StartPortForwardingSessionToRemoteHost',
+                'Parameters':{'host':[HOST],'portNumber':['5432'],'localPortNumber':['5432']}}
+    started=call('ssm','start_session',**parameters)
+    tunnel_session=started['SessionId']
+    plugin=ROOT/'.tools/session-manager/1.2.896.0/bin/session-manager-plugin'
+    # Standard AWS plugin interface: ephemeral SSM token only in private child argv.
+    # The database password is never in argv, environment, files or plugin inputs.
+    tunnel=subprocess.Popen([str(plugin),json.dumps(started),'ap-south-1','StartSession',
+                             'mohitmahapa1',json.dumps(parameters),'https://ssm.ap-south-1.amazonaws.com'],
+                            stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,start_new_session=True)
+    until=time.monotonic()+30
+    while True:
+        if tunnel.poll() is not None: raise Refused('owned_tunnel_exited')
+        try:
+            with socket.create_connection(('127.0.0.1',5432),timeout=1): break
+        except OSError:
+            if time.monotonic()>=until: raise Refused('owned_tunnel_timeout')
+            time.sleep(1)
+    # Bind the listener to our process group; never send SQL to someone else's port.
+    listening=subprocess.run(['/usr/sbin/lsof','-nP','-Fpn','-iTCP:5432','-sTCP:LISTEN'],
+                             capture_output=True,timeout=5,check=True)
+    verify_owned_listener(listening.stdout,tunnel.pid,os.getpgid)
+    event('owned_private_tunnel_verified')
+    credential=call('ssm','get_parameter',Name='/clip/test/database-master-password',WithDecryption=True)
+    password=credential['Parameter']['Value']
+    def connect_database(database):
+        settings={**LOGGING,'default_transaction_read_only':'on','statement_timeout':'60000',
+                  'lock_timeout':'5000','idle_in_transaction_session_timeout':'60000','idle_session_timeout':'0'}
+        return psycopg.connect(host=HOST,hostaddr='127.0.0.1',port=PORT,dbname=database,
+                              user=ADMIN,password=password,sslmode='verify-full',
+                              sslrootcert=str(ROOT/'.tools/session-manager/ap-south-1-bundle.pem'),
+                              connect_timeout=5,autocommit=True,
+                              application_name='clip-next06-readonly-freeze-snapshot',
+                              options=' '.join(f'-c {k}={v}' for k,v in settings.items()))
+    admin_connection=connect_database(DATABASE)
+    versions=[v[0] for v in admin_connection.execute('SELECT version FROM public.schema_migrations ORDER BY version')]
+    if versions!=bundle['manifest']['source_binding']['migration_versions']:
+        raise Refused('actual_schema_binding_changed')
+    loaded=json.loads((p/'cloud-load-20261031/result.json').read_text())
+    native=json.loads((p/'dataset-current-native-rebuild.json').read_text())
+    if native.get('input_fingerprint')!=bundle['manifest']['logical_data_fingerprint'] or native.get('cluster_stopped') is not True:
+        raise Refused('native_rebuild_binding_incomplete')
+    with admin_connection.transaction():
+        admin_connection.execute('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY')
+        guard_admin(admin_connection)
+        if admin_connection.execute("SELECT current_setting('transaction_read_only')").fetchone()!=('on',):
+            raise Refused('readonly_snapshot_required')
+        before=validate_rows(admin_connection,bundle,object_key_for=target.object_key_for)
+        if before['logical_projection_digest']!=loaded['actual_load_result']['logical_projection_digest']:
+            raise Refused('loaded_corpus_projection_changed')
+        spec=default_pipeline_spec()
+        registry=admin_connection.execute('SELECT pipeline_id,encoding,state FROM listings.embedding_pipelines ORDER BY pipeline_id').fetchall()
+        if registry!=[(spec.pipeline_id,spec.encoding,'serving')]:
+            raise Refused('snapshot_pipeline_binding_changed')
+        if admin_connection.execute('SELECT (SELECT count(*) FROM listings.embedding_generations),(SELECT count(*) FROM listings.embedding_chunks)').fetchone()!=(1000,2000):
+            raise Refused('snapshot_vector_counts_changed')
+        roles=admin_connection.execute("SELECT rolname,rolcanlogin FROM pg_roles WHERE rolname IN ('clip_next06_loader','clip_next06_runtime','clip_next06_embeddings') ORDER BY rolname").fetchall()
+        if roles!=[(name,False) for name in sorted(('clip_next06_loader','clip_next06_runtime','clip_next06_embeddings'))]:
+            raise Refused('snapshot_dataset_role_state_changed')
+        snapshot=vector_index_snapshot(admin_connection)
+        if canonical_json(snapshot)!=canonical_json(native['reset_reload']['after']):
+            raise Refused('cloud_vectors_or_indexes_differ_from_native_rebuild')
+    report['snapshot_result']={'state':'readonly_cloud_snapshot_matches_native_rebuild',
+                              'source':before,'vector_index_snapshot':snapshot,
+                              'pipeline_id':spec.pipeline_id.hex(),'roles_inactive':True,
+                              'cloud_native_rebuild_match':True,'data_ready':False}
+    report['snapshot_passed']=True
+    event('readonly_snapshot_verified')
+    report['state']='snapshot_passed_pending_cleanup'
+except Exception as error:
+    report['state']='blocked_before_starts' if not any(report['resource_start_attempts'].values()) else 'failed_pending_cleanup'
+    report['failure_type']=type(error).__name__
+    if isinstance(error,(Refused,LoadAccessRefused)): report['refusal_code']=str(error)
+    elif isinstance(error,ClientError): report['error_code']=error.response.get('Error',{}).get('Code')
+    event('window_refused_or_failed',state=report['state'],code=report.get('refusal_code',report.get('error_code')))
+finally:
+    cleaning=True;cleanup_deadline=time.monotonic()+900
+    report['cleanup']={'required':any(report['resource_start_attempts'].values())}
+    if admin_connection is not None:
+        try: admin_connection.close()
+        except Exception: report['cleanup']['admin_close_pending']=True
+
+    if tunnel is not None:
+        try:
+            if tunnel.poll() is None:
+                os.killpg(tunnel.pid,signal.SIGTERM)
+                try: tunnel.wait(timeout=10)
+                except subprocess.TimeoutExpired:
+                    os.killpg(tunnel.pid,signal.SIGKILL);tunnel.wait(timeout=5)
+            report['cleanup']['owned_tunnel_exited']=True
+        except Exception:
+            report['cleanup']['tunnel_close_pending']=True
+    if tunnel_session is not None:
+        try:
+            call('ssm','terminate_session',SessionId=tunnel_session)
+            report['cleanup']['owned_session_terminated']=True
+        except Exception:
+            report['cleanup']['session_close_pending']=True
+    if report['cleanup']['required']:
+        try:
+            idle();asg_guard()
+            if report['resource_start_attempts']['ec2']:
+                state=host_state()
+                if state in ('pending','running'): call('ec2','stop_instances',InstanceIds=[INSTANCE])
+                wait_for('host_stopped',host_state,lambda s:s=='stopped',300)
+                report['cleanup']['host_stopped']=True
+            if report['resource_start_attempts']['rds']:
+                state=wait_for('rds_stoppable',db_state,lambda s:s in ('available','stopped','stopping'),max(0,cleanup_deadline-time.monotonic()))
+                if state=='available': call('rds','stop_db_instance',DBInstanceIdentifier=DB)
+                wait_for('rds_stopped',db_state,lambda s:s=='stopped',max(0,cleanup_deadline-time.monotonic()))
+                report['cleanup']['rds_stopped']=True
+            report['state']=snapshot_outcome(report)
+            event('owned_resources_stopped')
+        except Exception as error:
+            report['cleanup']['pending']=True;report['cleanup']['failure_type']=type(error).__name__
+            if isinstance(error,Refused): report['cleanup']['refusal_code']=str(error)
+            report['state']='cleanup_pending_operator_attention'
+            event('CLEANUP_REQUIRES_OPERATOR_ATTENTION')
+    else:
+        report['cleanup']['no_start_or_stop_calls']=True
+    for client in clients.values(): client.close()
+    if any(report['cleanup'].get(k) for k in ('tunnel_close_pending','session_close_pending','admin_close_pending')):
+        report['cleanup']['pending']=True
+    report['state']=snapshot_outcome(report)
+    report['ended_utc']=datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S UTC')
+    event('window_finished',state=report['state'])
+    print('Receipt: '+str(folder/'result.json'),flush=True)
+sys.exit(0 if report['state']=='snapshot_verified_resources_stopped' else 2)

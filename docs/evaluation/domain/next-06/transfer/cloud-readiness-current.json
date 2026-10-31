@@ -1,0 +1,50 @@
+{
+  "task": "NEXT-06",
+  "checkpoint": "OriginalStep3 approved read-only cloud readiness inspection",
+  "recorded_utc": "2026-10-30 16:12:47 UTC",
+  "state": "identity and bounded resource inspection passed; awaiting human verification and next scope approval",
+  "profile": "mohitmahapa1",
+  "region": "ap-south-1",
+  "identity": {
+    "account": "335523638354",
+    "arn": "arn:aws:iam::335523638354:user/mohitmahapa1",
+    "root": false,
+    "method": "AWS CLI browser login; no access keys requested/read/copied"
+  },
+  "ecs": {
+    "cluster": "clip-shared-test",
+    "status": "ACTIVE",
+    "services": 1,
+    "running": 0,
+    "pending": 0,
+    "service": "clip-test-api-ap-south-1-pd16",
+    "desired": 0,
+    "service_running": 0,
+    "service_pending": 0,
+    "task_definition_revision": 11,
+    "rollout": "COMPLETED",
+    "failures": []
+  },
+  "rds": {
+    "instance": "clip-shared-test-postgres",
+    "status": "stopped",
+    "engine": "postgres",
+    "version": "18.6",
+    "public": false,
+    "encrypted": true
+  },
+  "project_bucket_names": [
+    "clip-test-listings-images-ap-south-1-id01",
+    "clip-test-listings-images-ap-south-1-li02",
+    "clip-tfstate-335523638354-ap-south-1-20261019-0e51ca0"
+  ],
+  "calls": "6successful scoped CLI invocations: STS, ECSdescribe/list/describe, RDSdescribe, S3bucket-name listing; no automatic retry",
+  "not_established": [
+    "Current task image/nonsecret runtime/model/worker/storage configuration",
+    "RDSendpoint/network/isolated database/runtime role/migrations/grants",
+    "Effective S3/IAM/signed delivery/caller permissions",
+    "Current capacity/network/price/cost/load approval",
+    "Real Identity/session/new-listing+edit/vector and final source-label/freeze readiness"
+  ],
+  "scope_safety": "No service start/stop/scale, bucket object enumeration/read/upload, secret read, SQL connection, IAM change, deployment, provisioning, deletion or Git publication."
+}
