@@ -1,0 +1,105 @@
+{
+  "task": "NEXT-06",
+  "checkpoint": "Human-verified staged Step4 producer preparation; original Step3 app gates retained",
+  "recorded_utc": "2026-10-31 08:57:13 UTC",
+  "state": "local preparation/native proof performed; awaiting verification and exact cloud vector-window approval",
+  "files_bound": 77,
+  "checks": {
+    "data_tests": "279passed in9.44s; warnings as errors",
+    "vector_control_tests": 18,
+    "black": "343Python files unchanged",
+    "boundaries": 0,
+    "native": "Real native PG18.6+SCRAM+actual pinned ONNXmodel/operator/worker; no AWS or fake vectors",
+    "native_published": 1000,
+    "native_coverage": {
+      "pipeline_id": "4b43fc307151933bf5b0fa80ff4e10f8cb4266194905cd2b15a3d01b2386d9ca",
+      "state": "serving",
+      "encoding_matches": true,
+      "conflicting_serving": false,
+      "live": 1000,
+      "ready": 1000,
+      "missing": 0,
+      "stale": 0,
+      "pending": 0,
+      "leased": 0,
+      "failed": 0,
+      "invalid_parts": 0
+    },
+    "parts": [
+      {
+        "part_kind": "description",
+        "count": 1000
+      },
+      {
+        "part_kind": "title",
+        "count": 1000
+      }
+    ],
+    "model_windows": 2006,
+    "helper_peak_rss_bytes": 265699328,
+    "permission_denials": 9,
+    "column_update_id_only": true,
+    "production_sql_cases": [
+      {
+        "query": "cycle",
+        "keyword_count": 82,
+        "hybrid_count": 82,
+        "lexical_outcome": "expanded",
+        "unique_visible_union_verified": true
+      },
+      {
+        "query": "cycel",
+        "keyword_count": 82,
+        "hybrid_count": 82,
+        "lexical_outcome": "typo_expanded",
+        "unique_visible_union_verified": true
+      },
+      {
+        "query": "vehicle",
+        "keyword_count": 82,
+        "hybrid_count": 82,
+        "lexical_outcome": "expanded",
+        "unique_visible_union_verified": true
+      },
+      {
+        "query": "wheeled vehicle",
+        "keyword_count": 17,
+        "hybrid_count": 82,
+        "lexical_outcome": "expanded",
+        "unique_visible_union_verified": true
+      },
+      {
+        "query": "books",
+        "keyword_count": 107,
+        "hybrid_count": 107,
+        "lexical_outcome": "expanded",
+        "unique_visible_union_verified": true
+      },
+      {
+        "query": "office chair",
+        "keyword_count": 19,
+        "hybrid_count": 74,
+        "lexical_outcome": "expanded",
+        "unique_visible_union_verified": true
+      }
+    ],
+    "native_credentials_revoked": true,
+    "native_cluster_stopped": true,
+    "source_projection": "Unchanged after pipeline; actual cloud projection digest remains original baseline",
+    "current_source_hashes": "77match; model/tokenizer/interpreter and actual source/contract files included",
+    "controller": "Syntax compiled; management APIoperation set matches prior approved private window; no S3code",
+    "approval_gate": "Exact prepared controller refused cloud_window_approved=false before starts;0AWS calls",
+    "whitespace": "passed",
+    "secret_scan": {
+      "tool": "Gitleaks8.30.1",
+      "findings": 0,
+      "report": "/private/tmp/clip-next06-vector-prep-scan-9wfmj6q8/scan.json"
+    }
+  },
+  "cloud_calls": 0,
+  "inference_scope": "Only fresh native/private corpus; no cloud data accessed or changed",
+  "cloud_role_candidate": "clip_next06_embeddings; existence not checked; future preflight requires absence",
+  "target_file": "vector-target.proposed.json",
+  "plan": "vector-window-plan.md",
+  "remaining": "Exact cloud approval/actual role+data pipeline execution, originalStep3real app/auth/create/edit/media, deployed Linux/ECSquery/worker, final source-label/rebuild/freeze/peer acceptance. DATA-READY false."
+}

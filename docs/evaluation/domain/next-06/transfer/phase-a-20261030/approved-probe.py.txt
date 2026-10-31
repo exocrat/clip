@@ -1,0 +1,242 @@
+"""Prepared remote read-only inventory; NEVER execute without exact cloud approval.
+
+Run only on the already approved existing access host through a reviewed SSM
+command. Require its instance-role identity and cached pinned application image.
+One named runtime connection secret enters an isolated container through stdin,
+not command arguments, Docker environment, files or log output. No data mutation,
+image pull, dependency install, schema setup or permission repair is implemented.
+"""
+
+import argparse
+import json
+import os
+import shutil
+import subprocess
+import sys
+from uuid import uuid4
+
+ACCOUNT = "335523638354"
+INSTANCE = "i-086045c48487471de"
+HOST = "clip-shared-test-postgres.cnsu8kgiimug.ap-south-1.rds.amazonaws.com"
+PARAMETER = "/clip/test/listings-database-url"
+IMAGE = (
+    "335523638354.dkr.ecr.ap-south-1.amazonaws.com/clip-shared-test-api@sha256:"
+    "97482cb4fb697eee230e66d134c165e557dac7d71a165e6034c88747f1738245"
+)
+CONTAINER = "clip-next06-readonly-inventory"
+
+# This exact fixed child is part of the reviewed command payload. It imports no
+# application startup/lifespan; only psycopg and non-private PostgreSQL metadata.
+SQL_PROBE = r"""
+import json,sys
+import psycopg
+from psycopg.conninfo import conninfo_to_dict
+try:
+    raw=sys.stdin.buffer.read(16385)
+    if not raw or len(raw)>16384: raise ValueError('input_bound')
+    secret=raw.decode()
+    p=conninfo_to_dict(secret)
+    if set(p)-{'host','port','dbname','user','password','sslmode','sslrootcert','application_name','connect_timeout'}: raise ValueError('indirection')
+    if p.get('host')!='clip-shared-test-postgres.cnsu8kgiimug.ap-south-1.rds.amazonaws.com' or p.get('port','5432')!='5432' or p.get('sslmode')!='verify-full' or not p.get('sslrootcert'): raise ValueError('target_tls')
+    if not p.get('dbname') or not p.get('user') or p['user'] in {'postgres','rdsadmin'}: raise ValueError('restricted_runtime_secret_required')
+    with psycopg.connect(secret,autocommit=True,connect_timeout=5,options='-c default_transaction_read_only=on -c statement_timeout=5000 -c lock_timeout=1000 -c idle_in_transaction_session_timeout=5000',application_name='clip-next06-readonly-inventory') as c:
+        with c.transaction():
+            c.execute('SET TRANSACTION READ ONLY')
+            identity=c.execute("SELECT current_database(),current_user,session_user,current_setting('server_version_num'),current_setting('transaction_read_only')").fetchone()
+            if identity[1]!=identity[2] or identity[3]!='180006' or identity[4]!='on' or not c.pgconn.ssl_in_use: raise ValueError('actual_target')
+            roles=c.execute("SELECT rolname,rolsuper,rolcreatedb,rolcreaterole FROM pg_roles WHERE rolname IN (current_user,'clip_next06_loader','clip_next06_runtime') ORDER BY rolname").fetchall()
+            if any(any(r[1:]) for r in roles): raise ValueError('privileged_role_refused')
+            if c.execute("SELECT oid FROM pg_roles WHERE rolname='rds_superuser' AND pg_has_role(current_user,oid,'MEMBER')").fetchone(): raise ValueError('rds_superuser_refused')
+            versions=c.execute('SELECT version FROM public.schema_migrations ORDER BY version').fetchall()
+            schemas=c.execute("SELECT nspname FROM pg_namespace WHERE nspname IN ('identity','listings','search','conversations') ORDER BY nspname").fetchall()
+            proposed=c.execute("SELECT datname FROM pg_database WHERE datname='clip_next06_reference'").fetchall()
+    print(json.dumps({'state':'readonly_metadata_passed','identity':identity,'roles':roles,'migration_versions':[r[0] for r in versions],'schemas':[r[0] for r in schemas],'proposed_database_already_exists':bool(proposed)}))
+except Exception as error:
+    print(json.dumps({'state':'refused_or_failed','failure_type':type(error).__name__,'sqlstate':getattr(error,'sqlstate',None)}))
+    sys.exit(1)
+"""
+
+
+def run(argv, *, env, timeout, content=None):
+    """Capture output privately; caller emits only an allowlisted metadata document."""
+    result = subprocess.run(
+        argv,
+        env=env,
+        input=content,
+        stdin=None if content is not None else subprocess.DEVNULL,
+        capture_output=True,
+        timeout=timeout,
+        check=False,
+    )
+    if result.returncode or len(result.stdout) > 65536:
+        raise RuntimeError("readonly_command_refused")
+    return result.stdout
+
+
+def main(argv=None):
+    """Fixed host-role/parameter/image only; inert until explicit reviewed activation."""
+    parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
+    parser.add_argument("--approved-readonly-inventory", action="store_true")
+    args = parser.parse_args(argv)
+    if not args.approved_readonly_inventory:
+        print(json.dumps({"state": "explicit_approval_required"}))
+        return 2
+    env = {
+        "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
+        "HOME": os.environ.get("HOME", "/root"),
+        "AWS_CONFIG_FILE": "/dev/null",
+        "AWS_SHARED_CREDENTIALS_FILE": "/dev/null",
+        "AWS_MAX_ATTEMPTS": "1",
+        "AWS_PAGER": "",
+        "AWS_CLI_AUTO_PROMPT": "off",
+    }
+    aws, docker = shutil.which("aws"), shutil.which("docker")
+    if not aws or not docker:
+        print(json.dumps({"state": "required_existing_tools_absent"}))
+        return 1
+    aws_base = [
+        aws,
+        "--region",
+        "ap-south-1",
+        "--no-cli-pager",
+        "--cli-connect-timeout",
+        "5",
+        "--cli-read-timeout",
+        "10",
+    ]
+    launched = False
+    run_id = uuid4().hex
+    container_name = f"{CONTAINER}-{run_id}"
+    try:
+        identity = json.loads(
+            run(
+                aws_base + ["sts", "get-caller-identity", "--output", "json"],
+                env=env,
+                timeout=20,
+            )
+        )
+        if identity.get("Account") != ACCOUNT or identity.get("Arn") != (
+            f"arn:aws:sts::{ACCOUNT}:assumed-role/clip-shared-test-ecs-instance/{INSTANCE}"
+        ):
+            raise RuntimeError("host_role_mismatch")
+        run(
+            [docker, "image", "inspect", "--format", "{{.Id}}", IMAGE],
+            env=env,
+            timeout=10,
+        )
+        # Refuse a name collision instead of removing/adopting an old container.
+        existing = json.loads(
+            run(
+                [
+                    docker,
+                    "ps",
+                    "--all",
+                    "--filter",
+                    f"name=^/{container_name}$",
+                    "--format",
+                    "json",
+                ],
+                env=env,
+                timeout=10,
+            )
+            or b"null"
+        )
+        if existing is not None:
+            raise RuntimeError("container_name_already_exists")
+        parameter = json.loads(
+            run(
+                aws_base
+                + [
+                    "ssm",
+                    "get-parameter",
+                    "--name",
+                    PARAMETER,
+                    "--with-decryption",
+                    "--output",
+                    "json",
+                ],
+                env=env,
+                timeout=20,
+            )
+        )
+        secret = parameter["Parameter"]["Value"].encode()
+        if not 0 < len(secret) <= 16384:
+            raise RuntimeError("connection_secret_bound")
+        launched = True
+        raw = run(
+            [
+                docker,
+                "run",
+                "--pull=never",
+                "--rm",
+                "--interactive",
+                "--name",
+                container_name,
+                "--label",
+                f"clip-next06-run={run_id}",
+                "--network",
+                "host",
+                "--entrypoint",
+                "python",
+                IMAGE,
+                "-c",
+                SQL_PROBE,
+            ],
+            env=env,
+            timeout=60,
+            content=secret,
+        )
+        report = json.loads(raw)
+        allowed = {
+            "state",
+            "identity",
+            "roles",
+            "migration_versions",
+            "schemas",
+            "proposed_database_already_exists",
+        }
+        if set(report) != allowed or report.get("state") != "readonly_metadata_passed":
+            raise RuntimeError("unexpected_metadata_report")
+        print(json.dumps(report))
+        return 0
+    except Exception as error:
+        print(
+            json.dumps(
+                {"state": "refused_or_failed", "failure_type": type(error).__name__}
+            )
+        )
+        return 1
+    finally:
+        if launched:
+            try:
+                owned = (
+                    run(
+                        [
+                            docker,
+                            "inspect",
+                            "--format",
+                            '{{.Id}} {{index .Config.Labels "clip-next06-run"}}',
+                            container_name,
+                        ],
+                        env=env,
+                        timeout=10,
+                    )
+                    .decode()
+                    .strip()
+                    .split()
+                )
+                if (
+                    len(owned) == 2
+                    and owned[1] == run_id
+                    and len(owned[0]) == 64
+                    and all(c in "0123456789abcdef" for c in owned[0])
+                ):
+                    run([docker, "rm", "--force", owned[0]], env=env, timeout=10)
+            except Exception:
+                # --rm normally removed it. The window controller must still
+                # stop the owned host; never broaden cleanup to other containers.
+                pass
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

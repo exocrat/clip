@@ -1,0 +1,75 @@
+{
+  "task": "NEXT-06",
+  "checkpoint": "User-approved Phase A conditional start/readonly inventory/stop",
+  "recorded_utc": "2026-10-30 17:51:24 UTC",
+  "state": "probe failed; both resources verified stopped",
+  "operator": {
+    "Account": "335523638354",
+    "Arn": "arn:aws:iam::335523638354:user/mohitmahapa1"
+  },
+  "window": {
+    "start": "2026-10-30 17:38:18 UTC",
+    "end": "2026-10-30 17:48:00 UTC",
+    "seconds": 582.0,
+    "service_calls": 48,
+    "approved_max": 160
+  },
+  "guard_results": "Exact identity/source/idleness/stopped target guards pass; all ASGprocesses includingLaunch/Terminate were already suspended, so no ASGchanges needed.",
+  "actions": {
+    "rds_start_attempted": true,
+    "host_start_attempted": true,
+    "ssm_command_id": "d8352338-10a2-461f-af34-f5d550fd5c81",
+    "remote_status": {
+      "status": "Failed",
+      "response_code": 1
+    },
+    "remote_metadata": {
+      "state": "refused_or_failed",
+      "failure_type": "RuntimeError"
+    },
+    "rds_stopped_verified": true,
+    "host_stopped_verified": true,
+    "uploads": 0,
+    "schema_or_grant_changes": 0,
+    "deployment_changes": 0,
+    "auto_scaling_changes": 0,
+    "application_data_or_schema_write_operations": 0
+  },
+  "failure": "Remote probe returned generic RuntimeError/exit1. No usable DBmetadata returned. Binaries-presence guard passed, but output does not establish the failed stage, whether secret access or SQLconnect was reached. Do not assert missing image/permissions/SQLproblem without evidence.",
+  "cleanup": "Controller verified both stopped through actual status polls and owned_resources_stopped event. Its raw failure-state label remained failed_pending_cleanup after successful cleanup; rawreceipt retained unchanged and explicit cleanupflags/events are authoritative for this derived closeout.",
+  "source_files": [
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/phase-a-20261030/approved-command-review.json",
+      "sha256": "612705046d1430526eff1ce3f280d96317b36e8e19e22c4b0bd9aa4dbfcb5432"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/phase-a-20261030/approved-command.json",
+      "sha256": "af9ff0c8f0207dfff933718992a94467b701f0997a9007ee8f3c30d6b67913eb"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/phase-a-20261030/approved-probe.py.txt",
+      "sha256": "aed4d51edd5cfb4ded973634ed27c18c7a7e2a064f0d0730a88c16e48d477b47"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/phase-a-20261030/controller.py.txt",
+      "sha256": "4aca4b09da66647d55b92e4aecb32ff1a7a43e0082bd152e7eb6da72b09a9434"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/phase-a-20261030/raw-receipt.json",
+      "sha256": "0e40becc070d3d60eb017646aaad0be9f140edbc0900ddbc96efee110d7b6ca3"
+    }
+  ],
+  "cost": {
+    "estimated_base_compute_usd_upper_from_observed_times": "0.003792444444444444444444444445",
+    "billing_not_queried": true,
+    "excludes": "CPUcredit,network/request/tax and continuing retainedstorage baseline; not an actual bill",
+    "approved_incremental_budget_usd": "1.00",
+    "basis": "../cloud-price-evidence.json"
+  },
+  "pending": [
+    "Verify failed-probe/stopped-resource checkpoint",
+    "Approve local-only safe-stage diagnostic improvement; no cloud retry in that scope",
+    "Review revised exact payload before any further paid start/remote attempt",
+    "OriginalStep3metadata/setup/load and realSteps4/5/6/cloud/source/labels/freeze/DATA-READY remain"
+  ]
+}

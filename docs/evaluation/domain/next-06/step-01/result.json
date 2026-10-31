@@ -1,0 +1,94 @@
+{
+  "task": "NEXT-06",
+  "step": 1,
+  "state": "verified by Mohit; Step2 authorized",
+  "recorded_utc": "2026-10-30 11:27:31 UTC",
+  "contributor": "Mohit Mahapatra (C)",
+  "branch": "task/next-06-reference-dataset",
+  "base_head": "6edb52ba4e5a148386cd81e78b29c15b557193c7",
+  "scope": "Reusable tooling/current schema/source-image audit; no generation/load/cloud action",
+  "audit": {
+    "material_definition_gap": "None in ordered NEXT-06 steps. User-directed photo substitution updates the former8swatch recipe; all other requirements retained.",
+    "reusable": [
+      "PD-09 deterministic IDs/canonical JSON/logical hashing/named-run guards",
+      "search_preview schema-shaped field/validation scaffolding; not final recipe",
+      "search_loader empty-target/role/socket/schema-version guards; not a cloud/final media loader",
+      "actual29migrations, active9category/4condition catalogue and unique Handles",
+      "supported pinned embedding prepare/queue/worker/activation operators",
+      "query-label template/validator and preview Success@5 arithmetic"
+    ],
+    "missing_outputs": [
+      "Final recipe generator with4800regular/200temporary users and exact independent assignments/45topics",
+      "Final schema-aware loader and backed/owner-linked1000image object workflow",
+      "Normal authorized new-listing publication/vector workflow check",
+      "Final actual model/index/eligible coverage and representative result validation",
+      "20+human-reviewed cases and final dataset-bound evaluator adapter",
+      "Repeated final generation/load/reset verification and frozen final fingerprints"
+    ]
+  },
+  "source_images": {
+    "root_name": "clip-dataset-images",
+    "inventory": "data/evaluation/reference-image-inputs.json",
+    "count": 45,
+    "bytes": 41861658,
+    "distinct_digests": 45,
+    "category_counts": {
+      "mobile_phone": 5,
+      "laptop": 5,
+      "electronics": 5,
+      "furniture": 5,
+      "books": 5,
+      "bicycles": 5,
+      "appliances": 5,
+      "sports_fitness": 5,
+      "other": 5
+    },
+    "types": {
+      "image/jpeg": 44,
+      "image/png": 1
+    },
+    "unsupported": 0,
+    "oversized": 0,
+    "dimensions_read": 45,
+    "dimension_min": 370,
+    "dimension_max": 6719,
+    "file_mutations": "none; typo mapped; Finder metadata ignored",
+    "not_established": "full decode/visual meaning, image upload/confirmation/delivery and cloud"
+  },
+  "schema": {
+    "migrations": 29,
+    "head": "20261029043000_unique_handles_and_participant_projection",
+    "unique_handle_requirement": "final adapter must set valid unique claimed Handles without creating passwords/sessions or bypassing Identity"
+  },
+  "retained_data": {
+    "names": [
+      "se01-schema-42-a",
+      "se01-schema-42-b"
+    ],
+    "manifest_counts_each": {
+      "users": 5000,
+      "listings": 1000
+    },
+    "schema": "search-preview-1",
+    "image_objects_verified": false,
+    "current_validator": "both refused as Invalid, altered or stale Search preview corpus (expected; historical inputs preserved)",
+    "final_labels_present": false
+  },
+  "checks": {
+    "existing_data_tests": "94passed in0.94s",
+    "source_file_magic_size_dimensions_mapping": "45pass",
+    "metadata_hashes": "45distinct; exact bytes recorded",
+    "remote_branch_check": "no next-06/dataset branch found",
+    "whitespace": "pass"
+  },
+  "environment": "Mohit macOS ARM64, repository Python3.14.3; existing native PostgreSQL/dbmate and semantic helper paths present; no Docker/install required for Step1",
+  "dependencies": {
+    "planning_recipe": "NEXT-01 recipe verified; NEXT-03 taxonomy/Handle changes merged in inspected main",
+    "formal_ID_READY_LI_CORE_SE_CORE_DATA_READY": "still not accepted in current work-log records; local generator preparation does not imply acceptance",
+    "cloud": "exact target/revision/schema/storage/auth/cost/operator approval still required before writes; no AWS command issued",
+    "human_labels": "pending fixed corpus and separate human judgment; proposals are not review"
+  },
+  "next_step": "Step2 implement final deterministic generator and1000listing image-topic assignment; generate twice locally and compare fingerprints; T chosen on actual generation day, no cloud writes",
+  "git_and_cloud": "No staging/commit/push/merge/deploy/upload or existing-target reset",
+  "human_verification_recorded_utc": "2026-10-30 11:42:23 UTC"
+}

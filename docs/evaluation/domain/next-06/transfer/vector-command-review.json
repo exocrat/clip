@@ -1,0 +1,321 @@
+{
+  "state": "Executed successfully; one approved vector window consumed; not retry/resume authorization",
+  "cloud_window_approved": true,
+  "files": [
+    {
+      "path": "scripts/evaluation/reference_db_inventory.py",
+      "sha256": "9f7081f77f3dea9fb11389cbb4b8641027262d0d43be59c587e1c647e2a47087"
+    },
+    {
+      "path": "data/generators/reference_login.py",
+      "sha256": "b1044ca6498250a95fb8b042ac0c49d91712e6eef2a1984d6c59c602686d680d"
+    },
+    {
+      "path": ".tools/session-manager/1.2.896.0/bin/session-manager-plugin",
+      "sha256": "71258c3f7d5c15603a3b75bc8dfd62f595e8ec6ef3b8132ab59a005eebb7fa35"
+    },
+    {
+      "path": ".tools/session-manager/ap-south-1-bundle.pem",
+      "sha256": "ca4a9dc14e06c3f84274eff3ffed0e5d4d3463141593e1159eb4a0904df6cd74"
+    },
+    {
+      "path": "scripts/evaluation/reference_admin_inventory.py",
+      "sha256": "c94f171cf499605ac3e87d3e5837006c4acd197e4e81c4de55032174415fb368"
+    },
+    {
+      "path": "scripts/evaluation/reference_database_setup.py",
+      "sha256": "a16c8f7217d8b5fcbf6c00f0ce0ea0d98dff8910d8effa17f7b7cfc064c8023f"
+    },
+    {
+      "path": "data/runs/next06-transfer-42-20261030-a/manifest.json",
+      "sha256": "b134281617059088a6b5d461891753fe0b05cc466250af39d9ff9cd7fb03edf4"
+    },
+    {
+      "path": "database/migrations/20261018094330_mvp_tables.sql",
+      "sha256": "ddcff1e44fd2da9c9b2574dfc3b1604f1603033609b66b7e8497460ef4b2966f"
+    },
+    {
+      "path": "database/migrations/20261018094331_mvp_integrity.sql",
+      "sha256": "81e06b30ee6a31f9fb66f0681c706fa7b9a9857d06e76469791b86afce0391b6"
+    },
+    {
+      "path": "database/migrations/20261018094332_initial_catalogue.sql",
+      "sha256": "45a1bc9b9df74afd95bf1131c274a07da7c14f1d3a657645e16a2980b78d020c"
+    },
+    {
+      "path": "database/migrations/20261018152702_reject_retired_origin_entries.sql",
+      "sha256": "7ec9d5c503e5935074b5dc02ca02ab1c29f5b0df7b267280546323c71a1b12e1"
+    },
+    {
+      "path": "database/migrations/20261020102224_listing_owner_command_results.sql",
+      "sha256": "659b5944b77c0fd3d6c69ced3f7a2c4800efb6ea7b05ab8e6995bd44f30c0fe3"
+    },
+    {
+      "path": "database/migrations/20261020111741_listing_create_command_results.sql",
+      "sha256": "1d3aca84d2c19b20f4c113c31a4c1750a5b765a4fd346dd2efb2467df9a74415"
+    },
+    {
+      "path": "database/migrations/20261020113531_listing_selection_and_confirmed_image_metadata.sql",
+      "sha256": "4ed6dd898c044ad003ef215f4850791b91a949e2a9bdcd08e390c3e349f62e51"
+    },
+    {
+      "path": "database/migrations/20261020142319_api_owned_retirement_and_trigger_boundaries.sql",
+      "sha256": "bfa1032a35dd3ff1769439e9b6052478400862d5ab14383a2568dc1d9229044b"
+    },
+    {
+      "path": "database/migrations/20261021105546_optional_listing_pickup_area.sql",
+      "sha256": "f2069d09d88aa68f1ef41a7e6f35e7ef4eea6d630ac57c16366570cf45e15952"
+    },
+    {
+      "path": "database/migrations/20261022050000_listing_image_upload_intents.sql",
+      "sha256": "2b702957c311faeaa462946a5bac2639790a2c6176a506f721c1786d54b8289c"
+    },
+    {
+      "path": "database/migrations/20261022062357_listing_image_cleanup_retries.sql",
+      "sha256": "8fd571308dbc45a67c5bfe0c85dbf8e071652a0632904f3996399fdfaaa8d461"
+    },
+    {
+      "path": "database/migrations/20261023173439_identity_account_profile_integrity.sql",
+      "sha256": "50dcb7949fdb16591c0543138196b621a149995c8be6564289b2e5ace26686d3"
+    },
+    {
+      "path": "database/migrations/20261023192856_identity_otp_transactions.sql",
+      "sha256": "c84cc79abb5ded9982aba48d3a1c1c782d1a726d1ae79e6df5c735502250e113"
+    },
+    {
+      "path": "database/migrations/20261023202807_identity_sessions_and_login.sql",
+      "sha256": "11fca117f8204edc4f1b3283bc8132ea211d786401be1e65e01d7dd087406c4c"
+    },
+    {
+      "path": "database/migrations/20261024153316_listing_embedding_generations.sql",
+      "sha256": "e85b87f2cbe8eb05a4af4c958a7d344f37ba6b7dbd99226d3e9093d6d073a0db"
+    },
+    {
+      "path": "database/migrations/20261025012200_wanted_category_code_reference.sql",
+      "sha256": "f6940e5eddb5360c8fd1d9d5253876289f4e38edcd3fcfefe0d6415825e642f6"
+    },
+    {
+      "path": "database/migrations/20261025013000_wanted_command_results.sql",
+      "sha256": "c23984cd903e6fce17106d235cc4e40de7c68c1a7521fe0dd896b98912224955"
+    },
+    {
+      "path": "database/migrations/20261026090000_conversation_retirement_hardening.sql",
+      "sha256": "a60d0a8319dd8ea53d89d3d617b5b75949c5ad96482d1c3095d628b776069587"
+    },
+    {
+      "path": "database/migrations/20261026090100_conversation_message_transport.sql",
+      "sha256": "e501421f793e9d0e8c723a28963f5c1922c76a6842b853950a6419352de9dd5d"
+    },
+    {
+      "path": "database/migrations/20261026090200_conversation_public_key_directory.sql",
+      "sha256": "9588b27d9cd73b7b41c45d66721875bfe41fc22d0b7d4ccd7711386ce0d53b40"
+    },
+    {
+      "path": "database/migrations/20261026090300_conversation_recovery_storage.sql",
+      "sha256": "3b44c216535e8c0117c7287bbbadb6456fd5cb62f36869e4ec31ceacf823cf11"
+    },
+    {
+      "path": "database/migrations/20261027064000_conversation_offer_requests.sql",
+      "sha256": "d90b6234914b72348dbe43ce25b02e1b4d553dad0f6982750b25341665678cef"
+    },
+    {
+      "path": "database/migrations/20261027112205_contact_share_initial_prekey_envelopes.sql",
+      "sha256": "392a1644e8a2ddd3b5a96de866ca53b9aee7a850c4130fc1440fdd9ef377a897"
+    },
+    {
+      "path": "database/migrations/20261028090000_marketplace_category_catalogue.sql",
+      "sha256": "2e46aa3c11d269abefaab55f81a8ab0088278aa9e477beeba7dc7ebe22b9d9af"
+    },
+    {
+      "path": "database/migrations/20261028100100_marketplace_title_case_labels.sql",
+      "sha256": "0647ae6687814a39322d4287b26c5759ee576bd4eed0e6fdd61792891d19410a"
+    },
+    {
+      "path": "database/migrations/20261028100200_wanted_discovery_text_search.sql",
+      "sha256": "1801610781ecb1b73a4cbac7bb019cadec61a92cf64f1bb5a674d5d86cf10f39"
+    },
+    {
+      "path": "database/migrations/20261028120000_sale_original_price_and_marketplace_amount_cap.sql",
+      "sha256": "0ed5c9e53ef1b09e5b1d7643c7cb2675cb0041efb325f6280b77e4bbbd659dd3"
+    },
+    {
+      "path": "database/migrations/20261028181500_private_buyer_selection.sql",
+      "sha256": "e383934c052f8a460c7774b18f1ca98aa8599f0714db0213ea9676663c55a38f"
+    },
+    {
+      "path": "database/migrations/20261029043000_unique_handles_and_participant_projection.sql",
+      "sha256": "00cf2d3f03e2f47c14b57b0b343052bf6fe4b2b8054f39b6d8c74f67d110385c"
+    },
+    {
+      "path": "scripts/evaluation/reference_load_access.py",
+      "sha256": "f21247d74415f5647d912ce4d385b566440bbc15e12ec6c635e59585375a15ea"
+    },
+    {
+      "path": "data/generators/reference_cloud.py",
+      "sha256": "91bec854f50e39952bbfba4279eecd811834952d6712e82cfcfb2c9673a9ad4b"
+    },
+    {
+      "path": "data/generators/reference_rows.py",
+      "sha256": "ee92adfa12243321e5767bb6196ccdd5abfc4873e8273eaf3722d87d8955425e"
+    },
+    {
+      "path": "data/generators/reference_load.py",
+      "sha256": "924767cf46734489529609fc056b52ca921eab045a86084f4d3ef83342fcf1ef"
+    },
+    {
+      "path": "data/evaluation/reference-recipe.json",
+      "sha256": "d7cb3287d76a2ac9aed1194af67003ba83183c9bf09e17dd97631cec4978e0c1"
+    },
+    {
+      "path": "data/generators/reference.py",
+      "sha256": "3c5bf0981c7f8196336fbaae23e31d387f6b9ff1a1ee4a30b8492492a8d70f38"
+    },
+    {
+      "path": "data/generators/preview.py",
+      "sha256": "69b3cb036d3b473b175e095bb662c5c734d70a7d42685aa9af7ccec9659ab3f1"
+    },
+    {
+      "path": "data/generators/manifest.py",
+      "sha256": "8d5c68025721a39f02e1932ffbb0f77d7bdf5282cab9fcace18fa2c1eb5abdce"
+    },
+    {
+      "path": "data/generators/files.py",
+      "sha256": "5ec379b7dec669949e23cb052dc9fd4a74f50ab53e95137bf6f3c8dbc59fdbf5"
+    },
+    {
+      "path": "contracts/source/types.py",
+      "sha256": "117734ce48742585e4794306fd834f55faa0ca77c6da5f967e4b35d453b36b33"
+    },
+    {
+      "path": "contracts/listings.md",
+      "sha256": "0f07635090c0f8f8f7d0efec85c1c9de6b83c0bf611e5d0231c9bacb513d6deb"
+    },
+    {
+      "path": "contracts/search.md",
+      "sha256": "68c859b8ff6d788ef16a8e67aacdaf8c51e8f8e973aa586315041d287e17841f"
+    },
+    {
+      "path": "apps/api/app/domains/listings/embedding_pipeline.json",
+      "sha256": "300604ee8a54f130d6c698ae4187238c0fd4f4e45d888b208d23622ed8c393a3"
+    },
+    {
+      "path": "apps/api/app/domains/listings/search_vocabulary.json",
+      "sha256": "fff663b1a325e78e19d39da1d41824e8d06a7aba7f2191e206323447e6b4b743"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/vector-controller.proposed.py.txt",
+      "sha256": "1d0d7586d9bd1ee8243dab17a72a94882f66ae637c7069c4361f8556cd7f5049"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/vector-target.proposed.json",
+      "sha256": "366e75846bd64afafb4fdc901da8d7cf135cc0b7f962848381f2c8acf3176d59"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/cloud-load-20261031/result.json",
+      "sha256": "67ddedfa8076d79cbadcfcef1fe07fedcf2512ff40d8809ad7600fb67ee2fe13"
+    },
+    {
+      "path": "scripts/evaluation/reference_vector_access.py",
+      "sha256": "e9c168014f54c6c250a3df0d40b7dbdf0f690259a158664edf97e669e9885a01"
+    },
+    {
+      "path": "scripts/evaluation/reference_vector_pipeline.py",
+      "sha256": "1ba12e58be30dde2f373b17cbf21f3813073a0927312a293c89c153697377980"
+    },
+    {
+      "path": "scripts/evaluation/reference_embeddings.py",
+      "sha256": "863e61e883f7bf3ebd67a62ac440c97e79216bfe4016484752261125cd1bd1c9"
+    },
+    {
+      "path": "apps/api/app/domains/listings/embedding_client.py",
+      "sha256": "64921aeea72a0f9372d4e7f405fa5913c0ee9577def707165c5f57a4d7e19ef4"
+    },
+    {
+      "path": "apps/api/app/domains/listings/embedding_bootstrap.py",
+      "sha256": "d46c1f71f96292aaf74e1dc222208b61f33c3b1f38262a5bfef69bfa66af168b"
+    },
+    {
+      "path": "apps/api/app/domains/listings/embedding_dispatch.py",
+      "sha256": "24b11501a7c9b898fb526e19f68608b619287980e227b6292d554070eb83d047"
+    },
+    {
+      "path": "apps/api/app/domains/listings/embedding_worker.py",
+      "sha256": "40ace5c836cf24bb10327b04f3700d9dd97d366adb69b24acb3095745960f81b"
+    },
+    {
+      "path": "apps/api/app/domains/listings/embedding_protocol.py",
+      "sha256": "315ee77c4a94103b6096b010e1e8ad599a02b7b8c5fc4d6ed3c0a07161a40963"
+    },
+    {
+      "path": "apps/api/app/domains/listings/embedding_store.py",
+      "sha256": "7e5c2b811acfda99a14a0786a508d812d97955b80e848a247a0c106272bf1f48"
+    },
+    {
+      "path": "apps/api/app/domains/listings/embedding_helper.py",
+      "sha256": "db4dba85fb1bfe4726ce005e7840a8ebed1282cf66af6f08590eef87714cabf1"
+    },
+    {
+      "path": "apps/api/app/domains/listings/embedding_types.py",
+      "sha256": "1578f90f71b510dc27d01f450009502dbf467d4a9ea8880fd8696145b48d3f55"
+    },
+    {
+      "path": "apps/api/app/domains/listings/hybrid_read.py",
+      "sha256": "88a17b648d4f5ce6343e32b5a7aee19ec7838567d8a43c40be9bd6ed799aad08"
+    },
+    {
+      "path": "apps/api/app/domains/listings/lexical_expansion.py",
+      "sha256": "5ebc13d35771a678c0067a0c9414bf4e007a0335980891e0c39e07a27d2bc919"
+    },
+    {
+      "path": "apps/api/app/domains/listings/typo_tolerance.py",
+      "sha256": "b2ca230ed965a1721f424a8179fa6df791c240ae3debfe5f4031b7105b0bfa32"
+    },
+    {
+      "path": "apps/api/app/domains/listings/vocabulary.py",
+      "sha256": "265a8e08ad4438ab1bd187c58745142ad7f4d88f5d7885f10d67ccb0119e051a"
+    },
+    {
+      "path": "apps/api/app/domains/listings/browse_validation.py",
+      "sha256": "70cd31967c8a1617a465f7024b86741aa4800aa0b824f6c8ccc975d458b263f7"
+    },
+    {
+      "path": "apps/api/app/core/pagination.py",
+      "sha256": "94134230003e9aa3cf8d8d69abf4851a35ddd98722c39e317187fd23217a4a72"
+    },
+    {
+      "path": "apps/api/app/core/money.py",
+      "sha256": "81582485ab9191776eddc7c7623ecf313326ab0e4155ccd62f7a4a1d4b643517"
+    },
+    {
+      "path": "scripts/evaluation/semantic/requirements-macos-arm64.txt",
+      "sha256": "14f5c81c44edb87b654338842ac7da1fdfb63137c3edb191e4c15f923e1906fe"
+    },
+    {
+      "path": ".tools/semantic/venv/bin/python",
+      "sha256": "b2c50fdcd4f1d79413218f91bb67b16a70a987cbf109a1dbc239dcb9c4ec96cb"
+    },
+    {
+      "path": ".tools/semantic/model/onnx/model.onnx",
+      "sha256": "6fd5d72fe4589f189f8ebc006442dbb529bb7ce38f8082112682524616046452"
+    },
+    {
+      "path": ".tools/semantic/model/tokenizer.json",
+      "sha256": "be50c3628f2bf5bb5e3a7f17b1f74611b2561a3a27eeab05e5aa30f411572037"
+    },
+    {
+      "path": "apps/api/app/contracts/domain_types.py",
+      "sha256": "dc10d116d7cfcadc4461d56e4e6ecf966422b52c84253ab843aac91ef15d25cb"
+    },
+    {
+      "path": "apps/api/app/core/errors.py",
+      "sha256": "199c23514ac4cfa5dd8da5d1afe42099c745e0e17892b2a53d896195855bb8c0"
+    }
+  ],
+  "role": "clip_next06_embeddings: create-only dedicated nonprivileged producer; native-tested column UPDATE(id) row locks, fixed pipeline/worker grants, memory-only expiring SCRAM; NOLOGIN/password clearing at closeout. No original app/runtime/loader activation.",
+  "target": "vector-target.proposed.json; bucket/prefix fields bind existing image SQL references only; zero S3calls or object mutation",
+  "operations": "Existing exact nonroot335523638354/Mumbai private target and stopped resource controls; one setup secret read; realprepare/queue1000/normal worker/activate complete coverage;6productionSQL/typo/Hybrid engineering cases; sourceprojection unchanged; no real web auth/runtime deployment acceptance.",
+  "budget": "60minwork+15mincleanup/160managementcalls;<=40minvector production;1000serial jobs;2400model windows; existing helper startup30s/inference5s/request20s/worker20s/statement5s/lock1s; helper peak below512MiB; USD1incremental estimate envelope, existing baseline/retained data excluded.",
+  "approval_recorded_utc": "2026-10-31 09:25:29 UTC",
+  "approval_context": "Mohit directed Proceed with the work after the exact vector-window request and remaining-work/cloud-upload clarification.",
+  "execution_closeout": "vector-production-20261031/result.json"
+}

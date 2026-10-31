@@ -1,8 +1,9 @@
-"""SE-01 isolated label validation and Success@5 calculation preparation.
+"""SE-01 strict label validation and Success@5 calculation preparation.
 
 No final measurement command exists here yet. CLI checks draft labels or runs
-synthetic arithmetic fixtures only. Real data/context bindings, human approval
-and native retrieval must be supplied at the original integration checkpoints.
+synthetic arithmetic fixtures only. reference_labels.py supplies independently
+verified actual dataset/context bindings; final scoring and native retrieval
+remain at their original integration checkpoints.
 No network, credentials, provider activation or database reads are performed.
 """
 
@@ -34,7 +35,7 @@ class EvaluationError(ValueError):
 
 @dataclass(frozen=True)
 class DatasetBinding:
-    """Trusted future adapter output, not evidence reconstructed from label claims.
+    """Trusted adapter output, not evidence reconstructed from label claims.
 
     The actual integration adapter must verify manifest/content/counts/schema,
     accepted revisions and context eligibility before constructing this object.

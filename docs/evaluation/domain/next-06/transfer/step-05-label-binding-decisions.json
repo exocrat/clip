@@ -1,0 +1,13 @@
+{
+  "task": "NEXT-06 Step5",
+  "recorded_utc": "2026-10-31 15:14:27 UTC",
+  "reviewer": "Mohit Mahapatra",
+  "use_recorded_acceptance_time": true,
+  "reviewed_at": "2026-10-30T12:46:38.764302Z",
+  "review_time_authorization": "Mohit: Use the recorded acceptance time. The earlier inspection time remains unknown; canonical reviewed_at denotes the recorded judgment acceptance.",
+  "source_binding_accepted": true,
+  "source_revision": "a12f4a31cd5517cacbdbeda4180b971ed9dcba84",
+  "search_contract_revision": "6edb52ba4e5a148386cd81e78b29c15b557193c7",
+  "source_authorization": "Mohit: Use those source and contract revisions. Explicit dataset binding approval; not merge/deploy approval.",
+  "formal_acceptance_note": "Owner readiness reports and merged upstream implementations are retained; no GitHub peer-review approval or final DATA-READY is inferred."
+}

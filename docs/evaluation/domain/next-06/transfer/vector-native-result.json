@@ -1,0 +1,233 @@
+{
+  "state": "passed",
+  "mode": "owned native permission rehearsal; not cloud/media acceptance",
+  "events": [
+    {
+      "stage": "preflight_passed"
+    },
+    {
+      "stage": "inactive_roles_committed"
+    },
+    {
+      "stage": "database_create_attempt"
+    },
+    {
+      "stage": "database_created_connections_disabled"
+    },
+    {
+      "stage": "database_opened_with_private_acl"
+    },
+    {
+      "stage": "schema_and_loader_grants_committed",
+      "migrations": 29
+    },
+    {
+      "stage": "schema_identical_to_canonical_dbmate",
+      "sha256": "aa72c9257b62de8897bb187d7a32f3d00a3da6481477b9a4fe66d2408f881bd1"
+    },
+    {
+      "stage": "loader_activation_attempt",
+      "role_oid": 17647,
+      "expires_utc": "2026-10-31T09:20:43.140907+00:00"
+    },
+    {
+      "stage": "loader_activated",
+      "role_oid": 17647
+    },
+    {
+      "stage": "native_wrong_scram_password_refused"
+    },
+    {
+      "stage": "loader_revoke_attempt",
+      "role_oid": 17647
+    },
+    {
+      "stage": "loader_disabled_password_cleared",
+      "role_oid": 17647
+    },
+    {
+      "stage": "native_login_disabled_and_password_null_verified"
+    },
+    {
+      "stage": "vector_role_create_attempt"
+    },
+    {
+      "stage": "vector_inactive_role_grants_committed",
+      "role_oid": 18905
+    },
+    {
+      "stage": "vector_activation_attempt",
+      "role_oid": 18905,
+      "expires_utc": "2026-10-31T09:20:43.848568+00:00"
+    },
+    {
+      "stage": "vector_role_activated",
+      "role_oid": 18905
+    },
+    {
+      "stage": "vector_queued",
+      "count": 1000
+    },
+    {
+      "stage": "vector_progress",
+      "published": 100
+    },
+    {
+      "stage": "vector_progress",
+      "published": 200
+    },
+    {
+      "stage": "vector_progress",
+      "published": 300
+    },
+    {
+      "stage": "vector_progress",
+      "published": 400
+    },
+    {
+      "stage": "vector_progress",
+      "published": 500
+    },
+    {
+      "stage": "vector_progress",
+      "published": 600
+    },
+    {
+      "stage": "vector_progress",
+      "published": 700
+    },
+    {
+      "stage": "vector_progress",
+      "published": 800
+    },
+    {
+      "stage": "vector_progress",
+      "published": 900
+    },
+    {
+      "stage": "vector_progress",
+      "published": 1000
+    },
+    {
+      "stage": "vector_pipeline_serving",
+      "ready": 1000
+    },
+    {
+      "stage": "vector_revoke_attempt",
+      "role_oid": 18905
+    },
+    {
+      "stage": "vector_disabled_password_cleared",
+      "role_oid": 18905
+    }
+  ],
+  "credential_lifecycle": "Real native SCRAM: wrong password refused, generated password accepted, load passed, NOLOGIN and NULL verifier verified, old password refused",
+  "vector_result": {
+    "state": "real_pinned_vectors_serving",
+    "queued": 1000,
+    "published": 1000,
+    "coverage": {
+      "pipeline_id": "4b43fc307151933bf5b0fa80ff4e10f8cb4266194905cd2b15a3d01b2386d9ca",
+      "state": "serving",
+      "encoding_matches": true,
+      "conflicting_serving": false,
+      "live": 1000,
+      "ready": 1000,
+      "missing": 0,
+      "stale": 0,
+      "pending": 0,
+      "leased": 0,
+      "failed": 0,
+      "invalid_parts": 0
+    },
+    "parts": [
+      {
+        "part_kind": "description",
+        "count": 1000
+      },
+      {
+        "part_kind": "title",
+        "count": 1000
+      }
+    ],
+    "search_diagnostics": [
+      {
+        "query": "cycle",
+        "keyword_count": 82,
+        "hybrid_count": 82,
+        "lexical_outcome": "expanded",
+        "unique_visible_union_verified": true
+      },
+      {
+        "query": "cycel",
+        "keyword_count": 82,
+        "hybrid_count": 82,
+        "lexical_outcome": "typo_expanded",
+        "unique_visible_union_verified": true
+      },
+      {
+        "query": "vehicle",
+        "keyword_count": 82,
+        "hybrid_count": 82,
+        "lexical_outcome": "expanded",
+        "unique_visible_union_verified": true
+      },
+      {
+        "query": "wheeled vehicle",
+        "keyword_count": 17,
+        "hybrid_count": 82,
+        "lexical_outcome": "expanded",
+        "unique_visible_union_verified": true
+      },
+      {
+        "query": "books",
+        "keyword_count": 107,
+        "hybrid_count": 107,
+        "lexical_outcome": "expanded",
+        "unique_visible_union_verified": true
+      },
+      {
+        "query": "office chair",
+        "keyword_count": 19,
+        "hybrid_count": 74,
+        "lexical_outcome": "expanded",
+        "unique_visible_union_verified": true
+      }
+    ],
+    "model_windows": 2006,
+    "real_app_auth_media_verified": false,
+    "deployed_linux_runtime_verified": false,
+    "data_ready": false,
+    "negative_permission_checks": 9,
+    "column_only_row_lock_grant_verified": true,
+    "helper_peak_rss_bytes": 265699328
+  },
+  "vector_access_closed": true,
+  "setup": {
+    "state": "isolated_database_prepared_roles_inactive",
+    "database": "clip_next06_reference",
+    "migrations": 29,
+    "loader": "clip_next06_loader",
+    "runtime": "clip_next06_runtime",
+    "credential_created": false,
+    "data_loaded": false,
+    "data_ready": false
+  },
+  "sql_validation": {
+    "users_verified": 5000,
+    "listings_verified": 1000,
+    "images_verified": 1000,
+    "regular_owners_verified": 1000,
+    "available_verified": 800,
+    "logical_projection_digest": "sha256:1d4a2369f53c8415ea6399546c0814d7a02e6bdae0e98f312221a995711efb80",
+    "text_vectors_verified": 1000,
+    "text_search_indexes": [
+      "CREATE INDEX sale_full_text ON listings.sale_listings USING gin (search_vector)"
+    ]
+  },
+  "negative_permission_checks": 8,
+  "cloud_calls": 0,
+  "media_objects_uploaded": 0,
+  "notes": "Native-only loader LOGIN enabled to prove real privileges; cloud plan retains both NOLOGIN. Model proof is recorded only when --vectors is explicitly selected. Real Identity session/S3/cloud runtime acceptance remains pending.",
+  "owned_cluster_stopped": true
+}

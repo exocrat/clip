@@ -1,0 +1,290 @@
+{
+  "state": "Human Step6 verification and exact prepared commit approved; publication requested",
+  "recorded_utc": "2026-10-31T15:58:08.242505+00:00",
+  "branch": "images",
+  "base_head": "a12f4a31cd5517cacbdbeda4180b971ed9dcba84",
+  "publication_requested": "Push images and replace PR23 after remaining work, per Mohit; no merge approval",
+  "frozen_release_sha256": "fcb86edb0412f39cda77cf65be87a2e963783f95842f5080ec0456c0b64f21b4",
+  "files_excluding_this_manifest": [
+    {
+      "path": "data/README.md",
+      "bytes": 22505,
+      "sha256": "2e9973f88222150d3793e2b57f0b8cc637ae0abe66a64e0a6c5221e6d109f3f4"
+    },
+    {
+      "path": "data/evaluation/query-labels.json",
+      "bytes": 49905,
+      "sha256": "77442ab33b687fa446436781f85e47f2f1340629c4f19d226997cc19e82b6af7"
+    },
+    {
+      "path": "data/formats/query-labels.md",
+      "bytes": 7268,
+      "sha256": "807e9897da6abf9baeb2200bbcb094e23c26786c1a40442a8d4f6e4d29b28aaf"
+    },
+    {
+      "path": "data/tests/test_reference_labels.py",
+      "bytes": 3167,
+      "sha256": "d5cdc0f9c0de3e4addd6c55d0c69f71584f63d09451c95b5ea5c6a3779253ed7"
+    },
+    {
+      "path": "data/tests/test_reference_release.py",
+      "bytes": 4066,
+      "sha256": "5b83a87245f8137f117635e819efe6c9987d2b56fa5abd51f95e4dce55a0518f"
+    },
+    {
+      "path": "data/tests/test_reference_runtime_inspection.py",
+      "bytes": 4978,
+      "sha256": "704cc25063d7f9c26686470a41424aa404878c5b3c16aa5d49443d148efc476b"
+    },
+    {
+      "path": "data/tests/test_reference_search_operator.py",
+      "bytes": 7152,
+      "sha256": "7852a5dcc4aeeda7ebc6742cb8b4603b7f44189de5ee3ce116b0728beeea90f6"
+    },
+    {
+      "path": "data/tests/test_reference_workflow_local.py",
+      "bytes": 6571,
+      "sha256": "b193aaeabbeb7d19bbc08344ec1eb67c00a1c0902501fe1295ad1cecceecef18"
+    },
+    {
+      "path": "data/transfer/README.md",
+      "bytes": 4232,
+      "sha256": "960d9d24787e451204f0f3c43715279879c20a765eb9f903f8583f8445fff855"
+    },
+    {
+      "path": "docs/README.md",
+      "bytes": 4579,
+      "sha256": "6cfcf1d0b2dd91f29d821dc7e81333bf3c5b4387193277a8a044f69e83168a94"
+    },
+    {
+      "path": "docs/environment/commands.md",
+      "bytes": 153440,
+      "sha256": "9452237579480118a0313316d362255031b99bf00403fa6bed60130272c294e1"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/cloud-handoff.md",
+      "bytes": 26146,
+      "sha256": "8d60086119079c032b91724f1a1be7d37f83bc9ba54436153a8b5c5191a7902a"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/current-pr-review.md",
+      "bytes": 2595,
+      "sha256": "2c9e76fd0ffb72ddf2e7d441e815dd82a55ab390c8e8285c59f25f8667d2c7a6"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/frozen-dataset.json",
+      "bytes": 23211,
+      "sha256": "fcb86edb0412f39cda77cf65be87a2e963783f95842f5080ec0456c0b64f21b4"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/task-wide-review.md",
+      "bytes": 7967,
+      "sha256": "43438646755df15740a6c86ed66d9f3a522cfe4a69e2da5e9e3999649abbf292"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/dataset-evidence-candidate.json",
+      "bytes": 29488,
+      "sha256": "bf7997f5b2de2836fb0af9f4ebfe8f616fc12a13aab64dd9e0e6cc4667e62dd2"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/dataset-evidence-plan.md",
+      "bytes": 7049,
+      "sha256": "c1ce6b7db45042c76284c24fbb2e4c5026e07c799c89ac0fb901bdbddaa4b005"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/final-label-binding.json",
+      "bytes": 15464,
+      "sha256": "8ce915ac0913a47ab43230f962f6a0d84f80182223e5612a7b0666dfe887c304"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/remaining-integration-gates.md",
+      "bytes": 4193,
+      "sha256": "33d3d3b2e93fe371452a366b07a38a63d82e38490012e469c7748a27f17c68b4"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/step-03-human-reported-completion.json",
+      "bytes": 759,
+      "sha256": "017547395443dcad25d617869e710c828a4a99f433d2c759927c1edeb95096c4"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/step-03-local-window-20261031/approved-review.json",
+      "bytes": 24267,
+      "sha256": "e2dc64b53c4514abc95217db85ef764b2be4eade684dc024eb8b3b8f31860088"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/step-03-local-window-20261031/executed-source/scripts/evaluation/reference_search_operator.py.txt",
+      "bytes": 11181,
+      "sha256": "6957d6a40f5bb95998831effe5b771485d765e6843332845db27c8736e28f3ef"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/step-03-local-window-20261031/executed-source/scripts/evaluation/reference_search_workflow.html.txt",
+      "bytes": 8449,
+      "sha256": "5f983ddd514671146717379ecf0ca8c3a3913576051cf61d3f90e8559c357a70"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/step-03-local-window-20261031/executed-source/scripts/evaluation/reference_workflow_local.py.txt",
+      "bytes": 30606,
+      "sha256": "610a86f189929fe17d4923b2f686568291c724c7f59b4296e49e0660266ecafa"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/step-03-local-window-20261031/raw-receipt.json",
+      "bytes": 827,
+      "sha256": "4b5aac57088fd364d1de0617a1d64b38e93f052abaf2f73cc5bcb9f73acd740a"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/step-03-local-window-20261031/result.json",
+      "bytes": 455,
+      "sha256": "1c58062f3b610ff0320518ef3362430b2c0bd51bc3ee70e8abf4ec173407ff78"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/step-03-runtime-inspection-plan.md",
+      "bytes": 3489,
+      "sha256": "74d5b334404e4d93e520db44685072d8493d8744192bf5596e9967de4c84de7f"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/step-03-runtime-inspection-preparation.json",
+      "bytes": 416,
+      "sha256": "74e66791cd4bb892c43435ca098afda79091fb725832ff7a5603570a586e7f3b"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/step-03-runtime-inspection-result.json",
+      "bytes": 2001,
+      "sha256": "00cc54cb0b29ef5ef448639858d354ec86c3e3af4be0aead3acf355a95e33598"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/step-03-runtime-inspection-review.json",
+      "bytes": 1231,
+      "sha256": "c725c6a3e0f0673ea2c4588fa08861709d4e4f5e6e3d97c62161f8409f54fcc7"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/step-03-search-operator-native-final.json",
+      "bytes": 454,
+      "sha256": "16e9d8c2289dc74fe4ccb852483751efbfc4e63bf0013c204e6e2e247696ca70"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/step-03-search-operator-native-result.json",
+      "bytes": 454,
+      "sha256": "16e9d8c2289dc74fe4ccb852483751efbfc4e63bf0013c204e6e2e247696ca70"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/step-03-search-vector-plan.md",
+      "bytes": 7909,
+      "sha256": "d8172289252e179ac546010d7adf0d0418439dfefb6d28c9fb7885294ca31b85"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/step-03-search-vector-preparation-result.json",
+      "bytes": 1259,
+      "sha256": "4f8d094861ec4d33417aee10759233062da5c7c044400f8a62395e92536e976f"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/step-03-workflow-live-plan.md",
+      "bytes": 7063,
+      "sha256": "16875b55ca9486f021722d21f5b01a4a5794d7de30dc0e9caaafcb4c5eb896f4"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/step-03-workflow-live-review.json",
+      "bytes": 24377,
+      "sha256": "c06a37b9bf6e0c0337923d080b59ad9383acb142ee7fabd1421f2baf29d8f889"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/step-03-workflow-native-result.json",
+      "bytes": 343,
+      "sha256": "13aafb054eff08e3fc0a9370aaf7e3f150208425daf46b308adcfa32dcb9ebe2"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/step-03-workflow-preparation-diagnostics.json",
+      "bytes": 671,
+      "sha256": "20dd17253018031b0c82fa9536c15f82ed03090f8bc6d079bcaabe4d72aed69e"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/step-03-workflow-preparation-result.json",
+      "bytes": 1015,
+      "sha256": "fd941f63580529b27a6af87edd01f49f46168993beee5ea03f855036d2288a7c"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/step-04-ordered-recheck.json",
+      "bytes": 2384,
+      "sha256": "b2d9c18c040f8c5c0ede1d425ef4e84e2c579232426d688a4092716ccdee6db0"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/step-05-final-labels-result.json",
+      "bytes": 3168,
+      "sha256": "9b3feced75f6ac3d1408940f536cacaa7ac8f11eafe68aaac7854b6e61110c3a"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/step-05-label-binding-decisions.json",
+      "bytes": 862,
+      "sha256": "7460a7af524b4e8b5d8aca40e6900643024d014103e029855a29bfff437e4da4"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/step-05-upstream-source-inspection.json",
+      "bytes": 872,
+      "sha256": "25f4b32b8afe6d82a992abddbb0ea4a512551ca17e08f40458f2dc744de3e73d"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/step-06-freeze-result.json",
+      "bytes": 4467,
+      "sha256": "401aafe7b16be61833cc3075ca1235d9d20d5e6e8a864a8af591231be9bea76c"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/step-06-human-verification.json",
+      "bytes": 654,
+      "sha256": "6fee74da634e1669f039c51801298bf855d9ecea41019e2c3759c495cf19b138"
+    },
+    {
+      "path": "docs/status/work-log.md",
+      "bytes": 281936,
+      "sha256": "0df1c2660ac53a7c539470fa68e8d9602ff4869dbddd46ac8ca90d69bfdc0856"
+    },
+    {
+      "path": "scripts/evaluation/README.md",
+      "bytes": 5395,
+      "sha256": "93e7162abfe0c4f74e15e152715e164d6b84c3285bcee037bf4f0194643a2a27"
+    },
+    {
+      "path": "scripts/evaluation/reference_labels.py",
+      "bytes": 13308,
+      "sha256": "6cf4462c16a9b0c12f0e82920e6477f4c42f2b066625c3c5817b7206697927dd"
+    },
+    {
+      "path": "scripts/evaluation/reference_release.py",
+      "bytes": 13522,
+      "sha256": "bd5d6162d6f69045f4c5ce2aa1756ab1856e6f5b585b2c2345e3201c9115b6cf"
+    },
+    {
+      "path": "scripts/evaluation/reference_runtime_inspection.py",
+      "bytes": 6986,
+      "sha256": "62b56f4153133b2747070a29a7f9b912206ce3f34c305f55faa21dffb4751365"
+    },
+    {
+      "path": "scripts/evaluation/reference_search_operator.py",
+      "bytes": 11181,
+      "sha256": "6957d6a40f5bb95998831effe5b771485d765e6843332845db27c8736e28f3ef"
+    },
+    {
+      "path": "scripts/evaluation/reference_search_workflow.html",
+      "bytes": 8449,
+      "sha256": "5f983ddd514671146717379ecf0ca8c3a3913576051cf61d3f90e8559c357a70"
+    },
+    {
+      "path": "scripts/evaluation/reference_workflow_local.py",
+      "bytes": 30769,
+      "sha256": "e9993b86a2e8d95623dca79a91baf2bff83168412b3c0106f4dcbefb916af1ba"
+    },
+    {
+      "path": "scripts/evaluation/search.py",
+      "bytes": 16967,
+      "sha256": "6e75e1b0faf0fe48ba1c526b96903bb8362d3baeea64fbe879b57e68bc575df7"
+    },
+    {
+      "path": "tests/evaluation/test_search.py",
+      "bytes": 9826,
+      "sha256": "e385ce1c0a3da2eb85b1ff1796043f781d127327e0320e5c4d74d29d7ac84230"
+    }
+  ],
+  "file_count_excluding_this_manifest": 55,
+  "bytes_excluding_this_manifest": 921948,
+  "data_ready": false,
+  "approval_recorded_utc": "2026-10-31T16:00:07.282654+00:00",
+  "approval_evidence": "Verified, proceed in direct reply to explicit commit request"
+}

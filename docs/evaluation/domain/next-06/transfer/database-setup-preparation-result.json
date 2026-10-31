@@ -1,0 +1,64 @@
+{
+  "task": "NEXT-06",
+  "checkpoint": "Original Step3 exact isolated database/role setup preparation",
+  "recorded_utc": "2026-10-30 19:08:44 UTC",
+  "state": "performed locally; awaiting verification and separate cloud setup approval",
+  "code": [
+    {
+      "path": "scripts/evaluation/reference_database_setup.py",
+      "sha256": "a16c8f7217d8b5fcbf6c00f0ce0ea0d98dff8910d8effa17f7b7cfc064c8023f"
+    },
+    {
+      "path": "scripts/evaluation/reference_setup_local.py",
+      "sha256": "090bd521ca8333c12481216aa3e2d89ac3afe3794b6e5e305e05cfab63a36cf8"
+    },
+    {
+      "path": "data/tests/test_reference_database_setup.py",
+      "sha256": "46b4f9140ceb47a1de489d68991b4ad420060daf80adf646cf050732509d7281"
+    }
+  ],
+  "checks": {
+    "focused_setup_tests": 10,
+    "full_data_tests": "232 passed in9.09s with warnings as errors",
+    "black": "337 files unchanged",
+    "python_boundaries": 0,
+    "native_postgresql": "18.6; canonical dbmate2.36.0 baseline; complete schema-only dump comparison passed",
+    "native_bulk_permissions": {
+      "users_verified": 5000,
+      "listings_verified": 1000,
+      "images_verified": 1000,
+      "regular_owners_verified": 1000,
+      "available_verified": 800,
+      "logical_projection_digest": "sha256:1d4a2369f53c8415ea6399546c0814d7a02e6bdae0e98f312221a995711efb80",
+      "text_vectors_verified": 1000,
+      "text_search_indexes": [
+        "CREATE INDEX sale_full_text ON listings.sale_listings USING gin (search_vector)"
+      ]
+    },
+    "forbidden_operation_checks": 8,
+    "other_application_connect_and_target_temp": "denied in owned native cluster",
+    "runtime": "NOLOGIN and no CONNECT",
+    "owned_native_cluster_stopped": true,
+    "source_dependency_bindings": "37 hashes match; all29migrations included",
+    "controller": "syntax compiled and cloud management-call AST expressions match already executed admin tunnel route",
+    "whitespace": "passed",
+    "secret_scan": {
+      "tool": "Gitleaks8.30.1",
+      "findings": 0,
+      "report": "/var/folders/f9/mf22ccnn3wl078szdw8gykpr0000gn/T/clip-next06-diagnostic-v2-q6p_frno/scan.json"
+    }
+  },
+  "scope_limitations": "Native role activated only inside private fixture to prove SQL privileges. Proposed cloud setup leaves both roles NOLOGIN; no credential publication, SQL business rows, S3 object or runtime activation. No actual cloud role/ACL/DDL verification claimed.",
+  "cloud_calls": 0,
+  "global_installs": false,
+  "native_success_receipt": "database-setup-native-result.json",
+  "earlier_trial_receipts": [
+    "/private/tmp/clip-next06-reference-5jwjrfrc/setup-result.json",
+    "/private/tmp/clip-next06-reference-ogcy_ssb/setup-result.json",
+    "/private/tmp/clip-next06-reference-jbzn24nt/setup-result.json",
+    "/private/tmp/clip-next06-reference-rd6g6xer/setup-result.json",
+    "/private/tmp/clip-next06-reference-jbq9wrmt/setup-result.json",
+    "/private/tmp/clip-next06-reference-2l4wfn3q/setup-result.json"
+  ],
+  "next": "Verify prepared setup and authorize exact cloud window; retain source/affected-owner peer review and all original real integration/freeze gates."
+}

@@ -1,0 +1,17 @@
+{
+  "state": "local preparation passed; awaiting human verification; no remote execution",
+  "focused_tests": 26,
+  "full_data_tests": "215 passed in 9.15s; warnings as errors",
+  "black": "332 files unchanged",
+  "python_boundaries": 0,
+  "secret_scan": {
+    "tool": "Gitleaks 8.30.1",
+    "findings": 0,
+    "report": "/var/folders/f9/mf22ccnn3wl078szdw8gykpr0000gn/T/clip-next06-diagnostic-v2-zu9hruo8/scan.json"
+  },
+  "bindings": "v2 source/request/controller hashes match; executed v1 source/request hashes remain unchanged",
+  "controller": "syntax compiled; ordered cloud call AST expressions unchanged",
+  "diff_check": "passed",
+  "cloud_calls": 0,
+  "integration": "not performed; original failure cause unknown"
+}

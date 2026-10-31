@@ -1,0 +1,59 @@
+{
+  "recorded_utc": "2026-10-30 18:54:41 UTC",
+  "checkpoint": "NEXT-06 Step3 source/schema reconciliation",
+  "state": "performed; awaiting human verification; no source integration or cloud writes",
+  "repository": "exocrat/clip",
+  "local_head": "8612633410fe8dbbac301c4379d47ede6833cdea",
+  "current_remote_main": "6edb52ba4e5a148386cd81e78b29c15b557193c7",
+  "local_and_corpus_migrations": 29,
+  "cloud_migration_versions": 32,
+  "upstream": {
+    "pr": 21,
+    "url": "https://github.com/exocrat/clip/pull/21",
+    "owner": "Aditya Medhe / SpookyWooky5",
+    "head": "db8a661a2fb1d3cdc01bfaf15c7186b9b4db7dd5",
+    "base": "6edb52ba4e5a148386cd81e78b29c15b557193c7",
+    "state": "OPEN",
+    "reviews": [],
+    "ci": "SUCCESS",
+    "ci_url": "https://github.com/exocrat/clip/actions/runs/41075797611/job/124131962075"
+  },
+  "next06_pr": {
+    "number": 22,
+    "state": "OPEN",
+    "head": "8612633410fe8dbbac301c4379d47ede6833cdea"
+  },
+  "extra_migrations": [
+    {
+      "version": "20261029133500",
+      "path": "database/migrations/20261029133500_identity_notification_destinations.sql",
+      "git_blob": "f4f971206d6a0b059416c03b25f442d48833d377",
+      "effect": "New Identity-owned encrypted notification_destinations table referencing identity.users; no generated row requires a destination."
+    },
+    {
+      "version": "20261029134500",
+      "path": "database/migrations/20261029134500_notification_delivery_state.sql",
+      "git_blob": "72c00a4bf02d95759520825d77232bbf57b6876e",
+      "effect": "Adds retry/reservation/result columns and due-retry index to Conversations notification_intents."
+    },
+    {
+      "version": "20261029182500",
+      "path": "database/migrations/20261029182500_identity_notification_preference.sql",
+      "git_blob": "d69cd6405b6f30f624b370d59281522496a8c102",
+      "effect": "Adds identity.users.conversation_email_enabled NOT NULL DEFAULT true; extends notification result check with preference_suppressed. Down migration refuses existing suppression rows."
+    }
+  ],
+  "decision_boundary": "Existing accepted main/corpus29 remains the preparation baseline for the proposed new isolated clip_next06_reference database. Do not reset or adopt existing shared32 database, copy unreviewed migrations into canonical source, or bypass exact schema checks. Verify planned isolated scope with human before setup. If integrated Notifications32 becomes the accepted target first, review/merge upstream through its owners, rebind source/schema and repeat affected real checks before freeze.",
+  "compatibility": "Static SQL review only: additions do not require changing existing 5000user/1000listing/image arrays or repeating unchanged query judgments. Actual32schema loader/runtime compatibility not tested, source-file contents in cloud not independently checked; ledger version equality is not a DDL checksum.",
+  "checks": {
+    "local_vs_corpus_version_sets": "identical29",
+    "main_inspection": "current main unchanged",
+    "upstream_inspection": "exact migration paths/blobs traced to PR21; CI success does not substitute for peer approval",
+    "generator_source": "unchanged",
+    "logical_fingerprint": "sha256:7efd142e11c3e8555e1aa08603cbf8dff07de5d74412ccde3c39869b9334ab98",
+    "schema_guard": "unchanged; refuses mismatched actual schema",
+    "cloud_calls": 0,
+    "git_mutations": "none; no fetch/merge/cherry-pick/commit/push"
+  },
+  "next_action": "Prepare and rehearse exact isolated29database/restricted-loader/migration/grant setup; affected-owner/source review and separate exact cloud approval required before DDL. Then separately reviewed S3 prefix/object/SQL load; real pipeline/runtime/freeze gates retained."
+}

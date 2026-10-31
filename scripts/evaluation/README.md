@@ -1,14 +1,22 @@
-# Search evaluator preparation — SE-01 Step 9
+# Search label bindings and evaluator tooling — SE-01 Step 9
 
-`search.py` validates the existing [label format](../../data/formats/query-labels.md)
-and prepares Success@5 arithmetic. It makes no network/database calls and writes
-no files. No final relevance evaluation or readiness acceptance is available.
+`reference_labels.py` now validates the actual NEXT-06 corpus against retained
+load/vector/rebuild evidence and explicitly accepted source/contract revisions.
+It writes or revalidates `data/evaluation/query-labels.json`:22unchanged human
+judgments, exact fingerprint and the recorded acceptance time chosen by Mohit.
+No network, provider, model inference or scoring occurs. See the
+[Step5 result](../../docs/evaluation/domain/next-06/transfer/step-05-final-labels-result.json).
+
+`search.py` remains the strict format validator and Success@5 arithmetic core.
+Its own CLI still exposes only draft validation/synthetic checks. Reviewed data
+requires the independently constructed non-preview binding from the adapter;
+metadata text alone never establishes human acceptance or DATA-READY.
 
 - `validate_labels` checks exact fields, canonical IDs, revisions, UTC review
   time, inclusion decisions, query contexts and dataset/eligibility references.
   Draft judgments remain null. Reviewed input requires at least 20 included cases
   and a separately verified non-preview `DatasetBinding`; metadata text alone
-  never proves human review. The binding is a future adapter boundary, not a
+  never proves human review. The binding is an adapter boundary, not a
   manifest validator or a substitute for count/FK/schema/index/data checks.
 - `safe_reference` confines label/evidence references to their repository trees
   and rejects traversal and symlinks. It never executes referenced content.
@@ -37,12 +45,24 @@ exclusion and one timeout. Neither is an actual search result or human label set
 Tests construct their own explicitly synthetic adapter bindings in temporary
 folders; they never populate the canonical final labels.
 
-Still pending: actual ID-READY/LI-CORE, real final corpus and integrity/index/
-availability/image checks, retained final manifest, agreed representative-query
-selection/default-context/inclusion policy, 20+ human-reviewed included queries,
-and exact data/code/contract/label freeze. The real runner must verify those
-inputs independently and use actual native retrieval before Step 11 NFR-04.
-No final `data/evaluation/query-labels.json` is supplied by this preparation.
+Current actual label command (existing project environment, retained payload and
+original/restored photos required):
+
+```sh
+.venv/bin/python -m scripts.evaluation.reference_labels validate --image-root /absolute/path/to/clip-dataset-images
+```
+
+The initial explicit `write` action refuses existing outputs; do not regenerate
+judgments or delete the canonical file to bypass it. Validation compares every
+judgment and metadata field with the accepted inputs, checks committed source
+blobs, rebuild/cloud hashes, dates and all800eligible IDs. The historic generated
+manifest remains unmodified and truthfully says generated-unloaded; the separate
+actual label-binding manifest joins it to retained real execution receipts.
+
+Still pending: Step6 formal freeze/readiness/independent acceptance and later
+SE-01 actual offline NFR-04 scoring. No score, full readiness milestone or fresh
+cloud state is inferred from a valid label file. The original draft/template and
+historical accepted judgment records remain unchanged.
 
 
 ## Step10 isolated load-runner preparation
@@ -54,3 +74,18 @@ an actual native SQL/model pilot pass; no real NFR or SE-CORE acceptance is
 available. The future full-rate profiles/manifests remain unapproved and cannot
 execute through this local-only entry point. Real auth/final data/deployment and
 remaining task gates are retained; no final labels are generated.
+
+## NEXT-06 frozen content manifest
+
+`reference_release.py validate` rechecks both actual generated record sets, all52
+archive members, the real1000object/SQLledger, physical pinned model files,
+reviewed labels/source and real reset/cloud-native hash evidence. No extraction,
+network, inference, SQL or scoring occurs. `freeze` exclusively creates the fixed
+manifest once; a repeat refuses without changing it.
+
+The [frozen content manifest](../../docs/evaluation/domain/next-06/frozen-dataset.json)
+now exists; formal human/current-headCI/independent acceptance remains separate.
+The immutable Step5label binding's earlier acceptance flags remain historical;
+follow the release and later explicitly recorded acceptance rather than editing
+old manifests. Run commands/limitations and reviewer handoff are in the
+[task-wide review](../../docs/evaluation/domain/next-06/task-wide-review.md).

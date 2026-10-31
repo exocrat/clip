@@ -1,0 +1,274 @@
+{
+  "task": "NEXT-06",
+  "step": "Step2 evaluation-window amendment and Step3 approved local rehearsal",
+  "recorded_utc": "2026-10-30 12:30:28 UTC",
+  "state": "performed locally; awaiting human verification; required real integration remains pending",
+  "branch": "task/next-06-reference-dataset",
+  "human_direction": "Mohit approved5000regular benchmark users stable until1December, separate normal14day temporary fixtures, and directed the already-verified Step3plan to proceed.",
+  "amendment": {
+    "users": {
+      "regular": 5000,
+      "temporary": 0
+    },
+    "temporary_policy": "unchanged14day product lifetime; fresh separate permission fixtures remain outside frozen corpus",
+    "measurement_window": {
+      "before": "2026-12-01T00:00:00.000000Z",
+      "from": "2026-10-30T01:00:00.000000Z"
+    },
+    "future_listings_start": "2026-12-02T00:00:00.000000Z",
+    "nonexpired_listings_end": "2026-12-31T00:00:00.000000Z",
+    "stable_november_populations": {
+      "available": 800,
+      "unavailable": 100,
+      "future": 50,
+      "expired": 50
+    },
+    "source_photos": 45,
+    "new_photos_downloaded": 0,
+    "material_change_caveat": "Code/schema/configuration changes can still require revalidation; no expiry-driven regeneration during November."
+  },
+  "regeneration": {
+    "runs": [
+      "next06-dec01-42-20261030-a",
+      "next06-dec01-42-20261030-b"
+    ],
+    "record_arrays_identical": true,
+    "image_plans_identical": true,
+    "only_manifest_difference": "generated_at",
+    "logical_fingerprint": "sha256:1ffa78c587b48d0a9dc0e878d008d0dd2d5e14a431f0b54f805e13585e693118",
+    "phase": "generated-unloaded inputs; separate receipt establishes local materialization/SQL checks",
+    "observed_counts": {
+      "availability_scenarios": {
+        "available": 800,
+        "expired": 50,
+        "future": 50,
+        "unavailable": 100
+      },
+      "categories": {
+        "appliances": 111,
+        "bicycles": 111,
+        "books": 111,
+        "electronics": 111,
+        "furniture": 111,
+        "laptop": 111,
+        "mobile_phone": 112,
+        "other": 111,
+        "sports_fitness": 111
+      },
+      "conditions": {
+        "fair": 250,
+        "good": 250,
+        "like_new": 250,
+        "new": 250
+      },
+      "distinct_regular_owners": 1000,
+      "listings": 1000,
+      "negotiable": {
+        "false": 500,
+        "true": 500
+      },
+      "pickup_areas": {
+        "Synthetic Zone A": 250,
+        "Synthetic Zone B": 250,
+        "Synthetic Zone C": 250,
+        "Synthetic Zone D": 250
+      },
+      "planned_image_bytes": 925881224,
+      "planned_images": 1000,
+      "prices_paise": {
+        "0": 100,
+        "100000": 100,
+        "1200000": 100,
+        "200000": 100,
+        "2000000": 100,
+        "25000": 100,
+        "300000": 100,
+        "50000": 100,
+        "500000": 100,
+        "800000": 100
+      },
+      "proof": {
+        "false": 333,
+        "omitted": 334,
+        "true": 333
+      },
+      "topics": {
+        "android-smartphone": 23,
+        "backpack": 23,
+        "badminton-racket": 23,
+        "basic-mobile-phone": 22,
+        "bed-frame": 22,
+        "biology-textbook": 22,
+        "bookshelf": 22,
+        "camera": 22,
+        "campus-bicycle": 23,
+        "chemistry-textbook": 22,
+        "commuter-bicycle": 22,
+        "compact-laptop": 22,
+        "computing-textbook": 22,
+        "desk-monitor": 23,
+        "dining-table": 22,
+        "dual-sim-smartphone": 22,
+        "dumbbells": 22,
+        "economics-textbook": 22,
+        "electric-kettle": 23,
+        "folding-bicycle": 22,
+        "football": 22,
+        "gaming-laptop": 22,
+        "headphones": 22,
+        "iphone": 23,
+        "kitchen-mixer": 22,
+        "linear-algebra-textbook": 23,
+        "mountain-bicycle": 22,
+        "office-chair": 22,
+        "office-laptop": 22,
+        "projector": 22,
+        "refurbished-laptop": 22,
+        "refurbished-smartphone": 22,
+        "rice-cooker": 22,
+        "road-bicycle": 22,
+        "speaker": 22,
+        "stationery-kit": 22,
+        "storage-box": 22,
+        "student-laptop": 23,
+        "study-desk": 23,
+        "table-fan": 22,
+        "tennis-racket": 22,
+        "toaster": 22,
+        "umbrella": 22,
+        "water-bottle": 22,
+        "yoga-mat": 22
+      },
+      "user_classes": {
+        "regular": 5000
+      },
+      "users": 5000
+    }
+  },
+  "local_execution": {
+    "target": "/private/tmp/clip-next06-reference-rb284ij2",
+    "postgres": "18.6",
+    "dbmate": "2.36.0",
+    "migrations": 29,
+    "database": "clip_test_next06_reference",
+    "role": "clip_next06_loader",
+    "transport": "owned Unix-only; no TCP listener",
+    "receipt_sha256": "ac63b6b65754986d218e84ba1959c5b9d542e272bbaa8b85e74513415188d958",
+    "result": {
+      "phase": "local-sql-and-byte-rehearsal",
+      "input_fingerprint": "sha256:1ffa78c587b48d0a9dc0e878d008d0dd2d5e14a431f0b54f805e13585e693118",
+      "load_audit_utc": "2026-10-30T12:23:03.994908Z",
+      "verified_local_objects": 1000,
+      "logical_object_bytes": 925881224,
+      "mapping_digest": "sha256:6aa1655b8003970f241dc0ecd1b19f75ae982177fc5b51729a4f33644541030b",
+      "scope": "owned local files only; actual S3 pending",
+      "users_verified": 5000,
+      "listings_verified": 1000,
+      "images_verified": 1000,
+      "regular_owners_verified": 1000,
+      "available_verified": 800,
+      "logical_projection_digest": "sha256:92d6a0f9f34a6dc405518b39b688afc7a4cca5eae4530526d3d6e464160138ef",
+      "text_vectors_verified": 1000,
+      "text_search_indexes": [
+        "CREATE INDEX sale_full_text ON listings.sale_listings USING gin (search_vector)"
+      ],
+      "cloud_media_verified": false,
+      "real_session_auth_verified": false,
+      "new_listing_vectors_verified": false,
+      "nonempty_retry": "refused without overwriting",
+      "application_probe": {
+        "owner_delivery_hashes_verified": 1000,
+        "real_browse_pages_verified": 8,
+        "real_browse_unique_ids_verified": 800,
+        "hidden_nonowner_status": 404,
+        "anonymous_status": 401,
+        "normal_upload_confirm_create_detail": "pass in separate cloned DB",
+        "normal_new_listing_id": "878c6fae-3162-4c7b-836b-4cbaaa745d88",
+        "real_session_auth": "not verified; trusted test scope fixture",
+        "cloud_storage": "not verified; real local bytes through typed fixture",
+        "automatic_vectors": "pending Step4 real pipeline check"
+      },
+      "reference_unchanged_after_probe": {
+        "users_verified": 5000,
+        "listings_verified": 1000,
+        "images_verified": 1000,
+        "regular_owners_verified": 1000,
+        "available_verified": 800,
+        "logical_projection_digest": "sha256:92d6a0f9f34a6dc405518b39b688afc7a4cca5eae4530526d3d6e464160138ef",
+        "text_vectors_verified": 1000,
+        "text_search_indexes": [
+          "CREATE INDEX sale_full_text ON listings.sale_listings USING gin (search_vector)"
+        ]
+      },
+      "state": "local rehearsal passed; cloud/auth/vector/freeze gates pending",
+      "source_run": "next06-dec01-42-20261030-a",
+      "media": {
+        "verified_local_objects": 1000,
+        "logical_object_bytes": 925881224,
+        "mapping_digest": "sha256:6aa1655b8003970f241dc0ecd1b19f75ae982177fc5b51729a4f33644541030b",
+        "scope": "owned local files only; actual S3 pending"
+      },
+      "cluster_stopped": true
+    }
+  },
+  "checks": {
+    "all_data_tests": "132passed in5.03s",
+    "generator_cases": 24,
+    "loader_guard_cases": 14,
+    "black": "5files unchanged",
+    "boundaries": "0violations",
+    "whitespace": "pass",
+    "final_input_pair_validation": "both pass with current source and actual45photo hashes",
+    "real_local_sql_and_bytes": "5000users/1000listings/1000objects, full logical projections/constraints/indexes and duplicate-load refusal pass",
+    "real_application_handlers": "8browse pages/800unique ordered IDs,1000owner image hashes, hidden404/anonymous401, normal intent/inspect/confirm/create/detail in isolated probe clone pass",
+    "snapshot_after_probe": "reference SQL projections unchanged"
+  },
+  "diagnostics": {
+    "initial_sandbox_target": "/private/tmp/clip-next06-reference-7w7egh7g; startup refused before server; no running cluster",
+    "first_escalated_target": "/private/tmp/clip-next06-reference-e7mm5qca; preflight failed; stopped",
+    "safe_diagnostic_target": "/private/tmp/clip-next06-reference-o9_k6lqz; SQL42501 on restricted unix_socket_directories setting; stopped",
+    "correction": "Use SQLdatabase/role/version/inet identity plus actual connection Unix host/port. No extra role privileges, guard disabling or constraint bypass.",
+    "initial_passing_target": "/private/tmp/clip-next06-reference-a3kdyvbb; stopped",
+    "final_target": "/private/tmp/clip-next06-reference-rb284ij2; stopped; retained",
+    "privacy": "Safe stage/type/SQLSTATE/constraint diagnostics; no raw credentials/provider errors/signed URLs in receipts."
+  },
+  "pending_original_obligations": [
+    "Step3 actual Identity sessions and S3/IAM/upload/delivery against separately approved target",
+    "Step3 normal new-listing automatic semantic vectors/search; repeat after Step4pipeline preparation",
+    "Step4 complete pinned vector coverage/current sources and representative real ranking",
+    "Step5at least20actual human-reviewed query judgments",
+    "Step6 reset/reload/final accepted revision/freeze; DATA-READY acceptance"
+  ],
+  "scope_safety": "No AWS calls, bucket/database cloud load, original-image edit, private contacts/passwords/OTPs/credential/session generation, installs/global change, staging/commit/push/merge or existing-target reset. Source datasets/manifests remain immutable.",
+  "source_files": [
+    {
+      "path": "data/generators/reference.py",
+      "sha256": "8837f3b8d1d4c8168ab0276eb6b1d55f9c6b52bad71967048a0c67987df21085"
+    },
+    {
+      "path": "data/evaluation/reference-recipe.json",
+      "sha256": "d7cb3287d76a2ac9aed1194af67003ba83183c9bf09e17dd97631cec4978e0c1"
+    },
+    {
+      "path": "data/tests/test_reference.py",
+      "sha256": "8487282e0d0d2536b669e35654040ee95c2c88d0f4660b6ba31c44b622b0f6ab"
+    },
+    {
+      "path": "data/generators/reference_load.py",
+      "sha256": "71400ae31a0aa05a21a9bddffad8ede4850b070912c4443c8883f8e0ba2d7c35"
+    },
+    {
+      "path": "scripts/evaluation/reference_local.py",
+      "sha256": "64d04b5dac7fdbb2c3cebc3d500315649dbf4cf1d0fbc4a39c91e55798a1c68a"
+    },
+    {
+      "path": "data/tests/test_reference_load.py",
+      "sha256": "4b6075901d50124b1421e06927986df3631f462e9adf1a995a3b6676f33be2dc"
+    }
+  ],
+  "verification_follow_up": {
+    "state": "Mohit verified local result; Step4 executed under staged authorization",
+    "follow_up": "../step-04/result.json",
+    "local_new_listing_semantic_subcheck": "passed in real Step4 helper/dispatcher clone; original real session/S3/cloud obligations pending"
+  }
+}

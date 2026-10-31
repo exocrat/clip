@@ -20,6 +20,58 @@ the host disk, and in ECR at digest
 `sha256:3faaeb2ebe160868d1e7b194e373051a1bde2fc5d84cef60959a028d3e8f3d00`;
 it is not deployed. Recheck all state before future work.
 
+## NEXT-06 approved Phase A closeout — 2026-10-30 17:51:24 UTC
+
+Conditional guards passed in non-root335523638354; ASGprocesses includingLaunch/
+Terminate were already suspended. Existing RDSand EC2host started for the one
+reviewed metadata probe; SSMbecame Online. Probe exited1with genericRuntimeError,
+no usable DBmetadata; exactfailurestage/secret-or-SQLprogress not established.
+No upload/schema/grant/runtime/ASGchange. Both named resources verified stopped
+by2026-10-30 17:48:00 UTC. Servicecalls48within160cap; no retry/repair performed. Rawreceipt's
+failure label did not rename after cleanup, but actual flags/events confirm both
+stops. [Closeout](../evaluation/domain/next-06/transfer/phase-a-20261030/result.json).
+Further cloud attempts require separately reviewed diagnostic payload/approval.
+
+## NEXT-06 SDK and route/storage preflight — 2026-10-30 17:02:49 UTC
+
+One approved max18call batch used14requests; actual SDKlogin bridge verified
+non-root project identity without access keys/CRTextra. EC2i-086045c48487471de is
+stopped/t3.micro in the existing appSG; priorASGInService did not establish running
+compute. SSMmanaged-node filter returned no records. IAMtask-role inline/attached
+policy listing was AccessDenied; effective runtime permissions remain unverified,
+not repaired. Current id01bucket metadata passes owner/region/private/SSE-S3/
+public-block checks; CORSmatcheshttps://clip-iisc.site, ownershipBucketOwnerEnforced,
+no versioning config returned. No object/secret/SQL access or resource changes.
+[Sanitized receipt](../evaluation/domain/next-06/transfer/load-preflight-current.json).
+
+## NEXT-06 configuration refresh — 2026-10-30 16:48:55 UTC
+
+Approved16operation scope completed using non-root profilemohitmahapa1 in project
+account335523638354. Shared ECSrevision11 is x86_64Linux/256CPU/512MiB/bridge and
+uses id01imagebucket/prefix, with Hybrid and worker false; only nonsecret allowlist
+and SSMreference names were read. RDS18.6db.t4g.micro/20GiBgp3/singleAZ remains
+stopped/private/encrypted; port5432ingress permits only appSG. Related private
+subnets have no automatic public IP. Existing ASGdesired0/max1 returns one healthy
+InServicehost; actual EC2state/type/SSMreachability not inspected. li02bucket is
+Mumbai/SSE-S3, all public blocks enabled, nonpublic policy status, owner enforced;
+CORS onlyhttp://127.0.0.1:5173; versioning call returned no configuration content.
+These are metadata observations, not working auth/media/SQL/model integration.
+No secrets/objects/SQL/session/remote commands or resource changes. [Evidence](../evaluation/domain/next-06/transfer/cloud-config-current.json).
+
+## NEXT-06 bounded read-only refresh — 2026-10-30 16:12:47 UTC
+
+Mohit's browser-login CLIprofile `mohitmahapa1` now verifies as non-root IAMuser
+`arn:aws:iam::335523638354:user/mohitmahapa1` in Mumbai. The approved six scoped
+inspection calls found `clip-shared-test` ACTIVE with one service and zero tasks;
+`clip-test-api-ap-south-1-pd16` uses taskrevision11 with desired/running/pending0
+and rolloutCOMPLETED. `clip-shared-test-postgres` is stopped, PostgreSQL18.6,
+private and encrypted. Project bucket names include the id01 and li02 images
+buckets and retained Terraform state bucket. No object/secret/SQL access or
+resource change. Current task config/capacity/network/effective permissions and
+pricing were not inspected; prior revision10/NAT/DNS/settings observations below
+remain historical, not reverified. [Evidence](../evaluation/domain/next-06/transfer/cloud-readiness-current.json).
+Next configuration scope requires separate approval; no cloud load authorized.
+
 ## NEXT-04 read-only refresh — 2026-10-29 12:08 UTC
 
 Using the renewed `surajs2` profile, STS confirmed non-root user `surajs2` in
@@ -512,3 +564,13 @@ hosts and roots, EIP, tunnel and fallback removed. User confirmed DNS deletion.
 Synthetic listing/image and narrow catalogue grants retained; Suraj review and
 durable grant restoration pending. Shared NAT/storage continue accruing charges.
 [Result](../evaluation/identity/id-01-step-14/s3-conversations-teardown-result.json).
+
+Latest Phase A v2 closeout (2026-10-30 18:20:36 UTC): [receipt and exact execution evidence](../evaluation/domain/next-06/transfer/phase-a-v2-20261030/result.json). Both existing resources verified stopped. The runtime role reached the migrations query and was denied SQLSTATE42501; no grants or other repairs made. Real load/metadata gates remain pending.
+
+Latest NEXT-06 administrative inventory (2026-10-30 18:46:54 UTC): [executed receipt and binding comparison](../evaluation/domain/next-06/transfer/admin-inventory-20261030/result.json). Read-only inventory passed;32migrations/four schemas; proposed NEXT-06 database and roles absent. Cloud adds three migrations beyond local/corpus29; reconcile accepted source before setup/load. Owned tunnel/session closed and both resources verified stopped. No grants, schema/data writes or uploads occurred.
+
+NEXT-06 isolated setup (2026-10-30 19:20:00 UTC): [actual successful execution and stopped closeout](../evaluation/domain/next-06/transfer/database-setup-20261030/result.json). New clip_next06_reference has29accepted migrations and explicit loader grants; clip_next06_loader/clip_next06_runtime remain NOLOGIN/no password, runtime no grants. Shared32database/service unchanged. No business rows, credential publication or S3objects yet. Owned access closed, both resources verified stopped. Next loader credential/S3/SQL load requires its exact prepared approval.
+
+NEXT-06 live load (2026-10-31 08:25:12 UTC): [actual S3/RDS execution, sources and ledger](../evaluation/domain/next-06/transfer/cloud-load-20261031/result.json).1000images/925881224bytes verified in existing id01bucket prefix id01/next06-reference-42-v1;5000users/1000listings+image records loaded into isolated clip_next06_reference29schema,800discoverable; SQLprojection matches native. Loader password cleared/NOLOGIN, runtime inactive, owned access closed, host/RDSverified stopped. Shared32service unchanged. Retain objects/data; no retry/reset. Real app/auth/signed-media/cloud ML/source-label/reproducibility/freeze remain pending; DATA-READY false.
+
+NEXT-06 actual vector publication (2026-10-31 09:46:20 UTC): [execution/coverage/cleanup evidence](../evaluation/domain/next-06/transfer/vector-production-20261031/result.json). Isolated clip_next06_reference now has1000current ready generations/2000actual pinned384-dimensional parts and serving pipeline4b43fc30...; six actual keyword/HybridSQLcases match native and source corpus rows remain unchanged. Dedicated producer password cleared/NOLOGIN; model/access closed and EC2/RDSstopped. No S3or original runtime/service changes. Actual authenticated app/media/normal new-vector workflow and deployedLinuxruntime/source-label/rebuild/freeze acceptance remain pending; DATA-READY false.

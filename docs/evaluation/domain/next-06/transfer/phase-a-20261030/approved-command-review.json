@@ -1,0 +1,15 @@
+{
+  "state": "prepared, not approved or executed",
+  "script": {
+    "path": "scripts/evaluation/reference_db_inventory.py",
+    "sha256": "aed4d51edd5cfb4ded973634ed27c18c7a7e2a064f0d0730a88c16e48d477b47"
+  },
+  "command_request": {
+    "path": "docs/evaluation/domain/next-06/transfer/db-inventory-command.proposed.json",
+    "sha256": "af9ff0c8f0207dfff933718992a94467b701f0997a9007ee8f3c30d6b67913eb"
+  },
+  "secret_reference": "/clip/test/listings-database-url",
+  "secret_values": "not read, included or stored",
+  "queries": "READONLYidentity/session/TLS/18.6, nonprivileged own/proposed role flags and own RDSsuperuser membership refusal, public migrations/domain schema names/proposed database existence only",
+  "source_revision": "Uncommitted source hashes; separate publication/merge approval remains."
+}

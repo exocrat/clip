@@ -1,0 +1,30 @@
+{
+  "task": "NEXT-06 Step3 runtime metadata inspection",
+  "state": "Executed: 10 metadata calls; no secret reads or mutations",
+  "cloud_window_approved": true,
+  "recorded_utc": "2026-10-31 13:05:39 UTC",
+  "files": [
+    {
+      "path": "scripts/evaluation/reference_runtime_inspection.py",
+      "sha256": "62b56f4153133b2747070a29a7f9b912206ce3f34c305f55faa21dffb4751365"
+    },
+    {
+      "path": "data/tests/test_reference_runtime_inspection.py",
+      "sha256": "704cc25063d7f9c26686470a41424aa404878c5b3c16aa5d49443d148efc476b"
+    },
+    {
+      "path": "data/generators/reference_login.py",
+      "sha256": "b1044ca6498250a95fb8b042ac0c49d91712e6eef2a1984d6c59c602686d680d"
+    },
+    {
+      "path": "docs/evaluation/domain/next-06/transfer/step-03-runtime-inspection-plan.md",
+      "sha256": "74d5b334404e4d93e520db44685072d8493d8744192bf5596e9967de4c84de7f"
+    }
+  ],
+  "local_tests": "4 control tests passed; no AWS calls",
+  "data_ready": false,
+  "approved_by": "Mohit Mahapatra",
+  "approval_evidence": "User: next, in response to exact Step3 read-only metadata approval request",
+  "approval_recorded_utc": "2026-10-31T13:12:38.816041+00:00",
+  "execution_receipt": "step-03-runtime-inspection-result.json"
+}

@@ -1,0 +1,743 @@
+"""Step3 real local application workflow, separate from retained reference data.
+
+Local preparation uses fresh native PostgreSQL/restricted roles and the actual
+installed model. Live mode adds real Microsoft validation and real private S3;
+it never seeds users, signs assertions, manufactures sessions, or changes RDS.
+The live approval flag is an execution guard, not authorization by itself.
+"""
+
+import argparse
+import asyncio
+from contextlib import contextmanager
+from datetime import UTC, datetime
+import json
+import hashlib
+import os
+from pathlib import Path
+import secrets
+import socket
+import sys
+import subprocess
+import tempfile
+from threading import Timer
+from uuid import uuid4
+from urllib.parse import parse_qs
+
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "apps/api"))
+
+import psycopg
+from psycopg import sql
+from psycopg.rows import dict_row
+from pydantic import SecretStr
+
+from app.application import create_app
+from app.core.config import Settings
+from app.domains.identity.database_setup import LOGGING, create_identity_role
+from app.domains.identity.email import SesEmailSender
+from app.domains.identity.http import BrowserPolicy, IdentityHttpDependencies
+from app.domains.identity.microsoft import MicrosoftKeys, MicrosoftTokenValidator
+from app.domains.identity.runtime_database import connection_factory, validate_database
+from app.domains.identity.sessions import IdentitySessions
+from app.domains.identity.temporary_crypto import TemporaryKeys
+from app.domains.listings.embedding_bootstrap import EmbeddingBootstrap
+from data.generators.reference_load import DATABASE as REFERENCE_DATABASE
+from data.generators.reference_login import sdk_session
+from scripts.identity_local_demo import socket_url
+from scripts.evaluation.reference_local import OwnedCluster, require_local
+
+DATABASE = "clip_test_identity"
+MARKETPLACE = "clip_next06_workflow"
+BUCKET = "clip-test-listings-images-ap-south-1-id01"
+ACCOUNT = "335523638354"
+REGION = "ap-south-1"
+PROFILE = "mohitmahapa1"
+ORIGIN = "http://localhost:5173"
+
+
+@contextmanager
+def native_target():
+    """Create only a new private Unix cluster and clone its just-migrated schema.
+
+    Role creation/revocation affects this invocation only. All passwords/keys
+    remain memory-only; stop the owned cluster on every exit. Stopped private
+    files remain outside Git so live browser evidence can be inspected safely.
+    """
+    cluster = OwnedCluster()
+    try:
+        cluster.start()
+        with psycopg.connect(
+            host=str(cluster.socket),
+            port=55438,
+            dbname="postgres",
+            user="clip_native_test",
+            autocommit=True,
+        ) as c:
+            c.execute(
+                sql.SQL(
+                    "CREATE DATABASE {} WITH TEMPLATE {} OWNER clip_native_test"
+                ).format(sql.Identifier(DATABASE), sql.Identifier(REFERENCE_DATABASE))
+            )
+
+        def admin():
+            c = psycopg.connect(
+                host=str(cluster.socket),
+                port=55438,
+                dbname=DATABASE,
+                user="clip_native_test",
+                autocommit=True,
+            )
+            for name, value in LOGGING.items():
+                c.execute(
+                    sql.SQL("SET {} = {}").format(
+                        sql.Identifier(name), sql.Literal(value)
+                    )
+                )
+            return c
+
+        with admin() as c:
+            c.execute("REVOKE ALL ON DATABASE clip_test_identity FROM PUBLIC")
+            c.execute("REVOKE CREATE ON SCHEMA public FROM PUBLIC")
+        identity_password = secrets.token_hex(32)
+        create_identity_role(
+            admin,
+            SecretStr(identity_password),
+            expected_database=DATABASE,
+            expected_admin="clip_native_test",
+        )
+        password = secrets.token_hex(32)
+        with admin() as c, c.transaction():
+            verifier = c.pgconn.encrypt_password(
+                password.encode(), MARKETPLACE.encode(), b"scram-sha-256"
+            ).decode()
+            c.execute(
+                sql.SQL(
+                    "CREATE ROLE {} LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOREPLICATION NOBYPASSRLS CONNECTION LIMIT 10 PASSWORD {}"
+                ).format(sql.Identifier(MARKETPLACE), sql.Literal(verifier))
+            )
+            for name, value in LOGGING.items():
+                c.execute(
+                    sql.SQL("ALTER ROLE {} SET {} = {}").format(
+                        sql.Identifier(MARKETPLACE),
+                        sql.Identifier(name),
+                        sql.Literal(value),
+                    )
+                )
+            c.execute(f"GRANT CONNECT ON DATABASE {DATABASE} TO {MARKETPLACE}")
+            c.execute(
+                f"GRANT USAGE ON SCHEMA public,identity,listings,search TO {MARKETPLACE}"
+            )
+            c.execute(
+                f"GRANT SELECT ON public.schema_migrations,identity.participant_profiles TO {MARKETPLACE}"
+            )
+            c.execute(
+                f"GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA listings,search TO {MARKETPLACE}"
+            )
+            c.execute(
+                f"GRANT USAGE,SELECT ON ALL SEQUENCES IN SCHEMA listings,search TO {MARKETPLACE}"
+            )
+            c.execute("SET LOCAL password_encryption='scram-sha-256'")
+            # This new cluster has no TCP listener. Require actual SCRAM locally
+            # before testing either restricted app role (no trust-auth shortcut).
+            (cluster.cluster / "pg_hba.conf").write_text(
+                "local all clip_native_test trust\nlocal all all scram-sha-256\n"
+            )
+            c.execute("SELECT pg_reload_conf()")
+        info = type(
+            "Info", (), {"dbname": DATABASE, "host": str(cluster.socket), "port": 55438}
+        )()
+        identity_dsn = socket_url(info, "clip_test_identity_app", identity_password)
+        marketplace_dsn = socket_url(info, MARKETPLACE, password)
+        keys = TemporaryKeys(
+            "next06_local", *(secrets.token_bytes(32) for _ in range(3))
+        )
+        connect = connection_factory(identity_dsn, "test")
+        validate_database(connect, keys)
+        yield cluster, admin, marketplace_dsn, connect, keys
+    finally:
+        cluster.stop()
+
+
+async def prepare_pipeline(dsn):
+    """Supported prepare/activate on an empty owned target, never forced flags.
+
+    Normal create/edit will enqueue real jobs after the app starts. No bulk
+    source or vector is copied from the retained reference database.
+    """
+    async with await psycopg.AsyncConnection.connect(
+        dsn.get_secret_value(), autocommit=True, row_factory=dict_row
+    ) as c:
+        op = EmbeddingBootstrap(c)
+        await op.prepare()
+        report = await op.activate()
+        if report.live != 0 or not report.complete or report.state != "serving":
+            raise ValueError("Empty local pipeline not ready")
+
+
+def application(dsn, connect, keys, prefix=None):
+    """Compose actual auth/model/worker; no SSM or test identity bindings.
+
+    Fresh local cryptographic keys are for this new database only. Microsoft
+    signature/audience/nonce validation and cookie/CSRF handlers are unchanged.
+    Temporary email routes are blocked by the outer operator policy below;
+    the concrete SES adapter is never used by this Microsoft-only checkpoint.
+    """
+    settings = Settings(
+        _env_file=None,
+        environment="test",
+        database_url=dsn,
+        identity_provider="microsoft",
+        email_provider="ses",
+        ses_test_recipients=("mohitmahapa1@iisc.ac.in",),
+        hybrid_search_enabled=True,
+        hybrid_worker_enabled=True,
+        hybrid_search_interpreter=ROOT / ".tools/semantic/venv/bin/python",
+        hybrid_search_model_dir=ROOT / ".tools/semantic/model",
+        storage_provider="s3" if prefix else "disabled",
+        image_bucket=BUCKET if prefix else None,
+        image_region=REGION if prefix else None,
+        image_key_prefix=prefix,
+    )
+    clock = lambda: datetime.now(UTC)
+    bindings = IdentityHttpDependencies(
+        IdentitySessions(connect, keys, clock),
+        BrowserPolicy((ORIGIN,), development=True),
+        SesEmailSender(settings),
+        MicrosoftTokenValidator(MicrosoftKeys()),
+        clock,
+    )
+    return create_app(settings, identity=bindings)
+
+
+class WorkflowBoundary:
+    """Loopback-only run guard and aggregate HTTP evidence; no bodies/cookies.
+
+    Restrict live mutations to one upload intent, one create and one edit.
+    No mail, Conversations or arbitrary workload is selected. All allowed
+    operations still pass unchanged real application authentication/CSRF.
+    """
+
+    def __init__(self, app, report, witness=None):
+        self.app, self.report = app, report
+        self.attempts = {}
+        self.witness = witness
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            return await self.app(scope, receive, send)
+        path, method = scope["path"], scope["method"]
+        self.report["http_requests"] = self.report.get("http_requests", 0) + 1
+        label = None
+        if method == "POST" and path == "/image-uploads":
+            label = "upload_intent"
+        if method == "POST" and path == "/listings":
+            label = "create_listing"
+        if method == "POST" and path == "/auth/microsoft/sessions":
+            label = "sign_in"
+        if method == "PUT" and path.startswith("/listings/") and path.count("/") == 2:
+            label = "edit_listing"
+        query = parse_qs(
+            scope.get("query_string", b"").decode("ascii", errors="ignore")
+        )
+        hybrid_query = (
+            method == "GET"
+            and path == "/listings"
+            and query.get("search_mode") == ["hybrid"]
+            and bool(query.get("q", [""])[0])
+        )
+        limit = {
+            "upload_intent": 1,
+            "create_listing": 1,
+            "edit_listing": 1,
+            "sign_in": 2,
+        }
+        if label:
+            self.attempts[label] = self.attempts.get(label, 0) + 1
+        allowed_mutation = (
+            path.startswith("/auth/microsoft/")
+            or path == "/auth/session"
+            or path == "/me/profile"
+            or label is not None
+            or (
+                method == "POST"
+                and path.startswith("/image-uploads/")
+                and path.endswith("/confirm")
+            )
+        )
+        peer = scope.get("client")
+        denied = (
+            self.report["http_requests"] > 300
+            or not peer
+            or peer[0] not in {"127.0.0.1", "::1"}
+            or path.startswith("/auth/temporary")
+            or (method not in {"GET", "HEAD", "OPTIONS"} and not allowed_mutation)
+            or (label is not None and self.attempts[label] > limit[label])
+        )
+        if denied:
+            await send({"type": "http.response.start", "status": 403, "headers": []})
+            await send({"type": "http.response.body", "body": b""})
+            return
+
+        observed_status = None
+
+        async def record(message):
+            nonlocal observed_status
+            if message["type"] == "http.response.start":
+                observed_status = message["status"]
+                tag = label or (
+                    "confirm_image"
+                    if path.startswith("/image-uploads/") and path.endswith("/confirm")
+                    else (
+                        "image_delivery"
+                        if path.startswith("/images/") and path.endswith("/delivery")
+                        else (
+                            "sign_in" if path == "/auth/microsoft/sessions" else "other"
+                        )
+                    )
+                )
+                if hybrid_query:
+                    tag = "hybrid_query"
+                key = f"{tag}:{message['status']}"
+                self.report["http_counts"][key] = (
+                    self.report["http_counts"].get(key, 0) + 1
+                )
+            await send(message)
+
+        await self.app(scope, receive, record)
+        if (
+            (label in {"create_listing", "edit_listing"} or hybrid_query)
+            and self.witness
+            and observed_status in {200, 201}
+        ):
+            self.report.setdefault("source_observations", []).append(
+                {"operation": label or "hybrid_query", **self.witness()}
+            )
+
+
+def witness(admin):
+    """Return only aggregate probe counts/current-source hashes, never user data."""
+    with admin() as c:
+        counts = c.execute(
+            "SELECT (SELECT count(*) FROM identity.users),"
+            "(SELECT count(*) FROM listings.sale_listings),"
+            "(SELECT count(*) FROM listings.images WHERE retired_at IS NULL)"
+        ).fetchone()
+        rows = c.execute(
+            """SELECT encode(listings.embedding_source_fingerprint(l.title,l.description),'hex'),
+            coalesce(g.state='ready' AND g.source_fingerprint=listings.embedding_source_fingerprint(l.title,l.description),false),
+            (SELECT count(*) FROM listings.embedding_chunks c WHERE c.generation_id=g.generation_id)
+            FROM listings.sale_listings l LEFT JOIN listings.embedding_generations g ON g.listing_id=l.id
+            ORDER BY l.id"""
+        ).fetchall()
+    return {
+        "users": counts[0],
+        "listings": counts[1],
+        "live_images": counts[2],
+        "sources": [
+            {"sha256": row[0], "current_ready": row[1], "parts": row[2]} for row in rows
+        ],
+    }
+
+
+def live_preflight(session):
+    """Five fixed metadata operations, no secret values or policy/permission change.
+
+    Exact IAM principal first; then bucket owner/privacy/encryption. The fixed
+    operator transport consumes API-issued URLs without new browser CORS rights.
+    No root/default fallback and no ListObjects or application database access.
+    """
+    from botocore.config import Config
+
+    config = Config(
+        ignore_configured_endpoint_urls=True,
+        connect_timeout=5,
+        read_timeout=10,
+        retries={"total_max_attempts": 1},
+    )
+    sts, s3 = (session.client(name, config=config) for name in ("sts", "s3"))
+    try:
+        actor = sts.get_caller_identity()
+        if (
+            actor.get("Account") != ACCOUNT
+            or actor.get("Arn") != f"arn:aws:iam::{ACCOUNT}:user/{PROFILE}"
+        ):
+            raise ValueError("wrong_project_identity")
+        s3.head_bucket(Bucket=BUCKET, ExpectedBucketOwner=ACCOUNT)
+        privacy = s3.get_public_access_block(Bucket=BUCKET, ExpectedBucketOwner=ACCOUNT)
+        if not all(
+            privacy.get("PublicAccessBlockConfiguration", {}).get(k) is True
+            for k in (
+                "BlockPublicAcls",
+                "IgnorePublicAcls",
+                "BlockPublicPolicy",
+                "RestrictPublicBuckets",
+            )
+        ):
+            raise ValueError("bucket_privacy_changed")
+        if (
+            s3.get_bucket_policy_status(Bucket=BUCKET, ExpectedBucketOwner=ACCOUNT)
+            .get("PolicyStatus", {})
+            .get("IsPublic")
+            is not False
+        ):
+            raise ValueError("bucket_public_policy")
+        encryption = s3.get_bucket_encryption(
+            Bucket=BUCKET, ExpectedBucketOwner=ACCOUNT
+        )
+        rules = encryption.get("ServerSideEncryptionConfiguration", {}).get("Rules", [])
+        if not any(
+            r.get("ApplyServerSideEncryptionByDefault", {}).get("SSEAlgorithm")
+            == "AES256"
+            for r in rules
+        ):
+            raise ValueError("bucket_encryption_changed")
+        return {
+            "calls": 5,
+            "identity_verified": True,
+            "bucket_private": True,
+            "aes256_default": True,
+            "browser_cors_change_required": False,
+        }
+    finally:
+        sts.close()
+        s3.close()
+
+
+@contextmanager
+def bounded_storage_session(session, prefix, report):
+    """Bind actual S3 adapter to approved profile with key/operation/call bounds.
+
+    The adapter is unchanged. Its normal boto3 construction uses this explicitly
+    selected process-local session, restored on exit. Events allow only signed
+    PUT/GET and real GET within the new prefix; no deletion or other AWS service.
+    Direct browser requests use the ordinary short-lived signed URLs and are not
+    counted as SDK calls. Never record URLs or credentials.
+    """
+    import boto3
+
+    previous = boto3.DEFAULT_SESSION
+    uploads = set()
+    from botocore.config import Config
+
+    # boto3 exposes its botocore session here; no credential values are accessed.
+    # The adapter's own signature config merges with these bounded defaults.
+    session._session.set_default_client_config(
+        Config(
+            ignore_configured_endpoint_urls=True,
+            connect_timeout=5,
+            read_timeout=10,
+            retries={"total_max_attempts": 1},
+        )
+    )
+
+    def guard(params, model, **kwargs):
+        report["storage_sdk_operations"] = report.get("storage_sdk_operations", 0) + 1
+        key = params.get("Key", "")
+        if (
+            report["storage_sdk_operations"] > 40
+            or model.name not in {"GetObject", "PutObject"}
+            or params.get("Bucket") != BUCKET
+            or not key.startswith(prefix + "/")
+            or "/" in key[len(prefix) + 1 :]
+        ):
+            raise ValueError("probe_storage_scope_or_budget")
+        if model.name == "PutObject":
+            if params.get("IfNoneMatch") != "*":
+                raise ValueError("probe_create_only_required")
+            uploads.add(key)
+            if len(uploads) > 1:
+                raise ValueError("probe_upload_limit")
+        report["probe_object_keys"] = sorted(uploads)
+
+    session.events.register("before-parameter-build.s3", guard)
+    boto3.DEFAULT_SESSION = session
+    try:
+        yield
+    finally:
+        boto3.DEFAULT_SESSION = previous
+        session.events.unregister("before-parameter-build.s3", guard)
+
+
+def serve_live(session, seconds, report):
+    """Real browser-owned sign-in and one listing workflow; no copied session.
+
+    Loopback-only listeners, finite wall clock and aggregate HTTP/SQL witnesses.
+    Retain new probe objects and stopped private local SQL; never delete existing
+    images or start/modify RDS/EC2. A human must perform/verify the browser actions.
+    """
+    import uvicorn
+
+    for port in (8000,):
+        with socket.socket() as sock:
+            sock.bind(("127.0.0.1", port))  # Refuse a conflicting existing service.
+    report["preflight"] = live_preflight(session)
+    report["probe_prefix"] = "id01/next06-step3-" + uuid4().hex
+    with native_target() as (cluster, admin, dsn, connect, keys):
+        report["local_target"] = str(cluster.root)
+        try:
+            asyncio.run(prepare_pipeline(dsn))
+            with bounded_storage_session(session, report["probe_prefix"], report):
+                app = application(dsn, connect, keys, report["probe_prefix"])
+                boundary = WorkflowBoundary(app, report, lambda: witness(admin))
+                from scripts.evaluation.reference_search_operator import (
+                    SearchOperatorPage,
+                    photo_input,
+                )
+
+                photo, photo_sha256 = photo_input()
+                report["probe_photo_sha256"] = photo_sha256
+                operator = SearchOperatorPage(
+                    boundary,
+                    report,
+                    photo,
+                    photo_sha256,
+                    lambda: setattr(server, "should_exit", True),
+                    probe_prefix=report["probe_prefix"],
+                )
+                server = uvicorn.Server(
+                    uvicorn.Config(
+                        operator,
+                        host="127.0.0.1",
+                        port=8000,
+                        workers=1,
+                        access_log=False,
+                        log_config=None,
+                        proxy_headers=False,
+                    )
+                )
+                timer = Timer(seconds, lambda: setattr(server, "should_exit", True))
+                timer.daemon = True
+                timer.start()
+                try:
+                    print(
+                        "Sign in at http://localhost:5173/sign-in; then open http://localhost:5173/api/__next06_search_check__ and run the automatic Search check.",
+                        flush=True,
+                    )
+                    try:
+                        server.run()
+                    except KeyboardInterrupt:
+                        # Uvicorn re-raises the handled signal after its normal
+                        # lifespan shutdown; preserve the final SQL witness.
+                        pass
+                finally:
+                    timer.cancel()
+                if not server.started:
+                    raise ValueError("live_app_startup_failed")
+                report["final_probe"] = witness(admin)
+                counts = report["http_counts"]
+                final = report["final_probe"]
+                observations = report.get("source_observations", [])
+                changed = (
+                    len({s["sha256"] for o in observations for s in o["sources"]}) >= 2
+                )
+                searched_ready_sources = {
+                    source["sha256"]
+                    for observation in observations
+                    if observation["operation"] == "hybrid_query"
+                    for source in observation["sources"]
+                    if source["current_ready"] and source["parts"] == 2
+                }
+                report["workflow_evidence_complete"] = (
+                    counts.get("sign_in:200", 0) >= 1
+                    and counts.get("create_listing:201", 0) == 1
+                    and counts.get("edit_listing:200", 0) >= 1
+                    and counts.get("confirm_image:200", 0) >= 1
+                    and counts.get("image_delivery:200", 0) >= 1
+                    and final["listings"] == 1
+                    and final["live_images"] >= 1
+                    and changed
+                    and len(searched_ready_sources) >= 2
+                    and report.get("operator_s3_upload_verified") is True
+                    and report.get("operator_s3_downloads_byte_verified") == 2
+                    and all(
+                        s["current_ready"] and s["parts"] == 2 for s in final["sources"]
+                    )
+                )
+        finally:
+            # This remains private because the owned native DB may contain the
+            # real sign-in account. Only safe aggregate JSON is later copied to Git.
+            (cluster.root / "workflow-live-result.json").write_text(
+                json.dumps(report, indent=2) + "\n"
+            )
+    report["cluster_stopped"] = not cluster.started
+
+
+async def rehearsal(app):
+    """Open actual restricted pools/dispatcher/model; no browser/provider/AWS.
+
+    No user or session is invented for rehearsal. A real provider sign-in and
+    successful listing workflow still require the separately approved live run.
+    """
+    async with app.router.lifespan_context(app):
+        runtime = app.state.search_runtime
+        if runtime.state != "ready" or runtime.dispatcher is None:
+            raise ValueError("Real model/worker startup failed")
+        encoded = await runtime.helper.encode_query("campus bicycle")
+        if len(encoded.vector) != 384:
+            raise ValueError("Real query encoding failed")
+        import httpx2
+        from scripts.evaluation.reference_search_operator import (
+            SearchOperatorPage,
+            photo_input,
+        )
+
+        photo, digest = photo_input()
+        operator = SearchOperatorPage(app, {}, photo, digest, lambda: None)
+        async with httpx2.AsyncClient(
+            transport=httpx2.ASGITransport(app=operator),
+            base_url=ORIGIN,
+        ) as client:
+            page = await client.get("/__next06_search_check__")
+            image = await client.get("/__next06_search_check__/photo")
+            denied = await client.get("/listings")
+            if (
+                page.status_code != 200
+                or image.content != photo
+                or denied.status_code != 401
+            ):
+                raise ValueError("Operator/app authentication boundary differs")
+        return {
+            "operator_page_local_http": 200,
+            "operator_photo_exact_bytes": True,
+            "normal_api_anonymous_status": 401,
+        }
+
+
+def main(argv=None):
+    """Separate local preparation from the explicitly approved real browser run."""
+    parser = argparse.ArgumentParser(description=__doc__)
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--local-rehearsal", action="store_true")
+    mode.add_argument("--approved-live-local", action="store_true")
+    parser.add_argument("--seconds", type=int, default=1800)
+    args = parser.parse_args(argv)
+    if not 60 <= args.seconds <= 1800:
+        parser.error("Use 60–1800seconds")
+    require_local(args.local_rehearsal or args.approved_live_local)
+    if any(key.startswith("CLIP_") and key != "CLIP_ENVIRONMENT" for key in os.environ):
+        parser.error("Ambient application overrides refused")
+    report = {
+        "task": "NEXT-06 Step3 preparation",
+        "state": "preparing",
+        "aws_calls": 0,
+        "real_signin_verified": False,
+        "real_s3_verified": False,
+        "normal_create_edit_verified": False,
+        "http_counts": {},
+    }
+    if args.approved_live_local:
+        report.pop("aws_calls")
+        for key in (
+            "real_signin_verified",
+            "real_s3_verified",
+            "normal_create_edit_verified",
+        ):
+            report.pop(key)
+        report["human_verification"] = "pending"
+        report["direct_browser_s3_requests"] = 0
+        folder = Path(
+            tempfile.mkdtemp(prefix="clip-next06-workflow-live-", dir="/private/tmp")
+        )
+        folder.chmod(0o700)
+        report["state"] = "live_preflight"
+        try:
+            review = json.loads(
+                (
+                    ROOT
+                    / "docs/evaluation/domain/next-06/transfer/step-03-workflow-live-review.json"
+                ).read_text()
+            )
+            if review.get("approved") is not True or review.get("consumed") is True:
+                raise ValueError("live_window_approval_pending")
+            for binding in review["files"]:
+                if (
+                    hashlib.sha256((ROOT / binding["path"]).read_bytes()).hexdigest()
+                    != binding["sha256"]
+                ):
+                    raise ValueError("live_reviewed_source_changed")
+            serve_live(sdk_session(PROFILE, REGION), args.seconds, report)
+            report["state"] = (
+                "live_checks_passed_awaiting_human_verification"
+                if report.get("workflow_evidence_complete") is True
+                else "live_stopped_incomplete"
+            )
+        except Exception as error:
+            report["state"] = "live_failed"
+            report["failure_type"] = type(error).__name__
+            if type(error) is ValueError and str(error) in {
+                "existing_localhost_cors_required",
+                "wrong_project_identity",
+                "bucket_privacy_changed",
+                "bucket_public_policy",
+                "bucket_encryption_changed",
+                "live_window_approval_pending",
+                "live_reviewed_source_changed",
+                "live_app_startup_failed",
+            }:
+                report["refusal_code"] = str(error)
+        finally:
+            target = report.get("local_target")
+            if target:
+                # The owned context already attempted shutdown on every path.
+                # Never infer success from an exception or merely a closed API.
+                status = subprocess.run(
+                    [
+                        str(ROOT / ".tools/native-db/pgsql/bin/pg_ctl"),
+                        "-D",
+                        str(Path(target) / "cluster"),
+                        "status",
+                    ],
+                    capture_output=True,
+                    timeout=5,
+                )
+                report["cluster_stopped"] = status.returncode == 3
+            (folder / "result.json").write_text(json.dumps(report, indent=2) + "\n")
+            print("Receipt: " + str(folder / "result.json"), flush=True)
+        return (
+            0
+            if report["state"] == "live_checks_passed_awaiting_human_verification"
+            and report.get("cluster_stopped") is True
+            else 2
+        )
+    cluster = None
+    try:
+        with native_target() as (cluster, admin, dsn, connect, keys):
+            asyncio.run(prepare_pipeline(dsn))
+            app = application(dsn, connect, keys)
+            report.update(asyncio.run(rehearsal(app)))
+            report["state"] = "native_auth_roles_model_worker_startup_passed"
+            report["real_model_dimensions"] = 384
+            report["identity_private_table_denial"] = False
+            with psycopg.connect(dsn.get_secret_value(), autocommit=True) as c:
+                try:
+                    c.execute("SELECT 1 FROM identity.sessions")
+                except psycopg.errors.InsufficientPrivilege:
+                    report["identity_private_table_denial"] = True
+                else:
+                    raise ValueError("Marketplace has private identity access")
+    except Exception as error:
+        report["state"] = "native_preparation_failed"
+        report["failure_type"] = type(error).__name__
+        # Code locations are safe diagnostics; exception messages/locals may
+        # contain credentials or private SQL, so never include them.
+        import traceback
+
+        report["failure_locations"] = [
+            {"file": Path(frame.filename).name, "line": frame.lineno}
+            for frame in traceback.extract_tb(error.__traceback__)
+        ]
+    finally:
+        if cluster is not None:
+            report["cluster_stopped"] = not cluster.started
+            (cluster.root / "workflow-result.json").write_text(
+                json.dumps(report, indent=2) + "\n"
+            )
+            print("Receipt: " + str(cluster.root / "workflow-result.json"))
+    print(json.dumps(report, indent=2))
+    return (
+        0 if report["state"] == "native_auth_roles_model_worker_startup_passed" else 2
+    )
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

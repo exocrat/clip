@@ -1,0 +1,14 @@
+{
+  "state": "local_window_incomplete_resources_stopped",
+  "recorded_utc": "2026-10-31 15:02:24 UTC",
+  "configured_api_limit_seconds": 300,
+  "metadata_operations": 5,
+  "local_users_created": 0,
+  "local_listings_created": 0,
+  "object_write_attempts": 0,
+  "reference_data_mutations": 0,
+  "native_cluster_stopped": true,
+  "frontend_process_exited": true,
+  "listeners_8000_5173_absent": true,
+  "actual_end_to_end_check_passed_in_this_run": false
+}

@@ -1,0 +1,89 @@
+{
+  "task": "NEXT-06",
+  "checkpoint": "Step3 real create-only S3/image and isolated RDS bulk load",
+  "state": "performed successfully; credential/access/compute cleanup verified; awaiting human verification",
+  "started_utc": "2026-10-31 08:05:19 UTC",
+  "ended_utc": "2026-10-31 08:25:12 UTC",
+  "duration_seconds": 1193,
+  "management_calls": 50,
+  "s3_logical_calls": 2008,
+  "identity": {
+    "Account": "335523638354",
+    "Arn": "arn:aws:iam::335523638354:user/mohitmahapa1"
+  },
+  "target": {
+    "account": "335523638354",
+    "region": "ap-south-1",
+    "profile": "mohitmahapa1",
+    "host": "clip-shared-test-postgres.cnsu8kgiimug.ap-south-1.rds.amazonaws.com",
+    "port": 5432,
+    "database": "clip_next06_reference",
+    "role": "clip_next06_loader",
+    "server_version_num": "180006",
+    "bucket": "clip-test-listings-images-ap-south-1-id01",
+    "prefix": "id01/next06-reference-42-v1",
+    "source_revision": "6edb52ba4e5a148386cd81e78b29c15b557193c7",
+    "logical_data_fingerprint": "sha256:7efd142e11c3e8555e1aa08603cbf8dff07de5d74412ccde3c39869b9334ab98",
+    "sensitive_threshold_paise": 500000
+  },
+  "actual_load_result": {
+    "state": "cloud bulk loaded; real auth/delivery/vector/freeze gates pending",
+    "input_fingerprint": "sha256:7efd142e11c3e8555e1aa08603cbf8dff07de5d74412ccde3c39869b9334ab98",
+    "objects_verified": 1000,
+    "logical_object_bytes": 925881224,
+    "users_verified": 5000,
+    "listings_verified": 1000,
+    "images_verified": 1000,
+    "regular_owners_verified": 1000,
+    "available_verified": 800,
+    "logical_projection_digest": "sha256:1d4a2369f53c8415ea6399546c0814d7a02e6bdae0e98f312221a995711efb80",
+    "text_vectors_verified": 1000,
+    "text_search_indexes": [
+      "CREATE INDEX sale_full_text ON listings.sale_listings USING gin (search_vector)"
+    ],
+    "real_session_auth_verified": false,
+    "real_signed_delivery_verified": false,
+    "semantic_pipeline_verified": false,
+    "data_ready": false
+  },
+  "cleanup": {
+    "required": true,
+    "loader_disabled_password_cleared": true,
+    "owned_tunnel_exited": true,
+    "owned_session_terminated": true,
+    "host_stopped": true,
+    "rds_stopped": true
+  },
+  "ledger": {
+    "events": {
+      "target_checked": 1,
+      "put_planned": 1000,
+      "bytes_verified": 1000,
+      "sql_planned": 1,
+      "sql_committed": 1
+    },
+    "exact_1000_expected_keys_and_hashes": "passed",
+    "sha256": "20a5f7c4f152b1a9e6c0dca816db88ac8dea2f3e112865868125ee456515a52b",
+    "no_retry_overwrite_delete": "one planned PUT and one successful byte verification per exact key; SQL committed once"
+  },
+  "cross_check": "Cloud logical SQL projection digest matches actual native restricted-role rehearsal exactly.",
+  "approval": "Mohit directed Proceed in direct response to explicit maintainer/prefix confirmation and exact-window request; no named maintainer identity invented.",
+  "authentication": "First preflight blocked before starts with CliLoginUnavailable/0API calls; named-profile browser login refreshed with user approval, then unchanged authorized window resumed. No authentication output/tokens saved.",
+  "cost_estimates_usd": {
+    "conservative_base_compute_whole_window": 0.01067072,
+    "base_1000_put_plus_get": 0.0054,
+    "storage_decimal_gb_month_conservative": 0.0231470306,
+    "meaning": "Estimates, not actual bill; excludes credits/network/transfer/baseline/tax. Approved USD1incremental operating envelope and transfer allowance retained."
+  },
+  "rds_stop_review_by_utc": "2026-11-06 08:25:12 UTC",
+  "rds_review_note": "Conservative review at six days; AWS may auto-restart after seven stopped days. No scheduler created; storage remains.",
+  "checks": "52source/dependency hashes match; exact ledger keys/hash/call/counts/projection and stopped/password-disabled/tunnel-close receipts verified; no code changed in execution.261data/native/SCRAM checks remain relevant; source/evidence secret scan and diff check recorded at closeout.",
+  "remaining": "Step3 normal real app/auth/new-listing/signed-media workflow checks; Step4 actual cloud pinned model/vector pipeline and search; Step5 final source/label binding; Step6 cloud reproducibility/freeze/source acceptance. NEXT-06/DATA-READY incomplete. Shared32service/runtime and runtime role remain unchanged/inactive.",
+  "secret_scan": {
+    "tool": "Gitleaks8.30.1",
+    "findings": 0,
+    "report": "/private/tmp/clip-next06-live-load-scan-t62lcdxj/scan.json",
+    "scope": "Current source and all nonignored tracked/untracked execution evidence; no inline bypass."
+  },
+  "executed_source_snapshot_hashes": "All preserved Python dependency copies match approved52file binding entries"
+}

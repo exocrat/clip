@@ -1,0 +1,304 @@
+{
+  "format_version": "1",
+  "status": "draft",
+  "dataset": {
+    "logical_data_fingerprint": null,
+    "manifest_path": null,
+    "schema_version": null,
+    "source_revision": null
+  },
+  "search_contract_revision": null,
+  "review": {
+    "reviewer": null,
+    "reviewed_at": null,
+    "inclusion_policy": null
+  },
+  "queries": [
+    {
+      "query_id": "90bb5492-35e6-43ee-9c0e-341dce70124a",
+      "query_text": "android smartphone",
+      "context": {
+        "sort": "relevance",
+        "search_mode": "hybrid",
+        "page": 1,
+        "page_size": 20
+      },
+      "relevant_listing_ids": null,
+      "include_in_nfr04": null,
+      "exclusion_reason": null
+    },
+    {
+      "query_id": "f08a1dee-142e-4e6b-8835-2809cf567da5",
+      "query_text": "mobile phone",
+      "context": {
+        "sort": "relevance",
+        "search_mode": "hybrid",
+        "page": 1,
+        "page_size": 20
+      },
+      "relevant_listing_ids": null,
+      "include_in_nfr04": null,
+      "exclusion_reason": null
+    },
+    {
+      "query_id": "fe2d4ccc-4f83-476c-a697-ebb9c39c4afc",
+      "query_text": "student laptop",
+      "context": {
+        "sort": "relevance",
+        "search_mode": "hybrid",
+        "page": 1,
+        "page_size": 20
+      },
+      "relevant_listing_ids": null,
+      "include_in_nfr04": null,
+      "exclusion_reason": null
+    },
+    {
+      "query_id": "e6d819f4-e8f8-4588-a132-c3e72bfcfc6f",
+      "query_text": "portable computer",
+      "context": {
+        "sort": "relevance",
+        "search_mode": "hybrid",
+        "page": 1,
+        "page_size": 20
+      },
+      "relevant_listing_ids": null,
+      "include_in_nfr04": null,
+      "exclusion_reason": null
+    },
+    {
+      "query_id": "c226e81d-fd4e-484a-ba2f-86a07e0c8b73",
+      "query_text": "desk monitor",
+      "context": {
+        "sort": "relevance",
+        "search_mode": "hybrid",
+        "page": 1,
+        "page_size": 20
+      },
+      "relevant_listing_ids": null,
+      "include_in_nfr04": null,
+      "exclusion_reason": null
+    },
+    {
+      "query_id": "e70f529b-70fb-4cb2-8a37-519405702777",
+      "query_text": "computer display",
+      "context": {
+        "sort": "relevance",
+        "search_mode": "hybrid",
+        "page": 1,
+        "page_size": 20
+      },
+      "relevant_listing_ids": null,
+      "include_in_nfr04": null,
+      "exclusion_reason": null
+    },
+    {
+      "query_id": "43d29d3b-b226-4520-af6e-40a4f4423fcc",
+      "query_text": "study desk",
+      "context": {
+        "sort": "relevance",
+        "search_mode": "hybrid",
+        "page": 1,
+        "page_size": 20
+      },
+      "relevant_listing_ids": null,
+      "include_in_nfr04": null,
+      "exclusion_reason": null
+    },
+    {
+      "query_id": "6236bd66-2661-4642-a68a-1057c2a517f5",
+      "query_text": "work table",
+      "context": {
+        "sort": "relevance",
+        "search_mode": "hybrid",
+        "page": 1,
+        "page_size": 20
+      },
+      "relevant_listing_ids": null,
+      "include_in_nfr04": null,
+      "exclusion_reason": null
+    },
+    {
+      "query_id": "fca31fe8-b96c-49fa-9f5d-386f1c2b0d5e",
+      "query_text": "linear algebra textbook",
+      "context": {
+        "sort": "relevance",
+        "search_mode": "hybrid",
+        "page": 1,
+        "page_size": 20
+      },
+      "relevant_listing_ids": null,
+      "include_in_nfr04": null,
+      "exclusion_reason": null
+    },
+    {
+      "query_id": "6d3b483f-dc8e-4b99-9821-2518f3a93a96",
+      "query_text": "mathematics book",
+      "context": {
+        "sort": "relevance",
+        "search_mode": "hybrid",
+        "page": 1,
+        "page_size": 20
+      },
+      "relevant_listing_ids": null,
+      "include_in_nfr04": null,
+      "exclusion_reason": null
+    },
+    {
+      "query_id": "25f01a48-b586-4dac-a4d6-384a7c62ec33",
+      "query_text": "campus bicycle",
+      "context": {
+        "sort": "relevance",
+        "search_mode": "hybrid",
+        "page": 1,
+        "page_size": 20
+      },
+      "relevant_listing_ids": null,
+      "include_in_nfr04": null,
+      "exclusion_reason": null
+    },
+    {
+      "query_id": "a7adbeaf-d751-4cbc-85d1-4db62fb54cb5",
+      "query_text": "two wheeled vehicle",
+      "context": {
+        "sort": "relevance",
+        "search_mode": "hybrid",
+        "page": 1,
+        "page_size": 20
+      },
+      "relevant_listing_ids": null,
+      "include_in_nfr04": null,
+      "exclusion_reason": null
+    },
+    {
+      "query_id": "6b9f5cf5-d13b-4c89-9b67-5fc0c83b9863",
+      "query_text": "electric kettle",
+      "context": {
+        "sort": "relevance",
+        "search_mode": "hybrid",
+        "page": 1,
+        "page_size": 20
+      },
+      "relevant_listing_ids": null,
+      "include_in_nfr04": null,
+      "exclusion_reason": null
+    },
+    {
+      "query_id": "841c12f8-cd0d-4310-8fab-237db4ae0819",
+      "query_text": "water boiler",
+      "context": {
+        "sort": "relevance",
+        "search_mode": "hybrid",
+        "page": 1,
+        "page_size": 20
+      },
+      "relevant_listing_ids": null,
+      "include_in_nfr04": null,
+      "exclusion_reason": null
+    },
+    {
+      "query_id": "0c799dbf-b9dd-4ee2-92e5-98e6b44fc47f",
+      "query_text": "badminton racket",
+      "context": {
+        "sort": "relevance",
+        "search_mode": "hybrid",
+        "page": 1,
+        "page_size": 20
+      },
+      "relevant_listing_ids": null,
+      "include_in_nfr04": null,
+      "exclusion_reason": null
+    },
+    {
+      "query_id": "c5f67688-e9c7-415e-96e9-a45be7f2cec3",
+      "query_text": "sports racket",
+      "context": {
+        "sort": "relevance",
+        "search_mode": "hybrid",
+        "page": 1,
+        "page_size": 20
+      },
+      "relevant_listing_ids": null,
+      "include_in_nfr04": null,
+      "exclusion_reason": null
+    },
+    {
+      "query_id": "2c8d15e4-498c-4225-8023-9f68a2489561",
+      "query_text": "backpack",
+      "context": {
+        "sort": "relevance",
+        "search_mode": "hybrid",
+        "page": 1,
+        "page_size": 20
+      },
+      "relevant_listing_ids": null,
+      "include_in_nfr04": null,
+      "exclusion_reason": null
+    },
+    {
+      "query_id": "970827b5-0c5b-4aca-be48-bc041c70ccba",
+      "query_text": "student carrying bag",
+      "context": {
+        "sort": "relevance",
+        "search_mode": "hybrid",
+        "page": 1,
+        "page_size": 20
+      },
+      "relevant_listing_ids": null,
+      "include_in_nfr04": null,
+      "exclusion_reason": null
+    },
+    {
+      "query_id": "a3e77bca-7ce1-4bb1-920a-4facaea22717",
+      "query_text": "student computer",
+      "context": {
+        "sort": "relevance",
+        "search_mode": "hybrid",
+        "page": 1,
+        "page_size": 20
+      },
+      "relevant_listing_ids": null,
+      "include_in_nfr04": null,
+      "exclusion_reason": null
+    },
+    {
+      "query_id": "68ebef59-22ef-462b-9df0-131b5edd5632",
+      "query_text": "folding cycle",
+      "context": {
+        "sort": "relevance",
+        "search_mode": "hybrid",
+        "page": 1,
+        "page_size": 20
+      },
+      "relevant_listing_ids": null,
+      "include_in_nfr04": null,
+      "exclusion_reason": null
+    },
+    {
+      "query_id": "d824caa4-2a76-4d57-9d34-0e50299320d9",
+      "query_text": "kitchen appliance",
+      "context": {
+        "sort": "relevance",
+        "search_mode": "hybrid",
+        "page": 1,
+        "page_size": 20
+      },
+      "relevant_listing_ids": null,
+      "include_in_nfr04": null,
+      "exclusion_reason": null
+    },
+    {
+      "query_id": "38c2fc63-6a76-40ce-82cc-325ef584af5a",
+      "query_text": "study furniture",
+      "context": {
+        "sort": "relevance",
+        "search_mode": "hybrid",
+        "page": 1,
+        "page_size": 20
+      },
+      "relevant_listing_ids": null,
+      "include_in_nfr04": null,
+      "exclusion_reason": null
+    }
+  ]
+}

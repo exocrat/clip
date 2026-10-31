@@ -1,0 +1,48 @@
+{
+  "task": "NEXT-06",
+  "checkpoint": "Approved local SDKcompatibility and grouped load preflight",
+  "recorded_utc": "2026-10-30 17:02:49 UTC",
+  "state": "performed; awaiting human verification; no live load approved",
+  "source_files": [
+    {
+      "path": "data/generators/reference_login.py",
+      "sha256": "b1044ca6498250a95fb8b042ac0c49d91712e6eef2a1984d6c59c602686d680d"
+    },
+    {
+      "path": "data/generators/reference_cloud.py",
+      "sha256": "6c90f1327d073bc24004d90d9a29820ffb5281565b71c2034be4aacaf45212ea"
+    },
+    {
+      "path": "data/tests/test_reference_login.py",
+      "sha256": "7a8dfd5d4baff344971fc96fa750d2167dfead0f78d3de1813c073bee4fdafe4"
+    }
+  ],
+  "implementation": "Named browser-login profiles use a lazy explicit CLI credential provider, memory-only token capture, bounded/redacted failures and expiring refresh. Normal named non-login profiles retain SDK chain. STS uses SigV4, S3S3SigV4; account/TLS/target guards unchanged. No globalconfig/key creation/new CRTdependency. CLI manages its normal existing cache.",
+  "checks": {
+    "focused_tests": "44passed in3.63s",
+    "data_tests": "189passed in9.16s, warnings errors",
+    "black": "330Python files unchanged; changedfiles check passed after documentation",
+    "boundaries": "0violations",
+    "input_validation": "transfer-a unchanged FP7efd142e... validates; records/photos/22judgments unchanged",
+    "real_sdk_identity": "STS335523638354:user/mohitmahapa1 through clip-cli-login provider passed; credentials not retained in evidence",
+    "metadata_batch": "14calls within18cap, one bounded permission request;2IAMpolicy-list calls AccessDenied, all other calls succeed",
+    "native_secret_scan": "Pinned Gitleaks8.30.1 source snapshot /private/tmp/clip-next06-sdk-scan-keduzd_w:0findings",
+    "whitespace": "pass"
+  },
+  "observations": {
+    "instance": "i-086045c48487471de stopped/t3.micro; ASGInService not proof of running compute",
+    "ssm": "No managed-node record returned; usable route must be rechecked after approved start",
+    "runtime_role": "Cannot inspect inline/attached policies; no grants changed. Effective role permissions remain unverified, not assumed denied.",
+    "current_storage": "id01bucket private/owner-enforced/SSE-S3;HTTPSclip-iisc.site CORS; no versioning config returned.",
+    "db": "Prior verified stopped/private18.6, appSG-only5432; no SQL attempted"
+  },
+  "raw_sanitized_receipt": "load-preflight-current.json",
+  "pending": [
+    "Human verification of current preflight and source changes",
+    "Exact approved storage/prefix/database/roles/connection route/runtime build plus current cost/window/stop/rollback plan",
+    "Owner permission review/export or actual effective runtime check; no broad IAM grant just to inspect metadata",
+    "Separate resource start/access/secret/SQL/upload/deployment approval",
+    "Real originalSteps3/4/5/6integration and accepted source/labels/freeze/DATA-READY"
+  ],
+  "publication": "New SDK/docs/evidence uncommitted; no commit,push,merge or AWSmutation authorized/executed by this checkpoint."
+}

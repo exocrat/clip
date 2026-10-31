@@ -1,0 +1,15 @@
+{
+  "account": "335523638354",
+  "region": "ap-south-1",
+  "profile": "mohitmahapa1",
+  "host": "clip-shared-test-postgres.cnsu8kgiimug.ap-south-1.rds.amazonaws.com",
+  "port": 5432,
+  "database": "clip_next06_reference",
+  "role": "clip_next06_embeddings",
+  "server_version_num": "180006",
+  "bucket": "clip-test-listings-images-ap-south-1-id01",
+  "prefix": "id01/next06-reference-42-v1",
+  "source_revision": "6edb52ba4e5a148386cd81e78b29c15b557193c7",
+  "logical_data_fingerprint": "sha256:7efd142e11c3e8555e1aa08603cbf8dff07de5d74412ccde3c39869b9334ab98",
+  "sensitive_threshold_paise": 500000
+}

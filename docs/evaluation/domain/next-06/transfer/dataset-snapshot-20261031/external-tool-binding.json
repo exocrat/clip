@@ -1,0 +1,6 @@
+{
+  "path": ".tools/session-manager/1.2.896.0/bin/session-manager-plugin",
+  "sha256": "71258c3f7d5c15603a3b75bc8dfd62f595e8ec6ef3b8132ab59a005eebb7fa35",
+  "version": "1.2.896.0",
+  "retention": "Original existing local tool remains outside Git; binary copy excluded from publication. Approved review retains exact dependency hash."
+}
