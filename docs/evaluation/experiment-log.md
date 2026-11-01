@@ -48,6 +48,42 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-01 20:40:42 UTC — NFR dataset-bound case draft preparation
+
+**Direction:** User verified grouped offline NFR-01/02 case preparation. The
+existing EXP-02 generator verifies the frozen archive hashes, A/B equality,
+counts, schema and dataset fingerprint; its five browse pages cover first,
+later and category-filter cases. Its three explicit Hybrid cases cover the
+direct, related and meaning-based query classes, but their ordered answers are
+not supplied. No deployment, experiment, live API or cloud call was authorized.
+
+**Changes:** `prepare_nfr_cases.py` selects these cases into a new non-executable
+bundle, adds the expected HTTP status, and preserves dataset and review metadata.
+Without ordered references the Hybrid expectations remain null. If a reference
+and source commit are both supplied, the existing ordered-results binder is
+used; mismatched or incomplete pairs fail and no existing output is replaced.
+`nfr_cases_check.js` and its offline CLI check distinct case counts/coverage,
+explicit Hybrid requests and existing response validator rules for status,
+page, availability, filters and required fields. Ordered response comparison
+reuses `correctResponse`; reversing a synthetic expected page fails. The checks
+always state execution and NFR acceptance are false.
+
+**Limits:** Browse expectations are archive-derived and still require SE-01
+owner review. Synthetic test rankings are used only as test fixtures, never as
+actual results. The checker does not attest provenance/review of an arbitrary
+bundle or inspect a deployment; correct response shape is not proof of ranking
+review. Its existing response validator uses the current clock for availability.
+Actual ordered Hybrid answers, final source/deployment binding, complete NFR
+profiles, zero-retry/cap/session gates and a real runner remain pending.
+
+**Checks:** 28 focused Python tests and three Node test files passed; strict
+Mypy, per-file Black and whitespace checks passed. A local generated draft passed NFR-01 case-shape checks and NFR-02
+refused its missing rankings, without any request. Synthetic tests cover
+determinism, refusal and existing-output protection, reference-binder reuse,
+status/page/filter/availability/fields and reversed ordered results. No k6
+workload, experiment, database, cloud or external service call occurred. Result
+awaits user verification.
+
 ### 2026-11-01 20:38:08 UTC — NFR draft preflight preparation
 
 **Direction:** User verified a grouped offline validator/test/documentation step.

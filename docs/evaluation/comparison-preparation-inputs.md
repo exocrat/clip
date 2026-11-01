@@ -45,6 +45,36 @@ loopback-only; preparing a corpus grants no permission to invoke it. Revalidate
 the frozen availability window and the current threshold, source, schema,
 model and target before any future use.
 
+## NFR browse and Hybrid case drafts
+
+The offline generator selects five browse and three Hybrid cases from the same
+archive-checked corpus, preserving full expected fields, page data, dataset
+binding and review limitations. It never emits a runnable profile:
+
+```sh
+.venv/bin/python -m scripts.evaluation.k6.prepare_nfr_cases --output path/to/new-nfr-cases.json
+node scripts/evaluation/k6/nfr_cases_check.mjs nfr-01 path/to/new-nfr-cases.json
+node scripts/evaluation/k6/nfr_cases_check.mjs nfr-02 path/to/new-nfr-cases.json
+```
+
+Output must be a new path. NFR-01 checks first/later pages, category coverage,
+status, expected response shape, fields, availability and filters. NFR-02
+checks three query classes and explicit Hybrid requests, but fails on the draft's
+missing ordered responses. When independently reviewed ordered references exist,
+provide `--ordered-reference path/to/reviewed-reference.json --search-revision
+FULL_REVIEWED_SEARCH_COMMIT` to the generator; it invokes the existing binder
+and refuses mismatched inputs. No substitute rankings are generated. The checker
+uses the current clock for availability; a valid old fixture is not evidence of
+current dataset availability.
+
+These case-shape checks do not independently establish archive provenance for
+an arbitrary supplied JSON bundle, human review, dataset parity, model/source
+deployment, rate, timeout, a complete NFR profile or any action approval. The
+generator verifies the frozen source archive, but even its valid output requires
+the SE-01 owner to review the actual cases. Both commands are offline and report
+`execution_permitted: false`; a future runner must validate the complete corpus
+and manifest before obtaining credentials or sending requests.
+
 ## Timing, saturation and telemetry metadata
 
 `data/evaluation/workloads/ecs-lambda-telemetry.template.json` specifies a
