@@ -48,6 +48,33 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-01 20:33:11 UTC — NFR-01/02 local denominator preparation
+
+**Direction:** User verified the grouped synthetic NFR-01/02 reporting step
+and requested multiple tasks per checkpoint. Inspection found the existing
+`scripts/evaluation/k6/runner.py` local cohort reporter, which already counts
+issued work, drops, missing outcomes, failures and the issued denominator. It
+remains a bounded loopback pilot and is not a real-target or measurement runner.
+
+**Change:** Extended that reporter instead of duplicating it: each cohort now
+reports both the fraction of correctly completed requests within 1,000 ms and
+the fraction of issued requests that are correct within 1,000 ms. The boundary
+is inclusive. This local pilot assumes every issued request is eligible; actual
+NFR-02 eligibility must be established by its real runner. A cohort with no
+correct results has no correct-denominator fraction. Drops and missing outcomes
+remain visible and invalidate the pilot; the existing `valid` condition also
+requires every result correct and is stricter than either NFR's acceptance
+formula. Reports explicitly mark latency timing unverified and NFR acceptance
+false. This is arithmetic preparation, not an NFR pass.
+
+**Checks and gates:** 27 focused Python tests passed. Per-file Black and
+`git diff --check` passed after formatting the changed test file. Synthetic tests exercise different browse/search
+denominators, inclusive one-second boundary, timeout, no successes, dropped
+arrivals and missing outcomes. Existing NFR profiles are still stale drafts;
+final dataset cases, timing design, real-target runner, owner review and live
+measurement remain open. No k6 workload, cloud, database or external service
+call occurred. This checkpoint awaits user verification.
+
 ### 2026-11-01 20:23:45 UTC — EXP-02 ordered reference source binding
 
 **Direction:** User verified upstream integration and said the latest search

@@ -53,7 +53,30 @@ def test_correct_200_shape_is_not_inferred_from_status_and_denominators_remain_v
     assert result["successful_latency"]["samples"] == 1
     assert result["all_completed_latency"]["samples"] == 4
     assert result["within_1s_fraction_of_issued"] == 0.25
+    assert result["within_1s_fraction_of_correct"] == 1.0
     assert not result["valid"]
+
+
+def test_browse_and_search_denominators_differ_and_boundary_is_inclusive():
+    points = samples("ok", "ok", "timeout")
+    elapsed = [p for p in points if p["metric"] == "clip_elapsed_ms"]
+    elapsed[0]["data"]["value"] = 1000
+    elapsed[1]["data"]["value"] = 1001
+    result = cohort(points, "measured", 3, 1)
+    assert result["expected_result_within_1s"] == 1
+    assert result["within_1s_fraction_of_correct"] == 0.5
+    assert result["within_1s_fraction_of_issued"] == pytest.approx(1 / 3)
+    assert result["outcomes"]["timeout"] == 1
+    assert not result["valid"]
+
+
+def test_empty_success_and_missing_outcome_do_not_appear_as_a_pass():
+    result = cohort(samples("timeout"), "measured", 1, 1)
+    assert result["within_1s_fraction_of_correct"] is None
+    assert result["within_1s_fraction_of_issued"] == 0
+    missing = cohort([point("clip_issued", 1), point("http_reqs", 1)], "measured", 1, 1)
+    assert missing["uncompleted"] == 1
+    assert not missing["valid"]
 
 
 def test_generator_shortfall_cannot_be_hidden_by_perfect_returned_requests():
@@ -100,6 +123,7 @@ def test_warmup_is_not_mixed_with_measured_latency_and_completion_required(tmp_p
     assert result["measured"]["all_completed_latency"]["p95_ms"] == 195
     assert result["warmup"]["outcomes"]["timeout"] == 1
     assert not result["valid_preparation_run"] and not result["nfr_accepted"]
+    assert result["latency_timing_verified"] is False
     assert not summarize(raw, profile, False, 0)["valid_preparation_run"]
 
 

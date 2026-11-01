@@ -169,6 +169,13 @@ produces p50/p95/p99 for all completed and successful samples separately; empty 
 null, not zero. Successful throughput means cohort completions divided by its
 scheduled duration, including bounded drain. NFR01's successful denominator and
 NFR02's all-issued eligible denominator remain explicit; failures are not removed.
+The local pilot assumes all issued requests are eligible and reports both
+`within_1s_fraction_of_correct` (correct responses only) and
+`within_1s_fraction_of_issued` (all issued requests). These are arithmetic
+previews, not NFR results. Its `valid` flag is stricter than either NFR and
+requires every issued response to be correct. A real NFR-02 runner must establish
+eligibility independently; dropped or missing work remains visible and invalidates
+the run. Timing remains unverified.
 Local small-cohort percentiles are not deployed evidence or a generator-capacity
 claim at20/10rps. API/helper resource watchdog excludes k6/native PostgreSQL RSS.
 
