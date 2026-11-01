@@ -43,6 +43,40 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-01 18:54:10 UTC — EXP-02 exact k6 source availability
+
+**Direction and checks:** User verified an offline check of the installed k6
+implementation and the extension alternative. The worktree started clean at
+`7eb9dc9`. `go version -m /usr/bin/k6` identifies module `go.k6.io/k6/v2` as
+`(devel)`, built for linux/amd64 with Go `go1.27.1-X:nodwarf5` and trimpath;
+the binary SHA-256 is
+`603b32fb28e5802a4a64bd053c0f2ec0d27146dfef8d803bd429abea37236960`.
+The command reports no exact k6 source revision. The local Go module/download
+caches searched contain k6-related dependencies but not the k6 module source;
+the installed documentation contains only a general README. Thus the installed
+implementation's request-phase boundaries, monotonic behavior and failed or
+timed-out request coverage could not be traced or verified locally. The binary
+hash identifies this file but does not establish its source revision.
+
+**Candidate, not a decision:** A narrowly scoped extension could retain a Go
+monotonic start instant per virtual user and expose elapsed duration after the
+synchronous HTTP call, while keeping outcome classification separate. It would
+need a pinned k6 source revision, compatible extension build tools and Go
+version, a reproducible binary and digest, confirmation that start/end brackets
+the approved full-response boundary, and owner review. Tests would need to cover
+per-VU isolation, invalid or missing starts, timeout/exception paths and overflow,
+using injected clocks and local doubles; later runtime checks remain gated.
+It must not expose absolute timestamps, secrets or a general remote capability.
+No extension was built, selected or validated; the built-in metrics might still
+suffice if exact source and all boundary cases substantiate them.
+
+**Outcome and next gate:** Obtain an identified, reviewable source revision and
+authoritative timing semantics through an allowed channel, or select a pinned
+version after the required review. Independently establish failure, timeout and
+connection-reuse behavior before changing workload timing. No k6 run, network,
+cloud, database or external-service call took place. The existing timing remains
+preview-only. Result awaits user verification.
+
 ### 2026-11-01 18:51:31 UTC — EXP-02 monotonic timing investigation
 
 **Direction:** User verified the proposed local timing investigation. No
