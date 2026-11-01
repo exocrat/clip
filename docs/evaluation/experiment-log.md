@@ -48,6 +48,42 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-01 20:43:12 UTC — EXP-02 planned case/manifest binding checks
+
+**Direction:** User verified grouped offline case, dataset and revision
+cross-checks. The existing `comparison_manifest.py` validates a post-run capture
+and requires actual end time, cost and evidence; it cannot be completed before
+credential acquisition. It was preserved unchanged rather than misrepresenting
+its capture schema as a pre-run approval.
+
+**Preparation:** Added a separate incomplete binding-plan template and
+`comparison_binding_preflight.py`. The operator supplies the intended full
+application source revision, frozen dataset fingerprint and SHA-256 of the
+exact complete comparison corpus, together with the ordered-reference file.
+The offline check validates those fields, hashes the file, invokes the existing
+ordered-reference binder (including archive/data/model/contract/source checks),
+and compares the entire reconstructed corpus. A missing, malformed, mismatched
+or altered input fails without a session, request or output artifact. Its exact
+revision match is conservative: source equivalence across different commits is
+not inferred. Passing never attests human review, deployment or authorization.
+
+An optional `--captured-manifest` uses the existing validator on an actual
+completed capture, then compares its application revision, dataset fingerprint
+and corpus hash with the plan. The blank template is not treated as a captured
+run. This optional comparison is post-run evidence consistency, not a pre-run
+gate. The separate NFR case bundle is not accepted as an EXP-02 comparison
+corpus. The existing real-target runner has not been implemented; it must invoke
+or enforce all required checks before it obtains credentials or sends requests.
+
+**Checks:** 37 focused Python tests passed, including synthetic reference orders,
+bad revisions/fingerprints/hashes, altered corpus with recomputed hash, optional
+captured-manifest mismatches, blank capture and explicit null refusal. Mocked manifest tests
+check cross-binding logic; the separate manifest suite covers actual capture
+validation. Strict Mypy, per-file Black and template JSON checks passed. No k6
+run, experiment, cloud, database or external-service call occurred. Actual
+reviewed ordered results, deployment/source equivalence, data parity, timing,
+all other manifest and approval gates remain pending. Result awaits verification.
+
 ### 2026-11-01 20:40:42 UTC — NFR dataset-bound case draft preparation
 
 **Direction:** User verified grouped offline NFR-01/02 case preparation. The

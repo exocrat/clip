@@ -45,6 +45,43 @@ loopback-only; preparing a corpus grants no permission to invoke it. Revalidate
 the frozen availability window and the current threshold, source, schema,
 model and target before any future use.
 
+## Planned comparison binding check
+
+The existing run-capture manifest includes actual end times, telemetry and
+costs, so it cannot be completed before a run. For offline input consistency,
+make a separate copy of
+`data/evaluation/workloads/ecs-lambda-binding-plan.template.json` and fill:
+
+- `application_revision`: the full 40-character source commit intended for the
+  application and used in the ordered-reference review.
+- `dataset_fingerprint`: the full `sha256:` logical fingerprint.
+- `case_corpus_sha256`: the 64-character SHA-256 of the exact case-corpus file
+  bytes, without a prefix.
+
+Then run the offline check with the complete prepared comparison corpus and its
+ordered-reference input:
+
+```sh
+.venv/bin/python -m scripts.evaluation.k6.comparison_binding_preflight path/to/binding-plan.json path/to/corpus.json path/to/ordered-reference.json
+```
+
+It checks the plan values and actual corpus file hash, rebuilds the full corpus
+from the verified archive and ordered reference, and compares the complete
+objects. The reference's search implementation revision must equal the planned
+application revision. This exact-match rule is conservative: if a later app
+commit preserves the same search implementation, owner-reviewed equivalence or
+a newly bound reference is needed; the tool does not infer it. If a completed
+run-capture manifest later exists, pass `--captured-manifest path/to/manifest.json`
+to validate its schema and compare its application revision, dataset fingerprint
+and corpus hash. A template is not a captured manifest.
+
+The check prints no cases or reference content. Exit 0 establishes only local
+input consistency, not human review, deployment identity, dataset parity,
+complete run safety or approval. It is not yet wired into a real-target runner;
+that future runner must enforce these and all other prerequisites before
+credentials or requests. The NFR case-draft bundle is a separate non-executable
+artifact and is not accepted as an EXP-02 comparison corpus by this check.
+
 ## NFR browse and Hybrid case drafts
 
 The offline generator selects five browse and three Hybrid cases from the same
