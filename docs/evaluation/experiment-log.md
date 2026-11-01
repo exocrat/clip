@@ -43,6 +43,47 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-01 20:11:52 UTC — NFR preparation and ownership inventory
+
+**Direction and scope:** User verified a read-only inventory of NFR preparation,
+ownership and local gaps. Reviewed `nfr/measurement-design.md`, the domain task
+list and status rows, workload drafts, evaluation scripts and evidence homes.
+No experiment, k6 workload, cloud, database or external-service call occurred.
+The repository's current formal DATA-READY and reviewed-result gates are not
+claimed satisfied; the user's preparation-only assumption remains an assumption.
+
+| NFR | Owner and approved workload | Existing preparation | Remaining work and gates |
+|---|---|---|---|
+| 01 Browse | SE-01 (C); 20 requests/s, 60 s warm-up and 300 s measured; at least 95% of correctly completed requests within 1 s; image bodies excluded. | Draft profile and manifest; shared local k6 correctness and comparison tooling. | Dataset-bound reviewed browse cases, approved profile, real-target authenticated runner, telemetry and timing decision; deployed evidence and owner acceptance. |
+| 02 Search | SE-01 (C); 10 requests/s, same windows; 95% of all issued eligible requests correct within 1 s, including failures in denominator. | Draft Hybrid profile/manifest; shared local tools and three Hybrid query bindings. | Approved independent search cases and real runner, query/DB signals, timing decision and deployed evidence; ordered comparison references alone do not complete this distinct NFR. |
+| 03 Peak | INT-01 (A coordinator); 50 operations/s mixed read/write workload, not the read-only comparison burst. | Design defines deterministic 100-operation mix and expected accounting. | Owner-built profile, controlled writes/CSRF checks, operation-ID reconciliation, cap and cleanup plan, real integrated path and evidence. |
+| 04 Usefulness | SE-01 (C); at least 20 included reviewed queries, Success@5 at least 80%, failed retrievals included. | `search.py` validates label structure/binding and provides synthetic arithmetic; reference-label tools exist. | Final independently reviewed labels and binding, actual retrieval adapter and real scoring integration; preview does not attest review or accept the NFR. |
+| 05 Chat | CN-01 (D); two clients, 60 messages at 5 s intervals over 300 s with approved background load; at least 57 visible by deadline. | Design defines sender-submit-to-recipient-display timing and privacy constraints. | Owner-built two-client harness/profile, actual display observation, authenticated encrypted integrated path, notification handling, approved browser driver and real evidence. |
+| 06 Recovery | INT-01 (A); approved loss of one ECS task, restored configured healthy capacity within 240 s. | Detailed observer inputs, timing and stop rules are designed. | Owner-built observer, reviewed exact task/fault plan and local doubles; actual authorized infrastructure and recovery evidence. |
+| 07 Restore | INT-01 (A); latest managed backup to an isolated target, usable with integrity/smoke within 30 min. | Detailed restore and safety requirements are designed. | Owner-built observer and local doubles, identified backup/isolated target, caps and cleanup plan, separate cloud approval and real evidence. |
+| 08 Budget | INT-01 (A) and CLOSE-00; project total under USD 200, shared costs not double-counted. | Evidence requirements and per-run cap guidance are documented. | Owner-led cap/ledger and actual billing/usage reconciliation, delayed charges and final closeout after all spending. |
+
+**Stale draft conflict:** `browse-nfr-draft-v1.json` and
+`hybrid-nfr-draft-v1.json` still specify 30 s warm-up and 3 s timeout, while the
+current NFR design specifies 60 s and 5 s; both also have null expected IDs.
+They are drafts, not approved runnable profiles. Do not quietly use or update
+them as a final decision. The older keyword draft is not an instruction to add a
+second search call; product NFR-02 uses explicitly selected Hybrid behavior.
+
+**Independent preparation candidates:** Within EXP-02 ownership, prepare shared
+offline input/manifest validation and reporting contracts that preserve distinct
+NFR-01/02 denominators, use synthetic fixtures, and refuse incomplete final
+cases before any session. Confirm actual SE-01 ownership and reviewed contracts
+before implementing NFR-specific profiles or real-target paths. CN-01 belongs
+to D but its two-client harness is a separate task/step with a browser-driver
+choice; INT-01 and SE-01 owner work must not be silently taken over. Real
+retrieval, human review, deployed authentication, fault injection, restore,
+budget data and all cloud actions remain outside this inventory. The proposed
+comparison clock/phase change remains unapproved and does not alter other NFRs.
+
+**Checks:** Read-only repository inspection and `git diff --check`; no test
+or measurement run. Inventory awaits user verification.
+
 ### 2026-11-01 20:03:45 UTC — EXP-02 offline phase-report preparation
 
 **Direction:** User verified preparing the candidate timing report with
