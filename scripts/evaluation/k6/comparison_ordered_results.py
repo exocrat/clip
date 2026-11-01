@@ -31,6 +31,7 @@ ROOT_KEYS = {
     "dataset_fingerprint",
     "schema_version",
     "search_contract_revision",
+    "search_implementation_revision",
     "model_revision",
     "review_record_reference",
     "queries",
@@ -38,8 +39,12 @@ ROOT_KEYS = {
 QUERY_KEYS = {"query_id", "query_text", "ordered_listing_ids", "has_next"}
 
 
-def bind_ordered_results(reference: Any) -> dict[str, Any]:
-    """Validate three supplied pages and build a non-authorizing case corpus."""
+def bind_ordered_results(reference: Any, expected_revision: str) -> dict[str, Any]:
+    """Bind reviewed pages to a separately supplied full search source revision."""
+    if not isinstance(expected_revision, str) or not re.fullmatch(
+        r"[0-9a-f]{40}", expected_revision
+    ):
+        raise ValueError("invalid_expected_search_revision")
     frozen = json.loads(FROZEN.read_text())
     labels = json.loads(LABELS.read_text())
     if not isinstance(reference, dict) or set(reference) != ROOT_KEYS:
@@ -50,6 +55,7 @@ def bind_ordered_results(reference: Any) -> dict[str, Any]:
         or reference["dataset_fingerprint"] != FINGERPRINT
         or reference["schema_version"] != frozen["schema_version"]
         or reference["search_contract_revision"] != labels["search_contract_revision"]
+        or reference["search_implementation_revision"] != expected_revision
         or reference["model_revision"] != frozen["model"]["revision"]
     ):
         raise ValueError("reference_binding_mismatch")
@@ -134,6 +140,7 @@ def bind_ordered_results(reference: Any) -> dict[str, Any]:
     corpus["review"]["ordered_reference_record"] = review
     corpus["review"]["ordered_reference_binding"] = {
         "search_contract_revision": reference["search_contract_revision"],
+        "search_implementation_revision": expected_revision,
         "model_revision": reference["model_revision"],
         "canonical_json_sha256": hashlib.sha256(
             json.dumps(reference, sort_keys=True, separators=(",", ":")).encode("utf-8")
@@ -148,11 +155,14 @@ def main() -> int:
     """Read a non-secret reference file and exclusively create a new corpus."""
     parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
     parser.add_argument("ordered_results", type=Path)
+    parser.add_argument(
+        "--search-revision", required=True, help="full intended search source commit"
+    )
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     try:
         reference = json.loads(args.ordered_results.read_text(encoding="utf-8"))
-        corpus = bind_ordered_results(reference)
+        corpus = bind_ordered_results(reference, args.search_revision)
         with args.output.open("x", encoding="utf-8") as stream:
             json.dump(corpus, stream, indent=2, ensure_ascii=False)
             stream.write("\n")

@@ -27,7 +27,8 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
   real ordered results and independent review remain pending. Corrected the
   burst arrival transition to eliminate an unintended five-second gap. Search
   category-text behavior changed on main; actual ordered cases and their search
-  implementation revision require review. Capacity/session/run gates and
+  implementation revision require review and matching source binding. The binder
+  now refuses an absent, malformed or mismatched intended revision. Capacity/session/run gates and
   deployed-path checks remain pending.
 - **EXP-02 Step 6:** Client accounting/reporting is implemented and locally
   checked with synthetic metrics. Offline metadata checks expose declared timing,
@@ -46,6 +47,31 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 - **Measurements:** No ECS/Lambda comparison or final NFR run is recorded here.
 
 ## History
+
+### 2026-11-01 20:23:45 UTC — EXP-02 ordered reference source binding
+
+**Direction:** User verified upstream integration and said the latest search
+implementation will be used in production. That is future intent, not proof of
+a current deployment. Latest merged main at reconciliation was `1f11065`;
+the exact final production/source revision must be checked before a run.
+
+**Change:** The ordered-reference template now requires an explicit full search
+implementation commit, left null until supplied. The offline binder requires a
+separately supplied intended full 40-character lowercase Git commit and refuses
+invalid or mismatched revisions before constructing the corpus; it records the
+matching revision in the derived corpus alongside contract and model bindings.
+The supplied command argument and reference are operator assertions: matching
+strings do not prove deployment, code identity or independent review. The real
+ordered answers were not available and no production data or results were
+invented. Reviewed rankings, final revision mapping to deployed artifacts and
+run gates remain pending. The corpus remains non-authorizing.
+
+**Checks:** 23 focused synthetic ordered-reference/corpus/manifest tests passed;
+strict Mypy, per-file Black, template JSON parsing and whitespace checks passed.
+Tests include malformed/missing/mismatched source
+revisions, refusal before corpus loading, no output on mismatch and immutable
+existing output. No k6 run, experiment, cloud, database or external-service
+call occurred. Result awaits user verification.
 
 ### 2026-11-01 20:18:19 UTC — EXP-02 upstream category-search reconciliation
 

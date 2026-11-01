@@ -13,15 +13,23 @@ the reviewed `has_next` boolean. The page size is 20; if `has_next` is true,
 provide 20 IDs. The reference points to an existing non-secret, relative review
 record. Do not add raw responses, credentials or real personal data. A relevance
 label set is not an ordered result and must not be used to invent one.
+Set `search_implementation_revision` to the full 40-character source commit
+used when those exact ordered results were independently reviewed. Separately
+select the intended experiment search source revision and supply it to the
+command; the values must match. The latest merged main at the reconciliation
+checkpoint is `1f110650d056f800e0179aec06f9b8747ad377ef`, not a verified
+production deployment or evidence that any results were reviewed against it.
+Later source changes require a fresh selection and reference review.
 
 From the repository root, prepare a new corpus (the output path must not exist):
 
 ```sh
-.venv/bin/python -m scripts.evaluation.k6.comparison_ordered_results path/to/reviewed-reference.json --output path/to/new-case-corpus.json
+.venv/bin/python -m scripts.evaluation.k6.comparison_ordered_results path/to/reviewed-reference.json --search-revision FULL_REVIEWED_SEARCH_COMMIT --output path/to/new-case-corpus.json
 ```
 
 The command checks the archive hash and its A/B synthetic records, dataset
 fingerprint and schema, query IDs/text, search-contract revision, model revision,
+and equality of the reference and intended search implementation revisions,
 listing eligibility, duplicate IDs and page shape. It reconstructs public fields
 from the frozen archive and preserves supplied order. It records a canonical JSON
 SHA-256 of the supplied reference and its review-record pointer. It does not
