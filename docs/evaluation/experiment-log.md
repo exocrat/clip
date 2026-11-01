@@ -40,13 +40,39 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
   metadata validator now checks run binding, artifact references and windows; it
   does not open or attest actual artifacts.
 - **EXP-02 Step 8:** The existing report tool reads raw k6 output and opens
-  derived reports as new files. Added a manifest guard against using the same
-  reference for raw and derived evidence; local regression checks confirm raw
-  hashes stay stable and existing reports cannot be replaced. User verified
-  this checkpoint; no run output has been captured.
+  derived reports as new files. The offline evidence verifier now hashes raw
+  output and derived reports against the captured manifest and rejects files
+  that resolve to the same inode. This checks recorded digests and distinctness;
+  it cannot prove when the digest was recorded or authenticate the artifacts.
+  No run output has been captured.
 - **Measurements:** No ECS/Lambda comparison or final NFR run is recorded here.
 
 ## History
+
+### 2026-11-01 20:57:31 UTC — EXP-02 raw and derived evidence checks
+
+**Direction:** User verified the offline raw-output and report verification
+step. The work remains preparation only; no run or external action was allowed.
+
+**Change:** Extended `comparison_artifacts.py` to hash the captured manifest's
+raw k6 output and derived report alongside the four telemetry artifacts and
+cost source. It rejects a digest mismatch and rejects raw/report references
+that are different paths to the same underlying file. The checker reads the
+artifacts without modifying them or printing their paths or contents. Updated
+the preparation guide to describe its seven-file coverage and limits.
+
+**Limits:** A matching hash proves only equality with the digest written in the
+manifest. It cannot prove that bytes remained unchanged before that digest was
+recorded, that evidence is authentic or complete, or that its contents are safe.
+No actual run outputs exist; all validation uses synthetic local files.
+
+**Checks:** Eight focused tests passed with warnings treated as errors,
+including unchanged-file checks, raw/report mismatches, and hard-link
+distinctness refusal. Black formatting verification passed through Black's
+in-process formatter (the normal command could not spawn its worker in this
+restricted environment); strict Mypy passed for the verifier module. No k6
+workload, experiment, cloud, database or external service call occurred.
+Result awaits user verification.
 
 ### 2026-11-01 20:52:28 UTC — EXP-02 offline evidence artifact checks
 

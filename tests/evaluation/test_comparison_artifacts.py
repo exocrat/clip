@@ -78,6 +78,12 @@ def evidence(tmp_path):
             "window_start_utc": "2026-11-01T09:59:00Z",
             "window_end_utc": "2026-11-01T10:07:00Z",
         }
+    raw = root / "raw/data.jsonl"
+    raw.parent.mkdir()
+    raw.write_bytes(b"synthetic immutable raw output")
+    report = root / "reports/report.json"
+    report.parent.mkdir()
+    report.write_bytes(b"synthetic derived report v1")
     cost = root / "cost.json"
     cost.write_bytes(b"synthetic cost")
     manifest["cost_inputs"].update(
@@ -92,9 +98,9 @@ def evidence(tmp_path):
     )
     manifest["evidence"] = {
         "raw_output_reference": "raw/data.jsonl",
-        "raw_output_sha256": "5" * 64,
+        "raw_output_sha256": hashlib.sha256(raw.read_bytes()).hexdigest(),
         "derived_report_reference": "reports/report.json",
-        "derived_report_sha256": "6" * 64,
+        "derived_report_sha256": hashlib.sha256(report.read_bytes()).hexdigest(),
         "approval_record_reference": "approval/record.md",
         "cleanup_record_reference": "cleanup/record.md",
     }
@@ -122,15 +128,22 @@ def evidence(tmp_path):
 
 def test_hashes_and_windows_without_claiming_content_or_measurement(evidence):
     root, manifest, telemetry = evidence
-    before = {p.name: p.read_bytes() for p in root.iterdir()}
+    before = {
+        p.relative_to(root): p.read_bytes() for p in root.rglob("*") if p.is_file()
+    }
     report = validate_artifacts(manifest, telemetry, root)
     assert report["artifact_hashes_match"] is True
+    assert report["raw_output_hash_matches"] is True
+    assert report["derived_report_hash_matches"] is True
+    assert report["raw_and_derived_report_are_distinct_files"] is True
     assert report["telemetry_metadata_valid"] is True
     assert report["artifact_contents_verified"] is False
     assert report["clock_independently_verified"] is False
     assert report["measurement_authorized"] is False
     assert report["nfr_accepted"] is False
-    assert {p.name: p.read_bytes() for p in root.iterdir()} == before
+    assert {
+        p.relative_to(root): p.read_bytes() for p in root.rglob("*") if p.is_file()
+    } == before
 
 
 def test_missing_modified_and_symlinked_artifacts_refused(evidence, tmp_path):
@@ -172,6 +185,35 @@ def test_modified_cost_and_generator_limit_flags(evidence):
     assert report["generator_checks"]["cpu_within_supplied_limit"] is False
     assert report["measurement_authorized"] is False
     (root / "cost.json").write_bytes(b"different synthetic cost")
+    with pytest.raises(ValueError, match="artifact_hash_mismatch"):
+        validate_artifacts(manifest, telemetry, root)
+
+
+def test_raw_and_derived_report_hashes_and_distinct_files(evidence):
+    root, manifest, telemetry = evidence
+    report = root / "reports/report.json"
+    report.write_bytes(b"corrected derived report v2")
+    with pytest.raises(ValueError, match="artifact_hash_mismatch"):
+        validate_artifacts(manifest, telemetry, root)
+
+    manifest["evidence"]["derived_report_sha256"] = hashlib.sha256(
+        report.read_bytes()
+    ).hexdigest()
+    raw = root / "raw/data.jsonl"
+    raw.unlink()
+    raw.hardlink_to(report)
+    manifest["evidence"]["raw_output_sha256"] = hashlib.sha256(
+        raw.read_bytes()
+    ).hexdigest()
+    with pytest.raises(
+        ValueError, match="raw_and_derived_report_must_be_distinct_files"
+    ):
+        validate_artifacts(manifest, telemetry, root)
+
+
+def test_modified_raw_output_is_refused(evidence):
+    root, manifest, telemetry = evidence
+    (root / "raw/data.jsonl").write_bytes(b"changed raw output")
     with pytest.raises(ValueError, match="artifact_hash_mismatch"):
         validate_artifacts(manifest, telemetry, root)
 

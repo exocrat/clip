@@ -143,28 +143,31 @@ passed. Both templates are intentionally invalid until real run inputs exist.
 
 ### Checking local telemetry and cost files
 
-After a completed run, the separate offline artifact verifier can check that
-the four telemetry references and cost source in a captured manifest point to
-local files with the recorded SHA-256 values:
+After a completed run, the separate offline artifact verifier checks that the
+four telemetry references, cost source, raw k6 output and derived report in a
+captured manifest point to local files with the recorded SHA-256 values:
 
 ```sh
 .venv/bin/python -m scripts.evaluation.k6.comparison_artifacts path/to/captured-manifest.json path/to/telemetry-metadata.json --evidence-root path/to/local-evidence-directory
 ```
 
 It reuses manifest and telemetry metadata validation, requires telemetry and
-cost windows to cover the run, and hashes the five files under the selected
-directory. References must be relative and cannot contain traversal or symlink
-components; the evidence root itself cannot be a symlink. Each artifact is
-limited to 100 MB and each metadata input to 2 MB. Missing, changed, non-regular,
-oversized or mismatched files fail. Exit 0 means those checks passed; exit 2
-means they failed. The files are read for hashing and never modified or printed.
+cost windows to cover the run, and hashes all seven files under the selected
+directory. Raw output and derived report must be distinct files, including when
+two different paths are hard links to the same file. References must be relative
+and cannot contain traversal or symlink components; the evidence root itself
+cannot be a symlink. Each artifact is limited to 100 MB and each metadata input
+to 2 MB. Missing, changed, non-regular, oversized or mismatched files fail.
+Exit 0 means those checks passed; exit 2 means they failed. The files are read
+for hashing and never modified or printed. A matching raw-output digest checks
+it against the digest recorded in this manifest; it cannot prove that no one
+changed the bytes before that digest was recorded.
 
 Matching hashes establish only that local bytes match recorded digests. They do
 not prove that a file came from the claimed provider, that its content is safe or
 complete, that telemetry is accurate, that limits are approved or that timing is
-valid. This check does not examine raw results or derived-report files. Use only
-sanitized evidence; this tool does not scan for secrets or private content. It
-does not authorize a run or accept an NFR.
+valid. Use only sanitized evidence; this tool does not scan for secrets or
+private content. It does not authorize a run or accept an NFR.
 
 ### Understanding connection timing
 

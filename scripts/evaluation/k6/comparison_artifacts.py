@@ -26,8 +26,8 @@ MAX_METADATA_BYTES = 2_000_000
 MAX_ARTIFACT_BYTES = 100_000_000
 
 
-def _hash_artifact(root: Path, reference: object) -> str:
-    """Hash one regular file under the selected root without following symlinks."""
+def _hash_artifact(root: Path, reference: object) -> tuple[str, tuple[int, int]]:
+    """Hash one regular file and return its device/inode without following links."""
     if not _reference(reference) or not isinstance(reference, str):
         raise ValueError("unsafe_artifact_reference")
     parts = reference.split("/")
@@ -71,7 +71,7 @@ def _hash_artifact(root: Path, reference: object) -> str:
             or before.st_ctime_ns != after.st_ctime_ns
         ):
             raise ValueError("artifact_changed_during_hash")
-        return digest.hexdigest()
+        return digest.hexdigest(), (after.st_dev, after.st_ino)
 
 
 def validate_artifacts(
@@ -96,11 +96,30 @@ def validate_artifacts(
         )
         for name in ARTIFACT_NAMES
     ] + [(cost["source_reference"], cost["source_sha256"])]
+    hashed: dict[str, tuple[str, tuple[int, int]]] = {}
     for reference, expected in references:
-        if _hash_artifact(evidence_root, reference) != expected.removeprefix("sha256:"):
+        hashed[reference] = _hash_artifact(evidence_root, reference)
+        if hashed[reference][0] != expected.removeprefix("sha256:"):
             raise ValueError("artifact_hash_mismatch")
+    raw = manifest["evidence"]["raw_output_reference"]
+    report = manifest["evidence"]["derived_report_reference"]
+    hashed[raw] = _hash_artifact(evidence_root, raw)
+    hashed[report] = _hash_artifact(evidence_root, report)
+    if hashed[raw][0] != manifest["evidence"]["raw_output_sha256"].removeprefix(
+        "sha256:"
+    ) or hashed[report][0] != manifest["evidence"][
+        "derived_report_sha256"
+    ].removeprefix(
+        "sha256:"
+    ):
+        raise ValueError("artifact_hash_mismatch")
+    if hashed[raw][1] == hashed[report][1]:
+        raise ValueError("raw_and_derived_report_must_be_distinct_files")
     return {
         "artifact_hashes_match": True,
+        "raw_output_hash_matches": True,
+        "derived_report_hash_matches": True,
+        "raw_and_derived_report_are_distinct_files": True,
         "telemetry_metadata_valid": True,
         "generator_checks": metadata["generator_checks"],
         "artifact_contents_verified": False,
