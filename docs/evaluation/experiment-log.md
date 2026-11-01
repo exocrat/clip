@@ -43,6 +43,41 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-01 19:07:32 UTC — EXP-02 official k6 timing source review
+
+**Direction:** The user allowed internet access, retaining the prohibition on
+workloads, live APIs and cloud or database actions. Reviewed the official
+[k6 v2.3.0 tracer](https://github.com/grafana/k6/blob/v2.3.0/lib/netext/httpext/tracer.go),
+[transport](https://github.com/grafana/k6/blob/v2.3.0/lib/netext/httpext/transport.go),
+[error codes](https://github.com/grafana/k6/blob/v2.3.0/lib/netext/httpext/error_codes.go),
+and [Go monotonic clock documentation](https://pkg.go.dev/time#hdr-Monotonic_Clocks).
+This is tagged upstream source, not proven identical to the installed development
+binary, whose source revision is unknown.
+
+**Finding:** The upstream tracer converts event times to `UnixNano` integers;
+that discards Go's monotonic clock reading. It calculates blocked time between
+connection acquisition events, while connecting and TLS intervals fall within
+that span for successful new connections, so blindly adding all three can double
+count. If connection acquisition never succeeds, blocked is not populated by
+that calculation. Phase summation therefore does not establish the approved
+monotonic full-operation boundary, particularly for failed connection attempts.
+The source handles reused connections and records metrics after the body is read,
+but the start of the full JavaScript call and all failure paths still need a
+separate supported timing method. No timing implementation was changed.
+
+**Additional defect found:** Upstream maps request timeout to 1050 and TCP dial
+timeout to 1211. `comparison_load.js` currently classifies only 1050 as a
+timeout; a 1211 response is instead counted as a transport error. This must be
+corrected and covered by synthetic tests before measurement. Other timeout
+sources and installed-version behavior need review; no complete timeout
+classification is claimed.
+
+**Next:** Prepare and test a bounded monotonic timer extension or another
+supported approach, pinning and verifying the binary/source relationship; fix
+the identified timeout accounting in a verified implementation step. No k6
+run, benchmark, deployed API, cloud, database or secret access occurred. This
+source-review result awaits user verification.
+
 ### 2026-11-01 18:54:10 UTC — EXP-02 exact k6 source availability
 
 **Direction and checks:** User verified an offline check of the installed k6
