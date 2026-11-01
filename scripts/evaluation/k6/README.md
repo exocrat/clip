@@ -161,7 +161,9 @@ false in every report. Absence of errors is not an NFR pass.
 Latency is Date.now elapsed around the full synchronous HTTP call (including
 connection/DNS/TLS where applicable), not http_req_duration alone. Resolution is
 milliseconds and wall-clock changes can affect intervals; negative intervals mark
-the run invalid. Final clock/timing method still needs the real run manifest.
+the run invalid. Comparison reports explicitly mark latency timing unverified:
+matching counts and a lack of negative intervals cannot prove a monotonic clock.
+The approved clock and end-to-end timing method remain an open gate.
 Actual raw k6 HTTP phase metrics are retained for diagnosis. R7 interpolation
 produces p50/p95/p99 for all completed and successful samples separately; empty is
 null, not zero. Successful throughput means cohort completions divided by its

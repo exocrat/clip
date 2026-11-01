@@ -28,7 +28,8 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 - **EXP-02 Step 6:** Client accounting/reporting is implemented and locally
   checked with synthetic metrics. Offline metadata checks expose declared timing,
   generator limits, VU headroom and drops. A verified monotonic k6 timing method,
-  real resource telemetry and a real k6 run remain pending.
+  real resource telemetry and a real k6 run remain pending. Reports explicitly
+  mark latency timing unverified even when counts match.
 - **EXP-02 Step 7:** A per-run capture template and validator are ready. No
   measured run exists, so run-specific values remain blank. An offline telemetry
   metadata validator now checks run binding, artifact references and windows; it
@@ -41,6 +42,38 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 - **Measurements:** No ECS/Lambda comparison or final NFR run is recorded here.
 
 ## History
+
+### 2026-11-01 18:48:42 UTC — EXP-02 local safety and reporting audit
+
+**Direction:** The user verified the preceding grouped result and approved a
+local timing, runner-safety and report audit. The checkout was clean at the
+start, at `422a45a`; no live requests or workload runs were authorized.
+
+**Timing:** The approved boundary includes connection setup and requires a
+verified monotonic clock. The installed Linux k6 v2.3.0 previously lacked
+`performance.now` in an inspect-only probe. `Date.now` can change with wall time,
+and built-in `http_req_duration` omits connection setup, so neither resolves the
+approved boundary. No supported replacement has been verified. The report now
+states `latency_timing_verified: false` and explains that matched accounting and
+no detected backward jumps do not establish valid timing. Latency figures remain
+preview values; a clock solution and verification remain open.
+
+**Runner and evidence:** The existing bounded local smoke runner permits only
+documented loopback ports and validates the entire supplied case batch through
+`k6 inspect` with a placeholder before synthetic login. It is not a real-target
+runner; real-target credential and request gates remain to be implemented. The
+report opens raw data read-only and creates a separate report exclusively; tests
+cover unchanged raw hashes and refusal to overwrite existing analysis. It
+reports counts, throughput, errors, timeouts, throttles and drops, and explicitly
+marks infrastructure telemetry uncollected. Artifact contents, real metrics,
+and provider claims are not verified by these local tools.
+
+**Checks:** 35 focused Python tests and three Node test files passed. The system
+Python lacked pytest and Black; the repository virtual environment supplied them.
+Black's multi-file invocation failed because its worker socket was denied by the
+sandbox; both individual file checks and `git diff --check` passed. No k6 run, experiment,
+cloud, database or external-service call occurred. This result awaits user
+verification.
 
 ### 2026-11-01 18:23:04 UTC — EXP-02 ordered references, timing and telemetry preparation
 

@@ -241,6 +241,12 @@ def summarize_points(points: list[dict], profile: dict) -> dict:
         "nfr_accepted": False,
         "accounting_complete": accounting_complete,
         "delivery_complete": delivery_complete,
+        "latency_timing_verified": False,
+        "latency_limitation": (
+            "Preview only: the workload uses Date.now(), which is not a "
+            "verified monotonic end-to-end clock. Complete accounting or no "
+            "detected backward jumps does not validate latency."
+        ),
         "client_metrics": result,
         "infrastructure_metrics": {
             "status": "not_collected_local_preparation",

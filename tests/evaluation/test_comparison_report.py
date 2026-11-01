@@ -54,6 +54,8 @@ class ComparisonReportTests(unittest.TestCase):
         self.assertEqual(low_warmup["successful_rps"], 1)
         self.assertTrue(report["accounting_complete"])
         self.assertTrue(report["delivery_complete"])
+        self.assertFalse(report["latency_timing_verified"])
+        self.assertIn("not a verified monotonic", report["latency_limitation"])
         low_measured = report["client_metrics"]["low_measured"]
         self.assertEqual(low_measured["throttled"], 1)
         self.assertEqual(low_measured["failed"], 1)
