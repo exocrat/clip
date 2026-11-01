@@ -26,8 +26,9 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
   configuration equivalence remains pending.
 - An offline paired-plan checker and blank template now describe the approved
   three-cycle A/B, B/A, A/B order and nine low/normal/burst pairs. They validate
-  the declared plan only; actual manifests, deployment identity and generator
-  suitability remain future gates. No concurrency ceiling is encoded.
+  the declared plan and can compare all 18 captured manifests to it. Actual
+  deployment identity and generator suitability remain future gates. No
+  concurrency ceiling is encoded.
 - **EXP-02 Steps 3–5:** Local path, response and scheduled-workload preparation
   exists on `task/exp-02-workload`. A ten-case dataset-bound draft now has five
   browse and two detail expected responses plus three reviewed Hybrid query
@@ -56,6 +57,29 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 - **Measurements:** No ECS/Lambda comparison or final NFR run is recorded here.
 
 ## History
+
+### 2026-11-01 21:27:51 UTC — EXP-02 paired captured-manifest cross-check
+
+**Direction:** User verified extending the paired-plan checker to compare all
+completed run manifests with the plan. Work remains offline preparation only.
+
+**Change:** `comparison_pair_plan.py` now optionally accepts all 18 captured
+manifests. It validates each with the existing manifest validator, then matches
+run ID, configuration, condition, repetition/cycle, sequence start and the
+planned dataset/index/database and workload fingerprints and generator version.
+It rejects missing, duplicate, unexpected, template or mismatched captures. The
+CLI still prints only aggregate check status and never authorizes a run. The
+preparation guide documents the later check.
+
+**Limits:** The checker verifies recorded values only. It does not prove that
+the deployed service used those values, inspect raw outputs, validate artifact
+hashes, or approve a measurement. Synthetic captures are test fixtures, not
+experiment evidence. The 300-request proposal remains non-binding.
+
+**Checks:** Thirteen focused tests passed with warnings as errors, covering
+valid synthetic captures and mismatched fields/sets. Strict Mypy and Black
+formatting verification passed. No k6 workload, experiment, cloud, database or
+external service call occurred. Result awaits user verification.
 
 ### 2026-11-01 21:15:42 UTC — EXP-02 offline paired-run plan
 

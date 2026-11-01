@@ -8,6 +8,9 @@ from pathlib import Path
 import re
 from typing import Any
 
+from scripts.evaluation.k6.comparison_manifest import TEMPLATE as MANIFEST_TEMPLATE
+from scripts.evaluation.k6.comparison_manifest import validate_manifest
+
 ROOT = Path(__file__).resolve().parents[3]
 TEMPLATE = ROOT / "data/evaluation/workloads/ecs-lambda-paired-plan.template.json"
 MAX_INPUT_BYTES = 2_000_000
@@ -39,8 +42,10 @@ def _nonempty(value: object) -> bool:
     return isinstance(value, str) and bool(value.strip())
 
 
-def validate_pair_plan(value: Any) -> dict[str, Any]:
-    """Validate one template or complete plan; never authorize a measurement."""
+def validate_pair_plan(
+    value: Any, captured_manifests: list[Any] | None = None
+) -> dict[str, Any]:
+    """Validate a declared plan and optionally its 18 sanitized run records."""
     plan = _object(value, TOP_KEYS, "invalid_plan_shape")
     if type(plan["schema_version"]) is not int or plan["schema_version"] != 1:
         raise ValueError("unsupported_plan_version")
@@ -55,6 +60,7 @@ def validate_pair_plan(value: Any) -> dict[str, Any]:
         raise ValueError("three_cycles_required")
 
     run_ids: set[str] = set()
+    run_bindings: dict[str, dict[str, Any]] = {}
     for index, (cycle_value, expected_order) in enumerate(
         zip(plan["cycles"], CONFIGURATION_ORDERS, strict=True), start=1
     ):
@@ -87,8 +93,16 @@ def validate_pair_plan(value: Any) -> dict[str, Any]:
                 if run_id in run_ids:
                     raise ValueError("duplicate_run_id")
                 run_ids.add(run_id)
+                run_bindings[run_id] = {
+                    "configuration": config,
+                    "condition": expected_condition,
+                    "repetition": index,
+                    "sequence_start": sequence_start,
+                }
 
     if state == "template":
+        if captured_manifests is not None:
+            raise ValueError("captured_manifests_require_planned_plan")
         if any(value is not None for value in shared.values()):
             raise ValueError("template_contains_shared_inputs")
         return {
@@ -112,6 +126,51 @@ def validate_pair_plan(value: Any) -> dict[str, Any]:
             raise ValueError("invalid_shared_fingerprint")
     if len(run_ids) != 18:
         raise ValueError("eighteen_unique_run_ids_required")
+    if captured_manifests is not None:
+        if len(captured_manifests) != 18:
+            raise ValueError("eighteen_captured_manifests_required")
+        manifest_template = json.loads(MANIFEST_TEMPLATE.read_text(encoding="utf-8"))
+        checked_run_ids: set[str] = set()
+        for manifest in captured_manifests:
+            if not isinstance(manifest, dict):
+                raise ValueError("invalid_captured_manifest")
+            checked = validate_manifest(manifest, manifest_template)
+            if checked["state"] != "captured":
+                raise ValueError("captured_manifest_required")
+            captured_run = manifest["run"]
+            run_id = captured_run["run_id"]
+            expected = run_bindings.get(run_id)
+            if expected is None or run_id in checked_run_ids:
+                raise ValueError("captured_run_id_mismatch")
+            workload = manifest["workload"]
+            if (
+                any(
+                    captured_run[key] != expected[key]
+                    for key in ("configuration", "condition", "repetition")
+                )
+                or workload["sequence_start"] != expected["sequence_start"]
+            ):
+                raise ValueError("captured_run_binding_mismatch")
+            dataset = manifest["dataset"]
+            bindings = (
+                dataset["logical_fingerprint"].removeprefix("sha256:")
+                == shared["dataset_fingerprint"].removeprefix("sha256:"),
+                dataset["index_fingerprint"] == shared["index_fingerprint"],
+                dataset["database_settings_sha256"].removeprefix("sha256:")
+                == shared["database_settings_sha256"].removeprefix("sha256:"),
+                workload["profile_sha256"].removeprefix("sha256:")
+                == shared["schedule_sha256"].removeprefix("sha256:"),
+                workload["case_corpus_sha256"].removeprefix("sha256:")
+                == shared["case_corpus_sha256"].removeprefix("sha256:"),
+                workload["load_script_sha256"].removeprefix("sha256:")
+                == shared["load_script_sha256"].removeprefix("sha256:"),
+                workload["generator_version"] == shared["generator_version"],
+            )
+            if not all(bindings):
+                raise ValueError("captured_shared_input_mismatch")
+            checked_run_ids.add(run_id)
+        if checked_run_ids != run_ids:
+            raise ValueError("captured_run_set_mismatch")
     return {
         "valid": True,
         "state": "planned",
@@ -119,6 +178,8 @@ def validate_pair_plan(value: Any) -> dict[str, Any]:
         "pair_count": 9,
         "planned_run_count": len(run_ids),
         "shared_inputs_bound": True,
+        "captured_manifests_checked": captured_manifests is not None,
+        "captured_manifest_count": len(captured_manifests or []),
         "measurement_authorized": False,
     }
 
@@ -137,9 +198,20 @@ def main() -> None:
     parser.add_argument(
         "plan", nargs="?", type=Path, default=TEMPLATE, help="local paired plan JSON"
     )
+    parser.add_argument(
+        "--captured-manifest",
+        action="append",
+        type=Path,
+        help="sanitized per-run manifest; supply all 18 to compare with the plan",
+    )
     args = parser.parse_args()
     try:
-        result = validate_pair_plan(_read(args.plan))
+        manifests = (
+            [_read(path) for path in args.captured_manifest]
+            if args.captured_manifest is not None
+            else None
+        )
+        result = validate_pair_plan(_read(args.plan), manifests)
         print(json.dumps(result, sort_keys=True))
     except (OSError, ValueError, TypeError, KeyError):
         parser.exit(2, "Paired run plan check failed; no workload was started\n")

@@ -9,6 +9,7 @@ from typing import Any, Callable, cast
 import pytest
 
 from scripts.evaluation.k6.comparison_pair_plan import TEMPLATE, validate_pair_plan
+from scripts.evaluation.k6.comparison_manifest import TEMPLATE as MANIFEST_TEMPLATE
 
 
 def planned_plan() -> dict[str, Any]:
@@ -31,6 +32,99 @@ def planned_plan() -> dict[str, Any]:
             pair["B_run_id"] = f"synthetic-{counter:02d}-B"
             counter += 1
     return plan
+
+
+def captured_manifests(plan: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build valid, entirely synthetic captured records for every planned run."""
+    manifests = []
+    for cycle in plan["cycles"]:
+        for pair in cycle["pairs"]:
+            for config in cycle["configuration_order"]:
+                manifest = cast(
+                    dict[str, Any], json.loads(MANIFEST_TEMPLATE.read_text())
+                )
+                manifest["manifest_state"] = "captured"
+                manifest["run"] = {
+                    "run_id": pair[f"{config}_run_id"],
+                    "configuration": config,
+                    "condition": pair["condition"],
+                    "repetition": cycle["cycle"],
+                    "owner_role": "synthetic operator",
+                    "planned_start_utc": "2026-11-01T10:00:00Z",
+                    "actual_start_utc": "2026-11-01T10:00:01Z",
+                    "actual_end_utc": "2026-11-01T10:06:00Z",
+                }
+                manifest["target"].update(
+                    {
+                        "account_id": "123456789012",
+                        "role_arn": "arn:aws:iam::123456789012:role/synthetic",
+                        "region": "synthetic-region",
+                        "environment_id": "synthetic-env",
+                        "entrypoint_reference": "synthetic-target-record",
+                        "resource_ids": ["synthetic-resource"],
+                        "resource_configuration_sha256": "f" * 64,
+                    }
+                )
+                manifest["revisions"].update(
+                    {
+                        "application_revision": "1" * 40,
+                        "image_digest": "sha256:" + "2" * 64,
+                        "frontend_revision": "3" * 40,
+                        "migration_head": "20261101010000",
+                        "api_contract_sha256": "4" * 64,
+                    }
+                )
+                shared = plan["shared_inputs"]
+                manifest["dataset"].update(
+                    {
+                        "seed": 42,
+                        "user_count": 5000,
+                        "listing_count": 1000,
+                        "logical_fingerprint": shared["dataset_fingerprint"],
+                        "index_fingerprint": shared["index_fingerprint"],
+                        "database_settings_sha256": shared["database_settings_sha256"],
+                    }
+                )
+                manifest["workload"].update(
+                    {
+                        "profile_sha256": shared["schedule_sha256"],
+                        "case_corpus_path": "synthetic-cases.json",
+                        "case_corpus_sha256": shared["case_corpus_sha256"],
+                        "generator_version": shared["generator_version"],
+                        "load_script_sha256": shared["load_script_sha256"],
+                        "run_command_reference": "synthetic-command.md",
+                        "sequence_start": pair["sequence_start"],
+                    }
+                )
+                for name in ("ecs", "lambda", "postgres", "generator"):
+                    manifest["resource_telemetry"].update(
+                        {
+                            f"{name}_artifact_reference": f"{name}.json",
+                            f"{name}_artifact_sha256": "5" * 64,
+                        }
+                    )
+                manifest["cost_inputs"].update(
+                    {
+                        "source_reference": "synthetic-cost.json",
+                        "source_sha256": "6" * 64,
+                        "interval_start_utc": "2026-11-01T09:59:00Z",
+                        "interval_end_utc": "2026-11-01T10:07:00Z",
+                        "amount_before_credits": 0.0,
+                        "billing_delay_note": "synthetic fixture",
+                    }
+                )
+                manifest["evidence"].update(
+                    {
+                        "raw_output_reference": "raw.ndjson",
+                        "raw_output_sha256": "7" * 64,
+                        "derived_report_reference": "report-v1.json",
+                        "derived_report_sha256": "8" * 64,
+                        "approval_record_reference": "synthetic-approval.md",
+                        "cleanup_record_reference": "synthetic-cleanup.md",
+                    }
+                )
+                manifests.append(manifest)
+    return manifests
 
 
 def test_template_is_valid_but_never_authorizes_measurement() -> None:
@@ -88,6 +182,49 @@ def test_duplicate_run_ids_are_refused() -> None:
     ]
     with pytest.raises(ValueError, match="duplicate_run_id"):
         validate_pair_plan(plan)
+
+
+def test_all_synthetic_captured_manifests_match_the_plan() -> None:
+    plan = planned_plan()
+    result = validate_pair_plan(plan, captured_manifests(plan))
+    assert result["captured_manifests_checked"] is True
+    assert result["captured_manifest_count"] == 18
+    assert result["measurement_authorized"] is False
+
+
+@pytest.mark.parametrize(
+    ("change", "message"),
+    [
+        (
+            lambda manifest: manifest["workload"].update(sequence_start=9),
+            "captured_run_binding_mismatch",
+        ),
+        (
+            lambda manifest: manifest["run"].update(configuration="B"),
+            "captured_run_binding_mismatch",
+        ),
+        (
+            lambda manifest: manifest["workload"].update(case_corpus_sha256="9" * 64),
+            "captured_shared_input_mismatch",
+        ),
+    ],
+)
+def test_mismatched_captured_manifest_is_refused(
+    change: Callable[[dict[str, Any]], None], message: str
+) -> None:
+    plan = planned_plan()
+    manifests = captured_manifests(plan)
+    change(manifests[0])
+    with pytest.raises(ValueError, match=message):
+        validate_pair_plan(plan, manifests)
+
+
+def test_incomplete_capture_set_and_template_capture_are_refused() -> None:
+    plan = planned_plan()
+    with pytest.raises(ValueError, match="eighteen_captured_manifests_required"):
+        validate_pair_plan(plan, captured_manifests(plan)[:-1])
+    with pytest.raises(ValueError, match="captured_manifests_require_planned_plan"):
+        validate_pair_plan(json.loads(TEMPLATE.read_text()), [])
 
 
 def test_cli_checks_template_offline_without_starting_workload(tmp_path: Path) -> None:

@@ -108,6 +108,17 @@ sets `measurement_authorized` to false. This check does not encode the
 experiment design's proposed 300 concurrent-request figure, which the user has
 clarified is non-binding.
 
+After all runs have captured manifests, run the same command with
+`--captured-manifest PATH` repeated once for each of the 18 manifest files.
+
+The checker first applies the existing per-run manifest validator, then matches
+all 18 run IDs, configuration/condition/cycle, case sequence start, and shared
+dataset/index/database and workload fingerprints to the plan. It rejects an
+incomplete, duplicate, unexpected or mismatched manifest set. This verifies the
+recorded fields only; it does not prove the deployed service used them or hash
+the raw results. Use the separate artifact verifier for the manifest's evidence
+files. Both checks remain offline and non-authorizing.
+
 ## NFR browse and Hybrid case drafts
 
 The offline generator selects five browse and three Hybrid cases from the same
