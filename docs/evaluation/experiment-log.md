@@ -48,6 +48,39 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-01 20:38:08 UTC — NFR draft preflight preparation
+
+**Direction:** User verified a grouped offline validator/test/documentation step.
+The existing browse and Hybrid drafts were left unchanged. The NFR design's
+rates and 60/300/5-second warm-up/measurement/timeout values are checked rather
+than silently replacing draft fields or changing the approved design.
+
+**Preparation:** Added `nfr_profile_preflight.js`, which reuses the existing
+draft query validator and comparison route rules, checks the NFR-specific rate,
+fixed time values, bounded case list and capacity, explicit Hybrid selection,
+and supplied ordered UUID arrays. It allows an explicitly empty page but does
+not claim that it is representative. `nfr_profile_preflight.mjs` is a bounded
+local-file CLI with sanitized errors and no networking or session code. A
+passing result always states execution is not permitted and no NFR is accepted.
+The existing loopback runner already rejects `nfr-draft`; the preflight is not
+wired into a real-target runner, which does not yet exist.
+
+**Remaining:** This check does not attest human review, final dataset, code or
+model binding, case coverage, expected field/page/filter correctness, maximum
+approved VUs, zero retries, clock or target/session controls. The future runner
+must enforce the complete corpus and manifest before credentials or requests.
+The SE-01 owner must complete and review NFR-specific profiles; this check is
+not a replacement for that ownership. Timing protocol remains open.
+
+**Checks:** Existing drafts refused; synthetic test cases cover rates, fixed
+timing, missing and invalid IDs, duplicates, malformed queries and required
+Hybrid mode. Three Node test files and 18 focused Python tests passed; direct CLI
+refused the stale browse draft. An initial Node test expected captured child
+stderr, but the local environment returned an empty captured stream despite the
+CLI directly printing the sanitized error; the test now checks refusal by exit
+status and the direct CLI output was checked separately. No k6 run, experiment,
+cloud, database or external-service call occurred. Result awaits verification.
+
 ### 2026-11-01 20:33:11 UTC — NFR-01/02 local denominator preparation
 
 **Direction:** User verified the grouped synthetic NFR-01/02 reporting step

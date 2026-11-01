@@ -6,6 +6,25 @@ For offline ordered-reference binding and telemetry metadata validation, see
 [comparison preparation inputs](../../../docs/evaluation/comparison-preparation-inputs.md).
 These commands do not send requests or authorize measurements.
 
+For offline NFR-01/02 draft checks, run with the project's Node 24:
+
+```sh
+node scripts/evaluation/k6/nfr_profile_preflight.mjs nfr-01 data/evaluation/workloads/browse-nfr-draft-v1.json
+node scripts/evaluation/k6/nfr_profile_preflight.mjs nfr-02 data/evaluation/workloads/hybrid-nfr-draft-v1.json
+```
+
+Both existing drafts deliberately fail: their warm-up, timeout and null IDs
+are incomplete. A candidate copy must use the designed rate (20 browse or 10
+Hybrid), 60-second warm-up, 300-second measured window and five-second timeout;
+each case must supply an ordered ID array. Empty arrays explicitly represent an
+empty expected page and are not a substitute for representative cases. Exit 0
+means these limited draft checks passed; exit 2 means they failed. The tool does
+not obtain a session, execute a workload, attest review, verify dataset/source
+bindings, case coverage, full expected response fields, concurrency, retries or
+timing. It always returns `execution_permitted: false`; the future real-target
+runner must enforce all final gates before obtaining credentials or sending
+requests. The existing local runner refuses all `nfr-draft` profiles.
+
 `comparison_runner.py` runs one to ten case-shaped requests against the owned
 synthetic inspection app on port 5174, 5175 or 5176. It obtains a synthetic buyer
 session from that app in memory, invokes the explicitly named k6 binary with a
