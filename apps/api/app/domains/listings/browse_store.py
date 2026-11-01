@@ -11,6 +11,10 @@ from app.core.pagination import Page, PageRequest, page_from_window
 from app.domains.listings.browse_validation import normalize_query
 from app.domains.listings.lexical_expansion import TextQuery, compile_expansion
 from app.domains.listings.vocabulary import load_vocabulary
+from app.domains.listings.category_text import (
+    DISCOVERY_VECTOR_SQL,
+    keyword_candidates_sql,
+)
 
 # Project only the reviewed public summary. Ownership, selection, revision,
 # operational timestamps, upload metadata and object keys never enter this read.
@@ -42,7 +46,7 @@ WHERE listing.retired_at IS NULL
     AND (listing.available_until IS NULL OR listing.available_until > %s)
 """
 
-KEYWORD_RELEVANCE_POLICY_VERSION = "keyword-relevance-v1"
+KEYWORD_RELEVANCE_POLICY_VERSION = "keyword-relevance-v2-category"
 
 # Only code-owned fragments can select ordering; client input is never SQL.
 _SORT_SQL = {
@@ -66,9 +70,9 @@ def browse_statement(
     """Build parameterized browse/search SQL using the authoritative GIN vector.
 
     plainto_tsquery treats syntax characters as plain text and uses the same
-    English normalization as the stored title/description vector. All normalized
-    terms must match; an empty normalized query matches nothing. The private
-    keyword_relevance option orders original matches before expanded/typo-only,
+    English normalization for title/description and the live category label.
+    All normalized terms must match; an empty normalized query matches nothing.
+    The private keyword_relevance option orders original matches before expanded/typo-only,
     then native cover-density rank and UUID. It never reads semantic state.
     Only code-owned SQL fragments are composed; user values stay bound.
     """
@@ -97,12 +101,15 @@ def browse_statement(
     if query.q is not None:
         # The public Keyword store supplies the reviewed vocabulary expansion.
         # Direct callers may omit it to request original full-text matching.
-        if text_query is None:
-            statement += " AND listing.search_vector @@ plainto_tsquery('pg_catalog.english', %s)\n"
-            parameters += (query.q,)
-        else:
-            statement += " AND listing.search_vector @@ " + text_query.sql + "\n"
-            parameters += text_query.parameters
+        expression = (
+            "plainto_tsquery('pg_catalog.english', %s)"
+            if text_query is None
+            else text_query.sql
+        )
+        text_parameters = (query.q,) if text_query is None else text_query.parameters
+        statement = keyword_candidates_sql(expression) + statement
+        parameters = text_parameters + parameters
+        statement += " AND listing.id IN (SELECT id FROM lexical_candidates)\n"
     for values, predicate in (
         (query.category_code, "category.code = ANY(%s)"),
         (query.condition_code, "listing_condition.code = ANY(%s)"),
@@ -124,17 +131,27 @@ def browse_statement(
         assert query.q is not None and text_query is not None
         original = "plainto_tsquery('pg_catalog.english', %s)"
         # Ranking selects the query that actually matched within its own tier.
-        # Default weights/normalization0 retain the existing positional vector;
-        # zero-rank matches stay present and no numeric rank enters the summary.
+        # Default weights/normalization0 use title/description followed by the
+        # current category label; zero-rank matches stay present and no numeric
+        # rank enters the summary.
+        vector = DISCOVERY_VECTOR_SQL
         statement += (
-            "ORDER BY CASE WHEN listing.search_vector @@ "
+            "ORDER BY CASE WHEN "
+            + vector
+            + " @@ "
             + original
-            + " THEN 1 ELSE 0 END DESC, CASE WHEN listing.search_vector @@ "
+            + " THEN 1 ELSE 0 END DESC, CASE WHEN "
+            + vector
+            + " @@ "
             + original
-            + " THEN ts_rank_cd(listing.search_vector, "
+            + " THEN ts_rank_cd("
+            + vector
+            + ", "
             + original
             + ", 0)"
-            + " ELSE ts_rank_cd(listing.search_vector, "
+            + " ELSE ts_rank_cd("
+            + vector
+            + ", "
             + text_query.sql
             + ", 0) END DESC, listing.id ASC\nLIMIT %s OFFSET %s"
         )

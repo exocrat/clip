@@ -544,6 +544,12 @@ async def exercise_expanded_text(
     Expectations are hand-specified controlled matching cases, not NFR labels.
     """
     ids = sorted(visible, reverse=True)
+    # These legacy cases isolate text normalization/rank. Category-specific
+    # membership is tested separately with real catalogue assignments.
+    await connection.execute(
+        "UPDATE listings.sale_listings SET category_id=(SELECT id FROM listings.categories WHERE code='other') WHERE id=ANY(%s)",
+        (list(visible),),
+    )
     await connection.execute(
         "UPDATE listings.sale_listings SET asking_price_paise=0,negotiable=false WHERE id=ANY(%s)",
         (list(visible),),
@@ -739,6 +745,12 @@ async def exercise_keyword_relevance(connection, now, visible, hidden):
     failed-generation simulation are rolled back with the parent's private run.
     """
     ids = sorted(visible, reverse=True)
+    # These legacy cases isolate text normalization/rank. Category-specific
+    # membership is tested separately with real catalogue assignments.
+    await connection.execute(
+        "UPDATE listings.sale_listings SET category_id=(SELECT id FROM listings.categories WHERE code='other') WHERE id=ANY(%s)",
+        (list(visible),),
+    )
     await connection.execute(
         "UPDATE listings.sale_listings SET title='Synthetic keywordmarker',description='unrelated quasar',asking_price_paise=0,negotiable=false,condition_code='good' WHERE id=ANY(%s)",
         (list(visible),),
@@ -817,6 +829,10 @@ async def exercise_keyword_relevance(connection, now, visible, hidden):
         "UPDATE listings.sale_listings SET negotiable=true,condition_code='fair' WHERE id=%s",
         (ids[1],),
     )
+    await connection.execute(
+        "UPDATE listings.sale_listings SET category_id=(SELECT id FROM listings.categories WHERE code='bicycles') WHERE id=%s",
+        (ids[0],),
+    )
     filtered = await ranked(
         ListingQuery(
             q="red bicycle",
@@ -838,7 +854,7 @@ async def exercise_keyword_relevance(connection, now, visible, hidden):
         await ranked(ListingQuery(q="bicycle", category_code="not_a_category"))
     assert raised.value.spec.status == 422
     await connection.execute(
-        "UPDATE listings.sale_listings SET description='red bicycle',asking_price_paise=0,negotiable=false,condition_code='good' WHERE id=ANY(%s)",
+        "UPDATE listings.sale_listings SET description='red bicycle',asking_price_paise=0,negotiable=false,condition_code='good',category_id=(SELECT id FROM listings.categories WHERE code='other') WHERE id=ANY(%s)",
         (list(visible),),
     )
     expected = sorted(visible)

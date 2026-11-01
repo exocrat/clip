@@ -197,6 +197,13 @@ async def exercise_math(value):
                 listing = await live_listing(
                     connection, 94100 + index, now, title, description, price, status
                 )
+                if index in (2, 3, 4):
+                    # Semantic-only negatives must not also be categorised as
+                    # Bicycles, which intentionally supplies a lexical match.
+                    await connection.execute(
+                        "UPDATE listings.sale_listings SET category_id=(SELECT id FROM listings.categories WHERE code='other') WHERE id=%s",
+                        (listing,),
+                    )
                 rows.append(listing)
                 outputs[listing] = output
             # Retired content is scrubbed and has no generation; it must neither
@@ -477,9 +484,9 @@ async def exercise_snapshot(value):
             outputs[listing] = parts(1.0, 1.0)
             await math_drain(store, spec, outputs)
             await store.set_state(spec, "serving")
-            request = ListingQuery(q="vehicle")
-            bound = bind_query("vehicle", spec, VECTOR)
-            compiled = await compile_expansion(reader, "vehicle")
+            request = ListingQuery(q="vehicle snapshot")
+            bound = bind_query("vehicle snapshot", spec, VECTOR)
+            compiled = await compile_expansion(reader, "vehicle snapshot")
             statement, parameters = hybrid_statement(
                 request, now, 500000, bound, compiled, relevance=True
             )
@@ -602,6 +609,9 @@ async def exercise_actual(value):
                         "Small kitchen appliance for storing milk, vegetables and groceries at a low temperature.",
                     ),
                 ]
+                fixtures.append(
+                    ("FX3 quasarframe", "Aluminium frame, recently serviced.")
+                )
                 for index, (title, description) in enumerate(fixtures):
                     async with connection.transaction():
                         ids.append(
@@ -609,6 +619,15 @@ async def exercise_actual(value):
                                 connection, 94400 + index, now, title, description
                             )
                         )
+                # Give the real-model examples their actual item categories;
+                # category membership must not label books/appliances as bicycles.
+                for listing, code in zip(
+                    ids, ("bicycles", "books", "appliances", "bicycles")
+                ):
+                    await connection.execute(
+                        "UPDATE listings.sale_listings SET category_id=(SELECT id FROM listings.categories WHERE code=%s) WHERE id=%s",
+                        (code, listing),
+                    )
                 # No accidental backfill of other fixtures through a real model.
                 due = await (
                     await connection.execute(
@@ -625,6 +644,7 @@ async def exercise_actual(value):
                     ("bycicle", ids[0]),
                     ("study material for calculus", ids[1]),
                     ("keep food cold", ids[2]),
+                    ("quasarframe bicycle", ids[3]),
                 ]:
                     page = await search_hybrid_page(
                         connection,
@@ -634,7 +654,14 @@ async def exercise_actual(value):
                         500000,
                         relevance=True,
                     )
-                    assert page.items and page.items[0].listing_id == expected
+                    if text == "bycicle":
+                        # Both correctly categorised bicycles are relevant;
+                        # their semantic tie ordering is not a single-item oracle.
+                        assert {ids[0], ids[3]} <= {
+                            item.listing_id for item in page.items
+                        }
+                    else:
+                        assert page.items and page.items[0].listing_id == expected
                     assert all(
                         set(item.model_dump()) == set(ListingSummary.model_fields)
                         for item in page.items
@@ -642,7 +669,10 @@ async def exercise_actual(value):
                     cases.append(
                         {
                             "scenario": text.replace(" ", "_"),
-                            "expected_first": True,
+                            "check": (
+                                "membership" if text == "bycicle" else "expected_first"
+                            ),
+                            "passed": True,
                             "returned": len(page.items),
                         }
                     )

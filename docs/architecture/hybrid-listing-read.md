@@ -12,6 +12,14 @@ final labels are unchanged.
 
 ## Internal interface and prerequisites
 
+**Category amendment (2026-11-01; draft-provider scope confirmed by Mohit):**
+Current retrieval policy `hybrid-blend-v2-category` extends original/expanded
+lexical matching to title, description and the current category display label.
+`category_text.py` supplies the combined vector inside the eligible-row snapshot.
+The semantic model, source fingerprint, 35/65 blend, cutoff and coverage checks
+are unchanged. Earlier v1 measurements do not accept v2. See the
+[approved scope](../decisions/hybrid-listing-search.md#category-text-matching-amendment--2026-11-01).
+
 All code remains Listings-owned in `hybrid_read.py`. This is persistence/query
 implementation, not a second Search-owned projection or public route. Actual
 caller eligibility must already have been checked by the owning service. No

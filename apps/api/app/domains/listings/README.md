@@ -302,7 +302,29 @@ behavior on its existing guarded native fixtures. [Policy/evidence](../../../../
 Public stores still leave the expansion/typo opt-in off. Actual hybrid read and
 public activation retain separate implementation/verification gates.
 
-## Private hybrid read — no public binding
+## Category-label lexical matching amendment
+
+`category_text.py` defines the Listings-private combined lexical vector:
+stored title/description followed by the current joined category display label,
+using the same PostgreSQL English configuration. Keyword retrieval unions its
+existing GIN-compatible title/description branch with a supplemental combined
+vector scan, deduplicating IDs before outer authorization-derived visibility,
+filters, ordering and pagination. PostgreSQL still chooses actual query plans;
+the supplemental branch is not indexed, and latency acceptance needs fresh
+measurement. No index/schema or copied category text is introduced. Renames and
+category reassignment are reflected on the next query.
+
+`browse_store.py` uses the combined vector for original/expanded matching and
+keyword relevance rank. The public provider also serves Wanted draft suggestions,
+so they inherit category matching. `hybrid_read.py` uses the combined vector for
+its lexical tiers only; embedding inputs, source fingerprints, semantic weights
+and threshold stay unchanged. Matching policy identifiers are now
+`keyword-relevance-v2-category` and `hybrid-blend-v2-category`; earlier measured
+results do not establish acceptance of these policies. Public Wanted Request
+discovery and the UI/API shapes are unchanged. See the
+[scope and gates](../../../../../docs/decisions/hybrid-listing-search.md#category-text-matching-amendment--2026-11-01).
+
+## Private hybrid read — historical implementation checkpoint
 
 `hybrid_read.py` binds exact query/model vectors, normalizes text through the
 existing compiler and performs one snapshot eligibility/coverage/score/union/

@@ -29,8 +29,9 @@ from app.domains.listings.embedding_types import (
 )
 from app.domains.listings.lexical_expansion import TextQuery, compile_expansion
 from app.domains.listings.vocabulary import load_vocabulary
+from app.domains.listings.category_text import DISCOVERY_VECTOR_SQL
 
-POLICY_VERSION = "hybrid-blend-v1"
+POLICY_VERSION = "hybrid-blend-v2-category"
 TITLE_WEIGHT = 0.35
 DESCRIPTION_WEIGHT = 0.65
 SEMANTIC_THRESHOLD = 0.35
@@ -139,7 +140,10 @@ def hybrid_statement(
         listing.asking_price_paise,listing.original_price_paise,listing.negotiable,listing.pickup_area,
         listing.available_from,listing.available_until,listing.availability,
         (category.sensitive_category OR listing.asking_price_paise>input.sensitive_threshold) AS sensitive_purchase,
-        listing.created_at,listing.search_vector
+        listing.created_at,listing.search_vector,
+        """
+        + DISCOVERY_VECTOR_SQL
+        + """ AS discovery_vector
         FROM listings.sale_listings AS listing
         JOIN listings.categories AS category ON category.id=listing.category_id
         JOIN listings.conditions AS listing_condition ON listing_condition.code=listing.condition_code
@@ -204,8 +208,8 @@ def hybrid_statement(
         SELECT catalogue.*,(EXISTS(SELECT 1 FROM pipeline)
           AND NOT EXISTS(SELECT 1 FROM current WHERE complete IS DISTINCT FROM true)) AS ready FROM catalogue
     ), scored AS MATERIALIZED (
-        SELECT current.*,current.search_vector @@ input.original AS original_match,
-        current.search_vector @@ input.expanded AS expanded_match,
+        SELECT current.*,current.discovery_vector @@ input.original AS original_match,
+        current.discovery_vector @@ input.expanded AS expanded_match,
         input.title_weight*scores.title_score+input.description_weight*scores.description_score AS semantic_score
         FROM current CROSS JOIN input CROSS JOIN status
         CROSS JOIN LATERAL (SELECT
