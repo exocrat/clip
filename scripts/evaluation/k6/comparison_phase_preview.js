@@ -1,6 +1,19 @@
 // Offline candidate only: calculate from phases belonging to one response.
 // Failed requests and suspicious values never receive an approximate span.
 // This is not a monotonic clock or an approved measurement.
+
+/** Select only timing fields from one synthetic response for the offline report. */
+export function phaseTimingRecord(response, outcome) {
+  if (outcome !== 'correct') return { outcome, timings: null };
+  const timings = response?.timings ?? {};
+  return { outcome, timings: {
+    blocked: timings.blocked,
+    duration: timings.duration,
+    connecting: timings.connecting,
+    tls_handshaking: timings.tls_handshaking,
+  } };
+}
+
 export function phaseTimingPreview(response, outcome) {
   if (outcome !== 'correct') return { eligible: false, reason: 'not_correct' };
   const timings = response?.timings;

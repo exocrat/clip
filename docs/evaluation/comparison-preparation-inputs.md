@@ -90,6 +90,23 @@ contains a proposed change. The approved monotonic rule remains in force until
 the applicable design owners approve a revision. NFR-05 measures chat submission
 to recipient display and is not replaced by these HTTP phases.
 
+For synthetic offline evaluation only, `comparison_phase_preview.js` can select
+timing fields from the same supplied response. `comparison_phase_report.py`
+accepts a local JSON array of objects with `outcome` and `timings`; a correct
+record's `timings` contains exactly `blocked`, `duration`, `connecting` and
+`tls_handshaking` in milliseconds, while failure records may use null. For
+example, run:
+
+```sh
+.venv/bin/python -m scripts.evaluation.k6.comparison_phase_report synthetic.json --output new-preview.json
+```
+
+The output must not exist. The report counts failures separately and suppresses
+all candidate percentiles if any correct record has missing, invalid or
+over-five-second timing. That limit is a warning, not proof of impossible data.
+It never claims a verified clock or NFR acceptance, and it is not connected to
+the workload or current accounting report.
+
 The installed k6 v2.3.0 on this Linux environment was checked with `k6 inspect`:
 `performance.now` was unavailable. The current local comparison script uses
 `Date.now`, which does not satisfy the approved monotonic-clock requirement.

@@ -43,6 +43,33 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-01 20:03:45 UTC — EXP-02 offline phase-report preparation
+
+**Direction:** User verified preparing the candidate timing report with
+synthetic inputs; approved timing and NFR rules remain unchanged. The JavaScript
+preview can now select blocked, duration, connecting and TLS from one supplied
+synthetic response without retaining its body; failed outcomes carry no inferred
+timings. The new offline Python report accepts bounded JSON records, calculates
+per-response blocked-plus-duration percentiles and separate per-phase summaries,
+and reports failure counts. It suppresses all candidate percentiles when any
+correct sample has missing, invalid or over-five-second phases: none is silently
+removed. The timeout check is only a warning, not proof of an impossible span.
+
+**Safety and scope:** Output is created exclusively at a new path; existing raw
+or report files are not overwritten. The report does not obtain correctness,
+sessions, live data or provider telemetry, and always marks timing unverified
+and NFR acceptance false. Neither collector nor report is wired to the actual
+workload or scoring. Successful, failure and interruption behavior in real k6,
+clock observation and the protocol revision remain pending owner review.
+
+**Checks:** Twelve focused Python tests and three Node test files passed;
+per-file Black and `git diff --check` passed. Synthetic tests cover opposite phase distributions (showing
+why per-request pairing matters), failure accounting, invalid/missing phases,
+over-timeout suppression, immutable input and refusal to replace output. Node
+tests cover selecting fields without retaining bodies. No k6 run, network
+request, experiment, cloud or database action occurred. Result awaits user
+verification.
+
 ### 2026-11-01 19:54:53 UTC — EXP-02 connection timing clarification
 
 User verified the proposed protocol documentation and requested removing the

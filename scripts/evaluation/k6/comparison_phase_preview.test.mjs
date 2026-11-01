@@ -1,12 +1,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { phaseTimingPreview } from './comparison_phase_preview.js';
+import { phaseTimingPreview, phaseTimingRecord } from './comparison_phase_preview.js';
 
 test('previews paired per-request phases without adding connection subphases', () => {
   const timings = { blocked: 100, connecting: 40, tls_handshaking: 30, duration: 200 };
   assert.deepEqual(phaseTimingPreview({timings}, 'correct'), {
     eligible: true, request_ms: 200, approximate_span_ms: 300,
   });
+  assert.deepEqual(phaseTimingRecord({timings, body: 'not retained'}, 'correct'), {outcome: 'correct', timings});
+  assert.deepEqual(phaseTimingRecord({timings}, 'timeout'), {outcome: 'timeout', timings: null});
   assert.equal(phaseTimingPreview({timings: {blocked: 0, duration: 150}}, 'correct').approximate_span_ms, 150);
 });
 
