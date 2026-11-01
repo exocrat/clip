@@ -84,8 +84,10 @@ this contract against the pinned upstream k6 v2.3.0 Go module; it is not selecte
 or verified for measurements. Review k6 and extension sources and build provenance; test VU isolation,
 invalid call ordering, exception/timeout handling and boundary placement with
 injected clocks and doubles; then independently verify the resulting binary and
-runtime behavior before changing the unverified report flag. No build, runtime
-verification or measurement is authorized by the prototype.
+runtime behavior before changing the unverified report flag. A temporary custom
+binary passed the initialization-only `monotonic/inspect_bridge.js` check; this
+does not establish request boundaries, concurrency behavior or reproducibility.
+The prototype does not authorize measurement.
 
 At the immediate burst transition, warm-up requests may finish during the first
 five seconds of measured arrivals. The k6 VU limit is per scenario, so both

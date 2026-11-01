@@ -43,6 +43,36 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-01 19:25:44 UTC — EXP-02 timer extension bridge inspection
+
+**Direction:** User verified a temporary custom k6 build and initialization-only
+bridge check. The checkout started clean at `2defe37`. A temporary Go main
+imports the prototype and `go.k6.io/k6/v2/cmd`, with upstream k6 v2.3.0 and a
+local replacement for the extension. Public dependencies were fetched into
+`/tmp/clip-timer-gopath` under the user's internet authorization. The temporary
+binary was built with Go 1.27.1 using `GOPROXY=off`, `-trimpath` and
+`-buildvcs=false`; its SHA-256 is
+`d66a62b633cb49b3d028072661d4869a7fc8d1d3d965de45d593e05dab6d224f`.
+Its version output identifies the local extension as `(devel)`; this hash
+identifies the temporary file, not an independently reproduced or approved build.
+
+**Check:** Added `monotonic/inspect_bridge.js`. A custom-binary `k6 inspect`
+successfully imported the extension, observed errors on stop-before-start,
+double-start and double-stop, and checked a finite nonnegative elapsed value.
+The default function throws if executed. `k6 inspect` only evaluated script
+initialization and sent no request. The first build attempt failed automatic VCS
+stamping outside a Git checkout; the documented retry disabled that stamping.
+An initial offline dependency resolution also failed on uncached modules before
+the approved download. Both failures were resolved locally.
+
+**Limits:** This is one initialization context, not a multiple-VU or request
+timing test. It establishes neither clock accuracy nor exception/timeout
+boundaries. The temporary build inputs and binary are not a reproducible release;
+source review, build provenance, independent verification and actual run gates
+remain open. The workload still does not import the extension. No k6 run,
+benchmark, live API, cloud or database action occurred. Result awaits user
+verification.
+
 ### 2026-11-01 19:11:27 UTC — EXP-02 monotonic timer prototype
 
 **Direction:** User verified a local, disconnected per-VU timer prototype.
