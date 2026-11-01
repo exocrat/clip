@@ -43,6 +43,31 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-01 19:08:52 UTC — EXP-02 timeout accounting and timer contract
+
+**Direction:** User verified the official-source findings and authorized the
+timeout correction and monotonic-timing preparation. No k6 workload, benchmark,
+live API, cloud, database or secret access was authorized or performed.
+
+**Change:** `comparison_outcomes.js` classifies the upstream request timeout
+1050 and TCP dial timeout 1211 as timeout, and distinguishes refused connections,
+authorization failures, throttles and other errors. `comparison_load.js` uses
+it before the existing independent response correctness check; HTTP 200 remains
+insufficient for success. `comparison_outcomes.test.mjs` covers those cases with
+synthetic response objects. This fixes the identified code path, not every
+possible timeout mapping; the installed development binary remains unbound to
+the upstream source reviewed earlier.
+
+**Timing preparation:** The official k6 JavaScript extension documentation
+supports a per-VU module instance. The input guide now outlines a bounded
+start/stop monotonic timer contract and the source pinning, build provenance,
+synthetic tests and independent runtime verification needed. It remains an
+unselected proposal: no extension, custom binary or verified clock exists.
+
+**Checks:** Four Node test files passed, including eight synthetic outcome
+assertions; eight focused Python runner/report tests passed. `git diff --check`
+passed. Reports remain preview-only and the result awaits user verification.
+
 ### 2026-11-01 19:07:32 UTC — EXP-02 official k6 timing source review
 
 **Direction:** The user allowed internet access, retaining the prohibition on

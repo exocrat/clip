@@ -153,7 +153,7 @@ and are explicitly not executable/accepted.
 Each custom issued counter precedes the single HTTP call; one outcome/elapsed
 sample follows it. Built-in actual HTTP counts independently verify correspondence.
 401/403, incorrect results, unexpected status, transport errors, request timeout
-(k6 code1050), missing/interrupted completion, negative clock elapsed and generator
+(comparison request/dial timeout codes 1050 and 1211), missing/interrupted completion, negative clock elapsed and generator
 drops/shortfall stay visible. Completion marker plus exit0and complete valid
 warm/measured cohorts are required for valid_preparation_run. nfr_accepted remains
 false in every report. Absence of errors is not an NFR pass.

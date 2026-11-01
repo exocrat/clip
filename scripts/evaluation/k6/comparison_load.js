@@ -6,6 +6,7 @@ import { Counter, Trend } from 'k6/metrics';
 import { comparisonPath, localApiTarget } from './comparison_cases.js';
 import { correctResponse, validExpected } from './comparison_checks.js';
 import { caseForIteration, comparisonScenarios, validateComparisonCases } from './comparison_schedule.js';
+import { preliminaryOutcome } from './comparison_outcomes.js';
 
 const target = localApiTarget(__ENV.CLIP_COMPARISON_LOCAL_TARGET);
 const cookie = __ENV.CLIP_COMPARISON_LOCAL_COOKIE;
@@ -47,11 +48,8 @@ export default function () {
       timeout: `${profile.timeout_seconds}s`,
       tags,
     });
-    if (response.error_code === 1050) outcome = 'timeout';
-    else if ([401, 403].includes(response.status)) outcome = 'unauthorized';
-    else if (response.status === 429) outcome = 'throttled';
-    else if (response.status !== 200) outcome = response.status === 0 ? 'transport_error' : 'http_error';
-    else {
+    outcome = preliminaryOutcome(response);
+    if (outcome === 'requires_correctness_check') {
       outcome = 'incorrect';
       try { if (correctResponse(response.status, response.json(), item.request, item.expected)) outcome = 'correct'; }
       catch (_) { /* Malformed response content is counted without being retained. */ }
