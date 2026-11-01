@@ -16,6 +16,10 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 ## Current checkpoint
 
 - **EXP-01:** Design verified; see the [comparison protocol](ecs-only-vs-ecs-lambda-task-list.md).
+- The experiment-design document's proposed 300 concurrent-client-request
+  ceiling is explicitly non-binding per user direction. Do not enforce it as a
+  code guard; the actual client/generator concurrency limit remains open for the
+  reviewed pre-run plan.
 - **EXP-02:** Retained upstream work-log evidence records DATA-READY accepted
   as reported by Aditya, with Suraj's review reported by Aditya; the immutable
   frozen artifact keeps its capture-time flag. Actual ECS/Lambda database and
@@ -48,6 +52,21 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 - **Measurements:** No ECS/Lambda comparison or final NFR run is recorded here.
 
 ## History
+
+### 2026-11-01 21:08:01 UTC — concurrency proposal clarified
+
+**Direction:** User clarified that the experiment design's proposed limit of
+300 concurrent client requests is not binding. It is not a PRD requirement and
+must not be treated as a settled cap or enforced in code.
+
+**Record:** Marked that figure non-binding in the experiment design. The actual
+generator/client concurrency cap remains an open pre-run input and must be
+resolved in the reviewed run plan. The burst's overlapping k6 scenarios remain
+a capacity consideration, but do not establish a numerical cap by themselves.
+
+**Limits:** No replacement cap was selected. No code guard, workload, cloud
+action or measurement was performed. EXP-02 still requires current generator
+capacity, rate delivery and saturation evidence before any run.
 
 ### 2026-11-01 20:57:31 UTC — EXP-02 raw and derived evidence checks
 

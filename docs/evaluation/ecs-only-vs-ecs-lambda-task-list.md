@@ -530,7 +530,11 @@ later deployment or retained costs after the window.
 | Requests | At most 160,000 total across A and B, including warm-up, preflight and cold checks; at most 80,000 Lambda invocations. Step 4 schedules 115,632 read requests total before preflight/cold checks (57,816 routed through B); the remaining allowance is 44,368 total requests and 22,184 Lambda invocations, subject to the separate caps. |
 | ECS | At most two `c7i-flex.large`-equivalent hosts and two app tasks; exact CPU/memory, minimum healthy capacity and scale policy are part of the later reviewed plan. Both configurations must retain the required ECS service. |
 | Lambda | At most 2 GiB memory, reserved concurrency 20, no provisioned concurrency and function timeout at most 5 seconds. The actual package and safe database usage must fit; otherwise revise before final runs. |
-| Client and database | At most 300 concurrent client requests and 50 scheduled requests/s. Cap project database connections at 60, reserve separate administrative headroom, and confirm the real database limit and pool sizes before use. Stop if the limit or downstream capacity cannot be established. |
+| Client and database | Proposed, non-binding ceiling: at most 300 concurrent client requests and 50 scheduled requests/s. Cap project database connections at 60, reserve separate administrative headroom, and confirm the real database limit and pool sizes before use. Stop if the limit or downstream capacity cannot be established. |
+
+**Human direction (2026-11-01):** The 300 concurrent-client-request figure is
+not binding and must not be enforced as a code guard. The actual generator and
+client concurrency limits remain open inputs for the reviewed pre-run plan.
 
 As a conservative **illustration**, if all 20 Lambda slots were continuously
 billed at 2 GiB for all four hours, compute would be about USD 9.60; 80,000
