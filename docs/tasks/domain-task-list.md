@@ -353,6 +353,25 @@ competing routes, a projection, or private cross-domain table access.
 
 **Outputs:** Search query/index migrations, API/UI, final dataset via `data/generators/`, reviewed labels at `data/evaluation/query-labels.json`, evaluator/load tooling under `scripts/evaluation/`, browse/search workload profiles under `data/evaluation/workloads/`, tests/metrics, and NFR-01/02/04 evidence under `docs/evaluation/nfr/`.
 
+**Category-text amendment (Mohit, 2026-11-01):** Extend Sale Listing lexical
+matching in Step 4 to current category display labels alongside title and
+description. Mohit also approved the shared effect on Wanted draft suggestions
+on 2026-11-02; public Wanted Request discovery is unchanged. Follow the [approved scope](../decisions/hybrid-listing-search.md#category-text-matching-amendment--2026-11-01)
+with these three follow-up steps on `elite-search`, verifying each before advancing:
+
+1. Document scope, dependencies, ownership and checks; update the work log.
+2. Implement category-label lexical/expanded matching through the Listings-owned
+   provider. Preserve indexed title/description retrieval, current-label and
+   category-reassignment correctness, filters, pagination and relevance tiers.
+   Keep semantic inputs/weights unchanged; run focused implementation checks.
+3. Verify model-only listings, aliases, supported typos, combined-field queries,
+   negatives, filters, ordering and pagination against real local PostgreSQL.
+   Run affected regression/evaluation and task-wide checks; record evidence and
+   pending NFR gates. Preserve fixed human labels. Obtain independent Listings
+   review before acceptance; publication, merge and cloud gates remain separate.
+
+The original numbered SE-01 steps below retain their IDs and acceptance gates.
+
 1. Inspect the current Listings read contract, available-only behavior, approved pagination/filter/sort shapes, database schema/indexes, generated types, existing synthetic-data generator, and search-evaluation files. Record exact reusable paths and verify seeds/counts/fingerprints before creating duplicates.
 2. In isolated mode create/reuse schema-shaped preview generator adapters/loader against the frozen contract and record final real validation as pending; this verified isolated checkpoint may advance under the stub guide. Complete the final generator adapters/loader after actual ID-READY and LI-CORE schemas/configuration exist. Generate twice and compare logical fingerprints; load a fresh local database; validate >=5,000 users/>=1,000 listings, constraints, referential integrity and current listing fields/availability; validate the new search indexes after step 4 before DATA-READY. Reconcile synthetic image references with LI-02 before cloud measurements. Register exact generate/load/reset commands and preserve fake-data safety; repair the assigned generator tooling explicitly rather than treating absent final data as a failed pre-domain gate.
 3. Implement paginated browse over available listings with stable ordering and a deterministic tie-breaker. Apply authorization and filters before pagination; verify records are neither skipped nor duplicated across pages for the frozen fixture set. Use only the listing-data boundary approved in DL-00; implement any selected projection/backfill/update synchronization and tests explicitly.

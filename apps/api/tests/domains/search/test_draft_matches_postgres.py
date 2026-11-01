@@ -76,11 +76,11 @@ async def exercise(value):
     )
     await pool.open()
     retired = None
+    identifiers = []
     try:
         await pool.wait(timeout=5)
         now = datetime.now(UTC)
         actor = uuid4()
-        identifiers = []
         async with pool.connection() as connection:
             await connection.execute(
                 "INSERT INTO identity.users(id,account_class,status,display_name) VALUES(%s,'regular','active','Synthetic draft actor')",
@@ -221,6 +221,13 @@ async def exercise(value):
             )
     finally:
         try:
+            # Committed synthetic rows survive until runner cleanup; stop them
+            # influencing later category-aware search matrices in this database.
+            async with pool.connection() as connection:
+                await connection.execute(
+                    "UPDATE listings.sale_listings SET availability='unavailable' WHERE id=ANY(%s)",
+                    (identifiers,),
+                )
             if retired is not None:
                 # Only this owned fixture's retired image/upload metadata is
                 # removable. No storage object was created. Keep the immutable

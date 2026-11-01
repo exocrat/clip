@@ -141,7 +141,8 @@ def test_sql_construction_preserves_filters_sort_and_parameter_count():
     )
     assert text not in sql and text in parameters
     assert sql.count("%s") == len(parameters)
-    assert "listing.search_vector @@ (" in sql
+    assert "listing.search_vector @@ lexical_input.query" in sql
+    assert "SELECT id FROM lexical_candidates" in sql
     assert "category.code = ANY(%s)" in sql and "listing.negotiable = %s" in sql
     assert "asking_price_paise >= %s" in sql
     assert "asking_price_paise ASC, listing.id ASC" in sql

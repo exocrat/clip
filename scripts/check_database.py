@@ -575,6 +575,7 @@ def main():
                     "apps/api/tests/domains/search/test_category_migration_postgres.py",
                     "apps/api/tests/domains/listings/test_postgres_store.py",
                     "apps/api/tests/domains/listings/test_browse_postgres.py",
+                    "apps/api/tests/domains/listings/test_category_text_postgres.py",
                     "apps/api/tests/domains/listings/test_embedding_postgres.py",
                     "apps/api/tests/domains/listings/test_embedding_worker_postgres.py",
                     "apps/api/tests/domains/listings/test_hybrid_read_postgres.py",

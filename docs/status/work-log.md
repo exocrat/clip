@@ -35,6 +35,29 @@ duration. Three Node test files and five Python tests passed. Approved timing
 rules and NFR procedures remain unchanged; no workload or live action occurred.
 Result awaits verification; [experiment log](../evaluation/experiment-log.md).
 
+### SE-01 category-text review and DATA-READY acceptance — 2026-11-01 19:38:43 UTC
+
+Aditya reports that Suraj completed the independent Listings review of the
+category-text implementation and confirms DATA-READY is complete. PR #25's exact
+head `af1cc3ff8fa5fa5e3b403327c5126fb71eba2e68` passed hosted Foundation quality
+gates in run [41338792850](https://github.com/exocrat/clip/actions/runs/41338792850).
+The category-text implementation/review checkpoint is complete; PR #25 remains
+open and its merge is a separate gate. SE-01's fixed-label relevance and cloud
+latency/NFR acceptance remain open.
+
+DATA-READY is accepted against the frozen release published through PR #24,
+merged to `main` at `c0bac599963abe5aa27a480630e2e345a2f11296`; its hosted
+Foundation quality gates passed in run [41217783729](https://github.com/exocrat/clip/actions/runs/41217783729).
+The frozen dataset and Step 6 evidence record 5,000 users, 1,000 listings,
+1,000 verified images, 22 reviewed queries, and logical fingerprint
+`7efd142e11c3e8555e1aa08603cbf8dff07de5d74412ccde3c39869b9334ab98`; see the
+[release](../evaluation/domain/next-06/frozen-dataset.json) and
+[freeze result](../evaluation/domain/next-06/transfer/step-06-freeze-result.json).
+Aditya confirms readiness; Suraj's review is reported by Aditya. The immutable
+release artifact retains its capture-time `data_ready: false`; this acceptance
+is recorded here without rewriting the frozen artifact. SE-01 remains in progress
+for its independent search/NFR gates.
+
 ### EXP-02 timer extension bridge inspection — 2026-11-01 19:25:44 UTC
 
 User verified a temporary custom k6 build and inspect-only bridge check. Built
@@ -102,6 +125,113 @@ synthetic session; the real-target runner remains unimplemented. Raw output is
 read-only and reports refuse overwrite. Thirty-five focused Python tests and
 three Node test files passed. No workload, live request or cloud action occurred.
 Result awaits user verification; details: [experiment log](../evaluation/experiment-log.md).
+
+### SE-01 category-text amendment Step 3 local verification — 2026-11-01 18:44:27 UTC
+
+Mohit verified Step 2 and directed Step 3. Added actual guarded PostgreSQL
+`test_category_text_postgres.py`: model-only/category membership; bicycle/cycle/
+bicyle/vehicle; combined-field AND and negatives; availability, condition, price,
+category and negotiability; native relevance tiers and explicit sorts; duplicate
+prevention and stable two-page continuation; GIN baseline EXPLAIN; shared
+DraftMatchService with real provider SQL; live label rename/reassignment with
+unchanged generation IDs/fingerprints/state. Coordinate vectors prove SQL math,
+not model quality. Existing real helper/worker test now includes model-only
+`FX3 quasarframe` and the query `quasarframe bicycle`, and still proves semantic
+queries, controlled503, filtered recovery and helper cleanup. Identity in this
+native harness is an explicit existing eligibility fixture, not real sign-in.
+
+Native first attempt required local shared-memory escalation. Approved runner
+then revealed its stale29rollback count against32migrations; Mohit is the scoped
+writer for the bounded runner/CI test-list changes on `elite-search`. Runner now
+reads actual count, performs full rollback/reapply, and registers the category
+suite; `scripts/check_database.py` includes that suite for the existing CI target.
+Initial native runtime run:18passed/2skipped/4failed due newly meaningful category
+assignments/shared committed fixtures. Corrected text-only fixtures to neutral
+categories, real-model books/appliances to accurate categories, draft fixture
+cleanup, and snapshot query isolation. Second run had2remaining failures: rank
+fixture category imbalance and a one-bicycle oracle after adding a second valid
+bicycle. Balanced the fixture; typo test asserts both relevant items instead of
+inventing a semantic first-place oracle. No application ranking weakened.
+
+Final native command `LC_ALL=C bash database/tests/native-checks.sh "$PWD/.tools/native-db/pgsql" "$PWD/.tools/native-db/downloads/dbmate-macos-arm64" --hybrid-read`:
+23passed/2explicit dedicated probe skips in9.44s; actual hybrid helper/worker ran.
+Clean apply/repeat, seven SQLsmoke suites twice,32down migrations/reapply and
+identical schema inventory pass. Actual helper14windows/one process, reaped;
+server stopped. Raw logs `/tmp/clip-pd08-native-check.8ThisT`; sanitized durable
+[result and source bindings](../evaluation/domain/se-01/category-text-checks.json).
+
+Affected suites `.venv/bin/python -m pytest apps/api/tests/domains/listings apps/api/tests/domains/search tests/evaluation data/tests tests/contracts -q -W error`:
+1247passed/23gated skips,52.18s. Local Node `npm run check`:497webpassed/3gated
+skips; lint/types/build pass; existing bundle-size warning. Black387files passes; native pinned Gitleaks source snapshot (~11.96MB) has
+0findings with project config/redaction/inline bypasses disabled. Docker-backed
+secret wrapper remains unavailable. Boundaries0, contracts8current, mypy2files
+pass, CIparity12pass, simulated wrapper
+safety35pass (process-descriptor escalation). Diff check passed. Root pytest was
+interrupted after encountering unavailable Docker fixtures:723passed/5skipped/
+4failed/299setup errors; no aggregate pass or resolution of those failures is
+claimed. Full Docker `make check` and current-head hosted CI remain required.
+
+Task-wide review: scope/ordered steps and approved shared draft effect traced;
+only Listings owns SQL, no Search private-table access, public contracts unchanged;
+auth-derived visibility/filter predicates precede returned pages, no scores/private
+metadata added; no changed embedding policy or schema, fixed labels and frozen
+NEXT-06 release byte-identical to HEAD. Architecture and command docs now link
+category behavior/checks. Fresh fixed-label Success@5 and cloud latency are not
+accepted by these local developer fixtures; final evaluator integration and
+original SE-01 NFR gates remain open. No source-label edits to force a pass, cloud,
+new stubs, commit, push or merge. Step 3 local checks performed, human verification
+pending; independent Listings review/full CI/NFR acceptance remain separate.
+
+### SE-01 category-text amendment Step 2 — 2026-11-01 18:33:46 UTC
+
+Mohit verified Step 1 and authorized implementation. After inspecting the shared
+provider, Mohit approved including Wanted draft suggestions (local date Nov 2);
+public Wanted discovery remains unchanged. Updated the decision and task scope.
+Mohit is the scoped writer on `elite-search` for Listings-private query helpers,
+browse/hybrid stores and related tests/docs; Listings ownership/Suraj review is
+retained, not inferred complete. No public contract or migration change.
+
+Added `category_text.py`: combined stored title/description plus current English
+category-label vector; keyword candidates union the original GIN-compatible
+branch and a live-label supplemental scan, deduplicated before pagination.
+`browse_store.py` uses this candidate set and combined-vector relevance;
+`hybrid_read.py` uses it for lexical tiers only. Semantic weights, cutoff, helper,
+source fingerprints and embedding storage stay unchanged. Category reassignment/
+rename needs no copied-label migration or vector rebuild. Policies now identify
+v2-category retrieval. The supplemental branch is not indexed; actual plans and
+latency remain unproven. README documents this limitation and fresh-evidence gate.
+Three existing tests updated for changed parameter order/SQL ranking shape.
+
+Focused initial run: 138 passed/5 obsolete shape assertions failed; updated those
+assertions, then 143 passed. Broader run found one additional old ranking-shape
+assertion (722 passed/21 skipped/1 failed); corrected it. Final command
+`.venv/bin/python -m pytest apps/api/tests/domains/listings apps/api/tests/domains/search -q -W error`:
+723 passed/21 gated skips in 10.66s. No native PostgreSQL/model integration is
+claimed from those skips. Black6 changed Python files passed with required
+process-socket escalation; boundary violations0; contract check8 current after
+selecting repo-local Node. Docker-backed secret wrapper unavailable; pinned local
+Gitleaks8.30.1 scanned a tracked/unignored-source snapshot using project config,
+redaction and disabled inline bypasses: no leaks (~11.94MB). Diff check passed.
+
+Step 2 performed; result verification pending. Step 3 remains not started: add/run
+real local PostgreSQL category, cross-field, alias/typo, rename/reassignment,
+filter/order/page and shared draft-provider regressions; revalidate affected
+evaluation and complete task-wide review. Existing NFR/cloud/review gates remain.
+No new test double, cloud action, commit, push or PR action.
+
+### SE-01 category-text amendment Step 1 — 2026-11-01 18:28:03 UTC
+
+Mohit verified the three-step follow-up plan on clean `elite-search`, based on
+`f816f66`. Step 1 updates the hybrid decision and canonical SE-01 scope to include
+current category display labels in Sale Listing lexical/expanded matching.
+Semantic scoring stays title/description-only. The previous documented field
+scope was the material gap; this amendment resolves it. Existing query provider,
+category catalogue and native test harness are present; no stub is selected.
+Listings retains query/index ownership and affected-owner review; no Suraj review
+is inferred. Original SE-01 readiness/NFR blockers remain. Documentation consistency
+and `git diff --check` pass; no runtime tests are needed for this documentation-only
+step. No product code, schema, corpus, labels or cloud changes, commit or push.
+Step 1 performed; result verification pending. Next: Step 2 after verification.
 
 ### EXP-02 ordered references, timing and telemetry preparation — 2026-11-01 18:23:04 UTC
 
@@ -1339,11 +1469,12 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 
 | Task ID | Owner role | Task status | Current checkpoint / immediate next action | Execution state | Human verification | Branch/revision/evidence | Blockers | Last UTC update |
 |---|---|---|---|---|---|---|---|---|
+| SE-01 category-text amendment | Mohit (C); Listings reviewer Suraj (B) | merged | PR #25 merged to main at `1f11065`; Steps 1–3 and reported Listings review complete | Exact-head hosted CI passed; [native/model/source evidence](../evaluation/domain/se-01/category-text-checks.json) | Steps 1–3 verified by Mohit; Suraj review reported by Aditya | PR #25; [hosted CI](https://github.com/exocrat/clip/actions/runs/41338792850) | Full SE-01 readiness, final fixed-label relevance and NFR/cloud latency remain open | 2026-11-01 20:18:19 UTC |
 | NEXT-00 | Suraj — requested planning coordinator | done | Planning output verified; NEXT-01 Step 1 authorized. | performed; planning only | verified by Suraj | `task/integrated-marketplace-rollout`, based on main `5e8d264`; [remaining-work plan](../tasks/remaining-project-plan.md), linked from project task index | No blocker for the accepted planning output; implementation and measured-run gates remain separate. | 2026-10-27 18:42:09 UTC |
 | NEXT-01 | Suraj — requested planning coordinator; C retains EXP-01 ownership | done | Design and task-wide review verified; NEXT-02 is next. | Steps 1–9 performed | Steps 1–9 verified | Planning baseline `c869f33`; [design and approved gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md#next-01-step-8--proposed-changes-to-measurement-gates); [NEXT-07 references](../tasks/remaining-project-plan.md#experiment-protocol-reference) | No blocker for the design handoff. Real implementations, data, tools, cost anchors, project AWS identity/spend and run approvals remain NEXT-07 prerequisites. | 2026-10-28 06:24:24 UTC |
 | NEXT-02 | Suraj — planning coordinator | done | Evaluation and documentation cleanup completed; test/fixture and app/infrastructure audits found no safe deletions. | Cleanup review and checks complete; its changes are included in the current commit. NEXT-02 itself changed no executable test or application code. | User accepted the cleanup and directed committing the combined changes on 2026-10-28. | `task/integrated-marketplace-rollout`; [NEXT-02 cleanup criteria](../tasks/remaining-project-plan.md); [command index](../environment/commands.md) | No cleanup blocker; documentation references and `git diff --check` passed. No tests/app checks, AWS actions, or paid runs for NEXT-02. | 2026-10-28 09:26:47 UTC |
 | NEXT-03 | Suraj — planning coordinator | in progress | NEXT-03 batch committed at `6700cb2`; no-commit integration with `origin/main` (`a60c83f`) reconciled. Post-integration pinned `make check` passes; pre-PR diff/package review complete. | 2,019 Python passed/156 skipped; 94 data; 496 web passed/3 skipped; 169 Conversations; 35 database safety; PostgreSQL 18.6 migration lifecycle; Black, boundaries, contracts, mypy, web lint/types/build, Gitleaks all passed. | Suraj confirms the complete NEXT-03 visual walkthrough is done. | `task/integrated-marketplace-rollout`; [walkthrough](../tasks/next-03-step-10-visual-checklist.md), [implementation/check report](../tasks/next-03-visual-feedback-implementation-report.md), [PR draft](../tasks/next-03-pr-package.md) | Shared migration and participant-view grant need separate exact review/approval; hosted DNS/HTTPS, Hybrid and general-recipient Identity email remain deployment gates. Affected-owner and independent peer review remain pending. | 2026-10-29 12:31:12 UTC |
-| NEXT-06 | Mohit (C), Search/data; domain owners review records | in progress | Step6 human-verified; commit/publication approved; replacement PR/current-head CI/peer next | All six output groups represented;453data/evaluation +496web pass; full new-head CI/peer gates pending | Steps5/6 verified by Mohit; exact commit/publication approved; Step3 external completion human-reported | [Frozen release](../evaluation/domain/next-06/frozen-dataset.json); [task-wide review](../evaluation/domain/next-06/task-wide-review.md); [checks](../evaluation/domain/next-06/transfer/step-06-freeze-result.json) | Current-head CI/independent review/authorized merge before formal DATA-READY | 2026-10-31 15:50:51 UTC |
+| NEXT-06 | Mohit (C), Search/data; domain owners review records | done | Frozen dataset published and DATA-READY accepted; downstream SE-01 relevance/NFR work remains separate | All six output groups represented; 453 data/evaluation and 496 web checks; PR #24 hosted CI passed | Steps 5–6 verified by Mohit; DATA-READY confirmed by Aditya; Suraj review reported complete by Aditya | PR #24 merged to `main` at `c0bac59`; [frozen release](../evaluation/domain/next-06/frozen-dataset.json); [task-wide review](../evaluation/domain/next-06/task-wide-review.md); [freeze checks](../evaluation/domain/next-06/transfer/step-06-freeze-result.json) | No remaining NEXT-06/DATA-READY gate; SE-01's final relevance/NFR acceptance remains separate | 2026-11-01 19:38:43 UTC |
 | BOOT-00 | B / Suraj (initial contributor) | done | Local documentation seed verified; publication pushed and verified | performed | verified | Current `origin/main` verified at `cfbf9352c03302990e6ffda09521f0a5450572d7`; includes seed `7fb9bfed79b45614a17de1bf2f9c50dbb3981b3f` and publication record | None | 2026-10-15 07:18 UTC |
 | PD-00 | Kickoff owner — Suraj (B) | done | Steps 1–6 complete; task-wide closeout reviewed | performed | verified | `task/pre-domain-foundation` at base `cfbf9352c03302990e6ffda09521f0a5450572d7`; work-log task table, initial inventory, Document 4 comparison, and `git diff --check` | None | 2026-10-16 07:02 UTC |
 | PD-01 | Kickoff owner — Suraj (B) | done | Steps 1–8 and task-wide acceptance review complete; published handoff confirmed | performed | verified | `docs/architecture/foundation-traceability.md`; handoff `d29c02b` is in remote `main` at `4754e97fdaf4284e84062a926eb1864fab745036`, confirmed by `git ls-remote` | None | 2026-10-17 06:26:36 UTC |
@@ -1370,7 +1501,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | ID-01 | A | in progress | All remaining Step14 parts verified and accepted by Aditya; prepare reviewed merge | Local implementation and recorded live checks performed; additional verification user-reported | Verified and accepted by Aditya | [Step14 evidence and closeout](../evaluation/identity/id-01-step-14/README.md) | Independent peer review, current-head checks and reviewed main merge remain required for formal task closeout | 2026-10-29 05:23:09 UTC |
 | LI-01 | B | in progress | Finish the remaining Step 7 browser states and current-head Step 11 checks/reviews; prepare a progress PR without claiming LI-CORE. Steps 12–13 remain integration-gated. | Steps 1–6 and 8–10 implemented and locally checked; Step 7 partial (create/detail/edit/My Listings/gallery). | Suraj verified the multi-image edit/gallery checkpoint, seller-only selected-buyer visibility, and Step 10. No LI-01 phone-device result is claimed. | domain/listings at 6ffbe0b; focused Listings suite: 61 passed, one database-only test skipped outside the wrapper; disposable PostgreSQL workflow passed; current worktree `make check` passed 2026-10-23 (573 Python, 63 data, 42 web tests; remaining contract, type, boundary, database, safety, formatting, lint, and build checks passed). | LI-CORE not accepted. Remaining Step 7 states; Step 11 query-plan, current aggregate, and affected-owner review; native schema check; five pre-existing backend boundary findings; real Identity, Conversations, storage, and Search integration; Steps 12–13. | 2026-10-23 10:38:31 UTC |
 | LI-02 | B | in progress | Step 12 demo is tested and stopped; record final evidence, then begin intake of the Search owner's PR under the review workflow. | Steps 1–11 and 1.5 verified; Step 12 ran on ECS and was tested on desktop/mobile. Read-only app checks found the synthetic listing and its S3 image; teardown is complete. | User approved and applied teardown plan `3703bb7b23405a5a23a1ac6c39fa8870e682dddf3a1a8272183f4642f8f0db81` (0 add, 1 change to LI-02 bucket CORS, 20 LI-02 deletes). Post-stop inventory confirms disposable RDS/ALB/service/host/root volume/run S3 objects/URL parameter/log streams absent; shared RDS is stopped, shared ECS cluster remains, LI-02 ASG desired 0/no instances. Two run ECR images are retained (105,624,604 bytes total) per user direction. | `task/li-02-isolated-runtime` at `f0bf6c6`; earlier 11 focused tests, Black, Python compilation, Terraform fmt/validate, CLI help and diff checks. Start plans: infrastructure `a2b8cbeaa6cc4fc2d13ff8c8696cfa133d8134280de89f719e0d6f2b91668f55`; app start `b6a3fbd4812c965a5830780f337997d13b4b362c7eb1a73f2b3e70f5946b5bd4`. Stop-path corrections are currently uncommitted in `scripts/li02-demo`, `infra/terraform/domains/listings/test/database_tasks.tf`, both LI-02 operator guides, and this work log. `git diff --check` passed; no tests rerun. Existing untracked `data/runs/` and `database/migrations.zip` remain untouched. | Compute/ingress/disposable-database charges from the demo have ended. Retained run images add about 101 MiB of ECR storage; Step 4 bucket/IAM/log group and shared VPC/NAT/ECS/RDS remain. No manual RDS snapshot remains. | 2026-10-25 09:29:55 UTC |
-| SE-01 | Mohit (C); peer Suraj (B), Identity review | in progress | Formal SE-CORE/DATA-READY and final NFR acceptance remain pending. Last recorded PR15 functional/database CI passed; evidence-format rerun was pending. | Local Search work and PR15 correction recorded; no final dataset/NFR result | Mohit verified the Hybrid-default UI and requested branch publication on 2026-10-26. | Last recorded Search worktree: task/search-evidence-reduction at 864e53b; PR #11 later merged as e315c9d; [SE-01 task](../tasks/domain-task-list.md). Refresh current branch/PR/CI before relying on this snapshot. | Final SE-CORE/DATA-READY, current hosted checks, and NFR evidence remain open. | 2026-10-26 19:06:47 UTC |
+| SE-01 | Mohit (C); peer Suraj (B), Identity review | in progress | DATA-READY accepted as reported; category-text PR #25 merged to main | Formal SE-CORE, fixed-label relevance and NFR acceptance remain pending | DATA-READY confirmed by Aditya; Suraj review reported by Aditya | [SE-01 task](../tasks/domain-task-list.md); category-text PR #25 merge `1f11065` | Final SE-CORE, current integrated checks and NFR evidence remain open | 2026-11-01 20:18:19 UTC |
 | SE-02 | Mohit (C); peer Suraj (B), Identity/Conversations review | in progress | Step 8 real integration is gated; isolated Steps 1–7 were verified. | Local handoff performed; Step 8 audit recorded | Mohit verified the isolated UI and local handoff on 2026-10-25. | [SE-02 task and real gates](../tasks/domain-task-list.md); prior detailed result is recoverable from Git at f36ce3d. | Real ID-READY/LI-CORE/SE-CORE provider paths, Step 9 acceptance, current CI and independent review remain pending. | 2026-10-25 08:50:43 UTC |
 | MERGE-LI-SE | Suraj (integration); Listings/Search affected owners | done | PR #11 is squash-merged; Search–Listings local merge task is complete | Steps 1–9 performed; approved PR head `2a43066` merged to `main` as `e315c9d`; final hosted CI run `40204621122` passed | Steps 3–8 verified by Suraj; user authorized squash merge of the exact PR revision on 2026-10-25 | PR #11 `https://github.com/exocrat/clip/pull/11`; source head `2a430660d25e7c14cf33d84bd78172db4ec063c7`; squash merge `e315c9df3e0e11d6e9c8d7d244d676204d3af7e8`; hosted CI `40204621122`; local merge commit `29eb6fb`; fallback branch `safety/search-pr11-pre-main-reconciliation-20261025`; stash `af9d7f5`; local checks recorded below | No blocker for the Search–Listings merge. Final dataset, formal NFR/cloud checks, and real Identity/Conversations remain later work. | 2026-10-25 15:17:46 UTC |
 | CN-01 | Rahul (D) | in progress | PR17 integration merged; final CN-01/readiness/NFR obligations remain | Accepted main b09978e contains reviewed head3773931; hosted run40402518748 passed; prior local aggregate1930Python/403web and Conversations114 | Rahul verified local correction and confirmed PR merged; no additional milestone acceptance inferred | [PR17](https://github.com/exocrat/clip/pull/17), merge `b09978e91620ae3877a77c5bea8a4f12df7a8907`; [integration checkpoint](../evaluation/domain/conversations-integration.md) | Formal readiness/remaining device and security checks; CN-03 producer path and final NFR-05; full task acceptance pending | 2026-10-27 06:16:43 UTC |
@@ -1378,7 +1509,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | CN-03 | A; D producer review | in progress | PR #21: migration-fixture CI fix locally verified; hosted CI pending | Full local checks passed: Python 2073/171 skipped, data 331, web 497/3 skipped, Conversations 184, migration and safety checks | Aditya confirmed prior task items done; current fix awaits hosted CI | Draft [PR #21](https://github.com/exocrat/clip/pull/21), branch includes merge `de2c94a` and local fixture fix | Push only after local checks; confirm hosted CI and obtain independent PR review | 2026-10-31 19:43:57 UTC |
 | INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
 | EXP-01 | C; Suraj coordinates NEXT-01 design | done | NEXT-01 design and gates are approved; actual topology pricing and numeric cost endpoints are NEXT-07 pre-result gates. | Design Steps 1–9 performed; no experiment run | Suraj verified NEXT-01 Steps 1–9 on 2026-10-28. | [Approved design and gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md); [NEXT-07 execution plan](../tasks/remaining-project-plan.md#experiment-protocol-reference) | Implementation, final data/tools, actual account/spend, numeric cost endpoints, and separate run approvals remain before measurement. | 2026-10-28 06:24:24 UTC |
-| EXP-02 | Rahul (D), reassigned by user; Search owner C review | in progress | NFR preparation/ownership inventoried; stale draft settings identified; result awaits verification | Read-only audit; offline phase report verified; approved timing design unchanged | Reporting result verified; inventory understanding verified, inventory result pending | `task/exp-02-workload`; comparison preparation and [experiment log](../evaluation/experiment-log.md) | Review/approve timing revision and anomaly criteria; reconcile NFR drafts with design and ownership; actual ordered Hybrid references and independent review, DATA-READY, k6 binary provenance, combined generator caps, pinned Node/contract check, seed/session limits, real-target runner, actual A/B deployment/revisions, approved run command, real telemetry, cost and cleanup evidence remain pending | 2026-11-01 20:11:52 UTC |
+| EXP-02 | Rahul (D), reassigned by user; Search owner C review | in progress | Upstream category-search change and recorded DATA-READY acceptance reconciled; result awaits verification | DATA-READY accepted as reported; actual deployment parity and ordered results remain unchecked | User requested upstream reconciliation | `task/exp-02-workload`; [experiment log](../evaluation/experiment-log.md) | Bind independently reviewed ordered Hybrid cases to final search implementation; timing protocol, NFR draft settings, other timeout sources, k6 provenance, generator caps, seed/session limits, real-target runner, A/B deployment, run authorization, telemetry, cost and cleanup evidence remain pending | 2026-11-01 20:18:19 UTC |
 | EXP-03 | B | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-02 | — |
 | EXP-04 | B | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-03 | — |
 | EXP-05 | C | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-04 | — |
@@ -1401,7 +1532,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | ID-READY | accepted (user-reported) | ID-01 step 12 | Identity PR #19 merged to `main` at `a60c83f`; exact milestone acceptance revision not separately recorded | Aditya reports complete and merged |
 | LI-CORE | not accepted | LI-01 step 11 | — | pending |
 | SE-CORE | not accepted | SE-01 step 10 | — | pending |
-| DATA-READY | not accepted | SE-01 steps 2/4/9 | — | pending |
+| DATA-READY | accepted (user-reported) | SE-01 steps 2/4/9 | PR #24 merged to `main` at `c0bac59`; hosted CI run `41217783729`; [frozen release](../evaluation/domain/next-06/frozen-dataset.json) and [Step 6 evidence](../evaluation/domain/next-06/transfer/step-06-freeze-result.json) | Aditya confirms complete; Suraj's review reported complete by Aditya |
 | CN-CORE | accepted (user-reported) | CN-01 step 10 | Conversations PR #17 merged at `b09978e`; current main `6edb52b`; exact milestone acceptance revision not separately recorded | Aditya reports complete and merged |
 | OPTIONAL-OK | not approved | Each optional task's selection/priority plan | — | pending |
 

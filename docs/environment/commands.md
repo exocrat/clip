@@ -77,6 +77,16 @@ results. It uses the already-local model, makes no cloud call and does not
 measure NFR performance. On macOS, native process/shared-memory access may need
 the contributor's local system approval.
 
+Category-text regressions are included in that native command and the existing
+`scripts/check_database.py --listings-store` container workflow through
+`test_category_text_postgres.py`. They exercise current labels/reassignment,
+cross-field AND, aliases/typos, filters, relevance, stable pagination and the real
+shared draft provider. Coordinate-vector cases isolate SQL behavior; the
+`--hybrid-read` run also exercises the actual pinned helper/worker with a
+model-only category match. These checks do not score the frozen final query set
+or establish cloud latency. The native runner rolls back its actual applied
+migration count, avoiding a stale count when main adds migrations.
+
 ## Shared aggregate — PD-12 Step 6
 
 `make check` runs the shared local quality gates and is the ordinary project

@@ -16,15 +16,19 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 ## Current checkpoint
 
 - **EXP-01:** Design verified; see the [comparison protocol](ecs-only-vs-ecs-lambda-task-list.md).
-- **EXP-02:** Steps 1 and 2 reviewed from retained dataset evidence. Step 2's
-  actual ECS/Lambda database and configuration equivalence remains pending.
+- **EXP-02:** Retained upstream work-log evidence records DATA-READY accepted
+  as reported by Aditya, with Suraj's review reported by Aditya; the immutable
+  frozen artifact keeps its capture-time flag. Actual ECS/Lambda database and
+  configuration equivalence remains pending.
 - **EXP-02 Steps 3–5:** Local path, response and scheduled-workload preparation
   exists on `task/exp-02-workload`. A ten-case dataset-bound draft now has five
   browse and two detail expected responses plus three reviewed Hybrid query
   references. An offline adapter now accepts ordered results when supplied; the
   real ordered results and independent review remain pending. Corrected the
-  burst arrival transition to eliminate an unintended five-second gap. DATA-READY
-  acceptance, capacity/session/run gates and deployed-path checks remain pending.
+  burst arrival transition to eliminate an unintended five-second gap. Search
+  category-text behavior changed on main; actual ordered cases and their search
+  implementation revision require review. Capacity/session/run gates and
+  deployed-path checks remain pending.
 - **EXP-02 Step 6:** Client accounting/reporting is implemented and locally
   checked with synthetic metrics. Offline metadata checks expose declared timing,
   generator limits, VU headroom and drops. A verified monotonic k6 timing method,
@@ -42,6 +46,41 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 - **Measurements:** No ECS/Lambda comparison or final NFR run is recorded here.
 
 ## History
+
+### 2026-11-01 20:18:19 UTC — EXP-02 upstream category-search reconciliation
+
+**Direction:** User requested checking the remote and then incorporating its
+new main commit. Fetched `origin/main` at `1f110650d056f800e0179aec06f9b8747ad377ef`
+(PR #25) and merged locally; the only conflict was the shared work log. Both
+branches' dated entries were retained in UTC order. Frozen manifests and dataset
+contents were not edited.
+
+**Dataset evidence:** The upstream work log records Aditya's confirmation of
+DATA-READY and reports Suraj's review, against PR #24's accepted dataset with
+5,000 users, 1,000 listings, 1,000 verified images, 22 reviewed queries and
+logical fingerprint `7efd142e11c3e8555e1aa08603cbf8dff07de5d74412ccde3c39869b9334ab98`.
+This is a recorded human acceptance, not independent verification by this agent;
+the immutable release retains `data_ready: false` from capture time. Actual A/B
+deployment/data/configuration parity and ordered-result review remain separate.
+
+**Search impact:** PR #25 incorporates current category labels in lexical
+matching used by Hybrid; semantic embedding input and stored fingerprints are
+unchanged. Changed candidate membership/order and a supplemental label scan can
+affect correctness and latency. Existing comparison case query texts remain
+drafts; obtain and independently review exact ordered results against the final
+search implementation before binding. The existing ordered-reference binder
+checks search-contract and model revisions, but does not bind an explicit
+search implementation revision. That missing binding is an open preparation
+gap; source/image revision in the run manifest alone does not make the reference
+review itself apply to that implementation. No ranking or new label is invented.
+
+**Checks:** 104 focused Python tests passed, including corpus, manifest,
+reporting and affected non-database Listings search tests; five JavaScript test
+files passed. Contract generation check passed for all eight artifacts using a
+previously available temporary Node 24.22.0. Merge whitespace checks passed.
+No experiment, workload, cloud, database or external-service call was performed.
+Search NFRs, actual deployed revisions, NFR ownership and independent timing
+protocol review remain open. Result awaits user verification.
 
 ### 2026-11-01 20:11:52 UTC — NFR preparation and ownership inventory
 
