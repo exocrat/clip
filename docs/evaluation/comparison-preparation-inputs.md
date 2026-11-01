@@ -79,12 +79,13 @@ Go `time.Time` with its monotonic reading; `stop()` returns elapsed milliseconds
 and clears that start. A second start while active or a stop without a start
 must fail. The workload would bracket exactly one synchronous HTTP call and
 retain a duration for timeouts and exceptions without recording private data.
-This contract is a design proposal, not an implemented or selected timer. Pin
-and review k6 and extension sources and build provenance; test VU isolation,
+The disconnected prototype under `scripts/evaluation/k6/monotonic/` implements
+this contract against the pinned upstream k6 v2.3.0 Go module; it is not selected
+or verified for measurements. Review k6 and extension sources and build provenance; test VU isolation,
 invalid call ordering, exception/timeout handling and boundary placement with
 injected clocks and doubles; then independently verify the resulting binary and
 runtime behavior before changing the unverified report flag. No build, runtime
-verification or measurement is authorized by this proposal.
+verification or measurement is authorized by the prototype.
 
 At the immediate burst transition, warm-up requests may finish during the first
 five seconds of measured arrivals. The k6 VU limit is per scenario, so both

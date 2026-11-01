@@ -43,6 +43,31 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-01 19:11:27 UTC — EXP-02 monotonic timer prototype
+
+**Direction:** User verified a local, disconnected per-VU timer prototype.
+The new Go module pins upstream `go.k6.io/k6/v2` v2.3.0 and records transitive
+module checksums; the installed development k6 binary is not assumed to match.
+Go 1.27.1 compiled the module, whose dependencies require Go 1.26 or later.
+`module.go` creates an independent timer for each VU. `timer.go` keeps Go's
+monotonic `time.Time` in memory, rejects repeated starts and stop without start,
+returns elapsed milliseconds, clears state, and rejects a backwards test clock.
+It exposes no absolute time, data, network operation or remote execution.
+
+**Checks:** `gofmt` and `go test ./...` passed with the pinned modules; injected
+clock tests exercise ordering, reset, backwards time, duration and per-instance
+isolation. The initial public-module fetch failed because the sandbox blocked
+DNS; the user had allowed internet, and the approved network-enabled retry
+downloaded dependencies to `/tmp/clip-timer-gopath`. Subsequent tests used
+`GOPROXY=off`. No k6 workload or live-system action occurred.
+
+**Limitations:** No custom k6 binary was built, the JavaScript/Go bridge has
+not been tested in a k6 runtime, and request, exception and timeout boundaries
+are not verified. The extension is not imported by the workload, and reports
+still mark latency unverified. Independent review, reproducible binary/provenance,
+safe runtime checks and the actual run gates remain open. Result awaits user
+verification.
+
 ### 2026-11-01 19:08:52 UTC — EXP-02 timeout accounting and timer contract
 
 **Direction:** User verified the official-source findings and authorized the
