@@ -31,7 +31,7 @@ own their detailed commands and limits.
 |---|---|
 | Search/Listings focused checks and isolated preview | [Search test guide](../../apps/api/tests/domains/search/README.md), [API guide](../../apps/api/README.md), and the browser procedure below |
 | Schema-shaped search data | [Data generator guide](../../data/README.md#se-01-isolated-schema-shaped-corpus); these are not the final NEXT-06 dataset commands |
-| Load-runner tools and bounded local pilot | [k6 tool guide](../../scripts/evaluation/k6/README.md) |
+| Load-runner tools, bounded local pilot and EXP-02 manifest validation | [k6 tool guide](../../scripts/evaluation/k6/README.md); [offline case and telemetry preparation](../evaluation/comparison-preparation-inputs.md) |
 | NFR measures and final-run requirements | [NFR measurement design](../evaluation/nfr/measurement-design.md) and the approved [ECS/Lambda experiment design](../evaluation/ecs-only-vs-ecs-lambda-task-list.md) |
 | Disposable database and SQL diagnostics | [Database guide](../../database/README.md) |
 | Identity provider setup and real-run gates | [Identity setup guide](identity-provider-setup.md) |
@@ -1836,7 +1836,28 @@ MYPYPATH=apps/api/app/domains/listings .venv/bin/mypy --no-incremental --python-
 This installs nothing. It checks the helper against its actual pinned runtime;
 it does not replace CI, inference checks or platform acceptance.
 
+## EXP-02 evidence manifest validation
+
+Validate the unfilled schema template or a completed per-run evidence record:
+
+```bash
+.venv/bin/python -m scripts.evaluation.k6.comparison_manifest data/evaluation/workloads/ecs-lambda-run-manifest.template.json
+```
+
+The command is local and read-only. A valid manifest records evidence completeness;
+it does not authorize load, deployment, or cloud work. Real manifests belong in
+`docs/evaluation/experiment/<run-id>/` and must contain no credentials or personal
+data. See the [k6 guide](../../scripts/evaluation/k6/README.md).
+
 ## NEXT-03 complete local inspection
+
+EXP-02 local comparison preparation: after starting the synthetic inspection
+app below, provide one to ten case objects on standard input to
+`.venv/bin/python -m scripts.evaluation.k6.comparison_runner --port 5175 --k6 /usr/bin/k6`.
+Only documented inspection ports are accepted; it obtains the synthetic buyer
+session in memory and checks HTTP status and content against separately supplied
+expected responses. It is not an NFR or cloud runner. See [its case format and
+limits](../../scripts/evaluation/k6/README.md).
 
 After building the normal web bundle with pinned Node/npm, run:
 

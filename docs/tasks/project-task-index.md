@@ -82,7 +82,7 @@ Roles A/B/C/D map to the people in the [work-log roster](../status/work-log.md).
 
 DL-00: each owner drafts/reviews its domain contract; A coordinates combined artifacts and D is the primary independent peer. INT-01: A coordinates; A verifies identity/notifications, B images/listings and isolated DB-restore preparation/evidence, C search/peak-load tooling/evidence, D conversations and runtime-loss preparation/evidence. The named cloud operator serializes actual recovery/load/deployment runs. All owners review the integrated journey and fix only their owned implementation through PRs.
 
-Experiment allocation: EXP-01/02 C; EXP-03/04 B; EXP-05/06 C with B infrastructure support; EXP-07 A with C/D raw-data/calculation review; EXP-08 B with A cost review. CLOSE-00 A coordinates, each owner runs/fixes its domain slice, C checks results/report, B resources/cost evidence, D encryption/demo evidence. Peer human approvals remain independent of authors.
+Experiment allocation: EXP-01 C; EXP-02 reassigned to Rahul (D) by user direction, with C review; EXP-03/04 B; EXP-05/06 C with B infrastructure support; EXP-07 A with C/D raw-data/calculation review; EXP-08 B with A cost review. CLOSE-00 A coordinates, each owner runs/fixes its domain slice, C checks results/report, B resources/cost evidence, D encryption/demo evidence. Peer human approvals remain independent of authors.
 
 ## Selecting work without human cross-reference
 

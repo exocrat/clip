@@ -1,8 +1,102 @@
 # Local k6 load-runner preparation — SE-01 Step10
 
+## EXP-02 local comparison preparation
+
+For offline ordered-reference binding and telemetry metadata validation, see
+[comparison preparation inputs](../../../docs/evaluation/comparison-preparation-inputs.md).
+These commands do not send requests or authorize measurements.
+
+`comparison_runner.py` runs one to ten case-shaped requests against the owned
+synthetic inspection app on port 5174, 5175 or 5176. It obtains a synthetic buyer
+session from that app in memory, invokes the explicitly named k6 binary with a
+clean environment and temporary metrics, and prints route kinds, HTTP statuses
+and correctness against supplied expected responses. It is not measurement
+evidence. Start the documented synthetic inspection app first; use separately
+prepared expected cases bound to that app's data. Each case has `request` and
+`expected` keys: the latter is the complete expected page or detail response.
+Pass the case array over standard input:
+Search cases must explicitly specify `search_mode: "hybrid"`; the generated API
+defaults to Keyword, so omitting the mode would test the wrong behavior. The
+runner checks all cases with `k6 inspect` before creating a synthetic session.
+
+```sh
+.venv/bin/python -m scripts.evaluation.k6.comparison_runner --port 5175 --k6 /usr/bin/k6 < local-reviewed-cases.json
+```
+
+Exit 0 means all supplied cases matched; exit 1 means one or more did not; exit 2
+means preparation failed. This runner refuses other ports and does not accept cloud targets or real
+credentials. The installed binary's provenance and the full scheduled/checked
+workload remain separate requirements. The older single-case environment input
+for `comparison_smoke.js` was replaced by `CLIP_COMPARISON_LOCAL_CASES`.
+
 This tool runs bounded loopback pilots only. It cannot execute the full-rate NFR
 profiles or accept SE-CORE/DATA-READY/NFRs. The final target/auth/data/image/index/
 telemetry/resource/cost/repetition plan remains a separately approved real gate.
+
+`comparison_schedule.js` and `comparison_load.js` prepare the EXP-02 approved
+sequence: one request per iteration in a 5-browse/3-Hybrid/2-detail cycle;
+0.2 requests/s low, 10 requests/s normal and 50 requests/s burst; 60-second
+warm-up, 300-second measurement and up to five seconds between cohorts. Burst
+warms at 10 requests/s, then starts 50 requests/s immediately. Low uses one
+iteration per five-second time unit. Arrival windows are sequential; burst
+warm-up requests may finish draining after the measured arrivals begin, with
+their own scenario tags. The configured VU maximum applies per scenario: during
+that overlap the two burst scenarios can use up to twice that maximum. A future
+real-run plan must explicitly budget and verify the combined generator cap. The load
+script checks complete expected responses, makes one request per iteration and
+accepts only a loopback target plus an explicit synthetic session. It does not
+write response bodies or credentials to output.
+
+The checked-in `ecs-lambda-comparison-schedule-v1.json` is a design schedule,
+not an executable final manifest. Dataset-bound expected cases, their reviewed
+ten-case sequence and rotation seed, VU caps, real authenticated-session limits,
+deployed parity, run/cost caps, telemetry and cleanup approval remain open. The
+full k6 script is not run until those inputs are reviewed; the separate runner
+still executes only bounded local pilots. This schedule preparation creates no
+performance or NFR evidence.
+
+`comparison_report.py` reads k6's JSON output without modifying it and writes a
+separate derived report. It reports scheduled, issued, HTTP, dropped, incomplete,
+correct and failed counts; timeouts and 429 throttles; offered and correct
+throughput; and R7 p50/p95/p99 latency by cohort and route. Accounting mismatches,
+missing samples, drops and wall-clock anomalies remain visible and make the
+corresponding accounting/delivery flag false. Its infrastructure section says
+`not_collected_local_preparation`; deployed ECS, Lambda and PostgreSQL telemetry
+must be attached separately before a real run is assessed.
+
+```sh
+.venv/bin/python -m scripts.evaluation.k6.comparison_report path/to/raw.ndjson --output path/to/new-report.json
+```
+
+The output path must not already exist. Raw k6 JSON stays unchanged; incomplete
+or dropped delivery still writes a report but exits nonzero.
+The per-run manifest requires different raw-output and derived-report references.
+If a calculation needs correction, preserve the original report and write a new
+versioned path (for example, `analysis-v2.json`); never edit a captured raw file
+or replace an earlier report.
+
+The report uses `issued + dropped_iterations` as generator-offered work and
+counts only `correct` completions as successful throughput. It retains route
+and cohort counts, all-completed and correct-only latency quantiles, timeout,
+429 throttle and other failure categories. Missing counter/latency samples,
+unexpected route/outcome tags, noninteger counters or clock anomalies invalidate
+the accounting check. This parser currently treats HTTP 429 as an explicit
+throttle signal; other non-200 responses remain categorized by status class.
+
+The per-run evidence template is
+`data/evaluation/workloads/ecs-lambda-run-manifest.template.json`. It separates
+the immutable approved schedule from run-specific values and keeps evidence by
+run under `docs/evaluation/experiment/<run-id>/`. Validate the untouched template
+or a completed record with:
+
+```sh
+.venv/bin/python -m scripts.evaluation.k6.comparison_manifest data/evaluation/workloads/ecs-lambda-run-manifest.template.json
+```
+
+The validator enforces the schema and approved workload constants, rejects
+unknown fields and common credential/PII patterns, and refuses incomplete
+captured records. Its result always says `measurement_authorized: false`; separate
+run approval remains required.
 
 ## Tool and sources
 

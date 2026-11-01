@@ -1,5 +1,179 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### EXP-02 ordered references, timing and telemetry preparation — 2026-11-01 18:23:04 UTC
+
+User verified grouped Steps 4, 6 and 7 preparation. Added an offline ordered
+Hybrid-reference binder and template, plus telemetry metadata validator and
+template. Corrected an existing five-second burst-transition gap; no workload
+had run under that schedule. Thirty-six Python tests, four Node test files,
+per-file Black, JSON/whitespace checks and synthetic `k6 inspect` passed; a
+separate inspect found `performance.now` unavailable. The real ordered results,
+independent review, monotonic timing, combined VU limits and real telemetry remain
+pending. No experiment or cloud action ran. Result awaits user verification;
+details: [experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 dataset-bound case corpus draft — 2026-11-01 17:51:15 UTC
+
+Prepared a ten-case 5/3/2 corpus from the retained frozen dataset and reviewed
+query labels. Seven browse/detail expected responses validate against the public
+response checker. Three Hybrid cases use the approved direct, related and
+meaning-based queries, but ordered responses remain unset: the stored NEXT-06
+ranking diagnostics are different query texts and are not reviewed references.
+The dataset remains `data_ready: false`. One focused Python test, per-file Black,
+deterministic regeneration, k6 mix/response validation and `git diff --check`
+passed. `k6 inspect` refused the draft with `invalid_expected_case` before any
+request, as intended. No app, cloud path or load was run. Details: [experiment
+log](../evaluation/experiment-log.md).
+
+### EXP-02 Step 8 immutable raw and versioned analysis — 2026-11-01 16:11:38 UTC
+
+User verified the Step 8 understanding. The report tool already reads raw k6
+output and creates derived output exclusively; captured manifests now reject a
+shared raw/derived reference, and the guide requires corrected calculations to
+use a new versioned report. Nine focused tests, per-file Black checks, template
+validation, and `git diff --check` passed. No run or measurement occurred. Step 8
+is user-verified; remaining gates are detailed in the
+[experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 Step 7 evidence manifest preparation — 2026-11-01 16:06:30 UTC
+
+User verified Step 7. Added a per-run manifest template covering target, revisions,
+migration, dataset/workload hashes, run times, telemetry, cost and evidence refs;
+added a validator that enforces the approved schedule, required capture fields,
+and common secret/PII exclusions. Four focused tests, Black, template validation,
+JSON and whitespace checks passed. Values remain blank; this does not authorize a
+run. See the [experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 Step 6 request accounting — 2026-11-01 15:56:58 UTC
+
+User verified Step 6. Added a read-only report over k6 JSON with route/cohort
+outcomes, p50/p95/p99 latency, offered/successful throughput, timeout/throttle/
+failure counts, dropped work and accounting validity. A k6 clock-anomaly counter
+prevents bad timing samples from appearing valid. Four Python and three Node test
+files passed; k6 inspect, per-file Black checks and whitespace checks passed.
+No HTTP run or infrastructure telemetry; deployed metrics remain pending. See
+the [experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 Step 5 scheduled workload configuration — 2026-11-01 14:22:56 UTC
+
+User verified the Step 5 understanding. Added the approved 50/30/20 request mix
+and low/normal/burst schedule to local k6 preparation: one HTTP request per
+arrival, separate 60-second warm-up and 300-second measured cohorts, a 10/s burst
+warm-up and immediate 50/s burst transition. The sequential six-cohort schedule
+was checked with Node tests and `k6 inspect`; no workload was run. Final reviewed
+cases/seed, capacity/session limits and real target remain pending. See the
+[experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 Step 4 local response checks — 2026-11-01 14:18:17 UTC
+
+User verified Step 4 understanding. Added exact expected-content page/detail
+checks, integrated sanitized per-case outcomes into the local k6/Python runner,
+and updated its input documentation. Three focused JS files and three Python
+tests passed; actual k6 correctly passed a synthetic response and failed a
+different HTTP-200 body. Black formatted the changed Python files. Final
+dataset-bound cases/real deployed checks remain pending; no cloud or performance
+measurement. Details: [experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 Step 3 revised runner smoke — 2026-11-01 14:14:45 UTC
+
+User directed continuation. Rechecked the preflight-enabled Python/k6 runner
+against the disposable integrated app: browse and explicit Hybrid search each
+returned HTTP 200, unchecked for content. Synthetic app stopped cleanly. No
+cloud or performance run. Real deployment/session and Step 2 A/B parity remain
+pending; see [experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 Step 3 Hybrid mode and preflight — 2026-11-01 14:09:02 UTC
+
+User verified the preceding checkpoint. Found that the API defaults to Keyword;
+comparison search cases now require explicit Hybrid. Python runner uses k6 inspect
+with a non-secret placeholder before synthetic login, rejecting invalid cases early.
+Three Python and 11 JS tests passed; actual k6 inspect accepted Hybrid and refused
+missing mode. No cloud or performance run. Recheck integrated synthetic app after
+this change; see [experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 Step 3 Python local runner — 2026-11-01 14:04:51 UTC
+
+User verified the previous checkpoint. Added a bounded local Python k6 runner
+that obtains a synthetic inspection session in memory and emits sanitized,
+unchecked HTTP statuses. Two Python tests and Black passed; actual k6 against
+the disposable integrated app returned HTTP 200 for browse and Hybrid search.
+App stopped; no cloud or performance measurement. Step 3 real-session/deployed
+checks remain pending. See [experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 Step 3 multi-case k6 smoke — 2026-11-01 14:02:36 UTC
+
+User verified the preceding checkpoint. Extended the loopback-only k6 scenario
+to validate and run one to ten cases sequentially. Four mocked adapter tests
+passed under Node 26.8.2; actual k6 with the disposable synthetic app sent browse,
+Hybrid search and detail in one run, each HTTP 200. App stopped and temporary
+metrics removed. Correctness, arrival-rate workload and real deployment remain
+pending; no cloud or performance evidence. See [experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 Step 3 three-route local smoke — 2026-11-01 14:00:23 UTC
+
+User verified the previous checkpoint. Against the documented disposable
+synthetic inspection app, three separate single-request k6 runs for browse,
+Hybrid search and listing detail each returned HTTP 200. Session stayed in
+memory, temporary metrics were removed and the app stopped. This validates
+local routing/status only; response correctness, scheduled workload and deployed
+real-session checks remain pending. See [experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 Step 3 integrated local smoke — 2026-11-01 13:58:35 UTC
+
+User verified the previous checkpoint. Prepared isolated Linux Python 3.13.12,
+24 hash-pinned helper packages and two hash-verified model files; local helper
+returned a 384-dimensional vector. The documented synthetic integrated app's
+startup sweep passed and actual k6 sent one authenticated synthetic-session
+Hybrid search to `/api/listings`, receiving HTTP 200. App stopped cleanly. The
+first inference attempt failed because the test resolved the venv symlink; the
+correct venv path passed. No real-provider/cloud/NFR/architecture evidence is
+claimed; correctness and full workload remain pending. See [experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 Step 3 integrated route preparation — 2026-11-01 13:49:47 UTC
+
+User directed continuation. Corrected local request targets to allow the real
+website `/api` mount or bare API root, with a shared loopback-only guard. Ten
+focused tests passed on Node 26.8.2; Docker 29.8.1 responds with approved socket
+access. Integrated inspection is not runnable yet because the required local
+Hybrid interpreter and model are absent. No real app/session, cloud or measured
+run. Step 3 remains partial; see [experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 Step 3 actual k6 local smoke — 2026-11-01 13:46:42 UTC
+
+User reports compiling/installing `/usr/bin/k6`; it reports v2.3.0 commit/devel
+on Linux AMD64. Actual k6 against a temporary synthetic loopback HTTP server
+exited 0 and issued exactly one expected Hybrid search with a synthetic cookie.
+Sandbox socket probe failed EPERM; local test passed after approved escalation.
+No real app/session, cloud or NFR/architecture measurement. Step 3 remains
+partial; final toolchain provenance and real session remain pending. See the
+[experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 Step 3 k6 adapter — 2026-11-01 13:29:30 UTC
+
+Added a one-request loopback-only k6 preparation scenario and mocked k6-adapter
+tests. Case/adapter test files pass on Node 26.8.2; actual k6 is unavailable on
+PATH and the registered installer is macOS ARM64-only. No real k6, app, session,
+cloud or measurement run; Node 24 and real runtime verification remain pending.
+Details: [experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 Step 3 local batch — 2026-11-01 13:27:01 UTC
+
+User verified the prior checkpoint. Added a bounded one-to-ten-request local
+preparation batch and exercised browse/search and 401 against a temporary
+synthetic loopback server. Six Node tests passed with Node 26.8.2; initial
+sandboxed bind failed `EPERM`, and the same test passed after approved escalation.
+No real app/session, cloud or measurement run; Step 3 remains partial. See the
+[detailed experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 Step 3 local transport preparation — 2026-11-01 13:25:12 UTC
+
+Added loopback-only, single-request transport preparation with in-memory session
+input and synthetic injected-transport tests. `node --test scripts/evaluation/k6/comparison_cases.test.mjs scripts/evaluation/k6/comparison_local.test.mjs` passed with Node 26.8.2; project-pinned Node 24 remains to be checked. No HTTP or cloud calls ran. Step 3 remains partial: actual k6 scenario, real authorized session and integrated checks are pending. See [experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 Steps 1–3 — dataset evidence and workload preparation — 2026-11-01 13:14:04 UTC
+
+User directed Rahul to continue EXP-02 and confirmed Mohit says the dataset exists. Frozen release and recorded load agree on seed 42, 5,000 users, 1,000 listings and fingerprint `7efd142e11c3e8555e1aa08603cbf8dff07de5d74412ccde3c39869b9334ab98`; release file SHA-256 matched its recorded value. Step 2 actual deployed A/B equivalence remains pending EXP-03/04. Step 3 adds contract-shaped comparison read paths and Node contract/refusal checks; `node --test scripts/evaluation/k6/comparison_cases.test.mjs` passed under Node 26.8.2 (project pins Node 24). No authenticated execution or complete load scenario yet; Step 3 remains partial and awaits verification. No cloud calls or measurements.
+
 ### NEXT-06 Step6 immutable release and task-wide review — 2026-10-31 15:50:51 UTC
 
 Mohit verified Step5 and directed Step6. Created `reference_release.py` and
@@ -1096,7 +1270,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | CN-03 | A; D producer review | in progress | PR #21: migration-fixture CI fix locally verified; hosted CI pending | Full local checks passed: Python 2073/171 skipped, data 331, web 497/3 skipped, Conversations 184, migration and safety checks | Aditya confirmed prior task items done; current fix awaits hosted CI | Draft [PR #21](https://github.com/exocrat/clip/pull/21), branch includes merge `de2c94a` and local fixture fix | Push only after local checks; confirm hosted CI and obtain independent PR review | 2026-10-31 19:43:57 UTC |
 | INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
 | EXP-01 | C; Suraj coordinates NEXT-01 design | done | NEXT-01 design and gates are approved; actual topology pricing and numeric cost endpoints are NEXT-07 pre-result gates. | Design Steps 1–9 performed; no experiment run | Suraj verified NEXT-01 Steps 1–9 on 2026-10-28. | [Approved design and gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md); [NEXT-07 execution plan](../tasks/remaining-project-plan.md#experiment-protocol-reference) | Implementation, final data/tools, actual account/spend, numeric cost endpoints, and separate run approvals remain before measurement. | 2026-10-28 06:24:24 UTC |
-| EXP-02 | C | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-01 | — |
+| EXP-02 | Rahul (D), reassigned by user; Search owner C review | in progress | Grouped Steps 4, 6 and 7 offline reference/telemetry preparation and burst-boundary correction checked; result awaits verification | Seven dataset expectations validated; ordered-input/telemetry validators and corrected timing tested; no measurement authorized | Earlier Steps 4–8 verified; grouped preparation understanding verified, result pending | `task/exp-02-workload`; case draft, ordered-reference/telemetry templates and scripts, corrected schedule, tests; [experiment log](../evaluation/experiment-log.md) | Actual ordered Hybrid references and independent review, DATA-READY, monotonic timing and combined generator caps, seed/session limits, actual A/B deployment/revisions, approved run command, real telemetry, cost and cleanup evidence remain pending | 2026-11-01 18:23:04 UTC |
 | EXP-03 | B | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-02 | — |
 | EXP-04 | B | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-03 | — |
 | EXP-05 | C | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-04 | — |
