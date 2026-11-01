@@ -1,5 +1,14 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### EXP-02 monotonic timing investigation — 2026-11-01 18:51:31 UTC
+
+User verified local investigation. An initialization-only k6 v2.3.0 inspect
+found no `performance`, `Temporal`, or `process` clock; `k6/timers` exposed
+scheduling functions. Local documentation did not establish the phase metrics'
+full boundary or failure behavior, so the monotonic-clock gate remains open and
+no timing substitution was made. No workload or external call occurred. Result
+awaits verification; [details and next checks](../evaluation/experiment-log.md).
+
 ### EXP-02 local safety and reporting audit — 2026-11-01 18:48:42 UTC
 
 User verified the preceding group and approved a local timing, runner and report
@@ -1286,7 +1295,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | CN-03 | A; D producer review | in progress | PR #21: migration-fixture CI fix locally verified; hosted CI pending | Full local checks passed: Python 2073/171 skipped, data 331, web 497/3 skipped, Conversations 184, migration and safety checks | Aditya confirmed prior task items done; current fix awaits hosted CI | Draft [PR #21](https://github.com/exocrat/clip/pull/21), branch includes merge `de2c94a` and local fixture fix | Push only after local checks; confirm hosted CI and obtain independent PR review | 2026-10-31 19:43:57 UTC |
 | INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
 | EXP-01 | C; Suraj coordinates NEXT-01 design | done | NEXT-01 design and gates are approved; actual topology pricing and numeric cost endpoints are NEXT-07 pre-result gates. | Design Steps 1–9 performed; no experiment run | Suraj verified NEXT-01 Steps 1–9 on 2026-10-28. | [Approved design and gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md); [NEXT-07 execution plan](../tasks/remaining-project-plan.md#experiment-protocol-reference) | Implementation, final data/tools, actual account/spend, numeric cost endpoints, and separate run approvals remain before measurement. | 2026-10-28 06:24:24 UTC |
-| EXP-02 | Rahul (D), reassigned by user; Search owner C review | in progress | Local timing, runner-safety and report audit completed; result awaits verification | 35 focused Python tests and three Node test files passed; report explicitly flags timing unverified; contract check needs pinned Node 24 | Preceding grouped result verified; current audit understanding verified, result pending | `task/exp-02-workload`; comparison preparation and [experiment log](../evaluation/experiment-log.md) | Actual ordered Hybrid references and independent review, DATA-READY, monotonic timing and combined generator caps, pinned Node/contract check, seed/session limits, real-target runner, actual A/B deployment/revisions, approved run command, real telemetry, cost and cleanup evidence remain pending | 2026-11-01 18:48:42 UTC |
+| EXP-02 | Rahul (D), reassigned by user; Search owner C review | in progress | Local monotonic-clock investigation completed; result awaits verification | k6 inspect exposed scheduling timers but no tested monotonic clock; HTTP phase boundaries remain unverified | Prior audit verified; investigation understanding verified, result pending | `task/exp-02-workload`; comparison preparation and [experiment log](../evaluation/experiment-log.md) | Actual ordered Hybrid references and independent review, DATA-READY, monotonic timing and combined generator caps, pinned Node/contract check, seed/session limits, real-target runner, actual A/B deployment/revisions, approved run command, real telemetry, cost and cleanup evidence remain pending | 2026-11-01 18:51:31 UTC |
 | EXP-03 | B | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-02 | — |
 | EXP-04 | B | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-03 | — |
 | EXP-05 | C | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-04 | — |

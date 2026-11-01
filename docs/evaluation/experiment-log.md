@@ -43,6 +43,33 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-01 18:51:31 UTC — EXP-02 monotonic timing investigation
+
+**Direction:** User verified the proposed local timing investigation. No
+workload or external-service call was authorized. On the installed Linux k6
+v2.3.0, an initialization-only `k6 inspect` probe with a temporary empty config
+reported `performance`, `performance.now`, `Temporal` and `process` undefined;
+`k6/timers` exposed `setTimeout`, `clearTimeout`, `setInterval` and
+`clearInterval`, rather than an observed elapsed-time clock. The first inspect
+attempt used `/dev/null` as a config and failed JSON parsing; retrying with an
+empty JSON object succeeded. Neither invocation sent requests.
+
+**Finding:** The approved boundary is request start through full response,
+including connection setup when incurred, using a verified monotonic client
+clock. The locally available k6 README does not establish that a combination of
+HTTP phase metrics covers that boundary for connection reuse, failures and
+timeouts, or prove its clock behavior. In particular, adding connection and TLS
+submetrics without proving their relationship to blocked time could double count.
+No replacement was implemented or approved; Date.now remains preview-only.
+
+**Next:** Examine authoritative source or documentation for the exact installed
+version and independently verify successful, reused-connection, failed and
+timed-out timing boundaries before selecting an approach. If built-in phases
+cannot meet the protocol, evaluate a bounded k6 extension providing a monotonic
+clock and its toolchain implications, then seek the required design review.
+Any future runtime verification and deployed testing remain separately gated.
+No measurement or NFR acceptance is claimed. Result awaits user verification.
+
 ### 2026-11-01 18:48:42 UTC — EXP-02 local safety and reporting audit
 
 **Direction:** The user verified the preceding grouped result and approved a
