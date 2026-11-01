@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "purpose": "approved-schedule-preparation",
+  "measurement_enabled": false,
+  "routes": {
+    "browse": "GET /listings",
+    "search": "GET /listings with explicit search_mode=hybrid",
+    "detail": "GET /listings/{listing_id}"
+  },
+  "mix_per_ten_requests": {
+    "browse": 5,
+    "search": 3,
+    "detail": 2
+  },
+  "conditions": [
+    { "name": "low", "warmup_rate": 0.2, "measured_rate": 0.2, "unit": "requests/second" },
+    { "name": "normal", "warmup_rate": 10, "measured_rate": 10, "unit": "requests/second" },
+    { "name": "burst", "warmup_rate": 10, "measured_rate": 50, "unit": "requests/second", "transition": "immediate after normal-rate warm-up" }
+  ],
+  "warmup_seconds": 60,
+  "measured_seconds": 300,
+  "maximum_drain_seconds_per_cohort": 5,
+  "client_timeout_seconds": 5,
+  "retries": 0,
+  "unresolved_run_inputs": [
+    "dataset-bound reviewed ten-case sequence and expected responses",
+    "fixed seed and paired-run sequence rotation",
+    "approved generator location and VU capacity caps from EXP-01 Step 7",
+    "actual authenticated session and deployed target parity",
+    "run authorization, resource/spend caps, telemetry and cleanup plan"
+  ]
+}
