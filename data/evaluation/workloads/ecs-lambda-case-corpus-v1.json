@@ -1,0 +1,2450 @@
+{
+  "format_version": 1,
+  "status": "draft_search_order_pending",
+  "purpose": "EXP-02 dataset-bound comparison case preparation; not executable",
+  "dataset": {
+    "logical_data_fingerprint": "sha256:7efd142e11c3e8555e1aa08603cbf8dff07de5d74412ccde3c39869b9334ab98",
+    "archive_sha256": "2c9c88d103f3329c794c1efa857268a7120c7f1549250d3e28278d5e1eb0b2ea",
+    "schema_version": "reference-v2@20261029043000",
+    "seed": 42,
+    "reference_time": "2026-11-01T00:00:00.000000Z",
+    "availability_window_ends": "2026-12-01T00:00:00.000000Z",
+    "data_ready": false
+  },
+  "review": {
+    "browse_and_detail": "expected from frozen records and current public listing contract; review pending",
+    "hybrid": "requests and reviewed relevance-ID sets bound; ordered response must be separately reviewed",
+    "measurement_enabled": false
+  },
+  "cases": [
+    {
+      "case_id": "browse_all_first",
+      "request": {
+        "kind": "browse",
+        "query": {
+          "sort": "created_desc",
+          "page": 1,
+          "page_size": 20
+        }
+      },
+      "expected": {
+        "items": [
+          {
+            "listing_id": "ffa8a135-e342-44a0-9989-82afa8e57b2e",
+            "title": "Synthetic refurbished smartphone 0541",
+            "description": "Synthetic refurbished smartphone. used mobile phone. Condition: Good. For campus use.",
+            "category_code": "mobile_phone",
+            "category_label": "Mobile Phones",
+            "condition_code": "good",
+            "condition_label": "Good",
+            "asking_price_paise": 25000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone B",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "0ceae0ed-3993-4961-9f7d-bed2ffbe407a"
+            ]
+          },
+          {
+            "listing_id": "ff7faa95-41c4-48f0-a8c8-5d264951b5d0",
+            "title": "Synthetic water bottle 0859",
+            "description": "Synthetic water bottle. reusable drink container. Condition: Good. For campus use.",
+            "category_code": "other",
+            "category_label": "Other",
+            "condition_code": "good",
+            "condition_label": "Good",
+            "asking_price_paise": 25000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone C",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "28303ff6-f761-4d2a-86b2-d887cf7b8bb5"
+            ]
+          },
+          {
+            "listing_id": "ff5a978a-74cb-4cd4-bd44-b691f783738c",
+            "title": "Synthetic office chair 0749",
+            "description": "Synthetic office chair. work seating. Condition: Fair. For campus use.",
+            "category_code": "furniture",
+            "category_label": "Furniture",
+            "condition_code": "fair",
+            "condition_label": "Fair",
+            "asking_price_paise": 25000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone D",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "aa13fea5-9c00-4993-8002-13eba4124256"
+            ]
+          },
+          {
+            "listing_id": "feb70a5d-d2e8-4e94-8f7e-87fd61e4269c",
+            "title": "Synthetic Student laptop 0224",
+            "description": "Synthetic Student laptop. student portable computer. Condition: New / Unused. For campus use.",
+            "category_code": "laptop",
+            "category_label": "Laptops",
+            "condition_code": "new",
+            "condition_label": "New / Unused",
+            "asking_price_paise": 1200000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone B",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "15287e68-a271-4790-aa76-edc97eb1b048"
+            ]
+          },
+          {
+            "listing_id": "feab6240-e160-4ddf-8ed0-136635cce468",
+            "title": "Synthetic speaker 0400",
+            "description": "Synthetic speaker. audio loudspeaker. Condition: New / Unused. For campus use.",
+            "category_code": "electronics",
+            "category_label": "Electronics",
+            "condition_code": "new",
+            "condition_label": "New / Unused",
+            "asking_price_paise": 300000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone C",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "fa527bce-dd99-46c8-9a75-e301a10a08ac"
+            ]
+          },
+          {
+            "listing_id": "fe6830df-766d-4efc-ac2c-99573938e338",
+            "title": "Synthetic biology textbook 0600",
+            "description": "Synthetic biology textbook. life science book. Condition: Good. For campus use.",
+            "category_code": "books",
+            "category_label": "Books and Study Materials",
+            "condition_code": "good",
+            "condition_label": "Good",
+            "asking_price_paise": 1200000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone D",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "a2c4bcda-77ef-4116-aa44-8cf52624dcc2"
+            ]
+          },
+          {
+            "listing_id": "fdb9630a-a579-49eb-a10a-603fddffe677",
+            "title": "Synthetic Backpack 0364",
+            "description": "Synthetic Backpack. student carrying bag. Condition: New / Unused. For campus use.",
+            "category_code": "other",
+            "category_label": "Other",
+            "condition_code": "new",
+            "condition_label": "New / Unused",
+            "asking_price_paise": 50000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone A",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "1b30994c-7ed6-4fdc-89e7-536f0aaa5ab4"
+            ]
+          },
+          {
+            "listing_id": "fce85965-249d-4038-bbed-da6c5a72891b",
+            "title": "Synthetic Study desk 0469",
+            "description": "Synthetic Study desk. study work table. Condition: Like New. For campus use.",
+            "category_code": "furniture",
+            "category_label": "Furniture",
+            "condition_code": "like_new",
+            "condition_label": "Like New",
+            "asking_price_paise": 800000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone B",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "22155282-3755-4737-9c58-5b322be12c72"
+            ]
+          },
+          {
+            "listing_id": "fcd34903-903a-4850-a1cd-dcd13dd5a36a",
+            "title": "Synthetic umbrella 0757",
+            "description": "Synthetic umbrella. rain cover. Condition: Fair. For campus use.",
+            "category_code": "other",
+            "category_label": "Other",
+            "condition_code": "fair",
+            "condition_label": "Fair",
+            "asking_price_paise": 200000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone A",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "5bda3ee3-ee29-4607-bb8f-f54d6e3cd0d6"
+            ]
+          },
+          {
+            "listing_id": "fca3900a-c071-4768-acc1-1b05e4ebc14b",
+            "title": "Synthetic projector 0312",
+            "description": "Synthetic projector. video display projector. Condition: Fair. For campus use.",
+            "category_code": "electronics",
+            "category_label": "Electronics",
+            "condition_code": "fair",
+            "condition_label": "Fair",
+            "asking_price_paise": 25000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone C",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "a3615776-840d-4d0c-9e0a-dc9829de7a51"
+            ]
+          },
+          {
+            "listing_id": "fc9b9e8b-ca73-4594-ad25-41a27ad8db69",
+            "title": "Synthetic biology textbook 0424",
+            "description": "Synthetic biology textbook. life science book. Condition: New / Unused. For campus use.",
+            "category_code": "books",
+            "category_label": "Books and Study Materials",
+            "condition_code": "new",
+            "condition_label": "New / Unused",
+            "asking_price_paise": 300000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone D",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "8742c152-17f7-41e6-86b7-804fac6d5b6a"
+            ]
+          },
+          {
+            "listing_id": "fc61b9f9-90b6-4576-98cb-6f90f361418e",
+            "title": "Synthetic Desk monitor 0715",
+            "description": "Synthetic Desk monitor. computer display. Condition: Good. For campus use.",
+            "category_code": "electronics",
+            "category_label": "Electronics",
+            "condition_code": "good",
+            "condition_label": "Good",
+            "asking_price_paise": 300000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone B",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "97de1c5f-6b96-4f18-9abf-3f01627ac080"
+            ]
+          },
+          {
+            "listing_id": "fc3a5269-fe85-49f7-8e39-f4a3e672fb77",
+            "title": "Synthetic refurbished laptop 0258",
+            "description": "Synthetic refurbished laptop. used portable computer. Condition: Good. For campus use.",
+            "category_code": "laptop",
+            "category_label": "Laptops",
+            "condition_code": "good",
+            "condition_label": "Good",
+            "asking_price_paise": 0,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone A",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "f7c4cc03-d0cf-47fb-944e-ddd5fd3dc107"
+            ]
+          },
+          {
+            "listing_id": "fc0c64bb-cf5a-4cb0-ba24-415626a29ea4",
+            "title": "Synthetic Electric kettle 0822",
+            "description": "Synthetic Electric kettle. kitchen water boiler. Condition: Like New. For campus use.",
+            "category_code": "appliances",
+            "category_label": "Home Appliances",
+            "condition_code": "like_new",
+            "condition_label": "Like New",
+            "asking_price_paise": 100000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone C",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "2f8c327a-76d3-4b6c-8770-45ee6a5555c7"
+            ]
+          },
+          {
+            "listing_id": "fbf1fb30-2204-4cd6-a945-46df71ffac9c",
+            "title": "Synthetic office chair 0320",
+            "description": "Synthetic office chair. work seating. Condition: Good. For campus use.",
+            "category_code": "furniture",
+            "category_label": "Furniture",
+            "condition_code": "good",
+            "condition_label": "Good",
+            "asking_price_paise": 800000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone D",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "7aab9c4e-9a15-477a-8972-ff54374573fa"
+            ]
+          },
+          {
+            "listing_id": "fbe20ec5-0b66-42f4-96bf-f52f6a8cd3ce",
+            "title": "Synthetic storage box 0986",
+            "description": "Synthetic storage box. plastic storage container. Condition: Fair. For campus use.",
+            "category_code": "other",
+            "category_label": "Other",
+            "condition_code": "fair",
+            "condition_label": "Fair",
+            "asking_price_paise": 300000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone B",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "152daefa-8078-4517-a35d-e8edb7900215"
+            ]
+          },
+          {
+            "listing_id": "faedcafb-d823-4ac3-9b03-7706a169ec75",
+            "title": "Synthetic camera 0020",
+            "description": "Synthetic camera. digital photo camera. Condition: Good. For campus use.",
+            "category_code": "electronics",
+            "category_label": "Electronics",
+            "condition_code": "good",
+            "condition_label": "Good",
+            "asking_price_paise": 25000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone D",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "1c6271dd-9fcc-4f83-949f-9a1891fcdcd3"
+            ]
+          },
+          {
+            "listing_id": "fadfe726-f893-48d3-a6da-883daa7aa5aa",
+            "title": "Synthetic economics textbook 0907",
+            "description": "Synthetic economics textbook. economics study book. Condition: Good. For campus use.",
+            "category_code": "books",
+            "category_label": "Books and Study Materials",
+            "condition_code": "good",
+            "condition_label": "Good",
+            "asking_price_paise": 300000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone B",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "53ee27b4-c625-405c-8728-6c4ca703fbf8"
+            ]
+          },
+          {
+            "listing_id": "fadaedc6-1e6e-42b3-82f6-2a8ec4923cea",
+            "title": "Synthetic bookshelf 0607",
+            "description": "Synthetic bookshelf. book storage shelf. Condition: Good. For campus use.",
+            "category_code": "furniture",
+            "category_label": "Furniture",
+            "condition_code": "good",
+            "condition_label": "Good",
+            "asking_price_paise": 0,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone D",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "9ebb6d18-8775-4f7e-9e5d-a81737868adb"
+            ]
+          },
+          {
+            "listing_id": "faa9ccd5-e03b-43f4-aa71-8d13321308da",
+            "title": "Synthetic dual-SIM smartphone 0005",
+            "description": "Synthetic dual-SIM smartphone. dual SIM cell phone. Condition: Good. For campus use.",
+            "category_code": "mobile_phone",
+            "category_label": "Mobile Phones",
+            "condition_code": "good",
+            "condition_label": "Good",
+            "asking_price_paise": 0,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone A",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "7dd29785-fa0c-4254-a517-16075bb49354"
+            ]
+          }
+        ],
+        "page": 1,
+        "page_size": 20,
+        "has_next": true
+      },
+      "reference_state": "dataset_derived_ordered_expected_pending_search_owner_review"
+    },
+    {
+      "case_id": "browse_all_later",
+      "request": {
+        "kind": "browse",
+        "query": {
+          "sort": "created_desc",
+          "page": 2,
+          "page_size": 20
+        }
+      },
+      "expected": {
+        "items": [
+          {
+            "listing_id": "fa385452-115f-4c8c-8ecc-19a177ceafc8",
+            "title": "Synthetic speaker 0090",
+            "description": "Synthetic speaker. audio loudspeaker. Condition: Like New. For campus use.",
+            "category_code": "electronics",
+            "category_label": "Electronics",
+            "condition_code": "like_new",
+            "condition_label": "Like New",
+            "asking_price_paise": 0,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone C",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "32027fdd-86ab-44cb-b759-3199c87f6e16"
+            ]
+          },
+          {
+            "listing_id": "f9dd824f-5b13-421c-b23b-8d5e591bc206",
+            "title": "Synthetic iPhone 0930",
+            "description": "Synthetic iPhone. Apple mobile phone. Condition: Fair. For campus use.",
+            "category_code": "mobile_phone",
+            "category_label": "Mobile Phones",
+            "condition_code": "fair",
+            "condition_label": "Fair",
+            "asking_price_paise": 2000000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone A",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "2bcf4a05-8b33-4942-9c3a-1eccaba43a8d"
+            ]
+          },
+          {
+            "listing_id": "f98bfd54-2593-4725-a252-d38832d49bec",
+            "title": "Synthetic camera 0585",
+            "description": "Synthetic camera. digital photo camera. Condition: Fair. For campus use.",
+            "category_code": "electronics",
+            "category_label": "Electronics",
+            "condition_code": "fair",
+            "condition_label": "Fair",
+            "asking_price_paise": 200000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone D",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "1046e95e-9c8b-4c66-bcb2-3a58bddff213"
+            ]
+          },
+          {
+            "listing_id": "f8f1e6e5-e632-441a-a330-edf3a2466ee4",
+            "title": "Synthetic biology textbook 0818",
+            "description": "Synthetic biology textbook. life science book. Condition: Good. For campus use.",
+            "category_code": "books",
+            "category_label": "Books and Study Materials",
+            "condition_code": "good",
+            "condition_label": "Good",
+            "asking_price_paise": 1200000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone B",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "a9470b0f-0f1a-43a9-88f8-d74653a9b31f"
+            ]
+          },
+          {
+            "listing_id": "f75ee528-3f5b-4a39-bf9c-1374ea56fa9d",
+            "title": "Synthetic water bottle 0892",
+            "description": "Synthetic water bottle. reusable drink container. Condition: Like New. For campus use.",
+            "category_code": "other",
+            "category_label": "Other",
+            "condition_code": "like_new",
+            "condition_label": "Like New",
+            "asking_price_paise": 50000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone A",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "6d8fd5a2-7871-4eff-91f7-e53bee4ad20b"
+            ]
+          },
+          {
+            "listing_id": "f6fb2cd1-b4ed-4a0c-b2e2-2e5286905ccc",
+            "title": "Synthetic rice cooker 0825",
+            "description": "Synthetic rice cooker. kitchen rice appliance. Condition: Fair. For campus use.",
+            "category_code": "appliances",
+            "category_label": "Home Appliances",
+            "condition_code": "fair",
+            "condition_label": "Fair",
+            "asking_price_paise": 2000000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone C",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "bc45e86d-aeb6-42da-9242-533de99fbf47"
+            ]
+          },
+          {
+            "listing_id": "f62adce1-6527-4aa4-be40-760ab6e85345",
+            "title": "Synthetic computing textbook 0692",
+            "description": "Synthetic computing textbook. computer science book. Condition: Good. For campus use.",
+            "category_code": "books",
+            "category_label": "Books and Study Materials",
+            "condition_code": "good",
+            "condition_label": "Good",
+            "asking_price_paise": 100000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone A",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "ee6ca99c-03c4-4846-8731-f3da250510ff"
+            ]
+          },
+          {
+            "listing_id": "f5d75a00-48fd-4c80-99f2-d48e78a5aa6c",
+            "title": "Synthetic tennis racket 0491",
+            "description": "Synthetic tennis racket. tennis equipment. Condition: New / Unused. For campus use.",
+            "category_code": "sports_fitness",
+            "category_label": "Sports & Fitness",
+            "condition_code": "new",
+            "condition_label": "New / Unused",
+            "asking_price_paise": 0,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone D",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "7fdc218d-55bf-4b8c-a5d5-88a0743c35bc"
+            ]
+          },
+          {
+            "listing_id": "f5cbefbd-f2ae-4d4e-bef3-e1b5c53c478f",
+            "title": "Synthetic refurbished smartphone 0114",
+            "description": "Synthetic refurbished smartphone. used mobile phone. Condition: New / Unused. For campus use.",
+            "category_code": "mobile_phone",
+            "category_label": "Mobile Phones",
+            "condition_code": "new",
+            "condition_label": "New / Unused",
+            "asking_price_paise": 200000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone A",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "74489baf-4ae9-4c7b-a08a-86654d0154f9"
+            ]
+          },
+          {
+            "listing_id": "f4f5ab95-8f30-4087-a0d2-457b4b329520",
+            "title": "Synthetic commuter bicycle 0150",
+            "description": "Synthetic commuter bicycle. daily travel cycle. Condition: Good. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "good",
+            "condition_label": "Good",
+            "asking_price_paise": 1200000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone B",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "ca5afbd5-bdf1-4947-b6f6-44d61fc793cc"
+            ]
+          },
+          {
+            "listing_id": "f467b222-2d45-4ee9-9bcf-35918df4cb5a",
+            "title": "Synthetic Electric kettle 0862",
+            "description": "Synthetic Electric kettle. kitchen water boiler. Condition: New / Unused. For campus use.",
+            "category_code": "appliances",
+            "category_label": "Home Appliances",
+            "condition_code": "new",
+            "condition_label": "New / Unused",
+            "asking_price_paise": 500000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone C",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "bab5ffb8-4e1c-4a6a-80db-94676908465d"
+            ]
+          },
+          {
+            "listing_id": "f429cee0-fcd2-4aad-a0e1-932be0fa9a59",
+            "title": "Synthetic Electric kettle 0369",
+            "description": "Synthetic Electric kettle. kitchen water boiler. Condition: Fair. For campus use.",
+            "category_code": "appliances",
+            "category_label": "Home Appliances",
+            "condition_code": "fair",
+            "condition_label": "Fair",
+            "asking_price_paise": 300000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone D",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "be0118cb-10a5-419a-af72-de1f9aebaa24"
+            ]
+          },
+          {
+            "listing_id": "f41a4418-4430-46ec-bf86-e743d105e275",
+            "title": "Synthetic Student laptop 0987",
+            "description": "Synthetic Student laptop. student portable computer. Condition: New / Unused. For campus use.",
+            "category_code": "laptop",
+            "category_label": "Laptops",
+            "condition_code": "new",
+            "condition_label": "New / Unused",
+            "asking_price_paise": 1200000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone A",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "011183c6-e902-4d31-8103-466a14eea9ea"
+            ]
+          },
+          {
+            "listing_id": "f40419cd-dbb2-4aa8-80ed-d342d52658fc",
+            "title": "Synthetic dual-SIM smartphone 0932",
+            "description": "Synthetic dual-SIM smartphone. dual SIM cell phone. Condition: New / Unused. For campus use.",
+            "category_code": "mobile_phone",
+            "category_label": "Mobile Phones",
+            "condition_code": "new",
+            "condition_label": "New / Unused",
+            "asking_price_paise": 2000000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone D",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "f890fbfd-70e7-421d-977f-4d43b2b3ec9c"
+            ]
+          },
+          {
+            "listing_id": "f3cdf631-29f1-4a6f-91bc-c98c6b777870",
+            "title": "Synthetic economics textbook 0693",
+            "description": "Synthetic economics textbook. economics study book. Condition: Fair. For campus use.",
+            "category_code": "books",
+            "category_label": "Books and Study Materials",
+            "condition_code": "fair",
+            "condition_label": "Fair",
+            "asking_price_paise": 0,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone D",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "5139f13a-fb7b-4bb9-bb1b-da54f0c90a53"
+            ]
+          },
+          {
+            "listing_id": "f3b907dd-b687-41b0-b4e3-15b0db40a109",
+            "title": "Synthetic iPhone 0445",
+            "description": "Synthetic iPhone. Apple mobile phone. Condition: Like New. For campus use.",
+            "category_code": "mobile_phone",
+            "category_label": "Mobile Phones",
+            "condition_code": "like_new",
+            "condition_label": "Like New",
+            "asking_price_paise": 500000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone D",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "6dd6f5b5-b02d-4d75-a1e5-19a1237f94ad"
+            ]
+          },
+          {
+            "listing_id": "f3955335-f1fe-4cd1-ba81-ec26cbc7d150",
+            "title": "Synthetic dining table 0703",
+            "description": "Synthetic dining table. eating table. Condition: New / Unused. For campus use.",
+            "category_code": "furniture",
+            "category_label": "Furniture",
+            "condition_code": "new",
+            "condition_label": "New / Unused",
+            "asking_price_paise": 2000000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone B",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "038992c0-7a61-4043-832d-3d60ed7ec282"
+            ]
+          },
+          {
+            "listing_id": "f2f2f658-0957-415b-bd24-0c7555be07eb",
+            "title": "Synthetic economics textbook 0162",
+            "description": "Synthetic economics textbook. economics study book. Condition: New / Unused. For campus use.",
+            "category_code": "books",
+            "category_label": "Books and Study Materials",
+            "condition_code": "new",
+            "condition_label": "New / Unused",
+            "asking_price_paise": 50000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone D",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "4f60e25a-5a52-463f-a97f-61164bc36093"
+            ]
+          },
+          {
+            "listing_id": "f2b2c60a-b79b-4e66-b7dc-94fd31450110",
+            "title": "Synthetic dual-SIM smartphone 0071",
+            "description": "Synthetic dual-SIM smartphone. dual SIM cell phone. Condition: Like New. For campus use.",
+            "category_code": "mobile_phone",
+            "category_label": "Mobile Phones",
+            "condition_code": "like_new",
+            "condition_label": "Like New",
+            "asking_price_paise": 1200000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone B",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "90d55b49-0d26-433f-9add-8626879c9594"
+            ]
+          },
+          {
+            "listing_id": "f2b0ce12-facb-4260-939b-fb852a2ac035",
+            "title": "Synthetic Study desk 0811",
+            "description": "Synthetic Study desk. study work table. Condition: Like New. For campus use.",
+            "category_code": "furniture",
+            "category_label": "Furniture",
+            "condition_code": "like_new",
+            "condition_label": "Like New",
+            "asking_price_paise": 1200000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone A",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "66219a28-c5fc-4586-b358-4e166c2be693"
+            ]
+          }
+        ],
+        "page": 2,
+        "page_size": 20,
+        "has_next": true
+      },
+      "reference_state": "dataset_derived_ordered_expected_pending_search_owner_review"
+    },
+    {
+      "case_id": "browse_bicycles_first",
+      "request": {
+        "kind": "browse",
+        "query": {
+          "sort": "created_desc",
+          "page": 1,
+          "page_size": 20,
+          "category_code": [
+            "bicycles"
+          ]
+        }
+      },
+      "expected": {
+        "items": [
+          {
+            "listing_id": "f4f5ab95-8f30-4087-a0d2-457b4b329520",
+            "title": "Synthetic commuter bicycle 0150",
+            "description": "Synthetic commuter bicycle. daily travel cycle. Condition: Good. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "good",
+            "condition_label": "Good",
+            "asking_price_paise": 1200000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone B",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "ca5afbd5-bdf1-4947-b6f6-44d61fc793cc"
+            ]
+          },
+          {
+            "listing_id": "f1d2ccf2-2c6a-4894-b4b3-307e71935f3c",
+            "title": "Synthetic Campus bicycle 0680",
+            "description": "Synthetic Campus bicycle. two wheeled vehicle. Condition: New / Unused. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "new",
+            "condition_label": "New / Unused",
+            "asking_price_paise": 25000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone C",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "3275d3e5-2b28-4ce4-957f-82c6b7ea55ae"
+            ]
+          },
+          {
+            "listing_id": "efc958f8-d3d6-4e18-a83e-82074cd011de",
+            "title": "Synthetic commuter bicycle 0040",
+            "description": "Synthetic commuter bicycle. daily travel cycle. Condition: Like New. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "like_new",
+            "condition_label": "Like New",
+            "asking_price_paise": 200000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone B",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "eb83e499-9606-49ed-b2f4-ee8fc608e7a4"
+            ]
+          },
+          {
+            "listing_id": "edca3801-d390-4320-9dfc-6eeab8fca3ff",
+            "title": "Synthetic commuter bicycle 0409",
+            "description": "Synthetic commuter bicycle. daily travel cycle. Condition: Good. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "good",
+            "condition_label": "Good",
+            "asking_price_paise": 0,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone D",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "a4684f9f-95d3-4844-9f20-d658a95364a3"
+            ]
+          },
+          {
+            "listing_id": "ec7f9447-41f0-407a-be9c-f7ee31425169",
+            "title": "Synthetic commuter bicycle 0506",
+            "description": "Synthetic commuter bicycle. daily travel cycle. Condition: Fair. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "fair",
+            "condition_label": "Fair",
+            "asking_price_paise": 2000000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone D",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "3e21cfc9-0f2e-4cea-bbdd-e25179dac0fb"
+            ]
+          },
+          {
+            "listing_id": "ea37d67b-fb7e-4e62-8b9c-c409f8ca6b7f",
+            "title": "Synthetic road bicycle 0354",
+            "description": "Synthetic road bicycle. road riding cycle. Condition: Good. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "good",
+            "condition_label": "Good",
+            "asking_price_paise": 0,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone A",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "7c162a5f-aa6d-48ec-89c9-9375252591ef"
+            ]
+          },
+          {
+            "listing_id": "e6d6d604-b9e9-449b-9a3e-c3b11d8b7d31",
+            "title": "Synthetic mountain bicycle 0776",
+            "description": "Synthetic mountain bicycle. off road cycle. Condition: Good. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "good",
+            "condition_label": "Good",
+            "asking_price_paise": 0,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone D",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "447578ce-2bc3-4ed1-8a94-1b05cc400aab"
+            ]
+          },
+          {
+            "listing_id": "e0f947d6-4334-42c3-a89d-6b281216305e",
+            "title": "Synthetic mountain bicycle 0500",
+            "description": "Synthetic mountain bicycle. off road cycle. Condition: Fair. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "fair",
+            "condition_label": "Fair",
+            "asking_price_paise": 500000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone A",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "a63803af-c3a1-433e-97a5-14900386846f"
+            ]
+          },
+          {
+            "listing_id": "e02d4a35-c02d-42a8-8851-6bd00831110b",
+            "title": "Synthetic road bicycle 0924",
+            "description": "Synthetic road bicycle. road riding cycle. Condition: Like New. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "like_new",
+            "condition_label": "Like New",
+            "asking_price_paise": 100000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone C",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "d2e8bf43-f0d3-46f8-9f7f-7c26771b482e"
+            ]
+          },
+          {
+            "listing_id": "dc81c48e-cce1-4de9-9624-8866c0b4c674",
+            "title": "Synthetic mountain bicycle 0810",
+            "description": "Synthetic mountain bicycle. off road cycle. Condition: New / Unused. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "new",
+            "condition_label": "New / Unused",
+            "asking_price_paise": 800000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone B",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "42e6b522-c454-49af-afab-0e29332bb953"
+            ]
+          },
+          {
+            "listing_id": "d893b30a-44d2-4bf3-85ca-5d4a3c28977b",
+            "title": "Synthetic road bicycle 0459",
+            "description": "Synthetic road bicycle. road riding cycle. Condition: Good. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "good",
+            "condition_label": "Good",
+            "asking_price_paise": 50000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone B",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "0dab7f6c-8f67-4b2e-98bb-ddd3aad1cfd7"
+            ]
+          },
+          {
+            "listing_id": "d613569d-b975-4976-bc7a-5573e678ac48",
+            "title": "Synthetic Campus bicycle 0951",
+            "description": "Synthetic Campus bicycle. two wheeled vehicle. Condition: Fair. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "fair",
+            "condition_label": "Fair",
+            "asking_price_paise": 200000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone C",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "dc7ba0f0-24aa-4f00-bba4-8234a722fd0b"
+            ]
+          },
+          {
+            "listing_id": "d5c8bea3-cb78-4938-bc07-2f6b79d030b6",
+            "title": "Synthetic folding bicycle 0487",
+            "description": "Synthetic folding bicycle. folding cycle. Condition: Like New. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "like_new",
+            "condition_label": "Like New",
+            "asking_price_paise": 25000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone A",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "3a6ca028-2b76-4d5a-a05e-b68f3b877f3d"
+            ]
+          },
+          {
+            "listing_id": "d572b894-1ce1-4e59-93b4-da76e32badb1",
+            "title": "Synthetic commuter bicycle 0741",
+            "description": "Synthetic commuter bicycle. daily travel cycle. Condition: Like New. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "like_new",
+            "condition_label": "Like New",
+            "asking_price_paise": 300000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone B",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "818486ab-94f7-4829-a2cf-1ba5231417f2"
+            ]
+          },
+          {
+            "listing_id": "caab3600-5c66-4e83-921f-0ce84bf5f10a",
+            "title": "Synthetic commuter bicycle 0425",
+            "description": "Synthetic commuter bicycle. daily travel cycle. Condition: New / Unused. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "new",
+            "condition_label": "New / Unused",
+            "asking_price_paise": 1200000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone B",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "4f23575a-b991-4d5d-8e99-d3c2b2ff6ffb"
+            ]
+          },
+          {
+            "listing_id": "ca08aed5-c885-4fb9-b910-519e27995011",
+            "title": "Synthetic Campus bicycle 0979",
+            "description": "Synthetic Campus bicycle. two wheeled vehicle. Condition: New / Unused. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "new",
+            "condition_label": "New / Unused",
+            "asking_price_paise": 2000000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone B",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "cda22746-c98d-45b0-b01d-da15d3d0aae1"
+            ]
+          },
+          {
+            "listing_id": "bb999a53-a3fb-4b2d-9cc7-3d3d67b228a2",
+            "title": "Synthetic Campus bicycle 0470",
+            "description": "Synthetic Campus bicycle. two wheeled vehicle. Condition: Like New. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "like_new",
+            "condition_label": "Like New",
+            "asking_price_paise": 800000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone D",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "f81f5060-fea9-4077-bb52-e246f79cf335"
+            ]
+          },
+          {
+            "listing_id": "ba787df1-4431-4d8a-912b-b56a2cbd9e45",
+            "title": "Synthetic mountain bicycle 0332",
+            "description": "Synthetic mountain bicycle. off road cycle. Condition: Like New. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "like_new",
+            "condition_label": "Like New",
+            "asking_price_paise": 1200000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone C",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "2c3bfa2c-2c08-4fab-b5c0-96d701bfa0f4"
+            ]
+          },
+          {
+            "listing_id": "ba33cf89-ea66-4a70-9624-c377707f57e7",
+            "title": "Synthetic commuter bicycle 0295",
+            "description": "Synthetic commuter bicycle. daily travel cycle. Condition: New / Unused. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "new",
+            "condition_label": "New / Unused",
+            "asking_price_paise": 2000000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone B",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "09010374-7cda-40f8-9abd-354b4b0d78ed"
+            ]
+          },
+          {
+            "listing_id": "b6af4779-5982-44df-9475-5a5d77f33285",
+            "title": "Synthetic folding bicycle 0247",
+            "description": "Synthetic folding bicycle. folding cycle. Condition: Fair. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "fair",
+            "condition_label": "Fair",
+            "asking_price_paise": 25000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone C",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "2b6a0b87-610b-4f5e-81b6-7eff96a7c3de"
+            ]
+          }
+        ],
+        "page": 1,
+        "page_size": 20,
+        "has_next": true
+      },
+      "reference_state": "dataset_derived_ordered_expected_pending_search_owner_review"
+    },
+    {
+      "case_id": "browse_bicycles_later",
+      "request": {
+        "kind": "browse",
+        "query": {
+          "sort": "created_desc",
+          "page": 2,
+          "page_size": 20,
+          "category_code": [
+            "bicycles"
+          ]
+        }
+      },
+      "expected": {
+        "items": [
+          {
+            "listing_id": "b566dd26-d7a0-45a8-be97-39f9f100f922",
+            "title": "Synthetic mountain bicycle 0267",
+            "description": "Synthetic mountain bicycle. off road cycle. Condition: New / Unused. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "new",
+            "condition_label": "New / Unused",
+            "asking_price_paise": 800000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone B",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "80ee52b2-044b-45ee-84c8-bc1d56292d3c"
+            ]
+          },
+          {
+            "listing_id": "b2ff8d3e-c13b-4ab3-95c5-d0c8ca9b1520",
+            "title": "Synthetic commuter bicycle 0078",
+            "description": "Synthetic commuter bicycle. daily travel cycle. Condition: Fair. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "fair",
+            "condition_label": "Fair",
+            "asking_price_paise": 100000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone D",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "2bba8967-a267-4833-927f-8e0f83d66240"
+            ]
+          },
+          {
+            "listing_id": "b26f7066-ea81-4fd9-ad8c-d9b15bef1360",
+            "title": "Synthetic folding bicycle 0164",
+            "description": "Synthetic folding bicycle. folding cycle. Condition: Fair. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "fair",
+            "condition_label": "Fair",
+            "asking_price_paise": 1200000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone D",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "bf36fbfd-9c62-4272-a143-d591e21de9a0"
+            ]
+          },
+          {
+            "listing_id": "b068b638-5943-46ee-907d-cc1db261ae6e",
+            "title": "Synthetic Campus bicycle 0283",
+            "description": "Synthetic Campus bicycle. two wheeled vehicle. Condition: Good. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "good",
+            "condition_label": "Good",
+            "asking_price_paise": 200000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone A",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "7d0b07ab-51d7-43d7-84ec-bac787a200bd"
+            ]
+          },
+          {
+            "listing_id": "acac83ff-369e-4415-8093-f887def73c1d",
+            "title": "Synthetic mountain bicycle 0519",
+            "description": "Synthetic mountain bicycle. off road cycle. Condition: New / Unused. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "new",
+            "condition_label": "New / Unused",
+            "asking_price_paise": 50000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone A",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "204d872b-33e3-498d-bcf7-0bdb6cee854c"
+            ]
+          },
+          {
+            "listing_id": "a9e1716d-63d7-4051-a3d0-a8d6fec053a8",
+            "title": "Synthetic Campus bicycle 0434",
+            "description": "Synthetic Campus bicycle. two wheeled vehicle. Condition: Fair. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "fair",
+            "condition_label": "Fair",
+            "asking_price_paise": 0,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone B",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "f866f3a3-2cc7-4756-b781-d865716d84d7"
+            ]
+          },
+          {
+            "listing_id": "a91d8833-c926-4ccc-90a5-685fd1350374",
+            "title": "Synthetic folding bicycle 0163",
+            "description": "Synthetic folding bicycle. folding cycle. Condition: Good. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "good",
+            "condition_label": "Good",
+            "asking_price_paise": 50000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone D",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "c49b81c0-ab1b-471a-9183-1c9c56c5a0ae"
+            ]
+          },
+          {
+            "listing_id": "a88a666a-136b-480e-b37d-180de65942a3",
+            "title": "Synthetic folding bicycle 0565",
+            "description": "Synthetic folding bicycle. folding cycle. Condition: Fair. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "fair",
+            "condition_label": "Fair",
+            "asking_price_paise": 800000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone C",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "70ac31a1-1f10-4888-b0ba-d1babe51790b"
+            ]
+          },
+          {
+            "listing_id": "a64e2af2-6143-4067-b37f-25d9f91f3a90",
+            "title": "Synthetic commuter bicycle 0080",
+            "description": "Synthetic commuter bicycle. daily travel cycle. Condition: New / Unused. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "new",
+            "condition_label": "New / Unused",
+            "asking_price_paise": 500000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone A",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "c86f51a9-a403-4a11-b612-b2531c985d2b"
+            ]
+          },
+          {
+            "listing_id": "99540454-f617-426d-a326-383d23a519ec",
+            "title": "Synthetic mountain bicycle 0016",
+            "description": "Synthetic mountain bicycle. off road cycle. Condition: Like New. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "like_new",
+            "condition_label": "Like New",
+            "asking_price_paise": 1200000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone C",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "e68c8168-9443-4045-8a90-6166e60666bc"
+            ]
+          },
+          {
+            "listing_id": "96b30c20-e4e8-408a-8a29-77ccee4b7a56",
+            "title": "Synthetic folding bicycle 0411",
+            "description": "Synthetic folding bicycle. folding cycle. Condition: Good. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "good",
+            "condition_label": "Good",
+            "asking_price_paise": 25000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone C",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "65bcc01d-4b76-40df-b79b-a49ba23dfab0"
+            ]
+          },
+          {
+            "listing_id": "92ea4709-7efa-48a9-8548-28e7412cb502",
+            "title": "Synthetic folding bicycle 0965",
+            "description": "Synthetic folding bicycle. folding cycle. Condition: Good. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "good",
+            "condition_label": "Good",
+            "asking_price_paise": 800000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone D",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "f16e2712-320b-48bd-b8cd-4522724dee16"
+            ]
+          },
+          {
+            "listing_id": "8e678993-caee-4ea7-8fce-6c3bcad7a732",
+            "title": "Synthetic Campus bicycle 0274",
+            "description": "Synthetic Campus bicycle. two wheeled vehicle. Condition: Good. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "good",
+            "condition_label": "Good",
+            "asking_price_paise": 0,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone C",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "d013c17b-dea0-4894-a08b-3e8383a056c1"
+            ]
+          },
+          {
+            "listing_id": "88b8787f-a765-4c93-bd35-3b5d796889c3",
+            "title": "Synthetic road bicycle 0047",
+            "description": "Synthetic road bicycle. road riding cycle. Condition: Like New. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "like_new",
+            "condition_label": "Like New",
+            "asking_price_paise": 100000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone A",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "b9812834-3f46-4f96-b040-02d37a2db307"
+            ]
+          },
+          {
+            "listing_id": "7d1df886-9fec-4809-99ef-b4aafc6cc9ee",
+            "title": "Synthetic mountain bicycle 0898",
+            "description": "Synthetic mountain bicycle. off road cycle. Condition: Good. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "good",
+            "condition_label": "Good",
+            "asking_price_paise": 50000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone D",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "df8d709b-5956-4cb9-bdb5-d25c01b24df0"
+            ]
+          },
+          {
+            "listing_id": "7c0d04a1-ae82-48fb-bd8b-e76a0d87e2d7",
+            "title": "Synthetic commuter bicycle 0095",
+            "description": "Synthetic commuter bicycle. daily travel cycle. Condition: New / Unused. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "new",
+            "condition_label": "New / Unused",
+            "asking_price_paise": 1200000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone C",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "afdf8e38-044c-4623-ad95-14c0a2518342"
+            ]
+          },
+          {
+            "listing_id": "7ba32737-a7b7-4170-af5d-21e50200c02d",
+            "title": "Synthetic road bicycle 0989",
+            "description": "Synthetic road bicycle. road riding cycle. Condition: Good. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "good",
+            "condition_label": "Good",
+            "asking_price_paise": 2000000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone B",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "1967c041-11af-41ca-ab88-85ce615ebabf"
+            ]
+          },
+          {
+            "listing_id": "74dca3ad-dd64-4773-95ea-9a4a133321d6",
+            "title": "Synthetic Campus bicycle 0149",
+            "description": "Synthetic Campus bicycle. two wheeled vehicle. Condition: Fair. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "fair",
+            "condition_label": "Fair",
+            "asking_price_paise": 1200000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone A",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "020fe6db-3f99-4774-abf2-aad1064dcd92"
+            ]
+          },
+          {
+            "listing_id": "74c1cace-45ce-461f-af7d-04dddd8feb66",
+            "title": "Synthetic road bicycle 0891",
+            "description": "Synthetic road bicycle. road riding cycle. Condition: Fair. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "fair",
+            "condition_label": "Fair",
+            "asking_price_paise": 100000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone A",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "9655197b-3f26-4418-aae3-59f3afb14057"
+            ]
+          },
+          {
+            "listing_id": "73e0068d-e540-4513-834d-cb5cf9695814",
+            "title": "Synthetic road bicycle 0021",
+            "description": "Synthetic road bicycle. road riding cycle. Condition: Good. For campus use.",
+            "category_code": "bicycles",
+            "category_label": "Bicycles",
+            "condition_code": "good",
+            "condition_label": "Good",
+            "asking_price_paise": 800000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone C",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "1a84f0dc-3b18-4219-bd4c-22a5105ec202"
+            ]
+          }
+        ],
+        "page": 2,
+        "page_size": 20,
+        "has_next": true
+      },
+      "reference_state": "dataset_derived_ordered_expected_pending_search_owner_review"
+    },
+    {
+      "case_id": "browse_books_first",
+      "request": {
+        "kind": "browse",
+        "query": {
+          "sort": "created_desc",
+          "page": 1,
+          "page_size": 20,
+          "category_code": [
+            "books"
+          ]
+        }
+      },
+      "expected": {
+        "items": [
+          {
+            "listing_id": "fe6830df-766d-4efc-ac2c-99573938e338",
+            "title": "Synthetic biology textbook 0600",
+            "description": "Synthetic biology textbook. life science book. Condition: Good. For campus use.",
+            "category_code": "books",
+            "category_label": "Books and Study Materials",
+            "condition_code": "good",
+            "condition_label": "Good",
+            "asking_price_paise": 1200000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone D",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "a2c4bcda-77ef-4116-aa44-8cf52624dcc2"
+            ]
+          },
+          {
+            "listing_id": "fc9b9e8b-ca73-4594-ad25-41a27ad8db69",
+            "title": "Synthetic biology textbook 0424",
+            "description": "Synthetic biology textbook. life science book. Condition: New / Unused. For campus use.",
+            "category_code": "books",
+            "category_label": "Books and Study Materials",
+            "condition_code": "new",
+            "condition_label": "New / Unused",
+            "asking_price_paise": 300000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone D",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "8742c152-17f7-41e6-86b7-804fac6d5b6a"
+            ]
+          },
+          {
+            "listing_id": "fadfe726-f893-48d3-a6da-883daa7aa5aa",
+            "title": "Synthetic economics textbook 0907",
+            "description": "Synthetic economics textbook. economics study book. Condition: Good. For campus use.",
+            "category_code": "books",
+            "category_label": "Books and Study Materials",
+            "condition_code": "good",
+            "condition_label": "Good",
+            "asking_price_paise": 300000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone B",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "53ee27b4-c625-405c-8728-6c4ca703fbf8"
+            ]
+          },
+          {
+            "listing_id": "f8f1e6e5-e632-441a-a330-edf3a2466ee4",
+            "title": "Synthetic biology textbook 0818",
+            "description": "Synthetic biology textbook. life science book. Condition: Good. For campus use.",
+            "category_code": "books",
+            "category_label": "Books and Study Materials",
+            "condition_code": "good",
+            "condition_label": "Good",
+            "asking_price_paise": 1200000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone B",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "a9470b0f-0f1a-43a9-88f8-d74653a9b31f"
+            ]
+          },
+          {
+            "listing_id": "f62adce1-6527-4aa4-be40-760ab6e85345",
+            "title": "Synthetic computing textbook 0692",
+            "description": "Synthetic computing textbook. computer science book. Condition: Good. For campus use.",
+            "category_code": "books",
+            "category_label": "Books and Study Materials",
+            "condition_code": "good",
+            "condition_label": "Good",
+            "asking_price_paise": 100000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone A",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "ee6ca99c-03c4-4846-8731-f3da250510ff"
+            ]
+          },
+          {
+            "listing_id": "f3cdf631-29f1-4a6f-91bc-c98c6b777870",
+            "title": "Synthetic economics textbook 0693",
+            "description": "Synthetic economics textbook. economics study book. Condition: Fair. For campus use.",
+            "category_code": "books",
+            "category_label": "Books and Study Materials",
+            "condition_code": "fair",
+            "condition_label": "Fair",
+            "asking_price_paise": 0,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone D",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "5139f13a-fb7b-4bb9-bb1b-da54f0c90a53"
+            ]
+          },
+          {
+            "listing_id": "f2f2f658-0957-415b-bd24-0c7555be07eb",
+            "title": "Synthetic economics textbook 0162",
+            "description": "Synthetic economics textbook. economics study book. Condition: New / Unused. For campus use.",
+            "category_code": "books",
+            "category_label": "Books and Study Materials",
+            "condition_code": "new",
+            "condition_label": "New / Unused",
+            "asking_price_paise": 50000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone D",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "4f60e25a-5a52-463f-a97f-61164bc36093"
+            ]
+          },
+          {
+            "listing_id": "e862037b-8fcb-44cd-8540-026885fedd48",
+            "title": "Synthetic computing textbook 0940",
+            "description": "Synthetic computing textbook. computer science book. Condition: Fair. For campus use.",
+            "category_code": "books",
+            "category_label": "Books and Study Materials",
+            "condition_code": "fair",
+            "condition_label": "Fair",
+            "asking_price_paise": 200000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone D",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "c82a7e9d-6c8f-45eb-b66b-39a46a642e54"
+            ]
+          },
+          {
+            "listing_id": "e72e3a3f-4fed-4fc1-8226-09cc85702d9e",
+            "title": "Synthetic computing textbook 0250",
+            "description": "Synthetic computing textbook. computer science book. Condition: New / Unused. For campus use.",
+            "category_code": "books",
+            "category_label": "Books and Study Materials",
+            "condition_code": "new",
+            "condition_label": "New / Unused",
+            "asking_price_paise": 2000000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone A",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "96b462d3-d839-4e95-b1ba-c7c8e113e476"
+            ]
+          },
+          {
+            "listing_id": "e56dc30b-1d8c-4a14-8800-d0ed26d5ac69",
+            "title": "Synthetic computing textbook 0395",
+            "description": "Synthetic computing textbook. computer science book. Condition: Fair. For campus use.",
+            "category_code": "books",
+            "category_label": "Books and Study Materials",
+            "condition_code": "fair",
+            "condition_label": "Fair",
+            "asking_price_paise": 800000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone D",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "e6c28f34-5c24-4ff2-b830-1c0f25d6ed7c"
+            ]
+          },
+          {
+            "listing_id": "e2d337ab-b465-490a-ac15-39ac27c9d392",
+            "title": "Synthetic biology textbook 0734",
+            "description": "Synthetic biology textbook. life science book. Condition: Fair. For campus use.",
+            "category_code": "books",
+            "category_label": "Books and Study Materials",
+            "condition_code": "fair",
+            "condition_label": "Fair",
+            "asking_price_paise": 500000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone C",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "7e2d54e3-a2ca-4f0a-90a9-962c0d0494c9"
+            ]
+          },
+          {
+            "listing_id": "e12ba99a-7f02-4f32-88f5-6b5ae3b3ac83",
+            "title": "Synthetic economics textbook 0399",
+            "description": "Synthetic economics textbook. economics study book. Condition: Fair. For campus use.",
+            "category_code": "books",
+            "category_label": "Books and Study Materials",
+            "condition_code": "fair",
+            "condition_label": "Fair",
+            "asking_price_paise": 100000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone C",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "39e6b2c5-0c53-412b-b417-c2ce3c3533ef"
+            ]
+          },
+          {
+            "listing_id": "db8b3658-ad36-45b0-9a36-57cce0fa1795",
+            "title": "Synthetic Linear algebra textbook 0815",
+            "description": "Synthetic Linear algebra textbook. mathematics book. Condition: New / Unused. For campus use.",
+            "category_code": "books",
+            "category_label": "Books and Study Materials",
+            "condition_code": "new",
+            "condition_label": "New / Unused",
+            "asking_price_paise": 300000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone D",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "30adbf72-810b-439d-9f26-2edc4b6737ad"
+            ]
+          },
+          {
+            "listing_id": "da0e646f-8128-461b-b6c6-6f23c4837509",
+            "title": "Synthetic economics textbook 0486",
+            "description": "Synthetic economics textbook. economics study book. Condition: Fair. For campus use.",
+            "category_code": "books",
+            "category_label": "Books and Study Materials",
+            "condition_code": "fair",
+            "condition_label": "Fair",
+            "asking_price_paise": 50000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone B",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "824f78b1-ca73-4fbb-8513-b9dbac80b5f3"
+            ]
+          },
+          {
+            "listing_id": "d9f79087-b3e0-4f0f-8114-42f48790a8a0",
+            "title": "Synthetic Linear algebra textbook 0187",
+            "description": "Synthetic Linear algebra textbook. mathematics book. Condition: New / Unused. For campus use.",
+            "category_code": "books",
+            "category_label": "Books and Study Materials",
+            "condition_code": "new",
+            "condition_label": "New / Unused",
+            "asking_price_paise": 200000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone C",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "1dfc06d0-b0a3-4a45-8af9-d0006d92b945"
+            ]
+          },
+          {
+            "listing_id": "d7306f14-735c-44aa-8964-f7824c66aa91",
+            "title": "Synthetic biology textbook 0008",
+            "description": "Synthetic biology textbook. life science book. Condition: Good. For campus use.",
+            "category_code": "books",
+            "category_label": "Books and Study Materials",
+            "condition_code": "good",
+            "condition_label": "Good",
+            "asking_price_paise": 0,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone A",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "4f385111-6f4c-441c-b848-12e08e3fa95b"
+            ]
+          },
+          {
+            "listing_id": "d377e163-5d11-4c4a-8e86-61819b8f0713",
+            "title": "Synthetic biology textbook 0306",
+            "description": "Synthetic biology textbook. life science book. Condition: Fair. For campus use.",
+            "category_code": "books",
+            "category_label": "Books and Study Materials",
+            "condition_code": "fair",
+            "condition_label": "Fair",
+            "asking_price_paise": 800000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone A",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "9c0da80b-c54a-44c4-952a-304f568f5160"
+            ]
+          },
+          {
+            "listing_id": "d210e378-a77e-4123-972e-041b66682c67",
+            "title": "Synthetic chemistry textbook 0953",
+            "description": "Synthetic chemistry textbook. science study book. Condition: Good. For campus use.",
+            "category_code": "books",
+            "category_label": "Books and Study Materials",
+            "condition_code": "good",
+            "condition_label": "Good",
+            "asking_price_paise": 800000,
+            "original_price_paise": null,
+            "negotiable": false,
+            "pickup_area": "Synthetic Zone B",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": true,
+            "image_ids": [
+              "6690c6c2-677a-4938-9e8e-ad1f503f370a"
+            ]
+          },
+          {
+            "listing_id": "cf66d80a-af8e-4624-996c-f741b7e1b602",
+            "title": "Synthetic biology textbook 0299",
+            "description": "Synthetic biology textbook. life science book. Condition: Good. For campus use.",
+            "category_code": "books",
+            "category_label": "Books and Study Materials",
+            "condition_code": "good",
+            "condition_label": "Good",
+            "asking_price_paise": 500000,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone A",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "2c511737-0ee1-4440-b367-d4afbfb706f8"
+            ]
+          },
+          {
+            "listing_id": "cd94958e-afb5-4163-abea-a1b32e5b0143",
+            "title": "Synthetic biology textbook 0797",
+            "description": "Synthetic biology textbook. life science book. Condition: Good. For campus use.",
+            "category_code": "books",
+            "category_label": "Books and Study Materials",
+            "condition_code": "good",
+            "condition_label": "Good",
+            "asking_price_paise": 0,
+            "original_price_paise": null,
+            "negotiable": true,
+            "pickup_area": "Synthetic Zone D",
+            "available_from": "2026-10-29T00:00:00.000000Z",
+            "available_until": "2026-12-31T00:00:00.000000Z",
+            "availability": "available",
+            "sensitive_purchase": false,
+            "image_ids": [
+              "ef70e35a-a4d8-4fb9-a73a-ea244549e135"
+            ]
+          }
+        ],
+        "page": 1,
+        "page_size": 20,
+        "has_next": true
+      },
+      "reference_state": "dataset_derived_ordered_expected_pending_search_owner_review"
+    },
+    {
+      "case_id": "hybrid_direct",
+      "request": {
+        "kind": "search",
+        "query": {
+          "q": "android smartphone",
+          "search_mode": "hybrid",
+          "sort": "relevance",
+          "page": 1,
+          "page_size": 20
+        }
+      },
+      "expected": null,
+      "relevance_reference": {
+        "query_id": "90bb5492-35e6-43ee-9c0e-341dce70124a",
+        "relevant_listing_ids": [
+          "04931358-5d3f-44d5-8afd-d95909559327",
+          "3000d087-98c4-48ec-88a5-b5388af7d935",
+          "37475207-8d0c-4411-bb8b-acf5cc656e19",
+          "38b24903-ec92-4705-a00c-018cc5a86b33",
+          "50dc4aea-9fb9-497c-8156-d048c613c7ac",
+          "5ee8c76b-5fea-4e8f-a840-8f36004d140a",
+          "622d1e4c-7e2e-4495-abaa-c410c9f20da5",
+          "65f3365a-ddc5-47cf-8c0b-1c7b3fbae860",
+          "66a378a0-3e68-41ee-acf7-f0121d060bec",
+          "73601e22-cf66-4bb1-879a-7a65d389676d",
+          "796601db-5199-410c-85f1-b6e51344165f",
+          "86901dba-8a86-4787-8e4a-b2ed027b8eec",
+          "88f5265f-71be-46c4-b997-1a4a62271509",
+          "8fb63720-ad05-4df3-8cc2-41a11cfd1d1f",
+          "a08e58fa-db3f-4b43-91c9-bccfe5615285",
+          "b263a83a-b343-46d3-ab66-c8e182a68313",
+          "dfb69248-0937-407f-b81f-c6100ad0166b",
+          "ecb28ebd-7f6f-4930-8dc5-845ba237fb19",
+          "ee2eb63c-c493-4732-a8f8-b732c19dc940"
+        ],
+        "query_class": "direct_word",
+        "ordered_response_state": "pending_final_data_ready_search_reference_and_review"
+      }
+    },
+    {
+      "case_id": "hybrid_related",
+      "request": {
+        "kind": "search",
+        "query": {
+          "q": "mobile phone",
+          "search_mode": "hybrid",
+          "sort": "relevance",
+          "page": 1,
+          "page_size": 20
+        }
+      },
+      "expected": null,
+      "relevance_reference": {
+        "query_id": "f08a1dee-142e-4e6b-8835-2809cf567da5",
+        "relevant_listing_ids": [
+          "04931358-5d3f-44d5-8afd-d95909559327",
+          "04c6d99f-cfcd-49c6-b6a8-aa411459c58e",
+          "05b3704b-19c0-4808-9424-68b838f7af1c",
+          "05f5a38e-b194-4968-bf70-8fe736f26d93",
+          "0a7477ea-3ed1-48dd-99ba-898570bce7ab",
+          "0c20d15f-84ca-4948-a98d-b2f138d2c557",
+          "0fecd8fe-4358-4380-90b8-1db430afac57",
+          "12f51645-5e1e-4209-ab75-a42d68281079",
+          "21c1960b-5a26-4511-9208-fe3ecec38bdf",
+          "271e957c-4ed8-4e4e-8e4a-4d6206c7d786",
+          "2e4848ee-9103-4420-9efa-cbb9fbcc7711",
+          "3000d087-98c4-48ec-88a5-b5388af7d935",
+          "3012d01f-55c5-4787-aa38-bb64f141d72f",
+          "332572c8-169b-48c7-abd6-cd94f1c894a4",
+          "35a81ebe-ef3f-430f-903c-ac27c73ba73a",
+          "35c3a040-3883-4bbe-b1f4-2ee33acec08c",
+          "37475207-8d0c-4411-bb8b-acf5cc656e19",
+          "3780377c-2c69-4b9f-80ee-0f576f388a8f",
+          "37834068-e915-4961-a910-ed45d25d918b",
+          "38b24903-ec92-4705-a00c-018cc5a86b33",
+          "39e5cee9-2460-4865-83e1-8bcac4d7bf9b",
+          "40c3a9ea-ecdd-4a6a-85e1-fbf3828bfd08",
+          "45031b21-a5e0-44f3-b593-45fc333c032e",
+          "476c6f3c-c916-4687-b8d7-0e263bb62ae6",
+          "4beef26e-9bac-449f-a762-3ea95dbab6ca",
+          "4d9fa137-e0ee-41a3-9d73-688830cc6966",
+          "50b1cea0-a5a3-4d72-ba94-3d53310809a7",
+          "50dc4aea-9fb9-497c-8156-d048c613c7ac",
+          "5442cc10-7079-4bfa-b4cf-3c7c370f1bee",
+          "5574ae89-b9b4-48fd-8ec7-e9b04ad420e2",
+          "58359b65-b91a-4782-adb0-e1891f9765a7",
+          "5ee8c76b-5fea-4e8f-a840-8f36004d140a",
+          "622d1e4c-7e2e-4495-abaa-c410c9f20da5",
+          "6251fd1e-5758-49bf-9559-10704a66a92a",
+          "63a54a52-64f7-4a7a-8ec9-7ee2bbad374d",
+          "640dd719-85a1-4b65-bab7-4861bdb33b4f",
+          "649700bd-6616-47f5-a080-35dee9cbee7c",
+          "65f3365a-ddc5-47cf-8c0b-1c7b3fbae860",
+          "66a378a0-3e68-41ee-acf7-f0121d060bec",
+          "678b2642-fda9-44de-961c-0c85f0e9272a",
+          "69b4eadb-d0cf-4655-ba07-0849f93e2813",
+          "6a16b609-9d6e-4b75-be16-ea7a4b220dfb",
+          "6a68f010-0913-401c-b911-e18acda61d2c",
+          "70b8f603-a250-47d7-8127-62dd4b55ad43",
+          "71e43f7f-e3eb-413e-8ea0-02f3e4eb4e21",
+          "73601e22-cf66-4bb1-879a-7a65d389676d",
+          "784e6386-24fc-44f9-9c07-d55f81ef058a",
+          "796601db-5199-410c-85f1-b6e51344165f",
+          "7ac25ef1-ee07-48e7-8464-7df6474afd5f",
+          "7c78f688-9b61-41d0-be2f-301a0b80b4ee",
+          "7df6e2c9-ee5c-408d-8e48-86a28473d6dc",
+          "83931d9c-b0c0-4549-ad8e-9c059d158752",
+          "86901dba-8a86-4787-8e4a-b2ed027b8eec",
+          "88f5265f-71be-46c4-b997-1a4a62271509",
+          "8ec747f7-57e4-4062-8a28-71ceab7e0eb1",
+          "8fb63720-ad05-4df3-8cc2-41a11cfd1d1f",
+          "9009984c-865d-400f-afde-7d0a7b1db303",
+          "91b287e1-be72-40df-a89f-2e938cb6cf27",
+          "93d253da-3b1e-423c-ab32-8f7491473f10",
+          "a08e58fa-db3f-4b43-91c9-bccfe5615285",
+          "a1ca6544-de83-41fb-bd91-44a76a0f488d",
+          "a81462cf-4e3e-4939-a245-f0f66b19904d",
+          "ab6e9d6c-8d4f-4f02-a98a-339f5c21d39f",
+          "ae0130c4-7fca-4996-b1e0-236b9e24d7ed",
+          "ae65bd8b-d67d-498a-96ef-5f5efb8954db",
+          "b263a83a-b343-46d3-ab66-c8e182a68313",
+          "b52b058b-8482-4122-ab8e-1cc14bee7877",
+          "b6015888-b1c3-49f1-8fd1-42ae44ab1499",
+          "b741912f-edeb-4026-a7d4-3422c7f63634",
+          "b748bdc1-02a3-4e08-b956-4adf9a28ca99",
+          "ba92fafe-8061-45b6-9a55-951a116929f5",
+          "c0186ba3-472a-41ca-a008-0b882ff0f3c0",
+          "c4b8067c-9dac-4d55-9e95-f99e582f9d29",
+          "ccd73228-344b-4f83-b067-db2204ef7ec8",
+          "cee7126c-01f1-48c6-8652-f5721b7b6f8d",
+          "d683e3dd-9af5-44d0-baaa-054456767d49",
+          "de052126-f844-474f-bac6-5cf1a1572001",
+          "dfb69248-0937-407f-b81f-c6100ad0166b",
+          "e6040038-1bb8-4993-a39d-c2dc27cf32c9",
+          "e8e8ae6e-5e48-47c7-9264-61e4a048660a",
+          "eb659962-0bd7-471f-bd08-267f08fe083a",
+          "ecb28ebd-7f6f-4930-8dc5-845ba237fb19",
+          "ee2eb63c-c493-4732-a8f8-b732c19dc940",
+          "f0eb1834-428a-4876-9a13-6861b9446c34",
+          "f289af88-3eed-420b-bcea-8d1e3e158e04",
+          "f2b2c60a-b79b-4e66-b7dc-94fd31450110",
+          "f3b907dd-b687-41b0-b4e3-15b0db40a109",
+          "f40419cd-dbb2-4aa8-80ed-d342d52658fc",
+          "f5cbefbd-f2ae-4d4e-bef3-e1b5c53c478f",
+          "f9dd824f-5b13-421c-b23b-8d5e591bc206",
+          "faa9ccd5-e03b-43f4-aa71-8d13321308da",
+          "ffa8a135-e342-44a0-9989-82afa8e57b2e"
+        ],
+        "query_class": "related_word",
+        "ordered_response_state": "pending_final_data_ready_search_reference_and_review"
+      }
+    },
+    {
+      "case_id": "hybrid_meaning",
+      "request": {
+        "kind": "search",
+        "query": {
+          "q": "student computer",
+          "search_mode": "hybrid",
+          "sort": "relevance",
+          "page": 1,
+          "page_size": 20
+        }
+      },
+      "expected": null,
+      "relevance_reference": {
+        "query_id": "a3e77bca-7ce1-4bb1-920a-4facaea22717",
+        "relevant_listing_ids": [
+          "00f8e384-7dc9-4048-be7f-8182a678fc93",
+          "02375b13-f004-41cc-aa28-7a9940015137",
+          "046a6092-32a3-4015-b4a3-ce27ecd92c48",
+          "04b08c84-13a2-4b04-a4c9-9b68948fc63a",
+          "067312f8-ce9e-41b9-806a-93229ffce5b2",
+          "07419635-18e1-46cb-9168-c473504c0e51",
+          "0a52f6eb-fef6-44f2-8559-058708993184",
+          "0c9c8f11-592e-4919-bca8-ed6a82821207",
+          "0dc42e0b-1224-4259-8d39-b448dc6ad85d",
+          "15902d39-53e3-46f2-8363-745766718164",
+          "19c4c71e-545e-473e-8a7f-65e19ee2d9cb",
+          "1b2fb3d9-82ec-4377-88ba-71875c537861",
+          "20930229-5698-48ce-9751-8208ea619db2",
+          "21acda9e-a0df-4ad7-b516-8ce2b5bf0e0c",
+          "23637ccc-8e0d-4a28-8ce7-05b041478640",
+          "23c94cd7-1a9c-46e4-b290-c1d7a54b0750",
+          "24b87916-1411-4dcd-a0e8-3039505cfe67",
+          "26a5ab8e-31d5-4993-8e57-570dc57c0f79",
+          "29351fe0-a7e2-4230-8d1c-78485299e22e",
+          "29cd02e5-3422-4cd5-8746-ad397044e823",
+          "2e17ed29-98e2-4ca4-90b4-b57f90d12194",
+          "32778557-8b6d-4917-91a1-c6172d16692f",
+          "358a4e02-fa86-48c5-ab05-ada56f27b5c6",
+          "3960dd3d-2786-4088-8ed6-12ce0ce4da7e",
+          "3ad3ea48-1971-4f75-9bbd-881499c902b6",
+          "3cf3eeff-632c-49bb-8520-3d756d5ef73c",
+          "3d89478c-5e74-4eeb-92fb-2bfd99592c54",
+          "4135bef9-84a0-431c-8f47-092cbf87c7df",
+          "413ae783-eeef-4321-9f12-43e98d1a0539",
+          "44482b33-5626-4cc2-8537-5bf5acaf7297",
+          "4556b3fb-fe49-4897-b455-c39458c0b398",
+          "4ba80724-99e4-41a5-8ea6-1e88429de20b",
+          "4e4b4aa1-ed9c-4a65-96b0-eccf87b0d021",
+          "52bbf775-5be1-41d6-a3f0-f2f102a81100",
+          "598adc1b-ddb5-4c2e-9c3a-f5e569c7ac48",
+          "60e8d507-5b63-4c06-a7e0-1c627bbeeef8",
+          "6b2ec57b-8d01-4746-8133-a574f4bbbb20",
+          "6b647dc8-6d9a-40da-b08a-9667d81103f4",
+          "6e228fd2-cd37-4b43-878f-2641102f65a4",
+          "6f207941-6de2-4483-94bd-a66ec00e6eed",
+          "7004ef5d-cca3-4a94-8297-d6aafb98e4fc",
+          "71f69e39-fed0-414d-992a-159c5ecb6aa4",
+          "7311b764-3da5-46a4-b24a-27b2e085e60c",
+          "78e26d88-2c45-4298-9c7e-64c762cd0fec",
+          "7cbe927a-a6a1-464c-8ae1-dce45a59559a",
+          "7d2310f3-7b74-46e8-8c21-5983dccc1813",
+          "7d395d37-4167-40cf-a9f6-b49d674505a3",
+          "7da27cb7-a8ad-45fd-be3a-5892c19d4f8b",
+          "7e70dc1f-fd63-4a71-be3e-d5ae192ec48d",
+          "82fd7ef1-c8fe-4635-8128-77a6a20313fa",
+          "85d0c094-be16-4418-98dc-9c139d0f7ab0",
+          "88f89b0d-5773-412d-adb0-98ad6194d388",
+          "8d8d2547-e0c2-485f-96bb-5880a2c24e07",
+          "900b3d32-6aff-44bd-a8de-bd6ba95f4c89",
+          "90e88797-f3e3-4378-ba83-0f68054ab0c7",
+          "91f8a10a-0717-49a0-bdf4-9cc55e76cff4",
+          "9aa65028-42b5-4da5-a341-5b75d05af29d",
+          "9b0eb6d8-7bf4-4b1b-b8a4-0b7f76bbc4b4",
+          "9b4f9cbd-ecb5-4e2e-b65b-a192f5bb4e28",
+          "9bde8b4a-20d7-43c7-b80d-c88c35256c70",
+          "9c1d20b7-33fd-436b-bae4-ee6666d2c7a4",
+          "9e19f26c-6f7c-4455-bf54-bf7081759ff3",
+          "9ef772da-f555-4a00-8e7a-eeb8ced3d7b6",
+          "a219e883-c06a-474b-8ab8-1fff0ab30c4f",
+          "a251b3d9-3e57-43c7-a05c-c6a188e6808b",
+          "a76414cf-7e86-40fb-add8-bf9438aa9889",
+          "a7e33e17-fe0b-4eb4-91bb-b243c75d837d",
+          "a9166dc2-4206-4473-8814-677b805aa249",
+          "b0540c3d-041c-490b-a120-ac19edce8f18",
+          "b1a0c432-2a8c-4893-8480-1436c4e08b3b",
+          "b24b38d4-3948-4216-ab97-5c3bbb61c642",
+          "b91c0815-94c6-484f-a3cc-5bad30bd2ad6",
+          "bb52dd88-8040-4627-87ab-bf4a68c255a0",
+          "bc651abc-7049-4aac-b62b-47418e713e93",
+          "bccbe1b0-eccf-4d40-9c98-b78f85a0e5b3",
+          "c7d9faca-2f4f-4d7f-bec3-9296c29e20cc",
+          "c956879f-c857-4816-9754-3516a9bc1cfb",
+          "c9c4887e-0842-4f09-b435-f0819625e395",
+          "d1426e50-2bfa-443f-b35e-9d1bcc10bb0b",
+          "d2f9bc44-f81f-43f9-8c19-e373c0d3eead",
+          "d556683a-3d41-432e-a431-7718c77074b9",
+          "da2fc3d2-9bdd-4935-9b43-3e6bf16a3d72",
+          "dddae723-3312-4fc5-b1ab-3642196100ca",
+          "e21e4ef1-6fa0-4efb-a4f1-28949037a9c9",
+          "e678f388-ce1f-4071-bbcb-d705889b6430",
+          "e69d533f-7039-4292-a06a-10274f5f3ada",
+          "e74969df-5637-4c02-a117-c2ac90507384",
+          "eaeacabc-0bed-4c2a-8eca-033a9a7ad3d8",
+          "ec1fd265-fbdd-4f2a-bdff-9d54b2d70175",
+          "f2002773-e1bf-473f-a873-d41dc26e753f",
+          "f41a4418-4430-46ec-bf86-e743d105e275",
+          "fc3a5269-fe85-49f7-8e39-f4a3e672fb77",
+          "feb70a5d-d2e8-4e94-8f7e-87fd61e4269c"
+        ],
+        "query_class": "meaning_based",
+        "ordered_response_state": "pending_final_data_ready_search_reference_and_review"
+      }
+    },
+    {
+      "case_id": "detail_available_a",
+      "request": {
+        "kind": "detail",
+        "listing_id": "00acb469-98ff-47ed-ae3a-a76e543e7c26"
+      },
+      "expected": {
+        "listing_id": "00acb469-98ff-47ed-ae3a-a76e543e7c26",
+        "title": "Synthetic bookshelf 0534",
+        "description": "Synthetic bookshelf. book storage shelf. Condition: Good. For campus use.",
+        "category_code": "furniture",
+        "category_label": "Furniture",
+        "condition_code": "good",
+        "condition_label": "Good",
+        "asking_price_paise": 25000,
+        "original_price_paise": null,
+        "negotiable": true,
+        "pickup_area": "Synthetic Zone B",
+        "available_from": "2026-10-29T00:00:00.000000Z",
+        "available_until": "2026-12-31T00:00:00.000000Z",
+        "availability": "available",
+        "sensitive_purchase": false,
+        "image_ids": [
+          "42287dbc-0a61-4026-b119-bdadce4a7833"
+        ],
+        "proof_available": false
+      },
+      "reference_state": "dataset_derived_expected_pending_search_owner_review"
+    },
+    {
+      "case_id": "detail_available_b",
+      "request": {
+        "kind": "detail",
+        "listing_id": "ffa8a135-e342-44a0-9989-82afa8e57b2e"
+      },
+      "expected": {
+        "listing_id": "ffa8a135-e342-44a0-9989-82afa8e57b2e",
+        "title": "Synthetic refurbished smartphone 0541",
+        "description": "Synthetic refurbished smartphone. used mobile phone. Condition: Good. For campus use.",
+        "category_code": "mobile_phone",
+        "category_label": "Mobile Phones",
+        "condition_code": "good",
+        "condition_label": "Good",
+        "asking_price_paise": 25000,
+        "original_price_paise": null,
+        "negotiable": false,
+        "pickup_area": "Synthetic Zone B",
+        "available_from": "2026-10-29T00:00:00.000000Z",
+        "available_until": "2026-12-31T00:00:00.000000Z",
+        "availability": "available",
+        "sensitive_purchase": true,
+        "image_ids": [
+          "0ceae0ed-3993-4961-9f7d-bed2ffbe407a"
+        ],
+        "proof_available": false
+      },
+      "reference_state": "dataset_derived_expected_pending_search_owner_review"
+    }
+  ]
+}
