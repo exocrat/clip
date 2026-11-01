@@ -72,9 +72,8 @@ For a successful HTTP request, k6 reports `connecting` (TCP setup),
 `tls_handshaking` (encrypted-session setup), `blocked` (connection acquisition)
 and `duration` (sending, waiting and receiving). In the reviewed k6 v2.3.0
 source, TCP and TLS setup for a successful new connection fall inside the
-blocked interval. Do not add `connecting` and `tls_handshaking` to `blocked`:
-doing so can count setup twice. When a connection is reused, its setup phases can
-be zero. The connection metrics remain useful as separate diagnostics.
+blocked interval. When a connection is reused, its setup phases can be zero.
+The connection metrics remain useful as separate diagnostics.
 
 For a correct response, adding that response's `blocked` and `duration` is a
 candidate approximation of its connection-acquisition-plus-response time.

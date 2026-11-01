@@ -43,6 +43,15 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-01 19:54:53 UTC — EXP-02 connection timing clarification
+
+User verified the proposed protocol documentation and requested removing the
+double-count warning wording from the preparation guide, while asking for an
+explanation in conversation. The guide retains the factual relationship that
+successful TCP and TLS setup falls within blocked time. Historical timing
+findings remain preserved here. No protocol approval, workload or live action
+occurred; affected-owner review and the scoring decision remain pending.
+
 ### 2026-11-01 19:50:33 UTC — EXP-02 proposed timing protocol revision
 
 **Direction:** User asked to retain the connection-timing explanation and
