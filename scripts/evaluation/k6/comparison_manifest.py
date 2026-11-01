@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 import re
 import sys
+from typing import Any
 
 ROOT = Path(__file__).resolve().parents[3]
 TEMPLATE = ROOT / "data/evaluation/workloads/ecs-lambda-run-manifest.template.json"
@@ -29,7 +30,7 @@ RUN_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{2,63}$")
 UTC = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?Z$")
 
 
-def _shape(expected, value, path="manifest"):
+def _shape(expected: Any, value: Any, path: str = "manifest") -> None:
     if isinstance(expected, dict):
         if not isinstance(value, dict) or set(value) != set(expected):
             raise ValueError(f"Unexpected object shape at {path}")
@@ -54,13 +55,13 @@ def _shape(expected, value, path="manifest"):
         raise ValueError(f"Sensitive value pattern at {path}")
 
 
-def _utc(value, name):
+def _utc(value: object, name: str) -> datetime:
     if not isinstance(value, str) or not UTC.fullmatch(value):
         raise ValueError(f"{name} must be an ISO-8601 UTC timestamp ending in Z")
     return datetime.fromisoformat(value.removesuffix("Z") + "+00:00")
 
 
-def _no_nulls(value, path="manifest"):
+def _no_nulls(value: Any, path: str = "manifest") -> None:
     if isinstance(value, dict):
         for key, item in value.items():
             _no_nulls(item, f"{path}.{key}")
@@ -73,7 +74,9 @@ def _no_nulls(value, path="manifest"):
         raise ValueError(f"Captured manifest has an empty value at {path}")
 
 
-def validate_manifest(value, template):
+def validate_manifest(
+    value: dict[str, Any], template: dict[str, Any]
+) -> dict[str, Any]:
     """Check exact schema, frozen workload constants, and safe capture values."""
     _shape(template, value)
     if (
@@ -288,7 +291,7 @@ def validate_manifest(value, template):
     return {"valid": True, "state": "captured", "measurement_authorized": False}
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
     parser.add_argument("manifest", type=Path)
     args = parser.parse_args()

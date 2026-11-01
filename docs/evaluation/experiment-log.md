@@ -89,6 +89,17 @@ inspect probe found `performance.now` unavailable in installed Linux k6 v2.3.0;
 the existing `Date.now` code is not a verified monotonic method. Inspect sent no
 requests. No experiment, real telemetry, measured result or NFR pass is claimed.
 
+**Follow-up checks at 2026-11-01 18:27:13 UTC:** Strict Mypy initially found a
+duplicate module path, then identified missing typing in the telemetry/manifest
+boundary. Added type annotations and explicit validated-object narrowing without
+changing manifest validation behavior. Mypy with `--explicit-package-bases` now
+passes for the manifest, ordered-reference and telemetry scripts; the 16 affected
+manifest/telemetry tests pass with warnings as errors. Contract freshness check
+could not complete: the available Node is 26.8.2 and project-local Node 24 is
+absent. The generator requires Node 24 and reported its standard toolchain error.
+No dependencies were installed or downloaded. Full aggregate/contract checks
+remain pending on the pinned toolchain.
+
 **Next gates:** Obtain and bind actual reviewed search references; verify a
 supported monotonic end-to-end clock and combined generator caps; validate real
 telemetry artifacts/approval against actual run inputs; finish real-target/auth

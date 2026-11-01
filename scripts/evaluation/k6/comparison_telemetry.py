@@ -12,6 +12,7 @@ import json
 import math
 from pathlib import Path
 import re
+from typing import Any
 
 from scripts.evaluation.k6.comparison_manifest import (
     SENSITIVE_VALUE,
@@ -24,10 +25,11 @@ SHA256 = re.compile(r"^(?:sha256:)?[0-9a-f]{64}$")
 ARTIFACT_NAMES = ("ecs", "lambda", "postgres", "generator")
 
 
-def _keys(value: object, expected: set[str], name: str) -> None:
-    """Reject unknown or missing fields before interpreting an evidence record."""
+def _keys(value: object, expected: set[str], name: str) -> dict[str, Any]:
+    """Return a validated object, rejecting unknown or missing fields."""
     if not isinstance(value, dict) or set(value) != expected:
         raise ValueError(f"Invalid {name} shape")
+    return value
 
 
 def _reference(value: object) -> bool:
@@ -56,13 +58,13 @@ def _number(value: object, name: str, *, maximum: float | None = None) -> float:
     return float(value)
 
 
-def validate_telemetry(evidence: object, manifest: dict) -> dict:
+def validate_telemetry(evidence: object, manifest: dict[str, Any]) -> dict[str, Any]:
     """Check run binding, capture windows, and supplied generator limits.
 
     The caller must separately validate the full captured manifest. A success
     result is metadata validation only, not an evidence audit or NFR result.
     """
-    _keys(
+    evidence = _keys(
         evidence,
         {"format_version", "run_id", "clock", "generator", "artifacts"},
         "telemetry",
@@ -79,8 +81,11 @@ def validate_telemetry(evidence: object, manifest: dict) -> dict:
     if end <= start:
         raise ValueError("Invalid run interval")
 
-    clock = evidence["clock"]
-    _keys(clock, {"source", "monotonic_verified", "evidence_reference"}, "clock")
+    clock = _keys(
+        evidence["clock"],
+        {"source", "monotonic_verified", "evidence_reference"},
+        "clock",
+    )
     if (
         not isinstance(clock["source"], str)
         or not clock["source"].strip()
@@ -92,9 +97,8 @@ def validate_telemetry(evidence: object, manifest: dict) -> dict:
     ):
         raise ValueError("Invalid clock declaration")
 
-    generator = evidence["generator"]
-    _keys(
-        generator,
+    generator = _keys(
+        evidence["generator"],
         {
             "peak_cpu_percent",
             "approved_cpu_limit_percent",
@@ -124,13 +128,11 @@ def validate_telemetry(evidence: object, manifest: dict) -> dict:
     if generator["approved_rss_limit_bytes"] < 1 or generator["approved_max_vus"] < 1:
         raise ValueError("Approved generator limits must be positive")
 
-    artifacts = evidence["artifacts"]
-    _keys(artifacts, set(ARTIFACT_NAMES), "artifacts")
+    artifacts = _keys(evidence["artifacts"], set(ARTIFACT_NAMES), "artifacts")
     manifest_artifacts = manifest["resource_telemetry"]
     for name in ARTIFACT_NAMES:
-        artifact = artifacts[name]
-        _keys(
-            artifact,
+        artifact = _keys(
+            artifacts[name],
             {"reference", "sha256", "window_start_utc", "window_end_utc"},
             name,
         )
