@@ -48,6 +48,36 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-01 20:52:28 UTC — EXP-02 offline evidence artifact checks
+
+**Direction:** User verified grouped offline telemetry and cost file checks.
+No run, cloud/provider call, credential access or database action was allowed.
+
+**Change:** `comparison_artifacts.py` first reuses the captured manifest and
+telemetry validators, including run binding, generator-limit declarations and
+telemetry window coverage. It also checks that the declared cost interval covers
+the run, then hashes four telemetry files and the cost source under an explicit
+local evidence root. It refuses traversal, symlinked roots/components, missing
+or non-regular files, changing files, over-100-MB artifacts and mismatched hashes;
+metadata inputs have a 2-MB limit. Descriptor-relative no-follow opens keep file
+access inside the selected directory. It never modifies or prints file content,
+paths or raw errors. Its result surfaces supplied generator-limit flags but
+always marks content, clock and measurement approval unverified.
+
+**Limits:** This hashes bytes; it does not attest provider provenance, scan for
+secrets, validate telemetry data or cost values, independently verify clocks or
+approve generator limits. Raw results and derived reports are not checked by
+this tool. Operators must supply sanitized evidence; a matching hash alone is
+not a valid result or NFR pass. The separate metadata validator retains its
+honest statement that it does not inspect artifacts.
+
+**Checks:** 22 focused Python tests passed with warnings as errors, including
+synthetic captured metadata, valid/missing/modified files, file/root/directory
+symlinks, traversal, limits, telemetry/cost windows, generator-limit flags and
+sanitized CLI failure. Strict Mypy and per-file Black passed; no k6 run,
+experiment, cloud, database or external service call occurred. Result awaits
+user verification.
+
 ### 2026-11-01 20:43:12 UTC — EXP-02 planned case/manifest binding checks
 
 **Direction:** User verified grouped offline case, dataset and revision
