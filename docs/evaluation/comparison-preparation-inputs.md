@@ -82,6 +82,32 @@ that future runner must enforce these and all other prerequisites before
 credentials or requests. The NFR case-draft bundle is a separate non-executable
 artifact and is not accepted as an EXP-02 comparison corpus by this check.
 
+## Planned A/B run order
+
+Before any future comparison, make a separate copy of
+`data/evaluation/workloads/ecs-lambda-paired-plan.template.json`. Fill its shared
+dataset/index/database-settings, schedule, case-corpus and load-script
+fingerprints, plus the generator version. For each of the nine low/normal/burst
+pairs, provide distinct A and B run IDs and the same `sequence_start` value for
+both members of that pair. The sequence start must be an integer from 0 to 9;
+this checker validates the supplied value but does not choose a seed or rotation.
+
+Check the local plan with:
+
+```sh
+.venv/bin/python -m scripts.evaluation.k6.comparison_pair_plan path/to/paired-plan.json
+```
+
+The checker requires three cycles in A/B, B/A, A/B configuration order, with
+low, normal and burst pairs in each cycle. It requires nine pairs, eighteen
+unique planned run IDs and one set of nonempty shared inputs. Exit 0 means only
+that the declared plan has this shape and order. It does not compare later
+captured manifests or prove deployed data/configuration parity; a future runner
+must enforce plan bindings before any session or request. Its output always
+sets `measurement_authorized` to false. This check does not encode the
+experiment design's proposed 300 concurrent-request figure, which the user has
+clarified is non-binding.
+
 ## NFR browse and Hybrid case drafts
 
 The offline generator selects five browse and three Hybrid cases from the same

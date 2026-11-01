@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "purpose": "offline-paired-run-plan-not-authorization",
+  "plan_state": "template",
+  "shared_inputs": {
+    "dataset_fingerprint": null,
+    "index_fingerprint": null,
+    "database_settings_sha256": null,
+    "schedule_sha256": null,
+    "case_corpus_sha256": null,
+    "load_script_sha256": null,
+    "generator_version": null
+  },
+  "cycles": [
+    {
+      "cycle": 1,
+      "configuration_order": ["A", "B"],
+      "pairs": [
+        {"condition": "low", "sequence_start": null, "A_run_id": null, "B_run_id": null},
+        {"condition": "normal", "sequence_start": null, "A_run_id": null, "B_run_id": null},
+        {"condition": "burst", "sequence_start": null, "A_run_id": null, "B_run_id": null}
+      ]
+    },
+    {
+      "cycle": 2,
+      "configuration_order": ["B", "A"],
+      "pairs": [
+        {"condition": "low", "sequence_start": null, "A_run_id": null, "B_run_id": null},
+        {"condition": "normal", "sequence_start": null, "A_run_id": null, "B_run_id": null},
+        {"condition": "burst", "sequence_start": null, "A_run_id": null, "B_run_id": null}
+      ]
+    },
+    {
+      "cycle": 3,
+      "configuration_order": ["A", "B"],
+      "pairs": [
+        {"condition": "low", "sequence_start": null, "A_run_id": null, "B_run_id": null},
+        {"condition": "normal", "sequence_start": null, "A_run_id": null, "B_run_id": null},
+        {"condition": "burst", "sequence_start": null, "A_run_id": null, "B_run_id": null}
+      ]
+    }
+  ]
+}

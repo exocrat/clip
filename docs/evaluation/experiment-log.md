@@ -24,6 +24,10 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
   as reported by Aditya, with Suraj's review reported by Aditya; the immutable
   frozen artifact keeps its capture-time flag. Actual ECS/Lambda database and
   configuration equivalence remains pending.
+- An offline paired-plan checker and blank template now describe the approved
+  three-cycle A/B, B/A, A/B order and nine low/normal/burst pairs. They validate
+  the declared plan only; actual manifests, deployment identity and generator
+  suitability remain future gates. No concurrency ceiling is encoded.
 - **EXP-02 Steps 3–5:** Local path, response and scheduled-workload preparation
   exists on `task/exp-02-workload`. A ten-case dataset-bound draft now has five
   browse and two detail expected responses plus three reviewed Hybrid query
@@ -52,6 +56,30 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 - **Measurements:** No ECS/Lambda comparison or final NFR run is recorded here.
 
 ## History
+
+### 2026-11-01 21:15:42 UTC — EXP-02 offline paired-run plan
+
+**Direction:** User verified preparation of a checker for the approved
+three-cycle comparison order. The 300 concurrent-request proposal remains
+non-binding and was excluded from the checker.
+
+**Change:** Added `comparison_pair_plan.py` and a blank paired-plan template.
+The checker validates A/B, B/A, A/B cycle order; low/normal/burst condition
+order; nine matched pairs; eighteen unique planned run IDs; shared dataset,
+database and workload fingerprints; and a supplied case sequence start for each
+pair. The pair has one shared sequence-start field, so A and B cannot silently
+use different case rotations. It accepts no target or credentials and always
+reports `measurement_authorized: false`.
+
+**Limits:** It validates declared plan shape and bindings only. It does not
+compare actual captured run manifests, prove that a deployment used these
+inputs, select the case rotation, establish generator capacity, or authorize
+execution. The actual generator/client concurrency cap remains open.
+
+**Checks:** Eight synthetic tests passed with warnings as errors. Strict Mypy
+passed for the checker and its tests; Black in-process formatting verification
+passed. No k6 workload, experiment, cloud, database or external service call
+occurred. Result awaits user verification.
 
 ### 2026-11-01 21:08:01 UTC — concurrency proposal clarified
 
