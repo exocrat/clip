@@ -1,5 +1,14 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### EXP-02 proposed timing protocol revision — 2026-11-01 19:50:33 UTC
+
+User requested recording connection-timing information and continuation. The
+preparation guide explains connection phases, overlap and failed acquisitions;
+the experiment log proposes per-response phase approximation, scoring, anomaly
+and failure treatment for review. Existing approved protocol and distinct NFR
+procedures remain in force pending affected-owner review and verification. No
+workload or live action occurred; result awaits verification. [Details](../evaluation/experiment-log.md).
+
 ### EXP-02 built-in phase timing evaluation — 2026-11-01 19:44:42 UTC
 
 User accepted evaluating built-in timing. Added a disconnected per-response
@@ -1352,7 +1361,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | CN-03 | A; D producer review | in progress | PR #21: migration-fixture CI fix locally verified; hosted CI pending | Full local checks passed: Python 2073/171 skipped, data 331, web 497/3 skipped, Conversations 184, migration and safety checks | Aditya confirmed prior task items done; current fix awaits hosted CI | Draft [PR #21](https://github.com/exocrat/clip/pull/21), branch includes merge `de2c94a` and local fixture fix | Push only after local checks; confirm hosted CI and obtain independent PR review | 2026-10-31 19:43:57 UTC |
 | INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
 | EXP-01 | C; Suraj coordinates NEXT-01 design | done | NEXT-01 design and gates are approved; actual topology pricing and numeric cost endpoints are NEXT-07 pre-result gates. | Design Steps 1–9 performed; no experiment run | Suraj verified NEXT-01 Steps 1–9 on 2026-10-28. | [Approved design and gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md); [NEXT-07 execution plan](../tasks/remaining-project-plan.md#experiment-protocol-reference) | Implementation, final data/tools, actual account/spend, numeric cost endpoints, and separate run approvals remain before measurement. | 2026-10-28 06:24:24 UTC |
-| EXP-02 | Rahul (D), reassigned by user; Search owner C review | in progress | Built-in phase timing candidate evaluated with synthetic inputs; result awaits verification | Three Node files and five Python tests passed; monotonic and failure-boundary limitations remain | Bridge check verified; phase evaluation authorized, result pending | `task/exp-02-workload`; comparison preparation and [experiment log](../evaluation/experiment-log.md) | Decide/review timing protocol change and failure treatment; other timeout sources; actual ordered Hybrid references and independent review, DATA-READY, k6 binary provenance, combined generator caps, pinned Node/contract check, seed/session limits, real-target runner, actual A/B deployment/revisions, approved run command, real telemetry, cost and cleanup evidence remain pending | 2026-11-01 19:44:42 UTC |
+| EXP-02 | Rahul (D), reassigned by user; Search owner C review | in progress | Connection timing documented; proposed comparison timing revision prepared for review | Synthetic phase checks passed; design and separate NFR rules unchanged pending review | User requested documentation and continuation; checkpoint pending verification | `task/exp-02-workload`; comparison preparation and [experiment log](../evaluation/experiment-log.md) | Review/approve timing revision and anomaly criteria; other timeout sources; actual ordered Hybrid references and independent review, DATA-READY, k6 binary provenance, combined generator caps, pinned Node/contract check, seed/session limits, real-target runner, actual A/B deployment/revisions, approved run command, real telemetry, cost and cleanup evidence remain pending | 2026-11-01 19:50:33 UTC |
 | EXP-03 | B | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-02 | — |
 | EXP-04 | B | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-03 | — |
 | EXP-05 | C | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-04 | — |

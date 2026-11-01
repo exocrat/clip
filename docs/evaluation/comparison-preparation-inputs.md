@@ -66,6 +66,31 @@ timing, assess infrastructure health, or authorize a run. A valid metadata
 record alone is not evidence that the generator was unsaturated or that an NFR
 passed. Both templates are intentionally invalid until real run inputs exist.
 
+### Understanding connection timing
+
+For a successful HTTP request, k6 reports `connecting` (TCP setup),
+`tls_handshaking` (encrypted-session setup), `blocked` (connection acquisition)
+and `duration` (sending, waiting and receiving). In the reviewed k6 v2.3.0
+source, TCP and TLS setup for a successful new connection fall inside the
+blocked interval. Do not add `connecting` and `tls_handshaking` to `blocked`:
+doing so can count setup twice. When a connection is reused, its setup phases can
+be zero. The connection metrics remain useful as separate diagnostics.
+
+For a correct response, adding that response's `blocked` and `duration` is a
+candidate approximation of its connection-acquisition-plus-response time.
+Calculate this for each response before finding percentiles; do not add separate
+percentiles. It does not cover the exact entire JavaScript-call boundary or use
+a verified monotonic clock. If connection acquisition fails, the source can
+leave blocked at zero even when time was spent trying. Count failures and
+timeouts separately; do not treat their apparent zero timing as proof that they
+were fast. A successful response, zero blocked time or plausible duration does
+not prove the clock and all boundaries were sound.
+
+The [experiment log](experiment-log.md#2026-11-01-195033-utc--exp-02-proposed-timing-protocol-revision)
+contains a proposed change. The approved monotonic rule remains in force until
+the applicable design owners approve a revision. NFR-05 measures chat submission
+to recipient display and is not replaced by these HTTP phases.
+
 The installed k6 v2.3.0 on this Linux environment was checked with `k6 inspect`:
 `performance.now` was unavailable. The current local comparison script uses
 `Date.now`, which does not satisfy the approved monotonic-clock requirement.

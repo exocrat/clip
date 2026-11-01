@@ -43,6 +43,47 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-01 19:50:33 UTC — EXP-02 proposed timing protocol revision
+
+**Direction:** User asked to retain the connection-timing explanation and
+continue the built-in timing evaluation. The preparation guide now explains
+TCP, TLS, blocked, duration, connection reuse, overlap, per-response sums and
+failed connection limitations. This is an exact proposal for review; it does
+not itself amend the approved EXP-01 protocol or accept an NFR.
+
+**Proposed comparison rule:** Use the same pinned, provenance-verified k6
+version and telemetry setup for both paths. For every issued request preserve
+the outcome, raw phase data and case/phase binding without secrets. For each
+independently verified correct response calculate `blocked + duration` from
+that same response, and calculate p50/p95/p99 over those per-response sums.
+Use the measured-phase correct-response p95 of that approximation for the
+comparison score, subject to all existing eligibility, success, load, parity
+and run-validity gates. Report `duration` percentiles and blocked, connecting
+and TLS diagnostics separately. Never add percentiles or add connecting/TLS
+again to blocked. Describe the approximation's clock and boundary limitations.
+
+Count every incorrect response, timeout, throttle, other failure, interrupted
+request and dropped arrival in the existing accounting; do not call a failed
+acquisition's zero blocked time a complete elapsed measurement. Retain raw
+outcomes even when an interval cannot be timed. Flag missing, nonfinite,
+negative or suspicious phase values for review; do not silently drop them to
+improve a percentile. The five-second timeout is a warning boundary, not proof
+that a longer observed sum is impossible. A material clock adjustment or other
+unresolved timing anomaly invalidates the affected paired evidence; stable
+looking numbers alone cannot prove that no clock adjustment occurred. Define
+clock observation, anomaly criteria and paired-run handling before the run.
+
+**Scope and gates:** This proposal would relax the comparison's verified
+monotonic/full-call requirement; the source owner and affected experiment/NFR
+owners must review the final wording and user must verify it before the change
+is treated as approved. NFR-01 and NFR-02 have different workloads and
+denominators; any use there requires their own reviewed timing decision.
+NFR-05 remains sender-to-recipient display timing, not this HTTP metric. A
+plausible phase sum does not establish PRD end-to-end coverage for every path.
+The custom timer remains a disconnected prototype; no deletion or selection is
+implied. No experiment, workload, cloud or database call occurred. This
+documentation checkpoint awaits user verification.
+
 ### 2026-11-01 19:44:42 UTC — EXP-02 built-in phase timing evaluation
 
 **Direction:** User accepted evaluating the simpler built-in timing proposal.
