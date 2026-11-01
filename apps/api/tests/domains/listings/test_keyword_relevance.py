@@ -37,7 +37,8 @@ def test_rank_tiers_bound_queries_private_projection_and_no_cutoff():
     # The inner image-reference subquery has its own ORDER BY and remains unchanged.
     assert "ts_rank_cd" not in before
     assert "THEN 1 ELSE 0 END DESC" in order
-    assert order.count("ts_rank_cd(listing.search_vector,") == 2
+    assert order.count("ts_rank_cd((listing.search_vector ||") == 2
+    assert "coalesce(category.label" in order
     assert ", 0)" in order and "END DESC, listing.id ASC" in order
     assert "category.code = ANY(%s)" in before
     assert "listing_condition.code = ANY(%s)" in before

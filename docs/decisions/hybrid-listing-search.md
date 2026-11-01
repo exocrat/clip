@@ -23,6 +23,37 @@ plain search-unavailable message and Retry, without silently switching modes.
 This supersedes earlier UI mode-toggle/default guidance only; real-provider,
 model availability, review and NFR acceptance gates remain in force.
 
+## Category-text matching amendment — 2026-11-01
+
+Mohit verified the three-step category-matching plan on `elite-search`: (1)
+document the scope, (2) implement through the Listings-owned query boundary,
+(3) validate and record evidence. This amendment extends Sale Listing lexical
+matching to the authoritative category **display label**, alongside title and
+description. Use the existing English normalization and bounded vocabulary/typo
+expansion for the query; category codes are identifiers, not extra search text.
+For example, a model-only listing assigned to Bicycles must match `bicycle`,
+the reviewed alias `cycle`, and supported vocabulary misspellings without a
+category filter. Independent query concepts may match across these fields;
+retain AND between concepts rather than admitting a listing on one matching word.
+
+Keep original lexical matches ahead of expanded/typo-only matches and then
+semantic-only matches when relevance sorting is selected. Preserve semantic
+inputs (title and description only), weights, cutoff, and explicit date/price
+orders. Category selection still filters results independently; availability,
+authorization and pagination rules remain unchanged. On 2026-11-02 Mohit also
+approved applying this shared provider behavior to Wanted Request draft
+suggestions. Wanted Request discovery itself remains outside this amendment.
+
+The implementation must reflect category reassignment and current display labels,
+preserve existing title/description matches and indexed retrieval, and include
+native PostgreSQL tests for model-only listings, aliases/typos, combined-field
+queries, negative cases, filters and ordering. No embedding rebuild is implied.
+Changed retrieval invalidates reuse of earlier relevance/latency results as proof
+of this revision; affected evaluation must be revalidated before acceptance.
+Listings retains ownership of query/index changes and affected-owner review;
+Mohit's scope approval is not Suraj's implementation review. Cloud, publication
+and merge actions retain their separate gates.
+
 ## Question
 
 How should search combine common curated item concepts with description-based

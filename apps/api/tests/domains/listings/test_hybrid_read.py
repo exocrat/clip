@@ -372,4 +372,4 @@ def test_policy_threshold_matches_keyword_without_bigint_overflow(threshold):
         request, NOW, threshold, binding(), scripted_plan("vehicle")
     )
     expected = min(threshold, ((2**63 - 1) // 100) * 100)
-    assert keyword[0] == hybrid[4] == expected
+    assert keyword[1] == hybrid[4] == expected

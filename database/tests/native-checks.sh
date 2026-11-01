@@ -144,7 +144,8 @@ sql --file "$root/database/tests/identity-session-smoke.sql" > "$evidence/sessio
 
 # No fixture commits remain after the smoke rollback; down/up is confined to
 # this disposable database and is not the persistent Compose-volume reset.
-for revision in $(seq 1 29); do migrate rollback > "$evidence/rollback-$revision.log" 2>&1; done
+migration_count=$(sql --command 'SELECT count(*) FROM public.schema_migrations')
+for revision in $(seq 1 "$migration_count"); do migrate rollback > "$evidence/rollback-$revision.log" 2>&1; done
 [[ $(sql --command 'SELECT count(*) FROM public.schema_migrations') == 0 ]]
 [[ $(sql --command "SELECT count(*) FROM pg_namespace WHERE nspname IN ('identity','listings','search','conversations')") == 0 ]]
 migrate migrate > "$evidence/apply-second.log" 2>&1
@@ -182,6 +183,7 @@ if [[ "$run_listings" == true ]]; then
     "$root/apps/api/tests/domains/search/test_category_migration_postgres.py" \
     "$root/apps/api/tests/domains/listings/test_postgres_store.py" \
     "$root/apps/api/tests/domains/listings/test_browse_postgres.py" \
+    "$root/apps/api/tests/domains/listings/test_category_text_postgres.py" \
     "$root/apps/api/tests/domains/listings/test_embedding_postgres.py" \
     "$root/apps/api/tests/domains/listings/test_embedding_worker_postgres.py" \
     "$root/apps/api/tests/domains/listings/test_hybrid_read_postgres.py" \
@@ -191,4 +193,4 @@ if [[ "$run_listings" == true ]]; then
     -q -W error > "$evidence/listings-tests.log" 2>&1
   cat "$evidence/listings-tests.log"
 fi
-printf '%s\n' 'PASS: native clean apply/head, repeat migrate, seven smoke suites twice, seventeen down migrations, clean reapply and identical runtime schema inventory.'
+printf '%s\n' 'PASS: native clean apply/head, repeat migrate, seven smoke suites twice, full ordered migration rollback, clean reapply and identical runtime schema inventory.'

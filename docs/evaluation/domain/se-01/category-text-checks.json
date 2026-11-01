@@ -1,0 +1,163 @@
+{
+  "captured_at": "2026-11-01T18:44:18.030440+00:00",
+  "branch": "elite-search",
+  "base_revision": "f816f667aa504fff0cbba538a44bff3dd9397f8f",
+  "uncommitted": true,
+  "scope": "Category-label lexical matching for Sale Listings and shared Wanted draft suggestions",
+  "source_sha256": {
+    "apps/api/app/domains/listings/category_text.py": "cfa753b0ee4534d650aa5de27e0bdc8c266ea53759efe3be5e225a58419feff9",
+    "apps/api/app/domains/listings/browse_store.py": "9b43c508e98108a52768c23ae1e1bbeef855227621d180ee405dc4cbb8a85b7f",
+    "apps/api/app/domains/listings/hybrid_read.py": "25619d2ebdca8d542d437c8362696b9def273cbf2593faf6db19fe8cf78a7e22",
+    "apps/api/tests/domains/listings/test_category_text_postgres.py": "7edf428883547adda017237ac473c4f12c43e279fd36933cc8203bf3dfd97abd",
+    "apps/api/tests/domains/listings/test_hybrid_read_postgres.py": "370a90a7f7e1786656ad99f669a6d81674b7b897cdafa8a50e28c09bc17d8524",
+    "database/tests/native-checks.sh": "f5528a9a0db6b8ecc5760e0465984408d7b2ab10e784c9da4e01da22b2904161",
+    "scripts/check_database.py": "6aa909cb0f2c4d0622ec12104ec0333d551eb2fcc5d694b19ab65a38d3e7b980"
+  },
+  "native": {
+    "command": "LC_ALL=C bash database/tests/native-checks.sh \"$PWD/.tools/native-db/pgsql\" \"$PWD/.tools/native-db/downloads/dbmate-macos-arm64\" --hybrid-read",
+    "passed": 23,
+    "skipped": 2,
+    "seconds": 9.44,
+    "dedicated_gated_runs": [
+      "standalone embedding-worker actual-model probe",
+      "development calibration probe"
+    ],
+    "actual_model_in_hybrid_test": true,
+    "migration_count": 32,
+    "clean_apply_rollback_reapply": true,
+    "schema_inventory_identical": true,
+    "postgres_stopped": true,
+    "local_raw_logs": "/tmp/clip-pd08-native-check.8ThisT"
+  },
+  "category_cases": [
+    "model-only category membership",
+    "bicycle/cycle/bicyle/vehicle",
+    "cross-field AND and negative terms",
+    "availability and independent filters",
+    "original/expanded before semantic tiers",
+    "price/date and stable relevance ordering",
+    "GIN-compatible baseline explain",
+    "shared DraftMatchService with real SQL",
+    "live category rename/reassignment without embedding rebuild",
+    "23 category-assisted rows across two deduplicated pages"
+  ],
+  "actual_model_probe": {
+    "captured_at": "2026-11-01T18:40:27.622571+00:00",
+    "isolated_only": true,
+    "public_activation": false,
+    "nfr_accepted": false,
+    "actual_model": true,
+    "cases": [
+      {
+        "scenario": "bycicle",
+        "check": "membership",
+        "passed": true,
+        "returned": 2
+      },
+      {
+        "scenario": "study_material_for_calculus",
+        "check": "expected_first",
+        "passed": true,
+        "returned": 1
+      },
+      {
+        "scenario": "keep_food_cold",
+        "check": "expected_first",
+        "passed": true,
+        "returned": 1
+      },
+      {
+        "scenario": "quasarframe_bicycle",
+        "check": "expected_first",
+        "passed": true,
+        "returned": 2
+      }
+    ],
+    "missing_coverage_503": true,
+    "filtered_recovery_after_503": true,
+    "closed_helper_503": true,
+    "keyword_independent": true,
+    "summary_whitelist_only": true,
+    "model_windows": 14,
+    "helper_starts": 1,
+    "max_simultaneous_owned_helpers": 1,
+    "sampled_peak_host_helper_rss_bytes": 408698880,
+    "all_owned_helpers_reaped": true,
+    "elapsed_seconds": 0.5900997910011938
+  },
+  "regression": {
+    "command": ".venv/bin/python -m pytest apps/api/tests/domains/listings apps/api/tests/domains/search tests/evaluation data/tests tests/contracts -q -W error",
+    "passed": 1247,
+    "skipped": 23,
+    "seconds": 52.18
+  },
+  "web": {
+    "command": "npm run check (repository-local Node)",
+    "passed": 497,
+    "skipped": 3,
+    "lint_types_build": "passed",
+    "warning": "Existing bundle chunks exceed 500 kB"
+  },
+  "other_checks": {
+    "black_files": 387,
+    "boundaries": 0,
+    "registered_contracts_current": 8,
+    "consumer_typecheck_files": 2,
+    "simulated_database_safety_cases": 35,
+    "ci_parity_checks": 12,
+    "diff_check": "passed",
+    "secret_scan": {
+      "tool": "native Gitleaks 8.30.1",
+      "scope": "tracked and unignored source snapshot, project config, redacted, inline bypasses disabled",
+      "findings": 0,
+      "approx_bytes": 11964600,
+      "docker_wrapper": "unavailable locally"
+    }
+  },
+  "unsuccessful_attempts": [
+    {
+      "stage": "native sandbox",
+      "reason": "PostgreSQL shared-memory access denied; rerun with approval"
+    },
+    {
+      "stage": "native migration lifecycle",
+      "reason": "32 applied migrations versus stale 29 rollback count; fixed runner to read count"
+    },
+    {
+      "stage": "native first runtime run",
+      "passed": 18,
+      "skipped": 2,
+      "failed": 4,
+      "local_raw_logs": "/tmp/clip-pd08-native-check.rHl39t/listings-tests.log",
+      "reason": "Old category assignments and shared committed fixtures invalidated text-only membership assumptions"
+    },
+    {
+      "stage": "native second runtime run",
+      "failed": 2,
+      "local_raw_logs": "/tmp/clip-pd08-native-check.CYaA6T/listings-tests.log",
+      "reason": "Rank fixture category imbalance and ambiguous two-bicycle actual-model oracle; corrected fixtures/assertions"
+    },
+    {
+      "stage": "root pytest",
+      "state": "interrupted",
+      "passed": 723,
+      "failed": 4,
+      "errors": 299,
+      "skipped": 5,
+      "reason": "Full repository suite encountered unavailable Docker setup; interrupted; no aggregate pass claimed. Other failures not accepted or reclassified as product fixes."
+    }
+  ],
+  "unchanged_final_artifacts": {
+    "data/evaluation/query-labels.json": "77442ab33b687fa446436781f85e47f2f1340629c4f19d226997cc19e82b6af7",
+    "docs/evaluation/domain/next-06/frozen-dataset.json": "fcb86edb0412f39cda77cf65be87a2e963783f95842f5080ec0456c0b64f21b4"
+  },
+  "acceptance": {
+    "human_step3": "verified by Mohit; recorded 2026-11-01T18:46:15Z",
+    "independent_listings_review": "pending",
+    "full_make_check_and_hosted_ci": "pending; Docker unavailable locally",
+    "fixed_final_label_success_at_5": "not rerun; final evaluator integration remains open",
+    "cloud_latency": "not rerun; no cloud authorization or action",
+    "nfr_accepted": false,
+    "commit_push_merge": "not performed"
+  }
+}

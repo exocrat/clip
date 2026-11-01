@@ -1,5 +1,112 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### SE-01 category-text amendment Step 3 local verification — 2026-11-01 18:44:27 UTC
+
+Mohit verified Step 2 and directed Step 3. Added actual guarded PostgreSQL
+`test_category_text_postgres.py`: model-only/category membership; bicycle/cycle/
+bicyle/vehicle; combined-field AND and negatives; availability, condition, price,
+category and negotiability; native relevance tiers and explicit sorts; duplicate
+prevention and stable two-page continuation; GIN baseline EXPLAIN; shared
+DraftMatchService with real provider SQL; live label rename/reassignment with
+unchanged generation IDs/fingerprints/state. Coordinate vectors prove SQL math,
+not model quality. Existing real helper/worker test now includes model-only
+`FX3 quasarframe` and the query `quasarframe bicycle`, and still proves semantic
+queries, controlled503, filtered recovery and helper cleanup. Identity in this
+native harness is an explicit existing eligibility fixture, not real sign-in.
+
+Native first attempt required local shared-memory escalation. Approved runner
+then revealed its stale29rollback count against32migrations; Mohit is the scoped
+writer for the bounded runner/CI test-list changes on `elite-search`. Runner now
+reads actual count, performs full rollback/reapply, and registers the category
+suite; `scripts/check_database.py` includes that suite for the existing CI target.
+Initial native runtime run:18passed/2skipped/4failed due newly meaningful category
+assignments/shared committed fixtures. Corrected text-only fixtures to neutral
+categories, real-model books/appliances to accurate categories, draft fixture
+cleanup, and snapshot query isolation. Second run had2remaining failures: rank
+fixture category imbalance and a one-bicycle oracle after adding a second valid
+bicycle. Balanced the fixture; typo test asserts both relevant items instead of
+inventing a semantic first-place oracle. No application ranking weakened.
+
+Final native command `LC_ALL=C bash database/tests/native-checks.sh "$PWD/.tools/native-db/pgsql" "$PWD/.tools/native-db/downloads/dbmate-macos-arm64" --hybrid-read`:
+23passed/2explicit dedicated probe skips in9.44s; actual hybrid helper/worker ran.
+Clean apply/repeat, seven SQLsmoke suites twice,32down migrations/reapply and
+identical schema inventory pass. Actual helper14windows/one process, reaped;
+server stopped. Raw logs `/tmp/clip-pd08-native-check.8ThisT`; sanitized durable
+[result and source bindings](../evaluation/domain/se-01/category-text-checks.json).
+
+Affected suites `.venv/bin/python -m pytest apps/api/tests/domains/listings apps/api/tests/domains/search tests/evaluation data/tests tests/contracts -q -W error`:
+1247passed/23gated skips,52.18s. Local Node `npm run check`:497webpassed/3gated
+skips; lint/types/build pass; existing bundle-size warning. Black387files passes; native pinned Gitleaks source snapshot (~11.96MB) has
+0findings with project config/redaction/inline bypasses disabled. Docker-backed
+secret wrapper remains unavailable. Boundaries0, contracts8current, mypy2files
+pass, CIparity12pass, simulated wrapper
+safety35pass (process-descriptor escalation). Diff check passed. Root pytest was
+interrupted after encountering unavailable Docker fixtures:723passed/5skipped/
+4failed/299setup errors; no aggregate pass or resolution of those failures is
+claimed. Full Docker `make check` and current-head hosted CI remain required.
+
+Task-wide review: scope/ordered steps and approved shared draft effect traced;
+only Listings owns SQL, no Search private-table access, public contracts unchanged;
+auth-derived visibility/filter predicates precede returned pages, no scores/private
+metadata added; no changed embedding policy or schema, fixed labels and frozen
+NEXT-06 release byte-identical to HEAD. Architecture and command docs now link
+category behavior/checks. Fresh fixed-label Success@5 and cloud latency are not
+accepted by these local developer fixtures; final evaluator integration and
+original SE-01 NFR gates remain open. No source-label edits to force a pass, cloud,
+new stubs, commit, push or merge. Step 3 local checks performed, human verification
+pending; independent Listings review/full CI/NFR acceptance remain separate.
+
+### SE-01 category-text amendment Step 2 — 2026-11-01 18:33:46 UTC
+
+Mohit verified Step 1 and authorized implementation. After inspecting the shared
+provider, Mohit approved including Wanted draft suggestions (local date Nov 2);
+public Wanted discovery remains unchanged. Updated the decision and task scope.
+Mohit is the scoped writer on `elite-search` for Listings-private query helpers,
+browse/hybrid stores and related tests/docs; Listings ownership/Suraj review is
+retained, not inferred complete. No public contract or migration change.
+
+Added `category_text.py`: combined stored title/description plus current English
+category-label vector; keyword candidates union the original GIN-compatible
+branch and a live-label supplemental scan, deduplicated before pagination.
+`browse_store.py` uses this candidate set and combined-vector relevance;
+`hybrid_read.py` uses it for lexical tiers only. Semantic weights, cutoff, helper,
+source fingerprints and embedding storage stay unchanged. Category reassignment/
+rename needs no copied-label migration or vector rebuild. Policies now identify
+v2-category retrieval. The supplemental branch is not indexed; actual plans and
+latency remain unproven. README documents this limitation and fresh-evidence gate.
+Three existing tests updated for changed parameter order/SQL ranking shape.
+
+Focused initial run: 138 passed/5 obsolete shape assertions failed; updated those
+assertions, then 143 passed. Broader run found one additional old ranking-shape
+assertion (722 passed/21 skipped/1 failed); corrected it. Final command
+`.venv/bin/python -m pytest apps/api/tests/domains/listings apps/api/tests/domains/search -q -W error`:
+723 passed/21 gated skips in 10.66s. No native PostgreSQL/model integration is
+claimed from those skips. Black6 changed Python files passed with required
+process-socket escalation; boundary violations0; contract check8 current after
+selecting repo-local Node. Docker-backed secret wrapper unavailable; pinned local
+Gitleaks8.30.1 scanned a tracked/unignored-source snapshot using project config,
+redaction and disabled inline bypasses: no leaks (~11.94MB). Diff check passed.
+
+Step 2 performed; result verification pending. Step 3 remains not started: add/run
+real local PostgreSQL category, cross-field, alias/typo, rename/reassignment,
+filter/order/page and shared draft-provider regressions; revalidate affected
+evaluation and complete task-wide review. Existing NFR/cloud/review gates remain.
+No new test double, cloud action, commit, push or PR action.
+
+### SE-01 category-text amendment Step 1 — 2026-11-01 18:28:03 UTC
+
+Mohit verified the three-step follow-up plan on clean `elite-search`, based on
+`f816f66`. Step 1 updates the hybrid decision and canonical SE-01 scope to include
+current category display labels in Sale Listing lexical/expanded matching.
+Semantic scoring stays title/description-only. The previous documented field
+scope was the material gap; this amendment resolves it. Existing query provider,
+category catalogue and native test harness are present; no stub is selected.
+Listings retains query/index ownership and affected-owner review; no Suraj review
+is inferred. Original SE-01 readiness/NFR blockers remain. Documentation consistency
+and `git diff --check` pass; no runtime tests are needed for this documentation-only
+step. No product code, schema, corpus, labels or cloud changes, commit or push.
+Step 1 performed; result verification pending. Next: Step 2 after verification.
+
 ### NEXT-06 Step6 immutable release and task-wide review — 2026-10-31 15:50:51 UTC
 
 Mohit verified Step5 and directed Step6. Created `reference_release.py` and
@@ -1057,6 +1164,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 
 | Task ID | Owner role | Task status | Current checkpoint / immediate next action | Execution state | Human verification | Branch/revision/evidence | Blockers | Last UTC update |
 |---|---|---|---|---|---|---|---|---|
+| SE-01 category-text amendment | Mohit (C); Listings reviewer Suraj (B) | in progress | Local implementation/checks human-verified; commit approved by Mohit; prepare approved commit, then separately approved publication and independent review | All three local steps performed | Steps 1–3 verified by Mohit; full acceptance gates pending | `elite-search` base `f816f66`; [native/model/source evidence](../evaluation/domain/se-01/category-text-checks.json); 1247 focused pass/23 gated skips; native23pass/2dedicated skips; web497pass/3gated skips | Publication needs separate approval; full Docker aggregate/current-head CI, independent Listings review, final fixed-label relevance and original SE-01 NFR gates remain open | 2026-11-01 18:47:03 UTC |
 | NEXT-00 | Suraj — requested planning coordinator | done | Planning output verified; NEXT-01 Step 1 authorized. | performed; planning only | verified by Suraj | `task/integrated-marketplace-rollout`, based on main `5e8d264`; [remaining-work plan](../tasks/remaining-project-plan.md), linked from project task index | No blocker for the accepted planning output; implementation and measured-run gates remain separate. | 2026-10-27 18:42:09 UTC |
 | NEXT-01 | Suraj — requested planning coordinator; C retains EXP-01 ownership | done | Design and task-wide review verified; NEXT-02 is next. | Steps 1–9 performed | Steps 1–9 verified | Planning baseline `c869f33`; [design and approved gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md#next-01-step-8--proposed-changes-to-measurement-gates); [NEXT-07 references](../tasks/remaining-project-plan.md#experiment-protocol-reference) | No blocker for the design handoff. Real implementations, data, tools, cost anchors, project AWS identity/spend and run approvals remain NEXT-07 prerequisites. | 2026-10-28 06:24:24 UTC |
 | NEXT-02 | Suraj — planning coordinator | done | Evaluation and documentation cleanup completed; test/fixture and app/infrastructure audits found no safe deletions. | Cleanup review and checks complete; its changes are included in the current commit. NEXT-02 itself changed no executable test or application code. | User accepted the cleanup and directed committing the combined changes on 2026-10-28. | `task/integrated-marketplace-rollout`; [NEXT-02 cleanup criteria](../tasks/remaining-project-plan.md); [command index](../environment/commands.md) | No cleanup blocker; documentation references and `git diff --check` passed. No tests/app checks, AWS actions, or paid runs for NEXT-02. | 2026-10-28 09:26:47 UTC |
