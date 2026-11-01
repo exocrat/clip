@@ -43,6 +43,40 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-01 19:44:42 UTC — EXP-02 built-in phase timing evaluation
+
+**Direction:** User accepted evaluating the simpler built-in timing proposal.
+The current approved monotonic requirement is not changed by this local
+evaluation; the timer extension remains disconnected and no measurement ran.
+
+**Finding:** In pinned upstream k6 v2.3.0, for successful acquisition `blocked`
+spans acquisition and includes connection and TLS intervals; adding those
+subphases again double counts. `blocked + duration`, calculated from the same
+response, is a candidate approximation for correct responses, not verified
+full JavaScript-call duration or a monotonic measurement. Failed acquisition can
+leave blocked at zero; other failed and interrupted paths also need separate
+accounting. The tracer uses Unix timestamps and checks can miss plausible clock
+errors. Equal tools do not guarantee equal error between runs. A clock adjustment,
+late completion or runtime overhead can affect a value without a negative number.
+
+**Preparation:** Added disconnected `comparison_phase_preview.js` and synthetic
+tests. It produces per-response `duration` and `blocked + duration` only when
+the caller identifies the response as correct; it flags missing, nonfinite or
+negative phases and sums above the configured comparison's five-second timeout.
+The cap is a conservative flag, not proof a longer value is impossible. It does
+not infer correctness, accept an NFR, change the runner, replace raw data, or
+compute a percentile by adding separate phase percentiles. A zero phase is not
+proof that acquisition was measured; synthetic values cannot verify live k6
+timing semantics or independent oracle results.
+
+**Checks and gates:** Three Node test files and five Python report tests passed;
+`git diff --check` passed. No k6 run, request, cloud or database call occurred.
+Before adopting this for scoring, review version/source provenance, successful
+and failure boundaries, result association, clock risk and measurement overhead;
+then explicitly revise the approved comparison protocol and its specific NFR
+procedures. Browse and search denominators differ; chat timing remains separate.
+This evaluation awaits user verification.
+
 ### 2026-11-01 19:25:44 UTC — EXP-02 timer extension bridge inspection
 
 **Direction:** User verified a temporary custom k6 build and initialization-only
