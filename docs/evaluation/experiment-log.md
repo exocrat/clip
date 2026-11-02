@@ -79,6 +79,32 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 12:48:25 UTC — Comparison search requirement change trace
+
+**Direction:** User requested using repository search requirements and checking
+the two paths for equivalence for other response details. User verified tracing
+the current requirements and affected tooling before implementing changes.
+
+**Findings:** The comparison protocol's Hybrid row currently requires reviewed
+exact IDs, order, page and fields; its dataset paragraph requires independently
+reviewed expected outcomes. The separate SE-01 NFR-04 procedure requires a
+human-reviewed labeled set and Success@5, and NFR-02 retains its own expected
+result and issued-eligible denominator requirements. These are distinct gates.
+`comparison_checks.js` currently requires full exact response equality for all
+three classes. The ordered-result binder, binding preflight, profile builder,
+paired preflight, parity validator, offline preparation and staging depend on
+the ordered reference. The current parity validator compares declarations and
+hashes, not A/B response contents. The preparation and workload guides describe
+the old dependency.
+
+**Next step and limits:** Change the comparison protocol and affected checks in
+a reviewed, coordinated unit, retaining explicit search requirements and a
+pre-run content-equivalence gate. Define how ties, malformed responses and
+unexpected empty results are judged from existing contracts; do not infer
+correctness merely from both paths agreeing. Preserve separate NFR-02/04 rules.
+No script or frozen record changed in this trace. Affected-owner protocol review
+and actual deployment verification remain open. Result awaits user verification.
+
 ### 2026-11-02 12:31:17 UTC — NFR-05 synthetic event collector
 
 **Direction:** User verified local event-collector preparation with simulated
