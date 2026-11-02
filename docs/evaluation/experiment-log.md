@@ -79,6 +79,26 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 12:12:20 UTC — EXP-02 synthetic local preparation flow
+
+**Direction:** User assigned actual test cases to Mohit and temporary-account
+and related access setup to Adity, then verified a grouped local preparation
+flow. No actual case review or account setup is claimed here.
+
+**Change:** A local-only Python helper connects existing checked staging, the
+report builder and evidence capture. It has no session, process or network
+interface and emits one explicitly labeled fabricated dropped arrival and report.
+The integration test checks missing-input refusal before folders are created,
+and checks successful synthetic staging/capture without claiming authorization.
+Separate stage and capture folders preserve existing exclusive-write behavior;
+a stage folder may remain if later capture fails. The guide records the scope.
+
+**Checks and limitations:** The focused synthetic integration check and strict
+Mypy passed. Black's multi-file command could not create a sandboxed worker;
+in-process Black formatting was used instead. These checks do not prove deployed
+parity, real runner behavior, account access, request pairing or timing. No
+experiment or NFR pass is claimed. Result awaits user verification.
+
 ### 2026-11-02 11:40:31 UTC — EXP-02 remaining runner work review
 
 **Direction and review:** User verified a prioritized offline review. Compared

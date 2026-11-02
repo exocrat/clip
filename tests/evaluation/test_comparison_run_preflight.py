@@ -1160,6 +1160,9 @@ def test_offline_preparation_components_work_together_without_a_run(
     """Exercise connected local components using only fabricated inputs and metrics."""
     from scripts.evaluation.k6.comparison_artifacts import _hash_artifact
     from scripts.evaluation.k6.comparison_evidence_capture import capture_local_evidence
+    from scripts.evaluation.k6.comparison_local_preparation_flow import (
+        prepare_synthetic_evidence,
+    )
     from scripts.evaluation.k6.comparison_offline_prepare import (
         FILE_FIELDS,
         prepare_inputs,
@@ -1179,7 +1182,18 @@ def test_offline_preparation_components_work_together_without_a_run(
         for name in MODULES
     }
     schedule = tmp_path / "schedule.json"
-    schedule.write_text('{"synthetic":true}\n')
+    schedule.write_text(
+        json.dumps(
+            {
+                "conditions": [
+                    {"name": name, "warmup_rate": 1, "measured_rate": 1}
+                    for name in ("low", "normal", "burst")
+                ],
+                "warmup_seconds": 1,
+                "measured_seconds": 1,
+            }
+        )
+    )
     plan["shared_inputs"]["load_script_sha256"] = module_hashes["comparison_load.js"]
     plan["shared_inputs"]["schedule_sha256"] = hashlib.sha256(
         schedule.read_bytes()
@@ -1295,3 +1309,35 @@ def test_offline_preparation_components_work_together_without_a_run(
     )
     assert fake_session.encode() not in raw + report_bytes
     assert result["run_validity_verified"] is False
+    flow_stage = tmp_path / "flow-stage"
+    flow_capture = tmp_path / "flow-capture"
+    flow_stage.mkdir()
+    flow_capture.mkdir()
+    arguments = (
+        paths,
+        1,
+        run_id,
+        profile_hash,
+        source,
+        schedule,
+        module_hashes,
+        flow_stage,
+        flow_capture,
+    )
+    kwargs = {"parity_path": parity_path, "parity_evidence_root": evidence_root}
+    with pytest.raises(ValueError, match="all_input_paths_required"):
+        prepare_synthetic_evidence({}, *arguments[1:], **kwargs)
+    assert not list(flow_stage.iterdir())
+    assert not list(flow_capture.iterdir())
+    observation.write_text('{"synthetic":false}')
+    with pytest.raises(ValueError, match="parity_evidence_hash_mismatch"):
+        prepare_synthetic_evidence(*arguments, **kwargs)
+    assert not list(flow_stage.iterdir())
+    assert not list(flow_capture.iterdir())
+    observation.write_text('{"synthetic":true}')
+    flow = prepare_synthetic_evidence(*arguments, **kwargs)
+    assert flow["requests_sent"] is False
+    assert flow["measurement_authorized"] is False
+    captured_report = json.loads((flow_capture / run_id / "report.json").read_bytes())
+    assert captured_report["synthetic_fixture"] is True
+    assert captured_report["delivery_complete"] is False

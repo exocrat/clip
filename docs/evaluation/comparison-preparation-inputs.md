@@ -236,6 +236,20 @@ Passing this simulation does not verify the order or safety of a future runner
 and does not approve a run. The real runner must implement and independently
 check all required gates before obtaining a session or sending requests.
 
+## Synthetic local preparation flow
+
+`comparison_local_preparation_flow.py` connects the existing input and declared
+parity checks, local staging, report builder and evidence capture as a Python
+helper. It never reads a session or invokes k6 or a network client. It writes
+one fixed, explicitly labeled synthetic dropped-arrival point and a labeled
+synthetic report; these are fixtures, not run results. Staging and capture use
+separate new folders. Missing inputs fail before capture. If a later step fails,
+an already staged folder may remain for inspection; it is not a completed run.
+The helper does not establish actual parity, authorization, privacy approval,
+timing validity or execution readiness. Mohit will supply the actual reviewed
+test cases; Adity will handle temporary-account and related access setup. Their
+outputs and the outstanding owner reviews are not replaced by this flow.
+
 ## Combined pre-request input check
 
 Before a future comparison runner requests a session or sends a request, it must
