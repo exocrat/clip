@@ -49,16 +49,13 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
   reusable for A and B. The version-3 run template records a separate profile
   reference/hash; offline checks compare saved bytes and require the six run
   records in a cycle to agree. Actual use remains a future runner/evidence gate.
-- **EXP-02 Steps 3–5:** Local path, response and scheduled-workload preparation
-  exists on `task/exp-02-workload`. A ten-case dataset-bound draft now has five
-  browse and two detail expected responses plus three reviewed Hybrid query
-  references. An offline adapter now accepts ordered results when supplied; the
-  real ordered results and independent review remain pending. Corrected the
-  burst arrival transition to eliminate an unintended five-second gap. Search
-  category-text behavior changed on main; actual ordered cases and their search
-  implementation revision require review and matching source binding. The binder
-  now refuses an absent, malformed or mismatched intended revision. Capacity/session/run gates and
-  deployed-path checks remain pending.
+- **EXP-02 Steps 3–5:** The user clarified that reviewed search labels are
+  already in the repository and directed comparison of ECS and ECS+Lambda
+  responses. Hand-authored ordered Hybrid results are not required. The offline
+  parity-corpus and ten-case comparator exist. Local staging now requires and
+  checks supplied response pairs for the parity draft; these local inputs do
+  not prove deployed parity. The ordinary preflight and real runner still need
+  integration with this approach, and affected-owner review remains.
 - **EXP-02 Step 6:** Client accounting/reporting is implemented and locally
   checked with synthetic metrics. Offline metadata checks expose declared timing,
   generator limits, VU headroom and drops. The user prefers built-in k6 phases;
@@ -78,6 +75,40 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 - **Measurements:** No ECS/Lambda comparison or final NFR run is recorded here.
 
 ## History
+
+### 2026-11-02 19:16:33 UTC — EXP-02 search parity direction and offline staging
+
+**Direction:** The user reiterated that the reviewed search inputs are already
+in the repository and directed comparing the ECS and ECS+Lambda outputs.
+`data/evaluation/query-labels.json` records reviewed labels for the separate
+Success@5 test; no new hand-authored ordering is required for the three
+comparison searches. An earlier checkpoint incorrectly presented that ordering
+as a remaining input. No DATA-READY record or frozen manifest was changed.
+
+**Implementation:** `comparison_declared_parity.py` and
+`comparison_offline_prepare.py` accept the parity-draft binding only when
+explicitly selected. `comparison_stage_run.py` accepts the version-2 binding
+and requires a supplied ten-case response-pair file, verifies its profile and
+bindings, checks all pairs with the existing offline comparator before creating
+the staging directory, and records the pair-file hash without copying bodies.
+The new synthetic test covers missing and mismatched pairs, a matching set,
+non-authorizing flags and no response copy. The protocol and preparation
+guides record the direction and distinguish this offline check from the
+unimplemented real runner. Older ordered-reference tooling remains available.
+
+**Checks:** The focused run-preflight suite passed 48 tests with warnings as
+errors; the new test separately passed. Both Node parity test files passed.
+Black passed per file after its multi-file worker could not start under the
+sandbox. No response was collected from either deployment, no workload was
+run, and no AWS action occurred. Synthetic matching responses do not verify
+production parity, relevance, session access or approval. Remaining work
+includes integrating the approach into the real runner, affected-owner review,
+deployed output/data parity, authentication, timing and execution gates.
+
+**Branch correction:** The first uncommitted edits were started on
+`task/exp-03-lambda`; they were carried without commit to the intended
+`task/exp-02-workload` branch. The committed EXP-03 work remains on its branch.
+
 
 ### 2026-11-02 14:01:05 UTC — EXP-03 ownership and design inspection
 

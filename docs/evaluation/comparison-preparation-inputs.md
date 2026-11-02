@@ -1,4 +1,11 @@
-# Comparison preparation: ordered cases and telemetry metadata
+# Comparison preparation: parity cases and telemetry metadata
+
+The user directed a pre-run ECS versus ECS+Lambda response comparison; a
+human-authored ordered result for the three Hybrid queries is not required.
+The existing reviewed `data/evaluation/query-labels.json` serves the separate
+Success@5 test. The older ordered-reference workflow below remains available as
+legacy tooling and is not an additional requested input. Real-run integration
+and affected-owner review are still required.
 
 ## Proposed search parity adapter
 
@@ -76,7 +83,7 @@ and two detail responses. The same strict input structure applies. The command
 checks that each request matches its corpus case and validates both responses;
 it reports counts without response bodies. Equal responses do not independently
 establish correct search relevance, data identity or deployed configuration.
-This remains an offline check rather than an enforced run gate.
+This remains an offline check rather than a real-run gate.
 
 `comparison_parity_preparation.check_draft_parity` connects the draft binding,
 paired-plan and profile-hash checks to that ten-case comparator. It validates
@@ -750,3 +757,15 @@ five seconds of measured arrivals. The k6 VU limit is per scenario, so both
 burst cohorts can jointly use up to twice the supplied per-scenario maximum.
 The future generator plan must account for this combined maximum and establish
 that its approved host, concurrency and resource limits are respected.
+
+## Local parity staging
+
+For the version-2 parity binding, the offline staging helper accepts
+`--response-pairs` containing the bounded ten-case array described above. It
+checks the case/profile binding, compares all ten supplied A/B responses before
+creating the staging directory, and records a hash of the supplied file without
+copying its bodies. Missing or mismatched pairs stop staging. Passing this
+local check does not establish where responses came from or verify a deployed
+target, review, relevance, or authorization. The local-only k6 workload still
+requires its separate parity-draft inputs, and a real-target runner remains to
+be implemented. Never put credentials or private responses in the pair file.

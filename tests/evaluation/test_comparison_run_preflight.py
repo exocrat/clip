@@ -1636,3 +1636,124 @@ def test_offline_preparation_components_work_together_without_a_run(
     assert captured_report["synthetic_fixture"] is True
     assert captured_report["delivery_complete"] is False
     assert fake_session not in (flow_capture / run_id / "report.json").read_text()
+
+
+def test_parity_draft_staging_requires_matching_response_pairs(
+    tmp_path: Path, prepared_inputs: Any
+) -> None:
+    """A parity draft must compare all supplied response pairs before staging."""
+    from scripts.evaluation.k6.comparison_offline_prepare import (
+        FILE_FIELDS,
+        prepare_inputs,
+    )
+    from scripts.evaluation.k6.comparison_stage_run import MODULES, stage_run
+
+    old_binding, _, old_reference, old_plan = prepared_inputs
+    reference = {
+        key: value
+        for key, value in old_reference.items()
+        if key not in {"review_record_reference", "queries"}
+    }
+    reference["format_version"] = 2
+    corpus = build_parity_corpus(reference, old_binding["application_revision"])
+    corpus_bytes = json.dumps(corpus, sort_keys=True).encode()
+    binding = {
+        **old_binding,
+        "case_corpus_sha256": hashlib.sha256(corpus_bytes).hexdigest(),
+    }
+    plan = deepcopy(old_plan)
+    plan["shared_inputs"]["case_corpus_sha256"] = binding["case_corpus_sha256"]
+    source = Path("scripts/evaluation/k6")
+    hashes = {
+        name: hashlib.sha256((source / name).read_bytes()).hexdigest()
+        for name in MODULES
+    }
+    schedule = tmp_path / "schedule.json"
+    schedule.write_text("{}")
+    plan["shared_inputs"]["load_script_sha256"] = hashes["comparison_load.js"]
+    plan["shared_inputs"]["schedule_sha256"] = hashlib.sha256(
+        schedule.read_bytes()
+    ).hexdigest()
+    profile = build_profile(
+        binding, corpus_bytes, reference, plan, 1, 2, 3, parity_draft=True
+    )
+    profile_hash = hashlib.sha256(profile).hexdigest()
+    paths = {name: tmp_path / (name + ".json") for name in FILE_FIELDS}
+    for name, value in zip(
+        FILE_FIELDS,
+        (
+            json.dumps(binding).encode(),
+            corpus_bytes,
+            json.dumps(reference).encode(),
+            json.dumps(plan).encode(),
+            profile,
+        ),
+    ):
+        paths[name].write_bytes(value)
+    run_id = "synthetic-c1-p0-A"
+    assert prepare_inputs(paths, 1, run_id, profile_hash, allow_parity_draft=True)[
+        "local_inputs_checked"
+    ]
+    assert not prepare_inputs(paths, 1, run_id, profile_hash)["local_inputs_checked"]
+    evidence = tmp_path / "observations"
+    evidence.mkdir()
+    (evidence / "snapshot.json").write_text('{"synthetic":true}')
+    common = {
+        "observed_at_utc": "2026-11-01T10:00:00Z",
+        "dataset_fingerprint": plan["shared_inputs"]["dataset_fingerprint"],
+        "schema_version": reference["schema_version"],
+        "index_fingerprint": plan["shared_inputs"]["index_fingerprint"],
+        "database_settings_sha256": plan["shared_inputs"]["database_settings_sha256"],
+        "search_contract_revision": reference["search_contract_revision"],
+        "search_implementation_revision": binding["application_revision"],
+        "model_revision": reference["model_revision"],
+        "evidence_reference": "snapshot.json",
+        "evidence_sha256": hashlib.sha256(
+            (evidence / "snapshot.json").read_bytes()
+        ).hexdigest(),
+    }
+    parity = {
+        "format_version": 1,
+        "purpose": "declared-pair-parity-not-authorization",
+        "cycle": 1,
+        "condition": "low",
+        "configurations": {
+            side: {"run_id": f"synthetic-c1-p0-{side}", **common} for side in ("A", "B")
+        },
+    }
+    parity_path = tmp_path / "parity.json"
+    parity_path.write_text(json.dumps(parity))
+    pairs = []
+    for case in corpus["cases"]:
+        response = (
+            case["expected"]
+            if case["request"]["kind"] != "search"
+            else {"items": [], "page": 1, "page_size": 20, "has_next": False}
+        )
+        pairs.append(
+            {
+                "case_id": case["case_id"],
+                "request": case["request"],
+                "a": {"status": 200, "body": response},
+                "b": {"status": 200, "body": deepcopy(response)},
+            }
+        )
+    pair_file = tmp_path / "responses.json"
+    stage_root = tmp_path / "stage"
+    stage_root.mkdir()
+    args = (paths, 1, run_id, profile_hash, source, schedule, hashes, stage_root)
+    kwargs = {"parity_path": parity_path, "parity_evidence_root": evidence}
+    with pytest.raises(ValueError, match="response_pairs_required"):
+        stage_run(*args, **kwargs)
+    pairs[0]["b"]["status"] = 503
+    pair_file.write_text(json.dumps(pairs))
+    with pytest.raises(ValueError, match="response_parity_mismatch"):
+        stage_run(*args, **kwargs, response_pairs_path=pair_file)
+    assert not (stage_root / run_id).exists()
+    pairs[0]["b"]["status"] = 200
+    pair_file.write_text(json.dumps(pairs))
+    result = stage_run(*args, **kwargs, response_pairs_path=pair_file)
+    assert result["response_parity_checked"] is True
+    assert result["deployed_parity_verified"] is False
+    assert result["measurement_authorized"] is False
+    assert not (stage_root / run_id / "responses.json").exists()

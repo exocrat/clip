@@ -38,9 +38,13 @@ def validate_declared_parity(
     reference: Any,
     plan: Any,
     evidence_root: Path | None = None,
+    *,
+    allow_parity_draft: bool = False,
 ) -> dict[str, Any]:
     """Compare two supplied declarations to the independently supplied plan/reference."""
-    validate_run_inputs(binding, corpus, reference, plan)
+    validate_run_inputs(
+        binding, corpus, reference, plan, allow_parity_draft=allow_parity_draft
+    )
     if not isinstance(record, dict) or set(record) != TOP_FIELDS:
         raise ValueError("invalid_parity_shape")
     if (
@@ -140,7 +144,7 @@ def main() -> None:
             evidence_root=args.evidence_root,
         )
         print(json.dumps(result, sort_keys=True))
-    except (OSError, ValueError, TypeError, KeyError, StopIteration):
+    except OSError, ValueError, TypeError, KeyError, StopIteration:
         parser.exit(2, "Declared parity check failed; no workload was started\n")
 
 

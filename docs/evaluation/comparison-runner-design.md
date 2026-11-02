@@ -32,7 +32,7 @@ The approved [comparison protocol](ecs-only-vs-ecs-lambda-task-list.md) and
 ## Proposed sequence for a future implementation
 
 1. Read a bounded, reviewed run plan. Validate the complete input corpus,
-   independent ordered-reference binding, pair plan, selected run and exact
+   dataset/search binding, pair plan, selected run and exact
    profile hash using the existing offline preparation. Stop on any failure
    before requesting a session or sending a request.
 2. Verify the approved target, revisions, authentication method, run limits,
@@ -102,11 +102,11 @@ independent human review remains required. No owner approval is recorded here.
 ## Prioritized remaining work
 
 1. **Finish reviewed workload inputs — D with Search C.** Bind the cases to the
-   dataset, intended search revision and model. The user proposed replacing
-   hand-authored Hybrid rankings with pre-run A/B response comparison; that
-   protocol revision and its full integration need affected-owner review. The
-   existing real-run preflight still requires the old ordered reference until
-   a reviewed replacement is complete. Confirm deployed source mapping later.
+   dataset, intended search revision and model. The user directed comparing
+   A/B responses instead of requiring hand-authored Hybrid rankings. Reviewed
+   relevance labels already exist; Success@5 remains a separate SE-01 test.
+   Finish integrating the response comparison into the real runner and obtain
+   affected-owner review. Confirm deployed source mapping later.
 2. **Settle runner interfaces — D with Identity A, infrastructure B and affected
    reviewers.** Review the user's proposed temporary synthetic account and
    environment-variable session handoff against the regular-account protocol;

@@ -52,6 +52,8 @@ def prepare_inputs(
     cycle: int | None,
     run_id: str | None,
     expected_hash: str | None,
+    *,
+    allow_parity_draft: bool = False,
 ) -> dict[str, Any]:
     """Validate supplied files and a planned run; return only safe status labels."""
     missing = [name for name in FILE_FIELDS if paths.get(name) is None]
@@ -72,7 +74,7 @@ def prepare_inputs(
             data = _read_local(path)
             contents[name] = data
             parsed[name] = json.loads(data)
-        except (OSError, ValueError, TypeError):
+        except OSError, ValueError, TypeError:
             invalid.append(name)
     if cycle is not None and (type(cycle) is not int or cycle not in (1, 2, 3)):
         invalid.append("cycle")
@@ -92,6 +94,7 @@ def prepare_inputs(
                 cycle,
                 profile_bytes=contents["workload_profile"],
                 expected_profile_sha256=expected_hash,
+                allow_parity_draft=allow_parity_draft,
             )
             if (
                 not result["workload_profile_checked"]
@@ -111,7 +114,7 @@ def prepare_inputs(
             ):
                 raise ValueError("run_not_in_selected_cycle")
             checked = True
-        except (OSError, ValueError, TypeError, KeyError, IndexError):
+        except OSError, ValueError, TypeError, KeyError, IndexError:
             invalid.append("input_bindings_or_planned_run")
     return {
         "local_inputs_checked": checked,
