@@ -99,6 +99,11 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
   The Lambda entry point remains fail-closed by default; explicit hosted-test
   opt-in now selects the session-only binding described below. Real authenticated
   parity is still unverified.
+- A local image builder now requires a source-matched cached Hybrid image and
+  cached pinned Lambda Adapter digest, verifies both are Linux AMD64, and refuses
+  to overwrite an existing local output tag. It is indexed in the command
+  registry; the existing output tag caused the test invocation to stop before
+  rebuilding. No registry upload or cloud action is possible through the script.
 - A synthetic Hybrid lifecycle test confirms the Lambda override requests a
   one-connection read pool and suppresses the optional worker. It does not prove
   startup with the real database/model or endpoint response parity.
@@ -130,6 +135,13 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
   execution environment and recommends SAM CLI to simulate it locally. SAM CLI
   is not installed here, so no adapter invocation simulation was run. See the
   [AWS Lambda Web Adapter local debugging guide](https://aws.github.io/aws-lambda-web-adapter/development/local-debugging.html).
+- EXP-03 steps 4–5 do not yet have an owned Terraform implementation path:
+  `infra/terraform/shared/test/` and `infra/terraform/modules/shared/` are
+  assigned to the PD-16 integration owner, and the ownership map defines no
+  Lambda-specific root. It forbids speculative modules and shared-resource
+  declarations from a domain root. Therefore no listener, Lambda, role, or
+  network Terraform was added on this branch. The exact resource owner/root and
+  reviewed shared interface must be settled before that code can be prepared.
 - User directed that no AWS work be done in this session. No AWS calls or
   resource changes were made after that direction; deployment, live smoke and
   measured-run steps remain pending under that explicit scope and their separate
@@ -179,6 +191,46 @@ runtime simulator, or deployment was used in this checkpoint.
 the status rows record the expected k6 refusal and limitations. The checkpoint
 is ready for local review/commit; independent peer/owner review remains required.
 No AWS action was attempted.
+
+### 2026-11-02 18:42:57 UTC — EXP-03 local image builder and Terraform ownership review
+
+**Scope:** Continued local preparation after the user's no-AWS direction. No
+cloud service, AWS CLI/API, image registry, workload, or measurement was used.
+
+**Local builder:** Added `scripts/evaluation/build_lambda_image.sh` and indexed
+it in `docs/environment/commands.md`. It requires the same commit suffix on a
+prebuilt local Hybrid API image and new Lambda output tag, confirms Docker's
+default context uses a Unix socket, requires the exact pinned adapter digest to
+be cached, checks both cached base images are Linux AMD64, refuses existing
+output tags, and uses `--pull=false`,
+`--network=none`, and `linux/amd64`. It only builds and inspects a local image;
+it has no Docker login, pull, run, push or deployment command. The checked-in
+image tag already exists, so the no-overwrite guard stopped before a build.
+
+**Checks:** `bash -n scripts/evaluation/build_lambda_image.sh` passed. `--help`
+printed the required source-matched tag syntax. Running it with the existing
+`clip-exp03-hybrid:local-8a60f83` and
+`clip-exp03-lambda:local-8a60f83` tags exited 2 with the expected refusal to
+replace the existing output. The local Docker endpoint and pinned cached inputs
+were therefore available; no image was created or changed. ShellCheck is not
+installed. At 18:44:38 UTC, reran the syntax/help checks and the safe Docker
+preflight; both cached images reported `linux/amd64`, then the existing output
+tag was refused before build. Terraform checks were not run because no Terraform
+files changed.
+
+**Infrastructure ownership:** Reviewed
+`docs/architecture/terraform-ownership.md`, the shared Terraform root, and the
+EXP-03 steps. The shared test root belongs to the PD-16 integration owner, the
+shared module has the same owner, and no Lambda root/interface is recorded.
+Those rules prohibit placing shared ALB/Lambda resources in the domain root or
+inventing a root/module without an approved owner and interface. No Terraform
+files were changed. EXP-03 steps 4–5 remain open for ownership/interface review,
+ALB rule/resource code, adapter/runtime proof, and later independent review.
+
+**Changed files:** `scripts/evaluation/build_lambda_image.sh` provides a
+network-disabled, no-overwrite local build path; `docs/environment/commands.md`
+records its invocation and effects; this experiment log and the status row
+record the checks and Terraform ownership blocker. No cloud action occurred.
 
 ### 2026-11-02 18:28:38 UTC — EXP-03 local image build and planning inputs
 

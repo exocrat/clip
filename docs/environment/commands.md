@@ -29,6 +29,7 @@ own their detailed commands and limits.
 
 | Work | Current command source |
 |---|---|
+| EXP-03 local Lambda image build | [Offline local image builder](../../scripts/evaluation/build_lambda_image.sh) |
 | Search/Listings focused checks and isolated preview | [Search test guide](../../apps/api/tests/domains/search/README.md), [API guide](../../apps/api/README.md), and the browser procedure below |
 | Schema-shaped search data | [Data generator guide](../../data/README.md#se-01-isolated-schema-shaped-corpus); these are not the final NEXT-06 dataset commands |
 | Load-runner tools, bounded local pilot and EXP-02 manifest validation | [k6 tool guide](../../scripts/evaluation/k6/README.md); [offline case and telemetry preparation](../evaluation/comparison-preparation-inputs.md) |
@@ -41,6 +42,22 @@ The k6 pilot is loopback-only and cannot accept an NFR. Draft profiles are not
 approved full-run inputs. NEXT-06 and NEXT-07 must register their final exact
 commands, inputs and evidence locations after the owning tools and data are
 ready; do not infer readiness from an example or local pilot.
+
+The EXP-03 image builder requires the source-matched Hybrid API image and the
+pinned Lambda Web Adapter digest to already exist in the local Docker image
+store. It forces the default Docker context to a local Unix socket, refuses an
+existing output tag, disables pulls and build-step networking, and prints the
+resulting local image ID/platform/size. It does not log in, pull, run, push or
+contact AWS. The resulting image is local build output, not a registry digest or
+deployment artifact. Example syntax (substitute the same actual source revision
+in both tags):
+
+```sh
+: "${EXP03_SOURCE_REVISION:?set this to the commit suffix in the local Hybrid API tag}"
+bash scripts/evaluation/build_lambda_image.sh \
+  "clip-exp03-hybrid:local-${EXP03_SOURCE_REVISION}" \
+  "clip-exp03-lambda:local-${EXP03_SOURCE_REVISION}"
+```
 
 ## SE-01 isolated discovery preview
 
