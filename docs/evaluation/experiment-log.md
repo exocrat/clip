@@ -53,7 +53,7 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
   exist and directed comparing the ECS and ECS+Lambda responses. No separate
   hand-authored ordered Hybrid results are required. On `task/exp-02-workload`,
   commits `ca5904f`, `db57507` and `845a809` add parity-bound offline staging,
-  preflight and mock-session ordering. The real runner, owner review and
+  preflight and mock-session ordering; `a52adea` adds local k6 phase previews. The real runner, owner review and
   actual deployed parity remain open; those changes are not merged into this
   Lambda branch. The earlier ordered-reference `k6 inspect` refusal is a
   historical tool limitation, not a request for new search results.
@@ -134,12 +134,46 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
   declarations from a domain root. Therefore no listener, Lambda, role, or
   network Terraform was added on this branch. The exact resource owner/root and
   reviewed shared interface must be settled before that code can be prepared.
-- User directed that no AWS work be done in this session. No AWS calls or
-  resource changes were made after that direction; deployment, live smoke and
-  measured-run steps remain pending under that explicit scope and their separate
-  exact-plan approval gates.
+- User later authorized AWS access under a USD 10 credit cap and assigned
+  Terraform ownership. Read-only identity, resource and parameter-metadata
+  checks were performed; no resource mutation or secret read occurred. Exact
+  deployment, pilot and cleanup plans retain their separate approval gates.
 
 ## History
+
+### 2026-11-02 19:32:53 UTC — EXP-03 Lambda database secret bootstrap
+
+**Direction and scope:** User authorized AWS under a USD 10 credit cap and
+assigned Terraform ownership. No deployment or secret retrieval was authorized
+by this local preparation; exact deployment/pilot/cleanup plans remain gated.
+EXP-02 commit `a52adea` on its separate branch prepares candidate k6 phase
+metrics; its real runner and real comparison remain incomplete.
+
+**Implementation:** The existing Identity-owned runtime configuration adds a
+Lambda-only opt-in loader for `/clip/test/listings-database-url`. It requires
+the Lambda runtime marker, test mode, Identity opt-in, no database environment
+override and otherwise valid settings before creating a parameter client; the
+fixed SecureString is retained as `SecretStr` in memory. Provider errors and
+invalid settings are redacted. `lambda_main.py` uses this loader; defaults
+remain unchanged and the existing Identity session code still reads its two
+fixed Identity parameters. The existing settings require controlled recipients
+even though this composition never starts an email sender. The architecture
+checker permits this exact composition-root import only.
+
+**Checks:** 108 focused synthetic Lambda, route, Identity and architecture
+tests passed with warnings as errors; boundary scan passed with zero violations.
+Strict Mypy passed for the runtime and entry point. The first test run exposed three private-domain boundary violations in a new
+bootstrap module; the loader was moved to the Identity-owned runtime and only
+its exact composition-root entry was allowed before the passing run. Fake
+providers verify refusal before reads and redaction; no actual secret was read.
+
+**AWS metadata:** Three targeted `ssm describe-parameters` calls using the
+verified non-root project identity returned SecureString version 1 for the
+fixed Listings database URL, Identity database URL and Identity authentication
+keys. Names/type/version only were requested; no values or SQL were read and
+no AWS resource was changed. Effective Lambda IAM, connectivity, session
+behavior, deployment and credit balance remain unverified.
+
 
 ### 2026-11-02 19:23:06 UTC — EXP-03 local image revision declaration
 

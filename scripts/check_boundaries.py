@@ -22,6 +22,7 @@ COMPOSITION_IMPORTS: dict[str, frozenset[str]] = {
         {
             "app.domains.identity.runtime_configuration",
             "app.domains.identity.runtime_configuration.prepare_hosted_test_identity_reads",
+            "app.domains.identity.runtime_configuration.load_lambda_settings",
         }
     ),
     "apps/api/app/main.py": frozenset(

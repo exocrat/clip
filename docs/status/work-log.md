@@ -1,5 +1,14 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### EXP-03 Lambda database bootstrap — 2026-11-02 19:32:53 UTC
+
+Rahul owns Terraform per user direction. Lambda-only guarded startup can load
+the fixed Listings SecureString in memory after test configuration validation;
+108 focused synthetic tests and boundaries pass. AWS metadata confirms the
+three required parameter names are SecureString version 1; no values read and
+no resources changed. Live IAM, database/session checks and exact approved
+deployment plan remain open. [Experiment log](../evaluation/experiment-log.md).
+
 ### EXP-03 image revision declaration guard — 2026-11-02 19:23:06 UTC
 
 The local image builder now requires a full OCI revision label matching the
@@ -2303,8 +2312,8 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | CN-03 | A; D producer review | in progress | PR #21: migration-fixture CI fix locally verified; hosted CI pending | Full local checks passed: Python 2073/171 skipped, data 331, web 497/3 skipped, Conversations 184, migration and safety checks | Aditya confirmed prior task items done; current fix awaits hosted CI | Draft [PR #21](https://github.com/exocrat/clip/pull/21), branch includes merge `de2c94a` and local fixture fix | Push only after local checks; confirm hosted CI and obtain independent PR review | 2026-10-31 19:43:57 UTC |
 | INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
 | EXP-01 | C; Suraj coordinates NEXT-01 design | done | NEXT-01 design and gates are approved; actual topology pricing and numeric cost endpoints are NEXT-07 pre-result gates. | Design Steps 1–9 performed; no experiment run | Suraj verified NEXT-01 Steps 1–9 on 2026-10-28; user clarified the 300 concurrent-client-request proposal is non-binding on 2026-11-01 UTC. | [Approved design and gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md); [NEXT-07 execution plan](../tasks/remaining-project-plan.md#experiment-protocol-reference) | Implementation, final data/tools, actual account/spend, numeric cost endpoints, and separate run approvals remain before measurement. | 2026-10-28 06:24:24 UTC |
-| EXP-02 | Rahul (D); Search owner C review | in progress | Parity-bound offline staging, preflight and mock checks committed on its own branch | Synthetic checks only; real runner remains open | User confirmed reviewed search labels and directed A/B output comparison | `task/exp-02-workload` at `845a809`; its experiment log | Affected-owner review, real runner, actual deployed parity, account/session and execution gates remain | 2026-11-02 19:23:06 UTC |
-| EXP-03 | Rahul (D), scoped Identity binding; A peer, C/B affected review | in progress | Local Lambda image builder requires declared source revision; adapter and real integration remain open | Five fake-Docker tests and shell syntax pass; prior local 98-test suite | User directs local work only | `task/exp-03-lambda`; [design](../evaluation/exp-03-lambda-design.md); [experiment log](../evaluation/experiment-log.md) | Label is not provenance proof; Lambda Adapter/ALB conversion, real SQL/session/Hybrid parity, DB capacity, Terraform ownership, deployment and independent review remain | 2026-11-02 19:23:06 UTC |
+| EXP-02 | Rahul (D); Search owner C review | in progress | Parity-bound offline staging, preflight, mock checks and phase previews committed on its own branch | Synthetic checks only; real runner remains open | User confirmed reviewed search labels and directed A/B output comparison | `task/exp-02-workload` at `a52adea`; its experiment log | Affected-owner review, real runner, actual deployed parity, account/session and execution gates remain | 2026-11-02 19:32:53 UTC |
+| EXP-03 | Rahul (D), Terraform and scoped Identity; A peer, C/B affected review | in progress | Lambda can load fixed Listings parameter in memory after hosted-test checks; deployment/integration still open | 108 synthetic Lambda/Identity/architecture tests; three parameter metadata checks | AWS access authorized with USD 10 credit cap; exact action plan approval remains | `task/exp-03-lambda`; [design](../evaluation/exp-03-lambda-design.md); [experiment log](../evaluation/experiment-log.md) | Adapter/ALB, real SQL/session/Hybrid parity, DB capacity, reviewed Terraform, deployment, owner review, credit balance and cleanup remain | 2026-11-02 19:32:53 UTC |
 | EXP-04 | B | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-03 | — |
 | EXP-05 | C | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-04 | — |
 | EXP-06 | C operator; B infra support | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-05 | — |

@@ -8,13 +8,14 @@ warms an email sender or installs login routes. Live startup remains separately 
 from fastapi import FastAPI
 
 from app.application import create_app
-from app.core.config import Settings, load_settings
+from app.core.config import Settings
 from app.core.logging import configure_logging
 from app.domains.identity.runtime_configuration import (
+    load_lambda_settings,
     prepare_hosted_test_identity_reads,
 )
 
-settings = load_settings()
+settings = load_lambda_settings()
 configure_logging()
 
 

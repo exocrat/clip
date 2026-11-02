@@ -222,6 +222,11 @@ def test_lambda_composition_import_is_scoped_to_its_entry_point():
         "apps/api/app/lambda_main.py",
         "from app.domains.identity.sessions import IdentitySessions",
     )[0]
+    bootstrap = (
+        "from app.domains.identity.runtime_configuration import load_lambda_settings"
+    )
+    assert not checker.inspect_source("apps/api/app/lambda_main.py", bootstrap)[0]
+    assert checker.inspect_source(SEARCH, bootstrap)[0]
 
 
 def test_cli_drift_and_recovery(tmp_path):

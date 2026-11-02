@@ -35,7 +35,8 @@ Switching between configurations must be explicit and reversible, with the
 selected listener rules and revisions captured before a run. Preserve the
 existing ECS service in both configurations. Exact origin, certificate,
 listener priorities, network and target group ownership remain subject to the
-infrastructure owner's review.
+infrastructure owner's review. The user assigned Terraform ownership to Rahul;
+independent and affected-domain review still apply.
 
 The candidates are GET `/api/listings` for browse and Hybrid search, and GET
 `/api/listings/{listing_id}` for detail. The final listener rule must match the
@@ -101,6 +102,17 @@ retains its current role privileges and local dummy-password hashing at startup;
 it is not a new least-privilege DB role or a measured startup optimization.
 Authentication uses fresh real session/account checks and retains the existing
 last-seen update; a read-only endpoint surface does not mean read-only SQL.
+The Lambda entry point also supports explicit hosted-test
+`CLIP_LAMBDA_DATABASE_PARAMETER_ENABLED=true` to read the fixed existing
+`/clip/test/listings-database-url` SecureString into an in-memory `SecretStr`
+before the ordinary settings and Identity reads. It requires an actual Lambda
+runtime marker, test mode, Identity opt-in, no conflicting database environment
+value and otherwise valid settings before any parameter read. The existing test
+settings still require a controlled recipient configuration even though this
+read-only composition does not start an email sender. It never accepts a
+caller-selected parameter name or stores its value in Terraform/environment.
+The IAM design must explicitly permit this one additional parameter; actual
+secret access, database connectivity and owner review remain pending.
 The browser policy still requires trusted HTTPS and accepted Origins when an
 Origin is supplied. Ingress scheme/host handling remains an unverified gate.
 Offline tests exercise middleware and public eligibility dispatch with mocked

@@ -9,11 +9,12 @@ import base64
 from dataclasses import dataclass
 from datetime import UTC, datetime
 import json
+from os import environ
 from typing import Any, Callable
 
 from pydantic import SecretStr
 
-from app.core.config import ConfigurationError, Settings
+from app.core.config import ConfigurationError, Settings, load_settings
 from app.domains.identity.email import SesEmailSender
 from app.domains.identity.email_configuration import (
     ParameterClient,
@@ -29,6 +30,39 @@ from app.domains.identity.microsoft import MicrosoftKeys, MicrosoftTokenValidato
 from app.domains.identity.runtime_database import connection_factory, validate_database
 from app.domains.identity.sessions import IdentitySessions
 from app.domains.identity.temporary_crypto import TemporaryKeys
+
+LISTINGS_DATABASE_PARAMETER = "/clip/test/listings-database-url"
+PARAMETER_OPT_IN = "CLIP_LAMBDA_DATABASE_PARAMETER_ENABLED"
+
+
+def load_lambda_settings(*, client: ParameterClient | None = None) -> Settings:
+    """Use a fixed SecureString only after validating the rest of the test setup.
+
+    The value remains a SecretStr in process memory. This function neither
+    modifies the environment nor permits a caller-selected parameter name.
+    """
+    enabled = environ.get(PARAMETER_OPT_IN, "false")
+    if enabled == "false":
+        return load_settings()
+    if (
+        enabled != "true"
+        or not environ.get("AWS_LAMBDA_FUNCTION_NAME")
+        or environ.get("CLIP_ENVIRONMENT") != "test"
+        or environ.get("CLIP_IDENTITY_RUNTIME_ENABLED") != "true"
+        or "CLIP_DATABASE_URL" in environ
+    ):
+        raise ConfigurationError("Invalid Lambda database parameter setup")
+    try:
+        # Validate all other settings before a provider or credential is accessed.
+        Settings(database_url=SecretStr("postgresql://fixture@localhost/clip"))
+    except Exception:
+        raise ConfigurationError("Invalid Lambda hosted test configuration") from None
+    try:
+        parameter_client = client or SsmEmailRouteLoader._make_client()
+        value = read_secure_parameter(parameter_client, LISTINGS_DATABASE_PARAMETER)
+        return Settings(database_url=value)
+    except Exception:
+        raise ConfigurationError("Lambda database configuration unavailable") from None
 
 
 @dataclass(frozen=True)
