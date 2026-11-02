@@ -76,6 +76,32 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 10:49:59 UTC — EXP-02 staged run files
+
+**Direction:** User verified grouping local run-file staging and checks. Only
+synthetic inputs and local files were used; no session, workload, cloud, database
+or provider call occurred.
+
+**Change:** Added a staging helper and blank six-module hash template. It reads
+the preflight inputs once, reuses full corpus/reference/plan/profile validation,
+checks the selected run, checks the exact main script and schedule against the
+pair plan and all six fixed JavaScript files against a supplied hash map. It
+creates a new private run directory only after validation, copies the profile,
+schedule and modules, reads them back, and records file hashes separately. It
+refuses missing/mismatched files and existing run folders; it does not run k6.
+Synthetic tests cover missing or blank hashes, missing/changed modules, changed
+schedule/profile, exclusive creation and sanitized CLI output.
+
+**Checks and limits:** 87 synthetic staging, preflight, pair-plan and capture
+tests passed, followed by a focused staging rerun after adding changed-file and
+wrong-run checks. Strict Mypy, Black formatting and whitespace checks passed. The current
+plan binds the main script and schedule, not the other five module hashes; the
+supplied map requires independent review. The helper does not prove later file
+integrity, actual runner use, dependency closure, k6 provenance or approval.
+Current workload is still loopback-only and the real runner, owner review and
+other deployment/run gates remain open. Result awaits user verification.
+
+
 ### 2026-11-02 10:41:42 UTC — EXP-02 parity evidence hash check
 
 **Direction:** User verified checking referenced parity evidence files locally.

@@ -781,3 +781,213 @@ def test_declared_pair_parity_requires_matching_plan_and_search_bindings(
     mismatched_reference["model_revision"] = "0" * 40
     with pytest.raises(ValueError):
         validate_declared_parity(record, binding, corpus, mismatched_reference, plan)
+
+
+def test_stage_run_checks_profile_modules_and_schedule_before_writing(
+    tmp_path: Path, prepared_inputs: Any
+) -> None:
+    from scripts.evaluation.k6.comparison_offline_prepare import FILE_FIELDS
+    from scripts.evaluation.k6.comparison_stage_run import MODULES, stage_run
+
+    binding, corpus, reference, supplied_plan = prepared_inputs
+    plan = deepcopy(supplied_plan)
+    source_dir = tmp_path / "source"
+    source_dir.mkdir()
+    repo_source = Path("scripts/evaluation/k6")
+    module_hashes = {}
+    for name in MODULES:
+        content = (repo_source / name).read_bytes()
+        (source_dir / name).write_bytes(content)
+        module_hashes[name] = hashlib.sha256(content).hexdigest()
+    schedule_path = tmp_path / "schedule.json"
+    schedule_path.write_bytes(b'{"synthetic":true}\n')
+    plan["shared_inputs"]["load_script_sha256"] = module_hashes["comparison_load.js"]
+    plan["shared_inputs"]["schedule_sha256"] = hashlib.sha256(
+        schedule_path.read_bytes()
+    ).hexdigest()
+    profile = build_profile(binding, corpus, reference, plan, 1, 2, 301)
+    paths = {name: tmp_path / f"input-{name}.json" for name in FILE_FIELDS}
+    values = (
+        json.dumps(binding).encode(),
+        corpus,
+        json.dumps(reference).encode(),
+        json.dumps(plan).encode(),
+        profile,
+    )
+    for name, value in zip(FILE_FIELDS, values):
+        paths[name].write_bytes(value)
+    digest = hashlib.sha256(profile).hexdigest()
+    root = tmp_path / "staged"
+    root.mkdir()
+    template = json.loads(
+        Path(
+            "data/evaluation/workloads/ecs-lambda-module-hashes.template.json"
+        ).read_text()
+    )
+    with pytest.raises(ValueError):
+        stage_run(
+            paths,
+            1,
+            "synthetic-c1-p0-A",
+            digest,
+            source_dir,
+            schedule_path,
+            template,
+            root,
+        )
+    assert list(root.iterdir()) == []
+    changed_plan = deepcopy(plan)
+    changed_plan["shared_inputs"]["load_script_sha256"] = "0" * 64
+    paths["paired_plan"].write_text(json.dumps(changed_plan))
+    with pytest.raises(ValueError, match="load_script_plan_mismatch"):
+        stage_run(
+            paths,
+            1,
+            "synthetic-c1-p0-A",
+            digest,
+            source_dir,
+            schedule_path,
+            module_hashes,
+            root,
+        )
+    paths["paired_plan"].write_text(json.dumps(plan))
+    assert list(root.iterdir()) == []
+    wrong = dict(module_hashes)
+    wrong["core.js"] = "0" * 64
+    with pytest.raises(ValueError, match="module_fingerprint_mismatch"):
+        stage_run(
+            paths,
+            1,
+            "synthetic-c1-p0-A",
+            digest,
+            source_dir,
+            schedule_path,
+            wrong,
+            root,
+        )
+    assert list(root.iterdir()) == []
+    missing = source_dir / "core.js"
+    saved = missing.read_bytes()
+    missing.unlink()
+    with pytest.raises(OSError):
+        stage_run(
+            paths,
+            1,
+            "synthetic-c1-p0-A",
+            digest,
+            source_dir,
+            schedule_path,
+            module_hashes,
+            root,
+        )
+    missing.write_bytes(saved + b"\n")
+    with pytest.raises(ValueError, match="module_fingerprint_mismatch"):
+        stage_run(
+            paths,
+            1,
+            "synthetic-c1-p0-A",
+            digest,
+            source_dir,
+            schedule_path,
+            module_hashes,
+            root,
+        )
+    missing.write_bytes(saved)
+    with pytest.raises(ValueError, match="run_not_in_selected_cycle"):
+        stage_run(
+            paths,
+            1,
+            "synthetic-c2-p0-A",
+            digest,
+            source_dir,
+            schedule_path,
+            module_hashes,
+            root,
+        )
+    assert list(root.iterdir()) == []
+    schedule_path.write_bytes(b'{"synthetic":false}\n')
+    with pytest.raises(ValueError, match="schedule_plan_mismatch"):
+        stage_run(
+            paths,
+            1,
+            "synthetic-c1-p0-A",
+            digest,
+            source_dir,
+            schedule_path,
+            module_hashes,
+            root,
+        )
+    assert list(root.iterdir()) == []
+    schedule_path.write_bytes(b'{"synthetic":true}\n')
+    result = stage_run(
+        paths,
+        1,
+        "synthetic-c1-p0-A",
+        digest,
+        source_dir,
+        schedule_path,
+        module_hashes,
+        root,
+    )
+    folder = root / "synthetic-c1-p0-A"
+    assert (folder / "profile.json").read_bytes() == profile
+    assert set(result["files"]) == set(MODULES) | {"profile.json", "schedule.json"}
+    assert json.loads((folder / "staged-files.json").read_text()) == result
+    assert result["actual_use_verified"] is False
+    assert result["measurement_authorized"] is False
+    with pytest.raises(FileExistsError):
+        stage_run(
+            paths,
+            1,
+            "synthetic-c1-p0-A",
+            digest,
+            source_dir,
+            schedule_path,
+            module_hashes,
+            root,
+        )
+    hashes_path = tmp_path / "module-hashes.json"
+    hashes_path.write_text(json.dumps(module_hashes))
+    command = [sys.executable, "-m", "scripts.evaluation.k6.comparison_stage_run"]
+    for name in FILE_FIELDS:
+        command.extend(["--" + name.replace("_", "-"), str(paths[name])])
+    command.extend(
+        [
+            "--cycle",
+            "1",
+            "--run-id",
+            "synthetic-c1-p1-A",
+            "--expected-profile-sha256",
+            digest,
+            "--module-hashes",
+            str(hashes_path),
+            "--source-dir",
+            str(source_dir),
+            "--schedule",
+            str(schedule_path),
+            "--staging-root",
+            str(root),
+        ]
+    )
+    completed = subprocess.run(command, capture_output=True, text=True, check=False)
+    assert completed.returncode == 0
+    assert json.loads(completed.stdout) == {
+        "staged": True,
+        "measurement_authorized": False,
+    }
+    assert (
+        reference["queries"][0]["query_text"] not in completed.stdout + completed.stderr
+    )
+    paths["workload_profile"].write_bytes(profile + b" ")
+    with pytest.raises(ValueError):
+        stage_run(
+            paths,
+            1,
+            "synthetic-c1-p2-A",
+            digest,
+            source_dir,
+            schedule_path,
+            module_hashes,
+            root,
+        )
+    assert not (root / "synthetic-c1-p2-A").exists()

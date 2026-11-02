@@ -313,6 +313,40 @@ hash. The future real-target runner must still enforce the reviewed profile and
 all other gates before credentials or requests. These recorded fields and file
 checks do not prove the runner actually used that profile.
 
+## Stage the files for one planned run
+
+The offline staging helper checks the bound corpus, ordered reference, pair plan,
+selected run and exact profile bytes before creating a new private run folder.
+It copies the profile, schedule and the current six workload JavaScript files,
+checks each written file and writes `staged-files.json` with fingerprints. It
+never starts k6, accepts a target or obtains a session.
+
+Copy `data/evaluation/workloads/ecs-lambda-module-hashes.template.json` to a new
+file and fill the six lowercase SHA-256 values from the independently reviewed
+workload files. The template's null values deliberately fail. Then use:
+
+```sh
+.venv/bin/python -m scripts.evaluation.k6.comparison_stage_run \
+  --binding-plan binding.json --corpus corpus.json \
+  --ordered-reference ordered.json --paired-plan paired.json \
+  --workload-profile profile.json --cycle 1 --run-id PLANNED_RUN_ID \
+  --expected-profile-sha256 EXPECTED_SHA256 --module-hashes module-hashes.json \
+  --source-dir scripts/evaluation/k6 \
+  --schedule data/evaluation/workloads/ecs-lambda-comparison-schedule-v1.json \
+  --staging-root path/to/existing-local-folder
+```
+
+The selected profile must match the supplied hash, the schedule and main load
+script must match the paired plan, and all six JavaScript files must match the
+supplied module-hash list. The plan does not currently bind the other five
+module hashes: their review and the list's provenance remain separate gates.
+The staged files preserve the current relative imports; if the workload adds
+more dependencies, the fixed list and tests need review. Existing run folders
+are refused; incomplete writes remain for inspection. A successful stage does
+not prove human approval, file integrity after the check, actual runner use,
+k6 binary provenance or permission to run. The existing workload remains
+loopback-only and the real-target runner remains unimplemented.
+
 ## NFR browse and Hybrid case drafts
 
 The offline generator selects five browse and three Hybrid cases from the same
