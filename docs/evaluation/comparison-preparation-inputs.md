@@ -330,10 +330,12 @@ timeouts separately; do not treat their apparent zero timing as proof that they
 were fast. A successful response, zero blocked time or plausible duration does
 not prove the clock and all boundaries were sound.
 
-The [experiment log](experiment-log.md#2026-11-01-195033-utc--exp-02-proposed-timing-protocol-revision)
-contains a proposed change. The approved monotonic rule remains in force until
-the applicable design owners approve a revision. NFR-05 measures chat submission
-to recipient display and is not replaced by these HTTP phases.
+The user prefers this built-in approach to a custom timer. The [experiment log](experiment-log.md#2026-11-01-195033-utc--exp-02-proposed-timing-protocol-revision)
+records the proposed rule and its limitations. The approved comparison design
+still requires a verified monotonic clock; the affected owners must review the
+revision before it can replace that rule. NFR-01 and NFR-02 need their own
+reviewed timing decisions. NFR-05 measures chat submission to recipient display
+and is not replaced by these HTTP phases.
 
 For synthetic offline evaluation only, `comparison_phase_preview.js` can select
 timing fields from the same supplied response. `comparison_phase_report.py`
@@ -354,26 +356,13 @@ the workload or current accounting report.
 
 The installed k6 v2.3.0 on this Linux environment was checked with `k6 inspect`:
 `performance.now` was unavailable. The current local comparison script uses
-`Date.now`, which does not satisfy the approved monotonic-clock requirement.
-Choose and independently verify a supported end-to-end monotonic timing method
-before preparing a real-target measurement runner. No local inspect probe sends
-requests or demonstrates performance.
-
-A candidate is a [k6 JavaScript extension](https://grafana.com/docs/k6/latest/extensions/create/javascript-extensions/)
-with a separate timer object per virtual user. A proposed `start()` retains a
-Go `time.Time` with its monotonic reading; `stop()` returns elapsed milliseconds
-and clears that start. A second start while active or a stop without a start
-must fail. The workload would bracket exactly one synchronous HTTP call and
-retain a duration for timeouts and exceptions without recording private data.
-The disconnected prototype under `scripts/evaluation/k6/monotonic/` implements
-this contract against the pinned upstream k6 v2.3.0 Go module; it is not selected
-or verified for measurements. Review k6 and extension sources and build provenance; test VU isolation,
-invalid call ordering, exception/timeout handling and boundary placement with
-injected clocks and doubles; then independently verify the resulting binary and
-runtime behavior before changing the unverified report flag. A temporary custom
-binary passed the initialization-only `monotonic/inspect_bridge.js` check; this
-does not establish request boundaries, concurrency behavior or reproducibility.
-The prototype does not authorize measurement.
+`Date.now`, which does not meet the existing verified-monotonic requirement.
+The user's preferred direction is built-in k6 phases, without requiring a custom
+Go extension; affected-owner review of the protocol change remains open. The
+existing disconnected prototype is not selected. Before a real run, settle the
+timing protocol and verify the actual generator version, phase coverage, failure
+accounting and clock-observation procedure. The preview and inspect check do not
+establish those run conditions or demonstrate performance.
 
 At the immediate burst transition, warm-up requests may finish during the first
 five seconds of measured arrivals. The k6 VU limit is per scenario, so both

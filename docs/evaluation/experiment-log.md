@@ -58,9 +58,10 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
   deployed-path checks remain pending.
 - **EXP-02 Step 6:** Client accounting/reporting is implemented and locally
   checked with synthetic metrics. Offline metadata checks expose declared timing,
-  generator limits, VU headroom and drops. A verified monotonic k6 timing method,
-  real resource telemetry and a real k6 run remain pending. Reports explicitly
-  mark latency timing unverified even when counts match.
+  generator limits, VU headroom and drops. The user prefers built-in k6 phases;
+  affected-owner review is needed to revise the verified-monotonic requirement.
+  Real resource telemetry and a real k6 run remain pending. Reports mark latency
+  timing unverified even when counts match.
 - **EXP-02 Step 7:** A per-run capture template and validator are ready. No
   measured run exists, so run-specific values remain blank. An offline telemetry
   metadata validator now checks run binding, artifact references and windows; it
@@ -74,6 +75,29 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 - **Measurements:** No ECS/Lambda comparison or final NFR run is recorded here.
 
 ## History
+
+### 2026-11-02 09:00:13 UTC — EXP-02 timing guidance correction
+
+**Direction:** User verified the profile preflight step and asked to align
+current timing guidance with the simpler built-in k6 approach. No measurement,
+credentials, workload or external action was performed.
+
+**Correction:** The user's preference is to use k6 phase metrics without
+requiring a custom Go extension. The preparation guide now states that preference
+and identifies the remaining review. The approved comparison design still
+requires a verified monotonic clock; this documentation change does not amend
+that design or record affected-owner approval. The built-in phase proposal uses
+per-response blocked plus duration for successful, independently correct
+responses, with separate failure accounting and phase diagnostics. It has clock
+and failed-connection limitations; the preview is not a run-ready implementation.
+NFR-01 and NFR-02 require their own reviewed timing decisions, and NFR-05 has a
+different sender-to-display boundary. Historical entries remain unchanged.
+
+**Checks and next action:** Reviewed the existing approved design, timing
+proposal and current guidance; `git diff --check` passed. Affected owners must
+review the protocol revision and the actual generator timing procedure before
+measurement. Result awaits user verification.
+
 
 ### 2026-11-02 08:48:38 UTC — EXP-02 profile preflight checks
 
