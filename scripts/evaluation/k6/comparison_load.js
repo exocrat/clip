@@ -4,22 +4,34 @@ import http from 'k6/http';
 import execution from 'k6/execution';
 import { Counter, Trend } from 'k6/metrics';
 import { comparisonPath, localApiTarget } from './comparison_cases.js';
-import { correctResponse, validExpected } from './comparison_checks.js';
+import { correctResponse, correctParityDraftResponse, validExpected } from './comparison_checks.js';
+import { checkAllParity } from './comparison_all_parity.js';
 import { caseForIteration, comparisonScenarios, sequenceStartForScenario, validateComparisonCases, validateSequenceStarts } from './comparison_schedule.js';
 import { preliminaryOutcome } from './comparison_outcomes.js';
 
 const target = localApiTarget(__ENV.CLIP_COMPARISON_LOCAL_TARGET);
 if (__ENV.CLIP_COMPARISON_LOCAL_LOAD !== 'true') throw Error('explicit_local_load_inputs_required');
 const profile = JSON.parse(open(__ENV.CLIP_COMPARISON_LOCAL_PROFILE));
+const parityMode = __ENV.CLIP_COMPARISON_LOCAL_PARITY_DRAFT === 'true';
 const sequenceStarts = validateSequenceStarts(profile.sequence_starts);
 const cases = validateComparisonCases(profile.cases, sequenceStarts.low);
 if (!Number.isSafeInteger(profile.capacity?.preAllocatedVUs) || !Number.isSafeInteger(profile.capacity?.maxVUs) || !Number.isFinite(profile.timeout_seconds) || profile.timeout_seconds !== 5) throw Error('approved_capacity_and_timeout_required');
 const paths = cases.map(item => {
   const path = comparisonPath(item.request);
-  if (!validExpected(item.request, item.expected)) throw Error('invalid_expected_case');
+  if (parityMode && item.request.kind === 'search' ? item.expected !== null : !validExpected(item.request, item.expected)) throw Error('invalid_expected_case');
   return path;
 });
 const scenarios = comparisonScenarios(profile.capacity, __ENV.CLIP_COMPARISON_LOCAL_CONDITION);
+if (parityMode) {
+  const parityPath = __ENV.CLIP_COMPARISON_LOCAL_PARITY_FILE;
+  if (typeof parityPath !== 'string' || !parityPath) throw Error('local_parity_input_required');
+  try {
+    const rawParity = open(parityPath);
+    if (rawParity.length > 5_000_000) throw Error('local_parity_input_too_large');
+    const parity = checkAllParity(JSON.parse(rawParity), {cases});
+    if (!parity.all_equal_and_valid) throw Error('local_parity_mismatch');
+  } catch (_) { throw Error('local_parity_invalid_or_mismatch'); }
+}
 // Do not read even the local session until profile, case and schedule checks pass.
 const cookie = __ENV.CLIP_COMPARISON_LOCAL_COOKIE;
 if (typeof cookie !== 'string' || !cookie || /[\r\n]/.test(cookie)) throw Error('explicit_local_load_inputs_required');
@@ -63,7 +75,10 @@ export default function () {
     outcome = preliminaryOutcome(response);
     if (outcome === 'requires_correctness_check') {
       outcome = 'incorrect';
-      try { if (correctResponse(response.status, response.json(), item.request, item.expected)) outcome = 'correct'; }
+      try {
+        const body = response.json();
+        if (parityMode ? correctParityDraftResponse(response.status, body, item) : correctResponse(response.status, body, item.request, item.expected)) outcome = 'correct';
+      }
       catch (_) { /* Malformed response content is counted without being retained. */ }
     }
   } finally {

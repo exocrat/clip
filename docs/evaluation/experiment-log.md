@@ -79,6 +79,38 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 13:57:21 UTC — Local parity workload and EXP-03 preliminary inspection
+
+**Direction:** User requested finishing essential EXP-02 work and starting
+EXP-03 preparation. Worked offline; no workload, deployment, cloud or external
+request was performed. EXP-02 remains incomplete and EXP-03's formal start
+dependency remains pending.
+
+**EXP-02:** Added an explicit local-only parity-draft workload path. It validates
+the ten supplied synthetic response pairs against the workload cases before
+reading the local session, uses the draft search response checker, and keeps
+the prior mode. Parity input errors are sanitized. Added both comparator modules
+to the staged-module inventory and blank hash template. Synthetic tests cover
+valid/mismatched/missing pairs and session-read ordering; `k6 inspect` verifies
+draft and prior initialization without executing a workload.
+
+**EXP-03 preliminary read-only inspection:** The selected Listings read is
+`GET /listings` in `apps/api/app/domains/listings/browse_routes.py`; it uses the
+shared caller dependency and configured Listings store. `apps/api/app/application.py`
+composes these routers with shared startup/lifespan and Identity configuration.
+No Lambda adapter was identified by the targeted local source search. EXP-03
+still needs its owner B, task-understanding verification, accepted EXP-02 and
+reviewed decisions on routing, auth, lifecycle, database connections and packaging
+before dependent implementation; no infrastructure was changed.
+
+**Checks and limitations:** Five selected staging/`k6 inspect` tests passed
+before the final sanitized-error change; four `k6 inspect` tests passed afterwards.
+Three synthetic Node test files, strict Mypy, Black and whitespace checks passed.
+The supplied parity file is not proof of response origin, deployment, review or
+freshness. Normal run preflight still rejects the draft, the target remains
+loopback-only, and the timing and real-runner gates remain open. No experiment or
+NFR pass is claimed. Result awaits user verification.
+
 ### 2026-11-02 13:45:38 UTC — Local workload session-read ordering
 
 **Direction:** User verified continuing preparation. All checks used synthetic

@@ -1299,6 +1299,93 @@ def test_stage_run_checks_profile_modules_and_schedule_before_writing(
 
 
 @pytest.mark.skipif(shutil.which("k6") is None, reason="k6 is not installed")
+def test_k6_inspect_parity_draft_requires_matching_cases(
+    tmp_path: Path, prepared_inputs: Any
+) -> None:
+    """Inspect only; fabricated pairs are never sent to an API."""
+    old_binding, _, old_reference, old_plan = prepared_inputs
+    reference = {
+        key: value
+        for key, value in old_reference.items()
+        if key not in {"review_record_reference", "queries"}
+    }
+    reference["format_version"] = 2
+    corpus = build_parity_corpus(reference, old_binding["application_revision"])
+    corpus_bytes = json.dumps(corpus, sort_keys=True).encode()
+    binding = {
+        **old_binding,
+        "case_corpus_sha256": hashlib.sha256(corpus_bytes).hexdigest(),
+    }
+    plan = deepcopy(old_plan)
+    plan["shared_inputs"]["case_corpus_sha256"] = binding["case_corpus_sha256"]
+    profile = tmp_path / "profile.json"
+    profile.write_bytes(
+        build_profile(
+            binding, corpus_bytes, reference, plan, 1, 2, 3, parity_draft=True
+        )
+    )
+    pairs = []
+    for case in corpus["cases"]:
+        response = (
+            case["expected"]
+            if case["request"]["kind"] != "search"
+            else {"items": [], "page": 1, "page_size": 20, "has_next": False}
+        )
+        pairs.append(
+            {
+                "case_id": case["case_id"],
+                "request": case["request"],
+                "a": {"status": 200, "body": response},
+                "b": {"status": 200, "body": deepcopy(response)},
+            }
+        )
+    parity = tmp_path / "parity.json"
+    parity.write_text(json.dumps(pairs))
+    config = tmp_path / "config.json"
+    config.write_text("{}\n")
+    binary = shutil.which("k6")
+    assert binary is not None
+    env = {
+        "PATH": "/usr/bin:/bin",
+        "K6_NO_USAGE_REPORT": "true",
+        "CLIP_COMPARISON_LOCAL_TARGET": "http://127.0.0.1:5174/api",
+        "CLIP_COMPARISON_LOCAL_COOKIE": "clip_session_dev=synthetic",
+        "CLIP_COMPARISON_LOCAL_LOAD": "true",
+        "CLIP_COMPARISON_LOCAL_PROFILE": str(profile),
+        "CLIP_COMPARISON_LOCAL_CONDITION": "low",
+        "CLIP_COMPARISON_LOCAL_PARITY_DRAFT": "true",
+        "CLIP_COMPARISON_LOCAL_PARITY_FILE": str(parity),
+    }
+    command = [
+        binary,
+        "inspect",
+        "--include-system-env-vars",
+        "--config",
+        str(config),
+        "scripts/evaluation/k6/comparison_load.js",
+    ]
+    result = subprocess.run(
+        command, env=env, capture_output=True, text=True, check=False, timeout=30
+    )
+    assert result.returncode == 0, result.stderr
+    pairs[0]["b"]["status"] = 503
+    parity.write_text(json.dumps(pairs))
+    assert (
+        subprocess.run(
+            command, env=env, capture_output=True, text=True, check=False, timeout=30
+        ).returncode
+        != 0
+    )
+    env.pop("CLIP_COMPARISON_LOCAL_PARITY_FILE")
+    assert (
+        subprocess.run(
+            command, env=env, capture_output=True, text=True, check=False, timeout=30
+        ).returncode
+        != 0
+    )
+
+
+@pytest.mark.skipif(shutil.which("k6") is None, reason="k6 is not installed")
 @pytest.mark.parametrize("condition", ["low", "normal", "burst"])
 def test_k6_inspect_selects_only_requested_condition(
     tmp_path: Path, prepared_inputs: Any, condition: str

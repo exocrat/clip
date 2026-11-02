@@ -12,8 +12,8 @@ and model must match the retained records. Search expected pages remain null;
 browse/detail expectations remain archive-derived. This helper does not verify
 review or authorize measurement. The binding preflight accepts this draft only
 with the explicit `--parity-draft` option, verifies its rebuilt contents and
-always reports measurement unauthorized. The combined run preflight and workload
-still refuse it and require the old ordered reference. The command's existing
+always reports measurement unauthorized. The combined run preflight still refuses
+it and requires the old ordered reference. The command's existing
 third positional argument is the version-2 binding file in draft mode.
 
 For offline preparation, the existing `comparison_profile_builder` also accepts
@@ -21,8 +21,9 @@ For offline preparation, the existing `comparison_profile_builder` also accepts
 argument. It checks the dataset-bound corpus, paired plan, selected cycle,
 rotation and worker-value shape, then creates a separate profile with null search
 expectations. This explicit draft path never authorizes measurement. The normal
-run preflight and the local workload still refuse these incomplete search cases;
-the real response parity gate and protocol review must be completed separately.
+run preflight still refuses these search cases. The local-only workload supports
+them in explicit draft mode after a supplied ten-case comparison; real-target
+response parity and protocol review must be completed separately.
 
 Copy `data/evaluation/workloads/ecs-lambda-parity-binding.template.json` to a
 new local file and fill all fields from the retained dataset/contract/model
@@ -51,8 +52,17 @@ The pure `correctParityDraftResponse` helper prepares per-request response
 checking for this proposed mode. It validates search status, shape, availability
 and applicable filters without an ordered expected page; browse and detail still
 require their exact expected response. A valid search response alone does not
-establish relevance or pre-run A/B parity. The workload does not call this helper,
-and it does not open any run gate.
+establish relevance or actual deployed A/B parity. The local workload calls it
+only in explicit draft mode; it does not open a real-target run gate.
+
+For local initialization checks, `CLIP_COMPARISON_LOCAL_PARITY_DRAFT=true`
+selects draft response validation and requires `CLIP_COMPARISON_LOCAL_PARITY_FILE`
+to identify a synthetic ten-case response-pair array. The workload compares the
+supplied pairs against its profile before reading the local session. Errors are
+sanitized. The file supplies declarations only: it does not prove their origin,
+review, deployment identity or freshness. The target remains loopback-only, and
+the ordinary run preflight does not accept this draft. `k6 inspect` may verify
+initialization; this instruction does not authorize `k6 run` or any measurement.
 
 For offline fixtures, `node scripts/evaluation/k6/comparison_search_parity_cli.mjs`
 reads one bounded JSON object on standard input. Its only top-level fields are
@@ -432,14 +442,14 @@ checks do not prove the runner actually used that profile.
 The offline staging helper checks the bound corpus, ordered reference, pair plan,
 selected run, exact profile bytes and declared parity with both local evidence
 hashes before creating a new private run folder.
-It copies the profile, schedule and the current six workload JavaScript files,
+It copies the profile, schedule and the current eight workload JavaScript files,
 checks each written file and writes `staged-files.json` with fingerprints and
 the selected run's condition. Each workload invocation must receive exactly that
 condition, and its report must select the same condition. It
 never starts k6, accepts a target or obtains a session.
 
 Copy `data/evaluation/workloads/ecs-lambda-module-hashes.template.json` to a new
-file and fill the six lowercase SHA-256 values from the independently reviewed
+file and fill the eight lowercase SHA-256 values from the independently reviewed
 workload files. The template's null values deliberately fail. Then use:
 
 ```sh
@@ -455,7 +465,7 @@ workload files. The template's null values deliberately fail. Then use:
 ```
 
 The selected profile must match the supplied hash, the schedule and main load
-script must match the paired plan, and all six JavaScript files must match the
+script must match the paired plan, and all eight JavaScript files must match the
 supplied module-hash list. The parity declaration must match the selected run's
 cycle and condition, and both evidence files must match their declared hashes.
 The staging record includes the parity-input hash; this checks supplied files,
