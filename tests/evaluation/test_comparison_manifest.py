@@ -18,6 +18,10 @@ class ComparisonManifestTests(unittest.TestCase):
 
     def test_template_rejects_run_values_and_extra_fields(self):
         value = copy.deepcopy(self.template)
+        value["schema_version"] = 1
+        with self.assertRaisesRegex(ValueError, "Unsupported manifest schema"):
+            validate_manifest(value, self.template)
+        value = copy.deepcopy(self.template)
         value["run"]["run_id"] = "A-low-r1"
         with self.assertRaisesRegex(
             ValueError, "Template must not contain run-specific"
@@ -42,6 +46,14 @@ class ComparisonManifestTests(unittest.TestCase):
         value = copy.deepcopy(self.template)
         value["workload"]["request_mix_per_ten"]["search"] = 4
         with self.assertRaisesRegex(ValueError, "Workload mix differs"):
+            validate_manifest(value, self.template)
+        value = copy.deepcopy(self.template)
+        value["workload"]["rotation_rule"] = "different"
+        with self.assertRaisesRegex(ValueError, "rotation rule differs"):
+            validate_manifest(value, self.template)
+        value = copy.deepcopy(self.template)
+        value["workload"]["rotation_seed"] = 1
+        with self.assertRaisesRegex(ValueError, "run-specific workload"):
             validate_manifest(value, self.template)
 
     def test_captured_record_checks_revision_data_telemetry_cost_and_run_evidence(self):
@@ -89,6 +101,7 @@ class ComparisonManifestTests(unittest.TestCase):
                 "generator_version": "k6 v2.3.0",
                 "load_script_sha256": "3" * 64,
                 "run_command_reference": "docs/evaluation/experiment/A-low-r1/command.md",
+                "rotation_seed": 2,
                 "sequence_start": 2,
             }
         )
@@ -125,6 +138,10 @@ class ComparisonManifestTests(unittest.TestCase):
             report,
             {"valid": True, "state": "captured", "measurement_authorized": False},
         )
+        value["workload"]["rotation_seed"] = 3
+        with self.assertRaisesRegex(ValueError, "does not match the rotation seed"):
+            validate_manifest(value, self.template)
+        value["workload"]["rotation_seed"] = 2
         value["evidence"]["derived_report_reference"] = value["evidence"][
             "raw_output_reference"
         ]

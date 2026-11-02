@@ -60,6 +60,7 @@ def prepared_inputs() -> tuple[dict[str, Any], bytes, dict[str, Any], dict[str, 
 
     paired_plan = cast(dict[str, Any], json.loads(PAIR_TEMPLATE.read_text()))
     paired_plan["plan_state"] = "planned"
+    paired_plan["rotation"]["seed"] = 0
     paired_plan["shared_inputs"] = {
         "dataset_fingerprint": FINGERPRINT,
         "index_fingerprint": "synthetic-index-v1",
@@ -71,7 +72,7 @@ def prepared_inputs() -> tuple[dict[str, Any], bytes, dict[str, Any], dict[str, 
     }
     for cycle in paired_plan["cycles"]:
         for pair_index, pair in enumerate(cycle["pairs"]):
-            pair["sequence_start"] = (pair_index + cycle["cycle"] - 1) % 10
+            pair["sequence_start"] = (cycle["cycle"] - 1) * 3 + pair_index
             pair["A_run_id"] = f"synthetic-c{cycle['cycle']}-p{pair_index}-A"
             pair["B_run_id"] = f"synthetic-c{cycle['cycle']}-p{pair_index}-B"
     return binding_plan, corpus_bytes, reference, paired_plan

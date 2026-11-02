@@ -1,7 +1,11 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "purpose": "offline-paired-run-plan-not-authorization",
   "plan_state": "template",
+  "rotation": {
+    "rule": "increment-one-per-pair-v1",
+    "seed": null
+  },
   "shared_inputs": {
     "dataset_fingerprint": null,
     "index_fingerprint": null,

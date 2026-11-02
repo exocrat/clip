@@ -61,6 +61,7 @@ def evidence(tmp_path):
             "generator_version": "k6 v2.3.0",
             "load_script_sha256": "4" * 64,
             "run_command_reference": "command.md",
+            "rotation_seed": 0,
             "sequence_start": 0,
         }
     )

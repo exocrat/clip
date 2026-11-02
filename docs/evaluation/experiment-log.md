@@ -36,8 +36,9 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
   authorize measurement, and has not yet been wired into a real-target runner.
 - The local workload now accepts one case-sequence start per traffic condition.
   The offline preflight can compare a supplied profile's starts and cases with
-  a selected cycle of the paired plan. The seed/rotation rule remains open, and
-  a future real-target runner must enforce this check before credentials.
+  a selected cycle of the paired plan. The user approved the seeded rotation
+  rule; the actual seed remains open, and a future real-target runner must
+  enforce these checks before credentials.
 - **EXP-02 Steps 3–5:** Local path, response and scheduled-workload preparation
   exists on `task/exp-02-workload`. A ten-case dataset-bound draft now has five
   browse and two detail expected responses plus three reviewed Hybrid query
@@ -66,6 +67,38 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 - **Measurements:** No ECS/Lambda comparison or final NFR run is recorded here.
 
 ## History
+
+### 2026-11-02 07:11:21 UTC — EXP-02 approved seeded rotation
+
+**Direction:** User approved generating the nine pair starts from a supplied
+integer seed 0–9, advancing one place per pair and wrapping after 9. Both A and
+B use the same start within a pair. The actual experiment seed remains blank.
+
+**Change:** Added the offline `comparison_rotation.py` generator and shared
+rule `increment-one-per-pair-v1`. The editable paired-plan and run-manifest
+templates now record the rule and an unfilled rotation seed, separately from
+the dataset seed; their schema versions are 2 because their shapes changed.
+The paired-plan validator checks every pair start against its seed and checks
+captured seeds against the plan. The per-run manifest validator checks the seed,
+rule and start against that run's cycle and condition. Version-1 record shapes
+are rejected. The synthetic fixture tests and preparation/k6 guides were
+updated. No frozen dataset or acceptance record was edited.
+
+**Checks:** One hundred focused rotation, plan, manifest, preflight, artifact,
+telemetry, binding and ordered-reference tests passed with warnings as errors.
+They cover the seed-3 wrap, invalid seeds/rules/starts, mismatched captured
+seeds and version-1 refusal. Strict Mypy, Black in-process formatting and
+`git diff --check` passed. The generator printed the expected nine starts for
+synthetic seed 3; both blank version-2 templates validated without authorizing
+a measurement. No workload, cloud, database, credential or external-service
+call occurred.
+
+**Remaining:** The actual seed must be selected and reviewed in the future run
+plan. The new offline command is documented in the EXP-02 preparation and k6
+guides; registration in the shared command registry awaits its coordinated
+writer reservation and current remote-work inspection, which this no-external-
+calls preparation scope does not permit. Owner review, future runner enforcement
+and all real measurement gates remain open. Result awaits user verification.
 
 ### 2026-11-02 07:05:05 UTC — EXP-02 per-condition case rotations
 

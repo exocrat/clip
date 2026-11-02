@@ -11,13 +11,25 @@ from typing import Any
 
 from scripts.evaluation.k6.comparison_manifest import TEMPLATE as MANIFEST_TEMPLATE
 from scripts.evaluation.k6.comparison_manifest import validate_manifest
+from scripts.evaluation.k6.comparison_rotation import (
+    CONDITIONS,
+    ROTATION_RULE,
+    rotation_start,
+    rotation_starts,
+)
 
 ROOT = Path(__file__).resolve().parents[3]
 TEMPLATE = ROOT / "data/evaluation/workloads/ecs-lambda-paired-plan.template.json"
 MAX_INPUT_BYTES = 2_000_000
-CONDITIONS = ("low", "normal", "burst")
 CONFIGURATION_ORDERS = (("A", "B"), ("B", "A"), ("A", "B"))
-TOP_KEYS = {"schema_version", "purpose", "plan_state", "shared_inputs", "cycles"}
+TOP_KEYS = {
+    "schema_version",
+    "purpose",
+    "plan_state",
+    "rotation",
+    "shared_inputs",
+    "cycles",
+}
 SHARED_KEYS = {
     "dataset_fingerprint",
     "index_fingerprint",
@@ -48,13 +60,22 @@ def validate_pair_plan(
 ) -> dict[str, Any]:
     """Validate a declared plan and optionally its 18 sanitized run records."""
     plan = _object(value, TOP_KEYS, "invalid_plan_shape")
-    if type(plan["schema_version"]) is not int or plan["schema_version"] != 1:
+    if type(plan["schema_version"]) is not int or plan["schema_version"] != 2:
         raise ValueError("unsupported_plan_version")
     if plan["purpose"] != "offline-paired-run-plan-not-authorization":
         raise ValueError("invalid_plan_purpose")
     state = plan["plan_state"]
     if not isinstance(state, str) or state not in {"template", "planned"}:
         raise ValueError("invalid_plan_state")
+
+    rotation = _object(plan["rotation"], {"rule", "seed"}, "invalid_rotation_shape")
+    if rotation["rule"] != ROTATION_RULE:
+        raise ValueError("invalid_rotation_rule")
+    if state == "template":
+        if rotation["seed"] is not None:
+            raise ValueError("template_contains_rotation_seed")
+    else:
+        rotation_starts(rotation["seed"])
 
     shared = _object(plan["shared_inputs"], SHARED_KEYS, "invalid_shared_inputs")
     if not isinstance(plan["cycles"], list) or len(plan["cycles"]) != 3:
@@ -88,6 +109,10 @@ def validate_pair_plan(
             sequence_start = pair["sequence_start"]
             if type(sequence_start) is not int or not 0 <= sequence_start < 10:
                 raise ValueError("invalid_sequence_start")
+            if sequence_start != rotation_start(
+                rotation["seed"], index, expected_condition
+            ):
+                raise ValueError("sequence_start_rotation_mismatch")
             for config in ("A", "B"):
                 run_id = pair[f"{config}_run_id"]
                 if not isinstance(run_id, str) or not RUN_ID.fullmatch(run_id):
@@ -158,6 +183,7 @@ def validate_pair_plan(
                     for key in ("configuration", "condition", "repetition")
                 )
                 or workload["sequence_start"] != expected["sequence_start"]
+                or workload["rotation_seed"] != rotation["seed"]
             ):
                 raise ValueError("captured_run_binding_mismatch")
             dataset = manifest["dataset"]

@@ -84,13 +84,29 @@ artifact and is not accepted as an EXP-02 comparison corpus by this check.
 
 ## Planned A/B run order
 
-Before any future comparison, make a separate copy of
+Before any future comparison, make a separate copy of the version-2
 `data/evaluation/workloads/ecs-lambda-paired-plan.template.json`. Fill its shared
 dataset/index/database-settings, schedule, case-corpus and load-script
-fingerprints, plus the generator version. For each of the nine low/normal/burst
-pairs, provide distinct A and B run IDs and the same `sequence_start` value for
-both members of that pair. The sequence start must be an integer from 0 to 9;
-this checker validates the supplied value but does not choose a seed or rotation.
+fingerprints, plus the generator version. Choose and record one rotation seed
+from 0 through 9; this is separate from the dataset seed. The approved
+`increment-one-per-pair-v1` rule starts at that number and advances by one for
+each of the nine pairs in cycle/condition order, wrapping from 9 to 0. Generate
+the starts offline with the chosen seed, for example:
+
+```sh
+.venv/bin/python -m scripts.evaluation.k6.comparison_rotation --seed 3
+```
+
+This example produces `3, 4, 5, 6, 7, 8, 9, 0, 1`; it does not select the real
+seed or authorize a run. Enter the generated `sequence_start` for each pair and
+distinct A and B run IDs into the copy. The plan checker rejects a missing seed,
+an altered rule or any start inconsistent with the seed. A and B share each
+pair's start. The editable version-2 run-manifest template also records the
+rotation rule, seed and start separately from the dataset seed. A completed
+capture must match both the rule and its cycle/condition; the paired check also
+requires the seed to match the plan. No frozen dataset or acceptance manifest is
+changed by preparing these copies. Version-1 plan and run-record shapes are not
+accepted by these version-2 validators.
 
 Check the local plan with:
 
@@ -165,7 +181,7 @@ values apply to both A and B. Supplying only one of the two options fails. When
 both are omitted, `workload_profile_checked` is false: the profile has not been
 checked. This option does not validate capacity, timeout, target, authentication
 or every other execution gate, and is not yet enforced by a real-target runner.
-The seed and rule used to choose the starts remain open pre-run inputs.
+The rule is approved; the actual seed remains an open pre-run input.
 
 ## NFR browse and Hybrid case drafts
 

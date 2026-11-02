@@ -10,6 +10,8 @@ import re
 import sys
 from typing import Any
 
+from scripts.evaluation.k6.comparison_rotation import ROTATION_RULE, rotation_start
+
 ROOT = Path(__file__).resolve().parents[3]
 TEMPLATE = ROOT / "data/evaluation/workloads/ecs-lambda-run-manifest.template.json"
 SENSITIVE_KEY = re.compile(
@@ -80,7 +82,8 @@ def validate_manifest(
     """Check exact schema, frozen workload constants, and safe capture values."""
     _shape(template, value)
     if (
-        value["schema_version"] != 1
+        type(value["schema_version"]) is not int
+        or value["schema_version"] != 2
         or value["manifest_kind"] != "ecs-lambda-run-capture"
     ):
         raise ValueError("Unsupported manifest schema")
@@ -97,6 +100,8 @@ def validate_manifest(
         "detail": 2,
     }:
         raise ValueError("Workload mix differs from the approved design")
+    if value["workload"]["rotation_rule"] != ROTATION_RULE:
+        raise ValueError("Workload rotation rule differs from the approved rule")
     if [
         value["workload"][field]
         for field in (
@@ -141,6 +146,7 @@ def validate_manifest(
             "generator_version",
             "load_script_sha256",
             "run_command_reference",
+            "rotation_seed",
             "sequence_start",
         )
         if any(value["workload"][key] is not None for key in placeholders):
@@ -270,6 +276,10 @@ def validate_manifest(
         or not 0 <= value["workload"]["sequence_start"] < 10
     ):
         raise ValueError("Invalid sequence start")
+    if value["workload"]["sequence_start"] != rotation_start(
+        value["workload"]["rotation_seed"], run["repetition"], run["condition"]
+    ):
+        raise ValueError("Sequence start does not match the rotation seed and rule")
     cost_start = _utc(
         value["cost_inputs"]["interval_start_utc"], "cost_inputs.interval_start_utc"
     )

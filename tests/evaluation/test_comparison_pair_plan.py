@@ -11,11 +11,13 @@ import pytest
 
 from scripts.evaluation.k6.comparison_pair_plan import TEMPLATE, validate_pair_plan
 from scripts.evaluation.k6.comparison_manifest import TEMPLATE as MANIFEST_TEMPLATE
+from scripts.evaluation.k6.comparison_rotation import rotation_start
 
 
 def planned_plan() -> dict[str, Any]:
     plan = cast(dict[str, Any], json.loads(TEMPLATE.read_text()))
     plan["plan_state"] = "planned"
+    plan["rotation"]["seed"] = 0
     plan["shared_inputs"] = {
         "dataset_fingerprint": "sha256:" + "a" * 64,
         "index_fingerprint": "synthetic-index-v1",
@@ -27,8 +29,8 @@ def planned_plan() -> dict[str, Any]:
     }
     counter = 1
     for cycle in plan["cycles"]:
-        for pair in cycle["pairs"]:
-            pair["sequence_start"] = (cycle["cycle"] - 1) % 10
+        for pair_index, pair in enumerate(cycle["pairs"]):
+            pair["sequence_start"] = (cycle["cycle"] - 1) * 3 + pair_index
             pair["A_run_id"] = f"synthetic-{counter:02d}-A"
             pair["B_run_id"] = f"synthetic-{counter:02d}-B"
             counter += 1
@@ -107,6 +109,7 @@ def captured_manifests(plan: dict[str, Any]) -> list[dict[str, Any]]:
                         "generator_version": shared["generator_version"],
                         "load_script_sha256": shared["load_script_sha256"],
                         "run_command_reference": "synthetic-command.md",
+                        "rotation_seed": plan["rotation"]["seed"],
                         "sequence_start": pair["sequence_start"],
                     }
                 )
@@ -152,6 +155,17 @@ def test_template_is_valid_but_never_authorizes_measurement() -> None:
     }
 
 
+def test_template_rejects_old_version_and_prefilled_seed() -> None:
+    template = json.loads(TEMPLATE.read_text())
+    template["schema_version"] = 1
+    with pytest.raises(ValueError, match="unsupported_plan_version"):
+        validate_pair_plan(template)
+    template = json.loads(TEMPLATE.read_text())
+    template["rotation"]["seed"] = 1
+    with pytest.raises(ValueError, match="template_contains_rotation_seed"):
+        validate_pair_plan(template)
+
+
 def test_complete_plan_checks_three_cycles_nine_pairs_and_order() -> None:
     result = validate_pair_plan(planned_plan())
     assert result["state"] == "planned"
@@ -160,6 +174,23 @@ def test_complete_plan_checks_three_cycles_nine_pairs_and_order() -> None:
     assert result["cycle_configuration_order"] == [["A", "B"], ["B", "A"], ["A", "B"]]
     assert result["shared_inputs_bound"] is True
     assert result["measurement_authorized"] is False
+
+
+def test_seeded_wrap_is_consistent_in_plan_and_captured_manifests() -> None:
+    plan = planned_plan()
+    plan["rotation"]["seed"] = 3
+    for cycle in plan["cycles"]:
+        for pair in cycle["pairs"]:
+            pair["sequence_start"] = rotation_start(
+                3, cycle["cycle"], pair["condition"]
+            )
+    assert [
+        pair["sequence_start"] for cycle in plan["cycles"] for pair in cycle["pairs"]
+    ] == [3, 4, 5, 6, 7, 8, 9, 0, 1]
+    assert (
+        validate_pair_plan(plan, captured_manifests(plan))["recorded_order_checked"]
+        is True
+    )
 
 
 @pytest.mark.parametrize(
@@ -177,6 +208,18 @@ def test_complete_plan_checks_three_cycles_nine_pairs_and_order() -> None:
         (
             lambda plan: plan["shared_inputs"].update(case_corpus_sha256="wrong"),
             "invalid_shared_fingerprint",
+        ),
+        (
+            lambda plan: plan["rotation"].update(seed=None),
+            "rotation_seed_must_be_integer_zero_to_nine",
+        ),
+        (
+            lambda plan: plan["rotation"].update(rule="different"),
+            "invalid_rotation_rule",
+        ),
+        (
+            lambda plan: plan["cycles"][0]["pairs"][0].update(sequence_start=1),
+            "sequence_start_rotation_mismatch",
         ),
     ],
 )
@@ -252,7 +295,7 @@ def test_touching_recorded_boundaries_are_allowed() -> None:
     [
         (
             lambda manifest: manifest["workload"].update(sequence_start=9),
-            "captured_run_binding_mismatch",
+            "Sequence start does not match the rotation seed and rule",
         ),
         (
             lambda manifest: manifest["run"].update(configuration="B"),
@@ -280,6 +323,14 @@ def test_incomplete_capture_set_and_template_capture_are_refused() -> None:
         validate_pair_plan(plan, captured_manifests(plan)[:-1])
     with pytest.raises(ValueError, match="captured_manifests_require_planned_plan"):
         validate_pair_plan(json.loads(TEMPLATE.read_text()), [])
+
+
+def test_capture_with_different_valid_seed_is_refused() -> None:
+    plan = planned_plan()
+    manifests = captured_manifests(plan)
+    manifests[0]["workload"].update(rotation_seed=1, sequence_start=1)
+    with pytest.raises(ValueError, match="captured_run_binding_mismatch"):
+        validate_pair_plan(plan, manifests)
 
 
 def test_cli_checks_template_offline_without_starting_workload(tmp_path: Path) -> None:

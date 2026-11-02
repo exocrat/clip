@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "manifest_kind": "ecs-lambda-run-capture",
   "manifest_state": "template",
   "measurement_state": "record_only_not_authorization",
@@ -46,6 +46,8 @@
     "generator_version": null,
     "load_script_sha256": null,
     "run_command_reference": null,
+    "rotation_rule": "increment-one-per-pair-v1",
+    "rotation_seed": null,
     "sequence_start": null,
     "request_mix_per_ten": { "browse": 5, "search": 3, "detail": 2 },
     "warmup_seconds": 60,

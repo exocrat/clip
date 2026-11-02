@@ -94,11 +94,23 @@ the script itself does not open or verify that plan.
 
 The checked-in `ecs-lambda-comparison-schedule-v1.json` is a design schedule,
 not an executable final manifest. Dataset-bound expected cases, their reviewed
-ten-case sequence and rotation seed, VU caps, real authenticated-session limits,
+ten-case sequence and selected rotation seed, VU caps, real authenticated-session limits,
 deployed parity, run/cost caps, telemetry and cleanup approval remain open. The
 full k6 script is not run until those inputs are reviewed; the separate runner
 still executes only bounded local pilots. This schedule preparation creates no
 performance or NFR evidence.
+
+The version-2 editable paired-plan and per-run manifest templates record the
+approved `increment-one-per-pair-v1` rule and leave the rotation seed blank.
+To print the nine starts for a synthetic example seed without running k6:
+
+```sh
+.venv/bin/python -m scripts.evaluation.k6.comparison_rotation --seed 3
+```
+
+The generator is offline and does not choose the real seed or authorize a run.
+The paired-plan and run-manifest validators check each start against its seed.
+These version-2 validators reject version-1 record shapes.
 
 `comparison_report.py` reads k6's JSON output without modifying it and writes a
 separate derived report. It reports scheduled, issued, HTTP, dropped, incomplete,
