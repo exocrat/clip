@@ -79,6 +79,42 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 12:14:17 UTC — NFR preparation follow-up inventory
+
+**Direction:** User verified an offline review across NFR-01–08. Reviewed the
+canonical task procedures, measurement design, existing workload files and
+evaluation scripts. This updates the 2026-11-01 inventory, not an NFR result.
+
+**Findings and next work:**
+
+- **NFR-01/02 (SE-01, C):** Dataset-bound case preparation, draft validators and
+  synthetic denominator reporting exist. Draft profiles are not approved run
+  profiles; final cases, reviewed timing and the real authorized runner remain.
+  Browse uses successful requests as its denominator; search counts all issued
+  eligible requests, including failures. Mohit is handling actual test cases.
+- **NFR-03 (INT-01):** The documented integrated mix includes reads and a
+  controlled write; the comparison read workload does not satisfy it. Its
+  integrated runner, account/write reconciliation and approved profile remain
+  task-owned prerequisites. No substitute workload is authorized here.
+- **NFR-04 (SE-01, C):** `search.py` supplies format and Success@5 arithmetic;
+  final dataset binding and real ranking retrieval remain SE-01 work. Retained
+  records report DATA-READY accepted, but this review did not reverify it or
+  establish that the deployed/evaluated ranking path matches those labels.
+- **NFR-05 (CN-01, D):** The design calls for two real clients and measures
+  submission to recipient display. A dedicated integrated harness, approved
+  profile and real messaging/polling checks remain; the read timer is not it.
+- **NFR-06/07 (INT-01):** The design calls for dedicated runtime-loss and
+  isolated database-restore observers and approved plans. Those are separate
+  integration tasks; no cloud or destructive action is authorized here.
+- **NFR-08 (INT-01/CLOSE-00):** Comparison cost helpers cover only experiment
+  arithmetic. Full-project actual spend, delayed costs, reserve and final budget
+  reconciliation remain separate owner work after relevant spending.
+
+**Checks and limits:** Repository/document inventory and whitespace check only;
+no tests, workload, provider call or measurement. Exact later implementation
+interfaces and human reviews remain with their owning tasks. This review awaits
+user verification; no NFR is claimed to have passed.
+
 ### 2026-11-02 12:12:20 UTC — EXP-02 synthetic local preparation flow
 
 **Direction:** User assigned actual test cases to Mohit and temporary-account
