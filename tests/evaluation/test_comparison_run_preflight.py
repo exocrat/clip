@@ -788,7 +788,10 @@ def test_stage_run_checks_profile_modules_and_schedule_before_writing(
     tmp_path: Path, prepared_inputs: Any
 ) -> None:
     from scripts.evaluation.k6.comparison_offline_prepare import FILE_FIELDS
-    from scripts.evaluation.k6.comparison_stage_run import MODULES, stage_run
+    from scripts.evaluation.k6.comparison_stage_run import (
+        MODULES,
+        stage_run as stage_checked_run,
+    )
 
     binding, corpus, reference, supplied_plan = prepared_inputs
     plan = deepcopy(supplied_plan)
@@ -820,6 +823,46 @@ def test_stage_run_checks_profile_modules_and_schedule_before_writing(
     digest = hashlib.sha256(profile).hexdigest()
     root = tmp_path / "staged"
     root.mkdir()
+    evidence_root = tmp_path / "parity-evidence"
+    evidence_root.mkdir()
+    evidence_file = evidence_root / "synthetic.json"
+    evidence_file.write_text('{"synthetic":true}')
+    parity_template = json.loads(
+        Path("data/evaluation/workloads/ecs-lambda-parity.template.json").read_text()
+    )
+
+    def make_parity(condition: str, pair_index: int) -> dict[str, Any]:
+        parity: dict[str, Any] = deepcopy(parity_template)
+        parity.update(cycle=1, condition=condition)
+        common = {
+            "observed_at_utc": "2026-11-01T10:00:00Z",
+            "dataset_fingerprint": plan["shared_inputs"]["dataset_fingerprint"],
+            "schema_version": reference["schema_version"],
+            "index_fingerprint": plan["shared_inputs"]["index_fingerprint"],
+            "database_settings_sha256": plan["shared_inputs"][
+                "database_settings_sha256"
+            ],
+            "search_contract_revision": reference["search_contract_revision"],
+            "search_implementation_revision": binding["application_revision"],
+            "model_revision": reference["model_revision"],
+            "evidence_reference": evidence_file.name,
+            "evidence_sha256": hashlib.sha256(evidence_file.read_bytes()).hexdigest(),
+        }
+        for side in ("A", "B"):
+            parity["configurations"][side] = {
+                "run_id": f"synthetic-c1-p{pair_index}-{side}",
+                **common,
+            }
+        return parity
+
+    parity_path = tmp_path / "parity-low.json"
+    parity_path.write_text(json.dumps(make_parity("low", 0)))
+
+    def stage_run(*args: Any) -> dict[str, Any]:
+        return stage_checked_run(
+            *args, parity_path=parity_path, parity_evidence_root=evidence_root
+        )
+
     template = json.loads(
         Path(
             "data/evaluation/workloads/ecs-lambda-module-hashes.template.json"
@@ -852,6 +895,61 @@ def test_stage_run_checks_profile_modules_and_schedule_before_writing(
             root,
         )
     paths["paired_plan"].write_text(json.dumps(plan))
+    assert list(root.iterdir()) == []
+    mismatch_parity = make_parity("normal", 1)
+    parity_path.write_text(json.dumps(mismatch_parity))
+    with pytest.raises(ValueError, match="selected_run_parity_mismatch"):
+        stage_run(
+            paths,
+            1,
+            "synthetic-c1-p0-A",
+            digest,
+            source_dir,
+            schedule_path,
+            module_hashes,
+            root,
+        )
+    parity_path.write_text(json.dumps(make_parity("low", 0)))
+    evidence_file.write_text('{"synthetic":false}')
+    with pytest.raises(ValueError, match="parity_evidence_hash_mismatch"):
+        stage_run(
+            paths,
+            1,
+            "synthetic-c1-p0-A",
+            digest,
+            source_dir,
+            schedule_path,
+            module_hashes,
+            root,
+        )
+    evidence_file.write_text('{"synthetic":true}')
+    evidence_file.unlink()
+    with pytest.raises(OSError):
+        stage_run(
+            paths,
+            1,
+            "synthetic-c1-p0-A",
+            digest,
+            source_dir,
+            schedule_path,
+            module_hashes,
+            root,
+        )
+    evidence_file.write_text('{"synthetic":true}')
+    original_parity = parity_path.read_bytes()
+    parity_path.unlink()
+    with pytest.raises(OSError):
+        stage_run(
+            paths,
+            1,
+            "synthetic-c1-p0-A",
+            digest,
+            source_dir,
+            schedule_path,
+            module_hashes,
+            root,
+        )
+    parity_path.write_bytes(original_parity)
     assert list(root.iterdir()) == []
     wrong = dict(module_hashes)
     wrong["core.js"] = "0" * 64
@@ -935,6 +1033,8 @@ def test_stage_run_checks_profile_modules_and_schedule_before_writing(
     assert set(result["files"]) == set(MODULES) | {"profile.json", "schedule.json"}
     assert json.loads((folder / "staged-files.json").read_text()) == result
     assert result["actual_use_verified"] is False
+    assert result["parity_evidence_hashes_checked"] is True
+    assert result["deployed_parity_verified"] is False
     assert result["condition"] == "low"
     assert result["measurement_authorized"] is False
     with pytest.raises(FileExistsError):
@@ -950,6 +1050,8 @@ def test_stage_run_checks_profile_modules_and_schedule_before_writing(
         )
     hashes_path = tmp_path / "module-hashes.json"
     hashes_path.write_text(json.dumps(module_hashes))
+    parity_normal_path = tmp_path / "parity-normal.json"
+    parity_normal_path.write_text(json.dumps(make_parity("normal", 1)))
     command = [sys.executable, "-m", "scripts.evaluation.k6.comparison_stage_run"]
     for name in FILE_FIELDS:
         command.extend(["--" + name.replace("_", "-"), str(paths[name])])
@@ -969,6 +1071,10 @@ def test_stage_run_checks_profile_modules_and_schedule_before_writing(
             str(schedule_path),
             "--staging-root",
             str(root),
+            "--parity",
+            str(parity_normal_path),
+            "--parity-evidence-root",
+            str(evidence_root),
         ]
     )
     completed = subprocess.run(command, capture_output=True, text=True, check=False)

@@ -79,6 +79,29 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 11:13:27 UTC — EXP-02 parity-gated staging
+
+**Direction:** User verified connecting declared A/B parity and local evidence
+checks to staging. Inputs and files were synthetic; no session, workload, cloud,
+database, deployed API or external service was used.
+
+**Change:** The stager now requires a pair-parity record and evidence root. It
+reuses the full parity check and existing safe local file hashing, requires both
+evidence hashes to match, and requires the record's cycle and condition to
+match the selected planned run before making a staging folder. The staging
+record includes the supplied parity-record hash and explicitly marks deployed
+parity unverified. The CLI requires both new inputs. Tests cover missing and
+altered evidence, missing record, wrong pair, valid staging and CLI use. The
+guide and README describe the required inputs and remaining gates.
+
+**Checks and limits:** 82 focused synthetic staging, parity and artifact tests,
+strict Mypy, Black formatting and whitespace checks passed. File hashes and
+matching declarations do not prove source, content, review, observation freshness
+or actual deployed parity. The stager does not obtain a session, run k6, enforce
+real target authorization or approve measurement. Real runner integration and
+owner/deployment gates remain open. Result awaits user verification.
+
+
 ### 2026-11-02 11:06:55 UTC — EXP-02 per-condition workload correction
 
 **Direction:** User verified fixing the mismatch between one-condition planned

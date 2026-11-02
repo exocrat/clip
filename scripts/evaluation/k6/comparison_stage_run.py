@@ -10,6 +10,7 @@ from pathlib import Path
 import re
 from typing import Any, Mapping
 
+from scripts.evaluation.k6.comparison_declared_parity import validate_declared_parity
 from scripts.evaluation.k6.comparison_evidence_capture import _verify_file, _write_new
 from scripts.evaluation.k6.comparison_offline_prepare import FILE_FIELDS, _read_local
 from scripts.evaluation.k6.comparison_run_preflight import validate_run_inputs
@@ -33,6 +34,9 @@ def stage_run(
     schedule_path: Path,
     expected_module_hashes: Any,
     staging_root: Path,
+    *,
+    parity_path: Path,
+    parity_evidence_root: Path,
 ) -> dict[str, Any]:
     """Validate one planned run and stage exact bounded bytes in a new folder.
 
@@ -76,6 +80,22 @@ def stage_run(
     ]
     if len(matches) != 1:
         raise ValueError("run_not_in_selected_cycle")
+    parity_bytes = _read_local(parity_path)
+    parity = json.loads(parity_bytes)
+    parity_result = validate_declared_parity(
+        parity,
+        binding,
+        data["corpus"],
+        reference,
+        plan,
+        evidence_root=parity_evidence_root,
+    )
+    if (
+        parity["cycle"] != cycle
+        or parity["condition"] != matches[0]["condition"]
+        or not parity_result["evidence_hashes_match"]
+    ):
+        raise ValueError("selected_run_parity_mismatch")
     module_bytes = {name: _read_local(source_dir / name) for name in MODULES}
     for name, content in module_bytes.items():
         expected = expected_module_hashes[name]
@@ -108,6 +128,9 @@ def stage_run(
         "run_id": run_id,
         "cycle": cycle,
         "condition": matches[0]["condition"],
+        "parity_record_sha256": hashlib.sha256(parity_bytes).hexdigest(),
+        "parity_evidence_hashes_checked": True,
+        "deployed_parity_verified": False,
         "files": {
             name: hashlib.sha256(content).hexdigest()
             for name, content in sorted(files.items())
@@ -149,6 +172,8 @@ def main() -> None:
     parser.add_argument("--source-dir", type=Path, required=True)
     parser.add_argument("--schedule", type=Path, required=True)
     parser.add_argument("--staging-root", type=Path, required=True)
+    parser.add_argument("--parity", type=Path, required=True)
+    parser.add_argument("--parity-evidence-root", type=Path, required=True)
     args = parser.parse_args()
     try:
         stage_run(
@@ -160,6 +185,8 @@ def main() -> None:
             args.schedule,
             json.loads(_read_local(args.module_hashes)),
             args.staging_root,
+            parity_path=args.parity,
+            parity_evidence_root=args.parity_evidence_root,
         )
         print(
             json.dumps(

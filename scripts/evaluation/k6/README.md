@@ -309,6 +309,7 @@ explains incomplete captures and required privacy review; this is not a runner.
 `comparison_declared_parity.py` compares supplied A/B dataset, schema, index,
 database and search/model declarations to the bound plan and reference. It can optionally verify local evidence hashes; it does not prove deployment parity. See the [preparation guide](../../../docs/evaluation/comparison-preparation-inputs.md#declared-ab-data-and-search-parity).
 
-`comparison_stage_run.py` stages a checked profile, schedule and fixed set of
-workload modules without running them. The [preparation guide](../../../docs/evaluation/comparison-preparation-inputs.md#stage-the-files-for-one-planned-run)
+`comparison_stage_run.py` checks selected-pair parity declarations and local
+evidence hashes, then stages a profile, schedule and fixed set of workload
+modules without running them. The [preparation guide](../../../docs/evaluation/comparison-preparation-inputs.md#stage-the-files-for-one-planned-run)
 describes the fingerprint inputs and remaining approval and use checks.

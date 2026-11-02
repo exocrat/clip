@@ -316,7 +316,8 @@ checks do not prove the runner actually used that profile.
 ## Stage the files for one planned run
 
 The offline staging helper checks the bound corpus, ordered reference, pair plan,
-selected run and exact profile bytes before creating a new private run folder.
+selected run, exact profile bytes and declared parity with both local evidence
+hashes before creating a new private run folder.
 It copies the profile, schedule and the current six workload JavaScript files,
 checks each written file and writes `staged-files.json` with fingerprints and
 the selected run's condition. Each workload invocation must receive exactly that
@@ -335,12 +336,17 @@ workload files. The template's null values deliberately fail. Then use:
   --expected-profile-sha256 EXPECTED_SHA256 --module-hashes module-hashes.json \
   --source-dir scripts/evaluation/k6 \
   --schedule data/evaluation/workloads/ecs-lambda-comparison-schedule-v1.json \
+  --parity parity.json --parity-evidence-root path/to/evidence \
   --staging-root path/to/existing-local-folder
 ```
 
 The selected profile must match the supplied hash, the schedule and main load
 script must match the paired plan, and all six JavaScript files must match the
-supplied module-hash list. The plan does not currently bind the other five
+supplied module-hash list. The parity declaration must match the selected run's
+cycle and condition, and both evidence files must match their declared hashes.
+The staging record includes the parity-input hash; this checks supplied files,
+not deployed parity, observation freshness, evidence contents or human review.
+The plan does not currently bind the other five
 module hashes: their review and the list's provenance remain separate gates.
 The staged files preserve the current relative imports; if the workload adds
 more dependencies, the fixed list and tests need review. Existing run folders
