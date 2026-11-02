@@ -1646,6 +1646,8 @@ def test_parity_draft_staging_requires_matching_response_pairs(
         FILE_FIELDS,
         prepare_inputs,
     )
+    from scripts.evaluation.k6.comparison_mock_runner import FAKE_SESSION, simulate_run
+    from scripts.evaluation.k6.comparison_session_handoff import SESSION_VARIABLE
     from scripts.evaluation.k6.comparison_stage_run import MODULES, stage_run
 
     old_binding, _, old_reference, old_plan = prepared_inputs
@@ -1755,11 +1757,40 @@ def test_parity_draft_staging_requires_matching_response_pairs(
     with pytest.raises(ValueError, match="response_pairs_required"):
         stage_run(*args, **kwargs)
     pairs[0]["b"]["status"] = 503
+
+    class UnreadableEnvironment(dict[str, str]):
+        def get(self, key: str, default: Any = None) -> Any:
+            raise AssertionError("session accessed before parity check")
+
+    refused = simulate_run(
+        paths,
+        1,
+        run_id,
+        profile_hash,
+        UnreadableEnvironment(),
+        parity_response_pairs=pairs,
+    )
+    assert refused["events"][-1] == "simulated_parity_refused"
+    assert refused["requests_sent"] is False
     pair_file.write_text(json.dumps(pairs))
     with pytest.raises(ValueError, match="response_parity_mismatch"):
         stage_run(*args, **kwargs, response_pairs_path=pair_file)
     assert not (stage_root / run_id).exists()
     pairs[0]["b"]["status"] = 200
+    simulated = simulate_run(
+        paths,
+        1,
+        run_id,
+        profile_hash,
+        {SESSION_VARIABLE: FAKE_SESSION},
+        parity_response_pairs=pairs,
+    )
+    assert simulated["events"][-3:] == [
+        "simulated_parity_passed",
+        "simulated_session",
+        "simulated_workload",
+    ]
+    assert simulated["measurement_authorized"] is False
     pair_file.write_text(json.dumps(pairs))
     result = stage_run(*args, **kwargs, response_pairs_path=pair_file)
     assert result["response_parity_checked"] is True

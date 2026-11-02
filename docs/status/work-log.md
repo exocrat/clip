@@ -1,5 +1,11 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### EXP-02 mock parity ordering — 2026-11-02 19:21:21 UTC
+
+The local mock validates all supplied synthetic response pairs before reading
+a fake session; mismatch and success tests passed. This is not a real runner
+or deployed parity. [Experiment log](../evaluation/experiment-log.md).
+
 ### EXP-02 parity preflight CLI — 2026-11-02 19:19:34 UTC
 
 The offline combined preflight now supports the explicit parity draft and

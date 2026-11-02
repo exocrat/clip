@@ -779,3 +779,8 @@ local check does not establish where responses came from or verify a deployed
 target, review, relevance, or authorization. The local-only k6 workload still
 requires its separate parity-draft inputs, and a real-target runner remains to
 be implemented. Never put credentials or private responses in the pair file.
+
+The in-memory `comparison_mock_runner.simulate_run` also accepts explicit
+synthetic `parity_response_pairs`. It refuses mismatches before reading the
+fake session and simulates the later steps only after all pairs match. This
+is a local test double: it sends no requests and never authorizes a run.

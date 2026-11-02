@@ -76,6 +76,19 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 19:21:21 UTC — EXP-02 mock parity ordering
+
+Extended the existing in-memory mock runner to accept explicitly supplied
+synthetic parity response pairs. It validates the dataset-bound draft and all
+ten pairs before accessing the fake session, and reports a refusal without
+request or session access for a mismatch. Matching inputs simulate later events
+only; this is not a real runner or deployed parity evidence. The focused
+parity and original mock-order tests passed (2 tests, warnings as errors).
+Mypy passed using explicit package bases; an initial file-path invocation
+failed because it resolved the same module under two names.
+No workload, cloud action or real session occurred.
+
+
 ### 2026-11-02 19:19:34 UTC — EXP-02 parity input preflight command
 
 The offline combined preflight now accepts an explicit `--parity-draft` flag
