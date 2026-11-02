@@ -1155,7 +1155,7 @@ def test_k6_inspect_selects_only_requested_condition(
 
 
 def test_offline_preparation_components_work_together_without_a_run(
-    tmp_path: Path, prepared_inputs: Any
+    tmp_path: Path, prepared_inputs: Any, monkeypatch: Any
 ) -> None:
     """Exercise connected local components using only fabricated inputs and metrics."""
     from scripts.evaluation.k6.comparison_artifacts import _hash_artifact
@@ -1325,19 +1325,34 @@ def test_offline_preparation_components_work_together_without_a_run(
         flow_capture,
     )
     kwargs = {"parity_path": parity_path, "parity_evidence_root": evidence_root}
+    from scripts.evaluation.k6 import comparison_local_preparation_flow as flow_module
+
+    session_calls = []
+    original_handoff = flow_module.prepare_session_environment
+
+    def record_handoff(*args):
+        session_calls.append(True)
+        return original_handoff(*args)
+
+    monkeypatch.setattr(flow_module, "prepare_session_environment", record_handoff)
     with pytest.raises(ValueError, match="all_input_paths_required"):
         prepare_synthetic_evidence({}, *arguments[1:], **kwargs)
     assert not list(flow_stage.iterdir())
     assert not list(flow_capture.iterdir())
+    assert not session_calls
     observation.write_text('{"synthetic":false}')
     with pytest.raises(ValueError, match="parity_evidence_hash_mismatch"):
         prepare_synthetic_evidence(*arguments, **kwargs)
     assert not list(flow_stage.iterdir())
     assert not list(flow_capture.iterdir())
+    assert not session_calls
     observation.write_text('{"synthetic":true}')
     flow = prepare_synthetic_evidence(*arguments, **kwargs)
     assert flow["requests_sent"] is False
     assert flow["measurement_authorized"] is False
+    assert flow["events"] == ["staged", "fake_session", "fake_workload", "captured"]
+    assert len(session_calls) == 1
     captured_report = json.loads((flow_capture / run_id / "report.json").read_bytes())
     assert captured_report["synthetic_fixture"] is True
     assert captured_report["delivery_complete"] is False
+    assert fake_session not in (flow_capture / run_id / "report.json").read_text()

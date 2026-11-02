@@ -240,8 +240,10 @@ check all required gates before obtaining a session or sending requests.
 
 `comparison_local_preparation_flow.py` connects the existing input and declared
 parity checks, local staging, report builder and evidence capture as a Python
-helper. It never reads a session or invokes k6 or a network client. It writes
-one fixed, explicitly labeled synthetic dropped-arrival point and a labeled
+helper. After staging and input preflight, it passes a fixed fake session through
+the existing handoff and clears the temporary mapping. It never reads the real
+environment or invokes k6 or a network client. Its fake workload writes one
+fixed, explicitly labeled synthetic dropped-arrival point and a labeled
 synthetic report; these are fixtures, not run results. Staging and capture use
 separate new folders. Missing inputs fail before capture. If a later step fails,
 an already staged folder may remain for inspection; it is not a completed run.

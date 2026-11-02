@@ -79,6 +79,24 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 12:20:07 UTC — EXP-02 offline control-flow simulation
+
+**Direction:** User verified extending the local control flow with a fake
+session and fake workload. No real session, process, request or experiment.
+
+**Change:** The existing local preparation flow stages and checks inputs before
+passing a hard-coded fake session through the handoff helper, clears its mapping,
+and produces the previously labeled synthetic metric and report. It exposes a
+fixed event sequence and has no launcher or network interface. Focused tests
+observe that missing inputs or mismatched parity evidence stop before the fake
+session helper; successful synthetic output contains no fake session. Two
+synthetic tests, strict Mypy, Black formatting and whitespace checks passed.
+
+**Limit:** This demonstrates local ordering with fixed doubles, not the actual
+runner's security, target, deployment, timing, account access or readiness. The
+future real runner and its owner-reviewed interfaces remain open. Result awaits
+user verification.
+
 ### 2026-11-02 12:14:17 UTC — NFR preparation follow-up inventory
 
 **Direction:** User verified an offline review across NFR-01–08. Reviewed the

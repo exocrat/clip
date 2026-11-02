@@ -1,7 +1,7 @@
 """Connect local preparation components using a fixed synthetic metric only.
 
-This is not an experiment runner: it never reads a session, starts a process,
-or sends requests. Its output is explicitly synthetic and cannot authorize runs.
+This is not an experiment runner: it uses a fixed fake session, never reads the
+environment, starts a process or sends requests. It cannot authorize runs.
 """
 
 from __future__ import annotations
@@ -11,7 +11,13 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from scripts.evaluation.k6.comparison_evidence_capture import capture_local_evidence
+from scripts.evaluation.k6.comparison_mock_runner import FAKE_SESSION
+from scripts.evaluation.k6.comparison_offline_prepare import prepare_inputs
 from scripts.evaluation.k6.comparison_report import summarize_points
+from scripts.evaluation.k6.comparison_session_handoff import (
+    SESSION_VARIABLE,
+    prepare_session_environment,
+)
 from scripts.evaluation.k6.comparison_stage_run import stage_run
 
 
@@ -29,7 +35,7 @@ def prepare_synthetic_evidence(
     parity_path: Path,
     parity_evidence_root: Path,
 ) -> dict[str, Any]:
-    """Validate and stage inputs, then capture one fabricated dropped arrival."""
+    """Check and stage inputs before a fixed fake session and fabricated output."""
     staged = stage_run(
         paths,
         cycle,
@@ -42,6 +48,15 @@ def prepare_synthetic_evidence(
         parity_path=parity_path,
         parity_evidence_root=parity_evidence_root,
     )
+    preflight = prepare_inputs(paths, cycle, run_id, profile_hash)
+    fake_environment = prepare_session_environment(
+        preflight, {SESSION_VARIABLE: FAKE_SESSION}
+    )
+    try:
+        if fake_environment.get(SESSION_VARIABLE) != FAKE_SESSION:
+            raise ValueError("synthetic_session_required")
+    finally:
+        fake_environment.clear()
     condition = staged["condition"]
     schedule = json.loads((stage_root / run_id / "schedule.json").read_bytes())
     point = {
@@ -61,6 +76,7 @@ def prepare_synthetic_evidence(
         "synthetic_fixture": True,
         "measurement_authorized": False,
         "requests_sent": False,
+        "events": ["staged", "fake_session", "fake_workload", "captured"],
         "staged": staged,
         "capture": capture,
     }
