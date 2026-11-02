@@ -12,12 +12,19 @@ helper environment is 172,887,905 bytes. The Linux wheel artifact directory was
 absent at that audit; the subsequent approved pip-only download supplied all 24
 hash-matching archives (51,910,303 bytes). Independent hash/ZIP checks and a clean
 offline pip install plus dependency check passed; see the experiment log and
-updated deployment handoff. This resolves the missing wheel context but does
-not verify a container build. The current Hybrid Dockerfile copies only the ONNX model
+updated deployment handoff. The current Hybrid Dockerfile copies only the ONNX model
 and tokenizer from the model context; the other manifest metadata files are not
 copied by that Dockerfile and their absence is not itself a build blocker. These
-files are local build inputs, not deployment artifacts. No Lambda image was
-built; total image size, startup and memory fit are unknown.
+files are local build inputs. On 2026-11-02 the API, Hybrid and Lambda images
+were built locally for Linux AMD64 at source commit `8a60f83`. Model and tokenizer
+hashes matched the pinned pipeline; the Hybrid build's one offline synthetic
+inference returned the expected 384 dimensions. The Lambda image's local size
+was 896,353,157 bytes. A network-disabled, credential-free container check
+started the app with Hybrid disabled, verified the restricted routes and health,
+and observed a 401 for a missing session. It did not exercise Lambda Web Adapter
+invocation, Hybrid/Identity startup, SQL, or real authentication. Actual memory
+fit, cold startup and deployed behavior remain unknown. Image IDs, commands,
+failure/retry and retention are in the experiment log.
 
 ## Request path
 
@@ -58,8 +65,9 @@ JSON has a 1 MB limit, which must be checked against the real response sizes.
 The local `alb_event.py` and `alb_asgi.py` files are synthetic feasibility
 probes, not the recommended production adapter. Do not wire them into app startup
 or deploy them. Remove or retain them as test-only contract probes after the
-AWS adapter's behavior is verified. The AWS extension digest still needs to be
-recorded from a reviewed artifact source; builds fail if it is absent. Configure
+AWS adapter's behavior is verified. The AWS extension digest was recorded from
+the public registry as `sha256:17cfd08eff1dfea3f6a9a1e9c65fdac80aa4919b6085e746615530f43f57d2f1`;
+independent artifact review is pending and builds fail if the digest is absent. Configure
 its local HTTP port as
 `8000`, matching the existing Uvicorn image, and readiness path as `/health`.
 That liveness endpoint is not application or dependency parity evidence.
@@ -97,8 +105,8 @@ The browser policy still requires trusted HTTPS and accepted Origins when an
 Origin is supplied. Ingress scheme/host handling remains an unverified gate.
 Offline tests exercise middleware and public eligibility dispatch with mocked
 session/SQL boundaries. Real expiry/revocation SQL, concurrent access, startup
-and shared-session behavior between ECS and Lambda remain unverified. The full
-image has not been built or demonstrated to serve an authenticated request.
+and shared-session behavior between ECS and Lambda remain unverified. The built
+image has not been demonstrated to serve an authenticated request.
 The focused Hybrid runtime test confirms that the code accepts a one-connection
 pool and suppresses the worker when overridden; it does not prove real database
 or model startup at that cap.

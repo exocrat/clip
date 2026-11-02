@@ -115,6 +115,76 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 18:28:38 UTC — EXP-03 local image build and planning inputs
+
+**Scope/direction:** User authorized autonomous local implementation/checks and
+local commits for the session, retaining exact-plan approval for AWS changes,
+live smoke and measurements. User confirms Rahul as operator with profile
+`clip-project`, account `335523638354`, region `ap-south-1`. They selected one
+temporary account for comparison and two only for conversations; this differs
+from the plan's initial regular-account workload and still requires the affected
+Identity/Search/experiment review and protocol/tool update. User prefers public
+HTTPS on the ALB without a client-IP allowlist. They set a $5–10 credit range;
+use $5 as the conservative working ceiling for a proposed plan until clarified.
+User requests pilot checks after a separately approved concrete AWS plan, not an
+assumed authorization for the measured comparison. If the deployed dataset is
+missing, stop rather than load/modify it. Dataset/evidence should be retained;
+no destructive cleanup is inferred.
+
+**S3 clarification:** Recorded NEXT-06 evidence says listing image objects were
+uploaded to S3, while the actual users/listings/vector data were loaded into an
+isolated RDS database. `data/transfer/next06-reference-20261030.tar.gz` and its
+manifest contain the reviewed transfer payloads/photos; the repository has an
+existing controlled load/transfer design. This is not evidence that S3 contains
+a restorable full database backup, that the current RDS/S3 contents still match,
+or that the approved experiment may reload them. No S3, database or loader call
+occurred. Verify the deployed copy under an approved plan; stop if absent.
+
+**AWS identity only:** A bounded STS caller-identity request using the explicit
+profile and region, with ambient AWS credential environment variables excluded,
+confirmed the specified project account and a non-root principal. The check did
+not verify permissions, resources, actual spend, data or session validity. No
+other AWS request or resource change was made in this checkpoint.
+
+**Local builds, all Linux AMD64 from clean source commit `8a60f83`:**
+- `clip-exp03-api:local-8a60f83`:
+  `sha256:081c63b78785d29aa3e99214fbbb45b8accae1e7f7dc85b2e24f774e6dfcedfc`,
+  local size 319,479,821 bytes. The existing API Dockerfile used its restricted
+  source context and locked npm/uv dependencies; public build inputs were
+  separately authorized. Web typecheck/build completed with its chunk advisory.
+- `clip-exp03-hybrid:local-8a60f83`:
+  `sha256:0ea4a8859dade5611c06b8df29fd0855e0e51c36ed327dd29899c568ecb85a19`,
+  891,296,081 bytes. Both local model/tokenizer SHA-256 values matched the
+  checked-in pipeline; 24 locked wheels installed offline. The existing build's
+  one network-disabled synthetic inference returned 384 dimensions. This is a
+  functional packaging check, not a benchmark, relevance score or NFR result.
+- `clip-exp03-lambda:local-8a60f83`:
+  `sha256:ea8b7d58342fa5070b8016401746994750df5988bf38d53a9f0ad82cc54bbefe`,
+  896,353,157 bytes. It used adapter image digest
+  `sha256:17cfd08eff1dfea3f6a9a1e9c65fdac80aa4919b6085e746615530f43f57d2f1`
+  and the deny-all Lambda context. Docker emitted two warnings because required
+  build arguments have intentionally invalid empty defaults; supplied arguments
+  built successfully. All images run as UID/GID 10001:10001. No image was pushed.
+
+**Offline startup check:** Ran a disposable `--rm --network none --read-only`
+container with no credentials or database. Hybrid and Identity were disabled;
+the adapter file existed, exactly the two read routes plus health were mounted,
+app lifespan/health passed, and a synthetic in-process missing-session read
+returned 401. The first attempt failed safely because disabling Hybrid while
+retaining its inherited interpreter/model paths is an invalid configuration;
+clearing those two paths in the test process resolved it. No deployed endpoint,
+Lambda Runtime API, actual adapter invocation, real session, SQL, or performance
+load was used. Scoped Docker inspection found no leftover containers from this
+image. The three task-tagged local images are retained for subsequent local
+integration, owned by Rahul, until EXP-03 local validation/cleanup; they have
+local disk cost only, no AWS runtime cost. Shared base images/cache are untouched.
+
+**Open:** The live adapter's forwarding/HTTPS host trust, Lambda initialization
+and memory fit, real shared SQL sessions including expiry/revocation, aggregate
+DB connections/concurrency, account/protocol review, actual dataset parity,
+resource inventory/cost, approved deployment/pilot plan, and independent review
+remain open. No experiment/NFR pass or EXP-02/03 completion is claimed.
+
 ### 2026-11-02 18:06:34 UTC — EXP-03 packaging checkpoint at user-requested stop
 
 User approved public build-image/locked-dependency retrieval and parallel work,

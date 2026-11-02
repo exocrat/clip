@@ -1,5 +1,22 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### EXP-03 local images and user planning direction — 2026-11-02 18:28:38 UTC
+
+User authorizes autonomous local work and local commits, and confirmed Rahul's
+project profile/account/region, one temporary account for the comparison, public
+HTTPS ALB without client-IP allowlist, $5–10 credits, pilot intent, and stopping
+if the deployed dataset is missing. Use $5 as conservative planning ceiling;
+account/protocol owner review and a concrete AWS plan approval remain required.
+STS verified the selected account/non-root principal; no resources were changed.
+Locally built API, Hybrid and Lambda AMD64 images from `8a60f83`; pinned model
+hashes matched, one offline inference passed, and credential-free isolated Lambda
+app startup/health/missing-session denial passed with Hybrid disabled. First smoke
+failed safely on inherited Hybrid paths; corrected test setup passed. Docker build
+warnings and retained local image IDs are recorded in the experiment log. No
+deployed API, database, real session, Lambda Runtime adapter, load or NFR result.
+Real integration, DB capacity, AWS inventory/plan and independent review remain.
+[Detailed experiment log](../evaluation/experiment-log.md).
+
 ### EXP-03 packaging stopped at local checkpoint — 2026-11-02 18:06:34 UTC
 
 User approved public build inputs/parallel work, then directed stopping and
@@ -2257,7 +2274,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
 | EXP-01 | C; Suraj coordinates NEXT-01 design | done | NEXT-01 design and gates are approved; actual topology pricing and numeric cost endpoints are NEXT-07 pre-result gates. | Design Steps 1–9 performed; no experiment run | Suraj verified NEXT-01 Steps 1–9 on 2026-10-28; user clarified the 300 concurrent-client-request proposal is non-binding on 2026-11-01 UTC. | [Approved design and gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md); [NEXT-07 execution plan](../tasks/remaining-project-plan.md#experiment-protocol-reference) | Implementation, final data/tools, actual account/spend, numeric cost endpoints, and separate run approvals remain before measurement. | 2026-10-28 06:24:24 UTC |
 | EXP-02 | Rahul (D), reassigned by user; Search owner C review | in progress | Local parity workload draft verified; real runner remains open | Synthetic Node, staging and k6 inspect checks passed; no workload run | User verified local parity draft on 2026-11-02 | `task/exp-02-workload`; [experiment log](../evaluation/experiment-log.md) | Coordinated protocol/tool update and affected-owner review; Mohit search inputs; user reports Adity supplied two temporary accounts, but account-class approval/use and real session/access are unverified; final source mapping, timing, NFR profiles, timeout sources, k6 provenance, Node 24, generator/session limits, rotation seed, command registry, real runner, deployed parity, authorization, telemetry, cost and cleanup remain pending; 300-request proposal is non-binding | 2026-11-02 17:07:59 UTC |
-| EXP-03 | Rahul (D), including scoped Identity binding; A peer, C/B affected review | in progress | Stopped at user request; commit current local preparation; public images pulled, image build/startup remains pending | 114 focused tests, 20 offline Identity config tests and 1 default ECS startup test passed; boundary scan, Mypy, Black, compile and diff checks passed; 8-artifact contract check and cached Gitleaks scan passed | Paired app/session/wheel checks verified; contract/privacy result and independent review pending | `task/exp-03-lambda`; [design](../evaluation/exp-03-lambda-design.md); [experiment log](../evaluation/experiment-log.md) | EXP-02 remains open; real SQL session/expiry/revocation/shared-session parity; real Hybrid/model startup; aggregate DB/concurrency; local API/Hybrid/Lambda builds; adapter acceptance/ingress parity; escalated local Docker access; image, listener, deployment and independent review gates remain | 2026-11-02 18:06:34 UTC |
+| EXP-03 | Rahul (D), including scoped Identity binding; A peer, C/B affected review | in progress | Step 3 local AMD64 API/Hybrid/Lambda images built; offline unauthenticated startup passed; investigate adapter/HTTPS and real integration | Earlier 135 focused tests, type/boundary/format, 8 contracts and secret scan passed; model hash and offline single inference passed; startup smoke passed after test-config correction | User allows autonomous local work; owner/independent review pending | `task/exp-03-lambda`; [design](../evaluation/exp-03-lambda-design.md); [experiment log](../evaluation/experiment-log.md) | EXP-02 remains open; adapter HTTPS/ALB proof; real SQL/session/Hybrid parity; DB/concurrency; approved AWS deployment/pilot plan; routing, infrastructure and independent review remain | 2026-11-02 18:28:38 UTC |
 | EXP-04 | B | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-03 | — |
 | EXP-05 | C | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-04 | — |
 | EXP-06 | C operator; B infra support | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-05 | — |
