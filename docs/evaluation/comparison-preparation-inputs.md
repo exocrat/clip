@@ -101,8 +101,8 @@ Check the local plan with:
 The checker requires three cycles in A/B, B/A, A/B configuration order, with
 low, normal and burst pairs in each cycle. It requires nine pairs, eighteen
 unique planned run IDs and one set of nonempty shared inputs. Exit 0 means only
-that the declared plan has this shape and order. It does not compare later
-captured manifests or prove deployed data/configuration parity; a future runner
+that the declared plan has this shape and order when no captured manifests are
+supplied. It does not prove deployed data/configuration parity; a future runner
 must enforce plan bindings before any session or request. Its output always
 sets `measurement_authorized` to false. This check does not encode the
 experiment design's proposed 300 concurrent-request figure, which the user has
@@ -113,11 +113,19 @@ After all runs have captured manifests, run the same command with
 
 The checker first applies the existing per-run manifest validator, then matches
 all 18 run IDs, configuration/condition/cycle, case sequence start, and shared
-dataset/index/database and workload fingerprints to the plan. It rejects an
-incomplete, duplicate, unexpected or mismatched manifest set. This verifies the
-recorded fields only; it does not prove the deployed service used them or hash
-the raw results. Use the separate artifact verifier for the manifest's evidence
-files. Both checks remain offline and non-authorizing.
+dataset/index/database and workload fingerprints to the plan. It also checks
+the recorded UTC start and end times: each cycle must list low, normal and
+burst for the first configuration, followed by low, normal and burst for the
+second, with the approved A/B, B/A, A/B cycle order. Recorded runs cannot
+overlap, although one may start exactly when the preceding run ends. File
+argument order does not matter. It rejects an incomplete, duplicate, unexpected,
+mismatched, out-of-order or overlapping manifest set.
+
+These checks verify recorded fields only. They do not prove the timestamps are
+accurate or comparable across clocks, establish the deployed service used the
+settings, or hash the raw results. Investigate clock discrepancies rather than
+changing timestamps to make a check pass. Use the separate artifact verifier
+for the manifest's evidence files. Both checks remain offline and non-authorizing.
 
 ## Combined pre-request input check
 

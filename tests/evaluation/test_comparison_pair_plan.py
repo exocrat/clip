@@ -1,5 +1,6 @@
 """Synthetic offline paired-plan checks; no generator or target is started."""
 
+from datetime import datetime, timedelta, timezone
 import json
 from pathlib import Path
 import subprocess
@@ -40,6 +41,19 @@ def captured_manifests(plan: dict[str, Any]) -> list[dict[str, Any]]:
     for cycle in plan["cycles"]:
         for pair in cycle["pairs"]:
             for config in cycle["configuration_order"]:
+                slot = (
+                    (cycle["cycle"] - 1) * 6
+                    + cycle["configuration_order"].index(config) * 3
+                    + ("low", "normal", "burst").index(pair["condition"])
+                )
+                start = datetime(2026, 11, 1, 10, tzinfo=timezone.utc) + timedelta(
+                    minutes=7 * slot
+                )
+                end = start + timedelta(minutes=6)
+
+                def utc(value: datetime) -> str:
+                    return value.isoformat().replace("+00:00", "Z")
+
                 manifest = cast(
                     dict[str, Any], json.loads(MANIFEST_TEMPLATE.read_text())
                 )
@@ -50,9 +64,9 @@ def captured_manifests(plan: dict[str, Any]) -> list[dict[str, Any]]:
                     "condition": pair["condition"],
                     "repetition": cycle["cycle"],
                     "owner_role": "synthetic operator",
-                    "planned_start_utc": "2026-11-01T10:00:00Z",
-                    "actual_start_utc": "2026-11-01T10:00:01Z",
-                    "actual_end_utc": "2026-11-01T10:06:00Z",
+                    "planned_start_utc": utc(start),
+                    "actual_start_utc": utc(start),
+                    "actual_end_utc": utc(end),
                 }
                 manifest["target"].update(
                     {
@@ -107,8 +121,8 @@ def captured_manifests(plan: dict[str, Any]) -> list[dict[str, Any]]:
                     {
                         "source_reference": "synthetic-cost.json",
                         "source_sha256": "6" * 64,
-                        "interval_start_utc": "2026-11-01T09:59:00Z",
-                        "interval_end_utc": "2026-11-01T10:07:00Z",
+                        "interval_start_utc": utc(start - timedelta(minutes=1)),
+                        "interval_end_utc": utc(end + timedelta(minutes=1)),
                         "amount_before_credits": 0.0,
                         "billing_delay_note": "synthetic fixture",
                     }
@@ -186,10 +200,51 @@ def test_duplicate_run_ids_are_refused() -> None:
 
 def test_all_synthetic_captured_manifests_match_the_plan() -> None:
     plan = planned_plan()
-    result = validate_pair_plan(plan, captured_manifests(plan))
+    # Input file order need not be chronological; recorded timestamps decide.
+    result = validate_pair_plan(plan, list(reversed(captured_manifests(plan))))
     assert result["captured_manifests_checked"] is True
     assert result["captured_manifest_count"] == 18
+    assert result["recorded_order_checked"] is True
     assert result["measurement_authorized"] is False
+
+
+@pytest.mark.parametrize("pair_index", [0, 3, 6])
+def test_reversed_configuration_order_is_refused_in_each_cycle(pair_index: int) -> None:
+    plan = planned_plan()
+    manifests = captured_manifests(plan)
+    left, right = manifests[pair_index * 2 : pair_index * 2 + 2]
+    for key in ("actual_start_utc", "actual_end_utc"):
+        left["run"][key], right["run"][key] = right["run"][key], left["run"][key]
+    with pytest.raises(ValueError, match="captured_run_order_or_overlap"):
+        validate_pair_plan(plan, manifests)
+
+
+def test_overlapping_recorded_runs_are_refused() -> None:
+    plan = planned_plan()
+    manifests = captured_manifests(plan)
+    # A normal starts one second before A low's recorded end.
+    manifests[2]["run"]["actual_start_utc"] = "2026-11-01T10:05:59Z"
+    with pytest.raises(ValueError, match="captured_run_order_or_overlap"):
+        validate_pair_plan(plan, manifests)
+
+
+def test_reversed_condition_order_is_refused() -> None:
+    plan = planned_plan()
+    manifests = captured_manifests(plan)
+    for key in ("actual_start_utc", "actual_end_utc"):
+        manifests[0]["run"][key], manifests[2]["run"][key] = (
+            manifests[2]["run"][key],
+            manifests[0]["run"][key],
+        )
+    with pytest.raises(ValueError, match="captured_run_order_or_overlap"):
+        validate_pair_plan(plan, manifests)
+
+
+def test_touching_recorded_boundaries_are_allowed() -> None:
+    plan = planned_plan()
+    manifests = captured_manifests(plan)
+    manifests[2]["run"]["actual_start_utc"] = manifests[0]["run"]["actual_end_utc"]
+    assert validate_pair_plan(plan, manifests)["recorded_order_checked"] is True
 
 
 @pytest.mark.parametrize(

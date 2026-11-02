@@ -26,8 +26,9 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
   configuration equivalence remains pending.
 - An offline paired-plan checker and blank template now describe the approved
   three-cycle A/B, B/A, A/B order and nine low/normal/burst pairs. They validate
-  the declared plan and can compare all 18 captured manifests to it. Actual
-  deployment identity and generator suitability remain future gates. No
+  the declared plan and can compare all 18 captured manifests to it, including
+  the recorded chronological order and non-overlap. Actual deployment identity,
+  timestamp accuracy and generator suitability remain future gates. No
   concurrency ceiling is encoded.
 - A combined offline input preflight now checks the completed source/dataset/
   corpus binding and 18-run pair plan together, including matching dataset and
@@ -61,6 +62,34 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 - **Measurements:** No ECS/Lambda comparison or final NFR run is recorded here.
 
 ## History
+
+### 2026-11-02 06:53:29 UTC — EXP-02 recorded run-order check
+
+**Direction:** User verified adding a check of completed manifests' recorded
+start/end times against the approved configuration and traffic order. This is
+offline preparation; no workload, credentials, cloud or external action was
+authorized or performed.
+
+**Finding and change:** The prior paired-plan validator checked the declared
+plan and each manifest's labels, but not the order of recorded times; its
+synthetic fixtures even gave all runs the same times. The validator now derives
+the approved configuration-first sequence: low, normal, burst for each
+configuration, with A/B, B/A, A/B across the three cycles. After validating all
+18 captures, it rejects recorded intervals that are reversed or overlap; an
+interval may start exactly when its predecessor ends. Input file order is not
+significant. The guide states the check and its limits.
+
+**Limits:** This compares supplied UTC values; it does not prove their clocks
+were accurate or comparable, confirm which runtime served requests, validate
+raw evidence, or authorize a measurement. No actual run or manifest was created.
+Historical synthetic tests did not establish recorded chronological order.
+
+**Checks:** Thirty-four focused paired-plan, binding and combined-preflight
+tests passed with warnings as errors. Synthetic cases covered the approved
+sequence, reversed configuration order in each cycle, reversed condition order,
+overlap, touching boundaries and shuffled input files. Strict Mypy, Black
+in-process formatting verification and `git diff --check` passed. Result awaits
+user verification.
 
 ### 2026-11-01 21:32:23 UTC — EXP-02 combined pre-request input preflight
 

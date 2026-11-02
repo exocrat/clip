@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from datetime import datetime
 import json
 from pathlib import Path
 import re
@@ -61,6 +62,7 @@ def validate_pair_plan(
 
     run_ids: set[str] = set()
     run_bindings: dict[str, dict[str, Any]] = {}
+    ordered_run_ids: list[str] = []
     for index, (cycle_value, expected_order) in enumerate(
         zip(plan["cycles"], CONFIGURATION_ORDERS, strict=True), start=1
     ):
@@ -99,6 +101,12 @@ def validate_pair_plan(
                     "repetition": index,
                     "sequence_start": sequence_start,
                 }
+        if state == "planned":
+            # The design runs all three conditions on one configuration before
+            # switching to the other, in each cycle's declared order.
+            ordered_run_ids.extend(
+                pair[f"{config}_run_id"] for config in expected_order for pair in pairs
+            )
 
     if state == "template":
         if captured_manifests is not None:
@@ -131,6 +139,7 @@ def validate_pair_plan(
             raise ValueError("eighteen_captured_manifests_required")
         manifest_template = json.loads(MANIFEST_TEMPLATE.read_text(encoding="utf-8"))
         checked_run_ids: set[str] = set()
+        intervals: dict[str, tuple[datetime, datetime]] = {}
         for manifest in captured_manifests:
             if not isinstance(manifest, dict):
                 raise ValueError("invalid_captured_manifest")
@@ -169,8 +178,19 @@ def validate_pair_plan(
             if not all(bindings):
                 raise ValueError("captured_shared_input_mismatch")
             checked_run_ids.add(run_id)
+            # validate_manifest has already checked these UTC timestamps and
+            # ensured that each individual run ends after it starts.
+            intervals[run_id] = (
+                datetime.fromisoformat(
+                    captured_run["actual_start_utc"][:-1] + "+00:00"
+                ),
+                datetime.fromisoformat(captured_run["actual_end_utc"][:-1] + "+00:00"),
+            )
         if checked_run_ids != run_ids:
             raise ValueError("captured_run_set_mismatch")
+        for previous, following in zip(ordered_run_ids, ordered_run_ids[1:]):
+            if intervals[following][0] < intervals[previous][1]:
+                raise ValueError("captured_run_order_or_overlap")
     return {
         "valid": True,
         "state": "planned",
@@ -180,6 +200,7 @@ def validate_pair_plan(
         "shared_inputs_bound": True,
         "captured_manifests_checked": captured_manifests is not None,
         "captured_manifest_count": len(captured_manifests or []),
+        "recorded_order_checked": captured_manifests is not None,
         "measurement_authorized": False,
     }
 
