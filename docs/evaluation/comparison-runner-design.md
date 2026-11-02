@@ -71,11 +71,13 @@ running capacity, provider behavior, timing validity or permission to measure.
    Identity protections. The presence of synthetic dataset rows does not prove
    they have login identities or usable credentials. Temporary-account login is
    a different path and is not silently substituted for the regular account.
-2. **Session handoff:** Identity/security and runner owners must select a secure
-   transport from the approved session source to the generator, including expiry,
-   rotation, process isolation and cleanup. Do not place secrets in CLI flags,
-   environment variables, temporary files or logs by assumption; the existing
-   local smoke runner's environment-variable technique is not approved here.
+2. **Session handoff:** The user selected an environment variable for the test
+   session. `CLIP_COMPARISON_SESSION_COOKIE` is the proposed future runner
+   variable; the local helper checks its shape only after local preflight. The
+   real runner is not wired to it. Identity/security and runner owners must
+   review process isolation, environment exposure, expiry, rotation and cleanup
+   before use. Keep the session out of CLI flags, files, logs and reports; the
+   local smoke runner's separate variable is not a production access method.
 3. **Target and authorization:** Infrastructure/experiment owners must define
    the exact allowed target identity, TLS/routing verification, authorization
    artifact and fail-closed checks. Account, region and deployed revision must

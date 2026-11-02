@@ -172,6 +172,25 @@ of the checked bytes, or run readiness. It is not yet integrated into a
 real-target runner. The expected profile hash must be sourced from the reviewed
 plan; these checks do not prevent file changes after reading.
 
+## Session handoff preparation
+
+The user selected an environment variable for a future synthetic test session.
+`comparison_session_handoff.py` prepares the in-memory child environment from
+`CLIP_COMPARISON_SESSION_COOKIE`, containing the complete
+`__Host-clip_session=<session-value>` cookie header value. It copies no other
+variables and refuses to read the session unless the caller supplies a passing
+local preflight result. Its errors never include the supplied value. No actual
+session or credentials are needed for synthetic unit tests.
+
+The helper performs only a format and sequencing check: callers must obtain the
+preflight result directly, enforce every separate authorization and deployment
+gate, and protect and clear the resulting mapping. It does not verify expiry,
+session validity, account class, target or approval, and it starts no process.
+The current workload does not read this variable. Environments may be visible to
+other processes or diagnostics, so the actual host isolation and handoff need
+Identity/security review before real use. Do not put a value in repository
+files, commands, logs or reports, and do not send it in chat.
+
 ## Mock runner ordering check
 
 `comparison_mock_runner.py` is a test-only ordering simulation. It calls the

@@ -291,3 +291,7 @@ disabled. See [offline preparation](../../../docs/evaluation/comparison-preparat
 `comparison_mock_runner.py` tests preflight ordering with fixed in-memory
 simulation events. It cannot send traffic or authorize a measurement; the
 future real runner still requires integration and review.
+
+`comparison_session_handoff.py` prepares a session environment mapping after a
+local check. It has no process or network action; the proposed variable and
+security-review limits are in the [preparation guide](../../../docs/evaluation/comparison-preparation-inputs.md#session-handoff-preparation).

@@ -76,6 +76,32 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 10:07:16 UTC — EXP-02 session environment handoff preparation
+
+**Direction:** User chose an environment variable for the future test session
+and verified preparing the handoff with fake values. User suggested a temporary
+account, which remains a proposed change to the approved regular-account plan
+and needs Identity and experiment owner review. No real session, credentials,
+request, k6 workload, cloud, database or external service was used.
+
+**Change:** Added an in-memory handoff helper with proposed variable
+`CLIP_COMPARISON_SESSION_COOKIE` for the complete host-session cookie header.
+It refuses to read its input mapping until supplied local preflight status is
+true, validates bounded cookie shape, copies only that variable, and gives
+sanitized error messages. It does not read the process environment, launch a
+child, contact a service or authorize a run. Tests use fake values and verify
+that a failed preflight cannot read the session and malformed values are not
+included in exceptions. Updated preparation guide, runner draft and README.
+
+**Checks and limits:** 47 focused synthetic tests, strict Mypy, in-process Black
+formatting and whitespace checks passed. The helper trusts the status provided
+by its caller: a future runner must call preflight itself and enforce all other
+gates. It cannot validate session expiry, account type or target. Environment
+visibility, process isolation, secure transfer and cleanup need security/owner
+review before real use; the existing workload does not read this variable.
+Result awaits user verification.
+
+
 ### 2026-11-02 09:56:27 UTC — EXP-02 real-runner design review
 
 **Direction:** User verified reviewing authentication, runner and evidence
