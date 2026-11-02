@@ -16,6 +16,19 @@ always reports measurement unauthorized. The combined run preflight and workload
 still refuse it and require the old ordered reference. The command's existing
 third positional argument is the version-2 binding file in draft mode.
 
+Copy `data/evaluation/workloads/ecs-lambda-parity-binding.template.json` to a
+new local file and fill all fields from the retained dataset/contract/model
+records and the intended full search revision. Then create a separate draft:
+
+```sh
+.venv/bin/python -m scripts.evaluation.k6.comparison_parity_corpus \
+  binding.json --search-revision FULL_SEARCH_COMMIT --output parity-corpus.json
+```
+
+The command validates the binding before writing, will not replace an existing
+output, and prints only aggregate status. It is offline preparation; passing it
+does not establish deployment, review, response parity or measurement approval.
+
 `comparison_search_parity.js` accepts the corpus and its three search cases with
 two already-supplied status/body pairs. It requires matching case IDs and exact
 request settings, and one case in each direct-word, related-word and meaning-based

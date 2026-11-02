@@ -5,9 +5,13 @@ This draft does not verify deployment, human review or the proposed protocol.
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
+import os
+from pathlib import Path
 import re
+import stat
 from typing import Any
 
 from scripts.evaluation.k6.prepare_comparison_corpus import (
@@ -66,3 +70,33 @@ def build_parity_corpus(binding: Any, expected_revision: str) -> dict[str, Any]:
     }
     corpus["review"]["measurement_enabled"] = False
     return corpus
+
+
+def main() -> None:
+    """Read a bounded local binding and exclusively create a separate draft."""
+    parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
+    parser.add_argument("binding", type=Path)
+    parser.add_argument("--search-revision", required=True)
+    parser.add_argument("--output", type=Path, required=True)
+    args = parser.parse_args()
+    try:
+        if not hasattr(os, "O_NOFOLLOW") or not hasattr(os, "O_NONBLOCK"):
+            raise ValueError("safe_file_access_unavailable")
+        fd = os.open(args.binding, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+        with os.fdopen(fd, "rb") as source:
+            if not stat.S_ISREG(os.fstat(source.fileno()).st_mode):
+                raise ValueError("regular_binding_required")
+            raw = source.read(64_001)
+        if len(raw) > 64_000:
+            raise ValueError("binding_too_large")
+        corpus = build_parity_corpus(json.loads(raw), args.search_revision)
+        with args.output.open("x", encoding="utf-8") as output:
+            json.dump(corpus, output, sort_keys=True, indent=2, ensure_ascii=False)
+            output.write("\n")
+        print(json.dumps({"draft_created": True, "measurement_authorized": False}))
+    except (OSError, UnicodeError, ValueError, TypeError, KeyError):
+        parser.exit(2, "Parity corpus preparation failed; no workload started\n")
+
+
+if __name__ == "__main__":
+    main()

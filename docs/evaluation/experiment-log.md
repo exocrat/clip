@@ -79,6 +79,24 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 13:20:23 UTC — Search parity corpus preparation command
+
+**Direction:** User verified continuing the search-parity preparation. No
+network, workload, cloud action or actual result collection occurred.
+
+**Change:** Added an offline command to the corpus builder and a blank version-2
+binding template. The command reads a bounded regular local binding, validates
+the dataset/schema/contract/model and explicit revision, then exclusively
+creates a separate non-executable corpus. It prints sanitized aggregate status
+and cannot replace an existing output. The guide records the exact command.
+
+**Checks and limits:** Twenty-one focused archive/synthetic tests and strict
+Mypy passed; tests cover deterministic outputs, refusal to overwrite, bad input,
+and sanitized errors. Black and whitespace checks passed. The corpus is a draft;
+real-run preflight still refuses it, and the actual response comparison gate,
+deployment, timing and affected-owner reviews remain open. Result awaits user
+verification; no experiment or NFR pass is claimed.
+
 ### 2026-11-02 13:17:37 UTC — Synthetic parity draft integration check
 
 **Direction:** User verified checking the draft-input preflight and three-search

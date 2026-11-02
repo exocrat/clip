@@ -4,6 +4,7 @@ from copy import deepcopy
 import hashlib
 import json
 import subprocess
+import sys
 
 import pytest
 
@@ -107,3 +108,36 @@ def test_checked_draft_and_synthetic_search_parity_connect_without_workload(bind
     cases[1]["b"]["status"] = 503
     assert compare()["all_equal_and_valid"] is False
     assert checked["deployment_verified"] is False
+
+
+def test_cli_creates_separate_deterministic_file_and_refuses_bad_input(
+    binding, tmp_path
+):
+    source = tmp_path / "binding.json"
+    source.write_text(json.dumps(binding))
+    output = tmp_path / "draft.json"
+    command = [
+        sys.executable,
+        "-m",
+        "scripts.evaluation.k6.comparison_parity_corpus",
+        str(source),
+        "--search-revision",
+        "a" * 40,
+        "--output",
+        str(output),
+    ]
+    result = subprocess.run(command, text=True, capture_output=True, check=False)
+    assert result.returncode == 0
+    assert json.loads(result.stdout)["measurement_authorized"] is False
+    first = output.read_bytes()
+    assert subprocess.run(command, text=True, capture_output=True).returncode == 2
+    assert output.read_bytes() == first
+    second = tmp_path / "second.json"
+    command[-1] = str(second)
+    assert subprocess.run(command, text=True, capture_output=True).returncode == 0
+    assert second.read_bytes() == first
+    source.write_text('{"private":"synthetic"}')
+    command[-1] = str(tmp_path / "invalid.json")
+    result = subprocess.run(command, text=True, capture_output=True)
+    assert result.returncode == 2 and "synthetic" not in result.stderr
+    assert not (tmp_path / "invalid.json").exists()
