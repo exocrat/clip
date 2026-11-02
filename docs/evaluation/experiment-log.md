@@ -76,6 +76,15 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 19:19:34 UTC — EXP-02 parity input preflight command
+
+The offline combined preflight now accepts an explicit `--parity-draft` flag
+for version-2 search bindings and reports response parity and owner review
+as remaining gates. Without the flag it continues to refuse this draft. Three
+focused synthetic tests passed, including CLI refusal and success; no session,
+request, workload or AWS action occurred. The real runner remains unimplemented.
+
+
 ### 2026-11-02 19:16:33 UTC — EXP-02 search parity direction and offline staging
 
 **Direction:** The user reiterated that the reviewed search inputs are already

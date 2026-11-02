@@ -116,11 +116,14 @@ def prepare_inputs(
             checked = True
         except OSError, ValueError, TypeError, KeyError, IndexError:
             invalid.append("input_bindings_or_planned_run")
+    gates = list(REMAINING_GATES)
+    if allow_parity_draft:
+        gates[0] = "response_parity_and_affected_owner_review"
     return {
         "local_inputs_checked": checked,
         "missing_inputs": missing,
         "invalid_inputs": invalid,
-        "remaining_run_gates": list(REMAINING_GATES),
+        "remaining_run_gates": gates,
         "measurement_authorized": False,
         "requests_sent": False,
     }
@@ -134,12 +137,14 @@ def main() -> None:
     parser.add_argument("--cycle", type=int)
     parser.add_argument("--run-id")
     parser.add_argument("--expected-profile-sha256")
+    parser.add_argument("--parity-draft", action="store_true")
     args = parser.parse_args()
     result = prepare_inputs(
         {name: getattr(args, name) for name in FILE_FIELDS},
         args.cycle,
         args.run_id,
         args.expected_profile_sha256,
+        allow_parity_draft=args.parity_draft,
     )
     print(json.dumps(result, sort_keys=True))
     if not result["local_inputs_checked"]:

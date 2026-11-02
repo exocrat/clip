@@ -1691,9 +1691,18 @@ def test_parity_draft_staging_requires_matching_response_pairs(
     ):
         paths[name].write_bytes(value)
     run_id = "synthetic-c1-p0-A"
-    assert prepare_inputs(paths, 1, run_id, profile_hash, allow_parity_draft=True)[
-        "local_inputs_checked"
-    ]
+    checked = prepare_inputs(paths, 1, run_id, profile_hash, allow_parity_draft=True)
+    assert checked["local_inputs_checked"]
+    assert "response_parity_and_affected_owner_review" in checked["remaining_run_gates"]
+    cli = [sys.executable, "-m", "scripts.evaluation.k6.comparison_offline_prepare"]
+    for name, path in paths.items():
+        cli.extend(["--" + name.replace("_", "-"), str(path)])
+    cli.extend(
+        ["--cycle", "1", "--run-id", run_id, "--expected-profile-sha256", profile_hash]
+    )
+    assert subprocess.run(cli, capture_output=True).returncode == 2
+    result = subprocess.run([*cli, "--parity-draft"], capture_output=True, check=True)
+    assert json.loads(result.stdout)["measurement_authorized"] is False
     assert not prepare_inputs(paths, 1, run_id, profile_hash)["local_inputs_checked"]
     evidence = tmp_path / "observations"
     evidence.mkdir()

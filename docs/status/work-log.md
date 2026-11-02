@@ -1,5 +1,11 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### EXP-02 parity preflight CLI — 2026-11-02 19:19:34 UTC
+
+The offline combined preflight now supports the explicit parity draft and
+reports response parity and owner review as pending; three synthetic checks
+passed. No real runner or AWS work. [Experiment log](../evaluation/experiment-log.md).
+
 ### EXP-02 user-directed response parity staging — 2026-11-02 19:16:33 UTC
 
 The user confirmed the reviewed search labels already exist and directed comparing

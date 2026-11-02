@@ -758,6 +758,16 @@ burst cohorts can jointly use up to twice the supplied per-scenario maximum.
 The future generator plan must account for this combined maximum and establish
 that its approved host, concurrency and resource limits are respected.
 
+## Offline parity input preflight
+
+The combined `comparison_offline_prepare` command accepts `--parity-draft`
+to check version-2 parity-bound inputs without an ordered search reference.
+Pass the version-2 binding using its existing `--ordered-reference` argument.
+The report explicitly lists response parity and affected-owner review as
+remaining gates. Without the option, parity drafts are refused. This check
+only validates local inputs; it does not compare deployed responses or authorize
+a run.
+
 ## Local parity staging
 
 For the version-2 parity binding, the offline staging helper accepts
