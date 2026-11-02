@@ -79,6 +79,30 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 14:01:05 UTC — EXP-03 ownership and design inspection
+
+**Direction:** User verified the previous checkpoint and assigned EXP-03 Lambda
+work to themselves, Rahul (D). Updated the task registry and task owner; the
+roster's default independent peer A and affected Search/infrastructure owners
+remain review participants. Rahul is the writer for this bounded ownership and
+design-record update. No code, cloud resource, workload or external service was
+changed or contacted.
+
+**Read-only findings:** The selected collection and detail operations are in the
+Listings router. `require_caller` uses Identity-established ASGI context rather
+than client-provided identity; the Lambda path must preserve it. The application
+lifespan opens Listings/Search and Conversations database pools and starts the
+configured search runtime; reuse and Lambda lifecycle/connection costs need
+design and review. The task also requires the actual Hybrid model/helper, route
+selection, parity, resource bounds and failure behavior. No implementation or
+deployed equivalence is claimed.
+
+**Gates:** EXP-03's recorded formal dependency is completed EXP-02, which remains
+open. Exact task understanding, target/adapter decisions and independent owner
+reviews remain before dependent implementation. Existing instruction excludes
+cloud actions and experiments. The preliminary inspection is not task
+acceptance; the user assignment does not imply deployment approval.
+
 ### 2026-11-02 13:57:21 UTC — Local parity workload and EXP-03 preliminary inspection
 
 **Direction:** User requested finishing essential EXP-02 work and starting

@@ -101,11 +101,12 @@ independent human review remains required. No owner approval is recorded here.
 
 ## Prioritized remaining work
 
-1. **Finish reviewed workload inputs — D with Search C.** Supply the actual
-   independently reviewed ordered Hybrid results and bind them to the dataset,
-   current intended search revision and model. The template and offline binder
-   exist; fixture rankings are not the required results. Confirm the deployed
-   source mapping later, when deployment exists.
+1. **Finish reviewed workload inputs — D with Search C.** Bind the cases to the
+   dataset, intended search revision and model. The user proposed replacing
+   hand-authored Hybrid rankings with pre-run A/B response comparison; that
+   protocol revision and its full integration need affected-owner review. The
+   existing real-run preflight still requires the old ordered reference until
+   a reviewed replacement is complete. Confirm deployed source mapping later.
 2. **Settle runner interfaces — D with Identity A, infrastructure B and affected
    reviewers.** Review the user's proposed temporary synthetic account and
    environment-variable session handoff against the regular-account protocol;
@@ -120,7 +121,7 @@ independent human review remains required. No owner approval is recorded here.
    and local doubles. The present mock is not the real runner; exact approved
    cloud commands remain to be documented and reviewed. No calls to deployed
    services are authorized by this checklist.
-4. **Complete mixed-path implementation — B, EXP-03.** Package and locally
+4. **Complete mixed-path implementation — Rahul (D), EXP-03.** Package and locally
    verify the Lambda adapter, routing, authorization and parity, then obtain
    the required review and merge. This is a separate downstream task; it does
    not authorize deployment. Both configurations and deployed parity are EXP-04.

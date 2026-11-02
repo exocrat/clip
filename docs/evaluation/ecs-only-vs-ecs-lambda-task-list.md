@@ -696,7 +696,7 @@ If scripts, metrics, or fixtures required by the approved plan do not exist, add
 
 ## EXP-03 — Implement and locally verify the mixed configuration
 
-**Owner:** B. **Reviewers:** C and D; affected contract owners where required. **Start after:** EXP-02.
+**Owner:** Rahul (D), reassigned by user direction. **Reviewers:** A as default independent peer; C and B as affected Search/infrastructure owners where required. **Start after:** EXP-02.
 
 1. Inspect the approved EXP-01 manifest, actual integrated read operations, auth context, database access, generated API contract and accepted revision. Identify shared application logic that can be reused without importing another domain's private implementation.
 2. Propose the minimal Lambda packaging/adapter, ingress/routing, authorized request-context handling, PostgreSQL connection limits, concurrency/timeouts, logging and failure behavior. Preserve state-changing routes on ECS; present any unresolved compatibility/security/cost decision and wait for approval before dependent implementation.
