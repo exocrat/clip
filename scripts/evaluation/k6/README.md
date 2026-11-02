@@ -6,6 +6,21 @@ For offline ordered-reference binding and telemetry metadata validation, see
 [comparison preparation inputs](../../../docs/evaluation/comparison-preparation-inputs.md).
 These commands do not send requests or authorize measurements.
 
+The combined pre-request input check is also offline. It requires complete
+binding and paired plans, rebuilds and checks the case corpus from the supplied
+ordered reference, then verifies their dataset and corpus fingerprints agree:
+
+```sh
+.venv/bin/python -m scripts.evaluation.k6.comparison_run_preflight \
+  path/to/binding-plan.json path/to/complete-case-corpus.json \
+  path/to/reviewed-ordered-reference.json path/to/complete-paired-plan.json
+```
+
+It prints aggregate status only and always sets `measurement_authorized` to
+false. A future real-target runner must call/enforce this and its other reviewed
+gates before requesting a session or sending traffic; this command is not yet
+wired to that runner.
+
 For offline NFR-01/02 draft checks, run with the project's Node 24:
 
 ```sh

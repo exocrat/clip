@@ -119,6 +119,32 @@ recorded fields only; it does not prove the deployed service used them or hash
 the raw results. Use the separate artifact verifier for the manifest's evidence
 files. Both checks remain offline and non-authorizing.
 
+## Combined pre-request input check
+
+Before a future comparison runner requests a session or sends a request, it must
+check that the ordered-reference binding and the planned A/B runs agree. The
+offline combined checker reuses the two validators above and cross-checks the
+dataset fingerprint and exact case-corpus file hash between their plans:
+
+```sh
+.venv/bin/python -m scripts.evaluation.k6.comparison_run_preflight \
+  path/to/binding-plan.json \
+  path/to/complete-case-corpus.json \
+  path/to/reviewed-ordered-reference.json \
+  path/to/complete-paired-plan.json
+```
+
+The binding and paired plans must both be complete; blank templates fail. The
+command checks the corpus against the frozen archive and supplied ordered
+reference, checks its source and dataset bindings, validates all nine pairs and
+18 run IDs, and requires the paired plan's dataset and corpus fingerprints to
+match the binding plan. It prints aggregate status only and always reports
+`measurement_authorized: false`. It does not ask for credentials, send requests,
+verify human review or deployed identity, validate target/auth/timing/caps, or
+attest database equivalence. The future real-target runner is not connected yet
+and must enforce this check plus all remaining reviewed run gates before any
+session or request.
+
 ## NFR browse and Hybrid case drafts
 
 The offline generator selects five browse and three Hybrid cases from the same

@@ -29,6 +29,10 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
   the declared plan and can compare all 18 captured manifests to it. Actual
   deployment identity and generator suitability remain future gates. No
   concurrency ceiling is encoded.
+- A combined offline input preflight now checks the completed source/dataset/
+  corpus binding and 18-run pair plan together, including matching dataset and
+  corpus fingerprints. It does not obtain credentials, send requests or
+  authorize measurement, and has not yet been wired into a real-target runner.
 - **EXP-02 Steps 3–5:** Local path, response and scheduled-workload preparation
   exists on `task/exp-02-workload`. A ten-case dataset-bound draft now has five
   browse and two detail expected responses plus three reviewed Hybrid query
@@ -57,6 +61,33 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 - **Measurements:** No ECS/Lambda comparison or final NFR run is recorded here.
 
 ## History
+
+### 2026-11-01 21:32:23 UTC — EXP-02 combined pre-request input preflight
+
+**Direction:** User verified one offline gate that composes the existing
+ordered-reference/corpus binding and paired-plan checks. Preparation only; no
+session, request, experiment, cloud, database or provider call was authorized.
+
+**Change:** Added `comparison_run_preflight.py`. It reuses the binding checker
+to rebuild the complete corpus from the frozen archive and supplied ordered
+reference, then reuses the paired-plan checker to require a complete 9-pair/18
+run plan. It rejects plans whose dataset fingerprint or exact corpus file hash
+differs between the two inputs. The CLI accepts four bounded local JSON files
+and prints aggregate status only. The preparation guide and k6 README document
+the command and its future runner boundary.
+
+**Limits:** The gate is offline and always reports `measurement_authorized: false`.
+It does not verify human review, deployed identity, target/auth, timing, caps or
+database equivalence. It is not yet wired into a real-target runner; that runner
+must enforce it and all other reviewed gates before credentials or requests.
+Synthetic ordered results and run IDs are test fixtures only. No concurrency
+ceiling is encoded.
+
+**Checks:** Twenty-eight focused binding, paired-plan and composite-gate tests
+passed with warnings as errors, including aligned bindings, dataset/corpus
+mismatch, blank plan refusal, aggregate-only CLI output and sanitized failure.
+Strict Mypy, Black in-process formatting verification and `git diff --check`
+passed. Result awaits user verification.
 
 ### 2026-11-01 21:27:51 UTC — EXP-02 paired captured-manifest cross-check
 
