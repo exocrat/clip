@@ -76,6 +76,29 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 10:32:45 UTC — EXP-02 capture privacy and read-back checks
+
+**Direction:** User verified grouped preparation for privacy checks and saved-file
+verification. All inputs were synthetic; no experiment, session, cloud, database
+or external action occurred.
+
+**Change:** The local capture helper parses raw JSONL and report JSON before
+creating a run folder. It rejects malformed JSON, nonfinite values, known
+sensitive field names and recognizable sensitive-value patterns, with sanitized
+errors. It reads the written raw file, report and fingerprint record back through
+no-follow descriptors and compares exact hashes before returning. Failures retain
+partial files and do not authorize a run. The guide and README explain this
+limited check and its input requirements.
+
+**Checks and limits:** 38 synthetic capture, artifact and manifest tests, strict
+Mypy, in-process Black formatting and whitespace checks passed. Fixtures include
+escaped sensitive keys, cookies, bodies, embeddings, unsafe report fields,
+synthetic k6 points/report compatibility and simulated corruption. Pattern checks cannot recognize every secret or private
+value; independent privacy review remains necessary. A successful read-back does
+not prevent later edits or establish provenance, review or run validity. No real
+runner integration or real evidence is claimed. Result awaits user verification.
+
+
 ### 2026-11-02 10:29:13 UTC — EXP-02 local evidence capture preparation
 
 **Direction:** User continued the proposed grouped capture step. Only synthetic
