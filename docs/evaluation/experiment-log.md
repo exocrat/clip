@@ -79,6 +79,30 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 11:22:32 UTC — EXP-02 report outcome and route checks
+
+**Direction:** User verified checking outcome labels and route tags in the local
+report. Synthetic metric points only; no workload, real session, cloud, database
+or external action occurred.
+
+**Finding and change:** The report previously compared only total outcome and
+latency counts; equal totals with different outcome labels could appear complete.
+It now compares counts by outcome overall and by route, verifies route-level
+issued/HTTP/outcome/latency totals, marks mismatches incomplete, and suppresses
+affected correct-latency summaries. For selected-condition reports, tracked
+request metrics without route tags fail; dropped arrivals are exempt because no
+request was assigned. The report explicitly marks individual-request binding
+unverified. Tests exercise matching data, swapped outcome labels, cross-route
+mismatches, missing route tags and dropped-arrival handling.
+
+**Checks and limits:** 53 synthetic report, evidence and cost tests and the
+cross-component test passed; strict Mypy, in-process Black formatting and
+whitespace checks passed. Aggregate label consistency does not prove that each
+individual request was paired with its own latency. Timing protocol, actual
+runner, account, deployment and owner review gates remain open; no results or
+NFR acceptance are claimed. Result awaits user verification.
+
+
 ### 2026-11-02 11:19:10 UTC — EXP-02 offline component integration check
 
 **Direction:** User verified a grouped local end-to-end preparation check.

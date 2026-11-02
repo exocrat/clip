@@ -55,6 +55,7 @@ class ComparisonReportTests(unittest.TestCase):
         self.assertTrue(report["accounting_complete"])
         self.assertTrue(report["delivery_complete"])
         self.assertFalse(report["latency_timing_verified"])
+        self.assertFalse(report["individual_request_outcome_binding_verified"])
         self.assertIn("not a verified monotonic", report["latency_limitation"])
         low_measured = report["client_metrics"]["low_measured"]
         self.assertEqual(low_measured["throttled"], 1)
@@ -174,6 +175,73 @@ class ComparisonReportTests(unittest.TestCase):
         }
         with self.assertRaisesRegex(ValueError, "Missing or duplicate condition"):
             summarize_points([], duplicated, "low")
+
+    def test_outcome_mismatch_invalidates_accounting_despite_equal_totals(self):
+        phase = "low_measured"
+        points = [
+            point("clip_comparison_issued", 1, phase=phase, kind="browse"),
+            point("http_reqs", 1, phase=phase, kind="browse"),
+            point(
+                "clip_comparison_outcomes",
+                1,
+                phase=phase,
+                kind="browse",
+                outcome="correct",
+            ),
+            point(
+                "clip_comparison_elapsed_ms",
+                12,
+                phase=phase,
+                kind="browse",
+                outcome="timeout",
+            ),
+        ]
+        cohort = summarize_points(points, self.profile, "low")["client_metrics"][phase]
+        self.assertEqual(cohort["completed"], 1)
+        self.assertFalse(cohort["outcome_latency_counts_match"])
+        self.assertFalse(cohort["accounting_complete"])
+        self.assertIsNone(cohort["correct_latency_ms"])
+        self.assertFalse(cohort["routes"]["browse"]["outcome_latency_counts_match"])
+
+    def test_cross_route_mismatch_and_missing_route_are_refused(self):
+        phase = "low_measured"
+        points = [
+            point("clip_comparison_issued", 1, phase=phase, kind="browse"),
+            point("http_reqs", 1, phase=phase, kind="browse"),
+            point(
+                "clip_comparison_outcomes",
+                1,
+                phase=phase,
+                kind="browse",
+                outcome="correct",
+            ),
+            point(
+                "clip_comparison_elapsed_ms",
+                12,
+                phase=phase,
+                kind="search",
+                outcome="correct",
+            ),
+        ]
+        cohort = summarize_points(points, self.profile, "low")["client_metrics"][phase]
+        self.assertTrue(cohort["outcome_latency_counts_match"])
+        self.assertFalse(cohort["route_accounting_matches"])
+        self.assertFalse(cohort["accounting_complete"])
+        self.assertIsNone(cohort["correct_latency_ms"])
+        for metric, tags in [
+            ("clip_comparison_issued", {}),
+            ("http_reqs", {}),
+            ("clip_comparison_outcomes", {"outcome": "correct"}),
+            ("clip_comparison_elapsed_ms", {"outcome": "correct"}),
+        ]:
+            with self.assertRaisesRegex(ValueError, "Missing route tag"):
+                summarize_points(
+                    [point(metric, 1, phase=phase, **tags)], self.profile, "low"
+                )
+        dropped = summarize_points(
+            [point("dropped_iterations", 1, scenario=phase)], self.profile, "low"
+        )
+        self.assertEqual(dropped["client_metrics"][phase]["dropped_iterations"], 1)
 
     def test_cli_keeps_raw_immutable_and_refuses_to_replace_derived_report(self):
         with tempfile.TemporaryDirectory() as directory:

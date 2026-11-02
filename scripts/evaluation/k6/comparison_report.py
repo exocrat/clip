@@ -159,6 +159,12 @@ def summarize_points(
         route = tags.get("kind")
         if route is not None and route not in ROUTES:
             raise ValueError("Unexpected route tag")
+        if (
+            condition is not None
+            and metric in tracked_metrics - {"dropped_iterations"}
+            and route is None
+        ):
+            raise ValueError("Missing route tag")
         route_record = record["route_data"][route] if route else None
         value = _number(point)
 
@@ -210,6 +216,7 @@ def summarize_points(
         ]
         all_latencies = [duration for duration, _ in record["latencies"]]
         route_results = {}
+        route_accounting_matches = True
         for route, route_record in sorted(record["route_data"].items()):
             route_outcomes = dict(route_record["outcomes"])
             route_latencies = [duration for duration, _ in route_record["latencies"]]
@@ -218,14 +225,31 @@ def summarize_points(
                 for duration, outcome in route_record["latencies"]
                 if outcome == "correct"
             ]
+            route_outcomes_match = Counter(route_outcomes) == Counter(
+                outcome for _, outcome in route_record["latencies"]
+            )
+            route_accounting = (
+                route_record["issued"]
+                == route_record["actual_http_requests"]
+                == sum(route_outcomes.values())
+                == len(route_record["latencies"])
+                and route_outcomes_match
+            )
+            route_accounting_matches = route_accounting_matches and route_accounting
             route_results[route] = {
                 "issued": route_record["issued"],
                 "actual_http_requests": route_record["actual_http_requests"],
                 "outcomes": route_outcomes,
+                "outcome_latency_counts_match": route_outcomes_match,
+                "accounting_complete": route_accounting,
                 "all_completed_latency_ms": _quantiles(route_latencies),
-                "correct_latency_ms": _quantiles(route_success_latencies),
+                "correct_latency_ms": (
+                    _quantiles(route_success_latencies) if route_accounting else None
+                ),
             }
-        outcome_count_matches_latency = completed == len(record["latencies"])
+        outcome_count_matches_latency = Counter(outcomes) == Counter(
+            outcome for _, outcome in record["latencies"]
+        )
         result[phase] = {
             "scheduled": expected_count,
             "issued": issued,
@@ -255,13 +279,20 @@ def summarize_points(
                 else profile["measured_seconds"]
             ),
             "all_completed_latency_ms": _quantiles(all_latencies),
-            "correct_latency_ms": _quantiles(successful_latencies),
+            "correct_latency_ms": (
+                _quantiles(successful_latencies)
+                if outcome_count_matches_latency and route_accounting_matches
+                else None
+            ),
             "routes": route_results,
+            "route_accounting_matches": route_accounting_matches,
             "accounting_complete": issued
             == actual
             == completed
             == len(record["latencies"])
-            and record["clock_invalid"] == 0,
+            and record["clock_invalid"] == 0
+            and outcome_count_matches_latency
+            and route_accounting_matches,
             "delivery_complete": issued + dropped == expected_count
             and dropped == 0
             and issued == expected_count,
@@ -277,6 +308,7 @@ def summarize_points(
         "accounting_complete": accounting_complete,
         "delivery_complete": delivery_complete,
         "latency_timing_verified": False,
+        "individual_request_outcome_binding_verified": False,
         "latency_limitation": (
             "Preview only: the workload uses Date.now(), which is not a "
             "verified monotonic end-to-end clock. Complete accounting or no "

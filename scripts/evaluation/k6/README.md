@@ -130,7 +130,11 @@ separate derived report. It reports scheduled, issued, HTTP, dropped, incomplete
 correct and failed counts; timeouts and 429 throttles; offered and correct
 throughput; and R7 p50/p95/p99 latency by cohort and route. Accounting mismatches,
 missing samples, drops and wall-clock anomalies remain visible and make the
-corresponding accounting/delivery flag false. Its infrastructure section says
+corresponding accounting/delivery flag false. Per-condition reports reject
+missing route tags on tracked request metrics, compare outcome and latency-label
+counts overall and by route, and suppress affected correct-latency summaries when
+counts disagree. Dropped arrivals do not require a route tag because no request
+was assigned. These aggregate checks do not prove per-request pairing. Its infrastructure section says
 `not_collected_local_preparation`; deployed ECS, Lambda and PostgreSQL telemetry
 must be attached separately before a real run is assessed.
 

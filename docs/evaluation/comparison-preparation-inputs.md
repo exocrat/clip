@@ -386,6 +386,22 @@ the SE-01 owner to review the actual cases. Both commands are offline and report
 `execution_permitted: false`; a future runner must validate the complete corpus
 and manifest before obtaining credentials or sending requests.
 
+## Outcome and latency accounting
+
+For a selected-condition report, tracked request metrics must carry a valid
+route tag; dropped arrivals are exempt because no request was issued. The report
+compares outcome-label counts with latency-label counts overall and for each
+route, and checks per-route issued, HTTP, completion and latency totals. A
+mismatch marks accounting incomplete and suppresses affected correct-latency
+summaries rather than presenting them as valid. Missing samples, drops and other
+run validity conditions remain separately visible.
+
+These are aggregate checks. Two records can have matching totals while still
+being incorrectly paired at the individual-request level; current raw metrics
+do not establish that pairing. The report explicitly marks individual request
+binding and latency timing unverified. The real runner and the selected timing
+protocol need independent review before measurements or scoring.
+
 ## Offline per-run cost arithmetic
 
 `comparison_cost_preview.py` calculates one run's pre-credit USD cost per
