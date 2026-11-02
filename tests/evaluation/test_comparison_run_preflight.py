@@ -505,3 +505,67 @@ def test_profile_hash_checks_exact_bytes_and_object(prepared_inputs: Any) -> Non
             profile_bytes=content,
             expected_profile_sha256=digest,
         )
+
+
+def test_offline_preparation_checks_all_inputs_and_planned_run(
+    tmp_path: Path, prepared_inputs: Any
+) -> None:
+    from scripts.evaluation.k6.comparison_offline_prepare import (
+        FILE_FIELDS,
+        prepare_inputs,
+    )
+
+    binding, corpus, reference, plan = prepared_inputs
+    profile = build_profile(binding, corpus, reference, plan, 1, 2, 301)
+    values = (
+        json.dumps(binding).encode(),
+        corpus,
+        json.dumps(reference).encode(),
+        json.dumps(plan).encode(),
+        profile,
+    )
+    paths = {name: tmp_path / f"{name}.json" for name in FILE_FIELDS}
+    for name, value in zip(FILE_FIELDS, values):
+        paths[name].write_bytes(value)
+    digest = hashlib.sha256(profile).hexdigest()
+    result = prepare_inputs(paths, 1, "synthetic-c1-p0-A", digest)
+    assert result["local_inputs_checked"] is True
+    assert result["measurement_authorized"] is False
+    assert result["remaining_run_gates"]
+    assert prepare_inputs(paths, 1, "synthetic-c2-p0-A", digest)["invalid_inputs"] == [
+        "input_bindings_or_planned_run"
+    ]
+    assert (
+        prepare_inputs(paths, 1, "synthetic-c1-p0-A", "0" * 64)["local_inputs_checked"]
+        is False
+    )
+    paths["workload_profile"].write_bytes(profile + b" ")
+    assert (
+        prepare_inputs(paths, 1, "synthetic-c1-p0-A", digest)["local_inputs_checked"]
+        is False
+    )
+    missing = prepare_inputs({}, None, None, None)
+    assert len(missing["missing_inputs"]) == 8
+    assert missing["requests_sent"] is False
+    paths["corpus"].unlink()
+    paths["corpus"].symlink_to(paths["binding_plan"])
+    assert (
+        "corpus"
+        in prepare_inputs(paths, 1, "synthetic-c1-p0-A", digest)["invalid_inputs"]
+    )
+
+
+def test_offline_preparation_cli_lists_missing_inputs_without_echoing_paths() -> None:
+    command = [
+        sys.executable,
+        "-m",
+        "scripts.evaluation.k6.comparison_offline_prepare",
+        "--binding-plan",
+        "/nonexistent/private-location",
+    ]
+    result = subprocess.run(command, capture_output=True, text=True, check=False)
+    assert result.returncode == 2
+    report = json.loads(result.stdout)
+    assert "binding_plan" in report["invalid_inputs"]
+    assert "ordered_reference" in report["missing_inputs"]
+    assert "/nonexistent/private-location" not in result.stdout + result.stderr

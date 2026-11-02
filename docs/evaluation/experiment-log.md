@@ -76,6 +76,35 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 09:43:48 UTC — EXP-02 offline runner preparation
+
+**Direction:** User verified grouped offline runner preparation and asked to
+complete EXP-02 as efficiently as its remaining gates allow. No credentials,
+workload, cloud, database or external-service call was made.
+
+**Change:** Added a non-executing local preparation stage for one planned run.
+It lists missing and individually unreadable/invalid inputs without echoing
+content, reuses the existing full corpus/reference/plan/profile preflight,
+checks exact profile bytes against the supplied hash, and confirms the selected
+run ID belongs to the selected cycle. Inputs are bounded local regular files;
+the final path component cannot be a symlink. It always reports that measurement
+is unauthorized and lists remaining gates. The tool does not invoke k6, obtain
+a session, accept a target or send requests. Guide and README describe inputs,
+exit codes and limits.
+
+**Checks:** 74 focused synthetic preflight, binding and pair-plan tests, strict
+Mypy, in-process Black formatting and whitespace checks passed. Tests exercise
+missing files, mismatched profiles, incorrect planned run,
+non-followed final symlinks and sanitized CLI output. No actual experiment
+reference or accepted real-run input is claimed.
+
+**Limits:** Hash matching does not establish review or protect files after the
+check. Run identity is a declared plan match, not deployed routing. Owner review,
+actual reference and seed, capacity, timing, authentication, real runner,
+deployed parity, approval, telemetry, costs and cleanup remain open. This stage
+cannot authorize a run; result awaits user verification.
+
+
 ### 2026-11-02 09:30:00 UTC — EXP-02 three-run cost median
 
 **Direction:** User verified the cost binding check and the next offline

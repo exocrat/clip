@@ -146,6 +146,32 @@ settings, or hash the raw results. Investigate clock discrepancies rather than
 changing timestamps to make a check pass. Use the separate artifact verifier
 for the manifest's evidence files. Both checks remain offline and non-authorizing.
 
+## Offline preparation for one planned run
+
+The preparation stage combines the existing corpus, plan and profile checks for
+one selected run. It reads local inputs only and cannot obtain a session, launch
+k6 or send requests. Run it with file paths and values from the reviewed plan:
+
+```sh
+.venv/bin/python -m scripts.evaluation.k6.comparison_offline_prepare \
+  --binding-plan binding.json --corpus corpus.json \
+  --ordered-reference ordered.json --paired-plan paired.json \
+  --workload-profile profile.json --cycle 1 \
+  --run-id PLANNED_RUN_ID --expected-profile-sha256 EXPECTED_SHA256
+```
+
+Omitting options lists their names as missing. An unreadable, malformed or
+non-regular file is listed as invalid; the final path component cannot be a
+symlink. Consistency failures or a run ID outside the selected cycle are
+reported as `input_bindings_or_planned_run` without printing supplied contents.
+The process exits 2 for missing or invalid inputs and 0 only when those local
+checks pass. It always reports `measurement_authorized: false` and lists other
+review, deployment, timing, capacity, authentication, telemetry, cost and run
+approval gates. Success does not prove human review, parity, capacity, execution
+of the checked bytes, or run readiness. It is not yet integrated into a
+real-target runner. The expected profile hash must be sourced from the reviewed
+plan; these checks do not prevent file changes after reading.
+
 ## Combined pre-request input check
 
 Before a future comparison runner requests a session or sends a request, it must

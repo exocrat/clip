@@ -283,3 +283,7 @@ for the offline command and limitations.
 `comparison_cost_median.py` checks three run inputs and calculates their
 per-run cost median offline. The [preparation guide](../../../docs/evaluation/comparison-preparation-inputs.md#three-run-cost-median-preview)
 describes the command and outstanding validity checks.
+
+`comparison_offline_prepare.py` combines local preflight checks for a selected
+planned run, lists missing or invalid inputs, and always keeps measurement
+disabled. See [offline preparation](../../../docs/evaluation/comparison-preparation-inputs.md#offline-preparation-for-one-planned-run).
