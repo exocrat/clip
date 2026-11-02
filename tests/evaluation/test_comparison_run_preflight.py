@@ -176,7 +176,7 @@ def test_parity_draft_profiles_are_offline_only_and_bound_to_each_cycle(
 
 
 def test_parity_preparation_validates_before_comparing_without_a_session(
-    prepared_inputs: Any, monkeypatch: Any
+    prepared_inputs: Any, monkeypatch: Any, tmp_path: Path
 ) -> None:
     old_binding, _, old_reference, old_plan = prepared_inputs
     reference = {
@@ -246,6 +246,48 @@ def test_parity_preparation_validates_before_comparing_without_a_session(
     assert mismatch["all_equal_and_valid"] is False
     assert mismatch["cases_equal_and_valid"] == 9
     assert len(calls) == 2
+    paths = {
+        name: tmp_path / f"{name}.json"
+        for name in ("binding", "corpus", "reference", "plan", "profile")
+    }
+    for name, data in (
+        ("binding", json.dumps(binding).encode()),
+        ("corpus", corpus_bytes),
+        ("reference", json.dumps(reference).encode()),
+        ("plan", json.dumps(plan).encode()),
+        ("profile", profile),
+    ):
+        paths[name].write_bytes(data)
+    command = [
+        sys.executable,
+        "-m",
+        "scripts.evaluation.k6.comparison_parity_preparation",
+    ]
+    for name, path in paths.items():
+        command += ["--" + name, str(path)]
+    command += ["--cycle", "1", "--profile-sha256", profile_hash]
+    cli = original(
+        command,
+        input=json.dumps(cases),
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=30,
+    )
+    assert cli.returncode == 2
+    assert json.loads(cli.stdout)["cases_equal_and_valid"] == 9
+    assert "android smartphone" not in cli.stdout + cli.stderr
+    cases[0]["b"]["status"] = 200
+    cli = original(
+        command,
+        input=json.dumps(cases),
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=30,
+    )
+    assert cli.returncode == 0
+    assert json.loads(cli.stdout)["measurement_authorized"] is False
 
 
 @pytest.mark.parametrize("cycle", [1, 2, 3])

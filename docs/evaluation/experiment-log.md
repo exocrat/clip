@@ -79,6 +79,24 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 13:42:03 UTC — Offline combined parity command
+
+**Direction:** User verified continuing the offline search-parity integration.
+Only synthetic local inputs were used; no session, workload or external call.
+
+**Change:** Added a command for the existing connected draft preflight and
+ten-case comparator. It reads bounded local inputs and synthetic response pairs
+from standard input, emits only hashes/counts/flags and exits nonzero for a
+difference or invalid input. The guide specifies arguments and input. The
+integration test exercises command success and mismatch, and checks query text
+is absent from output.
+
+**Checks and limits:** Two focused synthetic integration/profile tests, strict
+Mypy, Black and whitespace checks passed. This command does not obtain responses,
+authenticate either deployed path, establish relevance or authorize a run.
+The actual runner, deployment parity, timing, account and affected-owner review
+gates remain open. Result awaits user verification; no NFR pass is claimed.
+
 ### 2026-11-02 13:38:47 UTC — Offline draft input and parity preparation
 
 **Direction:** User verified continuing. Connected draft-input checks and the

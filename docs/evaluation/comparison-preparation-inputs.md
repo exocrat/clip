@@ -77,6 +77,20 @@ fails without printing supplied contents. Use synthetic fixtures at this stage.
 This helper does not fetch responses, authenticate deployments, verify relevance,
 or authorize a run; the real runner and pre-run parity gate remain unimplemented.
 
+For synthetic fixtures, the same check is available as a single offline command:
+
+```sh
+.venv/bin/python -m scripts.evaluation.k6.comparison_parity_preparation \
+  --binding binding-plan.json --corpus parity-corpus.json \
+  --reference parity-binding.json --plan paired-plan.json \
+  --profile draft-profile.json --cycle 1 --profile-sha256 PROFILE_SHA256 \
+  < synthetic-response-pairs.json
+```
+
+The standard input is the ten-case array described above, not a session or
+credential. The command emits only hashes, counts and flags; exit 2 means invalid
+input or a difference. It does not retrieve responses or authorize a run.
+
 These are offline preparation tools for EXP-02 Steps 4, 6 and 7. They do not
 contact a service, authorize a run or establish DATA-READY. Actual owner review,
 deployed parity, generator capacity and action approvals remain separate gates.

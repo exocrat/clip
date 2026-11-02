@@ -5,13 +5,16 @@ No requests, sessions or deployment checks are performed. This is not a run gate
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 from pathlib import Path
 import subprocess
+import sys
 from typing import Any
 
 from scripts.evaluation.k6.comparison_run_preflight import validate_run_inputs
+from scripts.evaluation.k6.comparison_offline_prepare import _read_local
 
 ROOT = Path(__file__).resolve().parents[3]
 MAX_INPUT_BYTES = 5_000_000
@@ -103,3 +106,41 @@ def check_draft_parity(
         "independent_correctness_verified": False,
         "measurement_authorized": False,
     }
+
+
+def main() -> None:
+    """Read checked local inputs and synthetic response pairs from standard input."""
+    parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
+    for name in ("binding", "corpus", "reference", "plan", "profile"):
+        parser.add_argument("--" + name, type=Path, required=True)
+    parser.add_argument("--cycle", type=int, required=True)
+    parser.add_argument("--profile-sha256", required=True)
+    args = parser.parse_args()
+    try:
+        binding = json.loads(_read_local(args.binding))
+        corpus = _read_local(args.corpus)
+        reference = json.loads(_read_local(args.reference))
+        plan = json.loads(_read_local(args.plan))
+        profile = _read_local(args.profile)
+        data = sys.stdin.buffer.read(MAX_INPUT_BYTES + 1)
+        if len(data) > MAX_INPUT_BYTES:
+            raise ValueError("parity_input_too_large")
+        result = check_draft_parity(
+            binding,
+            corpus,
+            reference,
+            plan,
+            profile,
+            args.cycle,
+            args.profile_sha256,
+            json.loads(data),
+        )
+        print(json.dumps(result, sort_keys=True))
+        if not result["all_equal_and_valid"]:
+            parser.exit(2)
+    except (OSError, ValueError, TypeError, KeyError, RecursionError):
+        parser.exit(2, "Offline parity preparation failed; no workload started\n")
+
+
+if __name__ == "__main__":
+    main()
