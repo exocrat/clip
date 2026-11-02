@@ -1,5 +1,14 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### EXP-02 real-runner design review — 2026-11-02 09:56:27 UTC
+
+User verified tracing runner contracts. Documented the local-only login gap,
+proposed real-runner sequence and open synthetic-account, secure-session, target,
+checked-byte, timing and capacity choices. Source review and whitespace checks
+passed; no execution or external action occurred. Result awaits verification.
+[Runner design](../evaluation/comparison-runner-design.md);
+[experiment log](../evaluation/experiment-log.md).
+
 ### EXP-02 mock runner ordering — 2026-11-02 09:53:25 UTC
 
 User verified offline preparation and authorized a simulated ordering check.
@@ -1714,7 +1723,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | CN-03 | A; D producer review | in progress | PR #21: migration-fixture CI fix locally verified; hosted CI pending | Full local checks passed: Python 2073/171 skipped, data 331, web 497/3 skipped, Conversations 184, migration and safety checks | Aditya confirmed prior task items done; current fix awaits hosted CI | Draft [PR #21](https://github.com/exocrat/clip/pull/21), branch includes merge `de2c94a` and local fixture fix | Push only after local checks; confirm hosted CI and obtain independent PR review | 2026-10-31 19:43:57 UTC |
 | INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
 | EXP-01 | C; Suraj coordinates NEXT-01 design | done | NEXT-01 design and gates are approved; actual topology pricing and numeric cost endpoints are NEXT-07 pre-result gates. | Design Steps 1–9 performed; no experiment run | Suraj verified NEXT-01 Steps 1–9 on 2026-10-28; user clarified the 300 concurrent-client-request proposal is non-binding on 2026-11-01 UTC. | [Approved design and gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md); [NEXT-07 execution plan](../tasks/remaining-project-plan.md#experiment-protocol-reference) | Implementation, final data/tools, actual account/spend, numeric cost endpoints, and separate run approvals remain before measurement. | 2026-10-28 06:24:24 UTC |
-| EXP-02 | Rahul (D), reassigned by user; Search owner C review | in progress | Mock runner ordering check prepared; result awaits verification | 64 focused synthetic preflight tests, strict Mypy and in-process Black formatting passed; no workload run | Offline runner preparation verified; mock runner check awaits verification | `task/exp-02-workload`; [experiment log](../evaluation/experiment-log.md) | Actual reviewed ordered Hybrid cases, final search deployment/source mapping, timing protocol, owner-reviewed NFR profiles, other timeout sources, k6 provenance, Node 24, generator caps, actual rotation seed and session limits, coordinated command-registry update, real-target runner enforcement and proof of profile use, A/B parity, run authorization, telemetry, cost and cleanup evidence remain pending; 300-request proposal is non-binding | 2026-11-02 09:53:25 UTC |
+| EXP-02 | Rahul (D), reassigned by user; Search owner C review | in progress | Real-runner design and open choices documented; result awaits verification | Source and documentation review and whitespace checks passed; no workload run | Mock runner check verified; real-runner design awaits verification | `task/exp-02-workload`; [experiment log](../evaluation/experiment-log.md) | Actual reviewed ordered Hybrid cases, final search deployment/source mapping, timing protocol, owner-reviewed NFR profiles, other timeout sources, k6 provenance, Node 24, generator caps, actual rotation seed and session limits, coordinated command-registry update, real-target runner enforcement and proof of profile use, A/B parity, run authorization, telemetry, cost and cleanup evidence remain pending; 300-request proposal is non-binding | 2026-11-02 09:56:27 UTC |
 | EXP-03 | B | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-02 | — |
 | EXP-04 | B | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-03 | — |
 | EXP-05 | C | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-04 | — |

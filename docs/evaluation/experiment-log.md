@@ -76,6 +76,32 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 09:56:27 UTC — EXP-02 real-runner design review
+
+**Direction:** User verified reviewing authentication, runner and evidence
+contracts and documenting unresolved decisions. No credentials, live requests,
+workload, database, cloud or provider action occurred.
+
+**Evidence and output:** Reviewed the approved comparison plan, local smoke
+runner, scheduled workload, Identity HTTP composition and evidence verifier.
+The local runner uses the isolated inspection login and loopback cookie; neither
+is an approved real test access path. The product Identity code exposes regular
+Microsoft exchange and separate temporary-account sessions; the plan calls for
+an authorized regular synthetic account. The scheduled workload remains
+loopback-only and uses unverified `Date.now` timing. Added
+[runner design](comparison-runner-design.md) with a proposed preflight, approval,
+session, checked-byte, capture and failure sequence, plus explicit owner inputs.
+The design does not select an authentication handoff, authorize a run, verify
+actual synthetic account access or change an approved protocol.
+
+**Checks and limitations:** Reviewed source and documentation and ran
+`git diff --check`; no executable code or frozen artifacts changed. Asked the
+user about the synthetic regular-account session and any existing secure handoff.
+Target authorization, profile-to-execution binding, safe evidence capture,
+timing, capacity and owner review remain open. This is a design draft, not an
+implemented real runner. Result awaits user verification.
+
+
 ### 2026-11-02 09:53:25 UTC — EXP-02 mock runner ordering
 
 **Direction:** User verified the offline preparation stage and the grouped mock
