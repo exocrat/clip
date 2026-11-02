@@ -13,6 +13,7 @@ import pytest
 
 from scripts.evaluation.k6.comparison_ordered_results import bind_ordered_results
 from scripts.evaluation.k6.comparison_parity_corpus import build_parity_corpus
+from scripts.evaluation.k6.comparison_parity_preparation import check_draft_parity
 from scripts.evaluation.k6.comparison_pair_plan import TEMPLATE as PAIR_TEMPLATE
 from scripts.evaluation.k6.comparison_profile_builder import build_profile
 from scripts.evaluation.k6.comparison_run_preflight import (
@@ -172,6 +173,79 @@ def test_parity_draft_profiles_are_offline_only_and_bound_to_each_cycle(
     assert cli.returncode == 0
     assert json.loads(cli.stdout)["measurement_authorized"] is False
     assert json.loads(cli.stdout)["parity_draft"] is True
+
+
+def test_parity_preparation_validates_before_comparing_without_a_session(
+    prepared_inputs: Any, monkeypatch: Any
+) -> None:
+    old_binding, _, old_reference, old_plan = prepared_inputs
+    reference = {
+        key: value
+        for key, value in old_reference.items()
+        if key not in {"review_record_reference", "queries"}
+    }
+    reference["format_version"] = 2
+    corpus = build_parity_corpus(reference, old_binding["application_revision"])
+    corpus_bytes = json.dumps(corpus, sort_keys=True).encode()
+    binding = {
+        **old_binding,
+        "case_corpus_sha256": hashlib.sha256(corpus_bytes).hexdigest(),
+    }
+    plan = deepcopy(old_plan)
+    plan["shared_inputs"]["case_corpus_sha256"] = binding["case_corpus_sha256"]
+    profile = build_profile(
+        binding, corpus_bytes, reference, plan, 1, 2, 3, parity_draft=True
+    )
+    profile_hash = hashlib.sha256(profile).hexdigest()
+    cases = []
+    for case in corpus["cases"]:
+        response = (
+            case["expected"]
+            if case["request"]["kind"] != "search"
+            else {"items": [], "page": 1, "page_size": 20, "has_next": False}
+        )
+        cases.append(
+            {
+                "case_id": case["case_id"],
+                "request": case["request"],
+                "a": {"status": 200, "body": response},
+                "b": {"status": 200, "body": deepcopy(response)},
+            }
+        )
+    arguments = (
+        binding,
+        corpus_bytes,
+        reference,
+        plan,
+        profile,
+        1,
+        profile_hash,
+        cases,
+    )
+    import scripts.evaluation.k6.comparison_parity_preparation as module
+
+    original = module.subprocess.run
+    calls = []
+
+    def run(*args, **kwargs):
+        calls.append(True)
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(module.subprocess, "run", run)
+    bad = deepcopy(binding)
+    bad["dataset_fingerprint"] = "invalid"
+    with pytest.raises(ValueError, match="dataset_fingerprint_mismatch"):
+        check_draft_parity(bad, *arguments[1:])
+    assert not calls
+    result = check_draft_parity(*arguments)
+    assert result["all_equal_and_valid"] is True
+    assert result["measurement_authorized"] is False
+    assert "android smartphone" not in json.dumps(result)
+    cases[0]["b"]["status"] = 503
+    mismatch = check_draft_parity(*arguments)
+    assert mismatch["all_equal_and_valid"] is False
+    assert mismatch["cases_equal_and_valid"] == 9
+    assert len(calls) == 2
 
 
 @pytest.mark.parametrize("cycle", [1, 2, 3])

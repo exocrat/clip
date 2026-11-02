@@ -79,6 +79,27 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 13:38:47 UTC — Offline draft input and parity preparation
+
+**Direction:** User verified continuing. Connected draft-input checks and the
+ten-case comparison with synthetic responses only; no session, workload, cloud
+or external request occurred.
+
+**Change:** Added a bounded offline Python helper that first validates the
+archive-bound draft, paired plan and selected profile hash, then invokes the
+fixed local Node comparator using standard input. It returns only corpus/profile
+hashes and aggregate counts, with deployment, independent correctness and
+measurement authorization false. Tests verify bad bindings stop before the
+comparator, all ten fabricated matches pass, one mismatch is visible, and query
+content is absent from the result. The guide records the interface and limits.
+
+**Checks and limits:** Two focused integration tests, strict Mypy, Black and
+whitespace checks passed. The helper is not a real runner or enforced gate; it
+does not fetch responses, prove actual deployment or establish search relevance.
+The normal run preflight remains closed to the draft. Protocol and owner review,
+actual parity, account, timing and telemetry remain open. Result awaits user
+verification; no experiment or NFR pass is claimed.
+
 ### 2026-11-02 13:34:00 UTC — Offline parity draft profiles
 
 **Direction:** User verified continuing and requested grouped work. Prepared

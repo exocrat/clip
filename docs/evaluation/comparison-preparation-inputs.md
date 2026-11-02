@@ -68,6 +68,15 @@ it reports counts without response bodies. Equal responses do not independently
 establish correct search relevance, data identity or deployed configuration.
 This remains an offline check rather than an enforced run gate.
 
+`comparison_parity_preparation.check_draft_parity` connects the draft binding,
+paired-plan and profile-hash checks to that ten-case comparator. It validates
+all supplied draft inputs before starting the fixed local Node comparator, passes
+supplied response pairs through standard input, and returns hashes and aggregate
+counts only. A mismatch returns `all_equal_and_valid: false`; malformed input
+fails without printing supplied contents. Use synthetic fixtures at this stage.
+This helper does not fetch responses, authenticate deployments, verify relevance,
+or authorize a run; the real runner and pre-run parity gate remain unimplemented.
+
 These are offline preparation tools for EXP-02 Steps 4, 6 and 7. They do not
 contact a service, authorize a run or establish DATA-READY. Actual owner review,
 deployed parity, generator capacity and action approvals remain separate gates.
