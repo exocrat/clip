@@ -323,6 +323,34 @@ def test_worker_opt_in_shares_helper_and_closes_before_helper_and_read_pool():
     asyncio.run(exercise())
 
 
+def test_lambda_read_runtime_can_use_one_connection_without_starting_worker():
+    """Keep the Lambda Hybrid read pool single-connection and worker-free."""
+
+    async def exercise():
+        pool, helper = resources()
+        settings = enabled().model_copy(update={"hybrid_worker_enabled": True})
+        with (
+            patch(MODULE + ".AsyncConnectionPool", return_value=pool) as pools,
+            patch(MODULE + ".SemanticHelper", return_value=helper),
+            patch(MODULE + ".EmbeddingDispatcher") as dispatch,
+        ):
+            async with search_runtime(
+                settings,
+                pool_max_size=1,
+                enable_worker=False,
+            ) as runtime:
+                assert runtime.state == "ready"
+                assert runtime.pool is pool and runtime.helper is helper
+                assert runtime.dispatcher is None
+                assert pools.call_args.kwargs["max_size"] == 1
+                assert pools.call_args.kwargs["min_size"] == 1
+                dispatch.assert_not_called()
+        pool.close.assert_awaited_once()
+        helper.close.assert_awaited_once()
+
+    asyncio.run(exercise())
+
+
 def test_unavailable_helper_never_starts_a_worker():
     async def exercise():
         pool, helper = resources()

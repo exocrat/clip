@@ -20,7 +20,11 @@ from app.domains.identity.email_configuration import (
     SsmEmailRouteLoader,
 )
 from app.domains.identity.email_routing import RefreshingEmailSender
-from app.domains.identity.http import BrowserPolicy, IdentityHttpDependencies
+from app.domains.identity.http import (
+    BrowserPolicy,
+    IdentityHttpDependencies,
+    IdentityReadDependencies,
+)
 from app.domains.identity.microsoft import MicrosoftKeys, MicrosoftTokenValidator
 from app.domains.identity.runtime_database import connection_factory, validate_database
 from app.domains.identity.sessions import IdentitySessions
@@ -161,6 +165,41 @@ def prepare_hosted_test_identity(
     except Exception:
         raise ConfigurationError("Invalid hosted Identity browser policy") from None
     return _prepare_identity(settings, policy, references, client=client, clock=clock)
+
+
+def prepare_hosted_test_identity_reads(
+    settings: Settings,
+    references: RuntimeReferences = RuntimeReferences(),
+    *,
+    client: ParameterClient | None = None,
+    clock: Callable[[], datetime] = lambda: datetime.now(UTC),
+) -> IdentityReadDependencies:
+    """Prepare existing-cookie validation without email or login provider startup.
+
+    Explicit hosted test opt-in only. Reads the same fixed auth-key and Identity
+    DB references, reuses the existing role/key audit and real session service.
+    This does not narrow that DB role's grants or change authentication semantics.
+    Actual secret/DB access remains an operator action requiring separate approval.
+    """
+    if (
+        not settings.identity_runtime_enabled
+        or settings.environment != "test"
+        or settings.development_auth
+        or settings.isolated_listings_test_caller
+    ):
+        raise ConfigurationError("Explicit hosted Identity test mode required")
+    try:
+        policy = BrowserPolicy(settings.identity_browser_origins)
+        parameter_client = client or SsmEmailRouteLoader._make_client()
+        keys = parse_authentication_keys(
+            read_secure_parameter(parameter_client, references.authentication_keys)
+        )
+        dsn = read_secure_parameter(parameter_client, references.database_url)
+        connect = connection_factory(dsn, settings.environment)
+        validate_database(connect, keys)
+        return IdentityReadDependencies(IdentitySessions(connect, keys, clock), policy)
+    except Exception:
+        raise ConfigurationError("Identity read startup validation failed") from None
 
 
 def _prepare_identity(

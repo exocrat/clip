@@ -213,6 +213,17 @@ def test_exact_composition_exception(tmp_path, monkeypatch):
     )[0]
 
 
+def test_lambda_composition_import_is_scoped_to_its_entry_point():
+    """Permit session bootstrap in Lambda while rejecting other private modules."""
+    source = "from app.domains.identity.runtime_configuration import prepare_hosted_test_identity_reads"
+    assert not checker.inspect_source("apps/api/app/lambda_main.py", source)[0]
+    assert checker.inspect_source(SEARCH, source)[0]
+    assert checker.inspect_source(
+        "apps/api/app/lambda_main.py",
+        "from app.domains.identity.sessions import IdentitySessions",
+    )[0]
+
+
 def test_cli_drift_and_recovery(tmp_path):
     """Real CLI rejects an introduced violation, preserves source, then passes recovery."""
     for source, expected in (

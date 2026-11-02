@@ -75,9 +75,738 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
   that resolve to the same inode. This checks recorded digests and distinctness;
   it cannot prove when the digest was recorded or authenticate the artifacts.
   No run output has been captured.
+- **EXP-02 session input:** Aditya has recommended signing in before the measured
+  run and privately passing the resulting HttpOnly CLIP session cookie to k6;
+  the user reports receiving two temporary test accounts. The repository already
+  has a preflight-gated, in-memory handoff draft using
+  `CLIP_COMPARISON_SESSION_COOKIE`, tested only with synthetic values. The real
+  session has not been acquired or handed off, and this report does not verify
+  either account, settle whether temporary accounts satisfy the approved account
+  class, or authorize a run. Do not record account identifiers or cookie values.
 - **Measurements:** No ECS/Lambda comparison or final NFR run is recorded here.
 
+- **EXP-03 narrow Lambda app composition:** The local app now exposes only the
+  two reviewed GET routes and caps its Listings and Hybrid pools at one
+  connection each; Conversations, notifications, wanted/saved stores, the
+  embedding worker and S3 image storage are skipped. Existing ECS composition
+  remains unchanged. This does not settle aggregate DB headroom or concurrency.
+  The Lambda entry point remains fail-closed by default; explicit hosted-test
+  opt-in now selects the session-only binding described below. Real authenticated
+  parity is still unverified.
+- A synthetic Hybrid lifecycle test confirms the Lambda override requests a
+  one-connection read pool and suppresses the optional worker. It does not prove
+  startup with the real database/model or endpoint response parity.
+- `apps/api/tests/test_lambda_read_routes.py` exercises the actual read-only
+  FastAPI routes over in-process ASGI transport with test-only trusted callers
+  and Listings adapters. It checks a successful Hybrid-labelled query envelope
+  and preserved filters/pagination, missing-session 401, malformed-query 422,
+  ineligible-user 403, detail identity/404, and safe 503 mapping for synthetic
+  database and pool-timeout failures. It does not prove real Identity, Hybrid
+  ranking/model startup or live database behavior.
+- The user assigned Rahul the scoped session-only Identity binding work. A new
+  read binding now reuses the existing session/browser middleware and public
+  eligibility dispatch without mounting Identity routes. Explicit Lambda test
+  opt-in prepares the existing real session service from only authentication-key
+  and database references, retaining the existing role/key audit and last-seen
+  session update. It skips email-route loading, sender warmup and Microsoft
+  metadata setup. Default startup remains unauthorized. Offline mock checks pass;
+  real SQL sessions, expiry/revocation, package startup, trusted HTTPS ingress and
+  owner/independent review remain pending.
+
 ## History
+
+### 2026-11-02 18:06:34 UTC — EXP-03 packaging checkpoint at user-requested stop
+
+User approved public build-image/locked-dependency retrieval and parallel work,
+then directed stopping work and committing all current repository changes locally.
+All image pulls completed before the stop; no build was started. An empty,
+task-specific Docker configuration was used without account credentials. Public
+Linux AMD64 image references resolved to these registry digests:
+- AWS adapter `public.ecr.aws/awsguru/aws-lambda-adapter:1.1.0`:
+  `sha256:17cfd08eff1dfea3f6a9a1e9c65fdac80aa4919b6085e746615530f43f57d2f1`.
+- `node:24.22.0-slim`:
+  `sha256:91acba91b842bec0bf7ea6f5e09c644c7ccad72c4996ed9616d861d1c7cd60d4`.
+- `python:3.14.8-slim-trixie`:
+  `sha256:fbecd461fc72d21b2143c6eaba25143738079154a6d0ea3da3aec724f50eed4a`.
+- `ghcr.io/astral-sh/uv:0.10.7`:
+  `sha256:edd1fd89f3e5b005814cc8f777610445d7b7e3ed05361f9ddfae67bebfe8456a`.
+
+These are observed pull digests, not independent human artifact acceptance or
+image-build evidence. A parallel read-only packaging audit found that Lambda's
+Dockerfile lacked a context ignore file. Added
+`apps/api/Dockerfile.lambda.dockerignore` with a deny-all rule: the Lambda recipe
+copies exclusively from image stages and needs no repository build context.
+This prevents a root-context build from sending unrelated worktree/local files.
+The audit also retained the existing test-mode and trusted-HTTPS ingress gates;
+neither image health nor route mounting proves authentication. The separate
+parallel static rerun produced no result and is not counted; earlier recorded
+checks remain the last test evidence. Parallel work was stopped at user direction.
+
+Pending: local image builds/startup, actual adapter/ALB behavior, real shared SQL
+sessions/Hybrid, DB/concurrency limits, Steps 4–6 and independent/affected-owner
+review. No deployment, account/secret access, cloud mutation, workload or NFR
+measurement occurred. Downloaded tools/wheels/images remain local ignored files
+or Docker cache and are not source-commit contents. No push is authorized.
+
+### 2026-11-02 17:38:25 UTC — EXP-03 contract/tooling blockers resolved locally
+
+**Direction/checkpoint:** User verified the 24-wheel preparation. Continued
+Step 3 with local artifact/tool discovery and static checks; no new dependency
+download was authorized or performed in this increment.
+
+**Node/contract result:** Found the previously retained executable at
+`/tmp/clip-cn02-final-node-FbkElB/node-v24.22.0-linux-x64/bin/node`; it reports
+**v24.22.0**. Using only a command-scoped PATH, ran
+`.venv/bin/python scripts/generate_contracts.py check`: **all eight registered
+artifacts current, format 2**. No generated output, lockfile, system Node, global
+link or existing environment was changed. This resolves the failed contract
+freshness check; it does not verify an upstream Node signature or establish a
+permanent tool installation. The temporary tool path must still exist for reuse.
+
+**Docker/privacy result:** The approved read-only Docker cache listing succeeded
+with sandbox escalation, without changing socket permissions or daemon settings.
+The required API/Hybrid/Lambda build bases and AWS adapter were not listed in the
+local cache. The pinned Gitleaks image was cached; the repo's source-only scanner
+then ran in its local container with network disabled and passed: **Gitleaks
+8.30.1 source snapshot, not Git history**. No application container was started
+or modified and no image was downloaded. Docker use remains subject to sandbox
+escalation rather than a permanent access repair.
+
+**Remaining:** Session-only wiring, wheel inputs and generated-contract freshness
+are locally checked. Public build-image/adapter retrieval and locked npm/Python
+dependency retrieval during container packaging need an explicit exception to
+the original external-service prohibition (the existing exception covers only
+the hash-pinned PyPI wheel download). Adapter digest, local image build/startup,
+real SQL/session/Hybrid parity, aggregate DB/concurrency, routing/infrastructure
+steps and independent review remain open. No deployment, cloud/account/secret
+access, API workload, NFR measurement, commit or publication occurred. Updated
+status checkpoint; whitespace check passed. This tooling check awaits verification.
+
+### 2026-11-02 17:35:56 UTC — EXP-03 pinned Linux wheel context prepared with pip
+
+**Authorization/scope:** User verified the explicit exception permitting pip to
+download only the repository's hash-pinned wheels from public PyPI. Network
+escalation for that exact action was approved. This does not authorize other
+public registry/Node downloads, credentials, cloud actions or measurements.
+Arch host/system packages and existing helper/API venvs were preserved.
+
+**Download and correction:** Used standalone Python 3.13.12's pip with explicit
+public PyPI, isolated configuration, required hashes, binary-only/no-dependency
+selection, CPython 3.13/ABI selectors, fixed platforms, zero retries and bounded
+timeouts. The initial allowed download stopped on protobuf: the numeric platform
+list selected its universal wheel, whose hash differed from the locked binary
+wheel. Pip refused it; no wheel files were saved. Installed wheel metadata showed
+the `cp310-abi3-manylinux2014_x86_64` tag. Adding that explicit compatible platform
+selected the locked binary archive; the retry downloaded all 24 wheels. No pin
+or hash was changed and no hash check was bypassed. The canonical deployment
+handoff now records the corrected platform list and exact pip-only command.
+
+**Artifact evidence:** `.tools/semantic/wheels` contains **24 wheels totaling
+51,910,303 bytes**. Independent checking parsed every requirement and wheel
+filename, compared exact version and SHA-256, refused duplicates/missing packages,
+and checked ZIP integrity. All passed. A new ignored inventory preserves each
+filename, size and SHA-256 plus the requirements file's SHA-256:
+`.tools/semantic/wheels-inventory-20261102T173541Z.json`, inventory SHA-256
+`eeac7a1f0b3ea3d6c738676ffce52f1af9f6c5ddbf70afea301bf0b306f90be8`.
+
+**Offline installation check:** Created a fresh disposable Python 3.13 venv,
+installed all frozen requirements through pip with `--no-index`, only the local
+wheel directory, `--require-hashes --only-binary :all: --no-deps`, and ran
+`pip check`. Both passed; no broken requirements. The owned disposable venv was
+removed afterward; existing helper venv was not replaced. No model inference,
+API request, experiment or performance data was produced. No source code,
+requirement lock, model/dataset/frozen manifest or system package changed.
+
+**Remaining/checkpoint:** Missing wheel archives are resolved locally. The
+adapter v1.1.0 image/digest, Node 24 contract check, Docker socket access, image
+build/startup, real DB/session/Hybrid parity and independent review remain open.
+Updated the package audit/design and work-log checkpoint; `git diff --check`
+passed. No deployment, account/secret access, cloud resource change, commit,
+push or PR occurred. This package-input increment awaits user verification.
+
+### 2026-11-02 17:33:16 UTC — EXP-03 Arch/pip-only dependency check and download gate
+
+**Direction/environment:** User reports Arch Linux, initially permits pacman/yay,
+then specifically directs Python installation through pip inside a virtual
+environment. Read-only evidence shows Linux x86_64, pacman/yay available,
+system Node 26.8.2 and pip 26.2.1; no system package was installed or changed.
+The existing `.tools/semantic/venv` is already Python 3.13.12, separate from the
+API's Python 3.14 environment. Model files remain present and unchanged.
+
+**Offline pip result:** Used the existing standalone Python's pip with
+`--isolated --python .tools/semantic/venv/bin/python` to install/check the frozen
+Linux requirements with `--no-index --require-hashes --only-binary :all:
+--no-deps`. All **24 pinned versions were already satisfied**; no package was
+installed or replaced. `pip check` passed: no broken requirements. Pip disabled
+its unwritable external cache; no cache permission was changed. Already-installed
+packages are not rehashed by this operation: this verifies version satisfaction
+and dependency consistency, not the original wheel bytes or image reproducibility.
+No inference, workload or performance probe was run.
+
+**Public-download attempt/blocker:** A pip-only wheel-download attempt against
+explicit public PyPI failed inside the sandbox; a bounded connectivity check
+confirmed DNS resolution was unavailable. The ignored wheel directory now exists
+but contains no downloaded artifacts. Requested network escalation for the exact
+hash-pinned download. Automatic approval review rejected it because the original
+preparation instructions prohibit external-service calls and it found no explicit
+scope exception. No alternate execution or download workaround was attempted.
+Public wheel retrieval remains pending explicit user approval of that exception.
+
+**Other limits:** A read-only local Docker image-list attempt was denied access
+to its Unix socket; no daemon state was changed or image-cache result inferred.
+No Node package, adapter manifest/image, model, system package, live account,
+secret, database or cloud resource was retrieved or changed. Existing installed
+libraries do not replace the missing hash-pinned wheel archives consumed by
+`Dockerfile.hybrid`; the package build, adapter digest, Node 24 contract check,
+real session/runtime parity and independent review remain pending.
+
+### 2026-11-02 17:24:53 UTC — EXP-03 package-input recheck after session verification
+
+User verified the session-only Identity implementation. Read the Step 3 task,
+Lambda/Hybrid image recipes and deployment artifact instructions. Local metadata
+checks confirm the CPython 3.13.12 Linux runtime and both model/tokenizer files
+are present; the required `.tools/semantic/wheels` directory is still absent.
+No adapter image digest is recorded in the searched source/configuration, and
+the repository-local Node executable is absent (available system Node 26 remains
+incompatible with the contract generator's Node 24 gate). This recheck does not
+reverify artifact hashes or inspect the Docker image cache. No download, registry
+lookup, build, account/secret access or cloud action occurred.
+
+Next necessary package inputs are the lock-selected Linux wheels, reviewed
+adapter v1.1.0 manifest/digest/image and Node 24.22.0 for the outstanding contract
+check. Retrieval requires permission to make the public artifact requests because
+the user's preparation-only scope forbids external-service calls. Package startup,
+real SQL/session checks and independent review remain open; the verified local
+implementation does not establish integration or EXP-03 completion.
+
+### 2026-11-02 17:23:04 UTC — EXP-03 Step 3 session-only Identity composition
+
+**Direction/scope:** User took ownership of the previously Aditya-owned session
+binding slice and verified implementation. Updated the task index with that
+scoped assignment; all ID-01 ownership and independent/affected-owner review
+requirements are otherwise retained. This is local Step 3 implementation on
+`task/exp-03-lambda`, not Step 4 routing, deployment or measurement. Earlier
+paired app-response checks are user-verified. This increment awaits verification.
+
+**Changed code:**
+- `apps/api/app/domains/identity/http.py`: `IdentityReadDependencies` validates
+  explicit session/browser bindings; `install_identity_reads` installs the
+  existing `IdentityBrowserMiddleware` without any Identity HTTP routes. Both
+  installation modes reject duplicate or mixed installation. Existing current
+  session/account checks, HTTPS/Origin policy, public eligibility dispatch and
+  last-seen update are reused. No cookie-derived user claim bypass is introduced.
+- `apps/api/app/domains/identity/runtime_configuration.py`:
+  `prepare_hosted_test_identity_reads` requires the existing hosted test opt-in,
+  reads only the fixed authentication-key and database references, uses existing
+  role/key validation and constructs real `IdentitySessions`. Email-route reads,
+  sender warmup and Microsoft metadata initialization are skipped. Errors are
+  sanitized. It reuses the existing full Identity role and session constructor,
+  including dummy Argon2 startup work; this is not a narrowed role or a measured
+  startup optimization. No bootstrap was run against real secrets or a database.
+- `apps/api/app/application.py`: adds the explicit `identity_reads` parameter,
+  permits it only in the guarded Lambda read mode, checks its policy against
+  configured origins, and refuses full Identity route installation in Lambda.
+  Added missing lifespan factory annotations discovered by Mypy; annotations do
+  not change resource behavior. The normal ECS Identity path is retained.
+- `apps/api/app/lambda_main.py`: defaults to unauthorized; the existing hosted
+  test opt-in selects the new bootstrap and passes its bindings to the restricted
+  app. Logging uses the existing safe formatter. Enabling real startup would
+  read secrets and audit the DB; no live startup was performed or authorized.
+- `apps/api/tests/test_lambda_identity.py`: offline checks cover both account
+  classes, cookie-to-session invocation, real public eligibility dispatch,
+  missing cookie/forged header denial, simulated session 401/503, expired trusted
+  context, ineligible account, HTTPS/Origin rejection before authentication,
+  route-surface limits, mode/duplicate guards, opt-in entry selection and
+  bounded/sanitized bootstrap behavior. Session/storage callbacks are mocks;
+  Starlette threadpool dispatch is replaced only in the offline fixture.
+- `scripts/check_boundaries.py` and `tests/architecture/test_boundaries.py`:
+  register the Lambda composition root's Identity runtime-module import and
+  explicit read-binding names, retaining rejection of other private modules
+  and cross-domain consumers. This follows the existing exact-file/module
+  exception model rather than granting general access to Identity internals.
+
+**Checks/results:** Focused Lambda routes/app/Identity/Hybrid-runtime plus boundary
+suite: **114 passed**. Existing offline Identity key/parameter/transport tests:
+**20 passed, 15 deselected**. Existing default ECS startup test: **1 passed,
+1 deselected**. Boundary scan: **0 violations**. Mypy passed all four changed
+production source files. Pinned Black 26.10.1 and compilation passed all seven
+changed Python files; whitespace checks passed. Initial mock assertions expected
+keyword arguments where generated public dispatch passes positional arguments:
+two tests failed, assertions were corrected, and the full focused suite passed.
+The first boundary scan correctly rejected the unregistered composition root;
+its scoped registry/test update passed. Mypy initially flagged pre-existing
+untyped lifespan factories; annotations resolved it.
+
+**Unavailable/remaining:** Generated-contract freshness check failed before
+generation because the available Node is 26.8.2 and the generator requires
+Node 24. No generated file was changed, no tool downloaded and no dependency
+installed. Full CI, packaged startup, real SQL session expiry/revocation and
+concurrency, ECS/Lambda shared-session parity, ingress trust, package inputs,
+independent review and merge remain open. The existing session validator updates
+last-seen even for listing reads; this preserves ECS behavior and is not a
+read-only-SQL claim. No real account/cookie, secret, DB, cloud/provider service,
+load workload or measurement was used. Raw results/frozen manifests are untouched.
+No commit, push or PR was made. Design and status checkpoints reflect these limits.
+
+### 2026-11-02 17:13:51 UTC — EXP-03 Step 3 local app response parity
+
+**Scope/verification:** User verified comparing the real ECS and restricted
+Lambda app compositions with identical synthetic dependencies. Work remains on
+`task/exp-03-lambda`, based on `ee4739a774b5cc39e0d6f0c0f07e3089c425aac7`;
+existing worktree changes were preserved. This increment changes only the route
+test file and these checkpoint documents. Its result awaits user verification.
+
+**Implementation:** Extended `apps/api/tests/test_lambda_read_routes.py` with a
+shared fixed detail fixture and nine paired response scenarios: nonempty browse,
+Hybrid-labelled search, detail, invalid query, missing authentication, forbidden
+account, missing detail, database failure and pool timeout. Each scenario creates
+the actual hosted ECS app and narrow Lambda app, requests their real `/api`
+routes through in-process ASGI, and compares status, all response headers except
+the generated request ID, and JSON except the generated body request ID. Each
+ID is validated as a UUID and error body IDs must match their response header.
+Success responses and errors are also checked against independently constructed
+fixture values and the public error vocabulary, so equality alone cannot make
+two incorrect responses pass. Nonempty browse/search checks preserve supplied
+item order, complete summary fields, page 2/page size 50/has-next, repeated
+category filters and Hybrid query settings. A temporary static web fixture
+satisfies hosted ECS composition without requiring a frontend build.
+
+**Checks:** `.venv/bin/python -m pytest -q
+apps/api/tests/test_lambda_read_routes.py apps/api/tests/test_lambda_read_app.py
+apps/api/tests/domains/listings/test_search_runtime.py` passed: **38 tests**.
+Pinned Black 26.10.1 single-file check, Python compilation and `git diff --check`
+passed. No production code, configuration, generated contract or frozen input
+changed; aggregate/packaged/deployed checks were not run.
+
+**Limits/next gates:** Lifespans are not entered; callers, eligibility and
+Listings data are explicit test-only overrides. The ordered results are fixture
+transport checks, not reference rankings or proof of SQL availability filtering,
+real Identity expiry/revocation, Hybrid inference, ALB/Web Adapter behavior,
+connection capacity or package startup. No real account, cookie, network socket,
+database, cloud/provider call, k6 workload or measurement was used. Step 3 remains
+partial pending the Identity-owned session binding, required package inputs and
+real runtime/parity checks. Steps 4–6 and all experiment deployment/measurement
+gates remain pending; no commit or publication occurred in this increment.
+
+### 2026-11-02 17:05:05 UTC — EXP-03 Identity binding integration gate
+
+Reviewed the real Identity composition sources after the user verified the
+offline route-contract slice. `create_app(identity=...)` installs the full
+Identity HTTP router, while `prepare_hosted_test_identity` is the only hosted
+initializer found: it reads three SecureStrings, validates the Identity DB
+role and warms the email sender. It is guarded for a hosted test environment,
+and its complete dependency object would expose Identity routes in the Lambda
+app in addition to browse/detail. Therefore it is not a safe drop-in for the
+two-read Lambda surface. No secret, Identity account, SSM, database or provider
+was accessed. The A/Identity owner must provide/review a session-only binding
+that validates the existing cookie/session and eligibility without adding
+Identity mutation routes or email warmup; real auth parity remains blocked.
+
+The AWS Web Adapter v1.1.0 release documentation confirms the versioned image
+tag used by the recipe, but no immutable image digest is supplied there. The
+exact digest and Linux wheels remain package inputs; no registry call, download
+or build was made. [AWS Web Adapter release](https://github.com/aws/aws-lambda-web-adapter/releases).
+
+### 2026-11-02 17:07:59 UTC — EXP-02 session approach and account availability
+
+**Direction/input:** The user shared Aditya's recommendation to authenticate
+before the measured run and pass the resulting HttpOnly CLIP session cookie to
+k6 through a private mechanism. The user also reports that Aditya supplied two
+temporary test accounts. This records reported availability only; no account
+details or credentials are retained.
+
+**Repository match:** `scripts/evaluation/k6/comparison_session_handoff.py`
+already defines `CLIP_COMPARISON_SESSION_COOKIE`. Its helper requires a
+caller-provided successful local-preflight marker, accepts only a bounded
+`__Host-clip_session` cookie shape, and returns a mapping containing only that
+variable. The helper's docstring explicitly says it does not establish session
+validity, approval or run readiness. Existing checks use fake values; this is
+not yet the real k6 handoff or a verified secure transfer mechanism. The
+recommendation is consistent with the prepared pre-run handoff concept, but
+does not resolve the EXP-03 need for Identity-owned server-side session and
+eligibility validation in the narrow Lambda application.
+
+**Checks and limits:** Read the helper, current checkpoint, EXP-02 history,
+EXP-03 design and status rows. No account was accessed, no session was created,
+no request or workload was sent, and no cloud/provider/database action occurred.
+The approved account class and use of the reported temporary accounts remain
+subject to the existing owner/protocol gate; secure local transfer, session
+expiry/validity checks and actual-run authorization remain open.
+
+### 2026-11-02 17:00:11 UTC — EXP-03 Step 3 offline route-contract checks
+
+**Scope and environment:** User verified this Step 3 increment. Work is on the
+isolated local branch `task/exp-03-lambda`; prior uncommitted EXP-03 changes were
+preserved. The tests use the pinned local Python environment, synthetic callers
+through an explicit dependency override, in-memory ASGI transport and fake
+Listings adapters. No socket, database, Identity account, cloud service or live
+API was contacted.
+
+**Change:** Added `apps/api/tests/test_lambda_read_routes.py`. The test exercises
+the actual restricted app and router while replacing only the trusted caller
+and Listings dependency boundaries. It checks a successful Hybrid-labelled
+request preserves repeated category filters, price, page, page size, query and
+sort in the service input and emits the expected page shape; missing caller
+returns 401; invalid price returns a value-free 422; ineligible caller returns
+403 before store access; detail returns the requested listing ID and retains
+404 behavior; synthetic PostgreSQL operational and pool timeout exceptions are
+translated to the safe 503 envelope without exposing diagnostics. These are
+contract checks over test doubles, not proof that the model, real session or
+real database behaves on Lambda.
+
+**Harness finding:** A full-app request using the normal synchronous service
+factory stalled in this sandbox. The reliable test harness uses an async,
+test-only dependency override at the Listings service boundary. This avoids the
+stall; the underlying cause has not been established. Production app wiring was
+not changed.
+
+**Checks:** Three focused suites passed: `test_lambda_read_routes.py`,
+`test_lambda_read_app.py` and Listings `test_search_runtime.py` (29 passed).
+Black's multi-file CLI invocation could not start its process pool in the
+sandbox (`PermissionError`); Black's in-process formatter check passed for all
+11 touched Python files. `py_compile` for those files and `git diff --check`
+passed. No workload or measurement was run.
+
+**Remaining:** Real Identity session composition and owner review, real
+Hybrid/model startup, database headroom/concurrency review, Linux wheels,
+approved adapter digest and image build, routing implementation, and all
+deployment/experiment gates remain pending. This Step 3 route-test increment
+awaits user verification; continue only within Step 3 after verification.
+
+### 2026-11-02 16:41:04 UTC — EXP-03 bounded Hybrid runtime check
+
+**Verification:** User verified the preceding narrow app-composition checkpoint.
+The next offline check targeted the Hybrid pool override without an external
+database, model process, Identity account or cloud service.
+
+**Change:** `apps/api/tests/domains/listings/test_search_runtime.py` adds a
+synthetic ready-runtime case that enables the normal worker setting, then calls
+the Lambda override with `pool_max_size=1` and `enable_worker=False`. It asserts
+the constructed pool min/max are both one and that no dispatcher starts. This
+tests the override itself, not actual model inference or DB capacity.
+
+**Check:** The full `test_search_runtime.py` and `test_lambda_read_app.py` suites
+passed: 22 tests. Black CLI remains unable to start its sandbox forkserver, so
+formatting was checked through Black's in-process API. Python compilation and
+`git diff --check` passed. An experimental in-process HTTP/ASGI harness stalled
+inside request handling, as did Starlette `TestClient`; that harness was removed.
+No route-level HTTP status/parity result is claimed.
+
+**Remaining:** EXP-03 Step 3 still needs reliable route-level success, validation,
+auth/forbidden/not-found and dependency failure/timeout checks. Real Identity
+session composition and real Hybrid startup are separate owner/integration
+gates. No experiment, deployment or external request was made.
+
+### 2026-11-02 16:36:10 UTC — EXP-03 narrow Listings/Search app composition
+
+**Direction and scope:** User verified implementing a separate read-only Lambda
+startup path while preserving normal ECS startup. Work was local and offline;
+no deployed target, database, credentials, cloud resources or experiment were
+used. No worktree changes from other contributors were overwritten.
+
+**Changes:** `apps/api/app/application.py` adds an explicit
+`listings_read_only` composition mode. It mounts only browse/search GET
+`/api/listings` and detail GET `/api/listings/{listing_id}`, caps the Listings
+pool at one connection and requests a one-connection Hybrid pool, disables the
+Hybrid worker, and skips Conversations, notifications, wanted/saved stores and
+S3 image storage. Default ECS mode retains its prior route and pool settings.
+`apps/api/app/domains/listings/routes.py` provides the separate route collection
+using the existing browse and detail handlers. `apps/api/app/domains/listings/search_runtime.py`
+accepts a pool cap and worker override while preserving its existing defaults.
+`apps/api/app/lambda_main.py` is the restricted ASGI entry point and intentionally
+does not create Identity bindings or a synthetic user;
+missing caller context still returns unauthorized. `apps/api/Dockerfile.lambda`
+selects this entry point while the ECS Dockerfile remains unchanged.
+
+**Tests:** `apps/api/tests/test_lambda_read_app.py` verifies the exact app route
+and method surface through OpenAPI metadata and checks with fake/no-resource
+lifecycles that each pool is bounded and Conversations, S3 and notifications do
+not start. The new tests passed (2). Existing combined-lifecycle tests passed
+(10). Black's normal command could not create its multiprocessing forkserver
+socket in this sandbox (`PermissionError`); the modified Python files were
+formatted with Black's in-process API. `git diff --check` passed. Attempts to
+start the repository's Starlette `TestClient` hung even on the unchanged health
+app in this environment, so request-level transport behavior is not claimed.
+
+**Limits and next gate:** This does not prove Hybrid can start in the one-pool
+configuration, that an authenticated request can reach the Lambda app, or that
+the aggregate DB budget supports any concurrency. Current `create_app` wiring
+does not provide a production-ready Identity binding; this Lambda entry fails
+closed until Identity provides and reviews its supported real-session
+composition. DB owner review must determine concurrency/headroom. Linux wheels,
+adapter digest, image build, listener, cloud deployment and A/B parity remain
+open. No experiment was run; EXP-03 remains in progress.
+
+### 2026-11-02 16:22:12 UTC — EXP-03 database connection budget check
+
+Inspected application pool settings and the installed psycopg-pool signature.
+Listings max is 10 and inherits min 4; Hybrid max is 2; the separate Conversations
+pool max is 1. Full app maximum is therefore 13 retained pooled connections per
+Lambda environment (12 from Listings+Hybrid alone), or 260 at proposed
+concurrency 20; two retained ECS tasks could add up to 26. Identity uses fresh
+direct DB connections, not included, so actual peaks may be higher. At proposed
+DB cap 60, 20 Lambda instances with just one persistent connection per pool would
+already consume 40 before Identity and leave no headroom for ECS/admin. The
+default pool/concurrency proposals do not fit together. Lower concurrency,
+narrower lifecycle/pools, or a separately reviewed connection-proxy/DB limit
+decision is required. No live DB or cloud query was made.
+
+### 2026-11-02 16:18:30 UTC — EXP-03 Lambda image recipe
+
+Added `apps/api/Dockerfile.lambda`, which extends the existing Hybrid API image
+with the AWS Lambda Web Adapter 1.1.0 binary from its versioned OCI image. The
+build requires a SHA-256 image digest and does not alter the ECS image. It sets
+the adapter to the inherited Uvicorn port 8000 and `/health` readiness route.
+The digest has not been resolved from an approved artifact receipt, the adapter
+was not downloaded, and the image was not built. Existing Hybrid Linux wheels
+are also absent. The exact adapter digest, target platform and runtime image
+remain build gates. `git diff --check` passed; no network or cloud call was made.
+
+
+### 2026-11-02 16:16:29 UTC — EXP-03 ALB rule proposal specified
+
+After the user verified the AWS Lambda Web Adapter direction, specified
+configuration B listener candidates: GET exact `/api/listings` and GET
+`/api/listings/*`, with ECS as the default, and configuration A routing both to
+ECS. Multi-value headers are required. Extra detail-path segments may hit the
+Lambda target but must retain API 404 semantics; writes and other operations
+must remain ECS-bound. Existing Uvicorn uses port 8000, and `/health` is the
+readiness candidate. This is a local design proposal, not Terraform or a claim
+that ALB behavior was tested. Exact listener review, target-group settings,
+origin and deployment plan remain open.
+
+### 2026-11-02 16:15:00 UTC — EXP-03 adapter recommendation refined
+
+Read the AWS Lambda Web Adapter's official guide and ALB's official Lambda target
+documentation. The AWS-maintained web adapter supports ALB events and container
+images, translating events to HTTP for a normal web server; the API already runs
+Uvicorn. Recommend pinning and locally verifying this extension instead of
+maintaining the custom event-to-ASGI bridge as a production adapter. ALB
+multi-value headers must be enabled and checked for repeated filters/cookies;
+ALB documents a 1 MB Lambda response JSON limit. The custom `alb_event.py` and
+`alb_asgi.py` remain synthetic probes only and should not be wired into the app.
+This is a refinement proposal; no extension artifact was downloaded or tested,
+and trusted host/scheme, app lifecycle, response size and resource startup remain
+to verify. Sources: [AWS Lambda Web Adapter guide](https://aws.github.io/aws-lambda-web-adapter/),
+[ALB Lambda target guide](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html).
+
+### 2026-11-02 16:11:55 UTC — EXP-03 local image availability check
+
+Inspected local Docker images and pinned artifact directories only. No project API
+or Hybrid image is locally cached; no Linux wheel archive exists in the reviewed
+uv cache or `.tools/semantic/wheels`. A local Docker daemon is reachable, but
+building the documented image is blocked until the exact pinned wheel artifacts
+are prepared. No build, download, network, inference or deployment was attempted.
+The cache check does not prove artifacts are unavailable elsewhere.
+
+### 2026-11-02 16:10:15 UTC — EXP-03 package-audit correction
+
+Correction to the 16:05:45 entry: the current Hybrid Dockerfile copies only
+`onnx/model.onnx` and `tokenizer.json` from the model context. Both local files
+exist at the manifest sizes. The five other manifest files are not copied by
+that Dockerfile, so their absence alone does not block the documented build.
+The missing Linux wheel directory remains a known missing input; no build was
+attempted. The earlier statement that all seven manifest files were required
+was incorrect.
+
+### 2026-11-02 16:07:32 UTC — EXP-03 route restriction and regression correction
+
+Following user verification, restricted the local bridge to GET collection and
+UUID-shaped detail paths, and added refusal checks for availability mutation,
+images and owner-management reads. The first test run exposed a test case that
+incorrectly classified the approved detail route as disallowed (17 passed, 1
+failed); corrected the case and added an explicit positive detail-route check.
+The rerun passed all 18 parser/bridge tests; Black and `git diff --check` passed.
+This local path guard does not replace ALB listener review or authentication.
+No live service or cloud request was made.
+
+### 2026-11-02 16:05:45 UTC — EXP-03 local package-input audit
+
+Inspected ignored local build-input names and byte counts against the committed
+model manifest and Hybrid Dockerfile; no file contents, credentials, network,
+build or inference were used. ONNX (90,405,214 bytes) and tokenizer (466,247
+bytes) match manifest sizes. Python 3.13.12 directory is 98,143,362 bytes and
+helper virtualenv 172,887,905 bytes. The Linux-wheel directory is absent; five
+other manifest files are absent. This is insufficient for the documented
+reproducible build. No Lambda image size, startup, memory fit or inference result
+is claimed. Obtain the exact pinned wheel/model inputs through the established
+semantic artifact workflow before attempting a local offline image build.
+
+### 2026-11-02 16:03:47 UTC — EXP-03 Step 3 parser safety and API boundary
+
+User verified the synthetic bridge and requested grouped progress. Tightened the
+event parser to reject invalid header names and malformed empty query fields;
+its representation no longer displays headers or cookies. Added a local test
+passing a forged caller header through the bridge to the real API with Identity
+unbound; the real Listings route rejected it with 401. This is not a real-session
+test and does not prove trusted ingress or deployed authentication.
+
+Fourteen focused parser/bridge tests passed, Black check passed for all four
+files, and `git diff --check` passed. No provider, database, cloud, listener or
+load test was used. Real Lambda handler, session integration, lifecycle,
+packaging and independent review remain open.
+
+### 2026-11-02 15:59:37 UTC — EXP-03 Step 3 in-process ASGI bridge draft
+
+**Scope:** User verified the parsing increment. Added a standalone ALB-to-ASGI
+bridge that calls an injected app, checks an explicitly supplied host, preserves
+multi-value response headers and bounds response size. It handles synthetic
+in-process requests only in tests. This is not an installed Lambda handler and
+does not establish invocation-source trust, session authentication, app startup,
+database lifecycle, security or deployment suitability. Its hard-coded HTTPS
+scope is safe only after the future integration proves trusted ingress.
+
+**Checks:** Nine synthetic parser/bridge tests passed; Black check passed for
+both new bridge files and `git diff --check` passed. No listener, provider, live
+request, cloud resource or measurement was used. Real app/auth integration,
+event validation, routing, warm lifecycle and independent owner review remain.
+
+### 2026-11-02 15:56:37 UTC — EXP-03 Step 3 ALB event parsing draft
+
+**Scope:** Following user verification, added a standalone local parser for
+synthetic ALB multi-value bodyless GET events and focused tests. It preserves
+repeated query values and header values, bounds outputs and rejects malformed
+requests without logging their values. It is not a Lambda handler, routing,
+authentication, origin validation, application invocation or deployment. It is
+not wired to an app; ALB event semantics and security require owner review.
+
+**Checks:** `pytest -q apps/api/tests/test_alb_event.py`: 6 passed. Black
+format/check passed when called once per file; an initial two-file Black call
+failed because sandbox process creation was denied. `git diff --check` passed.
+No network, cloud, database, provider or workload request was made. Exact adapter,
+Identity integration, real model packaging and Lambda lifecycle remain open.
+
+### 2026-11-02 15:40:50 UTC — EXP-03 ALB design draft
+
+**Direction:** User asked to continue after confirming ALB availability. Drafted
+the [Lambda design](exp-03-lambda-design.md) with same-origin A/B routing,
+method-and-path restrictions, real Identity/Hybrid behavior, safe lifecycle,
+database budgeting, rollback and review gates. Inspected existing app and
+Identity startup and Terraform ownership; no code, cloud call or load run.
+
+**Finding:** The current whole-app startup also opens a Conversations pool and
+hosted Identity startup warms its email sender. A narrow Lambda cannot be assumed
+to avoid those dependencies merely by routing reads. Exact adapter and trusted
+ingress handling, Identity public integration, per-instance/aggregate connections,
+model fit and infrastructure ownership need affected-owner review. The document
+is a proposal, not proof of equivalent or deployable behavior.
+
+**Check:** `git diff --check`; user verification and independent owner reviews
+remain before dependent implementation.
+
+### 2026-11-02 15:39:28 UTC — EXP-03 ALB availability reported
+
+**Direction:** User confirmed that an Application Load Balancer can be created.
+Use ALB routing as the working Lambda design. This is user-reported availability;
+the earlier read-only checks did not independently establish create permission
+or resolve the historical AWS rejection. No resource was created or changed.
+
+**Remaining:** Specify and review exact listener rules, same-origin sessions,
+trusted HTTPS and query handling, network and resource costs, database connection
+limits, model packaging, and rollback. Separate exact cloud-plan approval remains
+necessary before any provisioning or deployment.
+
+### 2026-11-02 14:22:02 UTC — EXP-03 read-only load-balancer check
+
+**Direction and target:** User requested a current check of whether a load
+balancer can be created. Read-only AWS calls used the configured non-root
+`clip-project` profile; STS identified the project account in `ap-south-1`.
+No resource was created, modified or deleted.
+
+**Evidence:** Service Quotas reported 50 Application Load Balancers per region
+(`L-53DA6B97`); ELBv2 described zero existing Application Load Balancers in that
+region. The caller was denied `iam:SimulatePrincipalPolicy`, so the create
+permission could not be checked this way. Available quota is not proof that AWS
+will permit creation: the previously observed account-wide service rejection
+and other policy or account restrictions are not resolved by these reads. No
+create attempt was made; current actual ability to create remains unverified.
+
+### 2026-11-02 14:16:44 UTC — EXP-03 local feasibility findings
+
+**Direction:** User approved the proposed investigation and recommendations,
+conditional on feasibility and affected-owner review. Inspected repository
+ingress, Hybrid image and model manifest locally; no cloud or network action,
+build, inference, benchmark or deployed test was performed.
+
+**Findings:** The retained hosted setup uses an EC2/Caddy HTTPS proxy to ECS,
+not an existing Application Load Balancer. Historical deployment evidence says
+AWS rejected load-balancer creation account-wide on 2026-10-26; current account
+status is unknown. An ALB therefore cannot be assumed available. Routing from
+the existing proxy through a Lambda HTTP ingress is an alternative to investigate;
+its same-origin cookies, TLS trust, networking, permissions and cost are not yet
+established. No new ingress choice is approved merely by approving investigation.
+
+The tracked model manifest records a 90,405,214-byte ONNX file and a 466,247-byte
+tokenizer; actual model files are not committed. The Hybrid Dockerfile requires
+separate pinned Python, wheels and model build contexts and runs offline model
+inference during its build. Those artifact contexts and Lambda-compatible image
+have not been inspected or built here. No Lambda ASGI adapter dependency appeared
+in the inspected root package lock. Real model fit, startup and parity remain
+unproven. Existing Identity initialization may access secret storage and a DB;
+it must not run in local checks and requires an approved runtime design.
+
+**Next:** Resolve the ingress and trusted request representation with the
+Identity/infrastructure owners, audit bounded per-instance connections and select
+an adapter only after its lifecycle, security and packaging fit are established.
+Deployment and performance execution remain outside this authorization.
+
+### 2026-11-02 14:12:04 UTC — EXP-03 Step 2 initial design
+
+**Scope:** User verified Step 1 and authorized the design step. Reviewed the
+existing Identity middleware, app creation, Hybrid image and shared runtime
+configuration; no code, image, deployment, workload or external call was made.
+
+**Proposed design:** Package the existing Python app and real Hybrid helper/model
+as a Lambda container image, with an HTTP-to-ASGI adapter and a warm-instance
+lifecycle that retains initialized resources where safe. Route only the two
+selected GET operations to the mixed path; leave writes and other routes on ECS.
+Reuse Identity's actual session authentication and Listings behavior; never
+trust a caller identity supplied by the client. Pass the request and response
+semantics, including status, headers, query and pagination, unchanged. Use the
+same private PostgreSQL and model/index revisions. Never log session values,
+request bodies or private response data; return existing safe errors on failure.
+
+**Unresolved feasibility and review:** The adapter/event type and ingress topology
+are not selected: their trusted HTTPS/origin/host/client context, same-origin
+session cookie forwarding, exact route matching and rollback need Security/Identity
+and infrastructure review. The helper's real binaries and model must fit Lambda's
+package, memory and startup/time budget; this has not been verified. The existing
+Listings pool permits 10 connections and Hybrid pool two per instance, before
+other Identity/Conversations connections, so the current settings cannot simply
+be multiplied by the proposed 20-instance ceiling while assuming the database
+budget is met. Pool and session-access limits require an audited design. No
+adapter, ingress, package, security or performance feasibility is claimed.
+
+**Next gate:** User and affected owners must review the proposed direction and
+resolve these points before dependent implementation. Existing task limits are
+proposals subject to the reviewed run plan; the user has made the 300-client
+proposal non-binding. EXP-02 remains incomplete; no cloud action is authorized.
+
+### 2026-11-02 14:09:40 UTC — EXP-03 Step 1 route and runtime inspection
+
+**Direction and scope:** The user directed starting the Lambda path alongside
+unfinished EXP-02 and verified the inspection step. Inspected local source at
+`90523cf`; no deployment, API call, experiment or application change occurred.
+The task index still records EXP-02 as an EXP-03 dependency; this overlap does
+not establish EXP-02 completion or authorize cloud actions.
+
+**Findings:** Browse and Hybrid search share `GET /listings`; listing detail is
+`GET /listings/{listing_id}`. Both require Identity-established caller context;
+client-supplied identity cannot substitute for session validation. Browse returns
+private, non-cacheable results, while detail includes the owner's permitted
+unavailable listings. Existing application startup opens a Listings database
+pool of up to 10 connections; Hybrid startup separately opens a pool of up to
+two and starts a model helper subprocess. Replicating that per Lambda execution
+environment without a reviewed design could multiply database connections and
+model startup costs. The real helper, model, permissions, failure semantics and
+same database must be retained; no Lambda equivalent has yet been demonstrated.
+
+**Checks and next gate:** Read the task definition, application lifespan,
+Listings route implementations, caller dependency and Hybrid runtime; no tests
+were appropriate for this read-only inspection. The adapter, trusted session
+handling, helper packaging, database limits and routing remain design decisions
+for Step 2 and affected-owner review. User verification of these findings is
+pending; local inspection does not prove deployed parity.
 
 ### 2026-11-02 14:01:05 UTC — EXP-03 ownership and design inspection
 

@@ -73,8 +73,13 @@ async def _close(
 
 
 @asynccontextmanager
-async def search_runtime(settings: Settings) -> AsyncIterator[SearchRuntime]:
-    """Open at most one helper and two dedicated autocommit read connections.
+async def search_runtime(
+    settings: Settings,
+    *,
+    pool_max_size: int = 2,
+    enable_worker: bool | None = None,
+) -> AsyncIterator[SearchRuntime]:
+    """Open one helper and a bounded dedicated autocommit read pool.
 
     Defaults create no resources. Explicit startup failure closes both owned
     resources, yields unavailable, and logs only a fixed safe message. Caller
@@ -83,6 +88,11 @@ async def search_runtime(settings: Settings) -> AsyncIterator[SearchRuntime]:
     schema change or backfill occurs here. A separately enabled dispatcher can
     process existing jobs only, borrowing this same helper.
     """
+    if pool_max_size < 1:
+        raise ValueError("Hybrid pool maximum must be positive")
+    worker_enabled = (
+        settings.hybrid_worker_enabled if enable_worker is None else enable_worker
+    )
     pool: Pool | None = None
     helper: SemanticHelper | None = None
     dispatcher: EmbeddingDispatcher | None = None
@@ -102,7 +112,7 @@ async def search_runtime(settings: Settings) -> AsyncIterator[SearchRuntime]:
                     "options": "-c statement_timeout=5000 -c lock_timeout=1000 -c idle_in_transaction_session_timeout=5000",
                 },
                 min_size=1,
-                max_size=2,
+                max_size=pool_max_size,
                 timeout=5,
                 open=False,
             )
@@ -124,7 +134,7 @@ async def search_runtime(settings: Settings) -> AsyncIterator[SearchRuntime]:
             helper = None
             pool = None
             logger.warning("Hybrid search startup unavailable")
-        if helper is not None and settings.hybrid_worker_enabled:
+        if helper is not None and worker_enabled:
             dispatcher = EmbeddingDispatcher(
                 settings.database_url.get_secret_value(), helper
             )
