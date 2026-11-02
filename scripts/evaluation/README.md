@@ -111,3 +111,12 @@ seconds, and all outcomes must be present. `threshold_met_if_valid` is only
 arithmetic; clock, browser-display events, background load, privacy and all
 other NFR-05 gates still need real evidence and review. The tool cannot run a
 workload or assert an NFR pass.
+
+`nfr05_events.collect` is an in-memory adapter for simulated events with only
+`index`, `event` and `time_ns`. It accepts a submission followed by an explicit
+displayed, failed or undisplayed outcome; a failure may occur before submission.
+An undisplayed outcome cannot be recorded before the five-second deadline and
+is final, so the eventual real observer must wait until its observation window
+ends before emitting it. A submission without a final outcome remains missing.
+Server receipt is not display. The adapter checks ordering and rejects extra
+fields, but does not observe a browser or verify events or timestamps.

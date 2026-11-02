@@ -79,6 +79,24 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 12:31:17 UTC — NFR-05 synthetic event collector
+
+**Direction:** User verified local event-collector preparation with simulated
+events. No browser, messaging, workload or external call occurred.
+
+**Change:** Added an in-memory adapter for bounded, indexed submission and
+explicit final display/failure/undisplayed events. It feeds the existing NFR-05
+preview, retains unresolved submissions as missing, rejects server receipt as
+display and rejects duplicates, out-of-order timestamps and extra fields. An
+undisplayed terminal cannot precede the five-second deadline; because it is
+final, a real observer must wait for its observation window to close. The
+evaluation README documents the interface and limits.
+
+**Checks and limits:** Synthetic adapter and preview tests, Mypy, formatting and
+whitespace checks passed. This adapter neither captures UI events nor validates
+the shared clock; browser driver selection, real two-client integration and all
+measurement gates remain open. Result awaits user verification; no NFR pass.
+
 ### 2026-11-02 12:24:44 UTC — NFR-05 offline outcome preview
 
 **Direction:** User verified preparing a local chat results checker while Mohit
