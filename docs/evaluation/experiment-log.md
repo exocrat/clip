@@ -79,6 +79,24 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 12:55:29 UTC — Offline three-search parity adapter
+
+**Direction:** User verified continuing the search-check integration. No
+workload, network call or deployed response was collected.
+
+**Change:** Added a bounded offline adapter connecting the existing valid-page
+and response-equality checks for three distinct search cases. It returns counts
+only and marks independent correctness, deployment and authorization unverified.
+Synthetic tests cover matching, failed, missing, duplicate and malformed inputs
+and ensure query content is not returned. The guide documents the interface.
+
+**Checks and limits:** Both synthetic Node test files and whitespace checks
+passed. This function does not fetch or verify responses, bind the three query
+classes, or judge relevance; two valid empty pages can match. It is not yet
+connected to the real runner or parity gate. Existing ordered-reference preflight
+and workload remain unchanged until a complete reviewed replacement exists.
+Result awaits user verification; no experiment or NFR pass is claimed.
+
 ### 2026-11-02 12:50:53 UTC — Proposed comparison search parity checks
 
 **Direction:** User verified the trace and requested repository search

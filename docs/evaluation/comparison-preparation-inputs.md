@@ -1,5 +1,16 @@
 # Comparison preparation: ordered cases and telemetry metadata
 
+## Proposed search parity adapter
+
+`comparison_search_parity.js` accepts three distinct search requests and their
+two already-supplied status/body pairs, validates each response and compares
+the pages. It returns aggregate counts without copying queries or response
+bodies. It does not collect responses, verify targets or establish relevance;
+valid identical empty pages can pass this shape/equality check. It is an offline
+building block only, not an execution gate. The existing ordered-reference
+preflight and workload remain in force until the new protocol and complete
+integration are reviewed; NFR-02 and NFR-04 retain their separate requirements.
+
 These are offline preparation tools for EXP-02 Steps 4, 6 and 7. They do not
 contact a service, authorize a run or establish DATA-READY. Actual owner review,
 deployed parity, generator capacity and action approvals remain separate gates.
