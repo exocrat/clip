@@ -295,3 +295,7 @@ measurement; the future real runner still requires integration and review.
 `comparison_session_handoff.py` prepares a session environment mapping after a
 local check. It has no process or network action; the proposed variable and
 security-review limits are in the [preparation guide](../../../docs/evaluation/comparison-preparation-inputs.md#session-handoff-preparation).
+
+`comparison_evidence_capture.py` prepares separate, exclusive local raw and
+report files with recorded hashes. The [preparation guide](../../../docs/evaluation/comparison-preparation-inputs.md#local-evidence-capture-helper)
+explains incomplete captures and required privacy review; this is not a runner.

@@ -380,6 +380,26 @@ that score. It does not verify cost allocation, common price basis, actual run
 validity, report provenance or eligibility. Those gates remain for human review.
 The output is a new file and existing files are not overwritten.
 
+## Local evidence-capture helper
+
+`comparison_evidence_capture.py` provides a callable preparation helper, not a
+runner or command that starts a measurement. Given an existing local evidence
+root, a safe run ID and bounded, privacy-reviewed raw/report bytes, it creates a
+new private run directory with separate `raw.jsonl` and `report.json` files. It
+writes `fingerprints.json` last with SHA-256 values and relative references that
+can be used in the existing run-manifest and artifact-verification workflow.
+Existing run directories and files are never overwritten by this helper.
+
+If capture fails, it retains partial files and refuses to reuse that run ID; a
+missing fingerprint record indicates incomplete capture. A present record must
+still be parsed and its hashes independently checked: an interrupted write can
+leave a partial file. The helper does not inspect content for credentials,
+response bodies or other private data; only privacy-reviewed bytes may be given
+to it. Its fixed fingerprint record is not a completed run manifest. It does
+not make files physically immutable, verify their source, authorize measurement
+or claim a run passed. The real runner must enforce privacy, preserve captured
+raw files and verify outputs before using this helper.
+
 ## Timing, saturation and telemetry metadata
 
 `data/evaluation/workloads/ecs-lambda-telemetry.template.json` specifies a

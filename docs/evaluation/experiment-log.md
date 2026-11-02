@@ -76,6 +76,30 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 10:29:13 UTC — EXP-02 local evidence capture preparation
+
+**Direction:** User continued the proposed grouped capture step. Only synthetic
+local bytes were used; no experiment, session, cloud, database or external action
+occurred.
+
+**Change:** Added an offline helper that validates bounded input sizes and safe
+run IDs, creates a new private run directory exclusively, writes raw and derived
+report bytes as distinct files, and writes a separate SHA-256 reference record
+last. Existing run directories are refused. Interrupted writes retain partial
+files without a successful return; a missing or partial fingerprint record is not
+accepted as completed evidence. Existing artifact hash tooling can check the
+recorded references. Synthetic tests cover hashes, distinct output, duplicate
+runs, invalid IDs, symlinked roots and a simulated write failure. The guide and
+README explain use and limitations.
+
+**Checks and limits:** 25 focused synthetic capture, artifact and manifest tests,
+strict Mypy, Black formatting and whitespace checks passed. The helper does not
+inspect its supplied bytes for private data, validate source or run status, or
+make files physically immutable. A future reviewed runner must enforce privacy,
+protect raw files and validate fingerprints; this helper is not wired to it and
+has not captured real results. Result awaits user verification.
+
+
 ### 2026-11-02 10:22:40 UTC — EXP-02 grouped mock session handoff
 
 **Direction:** User verified integrating fake session handoff with the actual
