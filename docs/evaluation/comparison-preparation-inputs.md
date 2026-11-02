@@ -194,12 +194,15 @@ files, commands, logs or reports, and do not send it in chat.
 ## Mock runner ordering check
 
 `comparison_mock_runner.py` is a test-only ordering simulation. It calls the
-offline preparation stage first; only a passing local check produces the
-in-memory labels `simulated_session` and `simulated_workload`. Failed input
-checks stop before either label. These are fixed labels, not pluggable operations:
-the module has no real session, target, k6 invocation or request interface.
-Passing this simulation does not verify the order or safety of a future runner,
-or does it approve a run. The real runner must implement and independently
+offline preparation stage first, then calls the session handoff helper using a
+caller-supplied mapping. It accepts only its fixed fake session value before
+producing `simulated_session` and `simulated_workload` labels. Failed input
+checks do not read the mapping; missing or invalid sessions stop before the
+workload label. The temporary mapping is cleared and never returned. These are
+fixed labels, not pluggable operations: the module has no real target, k6
+invocation or request interface.
+Passing this simulation does not verify the order or safety of a future runner
+and does not approve a run. The real runner must implement and independently
 check all required gates before obtaining a session or sending requests.
 
 ## Combined pre-request input check

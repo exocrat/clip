@@ -76,6 +76,30 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 10:22:40 UTC — EXP-02 grouped mock session handoff
+
+**Direction:** User verified integrating fake session handoff with the actual
+offline preflight and asked to group related work. No real session, credentials,
+network request, cloud action or workload was used.
+
+**Change:** The mock runner now invokes local preparation before reading its
+caller-supplied session mapping, invokes the environment handoff helper only on
+success, accepts only a fixed fake session for simulation, and clears the
+in-memory handoff mapping. Missing, malformed or non-fixture sessions stop before
+the simulated workload marker; returned events never include the session. Added
+synthetic tests for correct order, inaccessible session before preflight, wrong
+session, changed profile and no session disclosure; updated the guide and README.
+
+**Checks and limits:** 47 synthetic session and preflight tests passed on rerun,
+plus strict Mypy, Black formatting and whitespace checks. One initial assertion
+failed because its fake value was the word `invalid`, also present in a normal
+status key; a unique fake value corrected the test. This is still an in-memory
+simulation, not a real runner or a security review. The real-target path,
+account-class decision, environment isolation, session lifetime, owner approval,
+timing, capacity and deployment/parity remain open. No measurement authorized.
+Result awaits user verification.
+
+
 ### 2026-11-02 10:07:16 UTC — EXP-02 session environment handoff preparation
 
 **Direction:** User chose an environment variable for the future test session

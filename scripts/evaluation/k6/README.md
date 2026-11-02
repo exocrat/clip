@@ -288,9 +288,9 @@ describes the command and outstanding validity checks.
 planned run, lists missing or invalid inputs, and always keeps measurement
 disabled. See [offline preparation](../../../docs/evaluation/comparison-preparation-inputs.md#offline-preparation-for-one-planned-run).
 
-`comparison_mock_runner.py` tests preflight ordering with fixed in-memory
-simulation events. It cannot send traffic or authorize a measurement; the
-future real runner still requires integration and review.
+`comparison_mock_runner.py` tests preflight and fake-session handoff ordering
+with fixed in-memory simulation events. It cannot send traffic or authorize a
+measurement; the future real runner still requires integration and review.
 
 `comparison_session_handoff.py` prepares a session environment mapping after a
 local check. It has no process or network action; the proposed variable and

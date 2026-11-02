@@ -7,6 +7,12 @@ from pathlib import Path
 from typing import Any
 
 from scripts.evaluation.k6.comparison_offline_prepare import prepare_inputs
+from scripts.evaluation.k6.comparison_session_handoff import (
+    SESSION_VARIABLE,
+    prepare_session_environment,
+)
+
+FAKE_SESSION = "__Host-clip_session=synthetic-test-value"
 
 
 def simulate_run(
@@ -14,6 +20,7 @@ def simulate_run(
     cycle: int | None,
     run_id: str | None,
     expected_hash: str | None,
+    source_environment: Mapping[str, str],
 ) -> dict[str, Any]:
     """Read local inputs, then produce simulated events only after preflight."""
     events = ["preflight_started"]
@@ -21,7 +28,19 @@ def simulate_run(
     if not preparation["local_inputs_checked"]:
         events.append("preflight_refused")
     else:
-        events.extend(("preflight_passed", "simulated_session", "simulated_workload"))
+        events.append("preflight_passed")
+        session_environment: dict[str, str] = {}
+        try:
+            session_environment = prepare_session_environment(
+                preparation, source_environment
+            )
+            if session_environment[SESSION_VARIABLE] != FAKE_SESSION:
+                raise ValueError("synthetic_session_required")
+            events.extend(("simulated_session", "simulated_workload"))
+        except (KeyError, ValueError):
+            events.append("session_refused")
+        finally:
+            session_environment.clear()
     return {
         "events": events,
         "preparation": preparation,

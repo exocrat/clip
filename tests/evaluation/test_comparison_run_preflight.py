@@ -574,10 +574,15 @@ def test_offline_preparation_cli_lists_missing_inputs_without_echoing_paths() ->
 def test_mock_runner_stops_before_simulated_session_and_workload(
     tmp_path: Path, prepared_inputs: Any
 ) -> None:
-    from scripts.evaluation.k6.comparison_mock_runner import simulate_run
+    from scripts.evaluation.k6.comparison_mock_runner import FAKE_SESSION, simulate_run
     from scripts.evaluation.k6.comparison_offline_prepare import FILE_FIELDS
+    from scripts.evaluation.k6.comparison_session_handoff import SESSION_VARIABLE
 
-    refused = simulate_run({}, None, None, None)
+    class UnreadableEnvironment(dict[str, str]):
+        def get(self, key: str, default: Any = None) -> Any:
+            raise AssertionError("session accessed before preflight")
+
+    refused = simulate_run({}, None, None, None, UnreadableEnvironment())
     assert refused["events"] == ["preflight_started", "preflight_refused"]
     assert refused["requests_sent"] is False
     binding, corpus, reference, plan = prepared_inputs
@@ -593,7 +598,9 @@ def test_mock_runner_stops_before_simulated_session_and_workload(
     for name, value in zip(FILE_FIELDS, values):
         paths[name].write_bytes(value)
     digest = hashlib.sha256(profile).hexdigest()
-    result = simulate_run(paths, 1, "synthetic-c1-p0-A", digest)
+    result = simulate_run(
+        paths, 1, "synthetic-c1-p0-A", digest, {SESSION_VARIABLE: FAKE_SESSION}
+    )
     assert result["events"] == [
         "preflight_started",
         "preflight_passed",
@@ -602,7 +609,23 @@ def test_mock_runner_stops_before_simulated_session_and_workload(
     ]
     assert result["measurement_authorized"] is False
     assert result["simulation_only"] is True
+    assert FAKE_SESSION not in json.dumps(result)
+    for source in (
+        {},
+        {SESSION_VARIABLE: "__Host-clip_session=other"},
+        {SESSION_VARIABLE: "synthetic-private-invalid-cookie"},
+    ):
+        bad = simulate_run(paths, 1, "synthetic-c1-p0-A", digest, source)
+        assert bad["events"] == [
+            "preflight_started",
+            "preflight_passed",
+            "session_refused",
+        ]
+        assert "simulated_workload" not in bad["events"]
+        assert all(value not in json.dumps(bad) for value in source.values())
     paths["workload_profile"].write_bytes(profile + b" ")
-    refused = simulate_run(paths, 1, "synthetic-c1-p0-A", digest)
+    refused = simulate_run(
+        paths, 1, "synthetic-c1-p0-A", digest, UnreadableEnvironment()
+    )
     assert refused["events"] == ["preflight_started", "preflight_refused"]
     assert refused["requests_sent"] is False
