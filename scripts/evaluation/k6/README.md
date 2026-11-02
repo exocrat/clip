@@ -21,12 +21,13 @@ false. A future real-target runner must call/enforce this and its other reviewed
 gates before requesting a session or sending traffic; this command is not yet
 wired to that runner.
 
-To check one cycle's actual workload profile as well, append
-`--workload-profile path/to/profile.json --cycle 1` (or 2 or 3). The profile's
-`cases` must equal the bound corpus and `sequence_starts` must contain exactly
-the planned `low`, `normal`, and `burst` start positions for that cycle. With
-no profile and cycle supplied, its `workload_profile_checked` output is false;
-other run gates still apply even when it is true.
+To check one cycle's profile, append `--workload-profile path/to/profile.json
+--cycle 1 --expected-profile-sha256 EXPECTED_SHA256` (or cycle 2 or 3). All
+three options are required together. The checker compares the file's exact bytes
+with the supplied hash, checks its cases and planned starts, and validates the
+five-second timeout and worker settings' shape. Without these options both
+profile-check flags are false. The hash does not prove review, actual use, or
+that the file cannot change later; other run gates still apply.
 
 For offline NFR-01/02 draft checks, run with the project's Node 24:
 

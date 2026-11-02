@@ -14,10 +14,10 @@ from scripts.evaluation.k6.comparison_pair_plan import (
     MAX_INPUT_BYTES as PAIR_MAX_INPUT_BYTES,
     validate_pair_plan,
 )
-from scripts.evaluation.k6.comparison_run_preflight import validate_run_inputs
-
-# This is JavaScript's representable integer limit, not an operational VU cap.
-MAX_SAFE_INTEGER = 2**53 - 1
+from scripts.evaluation.k6.comparison_run_preflight import (
+    validate_generator_capacity,
+    validate_run_inputs,
+)
 
 
 def build_profile(
@@ -32,12 +32,9 @@ def build_profile(
     """Build deterministic profile bytes only after the existing checks pass."""
     if type(cycle) is not int or cycle not in (1, 2, 3):
         raise ValueError("invalid_cycle")
-    if (
-        type(pre_allocated_vus) is not int
-        or type(max_vus) is not int
-        or not 1 <= pre_allocated_vus <= max_vus <= MAX_SAFE_INTEGER
-    ):
-        raise ValueError("invalid_generator_capacity")
+    validate_generator_capacity(
+        {"preAllocatedVUs": pre_allocated_vus, "maxVUs": max_vus}
+    )
     if len(corpus_bytes) > MAX_INPUT_BYTES:
         raise ValueError("corpus_too_large")
     if validate_pair_plan(paired_plan)["state"] != "planned":

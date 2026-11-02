@@ -172,19 +172,21 @@ attest database equivalence. The future real-target runner is not connected yet
 and must enforce this check plus all remaining reviewed run gates before any
 session or request.
 
-For an additional check of the actual local workload profile for one cycle,
-add `--workload-profile path/to/profile.json --cycle 1` (or cycle 2 or 3).
-The profile must contain the complete corpus `cases` array and a
-`sequence_starts` object with exactly `low`, `normal` and `burst`; each value
-must be an integer from 0 through 9. For example,
-`{"low": 0, "normal": 1, "burst": 2}` is a synthetic shape example, not a
-selected rotation. The checker requires these three values to equal that
-cycle's paired plan and the cases to equal the bound corpus. The same planned
-values apply to both A and B. Supplying only one of the two options fails. When
-both are omitted, `workload_profile_checked` is false: the profile has not been
-checked. This option does not validate capacity, timeout, target, authentication
-or every other execution gate, and is not yet enforced by a real-target runner.
-The rule is approved; the actual seed remains an open pre-run input.
+For an additional check of a local profile, append `--workload-profile
+path/to/profile.json --cycle 1 --expected-profile-sha256 EXPECTED_SHA256` (use
+cycle 2 or 3 as appropriate). Supply the lowercase SHA-256 from the separately
+reviewed plan. All three options are required together. The checker compares
+exact file bytes to that hash, checks the cases and starts against the plan, and
+requires a five-second timeout and positive, JavaScript-representable integer
+worker settings with pre-allocated workers no greater than the maximum. This
+validates the settings' shape; it does not select or approve an operational cap.
+
+When omitted, `workload_profile_checked` and `profile_hash_checked` are false.
+The builder's internal check occurs before a file exists and likewise cannot
+check its hash. A future runner must require both checks before credentials or
+requests. Matching a supplied hash does not prove review, actual profile use,
+or that the file cannot change after this check; real-run gates still apply.
+The rotation rule is approved; the actual seed remains an open pre-run input.
 
 ## Generate a cycle workload profile
 

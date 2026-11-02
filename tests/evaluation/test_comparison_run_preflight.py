@@ -12,11 +12,11 @@ import pytest
 
 from scripts.evaluation.k6.comparison_ordered_results import bind_ordered_results
 from scripts.evaluation.k6.comparison_pair_plan import TEMPLATE as PAIR_TEMPLATE
-from scripts.evaluation.k6.comparison_profile_builder import (
+from scripts.evaluation.k6.comparison_profile_builder import build_profile
+from scripts.evaluation.k6.comparison_run_preflight import (
     MAX_SAFE_INTEGER,
-    build_profile,
+    validate_run_inputs,
 )
-from scripts.evaluation.k6.comparison_run_preflight import validate_run_inputs
 from scripts.evaluation.k6.prepare_comparison_corpus import (
     FINGERPRINT,
     FROZEN,
@@ -91,6 +91,7 @@ def test_matching_inputs_pass_but_never_authorize(prepared_inputs: Any) -> None:
         "planned_pair_count": 9,
         "planned_run_count": 18,
         "workload_profile_checked": False,
+        "profile_hash_checked": False,
         "measurement_authorized": False,
     }
 
@@ -104,7 +105,12 @@ def test_profile_starts_and_cases_match_the_selected_cycle(
         pair["condition"]: pair["sequence_start"]
         for pair in paired_plan["cycles"][cycle - 1]["pairs"]
     }
-    profile = {"cases": json.loads(corpus_bytes)["cases"], "sequence_starts": starts}
+    profile = {
+        "cases": json.loads(corpus_bytes)["cases"],
+        "sequence_starts": starts,
+        "capacity": {"preAllocatedVUs": 2, "maxVUs": 301},
+        "timeout_seconds": 5,
+    }
     result = validate_run_inputs(
         binding_plan, corpus_bytes, reference, paired_plan, profile, cycle
     )
@@ -141,6 +147,8 @@ def test_bad_workload_profile_is_refused(
     profile = {
         "cases": json.loads(corpus_bytes)["cases"],
         "sequence_starts": {"low": 0, "normal": 1, "burst": 2},
+        "capacity": {"preAllocatedVUs": 2, "maxVUs": 301},
+        "timeout_seconds": 5,
     }
     change(profile)
     with pytest.raises(ValueError, match=error):
@@ -366,22 +374,41 @@ def test_cli_outputs_only_aggregate_and_fails_closed(
             {
                 "cases": json.loads(corpus_bytes)["cases"],
                 "sequence_starts": {"low": 0, "normal": 1, "burst": 2},
+                "capacity": {"preAllocatedVUs": 2, "maxVUs": 301},
+                "timeout_seconds": 5,
             }
         )
     )
     checked = subprocess.run(
-        [*command, "--workload-profile", str(profile_path), "--cycle", "1"],
+        [
+            *command,
+            "--workload-profile",
+            str(profile_path),
+            "--cycle",
+            "1",
+            "--expected-profile-sha256",
+            hashlib.sha256(profile_path.read_bytes()).hexdigest(),
+        ],
         capture_output=True,
         text=True,
         check=False,
     )
     assert checked.returncode == 0
     assert json.loads(checked.stdout)["workload_profile_checked"] is True
+    assert json.loads(checked.stdout)["profile_hash_checked"] is True
     bad_profile = json.loads(profile_path.read_text())
     bad_profile["sequence_starts"]["burst"] = 9
     profile_path.write_text(json.dumps(bad_profile))
     mismatch = subprocess.run(
-        [*command, "--workload-profile", str(profile_path), "--cycle", "1"],
+        [
+            *command,
+            "--workload-profile",
+            str(profile_path),
+            "--cycle",
+            "1",
+            "--expected-profile-sha256",
+            hashlib.sha256(profile_path.read_bytes()).hexdigest(),
+        ],
         capture_output=True,
         text=True,
         check=False,
@@ -404,3 +431,77 @@ def test_cli_outputs_only_aggregate_and_fails_closed(
     assert result.returncode == 2
     assert "Comparison input preflight failed" in result.stderr
     assert reference["queries"][0]["query_text"] not in result.stdout + result.stderr
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        lambda p: p.pop("timeout_seconds"),
+        lambda p: p.update(extra=True),
+        lambda p: p.update(timeout_seconds=True),
+        lambda p: p.update(timeout_seconds=3),
+        lambda p: p["capacity"].update(preAllocatedVUs=0),
+        lambda p: p["capacity"].update(preAllocatedVUs=True),
+        lambda p: p["capacity"].update(preAllocatedVUs=302),
+        lambda p: p["capacity"].update(maxVUs=MAX_SAFE_INTEGER + 1),
+        lambda p: p["capacity"].update(extra=1),
+    ],
+)
+def test_profile_rejects_invalid_shape_timeout_or_workers(
+    prepared_inputs: Any, change: Any
+) -> None:
+    binding, corpus, reference, plan = prepared_inputs
+    profile = json.loads(build_profile(binding, corpus, reference, plan, 1, 2, 301))
+    change(profile)
+    with pytest.raises(ValueError):
+        validate_run_inputs(binding, corpus, reference, plan, profile, 1)
+
+
+def test_profile_hash_checks_exact_bytes_and_object(prepared_inputs: Any) -> None:
+    binding, corpus, reference, plan = prepared_inputs
+    content = build_profile(binding, corpus, reference, plan, 1, 2, 301)
+    profile = json.loads(content)
+    digest = hashlib.sha256(content).hexdigest()
+    result = validate_run_inputs(
+        binding,
+        corpus,
+        reference,
+        plan,
+        profile,
+        1,
+        profile_bytes=content,
+        expected_profile_sha256=digest,
+    )
+    assert result["profile_hash_checked"] is True
+    assert result["measurement_authorized"] is False
+    for data, expected in [
+        (content, None),
+        (None, digest),
+        (content, "bad"),
+        (content + b" ", digest),
+        (content, "0" * 64),
+    ]:
+        with pytest.raises(ValueError):
+            validate_run_inputs(
+                binding,
+                corpus,
+                reference,
+                plan,
+                profile,
+                1,
+                profile_bytes=data,
+                expected_profile_sha256=expected,
+            )
+    other = deepcopy(profile)
+    other["capacity"]["maxVUs"] = 302
+    with pytest.raises(ValueError, match="profile_bytes_mismatch"):
+        validate_run_inputs(
+            binding,
+            corpus,
+            reference,
+            plan,
+            other,
+            1,
+            profile_bytes=content,
+            expected_profile_sha256=digest,
+        )

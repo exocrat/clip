@@ -30,6 +30,8 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
   the recorded chronological order and non-overlap. Actual deployment identity,
   timestamp accuracy and generator suitability remain future gates. No
   concurrency ceiling is encoded.
+- The offline input preflight also validates profile timeout, worker-value shape
+  and an operator-supplied exact file hash; it cannot prove review or later use.
 - A combined offline input preflight now checks the completed source/dataset/
   corpus binding and 18-run pair plan together, including matching dataset and
   corpus fingerprints. It does not obtain credentials, send requests or
@@ -72,6 +74,36 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 - **Measurements:** No ECS/Lambda comparison or final NFR run is recorded here.
 
 ## History
+
+### 2026-11-02 08:48:38 UTC — EXP-02 profile preflight checks
+
+**Direction and scope:** User verified the previous generated-profile evidence
+binding and the next offline preflight step. No real workload, credentials,
+cloud or external service was used. The earlier proposed 300-request ceiling
+remains non-binding.
+
+**Change:** The combined input checker requires the profile's exact shape,
+five-second timeout, and positive JavaScript-representable integer worker
+settings with pre-allocation no greater than the maximum. It checks selected
+cycle starts and cases as before. When profile bytes and a lowercase SHA-256 are
+supplied, it compares the exact bytes and confirms they decode to the checked
+profile. Its CLI requires profile, cycle and expected hash together; it reports
+whether a hash was checked. The builder reuses the same capacity validation;
+its internal pre-output check cannot check a file hash. Synthetic tests include
+301 as a format example, not an operational recommendation.
+
+**Checks:** 125 comparison-focused synthetic/local tests passed, plus a fresh
+focused preflight test run after test cleanup, strict Mypy, in-process Black
+formatting and `git diff --check`. Black's normal multi-file CLI could not start
+its sandboxed worker process; in-process formatting and verification succeeded.
+
+**Limits and next action:** A matching caller-supplied hash proves consistency,
+not review, approved capacity, actual runner use, or protection from later file
+changes. The real runner must enforce both checks before credentials. Actual
+seed, capacity, reviewed ordered reference, timing and other real-run gates
+remain open, including shared command-registry coordination. This is not a
+measurement or run authorization; result awaits user verification.
+
 
 ### 2026-11-02 08:37:36 UTC — EXP-02 generated-profile evidence binding
 
