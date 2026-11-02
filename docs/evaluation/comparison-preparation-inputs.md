@@ -402,6 +402,13 @@ do not establish that pairing. The report explicitly marks individual request
 binding and latency timing unverified. The real runner and the selected timing
 protocol need independent review before measurements or scoring.
 
+The local workload assigns the outcome to its elapsed sample in the same
+iteration, then emits a separate outcome counter. Its case index repeats across
+iterations, so these records do not have a unique request identifier that lets
+the report independently match them. The elapsed interval currently also includes
+response validation; it is not an established request-only timing boundary.
+Interrupted iterations and the eventual real runner still require review.
+
 ## Offline per-run cost arithmetic
 
 `comparison_cost_preview.py` calculates one run's pre-credit USD cost per

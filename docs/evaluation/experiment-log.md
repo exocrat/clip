@@ -79,6 +79,23 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 11:30:12 UTC — EXP-02 request and timing record review
+
+**Direction and scope:** User verified an offline review of how outcomes and
+timings are connected, with a synthetic check and no experiment or external call.
+
+**Finding:** The local workload writes the outcome label on its elapsed sample
+and then emits an outcome counter in the same iteration. The case index repeats,
+and the records carry no unique request identifier for independent matching.
+The timer also includes response parsing and correctness checks; it is not a
+verified request-only boundary. Interrupted iterations and real-runner behavior
+remain unverified. The existing timing-protocol review remains open.
+
+**Check:** A synthetic test demonstrates that matching aggregate totals can
+coexist with unverified individual pairing. All nine report tests, Black and
+whitespace checks passed. The input guide records the finding. No real results
+or NFR acceptance are claimed; this review awaits user verification.
+
 ### 2026-11-02 11:22:32 UTC — EXP-02 report outcome and route checks
 
 **Direction:** User verified checking outcome labels and route tags in the local
