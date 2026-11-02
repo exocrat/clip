@@ -79,6 +79,27 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 13:22:34 UTC — Offline search parity command
+
+**Direction:** User verified continuing and requested grouped work. Prepared an
+offline comparator command, synthetic checks and documentation; no workload,
+real response, session or external call occurred.
+
+**Change:** The bounded Node command reads a supplied corpus and three A/B
+response pairs on standard input, uses the existing comparison helper and prints
+aggregate flags only. It exits nonzero on invalid inputs or any mismatch and
+never obtains responses itself. Tests exercise matched/mismatched data, malformed
+and oversized inputs and absence of query content in output. The guide describes
+the strict format and limits. Existing run gates remain in force.
+
+**Checks and limits:** Two Node test files and 21 Python parity/binding tests
+passed; whitespace checks passed. Initial Node command tests timed out when a
+synthetic input used a child-process pipe, and then exposed missing captured
+output; using a local fixture file for test input and synchronous command output
+resolved both, with the rerun passing. No actual deployment, dataset authenticity,
+relevance or authorization is established; the real runner and pre-run parity
+gate remain unimplemented. Result awaits user verification.
+
 ### 2026-11-02 13:20:23 UTC — Search parity corpus preparation command
 
 **Direction:** User verified continuing the search-parity preparation. No

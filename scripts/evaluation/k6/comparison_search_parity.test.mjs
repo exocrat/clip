@@ -1,5 +1,9 @@
 import { test } from 'node:test';
 import { strict as assert } from 'node:assert';
+import { spawnSync } from 'node:child_process';
+import { closeSync, mkdtempSync, openSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { checkSearchParity } from './comparison_search_parity.js';
 
 const page = {items:[],page:1,page_size:20,has_next:false};
@@ -28,4 +32,29 @@ test('refuses incomplete, duplicate and malformed case sets', () => {
   assert.throws(() => checkSearchParity(malformed,source));
   const wrongClasses=corpus(); wrongClasses.cases[2].relevance_reference.query_class='direct_word';
   assert.throws(() => checkSearchParity(cases(wrongClasses),wrongClasses));
+});
+
+test('offline command returns aggregate only and fails for mismatched or unsafe input', () => {
+  const source=corpus(), input=cases(source);
+  const run = value => {
+    const directory=mkdtempSync(join(tmpdir(),'parity-input-'));
+    try {
+      const path=join(directory,'input.json'); writeFileSync(path,value);
+      const fd=openSync(path,'r');
+      try { return spawnSync(process.execPath, ['scripts/evaluation/k6/comparison_search_parity_cli.mjs'], {stdio:[fd,'pipe','pipe'],encoding:'utf8',timeout:10000}); }
+      finally { closeSync(fd); }
+    } finally { rmSync(directory,{recursive:true,force:true}); }
+  };
+  const match=run(JSON.stringify({corpus:source,cases:input}));
+  assert.equal(match.status,0);
+  assert.ok(match.stdout, JSON.stringify(match));
+  assert.equal(JSON.parse(match.stdout).measurement_authorized,false);
+  assert.equal(match.stdout.includes('query-0'),false);
+  input[0].b.status=500;
+  assert.equal(run(JSON.stringify({corpus:source,cases:input})).status,2);
+  const invalid=run('{"secret":"synthetic-private"}');
+  assert.equal(invalid.status,2);
+  assert.equal(invalid.stderr.includes('synthetic-private'),false);
+  assert.equal(invalid.stdout,'');
+  assert.equal(run('x'.repeat(5_000_001)).status,2);
 });

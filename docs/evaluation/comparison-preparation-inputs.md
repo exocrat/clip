@@ -39,6 +39,14 @@ building block only, not an execution gate. The existing ordered-reference
 preflight and workload remain in force until the new protocol and complete
 integration are reviewed; NFR-02 and NFR-04 retain their separate requirements.
 
+For offline fixtures, `node scripts/evaluation/k6/comparison_search_parity_cli.mjs`
+reads one bounded JSON object on standard input. Its only top-level fields are
+`corpus` and `cases`; each case has `case_id`, `request`, `a` and `b`, and each
+side has only `status` and `body`. The command prints aggregate flags and exits
+2 on invalid or mismatched inputs. It never fetches responses or writes their
+contents. It does not authenticate the corpus or verify deployment, and a zero
+exit status is not run authorization or proof of search relevance.
+
 These are offline preparation tools for EXP-02 Steps 4, 6 and 7. They do not
 contact a service, authorize a run or establish DATA-READY. Actual owner review,
 deployed parity, generator capacity and action approvals remain separate gates.
