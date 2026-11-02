@@ -12,6 +12,7 @@ from typing import Any, cast
 import pytest
 
 from scripts.evaluation.k6.comparison_ordered_results import bind_ordered_results
+from scripts.evaluation.k6.comparison_parity_corpus import build_parity_corpus
 from scripts.evaluation.k6.comparison_pair_plan import TEMPLATE as PAIR_TEMPLATE
 from scripts.evaluation.k6.comparison_profile_builder import build_profile
 from scripts.evaluation.k6.comparison_run_preflight import (
@@ -95,6 +96,82 @@ def test_matching_inputs_pass_but_never_authorize(prepared_inputs: Any) -> None:
         "profile_hash_checked": False,
         "measurement_authorized": False,
     }
+
+
+def test_parity_draft_profiles_are_offline_only_and_bound_to_each_cycle(
+    prepared_inputs: Any,
+    tmp_path: Path,
+) -> None:
+    old_binding, _, old_reference, old_plan = prepared_inputs
+    reference = {
+        key: value
+        for key, value in old_reference.items()
+        if key not in {"review_record_reference", "queries"}
+    }
+    reference["format_version"] = 2
+    corpus = build_parity_corpus(reference, old_binding["application_revision"])
+    corpus_bytes = json.dumps(corpus, sort_keys=True).encode()
+    binding = {
+        **old_binding,
+        "case_corpus_sha256": hashlib.sha256(corpus_bytes).hexdigest(),
+    }
+    plan = deepcopy(old_plan)
+    plan["shared_inputs"]["case_corpus_sha256"] = binding["case_corpus_sha256"]
+    with pytest.raises(ValueError, match="parity_draft_not_allowed_for_run"):
+        build_profile(binding, corpus_bytes, reference, plan, 1, 2, 3)
+    for cycle in (1, 2, 3):
+        profile_bytes = build_profile(
+            binding, corpus_bytes, reference, plan, cycle, 2, 3, parity_draft=True
+        )
+        profile = json.loads(profile_bytes)
+        assert all(
+            case["expected"] is None
+            for case in profile["cases"]
+            if case["request"]["kind"] == "search"
+        )
+        result = validate_run_inputs(
+            binding,
+            corpus_bytes,
+            reference,
+            plan,
+            profile,
+            cycle,
+            profile_bytes=profile_bytes,
+            expected_profile_sha256=hashlib.sha256(profile_bytes).hexdigest(),
+            allow_parity_draft=True,
+        )
+        assert result["measurement_authorized"] is False
+        assert result["parity_draft_checked"] is True
+        with pytest.raises(ValueError, match="parity_draft_not_allowed_for_run"):
+            validate_run_inputs(binding, corpus_bytes, reference, plan, profile, cycle)
+    files = [tmp_path / f"input-{i}.json" for i in range(4)]
+    for path, data in zip(files, (binding, corpus, reference, plan), strict=True):
+        path.write_text(json.dumps(data, sort_keys=True))
+    # Bind to the exact on-disk corpus bytes used by the command.
+    binding["case_corpus_sha256"] = hashlib.sha256(files[1].read_bytes()).hexdigest()
+    plan["shared_inputs"]["case_corpus_sha256"] = binding["case_corpus_sha256"]
+    files[0].write_text(json.dumps(binding, sort_keys=True))
+    files[3].write_text(json.dumps(plan, sort_keys=True))
+    output = tmp_path / "draft-profile.json"
+    command = [
+        sys.executable,
+        "-m",
+        "scripts.evaluation.k6.comparison_profile_builder",
+        *map(str, files),
+        "--cycle",
+        "1",
+        "--pre-allocated-vus",
+        "2",
+        "--max-vus",
+        "3",
+        "--output",
+        str(output),
+        "--parity-draft",
+    ]
+    cli = subprocess.run(command, capture_output=True, text=True, check=False)
+    assert cli.returncode == 0
+    assert json.loads(cli.stdout)["measurement_authorized"] is False
+    assert json.loads(cli.stdout)["parity_draft"] is True
 
 
 @pytest.mark.parametrize("cycle", [1, 2, 3])

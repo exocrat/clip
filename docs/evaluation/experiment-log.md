@@ -79,6 +79,25 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 13:34:00 UTC — Offline parity draft profiles
+
+**Direction:** User verified continuing and requested grouped work. Prepared
+profiles and checks offline; no workload, session, provider or network call.
+
+**Change:** The existing profile builder accepts an explicit `--parity-draft`
+mode, and the underlying preflight can explicitly check that draft against the
+dataset-bound corpus and paired plan. It generates cycle-specific profile bytes
+without inventing search rankings and always reports measurement unauthorized.
+Normal preflight/staging callers retain the default refusal; the workload also
+rejects null search expectations. The guide explains the separate draft path.
+
+**Checks and limits:** Thirty-three selected focused tests passed before the
+final CLI assertion and explicit draft-result flag; three relevant tests passed
+again afterwards, including all three cycles, CLI use and default run refusal.
+Strict Mypy, Black and whitespace checks passed. Actual target/account access,
+response comparison enforcement, timing and affected-owner review remain open.
+Result awaits user verification; no experiment or NFR pass is claimed.
+
 ### 2026-11-02 13:30:11 UTC — Offline comparison of all ten cases
 
 **Direction:** User verified continuing the comparison preparation. No deployed

@@ -55,9 +55,15 @@ def validate_run_inputs(
     *,
     profile_bytes: bytes | None = None,
     expected_profile_sha256: str | None = None,
+    allow_parity_draft: bool = False,
 ) -> dict[str, Any]:
     """Check bindings, the paired plan, and optionally one cycle's profile."""
-    binding_result = validate_bindings(binding_plan, corpus_bytes, ordered_reference)
+    binding_result = validate_bindings(
+        binding_plan,
+        corpus_bytes,
+        ordered_reference,
+        allow_parity_draft=allow_parity_draft,
+    )
     pair_result = validate_pair_plan(paired_plan)
     if pair_result["state"] != "planned":
         raise ValueError("complete_paired_plan_required")
@@ -142,6 +148,11 @@ def validate_run_inputs(
         "workload_profile_checked": profile_checked,
         "profile_hash_checked": hash_checked,
         "measurement_authorized": False,
+        **(
+            {"parity_draft_checked": True}
+            if binding_result["parity_draft_checked"]
+            else {}
+        ),
     }
 
 

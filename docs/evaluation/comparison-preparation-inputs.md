@@ -16,6 +16,14 @@ always reports measurement unauthorized. The combined run preflight and workload
 still refuse it and require the old ordered reference. The command's existing
 third positional argument is the version-2 binding file in draft mode.
 
+For offline preparation, the existing `comparison_profile_builder` also accepts
+`--parity-draft`, with the version-2 binding in its existing third positional
+argument. It checks the dataset-bound corpus, paired plan, selected cycle,
+rotation and worker-value shape, then creates a separate profile with null search
+expectations. This explicit draft path never authorizes measurement. The normal
+run preflight and the local workload still refuse these incomplete search cases;
+the real response parity gate and protocol review must be completed separately.
+
 Copy `data/evaluation/workloads/ecs-lambda-parity-binding.template.json` to a
 new local file and fill all fields from the retained dataset/contract/model
 records and the intended full search revision. Then create a separate draft:

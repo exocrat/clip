@@ -28,6 +28,8 @@ def build_profile(
     cycle: int,
     pre_allocated_vus: int,
     max_vus: int,
+    *,
+    parity_draft: bool = False,
 ) -> bytes:
     """Build deterministic profile bytes only after the existing checks pass."""
     if type(cycle) is not int or cycle not in (1, 2, 3):
@@ -55,7 +57,13 @@ def build_profile(
     # The existing preflight verifies the archive, reference, source, corpus,
     # paired plan, and this profile before any output file is created.
     validate_run_inputs(
-        binding_plan, corpus_bytes, ordered_reference, paired_plan, profile, cycle
+        binding_plan,
+        corpus_bytes,
+        ordered_reference,
+        paired_plan,
+        profile,
+        cycle,
+        allow_parity_draft=parity_draft,
     )
     content = (
         json.dumps(profile, sort_keys=True, separators=(",", ":"), allow_nan=False)
@@ -88,6 +96,7 @@ def main() -> None:
     parser.add_argument("--pre-allocated-vus", required=True, type=int)
     parser.add_argument("--max-vus", required=True, type=int)
     parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--parity-draft", action="store_true")
     args = parser.parse_args()
     try:
         binding_plan = json.loads(_read_bounded(args.binding_plan, MAX_INPUT_BYTES))
@@ -102,6 +111,7 @@ def main() -> None:
             args.cycle,
             args.pre_allocated_vus,
             args.max_vus,
+            parity_draft=args.parity_draft,
         )
         # Exclusive creation preserves any existing user file, including symlinks.
         with args.output.open("xb") as output:
@@ -113,6 +123,7 @@ def main() -> None:
                     "cycle": args.cycle,
                     "profile_sha256": hashlib.sha256(content).hexdigest(),
                     "measurement_authorized": False,
+                    "parity_draft": args.parity_draft,
                 },
                 sort_keys=True,
             )
