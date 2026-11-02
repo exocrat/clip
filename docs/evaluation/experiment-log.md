@@ -141,6 +141,24 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 19:35:40 UTC — EXP-03 read-only settings without email
+
+The previous Lambda-only bootstrap inherited the full Identity email settings,
+which required a recipient even though the read-only app never starts an email
+sender. The opt-in path now uses a dedicated `LambdaReadSettings` subclass: it
+requires the existing hosted test identity, exact browser origin and Listings DB,
+while rejecting email provider/recipients, web serving, storage, notification
+and Hybrid worker startup. Ordinary ECS `Settings` and its controlled-recipient
+requirements remain unchanged. Secret retrieval stays fixed-path and only after
+all non-secret settings pass. This is local code, not live security acceptance;
+Identity and affected owners must review before deployment.
+
+Focused Lambda, Identity, route and architecture checks passed 112 tests with
+warnings as errors. Fake inputs cover refusal of email, recipients, extra
+services and bad setup before provider access. No AWS call or real secret read
+was made for this increment. [Design](exp-03-lambda-design.md).
+
+
 ### 2026-11-02 19:32:53 UTC — EXP-03 Lambda database secret bootstrap
 
 **Direction and scope:** User authorized AWS under a USD 10 credit cap and

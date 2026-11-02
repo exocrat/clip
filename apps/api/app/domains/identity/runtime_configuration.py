@@ -10,11 +10,16 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 import json
 from os import environ
-from typing import Any, Callable
+from typing import Any, Callable, Self
 
-from pydantic import SecretStr
+from pydantic import SecretStr, model_validator
 
-from app.core.config import ConfigurationError, Settings, load_settings
+from app.core.config import (
+    IDENTITY_TEST_BROWSER_ORIGINS,
+    ConfigurationError,
+    Settings,
+    load_settings,
+)
 from app.domains.identity.email import SesEmailSender
 from app.domains.identity.email_configuration import (
     ParameterClient,
@@ -33,6 +38,39 @@ from app.domains.identity.temporary_crypto import TemporaryKeys
 
 LISTINGS_DATABASE_PARAMETER = "/clip/test/listings-database-url"
 PARAMETER_OPT_IN = "CLIP_LAMBDA_DATABASE_PARAMETER_ENABLED"
+
+
+class LambdaReadSettings(Settings):
+    """Keep hosted session reads isolated from email and write runtimes."""
+
+    @model_validator(mode="after")
+    def validate_hosted_identity_runtime(self) -> Self:
+        """Require the real hosted test identity and no unrelated app services."""
+        if (
+            not self.identity_runtime_enabled
+            or self.environment != "test"
+            or self.identity_provider != "microsoft"
+            or self.email_provider != "disabled"
+            or self.ses_test_recipients
+            or self.identity_browser_origins != IDENTITY_TEST_BROWSER_ORIGINS
+            or self.database_url is None
+            or self.debug
+            or self.development_auth
+            or self.isolated_listings_test_caller
+            or self.serve_web_app
+            or self.notification_worker_enabled
+            or self.hybrid_worker_enabled
+            or self.storage_provider != "disabled"
+        ):
+            raise ValueError("Invalid Lambda read-only Identity configuration")
+        return self
+
+    @model_validator(mode="after")
+    def restrict_ses_sandbox(self) -> Self:
+        """Forbid email configuration entirely for this read-only runtime."""
+        if self.email_provider != "disabled" or self.ses_test_recipients:
+            raise ValueError("Lambda read-only Identity cannot configure email")
+        return self
 
 
 def load_lambda_settings(*, client: ParameterClient | None = None) -> Settings:
@@ -54,13 +92,15 @@ def load_lambda_settings(*, client: ParameterClient | None = None) -> Settings:
         raise ConfigurationError("Invalid Lambda database parameter setup")
     try:
         # Validate all other settings before a provider or credential is accessed.
-        Settings(database_url=SecretStr("postgresql://fixture@localhost/clip"))
+        LambdaReadSettings(
+            database_url=SecretStr("postgresql://fixture@localhost/clip")
+        )
     except Exception:
         raise ConfigurationError("Invalid Lambda hosted test configuration") from None
     try:
         parameter_client = client or SsmEmailRouteLoader._make_client()
         value = read_secure_parameter(parameter_client, LISTINGS_DATABASE_PARAMETER)
-        return Settings(database_url=value)
+        return LambdaReadSettings(database_url=value)
     except Exception:
         raise ConfigurationError("Lambda database configuration unavailable") from None
 

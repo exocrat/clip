@@ -1,5 +1,12 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### EXP-03 Lambda read-only settings — 2026-11-02 19:35:40 UTC
+
+The explicit Lambda read-only settings reject email/recipients and unrelated
+workers instead of requiring an unused recipient; ordinary ECS controls remain.
+112 focused synthetic tests passed. Actual Identity review, deployment and
+real session/DB checks remain. [Experiment log](../evaluation/experiment-log.md).
+
 ### EXP-03 Lambda database bootstrap — 2026-11-02 19:32:53 UTC
 
 Rahul owns Terraform per user direction. Lambda-only guarded startup can load

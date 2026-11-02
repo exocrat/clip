@@ -39,8 +39,7 @@ def hosted_environment(monkeypatch):
         "CLIP_ENVIRONMENT": "test",
         "CLIP_IDENTITY_RUNTIME_ENABLED": "true",
         "CLIP_IDENTITY_PROVIDER": "microsoft",
-        "CLIP_EMAIL_PROVIDER": "dual",
-        "CLIP_SES_TEST_RECIPIENTS": '["fixture@example.invalid"]',
+        "CLIP_EMAIL_PROVIDER": "disabled",
         "CLIP_IDENTITY_BROWSER_ORIGINS": '["https://clip-iisc.site"]',
     }.items():
         monkeypatch.setenv(key, value)
@@ -53,6 +52,8 @@ def test_fixed_secure_string_is_used_without_setting_environment(hosted_environm
         {"Name": LISTINGS_DATABASE_PARAMETER, "WithDecryption": True}
     ]
     assert settings.database_url.get_secret_value() == client.value
+    assert settings.email_provider == "disabled"
+    assert settings.ses_test_recipients == ()
     assert "synthetic-secret" not in repr(settings)
     assert "CLIP_DATABASE_URL" not in environ
 
@@ -66,6 +67,10 @@ def test_fixed_secure_string_is_used_without_setting_environment(hosted_environm
         ("CLIP_DATABASE_URL", "postgresql://fixture@localhost/clip"),
         ("CLIP_LAMBDA_DATABASE_PARAMETER_ENABLED", "unexpected"),
         ("CLIP_IDENTITY_PROVIDER", "fake"),
+        ("CLIP_EMAIL_PROVIDER", "dual"),
+        ("CLIP_SES_TEST_RECIPIENTS", '["fixture@example.invalid"]'),
+        ("CLIP_SERVE_WEB_APP", "true"),
+        ("CLIP_HYBRID_WORKER_ENABLED", "true"),
         ("CLIP_IDENTITY_BROWSER_ORIGINS", "synthetic-private-invalid-json"),
     ],
 )

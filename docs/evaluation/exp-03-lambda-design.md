@@ -107,9 +107,9 @@ The Lambda entry point also supports explicit hosted-test
 `/clip/test/listings-database-url` SecureString into an in-memory `SecretStr`
 before the ordinary settings and Identity reads. It requires an actual Lambda
 runtime marker, test mode, Identity opt-in, no conflicting database environment
-value and otherwise valid settings before any parameter read. The existing test
-settings still require a controlled recipient configuration even though this
-read-only composition does not start an email sender. It never accepts a
+value and otherwise valid settings before any parameter read. The explicitly opted-in Lambda read-only settings require email and recipients
+to be disabled, and also reject web, notification and Hybrid worker startup.
+The ordinary ECS Identity settings retain their existing recipient controls. It never accepts a
 caller-selected parameter name or stores its value in Terraform/environment.
 The IAM design must explicitly permit this one additional parameter; actual
 secret access, database connectivity and owner review remain pending.
