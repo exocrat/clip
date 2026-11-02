@@ -9,6 +9,7 @@ from uuid import UUID
 import httpx2
 from pydantic import SecretStr
 import pytest
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 from app.application import create_app
 from app.contracts.domain_types import AccountEligibility
@@ -63,12 +64,19 @@ def read_bindings(account_class="temporary"):
     return IdentityReadDependencies(sessions, BrowserPolicy((ORIGIN,)))
 
 
-def request(application, path="/api/listings", *, scheme="https", headers=None):
+def request(
+    application,
+    path="/api/listings",
+    *,
+    scheme="https",
+    headers=None,
+    peer="127.0.0.1",
+):
     """Use in-process ASGI without entering startup or opening sockets."""
 
     async def run():
         async with httpx2.AsyncClient(
-            transport=httpx2.ASGITransport(app=application),
+            transport=httpx2.ASGITransport(app=application, client=(peer, 12345)),
             base_url=f"{scheme}://clip-iisc.site",
         ) as client:
             return await client.get(path, headers=headers or {})
@@ -157,6 +165,38 @@ def test_missing_cookie_cannot_be_replaced_by_user_headers(bound_app):
     assert response.status_code == 401
     bindings.sessions.authenticate.assert_not_called()
     store.browse_available_listings.assert_not_awaited()
+
+
+@pytest.mark.parametrize(
+    ("peer", "forwarded_proto", "expected"),
+    [
+        ("127.0.0.1", "https", 200),
+        ("127.0.0.1", "http", 403),
+        ("127.0.0.1", None, 403),
+        ("192.0.2.45", "https", 403),
+    ],
+)
+def test_uvicorn_proxy_scheme_requires_a_trusted_peer_and_https(
+    bound_app, peer, forwarded_proto, expected
+):
+    """Exercise Uvicorn's proxy policy with synthetic ASGI peers and sessions.
+
+    This does not exercise the AWS adapter or prove a client cannot forge an ALB
+    event; actual Lambda invocation permissions and ingress remain review gates.
+    """
+    application, bindings, store = bound_app
+    proxied = ProxyHeadersMiddleware(application, trusted_hosts="127.0.0.1")
+    headers = {"Cookie": "__Host-clip_session=synthetic-cookie"}
+    if forwarded_proto is not None:
+        headers["X-Forwarded-Proto"] = forwarded_proto
+    response = request(proxied, scheme="http", headers=headers, peer=peer)
+    assert response.status_code == expected
+    if expected == 200:
+        bindings.sessions.authenticate.assert_called_once_with("synthetic-cookie")
+        store.browse_available_listings.assert_awaited_once()
+    else:
+        bindings.sessions.authenticate.assert_not_called()
+        store.browse_available_listings.assert_not_awaited()
 
 
 @pytest.mark.parametrize(

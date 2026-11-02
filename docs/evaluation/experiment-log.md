@@ -59,6 +59,12 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
   implementation revision require review and matching source binding. The binder
   now refuses an absent, malformed or mismatched intended revision. Capacity/session/run gates and
   deployed-path checks remain pending.
+- **EXP-02 k6 inspection checkpoint:** With the required loopback target and a
+  temporary profile, `k6 inspect` refuses the retained ten-case corpus because
+  its three Hybrid expected responses are intentionally null until independently
+  reviewed ordered results are supplied. This is the required fail-closed result;
+  no session was read and no request/workload was sent. Do not fill those results
+  with a ranking generated from the system under test.
 - **EXP-02 Step 6:** Client accounting/reporting is implemented and locally
   checked with synthetic metrics. Offline metadata checks expose declared timing,
   generator limits, VU headroom and drops. The user prefers built-in k6 phases;
@@ -112,8 +118,67 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
   metadata setup. Default startup remains unauthorized. Offline mock checks pass;
   real SQL sessions, expiry/revocation, package startup, trusted HTTPS ingress and
   owner/independent review remain pending.
+- A new offline transport test wraps the session-only app in Uvicorn's
+  `ProxyHeadersMiddleware` and checks that HTTPS is accepted only when the ASGI
+  peer is the configured loopback adapter; forwarded HTTP, missing forwarded
+  scheme and an untrusted peer fail before session authentication. The focused
+  four-file suite passed 98 tests. This tests Uvicorn's policy with synthetic
+  ASGI requests; it does not exercise Lambda Web Adapter event conversion or
+  establish ALB/Lambda invocation permissions, host trust, SQL or deployed parity.
+- The ordinary local container startup does not activate Lambda Web Adapter:
+  its official local guide says the adapter activates inside the Lambda
+  execution environment and recommends SAM CLI to simulate it locally. SAM CLI
+  is not installed here, so no adapter invocation simulation was run. See the
+  [AWS Lambda Web Adapter local debugging guide](https://aws.github.io/aws-lambda-web-adapter/development/local-debugging.html).
+- User directed that no AWS work be done in this session. No AWS calls or
+  resource changes were made after that direction; deployment, live smoke and
+  measured-run steps remain pending under that explicit scope and their separate
+  exact-plan approval gates.
 
 ## History
+
+### 2026-11-02 18:37:36 UTC — EXP-02 corpus gate and EXP-03 proxy policy check
+
+**Direction and scope:** User directed that no AWS work or resource creation be
+performed and asked to finish the remaining tasks. Work in this checkpoint was
+limited to local tests, static inspection, and documentation; no cloud calls,
+deployment, live request, workload, or measurement occurred.
+
+**EXP-02:** `/usr/bin/k6 inspect` was first invoked without its mandatory local
+target and failed at `local_target_required`, before script setup. A second
+inspection supplied an explicit loopback target, a temporary profile built from
+the retained case corpus, a synthetic cookie placeholder, and the low condition.
+It then refused initialization with `invalid_expected_case`: all five browse
+and two detail expectations pass the k6 shape check, while the three Hybrid
+cases have `expected: null` until independently reviewed ordered results
+exist. This is the intended fail-closed behavior. No cookie was read and no
+request was sent. Node 24.22.0 tests for case construction, schedules, outcomes,
+and response checks passed (4 files); the 10-case corpus remains incomplete for
+the scheduled load script.
+
+**EXP-03:** Added a parameterized ASGI check in
+`apps/api/tests/test_lambda_identity.py` around the existing session-only app.
+It accepts HTTPS only from Uvicorn's configured `127.0.0.1` trusted peer and
+rejects forwarded HTTP, absent forwarded scheme, or an untrusted peer before
+Identity session lookup. Focused command
+`.venv/bin/python -m pytest -q -W error apps/api/tests/test_lambda_identity.py
+apps/api/tests/test_lambda_read_routes.py apps/api/tests/test_lambda_read_app.py
+tests/architecture/test_boundaries.py` passed **98 tests**. Pinned Black check
+and `git diff --check` passed. Existing local API/Lambda images were inspected
+as Linux AMD64 with their recorded IDs unchanged. This test does not prove the
+AWS Lambda Web Adapter's ALB conversion, ingress host trust, invocation policy,
+real session/SQL, database headroom, or deployed A/B parity. Those remain open.
+
+The previously recorded local container start does not count as adapter
+invocation evidence. The official [Lambda Web Adapter local debugging guide](https://aws.github.io/aws-lambda-web-adapter/development/local-debugging.html)
+says the extension activates inside Lambda and documents SAM CLI for local
+simulation. SAM CLI is unavailable in this environment; no AWS API, local Lambda
+runtime simulator, or deployment was used in this checkpoint.
+
+**Files:** the test adds only synthetic transport peers/headers; this log and
+the status rows record the expected k6 refusal and limitations. The checkpoint
+is ready for local review/commit; independent peer/owner review remains required.
+No AWS action was attempted.
 
 ### 2026-11-02 18:28:38 UTC — EXP-03 local image build and planning inputs
 
