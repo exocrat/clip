@@ -253,6 +253,36 @@ the SE-01 owner to review the actual cases. Both commands are offline and report
 `execution_permitted: false`; a future runner must validate the complete corpus
 and manifest before obtaining credentials or sending requests.
 
+## Offline per-run cost arithmetic
+
+`comparison_cost_preview.py` calculates one run's pre-credit USD cost per
+1,000 correct operations from operator-supplied values. Provide a local JSON
+object with exactly these fields (the numbers below are synthetic examples):
+
+```json
+{"run_id":"synthetic-A-1","condition":"normal","cost_usd":"0.25","cost_basis":"estimated","correct_operations":500}
+```
+
+`condition` is `low`, `normal` or `burst`; `cost_basis` is `estimated` or
+`billing`. Enter `cost_usd` as a nonnegative decimal string, allocated to the
+measured interval before credits. The correct-operation count must come from the
+matching run's independently checked results. Use a separately reviewed common
+allocation and price basis for A and B, including retained ECS capacity and
+applicable shared services. Record pricing, interval, billing delay, sources and
+assumptions with the run evidence; the calculator does not establish any of them.
+
+```sh
+.venv/bin/python -m scripts.evaluation.k6.comparison_cost_preview path/to/cost-input.json --output path/to/new-cost-report.json
+```
+
+The tool writes a new file and refuses to overwrite an existing input or report.
+It reports the entered total, correct count and decimal cost per 1,000; with no
+correct operations, the unit cost is unavailable. A `billing` label is an input
+claim, not independently verified billing. Calculate each workload separately;
+normal-run values are used for the approved median score only after validity and
+other scoring gates are met. The tool does not calculate total experiment costs,
+verify whole-system allocation or establish a result, budget, or NFR pass.
+
 ## Timing, saturation and telemetry metadata
 
 `data/evaluation/workloads/ecs-lambda-telemetry.template.json` specifies a

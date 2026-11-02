@@ -76,6 +76,34 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 09:08:29 UTC — EXP-02 offline cost arithmetic
+
+**Direction:** User verified preparing a local cost calculator and asked to set
+the custom timer aside. This step uses only synthetic fixtures and local files;
+no experiment, provider, billing, database or external call was made.
+
+**Design and change:** EXP-01 calls for each measured low, normal or burst
+interval's pre-credit whole-system cost divided by its correct operations,
+multiplied by 1,000; normal-run values contribute to the score after review.
+No existing cost calculator was found. Added a bounded local Python calculator
+that accepts one declared run, decimal USD amount, estimated/billing label and
+correct count, and writes a separate new report. It reports an unavailable unit
+cost for zero correct operations and refuses invalid inputs or existing outputs.
+The guide defines its exact input format and records the requirement for a common
+allocation and price basis, retained ECS and shared services, and cost evidence.
+
+**Checks:** 25 synthetic calculator, manifest and artifact tests passed; strict
+Mypy, in-process Black formatting and `git diff --check` passed. No run results
+or actual prices were generated.
+
+**Limits and next action:** The calculator cannot verify cost attribution,
+source authenticity, allocation completeness, correctness counts, billing delay,
+run validity or budget; `billing` is a supplied label. It does not calculate
+whole-experiment cost, select a price model, score A/B or approve an NFR. Real
+cost sources, reviewed allocation, owner review and run evidence remain open.
+This step awaits user verification.
+
+
 ### 2026-11-02 09:03:54 UTC — EXP-02 timer prototype recheck
 
 **Direction:** User asked to check the custom timer. This was an offline check;
