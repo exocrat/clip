@@ -76,6 +76,29 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 10:36:32 UTC — EXP-02 declared A/B parity preparation
+
+**Direction:** User verified grouped offline parity preparation. Only synthetic
+inputs were used; no cloud, database, deployed API or provider was contacted.
+
+**Change:** Added a blank, non-authorizing pair-declaration template and an
+offline checker. The checker reuses complete corpus/reference and pair-plan
+validation, checks selected cycle/condition and run IDs, and compares both
+supplied dataset fingerprint, schema, index fingerprint, DB-settings hash and
+search contract, implementation and model revisions to the plan/reference. It
+requires an observation time and safe evidence reference/hash for each side and
+reports aggregate flags only. Tests cover incomplete templates, mismatches and
+malformed references. Guide and README document the input format and limits.
+
+**Checks and limits:** 65 focused synthetic tests, plus the new CLI check on a
+focused rerun, strict Mypy, Black formatting and whitespace checks passed.
+This compares declarations; it does not open evidence,
+verify hashes, authenticate provenance, check freshness, observe deployments or
+verify human review. Actual A/B dataset, index, DB settings, schema and model
+parity must still be demonstrated before measurement. No run is authorized and
+no DATA-READY or review claim is added. Result awaits user verification.
+
+
 ### 2026-11-02 10:32:45 UTC — EXP-02 capture privacy and read-back checks
 
 **Direction:** User verified grouped preparation for privacy checks and saved-file

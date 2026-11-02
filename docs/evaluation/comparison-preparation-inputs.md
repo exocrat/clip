@@ -146,6 +146,31 @@ settings, or hash the raw results. Investigate clock discrepancies rather than
 changing timestamps to make a check pass. Use the separate artifact verifier
 for the manifest's evidence files. Both checks remain offline and non-authorizing.
 
+## Declared A/B data and search parity
+
+For each planned pair, copy the blank
+`data/evaluation/workloads/ecs-lambda-parity.template.json` to a new local input.
+Fill the cycle and condition, and for A and B provide the corresponding planned
+run ID, UTC observation time, dataset fingerprint, schema version, index
+fingerprint, database-settings SHA-256, search contract and implementation
+revisions, model revision, and a non-secret local evidence reference and
+SHA-256. Do not edit the template or put credentials or response contents in the
+record. The ordered reference and binding plan must already be complete.
+
+```sh
+.venv/bin/python -m scripts.evaluation.k6.comparison_declared_parity \
+  parity.json binding.json corpus.json ordered-reference.json paired-plan.json
+```
+
+The offline checker first validates the existing plan, corpus and ordered-result
+binding. It checks both declared snapshots against their selected pair and the
+plan/reference values. It prints aggregate flags only and exits 2 for missing,
+malformed or mismatched inputs. Matching declarations do **not** establish that
+the evidence files exist or match their hashes, that either deployed path was
+observed, that timestamps are fresh or accurate, or that a human reviewed them.
+The actual paths, observation procedure and independently reviewed evidence are
+future deployment gates; this tool does not contact a database or authorize a run.
+
 ## Offline preparation for one planned run
 
 The preparation stage combines the existing corpus, plan and profile checks for

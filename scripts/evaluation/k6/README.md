@@ -299,3 +299,7 @@ security-review limits are in the [preparation guide](../../../docs/evaluation/c
 `comparison_evidence_capture.py` checks for known sensitive content and prepares
 separate, exclusive local raw and report files with read-back hashes. The [preparation guide](../../../docs/evaluation/comparison-preparation-inputs.md#local-evidence-capture-helper)
 explains incomplete captures and required privacy review; this is not a runner.
+
+`comparison_declared_parity.py` compares supplied A/B dataset, schema, index,
+database and search/model declarations to the bound plan and reference. It does
+not inspect evidence or prove deployment parity. See the [preparation guide](../../../docs/evaluation/comparison-preparation-inputs.md#declared-ab-data-and-search-parity).

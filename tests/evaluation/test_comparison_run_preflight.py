@@ -629,3 +629,88 @@ def test_mock_runner_stops_before_simulated_session_and_workload(
     )
     assert refused["events"] == ["preflight_started", "preflight_refused"]
     assert refused["requests_sent"] is False
+
+
+def test_declared_pair_parity_requires_matching_plan_and_search_bindings(
+    prepared_inputs: Any,
+    tmp_path: Path,
+) -> None:
+    from scripts.evaluation.k6.comparison_declared_parity import (
+        validate_declared_parity,
+    )
+
+    binding, corpus, reference, plan = prepared_inputs
+    template = json.loads(
+        Path("data/evaluation/workloads/ecs-lambda-parity.template.json").read_text()
+    )
+    with pytest.raises(ValueError):
+        validate_declared_parity(template, binding, corpus, reference, plan)
+    record = deepcopy(template)
+    record.update(cycle=1, condition="low")
+    common = {
+        "observed_at_utc": "2026-11-01T10:00:00Z",
+        "dataset_fingerprint": plan["shared_inputs"]["dataset_fingerprint"],
+        "schema_version": reference["schema_version"],
+        "index_fingerprint": plan["shared_inputs"]["index_fingerprint"],
+        "database_settings_sha256": plan["shared_inputs"]["database_settings_sha256"],
+        "search_contract_revision": reference["search_contract_revision"],
+        "search_implementation_revision": binding["application_revision"],
+        "model_revision": reference["model_revision"],
+        "evidence_reference": "synthetic/observation.json",
+        "evidence_sha256": "a" * 64,
+    }
+    for side in ("A", "B"):
+        record["configurations"][side] = {"run_id": f"synthetic-c1-p0-{side}", **common}
+    result = validate_declared_parity(record, binding, corpus, reference, plan)
+    assert result["declared_pair_matches_plan_and_reference"] is True
+    assert result["deployed_parity_verified"] is False
+    assert result["measurement_authorized"] is False
+    paths = [
+        tmp_path / name
+        for name in (
+            "parity.json",
+            "binding.json",
+            "corpus.json",
+            "reference.json",
+            "plan.json",
+        )
+    ]
+    for path, value in zip(
+        paths,
+        (
+            json.dumps(record).encode(),
+            json.dumps(binding).encode(),
+            corpus,
+            json.dumps(reference).encode(),
+            json.dumps(plan).encode(),
+        ),
+    ):
+        path.write_bytes(value)
+    command = [
+        sys.executable,
+        "-m",
+        "scripts.evaluation.k6.comparison_declared_parity",
+        *map(str, paths),
+    ]
+    cli = subprocess.run(command, capture_output=True, text=True, check=False)
+    assert cli.returncode == 0
+    assert json.loads(cli.stdout)["deployed_parity_verified"] is False
+    assert reference["queries"][0]["query_text"] not in cli.stdout + cli.stderr
+    for field, value in (
+        ("schema_version", "other"),
+        ("model_revision", "0" * 40),
+        ("index_fingerprint", "different"),
+        ("database_settings_sha256", "0" * 64),
+        ("search_implementation_revision", "0" * 40),
+        ("run_id", "synthetic-c2-p0-B"),
+        ("evidence_reference", "../outside"),
+        ("observed_at_utc", "not-a-time"),
+    ):
+        changed = deepcopy(record)
+        changed["configurations"]["B"][field] = value
+        with pytest.raises(ValueError):
+            validate_declared_parity(changed, binding, corpus, reference, plan)
+    mismatched_reference = deepcopy(reference)
+    mismatched_reference["model_revision"] = "0" * 40
+    with pytest.raises(ValueError):
+        validate_declared_parity(record, binding, corpus, mismatched_reference, plan)
