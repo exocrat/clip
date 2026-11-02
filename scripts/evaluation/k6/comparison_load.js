@@ -43,13 +43,20 @@ export default function () {
   issued.add(1, tags);
   const start = Date.now();
   let outcome = 'transport_error';
+  let duration;
   try {
-    const response = http.get(`${target}${paths[index]}`, {
-      headers: { Accept: 'application/json', 'Cache-Control': 'no-cache', Cookie: cookie },
-      redirects: 0,
-      timeout: `${profile.timeout_seconds}s`,
-      tags,
-    });
+    let response;
+    try {
+      response = http.get(`${target}${paths[index]}`, {
+        headers: { Accept: 'application/json', 'Cache-Control': 'no-cache', Cookie: cookie },
+        redirects: 0,
+        timeout: `${profile.timeout_seconds}s`,
+        tags,
+      });
+    } finally {
+      // Stop timing on return or throw, before interpreting the response.
+      duration = Date.now() - start;
+    }
     outcome = preliminaryOutcome(response);
     if (outcome === 'requires_correctness_check') {
       outcome = 'incorrect';
@@ -57,7 +64,6 @@ export default function () {
       catch (_) { /* Malformed response content is counted without being retained. */ }
     }
   } finally {
-    const duration = Date.now() - start;
     if (duration < 0) invalidClock.add(1, tags);
     elapsed.add(Math.max(0, duration), { ...tags, outcome });
     outcomes.add(1, { ...tags, outcome });

@@ -79,6 +79,22 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 11:35:09 UTC — EXP-02 request timing boundary
+
+**Direction:** User verified moving the local request timing endpoint before
+response checking. This is offline preparation, with no workload or external call.
+
+**Change:** The scheduled workload now records the end time when the HTTP call
+returns or throws, then classifies and checks the response. Outcome and elapsed
+metrics still share the iteration's outcome. A Node test substitutes fake k6 APIs
+and checks that a deliberately slow correctness check is excluded, thrown calls
+are accounted for, and backward clock readings are flagged. The input guide was
+updated. The real runner, individual-record verification and owner-reviewed timing
+protocol remain open; Date.now is not a verified monotonic clock.
+
+**Checks:** The fake-k6 Node tests and 53 synthetic report/preflight tests passed;
+whitespace checks passed. Result awaits user verification.
+
 ### 2026-11-02 11:30:12 UTC — EXP-02 request and timing record review
 
 **Direction and scope:** User verified an offline review of how outcomes and

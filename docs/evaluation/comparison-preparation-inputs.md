@@ -405,8 +405,9 @@ protocol need independent review before measurements or scoring.
 The local workload assigns the outcome to its elapsed sample in the same
 iteration, then emits a separate outcome counter. Its case index repeats across
 iterations, so these records do not have a unique request identifier that lets
-the report independently match them. The elapsed interval currently also includes
-response validation; it is not an established request-only timing boundary.
+the report independently match them. The elapsed interval stops on return or
+throw from the HTTP call, before response validation. Its wall-clock timing
+method remains unverified for the approved protocol.
 Interrupted iterations and the eventual real runner still require review.
 
 ## Offline per-run cost arithmetic
