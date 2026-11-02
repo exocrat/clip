@@ -274,3 +274,8 @@ The canonical final label file remains absent and cannot be fabricated by tools.
 operator-supplied values. Its input format and limits are documented in the
 [preparation guide](../../../docs/evaluation/comparison-preparation-inputs.md#offline-per-run-cost-arithmetic).
 It does not fetch billing or verify allocation or run validity.
+
+`comparison_cost_binding.py` checks cost input run/condition and correct count
+against a captured manifest and its hashed derived report. It does not verify
+cost allocation, report provenance or run validity. See the preparation guide
+for the offline command and limitations.

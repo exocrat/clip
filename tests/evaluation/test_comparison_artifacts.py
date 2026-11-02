@@ -291,3 +291,71 @@ def test_cli_refuses_template_without_disclosing_contents(evidence, tmp_path):
     assert result.returncode == 2
     assert result.stdout == ""
     assert "synthetic cost" not in result.stderr
+
+
+def test_cost_binding_matches_manifest_report_and_correct_count(evidence):
+    from scripts.evaluation.k6.comparison_cost_binding import check_cost_binding
+
+    _, manifest, _ = evidence
+    report = json.dumps({"client_metrics": {"low_measured": {"correct": 50}}}).encode()
+    manifest["evidence"]["derived_report_sha256"] = hashlib.sha256(report).hexdigest()
+    cost = {
+        "run_id": "synthetic-A-1",
+        "condition": "low",
+        "cost_usd": "0.25",
+        "cost_basis": "estimated",
+        "correct_operations": 50,
+    }
+    result = check_cost_binding(cost, manifest, report)
+    assert result["measured_correct_count_matches"] is True
+    assert result["cost_allocation_verified"] is False
+    assert result["measurement_authorized"] is False
+    for key, value in (
+        ("run_id", "synthetic-B-1"),
+        ("condition", "burst"),
+        ("correct_operations", 51),
+    ):
+        changed = deepcopy(cost)
+        changed[key] = value
+        with pytest.raises(ValueError):
+            check_cost_binding(changed, manifest, report)
+    with pytest.raises(ValueError, match="report_hash_mismatch"):
+        check_cost_binding(cost, manifest, report + b" ")
+    missing = json.dumps({"client_metrics": {}}).encode()
+    manifest["evidence"]["derived_report_sha256"] = hashlib.sha256(missing).hexdigest()
+    with pytest.raises(KeyError):
+        check_cost_binding(cost, manifest, missing)
+
+
+def test_cost_binding_cli_fails_closed(evidence, tmp_path):
+    _, manifest, _ = evidence
+    report_bytes = json.dumps(
+        {"client_metrics": {"low_measured": {"correct": 50}}}
+    ).encode()
+    manifest["evidence"]["derived_report_sha256"] = hashlib.sha256(
+        report_bytes
+    ).hexdigest()
+    cost = {
+        "run_id": "synthetic-A-1",
+        "condition": "low",
+        "cost_usd": "0.25",
+        "cost_basis": "estimated",
+        "correct_operations": 50,
+    }
+    paths = [tmp_path / name for name in ("input.json", "manifest.json", "report.json")]
+    paths[0].write_text(json.dumps(cost))
+    paths[1].write_text(json.dumps(manifest))
+    paths[2].write_bytes(report_bytes)
+    cmd = [
+        sys.executable,
+        "-m",
+        "scripts.evaluation.k6.comparison_cost_binding",
+        *map(str, paths),
+    ]
+    passed = subprocess.run(cmd, capture_output=True, text=True, check=False)
+    assert passed.returncode == 0
+    assert json.loads(passed.stdout)["report_hash_matches_manifest"] is True
+    paths[2].write_bytes(report_bytes + b" ")
+    failed = subprocess.run(cmd, capture_output=True, text=True, check=False)
+    assert failed.returncode == 2
+    assert not failed.stdout

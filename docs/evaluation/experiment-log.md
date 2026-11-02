@@ -76,6 +76,32 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 09:14:13 UTC — EXP-02 cost input binding
+
+**Direction:** User verified offline cost arithmetic and the next matching step.
+Only local synthetic files were used; no request, workload, billing, database or
+external service was contacted.
+
+**Change:** Added an offline checker for the cost input, captured run manifest,
+and derived comparison report. It validates the captured manifest, matches run
+ID and condition, hashes the supplied report bytes against the manifest and
+compares the declared correct count with the selected measured cohort. Existing
+reports have no run ID; their recorded digest supplies the association. It fails
+on missing or mismatched inputs and prints only aggregate flags. Added local
+synthetic tests for valid and mismatched inputs and CLI refusal.
+
+**Checks:** 27 cost, manifest and artifact tests passed, strict Mypy on the new
+checker, in-process Black formatting and `git diff --check` passed. The guide
+and k6 README record the command and limitations.
+
+**Limits:** Matching hashes do not establish report provenance or correctness.
+The cost interval in the manifest may cover the whole run, so this check cannot
+prove the supplied amount is allocated to the measured interval or that all
+shared costs were included. It does not accept a run, measurement or NFR. Human
+review of cost allocation, report accuracy, timing and other run gates remains.
+The result awaits user verification.
+
+
 ### 2026-11-02 09:08:29 UTC — EXP-02 offline cost arithmetic
 
 **Direction:** User verified preparing a local cost calculator and asked to set

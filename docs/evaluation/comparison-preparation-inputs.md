@@ -275,6 +275,22 @@ assumptions with the run evidence; the calculator does not establish any of them
 .venv/bin/python -m scripts.evaluation.k6.comparison_cost_preview path/to/cost-input.json --output path/to/new-cost-report.json
 ```
 
+Before using a cost calculation, cross-check the input against a completed
+captured manifest and its derived report:
+
+```sh
+.venv/bin/python -m scripts.evaluation.k6.comparison_cost_binding path/to/cost-input.json path/to/captured-manifest.json path/to/derived-report.json
+```
+
+The offline check requires matching run ID and condition, verifies the report's
+exact bytes against the manifest's recorded report hash, and compares the
+condition's measured correct count. The report itself has no run ID; its hash
+provides the recorded association, not independent proof of provenance. This
+does not check whether the cost amount is for the measured interval: the manifest
+cost interval can cover the whole run. Cost allocation, report accuracy and run
+validity still require independent review. Templates and missing or mismatched
+inputs fail; the checker does not request credentials or start a workload.
+
 The tool writes a new file and refuses to overwrite an existing input or report.
 It reports the entered total, correct count and decimal cost per 1,000; with no
 correct operations, the unit cost is unavailable. A `billing` label is an input
