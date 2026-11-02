@@ -2,6 +2,17 @@
 
 ## Proposed search parity adapter
 
+`comparison_parity_corpus.build_parity_corpus` builds a separate non-executable
+draft from the frozen archive and labels without search rankings. Supply a
+binding object with exactly `format_version` (integer 2), `dataset_fingerprint`,
+`schema_version`, `search_contract_revision`, `search_implementation_revision`
+and `model_revision`; the second function argument must be the same full
+40-character lowercase search implementation commit. Dataset, schema, contract
+and model must match the retained records. Search expected pages remain null;
+browse/detail expectations remain archive-derived. This helper does not verify
+review or authorize measurement. It is not yet accepted by the existing preflight
+or workload, which still require the old ordered reference.
+
 `comparison_search_parity.js` accepts the corpus and its three search cases with
 two already-supplied status/body pairs. It requires matching case IDs and exact
 request settings, and one case in each direct-word, related-word and meaning-based

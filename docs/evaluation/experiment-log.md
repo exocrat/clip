@@ -79,6 +79,25 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 12:59:58 UTC — Proposed parity corpus binding
+
+**Direction:** User verified preparing dataset-bound search inputs without a
+hand-written ranking; no workload, network or actual result collection occurred.
+
+**Change:** Added a separate non-executable corpus builder. Its strict version-2
+binding requires the retained dataset, schema, search contract, model and an
+explicit matching full search implementation commit. It rebuilds the existing
+ten archive-bound cases, preserves browse/detail expectations, leaves all three
+search expected pages null and marks measurement disabled. No frozen manifest,
+label or acceptance record was edited. The guide specifies the input fields.
+
+**Checks and limitations:** Eight focused synthetic/archive tests, strict Mypy,
+Black formatting and whitespace checks passed. The helper is not wired into the
+existing preflight or workload, which still require ordered references; matching
+input declarations do not prove review, deployed identity, search correctness or
+parity. The protocol change and affected-owner review remain open. Result awaits
+user verification; no experiment or NFR pass is claimed.
+
 ### 2026-11-02 12:57:43 UTC — Bind search parity inputs to corpus cases
 
 **Direction:** User verified continuing preparation without a hand-written
