@@ -153,6 +153,20 @@ attest database equivalence. The future real-target runner is not connected yet
 and must enforce this check plus all remaining reviewed run gates before any
 session or request.
 
+For an additional check of the actual local workload profile for one cycle,
+add `--workload-profile path/to/profile.json --cycle 1` (or cycle 2 or 3).
+The profile must contain the complete corpus `cases` array and a
+`sequence_starts` object with exactly `low`, `normal` and `burst`; each value
+must be an integer from 0 through 9. For example,
+`{"low": 0, "normal": 1, "burst": 2}` is a synthetic shape example, not a
+selected rotation. The checker requires these three values to equal that
+cycle's paired plan and the cases to equal the bound corpus. The same planned
+values apply to both A and B. Supplying only one of the two options fails. When
+both are omitted, `workload_profile_checked` is false: the profile has not been
+checked. This option does not validate capacity, timeout, target, authentication
+or every other execution gate, and is not yet enforced by a real-target runner.
+The seed and rule used to choose the starts remain open pre-run inputs.
+
 ## NFR browse and Hybrid case drafts
 
 The offline generator selects five browse and three Hybrid cases from the same

@@ -34,6 +34,10 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
   corpus binding and 18-run pair plan together, including matching dataset and
   corpus fingerprints. It does not obtain credentials, send requests or
   authorize measurement, and has not yet been wired into a real-target runner.
+- The local workload now accepts one case-sequence start per traffic condition.
+  The offline preflight can compare a supplied profile's starts and cases with
+  a selected cycle of the paired plan. The seed/rotation rule remains open, and
+  a future real-target runner must enforce this check before credentials.
 - **EXP-02 Steps 3–5:** Local path, response and scheduled-workload preparation
   exists on `task/exp-02-workload`. A ten-case dataset-bound draft now has five
   browse and two detail expected responses plus three reviewed Hybrid query
@@ -62,6 +66,37 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 - **Measurements:** No ECS/Lambda comparison or final NFR run is recorded here.
 
 ## History
+
+### 2026-11-02 07:05:05 UTC — EXP-02 per-condition case rotations
+
+**Direction:** User verified correcting the mismatch between the paired plan,
+which may give each traffic condition a different case start, and the local k6
+workload, which previously accepted only one start for all three. Work is offline
+preparation only; the seed and the rule for choosing starts remain open.
+
+**Change:** `comparison_schedule.js` validates exactly three integer indices
+in a profile's `sequence_starts` object and selects the relevant index for each
+condition's warm-up and measured scenarios. `comparison_load.js` uses that
+index when selecting and tagging the case. The combined Python preflight can
+optionally take `--workload-profile` and `--cycle` together, check the profile's
+cases against the bound corpus and compare all three indices to that cycle's
+paired plan. Its output explicitly says whether that profile was checked. A
+single legacy `sequence_start` no longer initializes the local workload. The
+preparation guide and k6 README document the profile shape and options.
+
+**Limits:** This does not choose a seed or prove that a deployment used the
+profile. The profile check does not verify capacity, target, timing, credentials
+or authorization and remains optional in this offline tool; the future
+real-target runner must enforce it along with all other gates before a session
+or request. No cap or approved rate changed. Synthetic case orders are fixtures,
+not independently reviewed results.
+
+**Checks:** Forty-three focused Python tests, four Node test files under the
+available Node 26.8.2, strict Mypy, Black in-process formatting verification and
+`git diff --check` passed. Node 24 remains the project-pinned toolchain check.
+An initialization-only `k6 inspect` accepted a synthetic complete profile and
+rejected an incomplete start map. No k6 run, performance test, cloud, database,
+credential or external-service call occurred. Result awaits user verification.
 
 ### 2026-11-02 06:53:29 UTC — EXP-02 recorded run-order check
 

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { COHORT_SECONDS, caseForIteration, comparisonScenarios, validateComparisonCases } from './comparison_schedule.js';
+import { COHORT_SECONDS, caseForIteration, comparisonScenarios, sequenceStartForScenario, validateComparisonCases, validateSequenceStarts } from './comparison_schedule.js';
 
 const kinds = ['browse','search','detail','browse','search','browse','detail','search','browse','browse'];
 const cases = kinds.map((kind,index) => ({request:{kind},expected:{id:index}}));
@@ -23,4 +23,20 @@ test('ten independently prepared cases enforce the approved 50/30/20 mix and rot
   assert.equal(caseForIteration(cases,3,10),cases[3]);
   assert.throws(() => validateComparisonCases(cases.slice(1),0), /invalid_sequence/);
   assert.throws(() => validateComparisonCases([...cases.slice(0,9),{request:{kind:'search'},expected:{}}],0), /invalid_mix/);
+});
+
+test('each condition uses its own planned rotation for warm-up and measurement', () => {
+  const starts = validateSequenceStarts({ low: 1, normal: 3, burst: 8 });
+  for (const [condition, expected] of Object.entries(starts)) {
+    for (const cohort of ['warmup', 'measured']) {
+      const offset = sequenceStartForScenario(starts, `${condition}_${cohort}`);
+      assert.equal(offset, expected);
+      assert.equal(caseForIteration(cases, offset, 0), cases[expected]);
+      assert.equal(caseForIteration(cases, offset, 10), cases[expected]);
+    }
+  }
+  for (const invalid of [null, [], { low: 0, normal: 1 }, { low: 0, normal: 1, burst: 10 }, { low: 0, normal: 1, burst: true }, { low: 0, normal: 1, burst: 2, extra: 3 }]) {
+    assert.throws(() => validateSequenceStarts(invalid), /invalid_sequence_starts/);
+  }
+  assert.throws(() => sequenceStartForScenario(starts, 'low_unknown'), /invalid_scenario/);
 });

@@ -24,13 +24,20 @@ def _same_fingerprint(left: str, right: str) -> bool:
     return left.removeprefix("sha256:") == right.removeprefix("sha256:")
 
 
+def _canonical_json(value: Any) -> str:
+    """Compare JSON values without treating booleans as integers."""
+    return json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False)
+
+
 def validate_run_inputs(
     binding_plan: Any,
     corpus_bytes: bytes,
     ordered_reference: Any,
     paired_plan: Any,
+    workload_profile: Any = None,
+    cycle: int | None = None,
 ) -> dict[str, Any]:
-    """Check source/data/corpus bindings and the complete paired-run plan."""
+    """Check bindings, the paired plan, and optionally one cycle's profile."""
     binding_result = validate_bindings(binding_plan, corpus_bytes, ordered_reference)
     pair_result = validate_pair_plan(paired_plan)
     if pair_result["state"] != "planned":
@@ -46,12 +53,42 @@ def validate_run_inputs(
     ):
         raise ValueError("paired_corpus_binding_mismatch")
 
+    profile_checked = workload_profile is not None or cycle is not None
+    if profile_checked:
+        if (
+            not isinstance(workload_profile, dict)
+            or type(cycle) is not int
+            or cycle not in (1, 2, 3)
+        ):
+            raise ValueError("workload_profile_and_cycle_required")
+        starts = workload_profile.get("sequence_starts")
+        if (
+            not isinstance(starts, dict)
+            or set(starts) != {"low", "normal", "burst"}
+            or any(
+                type(value) is not int or not 0 <= value < 10
+                for value in starts.values()
+            )
+        ):
+            raise ValueError("invalid_profile_sequence_starts")
+        expected_starts = {
+            pair["condition"]: pair["sequence_start"]
+            for pair in paired_plan["cycles"][cycle - 1]["pairs"]
+        }
+        if starts != expected_starts:
+            raise ValueError("profile_sequence_starts_mismatch")
+        if _canonical_json(workload_profile.get("cases")) != _canonical_json(
+            json.loads(corpus_bytes)["cases"]
+        ):
+            raise ValueError("profile_cases_mismatch")
+
     return {
         "valid": True,
         "source_dataset_corpus_bindings_match": binding_result["bindings_match"],
         "paired_plan_valid": pair_result["valid"],
         "planned_pair_count": pair_result["pair_count"],
         "planned_run_count": pair_result["planned_run_count"],
+        "workload_profile_checked": profile_checked,
         "measurement_authorized": False,
     }
 
@@ -73,8 +110,12 @@ def main() -> None:
     parser.add_argument("corpus", type=Path)
     parser.add_argument("ordered_reference", type=Path)
     parser.add_argument("paired_plan", type=Path)
+    parser.add_argument("--workload-profile", type=Path)
+    parser.add_argument("--cycle", type=int)
     args = parser.parse_args()
     try:
+        if (args.workload_profile is None) != (args.cycle is None):
+            raise ValueError("workload_profile_and_cycle_required")
         binding_plan, _ = _read_json(args.binding_plan, BINDING_MAX_INPUT_BYTES)
         if args.corpus.stat().st_size > BINDING_MAX_INPUT_BYTES:
             raise ValueError("input_too_large")
@@ -85,10 +126,20 @@ def main() -> None:
             args.ordered_reference, BINDING_MAX_INPUT_BYTES
         )
         paired_plan, _ = _read_json(args.paired_plan, PAIR_MAX_INPUT_BYTES)
+        workload_profile = (
+            _read_json(args.workload_profile, BINDING_MAX_INPUT_BYTES)[0]
+            if args.workload_profile is not None
+            else None
+        )
         print(
             json.dumps(
                 validate_run_inputs(
-                    binding_plan, corpus_bytes, ordered_reference, paired_plan
+                    binding_plan,
+                    corpus_bytes,
+                    ordered_reference,
+                    paired_plan,
+                    workload_profile,
+                    args.cycle,
                 ),
                 sort_keys=True,
             )

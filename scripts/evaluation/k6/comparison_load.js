@@ -5,14 +5,15 @@ import execution from 'k6/execution';
 import { Counter, Trend } from 'k6/metrics';
 import { comparisonPath, localApiTarget } from './comparison_cases.js';
 import { correctResponse, validExpected } from './comparison_checks.js';
-import { caseForIteration, comparisonScenarios, validateComparisonCases } from './comparison_schedule.js';
+import { caseForIteration, comparisonScenarios, sequenceStartForScenario, validateComparisonCases, validateSequenceStarts } from './comparison_schedule.js';
 import { preliminaryOutcome } from './comparison_outcomes.js';
 
 const target = localApiTarget(__ENV.CLIP_COMPARISON_LOCAL_TARGET);
 const cookie = __ENV.CLIP_COMPARISON_LOCAL_COOKIE;
 if (__ENV.CLIP_COMPARISON_LOCAL_LOAD !== 'true' || typeof cookie !== 'string' || !cookie || /[\r\n]/.test(cookie)) throw Error('explicit_local_load_inputs_required');
 const profile = JSON.parse(open(__ENV.CLIP_COMPARISON_LOCAL_PROFILE));
-const cases = validateComparisonCases(profile.cases, profile.sequence_start);
+const sequenceStarts = validateSequenceStarts(profile.sequence_starts);
+const cases = validateComparisonCases(profile.cases, sequenceStarts.low);
 if (!Number.isSafeInteger(profile.capacity?.preAllocatedVUs) || !Number.isSafeInteger(profile.capacity?.maxVUs) || !Number.isFinite(profile.timeout_seconds) || profile.timeout_seconds !== 5) throw Error('approved_capacity_and_timeout_required');
 const paths = cases.map(item => {
   const path = comparisonPath(item.request);
@@ -35,8 +36,9 @@ export const options = {
 export default function () {
   const phase = execution.scenario.name;
   const iteration = execution.scenario.iterationInTest;
-  const item = caseForIteration(cases, profile.sequence_start, iteration);
-  const index = (profile.sequence_start + iteration) % cases.length;
+  const sequenceStart = sequenceStartForScenario(sequenceStarts, phase);
+  const item = caseForIteration(cases, sequenceStart, iteration);
+  const index = (sequenceStart + iteration) % cases.length;
   const tags = { phase, kind: item.request.kind, case_index: String(index) };
   issued.add(1, tags);
   const start = Date.now();

@@ -21,6 +21,13 @@ false. A future real-target runner must call/enforce this and its other reviewed
 gates before requesting a session or sending traffic; this command is not yet
 wired to that runner.
 
+To check one cycle's actual workload profile as well, append
+`--workload-profile path/to/profile.json --cycle 1` (or 2 or 3). The profile's
+`cases` must equal the bound corpus and `sequence_starts` must contain exactly
+the planned `low`, `normal`, and `burst` start positions for that cycle. With
+no profile and cycle supplied, its `workload_profile_checked` output is false;
+other run gates still apply even when it is true.
+
 For offline NFR-01/02 draft checks, run with the project's Node 24:
 
 ```sh
@@ -79,7 +86,11 @@ that overlap the two burst scenarios can use up to twice that maximum. A future
 real-run plan must explicitly budget and verify the combined generator cap. The load
 script checks complete expected responses, makes one request per iteration and
 accepts only a loopback target plus an explicit synthetic session. It does not
-write response bodies or credentials to output.
+write response bodies or credentials to output. Its local profile now requires
+a `sequence_starts` object with one index (0–9) per condition; warm-up and
+measurement for that condition use the same index. A single legacy
+`sequence_start` is insufficient. The values must match the paired plan, but
+the script itself does not open or verify that plan.
 
 The checked-in `ecs-lambda-comparison-schedule-v1.json` is a design schedule,
 not an executable final manifest. Dataset-bound expected cases, their reviewed

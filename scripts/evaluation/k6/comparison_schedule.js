@@ -8,6 +8,22 @@ export const COMPARISON_PHASES = [
 export const COHORT_SECONDS = { warmup: 60, measured: 300, drain: 5 };
 export const MIX_COUNTS = { browse: 5, search: 3, detail: 2 };
 
+/** Require one planned rotation for each condition, shared by its two cohorts. */
+export function validateSequenceStarts(starts) {
+  if (!starts || typeof starts !== 'object' || Array.isArray(starts) ||
+      Object.keys(starts).sort().join(',') !== 'burst,low,normal' ||
+      Object.values(starts).some(value => !Number.isSafeInteger(value) || value < 0 || value >= 10)) {
+    throw Error('invalid_sequence_starts');
+  }
+  return starts;
+}
+
+/** Select a condition's planned start for either its warm-up or measured cohort. */
+export function sequenceStartForScenario(starts, scenario) {
+  if (typeof scenario !== 'string' || !/^(low|normal|burst)_(warmup|measured)$/.test(scenario)) throw Error('invalid_scenario');
+  return starts[scenario.split('_')[0]];
+}
+
 /** Build six arrival cohorts; burst starts immediately while warm-up requests may drain.
  * VU capacity is per scenario, so burst overlap may use both scenarios' VUs.
  */

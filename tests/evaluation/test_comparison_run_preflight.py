@@ -71,7 +71,7 @@ def prepared_inputs() -> tuple[dict[str, Any], bytes, dict[str, Any], dict[str, 
     }
     for cycle in paired_plan["cycles"]:
         for pair_index, pair in enumerate(cycle["pairs"]):
-            pair["sequence_start"] = pair_index
+            pair["sequence_start"] = (pair_index + cycle["cycle"] - 1) % 10
             pair["A_run_id"] = f"synthetic-c{cycle['cycle']}-p{pair_index}-A"
             pair["B_run_id"] = f"synthetic-c{cycle['cycle']}-p{pair_index}-B"
     return binding_plan, corpus_bytes, reference, paired_plan
@@ -85,8 +85,73 @@ def test_matching_inputs_pass_but_never_authorize(prepared_inputs: Any) -> None:
         "paired_plan_valid": True,
         "planned_pair_count": 9,
         "planned_run_count": 18,
+        "workload_profile_checked": False,
         "measurement_authorized": False,
     }
+
+
+@pytest.mark.parametrize("cycle", [1, 2, 3])
+def test_profile_starts_and_cases_match_the_selected_cycle(
+    prepared_inputs: Any, cycle: int
+) -> None:
+    binding_plan, corpus_bytes, reference, paired_plan = prepared_inputs
+    starts = {
+        pair["condition"]: pair["sequence_start"]
+        for pair in paired_plan["cycles"][cycle - 1]["pairs"]
+    }
+    profile = {"cases": json.loads(corpus_bytes)["cases"], "sequence_starts": starts}
+    result = validate_run_inputs(
+        binding_plan, corpus_bytes, reference, paired_plan, profile, cycle
+    )
+    assert result["workload_profile_checked"] is True
+    assert result["measurement_authorized"] is False
+
+
+@pytest.mark.parametrize(
+    ("change", "cycle", "error"),
+    [
+        (
+            lambda profile: profile["sequence_starts"].update(low=9),
+            1,
+            "profile_sequence_starts_mismatch",
+        ),
+        (
+            lambda profile: profile["sequence_starts"].update(low=True),
+            1,
+            "invalid_profile_sequence_starts",
+        ),
+        (
+            lambda profile: profile["sequence_starts"].pop("burst"),
+            1,
+            "invalid_profile_sequence_starts",
+        ),
+        (lambda profile: profile["cases"].pop(), 1, "profile_cases_mismatch"),
+        (lambda profile: None, 4, "workload_profile_and_cycle_required"),
+    ],
+)
+def test_bad_workload_profile_is_refused(
+    prepared_inputs: Any, change: Any, cycle: int, error: str
+) -> None:
+    binding_plan, corpus_bytes, reference, paired_plan = prepared_inputs
+    profile = {
+        "cases": json.loads(corpus_bytes)["cases"],
+        "sequence_starts": {"low": 0, "normal": 1, "burst": 2},
+    }
+    change(profile)
+    with pytest.raises(ValueError, match=error):
+        validate_run_inputs(
+            binding_plan, corpus_bytes, reference, paired_plan, profile, cycle
+        )
+
+
+def test_profile_and_cycle_must_be_supplied_together(prepared_inputs: Any) -> None:
+    binding_plan, corpus_bytes, reference, paired_plan = prepared_inputs
+    with pytest.raises(ValueError, match="workload_profile_and_cycle_required"):
+        validate_run_inputs(binding_plan, corpus_bytes, reference, paired_plan, None, 1)
+    with pytest.raises(ValueError, match="workload_profile_and_cycle_required"):
+        validate_run_inputs(
+            binding_plan, corpus_bytes, reference, paired_plan, {}, None
+        )
 
 
 @pytest.mark.parametrize(
@@ -127,6 +192,7 @@ def test_cli_outputs_only_aggregate_and_fails_closed(
     tmp_path: Path, prepared_inputs: Any
 ) -> None:
     binding_plan, corpus_bytes, reference, paired_plan = prepared_inputs
+    paired_plan = deepcopy(paired_plan)
     paths = [
         tmp_path / name
         for name in ("binding.json", "corpus.json", "ordered.json", "paired.json")
@@ -145,6 +211,44 @@ def test_cli_outputs_only_aggregate_and_fails_closed(
     assert result.returncode == 0
     assert json.loads(result.stdout)["measurement_authorized"] is False
     assert reference["queries"][0]["query_text"] not in result.stdout
+
+    profile_path = tmp_path / "profile.json"
+    profile_path.write_text(
+        json.dumps(
+            {
+                "cases": json.loads(corpus_bytes)["cases"],
+                "sequence_starts": {"low": 0, "normal": 1, "burst": 2},
+            }
+        )
+    )
+    checked = subprocess.run(
+        [*command, "--workload-profile", str(profile_path), "--cycle", "1"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert checked.returncode == 0
+    assert json.loads(checked.stdout)["workload_profile_checked"] is True
+    bad_profile = json.loads(profile_path.read_text())
+    bad_profile["sequence_starts"]["burst"] = 9
+    profile_path.write_text(json.dumps(bad_profile))
+    mismatch = subprocess.run(
+        [*command, "--workload-profile", str(profile_path), "--cycle", "1"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert mismatch.returncode == 2
+    assert (
+        reference["queries"][0]["query_text"] not in mismatch.stdout + mismatch.stderr
+    )
+    incomplete = subprocess.run(
+        [*command, "--workload-profile", str(profile_path)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert incomplete.returncode == 2
 
     paired_plan["shared_inputs"]["case_corpus_sha256"] = "e" * 64
     paths[3].write_text(json.dumps(paired_plan))
