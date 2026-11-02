@@ -66,8 +66,9 @@ ordered-reference input:
 ```
 
 It checks the plan values and actual corpus file hash, rebuilds the full corpus
-from the verified archive and ordered reference, and compares the complete
-objects. The reference's search implementation revision must equal the planned
+from the verified archive and ordered reference, and compares the complete JSON
+values with type distinctions, so a boolean cannot replace a number. The
+reference's search implementation revision must equal the planned
 application revision. This exact-match rule is conservative: if a later app
 commit preserves the same search implementation, owner-reviewed equivalence or
 a newly bound reference is needed; the tool does not infer it. If a completed
@@ -182,6 +183,39 @@ both are omitted, `workload_profile_checked` is false: the profile has not been
 checked. This option does not validate capacity, timeout, target, authentication
 or every other execution gate, and is not yet enforced by a real-target runner.
 The rule is approved; the actual seed remains an open pre-run input.
+
+## Generate a cycle workload profile
+
+Once the four preflight inputs are complete, the offline builder can create one
+profile for a cycle from the bound cases and the paired plan. Replace the worker
+placeholders with the independently reviewed values and choose a new output path:
+
+```sh
+.venv/bin/python -m scripts.evaluation.k6.comparison_profile_builder \
+  path/to/binding-plan.json path/to/complete-case-corpus.json \
+  path/to/reviewed-ordered-reference.json path/to/complete-paired-plan.json \
+  --cycle 1 --pre-allocated-vus PREALLOCATED_VUS --max-vus MAX_VUS \
+  --output path/to/new-cycle-1-profile.json
+```
+
+Repeat for cycles 2 and 3 with distinct new output paths. Reuse each cycle's
+profile for its A and B configurations. The builder checks the complete bound
+corpus, reviewed-reference envelope and plan before creating the file; it
+derives the three starts from that cycle, uses the approved five-second timeout,
+and refuses existing output files. With the same input bytes and capacity values,
+it produces identical bytes. Its output reports a SHA-256 of the generated file
+and `measurement_authorized: false`; it never requests a session or sends traffic.
+
+The worker values must be positive whole numbers representable by JavaScript,
+with pre-allocated workers no greater than the maximum. Those checks do not
+approve the values or prove the generator can sustain the workload. `maxVUs`
+is per k6 scenario, so both burst scenarios can overlap during the transition;
+the independently reviewed generator plan must account for their combined use.
+No numeric 300-request ceiling is imposed. The current per-run manifest's
+`workload.profile_sha256` identifies the checked-in schedule, not this generated
+profile. The generated profile's hash has no dedicated capture field yet; resolve
+that evidence gap before measurement. The future real-target runner must still
+enforce this profile and all other reviewed gates before credentials or requests.
 
 ## NFR browse and Hybrid case drafts
 

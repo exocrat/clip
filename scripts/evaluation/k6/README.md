@@ -112,6 +112,12 @@ The generator is offline and does not choose the real seed or authorize a run.
 The paired-plan and run-manifest validators check each start against its seed.
 These version-2 validators reject version-1 record shapes.
 
+`comparison_profile_builder.py` can create a new workload profile for each
+cycle from a complete bound corpus and paired plan, with worker limits supplied
+by the operator. Use the same cycle profile for A and B. The command and its
+remaining evidence/generator-capacity gates are in the [preparation guide](../../../docs/evaluation/comparison-preparation-inputs.md#generate-a-cycle-workload-profile).
+It does not run k6 or authorize a measurement.
+
 `comparison_report.py` reads k6's JSON output without modifying it and writes a
 separate derived report. It reports scheduled, issued, HTTP, dropped, incomplete,
 correct and failed counts; timeouts and 429 throttles; offered and correct

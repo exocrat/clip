@@ -12,6 +12,10 @@ import pytest
 
 from scripts.evaluation.k6.comparison_ordered_results import bind_ordered_results
 from scripts.evaluation.k6.comparison_pair_plan import TEMPLATE as PAIR_TEMPLATE
+from scripts.evaluation.k6.comparison_profile_builder import (
+    MAX_SAFE_INTEGER,
+    build_profile,
+)
 from scripts.evaluation.k6.comparison_run_preflight import validate_run_inputs
 from scripts.evaluation.k6.prepare_comparison_corpus import (
     FINGERPRINT,
@@ -153,6 +157,149 @@ def test_profile_and_cycle_must_be_supplied_together(prepared_inputs: Any) -> No
         validate_run_inputs(
             binding_plan, corpus_bytes, reference, paired_plan, {}, None
         )
+
+
+@pytest.mark.parametrize("cycle", [1, 2, 3])
+def test_profile_builder_reuses_bound_cases_and_planned_starts_deterministically(
+    prepared_inputs: Any, cycle: int
+) -> None:
+    binding_plan, corpus_bytes, reference, paired_plan = prepared_inputs
+    first = build_profile(
+        binding_plan, corpus_bytes, reference, paired_plan, cycle, 2, 301
+    )
+    second = build_profile(
+        binding_plan, corpus_bytes, reference, paired_plan, cycle, 2, 301
+    )
+    assert first == second
+    profile = json.loads(first)
+    assert profile["cases"] == json.loads(corpus_bytes)["cases"]
+    assert profile["sequence_starts"] == {
+        pair["condition"]: pair["sequence_start"]
+        for pair in paired_plan["cycles"][cycle - 1]["pairs"]
+    }
+    assert profile["capacity"] == {"preAllocatedVUs": 2, "maxVUs": 301}
+    assert profile["timeout_seconds"] == 5
+    assert (
+        validate_run_inputs(
+            binding_plan, corpus_bytes, reference, paired_plan, profile, cycle
+        )["workload_profile_checked"]
+        is True
+    )
+
+
+@pytest.mark.parametrize(
+    ("cycle", "pre_allocated", "maximum"),
+    [
+        (0, 1, 1),
+        (True, 1, 1),
+        (1, 0, 1),
+        (1, 2, 1),
+        (1, True, 1),
+        (1, 1, MAX_SAFE_INTEGER + 1),
+    ],
+)
+def test_profile_builder_refuses_bad_cycle_or_unrepresentable_capacity(
+    prepared_inputs: Any, cycle: Any, pre_allocated: Any, maximum: Any
+) -> None:
+    binding_plan, corpus_bytes, reference, paired_plan = prepared_inputs
+    with pytest.raises(ValueError):
+        build_profile(
+            binding_plan,
+            corpus_bytes,
+            reference,
+            paired_plan,
+            cycle,
+            pre_allocated,
+            maximum,
+        )
+
+
+def test_profile_builder_rejects_missing_or_mismatched_references(
+    prepared_inputs: Any,
+) -> None:
+    binding_plan, corpus_bytes, reference, paired_plan = prepared_inputs
+    missing = deepcopy(reference)
+    missing["queries"][0]["ordered_listing_ids"] = None
+    with pytest.raises(ValueError):
+        build_profile(binding_plan, corpus_bytes, missing, paired_plan, 1, 1, 2)
+    wrong_plan = deepcopy(paired_plan)
+    wrong_plan["rotation"]["seed"] = 1
+    with pytest.raises(ValueError, match="sequence_start_rotation_mismatch"):
+        build_profile(binding_plan, corpus_bytes, reference, wrong_plan, 1, 1, 2)
+
+
+def test_profile_builder_cli_is_exclusive_and_fails_before_output(
+    tmp_path: Path, prepared_inputs: Any
+) -> None:
+    binding_plan, corpus_bytes, reference, paired_plan = prepared_inputs
+    binding_path, corpus_path, reference_path, plan_path = [
+        tmp_path / name
+        for name in ("binding.json", "corpus.json", "reference.json", "paired.json")
+    ]
+    binding_path.write_text(json.dumps(binding_plan))
+    corpus_path.write_bytes(corpus_bytes)
+    reference_path.write_text(json.dumps(reference))
+    plan_path.write_text(json.dumps(paired_plan))
+    output = tmp_path / "profile.json"
+    command = [
+        sys.executable,
+        "-m",
+        "scripts.evaluation.k6.comparison_profile_builder",
+        str(binding_path),
+        str(corpus_path),
+        str(reference_path),
+        str(plan_path),
+        "--cycle",
+        "1",
+        "--pre-allocated-vus",
+        "2",
+        "--max-vus",
+        "301",
+        "--output",
+        str(output),
+    ]
+    result = subprocess.run(command, capture_output=True, text=True, check=False)
+    assert result.returncode == 0
+    report = json.loads(result.stdout)
+    original = output.read_bytes()
+    assert report["profile_sha256"] == hashlib.sha256(original).hexdigest()
+    assert report["measurement_authorized"] is False
+    assert reference["queries"][0]["query_text"] not in result.stdout + result.stderr
+    assert (
+        subprocess.run(command, capture_output=True, text=True, check=False).returncode
+        == 2
+    )
+    assert output.read_bytes() == original
+
+    untouched = tmp_path / "untouched.json"
+    untouched.write_text("existing user file")
+    alias = tmp_path / "profile-alias.json"
+    alias.symlink_to(untouched)
+    assert (
+        subprocess.run(
+            command[:-1] + [str(alias)], capture_output=True, text=True, check=False
+        ).returncode
+        == 2
+    )
+    assert untouched.read_text() == "existing user file"
+
+    missing_output = tmp_path / "not-created.json"
+    reference_path.unlink()
+    missing_command = command[:-1] + [str(missing_output)]
+    failed = subprocess.run(
+        missing_command, capture_output=True, text=True, check=False
+    )
+    assert failed.returncode == 2
+    assert not missing_output.exists()
+    assert reference["queries"][0]["query_text"] not in failed.stdout + failed.stderr
+    incomplete_reference = deepcopy(reference)
+    incomplete_reference["queries"][0]["ordered_listing_ids"] = None
+    reference_path.write_text(json.dumps(incomplete_reference))
+    failed = subprocess.run(
+        missing_command, capture_output=True, text=True, check=False
+    )
+    assert failed.returncode == 2
+    assert not missing_output.exists()
 
 
 @pytest.mark.parametrize(

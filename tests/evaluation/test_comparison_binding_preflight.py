@@ -98,6 +98,19 @@ def test_different_source_revision_and_modified_corpus_fail(prepared):
         validate_bindings(changed, altered, reference)
 
 
+def test_boolean_cannot_replace_numeric_page_even_with_recomputed_hash(prepared):
+    plan, content, reference = prepared
+    corpus = json.loads(content)
+    assert type(corpus["cases"][0]["expected"]["page"]) is int
+    assert corpus["cases"][0]["expected"]["page"] == 1
+    corpus["cases"][0]["expected"]["page"] = True
+    altered = json.dumps(corpus, sort_keys=True).encode()
+    changed = deepcopy(plan)
+    changed["case_corpus_sha256"] = hashlib.sha256(altered).hexdigest()
+    with pytest.raises(ValueError, match="case_corpus_does_not_match_reference"):
+        validate_bindings(changed, altered, reference)
+
+
 def test_optional_captured_manifest_checks_the_same_three_bindings(
     prepared, monkeypatch
 ):

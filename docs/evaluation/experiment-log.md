@@ -39,6 +39,10 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
   a selected cycle of the paired plan. The user approved the seeded rotation
   rule; the actual seed remains open, and a future real-target runner must
   enforce these checks before credentials.
+- An offline builder can now create a separate profile for each cycle using
+  the checked plan/cases and supplied worker limits. Each cycle's profile is
+  reusable for A and B. The exact generated profile hash has no dedicated
+  per-run manifest field yet and remains an evidence gap before measurement.
 - **EXP-02 Steps 3–5:** Local path, response and scheduled-workload preparation
   exists on `task/exp-02-workload`. A ten-case dataset-bound draft now has five
   browse and two detail expected responses plus three reviewed Hybrid query
@@ -67,6 +71,46 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 - **Measurements:** No ECS/Lambda comparison or final NFR run is recorded here.
 
 ## History
+
+### 2026-11-02 07:18:42 UTC — EXP-02 cycle profile preparation
+
+**Direction:** User verified preparing deterministic workload profiles from
+the bound case corpus and paired plan, with explicit worker values and one new
+output file per cycle. Preparation remains offline; actual seed and worker
+limits are not selected or approved by this step.
+
+**Change:** Added `comparison_profile_builder.py`. For a selected cycle it
+checks the complete plan, source/data/corpus and ordered-reference binding,
+derives the three planned case starts, uses supplied per-scenario worker values
+and the approved five-second timeout, and reuses the profile preflight before
+exclusively creating a new file. It prints only the cycle, file hash and
+non-authorization status. Repeated identical inputs produce identical bytes;
+the same cycle profile can be used for A and B. The builder never opens a
+session or sends a request. The preparation guide and k6 README explain usage.
+
+**Correctness repair:** The existing corpus binder compared Python objects,
+where `True == 1`. It now compares type-sensitive canonical JSON, so a boolean
+cannot replace a numeric expected field even when the supplied hash is updated.
+The focused regression test exercises that case.
+
+**Limits and follow-up:** Positive JavaScript-representable worker counts are
+only shape checks, not approved or safe generator limits; burst scenarios may
+overlap. No 300-request cap is encoded. The run manifest currently records the
+checked-in schedule hash rather than the generated profile's hash, so recording
+and binding the exact generated profile remains a pre-measurement evidence gap.
+Real reviewed ordered references, the actual seed and worker settings, owner
+review, target/auth/timing gates and future runner enforcement remain pending.
+Both new offline commands await coordinated shared command-registry registration;
+current remote-work inspection is outside the no-external-calls scope.
+
+**Checks:** One hundred twelve focused Python tests passed with warnings as
+errors, including deterministic generation, all three cycle mappings,
+incomplete/mismatched inputs, invalid capacities, existing file and symlink
+refusal, and type-sensitive case comparison. Strict Mypy, Black in-process
+formatting and `git diff --check` passed. Initialization-only `k6 inspect`
+accepted all three generated synthetic profiles. No k6 run, performance test,
+cloud, database, credential or external-service call occurred. Result awaits
+user verification.
 
 ### 2026-11-02 07:11:21 UTC — EXP-02 approved seeded rotation
 

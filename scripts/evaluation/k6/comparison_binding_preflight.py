@@ -72,7 +72,11 @@ def validate_bindings(
             raise ValueError("captured_manifest_binding_mismatch")
     corpus = json.loads(corpus_bytes)
     rebuilt = bind_ordered_results(reference, revision)
-    if corpus != rebuilt:
+    # Compare JSON encodings, not Python values: Python considers True equal
+    # to 1, but those are different response expectations in a workload case.
+    if json.dumps(
+        corpus, sort_keys=True, separators=(",", ":"), allow_nan=False
+    ) != json.dumps(rebuilt, sort_keys=True, separators=(",", ":"), allow_nan=False):
         raise ValueError("case_corpus_does_not_match_reference")
     return {
         "bindings_match": True,
