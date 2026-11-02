@@ -79,6 +79,24 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 13:17:37 UTC — Synthetic parity draft integration check
+
+**Direction:** User verified checking the draft-input preflight and three-search
+comparison together offline. No session, workload or external request occurred.
+
+**Change and checks:** An integration test builds the archive-bound draft,
+validates its declared bindings, and passes its three cases and fabricated empty
+pages to the existing JavaScript comparator via a local Node process. It checks
+matching pages and a simulated failed response, verifies aggregate output does
+not include query text and confirms deployment remains unverified. Twenty
+focused synthetic/archive tests and whitespace checks passed.
+
+**Limits:** This is a test of separate components, not a real runner or an
+enforced pre-run gate. Empty matching pages are not relevance evidence; real
+search responses, deployment identity, parity and affected-owner review remain
+open. Combined run preflight continues to refuse the draft. Result awaits user
+verification; no experiment or NFR pass is claimed.
+
 ### 2026-11-02 13:11:51 UTC — Offline parity draft binding check
 
 **Direction:** User verified connecting the search case draft to offline
