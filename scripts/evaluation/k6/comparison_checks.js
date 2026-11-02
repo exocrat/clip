@@ -42,3 +42,13 @@ export function validExpected(request, expected) {
 export function correctResponse(status, actual, request, expected) {
   return status === 200 && validExpected(request,expected) && validExpected(request,actual) && same(actual,expected);
 }
+
+/** Check a search response's public shape and applicable filters without a ranking oracle. */
+export function validSearchResponse(status, actual, request) {
+  return request?.kind === 'search' && status === 200 && validExpected(request, actual);
+}
+
+/** Compare two valid pages exactly; neither equality nor shape proves relevance. */
+export function equivalentSearchResponses(statusA, actualA, statusB, actualB, request) {
+  return validSearchResponse(statusA, actualA, request) && validSearchResponse(statusB, actualB, request) && same(actualA, actualB);
+}

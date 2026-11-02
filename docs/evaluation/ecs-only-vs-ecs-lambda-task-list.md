@@ -339,7 +339,7 @@ recorded in the manifest; replay the same cases for the matched A/B pair.
 | Class | Share | Request and correctness check |
 |---|---:|---|
 | Browse | 50% | `GET /listings`: first and later pages, with and without an approved category filter. Check the actual eligible/available IDs, filter, order, page and continuation indicator against the reviewed reference cases. |
-| Hybrid search | 30% | `GET /listings` with nonblank `q` and the final approved Hybrid/default relevance behavior. Include direct word, related-word and meaning-based cases; check expected IDs, order, pagination and fields against reviewed reference cases. |
+| Hybrid search | 30% | Proposed revision pending affected-owner review: `GET /listings` with nonblank `q` and the final approved Hybrid/default relevance behavior. Include direct-word, related-word and meaning-based cases. Before measured runs compare the two paths' valid responses for the same inputs, including IDs, order, pagination and fields; resolve unexplained differences. During runs check successful status, response shape and applicable product requirements. Assess search usefulness separately through NFR-04's reviewed labels. A human-authored exact ordering for these three cases is not required under this proposal. |
 | Detail | 20% | `GET /listings/{listing_id}` for available listings. Check the requested ID, current fields and image references. |
 
 Each request is one logical operation and one HTTP attempt; set retries to zero
@@ -347,9 +347,13 @@ for measurement. Use a 5-second client timeout and count timeout, transport
 error, rejection, unexpected status, malformed output or incorrect content as a
 failure. Preflight regular and temporary authorized synthetic users, denial of
 expired/unauthorized callers, unavailable detail and invalid filters outside the
-timed workload. The dataset step supplies the exact case IDs, query text, valid
-filter values and independently reviewed expected outcomes; never infer success
-from HTTP status alone. Keep image-body downloads out of the browse timing.
+timed workload. The dataset step supplies the exact case IDs, query text and valid
+filter values. Under the proposed search revision, pre-run A/B evidence records
+the comparison outcome; browse and detail retain their reviewed expected outcomes.
+Never infer success from HTTP status alone. Keep image-body downloads out of
+the browse timing. The existing tool still enforces the prior ordered-reference
+rule until its binding and runner dependencies are updated and reviewed; this
+proposal does not authorize a run or change NFR-02/04 requirements.
 
 Use the smallest practical number of existing authorized accounts for measured
 reads, initially one regular account. Establish and verify sessions outside the

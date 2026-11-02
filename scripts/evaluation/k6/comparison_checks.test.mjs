@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { correctResponse, validExpected } from './comparison_checks.js';
+import { correctResponse, validExpected, validSearchResponse, equivalentSearchResponses } from './comparison_checks.js';
 
 const id='01b4fbd6-4c3c-44da-a578-6284033a869c';
 const row={listing_id:id,title:'Synthetic bicycle',description:'Synthetic item',category_code:'bicycles',category_label:'Bicycles',condition_code:'good',condition_label:'Good',asking_price_paise:10000,original_price_paise:null,negotiable:true,pickup_area:null,available_from:'2026-01-01T00:00:00.000000Z',available_until:null,availability:'available',sensitive_purchase:false,image_ids:[id]};
@@ -38,4 +38,16 @@ test('the expected order is enforced independently of valid page shape', () => {
   const actual={...page,items:[second,row]};
   assert.equal(correctResponse(200,expected,request,expected),true);
   assert.equal(correctResponse(200,actual,request,expected),false);
+});
+
+test('search parity checks valid responses and exact ordered content independently of an oracle', () => {
+  assert.equal(validSearchResponse(200,copy(page),request),true);
+  assert.equal(equivalentSearchResponses(200,copy(page),200,copy(page),request),true);
+  const changed=copy(page); changed.items[0].title='Another synthetic title';
+  assert.equal(equivalentSearchResponses(200,page,200,changed,request),false);
+  const invalid=copy(page); invalid.items[0].category_code='books';
+  assert.equal(equivalentSearchResponses(200,invalid,200,invalid,request),false);
+  assert.equal(equivalentSearchResponses(200,page,503,page,request),false);
+  const second={...row,listing_id:'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'};
+  assert.equal(equivalentSearchResponses(200,{...page,items:[row,second]},200,{...page,items:[second,row]},request),false);
 });

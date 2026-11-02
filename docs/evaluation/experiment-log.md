@@ -79,6 +79,28 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 12:50:53 UTC — Proposed comparison search parity checks
+
+**Direction:** User verified the trace and requested repository search
+requirements plus A/B equivalence. No live calls or measurements occurred.
+
+**Change:** The experiment design now records a proposed search-row revision,
+pending affected-owner review, that checks valid search responses and compares
+the two paths before measurement without a human-authored exact ranking for
+the three cases. Browse/detail references and separate NFR-02/04 requirements
+are retained. Added local pure functions to validate search response shape and
+filters and compare two valid pages exactly, including ordering and fields.
+The Hybrid decision and calibration documents specify a UUID final tie-breaker.
+
+**Checks and limits:** Synthetic Node checks cover matching and changed pages,
+order, invalid filters and status; whitespace passed. A valid empty page is not
+evidence of search relevance, and equal valid responses do not establish dataset
+identity or usefulness. These new functions are not wired to staging or a real
+runner. The existing binder, preflight and workload still require the old exact
+reference; no existing gate was bypassed. Completing their coordinated update,
+reviewing expected behavior for empty cases and affected-owner review remain
+open. Result awaits user verification; no experiment or NFR pass is claimed.
+
 ### 2026-11-02 12:48:25 UTC — Comparison search requirement change trace
 
 **Direction:** User requested using repository search requirements and checking
