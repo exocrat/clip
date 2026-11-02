@@ -10,8 +10,11 @@ and `model_revision`; the second function argument must be the same full
 40-character lowercase search implementation commit. Dataset, schema, contract
 and model must match the retained records. Search expected pages remain null;
 browse/detail expectations remain archive-derived. This helper does not verify
-review or authorize measurement. It is not yet accepted by the existing preflight
-or workload, which still require the old ordered reference.
+review or authorize measurement. The binding preflight accepts this draft only
+with the explicit `--parity-draft` option, verifies its rebuilt contents and
+always reports measurement unauthorized. The combined run preflight and workload
+still refuse it and require the old ordered reference. The command's existing
+third positional argument is the version-2 binding file in draft mode.
 
 `comparison_search_parity.js` accepts the corpus and its three search cases with
 two already-supplied status/body pairs. It requires matching case IDs and exact

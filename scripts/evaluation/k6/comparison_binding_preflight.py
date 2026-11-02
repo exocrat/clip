@@ -16,6 +16,7 @@ from typing import Any
 
 from scripts.evaluation.k6.comparison_manifest import TEMPLATE, validate_manifest
 from scripts.evaluation.k6.comparison_ordered_results import bind_ordered_results
+from scripts.evaluation.k6.comparison_parity_corpus import build_parity_corpus
 from scripts.evaluation.k6.prepare_comparison_corpus import FINGERPRINT
 
 MAX_INPUT_BYTES = 5_000_000
@@ -29,7 +30,12 @@ PLAN_KEYS = {
 
 
 def validate_bindings(
-    plan: Any, corpus_bytes: bytes, reference: Any, captured_manifest: Any = None
+    plan: Any,
+    corpus_bytes: bytes,
+    reference: Any,
+    captured_manifest: Any = None,
+    *,
+    allow_parity_draft: bool = False,
 ) -> dict[str, Any]:
     """Rebuild the corpus from the archive and compare all declared bindings."""
     if not isinstance(plan, dict) or set(plan) != PLAN_KEYS:
@@ -71,7 +77,13 @@ def validate_bindings(
         ):
             raise ValueError("captured_manifest_binding_mismatch")
     corpus = json.loads(corpus_bytes)
-    rebuilt = bind_ordered_results(reference, revision)
+    is_parity = isinstance(reference, dict) and reference.get("format_version") == 2
+    if is_parity:
+        if not allow_parity_draft or captured_manifest is not None:
+            raise ValueError("parity_draft_not_allowed_for_run")
+        rebuilt = build_parity_corpus(reference, revision)
+    else:
+        rebuilt = bind_ordered_results(reference, revision)
     # Compare JSON encodings, not Python values: Python considers True equal
     # to 1, but those are different response expectations in a workload case.
     if json.dumps(
@@ -84,6 +96,7 @@ def validate_bindings(
         "reference_review_verified": False,
         "deployment_verified": False,
         "captured_manifest_checked": captured_manifest is not None,
+        "parity_draft_checked": is_parity,
         "note": "Offline input consistency only; remaining run gates still apply.",
     }
 
@@ -105,6 +118,7 @@ def main() -> None:
     parser.add_argument("corpus", type=Path)
     parser.add_argument("ordered_reference", type=Path)
     parser.add_argument("--captured-manifest", type=Path)
+    parser.add_argument("--parity-draft", action="store_true")
     args = parser.parse_args()
     try:
         plan = json.loads(_read_bounded(args.plan))
@@ -117,7 +131,13 @@ def main() -> None:
         )
         if args.captured_manifest is not None and captured is None:
             raise ValueError("captured_manifest_required")
-        result = validate_bindings(plan, corpus_bytes, reference, captured)
+        result = validate_bindings(
+            plan,
+            corpus_bytes,
+            reference,
+            captured,
+            allow_parity_draft=args.parity_draft,
+        )
         print(json.dumps(result, sort_keys=True))
     except OSError, ValueError, KeyError, TypeError:
         parser.exit(2, "Binding preflight failed; no workload was started\n")

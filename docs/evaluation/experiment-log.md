@@ -79,6 +79,24 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 13:11:51 UTC — Offline parity draft binding check
+
+**Direction:** User verified connecting the search case draft to offline
+preflight while keeping the actual run gate closed. No request or workload ran.
+
+**Change:** The existing binding checker can explicitly accept a version-2
+parity draft, rebuild it from the archive and compare exact JSON contents and
+declared hashes/revisions. Without the explicit offline-only option it refuses
+the draft; combined run preflight still uses that default refusal. Captured-run
+manifest use remains disallowed. The command retains its legacy positional
+argument and adds `--parity-draft`; no run is authorized by it.
+
+**Checks and limits:** Nineteen binding/corpus tests, strict Mypy, Black and
+whitespace checks passed. Tests include altered requests and refusal through the
+combined run preflight. This is input consistency, not A/B response comparison,
+deployed identity, owner approval or execution readiness. Workload and actual
+response parity gate remain unconnected. Result awaits user verification.
+
 ### 2026-11-02 12:59:58 UTC — Proposed parity corpus binding
 
 **Direction:** User verified preparing dataset-bound search inputs without a

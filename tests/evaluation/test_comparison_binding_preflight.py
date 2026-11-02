@@ -10,6 +10,7 @@ import pytest
 
 from scripts.evaluation.k6.comparison_binding_preflight import validate_bindings
 from scripts.evaluation.k6.comparison_ordered_results import bind_ordered_results
+from scripts.evaluation.k6.comparison_parity_corpus import build_parity_corpus
 from scripts.evaluation.k6.prepare_comparison_corpus import FROZEN, LABELS, build_corpus
 
 
@@ -58,6 +59,33 @@ def test_exact_bindings_pass_without_authorizing_or_attesting_review(prepared):
     assert result["reference_review_verified"] is False
     assert result["deployment_verified"] is False
     assert result["captured_manifest_checked"] is False
+
+
+def test_parity_draft_is_explicit_offline_only_and_rejects_changes(prepared):
+    old_plan, _, old_reference = prepared
+    reference = {
+        key: value
+        for key, value in old_reference.items()
+        if key not in {"review_record_reference", "queries"}
+    }
+    reference["format_version"] = 2
+    corpus = build_parity_corpus(reference, old_plan["application_revision"])
+    content = json.dumps(corpus, sort_keys=True).encode()
+    plan = {**old_plan, "case_corpus_sha256": hashlib.sha256(content).hexdigest()}
+    with pytest.raises(ValueError, match="parity_draft_not_allowed_for_run"):
+        validate_bindings(plan, content, reference)
+    from scripts.evaluation.k6.comparison_run_preflight import validate_run_inputs
+
+    with pytest.raises(ValueError, match="parity_draft_not_allowed_for_run"):
+        validate_run_inputs(plan, content, reference, {})
+    checked = validate_bindings(plan, content, reference, allow_parity_draft=True)
+    assert checked["parity_draft_checked"] is True
+    assert checked["measurement_authorized"] is False
+    corpus["cases"][5]["request"]["query"]["q"] = "changed"
+    changed = json.dumps(corpus, sort_keys=True).encode()
+    plan["case_corpus_sha256"] = hashlib.sha256(changed).hexdigest()
+    with pytest.raises(ValueError, match="case_corpus_does_not_match_reference"):
+        validate_bindings(plan, changed, reference, allow_parity_draft=True)
 
 
 @pytest.mark.parametrize(
