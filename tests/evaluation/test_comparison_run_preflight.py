@@ -1152,3 +1152,146 @@ def test_k6_inspect_selects_only_requested_condition(
         ).returncode
         != 0
     )
+
+
+def test_offline_preparation_components_work_together_without_a_run(
+    tmp_path: Path, prepared_inputs: Any
+) -> None:
+    """Exercise connected local components using only fabricated inputs and metrics."""
+    from scripts.evaluation.k6.comparison_artifacts import _hash_artifact
+    from scripts.evaluation.k6.comparison_evidence_capture import capture_local_evidence
+    from scripts.evaluation.k6.comparison_offline_prepare import (
+        FILE_FIELDS,
+        prepare_inputs,
+    )
+    from scripts.evaluation.k6.comparison_report import summarize_points
+    from scripts.evaluation.k6.comparison_session_handoff import (
+        SESSION_VARIABLE,
+        prepare_session_environment,
+    )
+    from scripts.evaluation.k6.comparison_stage_run import MODULES, stage_run
+
+    binding, corpus, reference, source_plan = prepared_inputs
+    plan = deepcopy(source_plan)
+    source = Path("scripts/evaluation/k6")
+    module_hashes = {
+        name: hashlib.sha256((source / name).read_bytes()).hexdigest()
+        for name in MODULES
+    }
+    schedule = tmp_path / "schedule.json"
+    schedule.write_text('{"synthetic":true}\n')
+    plan["shared_inputs"]["load_script_sha256"] = module_hashes["comparison_load.js"]
+    plan["shared_inputs"]["schedule_sha256"] = hashlib.sha256(
+        schedule.read_bytes()
+    ).hexdigest()
+    profile_bytes = build_profile(binding, corpus, reference, plan, 1, 2, 301)
+    paths = {name: tmp_path / f"{name}.json" for name in FILE_FIELDS}
+    for name, value in zip(
+        FILE_FIELDS,
+        (
+            json.dumps(binding).encode(),
+            corpus,
+            json.dumps(reference).encode(),
+            json.dumps(plan).encode(),
+            profile_bytes,
+        ),
+    ):
+        paths[name].write_bytes(value)
+    evidence_root = tmp_path / "observations"
+    evidence_root.mkdir()
+    observation = evidence_root / "synthetic.json"
+    observation.write_text('{"synthetic":true}')
+    common = {
+        "observed_at_utc": "2026-11-01T10:00:00Z",
+        "dataset_fingerprint": plan["shared_inputs"]["dataset_fingerprint"],
+        "schema_version": reference["schema_version"],
+        "index_fingerprint": plan["shared_inputs"]["index_fingerprint"],
+        "database_settings_sha256": plan["shared_inputs"]["database_settings_sha256"],
+        "search_contract_revision": reference["search_contract_revision"],
+        "search_implementation_revision": binding["application_revision"],
+        "model_revision": reference["model_revision"],
+        "evidence_reference": observation.name,
+        "evidence_sha256": hashlib.sha256(observation.read_bytes()).hexdigest(),
+    }
+    parity = {
+        "format_version": 1,
+        "purpose": "declared-pair-parity-not-authorization",
+        "cycle": 1,
+        "condition": "low",
+        "configurations": {
+            side: {"run_id": f"synthetic-c1-p0-{side}", **common} for side in ("A", "B")
+        },
+    }
+    parity_path = tmp_path / "parity.json"
+    parity_path.write_text(json.dumps(parity))
+    stage_root = tmp_path / "stage"
+    stage_root.mkdir()
+    profile_hash = hashlib.sha256(profile_bytes).hexdigest()
+    run_id = "synthetic-c1-p0-A"
+    observation.write_text('{"synthetic":false}')
+    with pytest.raises(ValueError, match="parity_evidence_hash_mismatch"):
+        stage_run(
+            paths,
+            1,
+            run_id,
+            profile_hash,
+            source,
+            schedule,
+            module_hashes,
+            stage_root,
+            parity_path=parity_path,
+            parity_evidence_root=evidence_root,
+        )
+    assert not (stage_root / run_id).exists()
+    observation.write_text('{"synthetic":true}')
+    staged = stage_run(
+        paths,
+        1,
+        run_id,
+        profile_hash,
+        source,
+        schedule,
+        module_hashes,
+        stage_root,
+        parity_path=parity_path,
+        parity_evidence_root=evidence_root,
+    )
+    assert staged["condition"] == "low"
+    assert staged["deployed_parity_verified"] is False
+    preflight = prepare_inputs(paths, 1, run_id, profile_hash)
+    fake_session = "__Host-clip_session=synthetic-test-value"
+    handoff = prepare_session_environment(preflight, {SESSION_VARIABLE: fake_session})
+    assert handoff == {SESSION_VARIABLE: fake_session}
+    handoff.clear()
+    profile = {
+        "conditions": [
+            {"name": name, "warmup_rate": 1, "measured_rate": 1}
+            for name in ("low", "normal", "burst")
+        ],
+        "warmup_seconds": 1,
+        "measured_seconds": 1,
+    }
+    points = [
+        {
+            "type": "Point",
+            "metric": "dropped_iterations",
+            "data": {"value": 1, "tags": {"scenario": "low_measured"}},
+        }
+    ]
+    report = summarize_points(points, profile, "low")
+    assert report["delivery_complete"] is False
+    assert report["nfr_accepted"] is False
+    raw = ("\n".join(json.dumps(point) for point in points) + "\n").encode()
+    report_bytes = json.dumps(report, sort_keys=True).encode()
+    capture_root = tmp_path / "capture"
+    capture_root.mkdir()
+    result = capture_local_evidence(capture_root, run_id, raw, report_bytes)
+    assert (
+        _hash_artifact(capture_root, result["raw_reference"])[0] == result["raw_sha256"]
+    )
+    assert (
+        _hash_artifact(capture_root, result["report_reference"])[0]
+        == result["report_sha256"]
+    )
+    assert fake_session.encode() not in raw + report_bytes
+    assert result["run_validity_verified"] is False

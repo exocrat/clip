@@ -313,3 +313,7 @@ database and search/model declarations to the bound plan and reference. It can o
 evidence hashes, then stages a profile, schedule and fixed set of workload
 modules without running them. The [preparation guide](../../../docs/evaluation/comparison-preparation-inputs.md#stage-the-files-for-one-planned-run)
 describes the fingerprint inputs and remaining approval and use checks.
+
+The synthetic integration check connects preparation, staging, fake-session,
+report and capture helpers without executing a workload; see the [preparation
+guide](../../../docs/evaluation/comparison-preparation-inputs.md#synthetic-integration-check).

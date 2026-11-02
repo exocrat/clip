@@ -476,6 +476,16 @@ record is not a completed run manifest. It does not make files physically immuta
 or claim a run passed. The real runner must enforce privacy, preserve captured
 raw files and verify outputs before using this helper.
 
+## Synthetic integration check
+
+The focused test `test_offline_preparation_components_work_together_without_a_run`
+connects the existing plan/reference, parity-evidence, staging, fake-session,
+report and capture helpers with fabricated inputs. It confirms that changed
+parity evidence prevents staging and that synthetic raw/report files retain
+matching hashes. Its synthetic dropped arrival remains a failed delivery, not a
+measurement or an NFR result. The test calls the helpers directly: it does not
+exercise or prove the behavior of a future real-target runner.
+
 ## Timing, saturation and telemetry metadata
 
 `data/evaluation/workloads/ecs-lambda-telemetry.template.json` specifies a

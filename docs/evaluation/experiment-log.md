@@ -79,6 +79,29 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 11:19:10 UTC — EXP-02 offline component integration check
+
+**Direction:** User verified a grouped local end-to-end preparation check.
+Synthetic inputs and fabricated metric points only; no real session, k6 workload,
+request, cloud, database or external service was used.
+
+**Change and checks:** Added one focused synthetic integration test that builds
+bound cases/plan, supplies declared parity evidence, confirms changed evidence
+prevents staging, stages the planned run, checks the fake session handoff,
+creates an incomplete synthetic report with a dropped arrival and captures
+separate raw/report files. It verifies both output hashes and confirms the fake
+session is absent from those artifacts. The report remains unaccepted and its
+synthetic delivery is marked incomplete. The new test and 36 focused session,
+report and capture tests passed; strict Mypy, in-process Black formatting and
+whitespace checks passed. The guide and README describe scope and limitations.
+
+**Limits:** The test calls helpers directly and does not exercise a real runner,
+real sessions, actual parity observations, generator capacity or timing. The
+synthetic metric points are fixtures, not performance results. Human review,
+real-target integration, deployment and other run gates remain open. Result
+awaits user verification.
+
+
 ### 2026-11-02 11:13:27 UTC — EXP-02 parity-gated staging
 
 **Direction:** User verified connecting declared A/B parity and local evidence
