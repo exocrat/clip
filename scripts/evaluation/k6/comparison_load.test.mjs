@@ -2,9 +2,10 @@ import { test } from 'node:test';
 import { strict as assert } from 'node:assert';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
+import { preliminaryOutcome } from './comparison_outcomes.js';
 
 // Replace k6 APIs with local fakes; no network or workload is run.
-function prepare({ throws = false, negative = false } = {}) {
+function prepare({ throws = false, negative = false, timeout = false } = {}) {
   const source = readFileSync(new URL('./comparison_load.js', import.meta.url), 'utf8')
     .replace(/^import .*;$/gm, '')
     .replace('export const options', 'globalThis.options')
@@ -25,9 +26,9 @@ function prepare({ throws = false, negative = false } = {}) {
     validExpected: () => true, comparisonScenarios: () => ({}),
     execution: { scenario: { name: 'low_measured', iterationInTest: 0 } },
     sequenceStartForScenario: () => 0, caseForIteration: () => item,
-    preliminaryOutcome: () => 'requires_correctness_check',
+    preliminaryOutcome,
     correctResponse: () => { time += 500; return true; },
-    http: { get: () => { time += negative ? -10 : 25; if (throws) throw Error('synthetic'); return { status: 200, json: () => ({}) }; } },
+    http: { get: () => { time += negative ? -10 : 25; if (throws) throw Error('synthetic'); if (timeout) return { status: 0, error_code: 1050 }; return { status: 200, json: () => ({}) }; } },
   };
   vm.runInNewContext(source, context);
   return { context, recorded };
@@ -38,6 +39,13 @@ test('elapsed time excludes response validation', () => {
   context.run();
   assert.deepEqual(recorded.clip_comparison_elapsed_ms, [{ value: 25, outcome: 'correct' }]);
   assert.deepEqual(recorded.clip_comparison_outcomes, [{ value: 1, outcome: 'correct' }]);
+});
+
+test('a returned timeout is recorded as a failure with its elapsed time', () => {
+  const { context, recorded } = prepare({ timeout: true });
+  context.run();
+  assert.deepEqual(recorded.clip_comparison_elapsed_ms, [{ value: 25, outcome: 'timeout' }]);
+  assert.deepEqual(recorded.clip_comparison_outcomes, [{ value: 1, outcome: 'timeout' }]);
 });
 
 test('thrown requests and negative clock samples remain accounted for', () => {

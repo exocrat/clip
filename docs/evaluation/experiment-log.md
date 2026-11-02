@@ -79,6 +79,20 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 11:38:03 UTC — EXP-02 timeout and incomplete-record checks
+
+**Direction:** User verified checking timeouts and interruptions using synthetic
+data. No workload, network request or real interruption was performed.
+
+**Finding and checks:** A fake returned timeout is labeled timeout in both
+elapsed and outcome records. A synthetic report containing one timeout and one
+issued request without completion records counts the timeout and the unfinished
+request separately, marks accounting incomplete and suppresses correct-latency
+summary. The two Node test files and ten report tests passed, as did Black and
+whitespace checks. This demonstrates handling of missing records, not how k6
+behaves when an actual iteration is forcibly interrupted; real-runner and timing
+review remain open. Result awaits user verification.
+
 ### 2026-11-02 11:35:09 UTC — EXP-02 request timing boundary
 
 **Direction:** User verified moving the local request timing endpoint before

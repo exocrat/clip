@@ -176,6 +176,23 @@ class ComparisonReportTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Missing or duplicate condition"):
             summarize_points([], duplicated, "low")
 
+    def test_timeout_and_missing_completion_are_reported_separately(self):
+        tags = {"phase": "low_measured", "kind": "browse"}
+        points = [
+            point("clip_comparison_issued", 2, **tags),
+            point("http_reqs", 1, **tags),
+            point("clip_comparison_outcomes", 1, **tags, outcome="timeout"),
+            point("clip_comparison_elapsed_ms", 5000, **tags, outcome="timeout"),
+        ]
+        cohort = summarize_points(points, self.profile, "low")["client_metrics"][
+            "low_measured"
+        ]
+        self.assertEqual(cohort["timeouts"], 1)
+        self.assertEqual(cohort["uncompleted"], 1)
+        self.assertEqual(cohort["correct"], 0)
+        self.assertFalse(cohort["accounting_complete"])
+        self.assertIsNone(cohort["correct_latency_ms"])
+
     def test_matching_totals_do_not_verify_individual_request_pairing(self):
         tags = {"phase": "low_measured", "kind": "browse", "case_index": "0"}
         points = [
