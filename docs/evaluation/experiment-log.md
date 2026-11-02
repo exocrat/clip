@@ -76,6 +76,28 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 09:03:54 UTC — EXP-02 timer prototype recheck
+
+**Direction:** User asked to check the custom timer. This was an offline check;
+no workload, request, cloud or external-service call was made.
+
+**Evidence:** With public-module downloads and checksum lookups disabled,
+`GOPROXY=off GOSUMDB=off GOPATH=/tmp/clip-timer-gopath
+GOCACHE=/tmp/clip-timer-gocache go test ./...` passed from the monotonic module
+(the result was cached). The existing temporary custom binary ran `k6 inspect`
+on `monotonic/inspect_bridge.js` and printed `clock_bridge_check_passed` during
+initialization. This checks import, nonnegative elapsed output and invalid call
+ordering. The inspection script throws if executed as a workload. Inspection of
+`comparison_load.js` confirms that it still uses `Date.now` and does not import
+the extension.
+
+**Limits:** These checks do not establish elapsed-time accuracy around an HTTP
+request, concurrent VU operation in the k6 runtime, timeout or exception
+coverage, reproducible binary provenance, or integration with report accounting.
+The timing decision and applicable owner review remain open. The custom prototype
+is not ready to support experiment results.
+
+
 ### 2026-11-02 09:00:13 UTC — EXP-02 timing guidance correction
 
 **Direction:** User verified the profile preflight step and asked to align
