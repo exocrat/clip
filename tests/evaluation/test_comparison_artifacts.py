@@ -359,3 +359,68 @@ def test_cost_binding_cli_fails_closed(evidence, tmp_path):
     failed = subprocess.run(cmd, capture_output=True, text=True, check=False)
     assert failed.returncode == 2
     assert not failed.stdout
+
+
+def test_cost_median_requires_matching_three_cycles(evidence, tmp_path):
+    from scripts.evaluation.k6.comparison_cost_median import cost_median
+
+    _, base, _ = evidence
+    runs = []
+    for cycle, amount in enumerate(("0.30", "0.10", "0.20"), 1):
+        manifest = deepcopy(base)
+        manifest["run"]["run_id"] = f"synthetic-A-{cycle}"
+        manifest["run"]["repetition"] = cycle
+        manifest["workload"]["sequence_start"] = (cycle - 1) * 3
+        report = json.dumps(
+            {"client_metrics": {"low_measured": {"correct": 100}}}
+        ).encode()
+        manifest["evidence"]["derived_report_sha256"] = hashlib.sha256(
+            report
+        ).hexdigest()
+        cost = {
+            "run_id": manifest["run"]["run_id"],
+            "condition": "low",
+            "cost_usd": amount,
+            "cost_basis": "estimated",
+            "correct_operations": 100,
+        }
+        runs.append((cost, manifest, report))
+    result = cost_median(runs)
+    assert result["median_usd_per_1000"] == "2.00"
+    assert result["normal_score_input_candidate"] is False
+    assert result["run_validity_verified"] is False
+    command = [sys.executable, "-m", "scripts.evaluation.k6.comparison_cost_median"]
+    for index, (cost, manifest, report) in enumerate(runs):
+        paths = [
+            tmp_path / f"{index}-{name}"
+            for name in ("cost.json", "manifest.json", "report.json")
+        ]
+        paths[0].write_text(json.dumps(cost))
+        paths[1].write_text(json.dumps(manifest))
+        paths[2].write_bytes(report)
+        command.extend(["--run", *map(str, paths)])
+    output = tmp_path / "median.json"
+    command.extend(["--output", str(output)])
+    assert subprocess.run(command, capture_output=True, check=False).returncode == 0
+    original = output.read_bytes()
+    assert subprocess.run(command, capture_output=True, check=False).returncode == 2
+    assert output.read_bytes() == original
+    with pytest.raises(ValueError):
+        cost_median(runs[:2])
+    with pytest.raises(ValueError):
+        cost_median([runs[0], runs[0], runs[2]])
+    mixed = deepcopy(runs)
+    mixed[2][1]["run"]["configuration"] = "B"
+    with pytest.raises(ValueError, match="configuration_or_condition_mismatch"):
+        cost_median(mixed)
+    zero = deepcopy(runs)
+    zero[1][0]["correct_operations"] = 0
+    zero_report = json.dumps(
+        {"client_metrics": {"low_measured": {"correct": 0}}}
+    ).encode()
+    zero[1][1]["evidence"]["derived_report_sha256"] = hashlib.sha256(
+        zero_report
+    ).hexdigest()
+    zero[1] = (zero[1][0], zero[1][1], zero_report)
+    with pytest.raises(ValueError, match="unit_cost_unavailable"):
+        cost_median(zero)

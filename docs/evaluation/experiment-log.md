@@ -76,6 +76,30 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 09:30:00 UTC — EXP-02 three-run cost median
+
+**Direction:** User verified the cost binding check and the next offline
+three-run median step. Synthetic inputs only; no experiment or external call.
+
+**Change:** Added a local Python preview that reuses the cost binding and
+per-run calculation for three captured manifest/report/input sets. It requires
+a common configuration and condition, unique run IDs and repetitions 1–3,
+and a defined unit cost for each. It reports each value and their median;
+normal is identified as a candidate score input, not an accepted score. It
+creates a new output file and never overwrites an existing one. Guide and README
+explain inputs and remaining checks.
+
+**Checks:** 28 focused cost, manifest and artifact tests passed, strict Mypy,
+in-process Black verification and `git diff --check` passed. An initial test
+failed because its synthetic fixture attempted to modify a tuple; it was fixed
+and the focused suite passed on rerun.
+
+**Limits:** Matching metadata and report hashes do not verify actual cost
+allocation, common price basis, provenance, run validity or eligibility. No
+weighted score, final comparison, budget or NFR acceptance is claimed. Owner
+review and real evidence remain open. Result awaits user verification.
+
+
 ### 2026-11-02 09:14:13 UTC — EXP-02 cost input binding
 
 **Direction:** User verified offline cost arithmetic and the next matching step.

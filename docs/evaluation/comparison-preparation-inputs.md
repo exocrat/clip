@@ -299,6 +299,28 @@ normal-run values are used for the approved median score only after validity and
 other scoring gates are met. The tool does not calculate total experiment costs,
 verify whole-system allocation or establish a result, budget, or NFR pass.
 
+## Three-run cost median preview
+
+For one configuration and one condition, supply the cost input, captured
+manifest and derived report for each of the three repetitions:
+
+```sh
+.venv/bin/python -m scripts.evaluation.k6.comparison_cost_median \
+  --run cost1.json manifest1.json report1.json \
+  --run cost2.json manifest2.json report2.json \
+  --run cost3.json manifest3.json report3.json --output new-median.json
+```
+
+The offline tool performs the binding check for each set, requires distinct
+run IDs and repetitions 1, 2 and 3, and refuses mixed configurations or
+conditions. It computes each declared per-run cost per 1,000 correct operations
+and takes the middle value; it does not divide pooled cost by pooled operations.
+A zero correct count makes the median unavailable. Only the normal condition
+is a candidate input for the weighted cost score; the tool does not calculate
+that score. It does not verify cost allocation, common price basis, actual run
+validity, report provenance or eligibility. Those gates remain for human review.
+The output is a new file and existing files are not overwritten.
+
 ## Timing, saturation and telemetry metadata
 
 `data/evaluation/workloads/ecs-lambda-telemetry.template.json` specifies a

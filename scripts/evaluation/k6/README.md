@@ -279,3 +279,7 @@ It does not fetch billing or verify allocation or run validity.
 against a captured manifest and its hashed derived report. It does not verify
 cost allocation, report provenance or run validity. See the preparation guide
 for the offline command and limitations.
+
+`comparison_cost_median.py` checks three run inputs and calculates their
+per-run cost median offline. The [preparation guide](../../../docs/evaluation/comparison-preparation-inputs.md#three-run-cost-median-preview)
+describes the command and outstanding validity checks.
