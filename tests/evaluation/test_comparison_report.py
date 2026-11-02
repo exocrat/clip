@@ -24,6 +24,52 @@ class ComparisonReportTests(unittest.TestCase):
             "measured_seconds": 1,
         }
 
+    def test_phase_preview_requires_complete_successful_samples(self):
+        tags = {"phase": "low_measured", "kind": "search"}
+        points = [
+            point("clip_comparison_issued", 1, **tags),
+            point("http_reqs", 1, **tags),
+            point("clip_comparison_outcomes", 1, **tags, outcome="correct"),
+            point("clip_comparison_elapsed_ms", 305, **tags, outcome="correct"),
+            point("clip_comparison_phase_span_ms", 300, **tags, outcome="correct"),
+            point("clip_comparison_phase_duration_ms", 200, **tags, outcome="correct"),
+        ]
+        report = summarize_points(points, self.profile)
+        phase = report["client_metrics"]["low_measured"]["phase_timing_preview"]
+        self.assertTrue(phase["available"])
+        self.assertEqual(phase["span_ms"]["p95_ms"], 300)
+        self.assertEqual(phase["duration_ms"]["p95_ms"], 200)
+        self.assertFalse(report["latency_timing_verified"])
+        self.assertFalse(
+            summarize_points(points[:-1], self.profile)["client_metrics"][
+                "low_measured"
+            ]["phase_timing_preview"]["available"]
+        )
+        invalid = points + [point("clip_comparison_phase_invalid", 1, **tags)]
+        self.assertIsNone(
+            summarize_points(invalid, self.profile)["client_metrics"]["low_measured"][
+                "phase_timing_preview"
+            ]["span_ms"]
+        )
+        with self.assertRaisesRegex(ValueError, "Implausible phase timing"):
+            summarize_points(
+                points
+                + [
+                    point(
+                        "clip_comparison_phase_span_ms", 5001, **tags, outcome="correct"
+                    )
+                ],
+                self.profile,
+            )
+        with self.assertRaisesRegex(ValueError, "Unexpected phase timing outcome"):
+            summarize_points(
+                points
+                + [
+                    point("clip_comparison_phase_span_ms", 1, **tags, outcome="timeout")
+                ],
+                self.profile,
+            )
+
     def test_counts_routes_outcomes_latency_and_client_throughput(self):
         points = []
         kinds = ["browse", "search", "detail", "browse", "search", "browse"]

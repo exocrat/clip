@@ -8,6 +8,7 @@ import { correctResponse, correctParityDraftResponse, validExpected } from './co
 import { checkAllParity } from './comparison_all_parity.js';
 import { caseForIteration, comparisonScenarios, sequenceStartForScenario, validateComparisonCases, validateSequenceStarts } from './comparison_schedule.js';
 import { preliminaryOutcome } from './comparison_outcomes.js';
+import { phaseTimingPreview } from './comparison_phase_preview.js';
 
 const target = localApiTarget(__ENV.CLIP_COMPARISON_LOCAL_TARGET);
 if (__ENV.CLIP_COMPARISON_LOCAL_LOAD !== 'true') throw Error('explicit_local_load_inputs_required');
@@ -40,6 +41,11 @@ const issued = new Counter('clip_comparison_issued');
 const outcomes = new Counter('clip_comparison_outcomes');
 const elapsed = new Trend('clip_comparison_elapsed_ms', true);
 const invalidClock = new Counter('clip_comparison_clock_invalid');
+// Candidate k6 phase metrics are paired from the same response; they do not
+// establish the final approved timing boundary or measure failed connections.
+const phaseSpan = new Trend('clip_comparison_phase_span_ms', true);
+const phaseDuration = new Trend('clip_comparison_phase_duration_ms', true);
+const invalidPhase = new Counter('clip_comparison_phase_invalid');
 export const options = {
   scenarios,
   maxRedirects: 0,
@@ -59,8 +65,8 @@ export default function () {
   const start = Date.now();
   let outcome = 'transport_error';
   let duration;
+  let response;
   try {
-    let response;
     try {
       response = http.get(`${target}${paths[index]}`, {
         headers: { Accept: 'application/json', 'Cache-Control': 'no-cache', Cookie: cookie },
@@ -82,6 +88,15 @@ export default function () {
       catch (_) { /* Malformed response content is counted without being retained. */ }
     }
   } finally {
+    if (outcome === 'correct') {
+      const phaseTiming = phaseTimingPreview(response, outcome);
+      if (phaseTiming.eligible) {
+        phaseSpan.add(phaseTiming.approximate_span_ms, { ...tags, outcome });
+        phaseDuration.add(phaseTiming.request_ms, { ...tags, outcome });
+      } else {
+        invalidPhase.add(1, tags);
+      }
+    }
     if (duration < 0) invalidClock.add(1, tags);
     elapsed.add(Math.max(0, duration), { ...tags, outcome });
     outcomes.add(1, { ...tags, outcome });

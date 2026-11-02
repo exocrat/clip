@@ -108,6 +108,9 @@ def summarize_points(
             "actual_http_requests": 0,
             "dropped_iterations": 0,
             "clock_invalid": 0,
+            "phase_invalid": 0,
+            "phase_spans": [],
+            "phase_durations": [],
             "uncompleted": 0,
             "outcomes": Counter(),
             "latencies": [],
@@ -132,6 +135,9 @@ def summarize_points(
         "clip_comparison_clock_invalid",
         "clip_comparison_outcomes",
         "clip_comparison_elapsed_ms",
+        "clip_comparison_phase_span_ms",
+        "clip_comparison_phase_duration_ms",
+        "clip_comparison_phase_invalid",
     }
     for point in points:
         if point.get("type") != "Point":
@@ -182,6 +188,18 @@ def summarize_points(
             record["dropped_iterations"] += _count(point)
         elif metric == "clip_comparison_clock_invalid":
             record["clock_invalid"] += _count(point)
+        elif metric == "clip_comparison_phase_invalid":
+            record["phase_invalid"] += _count(point)
+        elif metric in {
+            "clip_comparison_phase_span_ms",
+            "clip_comparison_phase_duration_ms",
+        }:
+            if tags.get("outcome") != "correct":
+                raise ValueError("Unexpected phase timing outcome")
+            if value > 5000:
+                raise ValueError("Implausible phase timing")
+            key = "phase_spans" if metric.endswith("span_ms") else "phase_durations"
+            record[key].append(value)
         elif metric == "clip_comparison_outcomes":
             outcome = tags.get("outcome")
             if outcome not in OUTCOMES:
@@ -250,6 +268,15 @@ def summarize_points(
         outcome_count_matches_latency = Counter(outcomes) == Counter(
             outcome for _, outcome in record["latencies"]
         )
+        phase_timing_available = (
+            correct > 0
+            and record["phase_invalid"] == 0
+            and len(record["phase_spans"]) == correct
+            and len(record["phase_durations"]) == correct
+            and issued == actual == completed == len(record["latencies"])
+            and outcome_count_matches_latency
+            and route_accounting_matches
+        )
         result[phase] = {
             "scheduled": expected_count,
             "issued": issued,
@@ -258,6 +285,22 @@ def summarize_points(
             "uncompleted": uncompleted,
             "dropped_iterations": dropped,
             "clock_invalid": record["clock_invalid"],
+            "phase_timing_preview": {
+                "available": phase_timing_available,
+                "invalid_samples": record["phase_invalid"],
+                "span_sample_count": len(record["phase_spans"]),
+                "duration_sample_count": len(record["phase_durations"]),
+                "span_ms": (
+                    _quantiles(record["phase_spans"])
+                    if phase_timing_available
+                    else None
+                ),
+                "duration_ms": (
+                    _quantiles(record["phase_durations"])
+                    if phase_timing_available
+                    else None
+                ),
+            },
             "schedule_shortfall": max(0, expected_count - offered),
             "schedule_matches": offered == expected_count,
             "offered_requests": offered,

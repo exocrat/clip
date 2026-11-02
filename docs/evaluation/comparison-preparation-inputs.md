@@ -784,3 +784,18 @@ The in-memory `comparison_mock_runner.simulate_run` also accepts explicit
 synthetic `parity_response_pairs`. It refuses mismatches before reading the
 fake session and simulates the later steps only after all pairs match. This
 is a local test double: it sends no requests and never authorizes a run.
+
+## Local k6 phase metrics
+
+The local-only scheduled workload emits candidate phase metrics for each
+response classified correct: `clip_comparison_phase_duration_ms` and
+`clip_comparison_phase_span_ms`, the latter calculated as `blocked + duration`
+from the same response. Connecting and TLS remain k6 diagnostics; they are
+not added separately. Invalid or greater-than-five-second samples increment
+`clip_comparison_phase_invalid`. The report suppresses preview percentiles if
+any correct sample is missing or invalid, or request accounting is incomplete.
+The report cannot independently prove the individual samples' pairing or
+timing validity; these values are not NFR acceptance or a reviewed final
+measurement protocol. Failures and timeouts remain separately accounted for.
+`comparison_phase_preview.js` is a staged workload dependency and must be
+included in module hashes.

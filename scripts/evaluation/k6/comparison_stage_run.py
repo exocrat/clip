@@ -22,6 +22,7 @@ MODULES = (
     "comparison_checks.js",
     "comparison_schedule.js",
     "comparison_outcomes.js",
+    "comparison_phase_preview.js",
     "comparison_all_parity.js",
     "comparison_search_parity.js",
     "core.js",

@@ -76,6 +76,42 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 19:28:16 UTC — EXP-02 k6 phase preview and AWS identity refresh
+
+**Direction:** User authorized AWS access and assigned Terraform ownership,
+with a maximum of USD 10 in credits. Existing requirement for a concrete,
+separately approved deployment/pilot/run/cleanup plan remains. The user asked
+to finish EXP-02 before EXP-03; the final real EXP-02 checks depend on the
+EXP-03 path, deployment and pilot, so preparation proceeds first.
+
+**Local implementation:** `comparison_load.js` now records correct-response
+k6 duration and per-response `blocked + duration` as candidate metrics, with
+an invalid-phase counter; it retains the existing elapsed metric and remains
+loopback-only. `comparison_report.py` previews quantiles only with complete
+correct-response phase samples and request accounting, refuses implausible
+values or failure-tagged phase samples, and still marks timing and individual
+request binding unverified. `comparison_stage_run.py` and the module-hash
+template include the phase helper. These are preparation metrics, not an NFR
+result or a replacement for affected-owner timing review.
+
+**Checks:** 16 focused Python tests passed, including `k6 inspect` only and
+synthetic reporting/staging checks. Two Node test files passed; strict Mypy
+passed for report and staging. One initial synthetic test used the wrong
+percentile field name; correcting the assertion produced the passing run. No
+`k6 run`, traffic, session or deployment was performed.
+
+**AWS read-only observations:** The configured `clip-project` profile resolved
+through STS to non-root IAM user `rahulkoyye` in account `335523638354`,
+`ap-south-1`. Targeted metadata calls found ECS service
+`clip-test-api-ap-south-1-pd16` active with desired/running zero at task
+revision 11; `clip-shared-test-postgres` stopped, private, db.t4g.micro;
+instances `i-086045c48487471de` and `i-0d1947299024cae06` stopped; and no
+CLIP-named load balancer returned. The first sandboxed STS call could not reach
+the endpoint; an authorized read-only retry succeeded. No resources were started,
+changed or created, no secrets read, and no AWS costs or credit balance were
+verified. The USD 10 cap is user direction, not a confirmed available balance.
+
+
 ### 2026-11-02 19:21:21 UTC — EXP-02 mock parity ordering
 
 Extended the existing in-memory mock runner to accept explicitly supplied
