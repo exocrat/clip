@@ -710,6 +710,73 @@ def test_declared_pair_parity_requires_matching_plan_and_search_bindings(
         changed["configurations"]["B"][field] = value
         with pytest.raises(ValueError):
             validate_declared_parity(changed, binding, corpus, reference, plan)
+    evidence_root = tmp_path / "evidence"
+    evidence_root.mkdir()
+    evidence_file = evidence_root / "observation.json"
+    evidence_file.write_text('{"synthetic":true}')
+    evidence_record = deepcopy(record)
+    for side in ("A", "B"):
+        evidence_record["configurations"][side][
+            "evidence_reference"
+        ] = evidence_file.name
+        evidence_record["configurations"][side]["evidence_sha256"] = hashlib.sha256(
+            evidence_file.read_bytes()
+        ).hexdigest()
+    verified = validate_declared_parity(
+        evidence_record, binding, corpus, reference, plan, evidence_root=evidence_root
+    )
+    assert verified["evidence_files_inspected"] is True
+    assert verified["evidence_hashes_match"] is True
+    assert verified["deployed_parity_verified"] is False
+    paths[0].write_text(json.dumps(evidence_record))
+    checked_cli = subprocess.run(
+        [*command, "--evidence-root", str(evidence_root)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert checked_cli.returncode == 0
+    assert json.loads(checked_cli.stdout)["evidence_hashes_match"] is True
+    evidence_file.write_text('{"synthetic":false}')
+    with pytest.raises(ValueError, match="parity_evidence_hash_mismatch"):
+        validate_declared_parity(
+            evidence_record,
+            binding,
+            corpus,
+            reference,
+            plan,
+            evidence_root=evidence_root,
+        )
+    evidence_file.unlink()
+    with pytest.raises(OSError):
+        validate_declared_parity(
+            evidence_record,
+            binding,
+            corpus,
+            reference,
+            plan,
+            evidence_root=evidence_root,
+        )
+    evidence_file.symlink_to(paths[0])
+    with pytest.raises(OSError):
+        validate_declared_parity(
+            evidence_record,
+            binding,
+            corpus,
+            reference,
+            plan,
+            evidence_root=evidence_root,
+        )
+    evidence_record["configurations"]["B"]["evidence_reference"] = "../outside"
+    with pytest.raises(ValueError, match="invalid_evidence_reference"):
+        validate_declared_parity(
+            evidence_record,
+            binding,
+            corpus,
+            reference,
+            plan,
+            evidence_root=evidence_root,
+        )
     mismatched_reference = deepcopy(reference)
     mismatched_reference["model_revision"] = "0" * 40
     with pytest.raises(ValueError):

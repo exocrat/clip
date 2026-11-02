@@ -76,6 +76,26 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 10:41:42 UTC — EXP-02 parity evidence hash check
+
+**Direction:** User verified checking referenced parity evidence files locally.
+No cloud, database, provider, deployed API or workload was contacted.
+
+**Change:** The declared-parity checker now optionally accepts an evidence root
+and reuses the existing bounded, no-symlink artifact verifier for both supplied
+references. It refuses missing files, unsafe paths and hash mismatches and only
+reports aggregate flags. Omitting the root leaves both evidence-check flags
+false. Synthetic tests exercise matching files, a modified file, missing file,
+symlink, traversal and CLI behavior. The guide and README describe usage.
+
+**Checks and limits:** 14 focused synthetic parity and artifact tests, strict Mypy,
+in-process Black formatting and whitespace checks passed. Hash matching proves
+only that supplied local bytes match declared hashes; it does not verify file
+contents or provenance, deployed observations, timestamp freshness, human review,
+or actual A/B parity. No real evidence or measurement is claimed. Result awaits
+user verification.
+
+
 ### 2026-11-02 10:36:32 UTC — EXP-02 declared A/B parity preparation
 
 **Direction:** User verified grouped offline parity preparation. Only synthetic

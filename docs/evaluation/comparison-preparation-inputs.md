@@ -164,12 +164,18 @@ record. The ordered reference and binding plan must already be complete.
 
 The offline checker first validates the existing plan, corpus and ordered-result
 binding. It checks both declared snapshots against their selected pair and the
-plan/reference values. It prints aggregate flags only and exits 2 for missing,
-malformed or mismatched inputs. Matching declarations do **not** establish that
-the evidence files exist or match their hashes, that either deployed path was
-observed, that timestamps are fresh or accurate, or that a human reviewed them.
-The actual paths, observation procedure and independently reviewed evidence are
-future deployment gates; this tool does not contact a database or authorize a run.
+plan/reference values. Append `--evidence-root path/to/evidence` to also read
+the referenced local regular files and compare their hashes; the existing safe
+file verifier rejects traversal, symlinks and oversized files. Without that
+option, `evidence_files_inspected` and `evidence_hashes_match` are false. The
+checker prints aggregate flags only and exits 2 for missing, malformed or
+mismatched inputs.
+
+Matching declarations and hashes do **not** prove file contents or source, that
+either deployed path was observed, that timestamps are fresh or accurate, or
+that a human reviewed them. The actual paths, observation procedure and
+independently reviewed evidence are future deployment gates; this tool does not
+contact a database or authorize a run.
 
 ## Offline preparation for one planned run
 

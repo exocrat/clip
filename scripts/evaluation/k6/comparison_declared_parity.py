@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from scripts.evaluation.k6.comparison_artifacts import _hash_artifact
 from scripts.evaluation.k6.comparison_manifest import HEX64, _utc
 from scripts.evaluation.k6.comparison_run_preflight import (
     MAX_INPUT_BYTES,
@@ -31,7 +32,12 @@ SNAPSHOT_FIELDS = {
 
 
 def validate_declared_parity(
-    record: Any, binding: Any, corpus: bytes, reference: Any, plan: Any
+    record: Any,
+    binding: Any,
+    corpus: bytes,
+    reference: Any,
+    plan: Any,
+    evidence_root: Path | None = None,
 ) -> dict[str, Any]:
     """Compare two supplied declarations to the independently supplied plan/reference."""
     validate_run_inputs(binding, corpus, reference, plan)
@@ -90,9 +96,16 @@ def validate_declared_parity(
                 ), expected_value.removeprefix("sha256:")
             if actual != expected_value:
                 raise ValueError("declared_parity_mismatch")
+    if evidence_root is not None:
+        for name in ("A", "B"):
+            item = configs[name]
+            actual_hash, _ = _hash_artifact(evidence_root, item["evidence_reference"])
+            if actual_hash != item["evidence_sha256"].removeprefix("sha256:"):
+                raise ValueError("parity_evidence_hash_mismatch")
     return {
         "declared_pair_matches_plan_and_reference": True,
-        "evidence_files_inspected": False,
+        "evidence_files_inspected": evidence_root is not None,
+        "evidence_hashes_match": evidence_root is not None,
         "deployed_parity_verified": False,
         "observation_freshness_verified": False,
         "human_review_verified": False,
@@ -115,6 +128,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
     for name in ("parity", "binding", "corpus", "reference", "plan"):
         parser.add_argument(name, type=Path)
+    parser.add_argument("--evidence-root", type=Path)
     args = parser.parse_args()
     try:
         result = validate_declared_parity(
@@ -123,6 +137,7 @@ def main() -> None:
             _read(args.corpus),
             json.loads(_read(args.reference)),
             json.loads(_read(args.plan)),
+            evidence_root=args.evidence_root,
         )
         print(json.dumps(result, sort_keys=True))
     except (OSError, ValueError, TypeError, KeyError, StopIteration):
