@@ -1,6 +1,8 @@
 """Local-only tests for guarded Lambda database settings bootstrap."""
 
 from os import environ
+from pathlib import Path
+import json
 
 import pytest
 
@@ -9,6 +11,19 @@ from app.domains.identity.runtime_configuration import (
     LISTINGS_DATABASE_PARAMETER,
     load_lambda_settings,
 )
+
+
+def test_lambda_image_disables_uvicorn_access_logs():
+    dockerfile = Path("apps/api/Dockerfile.lambda").read_text()
+    commands = [
+        line.removeprefix("CMD ")
+        for line in dockerfile.splitlines()
+        if line.startswith("CMD ")
+    ]
+    assert len(commands) == 1
+    command = json.loads(commands[0])
+    assert command[:2] == ["uvicorn", "app.lambda_main:app"]
+    assert "--no-access-log" in command
 
 
 class FakeParameterClient:

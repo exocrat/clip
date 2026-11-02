@@ -1,5 +1,11 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### EXP-03 Lambda access log control — 2026-11-02 19:36:53 UTC
+
+Lambda image now disables Uvicorn access logs; 15 focused tests passed.
+Adapter/service logging still needs review. No image build or AWS action.
+[Experiment log](../evaluation/experiment-log.md).
+
 ### EXP-03 Lambda read-only settings — 2026-11-02 19:35:40 UTC
 
 The explicit Lambda read-only settings reject email/recipients and unrelated

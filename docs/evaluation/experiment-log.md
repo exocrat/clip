@@ -141,6 +141,15 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 19:36:53 UTC — EXP-03 Lambda access log control
+
+The Lambda image command now sets Uvicorn `--no-access-log`, matching the
+existing hosted ECS intent to avoid logging raw paths and search queries. The
+controlled application logging still applies; this flag does not attest Lambda
+Web Adapter or AWS service logging. Fifteen focused bootstrap/image-command
+tests passed. No image build, AWS call or workload occurred for this change.
+
+
 ### 2026-11-02 19:35:40 UTC — EXP-03 read-only settings without email
 
 The previous Lambda-only bootstrap inherited the full Identity email settings,

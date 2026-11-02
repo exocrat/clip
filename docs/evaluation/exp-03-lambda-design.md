@@ -71,7 +71,8 @@ the public registry as `sha256:17cfd08eff1dfea3f6a9a1e9c65fdac80aa4919b6085e7466
 independent artifact review is pending and builds fail if the digest is absent. Configure
 its local HTTP port as
 `8000`, matching the existing Uvicorn image, and readiness path as `/health`.
-That liveness endpoint is not application or dependency parity evidence.
+That liveness endpoint is not application or dependency parity evidence. The Lambda image disables Uvicorn access
+logs so raw request paths and search queries are not emitted by that logger.
 
 Reuse the domain's real routes and search logic; do not replace Hybrid with a
 keyword or synthetic implementation. Explicitly test startup, warm reuse,
