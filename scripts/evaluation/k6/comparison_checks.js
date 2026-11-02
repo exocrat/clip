@@ -53,6 +53,12 @@ export function equivalentSearchResponses(statusA, actualA, statusB, actualB, re
   return validSearchResponse(statusA, actualA, request) && validSearchResponse(statusB, actualB, request) && same(actualA, actualB);
 }
 
+/** Compare valid browse or detail responses; equality is not an independent oracle. */
+export function equivalentReadResponses(statusA, actualA, statusB, actualB, request) {
+  return ['browse','detail'].includes(request?.kind) && statusA === 200 && statusB === 200 &&
+    validExpected(request, actualA) && validExpected(request, actualB) && same(actualA, actualB);
+}
+
 /** Preview case validation; it does not verify pre-run parity or authorize a run. */
 export function correctParityDraftResponse(status, actual, item) {
   if (!item || typeof item !== 'object' || !item.request) return false;

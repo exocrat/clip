@@ -2,7 +2,7 @@
 // This function makes no requests and does not establish deployment identity.
 import { equivalentSearchResponses } from './comparison_checks.js';
 
-const canonical = value => {
+export const canonical = value => {
   if (Array.isArray(value)) return value.map(canonical);
   if (value && typeof value === 'object') return Object.fromEntries(Object.keys(value).sort().map(key => [key, canonical(value[key])]));
   return value;

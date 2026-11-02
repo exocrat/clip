@@ -79,6 +79,25 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 13:30:11 UTC — Offline comparison of all ten cases
+
+**Direction:** User verified continuing the comparison preparation. No deployed
+responses, sessions, workload or network calls were used.
+
+**Change:** Extended the offline comparison to all five browse, three search
+and two detail cases. It requires matching case IDs and request settings,
+validates both responses and compares their complete contents, returning only
+aggregate flags. The existing offline command accepts `--all`; search-only mode
+remains available. Synthetic tests exercise matching responses, changed browse,
+search and detail fields, invalid case mixes and command failure on mismatch.
+The guide records the option and limits.
+
+**Checks and limits:** Three Node test files and whitespace checks passed. This
+does not authenticate the supplied corpus, independently establish correctness,
+verify deployments or authorize runs. It does not replace the still-required
+pre-run runner integration, owner review, or NFR-02/04 checks. Result awaits
+user verification; no experiment or NFR pass is claimed.
+
 ### 2026-11-02 13:28:30 UTC — Proposed parity workload response checks
 
 **Direction:** User verified continuing grouped preparation. No workload,

@@ -53,6 +53,12 @@ side has only `status` and `body`. The command prints aggregate flags and exits
 2 on invalid or mismatched inputs. It never fetches responses or writes their
 contents. It does not authenticate the corpus or verify deployment, and a zero
 exit status is not run authorization or proof of search relevance.
+Add `--all` to compare the complete ten-case corpus: five browse, three search
+and two detail responses. The same strict input structure applies. The command
+checks that each request matches its corpus case and validates both responses;
+it reports counts without response bodies. Equal responses do not independently
+establish correct search relevance, data identity or deployed configuration.
+This remains an offline check rather than an enforced run gate.
 
 These are offline preparation tools for EXP-02 Steps 4, 6 and 7. They do not
 contact a service, authorize a run or establish DATA-READY. Actual owner review,
