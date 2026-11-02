@@ -34,7 +34,7 @@ class MicrosoftIdentity:
 
     issuer: str = field(repr=False)
     subject: str = field(repr=False)
-    email: str = field(repr=False)
+    email: str | None = field(repr=False)
     expires_at: datetime = field(repr=False)
 
 
@@ -214,7 +214,6 @@ class MicrosoftTokenValidator:
                         "tid",
                         "ver",
                         "nonce",
-                        "email",
                     ],
                     "strict_aud": True,
                 },
@@ -236,24 +235,46 @@ class MicrosoftTokenValidator:
                 nonce, expected_nonce
             ):
                 raise ValueError("Invalid nonce")
-            email = claims["email"]
-            if (
-                not isinstance(email, str)
-                or not 3 <= len(email) <= 254
-                or not email.isascii()
-                or any(c.isspace() or ord(c) < 33 or c in '<>"(),;:\\' for c in email)
-                or email.count("@") != 1
-            ):
-                raise ValueError("Invalid email")
-            local, domain = email.split("@")
-            if (
-                not local
-                or local.startswith(".")
-                or local.endswith(".")
-                or ".." in local
-                or domain.lower() != "iisc.ac.in"
-            ):
-                raise ValueError("Ineligible email domain")
+            # The owner's Entra test tenant may use its onmicrosoft.com users
+            # as regular accounts. Match the signed tenant and exact username
+            # domain; never infer membership from an unsigned token or email alone.
+            username = claims.get("preferred_username")
+            object_id = claims.get("oid")
+            test_identity = (
+                tenant == "19d07278-f040-4722-8202-b1174cf3a4d3"
+                and isinstance(object_id, str)
+                and str(UUID(object_id)) == object_id
+                and isinstance(username, str)
+                and username.isascii()
+                and username.count("@") == 1
+                and bool(username.split("@")[0])
+                and "#" not in username
+                and not any(c.isspace() or ord(c) < 33 for c in username)
+                and username.split("@")[1].lower() == "medheadityagmail.onmicrosoft.com"
+            )
+            email = claims.get("email")
+            if email is None and test_identity:
+                pass
+            else:
+                if (
+                    not isinstance(email, str)
+                    or not 3 <= len(email) <= 254
+                    or not email.isascii()
+                    or any(
+                        c.isspace() or ord(c) < 33 or c in '<>"(),;:\\' for c in email
+                    )
+                    or email.count("@") != 1
+                ):
+                    raise ValueError("Invalid email")
+                local, domain = email.split("@")
+                if (
+                    not local
+                    or local.startswith(".")
+                    or local.endswith(".")
+                    or ".." in local
+                    or (domain.lower() != "iisc.ac.in" and not test_identity)
+                ):
+                    raise ValueError("Ineligible email domain")
             return MicrosoftIdentity(
                 issuer, subject, email, datetime.fromtimestamp(claims["exp"], UTC)
             )

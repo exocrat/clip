@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useConversationUnreadCount, ConversationUnreadBadge, ConversationKeySetup } from '../features/conversations';
-import { Link, NavLink, Outlet } from 'react-router';
+import { Link, NavLink, Outlet, useLocation } from 'react-router';
 import './AppShell.css';
 import { HandleSetup, IdentitySessionControl, useIdentity } from '../features/identity';
 
@@ -17,10 +17,14 @@ const productRoutes = [
 /** Supplies the shared scaffold navigation and renders the selected route. */
 export function AppShell() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const location = useLocation();
   const { status, user } = useIdentity();
   const unreadCount = useConversationUnreadCount(status === "ready" ? user?.user_id ?? null : null);
   const seller = status === 'ready' && user?.account_class === 'regular' && Date.parse(user.valid_until) > Date.now();
   const routes = status === 'anonymous' ? [{ to: '/sign-in', label: 'Sign in' }, ...productRoutes] : productRoutes;
+  // Keep the one-time OAuth callback mounted until it completes and the user
+  // navigates away; marketplace setup gates then run on the destination route.
+  if (location.pathname === '/auth/callback') return <Outlet />;
   return (
     <div className="app-shell">
       <header className="app-shell__header">
