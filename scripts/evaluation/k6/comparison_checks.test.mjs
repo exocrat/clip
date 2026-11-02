@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { correctResponse, validExpected, validSearchResponse, equivalentSearchResponses } from './comparison_checks.js';
+import { correctResponse, validExpected, validSearchResponse, equivalentSearchResponses, correctParityDraftResponse } from './comparison_checks.js';
 
 const id='01b4fbd6-4c3c-44da-a578-6284033a869c';
 const row={listing_id:id,title:'Synthetic bicycle',description:'Synthetic item',category_code:'bicycles',category_label:'Bicycles',condition_code:'good',condition_label:'Good',asking_price_paise:10000,original_price_paise:null,negotiable:true,pickup_area:null,available_from:'2026-01-01T00:00:00.000000Z',available_until:null,availability:'available',sensitive_purchase:false,image_ids:[id]};
@@ -50,4 +50,22 @@ test('search parity checks valid responses and exact ordered content independent
   assert.equal(equivalentSearchResponses(200,page,503,page,request),false);
   const second={...row,listing_id:'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'};
   assert.equal(equivalentSearchResponses(200,{...page,items:[row,second]},200,{...page,items:[second,row]},request),false);
+});
+
+test('parity draft checks search shape while preserving exact browse and detail checks', () => {
+  const search={request,expected:null};
+  assert.equal(correctParityDraftResponse(200,copy(page),search),true);
+  assert.equal(correctParityDraftResponse(200,copy(page),{...search,expected:page}),false);
+  assert.equal(correctParityDraftResponse(500,copy(page),search),false);
+  const invalid=copy(page); invalid.items[0].availability='unavailable';
+  assert.equal(correctParityDraftResponse(200,invalid,search),false);
+  const browse={request:{kind:'browse',query:{category_code:['bicycles']}},expected:page};
+  assert.equal(correctParityDraftResponse(200,copy(page),browse),true);
+  const changed=copy(page); changed.items[0].title='Changed';
+  assert.equal(correctParityDraftResponse(200,changed,browse),false);
+  assert.equal(correctParityDraftResponse(200,page,{...browse,expected:null}),false);
+  const detail={...row,proof_available:null};
+  assert.equal(correctParityDraftResponse(200,detail,{request:{kind:'detail',listing_id:id},expected:detail}),true);
+  assert.equal(correctParityDraftResponse(200,{...detail,proof_available:true},{request:{kind:'detail',listing_id:id},expected:detail}),false);
+  assert.equal(correctParityDraftResponse(200,page,{request:{kind:'other'},expected:page}),false);
 });

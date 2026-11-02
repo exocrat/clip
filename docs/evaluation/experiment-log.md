@@ -79,6 +79,23 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 13:28:30 UTC — Proposed parity workload response checks
+
+**Direction:** User verified continuing grouped preparation. No workload,
+session, deployed response or network call was used.
+
+**Change:** Added a pure draft-mode case checker: search requires the expected
+page to be null and checks successful status, response shape, availability and
+filters; browse and detail retain their exact expected responses. Synthetic tests
+cover valid and malformed searches, failed status, changed browse/detail fields
+and missing expected data. The guide explains its scope.
+
+**Checks and limits:** Three Node test files and whitespace checks passed. The
+helper does not verify relevance or pre-run A/B parity, and the actual workload
+does not call it. The existing preflight and workload continue to enforce the
+old reference until the complete replacement and owner review are ready. No
+measurement or NFR pass is claimed. Result awaits user verification.
+
 ### 2026-11-02 13:22:34 UTC — Offline search parity command
 
 **Direction:** User verified continuing and requested grouped work. Prepared an

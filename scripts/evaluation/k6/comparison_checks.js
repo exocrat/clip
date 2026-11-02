@@ -52,3 +52,13 @@ export function validSearchResponse(status, actual, request) {
 export function equivalentSearchResponses(statusA, actualA, statusB, actualB, request) {
   return validSearchResponse(statusA, actualA, request) && validSearchResponse(statusB, actualB, request) && same(actualA, actualB);
 }
+
+/** Preview case validation; it does not verify pre-run parity or authorize a run. */
+export function correctParityDraftResponse(status, actual, item) {
+  if (!item || typeof item !== 'object' || !item.request) return false;
+  if (item.request.kind === 'search') {
+    return item.expected === null && validSearchResponse(status, actual, item.request);
+  }
+  if (!['browse','detail'].includes(item.request.kind)) return false;
+  return correctResponse(status, actual, item.request, item.expected);
+}

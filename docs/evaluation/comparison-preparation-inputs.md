@@ -39,6 +39,13 @@ building block only, not an execution gate. The existing ordered-reference
 preflight and workload remain in force until the new protocol and complete
 integration are reviewed; NFR-02 and NFR-04 retain their separate requirements.
 
+The pure `correctParityDraftResponse` helper prepares per-request response
+checking for this proposed mode. It validates search status, shape, availability
+and applicable filters without an ordered expected page; browse and detail still
+require their exact expected response. A valid search response alone does not
+establish relevance or pre-run A/B parity. The workload does not call this helper,
+and it does not open any run gate.
+
 For offline fixtures, `node scripts/evaluation/k6/comparison_search_parity_cli.mjs`
 reads one bounded JSON object on standard input. Its only top-level fields are
 `corpus` and `cases`; each case has `case_id`, `request`, `a` and `b`, and each
