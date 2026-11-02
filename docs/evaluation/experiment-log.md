@@ -49,22 +49,14 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
   reusable for A and B. The version-3 run template records a separate profile
   reference/hash; offline checks compare saved bytes and require the six run
   records in a cycle to agree. Actual use remains a future runner/evidence gate.
-- **EXP-02 Steps 3–5:** Local path, response and scheduled-workload preparation
-  exists on `task/exp-02-workload`. A ten-case dataset-bound draft now has five
-  browse and two detail expected responses plus three reviewed Hybrid query
-  references. An offline adapter now accepts ordered results when supplied; the
-  real ordered results and independent review remain pending. Corrected the
-  burst arrival transition to eliminate an unintended five-second gap. Search
-  category-text behavior changed on main; actual ordered cases and their search
-  implementation revision require review and matching source binding. The binder
-  now refuses an absent, malformed or mismatched intended revision. Capacity/session/run gates and
-  deployed-path checks remain pending.
-- **EXP-02 k6 inspection checkpoint:** With the required loopback target and a
-  temporary profile, `k6 inspect` refuses the retained ten-case corpus because
-  its three Hybrid expected responses are intentionally null until independently
-  reviewed ordered results are supplied. This is the required fail-closed result;
-  no session was read and no request/workload was sent. Do not fill those results
-  with a ranking generated from the system under test.
+- **EXP-02 Steps 3–5:** The user confirmed reviewed search labels already
+  exist and directed comparing the ECS and ECS+Lambda responses. No separate
+  hand-authored ordered Hybrid results are required. On `task/exp-02-workload`,
+  commits `ca5904f`, `db57507` and `845a809` add parity-bound offline staging,
+  preflight and mock-session ordering. The real runner, owner review and
+  actual deployed parity remain open; those changes are not merged into this
+  Lambda branch. The earlier ordered-reference `k6 inspect` refusal is a
+  historical tool limitation, not a request for new search results.
 - **EXP-02 Step 6:** Client accounting/reporting is implemented and locally
   checked with synthetic metrics. Offline metadata checks expose declared timing,
   generator limits, VU headroom and drops. The user prefers built-in k6 phases;
@@ -99,7 +91,7 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
   The Lambda entry point remains fail-closed by default; explicit hosted-test
   opt-in now selects the session-only binding described below. Real authenticated
   parity is still unverified.
-- A local image builder now requires a source-matched cached Hybrid image and
+- A local image builder now requires a revision-labelled cached Hybrid image and
   cached pinned Lambda Adapter digest, verifies both are Linux AMD64, and refuses
   to overwrite an existing local output tag. It is indexed in the command
   registry; the existing output tag caused the test invocation to stop before
@@ -148,6 +140,24 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
   exact-plan approval gates.
 
 ## History
+
+### 2026-11-02 19:23:06 UTC — EXP-03 local image revision declaration
+
+**Finding and change:** The existing helper checked only matching tag suffixes;
+a tag can point to an unrelated image. `scripts/evaluation/build_lambda_image.sh`
+now requires a full OCI revision label on the cached Hybrid image matching the
+tag prefix, and propagates that label to the local Lambda output. The label is
+a producer declaration, not proof that the image was built from that revision;
+image provenance and later deployment checks still need review. Existing
+unlabelled Hybrid images will be refused until rebuilt with a declared label.
+`docs/environment/commands.md` describes that requirement and limitation.
+
+**Checks:** Five fake-Docker tests cover matching, absent, short, mismatched
+and malformed labels, no build on refusal, and offline build options. `bash -n`
+passed. No real Docker build, AWS action, workload or measurement occurred.
+The EXP-02 status above reflects the user's parity direction and separate branch
+commits; no cross-branch merge occurred.
+
 
 ### 2026-11-02 18:37:36 UTC — EXP-02 corpus gate and EXP-03 proxy policy check
 

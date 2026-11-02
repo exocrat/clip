@@ -43,14 +43,18 @@ approved full-run inputs. NEXT-06 and NEXT-07 must register their final exact
 commands, inputs and evidence locations after the owning tools and data are
 ready; do not infer readiness from an example or local pilot.
 
-The EXP-03 image builder requires the source-matched Hybrid API image and the
-pinned Lambda Web Adapter digest to already exist in the local Docker image
-store. It forces the default Docker context to a local Unix socket, refuses an
-existing output tag, disables pulls and build-step networking, and prints the
+The EXP-03 image builder requires a cached Hybrid API image with a full
+`org.opencontainers.image.revision` label whose prefix matches its tag, and
+the pinned Lambda Web Adapter digest in the local Docker image store. Supply
+the revision label when building the Hybrid image; an existing unlabeled image
+will be refused. The label is a build-time declaration, not independent proof
+of the image source or contents. The builder forces the default Docker context
+to a local Unix socket, refuses an existing output tag, disables pulls and build-step networking, and prints the
 resulting local image ID/platform/size. It does not log in, pull, run, push or
 contact AWS. The resulting image is local build output, not a registry digest or
 deployment artifact. Example syntax (substitute the same actual source revision
-in both tags):
+in both tags and ensure the source image carries the matching full revision
+label):
 
 ```sh
 : "${EXP03_SOURCE_REVISION:?set this to the commit suffix in the local Hybrid API tag}"

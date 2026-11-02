@@ -56,6 +56,14 @@ if [[ $api_platform != linux/amd64 ]]; then
   printf 'The local Hybrid API image must be linux/amd64.\n' >&2
   exit 2
 fi
+# A tag can be moved to another image. Require a full, matching revision label
+# as an additional declaration; this does not authenticate the image contents.
+api_revision=$(docker --context default image inspect \
+  --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' "$api_image")
+if [[ ! $api_revision =~ ^[0-9a-f]{40}$ || $api_revision != "$source_revision"* ]]; then
+  printf 'Hybrid image needs a matching full OCI revision label.\n' >&2
+  exit 2
+fi
 if ! adapter_platform=$(
   docker --context default image inspect \
     --format '{{.Os}}/{{.Architecture}}' \
@@ -83,6 +91,7 @@ DOCKER_BUILDKIT=0 docker --context default build \
   --build-arg "API_IMAGE=$api_image" \
   --build-arg "LWA_IMAGE=$adapter_image" \
   --build-arg "LWA_DIGEST=$adapter_digest" \
+  --label "org.opencontainers.image.revision=$api_revision" \
   --tag "$lambda_tag" \
   apps/api
 
