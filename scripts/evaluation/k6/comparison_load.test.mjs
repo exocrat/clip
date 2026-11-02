@@ -57,3 +57,26 @@ test('thrown requests and negative clock samples remain accounted for', () => {
   assert.equal(negative.recorded.clip_comparison_elapsed_ms[0].value, 0);
   assert.equal(negative.recorded.clip_comparison_clock_invalid.length, 1);
 });
+
+test('invalid setup is refused before reading the local session', () => {
+  const source = readFileSync(new URL('./comparison_load.js', import.meta.url), 'utf8')
+    .replace(/^import .*;$/gm, '')
+    .replace('export const options', 'globalThis.options')
+    .replace('export default function ()', 'globalThis.run = function ()');
+  for (const invalid of ['load_flag','sequence','cases','path','expected','capacity','scenario']) {
+    let cookieReads=0;
+    const env={CLIP_COMPARISON_LOCAL_LOAD:invalid==='load_flag'?'false':'true',CLIP_COMPARISON_LOCAL_PROFILE:'fixture',CLIP_COMPARISON_LOCAL_CONDITION:'low'};
+    Object.defineProperty(env,'CLIP_COMPARISON_LOCAL_COOKIE',{get(){cookieReads++; return 'synthetic';}});
+    const fail = name => { if (invalid===name) throw Error(`invalid_${name}`); };
+    const profile={sequence_starts:{low:0},cases:[{request:{kind:'browse'},expected:{}}],capacity:{preAllocatedVUs:1,maxVUs:1},timeout_seconds:invalid==='capacity'?4:5};
+    class Metric { add() {} }
+    const context={__ENV:env,open:()=>JSON.stringify(profile),localApiTarget:()=> 'http://127.0.0.1',
+      validateSequenceStarts:value=>{fail('sequence'); return value;},
+      validateComparisonCases:value=>{fail('cases'); return value;},
+      comparisonPath:()=>{fail('path'); return '/synthetic';},
+      validExpected:()=>invalid!=='expected',comparisonScenarios:()=>{fail('scenario'); return {};},
+      Counter:Metric,Trend:Metric};
+    assert.throws(()=>vm.runInNewContext(source,context));
+    assert.equal(cookieReads,0,invalid);
+  }
+});

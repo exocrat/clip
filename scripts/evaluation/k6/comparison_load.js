@@ -9,8 +9,7 @@ import { caseForIteration, comparisonScenarios, sequenceStartForScenario, valida
 import { preliminaryOutcome } from './comparison_outcomes.js';
 
 const target = localApiTarget(__ENV.CLIP_COMPARISON_LOCAL_TARGET);
-const cookie = __ENV.CLIP_COMPARISON_LOCAL_COOKIE;
-if (__ENV.CLIP_COMPARISON_LOCAL_LOAD !== 'true' || typeof cookie !== 'string' || !cookie || /[\r\n]/.test(cookie)) throw Error('explicit_local_load_inputs_required');
+if (__ENV.CLIP_COMPARISON_LOCAL_LOAD !== 'true') throw Error('explicit_local_load_inputs_required');
 const profile = JSON.parse(open(__ENV.CLIP_COMPARISON_LOCAL_PROFILE));
 const sequenceStarts = validateSequenceStarts(profile.sequence_starts);
 const cases = validateComparisonCases(profile.cases, sequenceStarts.low);
@@ -20,13 +19,17 @@ const paths = cases.map(item => {
   if (!validExpected(item.request, item.expected)) throw Error('invalid_expected_case');
   return path;
 });
+const scenarios = comparisonScenarios(profile.capacity, __ENV.CLIP_COMPARISON_LOCAL_CONDITION);
+// Do not read even the local session until profile, case and schedule checks pass.
+const cookie = __ENV.CLIP_COMPARISON_LOCAL_COOKIE;
+if (typeof cookie !== 'string' || !cookie || /[\r\n]/.test(cookie)) throw Error('explicit_local_load_inputs_required');
 
 const issued = new Counter('clip_comparison_issued');
 const outcomes = new Counter('clip_comparison_outcomes');
 const elapsed = new Trend('clip_comparison_elapsed_ms', true);
 const invalidClock = new Counter('clip_comparison_clock_invalid');
 export const options = {
-  scenarios: comparisonScenarios(profile.capacity, __ENV.CLIP_COMPARISON_LOCAL_CONDITION),
+  scenarios,
   maxRedirects: 0,
   summaryTrendStats: ['med', 'p(95)', 'p(99)'],
   systemTags: ['scenario', 'status', 'method', 'error_code'],

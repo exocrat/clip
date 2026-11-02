@@ -315,6 +315,13 @@ files, commands, logs or reports, and do not send it in chat.
 
 ## Mock runner ordering check
 
+The local k6 workload checks its load flag, profile shape, case responses and
+selected schedule before reading its local session variable. These checks do not
+establish archive fingerprints, owner approval, deployed parity or actual
+authorization. The future runner must enforce the complete checked corpus and
+all other gates before obtaining a real session; the k6 checks alone are not
+sufficient.
+
 `comparison_mock_runner.py` is a test-only ordering simulation. It calls the
 offline preparation stage first, then calls the session handoff helper using a
 caller-supplied mapping. It accepts only its fixed fake session value before

@@ -79,6 +79,23 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 13:45:38 UTC — Local workload session-read ordering
+
+**Direction:** User verified continuing preparation. All checks used synthetic
+inputs and local fakes or `k6 inspect`; no workload or external request ran.
+
+**Change:** Moved local workload session-variable access after its load flag,
+profile, case/path and selected schedule checks. A fake environment observes
+that seven invalid setup paths stop before reading the synthetic session.
+The guide distinguishes these local shape checks from full archive binding,
+review, parity and authorization, which still belong to the future real runner.
+
+**Checks and limits:** Three synthetic Node test files and three `k6 inspect`
+checks passed; whitespace checks passed. The workload still accepts only local
+targets and the old exact references. This change does not establish complete
+corpus validation before a real session, authenticate a deployment or authorize
+measurement. Result awaits user verification; no NFR pass is claimed.
+
 ### 2026-11-02 13:42:03 UTC — Offline combined parity command
 
 **Direction:** User verified continuing the offline search-parity integration.
