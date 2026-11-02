@@ -41,8 +41,9 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
   enforce these checks before credentials.
 - An offline builder can now create a separate profile for each cycle using
   the checked plan/cases and supplied worker limits. Each cycle's profile is
-  reusable for A and B. The exact generated profile hash has no dedicated
-  per-run manifest field yet and remains an evidence gap before measurement.
+  reusable for A and B. The version-3 run template records a separate profile
+  reference/hash; offline checks compare saved bytes and require the six run
+  records in a cycle to agree. Actual use remains a future runner/evidence gate.
 - **EXP-02 Steps 3–5:** Local path, response and scheduled-workload preparation
   exists on `task/exp-02-workload`. A ten-case dataset-bound draft now has five
   browse and two detail expected responses plus three reviewed Hybrid query
@@ -71,6 +72,39 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 - **Measurements:** No ECS/Lambda comparison or final NFR run is recorded here.
 
 ## History
+
+### 2026-11-02 08:37:36 UTC — EXP-02 generated-profile evidence binding
+
+**Direction:** User verified recording each generated profile's file reference
+and hash, checking local file bytes, and comparing A/B records per cycle. This
+is offline preparation; no credentials, workload or external action was allowed.
+
+**Change:** The editable run-manifest template is now schema version 3, with
+separate `execution_profile_reference` and `execution_profile_sha256` fields;
+the existing `profile_sha256` still identifies the checked-in schedule. The
+manifest validator requires these fields and a valid hash in completed records.
+The artifact verifier hashes the referenced local profile with its existing
+bounded, no-symlink evidence checks. The paired-plan checker requires all six
+captured records within each cycle to declare the same profile hash; different
+cycles may have different hashes. The guides describe the format and limits.
+Older run-manifest shapes are rejected; no frozen or actual record was edited.
+
+**Limits:** Matching recorded hashes prove only that supplied local bytes match
+the records and that records agree. They do not establish profile approval,
+content validity, deployed identity, or that a future runner used those bytes.
+The runner must enforce all reviewed inputs before credentials and requests.
+The actual seed, worker limits, reviewed ordered results, timing protocol and
+other real-measurement gates remain pending. Shared command-registry coordination
+also remains pending under the no-external-calls scope.
+
+**Checks:** One hundred fifteen focused rotation, manifest, paired-plan,
+preflight, artifact, telemetry, binding and ordered-reference tests passed with
+warnings as errors. Synthetic tests cover matching and mismatched cycle hashes,
+different hashes across cycles, missing/modified/symlinked/traversal profile
+files, missing fields and malformed hashes. Strict Mypy, Black in-process
+formatting and `git diff --check` passed. No k6 run, performance test, cloud,
+database, credential or external-service call occurred. Result awaits user
+verification.
 
 ### 2026-11-02 07:18:42 UTC — EXP-02 cycle profile preparation
 

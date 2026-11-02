@@ -165,6 +165,7 @@ def validate_pair_plan(
         manifest_template = json.loads(MANIFEST_TEMPLATE.read_text(encoding="utf-8"))
         checked_run_ids: set[str] = set()
         intervals: dict[str, tuple[datetime, datetime]] = {}
+        profile_hashes: dict[int, str] = {}
         for manifest in captured_manifests:
             if not isinstance(manifest, dict):
                 raise ValueError("invalid_captured_manifest")
@@ -203,6 +204,14 @@ def validate_pair_plan(
             )
             if not all(bindings):
                 raise ValueError("captured_shared_input_mismatch")
+            cycle_number = captured_run["repetition"]
+            profile_hash = workload["execution_profile_sha256"].removeprefix("sha256:")
+            if (
+                cycle_number in profile_hashes
+                and profile_hashes[cycle_number] != profile_hash
+            ):
+                raise ValueError("captured_execution_profile_mismatch")
+            profile_hashes[cycle_number] = profile_hash
             checked_run_ids.add(run_id)
             # validate_manifest has already checked these UTC timestamps and
             # ensured that each individual run ends after it starts.
@@ -227,6 +236,7 @@ def validate_pair_plan(
         "captured_manifests_checked": captured_manifests is not None,
         "captured_manifest_count": len(captured_manifests or []),
         "recorded_order_checked": captured_manifests is not None,
+        "captured_profile_hashes_checked": captured_manifests is not None,
         "measurement_authorized": False,
     }
 

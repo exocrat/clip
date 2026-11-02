@@ -1,5 +1,14 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### EXP-02 generated-profile evidence binding — 2026-11-02 08:37:36 UTC
+
+User verified recording the generated profile reference/hash and checking saved
+files and A/B agreement per cycle. The version-3 run template and offline
+manifest, artifact and paired-plan checks now support that evidence. One hundred
+fifteen focused tests, strict Mypy, Black formatting and whitespace checks passed.
+Actual profile use and run approval remain unverified; no workload or external
+action occurred. [Experiment log](../evaluation/experiment-log.md).
+
 ### EXP-02 cycle profile preparation — 2026-11-02 07:18:42 UTC
 
 User verified offline generation of a profile per cycle from the bound plan and
@@ -1648,7 +1657,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | CN-03 | A; D producer review | in progress | PR #21: migration-fixture CI fix locally verified; hosted CI pending | Full local checks passed: Python 2073/171 skipped, data 331, web 497/3 skipped, Conversations 184, migration and safety checks | Aditya confirmed prior task items done; current fix awaits hosted CI | Draft [PR #21](https://github.com/exocrat/clip/pull/21), branch includes merge `de2c94a` and local fixture fix | Push only after local checks; confirm hosted CI and obtain independent PR review | 2026-10-31 19:43:57 UTC |
 | INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
 | EXP-01 | C; Suraj coordinates NEXT-01 design | done | NEXT-01 design and gates are approved; actual topology pricing and numeric cost endpoints are NEXT-07 pre-result gates. | Design Steps 1–9 performed; no experiment run | Suraj verified NEXT-01 Steps 1–9 on 2026-10-28; user clarified the 300 concurrent-client-request proposal is non-binding on 2026-11-01 UTC. | [Approved design and gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md); [NEXT-07 execution plan](../tasks/remaining-project-plan.md#experiment-protocol-reference) | Implementation, final data/tools, actual account/spend, numeric cost endpoints, and separate run approvals remain before measurement. | 2026-10-28 06:24:24 UTC |
-| EXP-02 | Rahul (D), reassigned by user; Search owner C review | in progress | Offline builder prepares one bound workload profile per cycle; result awaits verification | 112 focused Python tests, strict Mypy, in-process Black and three synthetic `k6 inspect` checks passed; no workload run | Seeded rotation result verified; cycle profile preparation awaits verification | `task/exp-02-workload`; [experiment log](../evaluation/experiment-log.md) | Generated-profile hash capture, actual reviewed ordered Hybrid cases, final search deployment/source mapping, timing protocol, owner-reviewed NFR profiles, other timeout sources, k6 provenance, Node 24, generator caps, actual rotation seed and session limits, coordinated command-registry update, real-target runner enforcement, A/B parity, run authorization, telemetry, cost and cleanup evidence remain pending; 300-request proposal is non-binding | 2026-11-02 07:18:42 UTC |
+| EXP-02 | Rahul (D), reassigned by user; Search owner C review | in progress | Run template and offline checks bind saved profile hashes and A/B agreement; result awaits verification | 115 focused Python tests, strict Mypy and in-process Black formatting verification passed; no workload run | Cycle profile preparation verified; generated-profile evidence binding awaits verification | `task/exp-02-workload`; [experiment log](../evaluation/experiment-log.md) | Actual reviewed ordered Hybrid cases, final search deployment/source mapping, timing protocol, owner-reviewed NFR profiles, other timeout sources, k6 provenance, Node 24, generator caps, actual rotation seed and session limits, coordinated command-registry update, real-target runner enforcement and proof of profile use, A/B parity, run authorization, telemetry, cost and cleanup evidence remain pending; 300-request proposal is non-binding | 2026-11-02 08:37:36 UTC |
 | EXP-03 | B | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-02 | — |
 | EXP-04 | B | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-03 | — |
 | EXP-05 | C | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-04 | — |

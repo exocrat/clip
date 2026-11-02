@@ -102,12 +102,12 @@ This example produces `3, 4, 5, 6, 7, 8, 9, 0, 1`; it does not select the real
 seed or authorize a run. Enter the generated `sequence_start` for each pair and
 distinct A and B run IDs into the copy. The plan checker rejects a missing seed,
 an altered rule or any start inconsistent with the seed. A and B share each
-pair's start. The editable version-2 run-manifest template also records the
+pair's start. The editable version-3 run-manifest template also records the
 rotation rule, seed and start separately from the dataset seed. A completed
 capture must match both the rule and its cycle/condition; the paired check also
 requires the seed to match the plan. No frozen dataset or acceptance manifest is
-changed by preparing these copies. Version-1 plan and run-record shapes are not
-accepted by these version-2 validators.
+changed by preparing these copies. The paired-plan validator accepts version 2;
+the run-manifest validator accepts version 3 and rejects earlier record shapes.
 
 Check the local plan with:
 
@@ -130,7 +130,9 @@ After all runs have captured manifests, run the same command with
 
 The checker first applies the existing per-run manifest validator, then matches
 all 18 run IDs, configuration/condition/cycle, case sequence start, and shared
-dataset/index/database and workload fingerprints to the plan. It also checks
+dataset/index/database and workload fingerprints to the plan. It requires all
+six captures in a cycle to record the same generated-profile hash, while
+allowing different hashes between cycles. It also checks
 the recorded UTC start and end times: each cycle must list low, normal and
 burst for the first configuration, followed by low, normal and burst for the
 second, with the approved A/B, B/A, A/B cycle order. Recorded runs cannot
@@ -211,11 +213,13 @@ with pre-allocated workers no greater than the maximum. Those checks do not
 approve the values or prove the generator can sustain the workload. `maxVUs`
 is per k6 scenario, so both burst scenarios can overlap during the transition;
 the independently reviewed generator plan must account for their combined use.
-No numeric 300-request ceiling is imposed. The current per-run manifest's
-`workload.profile_sha256` identifies the checked-in schedule, not this generated
-profile. The generated profile's hash has no dedicated capture field yet; resolve
-that evidence gap before measurement. The future real-target runner must still
-enforce this profile and all other reviewed gates before credentials or requests.
+No numeric 300-request ceiling is imposed. The per-run manifest's
+`workload.profile_sha256` identifies the checked-in schedule. Its separate
+`execution_profile_reference` and `execution_profile_sha256` record a sanitized
+copy of the generated profile under the local evidence root and its exact file
+hash. The future real-target runner must still enforce the reviewed profile and
+all other gates before credentials or requests. These recorded fields and file
+checks do not prove the runner actually used that profile.
 
 ## NFR browse and Hybrid case drafts
 
@@ -279,15 +283,16 @@ passed. Both templates are intentionally invalid until real run inputs exist.
 ### Checking local telemetry and cost files
 
 After a completed run, the separate offline artifact verifier checks that the
-four telemetry references, cost source, raw k6 output and derived report in a
-captured manifest point to local files with the recorded SHA-256 values:
+generated profile, four telemetry references, cost source, raw k6 output and
+derived report in a captured manifest point to local files with the recorded
+SHA-256 values:
 
 ```sh
 .venv/bin/python -m scripts.evaluation.k6.comparison_artifacts path/to/captured-manifest.json path/to/telemetry-metadata.json --evidence-root path/to/local-evidence-directory
 ```
 
 It reuses manifest and telemetry metadata validation, requires telemetry and
-cost windows to cover the run, and hashes all seven files under the selected
+cost windows to cover the run, and hashes all eight files under the selected
 directory. Raw output and derived report must be distinct files, including when
 two different paths are hard links to the same file. References must be relative
 and cannot contain traversal or symlink components; the evidence root itself

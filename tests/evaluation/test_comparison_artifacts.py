@@ -53,9 +53,15 @@ def evidence(tmp_path):
         "index_fingerprint": "synthetic-index",
         "database_settings_sha256": "1" * 64,
     }
+    profile = root / "cycle-profile.json"
+    profile.write_bytes(b"synthetic workload profile")
     manifest["workload"].update(
         {
             "profile_sha256": "2" * 64,
+            "execution_profile_reference": profile.name,
+            "execution_profile_sha256": hashlib.sha256(
+                profile.read_bytes()
+            ).hexdigest(),
             "case_corpus_path": "cases.json",
             "case_corpus_sha256": "3" * 64,
             "generator_version": "k6 v2.3.0",
@@ -134,6 +140,7 @@ def test_hashes_and_windows_without_claiming_content_or_measurement(evidence):
     }
     report = validate_artifacts(manifest, telemetry, root)
     assert report["artifact_hashes_match"] is True
+    assert report["execution_profile_hash_matches"] is True
     assert report["raw_output_hash_matches"] is True
     assert report["derived_report_hash_matches"] is True
     assert report["raw_and_derived_report_are_distinct_files"] is True
@@ -160,6 +167,29 @@ def test_missing_modified_and_symlinked_artifacts_refused(evidence, tmp_path):
     outside.write_bytes(b"synthetic ecs")
     path.symlink_to(outside)
     with pytest.raises(OSError):
+        validate_artifacts(manifest, telemetry, root)
+
+
+def test_missing_modified_and_symlinked_execution_profile_refused(evidence, tmp_path):
+    root, manifest, telemetry = evidence
+    profile = root / "cycle-profile.json"
+    profile.write_bytes(b"modified synthetic profile")
+    with pytest.raises(ValueError, match="artifact_hash_mismatch"):
+        validate_artifacts(manifest, telemetry, root)
+    profile.unlink()
+    with pytest.raises(OSError):
+        validate_artifacts(manifest, telemetry, root)
+    outside = tmp_path / "profile.json"
+    outside.write_bytes(b"synthetic workload profile")
+    profile.symlink_to(outside)
+    with pytest.raises(OSError):
+        validate_artifacts(manifest, telemetry, root)
+
+
+def test_execution_profile_reference_cannot_escape_evidence_root(evidence):
+    root, manifest, telemetry = evidence
+    manifest["workload"]["execution_profile_reference"] = "../profile.json"
+    with pytest.raises(ValueError, match="unsafe_artifact_reference"):
         validate_artifacts(manifest, telemetry, root)
 
 

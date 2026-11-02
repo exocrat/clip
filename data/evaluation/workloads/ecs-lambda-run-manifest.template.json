@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "manifest_kind": "ecs-lambda-run-capture",
   "manifest_state": "template",
   "measurement_state": "record_only_not_authorization",
@@ -40,6 +40,8 @@
   "workload": {
     "profile_path": "data/evaluation/workloads/ecs-lambda-comparison-schedule-v1.json",
     "profile_sha256": null,
+    "execution_profile_reference": null,
+    "execution_profile_sha256": null,
     "case_corpus_path": null,
     "case_corpus_sha256": null,
     "generator": "k6",

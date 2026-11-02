@@ -100,8 +100,10 @@ full k6 script is not run until those inputs are reviewed; the separate runner
 still executes only bounded local pilots. This schedule preparation creates no
 performance or NFR evidence.
 
-The version-2 editable paired-plan and per-run manifest templates record the
-approved `increment-one-per-pair-v1` rule and leave the rotation seed blank.
+The version-2 editable paired-plan and version-3 per-run manifest templates
+record the approved `increment-one-per-pair-v1` rule and leave the rotation
+seed blank. The run template also records the generated profile's reference
+and hash separately from the schedule hash.
 To print the nine starts for a synthetic example seed without running k6:
 
 ```sh
@@ -110,7 +112,7 @@ To print the nine starts for a synthetic example seed without running k6:
 
 The generator is offline and does not choose the real seed or authorize a run.
 The paired-plan and run-manifest validators check each start against its seed.
-These version-2 validators reject version-1 record shapes.
+The validators reject older shapes for their respective templates.
 
 `comparison_profile_builder.py` can create a new workload profile for each
 cycle from a complete bound corpus and paired plan, with worker limits supplied

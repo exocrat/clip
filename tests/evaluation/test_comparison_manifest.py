@@ -17,10 +17,11 @@ class ComparisonManifestTests(unittest.TestCase):
         )
 
     def test_template_rejects_run_values_and_extra_fields(self):
-        value = copy.deepcopy(self.template)
-        value["schema_version"] = 1
-        with self.assertRaisesRegex(ValueError, "Unsupported manifest schema"):
-            validate_manifest(value, self.template)
+        for version in (1, 2):
+            value = copy.deepcopy(self.template)
+            value["schema_version"] = version
+            with self.assertRaisesRegex(ValueError, "Unsupported manifest schema"):
+                validate_manifest(value, self.template)
         value = copy.deepcopy(self.template)
         value["run"]["run_id"] = "A-low-r1"
         with self.assertRaisesRegex(
@@ -96,6 +97,8 @@ class ComparisonManifestTests(unittest.TestCase):
         value["workload"].update(
             {
                 "profile_sha256": "1" * 64,
+                "execution_profile_reference": "profiles/cycle-1.json",
+                "execution_profile_sha256": "f" * 64,
                 "case_corpus_path": "data/evaluation/workloads/cases.json",
                 "case_corpus_sha256": "2" * 64,
                 "generator_version": "k6 v2.3.0",
@@ -138,6 +141,14 @@ class ComparisonManifestTests(unittest.TestCase):
             report,
             {"valid": True, "state": "captured", "measurement_authorized": False},
         )
+        value["workload"]["execution_profile_reference"] = None
+        with self.assertRaisesRegex(ValueError, "empty value"):
+            validate_manifest(value, self.template)
+        value["workload"]["execution_profile_reference"] = "profiles/cycle-1.json"
+        value["workload"]["execution_profile_sha256"] = "invalid"
+        with self.assertRaisesRegex(ValueError, "Invalid SHA-256"):
+            validate_manifest(value, self.template)
+        value["workload"]["execution_profile_sha256"] = "f" * 64
         value["workload"]["rotation_seed"] = 3
         with self.assertRaisesRegex(ValueError, "does not match the rotation seed"):
             validate_manifest(value, self.template)

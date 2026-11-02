@@ -83,7 +83,7 @@ def validate_manifest(
     _shape(template, value)
     if (
         type(value["schema_version"]) is not int
-        or value["schema_version"] != 2
+        or value["schema_version"] != 3
         or value["manifest_kind"] != "ecs-lambda-run-capture"
     ):
         raise ValueError("Unsupported manifest schema")
@@ -141,6 +141,8 @@ def validate_manifest(
             raise ValueError("Template must not contain run-specific cost values")
         placeholders = (
             "profile_sha256",
+            "execution_profile_reference",
+            "execution_profile_sha256",
             "case_corpus_path",
             "case_corpus_sha256",
             "generator_version",
@@ -190,6 +192,8 @@ def validate_manifest(
         value["dataset"]["index_fingerprint"],
         value["dataset"]["database_settings_sha256"],
         value["workload"]["profile_sha256"],
+        value["workload"]["execution_profile_reference"],
+        value["workload"]["execution_profile_sha256"],
         value["workload"]["case_corpus_path"],
         value["workload"]["case_corpus_sha256"],
         value["workload"]["generator_version"],
@@ -236,6 +240,7 @@ def validate_manifest(
         "target.resource_configuration_sha256",
         "dataset.database_settings_sha256",
         "workload.profile_sha256",
+        "workload.execution_profile_sha256",
         "workload.case_corpus_sha256",
         "workload.load_script_sha256",
         "resource_telemetry.ecs_artifact_sha256",

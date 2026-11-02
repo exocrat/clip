@@ -1,4 +1,4 @@
-"""Verify bounded local telemetry and cost artifact hashes for a captured run.
+"""Verify bounded local profile, telemetry and evidence hashes for a captured run.
 
 No cloud access or provider calls are made. Hash equality does not attest source,
 artifact content, telemetry health, clock quality or measurement validity.
@@ -95,7 +95,13 @@ def validate_artifacts(
             manifest["resource_telemetry"][f"{name}_artifact_sha256"],
         )
         for name in ARTIFACT_NAMES
-    ] + [(cost["source_reference"], cost["source_sha256"])]
+    ] + [
+        (cost["source_reference"], cost["source_sha256"]),
+        (
+            manifest["workload"]["execution_profile_reference"],
+            manifest["workload"]["execution_profile_sha256"],
+        ),
+    ]
     hashed: dict[str, tuple[str, tuple[int, int]]] = {}
     for reference, expected in references:
         hashed[reference] = _hash_artifact(evidence_root, reference)
@@ -117,6 +123,7 @@ def validate_artifacts(
         raise ValueError("raw_and_derived_report_must_be_distinct_files")
     return {
         "artifact_hashes_match": True,
+        "execution_profile_hash_matches": True,
         "raw_output_hash_matches": True,
         "derived_report_hash_matches": True,
         "raw_and_derived_report_are_distinct_files": True,

@@ -104,6 +104,8 @@ def captured_manifests(plan: dict[str, Any]) -> list[dict[str, Any]]:
                 manifest["workload"].update(
                     {
                         "profile_sha256": shared["schedule_sha256"],
+                        "execution_profile_reference": f"profiles/cycle-{cycle['cycle']}.json",
+                        "execution_profile_sha256": str(cycle["cycle"]) * 64,
                         "case_corpus_path": "synthetic-cases.json",
                         "case_corpus_sha256": shared["case_corpus_sha256"],
                         "generator_version": shared["generator_version"],
@@ -248,6 +250,7 @@ def test_all_synthetic_captured_manifests_match_the_plan() -> None:
     assert result["captured_manifests_checked"] is True
     assert result["captured_manifest_count"] == 18
     assert result["recorded_order_checked"] is True
+    assert result["captured_profile_hashes_checked"] is True
     assert result["measurement_authorized"] is False
 
 
@@ -330,6 +333,19 @@ def test_capture_with_different_valid_seed_is_refused() -> None:
     manifests = captured_manifests(plan)
     manifests[0]["workload"].update(rotation_seed=1, sequence_start=1)
     with pytest.raises(ValueError, match="captured_run_binding_mismatch"):
+        validate_pair_plan(plan, manifests)
+
+
+def test_same_cycle_requires_matching_execution_profile_hashes() -> None:
+    plan = planned_plan()
+    manifests = captured_manifests(plan)
+    # Prefix spelling is immaterial; different cycle profiles may have different hashes.
+    manifests[1]["workload"]["execution_profile_sha256"] = "sha256:" + "1" * 64
+    assert (
+        validate_pair_plan(plan, manifests)["captured_profile_hashes_checked"] is True
+    )
+    manifests[1]["workload"]["execution_profile_sha256"] = "f" * 64
+    with pytest.raises(ValueError, match="captured_execution_profile_mismatch"):
         validate_pair_plan(plan, manifests)
 
 
