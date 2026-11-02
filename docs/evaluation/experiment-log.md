@@ -76,6 +76,29 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 09:53:25 UTC — EXP-02 mock runner ordering
+
+**Direction:** User verified the offline preparation stage and the grouped mock
+runner step. Only deterministic synthetic files were used. No session, k6
+workload, request, cloud, database or provider call occurred.
+
+**Change:** Added a simulation that calls the existing local preflight first.
+Missing or mismatched inputs yield a refusal event before any simulated session
+or workload events. Passing synthetic inputs produce fixed in-memory event
+labels in that order. The simulation accepts no target, credential callback,
+real transport or workload callback; it never authorizes a measurement. Added
+local tests for missing inputs, matching synthetic inputs and altered profile
+bytes; updated the guide and k6 README with the exact scope and limits.
+
+**Checks:** 64 focused preflight and paired-plan tests, strict Mypy, in-process
+Black formatting and whitespace checks passed. The worktree has no measurement
+results. This simulation demonstrates only its own ordering: it is not the real
+runner, does not establish that other gates are satisfied, and cannot prove
+future runner safety. Real runner implementation, reviewed references, timing,
+capacity, deployment/parity, authorization and owner reviews remain open.
+Result awaits user verification.
+
+
 ### 2026-11-02 09:43:48 UTC — EXP-02 offline runner preparation
 
 **Direction:** User verified grouped offline runner preparation and asked to

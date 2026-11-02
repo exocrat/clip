@@ -287,3 +287,7 @@ describes the command and outstanding validity checks.
 `comparison_offline_prepare.py` combines local preflight checks for a selected
 planned run, lists missing or invalid inputs, and always keeps measurement
 disabled. See [offline preparation](../../../docs/evaluation/comparison-preparation-inputs.md#offline-preparation-for-one-planned-run).
+
+`comparison_mock_runner.py` tests preflight ordering with fixed in-memory
+simulation events. It cannot send traffic or authorize a measurement; the
+future real runner still requires integration and review.

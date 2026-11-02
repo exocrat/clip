@@ -172,6 +172,17 @@ of the checked bytes, or run readiness. It is not yet integrated into a
 real-target runner. The expected profile hash must be sourced from the reviewed
 plan; these checks do not prevent file changes after reading.
 
+## Mock runner ordering check
+
+`comparison_mock_runner.py` is a test-only ordering simulation. It calls the
+offline preparation stage first; only a passing local check produces the
+in-memory labels `simulated_session` and `simulated_workload`. Failed input
+checks stop before either label. These are fixed labels, not pluggable operations:
+the module has no real session, target, k6 invocation or request interface.
+Passing this simulation does not verify the order or safety of a future runner,
+or does it approve a run. The real runner must implement and independently
+check all required gates before obtaining a session or sending requests.
+
 ## Combined pre-request input check
 
 Before a future comparison runner requests a session or sends a request, it must

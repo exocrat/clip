@@ -569,3 +569,40 @@ def test_offline_preparation_cli_lists_missing_inputs_without_echoing_paths() ->
     assert "binding_plan" in report["invalid_inputs"]
     assert "ordered_reference" in report["missing_inputs"]
     assert "/nonexistent/private-location" not in result.stdout + result.stderr
+
+
+def test_mock_runner_stops_before_simulated_session_and_workload(
+    tmp_path: Path, prepared_inputs: Any
+) -> None:
+    from scripts.evaluation.k6.comparison_mock_runner import simulate_run
+    from scripts.evaluation.k6.comparison_offline_prepare import FILE_FIELDS
+
+    refused = simulate_run({}, None, None, None)
+    assert refused["events"] == ["preflight_started", "preflight_refused"]
+    assert refused["requests_sent"] is False
+    binding, corpus, reference, plan = prepared_inputs
+    profile = build_profile(binding, corpus, reference, plan, 1, 2, 301)
+    values = (
+        json.dumps(binding).encode(),
+        corpus,
+        json.dumps(reference).encode(),
+        json.dumps(plan).encode(),
+        profile,
+    )
+    paths = {name: tmp_path / f"{name}.json" for name in FILE_FIELDS}
+    for name, value in zip(FILE_FIELDS, values):
+        paths[name].write_bytes(value)
+    digest = hashlib.sha256(profile).hexdigest()
+    result = simulate_run(paths, 1, "synthetic-c1-p0-A", digest)
+    assert result["events"] == [
+        "preflight_started",
+        "preflight_passed",
+        "simulated_session",
+        "simulated_workload",
+    ]
+    assert result["measurement_authorized"] is False
+    assert result["simulation_only"] is True
+    paths["workload_profile"].write_bytes(profile + b" ")
+    refused = simulate_run(paths, 1, "synthetic-c1-p0-A", digest)
+    assert refused["events"] == ["preflight_started", "preflight_refused"]
+    assert refused["requests_sent"] is False
