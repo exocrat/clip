@@ -79,6 +79,24 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 12:24:44 UTC — NFR-05 offline outcome preview
+
+**Direction:** User verified preparing a local chat results checker while Mohit
+and Adity handle their assigned inputs. No messages, browser or workload run.
+
+**Change:** Added a bounded JSON preview tool for 60 indexed synthetic outcomes.
+It includes failed and undisplayed messages in the denominator, includes the
+five-second boundary, flags missing outcomes, rejects duplicate IDs, impossible
+times and extra fields, and never claims an NFR pass or clock verification.
+The evaluation README documents the strict format and remaining browser, clock,
+background-load, privacy and review gates. Failures before submission may have
+no submission timestamp; no message content is accepted.
+
+**Checks:** Synthetic threshold, late/failed/undisplayed/missing and invalid
+input tests, strict Mypy, Black and whitespace checks passed. Actual two-client
+harness, approved profile and real integration remain CN-01 work; result awaits
+user verification.
+
 ### 2026-11-02 12:20:07 UTC — EXP-02 offline control-flow simulation
 
 **Direction:** User verified extending the local control flow with a fake
