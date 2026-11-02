@@ -79,6 +79,24 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 12:57:43 UTC — Bind search parity inputs to corpus cases
+
+**Direction:** User verified continuing preparation without a hand-written
+search order. The work used synthetic responses only; no workload or network.
+
+**Change:** The offline parity adapter now requires the supplied corpus, matches
+each of its three search case IDs and exact request settings, and requires the
+direct-word, related-word and meaning-based classes. Synthetic tests cover
+changed requests, duplicate IDs and incorrect class sets. The adapter outputs
+an explicit false corpus-authenticity flag; matching a supplied corpus does not
+establish its fingerprint, review or deployment use.
+
+**Checks and limits:** Both search-check Node test files and whitespace checks
+passed. The legacy ordered-reference preflight and workload remain in force;
+the new adapter is not yet a real-target gate and cannot verify relevance or
+the corpus itself. Coordinated implementation and owner review remain open.
+Result awaits user verification; no experiment or NFR pass is claimed.
+
 ### 2026-11-02 12:55:29 UTC — Offline three-search parity adapter
 
 **Direction:** User verified continuing the search-check integration. No

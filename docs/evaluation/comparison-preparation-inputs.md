@@ -2,10 +2,11 @@
 
 ## Proposed search parity adapter
 
-`comparison_search_parity.js` accepts three distinct search requests and their
-two already-supplied status/body pairs, validates each response and compares
-the pages. It returns aggregate counts without copying queries or response
-bodies. It does not collect responses, verify targets or establish relevance;
+`comparison_search_parity.js` accepts the corpus and its three search cases with
+two already-supplied status/body pairs. It requires matching case IDs and exact
+request settings, and one case in each direct-word, related-word and meaning-based
+class, then validates and compares the responses. It returns aggregate counts without copying queries or response
+bodies. It does not authenticate the supplied corpus, collect responses, verify targets or establish relevance;
 valid identical empty pages can pass this shape/equality check. It is an offline
 building block only, not an execution gate. The existing ordered-reference
 preflight and workload remain in force until the new protocol and complete
