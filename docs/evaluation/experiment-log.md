@@ -79,6 +79,22 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## History
 
+### 2026-11-02 11:40:31 UTC — EXP-02 remaining runner work review
+
+**Direction and review:** User verified a prioritized offline review. Compared
+EXP-02 completion criteria, existing runner design, local preflight and session
+handoff with EXP-03/04 dependencies. No code execution, workload or external
+service call was needed. The [runner design](comparison-runner-design.md#prioritized-remaining-work)
+now orders the remaining work and names responsible owners.
+
+**Outcome:** Actual reviewed Hybrid rankings and a real-target runner are still
+missing. Identity/security and affected owners must review the user's temporary
+account proposal, session handoff, target and timing protocol before dependent
+implementation. B owns downstream Lambda implementation; deployment, parity,
+generator capacity and measurement require later gates and authorization.
+Offline fixtures and file checks do not prove any of those gates. This review
+awaits user verification; no experiment or NFR pass is claimed.
+
 ### 2026-11-02 11:38:03 UTC — EXP-02 timeout and incomplete-record checks
 
 **Direction:** User verified checking timeouts and interruptions using synthetic

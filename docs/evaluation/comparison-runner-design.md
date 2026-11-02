@@ -98,3 +98,38 @@ These are pre-implementation or pre-run gates as applicable. Identity owner A,
 EXP-02 owner D, Search reviewer C and infrastructure owner B coordinate their
 respective areas;
 independent human review remains required. No owner approval is recorded here.
+
+## Prioritized remaining work
+
+1. **Finish reviewed workload inputs — D with Search C.** Supply the actual
+   independently reviewed ordered Hybrid results and bind them to the dataset,
+   current intended search revision and model. The template and offline binder
+   exist; fixture rankings are not the required results. Confirm the deployed
+   source mapping later, when deployment exists.
+2. **Settle runner interfaces — D with Identity A, infrastructure B and affected
+   reviewers.** Review the user's proposed temporary synthetic account and
+   environment-variable session handoff against the regular-account protocol;
+   agree target identification, authorization, session handling, checked-byte
+   use and timing. A protocol change needs affected-owner review. Until these
+   interfaces are settled, do not weaken the loopback restriction or infer
+   authorization from local files.
+3. **Implement and locally check the real-target runner — D.** After the
+   relevant interfaces are reviewed, connect the existing preflight, staged
+   inputs, approved target and session path, per-condition workload, reporting
+   and immutable capture. Test refusal and failure paths using synthetic inputs
+   and local doubles. The present mock is not the real runner; exact approved
+   cloud commands remain to be documented and reviewed. No calls to deployed
+   services are authorized by this checklist.
+4. **Complete mixed-path implementation — B, EXP-03.** Package and locally
+   verify the Lambda adapter, routing, authorization and parity, then obtain
+   the required review and merge. This is a separate downstream task; it does
+   not authorize deployment. Both configurations and deployed parity are EXP-04.
+5. **Prepare actual execution — B, D and relevant owners.** Review the run
+   plan, generator/session limits and seed, account, workload profiles, cost,
+   telemetry and cleanup; verify actual deployment, data/configuration parity,
+   capacity and access at the approved gates. EXP-04 deployment and EXP-05
+   pilot require separate authorization. Only then consider measured runs.
+
+The local timer-boundary and synthetic timeout checks do not resolve actual
+forced-interruption behavior or independently prove request-by-request matching.
+These remain runner/timing review items, not measurement results.
