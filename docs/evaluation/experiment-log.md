@@ -15,6 +15,58 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## Current checkpoint
 
+- **EXP-03 Terraform:** An opt-in local A/B infrastructure draft and mock
+  tests are ready for review. No AWS resources have been created or changed.
+  A concrete live plan, independent review, interruption-safe cleanup,
+  dataset verification and explicit approval remain necessary.
+
+### 2026-11-02 19:56:04 UTC — EXP-03 Terraform and deployment planning
+
+**Scope:** On `task/exp-03-lambda`, prepared an opt-in Terraform draft for
+the HTTPS ALB, Lambda, networking and ECS routing. No AWS resource was created,
+started, changed or deleted; no deployed requests or measurements were made.
+Rahul owns this Terraform work, with independent and affected-domain review
+still required. The [preparation record](exp-03-terraform-preparation.md)
+describes each input, the A/B routing, IAM, shared-resource changes and gaps.
+
+**Local checks:** Terraform 1.15.9 and AWS provider 6.69.1 validated a
+backend-free temporary copy; all 18 mock-provider plan tests passed, including
+the nine EXP-03 cases. Seven synthetic proxy-trust tests passed. Mock plans
+cannot establish effective IAM, actual security-group attachments, adapter
+header handling or service readiness. A mock apply attempt failed on synthetic
+provider-generated identifiers and was removed; a security-group assertion on
+unknown mock values also failed and was replaced with checks of known plan
+properties. Neither failure involved a real apply.
+On repeat, the sandbox prevented the local provider plugin from starting;
+the same mock-only test passed all 18 cases with approved local escalation and
+AWS credential environment variables removed. The full Identity test file passed
+21 tests; `terraform fmt -check -recursive` and `git diff --check` also passed.
+
+**Read-only inventory:** The project account/profile and region were verified;
+the ECS service, RDS and retained EC2 hosts were stopped. The ASG's launch and
+termination processes were suspended. The retained t3.micro host is too small
+for the existing Hybrid ECS task guard, and a launch-template update would not
+resize or update it. A second public subnet and an issued project certificate
+were identified as candidates; their real use needs a fresh plan and review.
+The historical synthetic reference database and the current secret target have
+not been proven to match. No secret values were read.
+
+**Costs and limits:** The user capped credit use at USD 10; a free-plan metadata
+response showed approximately USD 154.11 remaining, subject to billing delay
+and eligibility. Read-only public Mumbai price-list queries returned USD
+0.08479/hour for on-demand c7i-flex.large, 0.021/hour for running db.t4g.micro
+PostgreSQL, 0.0239/hour for the ALB and 0.008 per ALB capacity-unit-hour.
+These are individual price inputs, not a complete estimate: NAT, storage,
+public IP, Lambda, transfers, logging, taxes and other usage still need review.
+One initial SDK pricing query failed because the CLI login's optional CRT
+dependency was absent; subsequent CLI price-list queries succeeded.
+
+**Open gates:** The declared Terraform budget and expiry tags do not enforce a
+spending or runtime limit. An interruption-safe cleanup path, exact image and
+host rollout, database/data access, costed runtime and stop conditions, full
+plan review, and explicit approval remain necessary before any live operation.
+See the linked preparation record for restoration and dataset constraints.
+
 - **EXP-01:** Design verified; see the [comparison protocol](ecs-only-vs-ecs-lambda-task-list.md).
 - The experiment-design document's proposed 300 concurrent-client-request
   ceiling is explicitly non-binding per user direction. Do not enforce it as a

@@ -200,6 +200,34 @@ def test_uvicorn_proxy_scheme_requires_a_trusted_peer_and_https(
 
 
 @pytest.mark.parametrize(
+    ("peer", "expected"),
+    [("10.64.0.37", 200), ("10.64.3.44", 200), ("10.64.2.88", 403)],
+)
+def test_uvicorn_accepts_forwarding_only_from_reviewed_alb_subnets(
+    bound_app, peer, expected
+):
+    """A local CIDR check does not establish real ALB or security-group behavior."""
+    application, bindings, _ = bound_app
+    proxied = ProxyHeadersMiddleware(
+        application, trusted_hosts="10.64.0.0/24,10.64.3.0/24"
+    )
+    response = request(
+        proxied,
+        scheme="http",
+        peer=peer,
+        headers={
+            "Cookie": "__Host-clip_session=synthetic-cookie",
+            "X-Forwarded-Proto": "https",
+        },
+    )
+    assert response.status_code == expected
+    if expected == 200:
+        bindings.sessions.authenticate.assert_called_once()
+    else:
+        bindings.sessions.authenticate.assert_not_called()
+
+
+@pytest.mark.parametrize(
     "scheme,origin", [("http", ORIGIN), ("https", "https://other.invalid")]
 )
 def test_hostile_transport_or_origin_rejected_before_authentication(

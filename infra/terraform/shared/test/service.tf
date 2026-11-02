@@ -135,7 +135,9 @@ resource "aws_ecs_task_definition" "api" {
     command = concat([
       "uvicorn", "app.main:app", "--app-dir", "apps/api", "--host", "0.0.0.0",
       "--port", "8000", "--no-access-log",
-      ], var.identity_https_proxy_enabled ? [
+      ], local.exp03_active ? [
+      "--proxy-headers", "--forwarded-allow-ips", join(",", compact([var.public_subnet_cidr, var.exp03_second_public_subnet_cidr])),
+      ] : var.identity_https_proxy_enabled ? [
       "--proxy-headers", "--forwarded-allow-ips", local.identity_proxy_private_ip,
     ] : ["--no-proxy-headers"])
   } : {})])
@@ -178,6 +180,15 @@ resource "aws_ecs_service" "api" {
   task_definition = aws_ecs_task_definition.api[0].arn
   desired_count   = var.api_service_enabled ? 1 : 0
 
+  dynamic "load_balancer" {
+    for_each = local.exp03_active ? [1] : []
+    content {
+      target_group_arn = aws_lb_target_group.exp03_ecs[0].arn
+      container_name   = "api"
+      container_port   = 8000
+    }
+  }
+
   capacity_provider_strategy {
     capacity_provider = aws_ecs_capacity_provider.shared[0].name
     weight            = 1
@@ -199,6 +210,7 @@ resource "aws_ecs_service" "api" {
     aws_ecs_cluster_capacity_providers.shared,
     aws_iam_role_policy.api_identity_email,
     aws_iam_role_policy.api_execution,
+    aws_lb_listener.exp03_https,
   ]
   tags = { Name = "clip-test-api-${local.region}-pd16" }
 }

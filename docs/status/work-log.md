@@ -1,5 +1,16 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### EXP-03 opt-in Terraform draft — 2026-11-02 19:56:04 UTC
+
+Prepared a disabled-by-default Lambda and HTTPS ALB draft in the shared test
+root, with A/B route configuration and bounded declared inputs. Eighteen mock
+Terraform tests and seven synthetic proxy tests passed. This is local evidence,
+not a deployment or proof of live permissions and network behavior. AWS
+read-only inventory and public pricing were inspected; no resources were
+created, started, changed or deleted. An exact plan, independent review,
+interruption-safe cleanup and explicit live approval remain open. See the
+[detailed experiment log](../evaluation/experiment-log.md).
+
 ### EXP-03 Lambda access log control — 2026-11-02 19:36:53 UTC
 
 Lambda image now disables Uvicorn access logs; 15 focused tests passed.
@@ -2326,7 +2337,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
 | EXP-01 | C; Suraj coordinates NEXT-01 design | done | NEXT-01 design and gates are approved; actual topology pricing and numeric cost endpoints are NEXT-07 pre-result gates. | Design Steps 1–9 performed; no experiment run | Suraj verified NEXT-01 Steps 1–9 on 2026-10-28; user clarified the 300 concurrent-client-request proposal is non-binding on 2026-11-01 UTC. | [Approved design and gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md); [NEXT-07 execution plan](../tasks/remaining-project-plan.md#experiment-protocol-reference) | Implementation, final data/tools, actual account/spend, numeric cost endpoints, and separate run approvals remain before measurement. | 2026-10-28 06:24:24 UTC |
 | EXP-02 | Rahul (D); Search owner C review | in progress | Parity-bound offline staging, preflight, mock checks and phase previews committed on its own branch | Synthetic checks only; real runner remains open | User confirmed reviewed search labels and directed A/B output comparison | `task/exp-02-workload` at `a52adea`; its experiment log | Affected-owner review, real runner, actual deployed parity, account/session and execution gates remain | 2026-11-02 19:32:53 UTC |
-| EXP-03 | Rahul (D), Terraform and scoped Identity; A peer, C/B affected review | in progress | Lambda can load fixed Listings parameter in memory after hosted-test checks; deployment/integration still open | 108 synthetic Lambda/Identity/architecture tests; three parameter metadata checks | AWS access authorized with USD 10 credit cap; exact action plan approval remains | `task/exp-03-lambda`; [design](../evaluation/exp-03-lambda-design.md); [experiment log](../evaluation/experiment-log.md) | Adapter/ALB, real SQL/session/Hybrid parity, DB capacity, reviewed Terraform, deployment, owner review, credit balance and cleanup remain | 2026-11-02 19:32:53 UTC |
+| EXP-03 | Rahul (D), Terraform and scoped Identity; A peer, C/B affected review | in progress | Lambda startup and opt-in Terraform draft prepared; deployment/integration still open | 18 mock Terraform and seven synthetic proxy tests; prior Lambda/Identity checks | AWS access authorized with USD 10 credit cap; exact action plan approval remains | `task/exp-03-lambda`; [design](../evaluation/exp-03-lambda-design.md); [experiment log](../evaluation/experiment-log.md) | Adapter/ALB, real SQL/session/Hybrid parity, DB capacity, reviewed Terraform, deployment, owner review and interruption-safe cleanup remain | 2026-11-02 19:56:04 UTC |
 | EXP-04 | B | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-03 | — |
 | EXP-05 | C | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-04 | — |
 | EXP-06 | C operator; B infra support | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-05 | — |

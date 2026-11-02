@@ -29,7 +29,7 @@ own their detailed commands and limits.
 
 | Work | Current command source |
 |---|---|
-| EXP-03 local Lambda image build | [Offline local image builder](../../scripts/evaluation/build_lambda_image.sh) |
+| EXP-03 local Lambda image build and Terraform mock checks | [Offline local image builder](../../scripts/evaluation/build_lambda_image.sh); [Terraform preparation](../evaluation/exp-03-terraform-preparation.md) |
 | Search/Listings focused checks and isolated preview | [Search test guide](../../apps/api/tests/domains/search/README.md), [API guide](../../apps/api/README.md), and the browser procedure below |
 | Schema-shaped search data | [Data generator guide](../../data/README.md#se-01-isolated-schema-shaped-corpus); these are not the final NEXT-06 dataset commands |
 | Load-runner tools, bounded local pilot and EXP-02 manifest validation | [k6 tool guide](../../scripts/evaluation/k6/README.md); [offline case and telemetry preparation](../evaluation/comparison-preparation-inputs.md) |

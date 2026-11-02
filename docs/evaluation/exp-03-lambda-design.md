@@ -173,7 +173,9 @@ connection-proxy/DB-limit change. Do not assert that the default
   treat mocked sessions, health or route mounting as real authentication proof.
 - Keep integration and deployed A/B checks open until both actual configurations
   run with the same data, schema, settings, indexes and search revision.
-- Prepare infrastructure in the existing ownership boundary only after review;
+- The opt-in [shared-root Terraform draft](exp-03-terraform-preparation.md)
+  prepares ingress, routing, role and Lambda resources. It requires a reviewed
+  plan and unresolved host rollout, dataset, trust, budget and cleanup gates;
   cloud changes and experiments require separate explicit approval.
 
 The user's report that an ALB can be created is not independent evidence from a
