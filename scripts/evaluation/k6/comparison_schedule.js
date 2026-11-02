@@ -24,35 +24,23 @@ export function sequenceStartForScenario(starts, scenario) {
   return starts[scenario.split('_')[0]];
 }
 
-/** Build six arrival cohorts; burst starts immediately while warm-up requests may drain.
- * VU capacity is per scenario, so burst overlap may use both scenarios' VUs.
- */
-export function comparisonScenarios(capacity) {
+/** Build only the selected condition's warm-up and measured cohorts. */
+export function comparisonScenarios(capacity, condition) {
   if (!Number.isSafeInteger(capacity?.preAllocatedVUs) || !Number.isSafeInteger(capacity?.maxVUs) || capacity.preAllocatedVUs < 1 || capacity.maxVUs < capacity.preAllocatedVUs) throw Error('capacity_required');
-  let start = 0;
-  const scenarios = {};
-  for (const phase of COMPARISON_PHASES) {
-    const add = (cohort, rate, timeUnit, duration) => {
-      const name = `${phase.name}_${cohort}`;
-      scenarios[name] = {
-        executor: 'constant-arrival-rate',
-        rate,
-        timeUnit,
-        duration: `${duration}s`,
-        startTime: `${start}s`,
-        preAllocatedVUs: capacity.preAllocatedVUs,
-        maxVUs: capacity.maxVUs,
-        gracefulStop: `${COHORT_SECONDS.drain}s`,
-      };
-      // The approved burst changes rate at the warm-up boundary. Its in-flight
-      // warm-up requests keep their own scenario tag while allowed to drain.
-      const immediateBurstTransition = phase.name === 'burst' && cohort === 'warmup';
-      start += duration + (immediateBurstTransition ? 0 : COHORT_SECONDS.drain);
-    };
-    add('warmup', phase.warmupRate, phase.warmupTimeUnit, COHORT_SECONDS.warmup);
-    add('measured', phase.measuredRate, phase.timeUnit, COHORT_SECONDS.measured);
-  }
-  return scenarios;
+  const phase = COMPARISON_PHASES.find(item => item.name === condition);
+  if (!phase) throw Error('condition_required');
+  const scenario = (rate, timeUnit, duration, start) => ({
+    executor: 'constant-arrival-rate', rate, timeUnit,
+    duration: `${duration}s`, startTime: `${start}s`,
+    preAllocatedVUs: capacity.preAllocatedVUs, maxVUs: capacity.maxVUs,
+    gracefulStop: `${COHORT_SECONDS.drain}s`,
+  });
+  // Burst starts its higher rate immediately; its warm-up may still drain.
+  const measuredStart = COHORT_SECONDS.warmup + (condition === 'burst' ? 0 : COHORT_SECONDS.drain);
+  return {
+    [`${condition}_warmup`]: scenario(phase.warmupRate, phase.warmupTimeUnit, COHORT_SECONDS.warmup, 0),
+    [`${condition}_measured`]: scenario(phase.measuredRate, phase.timeUnit, COHORT_SECONDS.measured, measuredStart),
+  };
 }
 
 /** Check the ten-request rotation contract; the actual reviewed cases remain an input. */

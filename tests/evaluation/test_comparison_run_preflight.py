@@ -3,6 +3,7 @@
 from copy import deepcopy
 import hashlib
 import json
+import shutil
 from pathlib import Path
 import subprocess
 import sys
@@ -934,6 +935,7 @@ def test_stage_run_checks_profile_modules_and_schedule_before_writing(
     assert set(result["files"]) == set(MODULES) | {"profile.json", "schedule.json"}
     assert json.loads((folder / "staged-files.json").read_text()) == result
     assert result["actual_use_verified"] is False
+    assert result["condition"] == "low"
     assert result["measurement_authorized"] is False
     with pytest.raises(FileExistsError):
         stage_run(
@@ -975,6 +977,10 @@ def test_stage_run_checks_profile_modules_and_schedule_before_writing(
         "staged": True,
         "measurement_authorized": False,
     }
+    staged_normal = json.loads(
+        (root / "synthetic-c1-p1-A" / "staged-files.json").read_text()
+    )
+    assert staged_normal["condition"] == "normal"
     assert (
         reference["queries"][0]["query_text"] not in completed.stdout + completed.stderr
     )
@@ -991,3 +997,52 @@ def test_stage_run_checks_profile_modules_and_schedule_before_writing(
             root,
         )
     assert not (root / "synthetic-c1-p2-A").exists()
+
+
+@pytest.mark.skipif(shutil.which("k6") is None, reason="k6 is not installed")
+@pytest.mark.parametrize("condition", ["low", "normal", "burst"])
+def test_k6_inspect_selects_only_requested_condition(
+    tmp_path: Path, prepared_inputs: Any, condition: str
+) -> None:
+    """Inspect initialization only; no workload function is executed."""
+    binding, corpus, reference, plan = prepared_inputs
+    profile_path = tmp_path / "profile.json"
+    profile_path.write_bytes(build_profile(binding, corpus, reference, plan, 1, 2, 301))
+    config = tmp_path / "config.json"
+    config.write_text("{}\n")
+    binary = shutil.which("k6")
+    assert binary is not None
+    env = {
+        "PATH": "/usr/bin:/bin",
+        "K6_NO_USAGE_REPORT": "true",
+        "CLIP_COMPARISON_LOCAL_TARGET": "http://127.0.0.1:5174/api",
+        "CLIP_COMPARISON_LOCAL_COOKIE": "clip_session_dev=synthetic",
+        "CLIP_COMPARISON_LOCAL_LOAD": "true",
+        "CLIP_COMPARISON_LOCAL_PROFILE": str(profile_path),
+        "CLIP_COMPARISON_LOCAL_CONDITION": condition,
+    }
+    command = [
+        binary,
+        "inspect",
+        "--include-system-env-vars",
+        "--config",
+        str(config),
+        "scripts/evaluation/k6/comparison_load.js",
+    ]
+    result = subprocess.run(
+        command, env=env, capture_output=True, text=True, check=False, timeout=30
+    )
+    assert result.returncode == 0
+    scenarios = json.loads(result.stdout)["scenarios"]
+    assert set(scenarios) == {f"{condition}_warmup", f"{condition}_measured"}
+    assert scenarios[f"{condition}_warmup"]["startTime"] == "0s"
+    assert scenarios[f"{condition}_measured"]["startTime"] == (
+        "1m0s" if condition == "burst" else "1m5s"
+    )
+    env.pop("CLIP_COMPARISON_LOCAL_CONDITION")
+    assert (
+        subprocess.run(
+            command, env=env, capture_output=True, text=True, check=False, timeout=30
+        ).returncode
+        != 0
+    )

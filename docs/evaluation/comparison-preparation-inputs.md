@@ -318,7 +318,9 @@ checks do not prove the runner actually used that profile.
 The offline staging helper checks the bound corpus, ordered reference, pair plan,
 selected run and exact profile bytes before creating a new private run folder.
 It copies the profile, schedule and the current six workload JavaScript files,
-checks each written file and writes `staged-files.json` with fingerprints. It
+checks each written file and writes `staged-files.json` with fingerprints and
+the selected run's condition. Each workload invocation must receive exactly that
+condition, and its report must select the same condition. It
 never starts k6, accepts a target or obtains a session.
 
 Copy `data/evaluation/workloads/ecs-lambda-module-hashes.template.json` to a new
@@ -344,7 +346,8 @@ The staged files preserve the current relative imports; if the workload adds
 more dependencies, the fixed list and tests need review. Existing run folders
 are refused; incomplete writes remain for inspection. A successful stage does
 not prove human approval, file integrity after the check, actual runner use,
-k6 binary provenance or permission to run. The existing workload remains
+k6 binary provenance or permission to run. The future runner must bind the
+staged condition to the workload and report. The existing workload remains
 loopback-only and the real-target runner remains unimplemented.
 
 ## NFR browse and Hybrid case drafts

@@ -12,7 +12,9 @@ The approved [comparison protocol](ecs-only-vs-ecs-lambda-task-list.md) and
   cookie are local-only. They are not a production or comparison login method.
 - The current scheduled `comparison_load.js` accepts only loopback targets,
   reads an explicitly supplied profile and uses one checked HTTP read per
-  iteration with no redirects and a five-second timeout. It currently uses
+  iteration with no redirects and a five-second timeout. Each invocation needs
+  one selected `low`, `normal` or `burst` condition and schedules only that
+  condition. It currently uses
   `Date.now()` and is not a final timing implementation or real-target runner.
 - Identity's `apps/api/app/domains/identity/http.py` defines regular Microsoft
   login attempts and session exchange, and a distinct temporary-account
@@ -44,7 +46,8 @@ The approved [comparison protocol](ecs-only-vs-ecs-lambda-task-list.md) and
    must fail closed; do not replace them with demo identity or real-user data.
 4. Use the exact profile and workload bytes checked for the selected run, with
    an implementation that addresses file replacement between validation and
-   use. Preserve the approved schedule, one request per iteration, zero retries
+   use, and bind the staged run condition to both workload and report. Preserve
+   the approved schedule, one request per iteration, zero retries
    and five-second timeout. A profile hash in a manifest alone is not proof
    that those bytes were used. The workload's current loopback restriction must
    remain until a separate, specifically reviewed target design is implemented.

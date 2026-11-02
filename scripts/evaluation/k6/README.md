@@ -76,11 +76,13 @@ profiles or accept SE-CORE/DATA-READY/NFRs. The final target/auth/data/image/ind
 telemetry/resource/cost/repetition plan remains a separately approved real gate.
 
 `comparison_schedule.js` and `comparison_load.js` prepare the EXP-02 approved
-sequence: one request per iteration in a 5-browse/3-Hybrid/2-detail cycle;
+sequence: each invocation requires `CLIP_COMPARISON_LOCAL_CONDITION` set to
+`low`, `normal` or `burst`, and schedules only that condition. One request per
+iteration follows a 5-browse/3-Hybrid/2-detail cycle;
 0.2 requests/s low, 10 requests/s normal and 50 requests/s burst; 60-second
 warm-up, 300-second measurement and up to five seconds between cohorts. Burst
 warms at 10 requests/s, then starts 50 requests/s immediately. Low uses one
-iteration per five-second time unit. Arrival windows are sequential; burst
+iteration per five-second time unit. Within each run, warm-up and measured windows are sequential; burst
 warm-up requests may finish draining after the measured arrivals begin, with
 their own scenario tags. The configured VU maximum applies per scenario: during
 that overlap the two burst scenarios can use up to twice that maximum. A future
@@ -91,7 +93,9 @@ write response bodies or credentials to output. Its local profile now requires
 a `sequence_starts` object with one index (0–9) per condition; warm-up and
 measurement for that condition use the same index. A single legacy
 `sequence_start` is insufficient. The values must match the paired plan, but
-the script itself does not open or verify that plan.
+the script itself does not open or verify that plan. The staging record identifies
+the condition for the selected run; a future real runner must bind that value to
+the workload and report and enforce the plan before credentials or requests.
 
 The checked-in `ecs-lambda-comparison-schedule-v1.json` is a design schedule,
 not an executable final manifest. Dataset-bound expected cases, their reviewed
@@ -131,10 +135,12 @@ corresponding accounting/delivery flag false. Its infrastructure section says
 must be attached separately before a real run is assessed.
 
 ```sh
-.venv/bin/python -m scripts.evaluation.k6.comparison_report path/to/raw.ndjson --output path/to/new-report.json
+.venv/bin/python -m scripts.evaluation.k6.comparison_report path/to/raw.ndjson --condition low --output path/to/new-report.json
 ```
 
-The output path must not already exist. Raw k6 JSON stays unchanged; incomplete
+Select the condition recorded for that run (`low`, `normal` or `burst`). The
+CLI rejects mixed-condition or missing-phase tracked metrics. The output path
+must not already exist. Raw k6 JSON stays unchanged; incomplete
 or dropped delivery still writes a report but exits nonzero.
 The per-run manifest requires different raw-output and derived-report references.
 If a calculation needs correction, preserve the original report and write a new

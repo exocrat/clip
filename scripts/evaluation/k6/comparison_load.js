@@ -26,7 +26,7 @@ const outcomes = new Counter('clip_comparison_outcomes');
 const elapsed = new Trend('clip_comparison_elapsed_ms', true);
 const invalidClock = new Counter('clip_comparison_clock_invalid');
 export const options = {
-  scenarios: comparisonScenarios(profile.capacity),
+  scenarios: comparisonScenarios(profile.capacity, __ENV.CLIP_COMPARISON_LOCAL_CONDITION),
   maxRedirects: 0,
   summaryTrendStats: ['med', 'p(95)', 'p(99)'],
   systemTags: ['scenario', 'status', 'method', 'error_code'],

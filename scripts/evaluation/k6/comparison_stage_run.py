@@ -68,10 +68,13 @@ def stage_run(
     if not checked["profile_hash_checked"]:
         raise ValueError("profile_hash_required")
     pairs = plan["cycles"][cycle - 1]["pairs"]
-    if (
-        sum(run_id == pair[f"{side}_run_id"] for pair in pairs for side in ("A", "B"))
-        != 1
-    ):
+    matches = [
+        pair
+        for pair in pairs
+        for side in ("A", "B")
+        if run_id == pair[f"{side}_run_id"]
+    ]
+    if len(matches) != 1:
         raise ValueError("run_not_in_selected_cycle")
     module_bytes = {name: _read_local(source_dir / name) for name in MODULES}
     for name, content in module_bytes.items():
@@ -104,6 +107,7 @@ def stage_run(
     record: dict[str, Any] = {
         "run_id": run_id,
         "cycle": cycle,
+        "condition": matches[0]["condition"],
         "files": {
             name: hashlib.sha256(content).hexdigest()
             for name, content in sorted(files.items())

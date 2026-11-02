@@ -12,6 +12,7 @@ import json
 import math
 from pathlib import Path
 import sys
+from typing import Any
 
 ROOT = Path(__file__).resolve().parents[3]
 PROFILE = ROOT / "data/evaluation/workloads/ecs-lambda-comparison-schedule-v1.json"
@@ -38,15 +39,23 @@ def quantile(values: list[float], probability: float) -> float | None:
     return ordered[lower] + (ordered[upper] - ordered[lower]) * (index - lower)
 
 
-def expected_cohorts(profile: dict) -> dict[str, int]:
+def expected_cohorts(
+    profile: dict[str, Any], condition: str | None = None
+) -> dict[str, int]:
     """Translate the approved per-second rates into scheduled iterations."""
+    if condition is not None and condition not in {"low", "normal", "burst"}:
+        raise ValueError("Invalid condition")
     expected = {}
-    for condition in profile["conditions"]:
+    matched = 0
+    for item in profile["conditions"]:
+        if condition is not None and item["name"] != condition:
+            continue
+        matched += 1
         for cohort, duration, rate_key in (
             ("warmup", profile["warmup_seconds"], "warmup_rate"),
             ("measured", profile["measured_seconds"], "measured_rate"),
         ):
-            count = condition[rate_key] * duration
+            count = item[rate_key] * duration
             if (
                 not isinstance(count, (int, float))
                 or isinstance(count, bool)
@@ -57,16 +66,18 @@ def expected_cohorts(profile: dict) -> dict[str, int]:
                 raise ValueError(
                     "Cohort schedule must produce a positive integer request count"
                 )
-            expected[f"{condition['name']}_{cohort}"] = int(count)
+            expected[f"{item['name']}_{cohort}"] = int(count)
+    if condition is not None and matched != 1:
+        raise ValueError("Missing or duplicate condition")
     return expected
 
 
-def _tags(point: dict) -> dict:
+def _tags(point: dict[str, Any]) -> dict[str, Any]:
     tags = point.get("data", {}).get("tags") or {}
     return tags if isinstance(tags, dict) else {}
 
 
-def _number(point: dict) -> float:
+def _number(point: dict[str, Any]) -> float:
     value = point.get("data", {}).get("value")
     if (
         isinstance(value, bool)
@@ -78,17 +89,19 @@ def _number(point: dict) -> float:
     return float(value)
 
 
-def _count(point: dict) -> int:
+def _count(point: dict[str, Any]) -> int:
     value = _number(point)
     if not value.is_integer():
         raise ValueError("Counter metric must be an integer")
     return int(value)
 
 
-def summarize_points(points: list[dict], profile: dict) -> dict:
+def summarize_points(
+    points: list[dict[str, Any]], profile: dict[str, Any], condition: str | None = None
+) -> dict[str, Any]:
     """Summarize route and phase counters without changing or copying raw data."""
-    expected = expected_cohorts(profile)
-    phases = {
+    expected = expected_cohorts(profile, condition)
+    phases: dict[str, dict[str, Any]] = {
         name: {
             "scheduled": count,
             "issued": 0,
@@ -109,7 +122,17 @@ def summarize_points(points: list[dict], profile: dict) -> dict:
         }
         for name, count in expected.items()
     }
-    scenario_to_phase = {name: name for name in expected}
+    scenario_to_phase: dict[Any, str] = {
+        name: name for name in expected_cohorts(profile)
+    }
+    tracked_metrics = {
+        "clip_comparison_issued",
+        "http_reqs",
+        "dropped_iterations",
+        "clip_comparison_clock_invalid",
+        "clip_comparison_outcomes",
+        "clip_comparison_elapsed_ms",
+    }
     for point in points:
         if point.get("type") != "Point":
             continue
@@ -117,7 +140,18 @@ def summarize_points(points: list[dict], profile: dict) -> dict:
         tags = _tags(point)
         phase = tags.get("phase")
         scenario = tags.get("scenario")
-        if metric == "dropped_iterations":
+        if condition is not None and metric in tracked_metrics:
+            if scenario is not None and scenario not in scenario_to_phase:
+                raise ValueError("Invalid scenario in run output")
+            if phase is not None and scenario is not None and phase != scenario:
+                raise ValueError("Scenario and phase mismatch")
+            if metric == "dropped_iterations":
+                phase = scenario_to_phase.get(scenario, phase)
+            if phase not in scenario_to_phase:
+                raise ValueError("Missing or invalid phase in run output")
+            if phase not in phases:
+                raise ValueError("Unexpected condition in run output")
+        elif metric == "dropped_iterations":
             phase = scenario_to_phase.get(scenario, phase)
         if phase not in phases:
             continue
@@ -238,6 +272,7 @@ def summarize_points(points: list[dict], profile: dict) -> dict:
     delivery_complete = all(item["delivery_complete"] for item in result.values())
     return {
         "preview_only": True,
+        "selected_condition": condition,
         "nfr_accepted": False,
         "accounting_complete": accounting_complete,
         "delivery_complete": delivery_complete,
@@ -260,21 +295,23 @@ def summarize_points(points: list[dict], profile: dict) -> dict:
     }
 
 
-def _quantiles(values: list[float]) -> dict:
+def _quantiles(values: list[float]) -> dict[str, Any]:
     return {
         f"p{percentile}_ms": quantile(values, percentile / 100)
         for percentile in (50, 95, 99)
     } | {"samples": len(values)}
 
 
-def summarize_file(raw_path: Path, profile_path: Path = PROFILE) -> dict:
+def summarize_file(
+    raw_path: Path, profile_path: Path = PROFILE, condition: str | None = None
+) -> dict[str, Any]:
     if raw_path.stat().st_size > MAX_RAW_BYTES:
         raise ValueError("k6 raw output exceeds size limit")
     profile = json.loads(profile_path.read_text())
     points = [
         json.loads(line) for line in raw_path.read_text().splitlines() if line.strip()
     ]
-    return summarize_points(points, profile)
+    return summarize_points(points, profile, condition)
 
 
 def main() -> None:
@@ -283,9 +320,12 @@ def main() -> None:
     parser.add_argument(
         "--output", type=Path, help="new report path; refuses overwrite"
     )
+    parser.add_argument(
+        "--condition", choices=("low", "normal", "burst"), required=True
+    )
     args = parser.parse_args()
     try:
-        report = summarize_file(args.raw)
+        report = summarize_file(args.raw, condition=args.condition)
         rendered = json.dumps(report, indent=2, sort_keys=True) + "\n"
         if args.output:
             with args.output.open("x") as stream:

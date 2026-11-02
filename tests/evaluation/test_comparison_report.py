@@ -117,6 +117,64 @@ class ComparisonReportTests(unittest.TestCase):
                 self.profile,
             )
 
+    def test_one_condition_does_not_require_other_conditions_and_rejects_mixed_output(
+        self,
+    ):
+        points = []
+        for phase in ("low_warmup", "low_measured"):
+            for metric in ("clip_comparison_issued", "http_reqs"):
+                points.append(point(metric, 1, phase=phase, kind="browse"))
+            points.append(
+                point(
+                    "clip_comparison_outcomes",
+                    1,
+                    phase=phase,
+                    kind="browse",
+                    outcome="correct",
+                )
+            )
+            points.append(
+                point(
+                    "clip_comparison_elapsed_ms",
+                    37,
+                    phase=phase,
+                    kind="browse",
+                    outcome="correct",
+                )
+            )
+        report = summarize_points(points, self.profile, "low")
+        self.assertEqual(set(report["client_metrics"]), {"low_warmup", "low_measured"})
+        self.assertTrue(report["accounting_complete"])
+        self.assertTrue(report["delivery_complete"])
+        self.assertEqual(report["selected_condition"], "low")
+        with self.assertRaisesRegex(ValueError, "Unexpected condition"):
+            summarize_points(
+                points + [point("http_reqs", 1, phase="burst_measured")],
+                self.profile,
+                "low",
+            )
+        with self.assertRaisesRegex(ValueError, "Missing or invalid phase"):
+            summarize_points(points + [point("http_reqs", 1)], self.profile, "low")
+        with self.assertRaisesRegex(ValueError, "Scenario and phase mismatch"):
+            summarize_points(
+                points
+                + [
+                    point(
+                        "http_reqs", 1, phase="low_measured", scenario="normal_measured"
+                    )
+                ],
+                self.profile,
+                "low",
+            )
+        with self.assertRaisesRegex(ValueError, "Invalid condition"):
+            summarize_points([], self.profile, "all")
+        duplicated = {
+            **self.profile,
+            "conditions": self.profile["conditions"] + [self.profile["conditions"][0]],
+        }
+        with self.assertRaisesRegex(ValueError, "Missing or duplicate condition"):
+            summarize_points([], duplicated, "low")
+
     def test_cli_keeps_raw_immutable_and_refuses_to_replace_derived_report(self):
         with tempfile.TemporaryDirectory() as directory:
             raw_path = Path(directory) / "raw.ndjson"
@@ -132,6 +190,8 @@ class ComparisonReportTests(unittest.TestCase):
                 "-m",
                 "scripts.evaluation.k6.comparison_report",
                 str(raw_path),
+                "--condition",
+                "low",
                 "--output",
                 str(report_path),
             ]

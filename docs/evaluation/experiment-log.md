@@ -36,7 +36,10 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
   corpus binding and 18-run pair plan together, including matching dataset and
   corpus fingerprints. It does not obtain credentials, send requests or
   authorize measurement, and has not yet been wired into a real-target runner.
-- The local workload now accepts one case-sequence start per traffic condition.
+- Each local workload invocation now requires one condition and schedules only
+  its warm-up and measured cohorts; staging records the selected planned condition
+  and the report CLI requires it. The local workload also accepts one
+  case-sequence start per traffic condition.
   The offline preflight can compare a supplied profile's starts and cases with
   a selected cycle of the paired plan. The user approved the seeded rotation
   rule; the actual seed remains open, and a future real-target runner must
@@ -75,6 +78,44 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 - **Measurements:** No ECS/Lambda comparison or final NFR run is recorded here.
 
 ## History
+
+### 2026-11-02 11:06:55 UTC — EXP-02 per-condition workload correction
+
+**Direction:** User verified fixing the mismatch between one-condition planned
+runs and the script that scheduled all three conditions in every invocation.
+Only synthetic inputs and `k6 inspect` were used; no workload, request, session,
+cloud, database or external-service call was made.
+
+**Finding and change:** The paired plan contains 18 run IDs, each for one
+condition, but the workload previously constructed all six warm-up/measurement
+scenarios in each invocation. Connecting those as-is could schedule three times
+as many condition workloads. `comparison_schedule.js` now requires one selected
+condition and returns exactly its warm-up and measurement scenarios; the load
+script obtains it from `CLIP_COMPARISON_LOCAL_CONDITION`. Low and normal measured
+arrivals start after the warm-up drain; burst begins its higher rate immediately.
+Rates, mix, 60-second warm-up, 300-second measurement, five-second drain and
+zero retries remain unchanged. The staging record derives the condition from the
+planned run ID. The report CLI now requires a condition and rejects tracked
+metrics with missing, conflicting or other-condition tags; it does not require
+unrun conditions to have arrivals. Synthetic report and staging tests were
+updated. Historical all-condition in-process report use remains available for
+previous synthetic previews, not the per-run CLI.
+
+**Checks:** 96 focused Python tests passed, plus a staging-specific rerun; four
+Node test files passed, as did strict Mypy for the changed Python helpers,
+in-process Black formatting and whitespace checks. k6
+v2.3.0 `inspect` confirmed exactly two scenarios for each of low, normal and
+burst and refusal when the condition is missing. An initial inspect assertion
+expected `60s`/`65s`; k6 renders the same durations as `1m0s`/`1m5s`, so the
+test was corrected and passed. Node was v26.8.2; project-pinned Node 24 remains
+a separate check. No `k6 run` occurred.
+
+**Limits:** Local staging and condition selection do not yet prove a future
+real runner passes the staged condition or executes those bytes. The account,
+timing, reviewed references, module-hash approval, deployed parity, telemetry,
+run approval and owner review gates remain open. This change does not establish
+measurement or NFR acceptance. Result awaits user verification.
+
 
 ### 2026-11-02 10:49:59 UTC — EXP-02 staged run files
 
