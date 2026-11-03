@@ -1,0 +1,24 @@
+{
+  "format_version": 1,
+  "run_id": null,
+  "clock": {
+    "source": null,
+    "monotonic_verified": false,
+    "evidence_reference": null
+  },
+  "generator": {
+    "peak_cpu_percent": null,
+    "approved_cpu_limit_percent": null,
+    "peak_rss_bytes": null,
+    "approved_rss_limit_bytes": null,
+    "peak_vus": null,
+    "approved_max_vus": null,
+    "dropped_iterations": null
+  },
+  "artifacts": {
+    "ecs": {"reference": null, "sha256": null, "window_start_utc": null, "window_end_utc": null},
+    "lambda": {"reference": null, "sha256": null, "window_start_utc": null, "window_end_utc": null},
+    "postgres": {"reference": null, "sha256": null, "window_start_utc": null, "window_end_utc": null},
+    "generator": {"reference": null, "sha256": null, "window_start_utc": null, "window_end_utc": null}
+  }
+}

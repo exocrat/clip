@@ -32,6 +32,7 @@ The early architecture experiment design is in
 [`ecs-only-vs-ecs-lambda-task-list.md`](ecs-only-vs-ecs-lambda-task-list.md);
 its required method is in the
 [`experiment-definition guidelines`](ecs-lambda-experiment-guidelines.md).
+Progress and decisions are summarized in the [experiment log](experiment-log.md).
 The [reference dataset recipe](../../data/evaluation/reference-dataset-design.md)
 and [NFR measurement procedures](nfr/measurement-design.md) are design inputs,
 not generated data or measured results.
@@ -43,6 +44,10 @@ is `data/evaluation/query-labels.json`). Each owning task registers the exact
 tool command in `docs/environment/commands.md` and the profile path. Per-run manifests and
 results stay in the NFR evidence home above; measured values must not be
 silently substituted by a static workload profile.
+
+EXP-02's fixed schedule and per-run evidence template are in
+`data/evaluation/workloads/`; validate a template or completed capture with the
+manifest command in the [k6 tool guide](../../scripts/evaluation/k6/README.md).
 
 Before every measurement create a manifest with actual values: task/NFR/run ID and owner; source/build/image/frontend/migration/configuration fingerprints; target account/role/region/resources/deployed path; generator seed/counts/labels/data fingerprint; exact commands/tools/version; workload/routes/request distribution/success checks; timing boundary/clock method/warm-up/measured duration/sample/repetition/run order/cold-warm policy; offered-rate/timeout/failure/drop handling; resource/concurrency/duration/cost caps and stop thresholds; human-approved version; telemetry/evidence outputs; rollback/cleanup/retention. Unknown consequential values require a question before the run. Register the command/tool creator task explicitly.
 

@@ -17,6 +17,14 @@ DOMAINS = frozenset({"identity", "listings", "search", "conversations"})
 # The ASGI composition root wires reviewed Identity HTTP bindings, Listings
 # implementation modules and Conversations public declarations. Keep imports exact.
 COMPOSITION_IMPORTS: dict[str, frozenset[str]] = {
+    # EXP-03's explicit session-only entry point; no general Identity access.
+    "apps/api/app/lambda_main.py": frozenset(
+        {
+            "app.domains.identity.runtime_configuration",
+            "app.domains.identity.runtime_configuration.prepare_hosted_test_identity_reads",
+            "app.domains.identity.runtime_configuration.load_lambda_settings",
+        }
+    ),
     "apps/api/app/main.py": frozenset(
         {
             "app.domains.identity.runtime_configuration",
@@ -34,7 +42,9 @@ COMPOSITION_IMPORTS: dict[str, frozenset[str]] = {
             "app.domains.conversations.notifications.runtime.notification_runtime",
             "app.domains.identity.http",
             "app.domains.identity.http.IdentityHttpDependencies",
+            "app.domains.identity.http.IdentityReadDependencies",
             "app.domains.identity.http.install_identity_http",
+            "app.domains.identity.http.install_identity_reads",
             "app.domains.search.saved_routes",
             "app.domains.search.saved_routes.router",
             "app.domains.search.saved_store",

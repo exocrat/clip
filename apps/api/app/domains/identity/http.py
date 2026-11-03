@@ -255,6 +255,44 @@ def create_identity_app(
 
 
 @dataclass(frozen=True)
+class IdentityReadDependencies:
+    """Existing real session validator and browser policy, without issuance ports.
+
+    Trusted composition supplies these explicitly. No sender, Microsoft validator,
+    login route or secret discovery is needed to authenticate an existing cookie.
+    """
+
+    sessions: IdentitySessions = field(repr=False)
+    policy: BrowserPolicy
+
+    def __post_init__(self) -> None:
+        """Reject incomplete bindings before middleware or routes are installed."""
+        if not isinstance(self.sessions, IdentitySessions) or not isinstance(
+            self.policy, BrowserPolicy
+        ):
+            raise ValueError("Complete trusted Identity read dependencies required")
+
+
+def install_identity_reads(app: FastAPI, runtime: IdentityReadDependencies) -> None:
+    """Reuse the session/browser boundary without mounting any Identity routes.
+
+    Authentication still checks current SQL session/account state and updates the
+    existing idle timestamp. This is a read-route surface, not read-only SQL.
+    Call once from trusted composition before startup; installation performs no I/O.
+    """
+    if not isinstance(runtime, IdentityReadDependencies):
+        raise ValueError("Complete trusted Identity read dependencies required")
+    if getattr(app.state, "identity_http_installed", False) or getattr(
+        app.state, "identity_reads_installed", False
+    ):
+        raise ValueError("Identity HTTP already installed")
+    app.add_middleware(
+        IdentityBrowserMiddleware, sessions=runtime.sessions, policy=runtime.policy
+    )
+    app.state.identity_reads_installed = True
+
+
+@dataclass(frozen=True)
 class IdentityHttpDependencies:
     """Explicit trusted bindings, not an environment switch or auth credential.
 
@@ -295,7 +333,9 @@ def install_identity_http(
     """
     if not isinstance(runtime, IdentityHttpDependencies):
         raise ValueError("Complete trusted Identity dependencies required")
-    if getattr(app.state, "identity_http_installed", False):
+    if getattr(app.state, "identity_http_installed", False) or getattr(
+        app.state, "identity_reads_installed", False
+    ):
         raise ValueError("Identity HTTP already installed")
     if path_prefix not in ("", "/api"):
         raise ValueError("Unsupported Identity API prefix")

@@ -1,0 +1,93 @@
+{
+  "schema_version": 3,
+  "manifest_kind": "ecs-lambda-run-capture",
+  "manifest_state": "template",
+  "measurement_state": "record_only_not_authorization",
+  "run": {
+    "run_id": null,
+    "configuration": null,
+    "condition": null,
+    "repetition": null,
+    "owner_role": null,
+    "planned_start_utc": null,
+    "actual_start_utc": null,
+    "actual_end_utc": null
+  },
+  "target": {
+    "account_id": null,
+    "role_arn": null,
+    "region": null,
+    "environment_id": null,
+    "entrypoint_reference": null,
+    "resource_ids": [],
+    "resource_configuration_sha256": null
+  },
+  "revisions": {
+    "application_revision": null,
+    "image_digest": null,
+    "frontend_revision": null,
+    "migration_head": null,
+    "api_contract_sha256": null
+  },
+  "dataset": {
+    "seed": null,
+    "user_count": null,
+    "listing_count": null,
+    "logical_fingerprint": null,
+    "index_fingerprint": null,
+    "database_settings_sha256": null
+  },
+  "workload": {
+    "profile_path": "data/evaluation/workloads/ecs-lambda-comparison-schedule-v1.json",
+    "profile_sha256": null,
+    "execution_profile_reference": null,
+    "execution_profile_sha256": null,
+    "case_corpus_path": null,
+    "case_corpus_sha256": null,
+    "generator": "k6",
+    "generator_version": null,
+    "load_script_sha256": null,
+    "run_command_reference": null,
+    "rotation_rule": "increment-one-per-pair-v1",
+    "rotation_seed": null,
+    "sequence_start": null,
+    "request_mix_per_ten": { "browse": 5, "search": 3, "detail": 2 },
+    "warmup_seconds": 60,
+    "measured_seconds": 300,
+    "maximum_drain_seconds": 5,
+    "timeout_seconds": 5,
+    "retries": 0
+  },
+  "resource_telemetry": {
+    "ecs_artifact_reference": null,
+    "ecs_artifact_sha256": null,
+    "lambda_artifact_reference": null,
+    "lambda_artifact_sha256": null,
+    "postgres_artifact_reference": null,
+    "postgres_artifact_sha256": null,
+    "generator_artifact_reference": null,
+    "generator_artifact_sha256": null
+  },
+  "cost_inputs": {
+    "source_reference": null,
+    "source_sha256": null,
+    "interval_start_utc": null,
+    "interval_end_utc": null,
+    "currency": "USD",
+    "amount_before_credits": null,
+    "billing_delay_note": null
+  },
+  "evidence": {
+    "raw_output_reference": null,
+    "raw_output_sha256": null,
+    "derived_report_reference": null,
+    "derived_report_sha256": null,
+    "approval_record_reference": null,
+    "cleanup_record_reference": null
+  },
+  "privacy": {
+    "credentials_excluded": true,
+    "real_personal_data_excluded": true,
+    "private_message_content_excluded": true
+  }
+}

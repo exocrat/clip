@@ -1,0 +1,19 @@
+# Add the reviewed AWS Lambda Web Adapter to the existing Hybrid API image.
+# Supply the Lambda Web Adapter image digest from the reviewed artifact record;
+# the digest is required so a mutable tag cannot silently select new code.
+ARG API_IMAGE
+ARG LWA_IMAGE=public.ecr.aws/awsguru/aws-lambda-adapter:1.1.0
+ARG LWA_DIGEST
+
+FROM ${LWA_IMAGE}@sha256:${LWA_DIGEST} AS lambda-web-adapter
+FROM ${API_IMAGE} AS lambda-api
+
+COPY --from=lambda-web-adapter --chmod=0755 /lambda-adapter /opt/extensions/lambda-adapter
+
+# The inherited API image starts Uvicorn on port 8000. The readiness URL is a
+# liveness check only; it does not prove database, Hybrid, or identity parity.
+ENV AWS_LWA_PORT=8000 \
+    AWS_LWA_READINESS_CHECK_PATH=/health
+
+# Use the restricted app composition; normal ECS keeps app.main:app.
+CMD ["uvicorn", "app.lambda_main:app", "--app-dir", "apps/api", "--host", "0.0.0.0", "--port", "8000", "--no-access-log"]

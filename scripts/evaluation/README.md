@@ -89,3 +89,34 @@ The immutable Step5label binding's earlier acceptance flags remain historical;
 follow the release and later explicitly recorded acceptance rather than editing
 old manifests. Run commands/limitations and reviewer handoff are in the
 [task-wide review](../../docs/evaluation/domain/next-06/task-wide-review.md).
+
+# NFR-05 offline outcome preview
+
+`nfr05_report.py` reads a local JSON object containing only `samples`: up to 60
+records with unique integer `index` values 0–59, `outcome` (`displayed`,
+`failed`, or `undisplayed`), `submitted_ns`, and `displayed_ns`. Times are
+nonnegative integer nanoseconds from the same host monotonic clock; displayed
+records require both times, other outcomes require `displayed_ns: null`, and a
+failure before submission may also use `submitted_ns: null`. Do not include
+message content, ciphertext, account identifiers or credentials. For example:
+
+```json
+{"samples":[{"index":0,"outcome":"displayed","submitted_ns":0,"displayed_ns":5000000000}]}
+```
+
+This incomplete example is refused as a passing preview because 59 outcomes are
+missing. Run `python -m scripts.evaluation.nfr05_report observations.json` to
+print aggregate counts. At least 57 of all 60 must be displayed within five
+seconds, and all outcomes must be present. `threshold_met_if_valid` is only
+arithmetic; clock, browser-display events, background load, privacy and all
+other NFR-05 gates still need real evidence and review. The tool cannot run a
+workload or assert an NFR pass.
+
+`nfr05_events.collect` is an in-memory adapter for simulated events with only
+`index`, `event` and `time_ns`. It accepts a submission followed by an explicit
+displayed, failed or undisplayed outcome; a failure may occur before submission.
+An undisplayed outcome cannot be recorded before the five-second deadline and
+is final, so the eventual real observer must wait until its observation window
+ends before emitting it. A submission without a final outcome remains missing.
+Server receipt is not display. The adapter checks ordering and rejects extra
+fields, but does not observe a browser or verify events or timestamps.

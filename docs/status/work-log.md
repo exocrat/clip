@@ -1,5 +1,1009 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### EXP-03 bounded router integration — 2026-11-03 05:23:09 UTC
+
+Wired the per-process bounded invoker into the explicit test router and app
+lifespan. Router-capacity 503 is separate from AWS throttle fallback; deadline
+failure is not retried. The synthetic suite passed 158 tests plus mypy,
+Black and boundary checks. Runtime sizing, trusted ingress, telemetry export,
+Terraform and real integration remain open. No AWS action.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 bounded invocation preparation — 2026-11-03 05:20:44 UTC
+
+Prepared an unwired per-process invocation bound that keeps slots until timed-out
+or cancelled worker threads actually finish; 156 synthetic tests, mypy and Black
+passed. Router/lifecycle integration, actual sizing and AWS/DB limits remain
+open. No AWS action. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 explicit hosted-test composition — 2026-11-03 05:16:46 UTC
+
+The app factory can now install overflow only with explicit hosted-test Identity
+and same-run no-retry dependencies; normal startup stays unchanged. Logging
+wraps the router and ECS fallback retains Identity. The 16-file synthetic suite
+passed 149 tests plus mypy/Black. Runtime client, trusted ingress, deadlines,
+telemetry, Terraform and real integration remain open; no AWS action.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 Lambda client config preparation — 2026-11-03 05:14:41 UTC
+
+Prepared an unwired SDK config with explicit timeouts, pool size and no retries;
+145 local tests and mypy/Black passed. Socket timeouts do not provide a total
+deadline or concurrency cap. Runtime wiring and real checks remain open; no
+AWS action. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 broader Lambda regression — 2026-11-03 05:11:55 UTC
+
+The combined 14-file local Lambda, ALB and overflow regression passed 133
+synthetic tests. Middleware installation and real integration remain open; no
+AWS action. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 local overflow counters — 2026-11-03 05:10:45 UTC
+
+Added non-sensitive process-local routing counts; 92 synthetic tests and
+mypy/Black passed. Counts do not measure correct completions and still need a
+reviewed exporter/aggregation. Middleware is uninstalled, B remains blocked,
+and no AWS action occurred. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 local overflow middleware — 2026-11-03 05:09:02 UTC
+
+Implemented unwired ASGI routing for selected reads and throttle-only ECS
+fallback; 91 synthetic middleware/Identity/transport tests, mypy and Black
+passed. Trusted ingress, bounded client/concurrency, telemetry, app installation,
+Terraform review and real parity remain open; B stays blocked. No AWS action.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 synthetic overflow app chain — 2026-11-03 05:02:35 UTC
+
+Tested Lambda-first and throttled-fallback decisions against the real local
+read route/Identity middleware with fake SDK, bridge, session and store: 81
+combined tests passed. Actual ECS wiring, independent deployed parity and real
+integrations remain open. No AWS action. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 isolated Identity adapter probe — 2026-11-03 04:59:56 UTC
+
+Cached Lambda Web Adapter, Uvicorn and Identity middleware processed a synthetic
+session with HTTPS (200) and rejected HTTP (403) in a network-none container.
+After fixing the fake async bindings, cleanup was verified. Real sessions,
+ALB trust, current image and deployed parity remain open. No AWS action.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 offline real adapter probe — 2026-11-03 04:54:44 UTC
+
+The cached Lambda Web Adapter processed a synthetic ALB event in a network-none
+temporary container: HTTPS/header, cookie and repeated-query handoff plus a 200
+response were observed. Initial missing-runtime-setting failures were corrected;
+the named container was confirmed removed. This is not real Uvicorn/Identity,
+ALB, IAM or deployed parity. No AWS action. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 local HTTPS handoff preparation — 2026-11-03 04:50:32 UTC
+
+Added an unwired local helper that removes forwarding claims and binds a checked
+HTTPS scheme/project host; 77 synthetic overflow/Identity tests passed. It does
+not authenticate the ingress or prove real adapter behavior; both remain gates.
+Local Docker image inventory only, no AWS action. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 overflow protocol hardening — 2026-11-03 04:47:52 UTC
+
+Local event/response helpers now refuse ambiguous interleaved queries, duplicate
+JSON keys and unsafe controls; 50 synthetic tests and mypy/Black passed. Current
+builder rejects ALB forwarding headers, so trusted HTTPS/host handling and a
+real Web Adapter check are still mandatory before wiring. No AWS action.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 synthetic overflow chain — 2026-11-03 04:44:30 UTC
+
+Composed the local event, SDK, synthetic ASGI and fallback components; 46
+synthetic tests passed with local escalation after a sandboxed run stalled.
+This does not prove real HTTPS, Identity, Web Adapter or deployed parity; B
+remains blocked. No AWS action. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 synthetic Lambda response parser — 2026-11-03 04:42:25 UTC
+
+Prepared an unwired bounded ALB response parser, preserving status and repeated
+headers with safe content-length handling. Forty-five synthetic tests and
+mypy/Black passed. Real adapter, authentication and app integration remain open;
+no AWS action. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 synthetic Lambda event builder — 2026-11-03 04:40:44 UTC
+
+Added an unwired selected-read event builder and synthetic tests for repeated
+inputs and unsafe-header refusal. Thirty-six local tests, mypy and Black passed.
+Trusted ingress, real Web Adapter conversion and authentication remain open;
+no cloud action occurred. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 Lambda Invoke adapter — 2026-11-03 04:38:52 UTC
+
+Prepared an unwired, bounded synchronous SDK adapter with no retries and safe
+throttle classification. Nineteen synthetic tests plus mypy/Black passed. Real
+event conversion, authentication, timeouts, integration and deployment remain
+open; no AWS request was made. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 overflow rejection classifier — 2026-11-03 04:36:51 UTC
+
+Prepared an offline, redacted classifier for Lambda Invoke throttling errors;
+nine synthetic policy/classifier tests and mypy/Black checks passed. No client,
+app wiring or deployed request exists; transport and real checks remain open.
+See the [experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 overflow policy — 2026-11-03 04:35:00 UTC
+
+User accepted the ECS-hosted Lambda-first router recommendation. Added an
+offline injected-callable policy: only a confirmed capacity rejection invokes
+ECS; other errors propagate. Four synthetic tests, strict mypy and individual
+Black checks passed. No transport or app integration exists; B stays blocked.
+See the [experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 Lambda-first overflow direction — 2026-11-03 03:07:09 UTC
+
+User selected Lambda-first reads with ECS overflow at Lambda capacity. The old
+direct-Lambda B Terraform configuration is now blocked until the overflow
+mechanism is implemented and reviewed. Update comparison and evidence design;
+capacity, fallback and live verification remain open. No AWS action. See the
+[experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 opt-in Terraform draft — 2026-11-02 19:56:04 UTC
+
+Prepared a disabled-by-default Lambda and HTTPS ALB draft in the shared test
+root, with A/B route configuration and bounded declared inputs. Eighteen mock
+Terraform tests and seven synthetic proxy tests passed. This is local evidence,
+not a deployment or proof of live permissions and network behavior. AWS
+read-only inventory and public pricing were inspected; no resources were
+created, started, changed or deleted. An exact plan, independent review,
+interruption-safe cleanup and explicit live approval remain open. See the
+[detailed experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 Lambda access log control — 2026-11-02 19:36:53 UTC
+
+Lambda image now disables Uvicorn access logs; 15 focused tests passed.
+Adapter/service logging still needs review. No image build or AWS action.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 Lambda read-only settings — 2026-11-02 19:35:40 UTC
+
+The explicit Lambda read-only settings reject email/recipients and unrelated
+workers instead of requiring an unused recipient; ordinary ECS controls remain.
+112 focused synthetic tests passed. Actual Identity review, deployment and
+real session/DB checks remain. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 Lambda database bootstrap — 2026-11-02 19:32:53 UTC
+
+Rahul owns Terraform per user direction. Lambda-only guarded startup can load
+the fixed Listings SecureString in memory after test configuration validation;
+108 focused synthetic tests and boundaries pass. AWS metadata confirms the
+three required parameter names are SecureString version 1; no values read and
+no resources changed. Live IAM, database/session checks and exact approved
+deployment plan remain open. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 image revision declaration guard — 2026-11-02 19:23:06 UTC
+
+The local image builder now requires a full OCI revision label matching the
+Hybrid tag and carries it to the output. Five fake-Docker tests and shell syntax
+passed; a label is a declaration, not proof of image contents. No real build or
+AWS action. EXP-02 parity work remains on its own branch.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 local image builder and Terraform ownership review — 2026-11-02 18:42:57 UTC
+
+Added and registered a network-disabled, local-only Lambda image builder that
+refuses non-local Docker contexts, missing pinned local inputs and existing
+output tags. Shell syntax/help passed; the existing output tag was refused
+before any build. Terraform review found shared test resources belong to the
+PD-16 integration owner, with no Lambda root/interface assigned; no Terraform
+was added. No AWS call, image build, workload or measurement occurred. See the
+[detailed experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 corpus gate and EXP-03 proxy policy check — 2026-11-02 18:37:36 UTC
+
+User directed that no AWS work be done; this checkpoint was local-only. EXP-02
+`k6 inspect` correctly refuses the ten-case corpus while the three independently
+reviewed Hybrid ordered expected responses are missing; no cookie or request was
+used. Four Node 24.22.0 test files passed. EXP-03 added synthetic ASGI coverage
+for Uvicorn's trusted-peer HTTPS scheme policy; the focused Identity/read-app/
+boundary suite passed 98 tests, and pinned Black plus `git diff --check` passed.
+This does not prove Lambda Web Adapter conversion, ALB trust, real SQL/session or
+deployed parity. No AWS call/resource change, workload, or measurement occurred.
+See the [detailed experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 local images and user planning direction — 2026-11-02 18:28:38 UTC
+
+User authorizes autonomous local work and local commits, and confirmed Rahul's
+project profile/account/region, one temporary account for the comparison, public
+HTTPS ALB without client-IP allowlist, $5–10 credits, pilot intent, and stopping
+if the deployed dataset is missing. Use $5 as conservative planning ceiling;
+account/protocol owner review and a concrete AWS plan approval remain required.
+STS verified the selected account/non-root principal; no resources were changed.
+Locally built API, Hybrid and Lambda AMD64 images from `8a60f83`; pinned model
+hashes matched, one offline inference passed, and credential-free isolated Lambda
+app startup/health/missing-session denial passed with Hybrid disabled. First smoke
+failed safely on inherited Hybrid paths; corrected test setup passed. Docker build
+warnings and retained local image IDs are recorded in the experiment log. No
+deployed API, database, real session, Lambda Runtime adapter, load or NFR result.
+Real integration, DB capacity, AWS inventory/plan and independent review remain.
+[Detailed experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 packaging stopped at local checkpoint — 2026-11-02 18:06:34 UTC
+
+User approved public build inputs/parallel work, then directed stopping and
+committing all current source changes locally. Four required public images were
+pulled; their observed digests are retained in the experiment log. Parallel
+packaging audit identified the missing Lambda Docker context guard; added a
+deny-all Dockerfile-specific ignore file. No image build/startup occurred and no
+new parallel test result is claimed. Earlier 135 focused tests, static checks,
+contract check and source secret scan remain the recorded evidence. Packaging,
+real integration, later steps and independent review remain open; no cloud or
+workload action. [Detailed checkpoint](../evaluation/experiment-log.md).
+
+### EXP-03 local contract and privacy checks — 2026-11-02 17:38:25 UTC
+
+User verified the wheel preparation. Reused retained Node 24.22.0 from the
+existing temporary tool tree; generated-contract check passed for all eight
+artifacts. Approved read-only Docker cache inspection worked with escalation;
+needed build images/adapter are not cached. Cached Gitleaks 8.30.1 passed the
+source snapshot scan in a local network-disabled container. No system/tool
+installation, generated-file change, image download, application request or
+cloud action occurred. Image/locked dependency retrieval during packaging needs
+an explicit external-service exception; image/startup and real integration gates
+remain open. [Detailed experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 wheel build context ready — 2026-11-02 17:35:56 UTC
+
+User approved the explicit public-PyPI/pip-only exception. Downloaded all 24
+locked Linux wheels (51,910,303 bytes), independently verified names/versions,
+SHA-256 and ZIP integrity, and successfully installed them offline into a fresh
+disposable Python 3.13 venv; `pip check` passed. Initial protobuf selection was
+correctly hash-rejected; adding the omitted compatible `manylinux2014` platform
+selected the existing locked hash without changing pins. Updated the deployment
+handoff with the exact command and corrected platform list, package design and
+[experiment log](../evaluation/experiment-log.md). Existing venvs/system packages
+unchanged; no inference, API workload or cloud action. Result awaits verification;
+adapter digest/image, Node 24, Docker access and real package/runtime gates remain.
+
+### EXP-03 pip-only dependency readiness — 2026-11-02 17:33:16 UTC
+
+User identifies this workstation as Arch and directs pip-only Python installs
+inside a venv. Offline pip confirms all 24 frozen helper versions already exist
+in `.tools/semantic/venv` (Python 3.13.12); `pip check` passes. No package or
+system change was needed. Reproducible Docker wheel archives are still absent.
+Sandbox download failed DNS resolution; automatic approval review rejected
+network escalation under the earlier external-service prohibition, so an
+explicit public-PyPI scope exception is needed. Local Docker cache inspection
+also lacked socket access; no image/build result is inferred. Detailed limits,
+checks and next gates are in the [experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 Step 3 session-only Identity wiring — 2026-11-02 17:23:04 UTC
+
+User assigned Rahul the scoped Identity binding work and verified implementation.
+Lambda's explicit hosted test opt-in now prepares existing real sessions using
+only auth-key/DB references and the existing role audit, then installs the existing
+session/browser middleware without Identity routes or email sender warmup.
+Default startup remains unauthorized; ECS keeps its full Identity composition.
+The task index records the scoped assignment; design and experiment log explain
+the preserved last-seen SQL update, existing role and dummy-hash startup cost.
+Focused Lambda/Hybrid/boundary tests: 114 passed; offline Identity configuration:
+20 passed; default ECS startup: 1 passed. Boundary scan, four-source-file Mypy,
+seven-file pinned Black/compile and diff checks passed. Generated-contract check
+could not run with available Node 26.8.2 (requires Node 24); no artifacts changed.
+Result awaits verification; real SQL sessions, ingress, package/startup and
+independent/affected-owner review remain pending. No account, secret, DB/cloud,
+provider, workload or measurement used. [Detailed log](../evaluation/experiment-log.md).
+
+### EXP-03 Step 3 paired local response checks — 2026-11-02 17:13:51 UTC
+
+User verified this isolated parity-test scope. Extended the read-route suite
+to compare the hosted ECS and narrow Lambda app compositions over in-process
+ASGI with identical synthetic caller/eligibility/data adapters. Nine scenarios
+cover browse, Hybrid-labelled search, detail, invalid/auth/forbidden/not-found,
+database failure and timeout. Status, headers and JSON match after validating
+and excluding only generated request IDs; independent fixture assertions also
+check results, order, fields, pagination and filters. Focused route/app/Hybrid
+runtime tests: 38 passed; pinned Black, compile and diff checks passed. Result
+awaits user verification. Real Identity, SQL/model/adapter/package and deployed
+parity remain open; no external request, account use, workload or cloud action.
+[Detailed experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 session input and account availability — 2026-11-02 17:07:59 UTC
+
+User shared Aditya's pre-run sign-in and private HttpOnly session-cookie handoff
+recommendation and reports that Aditya supplied two temporary test accounts.
+The existing `CLIP_COMPARISON_SESSION_COOKIE` helper is a synthetic-only,
+preflight-gated draft; it is not wired as a real k6 handoff and does not validate
+the session. Account class/use, secure transfer, session validity and run
+authorization remain open. No account details or secrets recorded; no account
+was accessed. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 Identity binding integration gate — 2026-11-02 17:05:05 UTC
+
+Reviewed Identity composition without reading secrets or contacting SSM,
+database or email services. The existing hosted initializer validates full
+Identity configuration and warms the sender; injecting its current dependency
+object also mounts Identity routes beyond the Lambda's two approved reads. It
+is not a safe drop-in. Identity owner A must provide/review a session-only
+binding before real cookie/session parity work. Official AWS release evidence
+confirms adapter version 1.1.0 but does not provide the immutable image digest;
+Linux wheels and that digest remain package inputs. No build, registry call or
+cloud action. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 Step 3 offline route-contract checks — 2026-11-02 17:00:11 UTC
+
+On the isolated branch `task/exp-03-lambda`, added route-level tests over the
+actual read-only FastAPI app with explicit synthetic caller and Listings
+service overrides. Covered the successful Hybrid-labelled query and repeated
+filters/pagination, 401, value-free 422, ineligible-user 403, detail identity
+and 404, plus safe 503 responses for synthetic PostgreSQL and pool timeout
+failures. The focused route/app/Hybrid-runtime suites passed 29 tests; Black's
+in-process check, Python compilation and `git diff --check` passed. A normal
+synchronous service-factory request stalled in this sandbox; async test
+injection works, but the underlying cause is unresolved. No real Identity,
+database, model startup, cloud, deployed API or experiment was used. Step 3
+route-test slice awaits user verification; real Identity and runtime checks
+remain pending. [Detailed experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 bounded Hybrid runtime check — 2026-11-02 16:41:04 UTC
+
+User verified the narrow app-composition checkpoint. Added a synthetic test for
+one Hybrid read connection and worker suppression. Full runtime plus Lambda app
+tests passed (22); Black in-process check, compilation and diff check passed.
+HTTP/ASGI test harnesses stall in this environment and were removed; no
+route-level parity is claimed. Identity and real Hybrid startup remain open.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 narrow Listings/Search app composition — 2026-11-02 16:36:10 UTC
+
+Implemented a separate Lambda app mode for only browse/search and detail GETs.
+Listings and Hybrid pool maxima are one each; Conversations, notifications,
+wanted/saved stores, worker and S3 storage are skipped. ECS defaults are
+unchanged. New route/lifecycle tests: 2 passed; existing combined lifecycle:
+10 passed. Black CLI could not start its sandbox-blocked forkserver; files were
+formatted with its in-process API. TestClient transport behavior remains
+untested in this environment. The Lambda entry fails closed until Identity
+provides reviewed real-session wiring, and DB concurrency/headroom remains open.
+[Design](../evaluation/exp-03-lambda-design.md); [experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 database connection budget finding — 2026-11-02 16:22:12 UTC
+
+Current pools can retain 13 connections per full app environment (Listings 10,
+Hybrid 2, Conversations 1); 20 Lambdas could reach 260, before direct Identity
+connections. This conflicts with the proposed total DB cap 60. Concurrency,
+narrow app/pools or proxy/DB limits need design review. No DB/cloud call.
+[Design](../evaluation/exp-03-lambda-design.md).
+
+### EXP-03 Lambda image recipe — 2026-11-02 16:18:30 UTC
+
+Added a Lambda-only Dockerfile that adds the versioned AWS adapter to the Hybrid
+image and requires a SHA-256 image digest. The adapter artifact/digest and Hybrid
+Linux wheels are missing; no download or build. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 ALB rule proposal specified — 2026-11-02 16:16:29 UTC
+
+Specified GET `/api/listings` and `/api/listings/*` to Lambda in B, ECS default,
+and both to ECS in A; enable multi-value headers, use port 8000 and `/health`.
+Proposal only; listener/security review and deployment plan remain open.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 adapter recommendation refinement — 2026-11-02 16:15:00 UTC
+
+AWS's Web Adapter supports ALB and container apps and can front existing
+Uvicorn; recommend it over the custom event bridge, with ALB multi-value headers
+enabled and response-size checks. Custom bridge remains a local probe. Artifact
+pin, trust and lifecycle checks pending; no download or deployment.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 local image availability check — 2026-11-02 16:11:55 UTC
+
+No project image or required Linux wheel archives found in local Docker/uv cache.
+Image build awaits the pinned Linux wheel preparation; no build or download.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 package-audit correction — 2026-11-02 16:10:15 UTC
+
+Corrected the package audit: only ONNX and tokenizer are copied by the Hybrid
+Dockerfile and both are present; five absent manifest metadata files are not
+required there. Linux wheels remain missing. No build attempted. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 restricted read paths — 2026-11-02 16:07:32 UTC
+
+Bridge now accepts only listing collection and UUID detail GET paths. An initial
+test incorrectly rejected valid detail; corrected, then 18 focused tests passed.
+Formatting and diff checks passed. ALB listener review and real auth remain open.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 local package-input audit — 2026-11-02 16:05:45 UTC
+
+Local size/name audit found matching ONNX/tokenizer inputs and Python/helper
+environments, but no Linux wheel directory and five model manifest files are
+absent. No build or inference performed; reproducible package fit remains
+pending artifact preparation. [Design](../evaluation/exp-03-lambda-design.md).
+
+### EXP-03 Step 3 parser safety and API boundary — 2026-11-02 16:03:47 UTC
+
+Tightened header/query parsing and redacted header representations; a synthetic
+bridge request to the real unbound API returned 401 despite a forged user header.
+Fourteen focused tests and formatting passed. Real Identity sessions, handler,
+trusted ingress and owner review remain open. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 Step 3 synthetic ASGI bridge — 2026-11-02 15:59:37 UTC
+
+Added an in-process ALB/ASGI bridge draft and synthetic tests; nine bridge/parser
+tests and focused formatting passed. It is not a real handler or proof of
+ingress trust, Identity or deployment. User verification and affected-owner
+review pending. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 Step 3 ALB event parsing draft — 2026-11-02 15:56:37 UTC
+
+Added isolated synthetic ALB event parsing and six passing offline tests; Black
+passed per file after a sandbox-denied parallel Black invocation. This component
+is not connected to a handler, trusted origin, session, app or deployment. User
+verification and affected-owner review pending. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 Step 2 ALB design draft — 2026-11-02 15:40:50 UTC
+
+Drafted same-origin ALB/ECS/Lambda routing, actual Identity/Hybrid reuse and
+database-budget proposal. Full-app startup also includes Conversations and
+Identity email initialization; exact adapter, ingress trust, lifecycle, limits
+and ownership remain for review. No implementation or cloud action. User
+verification and affected-owner review pending. [Design](../evaluation/exp-03-lambda-design.md).
+
+### EXP-03 user-reported ALB availability — 2026-11-02 15:39:28 UTC
+
+User confirmed an Application Load Balancer can be created; use ALB as the
+working routing choice. Availability was not independently demonstrated by the
+read-only quota check. Exact design, owner review and cloud approval remain.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 read-only load-balancer check — 2026-11-02 14:22:02 UTC
+
+At user request, non-root AWS read checks found regional ALB quota 50 and zero
+existing ALBs. IAM policy simulation was denied; historical account restriction
+and actual create permission remain unverified. No resource change or creation.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 Step 2 feasibility inspection — 2026-11-02 14:16:44 UTC
+
+User approved investigating the proposed Lambda approach. Existing ingress is
+Caddy, and historical AWS evidence reports account-wide ALB creation rejection;
+current status is unknown. The model is an external pinned build input, and no
+Lambda adapter was found in the inspected lock. Routing, runtime and pool design
+remain open for affected-owner review. No build, cloud call or measurement.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 Step 2 initial design — 2026-11-02 14:12:04 UTC
+
+Rahul reviewed application, Identity and Hybrid packaging for a Lambda container
+proposal using shared logic and restricted read routing. Event/ingress trust,
+session forwarding, helper feasibility and aggregate database limits remain
+unresolved and require affected-owner review before implementation. User review
+of the proposal is pending; no code or cloud action. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 Step 1 route and runtime inspection — 2026-11-02 14:09:40 UTC
+
+User directed Lambda work alongside unfinished EXP-02 and verified the inspection.
+Reviewed the selected routes, trusted caller context, database pools and Hybrid
+helper startup. Lambda adapter, authentication, packaging, connection limits and
+routing require a reviewed design; deployed parity remains unproven. Source review
+only; no application change or cloud action. Findings await user verification.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 ownership and design inspection — 2026-11-02 14:01:05 UTC
+
+User assigned EXP-03 to Rahul (D); updated task registry and owner. Rahul is
+writer for this ownership/design-record update; A is the roster's default
+independent peer, with affected C/B review as applicable. Read-only inspection
+identified shared Identity context, database pools and search lifecycle as
+design inputs. Formal EXP-02 dependency remains open; no implementation or cloud
+action is claimed. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 local parity workload and EXP-03 preliminary inspection — 2026-11-02 13:57:21 UTC
+
+Connected the proposed parity checks to an explicit local-only workload draft;
+synthetic tests and `k6 inspect` passed. Began read-only inspection of the
+EXP-03 Listings route and app lifecycle; its formal dependency/owner gates remain
+pending. Result awaits verification. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 local workload session-read ordering — 2026-11-02 13:45:38 UTC
+
+Local workload validates profile, cases and schedule before reading its local
+session variable. Synthetic Node tests and three `k6 inspect` checks passed;
+full real-runner preflight remains open. Result awaits verification.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 offline combined parity command — 2026-11-02 13:42:03 UTC
+
+Added an offline command joining draft preflight and ten-case comparison;
+synthetic success/mismatch checks and Mypy passed. It does not authorize runs or
+verify deployments. Result awaits verification. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 offline draft input and parity preparation — 2026-11-02 13:38:47 UTC
+
+Connected draft input/profile validation to the ten-case offline comparator;
+synthetic match, mismatch and refusal checks passed with Mypy. No real runner or
+deployment parity is established; result awaits verification.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 offline parity draft profiles — 2026-11-02 13:34:00 UTC
+
+The profile builder can explicitly prepare and check cycle-specific parity
+drafts without ranked search results. Default run preflight still refuses them;
+focused tests and Mypy passed. Result awaits verification.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 offline comparison of all ten cases — 2026-11-02 13:30:11 UTC
+
+The offline comparator and command now cover five browse, three search and two
+detail cases; synthetic tests passed. Real pre-run integration and review remain
+open. Result awaits verification. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 proposed parity workload response checks — 2026-11-02 13:28:30 UTC
+
+Added a pure draft-mode response checker for search, browse and detail; three
+synthetic Node test files passed. The actual workload and pre-run parity gate
+remain unchanged; result awaits verification. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 offline search parity command — 2026-11-02 13:22:34 UTC
+
+Added an offline bounded response-comparison command and synthetic checks; two
+Node test files and 21 Python tests passed after fixing the local test transport.
+The real parity gate and runner remain open. Result awaits verification.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 search parity corpus command — 2026-11-02 13:20:23 UTC
+
+Added a blank version-2 binding template and offline command to create a
+separate, non-executable corpus without ranked results. Twenty-one focused tests
+and Mypy passed; real-run integration remains open. Result awaits verification.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 synthetic parity draft integration check — 2026-11-02 13:17:37 UTC
+
+An offline test connects archive-bound draft preflight and the three-search
+comparator with fabricated responses. Twenty focused checks passed; this is not
+a real runner or parity gate. Result awaits verification.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 offline parity draft binding check — 2026-11-02 13:11:51 UTC
+
+The offline binding checker now supports the proposed parity draft explicitly;
+combined run preflight still refuses it. Nineteen focused tests and Mypy passed;
+response parity integration and owner review remain open. Result awaits
+verification. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 proposed parity corpus binding — 2026-11-02 12:59:58 UTC
+
+Added a separate archive-bound, non-executable corpus builder that does not
+invent search rankings. Eight focused checks and Mypy passed; old preflight and
+workload remain unchanged. Integration and owner review remain open; result
+awaits verification. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 search parity case binding — 2026-11-02 12:57:43 UTC
+
+The offline response comparator now matches the three corpus case IDs, request
+settings and query classes without ordered expected results. Synthetic Node
+checks passed. Corpus authenticity and real-runner integration remain open;
+result awaits verification. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 offline three-search parity adapter — 2026-11-02 12:55:29 UTC
+
+Added an offline three-case response-comparison adapter returning aggregate
+counts; Node checks passed. Existing reference and execution gates remain; real
+runner integration and affected-owner review are open. Result awaits verification.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 proposed search parity checks — 2026-11-02 12:50:53 UTC
+
+Recorded the proposed comparison search change and added offline response-shape
+and A/B equality checks; synthetic Node tests passed. Existing preflight and
+workload still enforce the old reference rule. Full integration and affected-owner
+review remain open; result awaits verification. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 search requirement change trace — 2026-11-02 12:48:25 UTC
+
+User directed use of existing search requirements and A/B equivalence checks.
+Traced the approved exact-reference rule and its tooling dependencies; NFR-02/04
+remain separate. Protocol and code updates require a coordinated next step;
+result awaits verification. [Experiment log](../evaluation/experiment-log.md).
+
+### NFR-05 synthetic event collector — 2026-11-02 12:31:17 UTC
+
+Added a bounded simulated-event adapter feeding the offline NFR-05 preview.
+It rejects invalid ordering and never treats server receipt as display; real
+two-client event capture remains open. Synthetic tests, Mypy and formatting
+passed; result awaits verification. [Experiment log](../evaluation/experiment-log.md).
+
+### NFR-05 offline outcome preview — 2026-11-02 12:24:44 UTC
+
+Added a bounded offline checker for the 60-message denominator, late/failed/
+undisplayed and missing outcomes using synthetic tests. It does not observe real
+clients or claim an NFR pass. CN-01 integration remains open; result awaits
+verification. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 offline control-flow simulation — 2026-11-02 12:20:07 UTC
+
+Local staging now precedes a fixed fake session handoff and fabricated workload
+output; missing or mismatched inputs stop before handoff. Two synthetic tests,
+Mypy and formatting passed. The real runner remains open; result awaits
+verification. [Experiment log](../evaluation/experiment-log.md).
+
+### NFR preparation follow-up inventory — 2026-11-02 12:14:17 UTC
+
+Reviewed NFR-01–08 designs and existing evaluation files; recorded distinct
+owners, existing preparation and remaining harness/integration gates in the
+experiment log. No measurement or external action occurred. Result awaits
+verification. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 synthetic local preparation flow — 2026-11-02 12:12:20 UTC
+
+User assigned actual test cases to Mohit and temporary-account/access setup to
+Adity. Connected checked staging, synthetic reporting and capture without a
+session or network. Focused synthetic integration and Mypy passed; result awaits
+verification. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 remaining runner work review — 2026-11-02 11:40:31 UTC
+
+Prioritized the remaining corpus, runner-interface, implementation, Lambda
+and execution gates with responsible owners. Reviewed Hybrid rankings and the
+real-target runner are still missing; no measurement or cloud action occurred.
+Result awaits verification. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 timeout and incomplete-record checks — 2026-11-02 11:38:03 UTC
+
+Synthetic checks cover returned timeouts and missing completion records; the
+report separates them and flags incomplete accounting. Node and ten report
+tests passed. Actual forced-interruption behavior remains unverified; result
+awaits verification. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 request timing boundary — 2026-11-02 11:35:09 UTC
+
+The local workload stops timing when the HTTP call returns or throws, before
+checking the response. Synthetic k6-API fakes exercise success, exceptions and
+backward clocks. Timing protocol and real runner remain open; result awaits
+verification. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 request and timing record review — 2026-11-02 11:30:12 UTC
+
+The local workload labels timing and outcome in the same iteration, but saved
+records cannot independently establish request-by-request pairing. The timer
+also includes response validation. Nine synthetic report tests, Black and
+whitespace checks passed. Result awaits verification; timing protocol and real
+runner remain open. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 report outcome and route checks — 2026-11-02 11:22:32 UTC
+
+User verified strengthening report accounting. Outcome labels and route totals
+are now compared; mismatches invalidate accounting and suppress affected correct
+latency summaries. Fifty-four synthetic tests, Mypy, formatting and whitespace checks
+passed. Per-request binding and timing remain unverified. Result awaits
+verification. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 offline component integration check — 2026-11-02 11:19:10 UTC
+
+User verified a grouped synthetic check connecting plan, parity, staging, fake
+session, report and capture helpers. Thirty-seven focused tests, Mypy, formatting
+and whitespace checks passed; no workload or external action occurred. The real
+runner and deployment gates remain open. Result awaits verification.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 parity-gated staging — 2026-11-02 11:13:27 UTC
+
+User verified connecting pair-parity declarations and evidence hashes to local
+staging. The stager refuses missing, altered or wrong-pair inputs before creating
+a folder. Eighty-two synthetic tests, Mypy, formatting and whitespace checks passed; actual
+deployed parity remains unverified. Result awaits verification.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 per-condition workload correction — 2026-11-02 11:06:55 UTC
+
+User verified correcting the mismatch between condition-specific run records
+and a workload that scheduled all three conditions. Each invocation now
+schedules only its selected condition; staging records that condition and the
+report requires it. Ninety-six Python tests, four Node test files, strict Mypy,
+formatting and `k6 inspect`
+passed without running a workload. Real runner and owner gates remain open;
+result awaits verification. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 staged run files — 2026-11-02 10:49:59 UTC
+
+User verified local staging for a planned run. Added a new-folder staging helper
+for the bound profile, schedule and six workload files with supplied hashes.
+Eighty-seven synthetic tests, Mypy, formatting and whitespace checks passed; hash-list review
+and real runner use remain open. Result awaits verification.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 parity evidence hash check — 2026-11-02 10:41:42 UTC
+
+User verified optional local evidence hash checks for declared parity. Reused
+the bounded artifact verifier; 14 synthetic tests, Mypy, formatting and whitespace
+checks passed. Actual deployed parity and evidence review remain open; result
+awaits verification. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 declared A/B parity preparation — 2026-11-02 10:36:32 UTC
+
+User verified an offline pair-parity template and checker. It compares supplied
+dataset, schema, index, database settings and search/model declarations against
+the bound plan and reference. Sixty-five synthetic tests, Mypy, formatting and
+whitespace checks passed; actual deployed parity remains open. Result awaits verification.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 capture privacy and read-back — 2026-11-02 10:32:45 UTC
+
+User verified grouped capture privacy and hash checks. The helper rejects known
+unsafe JSON fields and values before creating files and verifies written bytes
+on read-back. Thirty-eight synthetic tests, Mypy, formatting and whitespace
+checks passed. Privacy review and runner integration remain open; result awaits
+verification. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 local evidence capture — 2026-11-02 10:29:13 UTC
+
+User continued with offline evidence capture preparation. Added exclusive run
+folders, separate raw/report files and final fingerprints; partial writes are
+retained for inspection. Twenty-five focused synthetic tests, Mypy, formatting
+and whitespace checks passed. Privacy and actual runner integration remain open;
+result awaits verification. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 grouped mock session handoff — 2026-11-02 10:22:40 UTC
+
+User verified the session helper and grouped fake-session integration. The mock
+runner runs local preflight before reading a fixed fake session and refuses
+missing or mismatched inputs. Forty-seven synthetic tests, Mypy, formatting and
+whitespace checks passed; real runner and owner gates remain open. Result awaits verification.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 session handoff preparation — 2026-11-02 10:07:16 UTC
+
+User chose an environment-variable session handoff and verified fake-only local
+preparation. Added a format and preflight-order helper without process or network
+actions. Forty-seven focused tests, Mypy, formatting and whitespace checks passed; account
+class, security review and real runner integration remain open. Result awaits
+verification. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 real-runner design review — 2026-11-02 09:56:27 UTC
+
+User verified tracing runner contracts. Documented the local-only login gap,
+proposed real-runner sequence and open synthetic-account, secure-session, target,
+checked-byte, timing and capacity choices. Source review and whitespace checks
+passed; no execution or external action occurred. Result awaits verification.
+[Runner design](../evaluation/comparison-runner-design.md);
+[experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 mock runner ordering — 2026-11-02 09:53:25 UTC
+
+User verified offline preparation and authorized a simulated ordering check.
+The fixed in-memory simulation refuses missing or mismatched inputs before its
+session and workload labels. Sixty-four focused synthetic tests, Mypy, formatting and
+whitespace checks passed; real runner integration remains open. Result awaits
+verification. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 offline runner preparation — 2026-11-02 09:43:48 UTC
+
+User verified grouped offline runner preparation. Added a non-executing stage
+that lists missing inputs and checks the planned run and exact profile using
+existing preflight validators. Seventy-four focused synthetic tests, Mypy, formatting and
+whitespace checks passed; real runner and owner gates remain open. Result awaits
+verification. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 three-run cost median — 2026-11-02 09:30:00 UTC
+
+User verified cost binding and approved offline three-run median preparation.
+The preview checks configuration, condition, repetition and bound report inputs
+before computing the median. Twenty-eight focused tests, Mypy, formatting and
+whitespace checks passed; validity and cost review remain open. Result awaits
+verification. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 cost input binding — 2026-11-02 09:14:13 UTC
+
+User verified offline cost arithmetic and approved checking it against captured
+run and report records. Added local run, condition, report-hash and measured
+correct-count matching. Twenty-seven synthetic tests, Mypy, formatting and
+whitespace checks passed. Cost allocation and run validity remain unverified;
+result awaits user verification. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 offline cost arithmetic — 2026-11-02 09:08:29 UTC
+
+User set the timer aside and verified an offline cost calculator. Added bounded
+per-run arithmetic for supplied pre-credit costs and correct counts, with no
+billing access or claim of verified allocation. Twenty-five focused tests,
+Mypy, formatting and whitespace checks passed; result awaits verification.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 timing guidance correction — 2026-11-02 09:00:13 UTC
+
+User verified profile preflight and requested guidance reflecting their preference
+for built-in k6 timing. Clarified that affected-owner review is still needed to
+change the approved monotonic requirement. Documentation and whitespace checks
+passed; no measurement or external action occurred. Result awaits verification.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 profile preflight checks — 2026-11-02 08:48:38 UTC
+
+User verified the profile evidence binding and the next offline check. The
+preflight checks the five-second timeout, worker-value shape and supplied exact
+profile hash; no operational cap is selected. Synthetic tests, Mypy, formatting
+and whitespace checks passed; real runner enforcement and run gates remain open.
+No workload or external action occurred. Result awaits user verification.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 generated-profile evidence binding — 2026-11-02 08:37:36 UTC
+
+User verified recording the generated profile reference/hash and checking saved
+files and A/B agreement per cycle. The version-3 run template and offline
+manifest, artifact and paired-plan checks now support that evidence. One hundred
+fifteen focused tests, strict Mypy, Black formatting and whitespace checks passed.
+Actual profile use and run approval remain unverified; no workload or external
+action occurred. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 cycle profile preparation — 2026-11-02 07:18:42 UTC
+
+User verified offline generation of a profile per cycle from the bound plan and
+cases, with supplied worker limits. Added the builder and corrected the corpus
+binder's boolean/number equality gap. One hundred twelve focused tests, strict
+Mypy, Black formatting, whitespace checks and `k6 inspect` on three synthetic
+profiles passed. The run manifest lacks a dedicated generated-profile
+hash field; the seed, limits, command-registry coordination and real-run gates
+remain open. No workload or external action occurred.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 approved seeded rotation — 2026-11-02 07:11:21 UTC
+
+User approved the one-step-per-pair seeded case rotation. Added an offline
+generator and version-2 editable plan/run templates; validators check the seed,
+rule and pair starts without choosing the real seed. One hundred focused tests,
+strict Mypy, Black formatting and whitespace checks passed; synthetic seed 3
+generated the expected wrapped sequence. No workload or external action occurred.
+Shared command-registry registration awaits coordinated ownership and remote
+work inspection, which the current no-external-calls scope does not permit.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 per-condition case rotations — 2026-11-02 07:05:05 UTC
+
+User verified aligning the local workload's case starts with the paired plan.
+The workload accepts one start per traffic condition; the offline preflight can
+compare a cycle's three starts and case list with the bound plan/corpus.
+Forty-three focused Python tests, four Node test files, strict Mypy, Black
+formatting, whitespace checks and synthetic-profile `k6 inspect` checks passed.
+The seed/rotation rule, Node 24 check, future runner enforcement and real
+measurement gates remain open. No workload or external action occurred.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 recorded run-order check — 2026-11-02 06:53:29 UTC
+
+User verified checking captured run times against the approved order. The paired
+plan validator now rejects reversed or overlapping recorded intervals across
+the 18 runs; earlier synthetic fixtures had not checked chronology. Thirty-four
+focused tests, strict Mypy, Black formatting verification and whitespace checks
+passed. Timestamp accuracy and real-run evidence remain unverified; no workload
+or external action occurred. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 combined pre-request input check — 2026-11-01 21:32:23 UTC
+
+User verified composing the corpus/source binding and A/B paired-plan checks
+into one offline gate. Added a command that validates all four inputs and
+rejects mismatched dataset or corpus fingerprints; it never requests credentials,
+sends requests or authorizes measurement. Twenty-eight focused tests, strict
+Mypy, Black formatting verification and whitespace checks passed. No experiment
+or external action occurred. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 paired captured-manifest check — 2026-11-01 21:27:51 UTC
+
+User verified the captured-manifest cross-check. Extended the paired-plan
+checker to compare 18 synthetic per-run manifests with planned IDs, order,
+sequence starts and shared fingerprints. Thirteen focused tests, strict Mypy and
+Black formatting verification passed. No run or external action occurred; the
+check does not prove deployment use or inspect raw evidence. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 offline paired-run plan — 2026-11-01 21:15:42 UTC
+
+User verified the offline paired-plan checker. Added a template and validator
+for the three approved A/B, B/A, A/B cycles and nine matched low/normal/burst
+pairs, with shared dataset/workload inputs and unique run IDs. Eight synthetic
+tests, strict Mypy and Black formatting verification passed. No run or external
+action occurred; the checker does not validate later captured manifests or
+authorize measurement. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-01/02 concurrency cap clarification — 2026-11-01 21:08:01 UTC
+
+User clarified that the experiment design's proposed 300 concurrent-client-
+request ceiling is non-binding and must not be enforced in code. Marked the
+design accordingly. The actual generator/client cap remains open for the
+reviewed pre-run plan; no replacement value was chosen and no guard or workload
+was added. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 raw and derived evidence checks — 2026-11-01 20:57:31 UTC
+
+User verified the offline evidence-integrity step. Extended the local artifact
+verifier to hash raw k6 output and derived reports and reject a raw/report
+hard-link alias; updated the preparation guide and experiment log. Eight focused
+synthetic tests, strict Mypy for the verifier, and in-process Black formatting
+verification passed. Matching a recorded digest does not prove artifact
+authenticity or pre-recording immutability. No experiment or external action
+occurred. Result awaits verification; [experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 offline evidence artifact checks — 2026-11-01 20:52:28 UTC
+
+User verified grouped offline evidence verification. Added bounded local
+telemetry/cost file hashing and window checks with safe path handling; 22 focused
+Python tests passed. Hash matches do not attest content, provenance, clocks or
+run validity. No workload or live action occurred. Result awaits verification;
+[experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 planned case/manifest binding checks — 2026-11-01 20:43:12 UTC
+
+User verified grouped offline checks. Added a non-authorizing plan template and
+preflight that hashes and reconstructs the comparison corpus against the intended
+dataset/source and ordered reference; optional completed run captures are compared
+through the existing validator. The capture schema remains post-run, and the
+future runner must enforce pre-session gates. Thirty-seven focused Python tests
+passed. No workload or live action occurred. Result awaits verification;
+[experiment log](../evaluation/experiment-log.md).
+
+### NFR dataset-bound case draft preparation — 2026-11-01 20:40:42 UTC
+
+User verified grouped offline NFR case preparation. Added non-executable archive-
+bound browse/Hybrid case drafts and shape checks; the five browse cases pass
+local shape checks and three Hybrid cases remain blocked on reviewed order.
+No workload or live action occurred. Owner review and full integration remain
+pending. Result awaits verification; [experiment log](../evaluation/experiment-log.md).
+
+### NFR draft preflight preparation — 2026-11-01 20:38:08 UTC
+
+User verified grouped offline draft validation and tests. Added bounded NFR-01/02
+preflight reusing existing query/route checks; stale settings and missing IDs
+are refused, and passing shape checks never permit execution. Three Node files
+and 18 Python tests passed. Full case review, owner-specific profiles and a
+real-target runner remain pending. No workload or live action occurred. Result
+awaits verification; [experiment log](../evaluation/experiment-log.md).
+
+### NFR-01/02 local denominator preparation — 2026-11-01 20:33:11 UTC
+
+User verified grouped synthetic reporting work. Extended the existing local k6
+cohort reporter with separate correct-request and issued-request fractions at
+the one-second boundary; preview timing remains unverified and no NFR is
+accepted. Real eligibility, profiles, timing and owner/integration gates remain
+open. No workload or live action occurred. Result awaits verification; details:
+[experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 ordered reference source binding — 2026-11-01 20:23:45 UTC
+
+User intends the latest search in production. The offline ordered-reference
+binder now requires matching explicit full search source revisions in the
+reference and command; this does not prove deployment or review. The template
+remains incomplete, with real ordered results and final deployed revision still
+pending. No workload or live action occurred. Result awaits verification;
+[experiment log](../evaluation/experiment-log.md).
+
+### NFR preparation inventory — 2026-11-01 20:11:52 UTC
+
+User verified the inventory scope. Mapped NFR-01–08 to owners, workload,
+existing preparation and outstanding integrations in the experiment log. The
+browse and Hybrid draft profiles have 30 s warm-up/3 s timeout versus the
+current design's 60 s/5 s and lack expected IDs; they are not approved run
+profiles. No workload or live action occurred. Inventory awaits verification;
+[details](../evaluation/experiment-log.md).
+
+### EXP-02 offline phase-report preparation — 2026-11-01 20:03:45 UTC
+
+User verified synthetic reporting preparation. Added a disconnected per-response
+phase selector and offline preview report with failure counts, separate phases,
+per-request sums and anomaly-based percentile suppression. It does not alter the
+approved timing protocol or run a workload. Result awaits verification; details
+and limitations: [experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 proposed timing protocol revision — 2026-11-01 19:50:33 UTC
+
+User requested recording connection-timing information and continuation. The
+preparation guide explains connection phases, overlap and failed acquisitions;
+the experiment log proposes per-response phase approximation, scoring, anomaly
+and failure treatment for review. Existing approved protocol and distinct NFR
+procedures remain in force pending affected-owner review and verification. No
+workload or live action occurred; result awaits verification. [Details](../evaluation/experiment-log.md).
+
+### EXP-02 built-in phase timing evaluation — 2026-11-01 19:44:42 UTC
+
+User accepted evaluating built-in timing. Added a disconnected per-response
+phase preview and synthetic tests; `blocked + duration` is only a candidate for
+correct responses and does not verify a monotonic clock or failed-connection
+duration. Three Node test files and five Python tests passed. Approved timing
+rules and NFR procedures remain unchanged; no workload or live action occurred.
+Result awaits verification; [experiment log](../evaluation/experiment-log.md).
+
 ### SE-01 category-text review and DATA-READY acceptance — 2026-11-01 19:38:43 UTC
 
 Aditya reports that Suraj completed the independent Listings review of the
@@ -22,6 +1026,74 @@ Aditya confirms readiness; Suraj's review is reported by Aditya. The immutable
 release artifact retains its capture-time `data_ready: false`; this acceptance
 is recorded here without rewriting the frozen artifact. SE-01 remains in progress
 for its independent search/NFR gates.
+
+### EXP-02 timer extension bridge inspection — 2026-11-01 19:25:44 UTC
+
+User verified a temporary custom k6 build and inspect-only bridge check. Built
+against pinned k6 v2.3.0 in `/tmp`; the new inspection script verified elapsed
+value and invalid start/stop errors during initialization. No k6 workload ran.
+Multiple-VU execution, request/failure boundaries, reproducible build provenance
+and independent review remain open. Result awaits verification; [experiment
+log](../evaluation/experiment-log.md).
+
+### EXP-02 monotonic timer prototype — 2026-11-01 19:11:27 UTC
+
+User verified a local prototype. Added a disconnected per-VU Go timer extension
+against pinned upstream k6 v2.3.0; Go tests pass for timing, ordering and instance
+isolation. Dependencies were downloaded to a temporary cache after the user
+allowed internet; tests ran with the module proxy disabled. No custom k6 binary,
+JS bridge or request-boundary verification exists, and no workload or live
+action occurred. Result awaits verification; [experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 timeout accounting and timer contract — 2026-11-01 19:08:52 UTC
+
+User verified the source review. The comparison workload now classifies k6
+request timeout 1050 and dial timeout 1211 as timeouts, with synthetic outcome
+tests; response correctness remains required for HTTP 200. Four Node files and
+eight Python tests passed. Documented a per-VU monotonic extension contract as
+a proposal, with build, source and runtime verification gates; no extension or
+verified clock exists. No workload or live-system action occurred. Result awaits
+verification; [experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 official k6 timing source review — 2026-11-01 19:07:32 UTC
+
+User permitted internet access. Official v2.3.0 source uses Unix nanosecond
+event values for HTTP phase timing, so summing phases does not establish the
+approved monotonic boundary; failed connection acquisition also leaves a gap.
+The installed development binary's exact source is not independently identified.
+Found a separate timeout accounting gap: the workload classifies 1050 but not
+TCP dial timeout 1211 as timeout. No workload or live-system action occurred.
+Result awaits verification; [experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 exact k6 source availability — 2026-11-01 18:54:10 UTC
+
+User verified offline source and extension investigation. Installed k6 identifies
+as a `(devel)` Go module without a source revision; its exact source was not in
+the searched local cache or installed documentation. Request timing semantics
+therefore remain unverified. Documented a bounded monotonic-clock extension as
+an unselected candidate and its source, build, boundary and review requirements.
+No workload or external call occurred. Result awaits verification; [experiment
+log](../evaluation/experiment-log.md).
+
+### EXP-02 monotonic timing investigation — 2026-11-01 18:51:31 UTC
+
+User verified local investigation. An initialization-only k6 v2.3.0 inspect
+found no `performance`, `Temporal`, or `process` clock; `k6/timers` exposed
+scheduling functions. Local documentation did not establish the phase metrics'
+full boundary or failure behavior, so the monotonic-clock gate remains open and
+no timing substitution was made. No workload or external call occurred. Result
+awaits verification; [details and next checks](../evaluation/experiment-log.md).
+
+### EXP-02 local safety and reporting audit — 2026-11-01 18:48:42 UTC
+
+User verified the preceding group and approved a local timing, runner and report
+audit. Reports now explicitly mark latency timing unverified even when request
+accounting matches; `Date.now` is not a verified monotonic clock and k6 HTTP
+duration alone omits connection setup. Local smoke preflight runs before the
+synthetic session; the real-target runner remains unimplemented. Raw output is
+read-only and reports refuse overwrite. Thirty-five focused Python tests and
+three Node test files passed. No workload, live request or cloud action occurred.
+Result awaits user verification; details: [experiment log](../evaluation/experiment-log.md).
 
 ### SE-01 category-text amendment Step 3 local verification — 2026-11-01 18:44:27 UTC
 
@@ -129,6 +1201,185 @@ is inferred. Original SE-01 readiness/NFR blockers remain. Documentation consist
 and `git diff --check` pass; no runtime tests are needed for this documentation-only
 step. No product code, schema, corpus, labels or cloud changes, commit or push.
 Step 1 performed; result verification pending. Next: Step 2 after verification.
+
+### EXP-02 ordered references, timing and telemetry preparation — 2026-11-01 18:23:04 UTC
+
+User verified grouped Steps 4, 6 and 7 preparation. Added an offline ordered
+Hybrid-reference binder and template, plus telemetry metadata validator and
+template. Corrected an existing five-second burst-transition gap; no workload
+had run under that schedule. Thirty-six Python tests, four Node test files,
+per-file Black, JSON/whitespace checks and synthetic `k6 inspect` passed; a
+separate inspect found `performance.now` unavailable. The real ordered results,
+independent review, monotonic timing, combined VU limits and real telemetry remain
+pending. No experiment or cloud action ran. Result awaits user verification;
+details: [experiment log](../evaluation/experiment-log.md).
+
+At 2026-11-01 18:27:13 UTC, type annotations and validated-object narrowing made
+strict Mypy pass for all three changed preparation scripts; 16 affected tests
+also passed. Contract freshness could not complete because pinned Node 24 is
+absent (available Node 26.8.2); no dependencies were installed.
+
+### EXP-02 dataset-bound case corpus draft — 2026-11-01 17:51:15 UTC
+
+Prepared a ten-case 5/3/2 corpus from the retained frozen dataset and reviewed
+query labels. Seven browse/detail expected responses validate against the public
+response checker. Three Hybrid cases use the approved direct, related and
+meaning-based queries, but ordered responses remain unset: the stored NEXT-06
+ranking diagnostics are different query texts and are not reviewed references.
+The dataset remains `data_ready: false`. One focused Python test, per-file Black,
+deterministic regeneration, k6 mix/response validation and `git diff --check`
+passed. `k6 inspect` refused the draft with `invalid_expected_case` before any
+request, as intended. No app, cloud path or load was run. Details: [experiment
+log](../evaluation/experiment-log.md).
+
+### EXP-02 Step 8 immutable raw and versioned analysis — 2026-11-01 16:11:38 UTC
+
+User verified the Step 8 understanding. The report tool already reads raw k6
+output and creates derived output exclusively; captured manifests now reject a
+shared raw/derived reference, and the guide requires corrected calculations to
+use a new versioned report. Nine focused tests, per-file Black checks, template
+validation, and `git diff --check` passed. No run or measurement occurred. Step 8
+is user-verified; remaining gates are detailed in the
+[experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 Step 7 evidence manifest preparation — 2026-11-01 16:06:30 UTC
+
+User verified Step 7. Added a per-run manifest template covering target, revisions,
+migration, dataset/workload hashes, run times, telemetry, cost and evidence refs;
+added a validator that enforces the approved schedule, required capture fields,
+and common secret/PII exclusions. Four focused tests, Black, template validation,
+JSON and whitespace checks passed. Values remain blank; this does not authorize a
+run. See the [experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 Step 6 request accounting — 2026-11-01 15:56:58 UTC
+
+User verified Step 6. Added a read-only report over k6 JSON with route/cohort
+outcomes, p50/p95/p99 latency, offered/successful throughput, timeout/throttle/
+failure counts, dropped work and accounting validity. A k6 clock-anomaly counter
+prevents bad timing samples from appearing valid. Four Python and three Node test
+files passed; k6 inspect, per-file Black checks and whitespace checks passed.
+No HTTP run or infrastructure telemetry; deployed metrics remain pending. See
+the [experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 Step 5 scheduled workload configuration — 2026-11-01 14:22:56 UTC
+
+User verified the Step 5 understanding. Added the approved 50/30/20 request mix
+and low/normal/burst schedule to local k6 preparation: one HTTP request per
+arrival, separate 60-second warm-up and 300-second measured cohorts, a 10/s burst
+warm-up and immediate 50/s burst transition. The sequential six-cohort schedule
+was checked with Node tests and `k6 inspect`; no workload was run. Final reviewed
+cases/seed, capacity/session limits and real target remain pending. See the
+[experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 Step 4 local response checks — 2026-11-01 14:18:17 UTC
+
+User verified Step 4 understanding. Added exact expected-content page/detail
+checks, integrated sanitized per-case outcomes into the local k6/Python runner,
+and updated its input documentation. Three focused JS files and three Python
+tests passed; actual k6 correctly passed a synthetic response and failed a
+different HTTP-200 body. Black formatted the changed Python files. Final
+dataset-bound cases/real deployed checks remain pending; no cloud or performance
+measurement. Details: [experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 Step 3 revised runner smoke — 2026-11-01 14:14:45 UTC
+
+User directed continuation. Rechecked the preflight-enabled Python/k6 runner
+against the disposable integrated app: browse and explicit Hybrid search each
+returned HTTP 200, unchecked for content. Synthetic app stopped cleanly. No
+cloud or performance run. Real deployment/session and Step 2 A/B parity remain
+pending; see [experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 Step 3 Hybrid mode and preflight — 2026-11-01 14:09:02 UTC
+
+User verified the preceding checkpoint. Found that the API defaults to Keyword;
+comparison search cases now require explicit Hybrid. Python runner uses k6 inspect
+with a non-secret placeholder before synthetic login, rejecting invalid cases early.
+Three Python and 11 JS tests passed; actual k6 inspect accepted Hybrid and refused
+missing mode. No cloud or performance run. Recheck integrated synthetic app after
+this change; see [experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 Step 3 Python local runner — 2026-11-01 14:04:51 UTC
+
+User verified the previous checkpoint. Added a bounded local Python k6 runner
+that obtains a synthetic inspection session in memory and emits sanitized,
+unchecked HTTP statuses. Two Python tests and Black passed; actual k6 against
+the disposable integrated app returned HTTP 200 for browse and Hybrid search.
+App stopped; no cloud or performance measurement. Step 3 real-session/deployed
+checks remain pending. See [experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 Step 3 multi-case k6 smoke — 2026-11-01 14:02:36 UTC
+
+User verified the preceding checkpoint. Extended the loopback-only k6 scenario
+to validate and run one to ten cases sequentially. Four mocked adapter tests
+passed under Node 26.8.2; actual k6 with the disposable synthetic app sent browse,
+Hybrid search and detail in one run, each HTTP 200. App stopped and temporary
+metrics removed. Correctness, arrival-rate workload and real deployment remain
+pending; no cloud or performance evidence. See [experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 Step 3 three-route local smoke — 2026-11-01 14:00:23 UTC
+
+User verified the previous checkpoint. Against the documented disposable
+synthetic inspection app, three separate single-request k6 runs for browse,
+Hybrid search and listing detail each returned HTTP 200. Session stayed in
+memory, temporary metrics were removed and the app stopped. This validates
+local routing/status only; response correctness, scheduled workload and deployed
+real-session checks remain pending. See [experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 Step 3 integrated local smoke — 2026-11-01 13:58:35 UTC
+
+User verified the previous checkpoint. Prepared isolated Linux Python 3.13.12,
+24 hash-pinned helper packages and two hash-verified model files; local helper
+returned a 384-dimensional vector. The documented synthetic integrated app's
+startup sweep passed and actual k6 sent one authenticated synthetic-session
+Hybrid search to `/api/listings`, receiving HTTP 200. App stopped cleanly. The
+first inference attempt failed because the test resolved the venv symlink; the
+correct venv path passed. No real-provider/cloud/NFR/architecture evidence is
+claimed; correctness and full workload remain pending. See [experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 Step 3 integrated route preparation — 2026-11-01 13:49:47 UTC
+
+User directed continuation. Corrected local request targets to allow the real
+website `/api` mount or bare API root, with a shared loopback-only guard. Ten
+focused tests passed on Node 26.8.2; Docker 29.8.1 responds with approved socket
+access. Integrated inspection is not runnable yet because the required local
+Hybrid interpreter and model are absent. No real app/session, cloud or measured
+run. Step 3 remains partial; see [experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 Step 3 actual k6 local smoke — 2026-11-01 13:46:42 UTC
+
+User reports compiling/installing `/usr/bin/k6`; it reports v2.3.0 commit/devel
+on Linux AMD64. Actual k6 against a temporary synthetic loopback HTTP server
+exited 0 and issued exactly one expected Hybrid search with a synthetic cookie.
+Sandbox socket probe failed EPERM; local test passed after approved escalation.
+No real app/session, cloud or NFR/architecture measurement. Step 3 remains
+partial; final toolchain provenance and real session remain pending. See the
+[experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 Step 3 k6 adapter — 2026-11-01 13:29:30 UTC
+
+Added a one-request loopback-only k6 preparation scenario and mocked k6-adapter
+tests. Case/adapter test files pass on Node 26.8.2; actual k6 is unavailable on
+PATH and the registered installer is macOS ARM64-only. No real k6, app, session,
+cloud or measurement run; Node 24 and real runtime verification remain pending.
+Details: [experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 Step 3 local batch — 2026-11-01 13:27:01 UTC
+
+User verified the prior checkpoint. Added a bounded one-to-ten-request local
+preparation batch and exercised browse/search and 401 against a temporary
+synthetic loopback server. Six Node tests passed with Node 26.8.2; initial
+sandboxed bind failed `EPERM`, and the same test passed after approved escalation.
+No real app/session, cloud or measurement run; Step 3 remains partial. See the
+[detailed experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 Step 3 local transport preparation — 2026-11-01 13:25:12 UTC
+
+Added loopback-only, single-request transport preparation with in-memory session
+input and synthetic injected-transport tests. `node --test scripts/evaluation/k6/comparison_cases.test.mjs scripts/evaluation/k6/comparison_local.test.mjs` passed with Node 26.8.2; project-pinned Node 24 remains to be checked. No HTTP or cloud calls ran. Step 3 remains partial: actual k6 scenario, real authorized session and integrated checks are pending. See [experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 Steps 1–3 — dataset evidence and workload preparation — 2026-11-01 13:14:04 UTC
+
+User directed Rahul to continue EXP-02 and confirmed Mohit says the dataset exists. Frozen release and recorded load agree on seed 42, 5,000 users, 1,000 listings and fingerprint `7efd142e11c3e8555e1aa08603cbf8dff07de5d74412ccde3c39869b9334ab98`; release file SHA-256 matched its recorded value. Step 2 actual deployed A/B equivalence remains pending EXP-03/04. Step 3 adds contract-shaped comparison read paths and Node contract/refusal checks; `node --test scripts/evaluation/k6/comparison_cases.test.mjs` passed under Node 26.8.2 (project pins Node 24). No authenticated execution or complete load scenario yet; Step 3 remains partial and awaits verification. No cloud calls or measurements.
 
 ### NEXT-06 Step6 immutable release and task-wide review — 2026-10-31 15:50:51 UTC
 
@@ -1187,7 +2438,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 
 | Task ID | Owner role | Task status | Current checkpoint / immediate next action | Execution state | Human verification | Branch/revision/evidence | Blockers | Last UTC update |
 |---|---|---|---|---|---|---|---|---|
-| SE-01 category-text amendment | Mohit (C); Listings reviewer Suraj (B) | in progress | Steps 1–3, implementation checks and Suraj's review are complete; PR #25 awaits its separate merge gate | All three steps performed; exact-head hosted CI passed | Steps 1–3 verified by Mohit; Suraj's independent Listings review reported complete by Aditya | PR #25 `elite-search` head `af1cc3f`; [hosted CI](https://github.com/exocrat/clip/actions/runs/41338792850); [native/model/source evidence](../evaluation/domain/se-01/category-text-checks.json) | PR #25 is open/unmerged; full local Docker aggregate, final fixed-label relevance and original SE-01 NFR/cloud latency gates remain open | 2026-11-01 19:38:43 UTC |
+| SE-01 category-text amendment | Mohit (C); Listings reviewer Suraj (B) | merged | PR #25 merged to main at `1f11065`; Steps 1–3 and reported Listings review complete | Exact-head hosted CI passed; [native/model/source evidence](../evaluation/domain/se-01/category-text-checks.json) | Steps 1–3 verified by Mohit; Suraj review reported by Aditya | PR #25; [hosted CI](https://github.com/exocrat/clip/actions/runs/41338792850) | Full SE-01 readiness, final fixed-label relevance and NFR/cloud latency remain open | 2026-11-01 20:18:19 UTC |
 | NEXT-00 | Suraj — requested planning coordinator | done | Planning output verified; NEXT-01 Step 1 authorized. | performed; planning only | verified by Suraj | `task/integrated-marketplace-rollout`, based on main `5e8d264`; [remaining-work plan](../tasks/remaining-project-plan.md), linked from project task index | No blocker for the accepted planning output; implementation and measured-run gates remain separate. | 2026-10-27 18:42:09 UTC |
 | NEXT-01 | Suraj — requested planning coordinator; C retains EXP-01 ownership | done | Design and task-wide review verified; NEXT-02 is next. | Steps 1–9 performed | Steps 1–9 verified | Planning baseline `c869f33`; [design and approved gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md#next-01-step-8--proposed-changes-to-measurement-gates); [NEXT-07 references](../tasks/remaining-project-plan.md#experiment-protocol-reference) | No blocker for the design handoff. Real implementations, data, tools, cost anchors, project AWS identity/spend and run approvals remain NEXT-07 prerequisites. | 2026-10-28 06:24:24 UTC |
 | NEXT-02 | Suraj — planning coordinator | done | Evaluation and documentation cleanup completed; test/fixture and app/infrastructure audits found no safe deletions. | Cleanup review and checks complete; its changes are included in the current commit. NEXT-02 itself changed no executable test or application code. | User accepted the cleanup and directed committing the combined changes on 2026-10-28. | `task/integrated-marketplace-rollout`; [NEXT-02 cleanup criteria](../tasks/remaining-project-plan.md); [command index](../environment/commands.md) | No cleanup blocker; documentation references and `git diff --check` passed. No tests/app checks, AWS actions, or paid runs for NEXT-02. | 2026-10-28 09:26:47 UTC |
@@ -1219,16 +2470,16 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | ID-01 | A | in progress | Test Microsoft identity exception in progress on task/test-microsoft-identity; test-tenant exception implemented and two real accounts verified; independent review and merge pending | Local implementation and recorded live checks performed; additional verification user-reported | Verified and accepted by Aditya | [Step14 evidence and closeout](../evaluation/identity/id-01-step-14/README.md) | Independent peer review, current-head checks and reviewed main merge remain required for formal task closeout | 2026-10-29 05:23:09 UTC |
 | LI-01 | B | in progress | Finish the remaining Step 7 browser states and current-head Step 11 checks/reviews; prepare a progress PR without claiming LI-CORE. Steps 12–13 remain integration-gated. | Steps 1–6 and 8–10 implemented and locally checked; Step 7 partial (create/detail/edit/My Listings/gallery). | Suraj verified the multi-image edit/gallery checkpoint, seller-only selected-buyer visibility, and Step 10. No LI-01 phone-device result is claimed. | domain/listings at 6ffbe0b; focused Listings suite: 61 passed, one database-only test skipped outside the wrapper; disposable PostgreSQL workflow passed; current worktree `make check` passed 2026-10-23 (573 Python, 63 data, 42 web tests; remaining contract, type, boundary, database, safety, formatting, lint, and build checks passed). | LI-CORE not accepted. Remaining Step 7 states; Step 11 query-plan, current aggregate, and affected-owner review; native schema check; five pre-existing backend boundary findings; real Identity, Conversations, storage, and Search integration; Steps 12–13. | 2026-10-23 10:38:31 UTC |
 | LI-02 | B | in progress | Step 12 demo is tested and stopped; record final evidence, then begin intake of the Search owner's PR under the review workflow. | Steps 1–11 and 1.5 verified; Step 12 ran on ECS and was tested on desktop/mobile. Read-only app checks found the synthetic listing and its S3 image; teardown is complete. | User approved and applied teardown plan `3703bb7b23405a5a23a1ac6c39fa8870e682dddf3a1a8272183f4642f8f0db81` (0 add, 1 change to LI-02 bucket CORS, 20 LI-02 deletes). Post-stop inventory confirms disposable RDS/ALB/service/host/root volume/run S3 objects/URL parameter/log streams absent; shared RDS is stopped, shared ECS cluster remains, LI-02 ASG desired 0/no instances. Two run ECR images are retained (105,624,604 bytes total) per user direction. | `task/li-02-isolated-runtime` at `f0bf6c6`; earlier 11 focused tests, Black, Python compilation, Terraform fmt/validate, CLI help and diff checks. Start plans: infrastructure `a2b8cbeaa6cc4fc2d13ff8c8696cfa133d8134280de89f719e0d6f2b91668f55`; app start `b6a3fbd4812c965a5830780f337997d13b4b362c7eb1a73f2b3e70f5946b5bd4`. Stop-path corrections are currently uncommitted in `scripts/li02-demo`, `infra/terraform/domains/listings/test/database_tasks.tf`, both LI-02 operator guides, and this work log. `git diff --check` passed; no tests rerun. Existing untracked `data/runs/` and `database/migrations.zip` remain untouched. | Compute/ingress/disposable-database charges from the demo have ended. Retained run images add about 101 MiB of ECR storage; Step 4 bucket/IAM/log group and shared VPC/NAT/ECS/RDS remain. No manual RDS snapshot remains. | 2026-10-25 09:29:55 UTC |
-| SE-01 | Mohit (C); peer Suraj (B), Identity review | in progress | Formal SE-CORE/DATA-READY and final NFR acceptance remain pending. Last recorded PR15 functional/database CI passed; evidence-format rerun was pending. | Local Search work and PR15 correction recorded; no final dataset/NFR result | Mohit verified the Hybrid-default UI and requested branch publication on 2026-10-26. | Last recorded Search worktree: task/search-evidence-reduction at 864e53b; PR #11 later merged as e315c9d; [SE-01 task](../tasks/domain-task-list.md). Refresh current branch/PR/CI before relying on this snapshot. | Final SE-CORE/DATA-READY, current hosted checks, and NFR evidence remain open. | 2026-10-26 19:06:47 UTC |
+| SE-01 | Mohit (C); peer Suraj (B), Identity review | in progress | DATA-READY accepted as reported; category-text PR #25 merged to main | Formal SE-CORE, fixed-label relevance and NFR acceptance remain pending | DATA-READY confirmed by Aditya; Suraj review reported by Aditya | [SE-01 task](../tasks/domain-task-list.md); category-text PR #25 merge `1f11065` | Final SE-CORE, current integrated checks and NFR evidence remain open | 2026-11-01 20:18:19 UTC |
 | SE-02 | Mohit (C); peer Suraj (B), Identity/Conversations review | in progress | Step 8 real integration is gated; isolated Steps 1–7 were verified. | Local handoff performed; Step 8 audit recorded | Mohit verified the isolated UI and local handoff on 2026-10-25. | [SE-02 task and real gates](../tasks/domain-task-list.md); prior detailed result is recoverable from Git at f36ce3d. | Real ID-READY/LI-CORE/SE-CORE provider paths, Step 9 acceptance, current CI and independent review remain pending. | 2026-10-25 08:50:43 UTC |
 | MERGE-LI-SE | Suraj (integration); Listings/Search affected owners | done | PR #11 is squash-merged; Search–Listings local merge task is complete | Steps 1–9 performed; approved PR head `2a43066` merged to `main` as `e315c9d`; final hosted CI run `40204621122` passed | Steps 3–8 verified by Suraj; user authorized squash merge of the exact PR revision on 2026-10-25 | PR #11 `https://github.com/exocrat/clip/pull/11`; source head `2a430660d25e7c14cf33d84bd78172db4ec063c7`; squash merge `e315c9df3e0e11d6e9c8d7d244d676204d3af7e8`; hosted CI `40204621122`; local merge commit `29eb6fb`; fallback branch `safety/search-pr11-pre-main-reconciliation-20261025`; stash `af9d7f5`; local checks recorded below | No blocker for the Search–Listings merge. Final dataset, formal NFR/cloud checks, and real Identity/Conversations remain later work. | 2026-10-25 15:17:46 UTC |
-| CN-01 | Rahul (D) | in progress | PR17 integration merged; final CN-01/readiness/NFR obligations remain | Accepted main b09978e contains reviewed head3773931; hosted run40402518748 passed; prior local aggregate1930Python/403web and Conversations114 | Rahul verified local correction and confirmed PR merged; no additional milestone acceptance inferred | [PR17](https://github.com/exocrat/clip/pull/17), merge `b09978e91620ae3877a77c5bea8a4f12df7a8907`; [integration checkpoint](../evaluation/domain/conversations-integration.md) | Formal readiness/remaining device and security checks; CN-03 producer path and final NFR-05; full task acceptance pending | 2026-10-27 06:16:43 UTC |
+| CN-01 | Rahul (D) | in progress | NFR-05 synthetic event adapter added; real harness and final CN-01/readiness obligations remain | Synthetic event/preview tests, Mypy and formatting passed; prior PR17 integration checks retained | Offline checker verified; event adapter awaits verification | [PR17](https://github.com/exocrat/clip/pull/17); [integration checkpoint](../evaluation/domain/conversations-integration.md); [experiment log](../evaluation/experiment-log.md) | Formal readiness/remaining device and security checks; CN-03 producer path and final NFR-05; full task acceptance pending | 2026-11-02 12:31:17 UTC |
 | CN-02 | Rahul (D); Aditya/Suraj review | in progress | Step11 local aggregate checks passed; obtain human verification, then complete real dependency/owner review gates | 1930 Python passed/153 skipped; 94 data; 433 web/3 skipped; build/types/lint, Black 296 files, mypy, contract generation (8 artifacts), boundaries, DB lifecycle PostgreSQL18.6, Conversations harness167, DB safety35, Gitleaks8.30.1 passed | Step10 verified; Step11 local result pending Rahul verification | `task/cn-02-offers-contact-sharing`; [checkpoint](../evaluation/domain/conversations-offers.md); [browser walkthrough](../environment/conversation-browser-test.md) | Formal CN-CORE/ID-READY/LI-CORE acceptance, affected-owner review and hosted CI remain required for full CN-02 acceptance; later real-session/deployment gates remain | 2026-10-27 15:15:10 UTC |
 | CN-03 | A; D producer review | in progress | PR #21: migration-fixture CI fix locally verified; hosted CI pending | Full local checks passed: Python 2073/171 skipped, data 331, web 497/3 skipped, Conversations 184, migration and safety checks | Aditya confirmed prior task items done; current fix awaits hosted CI | Draft [PR #21](https://github.com/exocrat/clip/pull/21), branch includes merge `de2c94a` and local fixture fix | Push only after local checks; confirm hosted CI and obtain independent PR review | 2026-10-31 19:43:57 UTC |
 | INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
-| EXP-01 | C; Suraj coordinates NEXT-01 design | done | NEXT-01 design and gates are approved; actual topology pricing and numeric cost endpoints are NEXT-07 pre-result gates. | Design Steps 1–9 performed; no experiment run | Suraj verified NEXT-01 Steps 1–9 on 2026-10-28. | [Approved design and gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md); [NEXT-07 execution plan](../tasks/remaining-project-plan.md#experiment-protocol-reference) | Implementation, final data/tools, actual account/spend, numeric cost endpoints, and separate run approvals remain before measurement. | 2026-10-28 06:24:24 UTC |
-| EXP-02 | C | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-01 | — |
-| EXP-03 | B | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-02 | — |
+| EXP-01 | C; Suraj coordinates NEXT-01 design | done | NEXT-01 design and gates are approved; actual topology pricing and numeric cost endpoints are NEXT-07 pre-result gates. | Design Steps 1–9 performed; no experiment run | Suraj verified NEXT-01 Steps 1–9 on 2026-10-28; user clarified the 300 concurrent-client-request proposal is non-binding on 2026-11-01 UTC. | [Approved design and gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md); [NEXT-07 execution plan](../tasks/remaining-project-plan.md#experiment-protocol-reference) | Implementation, final data/tools, actual account/spend, numeric cost endpoints, and separate run approvals remain before measurement. | 2026-10-28 06:24:24 UTC |
+| EXP-02 | Rahul (D); Search owner C review | in progress | Parity-bound offline staging, preflight, mock checks and phase previews committed on its own branch | Synthetic checks only; real runner remains open | User confirmed reviewed search labels and directed A/B output comparison | `task/exp-02-workload` at `a52adea`; its experiment log | Affected-owner review, real runner, actual deployed parity, account/session and execution gates remain | 2026-11-02 19:32:53 UTC |
+| EXP-03 | Rahul (D), Terraform and scoped Identity; A peer, C/B affected review | in progress | Direct weighted ALB route for selected Listing GETs is implemented locally; A defaults to ECS with no Lambda resources; B registers Lambda and weights selected reads between Lambda/ECS; old ECS overflow router is removed | 74 focused tests, mypy, boundaries, individual Black checks, Terraform format and `git diff --check` passed. PR #27's first CI run found 14 formatting-only differences in comparison/NFR scripts; all 14 now pass individual Black checks; refreshed CI is pending. Full local aggregate check remains constrained by sandbox permissions and missing Node 24; Terraform mock validation blocked by registry DNS failure. | User directed direct ALB routing, fixed Lambda/ECS weight, and no automatic fallback. USD 10 cap and exact live action plan/approval remain. | `task/exp-03-lambda`; [PR #27](https://github.com/exocrat/clip/pull/27); [design](../evaluation/exp-03-lambda-design.md); [experiment log](../evaluation/experiment-log.md) | Refreshed CI, full local suite, provider-backed validation, source trust, B sizing, real parity, aggregate DB budget (pool ceiling exceeds recorded DB cap at design max), owner/peer review, deployment and interruption-safe cleanup | 2026-11-03 06:41:23 UTC |
 | EXP-04 | B | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-03 | — |
 | EXP-05 | C | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-04 | — |
 | EXP-06 | C operator; B infra support | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-05 | — |

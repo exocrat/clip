@@ -94,6 +94,9 @@ def cohort(points: list[dict], phase: str, expected: int, duration: float) -> di
         "all_completed_latency": stats([value for value, _, _ in samples]),
         "successful_latency": stats(success),
         "expected_result_within_1s": timed_success,
+        "within_1s_fraction_of_correct": (
+            timed_success / len(success) if success else None
+        ),
         "within_1s_fraction_of_issued": timed_success / issued if issued else None,
         "case_outcomes": {
             case: dict(Counter(outcome for _, outcome, name in samples if name == case))
@@ -131,6 +134,7 @@ def summarize(raw: Path, profile: dict, finished: bool, exit_code: int) -> dict:
     return {
         "preview_only": True,
         "nfr_accepted": False,
+        "latency_timing_verified": False,
         "finished": finished,
         "k6_exit": exit_code,
         "profile_id": profile["id"],

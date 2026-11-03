@@ -17,6 +17,14 @@ Use the default Terraform workspace in each root configuration. Terraform worksp
 
 Do not initialize these configurations against a remote backend until its exact bucket, target account/Region, credentials, access, plan, and migration/creation approvals pass their separate gates. The bootstrap root remains local-backend-only until the state bucket exists and migration is explicitly approved.
 
+## EXP-03 writer assignment
+
+For the EXP-03 shared test ingress and Lambda preparation, the user assigned
+Rahul Terraform ownership on 2026-11-02 UTC. The resources remain in the
+existing shared test root/state. This task assignment does not remove PD-16's
+general shared-root ownership, affected-owner review, independent review or
+the separate cloud plan/apply gates. See the [EXP-03 preparation](../evaluation/exp-03-terraform-preparation.md).
+
 ## Module ownership
 
 - `infra/terraform/modules/shared/` is the home for reusable, non-secret modules that manage shared capabilities. The PD-16 owner is responsible for shared module changes and reviews.

@@ -29,9 +29,10 @@ own their detailed commands and limits.
 
 | Work | Current command source |
 |---|---|
+| EXP-03 local Lambda image build and Terraform mock checks | [Offline local image builder](../../scripts/evaluation/build_lambda_image.sh); [Terraform preparation](../evaluation/exp-03-terraform-preparation.md) |
 | Search/Listings focused checks and isolated preview | [Search test guide](../../apps/api/tests/domains/search/README.md), [API guide](../../apps/api/README.md), and the browser procedure below |
 | Schema-shaped search data | [Data generator guide](../../data/README.md#se-01-isolated-schema-shaped-corpus); these are not the final NEXT-06 dataset commands |
-| Load-runner tools and bounded local pilot | [k6 tool guide](../../scripts/evaluation/k6/README.md) |
+| Load-runner tools, bounded local pilot and EXP-02 manifest validation | [k6 tool guide](../../scripts/evaluation/k6/README.md); [offline case and telemetry preparation](../evaluation/comparison-preparation-inputs.md) |
 | NFR measures and final-run requirements | [NFR measurement design](../evaluation/nfr/measurement-design.md) and the approved [ECS/Lambda experiment design](../evaluation/ecs-only-vs-ecs-lambda-task-list.md) |
 | Disposable database and SQL diagnostics | [Database guide](../../database/README.md) |
 | Identity provider setup and real-run gates | [Identity setup guide](identity-provider-setup.md) |
@@ -41,6 +42,26 @@ The k6 pilot is loopback-only and cannot accept an NFR. Draft profiles are not
 approved full-run inputs. NEXT-06 and NEXT-07 must register their final exact
 commands, inputs and evidence locations after the owning tools and data are
 ready; do not infer readiness from an example or local pilot.
+
+The EXP-03 image builder requires a cached Hybrid API image with a full
+`org.opencontainers.image.revision` label whose prefix matches its tag, and
+the pinned Lambda Web Adapter digest in the local Docker image store. Supply
+the revision label when building the Hybrid image; an existing unlabeled image
+will be refused. The label is a build-time declaration, not independent proof
+of the image source or contents. The builder forces the default Docker context
+to a local Unix socket, refuses an existing output tag, disables pulls and build-step networking, and prints the
+resulting local image ID/platform/size. It does not log in, pull, run, push or
+contact AWS. The resulting image is local build output, not a registry digest or
+deployment artifact. Example syntax (substitute the same actual source revision
+in both tags and ensure the source image carries the matching full revision
+label):
+
+```sh
+: "${EXP03_SOURCE_REVISION:?set this to the commit suffix in the local Hybrid API tag}"
+bash scripts/evaluation/build_lambda_image.sh \
+  "clip-exp03-hybrid:local-${EXP03_SOURCE_REVISION}" \
+  "clip-exp03-lambda:local-${EXP03_SOURCE_REVISION}"
+```
 
 ## SE-01 isolated discovery preview
 
@@ -1846,7 +1867,28 @@ MYPYPATH=apps/api/app/domains/listings .venv/bin/mypy --no-incremental --python-
 This installs nothing. It checks the helper against its actual pinned runtime;
 it does not replace CI, inference checks or platform acceptance.
 
+## EXP-02 evidence manifest validation
+
+Validate the unfilled schema template or a completed per-run evidence record:
+
+```bash
+.venv/bin/python -m scripts.evaluation.k6.comparison_manifest data/evaluation/workloads/ecs-lambda-run-manifest.template.json
+```
+
+The command is local and read-only. A valid manifest records evidence completeness;
+it does not authorize load, deployment, or cloud work. Real manifests belong in
+`docs/evaluation/experiment/<run-id>/` and must contain no credentials or personal
+data. See the [k6 guide](../../scripts/evaluation/k6/README.md).
+
 ## NEXT-03 complete local inspection
+
+EXP-02 local comparison preparation: after starting the synthetic inspection
+app below, provide one to ten case objects on standard input to
+`.venv/bin/python -m scripts.evaluation.k6.comparison_runner --port 5175 --k6 /usr/bin/k6`.
+Only documented inspection ports are accepted; it obtains the synthetic buyer
+session in memory and checks HTTP status and content against separately supplied
+expected responses. It is not an NFR or cloud runner. See [its case format and
+limits](../../scripts/evaluation/k6/README.md).
 
 After building the normal web bundle with pinned Node/npm, run:
 
