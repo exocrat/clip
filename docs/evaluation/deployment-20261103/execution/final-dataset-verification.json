@@ -1,0 +1,14 @@
+{
+  "users_verified": 5000,
+  "listings_verified": 1000,
+  "images_verified": 1000,
+  "regular_owners_verified": 1000,
+  "available_verified": 800,
+  "logical_projection_digest": "sha256:1d4a2369f53c8415ea6399546c0814d7a02e6bdae0e98f312221a995711efb80",
+  "text_vectors_verified": 1000,
+  "text_search_indexes": [
+    "CREATE INDEX sale_full_text ON listings.sale_listings USING gin (search_vector)"
+  ],
+  "accepted_input_fingerprint": "sha256:7efd142e11c3e8555e1aa08603cbf8dff07de5d74412ccde3c39869b9334ab98",
+  "read_only": true
+}

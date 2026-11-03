@@ -5814,3 +5814,39 @@ and added a separate USD0.0838 unbilled two-hour ingress estimate to the
 project ledger; actual billing remains delayed/unreconciled. DNS phase review
 deadline is 18:10 UTC; this is not an automatic shutdown. Waiting for domain
 owner completion; source startup/site inspection/experiments remain pending.
+
+### EXP-03 private startup and final-database binding — 2026-11-03 16:41:56 UTC
+
+Suraj authorized progressing while DNS is pending, then explicitly approved
+binding plan SHA256 `8cfc3f0c2f7a1da00a5fecf2f7f2c21cf1369e4e86d3e4d1fa2ee6af928c7a2a`.
+Resized retained host `i-086045c48487471de` in place to c7i-flex.large and
+attached only the approved ALB group; started existing RDS. ECS rejected the
+old instance-type registration. With zero tasks, deregistered that logical
+registration, preserved `/var/lib/ecs/data.exp261103.before-reregister`, and
+restarted the agent. The same host now registers connected with 3819MiB under
+container instance `345a5cb37f744addbb0a168413be6038`.
+
+Read-only inspection found accepted final data intact in clip_next06_reference,
+while all three application DSNs still selected clip_test. Applied exactly three
+existing notification migrations (29->32) and reproduced the original app roles'
+restricted database/schema/table/column grants in the final database. No role,
+password, original-database or business-row replacement. The CLI rejected stdin
+JSON before SSM publication; used the existing reviewed SDK login bridge to
+publish only the three approved database-path edits, each version1->2. The
+complete logical row/image projection still matches the accepted archive:
+`sha256:1d4a2369f53c8415ea6399546c0814d7a02e6bdae0e98f312221a995711efb80`.
+The accepted input fingerprint remains `7efd142e...334ab98`; all5000users,
+1000listings/images/generations and2000vector chunks are present.
+
+Started run-owned second c7i-flex.large host `i-08e368391d905310e` (root volume
+`vol-090eb87915db43230`), ASG desired2/max2, resumed only Launch, retained other
+nine suspensions and scale-in protection. Published the built Lambda image.
+Initial app tasks exited1: Identity's connection guard permits only clip_test,
+so the final database is rejected. Stopped automatic retries (service desired0).
+Preparing the narrow reviewed-name allowlist fix; eight focused guard cases
+pass, and the existing real Identity role/key/privilege audit passes against the
+final database over verified TLS. This runtime guard was missed by earlier
+local-readiness review; no successful live app/NFR result is claimed. Black's
+multi-file process pool was sandbox-blocked; individual-file formatting passes.
+Next: PR/check/merge and exact image-update plan approval before redeploying.
+DNS still points at the stopped proxy; restore certificate remains pending.
