@@ -15,6 +15,28 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## Current checkpoint
 
+### 2026-11-03 04:35:00 UTC — Local overflow decision policy
+
+**Direction:** The user accepted an ECS-hosted Lambda-first router and the
+proposed narrow fallback: only a confirmed Lambda capacity rejection invokes
+the ECS handler. Timeouts and other errors do not trigger a second request.
+
+**Local work:** `apps/api/app/overflow_dispatch.py` implements this decision
+against injected async callables, without network access or app integration.
+It identifies the selected backend and suppresses response values in its
+representation. `apps/api/tests/test_overflow_dispatch.py` verifies Lambda
+success, one capacity fallback and no fallback on other errors with synthetic
+callbacks. The transport must independently classify real AWS rejection before
+execution; it does not exist yet. Route selection, ASGI event conversion,
+authentication, request/response privacy, bounded timeouts, backend telemetry,
+IAM, database capacity and real integration remain open. Terraform B stays
+blocked. No AWS call, deployment or measurement occurred.
+
+**Checks:** Four focused pytest cases and strict mypy passed. Black passed when
+checking each file separately. Its initial multi-file invocation could not
+create a sandboxed worker socket; a single-worker retry was interrupted after
+waiting, and the individual-file checks succeeded. No source was reformatted.
+
 - **New EXP-03 direction (2026-11-03):** The user requested Lambda-first reads
   with ECS overflow when Lambda reaches capacity. The old direct-to-Lambda B
   configuration is blocked pending an implemented, reviewed overflow path.

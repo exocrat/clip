@@ -1,5 +1,13 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### EXP-03 overflow policy — 2026-11-03 04:35:00 UTC
+
+User accepted the ECS-hosted Lambda-first router recommendation. Added an
+offline injected-callable policy: only a confirmed capacity rejection invokes
+ECS; other errors propagate. Four synthetic tests, strict mypy and individual
+Black checks passed. No transport or app integration exists; B stays blocked.
+See the [experiment log](../evaluation/experiment-log.md).
+
 ### EXP-03 Lambda-first overflow direction — 2026-11-03 03:07:09 UTC
 
 User selected Lambda-first reads with ECS overflow at Lambda capacity. The old
