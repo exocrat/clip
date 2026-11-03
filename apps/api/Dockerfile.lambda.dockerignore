@@ -1,0 +1,2 @@
+# Lambda copies only from explicit image stages; send no repository files.
+**

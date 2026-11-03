@@ -38,13 +38,9 @@ def validate_declared_parity(
     reference: Any,
     plan: Any,
     evidence_root: Path | None = None,
-    *,
-    allow_parity_draft: bool = False,
 ) -> dict[str, Any]:
     """Compare two supplied declarations to the independently supplied plan/reference."""
-    validate_run_inputs(
-        binding, corpus, reference, plan, allow_parity_draft=allow_parity_draft
-    )
+    validate_run_inputs(binding, corpus, reference, plan)
     if not isinstance(record, dict) or set(record) != TOP_FIELDS:
         raise ValueError("invalid_parity_shape")
     if (

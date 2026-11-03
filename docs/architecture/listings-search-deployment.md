@@ -53,12 +53,37 @@ the exact lock's binary wheels into `.tools/semantic/wheels`. A pinned
 `python:3.14.8-slim-trixie` container's `python -m pip download --require-hashes
 --only-binary :all: --no-deps` can prepare the wheel directory, using
 `--python-version 3.13 --implementation cp --abi cp313 --abi abi3 --abi none`
-and Linux x86_64 platforms `manylinux_2_28_x86_64`, `manylinux_2_27_x86_64` and
-`manylinux_2_17_x86_64`. Retrieve `onnx/model.onnx` and `tokenizer.json` from the
+and Linux x86_64 platforms `manylinux_2_28_x86_64`, `manylinux_2_27_x86_64`,
+`manylinux_2_17_x86_64` and `manylinux2014_x86_64`. The last explicit platform
+is required by the pinned protobuf binary wheel; omitting it can select a
+different universal wheel whose hash is correctly rejected by this lock.
+Retrieve `onnx/model.onnx` and `tokenizer.json` from the
 immutable model/revision in `embedding_pipeline.json`; the build refuses changed
 bytes. Existing [semantic artifact documentation](../../scripts/evaluation/semantic/README.md)
 explains provenance and the earlier Mac probe. That Mac-specific fetch script
 does not prepare the Linux wheel set.
+
+On the Arch workstation, use pip from the already present standalone Python;
+keep the helper's Python 3.13 virtual environment separate from the API's Python
+3.14 environment. With public-PyPI artifact downloads explicitly authorized:
+
+```sh
+.tools/semantic/python/cpython-3.13.12-linux-x86_64-gnu/bin/python3.13 -m pip \
+  --isolated --disable-pip-version-check download \
+  --index-url https://pypi.org/simple --require-hashes --only-binary :all: --no-deps \
+  --python-version 3.13 --implementation cp --abi cp313 --abi abi3 --abi none \
+  --platform manylinux_2_28_x86_64 --platform manylinux_2_27_x86_64 \
+  --platform manylinux_2_17_x86_64 --platform manylinux2014_x86_64 \
+  --dest .tools/semantic/wheels --no-cache-dir --timeout 20 --retries 0 --no-input \
+  -r scripts/evaluation/semantic/requirements-linux-x86_64.txt
+```
+
+This downloads binary archives for the build without changing a venv or system
+packages. The EXP-03 local check downloaded 24 matching archives and installed
+them with pip into a disposable Python 3.13 venv using `--no-index`, required
+hashes and these local files; `pip check` passed. It does not establish image
+startup, model inference or ECS/Lambda integration. Existing installed packages
+alone do not substitute for the wheel context used by the image build.
 
 ## Configuration and initial pipeline setup
 

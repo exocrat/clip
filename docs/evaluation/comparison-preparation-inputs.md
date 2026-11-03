@@ -1,11 +1,4 @@
-# Comparison preparation: parity cases and telemetry metadata
-
-The user directed a pre-run ECS versus ECS+Lambda response comparison; a
-human-authored ordered result for the three Hybrid queries is not required.
-The existing reviewed `data/evaluation/query-labels.json` serves the separate
-Success@5 test. The older ordered-reference workflow below remains available as
-legacy tooling and is not an additional requested input. Real-run integration
-and affected-owner review are still required.
+# Comparison preparation: ordered cases and telemetry metadata
 
 ## Proposed search parity adapter
 
@@ -83,7 +76,7 @@ and two detail responses. The same strict input structure applies. The command
 checks that each request matches its corpus case and validates both responses;
 it reports counts without response bodies. Equal responses do not independently
 establish correct search relevance, data identity or deployed configuration.
-This remains an offline check rather than a real-run gate.
+This remains an offline check rather than an enforced run gate.
 
 `comparison_parity_preparation.check_draft_parity` connects the draft binding,
 paired-plan and profile-hash checks to that ten-case comparator. It validates
@@ -757,45 +750,3 @@ five seconds of measured arrivals. The k6 VU limit is per scenario, so both
 burst cohorts can jointly use up to twice the supplied per-scenario maximum.
 The future generator plan must account for this combined maximum and establish
 that its approved host, concurrency and resource limits are respected.
-
-## Offline parity input preflight
-
-The combined `comparison_offline_prepare` command accepts `--parity-draft`
-to check version-2 parity-bound inputs without an ordered search reference.
-Pass the version-2 binding using its existing `--ordered-reference` argument.
-The report explicitly lists response parity and affected-owner review as
-remaining gates. Without the option, parity drafts are refused. This check
-only validates local inputs; it does not compare deployed responses or authorize
-a run.
-
-## Local parity staging
-
-For the version-2 parity binding, the offline staging helper accepts
-`--response-pairs` containing the bounded ten-case array described above. It
-checks the case/profile binding, compares all ten supplied A/B responses before
-creating the staging directory, and records a hash of the supplied file without
-copying its bodies. Missing or mismatched pairs stop staging. Passing this
-local check does not establish where responses came from or verify a deployed
-target, review, relevance, or authorization. The local-only k6 workload still
-requires its separate parity-draft inputs, and a real-target runner remains to
-be implemented. Never put credentials or private responses in the pair file.
-
-The in-memory `comparison_mock_runner.simulate_run` also accepts explicit
-synthetic `parity_response_pairs`. It refuses mismatches before reading the
-fake session and simulates the later steps only after all pairs match. This
-is a local test double: it sends no requests and never authorizes a run.
-
-## Local k6 phase metrics
-
-The local-only scheduled workload emits candidate phase metrics for each
-response classified correct: `clip_comparison_phase_duration_ms` and
-`clip_comparison_phase_span_ms`, the latter calculated as `blocked + duration`
-from the same response. Connecting and TLS remain k6 diagnostics; they are
-not added separately. Invalid or greater-than-five-second samples increment
-`clip_comparison_phase_invalid`. The report suppresses preview percentiles if
-any correct sample is missing or invalid, or request accounting is incomplete.
-The report cannot independently prove the individual samples' pairing or
-timing validity; these values are not NFR acceptance or a reviewed final
-measurement protocol. Failures and timeouts remain separately accounted for.
-`comparison_phase_preview.js` is a staged workload dependency and must be
-included in module hashes.

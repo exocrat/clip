@@ -46,7 +46,7 @@ class SafeJsonFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
         """Serialize bounded diagnostic metadata, ignoring arbitrary log content."""
         event = getattr(record, "event", None)
-        output = {
+        output: dict[str, str | int | float] = {
             "timestamp": format_timestamp(datetime.now(UTC)),
             "severity": logging.getLevelName(record.levelno),
             "event": (
@@ -72,7 +72,12 @@ class SafeJsonFormatter(logging.Formatter):
         if type(status) is int and 100 <= status <= 599:
             output["status"] = status
         duration = getattr(record, "duration_ms", None)
-        if type(duration) in (int, float) and math.isfinite(duration) and duration >= 0:
+        if (
+            isinstance(duration, (int, float))
+            and not isinstance(duration, bool)
+            and math.isfinite(duration)
+            and duration >= 0
+        ):
             output["duration_ms"] = round(duration, 3)
         return json.dumps(output, ensure_ascii=True, allow_nan=False)
 

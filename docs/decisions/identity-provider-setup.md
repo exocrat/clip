@@ -52,6 +52,10 @@ check required adding the one controlled recipient identity alongside the sender
 domain; the exact FromAddress condition remains. Preserve that private Terraform
 input during sandbox work and review its removal after production access.
 
+## Owner-directed Microsoft test-tenant exception — 2026-11-02
+
+The owner directed an exception for users whose validated Microsoft token has tenant ID `19d07278-f040-4722-8202-b1174cf3a4d3` and a signed `preferred_username` in the exact `medheadityagmail.onmicrosoft.com` domain, with a valid object ID. Guest-style `#` usernames are excluded. This rule applies across environments, subject to each environment's existing runtime gates. Microsoft signature, issuer, audience, expiry and nonce validation remain mandatory; accounts map by issuer and subject as regular accounts. The exact test-tenant identity can lack an email claim, in which case no notification email is saved. A missing username claim is denied. Real multi-account/provider checks and independent review remain pending; this does not authorize deployment.
+
 ## Rationale
 Matches the existing application-owned temporary authentication decision and
 uses the existing AWS environment. Microsoft registration details and SES domain

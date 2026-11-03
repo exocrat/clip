@@ -22,7 +22,10 @@ import app.domains.conversations.public as conversations_public
 import app.domains.conversations.routes as conversations_routes
 from app.domains.conversations.notifications.runtime import notification_runtime
 from app.core.database import PoolFactory, create_async_connection_pool
-from app.domains.listings.routes import router as listings_router
+from app.domains.listings.routes import (
+    read_only_router as listings_read_only_router,
+    router as listings_router,
+)
 from app.domains.listings.integrations import PublicListingsIdentity
 from app.domains.listings.postgres_store import PostgresListingsStore
 from app.domains.listings.search_access import ListingsSearchAccess
@@ -33,7 +36,12 @@ from app.domains.search.wanted_store import PostgresWantedStore
 from app.domains.search.saved_routes import router as saved_router
 from app.domains.search.saved_store import PostgresSavedStore
 
-from app.domains.identity.http import IdentityHttpDependencies, install_identity_http
+from app.domains.identity.http import (
+    IdentityHttpDependencies,
+    IdentityReadDependencies,
+    install_identity_http,
+    install_identity_reads,
+)
 
 
 @asynccontextmanager
@@ -47,6 +55,10 @@ async def _marketplace_lifespan(
     storage_factory: Callable[
         [str, str, str], S3ListingsImageStorage
     ] = S3ListingsImageStorage,
+    listings_pool_max_size: int = 10,
+    hybrid_pool_max_size: int = 2,
+    hybrid_worker_enabled: bool | None = None,
+    read_only_listings: bool = False,
 ) -> AsyncIterator[None]:
     """Open the configured PostgreSQL pool and close it during app shutdown."""
     application.state.search_runtime = None
@@ -65,7 +77,7 @@ async def _marketplace_lifespan(
         conninfo=settings.database_url.get_secret_value(),
         kwargs={"row_factory": dict_row},
         min_size=1,
-        max_size=10,
+        max_size=listings_pool_max_size,
         timeout=5,
         open=False,
     )
@@ -87,10 +99,18 @@ async def _marketplace_lifespan(
         ) from None
 
     try:
-        async with search_runtime(settings) as search:
+        async with search_runtime(
+            settings,
+            pool_max_size=hybrid_pool_max_size,
+            enable_worker=hybrid_worker_enabled,
+        ) as search:
             application.state.search_runtime = search
-            application.state.wanted_store = PostgresWantedStore(pool)
-            application.state.saved_store = PostgresSavedStore(pool)
+            application.state.wanted_store = (
+                None if read_only_listings else PostgresWantedStore(pool)
+            )
+            application.state.saved_store = (
+                None if read_only_listings else PostgresSavedStore(pool)
+            )
             application.state.listings_store = PostgresListingsStore(
                 pool,
                 settings.sensitive_purchase_threshold_paise,
@@ -117,12 +137,14 @@ async def _marketplace_lifespan(
                     settings.image_region or "",
                     settings.image_key_prefix or "",
                 )
-                if settings.storage_provider == "s3"
+                if settings.storage_provider == "s3" and not read_only_listings
                 else None
             )
             # These are reviewed declaration-only calls today. ListingsService maps
             # their NotImplementedError to a safe 503 until Conversations is wired.
-            application.state.listings_conversations = conversations_public
+            application.state.listings_conversations = (
+                None if read_only_listings else conversations_public
+            )
             yield
     finally:
         await finish_search_cleanup(pool.close())
@@ -133,9 +155,14 @@ async def application_lifespan(
     application: FastAPI,
     settings: Settings,
     *,
-    pool_factory=AsyncConnectionPool,
-    storage_factory=S3ListingsImageStorage,
+    pool_factory: Callable[
+        ..., AsyncConnectionPool[AsyncConnection[dict[str, Any]]]
+    ] = AsyncConnectionPool,
+    storage_factory: Callable[
+        [str, str, str], S3ListingsImageStorage
+    ] = S3ListingsImageStorage,
     conversation_pool_factory: PoolFactory = create_async_connection_pool,
+    read_only_listings: bool = False,
 ) -> AsyncIterator[None]:
     """Own both row-format-specific pools and close them on failure or shutdown.
 
@@ -147,7 +174,7 @@ async def application_lifespan(
     application.state.conversations_public = None
     dsn = settings.database_dsn or settings.database_url
     try:
-        if dsn is not None:
+        if dsn is not None and not read_only_listings:
             pool = conversation_pool_factory(dsn.get_secret_value())
             await pool.open(wait=False)
             application.state.database_pool = pool
@@ -156,17 +183,24 @@ async def application_lifespan(
             settings,
             pool_factory=pool_factory,
             storage_factory=storage_factory,
+            listings_pool_max_size=1 if read_only_listings else 10,
+            hybrid_pool_max_size=1 if read_only_listings else 2,
+            hybrid_worker_enabled=False if read_only_listings else None,
+            read_only_listings=read_only_listings,
         ):
-            if isinstance(pool, AsyncConnectionPool):
+            if not read_only_listings and isinstance(pool, AsyncConnectionPool):
                 services = conversations_routes.create_public_provider(pool)
                 application.state.conversations_public = services
                 application.state.listings_conversations = services
-            async with notification_runtime(
-                settings,
-                pool,
-                getattr(application.state, "identity_dependencies", None),
-            ):
+            if read_only_listings:
                 yield
+            else:
+                async with notification_runtime(
+                    settings,
+                    pool,
+                    getattr(application.state, "identity_dependencies", None),
+                ):
+                    yield
     finally:
         application.state.database_pool = None
         application.state.conversations_public = None
@@ -178,7 +212,9 @@ def create_app(
     settings: Settings | None = None,
     *,
     identity: IdentityHttpDependencies | None = None,
+    identity_reads: IdentityReadDependencies | None = None,
     pool_factory: PoolFactory = create_async_connection_pool,
+    listings_read_only: bool = False,
 ) -> FastAPI:
     """Compose the API with optional explicit real Identity bindings.
 
@@ -189,6 +225,25 @@ def create_app(
     app closes its own configured Listings pool.
     """
     settings = settings if settings is not None else load_settings()
+    if listings_read_only and identity is not None:
+        raise ConfigurationError("Lambda requires session-only Identity bindings")
+    if identity_reads is not None:
+        if (
+            not isinstance(identity_reads, IdentityReadDependencies)
+            or not listings_read_only
+            or identity is not None
+            or settings.environment != "test"
+            or not settings.identity_runtime_enabled
+            or settings.development_auth
+            or settings.isolated_listings_test_caller
+            or identity_reads.policy.development
+            or identity_reads.policy.origins != settings.identity_browser_origins
+        ):
+            raise ConfigurationError("Explicit safe Lambda Identity bindings required")
+    if listings_read_only and settings.isolated_listings_test_caller:
+        raise ConfigurationError(
+            "The Lambda read-only app cannot use the isolated demo identity"
+        )
     if identity is not None:
         if not isinstance(identity, IdentityHttpDependencies):
             raise ConfigurationError("Complete trusted Identity bindings required")
@@ -210,7 +265,10 @@ def create_app(
     async def lifespan(application: FastAPI) -> AsyncIterator[None]:
         """Bind this app's immutable configuration to the shared owned lifecycle."""
         async with application_lifespan(
-            application, settings, conversation_pool_factory=pool_factory
+            application,
+            settings,
+            conversation_pool_factory=pool_factory,
+            read_only_listings=listings_read_only,
         ):
             yield
 
@@ -226,14 +284,18 @@ def create_app(
         lifespan=lifespan,
     )
     app.state.identity_dependencies = identity
+    app.state.identity_read_dependencies = identity_reads
 
     install_error_handlers(app)
+    path_prefix = "/api" if settings.serve_web_app or listings_read_only else ""
     if identity is not None:
         install_identity_http(
             app,
             identity,
-            path_prefix="/api" if settings.serve_web_app else "",
+            path_prefix=path_prefix,
         )
+    if identity_reads is not None:
+        install_identity_reads(app, identity_reads)
     app.add_middleware(RequestLoggingMiddleware)
 
     if settings.isolated_listings_test_caller:
@@ -282,7 +344,11 @@ def create_app(
         """
         return HealthResponse(status="ok")
 
-    if settings.serve_web_app:
+    if listings_read_only:
+        # EXP-03's Lambda target exposes only the two reviewed read operations.
+        # Authentication remains the real injected Identity dependency.
+        app.include_router(listings_read_only_router, prefix="/api")
+    elif settings.serve_web_app:
         # Give the same-origin hosted UI its explicit /api path. The local Vite
         # proxy keeps its existing prefix rewrite against the unprefixed API.
         app.include_router(listings_router, prefix="/api")

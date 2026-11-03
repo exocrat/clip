@@ -38,6 +38,8 @@ from app.domains.listings.browse_routes import router as browse_router
 
 router = APIRouter()
 router.include_router(browse_router)
+read_only_router = APIRouter()
+read_only_router.include_router(browse_router)
 
 
 class ListingManagementPage(PageQuery):
@@ -229,6 +231,17 @@ async def read_listing_detail(
 ) -> ListingDetail:
     """Read public-discoverable detail or the caller's own unavailable listing."""
     return await service.read_detail(caller, listing_id)
+
+
+read_only_router.add_api_route(
+    "/listings/{listing_id}",
+    read_listing_detail,
+    methods=["GET"],
+    response_model=ListingDetail,
+    summary="listings_read_detail",
+    operation_id="listings_read_detail",
+    responses=_ERROR_RESPONSES,
+)
 
 
 @router.get(

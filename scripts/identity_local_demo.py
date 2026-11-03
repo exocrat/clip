@@ -148,16 +148,16 @@ def demo_application(root, recipients, client):
                 "GRANT CONNECT ON DATABASE clip_test_identity TO clip_local_marketplace"
             )
             c.execute(
-                "GRANT USAGE ON SCHEMA public,listings,search,identity TO clip_local_marketplace"
+                "GRANT USAGE ON SCHEMA public,listings,search,identity,conversations TO clip_local_marketplace"
             )
             c.execute(
-                "GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA listings,search TO clip_local_marketplace"
+                "GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA listings,search,conversations TO clip_local_marketplace"
             )
             c.execute(
                 "GRANT SELECT ON identity.participant_profiles TO clip_local_marketplace"
             )
             c.execute(
-                "GRANT USAGE,SELECT ON ALL SEQUENCES IN SCHEMA listings,search TO clip_local_marketplace"
+                "GRANT USAGE,SELECT ON ALL SEQUENCES IN SCHEMA listings,search,conversations TO clip_local_marketplace"
             )
         settings = Settings(
             _env_file=None,

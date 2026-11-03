@@ -284,7 +284,12 @@ resource "aws_launch_template" "ecs_host" {
     name = aws_iam_instance_profile.ecs_instance[0].name
   }
 
-  vpc_security_group_ids = [aws_security_group.ecs_host[0].id]
+  # Add a separate temporary ingress group rather than mixing inline and
+  # standalone rules on the retained shared host security group.
+  vpc_security_group_ids = concat(
+    [aws_security_group.ecs_host[0].id],
+    local.exp03_active ? [aws_security_group.exp03_ecs[0].id] : [],
+  )
 
   block_device_mappings {
     device_name = "/dev/xvda"

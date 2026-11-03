@@ -5,7 +5,8 @@ adapter must independently establish the trusted origin and session before
 using a request to invoke the application.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+import re
 from urllib.parse import unquote_plus, urlencode
 
 
@@ -16,7 +17,7 @@ class AlbRequest:
     method: str
     path: str
     query_string: bytes
-    headers: tuple[tuple[bytes, bytes], ...]
+    headers: tuple[tuple[bytes, bytes], ...] = field(repr=False)
 
 
 def parse_alb_read(event: object) -> AlbRequest:
@@ -29,7 +30,9 @@ def parse_alb_read(event: object) -> AlbRequest:
         raise ValueError("Invalid ALB read request")
     path = event.get("path")
     headers = event.get("multiValueHeaders")
-    query = event.get("multiValueQueryStringParameters") or {}
+    query = event.get("multiValueQueryStringParameters")
+    if query is None:
+        query = {}
     if (
         not isinstance(path, str)
         or not path.startswith("/")
@@ -50,7 +53,11 @@ def parse_alb_read(event: object) -> AlbRequest:
                     raise ValueError
                 pairs.append((unquote_plus(key), unquote_plus(value)))
         for key, values in headers.items():
-            if not isinstance(key, str) or not isinstance(values, list):
+            if (
+                not isinstance(key, str)
+                or not re.fullmatch(r"[!#$%&'*+.^_`|~0-9A-Za-z-]+", key)
+                or not isinstance(values, list)
+            ):
                 raise ValueError
             for value in values:
                 if not isinstance(value, str) or "\r" in value or "\n" in value:

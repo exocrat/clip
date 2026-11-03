@@ -162,6 +162,17 @@ resource "aws_security_group" "database" {
     security_groups = [aws_security_group.ecs_host[0].id]
   }
 
+  dynamic "ingress" {
+    for_each = local.exp03_active ? [1] : []
+    content {
+      description     = "Temporary EXP-03 Lambda access to private PostgreSQL."
+      from_port       = 5432
+      to_port         = 5432
+      protocol        = "tcp"
+      security_groups = [aws_security_group.exp03_lambda[0].id]
+    }
+  }
+
   tags = { Name = "${local.prefix}-database" }
 }
 

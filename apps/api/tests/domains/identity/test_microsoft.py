@@ -331,3 +331,45 @@ def test_signed_fixture_claims_are_reproducible_at_fixed_time(signed_tokens):
     assert first == signed_tokens.claims()
     assert first["exp"] - first["iat"] == 302
     assert first["exp"] == 1893456300
+
+
+def test_test_tenant_requires_signed_exact_username_domain(signed_tokens):
+    """Permit users of the specified tenant/domain, never other tenants or domains."""
+    tenant = "19d07278-f040-4722-8202-b1174cf3a4d3"
+    claims = {
+        "tid": tenant,
+        "iss": ISSUER.replace("{tenantid}", tenant),
+        "oid": "81cc6bfd-631b-4e8e-b941-dcc43f19093e",
+        "preferred_username": "clip-test-user@medheadityagmail.onmicrosoft.com",
+        "email": "test@example.com",
+    }
+    validator = signed_tokens.validator()
+    assert (
+        validator.verify(signed_tokens.token(claims), expected_nonce=NONCE).subject
+        == "synthetic-subject"
+    )
+    assert (
+        validator.verify(
+            signed_tokens.token(claims, remove=("email",)), expected_nonce=NONCE
+        ).email
+        is None
+    )
+    another = claims | {
+        "oid": "11111111-2222-4333-8444-555555555555",
+        "preferred_username": "another@medheadityagmail.onmicrosoft.com",
+    }
+    assert (
+        validator.verify(
+            signed_tokens.token(another, remove=("email",)), expected_nonce=NONCE
+        ).email
+        is None
+    )
+    for change in (
+        {"preferred_username": "other@other.onmicrosoft.com"},
+        {"preferred_username": "user#EXT#@medheadityagmail.onmicrosoft.com"},
+        {"oid": "not-a-uuid"},
+        {"tid": TENANT, "iss": ISSUER.replace("{tenantid}", TENANT)},
+        {"aud": "other"},
+    ):
+        denied(validator, signed_tokens.token(claims | change))
+    denied(validator, signed_tokens.token(claims, remove=("preferred_username",)))

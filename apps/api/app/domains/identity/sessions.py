@@ -426,9 +426,11 @@ class IdentitySessions:
             if row is None or row[2] is not None or not row[0] <= now < row[1]:
                 raise PublicError(ERRORS[401])
             account = PostgresMicrosoftAccounts.get_or_create_in(c, identity)
-            NotificationAddressCipher(self._keys).save_in(
-                c, account.user_id, identity.email
-            )
+            # A Microsoft test identity without a signed email has no delivery address.
+            if identity.email is not None:
+                NotificationAddressCipher(self._keys).save_in(
+                    c, account.user_id, identity.email
+                )
             grant = self._issue(c, account.user_id, now)
             c.execute(
                 "UPDATE identity.microsoft_login_attempts SET consumed_at=%s WHERE token_digest=%s",

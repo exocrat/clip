@@ -30,6 +30,489 @@ Python tests and both Node parity files passed. This is synthetic local evidence
 the real runner, deployed parity and affected-owner review remain open. The
 EXP-02 edits were moved to `task/exp-02-workload`; EXP-03 work remains on its
 branch. No AWS action or measurement. [Experiment log](../evaluation/experiment-log.md).
+### EXP-03 bounded router integration — 2026-11-03 05:23:09 UTC
+
+Wired the per-process bounded invoker into the explicit test router and app
+lifespan. Router-capacity 503 is separate from AWS throttle fallback; deadline
+failure is not retried. The synthetic suite passed 158 tests plus mypy,
+Black and boundary checks. Runtime sizing, trusted ingress, telemetry export,
+Terraform and real integration remain open. No AWS action.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 bounded invocation preparation — 2026-11-03 05:20:44 UTC
+
+Prepared an unwired per-process invocation bound that keeps slots until timed-out
+or cancelled worker threads actually finish; 156 synthetic tests, mypy and Black
+passed. Router/lifecycle integration, actual sizing and AWS/DB limits remain
+open. No AWS action. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 explicit hosted-test composition — 2026-11-03 05:16:46 UTC
+
+The app factory can now install overflow only with explicit hosted-test Identity
+and same-run no-retry dependencies; normal startup stays unchanged. Logging
+wraps the router and ECS fallback retains Identity. The 16-file synthetic suite
+passed 149 tests plus mypy/Black. Runtime client, trusted ingress, deadlines,
+telemetry, Terraform and real integration remain open; no AWS action.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 Lambda client config preparation — 2026-11-03 05:14:41 UTC
+
+Prepared an unwired SDK config with explicit timeouts, pool size and no retries;
+145 local tests and mypy/Black passed. Socket timeouts do not provide a total
+deadline or concurrency cap. Runtime wiring and real checks remain open; no
+AWS action. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 broader Lambda regression — 2026-11-03 05:11:55 UTC
+
+The combined 14-file local Lambda, ALB and overflow regression passed 133
+synthetic tests. Middleware installation and real integration remain open; no
+AWS action. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 local overflow counters — 2026-11-03 05:10:45 UTC
+
+Added non-sensitive process-local routing counts; 92 synthetic tests and
+mypy/Black passed. Counts do not measure correct completions and still need a
+reviewed exporter/aggregation. Middleware is uninstalled, B remains blocked,
+and no AWS action occurred. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 local overflow middleware — 2026-11-03 05:09:02 UTC
+
+Implemented unwired ASGI routing for selected reads and throttle-only ECS
+fallback; 91 synthetic middleware/Identity/transport tests, mypy and Black
+passed. Trusted ingress, bounded client/concurrency, telemetry, app installation,
+Terraform review and real parity remain open; B stays blocked. No AWS action.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 synthetic overflow app chain — 2026-11-03 05:02:35 UTC
+
+Tested Lambda-first and throttled-fallback decisions against the real local
+read route/Identity middleware with fake SDK, bridge, session and store: 81
+combined tests passed. Actual ECS wiring, independent deployed parity and real
+integrations remain open. No AWS action. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 isolated Identity adapter probe — 2026-11-03 04:59:56 UTC
+
+Cached Lambda Web Adapter, Uvicorn and Identity middleware processed a synthetic
+session with HTTPS (200) and rejected HTTP (403) in a network-none container.
+After fixing the fake async bindings, cleanup was verified. Real sessions,
+ALB trust, current image and deployed parity remain open. No AWS action.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 offline real adapter probe — 2026-11-03 04:54:44 UTC
+
+The cached Lambda Web Adapter processed a synthetic ALB event in a network-none
+temporary container: HTTPS/header, cookie and repeated-query handoff plus a 200
+response were observed. Initial missing-runtime-setting failures were corrected;
+the named container was confirmed removed. This is not real Uvicorn/Identity,
+ALB, IAM or deployed parity. No AWS action. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 local HTTPS handoff preparation — 2026-11-03 04:50:32 UTC
+
+Added an unwired local helper that removes forwarding claims and binds a checked
+HTTPS scheme/project host; 77 synthetic overflow/Identity tests passed. It does
+not authenticate the ingress or prove real adapter behavior; both remain gates.
+Local Docker image inventory only, no AWS action. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 overflow protocol hardening — 2026-11-03 04:47:52 UTC
+
+Local event/response helpers now refuse ambiguous interleaved queries, duplicate
+JSON keys and unsafe controls; 50 synthetic tests and mypy/Black passed. Current
+builder rejects ALB forwarding headers, so trusted HTTPS/host handling and a
+real Web Adapter check are still mandatory before wiring. No AWS action.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 synthetic overflow chain — 2026-11-03 04:44:30 UTC
+
+Composed the local event, SDK, synthetic ASGI and fallback components; 46
+synthetic tests passed with local escalation after a sandboxed run stalled.
+This does not prove real HTTPS, Identity, Web Adapter or deployed parity; B
+remains blocked. No AWS action. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 synthetic Lambda response parser — 2026-11-03 04:42:25 UTC
+
+Prepared an unwired bounded ALB response parser, preserving status and repeated
+headers with safe content-length handling. Forty-five synthetic tests and
+mypy/Black passed. Real adapter, authentication and app integration remain open;
+no AWS action. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 synthetic Lambda event builder — 2026-11-03 04:40:44 UTC
+
+Added an unwired selected-read event builder and synthetic tests for repeated
+inputs and unsafe-header refusal. Thirty-six local tests, mypy and Black passed.
+Trusted ingress, real Web Adapter conversion and authentication remain open;
+no cloud action occurred. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 Lambda Invoke adapter — 2026-11-03 04:38:52 UTC
+
+Prepared an unwired, bounded synchronous SDK adapter with no retries and safe
+throttle classification. Nineteen synthetic tests plus mypy/Black passed. Real
+event conversion, authentication, timeouts, integration and deployment remain
+open; no AWS request was made. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 overflow rejection classifier — 2026-11-03 04:36:51 UTC
+
+Prepared an offline, redacted classifier for Lambda Invoke throttling errors;
+nine synthetic policy/classifier tests and mypy/Black checks passed. No client,
+app wiring or deployed request exists; transport and real checks remain open.
+See the [experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 overflow policy — 2026-11-03 04:35:00 UTC
+
+User accepted the ECS-hosted Lambda-first router recommendation. Added an
+offline injected-callable policy: only a confirmed capacity rejection invokes
+ECS; other errors propagate. Four synthetic tests, strict mypy and individual
+Black checks passed. No transport or app integration exists; B stays blocked.
+See the [experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 Lambda-first overflow direction — 2026-11-03 03:07:09 UTC
+
+User selected Lambda-first reads with ECS overflow at Lambda capacity. The old
+direct-Lambda B Terraform configuration is now blocked until the overflow
+mechanism is implemented and reviewed. Update comparison and evidence design;
+capacity, fallback and live verification remain open. No AWS action. See the
+[experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 opt-in Terraform draft — 2026-11-02 19:56:04 UTC
+
+Prepared a disabled-by-default Lambda and HTTPS ALB draft in the shared test
+root, with A/B route configuration and bounded declared inputs. Eighteen mock
+Terraform tests and seven synthetic proxy tests passed. This is local evidence,
+not a deployment or proof of live permissions and network behavior. AWS
+read-only inventory and public pricing were inspected; no resources were
+created, started, changed or deleted. An exact plan, independent review,
+interruption-safe cleanup and explicit live approval remain open. See the
+[detailed experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 Lambda access log control — 2026-11-02 19:36:53 UTC
+
+Lambda image now disables Uvicorn access logs; 15 focused tests passed.
+Adapter/service logging still needs review. No image build or AWS action.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 Lambda read-only settings — 2026-11-02 19:35:40 UTC
+
+The explicit Lambda read-only settings reject email/recipients and unrelated
+workers instead of requiring an unused recipient; ordinary ECS controls remain.
+112 focused synthetic tests passed. Actual Identity review, deployment and
+real session/DB checks remain. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 Lambda database bootstrap — 2026-11-02 19:32:53 UTC
+
+Rahul owns Terraform per user direction. Lambda-only guarded startup can load
+the fixed Listings SecureString in memory after test configuration validation;
+108 focused synthetic tests and boundaries pass. AWS metadata confirms the
+three required parameter names are SecureString version 1; no values read and
+no resources changed. Live IAM, database/session checks and exact approved
+deployment plan remain open. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 image revision declaration guard — 2026-11-02 19:23:06 UTC
+
+The local image builder now requires a full OCI revision label matching the
+Hybrid tag and carries it to the output. Five fake-Docker tests and shell syntax
+passed; a label is a declaration, not proof of image contents. No real build or
+AWS action. EXP-02 parity work remains on its own branch.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 local image builder and Terraform ownership review — 2026-11-02 18:42:57 UTC
+
+Added and registered a network-disabled, local-only Lambda image builder that
+refuses non-local Docker contexts, missing pinned local inputs and existing
+output tags. Shell syntax/help passed; the existing output tag was refused
+before any build. Terraform review found shared test resources belong to the
+PD-16 integration owner, with no Lambda root/interface assigned; no Terraform
+was added. No AWS call, image build, workload or measurement occurred. See the
+[detailed experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 corpus gate and EXP-03 proxy policy check — 2026-11-02 18:37:36 UTC
+
+User directed that no AWS work be done; this checkpoint was local-only. EXP-02
+`k6 inspect` correctly refuses the ten-case corpus while the three independently
+reviewed Hybrid ordered expected responses are missing; no cookie or request was
+used. Four Node 24.22.0 test files passed. EXP-03 added synthetic ASGI coverage
+for Uvicorn's trusted-peer HTTPS scheme policy; the focused Identity/read-app/
+boundary suite passed 98 tests, and pinned Black plus `git diff --check` passed.
+This does not prove Lambda Web Adapter conversion, ALB trust, real SQL/session or
+deployed parity. No AWS call/resource change, workload, or measurement occurred.
+See the [detailed experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 local images and user planning direction — 2026-11-02 18:28:38 UTC
+
+User authorizes autonomous local work and local commits, and confirmed Rahul's
+project profile/account/region, one temporary account for the comparison, public
+HTTPS ALB without client-IP allowlist, $5–10 credits, pilot intent, and stopping
+if the deployed dataset is missing. Use $5 as conservative planning ceiling;
+account/protocol owner review and a concrete AWS plan approval remain required.
+STS verified the selected account/non-root principal; no resources were changed.
+Locally built API, Hybrid and Lambda AMD64 images from `8a60f83`; pinned model
+hashes matched, one offline inference passed, and credential-free isolated Lambda
+app startup/health/missing-session denial passed with Hybrid disabled. First smoke
+failed safely on inherited Hybrid paths; corrected test setup passed. Docker build
+warnings and retained local image IDs are recorded in the experiment log. No
+deployed API, database, real session, Lambda Runtime adapter, load or NFR result.
+Real integration, DB capacity, AWS inventory/plan and independent review remain.
+[Detailed experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 packaging stopped at local checkpoint — 2026-11-02 18:06:34 UTC
+
+User approved public build inputs/parallel work, then directed stopping and
+committing all current source changes locally. Four required public images were
+pulled; their observed digests are retained in the experiment log. Parallel
+packaging audit identified the missing Lambda Docker context guard; added a
+deny-all Dockerfile-specific ignore file. No image build/startup occurred and no
+new parallel test result is claimed. Earlier 135 focused tests, static checks,
+contract check and source secret scan remain the recorded evidence. Packaging,
+real integration, later steps and independent review remain open; no cloud or
+workload action. [Detailed checkpoint](../evaluation/experiment-log.md).
+
+### EXP-03 local contract and privacy checks — 2026-11-02 17:38:25 UTC
+
+User verified the wheel preparation. Reused retained Node 24.22.0 from the
+existing temporary tool tree; generated-contract check passed for all eight
+artifacts. Approved read-only Docker cache inspection worked with escalation;
+needed build images/adapter are not cached. Cached Gitleaks 8.30.1 passed the
+source snapshot scan in a local network-disabled container. No system/tool
+installation, generated-file change, image download, application request or
+cloud action occurred. Image/locked dependency retrieval during packaging needs
+an explicit external-service exception; image/startup and real integration gates
+remain open. [Detailed experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 wheel build context ready — 2026-11-02 17:35:56 UTC
+
+User approved the explicit public-PyPI/pip-only exception. Downloaded all 24
+locked Linux wheels (51,910,303 bytes), independently verified names/versions,
+SHA-256 and ZIP integrity, and successfully installed them offline into a fresh
+disposable Python 3.13 venv; `pip check` passed. Initial protobuf selection was
+correctly hash-rejected; adding the omitted compatible `manylinux2014` platform
+selected the existing locked hash without changing pins. Updated the deployment
+handoff with the exact command and corrected platform list, package design and
+[experiment log](../evaluation/experiment-log.md). Existing venvs/system packages
+unchanged; no inference, API workload or cloud action. Result awaits verification;
+adapter digest/image, Node 24, Docker access and real package/runtime gates remain.
+
+### EXP-03 pip-only dependency readiness — 2026-11-02 17:33:16 UTC
+
+User identifies this workstation as Arch and directs pip-only Python installs
+inside a venv. Offline pip confirms all 24 frozen helper versions already exist
+in `.tools/semantic/venv` (Python 3.13.12); `pip check` passes. No package or
+system change was needed. Reproducible Docker wheel archives are still absent.
+Sandbox download failed DNS resolution; automatic approval review rejected
+network escalation under the earlier external-service prohibition, so an
+explicit public-PyPI scope exception is needed. Local Docker cache inspection
+also lacked socket access; no image/build result is inferred. Detailed limits,
+checks and next gates are in the [experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 Step 3 session-only Identity wiring — 2026-11-02 17:23:04 UTC
+
+User assigned Rahul the scoped Identity binding work and verified implementation.
+Lambda's explicit hosted test opt-in now prepares existing real sessions using
+only auth-key/DB references and the existing role audit, then installs the existing
+session/browser middleware without Identity routes or email sender warmup.
+Default startup remains unauthorized; ECS keeps its full Identity composition.
+The task index records the scoped assignment; design and experiment log explain
+the preserved last-seen SQL update, existing role and dummy-hash startup cost.
+Focused Lambda/Hybrid/boundary tests: 114 passed; offline Identity configuration:
+20 passed; default ECS startup: 1 passed. Boundary scan, four-source-file Mypy,
+seven-file pinned Black/compile and diff checks passed. Generated-contract check
+could not run with available Node 26.8.2 (requires Node 24); no artifacts changed.
+Result awaits verification; real SQL sessions, ingress, package/startup and
+independent/affected-owner review remain pending. No account, secret, DB/cloud,
+provider, workload or measurement used. [Detailed log](../evaluation/experiment-log.md).
+
+### EXP-03 Step 3 paired local response checks — 2026-11-02 17:13:51 UTC
+
+User verified this isolated parity-test scope. Extended the read-route suite
+to compare the hosted ECS and narrow Lambda app compositions over in-process
+ASGI with identical synthetic caller/eligibility/data adapters. Nine scenarios
+cover browse, Hybrid-labelled search, detail, invalid/auth/forbidden/not-found,
+database failure and timeout. Status, headers and JSON match after validating
+and excluding only generated request IDs; independent fixture assertions also
+check results, order, fields, pagination and filters. Focused route/app/Hybrid
+runtime tests: 38 passed; pinned Black, compile and diff checks passed. Result
+awaits user verification. Real Identity, SQL/model/adapter/package and deployed
+parity remain open; no external request, account use, workload or cloud action.
+[Detailed experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 session input and account availability — 2026-11-02 17:07:59 UTC
+
+User shared Aditya's pre-run sign-in and private HttpOnly session-cookie handoff
+recommendation and reports that Aditya supplied two temporary test accounts.
+The existing `CLIP_COMPARISON_SESSION_COOKIE` helper is a synthetic-only,
+preflight-gated draft; it is not wired as a real k6 handoff and does not validate
+the session. Account class/use, secure transfer, session validity and run
+authorization remain open. No account details or secrets recorded; no account
+was accessed. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 Identity binding integration gate — 2026-11-02 17:05:05 UTC
+
+Reviewed Identity composition without reading secrets or contacting SSM,
+database or email services. The existing hosted initializer validates full
+Identity configuration and warms the sender; injecting its current dependency
+object also mounts Identity routes beyond the Lambda's two approved reads. It
+is not a safe drop-in. Identity owner A must provide/review a session-only
+binding before real cookie/session parity work. Official AWS release evidence
+confirms adapter version 1.1.0 but does not provide the immutable image digest;
+Linux wheels and that digest remain package inputs. No build, registry call or
+cloud action. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 Step 3 offline route-contract checks — 2026-11-02 17:00:11 UTC
+
+On the isolated branch `task/exp-03-lambda`, added route-level tests over the
+actual read-only FastAPI app with explicit synthetic caller and Listings
+service overrides. Covered the successful Hybrid-labelled query and repeated
+filters/pagination, 401, value-free 422, ineligible-user 403, detail identity
+and 404, plus safe 503 responses for synthetic PostgreSQL and pool timeout
+failures. The focused route/app/Hybrid-runtime suites passed 29 tests; Black's
+in-process check, Python compilation and `git diff --check` passed. A normal
+synchronous service-factory request stalled in this sandbox; async test
+injection works, but the underlying cause is unresolved. No real Identity,
+database, model startup, cloud, deployed API or experiment was used. Step 3
+route-test slice awaits user verification; real Identity and runtime checks
+remain pending. [Detailed experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 bounded Hybrid runtime check — 2026-11-02 16:41:04 UTC
+
+User verified the narrow app-composition checkpoint. Added a synthetic test for
+one Hybrid read connection and worker suppression. Full runtime plus Lambda app
+tests passed (22); Black in-process check, compilation and diff check passed.
+HTTP/ASGI test harnesses stall in this environment and were removed; no
+route-level parity is claimed. Identity and real Hybrid startup remain open.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 narrow Listings/Search app composition — 2026-11-02 16:36:10 UTC
+
+Implemented a separate Lambda app mode for only browse/search and detail GETs.
+Listings and Hybrid pool maxima are one each; Conversations, notifications,
+wanted/saved stores, worker and S3 storage are skipped. ECS defaults are
+unchanged. New route/lifecycle tests: 2 passed; existing combined lifecycle:
+10 passed. Black CLI could not start its sandbox-blocked forkserver; files were
+formatted with its in-process API. TestClient transport behavior remains
+untested in this environment. The Lambda entry fails closed until Identity
+provides reviewed real-session wiring, and DB concurrency/headroom remains open.
+[Design](../evaluation/exp-03-lambda-design.md); [experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 database connection budget finding — 2026-11-02 16:22:12 UTC
+
+Current pools can retain 13 connections per full app environment (Listings 10,
+Hybrid 2, Conversations 1); 20 Lambdas could reach 260, before direct Identity
+connections. This conflicts with the proposed total DB cap 60. Concurrency,
+narrow app/pools or proxy/DB limits need design review. No DB/cloud call.
+[Design](../evaluation/exp-03-lambda-design.md).
+
+### EXP-03 Lambda image recipe — 2026-11-02 16:18:30 UTC
+
+Added a Lambda-only Dockerfile that adds the versioned AWS adapter to the Hybrid
+image and requires a SHA-256 image digest. The adapter artifact/digest and Hybrid
+Linux wheels are missing; no download or build. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 ALB rule proposal specified — 2026-11-02 16:16:29 UTC
+
+Specified GET `/api/listings` and `/api/listings/*` to Lambda in B, ECS default,
+and both to ECS in A; enable multi-value headers, use port 8000 and `/health`.
+Proposal only; listener/security review and deployment plan remain open.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 adapter recommendation refinement — 2026-11-02 16:15:00 UTC
+
+AWS's Web Adapter supports ALB and container apps and can front existing
+Uvicorn; recommend it over the custom event bridge, with ALB multi-value headers
+enabled and response-size checks. Custom bridge remains a local probe. Artifact
+pin, trust and lifecycle checks pending; no download or deployment.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 local image availability check — 2026-11-02 16:11:55 UTC
+
+No project image or required Linux wheel archives found in local Docker/uv cache.
+Image build awaits the pinned Linux wheel preparation; no build or download.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 package-audit correction — 2026-11-02 16:10:15 UTC
+
+Corrected the package audit: only ONNX and tokenizer are copied by the Hybrid
+Dockerfile and both are present; five absent manifest metadata files are not
+required there. Linux wheels remain missing. No build attempted. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 restricted read paths — 2026-11-02 16:07:32 UTC
+
+Bridge now accepts only listing collection and UUID detail GET paths. An initial
+test incorrectly rejected valid detail; corrected, then 18 focused tests passed.
+Formatting and diff checks passed. ALB listener review and real auth remain open.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 local package-input audit — 2026-11-02 16:05:45 UTC
+
+Local size/name audit found matching ONNX/tokenizer inputs and Python/helper
+environments, but no Linux wheel directory and five model manifest files are
+absent. No build or inference performed; reproducible package fit remains
+pending artifact preparation. [Design](../evaluation/exp-03-lambda-design.md).
+
+### EXP-03 Step 3 parser safety and API boundary — 2026-11-02 16:03:47 UTC
+
+Tightened header/query parsing and redacted header representations; a synthetic
+bridge request to the real unbound API returned 401 despite a forged user header.
+Fourteen focused tests and formatting passed. Real Identity sessions, handler,
+trusted ingress and owner review remain open. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 Step 3 synthetic ASGI bridge — 2026-11-02 15:59:37 UTC
+
+Added an in-process ALB/ASGI bridge draft and synthetic tests; nine bridge/parser
+tests and focused formatting passed. It is not a real handler or proof of
+ingress trust, Identity or deployment. User verification and affected-owner
+review pending. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 Step 3 ALB event parsing draft — 2026-11-02 15:56:37 UTC
+
+Added isolated synthetic ALB event parsing and six passing offline tests; Black
+passed per file after a sandbox-denied parallel Black invocation. This component
+is not connected to a handler, trusted origin, session, app or deployment. User
+verification and affected-owner review pending. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 Step 2 ALB design draft — 2026-11-02 15:40:50 UTC
+
+Drafted same-origin ALB/ECS/Lambda routing, actual Identity/Hybrid reuse and
+database-budget proposal. Full-app startup also includes Conversations and
+Identity email initialization; exact adapter, ingress trust, lifecycle, limits
+and ownership remain for review. No implementation or cloud action. User
+verification and affected-owner review pending. [Design](../evaluation/exp-03-lambda-design.md).
+
+### EXP-03 user-reported ALB availability — 2026-11-02 15:39:28 UTC
+
+User confirmed an Application Load Balancer can be created; use ALB as the
+working routing choice. Availability was not independently demonstrated by the
+read-only quota check. Exact design, owner review and cloud approval remain.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 read-only load-balancer check — 2026-11-02 14:22:02 UTC
+
+At user request, non-root AWS read checks found regional ALB quota 50 and zero
+existing ALBs. IAM policy simulation was denied; historical account restriction
+and actual create permission remain unverified. No resource change or creation.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 Step 2 feasibility inspection — 2026-11-02 14:16:44 UTC
+
+User approved investigating the proposed Lambda approach. Existing ingress is
+Caddy, and historical AWS evidence reports account-wide ALB creation rejection;
+current status is unknown. The model is an external pinned build input, and no
+Lambda adapter was found in the inspected lock. Routing, runtime and pool design
+remain open for affected-owner review. No build, cloud call or measurement.
+[Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 Step 2 initial design — 2026-11-02 14:12:04 UTC
+
+Rahul reviewed application, Identity and Hybrid packaging for a Lambda container
+proposal using shared logic and restricted read routing. Event/ingress trust,
+session forwarding, helper feasibility and aggregate database limits remain
+unresolved and require affected-owner review before implementation. User review
+of the proposal is pending; no code or cloud action. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-03 Step 1 route and runtime inspection — 2026-11-02 14:09:40 UTC
+
+User directed Lambda work alongside unfinished EXP-02 and verified the inspection.
+Reviewed the selected routes, trusted caller context, database pools and Hybrid
+helper startup. Lambda adapter, authentication, packaging, connection limits and
+routing require a reviewed design; deployed parity remains unproven. Source review
+only; no application change or cloud action. Findings await user verification.
+[Experiment log](../evaluation/experiment-log.md).
 
 ### EXP-03 ownership and design inspection — 2026-11-02 14:01:05 UTC
 
@@ -2014,7 +2497,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | PD-19 | Integration owner (current branch) | done | Steps 1–9 and combined foundation handoff complete | Steps 1–9 performed | User confirms all work before PRE-00 is complete | PR #8 merged at `2cd83e7` from head `18c966e` against base `68d9da9`; [Foundation quality gates passed](https://github.com/exocrat/clip/actions/runs/39323851584) for that exact head/base; `make test` (395 Python, 63 data, 16 web), Black, contract freshness and 10 `make check` gates passed; [handoff](foundation-handoff.md) | No open PD-19 work per user confirmation. Linux AMD64/macOS results remain user-confirmed without raw outputs. PR #8 has no submitted GitHub review; independent-review completion is user-confirmed, with no separate review artifact linked. Refresh cloud snapshot before any operation. | 2026-10-19 21:09:05 UTC |
 | PRE-00 | Integration owner | done | Foundation gate audit accepted; DL-00 is unblocked | performed | verified/accepted by user | Reviewed handoff PR #8 merged to `main` at `2cd83e7`; hosted Foundation quality gates passed for head `18c966e` against base `68d9da9` (run `39323851584`); clean-checkout evidence at `0747be6`; see [PD-19 handoff](foundation-handoff.md) | None. PR #8 has no GitHub review event; independent-review completion remains user-reported without a separate artifact. | 2026-10-19 21:20:55 UTC |
 | DL-00 | Shared-core/contract coordinator; all domains review | done | Steps 1–13 and task-wide audit complete; accepted and merged | Steps 1–13 performed; accepted by user | User confirmed full acceptance and merge on 2026-10-22 05:30:49 UTC | PR #9 merged to `main` at `f5576ef`; current `main` is `44cd8ff`; Step 13 check evidence is recorded below and was not rerun for this update | None for DL-00; cleanup implementation remains separately gated; real providers/integrations and crypto/worker implementation remain downstream | 2026-10-22 05:30:49 UTC |
-| ID-01 | A | in progress | All remaining Step14 parts verified and accepted by Aditya; prepare reviewed merge | Local implementation and recorded live checks performed; additional verification user-reported | Verified and accepted by Aditya | [Step14 evidence and closeout](../evaluation/identity/id-01-step-14/README.md) | Independent peer review, current-head checks and reviewed main merge remain required for formal task closeout | 2026-10-29 05:23:09 UTC |
+| ID-01 | A | in progress | Test Microsoft identity exception in progress on task/test-microsoft-identity; test-tenant exception implemented and two real accounts verified; independent review and merge pending | Local implementation and recorded live checks performed; additional verification user-reported | Verified and accepted by Aditya | [Step14 evidence and closeout](../evaluation/identity/id-01-step-14/README.md) | Independent peer review, current-head checks and reviewed main merge remain required for formal task closeout | 2026-10-29 05:23:09 UTC |
 | LI-01 | B | in progress | Finish the remaining Step 7 browser states and current-head Step 11 checks/reviews; prepare a progress PR without claiming LI-CORE. Steps 12–13 remain integration-gated. | Steps 1–6 and 8–10 implemented and locally checked; Step 7 partial (create/detail/edit/My Listings/gallery). | Suraj verified the multi-image edit/gallery checkpoint, seller-only selected-buyer visibility, and Step 10. No LI-01 phone-device result is claimed. | domain/listings at 6ffbe0b; focused Listings suite: 61 passed, one database-only test skipped outside the wrapper; disposable PostgreSQL workflow passed; current worktree `make check` passed 2026-10-23 (573 Python, 63 data, 42 web tests; remaining contract, type, boundary, database, safety, formatting, lint, and build checks passed). | LI-CORE not accepted. Remaining Step 7 states; Step 11 query-plan, current aggregate, and affected-owner review; native schema check; five pre-existing backend boundary findings; real Identity, Conversations, storage, and Search integration; Steps 12–13. | 2026-10-23 10:38:31 UTC |
 | LI-02 | B | in progress | Step 12 demo is tested and stopped; record final evidence, then begin intake of the Search owner's PR under the review workflow. | Steps 1–11 and 1.5 verified; Step 12 ran on ECS and was tested on desktop/mobile. Read-only app checks found the synthetic listing and its S3 image; teardown is complete. | User approved and applied teardown plan `3703bb7b23405a5a23a1ac6c39fa8870e682dddf3a1a8272183f4642f8f0db81` (0 add, 1 change to LI-02 bucket CORS, 20 LI-02 deletes). Post-stop inventory confirms disposable RDS/ALB/service/host/root volume/run S3 objects/URL parameter/log streams absent; shared RDS is stopped, shared ECS cluster remains, LI-02 ASG desired 0/no instances. Two run ECR images are retained (105,624,604 bytes total) per user direction. | `task/li-02-isolated-runtime` at `f0bf6c6`; earlier 11 focused tests, Black, Python compilation, Terraform fmt/validate, CLI help and diff checks. Start plans: infrastructure `a2b8cbeaa6cc4fc2d13ff8c8696cfa133d8134280de89f719e0d6f2b91668f55`; app start `b6a3fbd4812c965a5830780f337997d13b4b362c7eb1a73f2b3e70f5946b5bd4`. Stop-path corrections are currently uncommitted in `scripts/li02-demo`, `infra/terraform/domains/listings/test/database_tasks.tf`, both LI-02 operator guides, and this work log. `git diff --check` passed; no tests rerun. Existing untracked `data/runs/` and `database/migrations.zip` remain untouched. | Compute/ingress/disposable-database charges from the demo have ended. Retained run images add about 101 MiB of ECR storage; Step 4 bucket/IAM/log group and shared VPC/NAT/ECS/RDS remain. No manual RDS snapshot remains. | 2026-10-25 09:29:55 UTC |
 | SE-01 | Mohit (C); peer Suraj (B), Identity review | in progress | DATA-READY accepted as reported; category-text PR #25 merged to main | Formal SE-CORE, fixed-label relevance and NFR acceptance remain pending | DATA-READY confirmed by Aditya; Suraj review reported by Aditya | [SE-01 task](../tasks/domain-task-list.md); category-text PR #25 merge `1f11065` | Final SE-CORE, current integrated checks and NFR evidence remain open | 2026-11-01 20:18:19 UTC |
@@ -2026,7 +2509,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
 | EXP-01 | C; Suraj coordinates NEXT-01 design | done | NEXT-01 design and gates are approved; actual topology pricing and numeric cost endpoints are NEXT-07 pre-result gates. | Design Steps 1–9 performed; no experiment run | Suraj verified NEXT-01 Steps 1–9 on 2026-10-28; user clarified the 300 concurrent-client-request proposal is non-binding on 2026-11-01 UTC. | [Approved design and gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md); [NEXT-07 execution plan](../tasks/remaining-project-plan.md#experiment-protocol-reference) | Implementation, final data/tools, actual account/spend, numeric cost endpoints, and separate run approvals remain before measurement. | 2026-10-28 06:24:24 UTC |
 | EXP-02 | Rahul (D); Search owner C review | in progress | Local parity preparation, k6 phase preview and staged workload tooling are ready for review; real runner remains open | Evaluation Python tests: 351 passed, 1 skipped; k6 Node tests: 48 passed; 14 Black checks and boundary check passed; no measurement | User directed response parity and built-in timing; review remains | `task/exp-02-workload`; [experiment log](../evaluation/experiment-log.md) | Draft PR/independent and affected-owner review, real runner, reviewed timing, target/session, actual deployed parity, telemetry, budget and approved execution remain | 2026-11-03 06:53:41 UTC |
-| EXP-03 | Rahul (D); A peer, C/B affected review | in progress | Local Lambda read path, session binding, image builder and proxy-policy checks prepared on separate branch | Focused 98-test local suite passed there; real adapter and integration not yet verified | User directs local work only | `task/exp-03-lambda` at `382c714`; branch experiment log | Adapter/ALB conversion and host trust, real session/SQL/Hybrid parity, database capacity, Terraform ownership, deployment and independent review remain | 2026-11-02 19:16:33 UTC |
+| EXP-03 | Rahul (D), Terraform and scoped Identity; A peer, C/B affected review | in progress | Direct weighted ALB route for selected Listing GETs is implemented locally; A defaults to ECS with no Lambda resources; B registers Lambda and weights selected reads between Lambda/ECS; old ECS overflow router is removed | 74 focused tests, mypy, boundaries, individual Black checks, Terraform format and `git diff --check` passed. PR #27's first CI run found 14 formatting-only differences in comparison/NFR scripts; all 14 now pass individual Black checks; refreshed CI is pending. Full local aggregate check remains constrained by sandbox permissions and missing Node 24; Terraform mock validation blocked by registry DNS failure. | User directed direct ALB routing, fixed Lambda/ECS weight, and no automatic fallback. USD 10 cap and exact live action plan/approval remain. | `task/exp-03-lambda`; [PR #27](https://github.com/exocrat/clip/pull/27); [design](../evaluation/exp-03-lambda-design.md); [experiment log](../evaluation/experiment-log.md) | Refreshed CI, full local suite, provider-backed validation, source trust, B sizing, real parity, aggregate DB budget (pool ceiling exceeds recorded DB cap at design max), owner/peer review, deployment and interruption-safe cleanup | 2026-11-03 06:41:23 UTC |
 | EXP-04 | B | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-03 | — |
 | EXP-05 | C | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-04 | — |
 | EXP-06 | C operator; B infra support | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-05 | — |
@@ -4663,3 +5146,43 @@ no additional cloud action is authorized or implied.
 **2026-10-29 12:20:58 UTC — Full branch review and handoff.** The complete branch comparison against `a60c83f` includes earlier NEXT-00/NEXT-01 planning and NEXT-02 documentation cleanup in addition to NEXT-03; the PR draft explicitly describes that scope. Current-main Identity and environment records reintroduced 58 links to 44 files removed by that cleanup. Verified all 44 exist at exact base `a60c83f` and replaced those broken relative links with immutable historical links; two receipts needed by tests were restored separately. Updated the full visual ledger to record Suraj’s completed walkthrough, and documented the refreshed read-only AWS/DNS findings and ordered deployment gates. The final pinned aggregate remains running; no PR, merge, cloud mutation or email send occurred.
 
 **2026-10-29 12:31:12 UTC — Integrated pre-PR verification complete.** The final pinned `make check` passed: Python 2,019 passed/156 skipped, data 94 passed, web 496 passed/3 skipped across 45 passing and 2 skipped files, clean web lint, TypeScript and production build, Black (316 files unchanged), boundaries, all eight contracts, mypy, 35 database safety cases, PostgreSQL 18.6 migration lifecycle, 169 Conversations retirement tests and Gitleaks 8.30.1. The Vite build emitted only its large-chunk advisory. Updated the detailed report and task row; the read-only cloud audit and PR draft are in place. Local diff/staging and human owner/independent review remain before PR creation. No cloud mutation, email send or PR creation occurred.
+
+### 2026-11-02 13:14:05 UTC — ID-01 test Microsoft identity exception
+
+Owner directed an exception for the specified Entra tenant and test-user object ID across environments. On `task/test-microsoft-identity`, the signed-token validator retains Microsoft verification and permits that identity through the email-domain check; focused Microsoft tests passed (58). Changes remain uncommitted and require decision reconciliation, broader checks, real sign-in, independent review and integration. Local live sign-in requires the documented real-provider runtime and its separately approved SSM access; production runtime activation remains separately incomplete.
+
+### 2026-11-02 13:17:17 UTC — ID-01 local sign-in startup blocked
+
+Owner approved local real-provider startup and the controlled recipient. Frontend started on loopback; API launcher exited before startup because AWS profile `adityalaxmi1` has an expired login. Docker daemon is available. Reauthenticate the profile, then rerun the approved launcher and verify real Microsoft sign-in. No token or secret was recorded.
+
+### 2026-11-02 13:19:42 UTC — ID-01 local sign-in ready
+
+After AWS reauthentication, the approved real-provider local launcher started with a disposable database. API health returned 200 and the Microsoft login-attempt endpoint returned 201 with the required browser request headers. Frontend is available on localhost:5173; actual Microsoft login and account capabilities await human verification.
+
+### 2026-11-02 13:25:29 UTC — ID-01 local sign-in diagnostic
+
+The real browser exchange was rejected; exact cause remains unknown. Added fixed-category, local-demo-only diagnostics without token values or exception messages in `scripts/identity_local_demo.py` and restarted the disposable runtime. Black passed; local demo and Microsoft tests passed (60). Awaiting another sign-in attempt; diagnostic and exception remain uncommitted.
+
+### 2026-11-02 13:28:07 UTC — ID-01 missing Microsoft email claim
+
+Local diagnostic confirmed Microsoft omitted the email claim. The exact signed tenant/object test identity can now authenticate without it; session creation omits notification-address storage in that case. Other identities still require an eligible signed email. Black and focused Microsoft/local-demo tests passed (60); local API restarted, real sign-in retry pending.
+
+### 2026-11-02 13:30:09 UTC — ID-01 local Conversations access
+
+Owner reached encryption setup after real Microsoft sign-in. The local demo role lacked Conversations schema/table access needed by the key-directory API; added disposable-database grants in `scripts/identity_local_demo.py`, formatted it and passed local-demo tests (2). Restarted the ephemeral runtime; a fresh sign-in and encryption setup are pending verification. Restart replaces the disposable local database.
+
+### 2026-11-02 13:32:22 UTC — ID-01 callback and setup ordering
+
+Owner completed encryption and Handle setup but saw a consumed-marker callback error. The shared `AppShell.tsx` now keeps the callback outside marketplace setup gates, preventing callback remount while preserving setup gates on destination routes. Identity Microsoft/workflow tests passed (45); TypeScript typecheck passed. Browser verification remains pending; shared frontend change needs affected-owner review.
+
+### 2026-11-02 15:13:01 UTC — ID-01 test tenant account expansion
+
+Owner confirmed local login and directed extension to users in the exact `medheadityagmail.onmicrosoft.com` domain. Validator requires signed matching tenant and preferred username plus valid object ID; missing email is allowed only for matching identities and no notification address is invented. Microsoft/local-demo tests passed (60); Black passed. Updated identity decision; real additional-user sign-in, current local runtime restart, broader checks and independent review remain pending.
+
+### 2026-11-02 15:20:49 UTC — ID-01 expanded test-tenant local restart
+
+After an error from a new test account, restarted the frontend and disposable real-auth API with the expanded tenant/domain rule. Frontend and API health returned 200; Microsoft login-attempt returned 201. Restart reset the disposable database and sessions. Real sign-in of the new account remains pending.
+
+### 2026-11-02 15:23:25 UTC — ID-01 test-tenant sign-in implementation complete
+
+Owner verified sign-in with both Entra test accounts. The scoped tenant/domain exception, missing-email handling, callback ordering and disposable Conversations grants are implemented; temporary diagnostic instrumentation was removed. Focused Microsoft/local-demo tests passed (60), frontend identity/workflow tests passed (45), TypeScript and frontend lint passed, and Black passed. The implementation checkpoint is complete and human-verified; full ID-01 completion remains subject to independent review, current required checks and reviewed main merge.

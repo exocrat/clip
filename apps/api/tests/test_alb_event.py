@@ -45,3 +45,22 @@ def test_rejects_header_injection():
     request["multiValueHeaders"] = {"x-test": ["ok\r\ninjected"]}
     with pytest.raises(ValueError):
         parse_alb_read(request)
+
+
+def test_request_representation_omits_cookie():
+    assert "synthetic=1" not in repr(parse_alb_read(event()))
+
+
+@pytest.mark.parametrize("name", ["bad header", "x-test\r\ninjected"])
+def test_rejects_invalid_header_names(name):
+    request = event()
+    request["multiValueHeaders"] = {name: ["value"]}
+    with pytest.raises(ValueError):
+        parse_alb_read(request)
+
+
+def test_rejects_non_mapping_query_even_if_empty():
+    request = event()
+    request["multiValueQueryStringParameters"] = []
+    with pytest.raises(ValueError):
+        parse_alb_read(request)

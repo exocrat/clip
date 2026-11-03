@@ -13,7 +13,6 @@ from typing import Any, Mapping
 from scripts.evaluation.k6.comparison_declared_parity import validate_declared_parity
 from scripts.evaluation.k6.comparison_evidence_capture import _verify_file, _write_new
 from scripts.evaluation.k6.comparison_offline_prepare import FILE_FIELDS, _read_local
-from scripts.evaluation.k6.comparison_parity_preparation import check_draft_parity
 from scripts.evaluation.k6.comparison_run_preflight import validate_run_inputs
 
 MODULES = (
@@ -22,7 +21,6 @@ MODULES = (
     "comparison_checks.js",
     "comparison_schedule.js",
     "comparison_outcomes.js",
-    "comparison_phase_preview.js",
     "comparison_all_parity.js",
     "comparison_search_parity.js",
     "core.js",
@@ -41,7 +39,6 @@ def stage_run(
     *,
     parity_path: Path,
     parity_evidence_root: Path,
-    response_pairs_path: Path | None = None,
 ) -> dict[str, Any]:
     """Validate one planned run and stage exact bounded bytes in a new folder.
 
@@ -62,7 +59,6 @@ def stage_run(
     data = {name: _read_local(paths[name]) for name in FILE_FIELDS}
     binding = json.loads(data["binding_plan"])
     reference = json.loads(data["ordered_reference"])
-    parity_draft = isinstance(reference, dict) and reference.get("format_version") == 2
     plan = json.loads(data["paired_plan"])
     profile = json.loads(data["workload_profile"])
     checked = validate_run_inputs(
@@ -74,7 +70,6 @@ def stage_run(
         cycle,
         profile_bytes=data["workload_profile"],
         expected_profile_sha256=expected_profile_sha256,
-        allow_parity_draft=parity_draft,
     )
     if not checked["profile_hash_checked"]:
         raise ValueError("profile_hash_required")
@@ -96,7 +91,6 @@ def stage_run(
         reference,
         plan,
         evidence_root=parity_evidence_root,
-        allow_parity_draft=parity_draft,
     )
     if (
         parity["cycle"] != cycle
@@ -104,26 +98,6 @@ def stage_run(
         or not parity_result["evidence_hashes_match"]
     ):
         raise ValueError("selected_run_parity_mismatch")
-    response_pairs_hash = None
-    if parity_draft:
-        if response_pairs_path is None:
-            raise ValueError("response_pairs_required")
-        response_bytes = _read_local(response_pairs_path)
-        compared = check_draft_parity(
-            binding,
-            data["corpus"],
-            reference,
-            plan,
-            data["workload_profile"],
-            cycle,
-            expected_profile_sha256,
-            json.loads(response_bytes),
-        )
-        if not compared["all_equal_and_valid"]:
-            raise ValueError("response_parity_mismatch")
-        response_pairs_hash = hashlib.sha256(response_bytes).hexdigest()
-    elif response_pairs_path is not None:
-        raise ValueError("response_pairs_require_parity_draft")
     module_bytes = {name: _read_local(source_dir / name) for name in MODULES}
     for name, content in module_bytes.items():
         expected = expected_module_hashes[name]
@@ -159,8 +133,6 @@ def stage_run(
         "parity_record_sha256": hashlib.sha256(parity_bytes).hexdigest(),
         "parity_evidence_hashes_checked": True,
         "deployed_parity_verified": False,
-        "response_pairs_sha256": response_pairs_hash,
-        "response_parity_checked": parity_draft,
         "files": {
             name: hashlib.sha256(content).hexdigest()
             for name, content in sorted(files.items())
@@ -204,7 +176,6 @@ def main() -> None:
     parser.add_argument("--staging-root", type=Path, required=True)
     parser.add_argument("--parity", type=Path, required=True)
     parser.add_argument("--parity-evidence-root", type=Path, required=True)
-    parser.add_argument("--response-pairs", type=Path)
     args = parser.parse_args()
     try:
         stage_run(
@@ -218,7 +189,6 @@ def main() -> None:
             args.staging_root,
             parity_path=args.parity,
             parity_evidence_root=args.parity_evidence_root,
-            response_pairs_path=args.response_pairs,
         )
         print(
             json.dumps(

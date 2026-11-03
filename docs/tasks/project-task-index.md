@@ -84,6 +84,11 @@ DL-00: each owner drafts/reviews its domain contract; A coordinates combined art
 
 Experiment allocation: EXP-01 C; EXP-02 reassigned to Rahul (D) by user direction, with C review; EXP-03 reassigned to Rahul (D) by user direction, with A as the default independent peer and C/B affected-owner review as applicable; EXP-04 B; EXP-05/06 C with B infrastructure support; EXP-07 A with C/D raw-data/calculation review; EXP-08 B with A cost review. CLOSE-00 A coordinates, each owner runs/fixes its domain slice, C checks results/report, B resources/cost evidence, D encryption/demo evidence. Peer human approvals remain independent of authors.
 
+For EXP-03, the user also assigned Rahul the session-only Identity composition
+slice on 2026-11-02. This scoped assignment permits the Identity HTTP/runtime
+binding changes needed by the narrow Lambda app; it does not reassign all ID-01
+work or replace independent human/affected-owner review.
+
 ## Selecting work without human cross-reference
 
 Read roster and actual main plus active assigned branch/PR checkpoints. Respect an explicitly requested task/member. If no task is specified, use the phase route and select the first unexecuted unblocked step of required work OWNED by this contributor; resume pending verification/partial checkpoint first. A task owner is unique. Ask if ownership/order is genuinely ambiguous. Optional work needs explicit selection and OPTIONAL-OK.
