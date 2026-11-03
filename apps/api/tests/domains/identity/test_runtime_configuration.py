@@ -387,6 +387,10 @@ def test_no_automatic_bootstrap_or_unsafe_mode_reads():
     "dsn,environment",
     [
         (
+            "postgresql://clip_test_identity_app:PRIVATE@remote/unreviewed_database?sslmode=verify-full&sslrootcert=system",
+            "test",
+        ),
+        (
             "postgresql://master:PRIVATE@remote/clip_test?sslmode=verify-full&sslrootcert=system",
             "local",
         ),
@@ -412,3 +416,16 @@ def test_database_transport_and_target_validation(dsn, environment):
     with pytest.raises(ConfigurationError) as error:
         connection_factory(SecretStr(dsn), environment)
     assert "PRIVATE" not in str(error.value)
+
+
+@pytest.mark.parametrize("database", ["clip_test", "clip_next06_reference"])
+def test_reviewed_hosted_databases_are_accepted_without_connecting(database):
+    """The final dataset and its restored copy use the same strict transport."""
+    connect = connection_factory(
+        SecretStr(
+            f"postgresql://clip_test_identity_app:PRIVATE@remote/{database}"
+            "?sslmode=verify-full&sslrootcert=system"
+        ),
+        "test",
+    )
+    assert callable(connect)

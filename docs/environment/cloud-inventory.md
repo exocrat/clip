@@ -5,6 +5,29 @@ permission to create, change, or delete resources. Before any cloud operation,
 verify the caller and refresh AWS and Terraform state; review and approve the
 exact operation separately. Never record credentials, tokens, or secret values.
 
+## Approved experiment ingress — 2026-11-03 16:14:02 UTC
+
+Suraj approved the exact PR #30 revision and saved Terraform plan; accepted main
+is `4bad7418623ee91b015e5c8b06cf2e1e233dce6f`. The approved apply completed.
+[Verified current resources](../evaluation/deployment-20261103/execution/ingress-verification.json)
+supersede the older no-ALB observations below.
+
+- Public HTTPS ALB `clip-exp03-exp261103` is active at
+  `clip-exp03-exp261103-1208550693.ap-south-1.elb.amazonaws.com`, with the
+  existing source certificate and ECS-only target group. No Lambda was created.
+- New ALB subnet `10.64.3.0/24` and scoped ALB/ECS security groups exist.
+- Both retained EC2 machines and the private source RDS remain stopped.
+  ECS desired/running/pending is 2/0/2; ASG min/desired/max is 0/0/2, with all
+  ten processes still suspended. Launch template now prepares c7i-flex.large;
+  the retained stopped host itself remains t3.micro until approved startup.
+- Restore ACM certificate `e5ebe4da-b808-4a73-ba56-9f259ccc626f` is pending
+  DNS validation. [Single exact owner handoff](../evaluation/deployment-20261103/execution/spaceship-handoff.md).
+- ALB creation: 2026-11-03 16:10:01 UTC. Two-hour phase review deadline:
+  18:10 UTC. No automatic shutdown exists. Incremental ALB/two-IP cost starts
+  near USD0.0339/hour plus LCU/data; ledger adds USD0.0838 as an unbilled
+  two-hour estimate with one LCU/hour allowance. Existing baseline charges
+  continue. Billing reconciliation and reviewed cleanup remain pending.
+
 ## Deployment-plan refresh — 2026-11-03 14:21 UTC
 
 Read-only inspection again verified `surajs2` in account `335523638354`.

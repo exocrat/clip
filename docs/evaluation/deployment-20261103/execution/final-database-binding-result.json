@@ -1,0 +1,26 @@
+{
+  "plan_sha256": "8cfc3f0c2f7a1da00a5fecf2f7f2c21cf1369e4e86d3e4d1fa2ee6af928c7a2a",
+  "approved_by": "Suraj",
+  "sql_committed": true,
+  "parameters": [
+    {
+      "name": "/clip/test/listings-database-url",
+      "previous_version": 1,
+      "new_version": 2,
+      "database": "clip_next06_reference"
+    },
+    {
+      "name": "/clip/test/identity/database-url",
+      "previous_version": 1,
+      "new_version": 2,
+      "database": "clip_next06_reference"
+    },
+    {
+      "name": "/clip/test/conversations/database-url",
+      "previous_version": 1,
+      "new_version": 2,
+      "database": "clip_next06_reference"
+    }
+  ],
+  "success": true
+}

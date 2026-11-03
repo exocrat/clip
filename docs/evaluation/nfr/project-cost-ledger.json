@@ -36,6 +36,22 @@
       "price_date": null,
       "estimate_basis": null,
       "replaces_estimate_id": null
+    },
+    {
+      "entry_id": "aws-ingress-dns-estimate-20261103",
+      "provider": "aws",
+      "kind": "unbilled_estimate",
+      "category": "experiment-ingress-dns-window",
+      "resource_scope": "arn:aws:elasticloadbalancing:ap-south-1:335523638354:loadbalancer/app/clip-exp03-exp261103/4e18d2ceb592dde3",
+      "period_start": "2026-11-03",
+      "period_end": "2026-11-03",
+      "amount_usd": "0.0838",
+      "credits_usd": "0",
+      "source_reference": "docs/evaluation/deployment-20261103/execution/dns-phase-budget.json",
+      "source_sha256": "dbb29196db6e3927b37ab1d5df1511b4f167944d29d382104278ec81da791c96",
+      "price_date": "2026-11-03",
+      "estimate_basis": "Two-hour phase: ALB 0.0239/h + two IPv4 0.0100/h + allowance for one LCU 0.0080/h. Not final billed usage; replace at reconciliation. Existing baseline and ECR excluded here.",
+      "replaces_estimate_id": null
     }
   ]
 }

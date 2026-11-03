@@ -16,6 +16,9 @@ from app.domains.identity.temporary_challenges import Database
 from app.domains.identity.temporary_crypto import TemporaryKeys
 
 ROLE = "clip_test_identity_app"
+# Both are reviewed test databases. Isolated restores retain the source database
+# name; role, password and verified TLS checks below still apply to every host.
+HOSTED_DATABASES = frozenset({"clip_test", "clip_next06_reference"})
 # Permanent guards are append-only; users are retained and only updated/redacted.
 APPEND_ONLY = frozenset(
     {
@@ -98,7 +101,7 @@ def connection_factory(dsn: SecretStr, environment: str) -> Callable[[], Databas
             ):
                 raise ValueError
         elif (
-            values.get("dbname") != "clip_test"
+            values.get("dbname") not in HOSTED_DATABASES
             or not values.get("password")
             or values.get("sslmode") != "verify-full"
             or values.get("sslrootcert") != "system"

@@ -2815,7 +2815,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | Task ID | Owner role | Task status | Current checkpoint / immediate next action | Execution state | Human verification | Branch/revision/evidence | Blockers | Last UTC update |
 |---|---|---|---|---|---|---|---|---|
 | EXP-02 | Rahul (D); Search owner C review | in progress | PR #28 merged; shared real-target runner, NFR-01–05/telemetry/reporting, pilot/analysis/cleanup tools are locally implemented | Evaluation suite 364 passed/5 skipped; compile, Black, strict Mypy, Terraform mocks, Gitleaks and whitespace checks passed; no live run. Monotonic k6 binary built, timer smoke passed and Go timer unit tests passed in GOPATH mode. | Prior PR #28 merge confirmed; local implementation committed for human and affected-owner review | PR #28 head `8e1a7e8`, merge `2a0916e`; local work on `task/experiment-tooling-readiness`; [experiment log](../evaluation/experiment-log.md) | PR review/merge, exact deployment plan/credit estimate, website DNS handoff, live smoke, pilot and NFR results remain. Module-mode Go test hits a local toolchain lookup issue; GOPATH-mode test passes. | 2026-11-03 12:52:00 UTC |
-| EXP-03 | Rahul (D), Terraform and scoped Identity; A peer, C/B affected review | in progress | PR #27 merged; live account has no ALB or Lambda and ECS/RDS are stopped. NFR-06 two-task/two-host inputs preserve one/one defaults. Fixed ALB stickiness schema and A-only Lambda security-group reference; mock tests pass. | No deployment, parity or live comparison. Terraform formatting and all 21 Terraform mock tests passed. | Prior PR #27/#28 merges confirmed; local fixes committed for human and affected-owner review | PR #27 merge on `main` at `67e5857`; PR #28 integration merge at `2a0916e`; local work on `task/experiment-tooling-readiness`; [live inventory](../environment/cloud-inventory.md) | Review/merge, fresh state/drift plan, exact deployment plan and approval remain | 2026-11-03 12:40:51 UTC |
+| EXP-03 | Rahul (D), Terraform and scoped Identity; Suraj reviewer/operator | in progress | PR #30 merged at `4bad741`; approved exact ingress plan applied. ALB active on HTTPS; source hosts/RDS stopped; ECS desired/running/pending 2/0/2 and ASG desired 0 with all ten processes suspended. | Hosted CI passed; 23 Terraform mocks and five builder tests passed; verified live resource state. No app smoke, Lambda deployment or workload. | Suraj approved exact PR head and plan checksum before merge/apply | [Ingress verification](../evaluation/deployment-20261103/execution/ingress-verification.json); [exact Spaceship handoff](../evaluation/deployment-20261103/execution/spaceship-handoff.md) | Domain owner adds three DNS records; then verify DNS/TLS and separately progress source startup, live parity, site inspection and pilots/NFRs. DNS phase review deadline 2026-11-03 18:10 UTC; no automatic shutdown. | 2026-11-03 16:14:02 UTC |
 | SE-01 category-text amendment | Mohit (C); Listings reviewer Suraj (B) | merged | PR #25 merged to main at `1f11065`; Steps 1–3 and reported Listings review complete | Exact-head hosted CI passed; [native/model/source evidence](../evaluation/domain/se-01/category-text-checks.json) | Steps 1–3 verified by Mohit; Suraj review reported by Aditya | PR #25; [hosted CI](https://github.com/exocrat/clip/actions/runs/41338792850) | Full SE-01 readiness, final fixed-label relevance and NFR/cloud latency remain open | 2026-11-01 20:18:19 UTC |
 | NEXT-00 | Suraj — requested planning coordinator | done | Planning output verified; NEXT-01 Step 1 authorized. | performed; planning only | verified by Suraj | `task/integrated-marketplace-rollout`, based on main `5e8d264`; [remaining-work plan](../tasks/remaining-project-plan.md), linked from project task index | No blocker for the accepted planning output; implementation and measured-run gates remain separate. | 2026-10-27 18:42:09 UTC |
 | NEXT-01 | Suraj — requested planning coordinator; C retains EXP-01 ownership | done | Design and task-wide review verified; NEXT-02 is next. | Steps 1–9 performed | Steps 1–9 verified | Planning baseline `c869f33`; [design and approved gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md#next-01-step-8--proposed-changes-to-measurement-gates); [NEXT-07 references](../tasks/remaining-project-plan.md#experiment-protocol-reference) | No blocker for the design handoff. Real implementations, data, tools, cost anchors, project AWS identity/spend and run approvals remain NEXT-07 prerequisites. | 2026-10-28 06:24:24 UTC |
@@ -5791,3 +5791,62 @@ Provider validation/mock checks and PR integration are the current checkpoint;
 exact saved-plan approval remains required before apply. No ALB or workload
 exists yet. Terraform/state/passwords remain private; source passwords were
 read only into the Terraform subprocess environment and were not logged.
+
+### EXP-03 approved ingress and complete DNS handoff — 2026-11-03 16:14:02 UTC
+
+Suraj approved PR #30 head `0c73804` and saved Terraform checksum
+`d1704f904c190d27f1b60b1df251d70efd2ee6f97049352b2ab58309b03c3090`.
+Hosted CI run `41669340137` passed (10m45s); squash merge accepted main
+`4bad7418623ee91b015e5c8b06cf2e1e233dce6f` was checked tree-equal to the
+reviewed head. Applied that exact plan: 12 added, 39 changed, one old API
+task-definition registration destroyed. No host/database was destroyed.
+A private wrapper first failed an import-order check before invoking Terraform;
+it was corrected and the approved apply completed successfully.
+
+Live verification confirms the ALB active with HTTPS443 and existing issued
+source certificate; exact hostname and three Spaceship records are in
+[the combined handoff](../evaluation/deployment-20261103/execution/spaceship-handoff.md).
+Retained ECS host/proxy and RDS remain stopped; ECS desired/running/pending
+2/0/2, ASG desired0/max2 and all ten processes remain suspended. Restore
+certificate is pending external DNS validation. No workload, live sign-in,
+SQL mutation, restore or task-loss action occurred. Updated cloud inventory
+and added a separate USD0.0838 unbilled two-hour ingress estimate to the
+project ledger; actual billing remains delayed/unreconciled. DNS phase review
+deadline is 18:10 UTC; this is not an automatic shutdown. Waiting for domain
+owner completion; source startup/site inspection/experiments remain pending.
+
+### EXP-03 private startup and final-database binding — 2026-11-03 16:41:56 UTC
+
+Suraj authorized progressing while DNS is pending, then explicitly approved
+binding plan SHA256 `8cfc3f0c2f7a1da00a5fecf2f7f2c21cf1369e4e86d3e4d1fa2ee6af928c7a2a`.
+Resized retained host `i-086045c48487471de` in place to c7i-flex.large and
+attached only the approved ALB group; started existing RDS. ECS rejected the
+old instance-type registration. With zero tasks, deregistered that logical
+registration, preserved `/var/lib/ecs/data.exp261103.before-reregister`, and
+restarted the agent. The same host now registers connected with 3819MiB under
+container instance `345a5cb37f744addbb0a168413be6038`.
+
+Read-only inspection found accepted final data intact in clip_next06_reference,
+while all three application DSNs still selected clip_test. Applied exactly three
+existing notification migrations (29->32) and reproduced the original app roles'
+restricted database/schema/table/column grants in the final database. No role,
+password, original-database or business-row replacement. The CLI rejected stdin
+JSON before SSM publication; used the existing reviewed SDK login bridge to
+publish only the three approved database-path edits, each version1->2. The
+complete logical row/image projection still matches the accepted archive:
+`sha256:1d4a2369f53c8415ea6399546c0814d7a02e6bdae0e98f312221a995711efb80`.
+The accepted input fingerprint remains `7efd142e...334ab98`; all5000users,
+1000listings/images/generations and2000vector chunks are present.
+
+Started run-owned second c7i-flex.large host `i-08e368391d905310e` (root volume
+`vol-090eb87915db43230`), ASG desired2/max2, resumed only Launch, retained other
+nine suspensions and scale-in protection. Published the built Lambda image.
+Initial app tasks exited1: Identity's connection guard permits only clip_test,
+so the final database is rejected. Stopped automatic retries (service desired0).
+Preparing the narrow reviewed-name allowlist fix; eight focused guard cases
+pass, and the existing real Identity role/key/privilege audit passes against the
+final database over verified TLS. This runtime guard was missed by earlier
+local-readiness review; no successful live app/NFR result is claimed. Black's
+multi-file process pool was sandbox-blocked; individual-file formatting passes.
+Next: PR/check/merge and exact image-update plan approval before redeploying.
+DNS still points at the stopped proxy; restore certificate remains pending.

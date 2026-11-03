@@ -1,0 +1,57 @@
+{
+  "account": "335523638354",
+  "profile": "surajs2",
+  "region": "ap-south-1",
+  "host": "clip-shared-test-postgres.cnsu8kgiimug.ap-south-1.rds.amazonaws.com",
+  "database": "clip_next06_reference",
+  "expected_before_migration_count": 29,
+  "expected_before_migration_head": "20261029043000",
+  "expected_after_migration_count": 32,
+  "expected_after_migration_head": "20261029182500",
+  "migrations": [
+    {
+      "path": "database/migrations/20261029133500_identity_notification_destinations.sql",
+      "version": "20261029133500",
+      "sha256": "b763de172889e4935664d7979cba9b081a6d2fde00a2a3a452f56bfa8fa1399b"
+    },
+    {
+      "path": "database/migrations/20261029134500_notification_delivery_state.sql",
+      "version": "20261029134500",
+      "sha256": "9344b71630161d23d4911c43ffc63c61425ee0359f0ba3e0a92b883097be5008"
+    },
+    {
+      "path": "database/migrations/20261029182500_identity_notification_preference.sql",
+      "version": "20261029182500",
+      "sha256": "70aef17ee8f34b02856056fca0be49413439d1f139582221342307aeeb433a52"
+    }
+  ],
+  "grants_path": "docs/evaluation/deployment-20261103/execution/final-database-runtime-grants.sql",
+  "grants_sha256": "2fdbb0e85030d44ad34fe83805ac3c387448eec729fa02e387794fb29e2fb97a",
+  "roles": [
+    "clip_test_conversations_app",
+    "clip_test_identity_app",
+    "clip_test_marketplace_app"
+  ],
+  "ssm_parameters": [
+    {
+      "name": "/clip/test/listings-database-url",
+      "expected_version": 1,
+      "change": "database path only: clip_test -> clip_next06_reference; keep login/password/host/TLS unchanged"
+    },
+    {
+      "name": "/clip/test/identity/database-url",
+      "expected_version": 1,
+      "change": "database path only: clip_test -> clip_next06_reference; keep login/password/host/TLS unchanged"
+    },
+    {
+      "name": "/clip/test/conversations/database-url",
+      "expected_version": 1,
+      "change": "database path only: clip_test -> clip_next06_reference; keep login/password/host/TLS unchanged"
+    }
+  ],
+  "rollback": "One SQL transaction rolls back all migrations/grants on failure before commit. Keep app stopped during SSM writes; on partial publication restore original secure SSM values from preserved version1. After successful commit, preserve upgraded schema; do not automatically run down migrations or delete data.",
+  "traffic": "none; no app startup in this database-change approval",
+  "cost": "no new AWS resources or RDS resize; uses already running bounded private startup window",
+  "source_database_unchanged": "clip_test",
+  "business_row_changes": "no regenerated/copied/deleted rows; existing users gain the reviewed default conversation_email_enabled=true column"
+}

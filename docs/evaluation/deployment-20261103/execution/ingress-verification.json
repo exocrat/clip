@@ -1,0 +1,123 @@
+{
+  "alb": [
+    {
+      "arn": "arn:aws:elasticloadbalancing:ap-south-1:335523638354:loadbalancer/app/clip-exp03-exp261103/4e18d2ceb592dde3",
+      "dns": "clip-exp03-exp261103-1208550693.ap-south-1.elb.amazonaws.com",
+      "state": "active",
+      "created": "2026-11-03T16:10:01.774000+00:00",
+      "scheme": "internet-facing"
+    }
+  ],
+  "listeners": [
+    {
+      "arn": "arn:aws:elasticloadbalancing:ap-south-1:335523638354:listener/app/clip-exp03-exp261103/4e18d2ceb592dde3/627e2260aa9d3ab4",
+      "port": 443,
+      "protocol": "HTTPS",
+      "certificates": [
+        {
+          "CertificateArn": "arn:aws:acm:ap-south-1:335523638354:certificate/a9775d00-2af5-4b12-990d-1ce9795f1859"
+        }
+      ],
+      "actions": [
+        {
+          "Type": "forward",
+          "TargetGroupArn": "arn:aws:elasticloadbalancing:ap-south-1:335523638354:targetgroup/clip-exp03-exp261103-ecs/bb6beb26bceea43a",
+          "Order": 1,
+          "ForwardConfig": {
+            "TargetGroups": [
+              {
+                "TargetGroupArn": "arn:aws:elasticloadbalancing:ap-south-1:335523638354:targetgroup/clip-exp03-exp261103-ecs/bb6beb26bceea43a",
+                "Weight": 1
+              }
+            ],
+            "TargetGroupStickinessConfig": {
+              "Enabled": false
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "hosts": [
+    {
+      "id": "i-086045c48487471de",
+      "state": "stopped",
+      "type": "t3.micro"
+    },
+    {
+      "id": "i-0d1947299024cae06",
+      "state": "stopped",
+      "type": "t3.micro"
+    }
+  ],
+  "rds": [
+    {
+      "id": "clip-shared-test-postgres",
+      "status": "stopped",
+      "class": "db.t4g.micro",
+      "storage": 20,
+      "protected": true,
+      "public": false
+    }
+  ],
+  "asg": [
+    {
+      "name": "clip-shared-test-ecs-host",
+      "min": 0,
+      "max": 2,
+      "desired": 0,
+      "suspended": [
+        "RemoveFromLoadBalancerLowPriority",
+        "ScheduledActions",
+        "InstanceRefresh",
+        "AddToLoadBalancer",
+        "HealthCheck",
+        "Launch",
+        "ReplaceUnhealthy",
+        "AZRebalance",
+        "AlarmNotification",
+        "Terminate"
+      ]
+    }
+  ],
+  "ecs": [
+    {
+      "name": "clip-test-api-ap-south-1-pd16",
+      "desired": 2,
+      "running": 0,
+      "pending": 2,
+      "task": "arn:aws:ecs:ap-south-1:335523638354:task-definition/clip-test-api-ap-south-1-pd16:12",
+      "loadBalancers": [
+        {
+          "targetGroupArn": "arn:aws:elasticloadbalancing:ap-south-1:335523638354:targetgroup/clip-exp03-exp261103-ecs/bb6beb26bceea43a",
+          "containerName": "api",
+          "containerPort": 8000
+        }
+      ]
+    }
+  ],
+  "certificate": {
+    "arn": "arn:aws:acm:ap-south-1:335523638354:certificate/e5ebe4da-b808-4a73-ba56-9f259ccc626f",
+    "status": "PENDING_VALIDATION",
+    "records": [
+      {
+        "Name": "_124fcb804396bc7809b15f6cbbfbff11.restore.clip-iisc.site.",
+        "Type": "CNAME",
+        "Value": "_0510eff1cce66333913b2d23217a51a4.wzccmgtwzk.acm-validations.aws."
+      }
+    ],
+    "options": {
+      "CertificateTransparencyLoggingPreference": "ENABLED",
+      "Export": "DISABLED"
+    }
+  },
+  "observed_at_utc": "2026-11-03T16:13:04.890666+00:00",
+  "accepted_main": "4bad7418623ee91b015e5c8b06cf2e1e233dce6f",
+  "applied_plan_sha256": "d1704f904c190d27f1b60b1df251d70efd2ee6f97049352b2ab58309b03c3090",
+  "apply_result": {
+    "added": 12,
+    "changed": 39,
+    "destroyed": 1,
+    "destroyed_resource": "old API ECS task definition registration only"
+  }
+}
