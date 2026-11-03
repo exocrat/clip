@@ -6,6 +6,7 @@ not a deployment authorization or proof of real session parity.
 """
 
 import asyncio
+from dataclasses import dataclass, field
 import re
 from typing import Any
 
@@ -17,6 +18,8 @@ from app.overflow_dispatch import LambdaAtCapacity
 from app.overflow_event import build_read_event, clean_ingress_headers
 from app.overflow_invoke import invoke_read
 from app.overflow_response import parse_read_response
+from app.overflow_event import _TARGET_GROUP
+from app.overflow_invoke import _TARGET
 
 _DETAIL = re.compile(
     r"/api/listings/[0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}"
@@ -44,6 +47,43 @@ class OverflowCounts:
             "lambda_failures": self.lambda_failures,
             "rejected_requests": self.rejected_requests,
         }
+
+
+@dataclass(frozen=True)
+class OverflowDependencies:
+    """Explicit private client and same-run targets supplied by trusted composition.
+
+    Construction performs no credential lookup or network I/O. Live proxy
+    trust, timeout, concurrency and IAM remain separate deployment checks.
+    """
+
+    client: Any = field(repr=False)
+    target: str
+    target_group: str
+    counts: OverflowCounts = field(default_factory=OverflowCounts, repr=False)
+
+    def __post_init__(self) -> None:
+        if (
+            not isinstance(self.target, str)
+            or _TARGET.fullmatch(self.target) is None
+            or not isinstance(self.target_group, str)
+            or _TARGET_GROUP.fullmatch(self.target_group) is None
+            or not callable(getattr(self.client, "invoke", None))
+            or not isinstance(self.counts, OverflowCounts)
+        ):
+            raise ValueError("Invalid overflow dependencies")
+        target_run = self.target.split(":function:clip-exp03-", 1)[1].split(":", 1)[0]
+        group_run = self.target_group.split(":targetgroup/clip-exp03-", 1)[1].split(
+            "-lambda/", 1
+        )[0]
+        config = getattr(getattr(self.client, "meta", None), "config", None)
+        retries = getattr(config, "retries", None)
+        if (
+            target_run != group_run
+            or not isinstance(retries, dict)
+            or retries.get("total_max_attempts") != 1
+        ):
+            raise ValueError("Invalid overflow dependencies")
 
 
 class OverflowReadMiddleware:

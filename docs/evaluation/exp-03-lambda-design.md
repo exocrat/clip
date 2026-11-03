@@ -13,13 +13,14 @@ The existing A/B design and evidence tooling must be revised and reviewed;
 neither a fixed-weight split nor an ALB target-health check implements this
 per-request capacity-aware behavior.
 
-The local `OverflowReadMiddleware` now composes request conversion, a single
-Lambda attempt, response parsing and ECS fallback after a confirmed throttle.
-It is **not installed** in the application. Before installation, review and
-implement trusted proxy/source enforcement, safe client initialization and
-timeouts, bounded concurrency, per-backend evidence, router placement relative
-to Identity/logging, and equivalent error/route behavior. Terraform B remains
-blocked; the local tests do not approve this deployment.
+The local `OverflowReadMiddleware` composes request conversion, a single Lambda
+attempt, response parsing and ECS fallback after a confirmed throttle. The app
+factory can install it only with explicit dependencies in a hosted test setup;
+normal startup never enables it. Logging wraps the router and ECS fallback retains
+the normal Identity stack. Before real deployment, review and implement trusted
+proxy/source enforcement, client initialization and total deadlines, bounded
+concurrency, per-backend evidence and equivalent error/route behavior. Terraform
+B remains blocked; local tests do not approve deployment.
 
 **Ingress compatibility gap:** The local builder can now remove incoming
 forwarding claims, check an already-resolved HTTPS scheme and exact project

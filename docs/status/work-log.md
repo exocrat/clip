@@ -1,5 +1,14 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### EXP-03 explicit hosted-test composition — 2026-11-03 05:16:46 UTC
+
+The app factory can now install overflow only with explicit hosted-test Identity
+and same-run no-retry dependencies; normal startup stays unchanged. Logging
+wraps the router and ECS fallback retains Identity. The 16-file synthetic suite
+passed 149 tests plus mypy/Black. Runtime client, trusted ingress, deadlines,
+telemetry, Terraform and real integration remain open; no AWS action.
+[Experiment log](../evaluation/experiment-log.md).
+
 ### EXP-03 Lambda client config preparation — 2026-11-03 05:14:41 UTC
 
 Prepared an unwired SDK config with explicit timeouts, pool size and no retries;

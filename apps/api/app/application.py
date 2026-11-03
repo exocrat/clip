@@ -42,6 +42,7 @@ from app.domains.identity.http import (
     install_identity_http,
     install_identity_reads,
 )
+from app.overflow_middleware import OverflowDependencies, OverflowReadMiddleware
 
 
 @asynccontextmanager
@@ -215,6 +216,7 @@ def create_app(
     identity_reads: IdentityReadDependencies | None = None,
     pool_factory: PoolFactory = create_async_connection_pool,
     listings_read_only: bool = False,
+    overflow: OverflowDependencies | None = None,
 ) -> FastAPI:
     """Compose the API with optional explicit real Identity bindings.
 
@@ -225,6 +227,19 @@ def create_app(
     app closes its own configured Listings pool.
     """
     settings = settings if settings is not None else load_settings()
+    if overflow is not None and (
+        not isinstance(overflow, OverflowDependencies)
+        or settings.environment != "test"
+        or not settings.serve_web_app
+        or not settings.identity_runtime_enabled
+        or settings.development_auth
+        or settings.isolated_listings_test_caller
+        or listings_read_only
+        or not isinstance(identity, IdentityHttpDependencies)
+        or identity.policy.development
+        or identity.policy.origins != settings.identity_browser_origins
+    ):
+        raise ConfigurationError("Explicit hosted test overflow bindings required")
     if listings_read_only and identity is not None:
         raise ConfigurationError("Lambda requires session-only Identity bindings")
     if identity_reads is not None:
@@ -296,6 +311,16 @@ def create_app(
         )
     if identity_reads is not None:
         install_identity_reads(app, identity_reads)
+    if overflow is not None:
+        # Logging wraps the router; ECS fallback retains the normal Identity stack.
+        app.add_middleware(
+            OverflowReadMiddleware,
+            client=overflow.client,
+            target=overflow.target,
+            target_group=overflow.target_group,
+            counts=overflow.counts,
+        )
+        app.state.overflow_counts = overflow.counts
     app.add_middleware(RequestLoggingMiddleware)
 
     if settings.isolated_listings_test_caller:

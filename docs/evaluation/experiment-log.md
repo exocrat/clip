@@ -15,6 +15,31 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## Current checkpoint
 
+### 2026-11-03 05:16:46 UTC — Explicit hosted-test router composition
+
+**Work:** `apps/api/app/application.py` can now install the local overflow
+middleware only when explicitly supplied trusted dependencies, hosted test
+settings, the web app and normal Identity bindings. The default entry point
+supplies none, so normal startup is unchanged. Request logging wraps the router;
+ECS fallback enters the normal Identity stack. `OverflowDependencies` in
+`apps/api/app/overflow_middleware.py` validates exact project-shaped Lambda and
+target-group names, the same run ID, one SDK attempt and explicit counters; it
+does no I/O or credential discovery. This is not an environment toggle or a
+deployment authorization.
+
+`apps/api/tests/test_overflow_composition.py` checks refusal without hosted
+Identity, mismatched targets and retrying clients, plus Lambda and throttled ECS
+paths with synthetic session/store, request correlation and routing counts.
+The 16-file local regression passed 149 tests; strict mypy, Black and the Python
+boundary check passed.
+No AWS call, real session, deployed request or performance measurement ran.
+
+**Remaining:** Actual startup client creation is not wired; proxy/source trust,
+total deadline and cancellation, bounded concurrency/backpressure, telemetry
+export, revised Terraform/IAM, current images, owner review and deployed parity
+remain open. The Terraform B guard stays active. A local injected composition
+does not establish real AWS or database security.
+
 ### 2026-11-03 05:14:41 UTC — Explicit Lambda client configuration
 
 **Work:** `apps/api/app/overflow_client_config.py` builds an explicit SDK
