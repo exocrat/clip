@@ -1,5 +1,12 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### EXP-03 synthetic overflow app chain — 2026-11-03 05:02:35 UTC
+
+Tested Lambda-first and throttled-fallback decisions against the real local
+read route/Identity middleware with fake SDK, bridge, session and store: 81
+combined tests passed. Actual ECS wiring, independent deployed parity and real
+integrations remain open. No AWS action. [Experiment log](../evaluation/experiment-log.md).
+
 ### EXP-03 isolated Identity adapter probe — 2026-11-03 04:59:56 UTC
 
 Cached Lambda Web Adapter, Uvicorn and Identity middleware processed a synthetic

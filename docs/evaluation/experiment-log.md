@@ -15,6 +15,24 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## Current checkpoint
 
+### 2026-11-03 05:02:35 UTC — Synthetic overflow with real read middleware
+
+**Work:** `apps/api/tests/test_overflow_app_chain.py` connects the local event,
+invoke and fallback helpers to the actual Listing read route and Identity
+middleware. Four synthetic cases cover an authorized and an unauthenticated
+request through each of the Lambda-first and throttled-fallback decisions.
+They check HTTP 200/401, call counts and that the synthetic store runs only for
+the authorized request. Both branches use the same local read-app fixture;
+they do not prove two independently deployed applications are equivalent.
+
+**Checks:** Eighty-one combined synthetic overflow and Identity tests and the
+focused Black check passed, using approved local escalation for threads. The SDK,
+ALB bridge, session service and database store were test doubles; there was no
+AWS request, real session, actual Web Adapter in this test, live app wiring or
+performance measurement. Real ingress trust, session SQL, ECS fallback wiring,
+Lambda adapter behavior with the current image, backend telemetry and deployed
+parity remain open. Terraform B remains blocked.
+
 ### 2026-11-03 04:59:56 UTC — Offline adapter, Uvicorn and Identity probe
 
 **Scope and outcome:** In a temporary Docker container with `--network none`
