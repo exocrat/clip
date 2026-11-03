@@ -15,6 +15,23 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## Current checkpoint
 
+### 2026-11-03 04:50:32 UTC — Local trusted-ingress handoff preparation
+
+**Work:** `apps/api/app/overflow_event.py` now offers an explicit, unwired
+handoff that removes incoming forwarding/hop headers, rejects unsafe Connection
+tokens, requires an already-resolved HTTPS scheme and exactly the project host,
+and builds a fresh HTTPS forwarding claim. Its test exercises spoofed forwarding
+headers, scheme/host mismatch, duplicate hosts and connection-header injection.
+The caller must establish the authenticity of the ASGI scheme and ingress;
+this helper does not do that. It does not validate real Lambda Web Adapter
+behavior, Lambda invoker IAM, or an actual ALB request and is not app-wired.
+
+**Checks:** Seventy-seven synthetic overflow/Identity tests and strict mypy
+passed; files were formatted with Black. Read-only local Docker image inventory
+confirmed the previously built Lambda image exists. No container was started,
+AWS call or measurement made. The real adapter, trusted proxy/source policy,
+session and endpoint parity still require a reviewed integration and live plan.
+
 ### 2026-11-03 04:47:52 UTC — Overflow request/response hardening
 
 **Work:** `apps/api/app/overflow_event.py` now refuses interleaved repeated

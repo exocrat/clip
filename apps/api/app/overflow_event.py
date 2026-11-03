@@ -32,12 +32,15 @@ def build_read_event(
     raw_query: bytes,
     headers: Sequence[tuple[bytes, bytes]],
     target_group_arn: str,
+    *,
+    trusted_https: bool = False,
 ) -> bytes:
     """Serialize one bodyless Listing GET; preserve repeated raw query values.
 
     Reject forwarded/hop-by-hop headers rather than trusting client metadata.
-    The trusted caller must supply the correct ingress metadata in a future
-    reviewed integration; this function never adds a claim of HTTPS itself.
+    With trusted_https, the caller must already have verified the trusted
+    ingress and HTTPS scheme; this function checks the host and adds a fresh
+    HTTPS claim. Never set it from client-provided forwarding headers.
     """
     if (
         method != "GET"
@@ -82,6 +85,10 @@ def build_read_event(
             clean_headers[lower.decode("ascii")].append(value.decode("latin-1"))
         if total > 16384:
             raise ValueError
+        if trusted_https:
+            if clean_headers.get("host") != ["clip-iisc.site"]:
+                raise ValueError
+            clean_headers["x-forwarded-proto"] = ["https"]
         event = {
             "requestContext": {"elb": {"targetGroupArn": target_group_arn}},
             "httpMethod": "GET",
@@ -94,3 +101,39 @@ def build_read_event(
         return json.dumps(event, ensure_ascii=True, separators=(",", ":")).encode()
     except TypeError, UnicodeError, ValueError:
         raise ValueError("Invalid overflow read") from None
+
+
+def clean_ingress_headers(
+    scheme: str, headers: Sequence[tuple[bytes, bytes]]
+) -> tuple[tuple[bytes, bytes], ...]:
+    """Remove proxy claims only after the caller has authenticated the ingress.
+
+    This checks the resolved ASGI scheme and exact host, but does not establish
+    that the ASGI server trusted only the load balancer. The deployment must
+    enforce and independently test that security boundary before use.
+    """
+    if scheme != "https":
+        raise ValueError("Invalid trusted ingress")
+    cleaned = []
+    try:
+        for name, value in headers:
+            if not isinstance(name, bytes) or not isinstance(value, bytes):
+                raise ValueError
+            lower = name.lower()
+            if lower == b"connection":
+                tokens = {part.strip().lower() for part in value.split(b",")}
+                if not tokens <= {b"close", b"keep-alive"}:
+                    raise ValueError
+            if (
+                lower in _HOP_HEADERS
+                or lower.startswith(b"x-forwarded-")
+                or lower == b"forwarded"
+            ):
+                continue
+            cleaned.append((name, value))
+        hosts = [value for name, value in cleaned if name.lower() == b"host"]
+        if hosts != [b"clip-iisc.site"]:
+            raise ValueError
+        return tuple(cleaned)
+    except TypeError, ValueError:
+        raise ValueError("Invalid trusted ingress") from None

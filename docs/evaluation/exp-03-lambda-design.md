@@ -13,15 +13,15 @@ The existing A/B design and evidence tooling must be revised and reviewed;
 neither a fixed-weight split nor an ALB target-health check implements this
 per-request capacity-aware behavior.
 
-**Ingress compatibility gap:** The local event builder currently rejects all
-forwarding headers, while an ALB normally adds `X-Forwarded-*` headers. It is
-therefore not ready to accept real ALB requests. The real Identity middleware
-requires an HTTPS scheme; the synthetic bridge hardcodes HTTPS and does not
-prove how the actual Lambda Web Adapter/Uvicorn path obtains it. Before wiring,
-design and verify a trusted ingress boundary that removes untrusted forwarding
-claims, preserves the verified host/scheme and cannot be spoofed by a client or
-an unauthorized Lambda invoker. The existing builder is fail-closed, not a
-usable implementation of that boundary.
+**Ingress compatibility gap:** The local builder can now remove incoming
+forwarding claims, check an already-resolved HTTPS scheme and exact project
+host, and add a fresh HTTPS claim. This helper does **not** authenticate the
+source of the resolved scheme: deployment must prove Uvicorn trusts only the
+actual load balancer and that an unauthorized Lambda invoker cannot spoof the
+event. Identity requires HTTPS, while the synthetic bridge hardcodes it. Real
+Lambda Web Adapter/Uvicorn behavior and trusted source enforcement remain
+unverified and block wiring/deployment. The local helper is not itself proof of
+an ingress security boundary.
 
 ## Local package-input audit
 

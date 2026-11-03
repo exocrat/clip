@@ -1,5 +1,12 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### EXP-03 local HTTPS handoff preparation — 2026-11-03 04:50:32 UTC
+
+Added an unwired local helper that removes forwarding claims and binds a checked
+HTTPS scheme/project host; 77 synthetic overflow/Identity tests passed. It does
+not authenticate the ingress or prove real adapter behavior; both remain gates.
+Local Docker image inventory only, no AWS action. [Experiment log](../evaluation/experiment-log.md).
+
 ### EXP-03 overflow protocol hardening — 2026-11-03 04:47:52 UTC
 
 Local event/response helpers now refuse ambiguous interleaved queries, duplicate
