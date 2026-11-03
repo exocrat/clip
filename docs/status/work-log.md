@@ -1,5 +1,13 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### EXP-03 overflow protocol hardening — 2026-11-03 04:47:52 UTC
+
+Local event/response helpers now refuse ambiguous interleaved queries, duplicate
+JSON keys and unsafe controls; 50 synthetic tests and mypy/Black passed. Current
+builder rejects ALB forwarding headers, so trusted HTTPS/host handling and a
+real Web Adapter check are still mandatory before wiring. No AWS action.
+[Experiment log](../evaluation/experiment-log.md).
+
 ### EXP-03 synthetic overflow chain — 2026-11-03 04:44:30 UTC
 
 Composed the local event, SDK, synthetic ASGI and fallback components; 46

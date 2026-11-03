@@ -33,12 +33,22 @@ class ReadResponse:
     body: bytes = field(repr=False)
 
 
+def _unique_object(pairs: list[tuple[str, object]]) -> dict[str, object]:
+    """Reject duplicate JSON keys rather than silently changing the response."""
+    result: dict[str, object] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError
+        result[key] = value
+    return result
+
+
 def parse_read_response(payload: bytes) -> ReadResponse:
     """Validate an ALB multi-value envelope; preserve repeated safe headers."""
     try:
         if not isinstance(payload, bytes) or len(payload) > _MAX_BODY:
             raise ValueError
-        event = json.loads(payload)
+        event = json.loads(payload, object_pairs_hook=_unique_object)
         if not isinstance(event, dict):
             raise ValueError
         status = event.get("statusCode")
@@ -62,7 +72,10 @@ def parse_read_response(payload: bytes) -> ReadResponse:
             if lower in _FORBIDDEN or not isinstance(values, list):
                 raise ValueError
             for value in values:
-                if not isinstance(value, str) or "\r" in value or "\n" in value:
+                if not isinstance(value, str) or any(
+                    ord(char) < 32 and char != "\t" or ord(char) == 127
+                    for char in value
+                ):
                     raise ValueError
                 # A future HTTP handler must calculate length from decoded bytes.
                 if lower == "content-length":

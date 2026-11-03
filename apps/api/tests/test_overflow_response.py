@@ -36,6 +36,7 @@ def test_parses_repeated_headers_without_exposing_body_in_repr():
         {"isBase64Encoded": "yes"},
         {"multiValueHeaders": {"transfer-encoding": ["chunked"]}},
         {"multiValueHeaders": {"x-test": ["hello\r\ninjection"]}},
+        {"multiValueHeaders": {"x-test": ["bad\x00value"]}},
     ],
 )
 def test_refuses_malformed_or_unsafe_response(changes):
@@ -50,3 +51,8 @@ def test_preserves_non_success_status():
 def test_discards_length_from_encoded_response():
     result = parse_read_response(encode(multiValueHeaders={"content-length": ["10"]}))
     assert result.headers == ()
+
+
+def test_rejects_ambiguous_duplicate_json_keys():
+    with pytest.raises(ValueError, match="Invalid Lambda read response"):
+        parse_read_response(b'{"statusCode":200,"statusCode":401}')

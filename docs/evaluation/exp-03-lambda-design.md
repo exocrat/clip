@@ -13,6 +13,16 @@ The existing A/B design and evidence tooling must be revised and reviewed;
 neither a fixed-weight split nor an ALB target-health check implements this
 per-request capacity-aware behavior.
 
+**Ingress compatibility gap:** The local event builder currently rejects all
+forwarding headers, while an ALB normally adds `X-Forwarded-*` headers. It is
+therefore not ready to accept real ALB requests. The real Identity middleware
+requires an HTTPS scheme; the synthetic bridge hardcodes HTTPS and does not
+prove how the actual Lambda Web Adapter/Uvicorn path obtains it. Before wiring,
+design and verify a trusted ingress boundary that removes untrusted forwarding
+claims, preserves the verified host/scheme and cannot be spoofed by a client or
+an unauthorized Lambda invoker. The existing builder is fail-closed, not a
+usable implementation of that boundary.
+
 ## Local package-input audit
 
 At the local audit, the ignored `.tools/semantic/model` directory contains the

@@ -53,8 +53,17 @@ def build_read_event(
     clean_headers: dict[str, list[str]] = defaultdict(list)
     try:
         if raw_query:
+            last_key: bytes | None = None
+            completed_keys: set[bytes] = set()
             for item in raw_query.split(b"&"):
                 key, _, value = item.partition(b"=")
+                # ALB groups values by key and cannot preserve interleaving.
+                if key != last_key:
+                    if key in completed_keys:
+                        raise ValueError
+                    if last_key is not None:
+                        completed_keys.add(last_key)
+                    last_key = key
                 query[key.decode("ascii")].append(value.decode("ascii"))
         total = 0
         for key, value in headers:
@@ -64,8 +73,7 @@ def build_read_event(
             total += len(key) + len(value)
             if (
                 _HEADER.fullmatch(key) is None
-                or b"\r" in value
-                or b"\n" in value
+                or any(byte < 32 and byte != 9 or byte == 127 for byte in value)
                 or lower in _HOP_HEADERS
                 or lower.startswith(b"x-forwarded-")
                 or lower == b"forwarded"

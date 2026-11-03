@@ -15,6 +15,28 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## Current checkpoint
 
+### 2026-11-03 04:47:52 UTC — Overflow request/response hardening
+
+**Work:** `apps/api/app/overflow_event.py` now refuses interleaved repeated
+query keys that the ALB-style representation would otherwise reorder, and
+rejects header control bytes. `apps/api/app/overflow_response.py` rejects
+duplicate JSON keys and header control characters. Their corresponding tests
+cover each case. Existing valid repeated filters and response headers remain
+covered. These helpers remain unwired and make no network calls.
+
+**Integration finding:** ALB normally provides forwarding headers, which the
+current event builder rejects. Real Identity also requires trusted HTTPS, while
+the local synthetic bridge asserts HTTPS. Thus the passing local chain is not
+ready for real traffic: a reviewed safe forwarding/host boundary and a real
+Web Adapter check are still required. See the
+[Lambda design](exp-03-lambda-design.md). The AWS adapter documentation was
+reviewed, but it does not establish this project's adapter/security behavior.
+
+**Checks:** Fifty synthetic chain, response, request and transport tests passed;
+strict mypy and Black passed. Local asyncio/thread tests used approved escalation.
+The initial Docker image inventory attempt could not access the local Docker
+socket; no Docker operation, AWS call or performance measurement occurred.
+
 ### 2026-11-03 04:44:30 UTC — Synthetic overflow chain integration
 
 **Work:** `apps/api/tests/test_overflow_local_chain.py` composes the local

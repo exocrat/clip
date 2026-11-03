@@ -44,8 +44,14 @@ def test_only_selected_reads_are_accepted(method, path):
         (b"x-forwarded-proto", b"https"),
         (b"connection", b"close"),
         (b"cookie", b"bad\r\nvalue"),
+        (b"cookie", b"bad\x00value"),
     ],
 )
 def test_unsafe_headers_are_rejected(header):
     with pytest.raises(ValueError):
         build_read_event("GET", "/api/listings/id", b"", [header], TG)
+
+
+def test_interleaved_query_keys_are_refused_instead_of_reordered():
+    with pytest.raises(ValueError):
+        build_read_event("GET", "/api/listings", b"a=1&b=2&a=3", [], TG)
