@@ -85,7 +85,7 @@ class OverflowDependencies:
             raise ValueError("Invalid overflow dependencies")
         target_run = self.target.split(":function:clip-exp03-", 1)[1].split(":", 1)[0]
         group_run = self.target_group.split(":targetgroup/clip-exp03-", 1)[1].split(
-            "-lambda/", 1
+            "-ecs/", 1
         )[0]
         config = getattr(getattr(self.client, "meta", None), "config", None)
         retries = getattr(config, "retries", None)

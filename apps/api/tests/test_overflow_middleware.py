@@ -15,7 +15,7 @@ from app.overflow_middleware import OverflowCounts, OverflowReadMiddleware
 from test_lambda_identity import bound_app  # noqa: F401
 
 TARGET = "arn:aws:lambda:ap-south-1:335523638354:function:clip-exp03-test001:1"
-TG = "arn:aws:elasticloadbalancing:ap-south-1:335523638354:targetgroup/clip-exp03-test001-lambda/0123456789abcdef"
+TG = "arn:aws:elasticloadbalancing:ap-south-1:335523638354:targetgroup/clip-exp03-test001-ecs/0123456789abcdef"
 
 
 class FakeClient:

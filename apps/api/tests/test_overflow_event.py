@@ -7,7 +7,7 @@ import pytest
 from app.alb_event import parse_alb_read
 from app.overflow_event import build_read_event, clean_ingress_headers
 
-TG = "arn:aws:elasticloadbalancing:ap-south-1:335523638354:targetgroup/clip-exp03-test001-lambda/0123456789abcdef"
+TG = "arn:aws:elasticloadbalancing:ap-south-1:335523638354:targetgroup/clip-exp03-test001-ecs/0123456789abcdef"
 
 
 def test_repeated_query_and_private_headers_survive_local_roundtrip():

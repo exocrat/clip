@@ -12,7 +12,7 @@ from collections.abc import Sequence
 _HEADER = re.compile(rb"[!#$%&'*+.^_`|~0-9A-Za-z-]+")
 _DETAIL = re.compile(r"/api/listings/[^/]+")
 _TARGET_GROUP = re.compile(
-    r"arn:aws:elasticloadbalancing:ap-south-1:335523638354:targetgroup/clip-exp03-[a-z0-9]{3,10}-lambda/[0-9a-f]{16}"
+    r"arn:aws:elasticloadbalancing:ap-south-1:335523638354:targetgroup/clip-exp03-[a-z0-9]{3,10}-ecs/[0-9a-f]{16}"
 )
 _HOP_HEADERS = {
     b"connection",

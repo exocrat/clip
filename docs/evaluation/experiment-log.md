@@ -15,6 +15,32 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## Current checkpoint
 
+### 2026-11-03 05:33:14 UTC — Align B infrastructure with ECS-hosted overflow
+
+**Work:** Corrected the EXP-03 Terraform draft to match the user's selected
+path: the ALB always forwards to the ECS target group, and configuration B
+enables the existing ECS API router to invoke Lambda for only the approved
+Listing GET routes. The ECS task role receives `lambda:InvokeFunction` access
+to only this run's exact function ARN, and only when B is enabled. Removed the
+direct ALB-to-Lambda listener rule, Lambda target group, ALB Lambda permission
+and Lambda target attachment. The ECS task receives explicit B/function/real
+ECS target-group identifiers. The synthetic event and middleware now validate
+that ECS target-group ARN. Updated the EXP-03 design and Terraform preparation
+records and the mock assertions.
+
+**Checks:** The focused local synthetic router/event suite passed 33 tests. The
+changed Terraform files pass `terraform fmt -check`; `git diff --check` passed.
+`make terraform-check` stopped during backend-free provider initialization
+because `registry.terraform.io` could not resolve from this environment. No
+Terraform apply/plan, AWS call, live API request or performance measurement ran.
+
+**Limits:** This aligns the proposed topology, but `app.main` does not yet create
+the configured client/invoker from the task environment. Per-process router-slot
+exhaustion still returns 503 before Lambda can throttle, and no cross-task
+capacity coordinator is implemented. Actual proxy trust, IAM evaluation, DB
+budget, response parity, owner review and deployment remain pending. B is not
+ready for a live comparison.
+
 ### 2026-11-03 05:23:09 UTC — Wire bounded router and lifecycle
 
 **Work:** `apps/api/app/overflow_middleware.py` now requires the explicit

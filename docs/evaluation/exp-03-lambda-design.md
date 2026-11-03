@@ -5,13 +5,14 @@ authorize provisioning, deployment, traffic or measurement.
 
 **2026-11-03 user direction:** Configuration B should send selected reads to
 Lambda first and route overflow to ECS when Lambda capacity is unavailable.
-The direct-ALB routing below is the previous draft, not an implementation of
-that direction. B is blocked in Terraform until overflow has been designed,
-implemented and reviewed. Capacity definition, coordination, safe fallback,
-route attribution, deployment cost and experiment interpretation are open.
-The existing A/B design and evidence tooling must be revised and reviewed;
-neither a fixed-weight split nor an ALB target-health check implements this
-per-request capacity-aware behavior.
+The ALB forwards all routes to ECS. The ECS API router invokes Lambda only for
+the selected Listing GET routes; a confirmed Lambda throttle serves that same
+request through ECS. Configuration A disables this router, while B enables it.
+The Terraform draft now represents that topology and grants the ECS task role
+access to only the run's Lambda function. Runtime startup wiring, local-router
+capacity policy, capacity coordination across ECS tasks, route attribution,
+deployment cost and independent review remain open. Neither a fixed-weight split
+nor an ALB target-health check implements per-request overflow.
 
 The local `OverflowReadMiddleware` composes request conversion, a single Lambda
 attempt, response parsing and ECS fallback after a confirmed throttle. The app
@@ -20,11 +21,12 @@ normal startup never enables it. Logging wraps the router and ECS fallback retai
 the normal Identity stack. Before real deployment, review and implement trusted
 proxy/source enforcement, client initialization, chosen deadlines and aggregate
 concurrency, per-backend evidence and equivalent error/route behavior. A local
-per-process admission limit is now wired: full router slots produce a 503
-before Lambda is attempted, separately counted from an actual Lambda throttle.
-This local limit may reject traffic before Lambda itself is saturated and must
-be sized, reviewed and reported. Accepted calls exceeding the deadline are not
-retried. Terraform B remains blocked; local tests do not approve deployment.
+per-process admission limit is wired: full router slots produce a 503 before
+Lambda is attempted, separately counted from an actual Lambda throttle. This
+local limit may reject traffic before Lambda itself is saturated and must be
+resolved before a no-loss capacity-overflow claim. Accepted calls exceeding the
+deadline are not retried. Terraform B represents the approved topology but
+does not mean the end-to-end router is deployable yet.
 
 **Ingress compatibility gap:** The local builder can now remove incoming
 forwarding claims, check an already-resolved HTTPS scheme and exact project
@@ -65,27 +67,26 @@ failure/retry and retention are in the experiment log.
 
 ## Request path
 
-Use one HTTPS origin and an Application Load Balancer (ALB) with ECS and Lambda
-targets. Configuration A sends all application requests to ECS. Configuration B
-sends only the selected listing reads to Lambda; all other requests use ECS.
-Switching between configurations must be explicit and reversible, with the
-selected listener rules and revisions captured before a run. Preserve the
-existing ECS service in both configurations. Exact origin, certificate,
-listener priorities, network and target group ownership remain subject to the
-infrastructure owner's review. The user assigned Terraform ownership to Rahul;
-independent and affected-domain review still apply.
+Use one HTTPS origin and an Application Load Balancer (ALB) whose target is ECS
+in both configurations. Configuration A handles all requests on ECS.
+Configuration B enables an ECS-hosted router that sends only the selected
+Listing reads to Lambda first and falls back to the same ECS handler on a
+confirmed Lambda capacity rejection. Switching between configurations must be
+explicit and reversible, with the selected runtime setting and revisions
+captured before a run. Preserve the existing ECS service in both configurations.
+Exact origin, certificate, listener, network and target group ownership remain
+subject to infrastructure review. The user assigned Terraform ownership to
+Rahul; independent and affected-domain review still apply.
 
 The candidates are GET `/api/listings` for browse and Hybrid search, and GET
-`/api/listings/{listing_id}` for detail. The final listener rule must match the
-HTTP method as well as the exact intended path shape, and tests must prove that
-write, chat, offer, image and other routes continue to ECS. Repeated query
-parameters, cookies, host, status, response headers and error behavior must be
-preserved. Concrete rule proposal: configuration B has a GET rule for exact path
-`/api/listings` and a GET rule for `/api/listings/*`, followed by the existing
-ECS default. The detail rule can also match extra path segments, but the API
-must return its normal not-found response for those; no non-GET operation may
-reach Lambda. Configuration A sends both paths to ECS. Target groups must
-enable multi-value headers so repeated filter values and cookies are retained.
+`/api/listings/{listing_id}` for detail. The ECS router matches the method and
+exact intended path shape; tests must prove that write, chat, offer, image and
+other routes continue directly through ECS. Repeated query parameters, cookies,
+host, status, response headers and error behavior must be preserved. Extra path
+segments must retain the API's normal not-found response. The router passes an
+ALB-shaped event to the Lambda Web Adapter, including the ECS target-group ARN
+as event context; this ARN is metadata and does not grant invoke access. The ECS
+task role's exact function permission is the invoke authorization boundary.
 
 ## Application and authentication
 

@@ -100,6 +100,11 @@ resource "aws_ecs_task_definition" "api" {
       { name = "CLIP_IMAGE_KEY_PREFIX", value = "id01" },
       { name = "CLIP_HYBRID_SEARCH_ENABLED", value = tostring(var.hybrid_runtime_enabled) },
       { name = "CLIP_HYBRID_WORKER_ENABLED", value = tostring(var.hybrid_runtime_enabled) },
+      ] : [], local.exp03_active ? [
+      { name = "CLIP_EXP03_OVERFLOW_ENABLED", value = tostring(var.exp03_route_reads_to_lambda) },
+      { name = "CLIP_EXP03_LAMBDA_FUNCTION_ARN", value = aws_lambda_function.exp03[0].arn },
+      { name = "CLIP_EXP03_INGRESS_TARGET_GROUP_ARN", value = aws_lb_target_group.exp03_ecs[0].arn },
+      ] : [], var.identity_runtime_enabled ? [
       { name = "CLIP_NOTIFICATION_WORKER_ENABLED", value = tostring(var.notification_worker_enabled) },
       { name = "CLIP_NOTIFICATION_ALLOW_UNLISTED_RECIPIENTS", value = tostring(var.notification_allow_unlisted_recipients) },
     ] : [])

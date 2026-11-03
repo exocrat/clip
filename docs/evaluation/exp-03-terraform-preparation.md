@@ -7,19 +7,24 @@ direction. The shared root and its existing state remain owned as recorded in
 and independent review still apply.
 
 **Superseding direction:** The user wants Lambda-first reads with ECS overflow
-at capacity. The direct B rule described below is the older draft and Terraform
-now refuses to enable it. A real overflow router and reviewed revised design are
-not yet present; the existing draft must not be used as evidence of overflow.
+at capacity. The ALB sends all HTTPS traffic to the existing ECS service. The
+ECS API router invokes Lambda for the two approved Listing GET patterns; on a
+confirmed Lambda capacity rejection it serves the same request on ECS. Other
+routes remain on ECS. Terraform gives the ECS task role permission to invoke
+only the exact run's function. The ALB has no Lambda target group or direct
+Lambda invoke permission.
 
 `infra/terraform/shared/test/exp03-lambda.tf` adds an opt-in configuration to
 the existing shared test root. When disabled it creates no EXP-03 resources.
 When enabled it uses the existing VPC, NAT route, ECS service and RDS; creates
-a second public ALB subnet, an HTTPS ALB, an ECS target group, a Lambda target
-group, a Lambda image function, a scoped runtime role and a seven-day log group;
-and adds separate temporary ALB/ECS/Lambda security groups. A sends all routes
-to ECS. B adds a GET-only rule for `/api/listings` and `/api/listings/*` to
-Lambda. The Lambda target group enables multi-value headers. Other methods and
-routes retain the ECS default. The API rejects unsupported extra paths.
+a second public ALB subnet, an HTTPS ALB, an ECS target group, a Lambda image
+function, a scoped runtime role and a seven-day log group; and adds separate
+temporary ALB/ECS/Lambda security groups. The ALB always sends traffic to ECS.
+Configuration A disables the ECS router's Lambda call. Configuration B enables
+Lambda-first routing inside the ECS API for `GET /api/listings` and
+`GET /api/listings/{uuid}`; a confirmed capacity rejection falls back to the
+same ECS handler. The ECS task role can invoke only the exact function ARN.
+Other methods and routes stay on ECS.
 
 The IAM policy lists only the three fixed SSM parameter ARNs for application
 startup. VPC ENI management requires wildcard EC2 resources; an explicit
@@ -44,9 +49,10 @@ The launch template gets an additional temporary ECS ingress group; this does
   Hybrid ECS settings, its image digest and safe access to existing secret
   references. Do not put secret values or real contacts into source, logs or
   plan review artifacts. Never use incomplete input defaults against real state.
-- `exp03_route_reads_to_lambda=false` for A. Switching it to true creates the
-  B rule, after the Lambda target is registered. Either transition requires the
-  approved exact plan and verification of the actual listener and outputs.
+- `exp03_route_reads_to_lambda=false` for A. Switching it to true enables the
+  ECS router in B and grants the existing ECS task role invoke permission for
+  the exact function. Both transitions require the approved exact plan and
+  verification of the actual listener and outputs.
 
 The root guard requires the recorded `10.64.0.0/20` VPC and its three existing
 `/24` subnet inputs, disallows choosing one of those managed subnets for the new

@@ -55,7 +55,7 @@ run "enabled_a_defaults_to_ecs_and_bounds_lambda" {
     api_task_memory_mib      = 2048
   }
   assert {
-    condition     = length(aws_lb.exp03) == 1 && length(aws_lb_listener_rule.exp03_reads) == 0 && length(aws_ecs_service.api[0].load_balancer) == 1
+    condition     = length(aws_lb.exp03) == 1 && length(aws_ecs_service.api[0].load_balancer) == 1 && contains([for item in jsondecode(aws_ecs_task_definition.api[0].container_definitions)[0].environment : item.name], "CLIP_EXP03_OVERFLOW_ENABLED") && [for item in jsondecode(aws_ecs_task_definition.api[0].container_definitions)[0].environment : item.value if item.name == "CLIP_EXP03_OVERFLOW_ENABLED"][0] == "false"
     error_message = "A must use the ECS default and attach the existing API service."
   }
   assert {
@@ -63,12 +63,12 @@ run "enabled_a_defaults_to_ecs_and_bounds_lambda" {
     error_message = "Create the separate ECS ingress group and expose only HTTPS."
   }
   assert {
-    condition     = aws_lambda_function.exp03[0].timeout == 5 && aws_lambda_function.exp03[0].memory_size == 2048 && aws_lambda_function.exp03[0].reserved_concurrent_executions == 2 && aws_lb_target_group.exp03_lambda[0].lambda_multi_value_headers_enabled
-    error_message = "Lambda limits and multi-value headers must use the explicit inputs."
+    condition     = aws_lambda_function.exp03[0].timeout == 5 && aws_lambda_function.exp03[0].memory_size == 2048 && aws_lambda_function.exp03[0].reserved_concurrent_executions == 2
+    error_message = "Lambda limits must use the explicit inputs."
   }
   assert {
-    condition     = aws_lambda_permission.exp03_alb[0].source_account == "335523638354" && length(aws_vpc_security_group_egress_rule.exp03_lambda_to_database) == 1 && length(aws_vpc_security_group_egress_rule.exp03_lambda_to_ssm) == 1 && aws_vpc_security_group_egress_rule.exp03_lambda_to_ssm[0].to_port == 443
-    error_message = "Lambda invocation and outbound rules must stay scoped."
+    condition     = length(aws_iam_role_policy.exp03_ecs_invoke_lambda) == 0 && length(aws_vpc_security_group_egress_rule.exp03_lambda_to_database) == 1 && length(aws_vpc_security_group_egress_rule.exp03_lambda_to_ssm) == 1 && aws_vpc_security_group_egress_rule.exp03_lambda_to_ssm[0].to_port == 443
+    error_message = "A leaves Lambda uninvoked while Lambda egress stays scoped."
   }
   assert {
     condition     = aws_lambda_function.exp03[0].environment[0].variables.CLIP_EMAIL_PROVIDER == "disabled" && aws_lambda_function.exp03[0].environment[0].variables.CLIP_LAMBDA_DATABASE_PARAMETER_ENABLED == "true" && !contains(keys(aws_lambda_function.exp03[0].environment[0].variables), "CLIP_DATABASE_URL")
@@ -80,7 +80,7 @@ run "enabled_a_defaults_to_ecs_and_bounds_lambda" {
   }
 }
 
-run "direct_b_routing_rejected_until_overflow_implemented" {
+run "b_routes_to_ecs_router_with_lambda_invoke_role" {
   command = plan
   variables {
     exp03_enabled               = true
@@ -92,7 +92,10 @@ run "direct_b_routing_rejected_until_overflow_implemented" {
     api_task_cpu                = 512
     api_task_memory_mib         = 2048
   }
-  expect_failures = [terraform_data.exp03_inputs]
+  assert {
+    condition     = length(aws_ecs_service.api[0].load_balancer) == 1 && aws_ecs_service.api[0].load_balancer[0].target_group_arn == aws_lb_target_group.exp03_ecs[0].arn && [for item in jsondecode(aws_ecs_task_definition.api[0].container_definitions)[0].environment : item.value if item.name == "CLIP_EXP03_OVERFLOW_ENABLED"][0] == "true" && contains([for item in jsondecode(aws_ecs_task_definition.api[0].container_definitions)[0].environment : item.name], "CLIP_EXP03_LAMBDA_FUNCTION_ARN") && jsondecode(aws_iam_role_policy.exp03_ecs_invoke_lambda[0].policy).Statement[0].Action == ["lambda:InvokeFunction"] && jsondecode(aws_iam_role_policy.exp03_ecs_invoke_lambda[0].policy).Statement[0].Resource == aws_lambda_function.exp03[0].arn
+    error_message = "ALB routes all traffic to ECS; its task role invokes Lambda for selected reads."
+  }
 }
 
 run "b_without_resources_is_rejected" {

@@ -97,7 +97,7 @@ variable "exp03_max_runtime_minutes" {
 }
 
 variable "exp03_route_reads_to_lambda" {
-  description = "Select B routing for the two GET read patterns; false keeps all routes on ECS."
+  description = "Enable ECS-hosted Lambda-first routing for the two GET read patterns; false keeps all routes on ECS."
   type        = bool
   default     = false
 }
@@ -118,10 +118,6 @@ locals {
 resource "terraform_data" "exp03_inputs" {
   count = var.exp03_enabled || var.exp03_route_reads_to_lambda ? 1 : 0
   lifecycle {
-    precondition {
-      condition     = !var.exp03_route_reads_to_lambda
-      error_message = "Direct Lambda routing does not implement the requested ECS overflow; configuration B is blocked until that routing is implemented and reviewed."
-    }
     precondition {
       condition = local.exp03_active && var.api_service_enabled && var.identity_runtime_enabled && var.hybrid_runtime_enabled && var.vpc_cidr == "10.64.0.0/20" && var.public_subnet_cidr == "10.64.0.0/24" && var.active_private_subnet_cidr == "10.64.1.0/24" && var.secondary_private_subnet_cidr == "10.64.2.0/24" && alltrue([
         var.exp03_run_id != null,
@@ -267,14 +263,6 @@ resource "aws_lb_target_group" "exp03_ecs" {
   tags = local.exp03_tags
 }
 
-resource "aws_lb_target_group" "exp03_lambda" {
-  count                              = local.exp03_active ? 1 : 0
-  name                               = "${local.exp03_name}-lambda"
-  target_type                        = "lambda"
-  lambda_multi_value_headers_enabled = true
-  tags                               = local.exp03_tags
-}
-
 resource "aws_lb_listener" "exp03_https" {
   count             = local.exp03_active ? 1 : 0
   load_balancer_arn = aws_lb.exp03[0].arn
@@ -287,24 +275,6 @@ resource "aws_lb_listener" "exp03_https" {
     target_group_arn = aws_lb_target_group.exp03_ecs[0].arn
   }
   tags = local.exp03_tags
-}
-
-resource "aws_lb_listener_rule" "exp03_reads" {
-  count        = local.exp03_active && var.exp03_route_reads_to_lambda ? 1 : 0
-  listener_arn = aws_lb_listener.exp03_https[0].arn
-  priority     = 100
-  action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.exp03_lambda[0].arn
-  }
-  condition {
-    http_request_method { values = ["GET"] }
-  }
-  condition {
-    path_pattern { values = ["/api/listings", "/api/listings/*"] }
-  }
-  tags       = local.exp03_tags
-  depends_on = [aws_lb_target_group_attachment.exp03_lambda]
 }
 
 resource "aws_iam_role" "exp03_lambda" {
@@ -379,19 +349,16 @@ resource "aws_lambda_function" "exp03" {
   tags       = local.exp03_tags
 }
 
-resource "aws_lambda_permission" "exp03_alb" {
-  count          = local.exp03_active ? 1 : 0
-  statement_id   = "AllowOwnedAlbTargetGroup"
-  action         = "lambda:InvokeFunction"
-  function_name  = aws_lambda_function.exp03[0].function_name
-  principal      = "elasticloadbalancing.amazonaws.com"
-  source_arn     = aws_lb_target_group.exp03_lambda[0].arn
-  source_account = local.account_id
-}
-
-resource "aws_lb_target_group_attachment" "exp03_lambda" {
-  count            = local.exp03_active ? 1 : 0
-  target_group_arn = aws_lb_target_group.exp03_lambda[0].arn
-  target_id        = aws_lambda_function.exp03[0].arn
-  depends_on       = [aws_lambda_permission.exp03_alb]
+resource "aws_iam_role_policy" "exp03_ecs_invoke_lambda" {
+  count = local.exp03_active && var.exp03_route_reads_to_lambda ? 1 : 0
+  name  = "${local.exp03_name}-invoke-lambda"
+  role  = aws_iam_role.api_task[0].id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["lambda:InvokeFunction"]
+      Resource = aws_lambda_function.exp03[0].arn
+    }]
+  })
 }
