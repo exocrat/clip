@@ -15,6 +15,29 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## Current checkpoint
 
+### 2026-11-03 05:20:44 UTC — Local bounded invocation preparation
+
+**Work:** `apps/api/app/overflow_admission.py` adds an explicit per-process
+bounded blocking-call executor with a deadline no longer than the comparison's
+five-second client timeout. When all configured slots are occupied it reports
+router capacity separately from a Lambda service throttle. A caller timeout or
+cancellation does not free a slot while its SDK thread is still running; the
+slot returns only after actual completion or cancellation before start. Late
+failures are consumed without logging provider content. Closing stops new calls
+and cancels queued work but cannot interrupt running SDK threads.
+
+`apps/api/tests/test_overflow_admission.py` uses local thread events to exercise
+completion, timeout, cancellation, capacity refusal and invalid values. The
+17-file synthetic regression passed 156 tests; mypy and Black passed. No client,
+AWS call, deployed request or benchmark occurred.
+
+**Remaining:** This executor is not yet wired to the router or app lifespan.
+Its capacity is per process, not an aggregate ECS/Lambda/DB bound, and its local
+capacity signal must be distinguished from an actual AWS throttle in evidence.
+The selected size/deadline, fallback handling, finite SDK timeouts, shutdown,
+backpressure and multi-process limits require integration/review. No timeout
+can stop work that AWS already accepted; do not replay it on ECS. B stays blocked.
+
 ### 2026-11-03 05:16:46 UTC — Explicit hosted-test router composition
 
 **Work:** `apps/api/app/application.py` can now install the local overflow
