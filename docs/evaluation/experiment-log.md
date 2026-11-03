@@ -15,6 +15,25 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## Current checkpoint
 
+### 2026-11-03 04:36:51 UTC — Offline Lambda rejection classification
+
+**Work:** `apps/api/app/overflow_aws_errors.py` translates only a synthetic
+SDK `Invoke` error with HTTP 429 and `TooManyRequestsException` to the existing
+overflow signal. Other SDK errors become a generic safe error; raw provider
+messages and exception chains are suppressed. The error can mean account or
+function throttling, so it is not proof of which concurrency limit was hit.
+The helper has no client or network calls and is not wired to the app.
+`apps/api/tests/test_overflow_aws_errors.py` checks the exact match and rejects
+other status, operation and error-code combinations, including redaction.
+
+**Basis and checks:** AWS documents that synchronous Invoke API errors prevent
+function execution and that `TooManyRequestsException` may reflect account or
+function concurrency ([Invoke API](https://docs.aws.amazon.com/lambda/latest/api/API_Invoke.html)).
+Nine combined policy/classification tests, strict mypy and individual Black
+checks passed. A future actual SDK transport must disable retries, handle
+function errors separately and remain subject to integration/privacy review.
+No AWS call, deployed request or measurement was made.
+
 ### 2026-11-03 04:35:00 UTC — Local overflow decision policy
 
 **Direction:** The user accepted an ECS-hosted Lambda-first router and the

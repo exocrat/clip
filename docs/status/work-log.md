@@ -1,5 +1,12 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### EXP-03 overflow rejection classifier — 2026-11-03 04:36:51 UTC
+
+Prepared an offline, redacted classifier for Lambda Invoke throttling errors;
+nine synthetic policy/classifier tests and mypy/Black checks passed. No client,
+app wiring or deployed request exists; transport and real checks remain open.
+See the [experiment log](../evaluation/experiment-log.md).
+
 ### EXP-03 overflow policy — 2026-11-03 04:35:00 UTC
 
 User accepted the ECS-hosted Lambda-first router recommendation. Added an
