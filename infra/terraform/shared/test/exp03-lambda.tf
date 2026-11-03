@@ -96,65 +96,20 @@ variable "exp03_max_runtime_minutes" {
   }
 }
 
-variable "exp03_route_reads_to_lambda" {
-  description = "Enable ECS-hosted Lambda-first routing for the two GET read patterns; false keeps all routes on ECS."
-  type        = bool
-  default     = false
-}
-
-variable "exp03_router_max_inflight" {
-  description = "Reviewed per-ECS-process cap for outstanding Lambda SDK calls; required only in configuration B."
+variable "exp03_selected_reads_lambda_weight_percent" {
+  description = "Lambda's fixed ALB traffic weight for selected Listing GETs; null keeps configuration A on ECS."
   type        = number
   default     = null
   validation {
-    condition     = var.exp03_router_max_inflight == null ? true : var.exp03_router_max_inflight >= 1 && var.exp03_router_max_inflight <= 1000 && floor(var.exp03_router_max_inflight) == var.exp03_router_max_inflight
-    error_message = "Choose a reviewed positive integer per-process cap no greater than 1000."
-  }
-}
-
-variable "exp03_router_deadline_seconds" {
-  description = "Reviewed per-request router deadline, at most the approved five-second request timeout."
-  type        = number
-  default     = null
-  validation {
-    condition     = var.exp03_router_deadline_seconds == null ? true : var.exp03_router_deadline_seconds > 0 && var.exp03_router_deadline_seconds <= 5
-    error_message = "Choose a positive router deadline no greater than five seconds."
-  }
-}
-
-variable "exp03_invoke_connect_timeout_seconds" {
-  description = "Reviewed Lambda SDK connection timeout, at most five seconds."
-  type        = number
-  default     = null
-  validation {
-    condition     = var.exp03_invoke_connect_timeout_seconds == null ? true : var.exp03_invoke_connect_timeout_seconds > 0 && var.exp03_invoke_connect_timeout_seconds <= 5
-    error_message = "Choose a positive connection timeout no greater than five seconds."
-  }
-}
-
-variable "exp03_invoke_read_timeout_seconds" {
-  description = "Reviewed Lambda SDK response-read timeout, at most five seconds."
-  type        = number
-  default     = null
-  validation {
-    condition     = var.exp03_invoke_read_timeout_seconds == null ? true : var.exp03_invoke_read_timeout_seconds > 0 && var.exp03_invoke_read_timeout_seconds <= 5
-    error_message = "Choose a positive read timeout no greater than five seconds."
-  }
-}
-
-variable "exp03_invoke_pool_connections" {
-  description = "Reviewed botocore connection-pool size per ECS process."
-  type        = number
-  default     = null
-  validation {
-    condition     = var.exp03_invoke_pool_connections == null ? true : var.exp03_invoke_pool_connections >= 1 && var.exp03_invoke_pool_connections <= 1000 && floor(var.exp03_invoke_pool_connections) == var.exp03_invoke_pool_connections
-    error_message = "Choose a positive integer SDK pool size no greater than 1000."
+    condition     = var.exp03_selected_reads_lambda_weight_percent == null ? true : var.exp03_selected_reads_lambda_weight_percent >= 0 && var.exp03_selected_reads_lambda_weight_percent <= 100 && floor(var.exp03_selected_reads_lambda_weight_percent) == var.exp03_selected_reads_lambda_weight_percent
+    error_message = "Choose a reviewed whole-number ALB Lambda weight from 0 through 100 percent."
   }
 }
 
 locals {
-  exp03_active = var.exp03_enabled && local.service_enabled
-  exp03_name   = "clip-exp03-${coalesce(var.exp03_run_id, "unset")}"
+  exp03_active        = var.exp03_enabled && local.service_enabled
+  exp03_lambda_active = local.exp03_active && var.exp03_selected_reads_lambda_weight_percent != null
+  exp03_name          = "clip-exp03-${coalesce(var.exp03_run_id, "unset")}"
   exp03_tags = merge(local.common_tags, {
     Owner      = "Rahul"
     Task       = "EXP-03"
@@ -166,7 +121,7 @@ locals {
 }
 
 resource "terraform_data" "exp03_inputs" {
-  count = var.exp03_enabled || var.exp03_route_reads_to_lambda ? 1 : 0
+  count = var.exp03_enabled || var.exp03_selected_reads_lambda_weight_percent != null ? 1 : 0
   lifecycle {
     precondition {
       condition = local.exp03_active && var.api_service_enabled && var.identity_runtime_enabled && var.hybrid_runtime_enabled && var.vpc_cidr == "10.64.0.0/20" && var.public_subnet_cidr == "10.64.0.0/24" && var.active_private_subnet_cidr == "10.64.1.0/24" && var.secondary_private_subnet_cidr == "10.64.2.0/24" && alltrue([
@@ -174,21 +129,15 @@ resource "terraform_data" "exp03_inputs" {
         var.exp03_expiry != null,
         var.exp03_second_public_subnet_cidr != null,
         var.exp03_certificate_arn != null,
-        var.exp03_lambda_image_uri != null,
-        var.exp03_lambda_memory_mb != null,
-        var.exp03_lambda_reserved_concurrency != null,
         var.exp03_budget_cap_usd != null,
         var.exp03_max_runtime_minutes != null,
-        !var.exp03_route_reads_to_lambda || var.exp03_router_max_inflight != null,
-        !var.exp03_route_reads_to_lambda || (var.exp03_router_max_inflight != null && var.exp03_router_max_inflight >= var.exp03_lambda_reserved_concurrency),
-        !var.exp03_route_reads_to_lambda || var.exp03_router_deadline_seconds != null,
-        !var.exp03_route_reads_to_lambda || var.exp03_invoke_connect_timeout_seconds != null,
-        !var.exp03_route_reads_to_lambda || var.exp03_invoke_read_timeout_seconds != null,
-        !var.exp03_route_reads_to_lambda || var.exp03_invoke_pool_connections != null,
+        var.exp03_selected_reads_lambda_weight_percent == null || var.exp03_lambda_image_uri != null,
+        var.exp03_selected_reads_lambda_weight_percent == null || var.exp03_lambda_memory_mb != null,
+        var.exp03_selected_reads_lambda_weight_percent == null || var.exp03_lambda_reserved_concurrency != null,
         var.exp03_second_public_subnet_cidr == null ? false : contains([for n in range(16) : cidrsubnet(var.vpc_cidr, 4, n)], var.exp03_second_public_subnet_cidr),
         !contains([var.public_subnet_cidr, var.active_private_subnet_cidr, var.secondary_private_subnet_cidr], var.exp03_second_public_subnet_cidr),
       ])
-      error_message = "EXP-03 requires the real Identity/Hybrid ECS service and explicit run, budget, runtime, cleanup, subnet, certificate, image, memory and concurrency inputs."
+      error_message = "EXP-03 requires the real Identity/Hybrid ECS service and explicit run, budget, runtime, cleanup and ingress inputs; Lambda inputs are required when a weighted Lambda path is selected."
     }
   }
 }
@@ -261,7 +210,7 @@ resource "aws_vpc_security_group_ingress_rule" "exp03_ecs_from_alb" {
 }
 
 resource "aws_security_group" "exp03_lambda" {
-  count       = local.exp03_active ? 1 : 0
+  count       = local.exp03_lambda_active ? 1 : 0
   name        = "${local.exp03_name}-lambda"
   description = "Temporary Lambda read path without inbound access."
   vpc_id      = aws_vpc.shared[0].id
@@ -269,7 +218,7 @@ resource "aws_security_group" "exp03_lambda" {
 }
 
 resource "aws_vpc_security_group_egress_rule" "exp03_lambda_to_database" {
-  count                        = local.exp03_active ? 1 : 0
+  count                        = local.exp03_lambda_active ? 1 : 0
   security_group_id            = aws_security_group.exp03_lambda[0].id
   referenced_security_group_id = aws_security_group.database[0].id
   ip_protocol                  = "tcp"
@@ -280,7 +229,7 @@ resource "aws_vpc_security_group_egress_rule" "exp03_lambda_to_database" {
 }
 
 resource "aws_vpc_security_group_egress_rule" "exp03_lambda_to_ssm" {
-  count             = local.exp03_active ? 1 : 0
+  count             = local.exp03_lambda_active ? 1 : 0
   security_group_id = aws_security_group.exp03_lambda[0].id
   cidr_ipv4         = "0.0.0.0/0"
   ip_protocol       = "tcp"
@@ -319,6 +268,30 @@ resource "aws_lb_target_group" "exp03_ecs" {
   tags = local.exp03_tags
 }
 
+resource "aws_lb_target_group" "exp03_lambda" {
+  count                              = local.exp03_lambda_active ? 1 : 0
+  name                               = "${local.exp03_name}-lambda"
+  target_type                        = "lambda"
+  lambda_multi_value_headers_enabled = true
+  tags                               = local.exp03_tags
+}
+
+resource "aws_lb_target_group_attachment" "exp03_lambda" {
+  count            = local.exp03_lambda_active ? 1 : 0
+  target_group_arn = aws_lb_target_group.exp03_lambda[0].arn
+  target_id        = aws_lambda_function.exp03[0].arn
+  depends_on       = [aws_lambda_permission.exp03_alb]
+}
+
+resource "aws_lambda_permission" "exp03_alb" {
+  count         = local.exp03_lambda_active ? 1 : 0
+  statement_id  = "AllowExecutionFromExp03Alb"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.exp03[0].function_name
+  principal     = "elasticloadbalancing.amazonaws.com"
+  source_arn    = aws_lb_target_group.exp03_lambda[0].arn
+}
+
 resource "aws_lb_listener" "exp03_https" {
   count             = local.exp03_active ? 1 : 0
   load_balancer_arn = aws_lb.exp03[0].arn
@@ -333,8 +306,48 @@ resource "aws_lb_listener" "exp03_https" {
   tags = local.exp03_tags
 }
 
+resource "aws_lb_listener_rule" "exp03_selected_reads" {
+  count        = local.exp03_active && var.exp03_selected_reads_lambda_weight_percent != null ? 1 : 0
+  listener_arn = aws_lb_listener.exp03_https[0].arn
+  priority     = 10
+
+  action {
+    type = "forward"
+    forward {
+      target_group {
+        arn    = aws_lb_target_group.exp03_lambda[0].arn
+        weight = var.exp03_selected_reads_lambda_weight_percent
+      }
+      target_group {
+        arn    = aws_lb_target_group.exp03_ecs[0].arn
+        weight = 100 - var.exp03_selected_reads_lambda_weight_percent
+      }
+      stickiness {
+        enabled = false
+      }
+    }
+  }
+
+  condition {
+    http_request_method {
+      values = ["GET"]
+    }
+  }
+  condition {
+    path_pattern {
+      regex_values = [
+        "^/api/listings$",
+        "^/api/listings/[0-9A-Fa-f-]{36}$",
+      ]
+    }
+  }
+
+  tags       = local.exp03_tags
+  depends_on = [aws_lb_target_group_attachment.exp03_lambda]
+}
+
 resource "aws_iam_role" "exp03_lambda" {
-  count = local.exp03_active ? 1 : 0
+  count = local.exp03_lambda_active ? 1 : 0
   name  = "${local.exp03_name}-lambda"
   assume_role_policy = jsonencode({
     Version   = "2012-10-17"
@@ -344,14 +357,14 @@ resource "aws_iam_role" "exp03_lambda" {
 }
 
 resource "aws_cloudwatch_log_group" "exp03_lambda" {
-  count             = local.exp03_active ? 1 : 0
+  count             = local.exp03_lambda_active ? 1 : 0
   name              = "/aws/lambda/${local.exp03_name}"
   retention_in_days = 7
   tags              = local.exp03_tags
 }
 
 resource "aws_iam_role_policy" "exp03_lambda" {
-  count = local.exp03_active ? 1 : 0
+  count = local.exp03_lambda_active ? 1 : 0
   name  = "${local.exp03_name}-runtime"
   role  = aws_iam_role.exp03_lambda[0].id
   policy = jsonencode({
@@ -374,7 +387,7 @@ resource "aws_iam_role_policy" "exp03_lambda" {
 }
 
 resource "aws_lambda_function" "exp03" {
-  count                          = local.exp03_active ? 1 : 0
+  count                          = local.exp03_lambda_active ? 1 : 0
   function_name                  = local.exp03_name
   role                           = aws_iam_role.exp03_lambda[0].arn
   package_type                   = "Image"
@@ -403,18 +416,4 @@ resource "aws_lambda_function" "exp03" {
   }
   depends_on = [aws_iam_role_policy.exp03_lambda, terraform_data.exp03_inputs]
   tags       = local.exp03_tags
-}
-
-resource "aws_iam_role_policy" "exp03_ecs_invoke_lambda" {
-  count = local.exp03_active && var.exp03_route_reads_to_lambda ? 1 : 0
-  name  = "${local.exp03_name}-invoke-lambda"
-  role  = aws_iam_role.api_task[0].id
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect   = "Allow"
-      Action   = ["lambda:InvokeFunction"]
-      Resource = aws_lambda_function.exp03[0].arn
-    }]
-  })
 }

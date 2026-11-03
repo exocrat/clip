@@ -7,14 +7,16 @@
 
 **Purpose:** Determine whether routing selected read-heavy requests from ECS to Lambda improves burst responsiveness or cost efficiency without degrading normal-load performance for this application.
 
-**2026-11-03 user direction:** Revise configuration B to send selected reads to
-Lambda first, with excess requests served by ECS when Lambda has no capacity.
-The ALB sends all requests to ECS in both configurations. In B, the ECS router
-invokes Lambda first for selected Listing GETs and serves the same request on
-ECS only after a confirmed Lambda throttle. Other routes stay on ECS. The task
-list, design and Terraform draft now reflect that topology; workload/evidence
-updates and affected-owner/peer review remain pending. Preserve per-service
-attribution and whole-system costs so the mixed result is interpreted correctly.
+**Latest user direction:** Use direct ALB routing for the selected reads. In B,
+the ALB distributes those requests between Lambda and ECS using a fixed weight;
+other routes remain on ECS. Before the main comparison, pilot the four weights
+specified in EXP-05 and select the main-experiment weight using criteria agreed
+before the pilot. ALB weights do not implement per-request fallback: a request
+sent to Lambda can fail if Lambda is throttled. The local EXP-03 implementation
+and design now reflect this direction; provider validation, affected-owner
+review and the normal deployment approval remain before use. Preserve
+per-service attribution and
+whole-system costs so the mixed result is interpreted correctly.
 
 This is a task list for that comparison. Step-by-step procedures for testing individual NFRs belong in the relevant domain task lists, at the first point when the integrated product makes those tests accurate. If a specific NFR has no earlier accurate test point, include its detailed procedure here as a named integrated verification task, as previously directed. Keep that exception narrow: Document 2 remains focused on the ECS-only versus ECS+Lambda comparison and must not imply that an unrelated NFR was measured by the comparison.
 
@@ -25,7 +27,7 @@ Compare these two configurations:
 | Configuration | Request handling |
 |---|---|
 | **A — ECS-only** | ECS serves all benchmarked read-heavy API requests. |
-| **B — ECS+Lambda** | ECS sends selected read-heavy API requests to Lambda first; a confirmed Lambda capacity rejection serves that same request through ECS. Other application routes remain on ECS. |
+| **B — ECS+Lambda** | The ALB sends selected read-heavy API requests directly to Lambda or ECS using the fixed split selected in the pilot. Other application routes remain on ECS. Lambda throttles/failures are recorded; no automatic retry or same-request fallback is implied. |
 
 Both configurations must use PostgreSQL as the authoritative datastore. State-changing requests stay on ECS in both. The selected routes should come from the implemented, integrated product and its generated API contract; the PRD names browsing available listings, retrieving listing details, and searching/filtering listings as candidate read-heavy operations.
 
@@ -543,7 +545,7 @@ later deployment or retained costs after the window.
 | Requests | At most 160,000 total across A and B, including warm-up, preflight and cold checks; at most 80,000 Lambda invocations. Step 4 schedules 115,632 read requests total before preflight/cold checks (57,816 routed through B); the remaining allowance is 44,368 total requests and 22,184 Lambda invocations, subject to the separate caps. |
 | ECS | At most two `c7i-flex.large`-equivalent hosts and two app tasks; exact CPU/memory, minimum healthy capacity and scale policy are part of the later reviewed plan. Both configurations must retain the required ECS service. |
 | Lambda | At most 2 GiB memory, reserved concurrency 20, no provisioned concurrency and function timeout at most 5 seconds. The actual package and safe database usage must fit; otherwise revise before final runs. |
-| Client and database | Proposed, non-binding ceiling: at most 300 concurrent client requests and 50 scheduled requests/s. Cap project database connections at 60, reserve separate administrative headroom, and confirm the real database limit and pool sizes before use. Stop if the limit or downstream capacity cannot be established. |
+| Client and database | Proposed, non-binding ceiling: at most 300 concurrent client requests and 50 scheduled requests/s. The proposed 60 project database connections is a planning figure, not a verified PostgreSQL maximum; its rationale and suitability are unconfirmed. Determine and approve the actual safe budget and administrative headroom under the explicit EXP-05 step before use. Stop if the actual limit or downstream capacity cannot be established. |
 
 **Human direction (2026-11-01):** The 300 concurrent-client-request figure is
 not binding and must not be enforced as a code guard. The actual generator and
@@ -708,9 +710,9 @@ If scripts, metrics, or fixtures required by the approved plan do not exist, add
 **Owner:** Rahul (D), reassigned by user direction. **Reviewers:** A as default independent peer; C and B as affected Search/infrastructure owners where required. **Start after:** EXP-02.
 
 1. Inspect the approved EXP-01 manifest, actual integrated read operations, auth context, database access, generated API contract and accepted revision. Identify shared application logic that can be reused without importing another domain's private implementation.
-2. Propose the minimal Lambda packaging/adapter, ingress/routing, authorized request-context handling, PostgreSQL connection limits, concurrency/timeouts, logging and failure behavior. Preserve state-changing routes on ECS; present any unresolved compatibility/security/cost decision and wait for approval before dependent implementation. For B, the ALB continues to target ECS; the ECS router invokes Lambda for selected reads and uses ECS on a confirmed Lambda throttle.
+2. Propose the minimal Lambda packaging/adapter, ingress/routing, authorized request-context handling, PostgreSQL connection limits, concurrency/timeouts, logging and failure behavior. Preserve state-changing routes on ECS; present any unresolved compatibility/security/cost decision and wait for approval before dependent implementation. For B, the ALB routes selected reads directly to Lambda and ECS at the pilot-selected fixed weight; it does not automatically retry throttled Lambda requests on ECS.
 3. Implement the Lambda entry/adapter and packaging using the frozen public operations and shared authorized logic. Preserve status/error/response semantics, filters, ordering, pagination, availability and privacy. Add unit/contract/parity tests for success, invalid/auth/forbidden/not-found, database failure and timeouts; no cloud measurement yet.
-4. Implement the configuration-A/B selection/routing path and build scripts with explicit targets and reversible configuration. Prove local routing tests keep writes/chat/offers on ECS, select only the approved GET reads for Lambda, and send Lambda capacity rejections to the same ECS read handler.
+4. Implement the configuration-A/B selection/routing path and build scripts with explicit targets and reversible configuration. Prove routing tests keep writes/chat/offers on ECS, send only approved GET reads to the configured Lambda target and distribute selected reads at the chosen fixed weight. Record Lambda throttles as failures, without assuming same-request fallback; remove the superseded ECS-router-first implementation before using the direct ALB path.
 5. Prepare scoped Terraform/runtime configuration for the Lambda, ingress/routing, roles/network/database access, resource/concurrency caps, telemetry and retention. Reuse shared datastore/resources. Register exact plan/build/deploy/verify/rollback/cleanup commands in canonical records; run static checks and inspect the plan without applying it.
 6. Run pinned Black and applicable tests/type/build/contract/CI gates; review packaged artifacts and privacy-safe diagnostics. Record configuration fingerprints and parity results; obtain peer PR review and merge the accepted implementation. Keep exact human-reviewed plan/apply/deployment gates for EXP-04.
 
@@ -732,12 +734,14 @@ If scripts, metrics, or fixtures required by the approved plan do not exist, add
 ## EXP-05 — Pilot and confirm safe limits
 
 1. Re-read the approved manifest, exact environment/resource targets, remaining project budget, and cleanup commands.
-2. Verify the load generator has enough capacity for the requested workload and will not exceed its approved virtual-user/concurrency cap.
-3. Run a short pilot on A, then B, using identical data and workload settings. A pilot is not an NFR run and must not be reported as one.
-4. Check that scheduled request rates are actually achieved, requests are not dropped by the generator, telemetry aligns to the run, expected response checks work, and the DB or runtime is not affected by unrelated traffic.
-5. Estimate the full planned batch from pilot duration/resource usage and current provider prices. Include warm-up, run time, idle/transition time, both configurations, database, ingress, logs/monitoring, and any temporary resources. Record assumptions and billing-data delay.
-6. Verify the estimate plus the approved reserve fits the project's remaining USD 200 budget. Confirm each run has a declared maximum duration and resource/concurrency caps.
-7. If the pilot reveals an unsafe cap, generator limit, unexpected scaling/cost, unavailable metric, or unclear result, stop. Present options and a revised plan for human approval; do not tune quietly.
+2. **Configure the database connection budget explicitly.** Before traffic, inspect the actual PostgreSQL `max_connections`, reserved slots, current connections and instance settings through the approved read-only path. Account for all ECS processes, Lambda environments and their pools, direct Identity connections, workers, administration and other consumers. Record and review a safe application connection budget, pool sizes and Lambda concurrency with headroom. The proposed figure of 60 is not an observed limit. Make any database or resource configuration change only under an exact approved plan; recheck the resulting settings before testing.
+3. Verify the load generator has enough capacity for the requested workload and will not exceed its approved virtual-user/concurrency cap. Predefine the candidate-selection criteria for correct responses, delivered rate, latency, throttles/failures, generator drops, database connections/lock waits and stop conditions. Record the weight rule, any stickiness setting, run order, warm-up, budget and telemetry before the pilot; do not invent pass thresholds after seeing results.
+4. Run the ECS-only baseline pilot and then the high-load candidate pilots with direct ALB routing. Test **Lambda/ECS weights 100/0, 75/25, 50/50 and 25/75**, in that order. Run **three repetitions of two measured minutes per weight**, with the same approved high-load workload and warm-up for each; record each run separately. Other routes remain on ECS. ALB weighting is approximate and does not retry a throttled request on ECS. Stop early on an approved safety, cost or validity stop condition. These are candidate-selection pilots, not NFR passes or final comparison results.
+5. Check that scheduled request rates are achieved, requests are not dropped by the generator, telemetry aligns to the run, expected response checks work, and the DB or runtime is not affected by unrelated traffic. Track database connection usage and lock waits, including contention from the single test account. Keep Lambda throttles and errors visible; preserve incomplete or failed runs.
+6. Apply the predefined criteria to the pilot results. If 100% Lambda passes, select it for the main experiment; otherwise select among the tested splits according to the pre-agreed rule. If none pass or evidence is inconclusive, stop and review rather than invent a winner. Record and freeze the selected weight and configuration before the main comparison; the final five-minute measurement windows and other approved main-run requirements remain unchanged.
+7. Estimate the full planned batch from pilot duration/resource usage and current provider prices. Include warm-up, run time, idle/transition time, both configurations, database, ingress, logs/monitoring, and any temporary resources. Record assumptions and billing-data delay.
+8. Verify the estimate plus the approved reserve fits the project's remaining USD 200 budget and the separately approved experiment spending cap. Confirm each run has a declared maximum duration and resource/concurrency caps.
+9. If the pilot reveals an unsafe cap, generator limit, unexpected scaling/cost, unavailable metric, or unclear result, stop. Present options and a revised plan for human approval; do not tune quietly.
 
 **Complete when:** The pilot validates the measurement setup and the approved batch remains within the budget and resource limits.
 

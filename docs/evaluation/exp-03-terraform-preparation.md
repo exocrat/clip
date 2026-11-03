@@ -6,25 +6,27 @@ direction. The shared root and its existing state remain owned as recorded in
 [Terraform ownership](../architecture/terraform-ownership.md); affected-domain
 and independent review still apply.
 
-**Superseding direction:** The user wants Lambda-first reads with ECS overflow
-at capacity. The ALB sends all HTTPS traffic to the existing ECS service. The
-ECS API router invokes Lambda for the two approved Listing GET patterns; on a
-confirmed Lambda capacity rejection it serves the same request on ECS. Other
-routes remain on ECS. Terraform gives the ECS task role permission to invoke
-only the exact run's function. The ALB has no Lambda target group or direct
-Lambda invoke permission.
+**Current direction:** Selected Listing reads go directly through the ALB. The
+HTTPS listener defaults to ECS. In B, a higher-priority GET/path rule sends
+selected Listing browse, Hybrid search and detail requests between ECS and a
+Lambda target group using the configured fixed weight. Other methods and routes
+stay on ECS. The ALB gets invoke permission scoped to the Lambda target group;
+the ECS task role does not invoke Lambda. ALB weights do not provide
+capacity-aware fallback: throttled or failed Lambda requests are recorded as
+failures, with no same-request retry on ECS.
 
 `infra/terraform/shared/test/exp03-lambda.tf` adds an opt-in configuration to
 the existing shared test root. When disabled it creates no EXP-03 resources.
 When enabled it uses the existing VPC, NAT route, ECS service and RDS; creates
-a second public ALB subnet, an HTTPS ALB, an ECS target group, a Lambda image
-function, a scoped runtime role and a seven-day log group; and adds separate
-temporary ALB/ECS/Lambda security groups. The ALB always sends traffic to ECS.
-Configuration A disables the ECS router's Lambda call. Configuration B enables
-Lambda-first routing inside the ECS API for `GET /api/listings` and
-`GET /api/listings/{uuid}`; a confirmed capacity rejection falls back to the
-same ECS handler. The ECS task role can invoke only the exact function ARN.
-Other methods and routes stay on ECS.
+a second public ALB subnet, an HTTPS ALB and an ECS target group. Configuration
+A leaves the listener on its ECS default and creates no Lambda function.
+Configuration B also creates a Lambda image function, scoped runtime role,
+seven-day log group and Lambda target group, registers the function, and grants
+the ALB permission to invoke it. A selected-read listener rule forwards only
+`GET /api/listings` and single-UUID `GET /api/listings/{listing_id}` to Lambda
+and ECS at the explicit weight. Multi-value headers are enabled. Other paths and
+methods continue to the ECS default action. Stickiness is disabled for the
+request-mix pilot. There is no ECS Lambda SDK invocation or fallback.
 
 The IAM policy lists only the three fixed SSM parameter ARNs for application
 startup. VPC ENI management requires wildcard EC2 resources; an explicit
@@ -41,28 +43,20 @@ The launch template gets an additional temporary ECS ingress group; this does
   runtime in minutes. Tags record these values; **they are not an automatic
   spending or shutdown control**.
 - A second-AZ public subnet CIDR, an issued project-account certificate ARN,
-  an immutable project ECR Lambda image digest, Lambda memory and reviewed
-  reserved concurrency. The Lambda timeout is fixed at five seconds and the
-  design ceiling is 2 GiB and 20 reserved executions. Those maxima are not proof
-  of memory fit or safe database capacity.
-- In B, a reviewed per-ECS-process outstanding-invocation limit, router
-  deadline, SDK connect/read timeouts and SDK connection-pool size. Terraform
-  requires every value, requires the per-process invocation cap to be at least
-  the Lambda reserved-concurrency input, and passes the values to the ECS task.
-  These per-process values do not establish an aggregate limit across ECS tasks.
-  `app.main` reads them only when B is explicitly enabled. The variables are
-  `CLIP_EXP03_ROUTER_MAX_INFLIGHT`, `CLIP_EXP03_ROUTER_DEADLINE_SECONDS`,
-  `CLIP_EXP03_INVOKE_CONNECT_TIMEOUT_SECONDS`,
-  `CLIP_EXP03_INVOKE_READ_TIMEOUT_SECONDS` and
-  `CLIP_EXP03_INVOKE_POOL_CONNECTIONS`.
+  and the declared run/budget/runtime/expiry inputs. Configuration B also needs
+  an immutable project ECR Lambda image digest, Lambda memory, reviewed reserved
+  concurrency and `exp03_selected_reads_lambda_weight_percent` from 0 to 100.
+  The Lambda timeout is fixed at five seconds; the design ceiling is 2 GiB and
+  20 reserved executions. Those maxima are not proof of memory fit or safe
+  database capacity. Use `null` weight for A; the pilot's B weights are 100, 75,
+  50 and 25 percent Lambda.
 - The existing shared root's full reviewed inputs, including real Identity and
   Hybrid ECS settings, its image digest and safe access to existing secret
   references. Do not put secret values or real contacts into source, logs or
   plan review artifacts. Never use incomplete input defaults against real state.
-- `exp03_route_reads_to_lambda=false` for A. Switching it to true enables the
-  ECS router in B and grants the existing ECS task role invoke permission for
-  the exact function. Both transitions require the approved exact plan and
-  verification of the actual listener and outputs.
+- `exp03_selected_reads_lambda_weight_percent=null` for A. Set an explicit
+  approved weight for B; changing it changes the ALB listener rule. Review the
+  exact saved plan and verify the applied listener/target group before traffic.
 
 The root guard requires the recorded `10.64.0.0/20` VPC and its three existing
 `/24` subnet inputs, disallows choosing one of those managed subnets for the new

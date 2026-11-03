@@ -15,6 +15,52 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## Current checkpoint
 
+### 2026-11-03 06:26:47 UTC — Replace ECS overflow router with weighted ALB routing
+
+**Direction:** The task-list's latest approved direction uses the ALB itself to
+split only selected Listing GET requests between ECS and Lambda. Configuration A
+keeps the ALB default action on ECS and provisions no Lambda. Configuration B
+uses a fixed Lambda/ECS target-group weight for `GET /api/listings` and a
+single-UUID `GET /api/listings/{listing_id}`; other paths and methods remain on
+ECS. This does not provide per-request fallback when Lambda is throttled or
+unhealthy. Preserve such outcomes as failures. The four pilot weights and
+repetitions remain defined by EXP-05; this work does not run them.
+
+**Changes:** Terraform now provisions the optional Lambda resources only when
+an explicit Lambda weight is set, registers the function in a Lambda target
+group, grants invocation only to ELB for that exact target group, and installs
+the selected-read weighted listener rule with target-group stickiness disabled.
+The previous ECS task-role Lambda permission and router environment are removed.
+The app no longer constructs or installs the now-superseded ECS overflow
+middleware; its independent Lambda read-only composition is retained. Synthetic
+tests and the EXP-03 design/terraform handoff describe the direct ALB route.
+The existing user-edited comparison task list is preserved in this change.
+
+**Checks:** Focused Lambda/read-composition/logging tests passed (74), the
+strict mypy check passed for the three changed application modules, Python
+boundary checks reported zero violations, individual Black checks passed for
+all changed Python files, and Terraform format plus `git diff --check` passed.
+The full `make check` stopped at Black because its default multiprocessing
+setup cannot bind a local socket in this sandbox. The repository contract check
+is also blocked because the installed Node is v26.8.2 while the generator
+requires Node 24; the full Python test command did not return a result. Terraform
+mock tests could not start: initializing the locked AWS provider failed because
+DNS/network access to `registry.terraform.io` is unavailable. No deployment,
+AWS call, experiment, live request or resource change occurred.
+
+**Files:** Application composition/main/logging and their tests remove the old
+ECS invocation path; Terraform and its mock tests define weighted direct ALB
+routing and configuration A/B resource differences; the EXP-03 design and
+Terraform preparation document the revised boundary and no-fallback semantics;
+the task list carries the previously recorded user direction. Removed
+`overflow_*.py` modules and tests were solely for the superseded ECS router.
+
+**Remaining gates:** Repeat the full check suite with the repository's Node 24
+toolchain and a sandbox that permits Black's process manager; acquire the locked
+AWS provider before running mock Terraform tests. Then obtain the normal
+independent and affected-owner review. Real ALB/Lambda/session/parity checks,
+deployment and measured pilot remain pending their separate gates and approvals.
+
 ### 2026-11-03 05:48:11 UTC — Reconcile ECS startup resources and pool ceiling
 
 **Review:** Traced the ECS B startup against `app.main`, the Identity runtime

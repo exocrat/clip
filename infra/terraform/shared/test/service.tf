@@ -100,17 +100,6 @@ resource "aws_ecs_task_definition" "api" {
       { name = "CLIP_IMAGE_KEY_PREFIX", value = "id01" },
       { name = "CLIP_HYBRID_SEARCH_ENABLED", value = tostring(var.hybrid_runtime_enabled) },
       { name = "CLIP_HYBRID_WORKER_ENABLED", value = tostring(var.hybrid_runtime_enabled) },
-      ] : [], local.exp03_active ? [
-      { name = "CLIP_EXP03_OVERFLOW_ENABLED", value = tostring(var.exp03_route_reads_to_lambda) },
-      { name = "CLIP_EXP03_LAMBDA_FUNCTION_ARN", value = aws_lambda_function.exp03[0].arn },
-      { name = "CLIP_EXP03_INGRESS_TARGET_GROUP_ARN", value = aws_lb_target_group.exp03_ecs[0].arn },
-      { name = "CLIP_EXP03_LAMBDA_RESERVED_CONCURRENCY", value = tostring(var.exp03_lambda_reserved_concurrency) },
-      ] : [], local.exp03_active && var.exp03_route_reads_to_lambda ? [
-      { name = "CLIP_EXP03_ROUTER_MAX_INFLIGHT", value = tostring(var.exp03_router_max_inflight) },
-      { name = "CLIP_EXP03_ROUTER_DEADLINE_SECONDS", value = tostring(var.exp03_router_deadline_seconds) },
-      { name = "CLIP_EXP03_INVOKE_CONNECT_TIMEOUT_SECONDS", value = tostring(var.exp03_invoke_connect_timeout_seconds) },
-      { name = "CLIP_EXP03_INVOKE_READ_TIMEOUT_SECONDS", value = tostring(var.exp03_invoke_read_timeout_seconds) },
-      { name = "CLIP_EXP03_INVOKE_POOL_CONNECTIONS", value = tostring(var.exp03_invoke_pool_connections) },
       ] : [], var.identity_runtime_enabled ? [
       { name = "CLIP_NOTIFICATION_WORKER_ENABLED", value = tostring(var.notification_worker_enabled) },
       { name = "CLIP_NOTIFICATION_ALLOW_UNLISTED_RECIPIENTS", value = tostring(var.notification_allow_unlisted_recipients) },
