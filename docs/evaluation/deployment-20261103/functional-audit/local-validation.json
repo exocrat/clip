@@ -76,6 +76,18 @@
       "log_path": "/tmp/clip-functional-integrated-local-batches.log",
       "log_sha256": "397450c1b9ba103eb2e9ea2a5569143306ff7a46da85ef4e5184f76c72a49bf7",
       "result": "26 workflow check groups passed with disposable PostgreSQL and real local semantic model; synthetic external sign-in/mail/storage"
+    },
+    {
+      "name": "clock-skew-before-correction",
+      "log_path": "/tmp/clip-functional-clock-skew-first.log",
+      "log_sha256": "42c84a548d0fa9a38e3c3bd2aa612e9330c05b93bacd2c11223358b5fb57ccba",
+      "result": "2 new skew regressions failed;3 existing photo checks passed; corrected before deployment"
+    },
+    {
+      "name": "web-after-api-clock-correction",
+      "log_path": "/tmp/clip-functional-web-clock-final.log",
+      "log_sha256": "2f35de5d076fc555b223c773caccc41798311fcd7b89e390e2dbf63c0e07caf7",
+      "result": "504 passed;3 skipped; lint/types/production build passed"
     }
   ],
   "initial_repair_ci": {

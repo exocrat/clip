@@ -196,3 +196,11 @@ Remaining human/external gates: renewed AWS login, exact worker-grant approval,
 a controlled deliverable mailbox for actual OTP/notification receipt, exact PR
 merge authorization, B deployment/parity and approved pilot/formal/fault runs.
 No automatic resource upgrade, wider SQL rights or formal traffic is authorized.
+
+Final review reproduced a new repair edge case: comparing API link expiry to the
+device clock rejected valid photos on fast/slow clients. The client now validates
+against the same-origin API Date header (local clock fallback only when absent).
+S3 continues enforcing real signature expiry. Two clock-skew regressions failed
+before correction; the complete web checks then passed504/3skipped with
+lint/types/build. This correction has not been deployed; rebuild the final source
+and wait for its matching CI before image publication/application.

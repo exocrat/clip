@@ -63,3 +63,9 @@ Follow-up files:
 `docs/decisions/identity-email-routing.md`, `docs/decisions/notification-delivery-policy.md`
 and `docs/environment/identity-provider-setup.md` link the superseding explicit
 hosted mail policy so old staged test restrictions are not presented as current.
+
+The final `listingsApi.ts` follow-up observes the same-origin response Date header
+for link-expiry checks, avoiding failures caused by a fast/slow client clock while
+retaining URL/expiry validation. `image-delivery-batch.test.ts` reproduces both
+clock directions and restores the clock mock after each test. API payloads and
+monotonic experiment timing are unaffected.

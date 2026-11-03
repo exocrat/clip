@@ -73,10 +73,14 @@ export async function startListingConversation(listingId: string, operationId: s
   return { conversation_id: value.conversation_id, created: value.created };
 }
 
-/** Call the same-origin API; writes have no automatic retry or client actor ID. */
+/** Call the same-origin API; writes have no automatic retry or client actor ID.
+ * A response observer lets expiry checks use the API clock without exposing
+ * response metadata in the domain payload or changing its reviewed contract.
+ */
 export async function listingsRequest<T>(
   path: string,
   options: RequestInit = {},
+  observeResponse?: (response: Response) => void,
 ): Promise<T> {
   let response: Response;
   try {
@@ -101,6 +105,7 @@ export async function listingsRequest<T>(
     }
     throw new ListingsApiError(response.status, code);
   }
+  observeResponse?.(response);
   if (response.status === 204) return undefined as T;
   try {
     return await response.json() as T;
@@ -181,7 +186,13 @@ export const cancelImageUpload = (uploadId: string) =>
 const imageDeliveryBatch = batchedRead<ImageDelivery | null>(async (ids, signal) => {
   const query = new URLSearchParams();
   for (const id of ids) query.append('image_ids', id);
-  const value = await listingsRequest<ImageDeliveryBatch>(`/images/delivery?${query}`, { signal });
+  // Signed links use server time. A fast/slow device clock must not turn valid
+  // links into page failures; S3 still enforces the actual signature expiry.
+  let serverNow = Number.NaN;
+  const value = await listingsRequest<ImageDeliveryBatch>(`/images/delivery?${query}`, { signal }, (response) => {
+    serverNow = Date.parse(response.headers.get('date') ?? '');
+  });
+  const referenceNow = Number.isFinite(serverNow) ? serverNow : Date.now();
   if (!value || !Array.isArray(value.items) || value.items.length !== ids.length) throw new ListingsApiError(503);
   const result = new Map<string, ImageDelivery | null>();
   for (const item of value.items) {
@@ -197,7 +208,7 @@ const imageDeliveryBatch = batchedRead<ImageDelivery | null>(async (ids, signal)
         ['127.0.0.1', 'localhost', '[::1]'].includes(window.location.hostname) && url.origin === window.location.origin;
       if ((url.protocol !== 'https:' && !(url.protocol === 'http:' && localPreview)) ||
           url.username || url.password || !Number.isFinite(expires) ||
-          expires <= Date.now() || expires > Date.now() + 301_000) throw new ListingsApiError(503);
+          expires <= referenceNow || expires > referenceNow + 301_000) throw new ListingsApiError(503);
     }
     result.set(item.image_id, item.delivery);
   }
