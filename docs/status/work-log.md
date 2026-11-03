@@ -1,5 +1,35 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### EXP-02 phase preview and read-only AWS refresh — 2026-11-02 19:28:16 UTC
+
+User assigned Terraform ownership and authorized AWS under a USD 10 credit
+cap. Non-root project identity verified; recorded ECS and RDS are stopped,
+two recorded instances stopped and no CLIP-named ALB found. No mutation or
+verified credit balance. Local k6 phase previews and report checks passed
+synthetic tests/inspect; final timing review, real runner and deployed parity
+remain. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 mock parity ordering — 2026-11-02 19:21:21 UTC
+
+The local mock validates all supplied synthetic response pairs before reading
+a fake session; mismatch and success tests passed. This is not a real runner
+or deployed parity. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 parity preflight CLI — 2026-11-02 19:19:34 UTC
+
+The offline combined preflight now supports the explicit parity draft and
+reports response parity and owner review as pending; three synthetic checks
+passed. No real runner or AWS work. [Experiment log](../evaluation/experiment-log.md).
+
+### EXP-02 user-directed response parity staging — 2026-11-02 19:16:33 UTC
+
+The user confirmed the reviewed search labels already exist and directed comparing
+ECS and ECS+Lambda outputs instead of requesting hand-authored search ordering.
+Local staging now checks all ten supplied pairs for parity drafts; 48 focused
+Python tests and both Node parity files passed. This is synthetic local evidence;
+the real runner, deployed parity and affected-owner review remain open. The
+EXP-02 edits were moved to `task/exp-02-workload`; EXP-03 work remains on its
+branch. No AWS action or measurement. [Experiment log](../evaluation/experiment-log.md).
 ### EXP-03 bounded router integration — 2026-11-03 05:23:09 UTC
 
 Wired the per-process bounded invoker into the explicit test router and app
@@ -2478,7 +2508,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | CN-03 | A; D producer review | in progress | PR #21: migration-fixture CI fix locally verified; hosted CI pending | Full local checks passed: Python 2073/171 skipped, data 331, web 497/3 skipped, Conversations 184, migration and safety checks | Aditya confirmed prior task items done; current fix awaits hosted CI | Draft [PR #21](https://github.com/exocrat/clip/pull/21), branch includes merge `de2c94a` and local fixture fix | Push only after local checks; confirm hosted CI and obtain independent PR review | 2026-10-31 19:43:57 UTC |
 | INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
 | EXP-01 | C; Suraj coordinates NEXT-01 design | done | NEXT-01 design and gates are approved; actual topology pricing and numeric cost endpoints are NEXT-07 pre-result gates. | Design Steps 1–9 performed; no experiment run | Suraj verified NEXT-01 Steps 1–9 on 2026-10-28; user clarified the 300 concurrent-client-request proposal is non-binding on 2026-11-01 UTC. | [Approved design and gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md); [NEXT-07 execution plan](../tasks/remaining-project-plan.md#experiment-protocol-reference) | Implementation, final data/tools, actual account/spend, numeric cost endpoints, and separate run approvals remain before measurement. | 2026-10-28 06:24:24 UTC |
-| EXP-02 | Rahul (D); Search owner C review | in progress | Parity-bound offline staging, preflight, mock checks and phase previews committed on its own branch | Synthetic checks only; real runner remains open | User confirmed reviewed search labels and directed A/B output comparison | `task/exp-02-workload` at `a52adea`; its experiment log | Affected-owner review, real runner, actual deployed parity, account/session and execution gates remain | 2026-11-02 19:32:53 UTC |
+| EXP-02 | Rahul (D); Search owner C review | in progress | Local parity preparation, k6 phase preview and staged workload tooling are ready for review; real runner remains open | Evaluation Python tests: 351 passed, 1 skipped; k6 Node tests: 48 passed; 14 Black checks and boundary check passed; no measurement | User directed response parity and built-in timing; review remains | `task/exp-02-workload`; [experiment log](../evaluation/experiment-log.md) | Draft PR/independent and affected-owner review, real runner, reviewed timing, target/session, actual deployed parity, telemetry, budget and approved execution remain | 2026-11-03 06:53:41 UTC |
 | EXP-03 | Rahul (D), Terraform and scoped Identity; A peer, C/B affected review | in progress | Direct weighted ALB route for selected Listing GETs is implemented locally; A defaults to ECS with no Lambda resources; B registers Lambda and weights selected reads between Lambda/ECS; old ECS overflow router is removed | 74 focused tests, mypy, boundaries, individual Black checks, Terraform format and `git diff --check` passed. PR #27's first CI run found 14 formatting-only differences in comparison/NFR scripts; all 14 now pass individual Black checks; refreshed CI is pending. Full local aggregate check remains constrained by sandbox permissions and missing Node 24; Terraform mock validation blocked by registry DNS failure. | User directed direct ALB routing, fixed Lambda/ECS weight, and no automatic fallback. USD 10 cap and exact live action plan/approval remain. | `task/exp-03-lambda`; [PR #27](https://github.com/exocrat/clip/pull/27); [design](../evaluation/exp-03-lambda-design.md); [experiment log](../evaluation/experiment-log.md) | Refreshed CI, full local suite, provider-backed validation, source trust, B sizing, real parity, aggregate DB budget (pool ceiling exceeds recorded DB cap at design max), owner/peer review, deployment and interruption-safe cleanup | 2026-11-03 06:41:23 UTC |
 | EXP-04 | B | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-03 | — |
 | EXP-05 | C | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-04 | — |
