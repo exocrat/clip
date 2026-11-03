@@ -6,6 +6,11 @@ direction. The shared root and its existing state remain owned as recorded in
 [Terraform ownership](../architecture/terraform-ownership.md); affected-domain
 and independent review still apply.
 
+**Superseding direction:** The user wants Lambda-first reads with ECS overflow
+at capacity. The direct B rule described below is the older draft and Terraform
+now refuses to enable it. A real overflow router and reviewed revised design are
+not yet present; the existing draft must not be used as evidence of overflow.
+
 `infra/terraform/shared/test/exp03-lambda.tf` adds an opt-in configuration to
 the existing shared test root. When disabled it creates no EXP-03 resources.
 When enabled it uses the existing VPC, NAT route, ECS service and RDS; creates

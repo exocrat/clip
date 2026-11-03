@@ -119,6 +119,10 @@ resource "terraform_data" "exp03_inputs" {
   count = var.exp03_enabled || var.exp03_route_reads_to_lambda ? 1 : 0
   lifecycle {
     precondition {
+      condition     = !var.exp03_route_reads_to_lambda
+      error_message = "Direct Lambda routing does not implement the requested ECS overflow; configuration B is blocked until that routing is implemented and reviewed."
+    }
+    precondition {
       condition = local.exp03_active && var.api_service_enabled && var.identity_runtime_enabled && var.hybrid_runtime_enabled && var.vpc_cidr == "10.64.0.0/20" && var.public_subnet_cidr == "10.64.0.0/24" && var.active_private_subnet_cidr == "10.64.1.0/24" && var.secondary_private_subnet_cidr == "10.64.2.0/24" && alltrue([
         var.exp03_run_id != null,
         var.exp03_expiry != null,

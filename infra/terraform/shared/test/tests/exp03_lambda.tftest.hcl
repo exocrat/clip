@@ -80,7 +80,7 @@ run "enabled_a_defaults_to_ecs_and_bounds_lambda" {
   }
 }
 
-run "enabled_b_adds_only_get_listing_rule" {
+run "direct_b_routing_rejected_until_overflow_implemented" {
   command = plan
   variables {
     exp03_enabled               = true
@@ -92,10 +92,7 @@ run "enabled_b_adds_only_get_listing_rule" {
     api_task_cpu                = 512
     api_task_memory_mib         = 2048
   }
-  assert {
-    condition     = length(aws_lb_listener_rule.exp03_reads) == 1 && alltrue([for c in aws_lb_listener_rule.exp03_reads[0].condition : length(c.http_request_method) == 0 || toset(tolist(c.http_request_method)[0].values) == toset(["GET"])]) && alltrue([for c in aws_lb_listener_rule.exp03_reads[0].condition : length(c.path_pattern) == 0 || toset(tolist(c.path_pattern)[0].values) == toset(["/api/listings", "/api/listings/*"])])
-    error_message = "B must route only GET listing patterns to Lambda."
-  }
+  expect_failures = [terraform_data.exp03_inputs]
 }
 
 run "b_without_resources_is_rejected" {

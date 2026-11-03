@@ -3,6 +3,16 @@
 Status: working proposal for owner and affected-domain review. It does not
 authorize provisioning, deployment, traffic or measurement.
 
+**2026-11-03 user direction:** Configuration B should send selected reads to
+Lambda first and route overflow to ECS when Lambda capacity is unavailable.
+The direct-ALB routing below is the previous draft, not an implementation of
+that direction. B is blocked in Terraform until overflow has been designed,
+implemented and reviewed. Capacity definition, coordination, safe fallback,
+route attribution, deployment cost and experiment interpretation are open.
+The existing A/B design and evidence tooling must be revised and reviewed;
+neither a fixed-weight split nor an ALB target-health check implements this
+per-request capacity-aware behavior.
+
 ## Local package-input audit
 
 At the local audit, the ignored `.tools/semantic/model` directory contains the

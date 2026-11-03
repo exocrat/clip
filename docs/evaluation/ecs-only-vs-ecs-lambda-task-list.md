@@ -7,6 +7,14 @@
 
 **Purpose:** Determine whether routing selected read-heavy requests from ECS to Lambda improves burst responsiveness or cost efficiency without degrading normal-load performance for this application.
 
+**2026-11-03 user direction:** Revise configuration B to send selected reads to
+Lambda first, with excess requests served by ECS when Lambda has no capacity.
+The earlier all-selected-reads-to-Lambda wording below remains historical until
+the affected design, routing, workload and evidence changes are reviewed.
+EXP-03 must implement and validate the overflow path before EXP-04 deployment;
+the current direct-Lambda Terraform rule is blocked. Preserve per-service
+attribution and whole-system costs so the mixed result is interpreted correctly.
+
 This is a task list for that comparison. Step-by-step procedures for testing individual NFRs belong in the relevant domain task lists, at the first point when the integrated product makes those tests accurate. If a specific NFR has no earlier accurate test point, include its detailed procedure here as a named integrated verification task, as previously directed. Keep that exception narrow: Document 2 remains focused on the ECS-only versus ECS+Lambda comparison and must not imply that an unrelated NFR was measured by the comparison.
 
 ## 1. Experiment boundary

@@ -15,6 +15,30 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## Current checkpoint
 
+- **New EXP-03 direction (2026-11-03):** The user requested Lambda-first reads
+  with ECS overflow when Lambda reaches capacity. The old direct-to-Lambda B
+  configuration is blocked pending an implemented, reviewed overflow path.
+
+### 2026-11-03 03:07:09 UTC — Lambda-first overflow direction
+
+**Decision:** The user directed Lambda-first handling for selected reads with
+overflow to ECS when Lambda has no capacity. The previous direct Lambda rule
+does not provide that behavior. The PRD leaves the exact route allocation open;
+the prior detailed comparison design needs affected-owner review and revision.
+
+**Preparation:** Added a Terraform precondition refusing the old configuration B
+and a mock test of that refusal. Configuration A remains available for local
+planning. The implementation approach, bounded concurrency, failure behavior,
+database capacity, per-backend evidence, cost, safety and real deployment
+remain open. An ALB weighted split or unhealthy-target routing does not itself
+provide per-request Lambda capacity overflow. No AWS action or measurement.
+
+**Checks:** `terraform fmt -check -recursive infra/terraform/shared/test` and
+`git diff --check` passed. A backend-free temporary copy ran `terraform test`
+using the mock AWS provider with credentials removed: 18 passed, including the
+new B refusal. Local provider communication required approved escalation; no
+AWS API calls or applies were made. This is a guard test, not overflow proof.
+
 - **EXP-03 Terraform:** An opt-in local A/B infrastructure draft and mock
   tests are ready for review. No AWS resources have been created or changed.
   A concrete live plan, independent review, interruption-safe cleanup,
