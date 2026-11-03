@@ -1,5 +1,11 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### EXP-03 broader Lambda regression — 2026-11-03 05:11:55 UTC
+
+The combined 14-file local Lambda, ALB and overflow regression passed 133
+synthetic tests. Middleware installation and real integration remain open; no
+AWS action. [Experiment log](../evaluation/experiment-log.md).
+
 ### EXP-03 local overflow counters — 2026-11-03 05:10:45 UTC
 
 Added non-sensitive process-local routing counts; 92 synthetic tests and

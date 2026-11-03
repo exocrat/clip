@@ -15,6 +15,15 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## Current checkpoint
 
+### 2026-11-03 05:11:55 UTC — Broader local Lambda regression
+
+After the middleware and counter changes, ran all 14 focused overflow, Lambda
+bootstrap/read/Identity and ALB local test files together: 133 passed. The
+command used approved local escalation for synthetic thread/ASGI tests. This
+does not establish live AWS behavior or install the middleware; no AWS calls,
+deployment or performance measurement occurred. See the preceding checkpoints
+for the still-open trust, runtime, telemetry and deployment gates.
+
 ### 2026-11-03 05:10:45 UTC — Local overflow aggregate counters
 
 **Work:** `apps/api/app/overflow_middleware.py` now records process-local counts
