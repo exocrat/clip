@@ -9,7 +9,7 @@ import httpx2
 import pytest
 from botocore.exceptions import ClientError
 
-from app.overflow_middleware import OverflowReadMiddleware
+from app.overflow_middleware import OverflowCounts, OverflowReadMiddleware
 from test_lambda_identity import bound_app  # noqa: F401
 
 TARGET = "arn:aws:lambda:ap-south-1:335523638354:function:clip-exp03-test001:1"
@@ -153,3 +153,27 @@ def test_throttle_falls_back_to_real_local_identity_and_read_route(
     else:
         bindings.sessions.authenticate.assert_not_called()
         store.browse_available_listings.assert_not_awaited()
+
+
+def test_counts_are_aggregate_and_not_success_claims():
+    counts = OverflowCounts()
+    client = FakeClient("throttle")
+
+    async def ecs(scope, receive, send):
+        await send({"type": "http.response.start", "status": 503, "headers": []})
+        await send({"type": "http.response.body", "body": b""})
+
+    async def run():
+        app = OverflowReadMiddleware(ecs, client, TARGET, TG, counts)
+        async with httpx2.AsyncClient(
+            transport=httpx2.ASGITransport(app=app), base_url="https://clip-iisc.site"
+        ) as http:
+            return await http.get("/api/listings")
+
+    assert asyncio.run(run()).status_code == 503
+    assert counts.snapshot() == {
+        "lambda_responses": 0,
+        "capacity_fallbacks": 1,
+        "lambda_failures": 0,
+        "rejected_requests": 0,
+    }

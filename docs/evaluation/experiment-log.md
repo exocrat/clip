@@ -15,6 +15,21 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## Current checkpoint
 
+### 2026-11-03 05:10:45 UTC — Local overflow aggregate counters
+
+**Work:** `apps/api/app/overflow_middleware.py` now records process-local counts
+of parsed Lambda responses, capacity-triggered ECS fallbacks, Lambda failures,
+and rejected requests. It stores no request details. These are routing counts:
+a Lambda HTTP error still counts as a parsed response, and a fallback counts
+even if the ECS handler fails. They do not claim successful or correct work.
+The corresponding test confirms a failed ECS fallback is still only a fallback,
+not success. Counters are not durable, cross-process or exported; a reviewed
+telemetry collection and aggregation mechanism remains necessary.
+
+**Checks:** Ninety-two synthetic overflow and Identity tests, mypy and Black
+passed. The middleware remains uninstalled and Terraform B remains blocked.
+No AWS call, deployment or experiment measurement occurred.
+
 ### 2026-11-03 05:09:02 UTC — Local overflow middleware implementation
 
 **Work:** `apps/api/app/overflow_middleware.py` implements an explicit ASGI

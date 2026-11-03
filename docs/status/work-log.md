@@ -1,5 +1,12 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### EXP-03 local overflow counters — 2026-11-03 05:10:45 UTC
+
+Added non-sensitive process-local routing counts; 92 synthetic tests and
+mypy/Black passed. Counts do not measure correct completions and still need a
+reviewed exporter/aggregation. Middleware is uninstalled, B remains blocked,
+and no AWS action occurred. [Experiment log](../evaluation/experiment-log.md).
+
 ### EXP-03 local overflow middleware — 2026-11-03 05:09:02 UTC
 
 Implemented unwired ASGI routing for selected reads and throttle-only ECS

@@ -23,15 +23,46 @@ _DETAIL = re.compile(
 )
 
 
+class OverflowCounts:
+    """Keep process-local routing totals without request or identity data.
+
+    These counters are updated on one ASGI event loop and are not durable or
+    aggregated across processes. A reviewed exporter is still required.
+    """
+
+    def __init__(self) -> None:
+        self.lambda_responses = 0
+        self.capacity_fallbacks = 0
+        self.lambda_failures = 0
+        self.rejected_requests = 0
+
+    def snapshot(self) -> dict[str, int]:
+        """Return a copy of safe aggregate counts, not proof of completed work."""
+        return {
+            "lambda_responses": self.lambda_responses,
+            "capacity_fallbacks": self.capacity_fallbacks,
+            "lambda_failures": self.lambda_failures,
+            "rejected_requests": self.rejected_requests,
+        }
+
+
 class OverflowReadMiddleware:
     """Route selected reads once to Lambda, falling back only on throttling."""
 
-    def __init__(self, app: ASGIApp, client: Any, target: str, target_group: str):
+    def __init__(
+        self,
+        app: ASGIApp,
+        client: Any,
+        target: str,
+        target_group: str,
+        counts: OverflowCounts | None = None,
+    ):
         """Bind an explicit client/targets; never discover credentials or endpoints."""
         self.app = app
         self.client = client
         self.target = target
         self.target_group = target_group
+        self.counts = counts if counts is not None else OverflowCounts()
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         """Keep other routes on ECS and fail closed on untrusted or broken input."""
@@ -45,6 +76,7 @@ class OverflowReadMiddleware:
             await self.app(scope, receive, send)
             return
         if scope.get("scheme") != "https":
+            self.counts.rejected_requests += 1
             await error_response(Request(scope), ERRORS[403])(scope, receive, send)
             return
         try:
@@ -64,6 +96,7 @@ class OverflowReadMiddleware:
                 trusted_https=True,
             )
         except TypeError, ValueError:
+            self.counts.rejected_requests += 1
             await error_response(Request(scope), ERRORS[400])(scope, receive, send)
             return
         try:
@@ -71,16 +104,20 @@ class OverflowReadMiddleware:
                 invoke_read, self.client, self.target, event
             )
         except LambdaAtCapacity:
+            self.counts.capacity_fallbacks += 1
             await self.app(scope, receive, send)
             return
         except Exception:
+            self.counts.lambda_failures += 1
             await error_response(Request(scope), ERRORS[503])(scope, receive, send)
             return
         try:
             response = parse_read_response(payload)
         except ValueError:
+            self.counts.lambda_failures += 1
             await error_response(Request(scope), ERRORS[503])(scope, receive, send)
             return
+        self.counts.lambda_responses += 1
         await send(
             {
                 "type": "http.response.start",
