@@ -138,7 +138,14 @@ The local app composition now mounts only GET `/api/listings` and
 maximum size 1 and a Hybrid pool with maximum size 1, disables the Hybrid worker,
 and skips the Conversations pool, notification lifecycle, wanted/saved stores,
 and S3 image storage. The regular ECS app retains its existing routers and pool
-defaults. `app.lambda_main` stays unauthorized by default. The existing explicit
+defaults. In A and B the ECS test app still uses its existing full Identity
+initializer: it reads the fixed email-delivery setting and warms the controlled
+test email route, but sends no message during startup. Its application lifecycle
+also creates the separate Conversations pool when a database DSN is present
+(minimum 0, maximum 1), and initializes the configured S3 storage client. The
+ECS Listings pool starts at 1 and can grow to 10; Hybrid allows 2. These are
+shared A/B conditions, but they still belong in startup and whole-system resource
+budgets. `app.lambda_main` stays unauthorized by default. The existing explicit
 hosted test opt-in (`CLIP_IDENTITY_RUNTIME_ENABLED`, with all its existing Settings
 guards) calls `prepare_hosted_test_identity_reads`. That initializer reads only
 the fixed authentication-key and Identity database SecureStrings, performs the
@@ -185,21 +192,21 @@ limits for review, not evidence that the model fits or that the database can
 support 20 environments. The user explicitly rejected the proposed 300-client
 ceiling as binding. Record the eventual approved settings and cost estimate.
 
-The current pool code is not compatible with the 20/60 proposals as written.
-Listings configures a maximum of 10 connections and inherits psycopg's default
-minimum of 4; Hybrid allows 2; the separate Conversations pool allows 1. Thus a
-full app environment can retain up to 13 pooled connections (with up to 12 in
-Listings/Hybrid alone), or 260 across 20 Lambda environments. Two retained ECS
-tasks could add up to another 26. Identity uses fresh direct connections outside
-those pools, so these figures undercount peak usage. At the proposed 60 total DB
-connections, even 20 Lambda instances with one connection in each persistent
-pool would leave no safe space for ECS, Identity, workers or administration.
-The narrow lifecycle and one-connection pool maximums are now implemented
-locally. Resolve the aggregate budget before setting concurrency: account for
-direct Identity connections, retained ECS, administration and other services;
-then choose and validate a safe concurrency/request rate or evaluate a reviewed
-connection-proxy/DB-limit change. Do not assert that the default
-20-concurrency proposal fits.
+The ECS full app explicitly sets its Listings pool to min 1/max 10 and Hybrid to
+min 1/max 2. Its separate Conversations pool is min 0/max 1, so it can grow on
+demand but does not open an idle connection by default. That is up to 13 pooled
+connections per fully busy ECS process, plus Identity's direct session/database
+connections. By contrast, the Lambda read-only app sets Listings and Hybrid to
+min 1/max 1 each and skips the Conversations pool, so its pooled maximum is 2
+per Lambda environment, plus direct Identity connections. At reserved concurrency
+20 this permits up to 40 Lambda pool connections; two fully busy ECS processes
+could add up to 26, for 66 before direct Identity, workers, administration and
+other services. Actual use depends on request behavior, but a 60-connection DB
+limit does not prove this ceiling is safe. Resolve the aggregate budget before
+setting concurrency: include direct Identity connections, retained ECS,
+administration and other services; then choose and validate a safe concurrency
+and request rate or evaluate a reviewed connection-proxy/DB-limit change. Do
+not assert that the 20-concurrency proposal fits.
 
 ## Verification and outstanding decisions
 

@@ -9,10 +9,11 @@
 
 **2026-11-03 user direction:** Revise configuration B to send selected reads to
 Lambda first, with excess requests served by ECS when Lambda has no capacity.
-The earlier all-selected-reads-to-Lambda wording below remains historical until
-the affected design, routing, workload and evidence changes are reviewed.
-EXP-03 must implement and validate the overflow path before EXP-04 deployment;
-the current direct-Lambda Terraform rule is blocked. Preserve per-service
+The ALB sends all requests to ECS in both configurations. In B, the ECS router
+invokes Lambda first for selected Listing GETs and serves the same request on
+ECS only after a confirmed Lambda throttle. Other routes stay on ECS. The task
+list, design and Terraform draft now reflect that topology; workload/evidence
+updates and affected-owner/peer review remain pending. Preserve per-service
 attribution and whole-system costs so the mixed result is interpreted correctly.
 
 This is a task list for that comparison. Step-by-step procedures for testing individual NFRs belong in the relevant domain task lists, at the first point when the integrated product makes those tests accurate. If a specific NFR has no earlier accurate test point, include its detailed procedure here as a named integrated verification task, as previously directed. Keep that exception narrow: Document 2 remains focused on the ECS-only versus ECS+Lambda comparison and must not imply that an unrelated NFR was measured by the comparison.
@@ -24,7 +25,7 @@ Compare these two configurations:
 | Configuration | Request handling |
 |---|---|
 | **A — ECS-only** | ECS serves all benchmarked read-heavy API requests. |
-| **B — ECS+Lambda** | Selected read-heavy API requests are served through Lambda; the rest of the application remains on ECS. |
+| **B — ECS+Lambda** | ECS sends selected read-heavy API requests to Lambda first; a confirmed Lambda capacity rejection serves that same request through ECS. Other application routes remain on ECS. |
 
 Both configurations must use PostgreSQL as the authoritative datastore. State-changing requests stay on ECS in both. The selected routes should come from the implemented, integrated product and its generated API contract; the PRD names browsing available listings, retrieving listing details, and searching/filtering listings as candidate read-heavy operations.
 
@@ -707,9 +708,9 @@ If scripts, metrics, or fixtures required by the approved plan do not exist, add
 **Owner:** Rahul (D), reassigned by user direction. **Reviewers:** A as default independent peer; C and B as affected Search/infrastructure owners where required. **Start after:** EXP-02.
 
 1. Inspect the approved EXP-01 manifest, actual integrated read operations, auth context, database access, generated API contract and accepted revision. Identify shared application logic that can be reused without importing another domain's private implementation.
-2. Propose the minimal Lambda packaging/adapter, ingress/routing, authorized request-context handling, PostgreSQL connection limits, concurrency/timeouts, logging and failure behavior. Preserve state-changing routes on ECS; present any unresolved compatibility/security/cost decision and wait for approval before dependent implementation.
+2. Propose the minimal Lambda packaging/adapter, ingress/routing, authorized request-context handling, PostgreSQL connection limits, concurrency/timeouts, logging and failure behavior. Preserve state-changing routes on ECS; present any unresolved compatibility/security/cost decision and wait for approval before dependent implementation. For B, the ALB continues to target ECS; the ECS router invokes Lambda for selected reads and uses ECS on a confirmed Lambda throttle.
 3. Implement the Lambda entry/adapter and packaging using the frozen public operations and shared authorized logic. Preserve status/error/response semantics, filters, ordering, pagination, availability and privacy. Add unit/contract/parity tests for success, invalid/auth/forbidden/not-found, database failure and timeouts; no cloud measurement yet.
-4. Implement the configuration-A/B selection/routing path and build scripts with explicit targets and reversible configuration. Prove local routing tests keep writes/chat/offers on ECS and select only the approved reads for Lambda.
+4. Implement the configuration-A/B selection/routing path and build scripts with explicit targets and reversible configuration. Prove local routing tests keep writes/chat/offers on ECS, select only the approved GET reads for Lambda, and send Lambda capacity rejections to the same ECS read handler.
 5. Prepare scoped Terraform/runtime configuration for the Lambda, ingress/routing, roles/network/database access, resource/concurrency caps, telemetry and retention. Reuse shared datastore/resources. Register exact plan/build/deploy/verify/rollback/cleanup commands in canonical records; run static checks and inspect the plan without applying it.
 6. Run pinned Black and applicable tests/type/build/contract/CI gates; review packaged artifacts and privacy-safe diagnostics. Record configuration fingerprints and parity results; obtain peer PR review and merge the accepted implementation. Keep exact human-reviewed plan/apply/deployment gates for EXP-04.
 

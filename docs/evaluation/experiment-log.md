@@ -15,6 +15,32 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## Current checkpoint
 
+### 2026-11-03 05:48:11 UTC — Reconcile ECS startup resources and pool ceiling
+
+**Review:** Traced the ECS B startup against `app.main`, the Identity runtime
+initializer and both app pool lifecycles. ECS A and B use the same full ECS app:
+Identity reads its fixed email-delivery setting and warms the controlled email
+route at startup without sending mail; the app constructs the S3 client; and a
+Conversations pool is opened when a database DSN is present (min 0/max 1). ECS
+Listings uses min 1/max 10 and Hybrid min 1/max 2. These are shared conditions
+between A and B and must remain in the DB/startup accounting.
+
+The Lambda read-only app uses Listings min 1/max 1 and Hybrid min 1/max 1, and
+skips the Conversations pool, notifications and S3 client. This is a maximum of
+two pooled connections per warm Lambda environment, plus Identity's direct DB
+connections. At the design ceiling of 20 Lambda environments plus two fully
+busy ECS tasks, the pooled ceilings alone could total 66 against the recorded
+60-connection DB ceiling. That is an upper bound, not observed usage, and it
+leaves no room for Identity's direct connections or other database users. The
+design document now states these exact settings and does not treat concurrency
+20 as proven safe. The task-list wording now says ECS always fronts the ALB and
+routes selected reads Lambda-first inside the ECS process.
+
+**Checks and limits:** Read-only source/document audit only; no tests, DB, AWS
+calls, deployment or measurements. Actual RDS connection allowance, ECS task
+count, simultaneous Identity connections and a safe reserved concurrency still
+need a reviewed aggregate budget before any B plan can be approved.
+
 ### 2026-11-03 05:45:41 UTC — Verify two ECS routers against shared Lambda capacity
 
 **Work:** `apps/api/tests/test_overflow_middleware.py` now runs two independent
