@@ -289,6 +289,7 @@ def create_app(
                 yield
         finally:
             if overflow is not None:
+                overflow.counts.emit_summary()
                 overflow.invoker.close()
 
     # Health, Listings lifecycle and wanted-request author/read routes are mounted here.
@@ -326,6 +327,7 @@ def create_app(
             counts=overflow.counts,
         )
         app.state.overflow_counts = overflow.counts
+        app.state.overflow_invoker = overflow.invoker
     app.add_middleware(RequestLoggingMiddleware)
 
     if settings.isolated_listings_test_caller:

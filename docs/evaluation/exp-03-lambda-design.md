@@ -15,18 +15,23 @@ deployment cost and independent review remain open. Neither a fixed-weight split
 nor an ALB target-health check implements per-request overflow.
 
 The local `OverflowReadMiddleware` composes request conversion, a single Lambda
-attempt, response parsing and ECS fallback after a confirmed throttle. The app
-factory can install it only with explicit dependencies in a hosted test setup;
-normal startup never enables it. Logging wraps the router and ECS fallback retains
-the normal Identity stack. Before real deployment, review and implement trusted
-proxy/source enforcement, client initialization, chosen deadlines and aggregate
-concurrency, per-backend evidence and equivalent error/route behavior. A local
-per-process admission limit is wired: full router slots produce a 503 before
-Lambda is attempted, separately counted from an actual Lambda throttle. This
-local limit may reject traffic before Lambda itself is saturated and must be
-resolved before a no-loss capacity-overflow claim. Accepted calls exceeding the
-deadline are not retried. Terraform B represents the approved topology but
-does not mean the end-to-end router is deployable yet.
+attempt, response parsing and ECS fallback after a confirmed throttle. The
+`app.main` factory now reads explicit B settings and constructs a one-attempt
+Lambda SDK client plus bounded invocation pool; A/default startup does not
+create either. Missing, mismatched or non-test settings fail closed. Terraform
+passes the exact function and ECS target-group ARNs and requires explicit
+per-process invocation, deadline, socket-timeout and connection-pool values.
+Logging wraps the router and ECS fallback retains the normal Identity stack.
+Before real deployment, review and prove trusted proxy/source enforcement,
+chosen values and aggregate concurrency, per-backend evidence and equivalent
+error/route behavior. A local per-process admission limit is wired and config
+refuses a slot cap below Lambda reserved concurrency. Multiple ECS processes
+each have their own cap; their combined traffic can exceed Lambda concurrency,
+and the AWS throttle moves those excess reads to ECS. Local slot exhaustion
+still produces a separately counted 503, and the cap/traffic relationship
+needs a synthetic multi-process check. Accepted calls exceeding the deadline
+are not retried. Terraform B represents the approved topology but does not mean
+the end-to-end router is deployable yet.
 
 **Ingress compatibility gap:** The local builder can now remove incoming
 forwarding claims, check an already-resolved HTTPS scheme and exact project

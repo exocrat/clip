@@ -83,17 +83,22 @@ run "enabled_a_defaults_to_ecs_and_bounds_lambda" {
 run "b_routes_to_ecs_router_with_lambda_invoke_role" {
   command = plan
   variables {
-    exp03_enabled               = true
-    exp03_route_reads_to_lambda = true
-    api_service_enabled         = true
-    identity_runtime_enabled    = true
-    identity_test_recipients    = ["synthetic@example.invalid"]
-    hybrid_runtime_enabled      = true
-    api_task_cpu                = 512
-    api_task_memory_mib         = 2048
+    exp03_enabled                        = true
+    exp03_route_reads_to_lambda          = true
+    exp03_router_max_inflight            = 4
+    exp03_router_deadline_seconds        = 4
+    exp03_invoke_connect_timeout_seconds = 1
+    exp03_invoke_read_timeout_seconds    = 3
+    exp03_invoke_pool_connections        = 4
+    api_service_enabled                  = true
+    identity_runtime_enabled             = true
+    identity_test_recipients             = ["synthetic@example.invalid"]
+    hybrid_runtime_enabled               = true
+    api_task_cpu                         = 512
+    api_task_memory_mib                  = 2048
   }
   assert {
-    condition     = length(aws_ecs_service.api[0].load_balancer) == 1 && aws_ecs_service.api[0].load_balancer[0].target_group_arn == aws_lb_target_group.exp03_ecs[0].arn && [for item in jsondecode(aws_ecs_task_definition.api[0].container_definitions)[0].environment : item.value if item.name == "CLIP_EXP03_OVERFLOW_ENABLED"][0] == "true" && contains([for item in jsondecode(aws_ecs_task_definition.api[0].container_definitions)[0].environment : item.name], "CLIP_EXP03_LAMBDA_FUNCTION_ARN") && jsondecode(aws_iam_role_policy.exp03_ecs_invoke_lambda[0].policy).Statement[0].Action == ["lambda:InvokeFunction"] && jsondecode(aws_iam_role_policy.exp03_ecs_invoke_lambda[0].policy).Statement[0].Resource == aws_lambda_function.exp03[0].arn
+    condition     = length(aws_ecs_service.api[0].load_balancer) == 1 && aws_ecs_service.api[0].load_balancer[0].target_group_arn == aws_lb_target_group.exp03_ecs[0].arn && [for item in jsondecode(aws_ecs_task_definition.api[0].container_definitions)[0].environment : item.value if item.name == "CLIP_EXP03_OVERFLOW_ENABLED"][0] == "true" && contains([for item in jsondecode(aws_ecs_task_definition.api[0].container_definitions)[0].environment : item.name], "CLIP_EXP03_LAMBDA_FUNCTION_ARN") && [for item in jsondecode(aws_ecs_task_definition.api[0].container_definitions)[0].environment : item.value if item.name == "CLIP_EXP03_ROUTER_MAX_INFLIGHT"][0] == "4" && [for item in jsondecode(aws_ecs_task_definition.api[0].container_definitions)[0].environment : item.value if item.name == "CLIP_EXP03_LAMBDA_RESERVED_CONCURRENCY"][0] == "2" && jsondecode(aws_iam_role_policy.exp03_ecs_invoke_lambda[0].policy).Statement[0].Action == ["lambda:InvokeFunction"] && jsondecode(aws_iam_role_policy.exp03_ecs_invoke_lambda[0].policy).Statement[0].Resource == aws_lambda_function.exp03[0].arn
     error_message = "ALB routes all traffic to ECS; its task role invokes Lambda for selected reads."
   }
 }
@@ -101,6 +106,26 @@ run "b_routes_to_ecs_router_with_lambda_invoke_role" {
 run "b_without_resources_is_rejected" {
   command = plan
   variables { exp03_route_reads_to_lambda = true }
+  expect_failures = [terraform_data.exp03_inputs]
+}
+
+run "b_requires_explicit_router_limits" {
+  command = plan
+  variables {
+    exp03_enabled                        = true
+    exp03_route_reads_to_lambda          = true
+    exp03_router_max_inflight            = 4
+    exp03_router_deadline_seconds        = 4
+    exp03_invoke_connect_timeout_seconds = 1
+    exp03_invoke_read_timeout_seconds    = null
+    exp03_invoke_pool_connections        = 4
+    api_service_enabled                  = true
+    identity_runtime_enabled             = true
+    identity_test_recipients             = ["synthetic@example.invalid"]
+    hybrid_runtime_enabled               = true
+    api_task_cpu                         = 512
+    api_task_memory_mib                  = 2048
+  }
   expect_failures = [terraform_data.exp03_inputs]
 }
 

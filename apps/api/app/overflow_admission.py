@@ -43,8 +43,14 @@ class BoundedInvoker:
         self._executor = ThreadPoolExecutor(
             max_workers=max_inflight, thread_name_prefix="clip-lambda"
         )
+        self._max_inflight = max_inflight
         self._deadline = deadline_seconds
         self._closed = False
+
+    @property
+    def max_inflight(self) -> int:
+        """Expose this process's configured slot cap for guarded diagnostics."""
+        return self._max_inflight
 
     async def invoke(self, operation: Callable[[], T]) -> T:
         """Run one operation or refuse immediately when all slots are occupied."""

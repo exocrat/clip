@@ -45,6 +45,16 @@ The launch template gets an additional temporary ECS ingress group; this does
   reserved concurrency. The Lambda timeout is fixed at five seconds and the
   design ceiling is 2 GiB and 20 reserved executions. Those maxima are not proof
   of memory fit or safe database capacity.
+- In B, a reviewed per-ECS-process outstanding-invocation limit, router
+  deadline, SDK connect/read timeouts and SDK connection-pool size. Terraform
+  requires every value, requires the per-process invocation cap to be at least
+  the Lambda reserved-concurrency input, and passes the values to the ECS task.
+  These per-process values do not establish an aggregate limit across ECS tasks.
+  `app.main` reads them only when B is explicitly enabled. The variables are
+  `CLIP_EXP03_ROUTER_MAX_INFLIGHT`, `CLIP_EXP03_ROUTER_DEADLINE_SECONDS`,
+  `CLIP_EXP03_INVOKE_CONNECT_TIMEOUT_SECONDS`,
+  `CLIP_EXP03_INVOKE_READ_TIMEOUT_SECONDS` and
+  `CLIP_EXP03_INVOKE_POOL_CONNECTIONS`.
 - The existing shared root's full reviewed inputs, including real Identity and
   Hybrid ECS settings, its image digest and safe access to existing secret
   references. Do not put secret values or real contacts into source, logs or

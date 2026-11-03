@@ -102,6 +102,56 @@ variable "exp03_route_reads_to_lambda" {
   default     = false
 }
 
+variable "exp03_router_max_inflight" {
+  description = "Reviewed per-ECS-process cap for outstanding Lambda SDK calls; required only in configuration B."
+  type        = number
+  default     = null
+  validation {
+    condition     = var.exp03_router_max_inflight == null ? true : var.exp03_router_max_inflight >= 1 && var.exp03_router_max_inflight <= 1000 && floor(var.exp03_router_max_inflight) == var.exp03_router_max_inflight
+    error_message = "Choose a reviewed positive integer per-process cap no greater than 1000."
+  }
+}
+
+variable "exp03_router_deadline_seconds" {
+  description = "Reviewed per-request router deadline, at most the approved five-second request timeout."
+  type        = number
+  default     = null
+  validation {
+    condition     = var.exp03_router_deadline_seconds == null ? true : var.exp03_router_deadline_seconds > 0 && var.exp03_router_deadline_seconds <= 5
+    error_message = "Choose a positive router deadline no greater than five seconds."
+  }
+}
+
+variable "exp03_invoke_connect_timeout_seconds" {
+  description = "Reviewed Lambda SDK connection timeout, at most five seconds."
+  type        = number
+  default     = null
+  validation {
+    condition     = var.exp03_invoke_connect_timeout_seconds == null ? true : var.exp03_invoke_connect_timeout_seconds > 0 && var.exp03_invoke_connect_timeout_seconds <= 5
+    error_message = "Choose a positive connection timeout no greater than five seconds."
+  }
+}
+
+variable "exp03_invoke_read_timeout_seconds" {
+  description = "Reviewed Lambda SDK response-read timeout, at most five seconds."
+  type        = number
+  default     = null
+  validation {
+    condition     = var.exp03_invoke_read_timeout_seconds == null ? true : var.exp03_invoke_read_timeout_seconds > 0 && var.exp03_invoke_read_timeout_seconds <= 5
+    error_message = "Choose a positive read timeout no greater than five seconds."
+  }
+}
+
+variable "exp03_invoke_pool_connections" {
+  description = "Reviewed botocore connection-pool size per ECS process."
+  type        = number
+  default     = null
+  validation {
+    condition     = var.exp03_invoke_pool_connections == null ? true : var.exp03_invoke_pool_connections >= 1 && var.exp03_invoke_pool_connections <= 1000 && floor(var.exp03_invoke_pool_connections) == var.exp03_invoke_pool_connections
+    error_message = "Choose a positive integer SDK pool size no greater than 1000."
+  }
+}
+
 locals {
   exp03_active = var.exp03_enabled && local.service_enabled
   exp03_name   = "clip-exp03-${coalesce(var.exp03_run_id, "unset")}"
@@ -129,6 +179,12 @@ resource "terraform_data" "exp03_inputs" {
         var.exp03_lambda_reserved_concurrency != null,
         var.exp03_budget_cap_usd != null,
         var.exp03_max_runtime_minutes != null,
+        !var.exp03_route_reads_to_lambda || var.exp03_router_max_inflight != null,
+        !var.exp03_route_reads_to_lambda || (var.exp03_router_max_inflight != null && var.exp03_router_max_inflight >= var.exp03_lambda_reserved_concurrency),
+        !var.exp03_route_reads_to_lambda || var.exp03_router_deadline_seconds != null,
+        !var.exp03_route_reads_to_lambda || var.exp03_invoke_connect_timeout_seconds != null,
+        !var.exp03_route_reads_to_lambda || var.exp03_invoke_read_timeout_seconds != null,
+        !var.exp03_route_reads_to_lambda || var.exp03_invoke_pool_connections != null,
         var.exp03_second_public_subnet_cidr == null ? false : contains([for n in range(16) : cidrsubnet(var.vpc_cidr, 4, n)], var.exp03_second_public_subnet_cidr),
         !contains([var.public_subnet_cidr, var.active_private_subnet_cidr, var.secondary_private_subnet_cidr], var.exp03_second_public_subnet_cidr),
       ])

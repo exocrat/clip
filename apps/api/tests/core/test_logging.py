@@ -82,6 +82,31 @@ def test_log_values_are_structured_bounded_and_allowlisted():
     assert parsed["duration_ms"] == 12.346
 
 
+def test_overflow_summary_keeps_only_fixed_nonnegative_counts():
+    """Per-process routing summaries expose counts and discard arbitrary data."""
+    parsed = json.loads(
+        SafeJsonFormatter().format(
+            make_record(
+                event="overflow_summary",
+                run_id="test001",
+                lambda_responses=12,
+                capacity_fallbacks=3,
+                router_capacity_rejections=1,
+                deadline_failures=0,
+                lambda_failures=2,
+                rejected_requests=4,
+                private_value=SENTINEL,
+            )
+        )
+    )
+    assert parsed["event"] == "overflow_summary"
+    assert parsed["run_id"] == "test001"
+    assert parsed["lambda_responses"] == 12
+    assert parsed["capacity_fallbacks"] == 3
+    assert "private_value" not in parsed
+    assert SENTINEL not in json.dumps(parsed)
+
+
 @pytest.mark.parametrize(
     ("status", "duration"),
     [(True, -1), (99, float("nan")), (600, float("inf")), ("200", SENTINEL)],

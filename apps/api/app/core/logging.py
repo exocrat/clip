@@ -21,7 +21,16 @@ _EVENTS = {
     "request_failed",
     "runtime_event",
     "provider_unavailable",
+    "overflow_summary",
 }
+_OVERFLOW_COUNT_FIELDS = (
+    "lambda_responses",
+    "capacity_fallbacks",
+    "router_capacity_rejections",
+    "deadline_failures",
+    "lambda_failures",
+    "rejected_requests",
+)
 _METHODS = {
     "GET",
     "POST",
@@ -46,7 +55,7 @@ class SafeJsonFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
         """Serialize bounded diagnostic metadata, ignoring arbitrary log content."""
         event = getattr(record, "event", None)
-        output = {
+        output: dict[str, str | int | float] = {
             "timestamp": format_timestamp(datetime.now(UTC)),
             "severity": logging.getLevelName(record.levelno),
             "event": (
@@ -72,8 +81,27 @@ class SafeJsonFormatter(logging.Formatter):
         if type(status) is int and 100 <= status <= 599:
             output["status"] = status
         duration = getattr(record, "duration_ms", None)
-        if type(duration) in (int, float) and math.isfinite(duration) and duration >= 0:
+        if (
+            isinstance(duration, (int, float))
+            and not isinstance(duration, bool)
+            and math.isfinite(duration)
+            and duration >= 0
+        ):
             output["duration_ms"] = round(duration, 3)
+        if event == "overflow_summary":
+            run_id = getattr(record, "run_id", None)
+            if (
+                isinstance(run_id, str)
+                and 3 <= len(run_id) <= 10
+                and run_id.isascii()
+                and run_id.isalnum()
+                and run_id == run_id.lower()
+            ):
+                output["run_id"] = run_id
+            for name in _OVERFLOW_COUNT_FIELDS:
+                count = getattr(record, name, None)
+                if type(count) is int and count >= 0:
+                    output[name] = count
         return json.dumps(output, ensure_ascii=True, allow_nan=False)
 
 

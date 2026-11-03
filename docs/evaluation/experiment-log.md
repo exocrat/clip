@@ -15,6 +15,49 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## Current checkpoint
 
+### 2026-11-03 05:43:20 UTC — Wire fail-closed ECS B startup and summary counts
+
+**Work:** `apps/api/app/overflow_runtime.py` reads explicit B environment values,
+checks the hosted test/Identity/Hybrid profile, validates same-run Lambda and ECS
+target ARNs, and requires finite timeout, pool and per-process invocation limits
+before creating a one-attempt Lambda SDK client. Default and A settings return
+without creating a client. `apps/api/app/main.py` supplies those dependencies
+to the shared app factory and closes them if composition or process lifetime
+ends; `apps/api/app/application.py` keeps the invoker available to the app's
+lifespan. `apps/api/app/overflow_admission.py` exposes its configured local cap
+for safe inspection and B refuses a cap below the Lambda reserved-concurrency
+setting. Terraform now requires the five B-only limits and injects them only in
+B. This is per ECS process and does not cap aggregate requests across processes.
+
+`apps/api/app/core/logging.py` allows only the validated lowercase run ID and
+six fixed nonnegative router counters in an `overflow_summary` JSON log event.
+The app emits that summary at shutdown through `OverflowCounts.emit_summary` in
+`apps/api/app/overflow_middleware.py`; there are no per-request cookies, paths,
+query values, request bodies, raw errors or identities in the new summary.
+The summary is per process; aggregation across ECS log streams remains a later
+analysis step.
+
+`apps/api/tests/test_overflow_runtime.py` checks default-off behavior, refusal
+before client creation for missing/mismatched inputs and local cap below
+Lambda concurrency, and B client composition without invoking AWS.
+`apps/api/tests/core/test_logging.py` checks the new allowlist. The Terraform
+mock file checks B's explicit settings and refusal of missing limits.
+
+**Checks:** Fifty focused offline tests passed; strict mypy passed for the six
+changed application modules; Black passed file-by-file for changed Python files;
+Terraform format/check-format and `git diff --check` passed. Provider-backed
+Terraform validation remains unavailable because the registry DNS lookup failed
+in the earlier `make terraform-check`. No AWS client call, live API request,
+deployment or measurement ran.
+
+**Limits:** The process cap is at least the function's reserved concurrency but
+multiplies by ECS process count; Lambda throttling is still the shared capacity
+signal. A full process cap still produces a separate 503, so the test must show
+the actual bounded workload cannot hit that condition before Lambda capacity.
+The shutdown totals may miss work still running when process shutdown begins.
+Source-proxy trust, real IAM and DB budget, actual function/image/session parity,
+peer/owner review and live deployment remain pending.
+
 ### 2026-11-03 05:33:14 UTC — Align B infrastructure with ECS-hosted overflow
 
 **Work:** Corrected the EXP-03 Terraform draft to match the user's selected

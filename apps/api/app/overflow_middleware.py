@@ -7,6 +7,7 @@ not a deployment authorization or proof of real session parity.
 
 from dataclasses import dataclass, field
 from functools import partial
+import logging
 import re
 from typing import Any
 
@@ -34,11 +35,20 @@ _DETAIL = re.compile(
 class OverflowCounts:
     """Keep process-local routing totals without request or identity data.
 
-    These counters are updated on one ASGI event loop and are not durable or
-    aggregated across processes. A reviewed exporter is still required.
+    These counters are updated on one ASGI event loop and emitted once at
+    shutdown; aggregation across ECS tasks is a separate analysis step.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, run_id: str | None = None) -> None:
+        if run_id is not None and (
+            not isinstance(run_id, str)
+            or not 3 <= len(run_id) <= 10
+            or not run_id.isascii()
+            or not run_id.isalnum()
+            or run_id != run_id.lower()
+        ):
+            raise ValueError("Invalid overflow run identifier")
+        self.run_id = run_id
         self.lambda_responses = 0
         self.capacity_fallbacks = 0
         self.router_capacity_rejections = 0
@@ -56,6 +66,16 @@ class OverflowCounts:
             "lambda_failures": self.lambda_failures,
             "rejected_requests": self.rejected_requests,
         }
+
+    def emit_summary(self) -> None:
+        """Write one privacy-safe process summary for later log aggregation."""
+        fields: dict[str, int | str] = {**self.snapshot()}
+        if self.run_id is not None:
+            fields["run_id"] = self.run_id
+        logging.getLogger("clip").info(
+            "",
+            extra={"event": "overflow_summary", **fields},
+        )
 
 
 @dataclass(frozen=True)
