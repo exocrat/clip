@@ -583,3 +583,11 @@ it.each([
     expect((failure as Error).message).not.toContain('PRIVATE_PROVIDER_DETAIL');
   }
 });
+
+it('permits the fixed isolated restore host only with Microsoft sign-in enabled', async () => {
+  const controller = await flow();
+  expect(controller.microsoftEnabled('https://restore.clip-iisc.site')).toBe(true);
+  expect(controller.microsoftEnabled('https://other.clip-iisc.site')).toBe(false);
+  vi.stubEnv('VITE_MICROSOFT_SIGN_IN_ENABLED', 'false');
+  expect(controller.microsoftEnabled('https://restore.clip-iisc.site')).toBe(false);
+});

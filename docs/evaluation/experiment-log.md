@@ -4403,3 +4403,36 @@ CloudWatch collector and opt-in NFR-06 two-task/two-host capacity configuration
 are locally implemented. No AWS mutation, website request, workload, or
 measurement occurred. See the [work-log checkpoint](../status/work-log.md)
 and [cloud inventory](../environment/cloud-inventory.md).
+
+### 2026-11-03 14:15:11 UTC — Step 0 three-gap tooling correction
+
+Implemented live A/B response capture/comparison, bounded sanitized Lambda
+initialization evidence and opt-in isolated NFR-07 app provisioning, including
+restored Identity/Conversations bindings. The observer includes app startup and
+fresh real sign-in in the original restore deadline. Normal runtime defaults
+remain off for the restore profile; run it under A and remove its host rule
+before weighted B. The prior USD 10 credit cap does not apply to this experiment.
+
+Local validation: evaluation plus API configuration 406 passed/5 skipped; final
+focused gap suite 12 passed; disposable PostgreSQL Identity 37 passed; frontend
+498 passed/3 skipped with lint/types/build; Terraform mock suite 23 passed;
+focused strict types, compile and whitespace passed. See the
+[procedure](predeployment-gap-tools.md) and [work-log checkpoint](../status/work-log.md)
+for changed-file behavior, earlier failures/fixes, external setup and remaining
+exact deployment/PR/live measurement gates. No cloud action or measurement ran.
+
+### 2026-11-03 15:11:50 UTC — Bounded deployment proposal and full local PR gates
+
+Prepared the [resource/cost/DNS/rollback plan](deployment-20261103/plan.md) before
+Git integration, using read-only current account evidence and AWS prices.
+Suraj selected two normal ECS tasks in A and B after verifying the actual PRD's
+NFR-06 wording. Both recovery runs are supported; normal performance and NFR-01–03
+use that same two-task baseline. The isolated restore helper is 1 GiB with Hybrid
+disabled so both source tasks remain healthy within two hosts.
+
+Full local `make check` passed: Python 2401/176 skipped, data 331, web 498/3
+skipped, contracts/types/boundaries, database safety/migrations, 184 Conversations
+operations and Gitleaks. Terraform mocks: 23 passed. Proposed additional cost
+USD 8–14, execution cap USD 30; historical USD 10 credit cap does not apply.
+Cloud approval, exact release binding, DNS/auth setup, live checks, site review,
+pilot and measurements remain. No cloud resource or live data changed.

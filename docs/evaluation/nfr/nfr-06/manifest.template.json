@@ -12,7 +12,7 @@
   "service_arn": null,
   "task_arn": null,
   "target_group_arn": null,
-  "desired_count": null,
+  "desired_count": 2,
   "target_origin": null,
   "target_plan_path": null,
   "listing_read_path": null,

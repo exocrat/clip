@@ -583,3 +583,10 @@ describes the fingerprint inputs and remaining approval and use checks.
 The synthetic integration check connects preparation, staging, fake-session,
 report and capture helpers without executing a workload; see the [preparation
 guide](../../../docs/evaluation/comparison-preparation-inputs.md#synthetic-integration-check).
+
+## Deployed experiment preflight and isolated restore commands
+
+See the [live parity, Lambda initialization and NFR-07 provisioning guide](../../../docs/evaluation/predeployment-gap-tools.md)
+for exact inputs, commands, evidence outputs, permission gates and limitations.
+The historical USD 10 credit cap is superseded for this experiment; retain the
+strict under-USD-200 project budget and separately reviewed per-action caps.

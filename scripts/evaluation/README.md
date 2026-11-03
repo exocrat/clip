@@ -234,7 +234,8 @@ NFR acceptance to human review and never deletes the restore target.
 charges and retained-resource estimates. It keeps AWS credits separate from
 gross project spend, rejects duplicate source lines and overlapping periods,
 and avoids counting a forecast again after an exact billing entry replaces it.
-It shows headroom against USD 200 and the separate USD 10 AWS-credit stop cap.
+It shows headroom against USD 200 and tracks credits separately; the earlier
+USD 10 credit-use cap does not apply to this experiment.
 It makes no cloud calls and cannot accept NFR-08; final scope and human review
 remain required.
 
@@ -247,3 +248,10 @@ headroom and the approved cost cap. It can recommend the highest Lambda share
 that passes those frozen gates, but leaves selection for human review and never
 freezes the main experiment weight. The plan remains draft and does not launch
 traffic or authorize deployment.
+
+## Deployed experiment preflight and isolated restore commands
+
+See the [live parity, Lambda initialization and NFR-07 provisioning guide](../../docs/evaluation/predeployment-gap-tools.md)
+for exact inputs, commands, evidence outputs, permission gates and limitations.
+The historical USD 10 credit cap is superseded for this experiment; retain the
+strict under-USD-200 project budget and separately reviewed per-action caps.

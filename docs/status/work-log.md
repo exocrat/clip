@@ -2854,7 +2854,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | CN-01 | Rahul (D) | in progress | NFR-05 synthetic event adapter added; real harness and final CN-01/readiness obligations remain | Synthetic event/preview tests, Mypy and formatting passed; prior PR17 integration checks retained | Offline checker verified; event adapter awaits verification | [PR17](https://github.com/exocrat/clip/pull/17); [integration checkpoint](../evaluation/domain/conversations-integration.md); [experiment log](../evaluation/experiment-log.md) | Formal readiness/remaining device and security checks; CN-03 producer path and final NFR-05; full task acceptance pending | 2026-11-02 12:31:17 UTC |
 | CN-02 | Rahul (D); Aditya/Suraj review | in progress | Step11 local aggregate checks passed; obtain human verification, then complete real dependency/owner review gates | 1930 Python passed/153 skipped; 94 data; 433 web/3 skipped; build/types/lint, Black 296 files, mypy, contract generation (8 artifacts), boundaries, DB lifecycle PostgreSQL18.6, Conversations harness167, DB safety35, Gitleaks8.30.1 passed | Step10 verified; Step11 local result pending Rahul verification | `task/cn-02-offers-contact-sharing`; [checkpoint](../evaluation/domain/conversations-offers.md); [browser walkthrough](../environment/conversation-browser-test.md) | Formal CN-CORE/ID-READY/LI-CORE acceptance, affected-owner review and hosted CI remain required for full CN-02 acceptance; later real-session/deployment gates remain | 2026-10-27 15:15:10 UTC |
 | CN-03 | A; D producer review | in progress | PR #21: migration-fixture CI fix locally verified; hosted CI pending | Full local checks passed: Python 2073/171 skipped, data 331, web 497/3 skipped, Conversations 184, migration and safety checks | Aditya confirmed prior task items done; current fix awaits hosted CI | Draft [PR #21](https://github.com/exocrat/clip/pull/21), branch includes merge `de2c94a` and local fixture fix | Push only after local checks; confirm hosted CI and obtain independent PR review | 2026-10-31 19:43:57 UTC |
-| INT-01 | A coordinator; all domain slices | in progress | Batches 1–10 plus read-only CloudWatch capture and NFR-06 two-task/two-host Terraform capacity support are locally implemented; no integrated run or acceptance is claimed. | Evaluation suite 364 passed/5 skipped; compile, Black (29 Python files), strict Mypy (22 production files), Gitleaks, whitespace, Terraform fmt and all 21 Terraform mock tests passed. Custom monotonic k6 binary built; timer smoke and Go timer unit tests pass. No AWS mutation or traffic. | User requested the local batch; commit completed; review pending | [NFR measurement design](../evaluation/nfr/measurement-design.md); [tooling checkpoints](../evaluation/experiment-log.md); [shared runner design](../evaluation/comparison-runner-design.md); [live inventory](../environment/cloud-inventory.md) | Prepare exact deployment and credit/resource estimate; identify DNS operator; complete PR review/merge before deployment, then live smoke/site inspection, pilot and NFR runs. Module-mode Go test fails locally; GOPATH-mode timer tests pass. | 2026-11-03 12:52:00 UTC |
+| INT-01 | A coordinator; all domain slices | in progress | Tooling and bounded deployment proposal complete locally; normal A/B deployment uses two ECS tasks/two hosts by Suraj decision. Publishing through the authorized PR/check/merge batch; cloud work remains gated. | Full make check passed: Python 2401 passed/176 skipped; data 331; web 498 passed/3 skipped; contracts/types/boundaries, 35 DB safety cases, PostgreSQL migration checks, 184 Conversations operations and Gitleaks passed. Terraform mocks 23 passed. | Suraj authorized plan before commit/PR checks/merge; he remains the sole human reviewer by session direction. | [Deployment plan](../evaluation/deployment-20261103/plan.md); [capacity decision](../decisions/experiment-runtime-capacity.md); [NFR tools](../evaluation/predeployment-gap-tools.md) | Exact cloud release/plan approval, DNS/certificate/Microsoft registration, live smoke/site inspection, pilot, cost-score input freeze and formal measurements remain. No live acceptance claimed. | 2026-11-03 15:11:50 UTC |
 | EXP-01 | C; Suraj coordinates NEXT-01 design | done | NEXT-01 design and gates are approved; actual topology pricing and numeric cost endpoints are NEXT-07 pre-result gates. | Design Steps 1–9 performed; no experiment run | Suraj verified NEXT-01 Steps 1–9 on 2026-10-28; user clarified the 300 concurrent-client-request proposal is non-binding on 2026-11-01 UTC. | [Approved design and gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md); [NEXT-07 execution plan](../tasks/remaining-project-plan.md#experiment-protocol-reference) | Implementation, final data/tools, actual account/spend, numeric cost endpoints, and separate run approvals remain before measurement. | 2026-10-28 06:24:24 UTC |
 | EXP-04 | B | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-03 | — |
 | EXP-05 | C | in progress | Fixed 15-run candidate matrix, dedicated profile/load script and shared coordinator launch path are prepared; no pilot traffic or weight selection has occurred. | Evaluation suite 364 passed/5 skipped; each run keeps distinct A/B bindings and receipt-bound summaries. No run results. | Human review pending for the proposed selection rule and exact resource/cost limits | [EXP-05 procedure](../evaluation/ecs-only-vs-ecs-lambda-task-list.md#exp-05--pilot-and-confirm-safe-limits); [pilot helper](../../scripts/evaluation/k6/exp05_pilot.py) | Review/merge; finalize deployment and pilot limits; live smoke/site inspection; actual DB/load-generator limits, frozen criteria, pilot execution and review. GOPATH-mode Go tests pass; module mode has a local testdeps lookup issue. | 2026-11-03 12:52:00 UTC |
@@ -5637,3 +5637,104 @@ extension package. Created a temporary GOPATH view over cached Go module
 sources and ran `GO111MODULE=off GOPATH=/tmp/clip-monotonic-gopath go test ./...`
 from `scripts/evaluation/k6/monotonic`; both timer tests passed. No source or
 AWS state changed. See the [experiment log](../evaluation/experiment-log.md).
+
+### 2026-11-03 13:45:56 UTC — Experiment credit-cap correction
+
+Suraj clarified that the earlier USD 10 AWS-credit cap covered prior cloud testing and does not apply to this experiment. Removed the hardcoded credit-use ceiling and its output gates from `scripts/evaluation/nfr_cost_ledger.py`, removed the NFR-08 manifest field, and updated current runner/NFR guidance. The strictly-under-USD-200 project gross-cost limit and separate credit accounting remain. Historical entries retain their original authorization context and are superseded for this experiment. Reference scan found no remaining active code/template references to the removed gates; `git diff --check` passed. Tests were not run at this checkpoint. Changes remain uncommitted.
+
+### 2026-11-03 14:15:11 UTC — NEXT-07 Step 0 three-gap implementation and local validation
+
+Suraj authorized all three fixes together in `/tmp/clip-experiment-plan`, branch
+`task/experiment-tooling-readiness`, based on `663cfca`. The earlier audit from
+the stale main worktree is not authoritative for this tooling branch.
+
+Added `live_parity.py` and its Node contract-check bridge, manifest and approval
+templates: local case validation precedes live target/session checks; capture
+issues ten reviewed read cases plus anonymous/hidden denial checks, records
+monotonic timing and sanitized response hashes, then compares sequential A/B
+receipts without storing bodies. Added `lambda_initialization.py` to bind the
+actual function/image/window, page bounded logs, discard application content
+and preserve platform durations/init evidence with hashed correlation IDs.
+Absent initialization fields do not establish warm execution, and missing logs
+do not become zero initialization. The human report links this evidence beside
+CloudWatch metrics; per-request backend/cold attribution still needs independent
+proof before making such a claim.
+
+Added opt-in `nfr07-smoke.tf`: stopped isolated ECS service, host port/ALB route,
+certificate attachment, exact secret permissions and three write-only ephemeral
+domain DSNs. Identity had a fixed source DB reference and origin; the explicit
+restore-only Settings/runtime profile now selects the isolated Identity DB and
+fixed `restore.clip-iisc.site` origin. The Microsoft frontend allowlist supports
+that exact origin, pending actual provider registration. All three domains must
+point to the restored RDS endpoint with verified TLS and reviewed database names.
+The observer validates the source account/session first, binds the restore
+operator, then waits within the original 30-minute deadline for app startup and
+a new private isolated-session handoff. Restore, secret publication, app startup
+and real login all count. The isolated service is restricted to configuration A
+and must be removed before weighted B; unchanged shared-DB restore evidence may
+cover B under the existing reuse rules.
+
+Also removed the prior USD 10 limit from EXP-03 Terraform's action-cap validation
+and current guidance, preserving a positive per-action cap below the under-USD-200
+project ceiling. Old entries remain historical. Added Step 0 to NEXT-07 and
+indexed exact commands, evidence locations, activation, external setup and cleanup.
+
+Validation: `pytest tests/evaluation apps/api/tests/test_config.py -q` passed
+406 tests with 5 skips. The final focused gap suite passed all 12 tests after
+the last routing guard. Real disposable PostgreSQL Identity startup/configuration
+tests passed 37. Frontend lint, types, build and full suite passed: 498 passed,
+3 skipped. All 23 Terraform mock tests passed; local provider validation passed.
+Focused strict Mypy passed five source files; Python compilation, whitespace
+and pinned Gitleaks 8.30.1 source-snapshot checks passed. Initial tests exposed a missing `stat` import, an undefined smoke
+timing list, obsolete budget assertions and mock ephemeral-input/configuration
+issues; these were fixed and affected checks rerun. Sandbox socket restrictions
+required the approved external local-provider/container checks. No AWS resource
+was created/changed, no real target/session was accessed and no live result is
+claimed. Changes remain uncommitted for review.
+
+### 2026-11-03 15:11:50 UTC — NEXT-07 deployment proposal before PR integration
+
+Suraj directed completing the deployment plan before commit/PR checks/merge in
+one batch, stopping for actual undecided matters. Read-only STS, resource and
+billing inspection used only `surajs2` in account `335523638354`; no resource
+or secret value changed. Current public Mumbai rates were obtained from the
+AWS Price List API. The proposal in `docs/evaluation/deployment-20261103/`
+contains sanitized inventory/prices, explicit public input overlay, a USD 8–14
+expected incremental estimate, proposed USD 30 cap and bounded cleanup.
+Completed-period gross usage is USD 26.232051; credits remain separate. Added
+the historical actuals to the non-final project ledger. Cloud approval and
+final immutable release binding remain separate from Git integration.
+
+Extracted the actual submitted PRD with isolated pypdf 6.21.0; SHA-256 matches
+`8ac241d1e72472a5dc77edad18579ec5d2ca3ff2ac8fd454cbc6e9627abf4ad1`.
+NFR-06 is on PDF page 4 and explicitly starts with two healthy serving instances.
+Suraj confirmed two tasks for the actual running deployment in both A and B,
+not only a temporary recovery-test setup. Recorded DEC-EXP-01 and desired count
+two in the public deployment overlay/NFR-06 template. The same ECS recovery
+mechanism is tested twice because B changes serving paths and shared DB load;
+this is not a Lambda runtime-loss injection. No normal single-task deployment
+is claimed to provide the two-task test's resilience. The earlier agent
+suggestion to use one normally is superseded.
+
+To preserve both source tasks during NFR-07 within two 4-GiB hosts, the isolated
+smoke task now uses 256 CPU/1,024 MiB and disables Hybrid search and background
+workers. This profile checks real auth and restored SQL reads, not search
+performance; verify actual available host memory before activation. The source
+comparison remains 512 CPU/2,048 MiB per task with Hybrid enabled. Terraform
+mock assertions verify the isolated cap/parameters and preserved two-task source.
+The nightly 23:47–00:17 UTC backup window requires a fresh automated snapshot
+after final source state; current old snapshots are not treated as that evidence.
+
+Required `uv sync --locked`, `npm ci` and full `make check` ran in this worktree.
+All 12 aggregate gates passed: 2401 Python passed/176 skipped, 331 data tests,
+498 web passed/3 skipped plus lint/types/build, domain/contract checks, 35 wrapper
+safety cases, full PostgreSQL 18.6 migration/rollback/smoke checks, 184 focused
+Conversations SQL operations and pinned Gitleaks. All 23 Terraform mock tests
+also passed after final restore sizing. Deployment JSON and actuals ledger
+validate; whitespace checks pass. Dependency caches were incomplete, so locked
+packages were installed normally after offline attempts; one initial automatic
+permission review timed out and the narrower retry succeeded.
+
+No deployment, paid workload, ECR push, live sign-in, SQL change, task stop or
+restore occurred. Continue the requested commit/PR/current-head CI/merge flow.
+The proposed cloud plan is reviewable; its exact execution still needs approval.

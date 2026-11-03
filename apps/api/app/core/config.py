@@ -27,6 +27,7 @@ ISOLATED_LISTINGS_TEST_BUCKET = "clip-test-listings-images-ap-south-1-li02"
 ISOLATED_LISTINGS_TEST_REGION = "ap-south-1"
 ISOLATED_LISTINGS_TEST_MAX_COUNT = 10
 IDENTITY_TEST_BROWSER_ORIGINS = ("https://clip-iisc.site",)
+NFR07_TEST_BROWSER_ORIGINS = ("https://restore.clip-iisc.site",)
 
 
 class Settings(BaseSettings):
@@ -53,6 +54,8 @@ class Settings(BaseSettings):
     # Hosted real Identity startup is an explicit test-environment capability.
     # Defaults preserve the liveness-only, Identity-unbound ASGI entry point.
     identity_runtime_enabled: bool = False
+    # Isolated restore verification uses its own fixed origin and Identity DB.
+    nfr07_restore_smoke_enabled: bool = False
     identity_browser_origins: tuple[str, ...] = Field(default=(), repr=False)
     # Step 2 permits only explicitly controlled sandbox recipients. General delivery
     # requires a separately reviewed production configuration increment.
@@ -225,6 +228,15 @@ class Settings(BaseSettings):
         Microsoft plus dual-provider selectors, a separate Listings database URL,
         and exact HTTPS browser origins. Cloud task/IAM/proxy setup remains gated.
         """
+        if self.nfr07_restore_smoke_enabled and (
+            not self.identity_runtime_enabled
+            or self.environment != "test"
+            or self.notification_worker_enabled
+            or self.hybrid_worker_enabled
+        ):
+            raise ValueError(
+                "Restore smoke requires isolated test Identity with background writers disabled"
+            )
         if not self.identity_runtime_enabled:
             if self.identity_browser_origins:
                 raise ValueError(
@@ -239,7 +251,12 @@ class Settings(BaseSettings):
             or self.development_auth
             or self.isolated_listings_test_caller
             or self.database_url is None
-            or self.identity_browser_origins != IDENTITY_TEST_BROWSER_ORIGINS
+            or self.identity_browser_origins
+            != (
+                NFR07_TEST_BROWSER_ORIGINS
+                if self.nfr07_restore_smoke_enabled
+                else IDENTITY_TEST_BROWSER_ORIGINS
+            )
         ):
             raise ValueError("Invalid hosted Identity test configuration")
         for origin in self.identity_browser_origins:

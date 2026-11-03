@@ -27,33 +27,36 @@ mock_provider "aws" {
 }
 
 variables {
-  deployment_phase                  = "service"
-  cleanup_review_date               = "2026-11-05"
-  vpc_cidr                          = "10.64.0.0/20"
-  public_subnet_cidr                = "10.64.0.0/24"
-  active_private_subnet_cidr        = "10.64.1.0/24"
-  secondary_private_subnet_cidr     = "10.64.2.0/24"
-  active_availability_zone          = "ap-south-1a"
-  secondary_availability_zone       = "ap-south-1b"
-  db_instance_class                 = "db.t4g.micro"
-  db_engine_version                 = "18.6"
-  db_allocated_storage_gib          = 20
-  db_skip_final_snapshot_on_delete  = true
-  db_backup_retention_days          = 1
-  db_master_password                = "synthetic-test-only-not-a-real-password"
-  db_probe_password                 = "synthetic-test-only-not-a-real-password"
-  log_retention_days                = 7
-  api_image_uri                     = "335523638354.dkr.ecr.ap-south-1.amazonaws.com/clip-shared-test-api@sha256:0000000000000000000000000000000000000000000000000000000000000000"
-  postgres_probe_image_uri          = "docker.io/library/postgres@sha256:0000000000000000000000000000000000000000000000000000000000000000"
-  exp03_run_id                      = "test001"
-  exp03_expiry                      = "2026-11-05"
-  exp03_second_public_subnet_cidr   = "10.64.3.0/24"
-  exp03_certificate_arn             = "arn:aws:acm:ap-south-1:335523638354:certificate/00000000-0000-0000-0000-000000000000"
-  exp03_lambda_image_uri            = "335523638354.dkr.ecr.ap-south-1.amazonaws.com/clip-lambda@sha256:0000000000000000000000000000000000000000000000000000000000000000"
-  exp03_lambda_memory_mb            = 2048
-  exp03_lambda_reserved_concurrency = 2
-  exp03_budget_cap_usd              = 10
-  exp03_max_runtime_minutes         = 120
+  nfr07_restored_database_url               = "postgresql://restore-pending.invalid/restore_pending"
+  nfr07_restored_identity_database_url      = "postgresql://restore-pending.invalid/restore_pending"
+  nfr07_restored_conversations_database_url = "postgresql://restore-pending.invalid/restore_pending"
+  deployment_phase                          = "service"
+  cleanup_review_date                       = "2026-11-05"
+  vpc_cidr                                  = "10.64.0.0/20"
+  public_subnet_cidr                        = "10.64.0.0/24"
+  active_private_subnet_cidr                = "10.64.1.0/24"
+  secondary_private_subnet_cidr             = "10.64.2.0/24"
+  active_availability_zone                  = "ap-south-1a"
+  secondary_availability_zone               = "ap-south-1b"
+  db_instance_class                         = "db.t4g.micro"
+  db_engine_version                         = "18.6"
+  db_allocated_storage_gib                  = 20
+  db_skip_final_snapshot_on_delete          = true
+  db_backup_retention_days                  = 1
+  db_master_password                        = "synthetic-test-only-not-a-real-password"
+  db_probe_password                         = "synthetic-test-only-not-a-real-password"
+  log_retention_days                        = 7
+  api_image_uri                             = "335523638354.dkr.ecr.ap-south-1.amazonaws.com/clip-shared-test-api@sha256:0000000000000000000000000000000000000000000000000000000000000000"
+  postgres_probe_image_uri                  = "docker.io/library/postgres@sha256:0000000000000000000000000000000000000000000000000000000000000000"
+  exp03_run_id                              = "test001"
+  exp03_expiry                              = "2026-11-05"
+  exp03_second_public_subnet_cidr           = "10.64.3.0/24"
+  exp03_certificate_arn                     = "arn:aws:acm:ap-south-1:335523638354:certificate/00000000-0000-0000-0000-000000000000"
+  exp03_lambda_image_uri                    = "335523638354.dkr.ecr.ap-south-1.amazonaws.com/clip-lambda@sha256:0000000000000000000000000000000000000000000000000000000000000000"
+  exp03_lambda_memory_mb                    = 2048
+  exp03_lambda_reserved_concurrency         = 2
+  exp03_budget_cap_usd                      = 10
+  exp03_max_runtime_minutes                 = 120
 }
 
 run "disabled_preserves_shared_service" {
@@ -231,9 +234,9 @@ run "larger_overlapping_shared_subnet_is_rejected" {
   expect_failures = [terraform_data.exp03_inputs]
 }
 
-run "budget_above_user_cap_is_rejected" {
+run "budget_at_project_limit_is_rejected" {
   command = plan
-  variables { exp03_budget_cap_usd = 10.01 }
+  variables { exp03_budget_cap_usd = 200 }
   expect_failures = [var.exp03_budget_cap_usd]
 }
 
@@ -250,4 +253,57 @@ run "missing_window_is_rejected" {
     api_task_memory_mib       = 2048
   }
   expect_failures = [terraform_data.exp03_inputs]
+}
+
+
+run "restore_smoke_stopped_and_isolated" {
+  command = apply
+  variables {
+    exp03_enabled                 = true
+    api_service_enabled           = true
+    api_service_desired_count     = 2
+    ecs_host_max_size             = 2
+    identity_runtime_enabled      = true
+    conversations_runtime_enabled = true
+    hybrid_runtime_enabled        = true
+    api_task_cpu                  = 512
+    api_task_memory_mib           = 2048
+    identity_test_recipients      = ["synthetic@example.invalid"]
+    nfr07_smoke_enabled           = true
+    nfr07_smoke_hostname          = "restore.clip-iisc.site"
+    nfr07_smoke_certificate_arn   = "arn:aws:acm:ap-south-1:335523638354:certificate/00000000-0000-0000-0000-000000000000"
+    exp03_budget_cap_usd          = 25
+  }
+  assert {
+    condition     = aws_ecs_service.nfr07_smoke[0].desired_count == 0 && aws_ecs_service.api[0].desired_count == var.api_service_desired_count
+    error_message = "Preprovisioning restore smoke must start no extra task and preserve source capacity."
+  }
+  assert {
+    condition     = aws_ecs_task_definition.nfr07_smoke[0].memory == "1024" && aws_ecs_task_definition.nfr07_smoke[0].cpu == "256" && jsondecode(aws_ecs_task_definition.nfr07_smoke[0].container_definitions)[0].portMappings[0].hostPort == 18001 && alltrue([for secret in jsondecode(aws_ecs_task_definition.nfr07_smoke[0].container_definitions)[0].secrets : secret.valueFrom == (secret.name == "CLIP_DATABASE_URL" ? aws_ssm_parameter.nfr07_database[0].arn : aws_ssm_parameter.nfr07_conversations_database[0].arn) if contains(["CLIP_DATABASE_URL", "CLIP_DATABASE_DSN"], secret.name)])
+    error_message = "Restore smoke must use a separate port and isolated database secret."
+  }
+  assert {
+    condition     = alltrue([for item in jsondecode(aws_ecs_task_definition.nfr07_smoke[0].container_definitions)[0].environment : item.value == "false" if contains(["CLIP_NOTIFICATION_WORKER_ENABLED", "CLIP_HYBRID_WORKER_ENABLED", "CLIP_HYBRID_SEARCH_ENABLED"], item.name)])
+    error_message = "Restore smoke must disable asynchronous database writers."
+  }
+}
+
+
+run "restore_smoke_refuses_weighted_source" {
+  command = plan
+  variables {
+    exp03_enabled                              = true
+    api_service_enabled                        = true
+    identity_runtime_enabled                   = true
+    conversations_runtime_enabled              = true
+    hybrid_runtime_enabled                     = true
+    api_task_cpu                               = 512
+    api_task_memory_mib                        = 2048
+    identity_test_recipients                   = ["synthetic@example.invalid"]
+    exp03_selected_reads_lambda_weight_percent = 50
+    nfr07_smoke_enabled                        = true
+    nfr07_smoke_hostname                       = "restore.clip-iisc.site"
+    nfr07_smoke_certificate_arn                = "arn:aws:acm:ap-south-1:335523638354:certificate/00000000-0000-0000-0000-000000000000"
+  }
+  expect_failures = [terraform_data.nfr07_guard]
 }

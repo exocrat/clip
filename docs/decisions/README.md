@@ -38,3 +38,5 @@ Link the earlier decision this replaces, or write `None`.
 ```
 
 Update the relevant canonical document when the decision changes its requirements. Link the decision record from that document when useful. Never record secrets or credentials here.
+
+Current experiment resource decision: [DEC-EXP-01 — two-task running baseline](experiment-runtime-capacity.md).

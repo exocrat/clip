@@ -7,12 +7,13 @@ from datetime import datetime, timezone
 import hashlib
 import json
 import os
+import stat
 from pathlib import Path
 import re
 import time
 from typing import Any
 from urllib.error import HTTPError, URLError
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, parse_qs
 from urllib.request import (
     HTTPSHandler,
     HTTPRedirectHandler,
@@ -117,6 +118,14 @@ def validate_plan(plan: Any) -> dict[str, Any]:
         or not plan["source_snapshot_scope"].strip()
     ):
         raise ValueError("snapshot_scope_required")
+    if (
+        not isinstance(plan.get("smoke_session_file"), str)
+        or not plan["smoke_session_file"]
+    ):
+        raise ValueError("isolated_smoke_session_file_required")
+    source_path = plan.get("source_target_plan_path")
+    if not isinstance(source_path, str) or not source_path.strip():
+        raise ValueError("source_target_plan_path_required")
     smoke = plan.get("application_smoke_plan")
     if not isinstance(smoke, dict) or set(smoke) != {
         "https_origin",
@@ -129,6 +138,10 @@ def validate_plan(plan: Any) -> dict[str, Any]:
         "target_group_arn",
         "task_definition_arn",
         "database_parameter_arn",
+        "identity_database_parameter_arn",
+        "conversations_database_parameter_arn",
+        "identity_database_name",
+        "conversations_database_name",
         "application_revision",
         "container_image",
         "expected_user_id",
@@ -158,9 +171,22 @@ def validate_plan(plan: Any) -> dict[str, Any]:
         "target_group_arn",
         "task_definition_arn",
         "database_parameter_arn",
+        "identity_database_parameter_arn",
+        "conversations_database_parameter_arn",
     ):
         if not isinstance(smoke[key], str) or not ARN.fullmatch(smoke[key]):
             raise ValueError("application_smoke_resource_binding_required")
+    for name in ("identity_database_name", "conversations_database_name"):
+        if not isinstance(smoke[name], str) or not re.fullmatch(
+            r"[A-Za-z_][A-Za-z0-9_]{0,62}", smoke[name]
+        ):
+            raise ValueError("invalid_restored_domain_database_name")
+    if smoke["https_origin"] != "https://restore.clip-iisc.site":
+        raise ValueError("fixed_restore_smoke_origin_required")
+    if not smoke["identity_database_parameter_arn"].endswith(
+        ":parameter/clip/test/nfr07/identity-database-url"
+    ):
+        raise ValueError("fixed_restore_identity_parameter_required")
     if not isinstance(smoke["application_revision"], str) or not re.fullmatch(
         r"[0-9a-f]{40}", smoke["application_revision"]
     ):
@@ -260,56 +286,57 @@ def _utc() -> str:
     )
 
 
-def _verify_smoke_session(plan: dict[str, Any], cookie: str) -> None:
+def _verify_smoke_session(plan: dict[str, Any], cookie: str) -> dict[str, Any]:
     """Check the approved regular test-user session before starting a restore."""
-    smoke = plan["application_smoke_plan"]
-    if not re.fullmatch(r"__Host-clip_session=[A-Za-z0-9._~+/=-]{1,2048}", cookie):
-        raise ValueError("nfr07_smoke_session_missing_or_invalid")
-
-    class RefuseRedirects(HTTPRedirectHandler):
-        def redirect_request(
-            self,
-            req: Request,
-            fp: Any,
-            code: int,
-            msg: str,
-            headers: Any,
-            newurl: str,
-        ) -> Request | None:
-            return None
-
-    opener = build_opener(ProxyHandler({}), HTTPSHandler(), RefuseRedirects())
-    request = Request(
-        smoke["https_origin"].rstrip("/") + "/api/me",
-        headers={
-            "Accept": "application/json",
-            "Cookie": cookie,
-            "Cache-Control": "no-cache",
-        },
-        method="GET",
+    from scripts.evaluation.k6.live_parity import read_bound
+    from scripts.evaluation.k6.real_target_preflight import (
+        validate_plan as validate_source,
+        inspect_target,
+        check_session_identity,
     )
-    try:
-        with opener.open(request, timeout=5) as response:
-            raw = response.read(100_001)
-            if response.status != 200 or len(raw) > 100_000:
-                raise ValueError("nfr07_smoke_session_check_failed")
-        identity = json.loads(raw)
-    except HTTPError, URLError, TimeoutError, OSError, json.JSONDecodeError:
-        raise ValueError("nfr07_smoke_session_check_failed") from None
-    expiry_text = identity.get("valid_until") if isinstance(identity, dict) else None
+
+    source = validate_source(
+        read_bound(plan["source_target_plan_path"], plan["target_manifest_sha256"])
+    )
+    smoke = plan["application_smoke_plan"]
     if (
-        not isinstance(identity, dict)
-        or identity.get("user_id") != smoke["expected_user_id"]
-        or identity.get("account_class") != "regular"
-        or not isinstance(expiry_text, str)
+        source["configuration"] != "A"
+        or source["account_id"] != plan["account_id"]
+        or source["region"] != plan["region"]
+        or source["resources"]["database_instance_id"]
+        != plan["snapshot_source_instance_id"]
+        or source["expected_user_id"] != smoke["expected_user_id"]
+        or source["revisions"]["application_revision"] != smoke["application_revision"]
+        or source["revisions"]["ecs_image_uri"] != smoke["container_image"]
     ):
-        raise ValueError("nfr07_smoke_session_identity_mismatch")
+        raise ValueError("restore_source_target_mismatch")
+    inspect_target(source)
+    check_session_identity(source, cookie)
+    return source
+
+
+def _read_isolated_session(path: str) -> str:
+    """Read the fresh restored-app session from an owner-only external handoff.
+
+    The source session may be newer than the backup, so it must not be assumed
+    to exist in the restored database. This file may arrive during timed startup.
+    """
+    descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
     try:
-        expiry = datetime.fromisoformat(expiry_text.replace("Z", "+00:00"))
-    except ValueError:
-        raise ValueError("nfr07_smoke_session_expiry_invalid") from None
-    if expiry.tzinfo is None or expiry <= datetime.now(timezone.utc):
-        raise ValueError("nfr07_smoke_session_expired")
+        info = os.fstat(descriptor)
+        if (
+            not stat.S_ISREG(info.st_mode)
+            or info.st_uid != os.getuid()
+            or info.st_mode & 0o077
+            or info.st_size > 4096
+        ):
+            raise ValueError("unsafe_isolated_session_handoff")
+        cookie = os.read(descriptor, 4097).decode().strip()
+    finally:
+        os.close(descriptor)
+    if not re.fullmatch(r"__Host-clip_session=[A-Za-z0-9._~+/=-]{1,2048}", cookie):
+        raise ValueError("isolated_session_missing_or_invalid")
+    return cookie
 
 
 def _write_exclusive(path: Path, document: dict[str, Any]) -> None:
@@ -364,6 +391,37 @@ def _integrity_checks(connection: Any, expected_head: str) -> dict[str, Any]:
         )
         checks["conversation_offer_relationship"] = bool(cursor.fetchone()[0])
     return checks
+
+
+def _verify_restored_parameters(
+    ssm: Any, smoke: dict[str, Any], rds_instance: dict[str, Any], database_name: str
+) -> None:
+    """Prove every domain DSN selects the restored endpoint, database and TLS."""
+    # Each domain retains its own DB role, but every connection must use the
+    # restored RDS instance and the exact reviewed database name for that domain.
+    for field, expected_database_name in (
+        ("database_parameter_arn", database_name),
+        ("identity_database_parameter_arn", smoke["identity_database_name"]),
+        ("conversations_database_parameter_arn", smoke["conversations_database_name"]),
+    ):
+        parameter = (
+            ssm.get_parameter(Name=smoke[field], WithDecryption=True).get("Parameter")
+            or {}
+        )
+        if parameter.get("ARN") != smoke[field] or not isinstance(
+            parameter.get("Value"), str
+        ):
+            raise ValueError("smoke_database_parameter_unavailable")
+        database_url = urlsplit(parameter["Value"])
+        endpoint = rds_instance.get("Endpoint") or {}
+        if (
+            database_url.scheme not in {"postgres", "postgresql"}
+            or database_url.hostname != endpoint.get("Address")
+            or database_url.port != endpoint.get("Port")
+            or parse_qs(database_url.query).get("sslmode") != ["verify-full"]
+            or database_url.path.strip("/") != expected_database_name
+        ):
+            raise ValueError("smoke_database_parameter_target_mismatch")
 
 
 def _verify_application_smoke(
@@ -430,6 +488,24 @@ def _verify_application_smoke(
         or database_secrets[0].get("valueFrom") != smoke["database_parameter_arn"]
     ):
         raise ValueError("smoke_database_secret_binding_mismatch")
+    conversation_secrets = [
+        item
+        for item in matching[0].get("secrets", [])
+        if item.get("name") == "CLIP_DATABASE_DSN"
+    ]
+    environment = {
+        item.get("name"): item.get("value")
+        for item in matching[0].get("environment", [])
+    }
+    if (
+        len(conversation_secrets) != 1
+        or conversation_secrets[0].get("valueFrom")
+        != smoke["conversations_database_parameter_arn"]
+        or environment.get("CLIP_NFR07_RESTORE_SMOKE_ENABLED") != "true"
+        or environment.get("CLIP_NOTIFICATION_WORKER_ENABLED") != "false"
+        or environment.get("CLIP_HYBRID_WORKER_ENABLED") != "false"
+    ):
+        raise ValueError("isolated_restore_runtime_binding_mismatch")
     target_groups = {
         item.get("targetGroupArn") for item in service.get("loadBalancers", [])
     }
@@ -550,25 +626,7 @@ def _verify_application_smoke(
     if len(healthy_targets) < service.get("desiredCount", 1):
         raise ValueError("smoke_no_healthy_application_target")
 
-    parameter = (
-        ssm.get_parameter(
-            Name=smoke["database_parameter_arn"], WithDecryption=True
-        ).get("Parameter")
-        or {}
-    )
-    if parameter.get("ARN") != smoke["database_parameter_arn"] or not isinstance(
-        parameter.get("Value"), str
-    ):
-        raise ValueError("smoke_database_parameter_unavailable")
-    database_url = urlsplit(parameter["Value"])
-    endpoint = rds_instance.get("Endpoint") or {}
-    if (
-        database_url.scheme not in {"postgres", "postgresql"}
-        or database_url.hostname != endpoint.get("Address")
-        or database_url.port != endpoint.get("Port")
-        or database_url.path.strip("/") != plan["database_name"]
-    ):
-        raise ValueError("smoke_database_parameter_target_mismatch")
+    _verify_restored_parameters(ssm, smoke, rds_instance, plan["database_name"])
 
     class RefuseRedirects(HTTPRedirectHandler):
         def redirect_request(
@@ -651,7 +709,9 @@ def run(
     if identity.get("Account") != plan["account_id"]:
         raise ValueError("aws_account_mismatch")
     smoke_cookie = os.environ.get("CLIP_NFR07_SMOKE_SESSION_COOKIE", "")
-    _verify_smoke_session(plan, smoke_cookie)
+    source_target = _verify_smoke_session(plan, smoke_cookie)
+    if identity.get("Arn") != source_target["expected_caller_arn"]:
+        raise ValueError("restore_operator_source_plan_mismatch")
     rds = session.client("rds")
     ecs = session.client("ecs")
     elbv2 = session.client("elbv2")
@@ -791,9 +851,25 @@ def run(
         options="-c default_transaction_read_only=on",
     ) as connection:
         checks = _integrity_checks(connection, plan["expected_migration_head"])
-    application_smoke = _verify_application_smoke(
-        plan, ecs, elbv2, acm, session.client("ssm"), instance, smoke_cookie
-    )
+    # Provision the stopped smoke service before the run. An approved operator
+    # publishes the restored endpoint and starts it during this bounded wait;
+    # the original restore timer includes parameter publication and app startup.
+    while time.monotonic_ns() < deadline:
+        try:
+            application_smoke = _verify_application_smoke(
+                plan,
+                ecs,
+                elbv2,
+                acm,
+                session.client("ssm"),
+                instance,
+                _read_isolated_session(plan["smoke_session_file"]),
+            )
+            break
+        except ValueError, FileNotFoundError:
+            time.sleep(5)
+    else:
+        raise ValueError("application_smoke_restore_deadline_exceeded")
     completed_ns = time.monotonic_ns()
     completed_utc = _utc()
     elapsed_ms = (completed_ns - started_ns) / 1_000_000
@@ -818,7 +894,7 @@ def run(
         "operator_arn": identity.get("Arn"),
         "restore_requested_at_utc": started_utc,
         "checks_completed_at_utc": completed_utc,
-        "elapsed_ms_through_integrity_checks": elapsed_ms,
+        "elapsed_ms_through_application_smoke": elapsed_ms,
         "within_30_minutes": elapsed_ms <= 1_800_000,
         "integrity_checks": checks,
         "application_smoke_verified": application_smoke["verified"],

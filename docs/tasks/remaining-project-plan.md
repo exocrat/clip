@@ -538,6 +538,11 @@ review their records. Read the submitted PRD and current approved data rules.
 [canonical experiment tasks](../evaluation/ecs-only-vs-ecs-lambda-task-list.md)
 as the execution home; this group preserves new planning requirements.
 
+0. Audit the actual experiment worktree against the PRD and EXP-01–08/NFR-01–08
+   procedures before deploying. Trace each required measurement through its
+   workload, evidence capture and report. Complete missing code, including the
+   [live parity, initialization and isolated restore paths](../evaluation/predeployment-gap-tools.md),
+   then validate locally. This gate does not supply live results.
 1. Reconfirm the approved NEXT-01 question, alternatives, applicable PRD
    requirements and eligibility rules against the implementation that will be
    measured. Do not silently broaden the experiment or predetermine a winner.

@@ -174,3 +174,12 @@ options require the real Identity profile. Existing service count, networking,
 S3 scope, credentials and retained stopped resources are unchanged until an
 exact cloud plan is approved and applied. No runtime startup auto-creates SQL
 roles or activates a pipeline. Backend-free mock plans are local checks only.
+
+## NFR-07 isolated restore smoke
+
+`nfr07-smoke.tf` is disabled by default. It provisions a separate stopped service,
+ALB host rule, target group and three write-only database parameters for the
+restore test. Its fixed host is `restore.clip-iisc.site`; it requires the
+reviewed certificate/DNS/Microsoft registration and real Identity profile.
+Follow the [timed provisioning procedure](../../../../docs/evaluation/predeployment-gap-tools.md)
+and approve both preprovisioning and activation plans before cloud changes.

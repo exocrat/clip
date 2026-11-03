@@ -11,7 +11,6 @@ import re
 from typing import Any
 
 PROJECT_LIMIT_USD = Decimal("200")
-AWS_CREDIT_CAP_USD = Decimal("10")
 AMOUNT = re.compile(r"^(?:0|[1-9][0-9]*)(?:\.[0-9]{1,6})?$")
 IDENTIFIER = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:/-]{0,159}$")
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
@@ -223,7 +222,6 @@ def validate_ledger(ledger: Any) -> dict[str, Any]:
         for row in entries.values()
     )
     budget_headroom = PROJECT_LIMIT_USD - exposure
-    credit_headroom = AWS_CREDIT_CAP_USD - aws_credits
     final = ledger["final_reconciliation"]
     if final and checked_through is None:
         raise ValueError("final_billing_period_required")
@@ -237,13 +235,9 @@ def validate_ledger(ledger: Any) -> dict[str, Any]:
         "project_cost_exposure_usd": str(exposure),
         "aws_credits_used_usd": str(aws_credits),
         "project_budget_limit_usd": str(PROJECT_LIMIT_USD),
-        "aws_credit_cap_usd": str(AWS_CREDIT_CAP_USD),
         "project_budget_headroom_usd": str(budget_headroom),
-        "aws_credit_headroom_usd": str(credit_headroom),
         "evidence_complete": evidence_complete,
         "below_project_budget_preview": exposure < PROJECT_LIMIT_USD,
-        "below_aws_credit_cap": aws_credits < AWS_CREDIT_CAP_USD,
-        "more_cloud_work_permitted_by_credit_cap": credit_headroom > 0,
         "final_reconciliation_requested": final,
         "project_scope_complete": ledger["project_scope_complete"],
         "billing_checked_through": (

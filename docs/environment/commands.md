@@ -2162,3 +2162,10 @@ NEXT-06 Search vector operator: [narrowed automatic Step3 plan](../evaluation/do
 NEXT-06 Step5 labels: `.venv/bin/python -m scripts.evaluation.reference_labels validate --image-root /absolute/path/to/clip-dataset-images`. Existing canonical22judgments/actual corpus bindings are revalidated, never rewritten; no network/provider/model/SQL/scoring. Requires retained/restored named payload and original45photos/full accepted source Git objects. Initial `write` creates fixed outputs only once and refuses existing files. [Step5 evidence](../evaluation/domain/next-06/transfer/step-05-final-labels-result.json); Step6freeze remains separate.
 
 NEXT-06 frozen release: `.venv/bin/python -m scripts.evaluation.reference_release validate --image-root /absolute/path/to/clip-dataset-images --model-root /absolute/path/to/model`. Verifies both payloads, all52archive members, actual load ledger/model/index/reset/label evidence without extraction/network/inference/SQL. Initial `freeze` exclusively creates the fixed release and refuses overwrite; do not remove a release to bypass versioning. [Task-wide handoff](../evaluation/domain/next-06/task-wide-review.md). Valid content is separate from DATA-READY/CI/peer/run approval.
+
+## Deployed experiment preflight and isolated restore commands
+
+See the [live parity, Lambda initialization and NFR-07 provisioning guide](../evaluation/predeployment-gap-tools.md)
+for exact inputs, commands, evidence outputs, permission gates and limitations.
+The historical USD 10 credit cap is superseded for this experiment; retain the
+strict under-USD-200 project budget and separately reviewed per-action caps.

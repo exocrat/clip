@@ -5,6 +5,25 @@ permission to create, change, or delete resources. Before any cloud operation,
 verify the caller and refresh AWS and Terraform state; review and approve the
 exact operation separately. Never record credentials, tokens, or secret values.
 
+## Deployment-plan refresh — 2026-11-03 14:21 UTC
+
+Read-only inspection again verified `surajs2` in account `335523638354`.
+The source ECS service, retained t3.micro hosts and private RDS remain stopped;
+there is no ALB or Lambda. Three existing /24 subnets leave proposed
+`10.64.3.0/24` unused at this check. The issued source certificate remains unused.
+[Current sanitized resource/billing metadata](../evaluation/deployment-20261103/inventory.json)
+and [current public AWS prices](../evaluation/deployment-20261103/prices.json)
+are attached to the [bounded deployment proposal](../evaluation/deployment-20261103/plan.md).
+Completed-period gross usage through Nov. 2 is USD 26.232051; credits are separate.
+The historical USD 10 credit cap does not apply to this experiment. The proposed
+new execution cap is USD 30 and requires exact cloud-plan approval.
+
+Suraj clarified that NFR-06 must reflect the actual running deployment. The
+proposal therefore keeps two ECS tasks on two hosts in both A and B, rather
+than increasing capacity only for the recovery test. No source resource has
+been started or changed. RDS's automated backup window is 23:47–00:17 UTC;
+obtain a fresh automated snapshot containing the final state before NFR-07.
+
 ## Experiment readiness identity check — 2026-11-03
 
 Read-only STS verification found that the default shared-credentials profile is

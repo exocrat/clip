@@ -99,7 +99,7 @@ approval or acceptance result.
 | CN-01: `scripts/evaluation/nfr05_browser.mjs` and `scripts/evaluation/nfr05_report.py` | The two-client harness measures actual message submission to display, supports bounded background load, counts undisplayed messages and avoids message-content logging. Consolidated local audit, two securely supplied sessions and the live participant run remain. |
 | INT-01: `scripts/evaluation/nfr06_recovery.py` | The recovery observer is implemented with a separately gated exact task-stop action. Live stop action requires its own approval. |
 | INT-01: `scripts/evaluation/nfr07_restore_observer.py` | Restore observation and integrity checks are implemented with a separately bound isolated target. A live restore needs its own approved target and cleanup plan. |
-| INT-01/CLOSE-00: `scripts/evaluation/nfr_cost_ledger.py` | The project ledger records actuals, estimates, delayed charges, retained resources and credits. Current price/billing evidence, the $10 AWS-credit cap, remaining project budget and final reconciliation need live review. |
+| INT-01/CLOSE-00: `scripts/evaluation/nfr_cost_ledger.py` | The project ledger records actuals, estimates, delayed charges, retained resources and credits. Current price/billing evidence, remaining project budget and final reconciliation need live review. |
 
 ## NFR-01 — Browse latency (SE-01)
 
@@ -327,8 +327,11 @@ restore timeline. It also verifies a named ECS smoke service's image digest and
 `CLIP_DATABASE_URL` SSM parameter binding, confirms the parameter resolves to
 the restored instance, checks healthy service targets, then makes an
 authenticated `/api/me` read and a wanted-request detail read through HTTPS.
-The smoke service and its database parameter must already exist under a
-separately reviewed plan; this observer creates neither. Cleanup remains a
+The opt-in `nfr07-smoke.tf` provisions the stopped isolated service and its
+three domain database parameters under a separately reviewed plan. The observer
+checks the source session first, then waits within the original restore deadline
+for the restored service and a fresh isolated-app session. See the
+[provisioning and session procedure](../predeployment-gap-tools.md). Cleanup remains a
 separate approved action, and NFR-07 acceptance still requires human review.
 
 **Scheduled preparation:** INT-01 Step 8 owns the restore/observer and exact
@@ -356,7 +359,7 @@ the approved snapshot contains representative synthetic rows needed for checks.
 **Tooling checkpoint:** `scripts/evaluation/nfr_cost_ledger.py` validates the
 append-only project ledger, reconciles billing against outstanding estimates,
 reports gross costs and credits separately, and shows the USD 200 project
-headroom plus the user's USD 10 AWS-credit stop condition. It cannot claim final
+headroom. Credits are tracked separately without a credit-use cap for this experiment. It cannot claim final
 acceptance without complete project scope and human closeout review.
 
 1. Before each cloud action, the owner records spend to date, delayed-billing

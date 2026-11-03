@@ -6,7 +6,6 @@
   "project_scope_complete": false,
   "project_cost_ledger_path": "docs/evaluation/nfr/project-cost-ledger.json",
   "project_budget_usd": "200",
-  "aws_credit_stop_cap_usd": "10",
   "credits_subtracted_from_project_spend": false,
   "billing_checked_through": null,
   "source_billing_exports": [],

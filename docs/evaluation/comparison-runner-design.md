@@ -97,16 +97,16 @@ checks remain outstanding.
    project estimate. Service totals do not identify the NAT resource; Suraj
    reports an approximate USD 1.56/day NAT charge, which still needs to be
    checked against detailed usage lines for the exact deployment estimate.
-   The USD 10 experiment-credit limit remains separate; verify current
-   remaining credit headroom and price the exact resource hours before the
-   deployment plan.
+   The prior USD 10 credit-use cap applied to earlier cloud testing and is
+   superseded for this experiment by Suraj. Track credits separately and price
+   the exact resource hours before the deployment plan.
 4. Bind exact reviewed image digests, migration head, final dataset/index/model
    fingerprints, test-account identity, database/runtime settings, external DNS
    and public HTTPS exposure, telemetry/cost limits, rollback, retention and
    cleanup. The existing infrastructure source is opt-in and requires explicit
    phase selection; it must not be applied from guessed or stale values.
-5. Present the exact Terraform plan and cost/reserve, including the user's
-   separate USD 10 AWS-credit cap and the project's strict under-USD 200 limit.
+5. Present the exact Terraform plan and cost/reserve against the project's
+   strict under-USD 200 limit.
    Obtain approval for that exact deployment plan before applying it.
 
 ## Live checks after deployment
