@@ -1,5 +1,13 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### EXP-03 offline real adapter probe — 2026-11-03 04:54:44 UTC
+
+The cached Lambda Web Adapter processed a synthetic ALB event in a network-none
+temporary container: HTTPS/header, cookie and repeated-query handoff plus a 200
+response were observed. Initial missing-runtime-setting failures were corrected;
+the named container was confirmed removed. This is not real Uvicorn/Identity,
+ALB, IAM or deployed parity. No AWS action. [Experiment log](../evaluation/experiment-log.md).
+
 ### EXP-03 local HTTPS handoff preparation — 2026-11-03 04:50:32 UTC
 
 Added an unwired local helper that removes forwarding claims and binds a checked

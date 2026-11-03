@@ -15,6 +15,31 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## Current checkpoint
 
+### 2026-11-03 04:54:44 UTC — Network-isolated real adapter probe
+
+**Scope and outcome:** Ran the cached `clip-exp03-lambda:local-8a60f83` image
+(`ea8b7d58342f`) in a temporary Docker container with `--network none`, a
+read-only root filesystem, an in-memory `/tmp`, a synthetic local Lambda runtime
+API and a synthetic HTTP app. The actual cached Lambda Web Adapter received an
+ALB-shaped synthetic event. The app observed the expected host, HTTPS forwarding
+header, test cookie and two category query values. The adapter returned status
+200 with a multi-value response envelope and the expected synthetic body. This
+used no real credentials, sessions, AWS resources, database or app server.
+
+**Failures and cleanup:** The first two attempts timed out before invocation
+because the fake Lambda runtime lacked `AWS_LAMBDA_FUNCTION_MEMORY_SIZE`; the
+captured local diagnostic identified it. After adding a synthetic value, two
+attempts passed. The final named container used `--rm`; `docker ps -a` with its
+exact name returned no container afterward. The temporary local probe file was
+`/tmp/clip-lwa-offline-probe.py`, SHA-256
+`8c30b21e04da0a56264b43d0639b1617c04a052e13b8280fa432d5cf93012a80`.
+No AWS action, performance measurement or cost was incurred by this probe.
+
+**Limits:** This is evidence about that cached adapter and synthetic event,
+not the current rebuilt app image, Uvicorn scheme trust, real Identity, IAM,
+ALB, database, routing, performance or production correctness. A real trusted
+source boundary, updated image build and approved deployed parity remain open.
+
 ### 2026-11-03 04:50:32 UTC — Local trusted-ingress handoff preparation
 
 **Work:** `apps/api/app/overflow_event.py` now offers an explicit, unwired
