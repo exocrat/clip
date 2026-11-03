@@ -128,7 +128,7 @@ def main() -> None:
                 sort_keys=True,
             )
         )
-    except (OSError, ValueError, TypeError, KeyError, RecursionError):
+    except OSError, ValueError, TypeError, KeyError, RecursionError:
         parser.exit(
             2, "Comparison profile preparation failed; no workload was started\n"
         )

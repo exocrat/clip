@@ -66,7 +66,7 @@ def main() -> None:
         with args.output.open("x", encoding="utf-8") as output:
             json.dump(report, output, sort_keys=True, indent=2)
             output.write("\n")
-    except (OSError, ValueError, TypeError, InvalidOperation):
+    except OSError, ValueError, TypeError, InvalidOperation:
         parser.exit(2, "Could not produce cost preview; no output was authorized\n")
 
 

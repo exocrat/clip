@@ -15,6 +15,34 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## Current checkpoint
 
+### 2026-11-03 06:53:41 UTC — Prepare EXP-02 PR and repair checks
+
+**Target:** `task/exp-02-workload`, based on `a52adea` before this checkpoint.
+No existing EXP-02 PR was found. The branch contains the EXP-02 preparation
+stack; the PR will be a draft because the real runner, deployed parity and
+owner review remain open.
+
+**Findings and changes:** Ten comparison/NFR Python files needed Black
+formatting. All fourteen paths flagged by CI now pass individual Black checks.
+The full k6 Node suite exposed a stale test harness: the workload uses
+`phaseTimingPreview`, but `comparison_load.test.mjs` did not provide it to the
+VM. The test now injects the real helper and synthetic HTTP timing phases, and
+asserts the already implemented phase preview. No production workload or
+experiment behavior changed.
+
+**Checks:** `pytest tests/evaluation -q -W error` passed (351 passed, 1
+skipped); all 48 `scripts/evaluation/k6/*.test.mjs` tests passed; the Python
+boundary check reported zero violations; all 14 Black paths pass;
+`git diff --check` passed. The Node test suite initially could not bind its
+synthetic 127.0.0.1 server under the default sandbox; rerunning that test-only
+suite with permitted loopback access passed. No external API, AWS, deployment
+or measured workload requests were sent.
+
+**Next:** Commit only these check repairs and documentation, push the EXP-02
+branch, and open a draft PR. Real runner integration, deployed A/B equality,
+session handoff, reviewed parity and measurement authorization remain pending.
+Bring current `main` into the PR branch before merge and rerun required gates.
+
 - **EXP-01:** Design verified; see the [comparison protocol](ecs-only-vs-ecs-lambda-task-list.md).
 - The experiment-design document's proposed 300 concurrent-client-request
   ceiling is explicitly non-binding per user direction. Do not enforce it as a

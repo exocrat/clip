@@ -3,6 +3,7 @@ import { strict as assert } from 'node:assert';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 import { preliminaryOutcome } from './comparison_outcomes.js';
+import { phaseTimingPreview } from './comparison_phase_preview.js';
 
 // Replace k6 APIs with local fakes; no network or workload is run.
 function prepare({ throws = false, negative = false, timeout = false, parity = false } = {}) {
@@ -27,10 +28,11 @@ function prepare({ throws = false, negative = false, timeout = false, parity = f
     execution: { scenario: { name: 'low_measured', iterationInTest: 0 } },
     sequenceStartForScenario: () => 0, caseForIteration: () => item,
     preliminaryOutcome,
+    phaseTimingPreview,
     checkAllParity: () => ({all_equal_and_valid:true}),
     correctParityDraftResponse: () => { time += 500; return true; },
     correctResponse: () => { time += 500; return true; },
-    http: { get: () => { time += negative ? -10 : 25; if (throws) throw Error('synthetic'); if (timeout) return { status: 0, error_code: 1050 }; return { status: 200, json: () => ({}) }; } },
+    http: { get: () => { time += negative ? -10 : 25; if (throws) throw Error('synthetic'); if (timeout) return { status: 0, error_code: 1050 }; return { status: 200, timings: { blocked: 2, duration: 25, connecting: 1, tls_handshaking: 0 }, json: () => ({}) }; } },
   };
   vm.runInNewContext(source, context);
   return { context, recorded };
@@ -41,6 +43,8 @@ test('elapsed time excludes response validation', () => {
   context.run();
   assert.deepEqual(recorded.clip_comparison_elapsed_ms, [{ value: 25, outcome: 'correct' }]);
   assert.deepEqual(recorded.clip_comparison_outcomes, [{ value: 1, outcome: 'correct' }]);
+  assert.deepEqual(recorded.clip_comparison_phase_span_ms, [{ value: 27, outcome: 'correct' }]);
+  assert.deepEqual(recorded.clip_comparison_phase_duration_ms, [{ value: 25, outcome: 'correct' }]);
 });
 
 test('parity draft uses its search checker after local parity succeeds', () => {
@@ -48,6 +52,7 @@ test('parity draft uses its search checker after local parity succeeds', () => {
   context.run();
   assert.deepEqual(recorded.clip_comparison_outcomes,[{value:1,outcome:'correct'}]);
   assert.equal(recorded.clip_comparison_elapsed_ms[0].value,25);
+  assert.equal(recorded.clip_comparison_phase_span_ms[0].value,27);
 });
 
 test('a returned timeout is recorded as a failure with its elapsed time', () => {

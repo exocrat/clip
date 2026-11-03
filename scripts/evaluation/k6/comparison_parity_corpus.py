@@ -94,7 +94,7 @@ def main() -> None:
             json.dump(corpus, output, sort_keys=True, indent=2, ensure_ascii=False)
             output.write("\n")
         print(json.dumps({"draft_created": True, "measurement_authorized": False}))
-    except (OSError, UnicodeError, ValueError, TypeError, KeyError):
+    except OSError, UnicodeError, ValueError, TypeError, KeyError:
         parser.exit(2, "Parity corpus preparation failed; no workload started\n")
 
 

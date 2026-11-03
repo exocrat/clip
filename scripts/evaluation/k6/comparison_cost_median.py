@@ -78,7 +78,7 @@ def main() -> None:
         with args.output.open("x", encoding="utf-8") as output:
             json.dump(result, output, indent=2, sort_keys=True)
             output.write("\n")
-    except (OSError, ValueError, TypeError, KeyError):
+    except OSError, ValueError, TypeError, KeyError:
         parser.exit(2, "Could not produce cost median preview\n")
 
 

@@ -70,7 +70,7 @@ def _check_evidence(raw: bytes, report: bytes) -> None:
         for line in lines:
             _check_json_value(json.loads(line, parse_constant=_reject_constant))
         _check_json_value(json.loads(report, parse_constant=_reject_constant))
-    except (ValueError, UnicodeError, RecursionError):
+    except ValueError, UnicodeError, RecursionError:
         raise ValueError("invalid_or_unsafe_evidence") from None
 
 

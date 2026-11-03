@@ -224,7 +224,7 @@ def main() -> None:
                 sort_keys=True,
             )
         )
-    except (OSError, ValueError, TypeError, KeyError):
+    except OSError, ValueError, TypeError, KeyError:
         parser.exit(2, "Comparison input preflight failed; no workload was started\n")
 
 
