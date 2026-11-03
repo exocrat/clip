@@ -323,7 +323,8 @@ resource "aws_lb_listener_rule" "exp03_selected_reads" {
         weight = 100 - var.exp03_selected_reads_lambda_weight_percent
       }
       stickiness {
-        enabled = false
+        enabled  = false
+        duration = 1
       }
     }
   }

@@ -5,6 +5,11 @@
 
 **Entry:** EXP-01 design may start before INT-01. EXP-06 may run before full INT-01 only after the real selected paths, DATA-READY, EXP-01–05 and the approved read-comparison gate below are verified. Full INT-01/Notifications acceptance remains required for project closeout. Select tasks through `docs/tasks/project-task-index.md`; human verification and action approvals remain separate.
 
+**Current checkpoint (2026-11-03):** Suraj confirms NEXT-04, NEXT-05 and
+NEXT-06 are complete, and DATA-READY is accepted. Dataset generation is not
+remaining work. EXP-02 and EXP-03 code has merged through PRs #28 and #27.
+The remaining local tooling must be completed and audited before any deployment.
+
 **Purpose:** Determine whether routing selected read-heavy requests from ECS to Lambda improves burst responsiveness or cost efficiency without degrading normal-load performance for this application.
 
 **Latest user direction:** Use direct ALB routing for the selected reads. In B,
@@ -105,7 +110,7 @@ repetitions, separate cold/warm observations and full-system cost attribution.
 | FR-01–03, FR-05–07, FR-14, FR-17 | Preserve identity/eligibility, availability/ownership, pagination, search/filter/order semantics, image references and sensitive-purchase presentation on selected reads. |
 | Other required FRs, including FR-13 and FR-16 | Retain full product acceptance, asynchronous notification failure isolation and client-only private-message decryption. Read offloading does not accept unrelated unfinished features. |
 | NFR-01 | At 20 browse requests/s, at least 95% of successful requests within 1 s; exclude image bodies and report failures separately. |
-| NFR-02 | At 10 indexed search requests/s, at least 95% of issued eligible requests correct within 1 s; owning SE-01 procedure counts failures/timeouts as violations. |
+| NFR-02 | At 10 indexed search requests/s, at least 95% of issued eligible requests complete successfully within 1 s; failures/timeouts count as violations. Search usefulness is evaluated separately by NFR-04. |
 | NFR-03 | At 50 requests/s for five minutes, at least 95% successful, excluding intentionally rate-limited abuse. |
 | NFR-04 | Success@5 at least 80% over at least 20 human-reviewed queries. |
 | NFR-05 | At least 95% of active-chat messages visible within 5 s under the defined normal workload. |
@@ -705,6 +710,28 @@ If scripts, metrics, or fixtures required by the approved plan do not exist, add
 
 **Complete when:** Local workload checks pass, the workload produces all approved metrics, and the exact cloud commands can be resolved from repository scripts/documentation.
 
+### Pre-deployment tooling-complete gate — user direction, 2026-11-03
+
+Before EXP-04 deploys either configuration, implement and locally validate all
+code needed to prepare, execute, capture and report EXP-01–08 and NFR-01–08.
+Reuse the accepted EXP-02/03 code where it meets the reviewed procedure; do not
+duplicate it. This gate covers runner/profile/manifest binding, failure and
+timeout accounting, telemetry/evidence capture, reports, cost inputs, recovery
+and restore observers, and cleanup accounting. Local doubles may exercise cloud
+command boundaries; they cannot be represented as live evidence. No deployed
+traffic, task-stop, restore or infrastructure mutation is allowed by this gate.
+
+NFR-01, NFR-02 and NFR-03 each require a separate runnable profile and report
+for both configuration A and configuration B. NFR-01 retains its successful
+browse-request denominator; NFR-02 counts all eligible issued search requests;
+NFR-03 uses its integrated mixed workload with controlled writes and operation
+reconciliation. The read-only comparison workload does not replace NFR-03.
+
+The tool-ready review must show the concrete commands, inputs, safe target and
+session handling, local success/failure scenarios, raw-output immutability,
+report validity rules and final checks. Only after that review may the separate
+deployment plan and approval gate proceed.
+
 ## EXP-03 — Implement and locally verify the mixed configuration
 
 **Owner:** Rahul (D), reassigned by user direction. **Reviewers:** A as default independent peer; C and B as affected Search/infrastructure owners where required. **Start after:** EXP-02.
@@ -727,11 +754,26 @@ If scripts, metrics, or fixtures required by the approved plan do not exist, add
 5. For each selected route, compare representative response content and authorization behavior between A and B. Confirm both read the same authoritative data and preserve filtering, sorting, pagination, not-found behavior, and access restrictions.
 6. Confirm logging and metrics can distinguish ECS and Lambda paths without logging sensitive data. Confirm PostgreSQL remains private and is the same authoritative datastore for both configurations.
 7. Run small, bounded cloud smoke tests. Do not call them measured results.
-8. If either configuration fails smoke tests or differs functionally, stop measurement. Fix the issue through its own task/review/deployment path, then repeat the smoke checks.
+8. If either configuration fails smoke tests or differs functionally, stop
+   measurement. Fix the issue through its own task/review/deployment path, then
+   repeat the smoke checks.
+9. After both configurations pass the smoke and routing checks, give Suraj
+   access to the deployed website for a human product inspection. Do not begin
+   EXP-05 pilot traffic until Suraj has inspected it. Fix any findings through
+   the normal review/deployment path and repeat affected smoke/parity checks.
 
 **Complete when:** Both deployed configurations are healthy, functionally equivalent for the frozen routes, correctly instrumented, and identifiable by immutable revision/configuration.
 
 ## EXP-05 — Pilot and confirm safe limits
+
+`scripts/evaluation/k6/exp05_pilot.py` prepares the required ECS baseline and
+four weighted candidates with three repetitions each and summarizes retained
+run reports against the 95% correctness/delivery floor, zero generator drops,
+resource and database headroom, telemetry, routing, and approved cost cap. Its
+proposed fallback rule is to select the largest Lambda weight that passes all
+frozen gates; the generated plan remains a draft until a human reviews the
+selection rule and exact thresholds. The tool does not run traffic or freeze
+the selected weight.
 
 1. Re-read the approved manifest, exact environment/resource targets, remaining project budget, and cleanup commands.
 2. **Configure the database connection budget explicitly.** Before traffic, inspect the actual PostgreSQL `max_connections`, reserved slots, current connections and instance settings through the approved read-only path. Account for all ECS processes, Lambda environments and their pools, direct Identity connections, workers, administration and other consumers. Record and review a safe application connection budget, pool sizes and Lambda concurrency with headroom. The proposed figure of 60 is not an observed limit. Make any database or resource configuration change only under an exact approved plan; recheck the resulting settings before testing.
@@ -791,6 +833,13 @@ Run paired configurations close enough in time to reduce time-of-day/environment
 8. Record task status, files/tools changed, local/cloud checks actually run, exact revisions, run IDs, result, costs/estimates, cleanup, unresolved issues, and next action.
 
 **Complete when:** The reviewed comparison report is reproducible, the result is tied to exact deployed revisions, and temporary resources are verified removed or explicitly retained with an owner and expiry.
+
+Use [`exp08_cleanup.py`](../../scripts/evaluation/exp08_cleanup.py) with the
+[cleanup record template](exp08-cleanup-record.template.json) to account for
+every resource from the approved plan, attach read-only observation evidence,
+and link retained-resource estimates to the project cost ledger. Its output is
+only an evidence-completeness preview; it neither inspects AWS nor authorizes
+cleanup.
 
 ## 10. Measures required by the PRD's comparison
 

@@ -1,4 +1,4 @@
-/** Offline shape and expected-response checks. This is never run authorization. */
+/** Offline browse-response and search-input checks; never run authorization. */
 import { comparisonPath } from './comparison_cases.js';
 import { validExpected } from './comparison_checks.js';
 
@@ -14,7 +14,17 @@ export function validateNfrCases(bundle, nfr) {
     if (!item || typeof item.case_id !== 'string' || !item.case_id || ids.has(item.case_id) || item.expected_status !== 200 || item.request?.kind !== (browse ? 'browse' : 'search')) throw Error('invalid_case');
     ids.add(item.case_id);
     comparisonPath(item.request);
-    if (!validExpected(item.request, item.expected)) throw Error('missing_or_invalid_expected');
+    if (browse) {
+      if (!validExpected(item.request, item.expected)) throw Error('missing_or_invalid_expected');
+    } else {
+      const queryClass = item.relevance_reference?.query_class;
+      if (item.expected !== null ||
+          !['direct_word', 'related_word', 'meaning_based'].includes(queryClass) ||
+          item.request.query.search_mode !== 'hybrid' ||
+          item.request.query.page !== 1 || item.request.query.page_size !== 20) {
+        throw Error('invalid_latency_search_case');
+      }
+    }
   }
   if (browse) {
     if (!cases.some(c => (c.request.query.page ?? 1) === 1) || !cases.some(c => c.request.query.page > 1) || !cases.some(c => c.request.query.category_code !== undefined)) throw Error('missing_browse_coverage');

@@ -15,6 +15,28 @@ variable "api_service_enabled" {
   default     = false
 }
 
+variable "api_service_desired_count" {
+  description = "Desired API tasks for an explicitly enabled service. Set to two only for the separately approved NFR-06 recovery plan; the ordinary default remains one."
+  type        = number
+  default     = 1
+
+  validation {
+    condition     = var.api_service_desired_count >= 1 && var.api_service_desired_count <= 2 && floor(var.api_service_desired_count) == var.api_service_desired_count
+    error_message = "api_service_desired_count must be one or two."
+  }
+}
+
+variable "ecs_host_max_size" {
+  description = "Maximum shared ECS host capacity. Set to two only for the separately approved NFR-06 recovery plan; the ordinary default remains one."
+  type        = number
+  default     = 1
+
+  validation {
+    condition     = var.ecs_host_max_size >= 1 && var.ecs_host_max_size <= 2 && floor(var.ecs_host_max_size) == var.ecs_host_max_size
+    error_message = "ecs_host_max_size must be one or two."
+  }
+}
+
 variable "cleanup_review_date" {
   description = "Required ExpiresOn tag and cleanup review date for the approved environment."
   type        = string

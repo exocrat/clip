@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "profile_id": "nfr05-active-chat-v1",
+  "nfr_id": "nfr-05",
+  "purpose": "draft-not-executable",
+  "warmup_seconds": 60,
+  "measured_seconds": 300,
+  "messages": 60,
+  "interval_seconds": 5,
+  "visibility_deadline_seconds": 5,
+  "background_read_rate_rps": 10,
+  "browser_sessions": 2,
+  "clock": "one host monotonic clock at local browser-event observation",
+  "start_event": "sender conversation form submission",
+  "finish_event": "recipient decrypted message rendered in the visible message list",
+  "denominator": "all 60 planned messages, including failed and undisplayed messages",
+  "content_logging": false,
+  "execution_permitted": false,
+  "nfr_accepted": false
+}

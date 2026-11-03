@@ -179,7 +179,14 @@ resource "aws_ecs_service" "api" {
   name            = "clip-test-api-${local.region}-pd16"
   cluster         = aws_ecs_cluster.shared[0].id
   task_definition = aws_ecs_task_definition.api[0].arn
-  desired_count   = var.api_service_enabled ? 1 : 0
+  desired_count   = var.api_service_enabled ? var.api_service_desired_count : 0
+
+  lifecycle {
+    precondition {
+      condition     = !var.api_service_enabled || var.api_service_desired_count <= var.ecs_host_max_size
+      error_message = "The enabled API service cannot request more tasks than the approved ECS host maximum."
+    }
+  }
 
   dynamic "load_balancer" {
     for_each = local.exp03_active ? [1] : []

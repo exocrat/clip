@@ -1,0 +1,14 @@
+{
+  "approval_id": null,
+  "human_approved": false,
+  "approved_at_utc": null,
+  "expires_at_utc": null,
+  "plan_sha256": null,
+  "action": "ecs.stop_task",
+  "run_id": null,
+  "account_id": null,
+  "region": null,
+  "cluster_arn": null,
+  "service_arn": null,
+  "task_arn": null
+}

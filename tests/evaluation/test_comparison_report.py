@@ -56,7 +56,9 @@ class ComparisonReportTests(unittest.TestCase):
         self.assertTrue(report["delivery_complete"])
         self.assertFalse(report["latency_timing_verified"])
         self.assertFalse(report["individual_request_outcome_binding_verified"])
-        self.assertIn("not a verified monotonic", report["latency_limitation"])
+        self.assertIn(
+            "not bound to its custom binary hash", report["latency_limitation"]
+        )
         low_measured = report["client_metrics"]["low_measured"]
         self.assertEqual(low_measured["throttled"], 1)
         self.assertEqual(low_measured["failed"], 1)

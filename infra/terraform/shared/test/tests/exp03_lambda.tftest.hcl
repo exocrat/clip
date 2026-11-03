@@ -3,6 +3,27 @@ mock_provider "aws" {
   mock_resource "aws_cloudwatch_log_group" {
     defaults = { arn = "arn:aws:logs:ap-south-1:335523638354:log-group:synthetic" }
   }
+  mock_resource "aws_launch_template" {
+    defaults = { id = "lt-0123456789abcdef0" }
+  }
+  mock_resource "aws_autoscaling_group" {
+    defaults = { arn = "arn:aws:autoscaling:ap-south-1:335523638354:autoScalingGroup:00000000-0000-0000-0000-000000000000:autoScalingGroupName/synthetic" }
+  }
+  mock_resource "aws_iam_role" {
+    defaults = { arn = "arn:aws:iam::335523638354:role/synthetic" }
+  }
+  mock_resource "aws_lb" {
+    defaults = { arn = "arn:aws:elasticloadbalancing:ap-south-1:335523638354:loadbalancer/app/synthetic/50dc6c495c0c9188" }
+  }
+  mock_resource "aws_lb_listener" {
+    defaults = { arn = "arn:aws:elasticloadbalancing:ap-south-1:335523638354:listener/app/synthetic/50dc6c495c0c9188/73e2d6bc24d8a067" }
+  }
+  mock_resource "aws_lb_target_group" {
+    defaults = { arn = "arn:aws:elasticloadbalancing:ap-south-1:335523638354:targetgroup/synthetic/73e2d6bc24d8a067" }
+  }
+  mock_resource "aws_lambda_function" {
+    defaults = { arn = "arn:aws:lambda:ap-south-1:335523638354:function:synthetic" }
+  }
 }
 
 variables {
@@ -44,7 +65,9 @@ run "disabled_preserves_shared_service" {
 }
 
 run "enabled_a_defaults_to_ecs_and_bounds_lambda" {
-  command = plan
+  # The ECS service's load_balancer collection is provider-computed, so use the
+  # mock provider's in-memory apply phase to assert its attached target group.
+  command = apply
   variables {
     exp03_enabled            = true
     api_service_enabled      = true
@@ -77,7 +100,9 @@ run "enabled_a_defaults_to_ecs_and_bounds_lambda" {
 }
 
 run "b_routes_selected_reads_with_weighted_alb_targets" {
-  command = plan
+  # The target attachment ID is provider-computed, so keep this entirely in
+  # the mock provider's in-memory apply phase for the identity assertion.
+  command = apply
   variables {
     exp03_enabled                              = true
     exp03_selected_reads_lambda_weight_percent = 75
@@ -89,8 +114,32 @@ run "b_routes_selected_reads_with_weighted_alb_targets" {
     api_task_memory_mib                        = 2048
   }
   assert {
-    condition     = length(aws_lb_listener_rule.exp03_selected_reads) == 1 && aws_lb_listener_rule.exp03_selected_reads[0].action[0].forward[0].target_group[0].arn == aws_lb_target_group.exp03_lambda[0].arn && aws_lb_listener_rule.exp03_selected_reads[0].action[0].forward[0].target_group[0].weight == 75 && aws_lb_listener_rule.exp03_selected_reads[0].action[0].forward[0].target_group[1].arn == aws_lb_target_group.exp03_ecs[0].arn && aws_lb_listener_rule.exp03_selected_reads[0].action[0].forward[0].target_group[1].weight == 25 && aws_lb_listener_rule.exp03_selected_reads[0].condition[0].http_request_method[0].values == ["GET"] && aws_lb_listener_rule.exp03_selected_reads[0].condition[1].path_pattern[0].regex_values == ["^/api/listings$", "^/api/listings/[0-9A-Fa-f-]{36}$"]
-    error_message = "B must split only the approved Listing GET routes between Lambda and ECS at the declared weights."
+    condition     = length(aws_lb_listener_rule.exp03_selected_reads) == 1 && length(aws_lb_listener_rule.exp03_selected_reads[0].action[0].forward[0].target_group) == 2
+    error_message = "B must have one rule with exactly two weighted targets."
+  }
+  assert {
+    condition = length([
+      for target in aws_lb_listener_rule.exp03_selected_reads[0].action[0].forward[0].target_group : target
+      if target.arn == aws_lb_target_group.exp03_lambda[0].arn && target.weight == 75
+      ]) == 1 && length([
+      for target in aws_lb_listener_rule.exp03_selected_reads[0].action[0].forward[0].target_group : target
+      if target.arn == aws_lb_target_group.exp03_ecs[0].arn && target.weight == 25
+    ]) == 1
+    error_message = "B must assign 75 percent to Lambda and 25 percent to ECS."
+  }
+  assert {
+    condition = length([
+      for condition in aws_lb_listener_rule.exp03_selected_reads[0].condition : condition
+      if length(condition.http_request_method) == 1 && length(condition.http_request_method[0].values) == 1 && contains(condition.http_request_method[0].values, "GET")
+    ]) == 1
+    error_message = "B's selected route must permit GET only."
+  }
+  assert {
+    condition = length([
+      for condition in aws_lb_listener_rule.exp03_selected_reads[0].condition : condition
+      if length(condition.path_pattern) == 1 && toset(condition.path_pattern[0].regex_values) == toset(["^/api/listings$", "^/api/listings/[0-9A-Fa-f-]{36}$"])
+    ]) == 1
+    error_message = "B's selected route must match only Listing collection and detail paths."
   }
   assert {
     condition     = aws_lb_target_group.exp03_lambda[0].target_type == "lambda" && aws_lb_target_group.exp03_lambda[0].lambda_multi_value_headers_enabled && aws_lb_target_group_attachment.exp03_lambda[0].target_id == aws_lambda_function.exp03[0].arn && aws_lambda_permission.exp03_alb[0].principal == "elasticloadbalancing.amazonaws.com" && aws_lambda_permission.exp03_alb[0].source_arn == aws_lb_target_group.exp03_lambda[0].arn
@@ -110,6 +159,34 @@ run "b_without_resources_is_rejected" {
   command = plan
   variables { exp03_selected_reads_lambda_weight_percent = 25 }
   expect_failures = [terraform_data.exp03_inputs]
+}
+
+run "nfr06_can_plan_two_hybrid_tasks_and_hosts" {
+  command = plan
+  variables {
+    api_service_enabled       = true
+    api_service_desired_count = 2
+    ecs_host_max_size         = 2
+    identity_runtime_enabled  = true
+    identity_test_recipients  = ["synthetic@example.invalid"]
+    hybrid_runtime_enabled    = true
+    api_task_cpu              = 512
+    api_task_memory_mib       = 2048
+  }
+  assert {
+    condition     = aws_ecs_service.api[0].desired_count == 2 && aws_autoscaling_group.ecs_host[0].max_size == 2
+    error_message = "NFR-06 must be able to declare two Hybrid-capable ECS tasks on separate hosts."
+  }
+}
+
+run "two_service_tasks_require_two_hosts" {
+  command = plan
+  variables {
+    api_service_enabled       = true
+    api_service_desired_count = 2
+    ecs_host_max_size         = 1
+  }
+  expect_failures = [aws_ecs_service.api]
 }
 
 run "invalid_alb_weight_is_rejected" {

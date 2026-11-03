@@ -1,0 +1,37 @@
+{
+  "format_version": 1,
+  "purpose": "exp07-offline-analysis-input",
+  "score_spec": {
+    "state": "draft",
+    "frozen_before_results": false,
+    "frozen_at_utc": null,
+    "review_record": null,
+    "cost_good_usd_per_1000": null,
+    "cost_poor_usd_per_1000": null,
+    "cost_model_reference": null
+  },
+  "eligibility": {
+    "A": {"status": "unknown", "review_record": null},
+    "B": {"status": "unknown", "review_record": null}
+  },
+  "runs": [
+    {"run_id":"A-low-r1","configuration":"A","condition":"low","repetition":1,"validity":"incomplete","validity_review":"review required","report_path":"docs/evaluation/experiment-runs/REPLACE/report.json","report_sha256":null,"cost_path":"docs/evaluation/experiment-runs/REPLACE/cost.json","cost_sha256":null},
+    {"run_id":"A-low-r2","configuration":"A","condition":"low","repetition":2,"validity":"incomplete","validity_review":"review required","report_path":"docs/evaluation/experiment-runs/REPLACE/report.json","report_sha256":null,"cost_path":"docs/evaluation/experiment-runs/REPLACE/cost.json","cost_sha256":null},
+    {"run_id":"A-low-r3","configuration":"A","condition":"low","repetition":3,"validity":"incomplete","validity_review":"review required","report_path":"docs/evaluation/experiment-runs/REPLACE/report.json","report_sha256":null,"cost_path":"docs/evaluation/experiment-runs/REPLACE/cost.json","cost_sha256":null},
+    {"run_id":"A-normal-r1","configuration":"A","condition":"normal","repetition":1,"validity":"incomplete","validity_review":"review required","report_path":"docs/evaluation/experiment-runs/REPLACE/report.json","report_sha256":null,"cost_path":"docs/evaluation/experiment-runs/REPLACE/cost.json","cost_sha256":null},
+    {"run_id":"A-normal-r2","configuration":"A","condition":"normal","repetition":2,"validity":"incomplete","validity_review":"review required","report_path":"docs/evaluation/experiment-runs/REPLACE/report.json","report_sha256":null,"cost_path":"docs/evaluation/experiment-runs/REPLACE/cost.json","cost_sha256":null},
+    {"run_id":"A-normal-r3","configuration":"A","condition":"normal","repetition":3,"validity":"incomplete","validity_review":"review required","report_path":"docs/evaluation/experiment-runs/REPLACE/report.json","report_sha256":null,"cost_path":"docs/evaluation/experiment-runs/REPLACE/cost.json","cost_sha256":null},
+    {"run_id":"A-burst-r1","configuration":"A","condition":"burst","repetition":1,"validity":"incomplete","validity_review":"review required","report_path":"docs/evaluation/experiment-runs/REPLACE/report.json","report_sha256":null,"cost_path":"docs/evaluation/experiment-runs/REPLACE/cost.json","cost_sha256":null},
+    {"run_id":"A-burst-r2","configuration":"A","condition":"burst","repetition":2,"validity":"incomplete","validity_review":"review required","report_path":"docs/evaluation/experiment-runs/REPLACE/report.json","report_sha256":null,"cost_path":"docs/evaluation/experiment-runs/REPLACE/cost.json","cost_sha256":null},
+    {"run_id":"A-burst-r3","configuration":"A","condition":"burst","repetition":3,"validity":"incomplete","validity_review":"review required","report_path":"docs/evaluation/experiment-runs/REPLACE/report.json","report_sha256":null,"cost_path":"docs/evaluation/experiment-runs/REPLACE/cost.json","cost_sha256":null},
+    {"run_id":"B-low-r1","configuration":"B","condition":"low","repetition":1,"validity":"incomplete","validity_review":"review required","report_path":"docs/evaluation/experiment-runs/REPLACE/report.json","report_sha256":null,"cost_path":"docs/evaluation/experiment-runs/REPLACE/cost.json","cost_sha256":null},
+    {"run_id":"B-low-r2","configuration":"B","condition":"low","repetition":2,"validity":"incomplete","validity_review":"review required","report_path":"docs/evaluation/experiment-runs/REPLACE/report.json","report_sha256":null,"cost_path":"docs/evaluation/experiment-runs/REPLACE/cost.json","cost_sha256":null},
+    {"run_id":"B-low-r3","configuration":"B","condition":"low","repetition":3,"validity":"incomplete","validity_review":"review required","report_path":"docs/evaluation/experiment-runs/REPLACE/report.json","report_sha256":null,"cost_path":"docs/evaluation/experiment-runs/REPLACE/cost.json","cost_sha256":null},
+    {"run_id":"B-normal-r1","configuration":"B","condition":"normal","repetition":1,"validity":"incomplete","validity_review":"review required","report_path":"docs/evaluation/experiment-runs/REPLACE/report.json","report_sha256":null,"cost_path":"docs/evaluation/experiment-runs/REPLACE/cost.json","cost_sha256":null},
+    {"run_id":"B-normal-r2","configuration":"B","condition":"normal","repetition":2,"validity":"incomplete","validity_review":"review required","report_path":"docs/evaluation/experiment-runs/REPLACE/report.json","report_sha256":null,"cost_path":"docs/evaluation/experiment-runs/REPLACE/cost.json","cost_sha256":null},
+    {"run_id":"B-normal-r3","configuration":"B","condition":"normal","repetition":3,"validity":"incomplete","validity_review":"review required","report_path":"docs/evaluation/experiment-runs/REPLACE/report.json","report_sha256":null,"cost_path":"docs/evaluation/experiment-runs/REPLACE/cost.json","cost_sha256":null},
+    {"run_id":"B-burst-r1","configuration":"B","condition":"burst","repetition":1,"validity":"incomplete","validity_review":"review required","report_path":"docs/evaluation/experiment-runs/REPLACE/report.json","report_sha256":null,"cost_path":"docs/evaluation/experiment-runs/REPLACE/cost.json","cost_sha256":null},
+    {"run_id":"B-burst-r2","configuration":"B","condition":"burst","repetition":2,"validity":"incomplete","validity_review":"review required","report_path":"docs/evaluation/experiment-runs/REPLACE/report.json","report_sha256":null,"cost_path":"docs/evaluation/experiment-runs/REPLACE/cost.json","cost_sha256":null},
+    {"run_id":"B-burst-r3","configuration":"B","condition":"burst","repetition":3,"validity":"incomplete","validity_review":"review required","report_path":"docs/evaluation/experiment-runs/REPLACE/report.json","report_sha256":null,"cost_path":"docs/evaluation/experiment-runs/REPLACE/cost.json","cost_sha256":null}
+  ]
+}

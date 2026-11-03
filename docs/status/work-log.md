@@ -1,3 +1,349 @@
+### Batch 10 implementation checkpoint — EXP-05 execution and EXP-07/08 closeout tools — 2026-11-03 10:51:44 UTC
+
+Connected the fixed EXP-05 pilot profile to the shared coordinator's launch
+table. The coordinator now selects the dedicated two-minute pilot workload;
+without this row it would have prepared and staged the pilot but failed before
+launch. Added `comparison_analysis.py` and an input template for the full
+18-run A/B-by-condition matrix. The analyzer binds derived report and cost
+files by hash, requires human validity and eligibility review notes, reports
+all retained invalid/incomplete runs, calculates the frozen score and
+sensitivity examples, checks the documented normal-load per-route degradation
+guard, and shows paired score differences. Added `exp08_cleanup.py` and its
+record template to account for all planned resources and link retained resource
+costs to the project ledger; the checker does not inspect or delete cloud
+resources.
+
+Updated NFR measurement guidance to state that the final dataset is present and
+DATA-READY is accepted, while requiring its fingerprint and relevant revisions
+to be rechecked against each target. Updated evaluation command guidance and
+the experiment task list for the new analysis and cleanup tools. No tests,
+builds, AWS calls, HTTP requests, traffic, task stops, restores or deployment
+were performed; the consolidated audit remains pending.
+
+Changed code/configuration files: `scripts/evaluation/k6/real_run_coordinator.py`
+now launches EXP-05 pilot runs; `scripts/evaluation/k6/comparison_analysis.py`
+calculates hash-bound EXP-07 results under the frozen scoring rules;
+`scripts/evaluation/exp08_cleanup.py` checks resource disposition coverage and
+retained-cost links. New `data/evaluation/workloads/exp07-analysis-input.template.json`,
+`data/evaluation/workloads/exp07-cost-input.template.json`, and
+`docs/evaluation/exp08-cleanup-record.template.json` define those tools' inputs.
+Documentation changes are in the NFR measurement design, k6/evaluation guides,
+the EXP-07/08 procedure and this work log. The final local audit/checks are not
+yet performed.
+
+### Batch 9 implementation checkpoint — shared execution, identity gates, and evidence binding — 2026-11-03 10:36:14 UTC
+
+Connected the prepared experiment pieces into safer run paths. The new
+`prepare_real_run_plan.py` builds local, hash-bound plans for the comparison
+and NFR-01/02/03; `real_run_coordinator.py` now validates and stages every
+selected case/profile/module before live target or session checks, then runs
+once and captures immutable raw output and a receipt. Fixed its impossible
+evidence-folder check and made oversized raw output stream-hashed. The new
+`real_run_evidence.py` lets the comparison and NFR reports verify exact raw,
+profile, plan, receipt and binary bindings without making an NFR decision.
+
+NFR-04 now uses the shared live target/session preflight and binds its target
+plan to the reviewed data/application/model manifest. NFR-05 now requires an
+expiring approval for exact manifest bytes, checks two distinct regular-user
+sessions against the bound A/B target before any messages/load, and limits and
+preserves its background raw output. NFR-06 verifies the target plan and user
+session before baseline traffic and binds task-stop approval to the exact plan
+bytes. NFR-07 verifies its regular test-user session before starting the
+isolated restore and binds restore approval to the exact plan bytes. Reports
+remain non-accepting; B's per-request ECS/Lambda attribution, telemetry,
+deployment parity and all live results remain open.
+
+No tests/builds, AWS calls, HTTP requests, workload traffic, task stops, restores
+or deployment were performed. The end-of-batch audit/checks are still pending.
+`git diff --check` has not yet been rerun after this batch. Changed paths include
+`scripts/evaluation/k6/prepare_real_run_plan.py`,
+`scripts/evaluation/k6/real_run_coordinator.py`,
+`scripts/evaluation/k6/real_run_evidence.py`,
+`scripts/evaluation/k6/real_target_preflight.py`, the comparison/NFR reports,
+`scripts/evaluation/nfr04_retrieval.py`, `scripts/evaluation/nfr05_browser.mjs`,
+`scripts/evaluation/nfr06_recovery.py`, `scripts/evaluation/nfr07_restore_observer.py`,
+their templates/measurement documents, the command index, and this checkpoint.
+
+### Batch 8 implementation checkpoint — read-only deployed-target preflight — 2026-11-03 10:14:25 UTC
+
+Added real_target_preflight.py and its exact-shape plan template as the first
+real-run coordinator component. The offline mode rejects incomplete or unsafe
+plans and enforces that A is ECS-only while B splits only the approved Listing
+GET paths with the recorded weights and no stickiness. Its explicit live mode
+uses read-only AWS APIs to check account and exact IAM user or assumed-role caller, HTTPS listener/certificate,
+ALB route, ECS service and image, Lambda image/concurrency/database permission,
+private RDS and encrypted database-parameter destination; it then performs
+only an unauthenticated HTTPS /health read with redirects/proxies disabled.
+The result reports unresolved DNS-to-ALB, source/data attestation, session,
+workload-bundle, telemetry and evidence gates and never authorizes or starts a
+workload. No AWS calls, HTTP requests, tests or builds were made. git diff
+--check is the only check; final audit remains pending. Changes:
+scripts/evaluation/k6/real_target_preflight.py,
+data/evaluation/workloads/real-target-plan.template.json, the evaluation
+READMEs, runner design and this checkpoint.
+
+### Batch 7 implementation checkpoint — NFR-04 retrieval approval and evidence binding — 2026-11-03 10:05:46 UTC
+
+Tightened the reviewed-label retrieval path around the actual NFR-04 rule from
+the PRD: first-five Success@5, at least 20 included queries, at least 80%, with
+failed, timed-out and empty-relevance queries retained in the denominator. The
+retrieval CLI now requires an explicit `--execute` plus a separate, expiring
+approval record bound to the exact manifest bytes, run ID and architecture. It
+validates the exact manifest fields and fixed scoring rule, and refuses output
+outside the run-specific NFR-04 evidence path. Added an approval template and
+procedure notes explaining the report contents and the limits of this adapter.
+The shared coordinator still must verify AWS identity, live routing, deployed
+parity and session identity; for weighted B, the plan also needs per-query route
+attribution if separate ECS/Lambda evidence is required. NFR acceptance remains
+false. No tests, builds, requests or cloud actions were run. Changes:
+`scripts/evaluation/nfr04_retrieval.py`, `docs/evaluation/nfr/nfr-04/README.md`,
+`action-approval.template.json`, `scripts/evaluation/README.md` and this log.
+
+### Batch 6 implementation checkpoint — shared deployed-target workload interface — 2026-11-03 10:03:27 UTC
+
+Added an internal HTTPS target handoff to the EXP-02, NFR-01/02 and NFR-03 k6
+workloads. The helper accepts only an API root exactly bound to the supplied
+HTTPS origin; the three workload scripts keep their existing direct local mode
+on loopback and require run/configuration/profile bindings in the distinct
+`approved-runner` mode. NFR-03 additionally binds the HTTPS origin and CSRF
+input. Updated the runner design and k6 README to state that this mode cannot
+be used until the shared coordinator verifies the complete plan, AWS target and
+routing, independent approval, staged bytes, session identity and private
+evidence destination. No coordinator exists yet, so no deployed run is ready or
+authorized. No tests, builds, network requests or cloud actions were run; final
+audit/tests remain pending. Changes: `scripts/evaluation/k6/comparison_cases.js`,
+`comparison_load.js`, `nfr_load.js`, `nfr03_load.js`, the k6 README, runner
+design and this checkpoint.
+
+### Batch 5 implementation checkpoint — NFR-07 restored-database application smoke — 2026-11-03 10:00:11 UTC
+
+Connected NFR-07 restore evidence to an application smoke path. The observer
+now checks that the declared ECS service uses the exact task definition and
+immutable image, consumes the dedicated `CLIP_DATABASE_URL` SSM parameter, and
+that the decrypted parameter resolves to the restored RDS endpoint/database.
+It verifies the HTTPS listener certificate, host/path rule and target group,
+healthy service targets, then calls authenticated `/api/me` and reads one
+reviewed wanted-request fixture. It retains only status/binding metadata, not
+the parameter value or response bodies. The new `application_smoke_plan` fields
+in the NFR-07 template bind the service, listener, image, database parameter,
+test identity and fixture. The smoke service and SSM parameter must already
+exist under their own reviewed resource plan; this observer creates neither.
+No tests, builds, network requests or cloud actions were run. `git diff --check`
+passed; final audit/tests remain pending. Changes: `scripts/evaluation/nfr07_restore_observer.py`,
+`docs/evaluation/nfr/nfr-07/manifest.template.json`, NFR-07 measurement and
+tooling documentation, and this checkpoint.
+
+### Batch 4 implementation checkpoint — NFR-05 background load and EXP-05 pilot controls — 2026-11-03 09:54:31 UTC
+
+Completed the missing NFR-05 concurrent-load path. `scripts/evaluation/k6/nfr05_background.js`
+uses the frozen ten-case 50/30/20 browse/search/detail profile to issue exactly
+10 checked reads/s for 300 seconds with no redirects or retries.
+`scripts/evaluation/nfr05_browser.mjs` now validates that profile and its hash,
+starts the k6 process during the 60-message measured window, captures actual
+sender submission and recipient display, and writes the sanitized chat capture
+and private raw load JSONL to separate new files. It does not store plaintext,
+keys, cookies or ciphertext. `scripts/evaluation/nfr05_report.py` verifies the
+raw-load SHA-256 when supplied and keeps failed/undisplayed messages in the full
+60-message denominator. Added the configuration/profile fields to the NFR-05
+manifest template and documented the input and evidence relationships.
+
+Added `scripts/evaluation/k6/exp05_pilot.py` to prepare the fixed 15-run
+matrix (three ECS baseline runs and three repetitions at each required
+Lambda/ECS weight) and summarize reports against correctness, delivery,
+generator, routing, telemetry, database-headroom and cost-cap gates. It proposes
+the highest Lambda share passing every frozen gate for human review; it cannot
+start traffic or freeze the main weight. That selection rule and exact resource
+thresholds still require review before the pilot. No tests, builds, requests or
+cloud actions were run. `git diff --check` remains the only check. Changes:
+`scripts/evaluation/k6/exp05_pilot.py`, `scripts/evaluation/k6/nfr05_background.js`,
+`scripts/evaluation/nfr05_browser.mjs`, `scripts/evaluation/nfr05_report.py`,
+the NFR-05 manifest template, EXP-05/NFR-05 procedure notes, evaluation README
+and this checkpoint.
+
+### Batch 3 implementation checkpoint — NFR-06/07/08 — 2026-11-03 09:46:09 UTC
+
+Added local-only NFR-06/07/08 tooling. The NFR-06 observer binds the named
+account, cluster, service, task and target group; requires a separate exact
+task-stop approval; checks baseline serving capacity; records a 1-read/s stream
+and ECS/ALB recovery; and writes a private failure receipt if an AWS/provider
+error occurs after the approval is accepted. The NFR-07 observer binds the
+latest available automated snapshot to a new private RDS target, requires a
+separate exact restore approval, and checks migration head, foreign keys and
+representative relationships. The NFR-08 ledger records actual gross spend,
+unbilled/retained estimates, separate AWS credits, source evidence and strict
+headroom against the $200 project limit and $10 credit cap. Added draft plans,
+approval templates, and the project ledger template.
+
+Review fixes: both action approvals require timezone-qualified, correctly
+ordered timestamps; NFR-07 treats a missing target as an available fresh
+target name and verifies the restored database remains non-public and
+single-AZ; ledger estimate replacement must match provider/category/scope and
+period. All three tools remain non-accepting until human review; NFR-07 still
+needs an application smoke read proven to use the restored database, and all
+AWS actions need their separate exact approvals. No tests, builds, requests or
+cloud actions were run. `git diff --check` is the only check. Changes include
+`scripts/evaluation/nfr06_recovery.py`, `nfr07_restore_observer.py`,
+`nfr_cost_ledger.py`, the NFR-06/07/08 draft manifests and approvals, the
+project ledger template, and the evaluation README/measurement design.
+
+### Batch 2 implementation checkpoint — NFR-03/04/05 — 2026-11-03 09:37:26 UTC
+
+Added local-only NFR-03 profile/load/report tooling for the PRD's 50 requests/s
+integrated route mix. The reporter checks exact route counts, correct outcomes,
+missed arrivals and monotonic timing. After the measured phase, the workload
+uses the caller-owned wanted-request list to reconcile unique synthetic writes
+by title/operation ID, with a ten-page scan cap; no write is retried or deleted.
+Added an NFR-04 retrieval adapter and approved-manifest CLI that binds the
+reviewed labels to the retained dataset, calls the real Hybrid `/api/listings`
+path without redirects/proxies, and reports the first-five score without query
+text. Added an NFR-05 browser capture that observes the sender form submission
+and recipient rendered message in two local browser profiles, hashes message
+text in memory, and writes host-monotonic event receipts. Added NFR-03/04/05
+workload and manifest drafts and documented each tool.
+
+Important remaining gap: the NFR-05 capture still marks its concurrent
+10-read/s background workload unverified. It cannot produce valid NFR-05 run
+evidence until connected to the shared real-target runner and its verified load
+receipt. No tests, builds, API calls or cloud actions were run. The code is
+unverified pending the final audit/tests. `git diff --check` is the only check.
+Changes include `scripts/evaluation/k6/nfr03_profile_builder.py`,
+`nfr03_load.js`, `nfr03_report.py`, `scripts/evaluation/nfr04_retrieval.py`,
+`scripts/evaluation/nfr05_browser.mjs`, `nfr05_report.py`, the three NFR
+manifest/workload drafts, related READMEs and this checkpoint.
+
+### Batch 1 semantic review confirmed — 2026-11-03 09:30:00 UTC
+
+Suraj verified the PRD correction and Batch 1 review checkpoint. NFR-02 is
+latency-only; NFR-04 owns the first-five Success@5 requirement. This is the
+human review checkpoint, not the final code/test audit: no tests or builds have
+run, and formal acceptance remains pending the planned final checks. Proceeding
+with the next implementation batch.
+
+### PRD audit finding fixes — 2026-11-03 09:26:00 UTC
+
+Continued the cross-check of the experiment/NFR procedures and newly added
+tooling against the PRD and the approved measurement design. Confirmed the
+separate NFR-01 browse-correctness denominator, NFR-02 indexed-search latency
+denominator, NFR-03 integrated 50 requests/s mixed read/write requirement,
+NFR-04 first-five Success@5 calculation, NFR-05 sender-submit-to-recipient-display
+boundary, NFR-06 ECS serving-capacity recovery, NFR-07 usable isolated restore,
+and NFR-08 strictly-below-USD-200 project total are represented separately in
+the procedures. This remains a tooling-readiness audit, not run evidence.
+
+Found and fixed two implementation defects during review: the NFR-04 retrieval
+adapter passed an unsupported argument to the canonical label validator, and
+the NFR-03 report could mark the run's accounting complete without confirming
+each of the seven route classes matched the scheduled mix. The report now
+requires exact per-route counts and binds write outcomes to issued operation
+IDs. `git diff --check` passed. No tests, builds, requests or cloud actions
+were run. NFR-05 still needs its real two-browser observer; NFR-06/07 observers
+and the NFR-08 project ledger remain to be implemented. Batch 1 remains
+unverified. Changes: `scripts/evaluation/nfr04_retrieval.py`,
+`scripts/evaluation/k6/nfr03_report.py`, and this checkpoint.
+
+### PRD cross-check correction: NFR-02 is latency-only — 2026-11-03 09:14:13 UTC
+
+Cross-checked Batch 1 against the canonical PRD, `docs/source/ICC_Project_PRD_FINAL.pdf`,
+page 5. The PRD defines NFR-02 as 10 indexed-search requests/s with 95% of
+requests completing within one second and PostgreSQL query metrics; it assigns
+search usefulness to NFR-04, which requires Success@5 of at least 80% over 20+
+manually labeled queries, where a hit is any relevant result in the first five.
+The initial Batch 1 NFR-02 code incorrectly scored relevance over the full page.
+The PRD audit also found the legacy case checker and draft preflight required
+ordered search results, and the case builder accepted ordered rankings as an
+NFR-02 input. Removed those quality gates: NFR-02 now counts successful HTTP
+completion and full-response latency only; NFR-04 remains the separate quality
+evaluator. Updated the NFR-02 procedure, SE-01 task wording, manifest, legacy
+validators, case builder and timing guide. Representative NFR-02 query text
+still comes from the reviewed query set, but labels do not affect the latency
+numerator. No tests/builds or requests were run; the batch remains unverified
+pending the requested final audit and tests.
+
+### Batch 1 implementation checkpoint — 2026-11-03 09:07:25 UTC
+
+Added a local-only NFR-01/02 profile builder, k6 workload and separate report.
+The builder takes browse expectations and Hybrid labels from the frozen case
+preparation path; the workload refuses non-loopback targets, requires an
+explicit synthetic session, sends one request per arrival with no retries, and
+emits correctness and monotonic elapsed-time metrics without response bodies.
+The report applies NFR-01's successful-browse denominator and NFR-02's all
+issued eligible-search denominator, retains failures/drops, and cannot accept
+an NFR or attest timing provenance. The candidate Hybrid rule (at least one
+reviewed relevant ID on the first page) is explicitly marked for review because
+the procedure does not define that exact rule. Also wired the already selected
+monotonic timer into the comparison workload and added a pinned custom-k6
+builder. No tests, API requests or cloud actions were run. The shared real-target
+runner, session boundary, real-run manifest binding of profile/case hashes,
+timing-binary provenance and the remaining NFR/experiment tooling are still
+pending. Changes include `scripts/evaluation/k6/nfr_profile_builder.py`,
+`nfr_workload.js`, `nfr_load.js`, `nfr_report.py`, `install_monotonic.py`, the
+comparison load/report, their README/design notes, NFR draft manifests and this
+checkpoint.
+
+### Pre-deployment experiment/NFR tooling gap audit — 2026-11-03 08:47:03 UTC
+
+Audited the merged EXP tooling, workload/evidence files, NFR procedures and
+available scripts. Confirmed the final dataset and reviewed query-label file
+are present, the synthetic Microsoft test account is available per Identity's
+record, and PRs #27/#28 are merged. EXP-02 has extensive offline preparation,
+local workload, staging, capture, report and cost helpers, but no reviewed
+real-target execution/telemetry/session path; its parity-draft workflow is not
+yet accepted by the ordinary run preflight and timing remains unresolved.
+NFR-01/02 have draft-only profiles/case validators; NFR-03 lacks its mixed
+read/write workload; NFR-04 lacks real retrieval/final scoring integration;
+NFR-05 has only synthetic event/report helpers; NFR-06/07 lack observers; and
+NFR-08 lacks a project-wide spend ledger. EXP-04 smoke verification, EXP-05
+pilot orchestration, EXP-07 paired score analysis and EXP-08 cleanup evidence
+also need implementation or integration; EXP-03 Terraform/build support exists.
+No tests, workload, network or cloud actions were run. Detailed findings and
+dependency order were reported to Suraj. Sources inspected include the canonical
+EXP task list, NFR measurement design, k6/evaluation READMEs, current scripts and
+workload files, status rows and experiment log.
+
+### EXP-02 real-runner interface proposal — 2026-11-03 08:38:22 UTC
+
+Added a proposed contract to the runner design after confirming that no reviewed
+contract exists. It binds one run to reviewed target/revision/input hashes;
+orders offline checks, live-target verification, checked-byte use and session
+handoff before requests; defines no-retry behavior, privacy-safe partial capture
+and report validity; and preserves separate NFR-01/02/03 denominators/workloads.
+It explicitly remains a proposal: target inspection, session isolation, staging,
+evidence protection and timing require affected-owner review, and the comparison
+timing change is not approved. No code, tests, workload or cloud actions were
+run. Changes: `docs/evaluation/comparison-runner-design.md` and this log.
+
+### EXP-02 real-run interface review boundary — 2026-11-03 08:35:47 UTC
+
+Reviewed the merged staging, session-handoff, manifest and local-runner
+interfaces, the experiment log/task gates, and available Git history against
+the EXP-02 design. No later reviewed real-runner contract exists. The separate
+fixed-target contract in `data/generators/reference_cloud.py` is for dataset
+loading and does not define experiment execution. No real-target runner was
+implemented:
+the design still requires owner review of target identity/authorization,
+session isolation and expiry, checked-byte-to-use binding, evidence output
+protection, and timing/capacity. Existing manifests explicitly do not authorize
+measurement, and the current k6 script is loopback-only. No tests, workload or
+cloud actions were run. EXP-02 implementation can proceed once those interfaces
+are specified and reviewed; the NFR tooling work remains independently needed.
+
+### 2026-11-03 08:32:29 UTC — Experiment/NFR pre-deployment plan reconciliation
+
+Following Suraj's verified direction, updated the comparison and NFR plans to
+require tooling for EXP-01–08 and NFR-01–08 to be implemented and locally
+validated before deployment. NFR-01/02/03 now each require separate A and B
+runs/reports with their distinct denominators and mixed-write workload. Updated
+the EXP-02 account notes to reflect Identity's owner-confirmed regular Microsoft
+test accounts and retained secure session-handoff review. Added the deployed
+website inspection after A/B smoke checks and before the pilot. Refreshed
+NEXT-04/05/06, DATA-READY and PR #27/#28 status; the frozen dataset remains
+accepted. `git diff --check` passed; no tests or cloud operations were run.
+Changes: `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md`,
+`docs/evaluation/nfr/measurement-design.md`,
+`docs/evaluation/comparison-runner-design.md`,
+`docs/tasks/remaining-project-plan.md`, and this work log. Implementation of the
+remaining tools is still pending.
+
 # Campus Marketplace — Shared Work Log and Checkpoints
 
 ### EXP-02 phase preview and read-only AWS refresh — 2026-11-02 19:28:16 UTC
@@ -2468,6 +2814,8 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 
 | Task ID | Owner role | Task status | Current checkpoint / immediate next action | Execution state | Human verification | Branch/revision/evidence | Blockers | Last UTC update |
 |---|---|---|---|---|---|---|---|---|
+| EXP-02 | Rahul (D); Search owner C review | in progress | PR #28 merged; shared real-target runner, NFR-01–05/telemetry/reporting, pilot/analysis/cleanup tools are locally implemented | Evaluation suite 364 passed/5 skipped; compile, Black, strict Mypy, Terraform mocks, Gitleaks and whitespace checks passed; no live run. Monotonic k6 binary built, timer smoke passed and Go timer unit tests passed in GOPATH mode. | Prior PR #28 merge confirmed; local implementation committed for human and affected-owner review | PR #28 head `8e1a7e8`, merge `2a0916e`; local work on `task/experiment-tooling-readiness`; [experiment log](../evaluation/experiment-log.md) | PR review/merge, exact deployment plan/credit estimate, website DNS handoff, live smoke, pilot and NFR results remain. Module-mode Go test hits a local toolchain lookup issue; GOPATH-mode test passes. | 2026-11-03 12:52:00 UTC |
+| EXP-03 | Rahul (D), Terraform and scoped Identity; A peer, C/B affected review | in progress | PR #27 merged; live account has no ALB or Lambda and ECS/RDS are stopped. NFR-06 two-task/two-host inputs preserve one/one defaults. Fixed ALB stickiness schema and A-only Lambda security-group reference; mock tests pass. | No deployment, parity or live comparison. Terraform formatting and all 21 Terraform mock tests passed. | Prior PR #27/#28 merges confirmed; local fixes committed for human and affected-owner review | PR #27 merge on `main` at `67e5857`; PR #28 integration merge at `2a0916e`; local work on `task/experiment-tooling-readiness`; [live inventory](../environment/cloud-inventory.md) | Review/merge, fresh state/drift plan, exact deployment plan and approval remain | 2026-11-03 12:40:51 UTC |
 | SE-01 category-text amendment | Mohit (C); Listings reviewer Suraj (B) | merged | PR #25 merged to main at `1f11065`; Steps 1–3 and reported Listings review complete | Exact-head hosted CI passed; [native/model/source evidence](../evaluation/domain/se-01/category-text-checks.json) | Steps 1–3 verified by Mohit; Suraj review reported by Aditya | PR #25; [hosted CI](https://github.com/exocrat/clip/actions/runs/41338792850) | Full SE-01 readiness, final fixed-label relevance and NFR/cloud latency remain open | 2026-11-01 20:18:19 UTC |
 | NEXT-00 | Suraj — requested planning coordinator | done | Planning output verified; NEXT-01 Step 1 authorized. | performed; planning only | verified by Suraj | `task/integrated-marketplace-rollout`, based on main `5e8d264`; [remaining-work plan](../tasks/remaining-project-plan.md), linked from project task index | No blocker for the accepted planning output; implementation and measured-run gates remain separate. | 2026-10-27 18:42:09 UTC |
 | NEXT-01 | Suraj — requested planning coordinator; C retains EXP-01 ownership | done | Design and task-wide review verified; NEXT-02 is next. | Steps 1–9 performed | Steps 1–9 verified | Planning baseline `c869f33`; [design and approved gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md#next-01-step-8--proposed-changes-to-measurement-gates); [NEXT-07 references](../tasks/remaining-project-plan.md#experiment-protocol-reference) | No blocker for the design handoff. Real implementations, data, tools, cost anchors, project AWS identity/spend and run approvals remain NEXT-07 prerequisites. | 2026-10-28 06:24:24 UTC |
@@ -2506,12 +2854,10 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | CN-01 | Rahul (D) | in progress | NFR-05 synthetic event adapter added; real harness and final CN-01/readiness obligations remain | Synthetic event/preview tests, Mypy and formatting passed; prior PR17 integration checks retained | Offline checker verified; event adapter awaits verification | [PR17](https://github.com/exocrat/clip/pull/17); [integration checkpoint](../evaluation/domain/conversations-integration.md); [experiment log](../evaluation/experiment-log.md) | Formal readiness/remaining device and security checks; CN-03 producer path and final NFR-05; full task acceptance pending | 2026-11-02 12:31:17 UTC |
 | CN-02 | Rahul (D); Aditya/Suraj review | in progress | Step11 local aggregate checks passed; obtain human verification, then complete real dependency/owner review gates | 1930 Python passed/153 skipped; 94 data; 433 web/3 skipped; build/types/lint, Black 296 files, mypy, contract generation (8 artifacts), boundaries, DB lifecycle PostgreSQL18.6, Conversations harness167, DB safety35, Gitleaks8.30.1 passed | Step10 verified; Step11 local result pending Rahul verification | `task/cn-02-offers-contact-sharing`; [checkpoint](../evaluation/domain/conversations-offers.md); [browser walkthrough](../environment/conversation-browser-test.md) | Formal CN-CORE/ID-READY/LI-CORE acceptance, affected-owner review and hosted CI remain required for full CN-02 acceptance; later real-session/deployment gates remain | 2026-10-27 15:15:10 UTC |
 | CN-03 | A; D producer review | in progress | PR #21: migration-fixture CI fix locally verified; hosted CI pending | Full local checks passed: Python 2073/171 skipped, data 331, web 497/3 skipped, Conversations 184, migration and safety checks | Aditya confirmed prior task items done; current fix awaits hosted CI | Draft [PR #21](https://github.com/exocrat/clip/pull/21), branch includes merge `de2c94a` and local fixture fix | Push only after local checks; confirm hosted CI and obtain independent PR review | 2026-10-31 19:43:57 UTC |
-| INT-01 | A coordinator; all domain slices | not started | — | not started | pending | No integration completion evidence; task definition in `docs/tasks/domain-task-list.md` | ID-01, LI-01, LI-02, SE-01, SE-02, CN-01, CN-02, CN-03 | — |
+| INT-01 | A coordinator; all domain slices | in progress | Batches 1–10 plus read-only CloudWatch capture and NFR-06 two-task/two-host Terraform capacity support are locally implemented; no integrated run or acceptance is claimed. | Evaluation suite 364 passed/5 skipped; compile, Black (29 Python files), strict Mypy (22 production files), Gitleaks, whitespace, Terraform fmt and all 21 Terraform mock tests passed. Custom monotonic k6 binary built; timer smoke and Go timer unit tests pass. No AWS mutation or traffic. | User requested the local batch; commit completed; review pending | [NFR measurement design](../evaluation/nfr/measurement-design.md); [tooling checkpoints](../evaluation/experiment-log.md); [shared runner design](../evaluation/comparison-runner-design.md); [live inventory](../environment/cloud-inventory.md) | Prepare exact deployment and credit/resource estimate; identify DNS operator; complete PR review/merge before deployment, then live smoke/site inspection, pilot and NFR runs. Module-mode Go test fails locally; GOPATH-mode timer tests pass. | 2026-11-03 12:52:00 UTC |
 | EXP-01 | C; Suraj coordinates NEXT-01 design | done | NEXT-01 design and gates are approved; actual topology pricing and numeric cost endpoints are NEXT-07 pre-result gates. | Design Steps 1–9 performed; no experiment run | Suraj verified NEXT-01 Steps 1–9 on 2026-10-28; user clarified the 300 concurrent-client-request proposal is non-binding on 2026-11-01 UTC. | [Approved design and gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md); [NEXT-07 execution plan](../tasks/remaining-project-plan.md#experiment-protocol-reference) | Implementation, final data/tools, actual account/spend, numeric cost endpoints, and separate run approvals remain before measurement. | 2026-10-28 06:24:24 UTC |
-| EXP-02 | Rahul (D); Search owner C review | in progress | Local parity preparation, k6 phase preview and staged workload tooling are ready for review; real runner remains open | Evaluation Python tests: 351 passed, 1 skipped; k6 Node tests: 48 passed; 14 Black checks and boundary check passed; no measurement | User directed response parity and built-in timing; review remains | `task/exp-02-workload`; [experiment log](../evaluation/experiment-log.md) | Draft PR/independent and affected-owner review, real runner, reviewed timing, target/session, actual deployed parity, telemetry, budget and approved execution remain | 2026-11-03 06:53:41 UTC |
-| EXP-03 | Rahul (D), Terraform and scoped Identity; A peer, C/B affected review | in progress | Direct weighted ALB route for selected Listing GETs is implemented locally; A defaults to ECS with no Lambda resources; B registers Lambda and weights selected reads between Lambda/ECS; old ECS overflow router is removed | 74 focused tests, mypy, boundaries, individual Black checks, Terraform format and `git diff --check` passed. PR #27's first CI run found 14 formatting-only differences in comparison/NFR scripts; all 14 now pass individual Black checks; refreshed CI is pending. Full local aggregate check remains constrained by sandbox permissions and missing Node 24; Terraform mock validation blocked by registry DNS failure. | User directed direct ALB routing, fixed Lambda/ECS weight, and no automatic fallback. USD 10 cap and exact live action plan/approval remain. | `task/exp-03-lambda`; [PR #27](https://github.com/exocrat/clip/pull/27); [design](../evaluation/exp-03-lambda-design.md); [experiment log](../evaluation/experiment-log.md) | Refreshed CI, full local suite, provider-backed validation, source trust, B sizing, real parity, aggregate DB budget (pool ceiling exceeds recorded DB cap at design max), owner/peer review, deployment and interruption-safe cleanup | 2026-11-03 06:41:23 UTC |
 | EXP-04 | B | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-03 | — |
-| EXP-05 | C | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-04 | — |
+| EXP-05 | C | in progress | Fixed 15-run candidate matrix, dedicated profile/load script and shared coordinator launch path are prepared; no pilot traffic or weight selection has occurred. | Evaluation suite 364 passed/5 skipped; each run keeps distinct A/B bindings and receipt-bound summaries. No run results. | Human review pending for the proposed selection rule and exact resource/cost limits | [EXP-05 procedure](../evaluation/ecs-only-vs-ecs-lambda-task-list.md#exp-05--pilot-and-confirm-safe-limits); [pilot helper](../../scripts/evaluation/k6/exp05_pilot.py) | Review/merge; finalize deployment and pilot limits; live smoke/site inspection; actual DB/load-generator limits, frozen criteria, pilot execution and review. GOPATH-mode Go tests pass; module mode has a local testdeps lookup issue. | 2026-11-03 12:52:00 UTC |
 | EXP-06 | C operator; B infra support | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-05 | — |
 | EXP-07 | A; C/D calculation review | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-06 | — |
 | EXP-08 | B; A cost review | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-07 | — |
@@ -5186,3 +5532,108 @@ After an error from a new test account, restarted the frontend and disposable re
 ### 2026-11-02 15:23:25 UTC — ID-01 test-tenant sign-in implementation complete
 
 Owner verified sign-in with both Entra test accounts. The scoped tenant/domain exception, missing-email handling, callback ordering and disposable Conversations grants are implemented; temporary diagnostic instrumentation was removed. Focused Microsoft/local-demo tests passed (60), frontend identity/workflow tests passed (45), TypeScript and frontend lint passed, and Black passed. The implementation checkpoint is complete and human-verified; full ID-01 completion remains subject to independent review, current required checks and reviewed main merge.
+
+### 2026-11-03 11:04:58 UTC — Pre-deployment tooling audit complete
+
+The evaluation suite passed 356 tests with 5 skips; Python compilation,
+Black formatting across 26 changed Python files, `git diff --check`, and the
+focused strict Mypy selection across 13 files passed. One actual runtime import
+defect in NFR-04 retrieval was fixed and covered by import/redirect tests. No
+AWS resource, HTTP target, session, workload, task-stop or restore action was
+used. Initial STS calls were blocked in the restricted shell; the approved
+read-only retry found default credentials are root in wrong account
+`484394572488`, while existing profile `surajs2` is non-root in project account
+`335523638354`. The documented `adityalaxmi1` profile is absent, so no resource,
+Terraform-state, billing, DNS or service inventory was queried. Human
+verification, affected-owner and independent review, normal PR merge, refreshed
+operator access, and an exact bounded deployment plan/approval remain before
+deployment. See [measurement design](../evaluation/nfr/measurement-design.md),
+[cloud inventory](../environment/cloud-inventory.md),
+[runner design](../evaluation/comparison-runner-design.md), and
+[Batch 10 audit](../evaluation/experiment-log.md).
+
+### 2026-11-03 11:23:11 UTC — Read-only deployment inventory and final tooling audit
+
+**AWS identity and state:** At Suraj's direction, read-only inventory used
+`surajs2`; STS confirmed IAM user `surajs2` in account `335523638354`. The
+shared test ECS service and Auto Scaling Group have desired capacity zero, the
+RDS instance is stopped, and the account currently has no ALB or Lambda for
+EXP-03. The existing task image predates the merged experiment PRs. The issued
+`clip-iisc.site` certificate is unused and this account has no Route 53 zone,
+so making the deployed website publicly inspectable will require identifying
+the external DNS operator and its change path. No cloud resource was changed,
+and no request or workload was sent.
+
+**Cost gate:** The account-level annual budget reports USD 26.526 actual and
+USD 1,217.222 forecast against USD 200, while the monthly budget reports USD
+4.015 actual and USD 58.264 forecast. Cost Explorer for the same inspected
+period is effectively zero. These account-wide figures conflict and are not
+reconciled to CLIP resources; remaining AWS credit balance is also unknown.
+Deployment cannot be responsibly costed against the project limit or the
+separate USD 10 credit cap until this is reconciled.
+
+**Local audit:** The evaluation suite passed 362 tests with 5 skipped; Python
+compilation, Black across 28 changed Python files, focused strict Mypy across
+14 files, Terraform formatting, and `git diff --check` passed. Terraform mock
+tests could not start because AWS provider 6.69.1 is absent from the local
+plugin cache; no provider download was attempted. The added read-only
+CloudWatch collector has fake-client coverage. NFR-06 now has opt-in two-task,
+two-host capacity inputs with existing one-task/one-host defaults unchanged.
+The actual provider-backed Terraform test remains pending.
+
+**Checkpoint:** Local code is ready for human and affected-owner review, not
+deployment. Billing reconciliation, review and normal merge, provider-backed
+Terraform validation, an exact bounded deployment plan and approval remain
+before deployment. The requested website inspection belongs after deployment
+smoke/parity checks and before the pilot.
+
+### 2026-11-03 12:26:21 UTC — Final local experiment-tooling audit
+
+Added strict NFR-01/02 and NFR-03 report typing and synthetic accounting tests.
+The NFR-02 test confirms failed requests remain in the full issued-request
+denominator; the NFR-03 test checks all route counts and write reconciliation.
+The full evaluation suite passed 364 tests with 5 skipped. Black passed for 29
+changed Python files; strict Mypy passed for 22 production files; Python
+compilation, `git diff --check`, Terraform formatting, Gitleaks 8.30.1, and 21
+Terraform mock tests passed.
+
+Terraform mocks exposed two real configuration faults: disabled ALB stickiness
+still needed its required duration, and the ECS-only A plan incorrectly tried
+to reference a Lambda security group. Both are fixed. The Terraform tests also
+now use valid synthetic ARNs and set-safe ALB assertions; the mock provider's
+in-memory apply resolves computed service/attachment fields without contacting
+AWS. Suraj clarified that the USD 200 limit is the cumulative project limit
+through experimentation; the account's annual unfiltered AWS budget and its
+gross Usage offset by Credits do not estimate that experiment. Remaining credit
+balance and an exact resource-level estimate still need confirmation.
+
+No AWS resource, DNS, session, website, or workload action ran. The custom
+monotonic k6 binary could not be built because Go is absent from this
+environment; install Go 1.26 or later and run the reviewed installer before
+deployment. Changes were committed locally after the audit on
+`task/experiment-tooling-readiness`; they have not been pushed. See the
+[experiment log](../evaluation/experiment-log.md) and
+[runner design](../evaluation/comparison-runner-design.md).
+
+### 2026-11-03 12:43:11 UTC — Custom monotonic k6 build
+
+Installed official Go 1.26.10 under the existing user-local tools directory
+after verifying the published archive SHA-256. The repository installer built
+k6 2.3.0 with xk6 1.4.14 and extension SHA-256
+`1f4f7eabfec7069f1193cbd0cfb7659772a6a31f209f10e79f6848a14730169d`; the
+binary SHA-256 is
+`58862efeb0ce5f58190f9b267108f4bdf0dd7db63b78f23a957a197b9a24ea44`. The
+binary reports its pinned version and extension, and a one-iteration timer
+bridge smoke passed with zero network traffic. The separate `go test ./...`
+invocation fails with `testing/internal/testdeps: package testmain: cannot find
+package`; investigate this test-runner failure. No source code, AWS resource,
+website, or workload changed.
+
+### 2026-11-03 12:52:00 UTC — Go timer unit-test workaround
+
+Reproduced the module-mode `testing/internal/testdeps` failure with the
+standard-library command `go test fmt`, confirming it is not specific to the
+extension package. Created a temporary GOPATH view over cached Go module
+sources and ran `GO111MODULE=off GOPATH=/tmp/clip-monotonic-gopath go test ./...`
+from `scripts/evaluation/k6/monotonic`; both timer tests passed. No source or
+AWS state changed. See the [experiment log](../evaluation/experiment-log.md).

@@ -1,0 +1,9 @@
+{
+  "format_version": 1,
+  "action": "execute_nfr05_browser_run",
+  "run_id": null,
+  "manifest_sha256": null,
+  "authorized_at": null,
+  "expires_at": null,
+  "review_record": null
+}

@@ -324,7 +324,7 @@ resource "aws_autoscaling_group" "ecs_host" {
 
   name             = "${local.prefix}-ecs-host"
   min_size         = 0
-  max_size         = 1
+  max_size         = var.ecs_host_max_size
   desired_capacity = 0
   # Preserve the active test host until the user approves cleanup.
   protect_from_scale_in = true

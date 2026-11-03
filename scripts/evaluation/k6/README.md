@@ -6,6 +6,23 @@ For offline ordered-reference binding and telemetry metadata validation, see
 [comparison preparation inputs](../../../docs/evaluation/comparison-preparation-inputs.md).
 These commands do not send requests or authorize measurements.
 
+## Monotonic timing binary
+
+`comparison_load.js` measures elapsed time with the repository's Go monotonic
+timer extension. Install the custom k6 binary with the pinned builder:
+
+```sh
+.venv/bin/python -m scripts.evaluation.k6.install_monotonic
+```
+
+This records the k6/xk6/Go versions and hashes of the extension and resulting
+binary under the ignored `.tools/k6/v2.3.0-monotonic/` directory. It requires a
+local Go 1.26-or-later toolchain and builds only for Linux x86-64 or macOS ARM64.
+Comparison and NFR load runs must bind their captured manifest to this binary's
+hash. The official unextended k6 binary does not provide this timing interface.
+The build follows Grafana's [k6 extension quickstart](https://grafana.com/docs/k6/latest/extensions/create/quickstart/)
+using the pinned [xk6 v1.4.14 release](https://github.com/grafana/xk6/releases/tag/v1.4.14).
+
 The combined pre-request input check is also offline. It requires complete
 binding and paired plans, rebuilds and checks the case corpus from the supplied
 ordered reference, then verifies their dataset and corpus fingerprints agree:
@@ -17,9 +34,9 @@ ordered reference, then verifies their dataset and corpus fingerprints agree:
 ```
 
 It prints aggregate status only and always sets `measurement_authorized` to
-false. A future real-target runner must call/enforce this and its other reviewed
-gates before requesting a session or sending traffic; this command is not yet
-wired to that runner.
+false. The shared real-run coordinator invokes this preparation before its
+live-target and session checks; the standalone command remains preparation
+only.
 
 To check one cycle's profile, append `--workload-profile path/to/profile.json
 --cycle 1 --expected-profile-sha256 EXPECTED_SHA256` (or cycle 2 or 3). All
@@ -29,24 +46,215 @@ five-second timeout and worker settings' shape. Without these options both
 profile-check flags are false. The hash does not prove review, actual use, or
 that the file cannot change later; other run gates still apply.
 
-For offline NFR-01/02 draft checks, run with the project's Node 24:
+The legacy NFR draft-shape check remains available with the project's Node 24:
 
 ```sh
 node scripts/evaluation/k6/nfr_profile_preflight.mjs nfr-01 data/evaluation/workloads/browse-nfr-draft-v1.json
 node scripts/evaluation/k6/nfr_profile_preflight.mjs nfr-02 data/evaluation/workloads/hybrid-nfr-draft-v1.json
 ```
 
-Both existing drafts deliberately fail: their warm-up, timeout and null IDs
-are incomplete. A candidate copy must use the designed rate (20 browse or 10
-Hybrid), 60-second warm-up, 300-second measured window and five-second timeout;
-each case must supply an ordered ID array. Empty arrays explicitly represent an
-empty expected page and are not a substitute for representative cases. Exit 0
-means these limited draft checks passed; exit 2 means they failed. The tool does
-not obtain a session, execute a workload, attest review, verify dataset/source
-bindings, case coverage, full expected response fields, concurrency, retries or
-timing. It always returns `execution_permitted: false`; the future real-target
-runner must enforce all final gates before obtaining credentials or sending
-requests. The existing local runner refuses all `nfr-draft` profiles.
+It only checks that old draft format and never runs the workload. For this old
+format, browse cases require expected listing IDs, while search cases carry no
+expected IDs because NFR-02 measures latency, not ranking. New NFR-01/02
+preparation uses a complete profile with full response cases for browse and
+representative reviewed Hybrid query texts. The shared `nfr_load.js`
+accepts loopback targets only and requires an explicit synthetic cookie. It
+schedules the designed 20 or 10 requests/s, 60-second warm-up, 300-second
+measurement, five-second drain and timeout, with no retries. Browse responses
+are checked against full expected pages; NFR-02 search outcomes use HTTP
+completion/status only and do not score relevance. Only aggregate metrics are
+emitted. The profile's
+`execution_permitted` and `nfr_accepted` fields must both be false.
+
+```sh
+CLIP_NFR_LOCAL_LOAD=true CLIP_NFR_LOCAL_TARGET=http://127.0.0.1:8000/api \
+  CLIP_NFR_LOCAL_PROFILE=path/to/local-profile.json \
+  CLIP_NFR_LOCAL_COOKIE='synthetic-session' \
+  .tools/k6/v2.3.0-monotonic/k6 run --out json=path/to/new-raw.ndjson \
+  scripts/evaluation/k6/nfr_load.js
+.venv/bin/python -m scripts.evaluation.k6.nfr_report path/to/new-raw.ndjson \
+  path/to/local-profile.json --output path/to/new-report.json
+```
+
+The reporter applies NFR-01's correctly completed browse denominator and
+NFR-02's all-issued eligible-search denominator, retains failed and dropped
+work, and always marks the result preview-only and timing provenance unverified.
+NFR-02 counts successful HTTP responses completed within one second; it does
+not judge relevance or ranking. NFR-04 separately scores Success@5 against the
+reviewed labels. These reports do not accept drafts or NFRs.
+
+The load modules now have a distinct `approved-runner` target mode. It accepts
+only the exact `https://<planned-origin>/api` pair and requires the coordinator
+to bind run ID, architecture, condition or profile, and session. NFR-03 also
+requires the approved HTTPS origin and CSRF value. This mode is not a standalone
+authorization. `prepare_real_run_plan.py` builds an offline hash-bound plan;
+`real_run_coordinator.py` then validates it and a separate expiring approval,
+stages the exact reviewed workload before live checks, verifies AWS routing and
+the regular test-account session, runs once without retries, and preserves raw
+output plus an immutable receipt. It cannot create resources or accept results.
+The existing direct local mode remains loopback-only.
+
+`real_target_preflight.py` is the shared read-only target check. Its plan
+template binds one A or B target to exact AWS resources and the approved
+Listing GET route patterns. `--inspect-live` performs read-only STS, ALB, ECS,
+Lambda, RDS and encrypted-parameter checks, then checks `/health` over HTTPS
+without following redirects or using proxy settings. It verifies the secret
+resolves to the named RDS endpoint but never prints the connection string. The
+result explicitly leaves DNS-to-ALB binding, source/data attestation, session
+identity, workload provenance, evidence capture and measurement authorization
+unverified. It can separately verify one supplied session from a named
+environment variable after the AWS/HTTPS check. It does not start a workload
+and does not replace the later authenticated parity smoke.
+
+### Shared real-run planning and execution
+
+Create one plan for every run and architecture. NFR profiles must already have
+been built from the frozen cases. For NFR-01/02/03, supply the reviewed target
+plan, profile, custom monotonic k6 binary, output directory and (for NFR-03)
+fixture. For the comparison, also supply all paired-plan, corpus, parity and
+schedule inputs:
+
+```sh
+.venv/bin/python -m scripts.evaluation.k6.prepare_real_run_plan \
+  --workload-kind nfr-01 --run-id RUN_ID --configuration A \
+  --target-plan .tools/targets/RUN_ID-A.json \
+  --profile data/evaluation/workloads/RUN_ID-A-profile.json \
+  --k6-binary .tools/k6/v2.3.0-monotonic/k6 \
+  --evidence-directory docs/evaluation/nfr/nfr-01/RUN_ID \
+  --output .tools/RUN_ID-plan.json
+```
+
+The output parent and evidence parent must already exist; the evidence folder
+itself must not. The plan builder hashes the target, profile, modules and binary
+and rejects mismatched A/B or incomplete inputs. It performs no AWS call and
+leaves `execution_permitted` false. Review the exact plan bytes, then record a
+separate short-lived approval using
+[`real-run-approval.template.json`](../../../docs/evaluation/real-run-approval.template.json).
+The coordinator requires that approval, the explicit `--execute` flag, and
+`CLIP_REAL_RUN_SESSION_COOKIE` in the environment. NFR-03 additionally obtains
+CSRF in memory; neither value is placed in arguments, plans, reports or logs.
+The coordinator first stages and validates all local inputs, then inspects the
+actual target and session, and only then starts the workload. A nonzero/timeout
+run remains failed or incomplete, with raw output retained and no automatic
+retry. These scripts are not deployment or run approvals.
+
+After a run, produce the derived report separately and supply the raw file,
+staged profile, coordinator receipt and exact run plan. This verifies that the
+reported raw bytes match the run record and binds elapsed timing to the hashed
+custom binary; incomplete or mismatched evidence is marked invalid. For
+example:
+
+```sh
+.venv/bin/python -m scripts.evaluation.k6.nfr_report \
+  docs/evaluation/nfr/nfr-01/RUN_ID/raw.ndjson \
+  docs/evaluation/nfr/nfr-01/RUN_ID/stage/profile.json \
+  --execution-receipt docs/evaluation/nfr/nfr-01/RUN_ID/execution-receipt.json \
+  --run-plan .tools/real-runs/RUN_ID-plan.json \
+  --output docs/evaluation/nfr/nfr-01/RUN_ID/report.json
+```
+
+NFR-03 and comparison have corresponding `nfr03_report` and
+`comparison_report` commands with the same receipt and plan arguments. Reports
+remain pending human measurement-validity review and always set NFR acceptance
+to false.
+
+### EXP-05 weighted-candidate pilot
+
+The pilot has its own fixed profile and run mode because each candidate is a
+120-second measured burst, followed by the unchanged five-minute comparison
+profiles for the final study. Build one profile per candidate run ID/config from
+the reviewed comparison profile and frozen dataset fingerprint:
+
+```sh
+.venv/bin/python -m scripts.evaluation.k6.exp05_pilot_profile_builder \
+  .tools/real-runs/comparison-cases-profile.json RUN_ID A \
+  --dataset-fingerprint FROZEN_DATASET_SHA256 \
+  --pre-allocated-vus REVIEWED_PREALLOCATED_VUS \
+  --max-vus REVIEWED_MAX_VUS \
+  --output data/evaluation/workloads/RUN_ID-pilot-profile.json
+```
+
+The profile reuses the reviewed 5-browse/3-Hybrid-search/2-detail case mix,
+keeps the checked sequence rotation, and fixes 60 seconds at 10 requests/s,
+five seconds of drain, then 120 seconds at 50 requests/s. It performs one
+checked read per iteration with no retries. `prepare_real_run_plan.py` accepts
+`--workload-kind exp05-pilot` and binds the profile to the exact target plan,
+which carries that candidate's ALB Lambda/ECS weight. Build all 15 target plans
+and profiles before pilot execution; produce a matrix plan with
+`exp05_pilot.py plan --target-bindings` mapping every run ID to its target-plan
+hash. The normal one-run approval and coordinator then enforce account,
+routing, session and raw-capture checks for each candidate.
+
+Each pilot run plan also names and hash-binds the comparison binding, corpus,
+ordered reference, paired plan, base comparison profile, parity record and
+schedule. Its offline validation confirms the pilot cases and rotation still
+match that reviewed source set before any live access. For one run, the plan
+command adds those exact source paths:
+
+```sh
+.venv/bin/python -m scripts.evaluation.k6.prepare_real_run_plan \
+  --workload-kind exp05-pilot --run-id RUN_ID --configuration B \
+  --target-plan .tools/targets/RUN_ID.json \
+  --profile data/evaluation/workloads/RUN_ID-pilot-profile.json \
+  --k6-binary .tools/k6/v2.3.0-monotonic/k6 \
+  --evidence-directory docs/evaluation/experiment-runs/RUN_ID \
+  --binding-plan PATH_TO_REVIEWED_BINDING \
+  --corpus PATH_TO_REVIEWED_CASE_CORPUS \
+  --ordered-reference PATH_TO_REVIEWED_ORDERED_REFERENCE \
+  --paired-plan PATH_TO_REVIEWED_PAIRED_PLAN --cycle 1 \
+  --comparison-profile PATH_TO_REVIEWED_COMPARISON_PROFILE \
+  --parity PATH_TO_REVIEWED_PARITY_RECORD \
+  --parity-evidence-root PATH_TO_PARITY_EVIDENCE \
+  --schedule data/evaluation/workloads/ecs-lambda-comparison-schedule-v1.json \
+  --output .tools/RUN_ID-plan.json
+```
+
+Report each run with `comparison_report.py --condition burst --profile PROFILE`
+and the matching execution receipt/run plan. Supply the 15 receipt-bound
+reports and explicit generator, routing, telemetry, database-headroom and cost
+checks to `exp05_pilot.py report`. The report may recommend a candidate for
+human review; it cannot freeze the B weight or authorize the main experiment.
+Review and freeze the numeric resource/headroom and cost criteria before the
+pilot. Preserve every failed or incomplete run.
+
+Build a new local preparation profile for one NFR and one configuration (each
+configuration gets its own file and run ID). The builder binds all five browse
+cases or three reviewed Hybrid queries to the checked-in frozen corpus and
+creates files exclusively:
+
+```sh
+.venv/bin/python -m scripts.evaluation.k6.nfr_profile_builder nfr-01 A local-nfr01-a \
+  --pre-allocated-vus 60 --max-vus 120 --output .tools/nfr01-a-profile.json
+```
+
+Capacity is an explicit local draft setting, not a capacity approval. The
+Hybrid profile uses three representative query classes from the reviewed label
+set, but relevance labels do not affect NFR-02's latency result.
+
+## NFR-03 integrated mixed workload preparation
+
+`nfr03_profile_builder.py` binds the frozen browse/detail cases and three Hybrid
+inputs to a fixture file containing an existing wanted-request ID, conversation
+ID and five saved-listing IDs. It creates a local-only profile for either A or B;
+the IDs are syntax-checked but their live existence and authorization still
+belong in the later real-target preflight. `nfr03_load.js` schedules the required
+30/25/15/10/10/9/1 route mix at 50 requests/s for 60 seconds of warm-up and 300
+seconds measured, sends one controlled wanted-request write per 100 operations,
+uses unique operation IDs, performs no retries, and emits no response bodies.
+It only accepts loopback targets and explicit synthetic session/CSRF inputs.
+
+`nfr03_report.py` preserves every route outcome, requires exact scheduled counts
+for all seven route classes, records drops and invalid timing, and lists each
+write operation ID with any returned row ID. Its post-run read of the caller's
+`/me/wanted-requests` pages matches the unique synthetic titles to recover row
+IDs even when a timed-out create actually committed. This extra reconciliation
+read is outside the measured denominator; the report never claims unresolved
+writes are safe to repeat or that cleanup occurred. The post-run scan is capped
+at ten 100-row pages and stops early when it finds all expected writes; a larger
+history with unresolved operations stays incomplete for explicit reconciliation.
+Profiles say `execution_permitted: false`; this local preview does not replace
+the separately approved A and B real-target workload, resource/cost limits,
+write cleanup plan, telemetry or identity/capacity checks.
 
 `comparison_runner.py` runs one to ten case-shaped requests against the owned
 synthetic inspection app on port 5174, 5175 or 5176. It obtains a synthetic buyer
@@ -138,6 +346,31 @@ was assigned. These aggregate checks do not prove per-request pairing. Its infra
 `not_collected_local_preparation`; deployed ECS, Lambda and PostgreSQL telemetry
 must be attached separately before a real run is assessed.
 
+`cloudwatch_capture.py` collects bounded read-only ECS, ALB, Lambda and RDS
+metrics for a completed run. It binds the exact target-plan file hash, run ID,
+configured account/caller and actual UTC interval; it refuses an unexpected
+AWS caller, a window over six hours or an existing output directory. It queries
+one-minute data and writes separate immutable ECS/ALB, Lambda and PostgreSQL
+artifacts. Configuration A records Lambda as not applicable. Empty metric
+series remain `NoData`; the tool never treats missing observations as zero or
+decides whether a run or NFR passed. Generator CPU/RSS and dropped work still
+come from the approved local generator evidence and k6 output.
+
+```sh
+.venv/bin/python -m scripts.evaluation.k6.cloudwatch_capture \
+  docs/evaluation/experiment-runs/RUN/target-plan.json \
+  docs/evaluation/experiment-runs/RUN/run-window.json \
+  --output-dir docs/evaluation/experiment-runs/RUN/cloudwatch
+```
+
+The target plan selects the AWS profile and region. Its expected caller must
+match live STS identity. The output directory must be new. The capture uses
+CloudWatch `GetMetricData` and STS identity lookup only; it does not inspect
+logs, read parameters or change resources. ALB target-group counts help verify
+which path received requests, while ECS/Lambda/RDS series show service health
+and pressure. Minute-level service metrics do not identify an individual
+request.
+
 ```sh
 .venv/bin/python -m scripts.evaluation.k6.comparison_report path/to/raw.ndjson --condition low --output path/to/new-report.json
 ```
@@ -158,6 +391,35 @@ and cohort counts, all-completed and correct-only latency quantiles, timeout,
 unexpected route/outcome tags, noninteger counters or clock anomalies invalidate
 the accounting check. This parser currently treats HTTP 429 as an explicit
 throttle signal; other non-200 responses remain categorized by status class.
+
+### EXP-07 paired analysis
+
+`comparison_analysis.py` reads the three A/B repetitions for low, normal and
+burst conditions from immutable derived reports and separate cost records. It
+checks every report/cost file hash and receipt-bound execution provenance,
+requires a human validity note for all 18 runs, retains invalid/incomplete runs
+as exclusions, and calculates the frozen median-based weighted score,
+sensitivity examples and paired score differences. It scores only a
+configuration whose eligibility review says `eligible`; this is a calculation
+tool, not an eligibility decision, NFR acceptance, or product approval.
+
+Start with `data/evaluation/workloads/exp07-analysis-input.template.json` and
+`data/evaluation/workloads/exp07-cost-input.template.json`. Fill the score
+anchors from the reviewed normal-load cost model and freeze them before
+inspecting final comparative results. Preserve report and cost files, record
+their SHA-256 values, and include a review reference for each run's validity.
+Then write a new analysis file:
+
+```sh
+.venv/bin/python -m scripts.evaluation.k6.comparison_analysis \
+  path/to/frozen-analysis-input.json --output path/to/analysis-v1.json
+```
+
+The report includes per-run medians/ranges, retained exclusions, weighted
+contributions, sensitivity scores, matched A/B score differences and an
+inconclusive/tie/score status. It never edits raw data and always leaves NFR and
+product acceptance false. A human reviewer must verify calculations and the
+eligibility/validity decisions against the raw results and telemetry.
 
 The per-run evidence template is
 `data/evaluation/workloads/ecs-lambda-run-manifest.template.json`. It separates
@@ -234,12 +496,12 @@ drops/shortfall stay visible. Completion marker plus exit0and complete valid
 warm/measured cohorts are required for valid_preparation_run. nfr_accepted remains
 false in every report. Absence of errors is not an NFR pass.
 
-Latency is Date.now elapsed around the full synchronous HTTP call (including
-connection/DNS/TLS where applicable), not http_req_duration alone. Resolution is
-milliseconds and wall-clock changes can affect intervals; negative intervals mark
-the run invalid. Comparison reports explicitly mark latency timing unverified:
-matching counts and a lack of negative intervals cannot prove a monotonic clock.
-The approved clock and end-to-end timing method remain an open gate.
+Latency is measured by a monotonic timer around the full synchronous HTTP call,
+including connection setup when incurred; it is not taken from
+`http_req_duration` alone. Invalid or missing timer samples remain visible and
+make accounting incomplete. Reports still mark timing unverified until the
+captured run binds to the custom k6 binary hash and the approved end-to-end
+boundary has been checked.
 Actual raw k6 HTTP phase metrics are retained for diagnosis. R7 interpolation
 produces p50/p95/p99 for all completed and successful samples separately; empty is
 null, not zero. Successful throughput means cohort completions divided by its

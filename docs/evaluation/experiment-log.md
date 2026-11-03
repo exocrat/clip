@@ -15,6 +15,264 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## Current checkpoint
 
+### 2026-11-03 12:26:21 UTC — Final local audit and Terraform mock repairs
+
+Added direct synthetic accounting tests for the NFR-01/02 and NFR-03 report
+builders and typed their phase accumulators. NFR-02 coverage verifies that
+timeouts remain in the denominator of all eligible issued requests; NFR-03
+coverage verifies its seven-route mix and reconciliation of every write.
+Terraform mock validation found and fixed the missing disabled-stickiness
+duration and the ECS-only Lambda security-group reference. The tests now use
+schema-valid mock ARNs, apply only through Terraform's in-memory mock provider
+where computed values are needed, and inspect ALB's set-valued route conditions
+without relying on order.
+
+Final local results: evaluation 364 passed/5 skipped; Terraform mock suite 21
+passed; strict Mypy 22 production files; Black 29 changed Python files;
+compilation, Terraform fmt, `git diff --check`, and Gitleaks 8.30.1 passed. No
+AWS actions or workload ran. The custom monotonic k6 binary remains unbuilt
+because Go is unavailable; the installer requires Go 1.26 or later. Suraj
+clarified that USD 200 is the project-wide cumulative experiment-period cap;
+the annual AWS budget and credits are separate account billing records, not an
+experiment cost estimate. Current credits and a reviewed resource-level
+experiment estimate remain pending. See the [work-log checkpoint](../status/work-log.md).
+
+### 2026-11-03 12:43:11 UTC — Custom monotonic k6 build
+
+Installed official Go 1.26.10 in the user-local tools directory after checking
+its published archive checksum. The repository installer built k6 2.3.0 with
+xk6 1.4.14 and recorded extension SHA-256
+`1f4f7eabfec7069f1193cbd0cfb7659772a6a31f209f10e79f6848a14730169d`; the
+binary SHA-256 is
+`58862efeb0ce5f58190f9b267108f4bdf0dd7db63b78f23a957a197b9a24ea44`. Its
+version output lists the custom extension, and a one-iteration timer bridge
+smoke passed with zero network traffic. The separate `go test ./...`
+invocation fails during generated testmain package lookup with
+`testing/internal/testdeps: package testmain: cannot find package`; this
+test-runner failure remains to investigate. No source code, AWS resource,
+website or workload changed. See the [work-log checkpoint](../status/work-log.md).
+
+### 2026-11-03 12:52:00 UTC — Go timer unit-test workaround
+
+Reproduced the module-mode `testing/internal/testdeps` failure using `go test
+fmt`, showing it is an environment/toolchain-mode issue rather than a failure
+specific to the extension. Generated a temporary GOPATH view over cached Go
+modules, then ran `GO111MODULE=off GOPATH=/tmp/clip-monotonic-gopath go test
+./...` from `scripts/evaluation/k6/monotonic`; both timer tests passed. No Go
+source changed. The k6 binary and zero-network timer smoke remain valid.
+
+### 2026-11-03 10:51:44 UTC — Batch 10 EXP-05, EXP-07 and EXP-08 tooling
+
+Wired the dedicated 60-second warm-up/two-minute EXP-05 pilot script into the
+shared coordinator; fixed the missing pilot launch selection. Added the
+hash-bound EXP-07 analysis utility for the full three-condition, three-repeat
+A/B matrix. It keeps validity exclusions visible, reports p50/p95/p99,
+calculates the frozen weighted score and cost sensitivities, checks the
+normal-load per-route degradation guard, and applies the paired score
+uncertainty rule. It requires pre-frozen cost anchors plus human validity and
+eligibility review references. Added an EXP-08 cleanup record checker that
+accounts for every approved resource and links retained liabilities to NFR-08.
+Updated the older NFR design text to recognize the present frozen dataset and
+accepted DATA-READY status, while retaining a per-target fingerprint check.
+
+No tests/builds, AWS calls, HTTP requests, workload, cleanup action or deployment
+ran at this implementation checkpoint. See the
+[Batch 10 work-log checkpoint](../status/work-log.md).
+
+### 2026-11-03 11:04:58 UTC — Batch 10 consolidated local audit
+
+The full `tests/evaluation` suite passed: 356 passed, 5 skipped. Python
+compilation passed. Black checked 26 changed Python files; one formatting issue
+in `real_run_coordinator.py` was formatted, then the check passed. `git diff
+--check` passed. Focused strict Mypy passed across 13 selected production files.
+No AWS resource, HTTP target, session, workload, task-stop or restore action
+was used.
+
+The initial read-only `aws sts get-caller-identity` command could not connect
+inside the restricted shell. The approved network retry showed the default
+credentials are root in the wrong account `484394572488`; profile `surajs2` is
+non-root IAM user `surajs2` in project account `335523638354`. The documented
+operator profile `adityalaxmi1` is absent. No resource, Terraform-state,
+billing, DNS or service inventory was queried. Human verification,
+affected-owner/independent review, normal PR merge, refreshed operator access,
+and exact bounded deployment plan/approval remain. See the [work-log checkpoint](../status/work-log.md)
+and [cloud inventory](../environment/cloud-inventory.md).
+
+### 2026-11-03 10:36:14 UTC — Batch 9 shared real-run execution and NFR gates
+
+Added the offline hash-bound run-plan builder, shared one-run k6 coordinator,
+and a receipt validator consumed by comparison/NFR-01/02/03 reports. The
+coordinator stages and checks all selected cases before inspecting AWS or
+accepting a session; it executes at most once and preserves raw output and
+receipt separately. NFR-04 now binds its retrieval to the common target plan
+and test-user session check. NFR-05 requires a separate exact-manifest approval
+and checks both participant sessions before browser messages/background load.
+NFR-06 binds its task-stop approval to the plan hash and checks target/user
+before baseline traffic. NFR-07 binds restore approval to exact plan bytes and
+checks its user session before the restore request. Reports continue to leave
+acceptance false and retain invalid runs.
+
+No tests/builds, AWS calls, HTTP requests, workload traffic, task stops, restores
+or deployment ran. The full audit and checks are still pending. Per-query B
+backend attribution remains an evidence requirement to resolve if separate
+ECS/Lambda quality scores are needed; live deployment parity and site review
+are also pending. See the [current work-log checkpoint](../status/work-log.md).
+
+### 2026-11-03 10:14:25 UTC — Batch 8 read-only target inspection
+
+Added an exact A/B target-plan validator and an explicitly read-only AWS
+inspection command. It checks account and exact IAM user or assumed-role caller, HTTPS listener/cert,
+the direct GET/path rule and its weights, ECS image/service, Lambda image and
+database-parameter permission, and the RDS endpoint named by the encrypted
+database parameter. It checks /health only after those identity/resource
+checks, without following redirects or using proxies. It makes no changes and
+does not read a session or start a workload. The result keeps source/data
+attestation, DNS-to-ALB proof, authentication, checked-byte execution,
+telemetry, evidence capture and approval open. No cloud calls, HTTPS requests,
+tests or builds ran; git diff --check is the only check.
+
+### 2026-11-03 10:05:46 UTC — Batch 7 NFR-04 execution/evidence gate
+
+Cross-checked NFR-04 against the PRD: the metric is Success@5, at least one
+relevant item in the first five, at least 20 reviewed queries, and a score of at
+least 80%. Tightened the retrieval CLI to require an explicit execution flag
+and a separate, time-bounded approval bound to the exact run manifest. It also
+checks the fixed denominator/scoring fields and writes only to the exact
+run-specific evidence path. Added the approval template and NFR-04 procedure
+notes. Reports retain query/result IDs and fingerprints only and cannot accept
+the NFR. Live AWS target/routing/session checks remain for the shared
+coordinator; weighted B also needs evidence to attribute each query to ECS or
+Lambda when separate path scores are required. `git diff --check` is the only
+check; no tests, builds, requests or cloud actions ran.
+
+### 2026-11-03 10:03:27 UTC — Batch 6 shared real-target workload interface
+
+Added a separate, exact-origin HTTPS mode to the comparison, NFR-01/02 and
+NFR-03 k6 workload scripts. It does not change their direct local mode. The
+interface checks that the deployed API root matches the planned HTTPS origin
+and binds run identity/configuration/profile; NFR-03 also binds its origin and
+CSRF value. This is only the workload side of the handoff. The central
+coordinator still must validate reviewed plans and approvals, AWS account and
+actual ALB/ECS/Lambda routing, checked executable/profile bytes, user session,
+target authorization and private evidence capture before any real use. No tests,
+builds, requests or cloud actions ran; no deployed workload is authorized.
+
+### 2026-11-03 10:00:11 UTC — Batch 5 NFR-07 application smoke
+
+Connected the isolated restore observer to a separately provisioned smoke
+service bound to the restored database. The observer checks the exact ECS task
+definition/image, ECS secret reference, decrypted SSM database endpoint,
+listener certificate and host/path forwarding rule, healthy targets, then
+performs authenticated `/api/me` and wanted-request detail reads. No secret or
+response content is retained. The smoke service and parameter need their own
+reviewed resource plan; no infrastructure was created. The observer still
+leaves NFR acceptance false for human review. `git diff --check` passed; no
+tests/builds, network requests or cloud actions ran. See the [work
+log](../status/work-log.md).
+
+### 2026-11-03 09:54:31 UTC — Batch 4 NFR-05 background workload and EXP-05 pilot controls
+
+Connected the NFR-05 browser observer to a concurrent 10-read/s 50/30/20
+browse/search/detail load over its 300-second message window. The workload
+uses the checked comparison profile, issues 3,000 requests with no retries or
+redirects, verifies response meaning, and stores the raw JSONL separately from
+the browser capture. The reporter checks the raw hash and accounts for all 60
+message outcomes. Added the fixed EXP-05 baseline/weight/repetition matrix and
+offline gate scorer; its highest-eligible-Lambda-share rule is a draft for human
+review. `git diff --check` is the only check; no tests/builds, requests or cloud
+actions ran. NFR-05 still requires reviewed live sessions/target and report
+review. EXP-05 still needs approved exact run limits and selection criteria.
+See the [work log](../status/work-log.md).
+
+### 2026-11-03 09:46:09 UTC — Batch 3 NFR-06/07/08 tooling checkpoint
+
+Added a bounded NFR-06 ECS task-loss observer with an exact separately approved
+stop action, serving-capacity baseline, 1-read/s observation stream, and
+private incomplete-run receipts. Added an NFR-07 latest-automated-snapshot
+restore observer with exact restore approval, private/single-AZ target checks,
+read-only migration/FK/relationship checks, and a retained-target policy.
+Added an NFR-08 project ledger for actual gross costs, outstanding and retained
+estimates, separate AWS credits, evidence references, estimate settlement, and
+the strict $200 project/$10 AWS-credit thresholds. Draft manifests and approval
+templates are not executable approvals. NFR-07 application smoke remains
+unconnected, so it cannot establish acceptance. `git diff --check` is the only
+check; no tests/builds, requests or cloud actions ran. See the [work
+log](../status/work-log.md).
+
+### 2026-11-03 09:37:26 UTC — Batch 2 NFR-03/04/05 tooling checkpoint
+
+Added local-only NFR-03 integrated mixed-load generation, exact route-mix and
+outcome reporting, and post-run reconciliation of wanted-request writes by
+operation ID. Added an NFR-04 reviewed-label retrieval adapter plus an
+approved-manifest HTTPS CLI that preserves the full included-query denominator
+and does not save query text. Added an NFR-05 two-browser UI observer that hashes
+synthetic message text in memory and records sender-submit/recipient-display
+events using one host monotonic clock. Added draft workload/manifest files and
+documented their scope. The NFR-05 tool still cannot start or verify its
+concurrent 10-read/s background load, so it marks its capture invalid for NFR
+acceptance pending shared-runner integration. `git diff --check` is the only
+check; no tests/builds, requests or cloud actions ran. See the [work
+log](../status/work-log.md).
+
+### 2026-11-03 09:30:00 UTC — Batch 1 semantic review confirmed
+
+Suraj confirmed the Batch 1 PRD correction and review checkpoint. NFR-02 remains
+latency-only; NFR-04 owns Success@5. This does not substitute for the final code
+and test audit, which remains pending. No tests, builds or requests have run.
+Work is proceeding on NFR-03/04/05 tooling.
+
+### 2026-11-03 09:26:00 UTC — PRD audit: fix NFR-04 binding and NFR-03 accounting
+
+Cross-checked the NFR-01–08 measurement definitions and the current NFR code
+against the PRD and approved measurement design. The audit caught an invalid
+NFR-04 validator call and an NFR-03 report that did not require the prescribed
+per-route mix. The retrieval adapter now uses the canonical validator contract;
+the NFR-03 report requires exact route counts for all seven operation classes
+and rejects write outcomes without an issued operation ID. `git diff --check`
+passed. No tests/builds, requests or cloud actions were run. This code remains
+unverified; Batch 1 is not verified. The real NFR-05 browser observer and the
+NFR-06/07 observers plus NFR-08 spend ledger are still required. See the
+[work log](../status/work-log.md).
+
+### 2026-11-03 09:14:13 UTC — PRD correction to NFR-02 semantics
+
+Cross-checked Batch 1 against `docs/source/ICC_Project_PRD_FINAL.pdf` (page 5).
+The PRD assigns latency to NFR-02 (10 indexed searches/s; 95% complete within
+one second; PostgreSQL query metrics) and usefulness to NFR-04 (Success@5 >=80%
+on 20+ reviewed queries; a hit is a relevant result among the first five).
+The first Batch 1 implementation had mistakenly applied a relevance threshold
+to NFR-02 and used the whole response page. The audit also found the legacy
+NFR case checker/preflight required ordered search results and the case builder
+accepted rankings for NFR-02. Removed those quality gates. NFR-02 now records
+successful HTTP completion and full response latency; NFR-04 owns relevance
+scoring. The reviewed labels still provide representative query text only.
+Updated the NFR workload, report, manifest, legacy validators, case builder and
+SE-01/NFR docs. No tests, builds or requests were run. `git diff
+--check` remains the only check; Batch 1 is not yet verified. See the [work
+log](../status/work-log.md).
+
+### 2026-11-03 09:07:25 UTC — Batch 1 NFR-01/02 and monotonic timing implementation
+
+**Target:** local preparation only; no deployed target or live session. **Inputs:**
+the repository's frozen reference archive, reviewed query labels, current
+comparison load and NFR procedures. Added a profile builder that creates
+separate A/B profiles, a loopback-only NFR workload with full response checks,
+no retries and aggregate-only metrics, and a report using the distinct NFR-01
+successful-request and NFR-02 all-issued denominators. Profiles are hashed and
+the workload/reporter verify the case bundle hash. NFR-02's draft correctness
+rule currently requires one reviewed relevant result on page one; the procedure
+does not set that threshold, so it remains a review item and cannot establish a
+formal result. Wired comparison elapsed duration to the Go monotonic extension
+and added the pinned custom-k6 build. The report still refuses to verify timing
+provenance until the run binds to the actual binary and approved boundary.
+
+**Checks:** no tests or builds run by design; no API, AWS, or workload traffic.
+`git diff --check` passed. **State:** local implementation is incomplete until
+the shared real-target runner, authentication/session boundary, live manifest
+binding and evidence paths are connected. Remaining NFR and EXP tools are still
+to be implemented. Next: continue with shared real-run input/session/capture
+plumbing and the next NFR workload batch. See the [work log](../status/work-log.md).
+
 
 ### 2026-11-03 06:53:41 UTC — Prepare EXP-02 PR and repair checks
 
@@ -4119,3 +4377,29 @@ passed with Node 26.8.2; rerun using project-pinned Node 24. The code does not
 send requests or handle sessions. No cloud action or performance measurement ran.
 See the [EXP-02 work-log entry](../status/work-log.md) for the checkpoint and
 pending integration.
+
+### 2026-11-03 11:23:11 UTC — Pre-deployment audit follow-up
+
+Suraj directed read-only AWS inventory with profile `surajs2`; STS confirmed
+IAM user `surajs2` in project account `335523638354`. ECS and RDS are stopped,
+there is no ALB or Lambda yet, the current ECS image predates the merged
+experiment PRs, and the issued public certificate is unused. The account has
+no Route 53 hosted zone, so the external DNS operator/change path must be
+identified to make the deployed website available for the requested human
+inspection.
+
+The account-level annual budget reports USD 26.526 actual and USD 1,217.222
+forecast against USD 200; the monthly budget reports USD 4.015 actual and USD
+58.264 forecast, while Cost Explorer for the inspected period is effectively
+zero. These account-level totals are unreconciled to CLIP resources and the
+remaining AWS-credit balance is unknown. This blocks a credible deployment
+estimate against the project limit and separate USD 10 credit cap.
+
+Local audit: 362 evaluation tests passed and 5 skipped; compilation, Black
+(28 changed Python files), focused strict Mypy (14 files), Terraform fmt and
+`git diff --check` passed. Terraform mock tests could not start because
+provider 6.69.1 is not cached; no download was attempted. The read-only
+CloudWatch collector and opt-in NFR-06 two-task/two-host capacity configuration
+are locally implemented. No AWS mutation, website request, workload, or
+measurement occurred. See the [work-log checkpoint](../status/work-log.md)
+and [cloud inventory](../environment/cloud-inventory.md).

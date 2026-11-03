@@ -9,13 +9,13 @@ const draft = () => ({format_version: 1, purpose: 'nfr-case-drafts-not-executabl
   nfr_01: structuredClone(corpus.cases.filter(c => c.request.kind === 'browse')).map(c => ({...c, expected_status: 200})),
   nfr_02: structuredClone(corpus.cases.filter(c => c.request.kind === 'search')).map(c => ({...c, expected_status: 200})) });
 
-test('validates dataset-derived browse pages and refuses missing Hybrid rankings', () => {
+test('validates browse expectations and accepts Hybrid latency inputs without rankings', () => {
   const previous = Date.now;
   Date.now = () => Date.parse('2026-11-01T00:00:00Z');
   try {
     const bundle = draft();
     assert.equal(validateNfrCases(bundle, 'nfr-01').execution_permitted, false);
-    assert.throws(() => validateNfrCases(bundle, 'nfr-02'), /missing_or_invalid_expected/);
+    assert.equal(validateNfrCases(bundle, 'nfr-02').execution_permitted, false);
     const browse = bundle.nfr_01[0];
     const reversed = structuredClone(browse.expected);
     reversed.items.reverse();
@@ -43,9 +43,10 @@ test('accepts synthetic Hybrid shapes without attesting review and checks classe
   Date.now = () => Date.parse('2026-11-01T00:00:00Z');
   try {
     const bundle = draft();
-    // Test-only fabricated page shape; never a real ranking or review.
-    for (const item of bundle.nfr_02) item.expected = structuredClone(bundle.nfr_01[0].expected);
     assert.equal(validateNfrCases(bundle, 'nfr-02').nfr_accepted, false);
+    bundle.nfr_02[0].expected = structuredClone(bundle.nfr_01[0].expected);
+    assert.throws(() => validateNfrCases(bundle, 'nfr-02'), /invalid_latency_search_case/);
+    bundle.nfr_02[0].expected = null;
     bundle.nfr_02[0].relevance_reference.query_class = 'related_word';
     assert.throws(() => validateNfrCases(bundle, 'nfr-02'), /missing_query_classes/);
   } finally { Date.now = previous; }

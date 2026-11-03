@@ -1,5 +1,5 @@
-// Package monotonic is a proposed per-VU elapsed timer for k6 preparation.
-// It is not wired to the workload or approved for measurements.
+// Package monotonic provides the per-VU elapsed timer used by comparison and
+// local NFR workloads. Measurement use still requires binary and boundary review.
 package monotonic
 
 import (

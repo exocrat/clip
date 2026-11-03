@@ -32,16 +32,18 @@ own their detailed commands and limits.
 | EXP-03 local Lambda image build and Terraform mock checks | [Offline local image builder](../../scripts/evaluation/build_lambda_image.sh); [Terraform preparation](../evaluation/exp-03-terraform-preparation.md) |
 | Search/Listings focused checks and isolated preview | [Search test guide](../../apps/api/tests/domains/search/README.md), [API guide](../../apps/api/README.md), and the browser procedure below |
 | Schema-shaped search data | [Data generator guide](../../data/README.md#se-01-isolated-schema-shaped-corpus); these are not the final NEXT-06 dataset commands |
-| Load-runner tools, bounded local pilot and EXP-02 manifest validation | [k6 tool guide](../../scripts/evaluation/k6/README.md); [offline case and telemetry preparation](../evaluation/comparison-preparation-inputs.md) |
+| Offline hash-bound comparison/NFR-01–03 run plans, shared target/session preflight and explicitly approved execution | [k6 tool guide](../../scripts/evaluation/k6/README.md#shared-real-run-planning-and-execution); [offline case and telemetry preparation](../evaluation/comparison-preparation-inputs.md) |
+| NFR-04/05 retrieval and chat capture | [NFR measurement procedures](../evaluation/nfr/measurement-design.md) and the NFR-04/05 run manifests and action-approval templates under `docs/evaluation/nfr/` |
+| Load-runner local pilot and EXP-02 input preparation | [k6 tool guide](../../scripts/evaluation/k6/README.md); [offline case and telemetry preparation](../evaluation/comparison-preparation-inputs.md) |
 | NFR measures and final-run requirements | [NFR measurement design](../evaluation/nfr/measurement-design.md) and the approved [ECS/Lambda experiment design](../evaluation/ecs-only-vs-ecs-lambda-task-list.md) |
 | Disposable database and SQL diagnostics | [Database guide](../../database/README.md) |
 | Identity provider setup and real-run gates | [Identity setup guide](identity-provider-setup.md) |
 | Cloud plans, targets and lifecycle | [Cloud inventory](cloud-inventory.md), the relevant [Terraform runbook](../../infra/terraform/shared/test/README.md), and the owning task's reviewed plan |
 
-The k6 pilot is loopback-only and cannot accept an NFR. Draft profiles are not
-approved full-run inputs. NEXT-06 and NEXT-07 must register their final exact
-commands, inputs and evidence locations after the owning tools and data are
-ready; do not infer readiness from an example or local pilot.
+The k6 local pilot is loopback-only and cannot accept an NFR. Draft profiles
+are not approved full-run inputs. The shared real-run coordinator still requires
+the actual frozen data, target, reviewed manifests and exact separate action
+approval; tool availability is not deployment or measurement authorization.
 
 The EXP-03 image builder requires a cached Hybrid API image with a full
 `org.opencontainers.image.revision` label whose prefix matches its tag, and

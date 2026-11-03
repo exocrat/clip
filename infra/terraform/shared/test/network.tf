@@ -163,7 +163,7 @@ resource "aws_security_group" "database" {
   }
 
   dynamic "ingress" {
-    for_each = local.exp03_active ? [1] : []
+    for_each = local.exp03_lambda_active ? [1] : []
     content {
       description     = "Temporary EXP-03 Lambda access to private PostgreSQL."
       from_port       = 5432
