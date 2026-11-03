@@ -15,6 +15,30 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## Current checkpoint
 
+### 2026-11-03 05:09:02 UTC — Local overflow middleware implementation
+
+**Work:** `apps/api/app/overflow_middleware.py` implements an explicit ASGI
+middleware: only the selected GET browse/detail routes attempt Lambda; a
+confirmed pre-execution throttle delegates once to the original ECS app. Other
+routes delegate immediately. It rejects untrusted scheme and unsuitable read
+bodies, sanitizes transport/response failures as 503 without fallback, and
+preserves safe Lambda response status/headers/body. It uses an injected client
+and targets and is not installed in the app or enabled by environment variables.
+
+`apps/api/tests/test_overflow_middleware.py` covers routing, one Lambda attempt,
+throttle fallback to the real local read/Identity middleware with synthetic
+sessions and store, wrong scheme, malformed responses and no fallback on other
+errors. Ninety-one focused synthetic tests, strict mypy and Black passed; local
+thread tests used approved escalation. No AWS calls or measurement occurred.
+
+**Limits:** The middleware relies on the caller's resolved HTTPS scheme but does
+not itself authenticate the proxy source. Client construction, timeout policy,
+thread/concurrency bounds, backpressure, backend metrics, placement relative to
+Identity and logging, real adapter event parity, ECS/Lambda database access,
+Terraform/IAM changes, full review and deployment remain open. The existing
+Terraform B guard remains active. Local doubles and synthetic session checks do
+not establish real parity, and no live system has been modified.
+
 ### 2026-11-03 05:02:35 UTC — Synthetic overflow with real read middleware
 
 **Work:** `apps/api/tests/test_overflow_app_chain.py` connects the local event,

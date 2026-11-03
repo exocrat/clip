@@ -1,5 +1,13 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### EXP-03 local overflow middleware — 2026-11-03 05:09:02 UTC
+
+Implemented unwired ASGI routing for selected reads and throttle-only ECS
+fallback; 91 synthetic middleware/Identity/transport tests, mypy and Black
+passed. Trusted ingress, bounded client/concurrency, telemetry, app installation,
+Terraform review and real parity remain open; B stays blocked. No AWS action.
+[Experiment log](../evaluation/experiment-log.md).
+
 ### EXP-03 synthetic overflow app chain — 2026-11-03 05:02:35 UTC
 
 Tested Lambda-first and throttled-fallback decisions against the real local
