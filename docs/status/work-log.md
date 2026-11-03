@@ -2815,7 +2815,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | Task ID | Owner role | Task status | Current checkpoint / immediate next action | Execution state | Human verification | Branch/revision/evidence | Blockers | Last UTC update |
 |---|---|---|---|---|---|---|---|---|
 | EXP-02 | Rahul (D); Search owner C review | in progress | PR #28 merged; shared real-target runner, NFR-01–05/telemetry/reporting, pilot/analysis/cleanup tools are locally implemented | Evaluation suite 364 passed/5 skipped; compile, Black, strict Mypy, Terraform mocks, Gitleaks and whitespace checks passed; no live run. Monotonic k6 binary built, timer smoke passed and Go timer unit tests passed in GOPATH mode. | Prior PR #28 merge confirmed; local implementation committed for human and affected-owner review | PR #28 head `8e1a7e8`, merge `2a0916e`; local work on `task/experiment-tooling-readiness`; [experiment log](../evaluation/experiment-log.md) | PR review/merge, exact deployment plan/credit estimate, website DNS handoff, live smoke, pilot and NFR results remain. Module-mode Go test hits a local toolchain lookup issue; GOPATH-mode test passes. | 2026-11-03 12:52:00 UTC |
-| EXP-03 | Rahul (D), Terraform and scoped Identity; A peer, C/B affected review | in progress | PR #27 merged; live account has no ALB or Lambda and ECS/RDS are stopped. NFR-06 two-task/two-host inputs preserve one/one defaults. Fixed ALB stickiness schema and A-only Lambda security-group reference; mock tests pass. | No deployment, parity or live comparison. Terraform formatting and all 21 Terraform mock tests passed. | Prior PR #27/#28 merges confirmed; local fixes committed for human and affected-owner review | PR #27 merge on `main` at `67e5857`; PR #28 integration merge at `2a0916e`; local work on `task/experiment-tooling-readiness`; [live inventory](../environment/cloud-inventory.md) | Review/merge, fresh state/drift plan, exact deployment plan and approval remain | 2026-11-03 12:40:51 UTC |
+| EXP-03 | Rahul (D), Terraform and scoped Identity; Suraj reviewer/operator | in progress | PR #30 merged at `4bad741`; approved exact ingress plan applied. ALB active on HTTPS; source hosts/RDS stopped; ECS desired/running/pending 2/0/2 and ASG desired 0 with all ten processes suspended. | Hosted CI passed; 23 Terraform mocks and five builder tests passed; verified live resource state. No app smoke, Lambda deployment or workload. | Suraj approved exact PR head and plan checksum before merge/apply | [Ingress verification](../evaluation/deployment-20261103/execution/ingress-verification.json); [exact Spaceship handoff](../evaluation/deployment-20261103/execution/spaceship-handoff.md) | Domain owner adds three DNS records; then verify DNS/TLS and separately progress source startup, live parity, site inspection and pilots/NFRs. DNS phase review deadline 2026-11-03 18:10 UTC; no automatic shutdown. | 2026-11-03 16:14:02 UTC |
 | SE-01 category-text amendment | Mohit (C); Listings reviewer Suraj (B) | merged | PR #25 merged to main at `1f11065`; Steps 1–3 and reported Listings review complete | Exact-head hosted CI passed; [native/model/source evidence](../evaluation/domain/se-01/category-text-checks.json) | Steps 1–3 verified by Mohit; Suraj review reported by Aditya | PR #25; [hosted CI](https://github.com/exocrat/clip/actions/runs/41338792850) | Full SE-01 readiness, final fixed-label relevance and NFR/cloud latency remain open | 2026-11-01 20:18:19 UTC |
 | NEXT-00 | Suraj — requested planning coordinator | done | Planning output verified; NEXT-01 Step 1 authorized. | performed; planning only | verified by Suraj | `task/integrated-marketplace-rollout`, based on main `5e8d264`; [remaining-work plan](../tasks/remaining-project-plan.md), linked from project task index | No blocker for the accepted planning output; implementation and measured-run gates remain separate. | 2026-10-27 18:42:09 UTC |
 | NEXT-01 | Suraj — requested planning coordinator; C retains EXP-01 ownership | done | Design and task-wide review verified; NEXT-02 is next. | Steps 1–9 performed | Steps 1–9 verified | Planning baseline `c869f33`; [design and approved gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md#next-01-step-8--proposed-changes-to-measurement-gates); [NEXT-07 references](../tasks/remaining-project-plan.md#experiment-protocol-reference) | No blocker for the design handoff. Real implementations, data, tools, cost anchors, project AWS identity/spend and run approvals remain NEXT-07 prerequisites. | 2026-10-28 06:24:24 UTC |
@@ -5791,3 +5791,26 @@ Provider validation/mock checks and PR integration are the current checkpoint;
 exact saved-plan approval remains required before apply. No ALB or workload
 exists yet. Terraform/state/passwords remain private; source passwords were
 read only into the Terraform subprocess environment and were not logged.
+
+### EXP-03 approved ingress and complete DNS handoff — 2026-11-03 16:14:02 UTC
+
+Suraj approved PR #30 head `0c73804` and saved Terraform checksum
+`d1704f904c190d27f1b60b1df251d70efd2ee6f97049352b2ab58309b03c3090`.
+Hosted CI run `41669340137` passed (10m45s); squash merge accepted main
+`4bad7418623ee91b015e5c8b06cf2e1e233dce6f` was checked tree-equal to the
+reviewed head. Applied that exact plan: 12 added, 39 changed, one old API
+task-definition registration destroyed. No host/database was destroyed.
+A private wrapper first failed an import-order check before invoking Terraform;
+it was corrected and the approved apply completed successfully.
+
+Live verification confirms the ALB active with HTTPS443 and existing issued
+source certificate; exact hostname and three Spaceship records are in
+[the combined handoff](../evaluation/deployment-20261103/execution/spaceship-handoff.md).
+Retained ECS host/proxy and RDS remain stopped; ECS desired/running/pending
+2/0/2, ASG desired0/max2 and all ten processes remain suspended. Restore
+certificate is pending external DNS validation. No workload, live sign-in,
+SQL mutation, restore or task-loss action occurred. Updated cloud inventory
+and added a separate USD0.0838 unbilled two-hour ingress estimate to the
+project ledger; actual billing remains delayed/unreconciled. DNS phase review
+deadline is 18:10 UTC; this is not an automatic shutdown. Waiting for domain
+owner completion; source startup/site inspection/experiments remain pending.
