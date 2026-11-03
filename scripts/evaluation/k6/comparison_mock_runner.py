@@ -37,7 +37,7 @@ def simulate_run(
             if session_environment[SESSION_VARIABLE] != FAKE_SESSION:
                 raise ValueError("synthetic_session_required")
             events.extend(("simulated_session", "simulated_workload"))
-        except (KeyError, ValueError):
+        except KeyError, ValueError:
             events.append("session_refused")
         finally:
             session_environment.clear()

@@ -72,7 +72,7 @@ def prepare_inputs(
             data = _read_local(path)
             contents[name] = data
             parsed[name] = json.loads(data)
-        except (OSError, ValueError, TypeError):
+        except OSError, ValueError, TypeError:
             invalid.append(name)
     if cycle is not None and (type(cycle) is not int or cycle not in (1, 2, 3)):
         invalid.append("cycle")
@@ -111,7 +111,7 @@ def prepare_inputs(
             ):
                 raise ValueError("run_not_in_selected_cycle")
             checked = True
-        except (OSError, ValueError, TypeError, KeyError, IndexError):
+        except OSError, ValueError, TypeError, KeyError, IndexError:
             invalid.append("input_bindings_or_planned_run")
     return {
         "local_inputs_checked": checked,

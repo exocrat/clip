@@ -270,7 +270,7 @@ def main() -> None:
         )
         result = validate_pair_plan(_read(args.plan), manifests)
         print(json.dumps(result, sort_keys=True))
-    except (OSError, ValueError, TypeError, KeyError):
+    except OSError, ValueError, TypeError, KeyError:
         parser.exit(2, "Paired run plan check failed; no workload was started\n")
 
 

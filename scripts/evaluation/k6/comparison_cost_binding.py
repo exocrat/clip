@@ -66,7 +66,7 @@ def main() -> None:
             _read(args.derived_report),
         )
         print(json.dumps(result, sort_keys=True))
-    except (OSError, ValueError, TypeError, KeyError):
+    except OSError, ValueError, TypeError, KeyError:
         parser.exit(2, "Cost input binding failed; no workload was started\n")
 
 

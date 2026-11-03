@@ -195,7 +195,7 @@ def main() -> None:
                 {"staged": True, "measurement_authorized": False}, sort_keys=True
             )
         )
-    except (OSError, ValueError, TypeError, KeyError):
+    except OSError, ValueError, TypeError, KeyError:
         parser.exit(2, "Comparison staging failed; no workload was started\n")
 
 

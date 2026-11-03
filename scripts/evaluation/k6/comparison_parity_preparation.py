@@ -94,7 +94,7 @@ def check_draft_parity(
             )
         ):
             raise ValueError("comparison_output_invalid")
-    except (OSError, ValueError, TypeError, KeyError, subprocess.SubprocessError):
+    except OSError, ValueError, TypeError, KeyError, subprocess.SubprocessError:
         raise ValueError("offline_comparison_failed") from None
     return {
         "draft_inputs_checked": True,
@@ -138,7 +138,7 @@ def main() -> None:
         print(json.dumps(result, sort_keys=True))
         if not result["all_equal_and_valid"]:
             parser.exit(2)
-    except (OSError, ValueError, TypeError, KeyError, RecursionError):
+    except OSError, ValueError, TypeError, KeyError, RecursionError:
         parser.exit(2, "Offline parity preparation failed; no workload started\n")
 
 

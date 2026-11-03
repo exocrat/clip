@@ -140,7 +140,7 @@ def main() -> None:
             evidence_root=args.evidence_root,
         )
         print(json.dumps(result, sort_keys=True))
-    except (OSError, ValueError, TypeError, KeyError, StopIteration):
+    except OSError, ValueError, TypeError, KeyError, StopIteration:
         parser.exit(2, "Declared parity check failed; no workload was started\n")
 
 

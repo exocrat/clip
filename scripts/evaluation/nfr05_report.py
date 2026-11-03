@@ -84,7 +84,7 @@ def main() -> None:
         if len(content) > MAX_INPUT_BYTES:
             raise ValueError("input_too_large")
         result = summarize(json.loads(content))
-    except (OSError, UnicodeError, ValueError, TypeError):
+    except OSError, UnicodeError, ValueError, TypeError:
         parser.exit(2, "Invalid NFR-05 observations\n")
     print(json.dumps(result, sort_keys=True))
 

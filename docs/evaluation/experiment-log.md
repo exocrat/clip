@@ -15,6 +15,32 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## Current checkpoint
 
+### 2026-11-03 06:41:23 UTC — Fix PR #27 Python formatting gate
+
+**Finding:** GitHub Actions run `41590941192`, job `125767272707`, failed only
+at `python-format`. Black 26.10.1 found 14 files in the existing comparison
+and NFR-05 tooling that differed from its required formatting. The changes are
+limited to Black's exception-handler formatting; no runtime logic or workload
+settings changed.
+
+**Files:** Reformatted `comparison_cost_binding.py`,
+`comparison_cost_median.py`, `comparison_cost_preview.py`,
+`comparison_declared_parity.py`, `comparison_evidence_capture.py`,
+`comparison_mock_runner.py`, `comparison_offline_prepare.py`,
+`comparison_parity_corpus.py`, `comparison_parity_preparation.py`,
+`comparison_pair_plan.py`, `comparison_profile_builder.py`,
+`comparison_run_preflight.py`, `comparison_stage_run.py`, and
+`scripts/evaluation/nfr05_report.py`.
+
+**Checks:** The same locked Black version reports all 14 files formatted when
+checked one at a time; `git diff --check` passes. This formatting-only repair
+does not change behavior, so tests were not rerun. The PR workflow must rerun
+to verify the repository-wide gate and reveal any later checks.
+
+**Limits and next action:** PR #27 is the only target. No AWS call, deployment,
+live request, experiment or measurement was run. Commit and push this repair,
+then inspect the refreshed CI result.
+
 ### 2026-11-03 06:26:47 UTC — Replace ECS overflow router with weighted ALB routing
 
 **Direction:** The task-list's latest approved direction uses the ALB itself to
