@@ -83,14 +83,15 @@ fi
 
 # Both FROM images must already be present. Disable registry pulls and RUN
 # networking so the build remains local and reproducible from these inputs.
-DOCKER_BUILDKIT=0 docker --context default build \
+# Dockerfile.lambda uses COPY --chmod, which requires BuildKit.
+DOCKER_BUILDKIT=1 docker --context default build \
   --pull=false \
   --network=none \
   --platform linux/amd64 \
   --file apps/api/Dockerfile.lambda \
   --build-arg "API_IMAGE=$api_image" \
   --build-arg "LWA_IMAGE=$adapter_image" \
-  --build-arg "LWA_DIGEST=$adapter_digest" \
+  --build-arg "LWA_DIGEST=${adapter_digest#sha256:}" \
   --label "org.opencontainers.image.revision=$api_revision" \
   --tag "$lambda_tag" \
   apps/api

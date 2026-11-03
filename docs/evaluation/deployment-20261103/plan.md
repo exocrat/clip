@@ -202,12 +202,49 @@ normal profile and resource bounds. Freeze the interval/allocation formula and
 credit/tax treatment then. This required input is not fixed by merging this
 plan, and must never be chosen from final A/B results.
 
+## Earliest DNS-owner handoff
+
+Suraj wants to forward all domain-owner work in one message. Collect the exact
+records at the earliest stages below, then present one complete handoff as soon
+as both certificate validation and ALB records are available. Do not wait for
+application startup or site readiness. The two preparation stages are:
+
+1. **Certificate validation first:** as the first separately approved AWS write,
+   request a standard **non-exportable public ACM certificate** for
+   `restore.clip-iisc.site` in `ap-south-1`. This does not depend on the release
+   image build. Immediately read and retain its exact validation CNAME name/value for
+   the combined owner handoff. Do not wait for issuance: the
+   owner's DNS record is what allows validation to finish. Request no private CA
+   or exportable certificate.
+2. **Application aliases next:** once the approved ALB creation finishes, give
+   Suraj one complete message containing certificate validation, the exact ALB
+   hostname, and the apex/restore records, before
+   waiting for ECS/RDS startup or site readiness. Preserve existing mail/source
+   validation records. Suraj forwards the records; the agent contacts no owner
+   directly. Verify DNS/TLS after the owner confirms the edits.
+
+Release build and certificate DNS propagation can proceed independently after
+these scoped actions are approved. The ALB still requires its reviewed full
+Terraform plan; do not use targeted apply to bypass dependency guards just to
+obtain its hostname earlier. Keep app compute stopped while waiting for DNS.
+
+`restore.clip-iisc.site` is a subdomain under the existing registered domain,
+used temporarily for the isolated NFR-07 application connected to the restored
+DB. It does not require buying another domain or Spaceship hosting. It reuses
+the same ALB. Standard non-exportable public ACM certificates have no certificate
+charge ([AWS pricing](https://aws.amazon.com/certificate-manager/pricing/)).
+The temporary restore database/app still incur the costs already budgeted here.
+This ordering change needs no application-code change and grants no cloud write
+approval by itself.
+
 ## Ordered execution and gates
 
 1. **Complete this plan, then Git integration.** Use the selected two-task baseline; commit the
    tooling/plan; run current local aggregate and hosted PR checks; merge through
    the normal workflow under Suraj's authorization. No cloud writes in this step.
-2. **Bind and review the release.** Build API/Hybrid/Lambda from accepted main
+2. **Start the certificate handoff and bind the release.** First prepare and
+   approve the narrow, no-certificate-charge ACM request described above; send
+   retain its exact validation CNAME for the combined owner handoff. Build API/Hybrid/Lambda from accepted main
    using pinned cached dependencies/model, verify x86 manifests and hashes,
    then obtain approval for the exact ECR publication and full Terraform plan.
    ECR tags are `exp03-api-<SHA>` / `exp03-lambda-<SHA>` in the existing project
@@ -215,7 +252,9 @@ plan, and must never be chosen from final A/B results.
    files outside Git; publish sanitized actions and their hashes for review.
 3. **Provision ingress and DNS prerequisites.** Under the approved A plan,
    create the extra public subnet, ALB/target group, scoped ingress and image/
-   secret permissions; request the restore certificate. Keep retained ASG launch/
+   secret permissions; attach the previously requested restore certificate only
+   when issued and required. Send all exact DNS records together immediately
+   after ALB creation. Keep retained ASG launch/
    replacement processes suspended while DNS/host readiness is prepared. Pending
    ECS tasks are not proof of a running site. Obtain actual DNS values from
    outputs and let the owner apply the handoff above. If DNS is delayed, keep

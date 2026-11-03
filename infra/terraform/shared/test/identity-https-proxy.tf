@@ -181,6 +181,9 @@ resource "aws_instance" "identity_https_proxy" {
   depends_on                  = [aws_iam_role_policy.identity_https_proxy_ssm]
   tags                        = local.identity_proxy_tags
   lifecycle {
+    # Preserve the retained proxy and its EIP. EC2 reports an associated public
+    # address here after EIP attachment; reconciling it would replace this host.
+    ignore_changes = [associate_public_ip_address]
     precondition {
       condition     = var.identity_https_proxy_upstream_ipv4 != null && var.identity_https_proxy_review_date != null
       error_message = "Review the run date and observed private upstream before enabling the proxy."

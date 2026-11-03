@@ -349,7 +349,9 @@ resource "aws_autoscaling_group" "ecs_host" {
 
   # ECS capacity-provider scaling owns desired capacity after initial creation.
   lifecycle {
-    ignore_changes = [desired_capacity]
+    # The approved operator controls suspension while retained hosts are stopped.
+    # An unrelated ingress plan must not resume replacement/termination or launch.
+    ignore_changes = [desired_capacity, suspended_processes]
   }
 }
 
