@@ -57,6 +57,12 @@ def test_declared_matching_revision_is_carried_to_offline_build(fake_docker):
     calls = log.read_text()
     assert f"--label org.opencontainers.image.revision={REVISION}" in calls
     assert "--pull=false --network=none --platform linux/amd64" in calls
+    # Dockerfile.lambda supplies the sha256: prefix in its FROM instruction.
+    assert (
+        "--build-arg LWA_DIGEST=17cfd08eff1dfea3f6a9a1e9c65fdac80aa4919b6085e746615530f43f57d2f1"
+        in calls
+    )
+    assert "LWA_DIGEST=sha256:" not in calls
 
 
 @pytest.mark.parametrize("revision", ["", "a" * 7, "b" * 40, "a" * 39 + "z"])

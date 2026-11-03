@@ -5738,3 +5738,56 @@ permission review timed out and the narrower retry succeeded.
 No deployment, paid workload, ECR push, live sign-in, SQL change, task stop or
 restore occurred. Continue the requested commit/PR/current-head CI/merge flow.
 The proposed cloud plan is reviewable; its exact execution still needs approval.
+
+### 2026-11-03 15:37:21 UTC — Deployment preparation: earliest DNS handoff
+
+PR #29 integrated tooling and the bounded deployment proposal at accepted main
+`8441f36c5c8bf107cee88bbc4b8d3398078d4e85`; hosted CI run
+`41661679124` passed for head `2a0ff92605432468a5085192324c2d50b1a3ac23`
+against base `2a0916e825cac4c060348b89e87af8ee40076321`. The merged tree
+was verified equal to the checked head and the original checkout refreshed.
+
+Suraj requested exact domain-owner values as soon as available. Updated the
+deployment sequence on `task/experiment-deployment-preparation`: first obtain
+scoped approval for the standard non-exportable restore certificate, immediately
+hand off its generated validation CNAME, then hand off the exact application
+aliases as soon as the approved ALB exists. Do not wait for all records or app
+startup. The restore hostname is a subdomain of the existing domain and reuses
+the ALB; only the already budgeted restore/app resources incur hosting cost.
+No app code or cloud resource changed; this is an uncommitted plan update.
+
+### Deployment preparation — combined owner handoff — 2026-11-03 15:41:19 UTC
+
+Suraj requests one complete domain-owner message, superseding the two-message
+handoff. Updated the deployment plan accordingly: collect ACM validation first,
+then send it together with the exact ALB aliases immediately after approved
+ALB creation, before application readiness. Read-only AWS checks confirm
+`surajs2` is the intended IAM user in account `335523638354`; no ALB or restore
+certificate exists yet, and the existing source certificate remains issued.
+Started a local Linux AMD64 API release build from an allowlisted archive of
+accepted main `8441f36`, with Microsoft sign-in enabled. Build remains in
+progress; no registry publication or AWS mutation has occurred. Separate
+certificate-request approval is pending. No application source changed.
+
+### Deployment execution — release and safe ingress plan — 2026-11-03 15:57:32 UTC
+
+Suraj explicitly resumed the existing plan and requested execution through one
+complete domain-owner handoff. Requested the non-exportable restore ACM
+certificate; exact public validation record is in deployment execution evidence.
+Built the accepted-main API and Hybrid images, checked real offline semantic
+inference (384 dimensions), and published the Hybrid image to the existing
+project ECR repository. The pinned Lambda builder exposed a duplicated digest
+prefix and legacy-builder incompatibility with COPY --chmod; corrected both
+and the actual local Lambda build passed. Five builder regression cases pass.
+
+The first real full Terraform plan proposed replacing the retained proxy due
+to EC2 public-address reporting and resuming all suspended ASG processes. It
+was not applied. Added narrow lifecycle preservation for those operator-owned
+fields. Regenerated full plan preserves both stopped hosts, database contents,
+password versions and suspension state; only task-definition replacement is
+planned. Sanitized resource actions and saved-plan checksum are in
+`docs/evaluation/deployment-20261103/execution/ingress-plan-summary.json`.
+Provider validation/mock checks and PR integration are the current checkpoint;
+exact saved-plan approval remains required before apply. No ALB or workload
+exists yet. Terraform/state/passwords remain private; source passwords were
+read only into the Terraform subprocess environment and were not logged.

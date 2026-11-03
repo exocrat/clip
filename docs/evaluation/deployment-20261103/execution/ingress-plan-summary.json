@@ -1,0 +1,603 @@
+{
+  "plan_sha256": "d1704f904c190d27f1b60b1df251d70efd2ee6f97049352b2ab58309b03c3090",
+  "changes": [
+    {
+      "address": "aws_autoscaling_group.ecs_host[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "launch_template",
+        "max_size"
+      ]
+    },
+    {
+      "address": "aws_cloudwatch_log_group.api[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "tags",
+        "tags_all"
+      ]
+    },
+    {
+      "address": "aws_cloudwatch_metric_alarm.notification[\"ambiguous\"]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "tags",
+        "tags_all"
+      ]
+    },
+    {
+      "address": "aws_cloudwatch_metric_alarm.notification[\"terminal_failure\"]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "tags",
+        "tags_all"
+      ]
+    },
+    {
+      "address": "aws_cloudwatch_metric_alarm.notification[\"transient_failure\"]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "tags",
+        "tags_all"
+      ]
+    },
+    {
+      "address": "aws_cloudwatch_metric_alarm.notification[\"work_error\"]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "tags",
+        "tags_all"
+      ]
+    },
+    {
+      "address": "aws_db_instance.shared[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "tags",
+        "tags_all"
+      ]
+    },
+    {
+      "address": "aws_db_subnet_group.shared[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "tags",
+        "tags_all"
+      ]
+    },
+    {
+      "address": "aws_ecr_repository.api[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "tags",
+        "tags_all"
+      ]
+    },
+    {
+      "address": "aws_ecs_capacity_provider.shared[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "tags",
+        "tags_all"
+      ]
+    },
+    {
+      "address": "aws_ecs_cluster.shared[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "tags",
+        "tags_all"
+      ]
+    },
+    {
+      "address": "aws_ecs_service.api[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "desired_count",
+        "load_balancer",
+        "tags",
+        "tags_all",
+        "task_definition"
+      ]
+    },
+    {
+      "address": "aws_ecs_task_definition.api[0]",
+      "actions": [
+        "delete",
+        "create"
+      ],
+      "changed_fields": [
+        "arn",
+        "arn_without_revision",
+        "container_definitions",
+        "cpu",
+        "enable_fault_injection",
+        "id",
+        "ipc_mode",
+        "memory",
+        "pid_mode",
+        "revision",
+        "tags",
+        "tags_all"
+      ]
+    },
+    {
+      "address": "aws_ecs_task_definition.db_probe[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "tags",
+        "tags_all"
+      ]
+    },
+    {
+      "address": "aws_ecs_task_definition.db_role_setup[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "tags",
+        "tags_all"
+      ]
+    },
+    {
+      "address": "aws_eip.nat[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "tags",
+        "tags_all"
+      ]
+    },
+    {
+      "address": "aws_iam_instance_profile.ecs_instance[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "tags",
+        "tags_all"
+      ]
+    },
+    {
+      "address": "aws_iam_role.api_execution[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "tags",
+        "tags_all"
+      ]
+    },
+    {
+      "address": "aws_iam_role.api_task[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "tags",
+        "tags_all"
+      ]
+    },
+    {
+      "address": "aws_iam_role.db_probe_execution[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "tags",
+        "tags_all"
+      ]
+    },
+    {
+      "address": "aws_iam_role.db_probe_task[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "tags",
+        "tags_all"
+      ]
+    },
+    {
+      "address": "aws_iam_role.db_role_setup_execution[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "tags",
+        "tags_all"
+      ]
+    },
+    {
+      "address": "aws_iam_role.db_role_setup_task[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "tags",
+        "tags_all"
+      ]
+    },
+    {
+      "address": "aws_iam_role.ecs_instance[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "tags",
+        "tags_all"
+      ]
+    },
+    {
+      "address": "aws_iam_role_policy.api_identity_email[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "policy"
+      ]
+    },
+    {
+      "address": "aws_internet_gateway.shared[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "tags",
+        "tags_all"
+      ]
+    },
+    {
+      "address": "aws_launch_template.ecs_host[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "instance_type",
+        "latest_version",
+        "tag_specifications",
+        "tags",
+        "tags_all",
+        "vpc_security_group_ids"
+      ]
+    },
+    {
+      "address": "aws_lb.exp03[0]",
+      "actions": [
+        "create"
+      ],
+      "changed_fields": [
+        "access_logs",
+        "client_keep_alive",
+        "connection_logs",
+        "desync_mitigation_mode",
+        "drop_invalid_header_fields",
+        "enable_deletion_protection",
+        "enable_http2",
+        "enable_tls_version_and_cipher_suite_headers",
+        "enable_waf_fail_open",
+        "enable_xff_client_port",
+        "enable_zonal_shift",
+        "health_check_logs",
+        "idle_timeout",
+        "internal",
+        "ipam_pools",
+        "load_balancer_type",
+        "minimum_load_balancer_capacity",
+        "name",
+        "preserve_host_header",
+        "region",
+        "tags",
+        "tags_all",
+        "xff_header_processing_mode"
+      ]
+    },
+    {
+      "address": "aws_lb_listener.exp03_https[0]",
+      "actions": [
+        "create"
+      ],
+      "changed_fields": [
+        "certificate_arn",
+        "default_action",
+        "port",
+        "protocol",
+        "region",
+        "ssl_policy",
+        "tags",
+        "tags_all"
+      ]
+    },
+    {
+      "address": "aws_lb_target_group.exp03_ecs[0]",
+      "actions": [
+        "create"
+      ],
+      "changed_fields": [
+        "deregistration_delay",
+        "health_check",
+        "lambda_multi_value_headers_enabled",
+        "name",
+        "port",
+        "protocol",
+        "proxy_protocol_v2",
+        "region",
+        "slow_start",
+        "tags",
+        "tags_all",
+        "target_type",
+        "vpc_id"
+      ]
+    },
+    {
+      "address": "aws_nat_gateway.shared[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "tags",
+        "tags_all"
+      ]
+    },
+    {
+      "address": "aws_route_table.nat_public[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "tags",
+        "tags_all"
+      ]
+    },
+    {
+      "address": "aws_route_table.rds_secondary_private[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "tags",
+        "tags_all"
+      ]
+    },
+    {
+      "address": "aws_route_table.workload_private[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "tags",
+        "tags_all"
+      ]
+    },
+    {
+      "address": "aws_route_table_association.exp03_public_secondary[0]",
+      "actions": [
+        "create"
+      ],
+      "changed_fields": [
+        "region",
+        "route_table_id"
+      ]
+    },
+    {
+      "address": "aws_s3_bucket.listings_images[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "tags",
+        "tags_all"
+      ]
+    },
+    {
+      "address": "aws_security_group.database[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "tags",
+        "tags_all"
+      ]
+    },
+    {
+      "address": "aws_security_group.ecs_host[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "tags",
+        "tags_all"
+      ]
+    },
+    {
+      "address": "aws_security_group.exp03_alb[0]",
+      "actions": [
+        "create"
+      ],
+      "changed_fields": [
+        "description",
+        "name",
+        "region",
+        "revoke_rules_on_delete",
+        "tags",
+        "tags_all",
+        "vpc_id"
+      ]
+    },
+    {
+      "address": "aws_security_group.exp03_ecs[0]",
+      "actions": [
+        "create"
+      ],
+      "changed_fields": [
+        "description",
+        "name",
+        "region",
+        "revoke_rules_on_delete",
+        "tags",
+        "tags_all",
+        "vpc_id"
+      ]
+    },
+    {
+      "address": "aws_ssm_parameter.db_master_password[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "tags",
+        "tags_all"
+      ]
+    },
+    {
+      "address": "aws_ssm_parameter.db_probe_password[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "tags",
+        "tags_all"
+      ]
+    },
+    {
+      "address": "aws_subnet.exp03_public_secondary[0]",
+      "actions": [
+        "create"
+      ],
+      "changed_fields": [
+        "assign_ipv6_address_on_creation",
+        "availability_zone",
+        "cidr_block",
+        "enable_dns64",
+        "enable_resource_name_dns_a_record_on_launch",
+        "enable_resource_name_dns_aaaa_record_on_launch",
+        "ipv6_native",
+        "map_public_ip_on_launch",
+        "region",
+        "tags",
+        "tags_all",
+        "vpc_id"
+      ]
+    },
+    {
+      "address": "aws_subnet.nat_public[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "tags",
+        "tags_all"
+      ]
+    },
+    {
+      "address": "aws_subnet.rds_secondary_private[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "tags",
+        "tags_all"
+      ]
+    },
+    {
+      "address": "aws_subnet.workload_private[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "tags",
+        "tags_all"
+      ]
+    },
+    {
+      "address": "aws_vpc.shared[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "tags",
+        "tags_all"
+      ]
+    },
+    {
+      "address": "aws_vpc_security_group_egress_rule.exp03_alb_to_ecs[0]",
+      "actions": [
+        "create"
+      ],
+      "changed_fields": [
+        "description",
+        "from_port",
+        "ip_protocol",
+        "region",
+        "tags",
+        "tags_all",
+        "to_port"
+      ]
+    },
+    {
+      "address": "aws_vpc_security_group_ingress_rule.exp03_alb_https[0]",
+      "actions": [
+        "create"
+      ],
+      "changed_fields": [
+        "cidr_ipv4",
+        "description",
+        "from_port",
+        "ip_protocol",
+        "region",
+        "tags",
+        "tags_all",
+        "to_port"
+      ]
+    },
+    {
+      "address": "aws_vpc_security_group_ingress_rule.exp03_ecs_from_alb[0]",
+      "actions": [
+        "create"
+      ],
+      "changed_fields": [
+        "description",
+        "from_port",
+        "ip_protocol",
+        "region",
+        "tags",
+        "tags_all",
+        "to_port"
+      ]
+    },
+    {
+      "address": "terraform_data.exp03_inputs[0]",
+      "actions": [
+        "create"
+      ],
+      "changed_fields": []
+    }
+  ]
+}

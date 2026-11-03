@@ -1,0 +1,8 @@
+{
+  "arn": "arn:aws:acm:ap-south-1:335523638354:certificate/e5ebe4da-b808-4a73-ba56-9f259ccc626f",
+  "status": "PENDING_VALIDATION",
+  "name": "_124fcb804396bc7809b15f6cbbfbff11.restore.clip-iisc.site.",
+  "type": "CNAME",
+  "value": "_0510eff1cce66333913b2d23217a51a4.wzccmgtwzk.acm-validations.aws.",
+  "exportable": false
+}

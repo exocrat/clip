@@ -1,0 +1,8 @@
+{
+  "application_revision": "8441f36c5c8bf107cee88bbc4b8d3398078d4e85",
+  "api_image": "335523638354.dkr.ecr.ap-south-1.amazonaws.com/clip-shared-test-api@sha256:d5b00227ed5f0dcb664c178d250a844c4ee2841a580f31a7c88c1df33b823dd7",
+  "lambda_local_image": "sha256:58db21c7d03670fd0f318580645e52aabbfc0e96aefc5dbbf495f8452aa636b5",
+  "lambda_published": false,
+  "platform": "linux/amd64",
+  "live_validation": false
+}
