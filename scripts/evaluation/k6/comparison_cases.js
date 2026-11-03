@@ -6,6 +6,14 @@ export function localApiTarget(target) {
   return target;
 }
 
+/** Accept a deployed API root only when it is bound to the planned HTTPS origin. */
+export function approvedApiTarget(target, origin) {
+  let parsedOrigin;
+  try { parsedOrigin = new URL(origin); } catch (_) { throw Error('approved_https_target_required'); }
+  if (parsedOrigin.protocol !== 'https:' || parsedOrigin.username || parsedOrigin.password || parsedOrigin.pathname !== '/' || parsedOrigin.search || parsedOrigin.hash || !parsedOrigin.hostname || target !== `${parsedOrigin.origin}/api`) throw Error('approved_https_target_required');
+  return target;
+}
+
 /** Build one contract-shaped read path from a reviewed comparison case.
  * The caller supplies an authenticated session separately; this function never
  * handles credentials or sends requests. Cases are inputs, not result oracles.

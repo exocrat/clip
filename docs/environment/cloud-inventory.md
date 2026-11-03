@@ -5,6 +5,57 @@ permission to create, change, or delete resources. Before any cloud operation,
 verify the caller and refresh AWS and Terraform state; review and approve the
 exact operation separately. Never record credentials, tokens, or secret values.
 
+## Deployment-plan refresh — 2026-11-03 14:21 UTC
+
+Read-only inspection again verified `surajs2` in account `335523638354`.
+The source ECS service, retained t3.micro hosts and private RDS remain stopped;
+there is no ALB or Lambda. Three existing /24 subnets leave proposed
+`10.64.3.0/24` unused at this check. The issued source certificate remains unused.
+[Current sanitized resource/billing metadata](../evaluation/deployment-20261103/inventory.json)
+and [current public AWS prices](../evaluation/deployment-20261103/prices.json)
+are attached to the [bounded deployment proposal](../evaluation/deployment-20261103/plan.md).
+Completed-period gross usage through Nov. 2 is USD 26.232051; credits are separate.
+The historical USD 10 credit cap does not apply to this experiment. The proposed
+new execution cap is USD 30 and requires exact cloud-plan approval.
+
+Suraj clarified that NFR-06 must reflect the actual running deployment. The
+proposal therefore keeps two ECS tasks on two hosts in both A and B, rather
+than increasing capacity only for the recovery test. No source resource has
+been started or changed. RDS's automated backup window is 23:47–00:17 UTC;
+obtain a fresh automated snapshot containing the final state before NFR-07.
+
+## Experiment readiness identity check — 2026-11-03
+
+Read-only STS verification found that the default shared-credentials profile is
+root in account `484394572488`, which is not the project account; do not use it
+for project work. The existing `surajs2` profile resolves to non-root IAM user
+`surajs2` in project account `335523638354` and region `ap-south-1`. The
+documented operator profile `adityalaxmi1` is not configured in this environment.
+Suraj then directed using `surajs2` for read-only project inspection. Later
+dated entries below record that refresh. No resource was changed.
+
+## Experiment deployment readiness refresh — 2026-11-03 11:17 UTC
+
+Suraj explicitly directed read-only project inspection with profile `surajs2`;
+STS confirmed non-root IAM user `surajs2` in project account `335523638354`.
+The default profile remains root in unrelated account `484394572488`; it was
+not used for project inspection. No resource was created, changed or deleted.
+
+| Area | Read-only observation |
+|---|---|
+| ECS | `clip-shared-test` is ACTIVE, with Container Insights disabled, one active service, zero running/pending tasks. `clip-test-api-ap-south-1-pd16` is ACTIVE at task-definition revision 11, desired/running/pending 0, with no load balancer attached. The task uses image digest `sha256:97482cb4fb697eee230e66d134c165e557dac7d71a165e6034c88747f1738245` (tag `cn03-b95a7a50ecf8`, pushed 2026-10-30), which predates the integrated EXP-03 PR #27/#28 merge on 2026-11-03; a current immutable application image must be built and reviewed. |
+| ECS host | ASG `clip-shared-test-ecs-host` reports min 0/desired 0/max 1 and all listed scaling processes suspended. It lists `i-086045c48487471de` as InService/Healthy, while EC2 reports that instance STOPPED (`t3.micro`). Do not start or terminate it directly. This capacity is not usable now. |
+| Database | `clip-shared-test-postgres` is stopped, private, encrypted, PostgreSQL 18.6, `db.t4g.micro`, 20 GiB gp3, deletion-protected. Five available automated snapshots were listed; the newest is 2026-10-30. No manual snapshot was listed. |
+| Ingress and Lambda | No load balancers and no Lambda functions are currently present. The only issued `clip-iisc.site` ACM certificate is valid until 2027-05-11 but `InUse=false`. The account has no Route53 hosted zones; any public hostname update belongs to the external DNS operator. No public DNS record was checked in this refresh. |
+| Network and Terraform | VPC `vpc-04b0cc01cbf93cd17` (`10.64.0.0/20`) and NAT `nat-0d7fefbad586f4bce` are available. The versioned, AES256-encrypted shared/test state object was last modified 2026-10-30 and has Terraform serial 31. A streamed state inspection printed only resource addresses/metadata, not attributes or secret values; it includes the retained Identity HTTPS proxy/EIP, shared database/network, and ECS service, with no EXP-03 ALB/Lambda resources. No Terraform refresh or plan ran. |
+| Costs | The AWS cost budget is account-wide, unfiltered, and configured for 2026-10-17 through 2027-10-17; its USD 200 target is not the project's experiment-period cap. Suraj clarified that the project USD 200 limit applies through experimentation. For 2026-10-17 through 2026-11-03, AWS Budgets reports USD 26.526 gross actual and USD 1,217.222 forecast; its `IncludeCredit=false` setting explains why this differs from the near-zero Cost Explorer net view. Cost Explorer's `RECORD_TYPE` breakdown is USD 26.525958 Usage and approximately -USD 26.525958 Credits, so credits offset the gross usage in that period. The budget has no project/resource filter and its forecast is not an experiment estimate. Cost Explorer service totals for the same period are account-level and do not identify exact resources; the largest are EC2-Other (about USD 20.92), VPC (USD 2.28), RDS (USD 1.64), and EC2 compute (USD 0.98). Suraj reports NAT is about USD 1.56/day; that rate is not confirmed by the queried service-level totals. The separate USD 10 experiment credit limit remains; current remaining credit balance and experiment-only allocation are unverified. |
+
+The stale `ExpiresOn=2026-10-27` tags on retained PD-16 state/resources are
+past due; do not retag or clean them up without the separately reviewed plan.
+These observations prove the target is not presently deployed and its cost
+headroom is unresolved. They do not authorize starting RDS/EC2, resuming ASG
+processes, changing DNS, applying Terraform, or deploying A/B.
+
 ## CN-03 test shutdown — 2026-10-30 10:27 UTC
 
 Aditya directed stopping the test resources while preserving them. The API ECS

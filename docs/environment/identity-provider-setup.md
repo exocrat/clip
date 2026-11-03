@@ -149,3 +149,12 @@ bypass or automatic transport replay. See the
 [decision](../decisions/browser-session-transport.md) and the
 [current ID-01 status](../status/work-log.md).
 Real provider/browser/proxy configuration and current image deployment remain gated.
+
+## NFR-07 restore hostname preparation
+
+The isolated restore app has code support for the exact test origin
+`https://restore.clip-iisc.site`. Before enabling that deployment, its reviewed
+plan must arrange DNS/certificate and register the Microsoft SPA redirect
+`https://restore.clip-iisc.site/auth/callback` with the existing test application.
+This is a pending operator configuration action, not a record of registration.
+See the [NFR-07 provisioning procedure](../evaluation/predeployment-gap-tools.md).

@@ -1,12 +1,19 @@
 # Remaining project work: ordered task groups
 
-**Planning branch:** task/integrated-marketplace-rollout based on remote `main` at `5e8d264018c85475fbe13809316616b63a40886e`
-(PR #18), 2026-10-27. **Coordinator:** Suraj for this planning request; domain
+**Planning branch:** `task/experiment-tooling-readiness` based on remote `main`
+at `2a0916e` (PR #28), 2026-11-03. **Coordinator:** Suraj for this planning request; domain
 ownership and independent review remain as recorded in the project index.
-**State:** NEXT-00 planning and NEXT-01 experiment design verified by Suraj. NEXT-01 is early experiment design. All implementation,
-deployment, dataset generation, research, measurements, and cleanup below are
-future work. This document records the user's requested sequence and decisions;
-it does not claim those tasks or existing readiness milestones are complete.
+**State:** NEXT-00 planning and NEXT-01 experiment design are verified. NEXT-04,
+NEXT-05, NEXT-06, and DATA-READY are complete per Suraj. EXP-02 and EXP-03
+implementation PRs are merged. Remaining experiment/NFR tooling, deployment,
+measurements, and closeout remain future work. This document records current
+status and direction; it does not claim those remaining tasks are complete.
+
+**Status refresh (2026-11-03):** Suraj confirms NEXT-04, NEXT-05 and NEXT-06
+are complete; the final dataset is present and DATA-READY is accepted. PR #27
+and PR #28 are merged to `main`. The remaining experiment/NFR tooling must be
+finished and locally validated before deployment. After deployment and smoke
+checks, Suraj inspects the website before the pilot begins.
 
 **Agent reading:** read the order table and the selected task group. Read the
 detailed experiment instructions only when defining/reviewing that experiment;
@@ -531,13 +538,21 @@ review their records. Read the submitted PRD and current approved data rules.
 [canonical experiment tasks](../evaluation/ecs-only-vs-ecs-lambda-task-list.md)
 as the execution home; this group preserves new planning requirements.
 
+0. Audit the actual experiment worktree against the PRD and EXP-01–08/NFR-01–08
+   procedures before deploying. Trace each required measurement through its
+   workload, evidence capture and report. Complete missing code, including the
+   [live parity, initialization and isolated restore paths](../evaluation/predeployment-gap-tools.md),
+   then validate locally. This gate does not supply live results.
 1. Reconfirm the approved NEXT-01 question, alternatives, applicable PRD
    requirements and eligibility rules against the implementation that will be
    measured. Do not silently broaden the experiment or predetermine a winner.
-2. Create the missing NFR tools/manifests and run each accurate test at its
-   earliest real verification point. Reuse valid evidence; route gaps into the
-   owning original task. Keep required NFR evidence distinct from comparative
-   performance results. Review Notifications dependencies as NEXT-05 specifies.
+2. Before deployment, complete and locally validate the code for every planned
+   experiment and NFR, including target-specific manifests, profiles, runners,
+   evidence capture, reports, observers and cleanup accounting. Reuse merged
+   EXP-02/03 components where they satisfy the procedures. Keep fake/local
+   checks distinct from live evidence. NFR-01, NFR-02 and NFR-03 each require
+   separate A and B runs and reports. Review Notifications dependencies as
+   NEXT-05 specifies.
 3. Before final comparative results are collected, price the exact reviewed A/B
    topology and normal workload, calculate and document the numeric good/poor
    cost-score endpoints, per-run allocation formula, price sources and
@@ -548,11 +563,12 @@ as the execution home; this group preserves new planning requirements.
    [experiment-definition guidelines](../evaluation/ecs-lambda-experiment-guidelines.md).
    Do not change scoring or workload after seeing comparative final results; a
    material validity change needs documented human approval.
-4. Follow EXP-02–08: prepare data/tools, implement and test the alternative,
-   review plans, deploy/smoke both, pilot separately, run approved repetitions,
-   analyze with uncertainty and costs, preserve evidence, and verify cleanup.
-   NEXT-01 defines the method early; NEXT-07 runs it only after the data and
-   measured paths are ready.
+4. After the tooling-complete gate and approved deployment plan, follow
+   EXP-02–08: deploy/smoke both, provide the deployed site for Suraj's inspection,
+   pilot separately, run approved repetitions, analyze with uncertainty and
+   costs, preserve evidence, and verify cleanup. Do not start the pilot before
+   the website inspection. NEXT-01 defines the method early; NEXT-07 runs it
+   only after the data and measured paths are ready.
    After the approved runs and cleanup, turn off app/experiment compute until
    the demo or another separately approved necessary check; retain required data,
    evidence and a reviewed restart path, and account for any remaining costs.

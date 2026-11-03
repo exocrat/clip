@@ -1,27 +1,35 @@
 # Proposed implementation design for NFR-01–08
 
-**State:** NEXT-01 Step 6 verified by Suraj on 2026-10-28. These are
-implementation instructions and proposed run settings, not executable commands,
-measured results or cloud authorization. The [domain task list](../../tasks/domain-task-list.md)
-owns the individual checks; [CLOSE-00](../../tasks/final-closeout-task-list.md)
-owns final budget reconciliation. If a named tool or setting does not yet exist,
-the owning task implements, registers and locally verifies it before use. Do not
-invent a command, weaken a required check, or call a local pilot a cloud result.
+**State:** NEXT-01 Step 6 verified by Suraj on 2026-10-28. The frozen final
+dataset exists and DATA-READY is accepted in the work log; its recorded logical
+fingerprint is
+`7efd142e11c3e8555e1aa08603cbf8dff07de5d74412ccde3c39869b9334ab98`. These
+are implementation instructions and proposed run settings, not live results or
+cloud authorization. The [domain task list](../../tasks/domain-task-list.md)
+owns each check and [CLOSE-00](../../tasks/final-closeout-task-list.md) owns
+final budget reconciliation. The pre-deployment tooling batch has passed its
+local evaluation-suite, compile, formatting, whitespace and focused type checks.
+Affected-owner/independent review and normal PR merge remain before deployment.
+Recheck the
+frozen fingerprint, schema, indexes, model, reviewed labels and application
+revisions against each target before running. Do not call local evidence a cloud
+result.
 
 ## Common preparation and evidence
 
-1. Use the final [dataset recipe](../../../data/evaluation/reference-dataset-design.md)
-   after NEXT-03 updates category-dependent fields and NEXT-06/SE-01 validates
-   the real 5,000-user/1,000-listing minimum, image objects, indexes, model and
-   human labels. Confirm a fresh fingerprint and that the approved dataset window
-   covers the run. The current preview corpus and local-only load runner do not
-   establish DATA-READY. NFR-06/07 use their own approved fixtures/targets.
+1. Use the accepted final dataset release and its recorded fingerprint; do not
+   regenerate it for the experiment. Before a run, verify that the deployed
+   database, image references, indexes, model and reviewed labels match the
+   frozen release, and that the accepted measurement window covers the run.
+   NFR-06/07 use their own approved fixtures/targets.
 2. For each deployed measurement record the actual account/region/environment,
    authenticated operator, app/image and schema revisions, configuration,
    routing, synthetic data/label fingerprints, real authorized test sessions,
    resource settings, generator version/location and UTC start/end. Use one
-   existing regular test account where practical; NFR-05 needs two participants.
-   Never store tokens, private contact data, keys or message bodies in evidence.
+   existing regular synthetic Microsoft test account from the approved Entra
+   test tenant; sign in outside measured traffic and use the reviewed secure
+   session handoff. NFR-05 needs two authorized participants. Never store tokens,
+   private contact data, keys or message bodies in evidence.
 3. The owning task writes a manifest before each run under the existing
    `docs/evaluation/nfr/` convention. Include exact target and version, input
    profiles/fixtures, valid/invalid criteria, timing/timeout, workload,
@@ -68,9 +76,9 @@ must not be assumed merely because the source code is shared.
 
 | NFR | Required coverage and permitted reuse |
 |---|---|
-| 01 — Browse | Run the 20 requests/s check against both configurations if browse is routed differently or changed capacity/dependencies could affect it. Reuse a prior result only if the actual browse path and relevant capacity, data and conditions are unchanged. |
-| 02 — Search | Run the 10 requests/s check against both configurations if search is routed differently or changed capacity/dependencies could affect it. Reuse only for the same actual search path, model, data and relevant resources. |
-| 03 — Peak API | Run the integrated mixed workload against both when routing, shared capacity or dependencies differ. Reuse only if evidence covers the unchanged whole measured path and conditions; the comparison's read-only burst is not this check. |
+| 01 — Browse | Run the 20 requests/s check separately against A and B. Preserve the successful-request denominator and report each configuration's results. |
+| 02 — Search | Run the 10 requests/s check separately against A and B. Preserve the all-eligible-issued-request denominator and report each configuration's results. |
+| 03 — Peak API | Run the integrated mixed workload separately against A and B at 50 requests/s. Preserve the NFR-03 success rules; the comparison's read-only burst is not this check. |
 | 04 — Search usefulness | Use the same reviewed labels. Retrieve and compare the first five results for every included query on both paths if search routing changes. A previously calculated score may be reused only after identical ordered results, data, model, configuration and applicable behavior are verified; otherwise calculate and report each result separately. |
 | 05 — Chat latency | Measure on both if chat routing, shared capacity, background activity, polling or dependencies differ in a way that could affect sender-to-display time. Reuse only with evidence that the actual chat path and relevant normal workload/resources are unchanged. |
 | 06 — Runtime recovery | Check both if serving paths, orchestration or relevant capacity differ. Reuse only when the tested recovery path and configuration are unchanged. Both proposed architectures retain ECS: stop one approved ECS task, measure restoration of configured ECS serving capacity and record request outcomes for the applicable routes, including Lambda-routed reads in the mixed configuration. |
@@ -79,20 +87,19 @@ must not be assumed merely because the source code is shared.
 
 ### Tool work assigned to existing tasks
 
-These are intended implementation homes, not currently registered commands. The
-owner checks the actual repository and uses an existing equivalent if it already
-meets the stated contract. Register the actual invocation, effects and exit codes
-in the command registry after implementation.
+These are implementation contracts. The status notes below identify current
+local tooling and its remaining integration limits; a command is not a live-run
+approval or acceptance result.
 
 | Owner and planned home | Required inputs, outputs and verification |
 |---|---|
-| SE-01/EXP-02: extend `scripts/evaluation/k6/` with a separate real-target runner and versioned profiles under `data/evaluation/workloads/` | Input: approved target/revision, profile, controlled session through the secure access path, reviewed case references and caps. Output: per-operation sanitized raw results, arrival/drop counts, timing, summary and completion status. Validate incorrect response, unauthorized caller, timeout, missed arrival, expired session, cap and wrong-target refusal. Keep the current local-only entry point's restrictions. The existing pilot uses `Date.now`; the real runner must first establish a supported monotonic client timing source, and must not silently claim the pilot provides one. |
-| INT-01: peak profile/runner under `scripts/evaluation/` and `data/evaluation/workloads/` | Input: the approved real target, account/session, reference cases, final valid category and bounded write/cleanup scope. Output: per-route raw data, unique operation IDs for created fixtures, summary and validity. Locally check duplicate/timeout reconciliation, write count, auth/CSRF failure, invalid content and generator shortfall. Reuse the real-target load components where appropriate. |
-| SE-01: extend `scripts/evaluation/search.py` | Input: validated final dataset binding, accepted label file and real retrieval adapter. Output: per-query ID, first-five IDs, hit/failure and aggregate with dataset/label/model/contract hashes. Reject draft/unreviewed labels, wrong dataset or context, absent IDs and unaccounted retrieval errors. |
-| CN-01: two-client harness under `scripts/evaluation/` with a versioned workload in `data/evaluation/workloads/` | Input: approved deployed browser/API URL, two real participant sessions supplied securely, known conversation, normal-load driver and limits. Output: non-secret message correlation IDs, sender/display timing, failures and aggregate. Locally prove it observes actual display and records failed/undisplayed samples; never substitute server receipt or log plaintext/keys/ciphertext. Choose a browser driver supported by the actual project environment before implementation; no new driver is assumed installed. |
-| INT-01: runtime-recovery observer under `scripts/evaluation/` | Input: exact approved ECS cluster/service/task, account/region, configured capacity, route and load cap. Output: UTC/provider events, monotonic timestamps, load outcomes and restored-capacity result. Refuse absent/mismatched targets; separate the read-only preflight from the explicitly approved stop action. Test against controlled local command doubles before cloud use. |
-| INT-01: database-restore observer under `scripts/evaluation/` | Input: exact approved source backup, isolated target, account/region, cap and safe secret reference. Output: restore timeline, migration/integrity/smoke outcomes and cleanup/retention status. Refuse existing or mismatched targets, never expose credentials, and test failures/timeouts with local command doubles before cloud use. |
-| INT-01/CLOSE-00: budget evidence in the existing work log and NFR evidence home | Input: actual billed/usage data, retained resource inventory, current price date and delayed-cost estimates. Output: traceable project total and remaining liabilities, with credits separate; no new paid service is implied. |
+| SE-01/EXP-02: `scripts/evaluation/k6/` | Offline profiles, monotonic timing, A/B real-run coordinator, receipt-bound reports and separate NFR-01/02 and EXP-05 workloads are implemented. Consolidated local audit, reviewed inputs and later deployed target/session checks remain. NFR-01 and NFR-02 keep their distinct denominators. |
+| INT-01: peak profile/runner under `scripts/evaluation/` and `data/evaluation/workloads/` | The separate NFR-03 mixed workload, controlled writes, unique operation IDs, timeout reconciliation and A/B reports are implemented. Consolidated local audit, final route/case bindings and live integration remain. |
+| SE-01: `scripts/evaluation/nfr04_retrieval.py` | The approved-manifest retrieval runner uses reviewed labels, binds target/session and produces Success@5 evidence. Consolidated local audit, current label/retrieval contract review and live A/B results remain. |
+| CN-01: `scripts/evaluation/nfr05_browser.mjs` and `scripts/evaluation/nfr05_report.py` | The two-client harness measures actual message submission to display, supports bounded background load, counts undisplayed messages and avoids message-content logging. Consolidated local audit, two securely supplied sessions and the live participant run remain. |
+| INT-01: `scripts/evaluation/nfr06_recovery.py` | The recovery observer is implemented with a separately gated exact task-stop action. Live stop action requires its own approval. |
+| INT-01: `scripts/evaluation/nfr07_restore_observer.py` | Restore observation and integrity checks are implemented with a separately bound isolated target. A live restore needs its own approved target and cleanup plan. |
+| INT-01/CLOSE-00: `scripts/evaluation/nfr_cost_ledger.py` | The project ledger records actuals, estimates, delayed charges, retained resources and credits. Current price/billing evidence, remaining project budget and final reconciliation need live review. |
 
 ## NFR-01 — Browse latency (SE-01)
 
@@ -105,8 +112,8 @@ supplies the real-target runner. Existing `nfr-01/manifest.template.json` and
    IDs through `GET /listings`; ensure image bodies are not downloaded. Cycle a
    fixed set of approved first-page, later-page and category-filter cases from
    the final dataset. Each started iteration sends one HTTP request.
-2. For each architecture whose NFR evidence is needed, run one approved phase at
-   20 requests/s: 1,200 warm-up and 6,000 measured scheduled requests. Check
+2. Run one approved phase on A and one on B at 20 requests/s: 1,200 warm-up and
+   6,000 measured scheduled requests per configuration. Check
    each status, listing availability, filter, page, IDs/order and response shape
    against the reviewed cases. Use the common timeout, drain and evidence rules.
 3. Let `S` be correctly completed browse requests and `F` be those in `S`
@@ -125,15 +132,18 @@ reviewed search queries, actual indexed search, final Hybrid model and coverage.
 1. Preflight the real public search route with frozen representative direct-word,
    related-word and meaning-based cases; check final NEXT-03 filters and ordering.
    Use the intended Hybrid product behavior, not an invented keyword-only path.
-2. For each needed architecture run one approved phase at 10 requests/s: 600
-   warm-up and 3,000 measured scheduled requests. Check the expected results and
-   record query/database timing and connection/saturation signals. Image bodies
-   are outside the API-response timing.
+2. Run one approved phase on A and one on B at 10 requests/s: 600 warm-up and
+   3,000 measured scheduled requests per configuration. Record successful HTTP
+   response completion and latency, plus query/database timing and
+   connection/saturation signals. Do not score relevance in this latency NFR;
+   NFR-04 is the separate Success@5 evaluation. Image bodies are outside the
+   API-response timing.
 3. Let `E` be all issued, eligible indexed-search requests and `F` those that
-   returned the expected result within 1,000 ms. Pass only if `E > 0` and
-   `F / E >= 0.95`. Wrong results, failures and timeouts count in `E` as
+   completed successfully within 1,000 ms. Pass only if `E > 0` and
+   `F / E >= 0.95`. Unsuccessful HTTP responses and timeouts count in `E` as
    violations. Separately record dropped arrivals, which invalidate the run.
-   Use SE-01's explicit denominator and preserve raw samples.
+   Use SE-01's explicit denominator and preserve raw samples. Relevance and
+   ranking quality are evaluated separately under NFR-04.
 
 ## NFR-03 — Integrated peak API behavior (INT-01)
 
@@ -152,8 +162,8 @@ approved run plan. Run this test outside frozen A/B comparison windows.
    write use a unique deterministic operation ID and synthetic title/description;
    verify the created ID and returned fields. A request that times out may still
    have created a row; track its operation ID for reconciliation, not blind retry.
-2. Run one phase per architecture whose evidence is needed at 50 requests/s:
-   3,000 warm-up and 15,000 measured scheduled operations, including 30 and 150
+2. Run one phase on A and one on B at 50 requests/s: 3,000 warm-up and 15,000
+   measured scheduled operations per configuration, including 30 and 150
    wanted-request create attempts respectively. All ordinary expected 429s are
    failures; exclude only a separately identified intentionally abusive request,
    of which this workload schedules none. Record per-route results and generator
@@ -218,12 +228,41 @@ acceptance and affected timing rechecks still require real CN-03 integration.
    sample counts and background-load success. Missing observations invalidate
    the run; do not calculate p95 only from displayed messages and claim a pass.
 
+**Tooling checkpoint:** `scripts/evaluation/nfr05_browser.mjs` observes the
+sender form-submit event and recipient rendered-message event through two local
+browser debugging sessions, hashes synthetic message text only in memory, and
+records sanitized host-monotonic event times. It requires a separate expiring
+approval bound to the exact manifest; the manifest binds a hashed A/B target
+plan, two distinct reviewed user IDs, revisions, caps and cleanup. Before any
+browser message or background request, it calls the shared read-only AWS/HTTPS
+preflight and verifies both regular test-account sessions against those IDs.
+It starts the hash-bound comparison profile as a concurrent 10-read/s
+browse/search/detail mix for the 300-second message window, retains its raw k6
+stream separately, and marks the background load valid only when 3,000 requests
+are issued and correctly accounted with no drops or failed responses.
+`scripts/evaluation/nfr05_report.py` checks this receipt and keeps the full
+60-message denominator. The browser tool creates no AWS resources, stops no
+tasks and does not accept the NFR result.
+
 ## NFR-06 — Runtime recovery (INT-01)
+
+**Tooling checkpoint:** `scripts/evaluation/nfr06_recovery.py` binds a hashed
+shared A/B target plan to the exact account/service/task/target group, performs
+the shared AWS/HTTPS routing preflight, and verifies the regular test-user
+session before any baseline traffic. It then performs the bounded 1-read/s
+baseline and recovery stream and requires an unexpired `ecs.stop_task` approval
+bound to the exact plan bytes and named task. It never creates resources. It
+records request failures and drops separately from the 240-second capacity
+result; no automatic fallback is assumed.
 
 **Scheduled preparation:** INT-01 Step 7 owns an observer and an exact reviewed
 failure/recovery plan. At least two ECS tasks must be healthy, registered and
-serving the deployed path before starting. Prepare an approved way to identify
-one specific task and invoke ECS task stop; verify which paths each task serves.
+serving the deployed path before starting. The shared Terraform root now has
+explicit `api_service_desired_count=2` and `ecs_host_max_size=2` inputs for this
+separately approved plan; normal defaults remain one task/one host maximum. A
+two-task request with a one-host maximum is rejected. Prepare an approved way to
+identify one specific task and invoke ECS task stop; verify which paths each
+task serves.
 
 1. Run a 1-request/s controlled read stream for 60 seconds to establish normal
    service. Alternate an approved listing-read case with an authenticated
@@ -279,6 +318,22 @@ final comparison runs or their fixed scoring.
 
 ## NFR-07 — Managed database restore (INT-01)
 
+**Tooling checkpoint:** `scripts/evaluation/nfr07_restore_observer.py` verifies
+the named latest available automated snapshot, refuses an existing target,
+requires a separate approval bound to the exact restore-plan hash, checks the
+approved regular test-user session before requesting the restore, restores
+privately, verifies the migration head/FKs/representative relationships, and records the monotonic
+restore timeline. It also verifies a named ECS smoke service's image digest and
+`CLIP_DATABASE_URL` SSM parameter binding, confirms the parameter resolves to
+the restored instance, checks healthy service targets, then makes an
+authenticated `/api/me` read and a wanted-request detail read through HTTPS.
+The opt-in `nfr07-smoke.tf` provisions the stopped isolated service and its
+three domain database parameters under a separately reviewed plan. The observer
+checks the source session first, then waits within the original restore deadline
+for the restored service and a fresh isolated-app session. See the
+[provisioning and session procedure](../predeployment-gap-tools.md). Cleanup remains a
+separate approved action, and NFR-07 acceptance still requires human review.
+
 **Scheduled preparation:** INT-01 Step 8 owns the restore/observer and exact
 plan. Identify the latest available managed backup, its timestamp and synthetic
 data scope, source revision/schema, isolated target name/network/permissions,
@@ -300,6 +355,12 @@ the approved snapshot contains representative synthetic rows needed for checks.
    only if they use the same unchanged database and backup/restore procedure.
 
 ## NFR-08 — Project budget (INT-01 and CLOSE-00)
+
+**Tooling checkpoint:** `scripts/evaluation/nfr_cost_ledger.py` validates the
+append-only project ledger, reconciles billing against outstanding estimates,
+reports gross costs and credits separately, and shows the USD 200 project
+headroom. Credits are tracked separately without a credit-use cap for this experiment. It cannot claim final
+acceptance without complete project scope and human closeout review.
 
 1. Before each cloud action, the owner records spend to date, delayed-billing
    estimate, current unit prices, expected and worst allowed resources/duration,

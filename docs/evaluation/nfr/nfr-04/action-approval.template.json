@@ -1,0 +1,10 @@
+{
+  "format_version": 1,
+  "action": "retrieve_nfr04",
+  "run_id": null,
+  "configuration": null,
+  "manifest_sha256": null,
+  "authorized_at": null,
+  "expires_at": null,
+  "review_record": null
+}

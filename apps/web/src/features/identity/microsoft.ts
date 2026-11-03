@@ -5,7 +5,12 @@ import { identityApi, IdentityError } from './api';
 // Public registration values reviewed in docs/environment/identity-provider-setup.md.
 export const MICROSOFT_CLIENT_ID = 'ab3a63e3-d4db-4c3c-b4bf-ac5f7573ffbb';
 export const MICROSOFT_ATTEMPT_KEY = 'clip.microsoft.redirect';
-const origins = new Set(['http://localhost:5173', 'https://clip-iisc.site']);
+// The restore origin is used only by the separately approved NFR-07 deployment.
+const origins = new Set([
+  'http://localhost:5173',
+  'https://clip-iisc.site',
+  'https://restore.clip-iisc.site',
+]);
 const messages = {
   unavailable: 'Microsoft sign-in is unavailable right now. Please try again later.',
   failed: 'We could not complete Microsoft sign-in. Try again with an eligible IISc account.',

@@ -310,9 +310,9 @@ def summarize_points(
         "latency_timing_verified": False,
         "individual_request_outcome_binding_verified": False,
         "latency_limitation": (
-            "Preview only: the workload uses Date.now(), which is not a "
-            "verified monotonic end-to-end clock. Complete accounting or no "
-            "detected backward jumps does not validate latency."
+            "Preview only: timing now uses the repository's monotonic k6 "
+            "extension, but the run is not bound to its custom binary hash. "
+            "Complete accounting alone does not validate timing provenance."
         ),
         "client_metrics": result,
         "infrastructure_metrics": {
@@ -355,9 +355,51 @@ def main() -> None:
     parser.add_argument(
         "--condition", choices=("low", "normal", "burst"), required=True
     )
+    parser.add_argument("--profile", type=Path)
+    parser.add_argument("--execution-receipt", type=Path)
+    parser.add_argument("--run-plan", type=Path)
     args = parser.parse_args()
     try:
-        report = summarize_file(args.raw, condition=args.condition)
+        if bool(args.execution_receipt) != bool(args.run_plan):
+            raise ValueError("both execution receipt and run plan are required")
+        profile_path = args.profile or PROFILE
+        report = summarize_file(args.raw, profile_path, args.condition)
+        if args.execution_receipt:
+            try:
+                from scripts.evaluation.k6.real_run_evidence import verify_execution
+
+                profile = json.loads(profile_path.read_text())
+                workload_kind = (
+                    "exp05-pilot"
+                    if profile.get("purpose") == "exp05-pilot-workload"
+                    else "comparison"
+                )
+                binding = verify_execution(
+                    args.execution_receipt,
+                    args.run_plan,
+                    args.raw,
+                    profile_path,
+                    workload_kind=workload_kind,
+                    configuration=profile["configuration"],
+                    run_id=profile["run_id"],
+                )
+            except (OSError, ValueError, KeyError, json.JSONDecodeError) as error:
+                binding = {
+                    "execution_artifact_binding_verified": False,
+                    "failure_code": (
+                        str(error)
+                        if isinstance(error, ValueError)
+                        else "execution_evidence_invalid"
+                    ),
+                    "nfr_accepted": False,
+                }
+            report["execution_provenance"] = binding
+            report["latency_timing_verified"] = (
+                binding.get("execution_artifact_binding_verified") is True
+                and binding.get("latency_timing_binary_hash_bound") is True
+            )
+        else:
+            report["execution_provenance"] = None
         rendered = json.dumps(report, indent=2, sort_keys=True) + "\n"
         if args.output:
             with args.output.open("x") as stream:

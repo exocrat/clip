@@ -39,7 +39,7 @@ The launch template gets an additional temporary ECS ingress group; this does
 
 ## Required explicit inputs
 
-- A run ID, expiry date, declared spend cap at or below USD 10, and bounded
+- A run ID, expiry date, declared action spend cap below the remaining USD 200 project budget, and bounded
   runtime in minutes. Tags record these values; **they are not an automatic
   spending or shutdown control**.
 - A second-AZ public subnet CIDR, an issued project-account certificate ARN,
@@ -82,7 +82,8 @@ the retained shared instance. Check the actual ECS registration and task
 readiness, then verify the new group was removed at cleanup.
 
 Read-only free-plan metadata reported USD 154.11 remaining credits, subject to
-AWS billing delay and service eligibility. The user's separate **USD 10 maximum**
+AWS billing delay and service eligibility. The earlier USD 10 credit-use cap covered prior cloud testing and is superseded
+for this experiment. The project **under-USD-200 limit**
 for this work still applies. Existing NAT, storage, IP and logging charges can
 continue independently. A bounded plan must estimate both incremental and
 relevant baseline charges, reserve headroom, define spend/time stop conditions,

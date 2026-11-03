@@ -1,0 +1,18 @@
+{
+  "approval_id": null,
+  "human_approved": false,
+  "approved_at_utc": null,
+  "expires_at_utc": null,
+  "plan_sha256": null,
+  "action": "rds.restore_db_instance_from_db_snapshot",
+  "run_id": null,
+  "account_id": null,
+  "region": null,
+  "snapshot_arn": null,
+  "target_db_instance_id": null,
+  "db_instance_class": null,
+  "subnet_group": null,
+  "security_group_ids": [],
+  "publicly_accessible": false,
+  "multi_az": false
+}

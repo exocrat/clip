@@ -1,0 +1,26 @@
+{
+  "format_version": 1,
+  "purpose": "exp08-cleanup-accounting",
+  "run_id": "REPLACE_WITH_RUN_ID",
+  "approved_plan_sha256": null,
+  "inventory_source_reference": "REPLACE_WITH_APPROVED_RESOURCE_INVENTORY_REFERENCE",
+  "inventory_source_sha256": null,
+  "observed_at_utc": null,
+  "expected_resource_ids": ["REPLACE_WITH_EVERY_RESOURCE_FROM_APPROVED_PLAN"],
+  "unplanned_resource_ids": [],
+  "resources": [
+    {
+      "resource_id": "REPLACE_WITH_EXACT_RESOURCE_ID",
+      "service": "REPLACE_WITH_AWS_SERVICE",
+      "disposition": "removed",
+      "observed_state": "absent",
+      "verified": false,
+      "evidence_reference": "REPLACE_WITH_READ_ONLY_POST_CLEANUP_EVIDENCE",
+      "evidence_sha256": null,
+      "owner": null,
+      "expiry_utc": null,
+      "estimated_remaining_cost_usd": "0",
+      "cost_ledger_entry_id": null
+    }
+  ]
+}

@@ -32,16 +32,18 @@ own their detailed commands and limits.
 | EXP-03 local Lambda image build and Terraform mock checks | [Offline local image builder](../../scripts/evaluation/build_lambda_image.sh); [Terraform preparation](../evaluation/exp-03-terraform-preparation.md) |
 | Search/Listings focused checks and isolated preview | [Search test guide](../../apps/api/tests/domains/search/README.md), [API guide](../../apps/api/README.md), and the browser procedure below |
 | Schema-shaped search data | [Data generator guide](../../data/README.md#se-01-isolated-schema-shaped-corpus); these are not the final NEXT-06 dataset commands |
-| Load-runner tools, bounded local pilot and EXP-02 manifest validation | [k6 tool guide](../../scripts/evaluation/k6/README.md); [offline case and telemetry preparation](../evaluation/comparison-preparation-inputs.md) |
+| Offline hash-bound comparison/NFR-01–03 run plans, shared target/session preflight and explicitly approved execution | [k6 tool guide](../../scripts/evaluation/k6/README.md#shared-real-run-planning-and-execution); [offline case and telemetry preparation](../evaluation/comparison-preparation-inputs.md) |
+| NFR-04/05 retrieval and chat capture | [NFR measurement procedures](../evaluation/nfr/measurement-design.md) and the NFR-04/05 run manifests and action-approval templates under `docs/evaluation/nfr/` |
+| Load-runner local pilot and EXP-02 input preparation | [k6 tool guide](../../scripts/evaluation/k6/README.md); [offline case and telemetry preparation](../evaluation/comparison-preparation-inputs.md) |
 | NFR measures and final-run requirements | [NFR measurement design](../evaluation/nfr/measurement-design.md) and the approved [ECS/Lambda experiment design](../evaluation/ecs-only-vs-ecs-lambda-task-list.md) |
 | Disposable database and SQL diagnostics | [Database guide](../../database/README.md) |
 | Identity provider setup and real-run gates | [Identity setup guide](identity-provider-setup.md) |
 | Cloud plans, targets and lifecycle | [Cloud inventory](cloud-inventory.md), the relevant [Terraform runbook](../../infra/terraform/shared/test/README.md), and the owning task's reviewed plan |
 
-The k6 pilot is loopback-only and cannot accept an NFR. Draft profiles are not
-approved full-run inputs. NEXT-06 and NEXT-07 must register their final exact
-commands, inputs and evidence locations after the owning tools and data are
-ready; do not infer readiness from an example or local pilot.
+The k6 local pilot is loopback-only and cannot accept an NFR. Draft profiles
+are not approved full-run inputs. The shared real-run coordinator still requires
+the actual frozen data, target, reviewed manifests and exact separate action
+approval; tool availability is not deployment or measurement authorization.
 
 The EXP-03 image builder requires a cached Hybrid API image with a full
 `org.opencontainers.image.revision` label whose prefix matches its tag, and
@@ -2160,3 +2162,10 @@ NEXT-06 Search vector operator: [narrowed automatic Step3 plan](../evaluation/do
 NEXT-06 Step5 labels: `.venv/bin/python -m scripts.evaluation.reference_labels validate --image-root /absolute/path/to/clip-dataset-images`. Existing canonical22judgments/actual corpus bindings are revalidated, never rewritten; no network/provider/model/SQL/scoring. Requires retained/restored named payload and original45photos/full accepted source Git objects. Initial `write` creates fixed outputs only once and refuses existing files. [Step5 evidence](../evaluation/domain/next-06/transfer/step-05-final-labels-result.json); Step6freeze remains separate.
 
 NEXT-06 frozen release: `.venv/bin/python -m scripts.evaluation.reference_release validate --image-root /absolute/path/to/clip-dataset-images --model-root /absolute/path/to/model`. Verifies both payloads, all52archive members, actual load ledger/model/index/reset/label evidence without extraction/network/inference/SQL. Initial `freeze` exclusively creates the fixed release and refuses overwrite; do not remove a release to bypass versioning. [Task-wide handoff](../evaluation/domain/next-06/task-wide-review.md). Valid content is separate from DATA-READY/CI/peer/run approval.
+
+## Deployed experiment preflight and isolated restore commands
+
+See the [live parity, Lambda initialization and NFR-07 provisioning guide](../evaluation/predeployment-gap-tools.md)
+for exact inputs, commands, evidence outputs, permission gates and limitations.
+The historical USD 10 credit cap is superseded for this experiment; retain the
+strict under-USD-200 project budget and separately reviewed per-action caps.

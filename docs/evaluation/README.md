@@ -66,3 +66,10 @@ Affected changes invalidate earlier evidence until rerun or a documented equival
 ## Dependency substitution restriction
 
 Manifest mode records real versus test-double dependencies and contract/runtime/data revisions. Stub/local evidence is for isolated implementation only; it cannot establish deployed NFRs or real integrated acceptance. Offline NFR-04 still requires the final dataset/labels and real ranking path under SE-01. No deferred integration obligation may disappear from final traceability.
+
+## Current bounded deployment proposal
+
+The [2026-11-03 deployment plan](deployment-20261103/plan.md) records the
+verified account/resources, current public prices, two-task A/B configuration,
+DNS/auth handoff, budget and exact execution/cleanup gates. It precedes PR
+integration and does not authorize cloud changes.

@@ -81,8 +81,8 @@ variable "exp03_budget_cap_usd" {
   type        = number
   default     = null
   validation {
-    condition     = var.exp03_budget_cap_usd == null ? true : var.exp03_budget_cap_usd > 0 && var.exp03_budget_cap_usd <= 10
-    error_message = "Set a positive cap no greater than the user's USD 10 limit."
+    condition     = var.exp03_budget_cap_usd == null ? true : var.exp03_budget_cap_usd > 0 && var.exp03_budget_cap_usd < 200
+    error_message = "Set a positive action cap below the USD 200 project total; remaining headroom requires separate review."
   }
 }
 
@@ -323,7 +323,8 @@ resource "aws_lb_listener_rule" "exp03_selected_reads" {
         weight = 100 - var.exp03_selected_reads_lambda_weight_percent
       }
       stickiness {
-        enabled = false
+        enabled  = false
+        duration = 1
       }
     }
   }

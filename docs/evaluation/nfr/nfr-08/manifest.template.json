@@ -1,0 +1,17 @@
+{
+  "status": "draft-unapproved-not-executable",
+  "nfr_id": "nfr-08",
+  "owner": "INT-01/CLOSE-00",
+  "final_reconciliation": false,
+  "project_scope_complete": false,
+  "project_cost_ledger_path": "docs/evaluation/nfr/project-cost-ledger.json",
+  "project_budget_usd": "200",
+  "credits_subtracted_from_project_spend": false,
+  "billing_checked_through": null,
+  "source_billing_exports": [],
+  "delayed_billing_and_retained_resources": [],
+  "current_price_as_of": null,
+  "remaining_required_work_reserve_usd": null,
+  "per_action_cost_caps_and_stop_conditions": null,
+  "nfr_accepted": false
+}

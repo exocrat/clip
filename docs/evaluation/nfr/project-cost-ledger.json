@@ -1,0 +1,41 @@
+{
+  "format_version": 1,
+  "ledger_id": "clip-project-20261103",
+  "final_reconciliation": false,
+  "project_scope_complete": false,
+  "billing_checked_through": "2026-11-02",
+  "entries": [
+    {
+      "entry_id": "aws-actual-1-20261103",
+      "provider": "aws",
+      "kind": "actual",
+      "category": "project-account-usage",
+      "resource_scope": "335523638354",
+      "period_start": "2026-10-17",
+      "period_end": "2026-10-31",
+      "amount_usd": "22.511303",
+      "credits_usd": "22.511303",
+      "source_reference": "docs/evaluation/deployment-20261103/inventory.json#costs.ResultsByTime[0]",
+      "source_sha256": "d429b2a2c5587ed8285608d1e4896914285274eb57e74119156d04f0d95343d7",
+      "price_date": null,
+      "estimate_basis": null,
+      "replaces_estimate_id": null
+    },
+    {
+      "entry_id": "aws-actual-2-20261103",
+      "provider": "aws",
+      "kind": "actual",
+      "category": "project-account-usage",
+      "resource_scope": "335523638354",
+      "period_start": "2026-11-01",
+      "period_end": "2026-11-02",
+      "amount_usd": "3.720748",
+      "credits_usd": "3.720748",
+      "source_reference": "docs/evaluation/deployment-20261103/inventory.json#costs.ResultsByTime[1]",
+      "source_sha256": "d429b2a2c5587ed8285608d1e4896914285274eb57e74119156d04f0d95343d7",
+      "price_date": null,
+      "estimate_basis": null,
+      "replaces_estimate_id": null
+    }
+  ]
+}

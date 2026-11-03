@@ -494,13 +494,13 @@ node scripts/evaluation/k6/nfr_cases_check.mjs nfr-02 path/to/new-nfr-cases.json
 
 Output must be a new path. NFR-01 checks first/later pages, category coverage,
 status, expected response shape, fields, availability and filters. NFR-02
-checks three query classes and explicit Hybrid requests, but fails on the draft's
-missing ordered responses. When independently reviewed ordered references exist,
-provide `--ordered-reference path/to/reviewed-reference.json --search-revision
-FULL_REVIEWED_SEARCH_COMMIT` to the generator; it invokes the existing binder
-and refuses mismatched inputs. No substitute rankings are generated. The checker
-uses the current clock for availability; a valid old fixture is not evidence of
-current dataset availability.
+checks three representative query classes and explicit Hybrid request settings;
+it intentionally has no ordered expected response because this is the search
+latency workload. The reviewed query labels supply query text/class inputs but
+do not score NFR-02. Success@5 is evaluated separately by NFR-04. Ordered
+references belong to the architecture-comparison path and are not a prerequisite
+for NFR-02. The checker uses the current clock for NFR-01 availability; a valid
+old fixture is not evidence of current dataset availability.
 
 These case-shape checks do not independently establish archive provenance for
 an arbitrary supplied JSON bundle, human review, dataset parity, model/source
@@ -711,12 +711,13 @@ timeouts separately; do not treat their apparent zero timing as proof that they
 were fast. A successful response, zero blocked time or plausible duration does
 not prove the clock and all boundaries were sound.
 
-The user prefers this built-in approach to a custom timer. The [experiment log](experiment-log.md#2026-11-01-195033-utc--exp-02-proposed-timing-protocol-revision)
-records the proposed rule and its limitations. The approved comparison design
-still requires a verified monotonic clock; the affected owners must review the
-revision before it can replace that rule. NFR-01 and NFR-02 need their own
-reviewed timing decisions. NFR-05 measures chat submission to recipient display
-and is not replaced by these HTTP phases.
+Suraj confirmed the monotonic elapsed-duration rule: use a monotonic clock for
+durations and UTC only for event metadata. The current comparison workload now
+calls the repository's custom monotonic k6 extension around the full HTTP call.
+The custom binary has not yet been built or hash-bound to a run; verification of
+the exact runtime boundary remains a final tooling gate. NFR-01 and NFR-02 use
+the same elapsed-time rule under their own workloads. NFR-05 measures chat
+submission to recipient display and is not replaced by these HTTP phases.
 
 For synthetic offline evaluation only, `comparison_phase_preview.js` can select
 timing fields from the same supplied response. `comparison_phase_report.py`
@@ -735,15 +736,13 @@ over-five-second timing. That limit is a warning, not proof of impossible data.
 It never claims a verified clock or NFR acceptance, and it is not connected to
 the workload or current accounting report.
 
-The installed k6 v2.3.0 on this Linux environment was checked with `k6 inspect`:
-`performance.now` was unavailable. The current local comparison script uses
-`Date.now`, which does not meet the existing verified-monotonic requirement.
-The user's preferred direction is built-in k6 phases, without requiring a custom
-Go extension; affected-owner review of the protocol change remains open. The
-existing disconnected prototype is not selected. Before a real run, settle the
-timing protocol and verify the actual generator version, phase coverage, failure
-accounting and clock-observation procedure. The preview and inspect check do not
-establish those run conditions or demonstrate performance.
+The official unextended k6 binary did not provide the needed monotonic timer
+interface. The comparison workload now imports the repository extension, and a
+pinned custom-binary builder records source and binary hashes. This wiring has
+not yet been built or inspected. Before a real run, verify the custom binary,
+full-call boundary, phase coverage, failure accounting and manifest hash
+binding. The earlier inspect check does not establish run conditions or
+demonstrate performance.
 
 At the immediate burst transition, warm-up requests may finish during the first
 five seconds of measured arrivals. The k6 VU limit is per scenario, so both

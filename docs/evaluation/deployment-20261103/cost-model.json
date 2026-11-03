@@ -1,0 +1,115 @@
+{
+  "status": "proposed-not-cloud-approved",
+  "project_limit_usd": "200",
+  "prior_gross_usage_through_2026_11_02_usd": "26.232051",
+  "predeployment_current_day_delay_reserve_usd": "2",
+  "proposed_incremental_window_cap_usd": "30",
+  "remaining_project_work_reserve_usd": "30",
+  "credits_are_separate": true,
+  "legacy_10_credit_cap_applies": false,
+  "calendar_window_hours": 36,
+  "ecs_active_hours": 12,
+  "lambda_active_invocation_hours": 4,
+  "estimated_expected_incremental_range_usd": [
+    "8",
+    "14"
+  ],
+  "conservative_component_bound_usd": "27.677818",
+  "components": [
+    {
+      "component": "ECS hosts",
+      "quantity": "24",
+      "unit_price_usd": "0.0847900000",
+      "bound_usd": "2.034960",
+      "basis": "instance-hours; at most two hosts for 12 hours"
+    },
+    {
+      "component": "source RDS",
+      "quantity": "36",
+      "unit_price_usd": "0.0210000000",
+      "bound_usd": "0.756000",
+      "basis": "instance-hours including waiting for fresh automated backup"
+    },
+    {
+      "component": "isolated restore RDS",
+      "quantity": "2",
+      "unit_price_usd": "0.0210000000",
+      "bound_usd": "0.042000",
+      "basis": "instance-hours including cleanup"
+    },
+    {
+      "component": "NAT fixed",
+      "quantity": "36",
+      "unit_price_usd": "0.0560000000",
+      "bound_usd": "2.016000",
+      "basis": "gateway-hours; existing baseline counted"
+    },
+    {
+      "component": "ALB fixed",
+      "quantity": "36",
+      "unit_price_usd": "0.0239",
+      "bound_usd": "0.860400",
+      "basis": "regional ALB hours; excludes Outposts/trust-store products"
+    },
+    {
+      "component": "ALB capacity ceiling",
+      "quantity": "720",
+      "unit_price_usd": "0.008",
+      "bound_usd": "5.760000",
+      "basis": "LCU-hours; operational bound monitored, not an AWS billing hard limit"
+    },
+    {
+      "component": "public IPv4 ceiling",
+      "quantity": "216",
+      "unit_price_usd": "0.0050000000",
+      "bound_usd": "1.080000",
+      "basis": "address-hours including ALB, NAT and retained old proxy IP"
+    },
+    {
+      "component": "EC2 retained/new disks",
+      "quantity": "6",
+      "unit_price_usd": "0.0912000000",
+      "bound_usd": "0.547200",
+      "basis": "GB-months at a conservative 120 GiB total, 720-hour convention"
+    },
+    {
+      "component": "RDS source/restore storage",
+      "quantity": "1.055555555555555555555555556",
+      "unit_price_usd": "0.1310000000",
+      "bound_usd": "0.138278",
+      "basis": "GB-months; 20 GiB source plus 20 GiB restore"
+    },
+    {
+      "component": "Lambda bounded compute",
+      "quantity": "288000",
+      "unit_price_usd": "0.0000166667",
+      "bound_usd": "4.800010",
+      "basis": "GB-seconds; 10 reserved executions, 2 GiB, max four active invocation hours"
+    },
+    {
+      "component": "Lambda requests",
+      "quantity": "150000",
+      "unit_price_usd": "2E-7",
+      "bound_usd": "0.030000",
+      "basis": "requests; ceiling includes pilots and formal/NFR work"
+    },
+    {
+      "component": "network/logs/images/mail allowance",
+      "quantity": "1",
+      "unit_price_usd": "5",
+      "bound_usd": "5.000000",
+      "basis": "USD allowance; reserve covers metered traffic, logs, ECR/S3, SES and rounding"
+    },
+    {
+      "component": "tax/pricing/usage contingency",
+      "quantity": "0.20",
+      "unit_price_usd": "23.064848",
+      "bound_usd": "4.612970",
+      "basis": "Planning reserve, not a claim about the account tax rate"
+    }
+  ],
+  "cost_score_anchors_status": "numeric endpoints require human verification before formal results; derive from frozen topology and these prices, never from A/B results",
+  "unallocated_project_headroom_after_cap_and_reserves_usd": "111.767949",
+  "normal_ecs_task_count": 2,
+  "normal_ecs_task_count_status": "two healthy ECS tasks on two hosts in both configurations, matching NFR-06 and Suraj clarification"
+}

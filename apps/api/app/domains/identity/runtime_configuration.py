@@ -48,6 +48,7 @@ class LambdaReadSettings(Settings):
         """Require the real hosted test identity and no unrelated app services."""
         if (
             not self.identity_runtime_enabled
+            or self.nfr07_restore_smoke_enabled
             or self.environment != "test"
             or self.identity_provider != "microsoft"
             or self.email_provider != "disabled"
@@ -228,8 +229,8 @@ def prepare_hosted_test_identity(
     """Prepare real bindings for the explicit hosted test-environment opt-in.
 
     The Settings validator requires real Microsoft/dual selectors, a Listings
-    database URL, exact HTTPS Origins, and test mode. This path still reads only
-    the three fixed Identity SecureStrings and performs a read-only role audit;
+    database URL, exact HTTPS Origins, and test mode. This path reads the fixed Identity SecureStrings (with the fixed isolated
+    database parameter in the explicit NFR-07 profile) and audits the DB role;
     it never migrates, provisions or sends mail during startup.
     """
     if not settings.identity_runtime_enabled or settings.environment != "test":
@@ -290,7 +291,14 @@ def _prepare_identity(
         keys = parse_authentication_keys(
             read_secure_parameter(parameter_client, references.authentication_keys)
         )
-        dsn = read_secure_parameter(parameter_client, references.database_url)
+        # Restore smoke uses the same real keys/provider but its own restored
+        # Identity role/endpoint. No caller-selected secret namespace is allowed.
+        database_parameter = (
+            "/clip/test/nfr07/identity-database-url"
+            if settings.nfr07_restore_smoke_enabled
+            else references.database_url
+        )
+        dsn = read_secure_parameter(parameter_client, database_parameter)
         connect = connection_factory(dsn, settings.environment)
         validate_database(connect, keys)
         sender = RefreshingEmailSender(

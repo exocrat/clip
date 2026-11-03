@@ -67,7 +67,7 @@ class Retrieval:
     """First-page ordered IDs/status from a future real runner or explicit unit script."""
 
     listing_ids: tuple[UUID, ...] = ()
-    status: Literal["ok", "timeout", "error", "unauthorized"] = "ok"
+    status: Literal["ok", "timeout", "error", "unauthorized", "throttled"] = "ok"
 
 
 def _require(condition: bool, code: str) -> None:

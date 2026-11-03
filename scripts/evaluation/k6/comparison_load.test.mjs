@@ -5,13 +5,14 @@ import vm from 'node:vm';
 import { preliminaryOutcome } from './comparison_outcomes.js';
 
 // Replace k6 APIs with local fakes; no network or workload is run.
-function prepare({ throws = false, negative = false, timeout = false, parity = false } = {}) {
+function prepare({ throws = false, negative = false, timeout = false, parity = false, timerStartFails = false } = {}) {
   const source = readFileSync(new URL('./comparison_load.js', import.meta.url), 'utf8')
     .replace(/^import .*;$/gm, '')
     .replace('export const options', 'globalThis.options')
     .replace('export default function ()', 'globalThis.run = function ()');
   const recorded = {};
   let time = 100;
+  let timerStart;
   class Metric {
     constructor(name) { this.name = name; recorded[name] = []; }
     add(value, tags) { recorded[this.name].push({ value, outcome: tags.outcome }); }
@@ -20,7 +21,7 @@ function prepare({ throws = false, negative = false, timeout = false, parity = f
   const profile = { sequence_starts: { low: 0 }, cases: [item], capacity: { preAllocatedVUs: 1, maxVUs: 1 }, timeout_seconds: 5 };
   const context = {
     __ENV: { CLIP_COMPARISON_LOCAL_LOAD: 'true', CLIP_COMPARISON_LOCAL_COOKIE: 'synthetic', CLIP_COMPARISON_LOCAL_PROFILE: 'fixture', CLIP_COMPARISON_LOCAL_CONDITION: 'low', ...(parity ? {CLIP_COMPARISON_LOCAL_PARITY_DRAFT:'true',CLIP_COMPARISON_LOCAL_PARITY_FILE:'parity'} : {}) },
-    open: path => JSON.stringify(path==='parity'?[]:profile), Date: { now: () => time }, Counter: Metric, Trend: Metric,
+    open: path => JSON.stringify(path==='parity'?[]:profile), Counter: Metric, Trend: Metric,
     localApiTarget: () => 'http://127.0.0.1', comparisonPath: () => '/synthetic',
     validateSequenceStarts: value => value, validateComparisonCases: value => value,
     validExpected: () => true, comparisonScenarios: () => ({}),
@@ -30,6 +31,10 @@ function prepare({ throws = false, negative = false, timeout = false, parity = f
     checkAllParity: () => ({all_equal_and_valid:true}),
     correctParityDraftResponse: () => { time += 500; return true; },
     correctResponse: () => { time += 500; return true; },
+    monotonic: {
+      start: () => { if (timerStartFails) throw Error('timer_unavailable'); timerStart = time; },
+      stop: () => { const elapsed = time - timerStart; timerStart = undefined; return elapsed; },
+    },
     http: { get: () => { time += negative ? -10 : 25; if (throws) throw Error('synthetic'); if (timeout) return { status: 0, error_code: 1050 }; return { status: 200, json: () => ({}) }; } },
   };
   vm.runInNewContext(source, context);
@@ -57,14 +62,18 @@ test('a returned timeout is recorded as a failure with its elapsed time', () => 
   assert.deepEqual(recorded.clip_comparison_outcomes, [{ value: 1, outcome: 'timeout' }]);
 });
 
-test('thrown requests and negative clock samples remain accounted for', () => {
+test('thrown requests and invalid monotonic samples remain accounted for', () => {
   const thrown = prepare({ throws: true });
   assert.throws(() => thrown.context.run());
   assert.deepEqual(thrown.recorded.clip_comparison_elapsed_ms, [{ value: 25, outcome: 'transport_error' }]);
   const negative = prepare({ negative: true });
   negative.context.run();
-  assert.equal(negative.recorded.clip_comparison_elapsed_ms[0].value, 0);
+  assert.equal(negative.recorded.clip_comparison_elapsed_ms.length, 0);
   assert.equal(negative.recorded.clip_comparison_clock_invalid.length, 1);
+  const missing = prepare({ timerStartFails: true });
+  assert.throws(() => missing.context.run());
+  assert.equal(missing.recorded.clip_comparison_elapsed_ms.length, 0);
+  assert.equal(missing.recorded.clip_comparison_clock_invalid.length, 1);
 });
 
 test('invalid setup is refused before reading the local session', () => {

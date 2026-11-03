@@ -15,7 +15,7 @@ but does not enable ECS or require infrastructure recreation.
 
 ## ECS capacity lifecycle
 
-`api_service_enabled` defaults to `false`; it sets the ECS API service desired count to zero. The ECS capacity provider manages a single-host Auto Scaling group with minimum zero and maximum one, and starts from zero. Enabling the API service during an approved run lets ECS launch capacity; disabling it after workloads and one-shot tasks finish stops the persistent API task and lets ECS drain/terminate the empty host. Verify zero tasks and hosts; do not wait for an enabled API service task to exit first. The root EBS volume is deleted with that host. ECS scale-in may take about 15 minutes after the cluster becomes empty. One-shot tasks use the cluster's default capacity-provider strategy and can request a host while they run.
+`api_service_enabled` defaults to `false`; it sets the ECS API service desired count to zero. The ECS capacity provider starts with zero hosts and defaults to a one-host maximum. For the separately approved NFR-06 recovery plan, set both `api_service_desired_count=2` and `ecs_host_max_size=2` so two Hybrid-sized serving tasks can be placed on separate hosts; the configuration refuses two requested tasks with a one-host maximum. Do not use these larger settings for the ordinary comparison without an approved plan. Disabling the API service after workloads and one-shot tasks finish sets its desired count to zero and lets ECS drain/terminate empty hosts. Verify zero tasks and hosts; do not wait for enabled API tasks to exit first. The root EBS volume is deleted with its host. ECS scale-in may take about 15 minutes after the cluster becomes empty. One-shot tasks use the cluster's default capacity-provider strategy and can request a host while they run.
 
 To resume after a run, first start RDS and wait until it is available. Then prepare and review a saved Terraform plan with `api_service_enabled=true`, and apply only after approval for that exact plan. After workloads and one-shot tasks finish, prepare/review/apply a separate plan retaining `deployment_phase=service` with `api_service_enabled=false`; wait for API tasks to stop and the host to drain/terminate, then verify zero tasks/hosts. If this stalls, stop and review diagnosis/cost action; do not terminate shared capacity manually. Review the account, Region, backend key, exact changes, cost, and plan checksum for each plan. Never stop or terminate the Auto Scaling group's instance directly. Stop RDS after the tasks have exited, using the reviewed operator procedure below; RDS actions need their own explicit authorization and an approved non-root identity. `aws rds stop-db-instance` and `start-db-instance` are operations, not Terraform plan changes. RDS storage and backups remain while it is stopped, and AWS may automatically restart it after seven consecutive days; the selected full-stack idle teardown is after 96 hours.
 
@@ -174,3 +174,12 @@ options require the real Identity profile. Existing service count, networking,
 S3 scope, credentials and retained stopped resources are unchanged until an
 exact cloud plan is approved and applied. No runtime startup auto-creates SQL
 roles or activates a pipeline. Backend-free mock plans are local checks only.
+
+## NFR-07 isolated restore smoke
+
+`nfr07-smoke.tf` is disabled by default. It provisions a separate stopped service,
+ALB host rule, target group and three write-only database parameters for the
+restore test. Its fixed host is `restore.clip-iisc.site`; it requires the
+reviewed certificate/DNS/Microsoft registration and real Identity profile.
+Follow the [timed provisioning procedure](../../../../docs/evaluation/predeployment-gap-tools.md)
+and approve both preprovisioning and activation plans before cloud changes.
