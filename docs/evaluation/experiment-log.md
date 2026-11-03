@@ -15,6 +15,23 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## Current checkpoint
 
+### 2026-11-03 05:14:41 UTC — Explicit Lambda client configuration
+
+**Work:** `apps/api/app/overflow_client_config.py` builds an explicit SDK
+configuration for the project region with caller-supplied positive connection
+and read timeouts, an explicit connection-pool size and one total attempt.
+Each timeout is at most the approved five-second comparison client timeout.
+`apps/api/tests/test_overflow_client_config.py` checks the settings and refusal
+of invalid inputs. Building the configuration creates no client, discovers no
+credentials and makes no AWS call; the helper is not connected to app startup.
+
+**Checks and limits:** The 15-file synthetic Lambda/overflow suite passed 145
+tests; mypy and Black passed. Socket connect/read timeouts are not a total
+request deadline, the connection pool is not a concurrency limit, and neither
+selected runtime values nor cancellation/backpressure behavior are settled.
+Client creation, trusted ingress, telemetry export, app installation, Terraform
+and real integration remain open. No deployed operation or measurement ran.
+
 ### 2026-11-03 05:11:55 UTC — Broader local Lambda regression
 
 After the middleware and counter changes, ran all 14 focused overflow, Lambda

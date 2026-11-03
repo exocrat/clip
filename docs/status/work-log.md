@@ -1,5 +1,12 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### EXP-03 Lambda client config preparation — 2026-11-03 05:14:41 UTC
+
+Prepared an unwired SDK config with explicit timeouts, pool size and no retries;
+145 local tests and mypy/Black passed. Socket timeouts do not provide a total
+deadline or concurrency cap. Runtime wiring and real checks remain open; no
+AWS action. [Experiment log](../evaluation/experiment-log.md).
+
 ### EXP-03 broader Lambda regression — 2026-11-03 05:11:55 UTC
 
 The combined 14-file local Lambda, ALB and overflow regression passed 133
