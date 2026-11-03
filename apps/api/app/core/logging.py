@@ -30,6 +30,14 @@ _OVERFLOW_COUNT_FIELDS = (
     "deadline_failures",
     "lambda_failures",
     "rejected_requests",
+    "lambda_2xx",
+    "lambda_3xx",
+    "lambda_4xx",
+    "lambda_5xx",
+    "ecs_fallback_2xx",
+    "ecs_fallback_3xx",
+    "ecs_fallback_4xx",
+    "ecs_fallback_5xx",
 )
 _METHODS = {
     "GET",

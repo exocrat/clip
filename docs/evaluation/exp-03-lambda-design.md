@@ -29,9 +29,10 @@ refuses a slot cap below Lambda reserved concurrency. Multiple ECS processes
 each have their own cap; their combined traffic can exceed Lambda concurrency,
 and the AWS throttle moves those excess reads to ECS. Local slot exhaustion
 still produces a separately counted 503, and the cap/traffic relationship
-needs a synthetic multi-process check. Accepted calls exceeding the deadline
-are not retried. Terraform B represents the approved topology but does not mean
-the end-to-end router is deployable yet.
+passed a local synthetic two-process check. Actual Lambda throttle behavior,
+request-rate fit and process-shutdown limits remain unverified. Accepted calls
+exceeding the deadline are not retried. Terraform B represents the approved
+topology but does not mean the end-to-end router is deployable yet.
 
 **Ingress compatibility gap:** The local builder can now remove incoming
 forwarding claims, check an already-resolved HTTPS scheme and exact project

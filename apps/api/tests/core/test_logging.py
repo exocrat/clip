@@ -95,6 +95,8 @@ def test_overflow_summary_keeps_only_fixed_nonnegative_counts():
                 deadline_failures=0,
                 lambda_failures=2,
                 rejected_requests=4,
+                lambda_4xx=1,
+                ecs_fallback_5xx=2,
                 private_value=SENTINEL,
             )
         )
@@ -103,6 +105,8 @@ def test_overflow_summary_keeps_only_fixed_nonnegative_counts():
     assert parsed["run_id"] == "test001"
     assert parsed["lambda_responses"] == 12
     assert parsed["capacity_fallbacks"] == 3
+    assert parsed["lambda_4xx"] == 1
+    assert parsed["ecs_fallback_5xx"] == 2
     assert "private_value" not in parsed
     assert SENTINEL not in json.dumps(parsed)
 

@@ -9,10 +9,10 @@ from dataclasses import dataclass, field
 from functools import partial
 import logging
 import re
-from typing import Any
+from typing import Any, Literal
 
 from starlette.requests import Request
-from starlette.types import ASGIApp, Receive, Scope, Send
+from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from app.core.errors import ERRORS, error_response
 from app.overflow_admission import (
@@ -55,6 +55,14 @@ class OverflowCounts:
         self.deadline_failures = 0
         self.lambda_failures = 0
         self.rejected_requests = 0
+        self.lambda_2xx = 0
+        self.lambda_3xx = 0
+        self.lambda_4xx = 0
+        self.lambda_5xx = 0
+        self.ecs_fallback_2xx = 0
+        self.ecs_fallback_3xx = 0
+        self.ecs_fallback_4xx = 0
+        self.ecs_fallback_5xx = 0
 
     def snapshot(self) -> dict[str, int]:
         """Return a copy of safe aggregate counts, not proof of completed work."""
@@ -65,7 +73,28 @@ class OverflowCounts:
             "deadline_failures": self.deadline_failures,
             "lambda_failures": self.lambda_failures,
             "rejected_requests": self.rejected_requests,
+            "lambda_2xx": self.lambda_2xx,
+            "lambda_3xx": self.lambda_3xx,
+            "lambda_4xx": self.lambda_4xx,
+            "lambda_5xx": self.lambda_5xx,
+            "ecs_fallback_2xx": self.ecs_fallback_2xx,
+            "ecs_fallback_3xx": self.ecs_fallback_3xx,
+            "ecs_fallback_4xx": self.ecs_fallback_4xx,
+            "ecs_fallback_5xx": self.ecs_fallback_5xx,
         }
+
+    def record_response_status(
+        self, backend: Literal["lambda", "ecs_fallback"], status: object
+    ) -> None:
+        """Count only a validated HTTP status group for one selected backend."""
+        if type(status) is not int or not 200 <= status <= 599:
+            return
+        family = status // 100
+        if family not in {2, 3, 4, 5}:
+            return
+        setattr(
+            self, f"{backend}_{family}xx", getattr(self, f"{backend}_{family}xx") + 1
+        )
 
     def emit_summary(self) -> None:
         """Write one privacy-safe process summary for later log aggregation."""
@@ -178,7 +207,16 @@ class OverflowReadMiddleware:
             )
         except LambdaAtCapacity:
             self.counts.capacity_fallbacks += 1
-            await self.app(scope, receive, send)
+
+            async def send_fallback(message: Message) -> None:
+                """Count fallback status only; never inspect response contents."""
+                if message.get("type") == "http.response.start":
+                    self.counts.record_response_status(
+                        "ecs_fallback", message.get("status")
+                    )
+                await send(message)
+
+            await self.app(scope, receive, send_fallback)
             return
         except RouterAtCapacity:
             self.counts.router_capacity_rejections += 1
@@ -199,6 +237,7 @@ class OverflowReadMiddleware:
             await error_response(Request(scope), ERRORS[503])(scope, receive, send)
             return
         self.counts.lambda_responses += 1
+        self.counts.record_response_status("lambda", response.status)
         await send(
             {
                 "type": "http.response.start",

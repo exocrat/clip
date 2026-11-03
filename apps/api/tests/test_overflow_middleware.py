@@ -3,7 +3,7 @@
 import asyncio
 from io import BytesIO
 import json
-from threading import Event
+from threading import Event, Lock
 from types import SimpleNamespace
 
 import httpx2
@@ -194,6 +194,14 @@ def test_counts_are_aggregate_and_not_success_claims():
         "deadline_failures": 0,
         "lambda_failures": 0,
         "rejected_requests": 0,
+        "lambda_2xx": 0,
+        "lambda_3xx": 0,
+        "lambda_4xx": 0,
+        "lambda_5xx": 0,
+        "ecs_fallback_2xx": 0,
+        "ecs_fallback_3xx": 0,
+        "ecs_fallback_4xx": 0,
+        "ecs_fallback_5xx": 1,
     }
 
 
@@ -232,6 +240,122 @@ def test_router_capacity_is_rejected_without_claiming_aws_throttle():
             release.set()
             await task
             invoker.close()
+
+    asyncio.run(run())
+
+
+def test_two_router_processes_share_lambda_capacity_and_fall_back_on_throttle():
+    """Independent ECS caps use Lambda's shared throttle as the global signal."""
+
+    class SharedLambdaCapacity:
+        """Simulate one global Lambda concurrency ceiling across two processes."""
+
+        def __init__(self):
+            self.lock = Lock()
+            self.active = 0
+            self.accepted = Event()
+            self.release = Event()
+            self.meta = SimpleNamespace(
+                config=SimpleNamespace(retries={"total_max_attempts": 1})
+            )
+
+        def invoke(self, **kwargs):
+            """Hold two accepted calls; reject later calls like Lambda 429."""
+            with self.lock:
+                if self.active >= 2:
+                    raise ClientError(
+                        {
+                            "Error": {"Code": "TooManyRequestsException"},
+                            "ResponseMetadata": {"HTTPStatusCode": 429},
+                        },
+                        "Invoke",
+                    )
+                self.active += 1
+                if self.active == 2:
+                    self.accepted.set()
+            try:
+                assert self.release.wait(2)
+                event = {
+                    "statusCode": 200,
+                    "multiValueHeaders": {"content-type": ["application/json"]},
+                    "isBase64Encoded": False,
+                    "body": '{"backend":"lambda"}',
+                }
+                return {
+                    "StatusCode": 200,
+                    "Payload": BytesIO(json.dumps(event).encode()),
+                }
+            finally:
+                with self.lock:
+                    self.active -= 1
+
+    shared_client = SharedLambdaCapacity()
+    fallback_paths = []
+    first_counts = OverflowCounts("test001")
+    second_counts = OverflowCounts("test001")
+
+    async def ecs(scope, receive, send):
+        """Return a small local response and record only the fixed path."""
+        fallback_paths.append(scope["path"])
+        body = b'{"backend":"ecs"}'
+        await send(
+            {
+                "type": "http.response.start",
+                "status": 200,
+                "headers": [(b"content-type", b"application/json")],
+            }
+        )
+        await send({"type": "http.response.body", "body": body})
+
+    async def run():
+        """Interleave two independent process pools against shared Lambda slots."""
+        first_pool = BoundedInvoker(max_inflight=2, deadline_seconds=1)
+        second_pool = BoundedInvoker(max_inflight=2, deadline_seconds=1)
+        first_app = OverflowReadMiddleware(
+            ecs, shared_client, TARGET, TG, first_pool, first_counts
+        )
+        second_app = OverflowReadMiddleware(
+            ecs, shared_client, TARGET, TG, second_pool, second_counts
+        )
+        try:
+            async with (
+                httpx2.AsyncClient(
+                    transport=httpx2.ASGITransport(app=first_app),
+                    base_url="https://clip-iisc.site",
+                ) as first_http,
+                httpx2.AsyncClient(
+                    transport=httpx2.ASGITransport(app=second_app),
+                    base_url="https://clip-iisc.site",
+                ) as second_http,
+            ):
+                accepted = [
+                    asyncio.create_task(first_http.get("/api/listings"))
+                    for _ in range(2)
+                ]
+                assert await asyncio.to_thread(shared_client.accepted.wait, 1)
+                overflow = await asyncio.gather(
+                    second_http.get("/api/listings"),
+                    second_http.get("/api/listings"),
+                )
+                assert [response.json()["backend"] for response in overflow] == [
+                    "ecs",
+                    "ecs",
+                ]
+                assert second_counts.capacity_fallbacks == 2
+                assert second_counts.ecs_fallback_2xx == 2
+                shared_client.release.set()
+                primary = await asyncio.gather(*accepted)
+                assert [response.json()["backend"] for response in primary] == [
+                    "lambda",
+                    "lambda",
+                ]
+                assert first_counts.lambda_responses == 2
+                assert first_counts.lambda_2xx == 2
+                assert fallback_paths == ["/api/listings", "/api/listings"]
+        finally:
+            shared_client.release.set()
+            first_pool.close()
+            second_pool.close()
 
     asyncio.run(run())
 

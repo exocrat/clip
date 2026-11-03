@@ -15,6 +15,32 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## Current checkpoint
 
+### 2026-11-03 05:45:41 UTC — Verify two ECS routers against shared Lambda capacity
+
+**Work:** `apps/api/tests/test_overflow_middleware.py` now runs two independent
+router instances with separate bounded pools against one synthetic Lambda
+capacity of two. Two requests occupy Lambda; two later requests receive an
+AWS-shaped 429 from the fake client and complete on ECS. The first two finish
+on Lambda after release. The test confirms Lambda's service throttle is a
+global capacity signal shared across router instances; it does not simulate
+real AWS scheduling, network delay, task scaling or throughput.
+
+`OverflowCounts.record_response_status` now records 2xx/3xx/4xx/5xx groups
+separately for Lambda responses and ECS throttle fallbacks. The privacy-safe
+shutdown summary includes those fixed counters and the run ID. This makes
+backend status outcomes visible in process logs while keeping response bodies,
+paths, queries, cookies and account details out of the summary.
+
+**Checks:** Fifty-one focused offline tests passed, including the two-router
+case; strict mypy passed for six application modules; Black passed for changed
+Python files. No AWS calls, deployed requests or measurements ran.
+
+**Limits:** This proves only the local routing model. Real IAM, AWS throttle
+classification, ALB trust, Lambda/ECS output parity, task scaling, DB budget,
+log delivery and cross-stream aggregation remain unverified. Process-slot
+exhaustion still produces a separate 503 and must be absent or correctly
+reported in any future measured workload.
+
 ### 2026-11-03 05:43:20 UTC — Wire fail-closed ECS B startup and summary counts
 
 **Work:** `apps/api/app/overflow_runtime.py` reads explicit B environment values,
