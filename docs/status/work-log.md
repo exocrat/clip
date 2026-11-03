@@ -1,5 +1,12 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### EXP-03 synthetic Lambda event builder — 2026-11-03 04:40:44 UTC
+
+Added an unwired selected-read event builder and synthetic tests for repeated
+inputs and unsafe-header refusal. Thirty-six local tests, mypy and Black passed.
+Trusted ingress, real Web Adapter conversion and authentication remain open;
+no cloud action occurred. [Experiment log](../evaluation/experiment-log.md).
+
 ### EXP-03 Lambda Invoke adapter — 2026-11-03 04:38:52 UTC
 
 Prepared an unwired, bounded synchronous SDK adapter with no retries and safe

@@ -15,6 +15,24 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## Current checkpoint
 
+### 2026-11-03 04:40:44 UTC — Synthetic Lambda read event builder
+
+**Work:** `apps/api/app/overflow_event.py` builds a bounded ALB-shaped event
+for a selected bodyless Listing GET, preserving repeated query parameters and
+headers while rejecting forwarded and hop-by-hop headers. Its synthetic target
+group marker is restricted to the project/account naming shape. The builder
+does not establish an authenticated caller or trusted HTTPS; trusted ingress
+metadata and authentication remain integration gates. It is not app-wired.
+`apps/api/tests/test_overflow_event.py` checks synthetic round-trip preservation,
+selected routes and rejection of unsafe headers. AWS documents the
+[multi-value ALB event shape and raw query encoding](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html).
+
+**Checks:** Thirty-six synthetic event, policy and transport tests passed;
+strict mypy and Black passed after formatting. No real Lambda Web Adapter event,
+session, AWS call or measurement occurred. The required trusted HTTPS/host
+handoff and real Web Adapter behavior must be reviewed and tested before use;
+the module deliberately cannot establish either. Terraform B remains blocked.
+
 ### 2026-11-03 04:38:52 UTC — Unwired Lambda Invoke adapter
 
 **Work:** `apps/api/app/overflow_invoke.py` accepts an injected SDK client,
