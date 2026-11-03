@@ -14,29 +14,39 @@ from app.domains.identity.http import IdentityHttpDependencies
 from app.domains.identity.microsoft import MicrosoftTokenValidator
 from app.domains.listings.browse import ListingsBrowseService, PublicBrowseIdentity
 from app.domains.listings.browse_routes import browse_service
+from app.overflow_admission import BoundedInvoker
 from app.overflow_middleware import OverflowDependencies
 from test_lambda_identity import bound_app, hosted_settings  # noqa: F401
 from test_overflow_middleware import FakeClient, TARGET, TG
 
 
-def test_requires_explicit_hosted_identity():
-    dependencies = OverflowDependencies(FakeClient("ok"), TARGET, TG)
+@pytest.fixture
+def invoker():
+    bounded = BoundedInvoker(max_inflight=2, deadline_seconds=1)
+    yield bounded
+    bounded.close()
+
+
+def test_requires_explicit_hosted_identity(invoker):
+    dependencies = OverflowDependencies(FakeClient("ok"), TARGET, TG, invoker)
     with pytest.raises(ConfigurationError, match="Explicit hosted test overflow"):
         create_app(Settings(environment="test"), overflow=dependencies)
 
 
-def test_refuses_mismatched_run_and_retrying_client():
+def test_refuses_mismatched_run_and_retrying_client(invoker):
     with pytest.raises(ValueError, match="Invalid overflow dependencies"):
-        OverflowDependencies(FakeClient("ok"), TARGET, TG.replace("test001", "other01"))
+        OverflowDependencies(
+            FakeClient("ok"), TARGET, TG.replace("test001", "other01"), invoker
+        )
     client = FakeClient("ok")
     client.meta.config.retries = {"total_max_attempts": 2}
     with pytest.raises(ValueError, match="Invalid overflow dependencies"):
-        OverflowDependencies(client, TARGET, TG)
+        OverflowDependencies(client, TARGET, TG, invoker)
 
 
 @pytest.mark.parametrize("outcome", ["ok", "throttle"])
 def test_explicit_composition_routes_and_preserves_logging(
-    bound_app, tmp_path, monkeypatch, outcome
+    bound_app, tmp_path, monkeypatch, outcome, invoker
 ):
     _, read_bindings, store = bound_app
     (tmp_path / "assets").mkdir()
@@ -51,7 +61,7 @@ def test_explicit_composition_routes_and_preserves_logging(
     )
     settings = hosted_settings().model_copy(update={"serve_web_app": True})
     client = FakeClient(outcome)
-    dependencies = OverflowDependencies(client, TARGET, TG)
+    dependencies = OverflowDependencies(client, TARGET, TG, invoker)
     application = create_app(settings, identity=full_identity, overflow=dependencies)
 
     async def provider():

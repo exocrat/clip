@@ -279,13 +279,17 @@ def create_app(
     @asynccontextmanager
     async def lifespan(application: FastAPI) -> AsyncIterator[None]:
         """Bind this app's immutable configuration to the shared owned lifecycle."""
-        async with application_lifespan(
-            application,
-            settings,
-            conversation_pool_factory=pool_factory,
-            read_only_listings=listings_read_only,
-        ):
-            yield
+        try:
+            async with application_lifespan(
+                application,
+                settings,
+                conversation_pool_factory=pool_factory,
+                read_only_listings=listings_read_only,
+            ):
+                yield
+        finally:
+            if overflow is not None:
+                overflow.invoker.close()
 
     # Health, Listings lifecycle and wanted-request author/read routes are mounted here.
     # Domain storage/auth integrations remain explicitly configured dependencies.
@@ -318,6 +322,7 @@ def create_app(
             client=overflow.client,
             target=overflow.target,
             target_group=overflow.target_group,
+            invoker=overflow.invoker,
             counts=overflow.counts,
         )
         app.state.overflow_counts = overflow.counts

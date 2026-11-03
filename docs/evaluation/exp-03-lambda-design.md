@@ -18,9 +18,13 @@ attempt, response parsing and ECS fallback after a confirmed throttle. The app
 factory can install it only with explicit dependencies in a hosted test setup;
 normal startup never enables it. Logging wraps the router and ECS fallback retains
 the normal Identity stack. Before real deployment, review and implement trusted
-proxy/source enforcement, client initialization and total deadlines, bounded
-concurrency, per-backend evidence and equivalent error/route behavior. Terraform
-B remains blocked; local tests do not approve deployment.
+proxy/source enforcement, client initialization, chosen deadlines and aggregate
+concurrency, per-backend evidence and equivalent error/route behavior. A local
+per-process admission limit is now wired: full router slots produce a 503
+before Lambda is attempted, separately counted from an actual Lambda throttle.
+This local limit may reject traffic before Lambda itself is saturated and must
+be sized, reviewed and reported. Accepted calls exceeding the deadline are not
+retried. Terraform B remains blocked; local tests do not approve deployment.
 
 **Ingress compatibility gap:** The local builder can now remove incoming
 forwarding claims, check an already-resolved HTTPS scheme and exact project

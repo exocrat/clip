@@ -5,8 +5,8 @@ Lambda client. This component is not enabled by environment variables and is
 not a deployment authorization or proof of real session parity.
 """
 
-import asyncio
 from dataclasses import dataclass, field
+from functools import partial
 import re
 from typing import Any
 
@@ -14,6 +14,11 @@ from starlette.requests import Request
 from starlette.types import ASGIApp, Receive, Scope, Send
 
 from app.core.errors import ERRORS, error_response
+from app.overflow_admission import (
+    BoundedInvoker,
+    RouterAtCapacity,
+    RouterDeadlineExceeded,
+)
 from app.overflow_dispatch import LambdaAtCapacity
 from app.overflow_event import build_read_event, clean_ingress_headers
 from app.overflow_invoke import invoke_read
@@ -36,6 +41,8 @@ class OverflowCounts:
     def __init__(self) -> None:
         self.lambda_responses = 0
         self.capacity_fallbacks = 0
+        self.router_capacity_rejections = 0
+        self.deadline_failures = 0
         self.lambda_failures = 0
         self.rejected_requests = 0
 
@@ -44,6 +51,8 @@ class OverflowCounts:
         return {
             "lambda_responses": self.lambda_responses,
             "capacity_fallbacks": self.capacity_fallbacks,
+            "router_capacity_rejections": self.router_capacity_rejections,
+            "deadline_failures": self.deadline_failures,
             "lambda_failures": self.lambda_failures,
             "rejected_requests": self.rejected_requests,
         }
@@ -60,6 +69,7 @@ class OverflowDependencies:
     client: Any = field(repr=False)
     target: str
     target_group: str
+    invoker: BoundedInvoker = field(repr=False)
     counts: OverflowCounts = field(default_factory=OverflowCounts, repr=False)
 
     def __post_init__(self) -> None:
@@ -70,6 +80,7 @@ class OverflowDependencies:
             or _TARGET_GROUP.fullmatch(self.target_group) is None
             or not callable(getattr(self.client, "invoke", None))
             or not isinstance(self.counts, OverflowCounts)
+            or not isinstance(self.invoker, BoundedInvoker)
         ):
             raise ValueError("Invalid overflow dependencies")
         target_run = self.target.split(":function:clip-exp03-", 1)[1].split(":", 1)[0]
@@ -95,6 +106,7 @@ class OverflowReadMiddleware:
         client: Any,
         target: str,
         target_group: str,
+        invoker: BoundedInvoker,
         counts: OverflowCounts | None = None,
     ):
         """Bind an explicit client/targets; never discover credentials or endpoints."""
@@ -102,6 +114,7 @@ class OverflowReadMiddleware:
         self.client = client
         self.target = target
         self.target_group = target_group
+        self.invoker = invoker
         self.counts = counts if counts is not None else OverflowCounts()
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
@@ -140,12 +153,20 @@ class OverflowReadMiddleware:
             await error_response(Request(scope), ERRORS[400])(scope, receive, send)
             return
         try:
-            payload = await asyncio.to_thread(
-                invoke_read, self.client, self.target, event
+            payload = await self.invoker.invoke(
+                partial(invoke_read, self.client, self.target, event)
             )
         except LambdaAtCapacity:
             self.counts.capacity_fallbacks += 1
             await self.app(scope, receive, send)
+            return
+        except RouterAtCapacity:
+            self.counts.router_capacity_rejections += 1
+            await error_response(Request(scope), ERRORS[503])(scope, receive, send)
+            return
+        except RouterDeadlineExceeded:
+            self.counts.deadline_failures += 1
+            await error_response(Request(scope), ERRORS[503])(scope, receive, send)
             return
         except Exception:
             self.counts.lambda_failures += 1

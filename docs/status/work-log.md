@@ -1,5 +1,14 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### EXP-03 bounded router integration — 2026-11-03 05:23:09 UTC
+
+Wired the per-process bounded invoker into the explicit test router and app
+lifespan. Router-capacity 503 is separate from AWS throttle fallback; deadline
+failure is not retried. The synthetic suite passed 158 tests plus mypy,
+Black and boundary checks. Runtime sizing, trusted ingress, telemetry export,
+Terraform and real integration remain open. No AWS action.
+[Experiment log](../evaluation/experiment-log.md).
+
 ### EXP-03 bounded invocation preparation — 2026-11-03 05:20:44 UTC
 
 Prepared an unwired per-process invocation bound that keeps slots until timed-out

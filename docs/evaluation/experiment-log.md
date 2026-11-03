@@ -15,6 +15,29 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## Current checkpoint
 
+### 2026-11-03 05:23:09 UTC — Wire bounded router and lifecycle
+
+**Work:** `apps/api/app/overflow_middleware.py` now requires the explicit
+`BoundedInvoker` for the hosted-test router. A full per-process router returns
+503 without invoking Lambda and increments its own capacity rejection counter;
+an AWS throttle remains a separate ECS fallback. A router deadline returns a safe
+503 without ECS retry because the accepted call may still run. The invoker
+holds its slot until the worker ends. `apps/api/app/application.py` closes the
+invoker in its app lifespan, including startup failure; this does not forcibly
+stop active SDK threads. The affected middleware/composition tests cover both
+cases and shutdown-compatible explicit injection.
+
+**Checks:** The 17-file local suite passed 158 synthetic tests; strict mypy,
+Black and the Python boundary check passed. No AWS calls or measurement ran.
+
+**Limits:** Local capacity is per process and may be lower than actual Lambda
+capacity; these 503s must not be reported as Lambda throttles. Aggregate ECS processes,
+Lambda reserved concurrency and PostgreSQL connection limits need one reviewed
+budget. Timeout, pool and capacity values are not yet selected for deployment.
+SDK calls can continue after a request deadline and socket timeouts do not prove
+their end. Runtime client creation, telemetry export, trusted source, Terraform,
+owner review and real parity remain open; B remains blocked.
+
 ### 2026-11-03 05:20:44 UTC — Local bounded invocation preparation
 
 **Work:** `apps/api/app/overflow_admission.py` adds an explicit per-process

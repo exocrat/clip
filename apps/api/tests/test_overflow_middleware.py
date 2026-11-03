@@ -3,12 +3,14 @@
 import asyncio
 from io import BytesIO
 import json
+from threading import Event
 from types import SimpleNamespace
 
 import httpx2
 import pytest
 from botocore.exceptions import ClientError
 
+from app.overflow_admission import BoundedInvoker
 from app.overflow_middleware import OverflowCounts, OverflowReadMiddleware
 from test_lambda_identity import bound_app  # noqa: F401
 
@@ -71,11 +73,15 @@ def request(
         await send({"type": "http.response.body", "body": body})
 
     async def run():
-        app = OverflowReadMiddleware(ecs, client, TARGET, TG)
-        async with httpx2.AsyncClient(
-            transport=httpx2.ASGITransport(app=app), base_url=base
-        ) as http:
-            return await http.request(method, path, headers=headers)
+        invoker = BoundedInvoker(max_inflight=2, deadline_seconds=1)
+        try:
+            app = OverflowReadMiddleware(ecs, client, TARGET, TG, invoker)
+            async with httpx2.AsyncClient(
+                transport=httpx2.ASGITransport(app=app), base_url=base
+            ) as http:
+                return await http.request(method, path, headers=headers)
+        finally:
+            invoker.close()
 
     return asyncio.run(run()), client, calls
 
@@ -138,11 +144,16 @@ def test_throttle_falls_back_to_real_local_identity_and_read_route(
     )
 
     async def run():
-        app = OverflowReadMiddleware(application, client, TARGET, TG)
-        async with httpx2.AsyncClient(
-            transport=httpx2.ASGITransport(app=app), base_url="https://clip-iisc.site"
-        ) as http:
-            return await http.get("/api/listings?page=1", headers=headers)
+        invoker = BoundedInvoker(max_inflight=2, deadline_seconds=1)
+        try:
+            app = OverflowReadMiddleware(application, client, TARGET, TG, invoker)
+            async with httpx2.AsyncClient(
+                transport=httpx2.ASGITransport(app=app),
+                base_url="https://clip-iisc.site",
+            ) as http:
+                return await http.get("/api/listings?page=1", headers=headers)
+        finally:
+            invoker.close()
 
     response = asyncio.run(run())
     assert response.status_code == (200 if authenticated else 401)
@@ -164,16 +175,100 @@ def test_counts_are_aggregate_and_not_success_claims():
         await send({"type": "http.response.body", "body": b""})
 
     async def run():
-        app = OverflowReadMiddleware(ecs, client, TARGET, TG, counts)
-        async with httpx2.AsyncClient(
-            transport=httpx2.ASGITransport(app=app), base_url="https://clip-iisc.site"
-        ) as http:
-            return await http.get("/api/listings")
+        invoker = BoundedInvoker(max_inflight=2, deadline_seconds=1)
+        try:
+            app = OverflowReadMiddleware(ecs, client, TARGET, TG, invoker, counts)
+            async with httpx2.AsyncClient(
+                transport=httpx2.ASGITransport(app=app),
+                base_url="https://clip-iisc.site",
+            ) as http:
+                return await http.get("/api/listings")
+        finally:
+            invoker.close()
 
     assert asyncio.run(run()).status_code == 503
     assert counts.snapshot() == {
         "lambda_responses": 0,
         "capacity_fallbacks": 1,
+        "router_capacity_rejections": 0,
+        "deadline_failures": 0,
         "lambda_failures": 0,
         "rejected_requests": 0,
     }
+
+
+def test_router_capacity_is_rejected_without_claiming_aws_throttle():
+    started, release = Event(), Event()
+    invoker = BoundedInvoker(max_inflight=1, deadline_seconds=1)
+    counts = OverflowCounts()
+    client = FakeClient("ok")
+    ecs_calls = []
+
+    def blocked():
+        started.set()
+        assert release.wait(2)
+
+    async def ecs(scope, receive, send):
+        ecs_calls.append(1)
+        await send({"type": "http.response.start", "status": 200, "headers": []})
+        await send({"type": "http.response.body", "body": b"ecs"})
+
+    async def run():
+        task = asyncio.create_task(invoker.invoke(blocked))
+        try:
+            assert await asyncio.to_thread(started.wait, 1)
+            app = OverflowReadMiddleware(ecs, client, TARGET, TG, invoker, counts)
+            async with httpx2.AsyncClient(
+                transport=httpx2.ASGITransport(app=app),
+                base_url="https://clip-iisc.site",
+            ) as http:
+                response = await http.get("/api/listings")
+            assert response.status_code == 503
+            assert not client.calls
+            assert not ecs_calls
+            assert counts.router_capacity_rejections == 1
+            assert counts.capacity_fallbacks == 0
+        finally:
+            release.set()
+            await task
+            invoker.close()
+
+    asyncio.run(run())
+
+
+def test_deadline_does_not_retry_on_ecs_while_worker_is_running():
+    started, release, finished = Event(), Event(), Event()
+    counts = OverflowCounts()
+    invoker = BoundedInvoker(max_inflight=1, deadline_seconds=0.05)
+    client = FakeClient("ok")
+    ecs_calls = []
+
+    def invoke(**kwargs):
+        started.set()
+        try:
+            assert release.wait(2)
+            return {"StatusCode": 200, "Payload": BytesIO(b"{}")}
+        finally:
+            finished.set()
+
+    client.invoke = invoke
+
+    async def ecs(scope, receive, send):
+        ecs_calls.append(1)
+
+    async def run():
+        try:
+            app = OverflowReadMiddleware(ecs, client, TARGET, TG, invoker, counts)
+            async with httpx2.AsyncClient(
+                transport=httpx2.ASGITransport(app=app),
+                base_url="https://clip-iisc.site",
+            ) as http:
+                response = await http.get("/api/listings")
+            assert started.is_set() and response.status_code == 503
+            assert counts.deadline_failures == 1 and not ecs_calls
+        finally:
+            release.set()
+            assert await asyncio.to_thread(finished.wait, 2)
+            invoker.close()
+
+    asyncio.run(run())
