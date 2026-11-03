@@ -21,9 +21,11 @@ actual load balancer and that an unauthorized Lambda invoker cannot spoof the
 event. Identity requires HTTPS, while the synthetic bridge hardcodes it. A
 network-isolated check of the cached real Lambda Web Adapter confirmed that a
 synthetic event's HTTPS header, host, cookie and repeated filters reach a
-synthetic HTTP server. It did not run Uvicorn, real Identity or actual ALB/IAM.
-Those trusted source and real session checks remain open and block deployment.
-The local helper is not itself proof of an ingress security boundary.
+synthetic HTTP server. A follow-up isolated check ran the cached real adapter,
+Uvicorn and Identity middleware with synthetic session bindings: HTTPS reached
+the handler and HTTP was denied. Actual ALB/IAM, current image, real session
+and trusted-source checks remain open and block deployment. The local helper
+is not itself proof of an ingress security boundary.
 
 ## Local package-input audit
 

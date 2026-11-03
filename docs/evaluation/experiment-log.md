@@ -15,6 +15,32 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## Current checkpoint
 
+### 2026-11-03 04:59:56 UTC — Offline adapter, Uvicorn and Identity probe
+
+**Scope and outcome:** In a temporary Docker container with `--network none`
+and a read-only root, the cached `clip-exp03-lambda:local-8a60f83` image ran
+the actual Lambda Web Adapter, Uvicorn and the cached app's Identity browser
+middleware. A synthetic runtime supplied an ALB-shaped read event, while a
+synthetic session service and endpoint replaced real Identity/database/product
+dependencies. An HTTPS event returned 200: the handler observed HTTPS, the
+synthetic caller and both category values. The same probe with HTTP returned
+403. No account credentials or real AWS, database or deployed API were used.
+
+**Failures and cleanup:** Three initial attempts timed out before an event was
+delivered because the synthetic middleware bindings were synchronous; an
+isolated diagnostic exposed the fake-binding error. Converting those test
+bindings to async allowed both HTTPS and HTTP checks to finish. The container
+used `--rm`; a subsequent exact-name Docker inventory returned no container.
+Temporary probe SHA-256 values were `2a6351032aeae0e042ebb4031f97d2b695d04be0256d1bc86a0c0a5b378f7a3a`
+for `/tmp/clip-lwa-identity-probe.py` and
+`255c31efc8ca178ba42a6dfe0680181f2523e5a230825387e033dafa800f1b7e` for
+`/tmp/clip_lwa_identity_app.py`. No AWS action or experiment measurement ran.
+
+**Limits:** This tests the cached source/image and a fake session on localhost.
+It does not establish current-image parity, real session SQL, actual ALB peer
+trust, Lambda invocation IAM, response correctness, deployed safety or timing.
+Those remain open before enabling configuration B.
+
 ### 2026-11-03 04:54:44 UTC — Network-isolated real adapter probe
 
 **Scope and outcome:** Ran the cached `clip-exp03-lambda:local-8a60f83` image

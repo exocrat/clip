@@ -1,5 +1,13 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### EXP-03 isolated Identity adapter probe — 2026-11-03 04:59:56 UTC
+
+Cached Lambda Web Adapter, Uvicorn and Identity middleware processed a synthetic
+session with HTTPS (200) and rejected HTTP (403) in a network-none container.
+After fixing the fake async bindings, cleanup was verified. Real sessions,
+ALB trust, current image and deployed parity remain open. No AWS action.
+[Experiment log](../evaluation/experiment-log.md).
+
 ### EXP-03 offline real adapter probe — 2026-11-03 04:54:44 UTC
 
 The cached Lambda Web Adapter processed a synthetic ALB event in a network-none
