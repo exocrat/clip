@@ -15,6 +15,23 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## Current checkpoint
 
+### 2026-11-03 04:44:30 UTC — Synthetic overflow chain integration
+
+**Work:** `apps/api/tests/test_overflow_local_chain.py` composes the local
+event builder, injected synchronous SDK transport, synthetic ALB/ASGI bridge,
+response parser and dispatch policy. It checks one Lambda success and one
+confirmed-throttle ECS fallback, including a synthetic cookie and repeated
+filters. Both AWS and the application/Identity are test doubles. The bridge
+asserts HTTPS in its synthetic scope, so this test does not prove a trusted
+real HTTPS handoff or actual Lambda Web Adapter compatibility.
+
+**Checks:** Forty-six combined synthetic tests and Black passed. The first
+sandboxed run stalled and was interrupted; the same offline suite passed with
+approved escalation for local asyncio/thread communication. No AWS call,
+real session, deployed request or measurement occurred. App wiring, bounded
+timeouts, real Identity, attribution, database and deployed parity remain
+open; Terraform B stays blocked.
+
 ### 2026-11-03 04:42:25 UTC — Synthetic Lambda response parser
 
 **Work:** `apps/api/app/overflow_response.py` validates a bounded ALB-shaped

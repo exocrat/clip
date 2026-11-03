@@ -1,5 +1,12 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### EXP-03 synthetic overflow chain — 2026-11-03 04:44:30 UTC
+
+Composed the local event, SDK, synthetic ASGI and fallback components; 46
+synthetic tests passed with local escalation after a sandboxed run stalled.
+This does not prove real HTTPS, Identity, Web Adapter or deployed parity; B
+remains blocked. No AWS action. [Experiment log](../evaluation/experiment-log.md).
+
 ### EXP-03 synthetic Lambda response parser — 2026-11-03 04:42:25 UTC
 
 Prepared an unwired bounded ALB response parser, preserving status and repeated
