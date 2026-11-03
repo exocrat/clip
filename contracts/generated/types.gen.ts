@@ -627,6 +627,31 @@ export type ImageDelivery = {
 };
 
 /**
+ * ImageDeliveryBatch
+ *
+ * Private short-lived links for only the requested authorized images.
+ */
+export type ImageDeliveryBatch = {
+    /**
+     * Items
+     */
+    items: Array<ImageDeliveryItem>;
+};
+
+/**
+ * ImageDeliveryItem
+ *
+ * Missing and hidden images both have no link; never disclose their state.
+ */
+export type ImageDeliveryItem = {
+    delivery: ImageDelivery | null;
+    /**
+     * Image Id
+     */
+    image_id: string;
+};
+
+/**
  * ImageUploadRequest
  *
  * Metadata and stable idempotency key for a pending image upload.
@@ -1767,6 +1792,22 @@ export type SavedListingAck = {
 };
 
 /**
+ * SavedListingStatus
+ *
+ * Only the caller's own saved relationship, including unavailable references.
+ */
+export type SavedListingStatus = {
+    /**
+     * Listing Id
+     */
+    listing_id: string;
+    /**
+     * Saved
+     */
+    saved: boolean;
+};
+
+/**
  * SavedListingView
  *
  * Caller-owned saved reference with current safe detail or retired marker.
@@ -1785,6 +1826,18 @@ export type SavedListingView = {
      * Saved At
      */
     saved_at: string;
+};
+
+/**
+ * SavedStatusBatch
+ *
+ * One status per requested ID; no other user's references or listing content.
+ */
+export type SavedStatusBatch = {
+    /**
+     * Items
+     */
+    items: Array<SavedListingStatus>;
 };
 
 /**
@@ -3748,6 +3801,68 @@ export type ListingsConfirmImageUploadResponses = {
 
 export type ListingsConfirmImageUploadResponse = ListingsConfirmImageUploadResponses[keyof ListingsConfirmImageUploadResponses];
 
+export type ListingsGetImageDeliveryBatchData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Image Ids
+         */
+        image_ids: Array<string>;
+    };
+    url: '/images/delivery';
+};
+
+export type ListingsGetImageDeliveryBatchErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorEnvelope;
+    /**
+     * Unauthorized
+     */
+    401: ErrorEnvelope;
+    /**
+     * Forbidden
+     */
+    403: ErrorEnvelope;
+    /**
+     * Not Found
+     */
+    404: ErrorEnvelope;
+    /**
+     * Conflict
+     */
+    409: ErrorEnvelope;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorEnvelope;
+    /**
+     * Too Many Requests
+     */
+    429: ErrorEnvelope;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorEnvelope;
+    /**
+     * Service Unavailable
+     */
+    503: ErrorEnvelope;
+};
+
+export type ListingsGetImageDeliveryBatchError = ListingsGetImageDeliveryBatchErrors[keyof ListingsGetImageDeliveryBatchErrors];
+
+export type ListingsGetImageDeliveryBatchResponses = {
+    /**
+     * Successful Response
+     */
+    200: ImageDeliveryBatch;
+};
+
+export type ListingsGetImageDeliveryBatchResponse = ListingsGetImageDeliveryBatchResponses[keyof ListingsGetImageDeliveryBatchResponses];
+
 export type ListingsGetImageDeliveryData = {
     body?: never;
     path: {
@@ -5181,6 +5296,68 @@ export type SearchListSavedListingsResponses = {
 };
 
 export type SearchListSavedListingsResponse = SearchListSavedListingsResponses[keyof SearchListSavedListingsResponses];
+
+export type SearchReadSavedStatusBatchData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Listing Ids
+         */
+        listing_ids: Array<string>;
+    };
+    url: '/me/saved-listings/status';
+};
+
+export type SearchReadSavedStatusBatchErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorEnvelope;
+    /**
+     * Unauthorized
+     */
+    401: ErrorEnvelope;
+    /**
+     * Forbidden
+     */
+    403: ErrorEnvelope;
+    /**
+     * Not Found
+     */
+    404: ErrorEnvelope;
+    /**
+     * Conflict
+     */
+    409: ErrorEnvelope;
+    /**
+     * Unprocessable Content
+     */
+    422: ErrorEnvelope;
+    /**
+     * Too Many Requests
+     */
+    429: ErrorEnvelope;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorEnvelope;
+    /**
+     * Service Unavailable
+     */
+    503: ErrorEnvelope;
+};
+
+export type SearchReadSavedStatusBatchError = SearchReadSavedStatusBatchErrors[keyof SearchReadSavedStatusBatchErrors];
+
+export type SearchReadSavedStatusBatchResponses = {
+    /**
+     * Successful Response
+     */
+    200: SavedStatusBatch;
+};
+
+export type SearchReadSavedStatusBatchResponse = SearchReadSavedStatusBatchResponses[keyof SearchReadSavedStatusBatchResponses];
 
 export type SearchUnsaveListingData = {
     body?: never;

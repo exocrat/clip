@@ -1,4 +1,5 @@
 import { sessionFetch, SessionFetchError } from '../../shared/http/sessionFetch';
+import { batchedRead } from '../../shared/http/batchedRead';
 import type {
   ConversationStartResult,
   CreateWantedRequest,
@@ -7,6 +8,7 @@ import type {
   PageResultWantedRequestOwnerView,
   PageResultWantedRequestPublic,
   SavedListingAck,
+  SavedStatusBatch,
   SessionView,
   WantedRequestOwnerView,
   WantedRequestPatch,
@@ -282,14 +284,18 @@ const readSavedPage = (number: number, pageSize: 20 | 100, signal: AbortSignal) 
 export const readSaved = (number: number, signal: AbortSignal) =>
   readSavedPage(number, 20, signal);
 
-/** Search only the caller's current private saved pages; stop as soon as found. */
-export async function isListingSaved(listingId: string, signal: AbortSignal): Promise<boolean> {
-  for (let number = 1; ; number += 1) {
-    const result = await readSavedPage(number, 100, signal);
-    if (result.items.some((item) => item.listing_id === listingId)) return true;
-    if (!result.has_next) return false;
-  }
-}
+/** Fetch exactly the current render's IDs once, without traversing saved content. */
+export const isListingSaved = batchedRead<boolean>(async (ids, signal) => {
+  const query = new URLSearchParams();
+  for (const id of ids) query.append('listing_ids', id);
+  const value = await request<SavedStatusBatch>(`/me/saved-listings/status?${query}`, signal, (v) =>
+    object(v) && exact(v, ['items']) && Array.isArray(v.items) && v.items.length === ids.length &&
+    new Set(v.items.map((item) => object(item) ? item.listing_id : null)).size === ids.length &&
+    v.items.every((item) => object(item) && exact(item, ['listing_id', 'saved']) &&
+      validSearchId(item.listing_id) && ids.includes(item.listing_id) && typeof item.saved === 'boolean'),
+  );
+  return new Map(value.items.map((item) => [item.listing_id, item.saved]));
+});
 export const saveListing = (id: string, operationId: string, signal: AbortSignal) =>
   request<SavedListingAck>(
     `/me/saved-listings/${id}`,

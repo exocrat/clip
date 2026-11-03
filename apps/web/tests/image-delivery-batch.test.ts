@@ -1,0 +1,25 @@
+import { afterEach, expect, it, vi } from 'vitest';
+import { readImageDelivery } from '../src/features/listings/listingsApi';
+
+const id = (n: number) => `30000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
+afterEach(() => vi.unstubAllGlobals());
+
+it('batches photo links and isolates a hidden image without failing other photos', async () => {
+  const delivery = { url: 'https://storage.example.invalid/synthetic-link', url_expires_at: new Date(Date.now() + 240000).toISOString() };
+  const fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({ items: [
+    { image_id: id(1), delivery }, { image_id: id(2), delivery: null },
+  ] }), { status: 200 }));
+  vi.stubGlobal('fetch', fetch);
+  const visible = readImageDelivery(id(1));
+  const hidden = readImageDelivery(id(2));
+  await expect(visible).resolves.toEqual(delivery);
+  await expect(hidden).rejects.toMatchObject({ status: 404 });
+  expect(fetch).toHaveBeenCalledTimes(1);
+});
+
+it('rejects an expired link rather than returning it to an image element', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ items: [
+    { image_id: id(1), delivery: { url: 'https://storage.example.invalid/expired', url_expires_at: new Date(Date.now() - 1000).toISOString() } },
+  ] }), { status: 200 })));
+  await expect(readImageDelivery(id(1))).rejects.toMatchObject({ status: 503 });
+});

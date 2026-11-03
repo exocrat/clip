@@ -325,6 +325,9 @@ def test_read_bootstrap_reads_only_auth_and_db_and_never_prepares_mail(monkeypat
     monkeypatch.setattr(runtime, "connection_factory", lambda dsn, environment: connect)
     audit = MagicMock()
     monkeypatch.setattr(runtime, "validate_database", audit)
+    pooled = MagicMock()
+    pool_factory = MagicMock(return_value=pooled)
+    monkeypatch.setattr(runtime, "IdentityConnectionPool", pool_factory)
     constructor = MagicMock(return_value=bindings.sessions)
     monkeypatch.setattr(runtime, "IdentitySessions", constructor)
     monkeypatch.setattr(runtime, "RefreshingEmailSender", forbidden)
@@ -339,6 +342,11 @@ def test_read_bootstrap_reads_only_auth_and_db_and_never_prepares_mail(monkeypat
     ]
     audit.assert_called_once_with(connect, keys)
     constructor.assert_called_once()
+    pool_factory.assert_called_once_with(
+        SecretStr("synthetic"), "test", max_size=1, retain_idle=False
+    )
+    assert constructor.call_args.args[0] is pooled
+    assert result.close == pooled.close
 
 
 def test_read_bootstrap_refuses_unenabled_mode_before_reading_secrets(monkeypatch):

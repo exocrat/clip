@@ -1,0 +1,65 @@
+{
+  "at": "2026-11-03T19:22:53.179912+00:00",
+  "max_connections": "78",
+  "reserved": "3",
+  "roles": [
+    {
+      "role": "clip_test_conversations_app",
+      "limit": 4,
+      "connections": 2
+    },
+    {
+      "role": "clip_test_identity_app",
+      "limit": 10,
+      "connections": 0
+    },
+    {
+      "role": "clip_test_marketplace_app",
+      "limit": 32,
+      "connections": 9
+    }
+  ],
+  "embedding_states": {
+    "pending": 2,
+    "ready": 1000
+  },
+  "worker_privileges": {
+    "embedding_generations_UPDATE": false,
+    "embedding_chunks_INSERT": false
+  },
+  "deployment_configuration": {
+    "deploymentCircuitBreaker": {
+      "enable": true,
+      "rollback": true,
+      "resetOnHealthyTask": true,
+      "thresholdConfiguration": {
+        "type": "BOUNDED_PERCENT",
+        "value": 50
+      }
+    },
+    "maximumPercent": 100,
+    "minimumHealthyPercent": 0,
+    "strategy": "ROLLING",
+    "bakeTimeInMinutes": 0
+  },
+  "container": {
+    "cpu": 512,
+    "memory": 2048,
+    "portMappings": [
+      {
+        "containerPort": 8000,
+        "hostPort": 18000,
+        "protocol": "tcp"
+      }
+    ],
+    "nonsecret_feature_flags": {
+      "CLIP_NOTIFICATION_WORKER_ENABLED": "true",
+      "CLIP_ENVIRONMENT": "test",
+      "CLIP_NOTIFICATION_ALLOW_UNLISTED_RECIPIENTS": "false",
+      "CLIP_IDENTITY_RUNTIME_ENABLED": "true",
+      "CLIP_HYBRID_SEARCH_ENABLED": "true",
+      "CLIP_HYBRID_WORKER_ENABLED": "true"
+    }
+  },
+  "resource_mutations": false
+}

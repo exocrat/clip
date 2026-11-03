@@ -41,12 +41,15 @@ class SsmEmailRouteLoader:
         recipients: tuple[str, ...],
         ses: EmailSender,
         client: ParameterClient | None = None,
+        *,
+        allow_unlisted_recipients: bool = False,
     ) -> None:
         """Require a private project path; construction reads no secrets/providers."""
         if not re.fullmatch(r"/clip/[a-zA-Z0-9_/-]{1,250}", parameter):
             raise ValueError("Explicit project email parameter required")
         self._parameter, self._recipients, self._ses = parameter, recipients, ses
         self._client = client
+        self._allow_unlisted = allow_unlisted_recipients
 
     def __call__(self) -> EmailRoute:
         """Strictly validate the private versioned JSON before constructing a route."""
@@ -71,7 +74,11 @@ class SsmEmailRouteLoader:
                 raise ValueError
             return EmailRoute(
                 value["primary"],
-                ResendEmailSender(SecretStr(value["resend_api_key"]), self._recipients),
+                ResendEmailSender(
+                    SecretStr(value["resend_api_key"]),
+                    self._recipients,
+                    allow_unlisted_recipients=self._allow_unlisted,
+                ),
                 self._ses,
             )
         except Exception:

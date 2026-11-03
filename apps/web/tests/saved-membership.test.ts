@@ -1,49 +1,51 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { isListingSaved } from '../src/features/search/wantedApi';
 
-const savedAt = '2026-10-25T13:00:00.000000Z';
-const id = (number: number) => `20000000-0000-4000-8000-${String(number).padStart(12, '0')}`;
-const retired = (listingId: string) => ({
-  listing_id: listingId,
-  saved_at: savedAt,
-  listing: null,
-  retired: true,
+const id = (n: number) => `20000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
+const response = (items: unknown[]) => new Response(JSON.stringify({ items }), {
+  status: 200, headers: { 'Content-Type': 'application/json' },
 });
-const page = (items: unknown[], number: number, hasNext: boolean) => new Response(JSON.stringify({
-  items,
-  page: number,
-  page_size: 100,
-  has_next: hasNext,
-}), { status: 200, headers: { 'Content-Type': 'application/json' } });
-
 afterEach(() => vi.unstubAllGlobals());
 
-describe('saved listing membership check', () => {
-  it('recognizes an already saved listing on the first private page', async () => {
-    const fetch = vi.fn().mockResolvedValue(page([retired(id(1))], 1, false));
+describe('private saved membership batching', () => {
+  it('checks an entire render in one request without loading saved listing content', async () => {
+    const fetch = vi.fn().mockResolvedValue(response([
+      { listing_id: id(1), saved: true }, { listing_id: id(2), saved: false },
+    ]));
     vi.stubGlobal('fetch', fetch);
-
-    await expect(isListingSaved(id(1), new AbortController().signal)).resolves.toBe(true);
+    await expect(Promise.all([isListingSaved(id(1)), isListingSaved(id(2)), isListingSaved(id(1))]))
+      .resolves.toEqual([true, false, true]);
     expect(fetch).toHaveBeenCalledTimes(1);
-    expect(fetch.mock.calls[0][0]).toBe('/api/me/saved-listings?page=1&page_size=100');
+    expect(fetch.mock.calls[0][0]).toBe(`/api/me/saved-listings/status?listing_ids=${id(1)}&listing_ids=${id(2)}`);
   });
 
-  it('checks later pages only when earlier pages say more results exist', async () => {
-    const first = Array.from({ length: 100 }, (_, index) => retired(id(index + 1)));
-    const fetch = vi.fn()
-      .mockResolvedValueOnce(page(first, 1, true))
-      .mockResolvedValueOnce(page([retired(id(101))], 2, false));
-    vi.stubGlobal('fetch', fetch);
+  it('rejects incomplete or foreign membership responses', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response([{ listing_id: id(9), saved: true }])));
+    await expect(isListingSaved(id(1))).rejects.toThrow();
+  });
 
-    await expect(isListingSaved(id(101), new AbortController().signal)).resolves.toBe(true);
+  it('does not reuse membership after a navigation or account change', async () => {
+    const fetch = vi.fn()
+      .mockResolvedValueOnce(response([{ listing_id: id(1), saved: true }]))
+      .mockResolvedValueOnce(response([{ listing_id: id(1), saved: false }]));
+    vi.stubGlobal('fetch', fetch);
+    await expect(isListingSaved(id(1))).resolves.toBe(true);
+    await expect(isListingSaved(id(1))).resolves.toBe(false);
     expect(fetch).toHaveBeenCalledTimes(2);
   });
 
-  it('returns false after the last page when the listing is absent', async () => {
-    const fetch = vi.fn().mockResolvedValue(page([], 1, false));
-    vi.stubGlobal('fetch', fetch);
-
-    await expect(isListingSaved(id(1), new AbortController().signal)).resolves.toBe(false);
-    expect(fetch).toHaveBeenCalledTimes(1);
+  it('cancels an unmounted caller while preserving another card in the same batch', async () => {
+    const removed = new AbortController();
+    vi.stubGlobal('fetch', vi.fn().mockImplementation((_path, options) =>
+      new Promise((resolve) => {
+        removed.abort();
+        expect(options.signal.aborted).toBe(false);
+        resolve(response([{ listing_id: id(1), saved: true }, { listing_id: id(2), saved: false }]));
+      }),
+    ));
+    const abandoned = isListingSaved(id(1), removed.signal);
+    const retained = isListingSaved(id(2));
+    await expect(abandoned).rejects.toMatchObject({ name: 'AbortError' });
+    await expect(retained).resolves.toBe(false);
   });
 });

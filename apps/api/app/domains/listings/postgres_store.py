@@ -671,6 +671,34 @@ class PostgresListingsStore:
             listing=_management_view(row), object_key=object_key
         )
 
+    async def read_images_for_delivery(
+        self, image_ids: list[ImageId]
+    ) -> dict[ImageId, ListingImageDeliveryTarget]:
+        """Resolve a bounded image batch in one snapshot; service checks visibility.
+
+        Only attached, retained images/listings are candidates. No private object
+        key leaves this owner-owned storage boundary except to the signer.
+        """
+        query = f"""
+            WITH attached_listing AS ({_VIEW_QUERY})
+            SELECT attached_listing.*, image.id AS delivery_image_id, image.object_key
+            FROM attached_listing JOIN listings.images AS image
+              ON image.listing_id = attached_listing.listing_id
+            WHERE image.id = ANY(%s) AND image.retired_at IS NULL
+        """
+        async with self._connection() as connection:
+            rows = await (
+                await connection.execute(query, (self._threshold, image_ids))
+            ).fetchall()
+        targets = {}
+        for row in rows:
+            identifier = row.pop("delivery_image_id")
+            key = row.pop("object_key")
+            targets[identifier] = ListingImageDeliveryTarget(
+                listing=_management_view(row), object_key=key
+            )
+        return targets
+
     async def list_owned_listings(
         self, owner_id: UserId, query: PageQuery
     ) -> Page[ListingManagementView]:

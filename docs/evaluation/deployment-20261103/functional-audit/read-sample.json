@@ -1,0 +1,55 @@
+{
+  "at_utc": "2026-11-03T18:06:52.655524+00:00",
+  "scope": "one signed-in account; bounded read-only functional requests; no experiment",
+  "checks": {
+    "session": {
+      "status": 200
+    },
+    "browse": {
+      "status": 200,
+      "items": 20
+    },
+    "search": {
+      "status": 200
+    },
+    "saved": {
+      "status": 200
+    },
+    "wanted": {
+      "status": 200
+    },
+    "own_wanted": {
+      "status": 200
+    },
+    "inbox": {
+      "status": 200
+    },
+    "unread": {
+      "status": 200
+    },
+    "preference": {
+      "status": 200
+    },
+    "key": {
+      "status": 200
+    },
+    "listing_detail": {
+      "status": 200,
+      "identity_matches": true
+    },
+    "photo_page": {
+      "requested": 20,
+      "stages": {
+        "s3:200": 20
+      }
+    },
+    "saved_card_checks": {
+      "requested": 20,
+      "statuses": {
+        "200": 20
+      }
+    }
+  },
+  "personal_content_persisted": false,
+  "cookie_or_signed_urls_persisted": false
+}

@@ -43,6 +43,17 @@ class PostgresSavedStore:
             ).fetchone()
         return None if row is None else SavedListingAck.model_validate(row)
 
+    async def saved_ids(self, actor: UUID, identifiers: list[UUID]) -> set[UUID]:
+        """Read only the current actor's requested pairs in one bounded query."""
+        async with self.connection() as connection:
+            rows = await (
+                await connection.execute(
+                    "SELECT listing_id FROM search.saved_listings WHERE user_id=%s AND listing_id=ANY(%s)",
+                    (actor, identifiers),
+                )
+            ).fetchall()
+        return {row["listing_id"] for row in rows}
+
     async def save(self, actor: UUID, identifier: UUID) -> SavedListingAck:
         """Serialize pair writes and keep first timestamp even across concurrent PUTs."""
         async with self.connection() as connection:

@@ -1,0 +1,232 @@
+{
+  "startedAt": "2026-11-03T19:12:17.946Z",
+  "tests": [
+    {
+      "name": "seller-session",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "buyer-session",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "accounts-distinct",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "catalogue",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "browse-page-one",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "browse-page-two",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "price-ascending",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "price-descending",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "category-filter",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "condition-filter",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "negotiability-filter",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "price-range",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "keyword-search",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "hybrid-search",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "empty-keyword",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "saved-page",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "wanted-discovery",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "own-wanted",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "inbox",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "unread-count",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "invalid-page-rejected",
+      "status": 422,
+      "pass": true,
+      "errorCode": "validation_error"
+    },
+    {
+      "name": "unknown-listing-hidden",
+      "status": 404,
+      "pass": true,
+      "errorCode": "not_found"
+    },
+    {
+      "name": "invalid-listing-rejected",
+      "status": 422,
+      "pass": true,
+      "errorCode": "validation_error"
+    },
+    {
+      "name": "image-upload-intent",
+      "status": 201,
+      "pass": true
+    },
+    {
+      "name": "browser-s3-upload",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "image-confirm",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "foreign-image-confirm-denied",
+      "status": 404,
+      "pass": true,
+      "errorCode": "not_found"
+    },
+    {
+      "name": "listing-create",
+      "status": 201,
+      "pass": true
+    },
+    {
+      "name": "listing-detail",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "save-listing",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "saved-includes-fixture",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "unsave-listing",
+      "status": 204,
+      "pass": true
+    },
+    {
+      "name": "fixture-photo-link",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "fixture-photo-browser-decode",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "own-listing-conversation-denied",
+      "status": 403,
+      "pass": true,
+      "errorCode": "forbidden"
+    },
+    {
+      "name": "conversation-create",
+      "status": 201,
+      "pass": true
+    },
+    {
+      "name": "conversation-deduplicate",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "seller-conversation-read",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "offer-create",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "seller-offer-read",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "wanted-create",
+      "status": 201,
+      "pass": true
+    },
+    {
+      "name": "wanted-peer-read",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "wanted-edit",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "wanted-draft-matches",
+      "status": 200,
+      "pass": true
+    }
+  ],
+  "complete": true,
+  "finishedAt": "2026-11-03T19:12:32.696Z"
+}

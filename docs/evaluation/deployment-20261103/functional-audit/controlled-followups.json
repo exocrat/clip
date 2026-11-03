@@ -1,0 +1,155 @@
+{
+  "checks": [
+    {
+      "name": "hybrid-after-new-fixture",
+      "status": 503,
+      "pass": false,
+      "errorCode": "dependency_unavailable"
+    },
+    {
+      "name": "own-listing-fixture-management",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "foreign-listing-edit-denied",
+      "status": 403,
+      "pass": true,
+      "errorCode": "forbidden"
+    },
+    {
+      "name": "listing-owner-edit",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "stale-listing-revision-conflict",
+      "status": 409,
+      "pass": true,
+      "errorCode": "conflict"
+    },
+    {
+      "name": "read-current-offer",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "offer-revise",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "offer-withdraw",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "conversation-contact-options",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "unknown-conversation-denied",
+      "status": 404,
+      "pass": true,
+      "errorCode": "not_found"
+    },
+    {
+      "name": "wanted-current-owner",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "foreign-wanted-edit-denied",
+      "status": 404,
+      "pass": true,
+      "errorCode": "not_found"
+    },
+    {
+      "name": "wanted-mark-unavailable",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "unavailable-wanted-hidden-from-peer",
+      "status": 404,
+      "pass": true,
+      "errorCode": "not_found"
+    },
+    {
+      "name": "contacts",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "contact-profile",
+      "status": 404,
+      "pass": false,
+      "errorCode": "not_found"
+    },
+    {
+      "name": "notification-preference",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "discover-browser-render",
+      "images": [
+        {
+          "complete": true,
+          "decoded": true
+        },
+        {
+          "complete": true,
+          "decoded": true
+        },
+        {
+          "complete": true,
+          "decoded": true
+        },
+        {
+          "complete": true,
+          "decoded": true
+        },
+        {
+          "complete": true,
+          "decoded": true
+        },
+        {
+          "complete": true,
+          "decoded": true
+        },
+        {
+          "complete": true,
+          "decoded": true
+        },
+        {
+          "complete": true,
+          "decoded": true
+        },
+        {
+          "complete": true,
+          "decoded": true
+        }
+      ],
+      "photoErrors": 11,
+      "savedWarnings": 14,
+      "overflow": false
+    },
+    {
+      "name": "seller-thread",
+      "composer": true,
+      "composerEnabled": true,
+      "keyGate": false,
+      "errorCount": 0
+    },
+    {
+      "name": "buyer-thread",
+      "composer": false,
+      "composerEnabled": false,
+      "keyGate": true,
+      "errorCount": 0
+    }
+  ],
+  "at": "2026-11-03T19:13:49.893Z"
+}

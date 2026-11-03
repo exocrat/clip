@@ -264,6 +264,7 @@ class IdentityReadDependencies:
 
     sessions: IdentitySessions = field(repr=False)
     policy: BrowserPolicy
+    close: Callable[[], None] | None = field(default=None, repr=False)
 
     def __post_init__(self) -> None:
         """Reject incomplete bindings before middleware or routes are installed."""
@@ -306,6 +307,7 @@ class IdentityHttpDependencies:
     sender: EmailSender = field(repr=False)
     validator: MicrosoftTokenValidator = field(repr=False)
     clock: Callable[[], datetime] = field(repr=False)
+    close: Callable[[], None] | None = field(default=None, repr=False)
 
     def __post_init__(self) -> None:
         """Reject incomplete/wrong runtime bindings before installing any route."""

@@ -284,6 +284,8 @@ def test_actual_api_schema_matches_generated_contract():
         "/image-uploads/{upload_id}/confirm",
         "/image-uploads/{upload_id}",
         "/images/{image_id}/delivery",
+        "/images/delivery",
+        "/me/saved-listings/status",
     }
     assert set(actual["paths"]) == implemented_paths
     # Runtime subclasses add validation without changing the reviewed body
@@ -331,7 +333,7 @@ def test_actual_api_schema_matches_generated_contract():
         for operation in path.values()
         if isinstance(operation, dict) and "operationId" in operation
     }
-    assert len(contract_operation_ids) == 60
+    assert len(contract_operation_ids) == 62
     assert {
         "identity_start_microsoft_login_attempt",
         "identity_read_csrf_token",
@@ -374,7 +376,7 @@ def test_schema_build_does_not_import_real_application(monkeypatch):
     monkeypatch.setitem(sys.modules, "app.main", None)
     health, domains = generator.load_sources()
     schema = generator.declared_schema(health, domains)
-    assert len(schema["paths"]) == 50
+    assert len(schema["paths"]) == 52
     assert "/auth/microsoft/login-attempts" in schema["paths"]
     assert "/auth/csrf" in schema["paths"]
 

@@ -155,8 +155,9 @@ def test_combined_lifespan_owns_both_pools_and_unwinds_failures(
             "conninfo": shared,
             "kwargs": {"row_factory": dict_row},
             "min_size": 1,
-            "max_size": 10,
+            "max_size": 6,
             "timeout": 5,
+            "max_waiting": 64,
             "open": False,
         }
         if failure == "marketplace_factory":

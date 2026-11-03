@@ -20,13 +20,15 @@ PoolFactory = Callable[[str], PoolLifecycle]
 def create_async_connection_pool(conninfo: str) -> AsyncConnectionPool:
     """Build a lazy, conservatively bounded pool without connecting immediately.
 
-    The zero minimum avoids startup connections; one maximum connection is a
-    safe initial local bound until deployment capacity is reviewed. Callers
+    The zero minimum avoids startup connections; two maximum connections per
+    task fit the shared Conversations role limit of four across two tasks. Callers
     own open/close lifecycle, while domain providers acquire their own sessions.
     """
     return AsyncConnectionPool(
         conninfo=conninfo,
         min_size=0,
-        max_size=1,
+        max_size=2,
+        max_waiting=32,
+        timeout=2,
         open=False,
     )

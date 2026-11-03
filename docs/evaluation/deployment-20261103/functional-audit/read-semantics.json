@@ -1,0 +1,68 @@
+{
+  "at_utc": "2026-11-03T18:13:25.144197+00:00",
+  "scope": "bounded authenticated read-only sample; no mutation or performance measurement",
+  "checks": {
+    "browse_page_1": {
+      "status": 200,
+      "count": 20,
+      "all_available": true
+    },
+    "browse_page_2": {
+      "status": 200,
+      "count": 20,
+      "no_page_overlap": true
+    },
+    "category_filter": {
+      "status": 200,
+      "count": 20,
+      "all_match": true
+    },
+    "negotiable_filter": {
+      "status": 200,
+      "count": 20,
+      "all_match": true
+    },
+    "price_sort": {
+      "status": 200,
+      "count": 20,
+      "ascending": true
+    },
+    "search_keyword": {
+      "status": 200
+    },
+    "search_hybrid": {
+      "status": 503
+    },
+    "catalogue": {
+      "status": 200
+    },
+    "my_listings": {
+      "status": 200
+    },
+    "saved": {
+      "status": 200
+    },
+    "wanted": {
+      "status": 200
+    },
+    "my_wanted": {
+      "status": 200
+    },
+    "inbox": {
+      "status": 200
+    },
+    "unread": {
+      "status": 200
+    },
+    "profile": {
+      "status": 200
+    },
+    "notification_preference": {
+      "status": 200
+    },
+    "conversation_key": {
+      "status": 200
+    }
+  },
+  "private_bodies_persisted": false
+}

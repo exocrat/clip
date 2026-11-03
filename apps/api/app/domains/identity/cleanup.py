@@ -6,6 +6,7 @@ Each candidate is rechecked under compatible target/user locks in its own bounde
 transaction. Explicit runtime target/apply approval is separate from this code.
 """
 
+from contextlib import AbstractContextManager
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Callable
@@ -31,7 +32,11 @@ class CleanupResult:
 class IdentityCleanup:
     """Apply approved retention to explicitly injected fresh connections/time."""
 
-    def __init__(self, connect: Callable[[], Database], clock: Callable[[], datetime]):
+    def __init__(
+        self,
+        connect: Callable[[], AbstractContextManager[Database]],
+        clock: Callable[[], datetime],
+    ):
         """Construction performs no database call or automatic cleanup."""
         self._connect = connect
         self._clock = clock

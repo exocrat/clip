@@ -49,6 +49,32 @@ def test_denied_destination_never_calls_provider():
     assert client.calls == []
 
 
+def test_explicit_hosted_auth_accepts_unlisted_canonical_recipient():
+    """SES production access is useful only when the hosted app permits its users."""
+    from pydantic import SecretStr
+
+    configured = Settings(
+        environment="test",
+        identity_provider="microsoft",
+        email_provider="dual",
+        identity_runtime_enabled=True,
+        identity_browser_origins=("https://clip-iisc.site",),
+        database_url=SecretStr("postgresql://synthetic@db.invalid/clip_test"),
+        ses_test_recipients=(RECIPIENT,),
+    )
+    client = RecordingClient()
+    sender = SesEmailSender(configured, client)
+    sender.send("other@example.invalid", "CLIP verification", "SYNTHETIC_BODY")
+    assert len(client.calls) == 1
+    with pytest.raises(EmailUnavailable):
+        sender.send(
+            "other@example.invalid\r\nBcc: injected",
+            "CLIP verification",
+            "SYNTHETIC_BODY",
+        )
+    assert len(client.calls) == 1
+
+
 def test_uncertain_failure_is_redacted_without_retry():
     client = RecordingClient(fail=True)
     with pytest.raises(EmailUnavailable) as captured:

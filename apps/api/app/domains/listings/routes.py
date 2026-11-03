@@ -18,6 +18,8 @@ from app.contracts.domain_types import (
     StartListingConversationRequest,
     ErrorEnvelope,
     ImageDelivery,
+    ImageDeliveryBatch,
+    ImageDeliveryQuery,
     ListingDetail,
     ListingId,
     ImageId,
@@ -182,6 +184,24 @@ async def cancel_image_upload(
     """Cancel one owner's unattached intent, retaining its key for cleanup."""
     await service.cancel_image_upload(caller, upload_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.get(
+    "/images/delivery",
+    response_model=ImageDeliveryBatch,
+    operation_id="listings_get_image_delivery_batch",
+    summary="listings_get_image_delivery_batch",
+    responses=_ERROR_RESPONSES,
+)
+async def get_image_delivery_batch(
+    response: Response,
+    query: Annotated[ImageDeliveryQuery, Query()],
+    caller: Annotated[CallerContext, Depends(require_caller)],
+    service: Annotated[ListingsService, Depends(_service)],
+) -> ImageDeliveryBatch:
+    """Resolve a bounded page without separate authentication for every photo."""
+    response.headers["Cache-Control"] = "private, no-store"
+    return await service.get_image_deliveries(caller, query.image_ids)
 
 
 @router.get(

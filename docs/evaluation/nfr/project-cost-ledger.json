@@ -100,6 +100,22 @@
       "price_date": "2026-11-03",
       "estimate_basis": "2 hours at USD0.021/hour; not actual billed usage; replace at reconciliation.",
       "replaces_estimate_id": null
+    },
+    {
+      "entry_id": "aws-overnight-functional-estimate-20261103",
+      "provider": "aws",
+      "kind": "unbilled_estimate",
+      "category": "functional-inspection-runtime-extension",
+      "resource_scope": "exp261103-existing-source-a-extension",
+      "period_start": "2026-11-03",
+      "period_end": "2026-11-04",
+      "amount_usd": "3.300000",
+      "credits_usd": "0",
+      "source_reference": "docs/evaluation/deployment-20261103/functional-audit/overnight-budget.json",
+      "source_sha256": "2bdd5c380a1e0086d35db81ca762c5a4084ce3275ffb07bf832a92886629ec62",
+      "price_date": "2026-11-03",
+      "estimate_basis": "Two hosts plus source RDS from prior startup window end near18:25UTC to04:00UTC: about1.8264USD. ALB/two IPs/one LCU and NAT from18:10UTC to04:00UTC: about0.9627USD. Remaining0.5109USD allowance for storage, logs, mail, ECR and rounding. Existing retained baseline liabilities remain tracked separately; replace estimates with gross billing at reconciliation.",
+      "replaces_estimate_id": null
     }
   ]
 }

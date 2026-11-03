@@ -6,6 +6,7 @@ Public eligibility targets come from trusted context/authoritative relationships
 never a browser-provided user directory. No account data beyond a bool is returned.
 """
 
+from contextlib import AbstractContextManager
 import asyncio
 from datetime import datetime
 from enum import Enum
@@ -68,7 +69,9 @@ class PostgresCapabilities:
     """Fresh eligibility/policy checks; never caches class/lifecycle/caller flags."""
 
     def __init__(
-        self, connect: Callable[[], Database], clock: Callable[[], datetime]
+        self,
+        connect: Callable[[], AbstractContextManager[Database]],
+        clock: Callable[[], datetime],
     ) -> None:
         """Bind trusted fresh connections/time without I/O or provider discovery."""
         self._connect = connect

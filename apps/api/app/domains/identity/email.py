@@ -9,6 +9,7 @@ from importlib import import_module
 from typing import Protocol, cast
 
 from app.core.config import Settings
+from app.domains.identity.temporary_crypto import normalize_login
 
 
 class EmailUnavailable(RuntimeError):
@@ -24,7 +25,7 @@ class SesClient(Protocol):
 
 
 class SesEmailSender:
-    """Send to one approved test destination without automatic duplicate retries.
+    """Send bounded Identity mail without automatic duplicate retries.
 
     A timeout can follow provider acceptance. Callers must treat that outcome as
     uncertain, not retry blindly or claim delivery. No message data is logged.
@@ -39,13 +40,23 @@ class SesEmailSender:
         self._client = client
 
     def send(self, recipient: str, subject: str, body: str) -> None:
-        """Submit bounded UTF-8 plain text to one allowlisted recipient.
+        """Submit only canonical recipients; hosted real auth supports general mail.
 
         No raw OTP, recipient, content or provider exception is returned. This
         function stores nothing and does not create or activate an account.
+        Standalone/local test configuration retains its recipient restriction;
+        only the already explicit real hosted runtime removes that restriction.
         """
+        try:
+            valid_recipient = normalize_login(recipient) == recipient
+        except Exception:
+            valid_recipient = False
         if (
-            recipient not in self._settings.ses_test_recipients
+            not valid_recipient
+            or (
+                not self._settings.identity_runtime_enabled
+                and recipient not in self._settings.ses_test_recipients
+            )
             or not subject
             or len(subject) > 120
             or any(character in subject for character in "\r\n")

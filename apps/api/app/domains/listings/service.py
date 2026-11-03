@@ -30,6 +30,8 @@ from app.contracts.domain_types import (
     ConfirmedImage,
     ImageId,
     ImageDelivery,
+    ImageDeliveryBatch,
+    ImageDeliveryItem,
     ImageUploadRequest,
     ListingDetail,
     ListingId,
@@ -229,6 +231,12 @@ class ListingsStore(Protocol):
 
     async def read_listing(self, listing_id: ListingId) -> ListingManagementView | None:
         """Read one non-retired listing with its ordered controlled references."""
+        ...
+
+    async def read_images_for_delivery(
+        self, image_ids: list[ImageId]
+    ) -> dict[ImageId, ListingImageDeliveryTarget]:
+        """Resolve only a bounded batch; service retains listing authorization."""
         ...
 
     async def read_image_for_delivery(
@@ -710,6 +718,40 @@ class ListingsService:
             # the public response or logs.
             raise PublicError(ERRORS[503]) from None
         return ImageDelivery(url=url, url_expires_at=url_expires_at)
+
+    async def get_image_deliveries(
+        self, caller: CallerContext, image_ids: list[ImageId]
+    ) -> ImageDeliveryBatch:
+        """Authorize once, then sign only images whose listings are visible.
+
+        A stale/hidden image does not fail other page photos and is indistinguishable
+        from a missing ID. Links retain the existing five-minute/no-store policy.
+        """
+        await _require_eligible(caller, self._identity)
+        if not 1 <= len(image_ids) <= 100:
+            raise PublicError(ERRORS[422])
+        if self._image_storage is None:
+            raise PublicError(ERRORS[503])
+        identifiers = list(dict.fromkeys(image_ids))
+        targets = await self._store.read_images_for_delivery(identifiers)
+        expires = self._clock() + timedelta(minutes=5)
+        items = []
+        for identifier in identifiers:
+            target = targets.get(identifier)
+            delivery = None
+            if target is not None and (
+                target.listing.owner_id == caller.user_id
+                or self._is_discoverable(target.listing)
+            ):
+                try:
+                    url = await self._image_storage.create_download_url(
+                        target.object_key, expires
+                    )
+                except Exception:
+                    raise PublicError(ERRORS[503]) from None
+                delivery = ImageDelivery(url=url, url_expires_at=expires)
+            items.append(ImageDeliveryItem(image_id=identifier, delivery=delivery))
+        return ImageDeliveryBatch(items=items)
 
     async def list_mine(
         self, caller: CallerContext, query: PageQuery

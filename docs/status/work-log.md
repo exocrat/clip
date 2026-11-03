@@ -1,3 +1,79 @@
+### Functional repair implementation and local verification — 2026-11-03 19:48:13 UTC
+
+Suraj explicitly began the autonomous batch after the two controlled account
+handoff. The initial deployed audit exercised listing/image writes, saved and
+wanted workflows, offers, true two-browser encrypted messages and deliberate
+contact sharing; fixtures were marked unavailable and source contact/preference
+restored. Discover reproduced11photo placeholders/14saved warnings. New visible
+unindexed content changed Hybrid200->503; hiding it restored200. The actual
+worker still lacks UPDATE/INSERT column privileges; exact SQL approval is pending.
+
+Implemented bounded shared Identity leases and finite async queues, Lambda null
+pools to avoid retaining DB connections in frozen environments, two additive
+photo/saved batch endpoints and browser coalescing, and intended hosted real-app
+Identity/notification mail beyond the old test list. Existing Listing payloads,
+selected weighted routes, session SQL and resource sizes are retained. The
+[connection budget](../evaluation/deployment-20261103/functional-audit/connection-budget.md)
+fits current A/small-B limits; concurrency10 needs separately approved role caps.
+
+[Coverage](../evaluation/deployment-20261103/functional-audit/coverage.md),
+[file explanations](../evaluation/deployment-20261103/functional-audit/repair-files.md)
+and [local verification](../evaluation/deployment-20261103/functional-audit/local-validation.json)
+retain exact results and initial failures. Corrected lifecycle/contract groups106
+passed; web501passed/3skipped; native database23passed/3skipped; data331;
+Conversations184; boundaries/contracts/types/35DB safety cases/Gitleaks passed.
+Initial broad Python run2398passed/176skipped with12old pool/schema assertions
+subsequently corrected; no claim that the full aggregate was rerun successfully.
+Next: publish repair PR/CI, build revision-bound images, review an image-only
+Terraform plan and deploy under Suraj's bounded approval; then repeat live
+functional checks. SQL grants, future PR merge and formal traffic remain gated.
+
+### Overnight account handoff and image deployment scope — 2026-11-03 19:03:07 UTC
+
+Two separate controlled regular Microsoft accounts are signed into the dedicated
+local browser profiles. Session GETs both returned200, both Handles are ready,
+both public conversation keys exist, and neither page shows the key-setup gate.
+Only booleans/statuses were retained; no account identifiers, keys or cookies
+were printed. [Sanitized readiness](../evaluation/deployment-20261103/functional-audit/overnight-readiness.json).
+This confirms setup, not actual two-person encrypted chat behavior.
+
+Suraj explicitly authorized image-only repair redeployments on existing resources
+with passing checks, deployment-diff review, health verification and a known
+rollback image, within the existing budget; small image-storage/deployment usage
+was accepted. Resource counts/sizes, database permissions and new resources are
+outside this approval. PR merge retains its separate current gate. Suraj requires
+the agent to report readiness and wait for his explicit start before overnight
+audit/implementation; no overnight repair work has begun.
+
+### Functional audit and overnight preparation — 2026-11-03 18:55:50 UTC
+
+Suraj directed a complete functional failure catalogue before coordinated repairs,
+then local verification and preparation for deployed retesting. Approved up to ten
+controlled fixtures (a few more if necessary), including test-account messages and
+offers; preserve personal content and keep fixture IDs for later retirement or
+cleanup. Two Microsoft test accounts are available; credentials remain human-only.
+Two dedicated browser profiles were opened outside the worktree for secure local
+sign-in; ports9223/9224 were verified bound only to127.0.0.1. Account separation,
+session validity and key readiness remain unverified until human sign-in.
+
+Suraj approved continued existing cloud runtime, responding to the proposed
+extension to2026-11-04 04:00UTC within the existing USD30 incremental cap. This
+supersedes the earlier18:25/20:10 review deadlines; it does not authorize new
+resources, database resizing, deployment, future PR merge, fault injection or
+formal experiments. Reconcile unbilled runtime and baseline in the project ledger
+before further cloud mutations. No automatic shutdown is claimed. If blocked,
+continue independent work and record the exact remaining gate.
+
+The [in-progress issue catalogue](../evaluation/deployment-20261103/functional-audit/README.md)
+records intermittent pre-route photo/saved503s correlated with Identity connection
+limits, pending Hybrid indexing and confirmed missing worker privileges, and the
+application email recipient restriction despite SES production access. Earlier
+approved Search grants and marketplace/Conversations connection-limit increases
+were applied; embedding worker grants remain unapplied. No claim of full coverage,
+capacity, A/B parity or NFR acceptance. Audit all component connection budgets,
+preserve session revocation/expiry, assess Discover saved/image request batching,
+and check both architecture paths and workload validation after choosing a design.
+
 ### Batch 10 implementation checkpoint — EXP-05 execution and EXP-07/08 closeout tools — 2026-11-03 10:51:44 UTC
 
 Connected the fixed EXP-05 pilot profile to the shared coordinator's launch
@@ -2815,7 +2891,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | Task ID | Owner role | Task status | Current checkpoint / immediate next action | Execution state | Human verification | Branch/revision/evidence | Blockers | Last UTC update |
 |---|---|---|---|---|---|---|---|---|
 | EXP-02 | Rahul (D); Search owner C review | in progress | PR #28 merged; shared real-target runner, NFR-01–05/telemetry/reporting, pilot/analysis/cleanup tools are locally implemented | Evaluation suite 364 passed/5 skipped; compile, Black, strict Mypy, Terraform mocks, Gitleaks and whitespace checks passed; no live run. Monotonic k6 binary built, timer smoke passed and Go timer unit tests passed in GOPATH mode. | Prior PR #28 merge confirmed; local implementation committed for human and affected-owner review | PR #28 head `8e1a7e8`, merge `2a0916e`; local work on `task/experiment-tooling-readiness`; [experiment log](../evaluation/experiment-log.md) | PR review/merge, exact deployment plan/credit estimate, website DNS handoff, live smoke, pilot and NFR results remain. Module-mode Go test hits a local toolchain lookup issue; GOPATH-mode test passes. | 2026-11-03 12:52:00 UTC |
-| EXP-03 | Rahul (D); Suraj reviewer/operator | in progress | Source A deployed: two c7i-flex.large hosts/two healthy ECS tasks, revision13; final DB bound/upgraded, accepted data verified. PR #31 accepted at e97a181. | CI passed; actual role/key/privilege audit and complete dataset projection pass; HTTPS health/site200 and anonymous Listing401; public URL health200 independently from AWS. | Suraj approved exact database repair and exact PR31/image plan before execution | [Source A verification](../evaluation/deployment-20261103/execution/source-a-startup-verification.json); [public DNS proof](../evaluation/deployment-20261103/execution/public-dns-aws-network-check.json) | Human website/sign-in inspection; workstation DNS discrepancy; authenticated parity and B deployment, pilot/NFR/measurements remain. Startup review deadline18:25UTC; no automatic shutdown. | 2026-11-03 17:00:57 UTC |
+| EXP-03 | Rahul (D); Suraj reviewer/operator | in progress | Source A deployed on two hosts/tasks; functional failures under audit. Next: verify two dedicated test-account browsers, finish failure catalogue, then coordinated repairs. PR31 accepted at e97a181. | Startup and initial dataset projection passed before human-created content; sampled reads passed, intermittent photo/saved503 and Hybrid503 reproduced. Full functional acceptance remains pending. | Suraj approved controlled functional fixtures and existing runtime through2026-11-04 04:00UTC within USD30 cap; redeployment/future merge remain gated. | [Source A verification](../evaluation/deployment-20261103/execution/source-a-startup-verification.json); [functional audit](../evaluation/deployment-20261103/functional-audit/README.md) | Account/browser handoff; remaining functional audit; repair review/deployment; authenticated A/B parity, B deployment, pilot and all live NFR/measurements. No automatic shutdown. | 2026-11-03 18:55:50 UTC |
 | SE-01 category-text amendment | Mohit (C); Listings reviewer Suraj (B) | merged | PR #25 merged to main at `1f11065`; Steps 1–3 and reported Listings review complete | Exact-head hosted CI passed; [native/model/source evidence](../evaluation/domain/se-01/category-text-checks.json) | Steps 1–3 verified by Mohit; Suraj review reported by Aditya | PR #25; [hosted CI](https://github.com/exocrat/clip/actions/runs/41338792850) | Full SE-01 readiness, final fixed-label relevance and NFR/cloud latency remain open | 2026-11-01 20:18:19 UTC |
 | NEXT-00 | Suraj — requested planning coordinator | done | Planning output verified; NEXT-01 Step 1 authorized. | performed; planning only | verified by Suraj | `task/integrated-marketplace-rollout`, based on main `5e8d264`; [remaining-work plan](../tasks/remaining-project-plan.md), linked from project task index | No blocker for the accepted planning output; implementation and measured-run gates remain separate. | 2026-10-27 18:42:09 UTC |
 | NEXT-01 | Suraj — requested planning coordinator; C retains EXP-01 ownership | done | Design and task-wide review verified; NEXT-02 is next. | Steps 1–9 performed | Steps 1–9 verified | Planning baseline `c869f33`; [design and approved gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md#next-01-step-8--proposed-changes-to-measurement-gates); [NEXT-07 references](../tasks/remaining-project-plan.md#experiment-protocol-reference) | No blocker for the design handoff. Real implementations, data, tools, cost anchors, project AWS identity/spend and run approvals remain NEXT-07 prerequisites. | 2026-10-28 06:24:24 UTC |

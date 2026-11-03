@@ -5,11 +5,15 @@ Only explicit bootstrap calls connect. All diagnostics are fixed/redacted; no
 connection string, database error, fingerprint or key is returned or logged.
 """
 
+from collections.abc import Iterator
+from contextlib import AbstractContextManager, contextmanager
+from threading import Lock
 from typing import Callable
 
 import psycopg
 from psycopg.conninfo import conninfo_to_dict
 from pydantic import SecretStr
+from psycopg_pool import ConnectionPool, NullConnectionPool
 
 from app.core.config import ConfigurationError
 from app.domains.identity.temporary_challenges import Database
@@ -134,7 +138,66 @@ def connection_factory(dsn: SecretStr, environment: str) -> Callable[[], Databas
     return connect
 
 
-def validate_database(connect: Callable[[], Database], keys: TemporaryKeys) -> None:
+class IdentityConnectionPool:
+    """Reuse bounded, exclusive connections without caching authentication state.
+
+    Every borrower still runs the existing transactions, current-account checks,
+    session expiry and revocation checks. Acquisition waits at most one second;
+    at most64 callers may queue. SQL and transaction timeouts bound a stalled
+    borrower. A zero minimum avoids idle Lambda connections and import-time I/O.
+    """
+
+    def __init__(
+        self,
+        dsn: SecretStr,
+        environment: str,
+        *,
+        max_size: int,
+        retain_idle: bool = True,
+    ) -> None:
+        """Validate the same role/TLS/target policy before constructing a lazy pool."""
+        connection_factory(dsn, environment)
+        if type(max_size) is not int or not 1 <= max_size <= 4:
+            raise ConfigurationError("Invalid Identity pool bound")
+        self._lock = Lock()
+        self._opened = False
+        pool_type = ConnectionPool if retain_idle else NullConnectionPool
+        self._pool: ConnectionPool = pool_type(
+            conninfo=dsn.get_secret_value(),
+            kwargs={
+                "passfile": "/dev/null",
+                "connect_timeout": 3,
+                "application_name": "clip-identity-pooled",
+                "autocommit": True,
+                "options": "-c statement_timeout=5000 -c lock_timeout=3000 -c idle_in_transaction_session_timeout=5000",
+            },
+            min_size=0,
+            max_size=max_size,
+            max_waiting=64,
+            timeout=1,
+            max_idle=60,
+            open=False,
+        )
+
+    @contextmanager
+    def __call__(self) -> Iterator[Database]:
+        """Return an exclusive lease; pool context commits/rolls back before reuse."""
+        with self._lock:
+            if not self._opened:
+                self._pool.open(wait=False)
+                self._opened = True
+        with self._pool.connection(timeout=1) as connection:
+            yield connection
+
+    def close(self) -> None:
+        """Close only this app's pool after request and worker shutdown."""
+        with self._lock:
+            self._pool.close()
+
+
+def validate_database(
+    connect: Callable[[], AbstractContextManager[Database]], keys: TemporaryKeys
+) -> None:
     """Read-only startup audit of effective privileges, logging and stable keys.
 
     Reject elevated/wrong/session-switched roles, CREATE/TEMP, schema ownership,

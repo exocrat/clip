@@ -61,9 +61,10 @@ def test_lambda_read_lifecycle_uses_single_pools_and_skips_other_runtimes(monkey
         assert kwargs == {
             "conninfo": shared_dsn,
             "kwargs": {"row_factory": dict_row},
-            "min_size": 1,
+            "min_size": 0,
             "max_size": 1,
             "timeout": 5,
+            "max_waiting": 64,
             "open": False,
         }
         return database_pool
@@ -84,7 +85,11 @@ def test_lambda_read_lifecycle_uses_single_pools_and_skips_other_runtimes(monkey
 
     @asynccontextmanager
     async def bounded_search_runtime(search_settings, **kwargs):
-        assert kwargs == {"pool_max_size": 1, "enable_worker": False}
+        assert kwargs == {
+            "pool_max_size": 1,
+            "enable_worker": False,
+            "retain_idle_connections": False,
+        }
         async with real_search_runtime(search_settings, **kwargs) as runtime:
             yield runtime
 

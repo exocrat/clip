@@ -53,7 +53,11 @@ export function ListingImagePreview({
       className={`listings-image-preview${compact ? ' listings-image-preview--compact' : ''}`}
       src={url}
       alt={alt}
-      onError={() => setError(true)}
+      onError={() => {
+        // Refresh a stale link once; persistent failures remain visible, never loop.
+        if (retry === 0) setRetry(1);
+        else setError(true);
+      }}
     />
   );
 }

@@ -1,4 +1,5 @@
 import { sessionFetch, SessionFetchError } from '../../shared/http/sessionFetch';
+import { batchedRead } from '../../shared/http/batchedRead';
 import type {
   OfferRevisionRequest,
   OfferWithdrawalRequest,
@@ -12,6 +13,7 @@ import type {
   ListingReplacement,
   PageResultListingManagementView,
   ImageDelivery,
+  ImageDeliveryBatch,
   ImageUploadRequest,
   ListingOwnerView,
   SelectionChange,
@@ -176,11 +178,33 @@ export const cancelImageUpload = (uploadId: string) =>
     { method: 'DELETE' },
   );
 
-export const readImageDelivery = (imageId: string, signal?: AbortSignal) =>
-  listingsRequest<ImageDelivery>(
-    `/images/${encodeURIComponent(imageId)}/delivery`,
-    signal ? { signal } : {},
-  );
+const imageDeliveryBatch = batchedRead<ImageDelivery | null>(async (ids, signal) => {
+  const query = new URLSearchParams();
+  for (const id of ids) query.append('image_ids', id);
+  const value = await listingsRequest<ImageDeliveryBatch>(`/images/delivery?${query}`, { signal });
+  if (!value || !Array.isArray(value.items) || value.items.length !== ids.length) throw new ListingsApiError(503);
+  const result = new Map<string, ImageDelivery | null>();
+  for (const item of value.items) {
+    if (!item || !ids.includes(item.image_id) || result.has(item.image_id)) throw new ListingsApiError(503);
+    if (item.delivery !== null) {
+      const delivery = item.delivery;
+      if (!delivery || typeof delivery.url !== 'string' || typeof delivery.url_expires_at !== 'string') throw new ListingsApiError(503);
+      const url = new URL(delivery.url);
+      const expires = Date.parse(delivery.url_expires_at);
+      if (url.protocol !== 'https:' || url.username || url.password || !Number.isFinite(expires) ||
+          expires <= Date.now() || expires > Date.now() + 301_000) throw new ListingsApiError(503);
+    }
+    result.set(item.image_id, item.delivery);
+  }
+  return result;
+});
+
+/** Resolve current page links in one request; no signed URL cache survives a view. */
+export async function readImageDelivery(imageId: string, signal?: AbortSignal): Promise<ImageDelivery> {
+  const delivery = await imageDeliveryBatch(imageId, signal);
+  if (!delivery) throw new ListingsApiError(404);
+  return delivery;
+}
 
 function putImageBytes(
   file: File,

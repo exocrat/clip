@@ -13,6 +13,8 @@ from app.contracts.domain_types import (
     SavedListingAck,
     SavedListingState,
     SavedListingView,
+    SavedListingStatus,
+    SavedStatusBatch,
 )
 from app.core.auth import CallerContext
 from app.core.errors import ERRORS, PublicError
@@ -64,6 +66,22 @@ class SavedService:
             raise PublicError(ERRORS[503])
         if not eligible:
             raise PublicError(ERRORS[403])
+
+    async def statuses(
+        self, caller: CallerContext, identifiers: list[UUID]
+    ) -> SavedStatusBatch:
+        """Read only requested saved pairs; never resolve other users or content."""
+        await self.authorize(caller)
+        if not 1 <= len(identifiers) <= 100:
+            raise PublicError(ERRORS[422])
+        unique = list(dict.fromkeys(identifiers))
+        saved = await self.store.saved_ids(caller.user_id, unique)
+        return SavedStatusBatch(
+            items=[
+                SavedListingStatus(listing_id=identifier, saved=identifier in saved)
+                for identifier in unique
+            ]
+        )
 
     async def save(self, caller: CallerContext, identifier: UUID) -> SavedListingAck:
         """Existing pair is idempotent; a new pair requires current save-target success.

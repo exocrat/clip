@@ -5,6 +5,23 @@ permission to create, change, or delete resources. Before any cloud operation,
 verify the caller and refresh AWS and Terraform state; review and approve the
 exact operation separately. Never record credentials, tokens, or secret values.
 
+## Functional inspection runtime extension — 2026-11-03 18:55:50 UTC
+
+Suraj approved continuing the existing two ECS hosts, source RDS and ALB through
+2026-11-04 04:00UTC (09:30IST) within the existing USD30 incremental cap. This
+supersedes earlier phase review deadlines. It authorizes no new resources,
+database resize, redeployment, fault injection or formal load. No automatic
+shutdown exists. Reconcile elapsed and planned unbilled costs before cloud changes.
+
+The [functional audit](../evaluation/deployment-20261103/functional-audit/README.md)
+records the remaining app failures; healthy startup does not establish functional
+readiness. Approved Search schema/table grants were restored in the final DB;
+marketplace connection limit10->32 and Conversations2->4 were applied. Identity
+remains10, RDS max78 including3 superuser-reserved. These are current settings,
+not an accepted pilot connection budget. Proposed worker grants remain unapplied.
+User-created content is preserved; the live database must be frozen again before
+measurements rather than described as unchanged from its original reference.
+
 ## Source A running and DNS owner complete — 2026-11-03 17:00:57 UTC
 
 Accepted main `e97a1810b3eee7d9c3f5c2e7cac0a41c07fffee3`; approved exact

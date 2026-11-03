@@ -41,7 +41,12 @@ async def notification_runtime(
         render_notification,
         profile="test",
         test_recipients=settings.ses_test_recipients,
-        allow_unlisted_recipients=settings.notification_allow_unlisted_recipients,
+        # The explicitly hosted real app delivers required event mail to eligible
+        # users. Standalone worker probes retain their controlled-recipient flag.
+        allow_unlisted_recipients=(
+            settings.notification_allow_unlisted_recipients
+            or settings.identity_runtime_enabled
+        ),
     )
     stop = asyncio.Event()
 

@@ -1,0 +1,19 @@
+{
+  "format_version": 1,
+  "purpose": "Controlled functional-audit setup; not experiment or NFR evidence",
+  "account_count": 2,
+  "distinct_accounts": true,
+  "both_regular": true,
+  "both_session_http_200": true,
+  "both_handle_ready": true,
+  "both_public_keys_registered": true,
+  "neither_browser_shows_key_setup_gate": true,
+  "debug_ports": [9223, 9224],
+  "debug_bind_address": "127.0.0.1",
+  "functional_test_fixtures_authorized": true,
+  "image_only_redeploy_authorized_with_checks_and_rollback": true,
+  "resource_upgrades_authorized": false,
+  "new_database_permission_changes_authorized": false,
+  "formal_experiment_traffic_authorized": false,
+  "awaiting_explicit_start": true
+}

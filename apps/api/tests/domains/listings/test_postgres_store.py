@@ -203,6 +203,13 @@ async def _exercise_postgres_listing_workflow(conninfo: str) -> None:
         assert stored.asking_price_paise == 0
         assert stored.original_price_paise == 15_000
         assert len(stored.image_ids) == 1
+        # The new page batch must resolve only requested attached images in SQL.
+        unknown_image = uuid4()
+        targets = await store.read_images_for_delivery(
+            [stored.image_ids[0], unknown_image]
+        )
+        assert set(targets) == {stored.image_ids[0]}
+        assert targets[stored.image_ids[0]].listing.listing_id == created.listing_id
         assert stored.sensitive_purchase is False
 
         async def set_price_and_category(price_paise: int, category_code: str) -> None:

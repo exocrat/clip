@@ -1,0 +1,18 @@
+{
+  "purpose": "Approved continued source-A inspection runtime; estimate, not billed actuals",
+  "account_id": "335523638354",
+  "region": "ap-south-1",
+  "approved_until_utc": "2026-11-04T04:00:00Z",
+  "incremental_window_cap_usd": "30",
+  "unchanged_resources": [
+    "i-086045c48487471de",
+    "i-08e368391d905310e",
+    "clip-shared-test-postgres",
+    "clip-exp03-exp261103"
+  ],
+  "extension_allowance_usd": "3.300000",
+  "basis": "Two hosts plus source RDS from prior startup window end near18:25UTC to04:00UTC: about1.8264USD. ALB/two IPs/one LCU and NAT from18:10UTC to04:00UTC: about0.9627USD. Remaining0.5109USD allowance for storage, logs, mail, ECR and rounding. Existing retained baseline liabilities remain tracked separately; replace estimates with gross billing at reconciliation.",
+  "automatic_shutdown": false,
+  "resource_upgrades_authorized": false,
+  "billing_reconciliation_complete": false
+}

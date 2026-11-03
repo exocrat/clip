@@ -1,0 +1,54 @@
+{
+  "at_utc": "2026-11-03T19:48:13.008653+00:00",
+  "source_branch": "task/functional-runtime-repairs",
+  "checks": [
+    {
+      "name": "affected-backend-first",
+      "log_path": "/tmp/clip-functional-python-check.log",
+      "log_sha256": "1f50c046a54a09d201c79a190515ad1b0ed2db170697ab822e23a7d14d5e6246",
+      "result": "705 passed;5 inventory/lifecycle failures subsequently corrected;3 skipped"
+    },
+    {
+      "name": "full-python-first",
+      "log_path": "/tmp/clip-functional-full-check.log",
+      "log_sha256": "ae84a833735932dab5bd5d687ce06bf27742ce1e69175985b159246b2a19f93c",
+      "result": "2398 passed;12 lifecycle/schema expectation failures subsequently corrected;176 skipped; aggregate stopped at Python group"
+    },
+    {
+      "name": "corrected-lifecycle-contracts",
+      "log_path": "/tmp/clip-functional-regression-recheck-with-tools.log",
+      "log_sha256": "971fd0ac887fe6b41ac77c8237d72f773fe4c6bb94b985c3b303eb178ec54100",
+      "result": "106 passed"
+    },
+    {
+      "name": "web",
+      "log_path": "/tmp/clip-functional-web-check.log",
+      "log_sha256": "b2511ee1ada7c5a72096580981c70c68184f534a96595a0c073cb6d4373665db",
+      "result": "501 passed;3 skipped; lint/types/production build passed"
+    },
+    {
+      "name": "native-database",
+      "log_path": "/tmp/clip-functional-database-check.log",
+      "log_sha256": "06c7a7eeb9710ea5d32ddb8271f887f8fb4168870710e0c68f687f4fb33e4cdb",
+      "result": "23 passed;3 skipped; PostgreSQL18.6 migrations and native Listings/Search batch queries passed"
+    },
+    {
+      "name": "remaining-required-checks",
+      "log_path": "/tmp/clip-functional-remaining-checks.log",
+      "log_sha256": "b12e2d1f1ea20cf6150284ce2bfe284ac430532357e8e94ec60cbb2484d14422",
+      "result": "Data331 passed; boundaries0; contract artifacts8 current; consumer types2 pass; DB safety35; Conversations184; Gitleaks passed"
+    },
+    {
+      "name": "final-format",
+      "log_path": "/tmp/clip-functional-final-format.log",
+      "log_sha256": "20087e738e090c2a59b2241ff372e83b6aec47716edd3afb45fe0df29aba46b6",
+      "result": "471 Python files unchanged"
+    }
+  ],
+  "initial_failures_preserved": true,
+  "tooling_retry_without_node_not_product_failure": "/tmp/clip-functional-regression-recheck.log",
+  "full_aggregate_repeated": false,
+  "deployed_repair_verified": false,
+  "experiments_started": false,
+  "nfr_accepted": false
+}

@@ -1,0 +1,51 @@
+# Repair file guide
+
+This guide names changed code/configuration files and their purpose. See local-validation.json for results.
+
+- `apps/api/app/application.py` — Compose bounded pools, use null pools on Lambda, and close Identity after requests/workers finish.
+- `apps/api/app/contracts/domain_types.py` — Focused regressions and updated explicit pool/endpoint expectations.
+- `apps/api/app/core/database.py` — Bound Conversations to two connections/task and32queued borrowers.
+- `apps/api/app/domains/conversations/notifications/runtime.py` — Enable intended eligible-recipient delivery in the explicit hosted real app; preserve notification policy.
+- `apps/api/app/domains/identity/capabilities.py` — Pool construction, runtime/lifecycle ownership, connection-source typing and intended hosted email delivery; session SQL and expiry/revocation remain.
+- `apps/api/app/domains/identity/cleanup.py` — Pool construction, runtime/lifecycle ownership, connection-source typing and intended hosted email delivery; session SQL and expiry/revocation remain.
+- `apps/api/app/domains/identity/contacts.py` — Pool construction, runtime/lifecycle ownership, connection-source typing and intended hosted email delivery; session SQL and expiry/revocation remain.
+- `apps/api/app/domains/identity/email.py` — Pool construction, runtime/lifecycle ownership, connection-source typing and intended hosted email delivery; session SQL and expiry/revocation remain.
+- `apps/api/app/domains/identity/email_configuration.py` — Pool construction, runtime/lifecycle ownership, connection-source typing and intended hosted email delivery; session SQL and expiry/revocation remain.
+- `apps/api/app/domains/identity/http.py` — Pool construction, runtime/lifecycle ownership, connection-source typing and intended hosted email delivery; session SQL and expiry/revocation remain.
+- `apps/api/app/domains/identity/resend_email.py` — Pool construction, runtime/lifecycle ownership, connection-source typing and intended hosted email delivery; session SQL and expiry/revocation remain.
+- `apps/api/app/domains/identity/runtime_configuration.py` — Pool construction, runtime/lifecycle ownership, connection-source typing and intended hosted email delivery; session SQL and expiry/revocation remain.
+- `apps/api/app/domains/identity/runtime_database.py` — Pool construction, runtime/lifecycle ownership, connection-source typing and intended hosted email delivery; session SQL and expiry/revocation remain.
+- `apps/api/app/domains/identity/sessions.py` — Pool construction, runtime/lifecycle ownership, connection-source typing and intended hosted email delivery; session SQL and expiry/revocation remain.
+- `apps/api/app/domains/identity/temporary_accounts.py` — Pool construction, runtime/lifecycle ownership, connection-source typing and intended hosted email delivery; session SQL and expiry/revocation remain.
+- `apps/api/app/domains/identity/temporary_challenges.py` — Pool construction, runtime/lifecycle ownership, connection-source typing and intended hosted email delivery; session SQL and expiry/revocation remain.
+- `apps/api/app/domains/listings/postgres_store.py` — Bounded batch photo route/service and one-snapshot SQL lookup; Hybrid read pool lifecycle; generated public imports.
+- `apps/api/app/domains/listings/public.py` — Bounded batch photo route/service and one-snapshot SQL lookup; Hybrid read pool lifecycle; generated public imports.
+- `apps/api/app/domains/listings/routes.py` — Bounded batch photo route/service and one-snapshot SQL lookup; Hybrid read pool lifecycle; generated public imports.
+- `apps/api/app/domains/listings/search_runtime.py` — Bounded batch photo route/service and one-snapshot SQL lookup; Hybrid read pool lifecycle; generated public imports.
+- `apps/api/app/domains/listings/service.py` — Bounded batch photo route/service and one-snapshot SQL lookup; Hybrid read pool lifecycle; generated public imports.
+- `apps/api/app/domains/search/public.py` — Private batch saved-state route/service/SQL without loading the whole Saved collection; generated public imports.
+- `apps/api/app/domains/search/saved.py` — Private batch saved-state route/service/SQL without loading the whole Saved collection; generated public imports.
+- `apps/api/app/domains/search/saved_routes.py` — Private batch saved-state route/service/SQL without loading the whole Saved collection; generated public imports.
+- `apps/api/app/domains/search/saved_store.py` — Private batch saved-state route/service/SQL without loading the whole Saved collection; generated public imports.
+- `apps/api/tests/domains/identity/test_email.py` — Focused regressions and updated explicit pool/endpoint expectations.
+- `apps/api/tests/domains/identity/test_runtime_configuration.py` — Focused regressions and updated explicit pool/endpoint expectations.
+- `apps/api/tests/domains/listings/test_postgres_store.py` — Focused regressions and updated explicit pool/endpoint expectations.
+- `apps/api/tests/domains/search/test_saved.py` — Focused regressions and updated explicit pool/endpoint expectations.
+- `apps/api/tests/domains/search/test_saved_postgres.py` — Focused regressions and updated explicit pool/endpoint expectations.
+- `apps/api/tests/test_database_lifespan.py` — Focused regressions and updated explicit pool/endpoint expectations.
+- `apps/api/tests/test_lambda_identity.py` — Focused regressions and updated explicit pool/endpoint expectations.
+- `apps/api/tests/test_lambda_read_app.py` — Focused regressions and updated explicit pool/endpoint expectations.
+- `apps/web/src/features/listings/ListingImagePreview.tsx` — Coalesce page requests, validate responses and cancellation, and bound photo-link refresh; no cross-navigation private cache.
+- `apps/web/src/features/listings/listingsApi.ts` — Coalesce page requests, validate responses and cancellation, and bound photo-link refresh; no cross-navigation private cache.
+- `apps/web/src/features/search/wantedApi.ts` — Coalesce page requests, validate responses and cancellation, and bound photo-link refresh; no cross-navigation private cache.
+- `apps/web/tests/saved-membership.test.ts` — Focused regressions and updated explicit pool/endpoint expectations.
+- `contracts/generated/openapi.json` — Canonical additive batch models/operations and generated TypeScript/OpenAPI; existing listing payloads retained.
+- `contracts/generated/types.gen.ts` — Canonical additive batch models/operations and generated TypeScript/OpenAPI; existing listing payloads retained.
+- `contracts/source/listings.py` — Canonical additive batch models/operations and generated TypeScript/OpenAPI; existing listing payloads retained.
+- `contracts/source/search.py` — Canonical additive batch models/operations and generated TypeScript/OpenAPI; existing listing payloads retained.
+- `contracts/source/types.py` — Canonical additive batch models/operations and generated TypeScript/OpenAPI; existing listing payloads retained.
+- `tests/contracts/test_domain_declarations.py` — Verification or contract-inventory expectations.
+- `tests/contracts/test_generation.py` — Verification or contract-inventory expectations.
+- `apps/api/tests/domains/listings/test_image_delivery_batch.py` — Focused regressions and updated explicit pool/endpoint expectations.
+- `apps/web/src/shared/http/batchedRead.ts` — Coalesce page requests, validate responses and cancellation, and bound photo-link refresh; no cross-navigation private cache.
+- `apps/web/tests/image-delivery-batch.test.ts` — Focused regressions and updated explicit pool/endpoint expectations.

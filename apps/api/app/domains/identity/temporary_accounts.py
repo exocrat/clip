@@ -5,6 +5,7 @@ atomically under Step5's target lock. A cached caller is never sufficient for
 current account eligibility. Public session transport/issuance remains Step7.
 """
 
+from contextlib import AbstractContextManager
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Callable, TypeVar
@@ -139,7 +140,9 @@ class PostgresTemporaryAccounts:
     """
 
     def __init__(
-        self, connect: Callable[[], Database], clock: Callable[[], datetime]
+        self,
+        connect: Callable[[], AbstractContextManager[Database]],
+        clock: Callable[[], datetime],
     ) -> None:
         """Use fresh trusted connections/time; never accept an ambient DB target."""
         self._connect = connect

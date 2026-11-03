@@ -32,7 +32,11 @@ from app.domains.identity.http import (
     IdentityReadDependencies,
 )
 from app.domains.identity.microsoft import MicrosoftKeys, MicrosoftTokenValidator
-from app.domains.identity.runtime_database import connection_factory, validate_database
+from app.domains.identity.runtime_database import (
+    IdentityConnectionPool,
+    connection_factory,
+    validate_database,
+)
 from app.domains.identity.sessions import IdentitySessions
 from app.domains.identity.temporary_crypto import TemporaryKeys
 
@@ -272,7 +276,13 @@ def prepare_hosted_test_identity_reads(
         dsn = read_secure_parameter(parameter_client, references.database_url)
         connect = connection_factory(dsn, settings.environment)
         validate_database(connect, keys)
-        return IdentityReadDependencies(IdentitySessions(connect, keys, clock), policy)
+        # Each Lambda execution environment is serial; one lease is sufficient.
+        pooled = IdentityConnectionPool(
+            dsn, settings.environment, max_size=1, retain_idle=False
+        )
+        return IdentityReadDependencies(
+            IdentitySessions(pooled, keys, clock), policy, close=pooled.close
+        )
     except Exception:
         raise ConfigurationError("Identity read startup validation failed") from None
 
@@ -307,12 +317,25 @@ def _prepare_identity(
                 settings.ses_test_recipients,
                 SesEmailSender(settings),
                 parameter_client,
+                allow_unlisted_recipients=settings.identity_runtime_enabled,
             )
         )
         sender.warmup()
-        sessions = IdentitySessions(connect, keys, clock)
+        pooled = (
+            IdentityConnectionPool(dsn, settings.environment, max_size=4)
+            if settings.identity_runtime_enabled
+            else None
+        )
+        sessions = IdentitySessions(
+            pooled if pooled is not None else connect, keys, clock
+        )
         return IdentityHttpDependencies(
-            sessions, policy, sender, MicrosoftTokenValidator(MicrosoftKeys()), clock
+            sessions,
+            policy,
+            sender,
+            MicrosoftTokenValidator(MicrosoftKeys()),
+            clock,
+            close=pooled.close if pooled is not None else None,
         )
     except Exception:
         raise ConfigurationError("Identity startup validation failed") from None

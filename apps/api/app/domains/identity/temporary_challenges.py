@@ -6,6 +6,7 @@ same target-before-user lock order. Delivery is a separate post-commit action;
 HTTP wiring must acknowledge uniformly before dispatch to avoid enumeration.
 """
 
+from contextlib import AbstractContextManager
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 import hashlib
@@ -74,7 +75,7 @@ class PostgresTemporaryChallenges:
 
     def __init__(
         self,
-        connect: Callable[[], Database],
+        connect: Callable[[], AbstractContextManager[Database]],
         keys: TemporaryKeys,
         clock: Callable[[], datetime],
     ) -> None:
