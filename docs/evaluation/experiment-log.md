@@ -15,6 +15,25 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## Current checkpoint
 
+### 2026-11-03 04:38:52 UTC — Unwired Lambda Invoke adapter
+
+**Work:** `apps/api/app/overflow_invoke.py` accepts an injected SDK client,
+a project-account/region EXP-03 function ARN and bounded event bytes. It
+requires SDK retries disabled, invokes synchronously once without log tails,
+closes and bounds the response stream, rejects function errors and sanitizes
+failures. Only the prior precise throttle classifier permits ECS overflow.
+`apps/api/tests/test_overflow_invoke.py` checks one-call behavior, throttling,
+failed/oversized responses and refusal before calls with synthetic clients.
+
+**Checks and limitations:** Nineteen policy/classifier/transport tests passed;
+strict mypy and Black passed. Initial mypy found a possibly missing stream; it
+was fixed before rerunning. No real client, AWS call, ASGI wiring or request was
+used. Event encoding, Lambda Web Adapter compatibility, trusted HTTPS/session
+handling, response validation, bounded timeouts, concurrency, telemetry and
+deployed parity remain unverified. The 64 KiB event and 1 MiB response limits
+are local safety bounds, not measurements or proven product limits. The
+Terraform B guard remains in force until the full mechanism is reviewed.
+
 ### 2026-11-03 04:36:51 UTC — Offline Lambda rejection classification
 
 **Work:** `apps/api/app/overflow_aws_errors.py` translates only a synthetic

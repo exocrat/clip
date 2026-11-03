@@ -1,5 +1,12 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### EXP-03 Lambda Invoke adapter — 2026-11-03 04:38:52 UTC
+
+Prepared an unwired, bounded synchronous SDK adapter with no retries and safe
+throttle classification. Nineteen synthetic tests plus mypy/Black passed. Real
+event conversion, authentication, timeouts, integration and deployment remain
+open; no AWS request was made. [Experiment log](../evaluation/experiment-log.md).
+
 ### EXP-03 overflow rejection classifier — 2026-11-03 04:36:51 UTC
 
 Prepared an offline, redacted classifier for Lambda Invoke throttling errors;
