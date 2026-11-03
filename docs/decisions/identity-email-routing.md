@@ -52,6 +52,12 @@ reviewed configuration work, not a way to bypass SES sandbox restrictions.
 
 ## Current boundaries and acceptance
 
+Suraj's 2026-11-03 [hosted functional repair](hosted-functional-repair.md)
+supersedes the recipient restriction below only for the explicit real hosted
+runtime. Both adapters use the same hosted recipient policy; local/standalone
+probes retain controlled recipients. Provider order, refresh and bounded fallback
+remain. The repair is not yet merged or verified by real mailbox receipt.
+
 Local Resend adapter retains at most five explicit controlled recipients. Existing
 SES production refusal and sandbox allowlist remain. No production selector or
 real deployment is enabled by this decision. Resend account/domain/API-key setup,

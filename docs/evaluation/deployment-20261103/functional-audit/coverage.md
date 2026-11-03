@@ -36,3 +36,12 @@ Listing-only API traffic. Listing collection/detail payloads are unchanged, so
 their existing workload case shape is retained. Freeze the new application,
 schema/contract and connection-setting revisions before any pilot, and verify
 equivalent selected reads on both paths. Functional messages here are not NFR05.
+
+Local normal-app integration now covers26workflow groups, including real
+PostgreSQL batch photo/saved reads, missing/removed-image isolation, Hybrid
+invalidation/reindexing, seller selection, wanted-origin conversations, logout,
+temporary activation/permission limits and unread grouping. See
+[integrated-local-sweep.json](integrated-local-sweep.json). These extend local
+coverage and do not replace the deployed checks in the table. The worker-grant
+regression proves the exact missing privileges in a disposable restricted role;
+cloud SQL application and live indexing recovery remain pending.

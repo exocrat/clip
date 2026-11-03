@@ -50,5 +50,39 @@
   "full_aggregate_repeated": false,
   "deployed_repair_verified": false,
   "experiments_started": false,
-  "nfr_accepted": false
+  "nfr_accepted": false,
+  "followup_at_utc": "2026-11-03T20:25:30.279075+00:00",
+  "followup_checks": [
+    {
+      "name": "final-web",
+      "log_path": "/tmp/clip-functional-web-final.log",
+      "log_sha256": "8ca0a77f25f374c01e34702cba2646c7a3dfceb97a5c6d3ead89772cc8de4e9e",
+      "result": "502 passed;3 skipped; lint/types/production build passed"
+    },
+    {
+      "name": "restricted-worker-grants-native",
+      "log_path": "/tmp/clip-functional-worker-grant-native-recheck.log",
+      "log_sha256": "8ed2687d4705c0962ec35c562bd6419697d61125b2e3970ab36a0aa1d14a7c2c",
+      "result": "24 passed;3 skipped; native migration/SQL checks passed; exact restricted role reproduced permission denial and completed publication after proposed grants"
+    },
+    {
+      "name": "lambda-image-builder",
+      "log_path": "/tmp/clip-functional-builder-final.log",
+      "log_sha256": "bd5201fad773316bbfda2cfee7833ff2d8db356db81550c537f47ba44de0ed2d",
+      "result": "5 passed; single-platform image-root flags checked"
+    },
+    {
+      "name": "integrated-normal-app",
+      "log_path": "/tmp/clip-functional-integrated-local-batches.log",
+      "log_sha256": "397450c1b9ba103eb2e9ea2a5569143306ff7a46da85ef4e5184f76c72a49bf7",
+      "result": "26 workflow check groups passed with disposable PostgreSQL and real local semantic model; synthetic external sign-in/mail/storage"
+    }
+  ],
+  "initial_repair_ci": {
+    "source_revision": "24c1701ebd925a0bdaee482f588b946c79ca1351",
+    "conclusion": "success",
+    "url": "https://github.com/exocrat/clip/actions/runs/41706809907",
+    "scope": "initial repair commit only; follow-up revision requires its own CI"
+  },
+  "followup_format": "Both changed Python files checked individually; multi-file Black cannot create its process-manager socket inside the sandbox"
 }

@@ -2,7 +2,8 @@
 
 This is a diagnostic inventory, not an experiment, NFR pass or claim that all
 features work. Preserve user-created content. The user asked to find issues
-before starting further repairs; the proposed embedding grants remain unapplied.
+before starting repairs. The first controlled live pass is complete; coordinated
+repairs are implemented locally. Proposed embedding grants remain unapplied.
 
 ## Findings and evidence
 
@@ -160,3 +161,38 @@ its task definition had Hybrid search and indexing worker disabled. The old
 `clip_test` database currently contains four listings/images, while the final
 reference database currently contains 1,001 of each after user inspection.
 Do not infer the exact historical database row count solely from current counts.
+
+## Repair verification checkpoint
+
+Initial repair commit `24c1701` passed [all hosted CI gates](https://github.com/exocrat/clip/actions/runs/41706809907).
+Follow-up changes add a real restricted-role regression for the exact proposed
+worker grants, normal-app HTTP/SQL checks for both batch endpoints, and a
+single-platform Lambda build without an attestation index. Local loopback photo
+previews remain supported; public hosted delivery still requires HTTPS.
+
+[The full local integration sweep](integrated-local-sweep.json) passed26workflow
+groups with real disposable PostgreSQL and the real pinned semantic model.
+External sign-in, mail and photo storage were synthetic in that sweep. The
+follow-up web suite passed502/3skipped, native database24/3skipped and image-builder
+checks5. [Verification receipts](local-validation.json) preserve earlier failures
+and log hashes. The final follow-up revision still requires its own hosted CI.
+
+Repair images were built locally and their offline model/container smoke passed
+for the initial revision. No repaired image was published or deployed: explicit
+`surajs2` credentials expired before publication. Rebuild the final committed
+revision, verify matching CI, then publish/review/apply only the approved image
+change. Current public health and both dedicated controlled sessions are healthy
+following hotspot restoration. Normal workstation DNS now resolves the live ALB;
+the temporary per-browser override must be removed before frozen measurements.
+
+The exact worker grant script is also retained under
+`database/roles/marketplace-embedding-worker.sql.proposed`. Both copies have SHA256
+`0236c75647b9e2f8e1e6a0fd64301196641ff16b5c5f019bd224de47e7283510`.
+Native tests reproduce SQLSTATE42501 with restricted rights, then claim/publish
+successfully with those exact columns. This supports the correction but is not
+permission to apply it or proof of live worker/search recovery.
+
+Remaining human/external gates: renewed AWS login, exact worker-grant approval,
+a controlled deliverable mailbox for actual OTP/notification receipt, exact PR
+merge authorization, B deployment/parity and approved pilot/formal/fault runs.
+No automatic resource upgrade, wider SQL rights or formal traffic is authorized.

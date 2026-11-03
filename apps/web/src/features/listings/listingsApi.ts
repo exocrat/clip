@@ -191,7 +191,12 @@ const imageDeliveryBatch = batchedRead<ImageDelivery | null>(async (ids, signal)
       if (!delivery || typeof delivery.url !== 'string' || typeof delivery.url_expires_at !== 'string') throw new ListingsApiError(503);
       const url = new URL(delivery.url);
       const expires = Date.parse(delivery.url_expires_at);
-      if (url.protocol !== 'https:' || url.username || url.password || !Number.isFinite(expires) ||
+      // The isolated local browser harness serves its own temporary bytes over
+      // loopback HTTP. Public hosted pages still require HTTPS delivery links.
+      const localPreview = typeof window !== 'undefined' && window.location.protocol === 'http:' &&
+        ['127.0.0.1', 'localhost', '[::1]'].includes(window.location.hostname) && url.origin === window.location.origin;
+      if ((url.protocol !== 'https:' && !(url.protocol === 'http:' && localPreview)) ||
+          url.username || url.password || !Number.isFinite(expires) ||
           expires <= Date.now() || expires > Date.now() + 301_000) throw new ListingsApiError(503);
     }
     result.set(item.image_id, item.delivery);

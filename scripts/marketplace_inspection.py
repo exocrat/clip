@@ -489,6 +489,25 @@ def exercise_and_seed(app):
         delivery = expect("GET", "/api/images/" + detail["image_ids"][0] + "/delivery")
         assert c.get(delivery["url"]).content == png
         checks.append("authorized photo delivery returns uploaded bytes")
+        absent_photo = str(uuid4())
+        batch = c.get(
+            "/api/images/delivery",
+            params=[
+                ("image_ids", detail["image_ids"][0]),
+                ("image_ids", absent_photo),
+            ],
+        )
+        assert batch.status_code == 200
+        # Real Identity middleware may replace the route's private/no-store with
+        # no-store; both forbid browser and shared-cache retention of signed links.
+        assert "no-store" in {
+            token.strip().lower() for token in batch.headers["cache-control"].split(",")
+        }
+        assert batch.json()["items"][1] == {"image_id": absent_photo, "delivery": None}
+        assert c.get(batch.json()["items"][0]["delivery"]["url"]).content == png
+        checks.append(
+            "batch photo HTTP/SQL/signing preserves missing-ID isolation and private cache policy"
+        )
         for index in range(25):
             use("other-seller" if index % 2 else "seller")
             title = (
@@ -625,6 +644,19 @@ def exercise_and_seed(app):
             "PUT", f"/api/me/saved-listings/{bike}", json={"operation_id": str(uuid4())}
         )
         assert expect("GET", "/api/me/saved-listings")["items"]
+        statuses = expect(
+            "GET",
+            "/api/me/saved-listings/status",
+            params=[
+                ("listing_ids", bike),
+                ("listing_ids", str(uuid4())),
+            ],
+        )["items"]
+        assert statuses[0] == {"listing_id": bike, "saved": True}
+        assert statuses[1]["saved"] is False
+        checks.append(
+            "batch saved HTTP/SQL returns only caller membership without listing content"
+        )
         expect("DELETE", f"/api/me/saved-listings/{bike}", 204)
         expect("DELETE", f"/api/me/saved-listings/{bike}", 204)
         checks.append("saved listing add/read/remove/idempotent retry")
@@ -831,6 +863,10 @@ def exercise_and_seed(app):
         )
         edited = expect("PUT", f"/api/listings/{bike}", json=edit)
         assert c.get(f"/api/images/{old_photo}/delivery").status_code == 404
+        removed_batch = expect(
+            "GET", "/api/images/delivery", params={"image_ids": old_photo}
+        )
+        assert removed_batch["items"] == [{"image_id": old_photo, "delivery": None}]
         assert edited["original_price_paise"] == owned_row["original_price_paise"]
         checks.append(
             "listing edit/photo replacement/removal revokes old delivery; Original price persists"

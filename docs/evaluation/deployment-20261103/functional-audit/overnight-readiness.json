@@ -8,12 +8,18 @@
   "both_handle_ready": true,
   "both_public_keys_registered": true,
   "neither_browser_shows_key_setup_gate": true,
-  "debug_ports": [9223, 9224],
+  "debug_ports": [
+    9223,
+    9224
+  ],
   "debug_bind_address": "127.0.0.1",
   "functional_test_fixtures_authorized": true,
   "image_only_redeploy_authorized_with_checks_and_rollback": true,
   "resource_upgrades_authorized": false,
   "new_database_permission_changes_authorized": false,
   "formal_experiment_traffic_authorized": false,
-  "awaiting_explicit_start": true
+  "awaiting_explicit_start": false,
+  "autonomous_batch_authorized": true,
+  "aws_login_expired_before_publication": true,
+  "repair_deployed": false
 }

@@ -23,3 +23,16 @@ it('rejects an expired link rather than returning it to an image element', async
   ] }), { status: 200 })));
   await expect(readImageDelivery(id(1))).rejects.toMatchObject({ status: 503 });
 });
+
+it('preserves same-origin loopback image previews without allowing public HTTP links', async () => {
+  const response = (url: string) => new Response(JSON.stringify({ items: [
+    { image_id: id(1), delivery: { url, url_expires_at: new Date(Date.now() + 240000).toISOString() } },
+  ] }), { status: 200 });
+  vi.stubGlobal('window', { location: new URL('http://127.0.0.1:5174') });
+  const fetch = vi.fn()
+    .mockResolvedValueOnce(response('http://127.0.0.1:5174/__listings_demo/storage/synthetic'))
+    .mockResolvedValueOnce(response('http://storage.example.invalid/synthetic'));
+  vi.stubGlobal('fetch', fetch);
+  await expect(readImageDelivery(id(1))).resolves.toMatchObject({ url: 'http://127.0.0.1:5174/__listings_demo/storage/synthetic' });
+  await expect(readImageDelivery(id(1))).rejects.toMatchObject({ status: 503 });
+});
