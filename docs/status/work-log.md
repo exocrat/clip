@@ -1,5 +1,12 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### EXP-03 synthetic Lambda response parser — 2026-11-03 04:42:25 UTC
+
+Prepared an unwired bounded ALB response parser, preserving status and repeated
+headers with safe content-length handling. Forty-five synthetic tests and
+mypy/Black passed. Real adapter, authentication and app integration remain open;
+no AWS action. [Experiment log](../evaluation/experiment-log.md).
+
 ### EXP-03 synthetic Lambda event builder — 2026-11-03 04:40:44 UTC
 
 Added an unwired selected-read event builder and synthetic tests for repeated

@@ -15,6 +15,23 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## Current checkpoint
 
+### 2026-11-03 04:42:25 UTC — Synthetic Lambda response parser
+
+**Work:** `apps/api/app/overflow_response.py` validates a bounded ALB-shaped
+response envelope, preserves status and repeated headers, decodes the body and
+rejects malformed or unsafe headers. It discards content length so a future HTTP
+handler can calculate it from decoded bytes. Its representation omits response
+content and cookies. `apps/api/tests/test_overflow_response.py` checks synthetic
+success, non-success status, invalid envelopes and header safety. This is not
+installed in the app and does not establish product correctness or actual
+Lambda Web Adapter compatibility.
+
+**Checks:** Forty-five synthetic policy, transport and event/response tests
+passed; mypy and Black checks passed. No AWS call, real session or performance
+measurement occurred. Integration still needs trusted HTTPS/session handling,
+timeouts, backend attribution and real adapter/parity verification. Terraform B
+remains blocked.
+
 ### 2026-11-03 04:40:44 UTC — Synthetic Lambda read event builder
 
 **Work:** `apps/api/app/overflow_event.py` builds a bounded ALB-shaped event
