@@ -2815,7 +2815,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | Task ID | Owner role | Task status | Current checkpoint / immediate next action | Execution state | Human verification | Branch/revision/evidence | Blockers | Last UTC update |
 |---|---|---|---|---|---|---|---|---|
 | EXP-02 | Rahul (D); Search owner C review | in progress | PR #28 merged; shared real-target runner, NFR-01–05/telemetry/reporting, pilot/analysis/cleanup tools are locally implemented | Evaluation suite 364 passed/5 skipped; compile, Black, strict Mypy, Terraform mocks, Gitleaks and whitespace checks passed; no live run. Monotonic k6 binary built, timer smoke passed and Go timer unit tests passed in GOPATH mode. | Prior PR #28 merge confirmed; local implementation committed for human and affected-owner review | PR #28 head `8e1a7e8`, merge `2a0916e`; local work on `task/experiment-tooling-readiness`; [experiment log](../evaluation/experiment-log.md) | PR review/merge, exact deployment plan/credit estimate, website DNS handoff, live smoke, pilot and NFR results remain. Module-mode Go test hits a local toolchain lookup issue; GOPATH-mode test passes. | 2026-11-03 12:52:00 UTC |
-| EXP-03 | Rahul (D), Terraform and scoped Identity; Suraj reviewer/operator | in progress | PR #30 merged at `4bad741`; approved exact ingress plan applied. ALB active on HTTPS; source hosts/RDS stopped; ECS desired/running/pending 2/0/2 and ASG desired 0 with all ten processes suspended. | Hosted CI passed; 23 Terraform mocks and five builder tests passed; verified live resource state. No app smoke, Lambda deployment or workload. | Suraj approved exact PR head and plan checksum before merge/apply | [Ingress verification](../evaluation/deployment-20261103/execution/ingress-verification.json); [exact Spaceship handoff](../evaluation/deployment-20261103/execution/spaceship-handoff.md) | Domain owner adds three DNS records; then verify DNS/TLS and separately progress source startup, live parity, site inspection and pilots/NFRs. DNS phase review deadline 2026-11-03 18:10 UTC; no automatic shutdown. | 2026-11-03 16:14:02 UTC |
+| EXP-03 | Rahul (D); Suraj reviewer/operator | in progress | Source A deployed: two c7i-flex.large hosts/two healthy ECS tasks, revision13; final DB bound/upgraded, accepted data verified. PR #31 accepted at e97a181. | CI passed; actual role/key/privilege audit and complete dataset projection pass; HTTPS health/site200 and anonymous Listing401; public URL health200 independently from AWS. | Suraj approved exact database repair and exact PR31/image plan before execution | [Source A verification](../evaluation/deployment-20261103/execution/source-a-startup-verification.json); [public DNS proof](../evaluation/deployment-20261103/execution/public-dns-aws-network-check.json) | Human website/sign-in inspection; workstation DNS discrepancy; authenticated parity and B deployment, pilot/NFR/measurements remain. Startup review deadline18:25UTC; no automatic shutdown. | 2026-11-03 17:00:57 UTC |
 | SE-01 category-text amendment | Mohit (C); Listings reviewer Suraj (B) | merged | PR #25 merged to main at `1f11065`; Steps 1–3 and reported Listings review complete | Exact-head hosted CI passed; [native/model/source evidence](../evaluation/domain/se-01/category-text-checks.json) | Steps 1–3 verified by Mohit; Suraj review reported by Aditya | PR #25; [hosted CI](https://github.com/exocrat/clip/actions/runs/41338792850) | Full SE-01 readiness, final fixed-label relevance and NFR/cloud latency remain open | 2026-11-01 20:18:19 UTC |
 | NEXT-00 | Suraj — requested planning coordinator | done | Planning output verified; NEXT-01 Step 1 authorized. | performed; planning only | verified by Suraj | `task/integrated-marketplace-rollout`, based on main `5e8d264`; [remaining-work plan](../tasks/remaining-project-plan.md), linked from project task index | No blocker for the accepted planning output; implementation and measured-run gates remain separate. | 2026-10-27 18:42:09 UTC |
 | NEXT-01 | Suraj — requested planning coordinator; C retains EXP-01 ownership | done | Design and task-wide review verified; NEXT-02 is next. | Steps 1–9 performed | Steps 1–9 verified | Planning baseline `c869f33`; [design and approved gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md#next-01-step-8--proposed-changes-to-measurement-gates); [NEXT-07 references](../tasks/remaining-project-plan.md#experiment-protocol-reference) | No blocker for the design handoff. Real implementations, data, tools, cost anchors, project AWS identity/spend and run approvals remain NEXT-07 prerequisites. | 2026-10-28 06:24:24 UTC |
@@ -5850,3 +5850,38 @@ local-readiness review; no successful live app/NFR result is claimed. Black's
 multi-file process pool was sandbox-blocked; individual-file formatting passes.
 Next: PR/check/merge and exact image-update plan approval before redeploying.
 DNS still points at the stopped proxy; restore certificate remains pending.
+
+### EXP-03 corrected runtime deployed and website handoff — 2026-11-03 17:00:57 UTC
+
+Suraj approved PR31 head `ca5852cabbcec42393d83ebdf44685dbf19b1aa8` and
+saved image-update plan `5075addaee7f36f5cb3f92161bae23478be02bfc78604f3880e8dcc019038a87`.
+Hosted CI `41676874164` passed in10m44s; accepted main
+`e97a1810b3eee7d9c3f5c2e7cac0a41c07fffee3` was checked tree-equal.
+Applied only the new API task definition and service update. Both revision13
+tasks run on the two preserved/planned hosts and both ALB targets are healthy.
+Only app-code change: `apps/api/app/domains/identity/runtime_database.py` now
+allows the two exact reviewed hosted database names, keeping transport/role/
+password checks; `test_runtime_configuration.py` covers accepted names and
+unreviewed-name denial. Eight focused cases and real final-DB role/key audit pass.
+API/Hybrid/Lambda builds pass; published manifests are single-platform. Lambda
+image is prepared, but no Lambda function/B routing or workload was deployed.
+
+Verified real TLS/SNI through ALB with a connection override: health200 with
+correct body, website200 with bundled assets, anonymous Listing GET401. These
+three checks are smoke evidence, not NFR/cold/performance results. Suraj then
+reported the owner completed DNS work. Restore certificate is ISSUED and DNS
+validation SUCCESS. AWS host independently resolves both public hostnames to
+ALB and normal `https://clip-iisc.site/health` returns200 without override.
+This workstation's DNS answers differ and normal local HTTPS times out; preserve
+both observations and investigate local resolver before workload traffic. Do not
+ask owner to change verified records based only on local answers. Closed only
+the owned SSM database session after private checks.
+
+[Exact release](../evaluation/deployment-20261103/execution/source-a-release.json),
+[smoke receipts](../evaluation/deployment-20261103/execution/https-smoke-with-dns-override.json),
+and [public DNS/health proof](../evaluation/deployment-20261103/execution/public-dns-aws-network-check.json)
+are retained. Updated cost ledger with separate USD0.38116 unbilled two-hour
+compute estimates; project scope/billing remain incomplete, credits separate,
+no NFR08 acceptance. No measured traffic, real sign-in, forced task loss or
+restore has run. Current handoff is Suraj's desktop/phone website inspection;
+B routing/authenticated parity/pilot and formal measurements remain pending.

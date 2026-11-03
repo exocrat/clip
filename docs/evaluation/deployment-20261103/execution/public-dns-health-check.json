@@ -1,0 +1,20 @@
+{
+  "observed_at_utc": "2026-11-03T16:56:56.580821+00:00",
+  "hosts": {
+    "clip-iisc.site": [
+      "13.235.3.251"
+    ],
+    "restore.clip-iisc.site": [
+      "43.205.193.65"
+    ],
+    "clip-exp03-exp261103-1208550693.ap-south-1.elb.amazonaws.com": [
+      "13.126.180.62",
+      "13.205.29.134"
+    ]
+  },
+  "normal_https_health": {
+    "transport_success": false,
+    "curl_exit": 28,
+    "expected_body": false
+  }
+}

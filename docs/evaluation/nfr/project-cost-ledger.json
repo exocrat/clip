@@ -52,6 +52,54 @@
       "price_date": "2026-11-03",
       "estimate_basis": "Two-hour phase: ALB 0.0239/h + two IPv4 0.0100/h + allowance for one LCU 0.0080/h. Not final billed usage; replace at reconciliation. Existing baseline and ECR excluded here.",
       "replaces_estimate_id": null
+    },
+    {
+      "entry_id": "aws-private-startup-estimate-1-20261103",
+      "provider": "aws",
+      "kind": "unbilled_estimate",
+      "category": "experiment-private-startup",
+      "resource_scope": "i-086045c48487471de",
+      "period_start": "2026-11-03",
+      "period_end": "2026-11-03",
+      "amount_usd": "0.16958",
+      "credits_usd": "0",
+      "source_reference": "docs/evaluation/deployment-20261103/execution/private-startup-phase-budget.json#resources[0]",
+      "source_sha256": "c58784f4625d37fbec0263c4bfcbb17279953cad13149bf9fd79bde49d0a6a13",
+      "price_date": "2026-11-03",
+      "estimate_basis": "2 hours at USD0.08479/hour; not actual billed usage; replace at reconciliation.",
+      "replaces_estimate_id": null
+    },
+    {
+      "entry_id": "aws-private-startup-estimate-2-20261103",
+      "provider": "aws",
+      "kind": "unbilled_estimate",
+      "category": "experiment-private-startup",
+      "resource_scope": "i-08e368391d905310e",
+      "period_start": "2026-11-03",
+      "period_end": "2026-11-03",
+      "amount_usd": "0.16958",
+      "credits_usd": "0",
+      "source_reference": "docs/evaluation/deployment-20261103/execution/private-startup-phase-budget.json#resources[1]",
+      "source_sha256": "c58784f4625d37fbec0263c4bfcbb17279953cad13149bf9fd79bde49d0a6a13",
+      "price_date": "2026-11-03",
+      "estimate_basis": "2 hours at USD0.08479/hour; not actual billed usage; replace at reconciliation.",
+      "replaces_estimate_id": null
+    },
+    {
+      "entry_id": "aws-private-startup-estimate-3-20261103",
+      "provider": "aws",
+      "kind": "unbilled_estimate",
+      "category": "experiment-private-startup",
+      "resource_scope": "clip-shared-test-postgres",
+      "period_start": "2026-11-03",
+      "period_end": "2026-11-03",
+      "amount_usd": "0.042",
+      "credits_usd": "0",
+      "source_reference": "docs/evaluation/deployment-20261103/execution/private-startup-phase-budget.json#resources[2]",
+      "source_sha256": "c58784f4625d37fbec0263c4bfcbb17279953cad13149bf9fd79bde49d0a6a13",
+      "price_date": "2026-11-03",
+      "estimate_basis": "2 hours at USD0.021/hour; not actual billed usage; replace at reconciliation.",
+      "replaces_estimate_id": null
     }
   ]
 }

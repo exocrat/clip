@@ -1,0 +1,19 @@
+{
+  "source_revision": "ca5852cabbcec42393d83ebdf44685dbf19b1aa8",
+  "images": {
+    "api": {
+      "uri": "335523638354.dkr.ecr.ap-south-1.amazonaws.com/clip-shared-test-api@sha256:860c8c15fe29b2592976ca5b8dafdb5738d791de012ccbc4f57b9bc076ae674b",
+      "manifest_media_type": "application/vnd.docker.distribution.manifest.v2+json",
+      "single_platform_manifest": true
+    },
+    "lambda": {
+      "uri": "335523638354.dkr.ecr.ap-south-1.amazonaws.com/clip-shared-test-api@sha256:a82a3292c8374ce9041e290b156fdfe8e6b4b61e15b26159cb7de56911b7cf80",
+      "manifest_media_type": "application/vnd.docker.distribution.manifest.v2+json",
+      "single_platform_manifest": true
+    }
+  },
+  "accepted_main": "e97a1810b3eee7d9c3f5c2e7cac0a41c07fffee3",
+  "api_deployed_task_definition": "clip-test-api-ap-south-1-pd16:13",
+  "lambda_deployed": false,
+  "live_validation": "two ECS targets healthy; three anonymous HTTPS smoke checks passed; authenticated parity/NFRs pending"
+}
