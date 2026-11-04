@@ -1,7 +1,7 @@
-"""Explicit, reversible RDS Proxy routing without changing stored credentials.
+"""Explicit, reversible shared-pool routing without changing stored credentials.
 
 The source DSN remains authoritative for role/database/TLS. Only its host is
-replaced, and only by an approved Mumbai proxy hostname. Removing the runtime
+replaced, and only by a managed Mumbai endpoint or private workload-subnet IP. Removing the runtime
 override restores the direct path. No connection is opened during routing.
 """
 
@@ -13,7 +13,7 @@ from psycopg.conninfo import conninfo_to_dict
 from psycopg.rows import tuple_row
 
 PROXY_HOST = re.compile(
-    r"[a-z][a-z0-9-]*\.proxy-[a-z0-9]+\.ap-south-1\.rds\.amazonaws\.com\Z"
+    r"(?:[a-z][a-z0-9-]*\.proxy-[a-z0-9]+\.ap-south-1\.rds\.amazonaws\.com|10\.64\.1\.(?:[1-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-4]))\Z"
 )
 TIMEOUT_QUERY = "SELECT current_setting('statement_timeout'), current_setting('lock_timeout'), current_setting('idle_in_transaction_session_timeout')"
 EXPECTED_TIMEOUTS = ("5s", "1s", "5s")
@@ -42,15 +42,28 @@ def route_database(conninfo: str, endpoint: str | None) -> str:
             - {"host", "port", "dbname", "user", "password", "sslmode", "sslrootcert"}
         ):
             raise ValueError
-        authority = parsed.netloc.rsplit("@", 1)[0] + "@" + endpoint + ":5432"
+        port = "6432" if endpoint.startswith("10.64.1.") else "5432"
+        authority = parsed.netloc.rsplit("@", 1)[0] + "@" + endpoint + ":" + port
         return urlunsplit((parsed.scheme, authority, parsed.path, parsed.query, ""))
     except Exception:
         raise ValueError("Invalid database proxy routing configuration") from None
 
 
 def uses_proxy(conninfo: str) -> bool:
-    """Identify only the constrained managed endpoint, never arbitrary host text."""
-    return bool(PROXY_HOST.fullmatch(str(conninfo_to_dict(conninfo).get("host", ""))))
+    """Identify constrained pool endpoints, never arbitrary host text."""
+    values = conninfo_to_dict(conninfo)
+    return is_pool_address(str(values.get("host", "")), values.get("port", 5432))
+
+
+def is_pool_address(host: str, port: Any = 5432) -> bool:
+    """The isolated native harness uses an explicit port-6432 Unix socket.
+
+    Domain DSN validation still permits non-TLS sockets only in test mode.
+    Hosted endpoints always require verified TLS, including the private IP.
+    """
+    return bool(PROXY_HOST.fullmatch(host)) or (
+        host.startswith("/") and str(port) == "6432"
+    )
 
 
 def connection_kwargs(conninfo: str, **kwargs: Any) -> dict[str, Any]:
@@ -70,7 +83,7 @@ def connection_kwargs(conninfo: str, **kwargs: Any) -> dict[str, Any]:
 
 def check_proxy_connection(connection: Any) -> None:
     """Refuse a proxy missing bounded server deadlines; leave no transaction open."""
-    if not PROXY_HOST.fullmatch(connection.info.host):
+    if not is_pool_address(connection.info.host, connection.info.port):
         return
     try:
         with connection.cursor(row_factory=tuple_row) as cursor:
@@ -83,7 +96,7 @@ def check_proxy_connection(connection: Any) -> None:
 
 async def check_async_proxy_connection(connection: Any) -> None:
     """Async equivalent of the fail-closed timeout check for each new client."""
-    if not PROXY_HOST.fullmatch(connection.info.host):
+    if not is_pool_address(connection.info.host, connection.info.port):
         return
     try:
         async with connection.cursor(row_factory=tuple_row) as cursor:

@@ -152,3 +152,23 @@ and `test_lambda_read_app.py` now expect the explicit configure/check callbacks
 while still asserting every existing pool bound; `domains/listings/test_embedding_dispatch.py`
 uses a syntactically valid unused DSN so it reaches the intended mocked startup,
 shutdown and cancellation failures. These tests still open no external connection.
+
+## Existing-host PgBouncer pivot
+
+- `infra/pgbouncer/Dockerfile`, `requirements.txt`, `entrypoint.py` — Build the pinned pool, validate the three existing restricted credentials, enforce transaction/connection/time limits, verify TLS and emit content-free counters. Private keys are injected, never built into an image.
+- `apps/api/app/domains/identity/certificates/clip-pgbouncer-20261104.crt` — Add the constrained public CA used by both app images to verify the selected private pool host.
+- `apps/api/app/core/database_transport.py`, `config.py` — Allow the explicit private pool address while preserving database, roles and TLS; keep restore targets isolated and use compatible connection settings.
+- `apps/api/app/application.py`, `domains/identity/runtime_database.py` — Reuse bounded Lambda client connections when using the shared transaction pool; preserve direct-mode cleanup, fresh authorization and stale-connection checks.
+- `infra/terraform/shared/test/pgbouncer.tf` — Define the separate service on the existing pinned host, its private port, narrow execution permissions, TLS parameter and logs; provisioning and application routing are separate switches.
+- `infra/terraform/shared/test/service.tf`, `exp03-lambda.tf` — Route both architectures to the same endpoint only when activated.
+- `infra/terraform/shared/test/tests/pgbouncer.tftest.hcl`, `tests/exp03_lambda.tftest.hcl` — Check disabled defaults, isolated provisioning and invalid activation using synthetic Terraform mocks.
+- `scripts/evaluation/k6/pgbouncer_preflight.py`, `real_target_preflight.py` — Bind format-3 plans to the exact pool image, service, host and resource settings, and verify matching application routing before workload traffic.
+- `scripts/evaluation/k6/pgbouncer_capture.py`, `cloudwatch_capture.py` — Capture bounded safe pool counters and ECS pool metrics alongside existing experiment telemetry; retain unavailable intervals.
+- `scripts/evaluation/pgbouncer_local.py`, `capacity_local.py` — Run the actual pool and app against a disposable database, retain resource/failure logs, enforce local Lambda occupancy and allow identical sequential profile repetitions. Local runs remain diagnostic evidence.
+- `tests/evaluation/test_pgbouncer.py`, `test_pgbouncer_tls.py`, `test_pgbouncer_preflight.py`, `apps/api/tests/test_database_transport.py` — Check role isolation, reuse, bounded waiting, stale/dead connections, TLS rejection, real telemetry serialization and deployment drift. The existing direct-connection mock now exposes its port.
+- `data/evaluation/workloads/real-target-pgbouncer-plan.template.json` — Provide the explicit pool binding required by the new preflight.
+- `docs/evaluation/deployment-20261103/public-input-overlay.json` — Record the selected ten-slot unreserved mode; activation remains separately approved.
+
+- `scripts/evaluation/k6/lambda_concurrency.py`, `real_run_coordinator.py`, `tests/evaluation/test_lambda_concurrency.py` — Bind unreserved capacity to the observed quota and sole function, poll during traffic, stop on change/read failure, and retain incomplete evidence. Reserved-mode checks now use the correct AWS API.
+- `apps/api/tests/domains/identity/test_image_trust.py`, `apps/api/app/domains/identity/certificates/README.md` — Pin the new private pool CA separately from the three Amazon RDS roots and verify its restricted name constraints.
+- `scripts/evaluation/k6/real_target_preflight.py` — Validate the actual DSN against the planned database on the exact RDS instance; the instance's original database name is not a restriction on other databases hosted there.

@@ -841,6 +841,11 @@ def execute(plan_path: Path, approval_path: Path) -> dict[str, Any]:
         if not staged_profile.exists():
             raise ValueError("staged_profile_missing")
         inspect_target(target)
+        from scripts.evaluation.k6.lambda_concurrency import run_guard
+
+        concurrency_guard = run_guard(target)
+        if concurrency_guard:
+            concurrency_guard()
         needs_csrf = plan["workload_kind"] == "nfr-03"
         session_value = os.environ.get("CLIP_REAL_RUN_SESSION_COOKIE", "")
         session = check_session_identity(target, session_value, needs_csrf=needs_csrf)
@@ -870,6 +875,8 @@ def execute(plan_path: Path, approval_path: Path) -> dict[str, Any]:
         )
         timed_out = False
         oversized = False
+        concurrency_guard_failed = False
+        next_concurrency_check = time.monotonic() + 5
         while process.poll() is None:
             if time.monotonic() - begin > plan["maximum_duration_seconds"]:
                 timed_out = True
@@ -877,7 +884,13 @@ def execute(plan_path: Path, approval_path: Path) -> dict[str, Any]:
                 oversized = raw_path.stat().st_size > plan["maximum_raw_bytes"]
             except FileNotFoundError:
                 oversized = True
-            if timed_out or oversized:
+            if concurrency_guard and time.monotonic() >= next_concurrency_check:
+                try:
+                    concurrency_guard()
+                except Exception:
+                    concurrency_guard_failed = True
+                next_concurrency_check = time.monotonic() + 5
+            if timed_out or oversized or concurrency_guard_failed:
                 os.killpg(process.pid, signal.SIGTERM)
                 try:
                     process.wait(timeout=5)
@@ -888,6 +901,11 @@ def execute(plan_path: Path, approval_path: Path) -> dict[str, Any]:
             time.sleep(0.2)
         return_code = process.wait()
         elapsed_seconds = time.monotonic() - begin
+        if concurrency_guard:
+            try:
+                concurrency_guard()
+            except Exception:
+                concurrency_guard_failed = True
         child_env.clear()
         del session_value
         raw_hash, raw_size, output_exceeded = _hash_output(
@@ -914,9 +932,13 @@ def execute(plan_path: Path, approval_path: Path) -> dict[str, Any]:
             "process_exit_code": return_code,
             "timed_out": timed_out,
             "raw_limit_exceeded": oversized,
+            "concurrency_guard_failed": concurrency_guard_failed,
             "execution_state": (
                 "completed"
-                if return_code == 0 and not timed_out and not oversized
+                if return_code == 0
+                and not timed_out
+                and not oversized
+                and not concurrency_guard_failed
                 else "failed_or_incomplete"
             ),
             "nfr_accepted": False,

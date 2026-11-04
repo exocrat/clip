@@ -76,6 +76,16 @@ variable "exp03_lambda_reserved_concurrency" {
   }
 }
 
+variable "exp03_lambda_unreserved_account_limit" {
+  description = "Explicit single-function unreserved mode. Preflight and run monitoring must verify the regional quota and absence of competing functions."
+  type        = number
+  default     = null
+  validation {
+    condition     = var.exp03_lambda_unreserved_account_limit == null ? true : var.exp03_lambda_unreserved_account_limit == 10
+    error_message = "The reviewed unreserved mode requires the observed account limit of ten."
+  }
+}
+
 variable "exp03_budget_cap_usd" {
   description = "Declared maximum additional spend for the owned temporary window; external monitoring and stop controls are still required."
   type        = number
@@ -133,7 +143,10 @@ resource "terraform_data" "exp03_inputs" {
         var.exp03_max_runtime_minutes != null,
         var.exp03_selected_reads_lambda_weight_percent == null || var.exp03_lambda_image_uri != null,
         var.exp03_selected_reads_lambda_weight_percent == null || var.exp03_lambda_memory_mb != null,
-        var.exp03_selected_reads_lambda_weight_percent == null || var.exp03_lambda_reserved_concurrency != null,
+        var.exp03_selected_reads_lambda_weight_percent == null || (
+          var.exp03_lambda_unreserved_account_limit == null ? var.exp03_lambda_reserved_concurrency != null :
+          var.exp03_lambda_reserved_concurrency == null && var.pgbouncer_routing_enabled
+        ),
         var.exp03_second_public_subnet_cidr == null ? false : contains([for n in range(16) : cidrsubnet(var.vpc_cidr, 4, n)], var.exp03_second_public_subnet_cidr),
         !contains([var.public_subnet_cidr, var.active_private_subnet_cidr, var.secondary_private_subnet_cidr], var.exp03_second_public_subnet_cidr),
       ])
@@ -396,7 +409,7 @@ resource "aws_lambda_function" "exp03" {
   architectures                  = ["x86_64"]
   memory_size                    = var.exp03_lambda_memory_mb
   timeout                        = 5
-  reserved_concurrent_executions = var.exp03_lambda_reserved_concurrency
+  reserved_concurrent_executions = var.exp03_lambda_unreserved_account_limit != null ? -1 : var.exp03_lambda_reserved_concurrency
   vpc_config {
     subnet_ids         = [aws_subnet.workload_private[0].id]
     security_group_ids = [aws_security_group.exp03_lambda[0].id]
@@ -413,7 +426,7 @@ resource "aws_lambda_function" "exp03" {
       CLIP_HYBRID_WORKER_ENABLED             = "false"
       CLIP_STORAGE_PROVIDER                  = "disabled"
       CLIP_SERVE_WEB_APP                     = "false"
-    }, { for setting in local.database_proxy_environment : setting.name => setting.value })
+    }, { for setting in concat(local.database_proxy_environment, local.pgbouncer_environment) : setting.name => setting.value })
   }
   depends_on = [aws_iam_role_policy.exp03_lambda, terraform_data.exp03_inputs]
   tags       = local.exp03_tags

@@ -234,7 +234,7 @@ def prepare_database(connect, directory, report):
         expected_admin="clip_identity_ci",
     )
     passwords = {
-        "clip_lunch_marketplace": secrets.token_hex(24),
+        "clip_test_marketplace_app": secrets.token_hex(24),
         "clip_test_conversations_app": secrets.token_hex(24),
     }
     with connect() as c:
@@ -258,14 +258,16 @@ def prepare_database(connect, directory, report):
                 )
             )
         c.execute(
-            "GRANT USAGE ON SCHEMA public,listings,search TO clip_lunch_marketplace"
-        )
-        c.execute("GRANT SELECT ON public.schema_migrations TO clip_lunch_marketplace")
-        c.execute(
-            "GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA listings,search TO clip_lunch_marketplace"
+            "GRANT USAGE ON SCHEMA public,listings,search TO clip_test_marketplace_app"
         )
         c.execute(
-            "GRANT USAGE,SELECT ON ALL SEQUENCES IN SCHEMA listings,search TO clip_lunch_marketplace"
+            "GRANT SELECT ON public.schema_migrations TO clip_test_marketplace_app"
+        )
+        c.execute(
+            "GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA listings,search TO clip_test_marketplace_app"
+        )
+        c.execute(
+            "GRANT USAGE,SELECT ON ALL SEQUENCES IN SCHEMA listings,search TO clip_test_marketplace_app"
         )
         c.execute(
             "GRANT USAGE ON SCHEMA public,conversations,identity TO clip_test_conversations_app"
@@ -309,8 +311,8 @@ def prepare_database(connect, directory, report):
             "clip_test_identity_app", identity_password, "/run/clip-db"
         ),
         "marketplace_dsn": dsn(
-            "clip_lunch_marketplace",
-            passwords["clip_lunch_marketplace"],
+            "clip_test_marketplace_app",
+            passwords["clip_test_marketplace_app"],
             "/run/clip-db",
         ),
         "conversations_dsn": dsn(
@@ -369,6 +371,11 @@ async def run_profiles(
     lambda_weight,
     short_diagnostic=False,
     ecs_fallback_only=False,
+    pool_directory=None,
+    pool_identifier=None,
+    lambda_environments=4,
+    only_profile=None,
+    repetitions=1,
 ):
     """Serve actual A/B app paths through loopback, run unchanged required profiles."""
     docker = list(connect.profile_docker)
@@ -380,6 +387,9 @@ async def run_profiles(
     round_robin = {"ecs": 0, "lambda": 0}
     selected_sequence = [0]
     routing_weight = [lambda_weight]
+    lambda_available = asyncio.Queue()
+    for index in range(lambda_environments):
+        lambda_available.put_nowait(index)
     with socket.socket() as listener:
         listener.bind(("127.0.0.1", 0))
         port = listener.getsockname()[1]
@@ -392,7 +402,7 @@ async def run_profiles(
     root_socket = Path(parameters["host"])
     try:
         for kind in (["ecs"] if ecs_fallback_only else ["ecs", "lambda"]):
-            for number in range(2 if kind == "ecs" else 4):
+            for number in range(2 if kind == "ecs" else lambda_environments):
                 name = f"{kind}-{number}"
                 identifier = command(
                     docker
@@ -413,6 +423,14 @@ async def run_profiles(
                         f"type=bind,src={root_socket},dst=/run/clip-db",
                         "--mount",
                         f"type=bind,src={runtime},dst=/run/clip-capacity",
+                        *(
+                            [
+                                "--mount",
+                                f"type=bind,src={pool_directory},dst=/run/clip-pool",
+                            ]
+                            if pool_directory
+                            else []
+                        ),
                         "--entrypoint",
                         "python",
                         image,
@@ -486,8 +504,7 @@ async def run_profiles(
                 use_lambda = (selected_sequence[0] * 37) % 100 < routing_weight[0]
                 selected_sequence[0] += 1
             kind = "lambda" if use_lambda else "ecs"
-            number = round_robin[kind] % (2 if kind == "ecs" else 4)
-            round_robin[kind] += 1
+            number = round_robin[kind] % 2
             chunks = []
             while True:
                 event = await receive()
@@ -507,9 +524,26 @@ async def run_profiles(
             target = path if kind == "lambda" else path.removeprefix("/api")
             if scope.get("query_string"):
                 target += "?" + scope["query_string"].decode()
-            response = await clients[f"{kind}-{number}"].request(
-                scope["method"], target, headers=headers, content=b"".join(chunks)
-            )
+            if use_lambda:
+                try:
+                    number = lambda_available.get_nowait()
+                except asyncio.QueueEmpty:
+                    # Explicit local concurrency exhaustion, never hidden queue
+                    # time or ECS fallback. Real ALB/Lambda error mapping differs.
+                    await send(
+                        {"type": "http.response.start", "status": 429, "headers": []}
+                    )
+                    await send({"type": "http.response.body", "body": b""})
+                    return
+            else:
+                round_robin[kind] += 1
+            try:
+                response = await clients[f"{kind}-{number}"].request(
+                    scope["method"], target, headers=headers, content=b"".join(chunks)
+                )
+            finally:
+                if use_lambda:
+                    lambda_available.put_nowait(number)
             response_headers = [
                 (k, v)
                 for k, v in response.headers.raw
@@ -596,7 +630,9 @@ async def run_profiles(
             "application_cpus": 1,
             "application_memory_gib": 2,
             "ecs_tasks": 2,
-            "lambda_serial_environments_tested": 0 if ecs_fallback_only else 4,
+            "lambda_serial_environments_tested": (
+                0 if ecs_fallback_only else lambda_environments
+            ),
             "B_read_weight_percent": None if ecs_fallback_only else lambda_weight,
             "database_cpus": 2,
             "database_memory_gib": 1,
@@ -794,6 +830,11 @@ async def run_profiles(
                         flush=True,
                     )
         routing_weight[0] = lambda_weight
+        if only_profile:
+            phases = [phase for phase in phases if phase[1] in only_profile]
+        # Repeat the same ordered profiles without rebuilding or changing their
+        # rates. Every repetition gets distinct raw/report paths and cleanup.
+        phases = phases * repetitions
         for config_name, kind in phases:
             if ecs_fallback_only and config_name != "A":
                 continue
@@ -887,6 +928,16 @@ async def run_profiles(
                         sample = {
                             "elapsed_seconds": time.monotonic() - started,
                             "applications": {},
+                            "host_memory_pressure": Path(
+                                "/proc/pressure/memory"
+                            ).read_text(),
+                            "host_memory": {
+                                line.split(":")[0]: line.split(":")[1].strip()
+                                for line in Path("/proc/meminfo")
+                                .read_text()
+                                .splitlines()
+                                if line.split(":")[0] in {"MemAvailable", "SwapFree"}
+                            },
                         }
                         for name, identifier in containers:
                             values = await asyncio.to_thread(
@@ -916,6 +967,22 @@ async def run_profiles(
                                     )
                                 ).json(),
                             }
+                        if pool_identifier:
+                            from scripts.evaluation.pgbouncer_local import snapshot
+
+                            sample["pgbouncer"] = await asyncio.to_thread(
+                                snapshot, pool_directory, config["identity_dsn"]
+                            )
+                            sample["pgbouncer"]["cpu_stat"] = await asyncio.to_thread(
+                                command,
+                                docker
+                                + [
+                                    "exec",
+                                    pool_identifier,
+                                    "cat",
+                                    "/sys/fs/cgroup/cpu.stat",
+                                ],
+                            )
                         values = await asyncio.to_thread(
                             command,
                             docker
@@ -938,7 +1005,18 @@ async def run_profiles(
                             ),
                             "memory_bytes": int(lines[-1]),
                         }
+
+                        def database_waits():
+                            with connect() as connection:
+                                return connection.execute(
+                                    "SELECT usename,state,wait_event_type,wait_event,count(*) FROM pg_stat_activity WHERE datname=current_database() GROUP BY 1,2,3,4"
+                                ).fetchall()
+
+                        sample["database"]["waits"] = await asyncio.to_thread(
+                            database_waits
+                        )
                         observations.append(sample)
+                        save(resource_path, observations)
                         if "script exception" in log.read_text()[:20000]:
                             raise RuntimeError("local_workload_script_exception")
                         if time.monotonic() - started > 430:
@@ -1002,7 +1080,14 @@ async def run_profiles(
             await task
         for client in (*clients.values(), *metric_clients.values()):
             await client.aclose()
-        for _, identifier in containers:
+        for name, identifier in containers:
+            with (output.parent / f"{name}-runtime.log").open("w") as stream:
+                subprocess.run(
+                    docker + ["logs", identifier],
+                    stdout=stream,
+                    stderr=subprocess.STDOUT,
+                    timeout=15,
+                )
             command(docker + ["rm", "--force", identifier])
 
 
@@ -1028,7 +1113,32 @@ def main():
     parser.add_argument(
         "--ecs-fallback-only",
         action="store_true",
-        help="Check only the preserved direct ECS behavior in short-release mode; never claims a B result.",
+        help="Check ECS only in short-release mode, using the selected direct or PgBouncer transport; never claims a B result.",
+    )
+    parser.add_argument(
+        "--pgbouncer",
+        action="store_true",
+        help="Use the actual bounded local PgBouncer service for both architectures.",
+    )
+    parser.add_argument(
+        "--lambda-environments",
+        type=int,
+        choices=range(1, 11),
+        default=4,
+        help="Explicit simulated Lambda concurrency; match the reviewed target. Exhaustion returns local 429 rather than queueing behind a busy environment.",
+    )
+    parser.add_argument(
+        "--only-profile",
+        action="append",
+        choices=("exp-05", "nfr-01", "nfr-02", "nfr-03"),
+        help="Isolate a failed local profile without changing its workload or rate.",
+    )
+    parser.add_argument(
+        "--repetitions",
+        type=int,
+        choices=range(1, 4),
+        default=1,
+        help="Repeat the selected local profiles in the same order, retaining every result.",
     )
     args = parser.parse_args()
     short_diagnostic = args.profile_set == "short-release"
@@ -1047,9 +1157,15 @@ def main():
         "purpose": "required-rate local diagnostic; no deployed NFR acceptance",
         "complete": False,
         "profile_set": args.profile_set,
+        "only_profile": args.only_profile,
+        "repetitions": args.repetitions,
         "short_local_diagnostic": short_diagnostic,
         "configurations": ["A"] if args.ecs_fallback_only else ["A", "B"],
-        "database_transport": "direct-local-postgresql-not-managed-proxy",
+        "database_transport": (
+            "local-pgbouncer-unix-sockets"
+            if args.pgbouncer
+            else "direct-local-postgresql-not-managed-proxy"
+        ),
         "runtime_window": (
             {"warmup_seconds": 10, "measured_seconds": 60} if short_diagnostic else None
         ),
@@ -1102,23 +1218,37 @@ def main():
                 save(args.output, report)
                 asyncio.run(prepare_vectors(parameters, report))
                 save(args.output, report)
-                asyncio.run(
-                    run_profiles(
-                        connect,
-                        directory,
-                        args.output,
-                        report,
-                        token,
-                        config,
-                        parameters,
-                        image,
-                        args.k6,
-                        args.profile_set,
-                        args.lambda_weight_percent,
-                        short_diagnostic,
-                        args.ecs_fallback_only,
-                    )
+                from contextlib import nullcontext
+                from scripts.evaluation.pgbouncer_local import local_pool
+
+                pool_context = (
+                    local_pool(directory, Path(parameters["host"]), config, report)
+                    if args.pgbouncer
+                    else nullcontext((None, None))
                 )
+                with pool_context as (pool_directory, pool_identifier):
+                    asyncio.run(
+                        run_profiles(
+                            connect,
+                            directory,
+                            args.output,
+                            report,
+                            token,
+                            config,
+                            parameters,
+                            image,
+                            args.k6,
+                            args.profile_set,
+                            args.lambda_weight_percent,
+                            short_diagnostic,
+                            args.ecs_fallback_only,
+                            pool_directory,
+                            pool_identifier,
+                            args.lambda_environments,
+                            args.only_profile,
+                            args.repetitions,
+                        )
+                    )
         report["complete"] = True
         report["owned_resources_removed"] = True
     except Exception as error:

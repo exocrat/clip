@@ -1,0 +1,57 @@
+{
+  "format_version": 3,
+  "purpose": "clip-read-experiment-target",
+  "run_id": null,
+  "configuration": null,
+  "aws_profile": null,
+  "account_id": null,
+  "region": null,
+  "expected_caller_arn": null,
+  "expected_user_id": null,
+  "api_origin": null,
+  "resources": {
+    "load_balancer_arn": null,
+    "listener_arn": null,
+    "listener_rule_arn": null,
+    "certificate_arn": null,
+    "ecs_cluster_arn": null,
+    "ecs_service_arn": null,
+    "ecs_task_definition_arn": null,
+    "ecs_target_group_arn": null,
+    "lambda_function_arn": null,
+    "lambda_target_group_arn": null,
+    "lambda_concurrency": null,
+    "database_instance_id": null,
+    "database_name": null,
+    "database_parameter_arn": null,
+    "database_proxy": {
+      "kind": "pgbouncer",
+      "endpoint": null,
+      "service_arn": null,
+      "task_definition_arn": null,
+      "image_uri": null,
+      "host_instance_id": null
+    }
+  },
+  "routing": {
+    "lambda_weight_percent": null,
+    "methods": [
+      "GET"
+    ],
+    "path_regexes": [
+      "^/api/listings$",
+      "^/api/listings/[0-9A-Fa-f-]{36}$"
+    ],
+    "stickiness_enabled": false
+  },
+  "revisions": {
+    "ecs_image_uri": null,
+    "lambda_image_uri": null,
+    "application_revision": null,
+    "dataset_fingerprint": null,
+    "model_revision": null
+  },
+  "evidence_path": null,
+  "execution_permitted": false,
+  "nfr_accepted": false
+}
