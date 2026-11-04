@@ -20,7 +20,11 @@ from scripts.evaluation.k6.prepare_comparison_corpus import FINGERPRINT, build_c
 def build_profile(
     run_id: str, configuration: str, fixture: Any, pre_allocated_vus: int, max_vus: int
 ) -> dict[str, Any]:
-    """Bind deterministic route cases and pre-existing fixture IDs."""
+    """Bind deterministic cases/fixtures; staged schedule code fixes smooth ordering.
+
+    nfr03_schedule.js preserves the reviewed counts and is hash-bound by the
+    real coordinator. No outcome-dependent ordering or weakened load is allowed.
+    """
     if configuration not in {"A", "B"} or not re.fullmatch(
         r"[A-Za-z0-9][A-Za-z0-9._-]{2,63}", run_id
     ):

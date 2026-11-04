@@ -4,7 +4,7 @@
   "api_service_desired_count": 2,
   "ecs_host_max_size": 2,
   "ecs_instance_type": "c7i-flex.large",
-  "api_task_cpu": 512,
+  "api_task_cpu": 1024,
   "api_task_memory_mib": 2048,
   "identity_runtime_enabled": true,
   "conversations_runtime_enabled": true,

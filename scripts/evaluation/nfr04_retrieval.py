@@ -515,7 +515,11 @@ def main() -> int:
     parser.add_argument(
         "--execute", action="store_true", help="run the explicitly approved retrieval"
     )
-    parser.add_argument("--image-root", type=Path, required=True)
+    parser.add_argument(
+        "--image-root",
+        type=Path,
+        help="Legacy compatibility argument; frozen archive photos are verified directly",
+    )
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     try:
@@ -534,14 +538,12 @@ def main() -> int:
         validate_execution_approval(
             manifest, manifest_bytes, json.loads(approval_bytes)
         )
-        from scripts.evaluation.reference_labels import LABELS, materialize
+        from scripts.evaluation.frozen_reference import LABELS, load_frozen_reference
 
         labels_path = ROOT / LABELS
         raw_labels = labels_path.read_bytes()
         labels = json.loads(raw_labels)
-        expected_labels, _binding_evidence, binding = materialize(
-            args.image_root
-        )  # type: ignore[no-untyped-call]  # Legacy adapter has no public type contract.
+        _bundle, expected_labels, binding = load_frozen_reference()
         if json.dumps(labels, sort_keys=True, separators=(",", ":")) != json.dumps(
             expected_labels, sort_keys=True, separators=(",", ":")
         ):

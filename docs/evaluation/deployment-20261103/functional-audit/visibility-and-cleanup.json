@@ -1,0 +1,90 @@
+{
+  "checks": [
+    {
+      "name": "management-before-retire",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "saved-before-unavailability",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "missing-csrf-denied",
+      "status": 403,
+      "pass": true
+    },
+    {
+      "name": "foreign-availability-denied",
+      "status": 403,
+      "pass": true
+    },
+    {
+      "name": "owner-mark-listing-unavailable",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "owner-unavailable-detail-readable",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "peer-unavailable-detail-hidden",
+      "status": 404,
+      "pass": true
+    },
+    {
+      "name": "saved-unavailable-preserved",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "peer-unavailable-photo-rule",
+      "status": 404,
+      "pass": true
+    },
+    {
+      "name": "owner-unavailable-photo-readable",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "test-save-cleanup",
+      "status": 204,
+      "pass": true
+    },
+    {
+      "name": "existing-conversation-after-listing-hidden",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "hybrid-after-fixture-hidden",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "notification-preference-read",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "notification-preference-toggle",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "notification-preference-restore",
+      "status": 200,
+      "pass": true
+    },
+    {
+      "name": "invalid-image-type-rejected",
+      "status": 422,
+      "pass": true
+    }
+  ],
+  "at": "2026-11-03T19:15:30.321Z"
+}

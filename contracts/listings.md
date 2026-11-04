@@ -9,6 +9,14 @@ implementation and migrations remain with LI-01/LI-02.
 
 ## Scope and authoritative data
 
+The [hosted functional repair](../docs/decisions/hosted-functional-repair.md) adds
+GET`/images/delivery` with repeated `image_ids` (1–100 UUIDs). It returns one
+deduplicated `{image_id,delivery}` item per requested ID; delivery is the existing
+five-minute link shape or null for both missing and inaccessible images. Every
+link requires the same listing visibility as the existing single-image route.
+Responses are private/no-store. A stale card cannot suppress unrelated links.
+Listing collection/detail payloads and the experiment's selected routes remain.
+
 Listings owns sale-listing records, the item-category/condition catalogues,
 images/references, seller-controlled availability, the selected buyer, and the
 listing search index. It owns the listing-side command boundary for seller

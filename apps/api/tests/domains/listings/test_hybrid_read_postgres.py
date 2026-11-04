@@ -767,3 +767,308 @@ async def exercise_actual(value):
     )
     folder.mkdir(parents=True, exist_ok=False)
     (folder / "result.json").write_text(json.dumps(result, indent=2) + "\n")
+
+
+def test_optimized_scores_match_original_cosine_for_near_unit_vectors():
+    """Keep threshold membership and every ordering exact after SQL optimisation."""
+    asyncio.run(exercise_optimized_cosine_equivalence(target()))
+
+
+async def exercise_optimized_cosine_equivalence(value):
+    """Use real constraints and the retained cosine function as the reference.
+
+    Near-unit vectors make a raw dot-product shortcut observably wrong. The
+    optimised query must preserve true cosine, current coverage, filters and
+    page order; invalid stored vectors remain rejected by the database CHECK.
+    """
+    from psycopg.errors import CheckViolation
+    from app.domains.listings.hybrid_snapshot import HybridVectorCache
+
+    vector_cache = HybridVectorCache()
+
+    async with await connect(value) as connection:
+        async with connection.transaction(force_rollback=True):
+            now = datetime.now(UTC)
+            outputs = {}
+            store, spec, _ = await activate_math(connection, outputs)
+            for index, (score, scale) in enumerate(
+                (score, scale)
+                for repeat in range(4)
+                for score in (0.349999, 0.350001, 0.6, -0.5)
+                for scale in (0.9991, 1.0, 1.0009)
+            ):
+                listing = await live_listing(
+                    connection,
+                    189000 + index,
+                    now,
+                    f"Synthetic scoring fixture {index}",
+                    "Controlled mathematical comparison",
+                    index * 100,
+                )
+                vector = (score * scale, math.sqrt(1 - score**2) * scale) + (0.0,) * 382
+                outputs[listing] = (
+                    EmbeddingPart("title", 0, vector),
+                    EmbeddingPart("description", 0, vector),
+                )
+            await math_drain(store, spec, outputs)
+            await store.set_state(spec, "serving")
+            for sort in ("relevance", "created_desc", "price_asc", "price_desc"):
+                for page in (1, 2):
+                    query = ListingQuery(
+                        q="xylophonic", sort=sort, page=page, page_size=20
+                    )
+                    compiled = await compile_expansion(connection, query.q)
+                    statement, parameters = hybrid_statement(
+                        query,
+                        now,
+                        500000,
+                        bind_query(query.q, spec, VECTOR),
+                        compiled,
+                        relevance=sort == "relevance",
+                    )
+                    # Independently retained pre-optimisation SQL scores every
+                    # candidate; it also detects incorrect lexical-tier pruning.
+                    from apps.api.tests.domains.listings.hybrid_reference import (
+                        reference_hybrid_statement,
+                    )
+
+                    original, original_parameters = reference_hybrid_statement(
+                        query,
+                        now,
+                        500000,
+                        bind_query(query.q, spec, VECTOR),
+                        compiled,
+                        relevance=sort == "relevance",
+                    )
+                    expected = await (
+                        await connection.execute(original, original_parameters)
+                    ).fetchone()
+                    observed = await (
+                        await connection.execute(statement, parameters)
+                    ).fetchone()
+                    assert observed == expected
+                    assert len(observed["items"]) == (21 if page == 1 else 4)
+                    await assert_application_snapshot_matches(
+                        connection,
+                        query,
+                        now,
+                        bound=bind_query(query.q, spec, VECTOR),
+                        expected=expected,
+                        cache=vector_cache,
+                    )
+            with pytest.raises(CheckViolation):
+                async with connection.transaction():
+                    await connection.execute(
+                        "UPDATE listings.embedding_chunks SET vector=%s WHERE generation_id=(SELECT generation_id FROM listings.embedding_generations WHERE listing_id=%s)",
+                        ([0.0] * 384, listing),
+                    )
+
+
+def test_lexical_tier_pruning_preserves_all_pages_sorts_and_missing_coverage():
+    """Prove lower tiers are skipped only when they cannot change this page."""
+    asyncio.run(exercise_lexical_tier_equivalence(target()))
+
+
+async def exercise_lexical_tier_equivalence(value):
+    """Cross original-only, expanded and semantic page boundaries against old SQL."""
+    from apps.api.tests.domains.listings.hybrid_reference import (
+        reference_hybrid_statement,
+    )
+    from app.domains.listings.hybrid_snapshot import HybridVectorCache
+
+    vector_cache = HybridVectorCache()
+
+    async with await connect(value) as connection:
+        async with connection.transaction(force_rollback=True):
+            now = datetime.now(UTC)
+            outputs = {}
+            store, spec, _ = await activate_math(connection, outputs)
+            for index in range(95):
+                title = (
+                    "Vehicle handbook"
+                    if index < 45
+                    else "Bicycle" if index < 75 else "Plain item"
+                )
+                listing = await live_listing(
+                    connection,
+                    191000 + index,
+                    now,
+                    title,
+                    "Controlled lexical-tier comparison",
+                    index * 100,
+                )
+                await connection.execute(
+                    "UPDATE listings.sale_listings SET category_id=(SELECT id FROM listings.categories WHERE code='other') WHERE id=%s",
+                    (listing,),
+                )
+                outputs[listing] = parts(0.6 + index / 1000, 0.6 + index / 1000)
+            await math_drain(store, spec, outputs)
+            await store.set_state(spec, "serving")
+            for sort in ("relevance", "created_desc", "price_asc", "price_desc"):
+                for page in (1, 2, 3, 4, 5):
+                    request = ListingQuery(q="vehicle", sort=sort, page=page)
+                    compiled = await compile_expansion(connection, request.q)
+                    bound = bind_query(request.q, spec, VECTOR)
+                    reference, reference_values = reference_hybrid_statement(
+                        request,
+                        now,
+                        500000,
+                        bound,
+                        compiled,
+                        relevance=sort == "relevance",
+                    )
+                    current, current_values = hybrid_statement(
+                        request,
+                        now,
+                        500000,
+                        bound,
+                        compiled,
+                        relevance=sort == "relevance",
+                    )
+                    expected = await (
+                        await connection.execute(reference, reference_values)
+                    ).fetchone()
+                    actual = await (
+                        await connection.execute(current, current_values)
+                    ).fetchone()
+                    assert actual == expected
+                    await assert_application_snapshot_matches(
+                        connection,
+                        request,
+                        now,
+                        bound=bound,
+                        expected=expected,
+                        cache=vector_cache,
+                    )
+            async with connection.transaction(force_rollback=True):
+                # Even a low-priority source beyond page1 must still invalidate
+                # coverage. Pruning is never permission to hide a broken index.
+                await connection.execute(
+                    "DELETE FROM listings.embedding_chunks WHERE generation_id=(SELECT generation_id FROM listings.embedding_generations WHERE listing_id=%s)",
+                    (listing,),
+                )
+                await expect503(
+                    connection,
+                    ListingQuery(q="vehicle"),
+                    now,
+                    bind_query("vehicle", spec, VECTOR),
+                )
+
+
+async def assert_application_snapshot_matches(
+    connection, request, now, *, bound, expected, cache
+):
+    """Compare the actual binary-vector cache/scorer with the independent SQL oracle."""
+    from app.core.pagination import PageRequest, page_from_window
+    from app.domains.listings.hybrid_snapshot import read_snapshot, score_snapshot
+
+    cached = cache.snapshot(bound.spec.pipeline_id)
+    snapshot = await read_snapshot(
+        connection,
+        request,
+        now,
+        500000,
+        bound,
+        cached,
+        relevance=request.sort == "relevance",
+    )
+    actual = score_snapshot(snapshot, request, bound, cached, cache)
+    reference = page_from_window(
+        PageRequest(request.page, request.page_size),
+        [ListingSummary.model_validate(item) for item in expected["items"]],
+    )
+    assert actual == reference
+    return snapshot
+
+
+def test_application_cache_observes_current_price_visibility_and_new_generation():
+    """Warm vector reuse never caches price/visibility, stale source or an old page."""
+    asyncio.run(exercise_application_cache(target()))
+
+
+async def exercise_application_cache(value):
+    from app.domains.listings.hybrid_snapshot import HybridVectorCache, read_snapshot
+    from apps.api.tests.domains.listings.hybrid_reference import (
+        reference_hybrid_statement,
+    )
+
+    async with await connect(value) as connection:
+        async with connection.transaction(force_rollback=True):
+            now = datetime.now(UTC)
+            outputs = {}
+            store, spec, _ = await activate_math(connection, outputs)
+            identifier = await live_listing(
+                connection,
+                196001,
+                now,
+                "Synthetic cache fixture",
+                "Controlled current source",
+                500,
+            )
+            outputs[identifier] = parts(0.7, *([-0.5] * 95), 0.8)
+            await math_drain(store, spec, outputs)
+            await store.set_state(spec, "serving")
+            request = ListingQuery(q="xylophonic", sort="relevance")
+            bound = bind_query(request.q, spec, VECTOR)
+            cache = HybridVectorCache()
+
+            async def compare():
+                compiled = await compile_expansion(connection, request.q)
+                statement, arguments = reference_hybrid_statement(
+                    request, now, 500000, bound, compiled, relevance=True
+                )
+                expected = await (
+                    await connection.execute(statement, arguments)
+                ).fetchone()
+                return await assert_application_snapshot_matches(
+                    connection,
+                    request,
+                    now,
+                    bound=bound,
+                    expected=expected,
+                    cache=cache,
+                )
+
+            await compare()
+            assert (await compare())["vectors"] == []
+            await connection.execute(
+                "UPDATE listings.sale_listings SET asking_price_paise=12300 WHERE id=%s",
+                (identifier,),
+            )
+            fresh = await compare()
+            assert fresh["vectors"] == []
+            assert (
+                next(
+                    row
+                    for row in fresh["candidates"]
+                    if row["listing_id"] == str(identifier)
+                )["summary"]["asking_price_paise"]
+                == 12300
+            )
+            await connection.execute(
+                "UPDATE listings.sale_listings SET availability='unavailable' WHERE id=%s",
+                (identifier,),
+            )
+            assert not any(
+                row["listing_id"] == str(identifier)
+                for row in (await compare())["candidates"]
+            )
+            await connection.execute(
+                "UPDATE listings.sale_listings SET availability='available',description='Changed controlled source' WHERE id=%s",
+                (identifier,),
+            )
+            with pytest.raises(PublicError) as raised:
+                await read_snapshot(
+                    connection,
+                    request,
+                    now,
+                    500000,
+                    bound,
+                    cache.snapshot(spec.pipeline_id),
+                    relevance=True,
+                )
+            assert raised.value.spec == ERRORS[503]
+            outputs[identifier] = parts(0.8, 0.9)
+            await math_drain(store, spec, outputs)
+            refreshed = await compare()
+            assert len(refreshed["vectors"]) == 2

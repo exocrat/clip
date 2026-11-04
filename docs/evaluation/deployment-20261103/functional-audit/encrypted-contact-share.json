@@ -1,0 +1,24 @@
+{
+  "at": "2026-11-03T19:16:02.316Z",
+  "checks": [
+    {
+      "name": "set-controlled-contact",
+      "status": 204,
+      "pass": true
+    },
+    {
+      "name": "deliberate-encrypted-phone-share",
+      "load": true,
+      "selected": true,
+      "reviewed": true,
+      "sent": true,
+      "displayed": true,
+      "pass": true
+    },
+    {
+      "name": "source-contact-restored",
+      "status": 204,
+      "pass": true
+    }
+  ]
+}

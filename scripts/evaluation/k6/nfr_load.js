@@ -1,6 +1,8 @@
 // NFR-01/02 workload. Direct/local preparation stays loopback-only; a reviewed
 // coordinator must validate every gate before using its separate real mode.
 import http from 'k6/http';
+import { localCapacityWindow } from './local_capacity_window.js';
+import { plannedArrivalCount } from './core.js';
 import execution from 'k6/execution';
 import { Counter, Trend } from 'k6/metrics';
 import monotonic from 'k6/x/clipmonotonic';
@@ -22,12 +24,14 @@ if (realMode && (!/^[A-Za-z0-9][A-Za-z0-9._-]{2,63}$/.test(__ENV.CLIP_NFR_REAL_R
 const cookie = realMode ? __ENV.CLIP_REAL_RUN_SESSION_COOKIE : __ENV.CLIP_NFR_LOCAL_COOKIE;
 if (typeof cookie !== 'string' || !cookie || /[\r\n]/.test(cookie)) throw Error('explicit_session_required');
 
+const boundarySkipped = new Counter('clip_schedule_boundary_skipped');
 const issued = new Counter('clip_nfr_issued');
 const outcomes = new Counter('clip_nfr_outcomes');
 const elapsed = new Trend('clip_nfr_elapsed_ms', true);
 const invalidClock = new Counter('clip_nfr_clock_invalid');
+const scenarios = nfrScenarios({ ...profile, ...localCapacityWindow(__ENV, realMode, profile) });
 export const options = {
-  scenarios: nfrScenarios(profile),
+  scenarios,
   maxRedirects: 0,
   summaryTrendStats: ['med', 'p(95)', 'p(99)'],
   systemTags: ['scenario', 'status', 'method', 'error_code'],
@@ -36,6 +40,10 @@ export const options = {
 /** Issue one non-retried request, validate its independent oracle, and retain only aggregate metrics. */
 export default function () {
   const phase = execution.scenario.name;
+  if (execution.scenario.iterationInTest >= plannedArrivalCount(scenarios[phase])) {
+    boundarySkipped.add(1, { phase: execution.scenario.name });
+    return;
+  }
   const item = nfrCaseForIteration(profile.cases, execution.scenario.iterationInTest);
   const tags = { nfr_id: profile.nfr_id, configuration: profile.configuration, run_id: profile.run_id, phase, case_id: item.case_id };
   issued.add(1, tags);

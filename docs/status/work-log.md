@@ -1,3 +1,307 @@
+### Shared-pool release and exact provisioning approval — 2026-11-04 12:24:22 UTC
+
+Suraj approved the reviewed41-file source receipt
+`aca72703c9c926ae29d388c29dc8547e82ce7b09726575d389c8c815aaf39c43`
+for commit/publication to existing PR32 and CI. All41files matched before recording
+this approval metadata. He separately approved saved provisioning plan
+`ea6be9edfbf3eae1845488d35baffb4eaab83e42ac76009c41cdd8fbeff3b01a`
+for account335523638354/Mumbai, at most24hours/USD2additional, conditional on
+separately approved PR integration. The plan creates the private proxy/credential
+copies/IAM/network objects, updates one DB security-group rule, and leaves app
+routing unchanged. No merge, apply, SQL or activation has been performed.
+
+### Shared database pool implementation and preserved fallback — 2026-11-04 11:58:53 UTC
+
+Suraj approved preserving the optimized direct implementation and continuing local
+shared-pool work. Fallback source is `6193ca7`; its exact Hybrid image builds and
+performs offline model inference. New proxy routing preserves source DSNs, roles,
+TLS and transactions, checks deadlines/stale connections, protects restore targets,
+and records proxy telemetry. EXP-05 now declares only baseline and 100% Lambda,
+three repetitions each; historical plans remain readable. NFR-03 remains 50rps.
+The [shared-pool plan](../evaluation/deployment-20261103/functional-audit/shared-pool-plan.md)
+records the full read-only Terraform plan (15 creates, one SG update, no destruction,
+routing disabled), credential-version binding, costs and rollback. No cloud apply,
+SQL, push, CI or merge. Initial focused checks: 84 app/auth tests, 30 tooling tests,
+27 Terraform mocks and backend-free validation passed. Final checks: the broad Python run had2457passes/180skips and14fixture failures;
+all failures resolved and77affected tests passed. Data331, web504/3skips, native
+Listings27/3skips and Conversations184 passed; format/contracts/boundaries/SQL/
+secret checks passed. Original failed aggregate is retained. The separate short
+ECS fallback profiles delivered7800/7800successful operations with no drops/timeouts;
+all22quality queries hit. Read-burst p95130.08ms; mean DB quota48.54%, versus
+65.25ms/23.64%in the earlier local run, so no identical-performance claim.
+[Final validation](../evaluation/deployment-20261103/functional-audit/shared-pool-validation.md)
+records exact results/limits. Managed-proxy performance still requires deployment.
+
+### Precommit local capacity gate and independent audit — 2026-11-04 10:42:05 UTC
+
+Suraj authorises autonomous local work until immediately before commit; the
+theoretical discussion follows actual measurements. Stop capacity-dependent
+progress if PostgreSQL saturates; independent audit/validation may continue.
+Commit, push, hosted CI, merge, cloud/SQL changes and unapproved resource upgrades
+remain held. Shared pooling and a second database are discussed fallbacks only.
+
+The latest Lambda invocation change shares one exclusive physical Identity
+connection across fresh session/account transactions, then closes it before the
+terminal HTTP body. The short local diagnostic uses10seconds warm-up/60seconds
+measurement at unchanged rates; affected deployed runners reject this mode and
+formal profiles/reports stay strict. Integrated local inspection passed26groups.
+Both paths retrieved22reviewed queries with zero failures,Success@5=1.0and exact
+ordered-page equality to original SQL. At the formal mix's50Listing reads/s,
+A completed3000/3000correct with zero drops,p95=65.25msand0.4729of2DB cores.
+B100%selected-read offload issued2922of3000,with2510correct/412timeouts/78drops,
+p95=5001.04msand1.9903of2DB cores. No sampled pool errors. The high-load gate
+remains blocked; six new short NFR profiles were not run after that failure.
+No weight/resource choice or further performance optimisation was made.
+
+Independent final checks:Python2429passed/180skipped,data331passed,web504passed/
+3skippedandlint/types/buildpassed,nativeListings/Hybrid27passed/3skipped,
+CIparity/boundaries/contracts/types,35wrapper safety cases,clean migration and
+retirement checks passed;Terraform backend-free validation and23mock tests passed.
+Strict scorer typing and final Black check passed. The aggregate stopped only
+at its final Gitleaks check on a documentation false positive;descriptive wording
+was corrected without scanner exceptions and the focused scan passed. Retain
+the original failed aggregate log rather than claim a clean aggregate rerun.
+
+[Capacity results and exact evidence paths](../evaluation/deployment-20261103/functional-audit/precommit-capacity-20261104.md)
+and the [requirement-to-tooling audit](../evaluation/deployment-20261103/functional-audit/precommit-audit-20261104.md)
+record the handoff. Persistent private evidence is under
+`/home/suraj/src/.clip-private/exp261103/precommit-20261104/`, including prior06–08
+attempts and137source/module files matching the tested hashes. Current live
+website remains on its old image. Next:Suraj reviews capacity options;retest the
+selected change before commit/integration and renewed exact cloud approvals.
+
+### Lunch batch implementation and first required-rate diagnostic — 2026-11-04 07:57:33 UTC
+
+Suraj explicitly authorised the autonomous local lunch batch. Commits, publication,
+hosted CI, deployment/live SQL and unapproved resource changes remain held.
+Common ECS/Lambda search now takes a fresh SQL eligibility/readiness snapshot,
+fetches only missing immutable-generation vectors, returns its DB lease, then
+performs ordered-double NumPy scoring using bounded cached vectors/norms. CPU
+workers and waiting requests remain bounded even after caller cancellation.
+Focused scoring/lease/cancellation checks pass33; native equivalence had27passed/
+3skipped with migrated PostgreSQL and original SQL comparisons, including pages,
+filters, live edits and96description chunks. The approved1vCPU/task is recorded
+in the deployment overlay only; live tasks remain512CPU units.
+
+Experiment changes align NFR-03's deterministic well-spread100-operation schedule,
+Wanted fixture preflight/dynamic pagination, static staged module dependencies
+and the existing credential-private AWS CLI-login bridge. A local harness uses
+the accepted archive's exact1000listings/5000users, pinned actual model and real
+session/domain SQL on owned resource-limited containers. The first full50rps run
+retains18001correct/zero HTTP failures but is invalid: one extra k6 boundary
+iteration caused15001instead of15000measured requests. The report refused success;
+raw evidence remains`/tmp/clip-lunch-capacity-03/`. All four load scripts now cap
+HTTP work at frozen arrival budgets and retain surplus scheduler executions in
+raw boundary counters; dropped/short work still fails reporting. Required-rate
+A/B profiles are continuing under`/tmp/clip-lunch-capacity-04/`; no cloud result
+or deployed functional acceptance is claimed.
+
+### Required-only test scope and image/Saved repair trace — 2026-11-04 07:11:52 UTC
+
+Suraj declines optional grouped stress testing and prioritises PRD/experiment
+requirements within the deadline. The paused plan now excludes grouped/over-rate
+stress campaigns and optional Lambda reset; required implementation correctness
+checks remain. Read-only source/evidence review confirms the repair addresses
+reproduced image-link/Saved503s correlated with Identity connection rejection:
+four-connection Identity pools/task, coalesced photo/Saved batches, replacement
+of per-card whole-Saved pagination, API-clock expiry and bounded image-link refresh.
+Existing evidence includes20complete S3 decodes, real restricted-DB pool tests,
+batch HTTP/SQL integration and web clock/cancellation/isolation regressions.
+No new tests, app changes, load or deployment occurred; old live image remains.
+
+### Paused planning, NFR-03 ordering and current access/release check — 2026-11-04 07:06:12 UTC
+
+Suraj keeps implementation/load tests paused, requests explicit tooling/code
+alignment now and immediately before deployment, and asks for current access and
+photo/Saved status. The PRD specifies50rps/five minutes/95%success, not consecutive
+operation blocks. The [revised plan](../evaluation/deployment-20261103/functional-audit/lunch-batch-plan.md)
+proposes well-spread deterministic ordering with unchanged integrated counts,
+writes, cases, timing and denominators, frozen identically for A/B before formal
+results. No workload code or production resource was changed.
+
+Read-only STS confirms surajs2/account335523638354; actual ECS/RDS/ECR/ALB/Lambda/
+SSM/EC2 reads pass, both hosts/SSM agents are up and ECS has2running/no pending
+tasks at revision13/512CPU/2048MiB. Its image is still860c8c15..., so image/Saved
+repairs remain local despite3691a50CI/local verification. IAM simulation allows
+all20checked deployment/telemetry/task-loss/restore actions; GitHub auth works.
+Plain root SDK login hits MissingDependencyException for optional CRT, while the
+existing private CLI-login bridge's actual STS call succeeds. Several experiment
+entry points need bridge wiring; record this as local tooling integration, not
+an AWS permission failure. No new dependency or credentials were written; no
+deployment, workload, SQL grant or task-stop action was attempted.
+
+### Published-vector cache invariant confirmed — 2026-11-04 06:28:55 UTC
+
+Suraj confirms no privileged actor will replace vectors under an existing
+generation. The proposed cache therefore adopts the normal application's existing
+ready-generation immutability: key by pipeline/generation/part, without per-search
+vector hashing or a new revision mechanism for manual edits. Fresh eligibility,
+serving-pipeline and complete-ready checks remain mandatory. Recorded in the
+[optimisation ledger](../evaluation/deployment-20261103/functional-audit/optimisation-ledger.md#generation-ids-and-vector-changes).
+No product/schema/cloud changes accompany this decision.
+
+### NumPy/PostgreSQL numerical and ranking equivalence — 2026-11-04 06:27:45 UTC
+
+Suraj requested actual equivalence evidence and review of other NumPy candidates.
+An isolated diagnostic used real migrated PostgreSQL18.6 and the existing local
+NumPy2.5.4 environment:2568part-score comparisons had zero numerical differences
+or threshold mismatches;72ordered result sets/360page windows matched. Fixtures
+included near-unit/threshold/tie cases, four sorts, fixture metadata filters and
+96description chunks. [Raw evidence and limits](../evaluation/deployment-20261103/functional-audit/search-optimisation/README.md#differential-equivalence-follow-up).
+This proves the tested arithmetic/ranking, not a production retrieval/cache path;
+lexical tiers were supplied fixture metadata. The owned DB was removed. No cloud,
+dependency, product-code, commit or CI change occurred. The optimisation ledger
+adds precomputed cached-vector norms and bulk chunk/blend calculations as proposals;
+the model already uses NumPy/ONNX, and transactional/authorization work stays SQL.
+
+### Incremental vector-cache proposal and full optimisation tracking — 2026-11-04 06:22:02 UTC
+
+Suraj proposed an initial vector load followed by compact per-search change
+checks and requested tracking of all optimisations. The
+[combined ledger](../evaluation/deployment-20261103/functional-audit/optimisation-ledger.md)
+now distinguishes implemented, proposed and rejected work across pooling,
+browser batches, search, caching and resource sizing. Source audit found no normal
+application path updating published vectors in place: publication inserts under
+a leased generation, and source changes create fresh IDs. The schema permits
+valid privileged direct updates; that is not evidence of actual production use.
+Any application vector cache needs an explicit immutable-generation or revision
+invariant and snapshot tests. The8.73ms arithmetic result was local NumPy only,
+not an ECS benchmark or full request measurement. No product/cache/DB/cloud change
+or new test run was performed for this documentation/source-inspection increment.
+
+### First-time search optimisation and scoring-location investigation — 2026-11-04 06:17:24 UTC
+
+Suraj authorised testable local search optimisation, required later-page
+correctness and a capacity estimate, then held commits/CI for further discussion.
+He prioritised first-time search over repeated-score caching and proposed moving
+the arithmetic to ECS. Current uncommitted code inlines exact cosine, computes
+the query norm once, safely skips lower tiers only beyond the requested page's
+lookahead, encodes before borrowing the DB lease and reuses bounded query vectors.
+The slower-first-use numerical-score cache was removed; all diagnostic attempts
+remain preserved. No cloud, SQL grant, publication or resource change occurred.
+
+[Checkpoint and raw evidence](../evaluation/deployment-20261103/functional-audit/search-optimisation/README.md):
+73focused tests passed; native26passed/3skipped and migration/smoke/rollback checks
+passed. Final synthetic SQL medians: broad896.60->213.87ms, selective page1
+935.95->35.32ms, page3 853.62->193.19ms; exact original responses retained.
+Four-connection broad SQL reached4.35/s at460.89DB-CPU ms/query; selective34.36/s.
+These local measurements do not prove the formal10search/s or50mixed/s targets.
+Controlled pooled-session SQL200/200 passed. A separate existing-NumPy prototype
+scored2000vectors in8.73CPU ms, excluding retrieval/decoding/auth/HTTP; application
+scoring remains a proposal needing full numerical/snapshot/transport verification.
+Next: discuss that scoring placement and task CPU budget before final checks,
+commit/CI/images and renewed gated cloud work. Prior cloud window has expired.
+
+### Photo repair device-clock correction — 2026-11-03 20:31:39 UTC
+
+Final review reproduced two failures in the new batch client when a device clock
+was ten minutes fast or slow. `listingsApi.ts` now observes the same-origin API
+Date header for signed-link expiry validation; `image-delivery-batch.test.ts`
+checks both directions. S3 expiry, hosted HTTPS and Listing payloads remain.
+Both failures were observed before correction; full web checks then passed
+504/3skipped plus lint/types/build. No repaired image is deployed. Final source
+needs rebuilt images and matching CI before the already approved image-only
+rollout; AWS login and exact worker-grant approval remain pending.
+
+### Functional repair follow-up and real local integration — 2026-11-03 20:25:30 UTC
+
+PR32 initial repair head `24c1701` passed hosted CI
+[41706809907](https://github.com/exocrat/clip/actions/runs/41706809907).
+The normal-app local sweep passed26workflow groups using real disposable
+PostgreSQL and the pinned local model; external sign-in/mail/storage were synthetic.
+Follow-up web502passed/3skipped, native database24passed/3skipped and Lambda
+builder5passed. The restricted-role regression reproduces the missing worker
+privileges and verifies the exact proposed SQL enables claim/publication.
+Both modified Python files pass individual Black checks; a multi-file attempt
+could not create its sandbox process-manager socket. No product failure is hidden.
+
+Added the canonical proposed grant file and regression; extended normal-app
+inspection for image/saved batches; preserved same-origin loopback photo previews
+without allowing public HTTP links; disabled Lambda attestation indexes. Updated
+hosted-mail supersession notes and the [file explanations](../evaluation/deployment-20261103/functional-audit/repair-files.md).
+Final follow-up source needs its own CI and image rebuild. Initial revision images
+built/model-smoked locally, but AWS login expired before publication; no repair
+was deployed. Hotspot/public health200 and both controlled sessions were rechecked.
+Exact worker grants remain pending human approval; live mailbox receipt, repaired
+website checks and all experiment/NFR evidence remain pending. Resource sizes,
+counts and SQL privileges were not changed by this local follow-up.
+
+### Functional repair implementation and local verification — 2026-11-03 19:48:13 UTC
+
+Suraj explicitly began the autonomous batch after the two controlled account
+handoff. The initial deployed audit exercised listing/image writes, saved and
+wanted workflows, offers, true two-browser encrypted messages and deliberate
+contact sharing; fixtures were marked unavailable and source contact/preference
+restored. Discover reproduced11photo placeholders/14saved warnings. New visible
+unindexed content changed Hybrid200->503; hiding it restored200. The actual
+worker still lacks UPDATE/INSERT column privileges; exact SQL approval is pending.
+
+Implemented bounded shared Identity leases and finite async queues, Lambda null
+pools to avoid retaining DB connections in frozen environments, two additive
+photo/saved batch endpoints and browser coalescing, and intended hosted real-app
+Identity/notification mail beyond the old test list. Existing Listing payloads,
+selected weighted routes, session SQL and resource sizes are retained. The
+[connection budget](../evaluation/deployment-20261103/functional-audit/connection-budget.md)
+fits current A/small-B limits; concurrency10 needs separately approved role caps.
+
+[Coverage](../evaluation/deployment-20261103/functional-audit/coverage.md),
+[file explanations](../evaluation/deployment-20261103/functional-audit/repair-files.md)
+and [local verification](../evaluation/deployment-20261103/functional-audit/local-validation.json)
+retain exact results and initial failures. Corrected lifecycle/contract groups106
+passed; web501passed/3skipped; native database23passed/3skipped; data331;
+Conversations184; boundaries/contracts/types/35DB safety cases/Gitleaks passed.
+Initial broad Python run2398passed/176skipped with12old pool/schema assertions
+subsequently corrected; no claim that the full aggregate was rerun successfully.
+Next: publish repair PR/CI, build revision-bound images, review an image-only
+Terraform plan and deploy under Suraj's bounded approval; then repeat live
+functional checks. SQL grants, future PR merge and formal traffic remain gated.
+
+### Overnight account handoff and image deployment scope — 2026-11-03 19:03:07 UTC
+
+Two separate controlled regular Microsoft accounts are signed into the dedicated
+local browser profiles. Session GETs both returned200, both Handles are ready,
+both public conversation keys exist, and neither page shows the key-setup gate.
+Only booleans/statuses were retained; no account identifiers, keys or cookies
+were printed. [Sanitized readiness](../evaluation/deployment-20261103/functional-audit/overnight-readiness.json).
+This confirms setup, not actual two-person encrypted chat behavior.
+
+Suraj explicitly authorized image-only repair redeployments on existing resources
+with passing checks, deployment-diff review, health verification and a known
+rollback image, within the existing budget; small image-storage/deployment usage
+was accepted. Resource counts/sizes, database permissions and new resources are
+outside this approval. PR merge retains its separate current gate. Suraj requires
+the agent to report readiness and wait for his explicit start before overnight
+audit/implementation; no overnight repair work has begun.
+
+### Functional audit and overnight preparation — 2026-11-03 18:55:50 UTC
+
+Suraj directed a complete functional failure catalogue before coordinated repairs,
+then local verification and preparation for deployed retesting. Approved up to ten
+controlled fixtures (a few more if necessary), including test-account messages and
+offers; preserve personal content and keep fixture IDs for later retirement or
+cleanup. Two Microsoft test accounts are available; credentials remain human-only.
+Two dedicated browser profiles were opened outside the worktree for secure local
+sign-in; ports9223/9224 were verified bound only to127.0.0.1. Account separation,
+session validity and key readiness remain unverified until human sign-in.
+
+Suraj approved continued existing cloud runtime, responding to the proposed
+extension to2026-11-04 04:00UTC within the existing USD30 incremental cap. This
+supersedes the earlier18:25/20:10 review deadlines; it does not authorize new
+resources, database resizing, deployment, future PR merge, fault injection or
+formal experiments. Reconcile unbilled runtime and baseline in the project ledger
+before further cloud mutations. No automatic shutdown is claimed. If blocked,
+continue independent work and record the exact remaining gate.
+
+The [in-progress issue catalogue](../evaluation/deployment-20261103/functional-audit/README.md)
+records intermittent pre-route photo/saved503s correlated with Identity connection
+limits, pending Hybrid indexing and confirmed missing worker privileges, and the
+application email recipient restriction despite SES production access. Earlier
+approved Search grants and marketplace/Conversations connection-limit increases
+were applied; embedding worker grants remain unapplied. No claim of full coverage,
+capacity, A/B parity or NFR acceptance. Audit all component connection budgets,
+preserve session revocation/expiry, assess Discover saved/image request batching,
+and check both architecture paths and workload validation after choosing a design.
+
 ### Batch 10 implementation checkpoint — EXP-05 execution and EXP-07/08 closeout tools — 2026-11-03 10:51:44 UTC
 
 Connected the fixed EXP-05 pilot profile to the shared coordinator's launch
@@ -2815,7 +3119,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | Task ID | Owner role | Task status | Current checkpoint / immediate next action | Execution state | Human verification | Branch/revision/evidence | Blockers | Last UTC update |
 |---|---|---|---|---|---|---|---|---|
 | EXP-02 | Rahul (D); Search owner C review | in progress | PR #28 merged; shared real-target runner, NFR-01–05/telemetry/reporting, pilot/analysis/cleanup tools are locally implemented | Evaluation suite 364 passed/5 skipped; compile, Black, strict Mypy, Terraform mocks, Gitleaks and whitespace checks passed; no live run. Monotonic k6 binary built, timer smoke passed and Go timer unit tests passed in GOPATH mode. | Prior PR #28 merge confirmed; local implementation committed for human and affected-owner review | PR #28 head `8e1a7e8`, merge `2a0916e`; local work on `task/experiment-tooling-readiness`; [experiment log](../evaluation/experiment-log.md) | PR review/merge, exact deployment plan/credit estimate, website DNS handoff, live smoke, pilot and NFR results remain. Module-mode Go test hits a local toolchain lookup issue; GOPATH-mode test passes. | 2026-11-03 12:52:00 UTC |
-| EXP-03 | Rahul (D), Terraform and scoped Identity; Suraj reviewer/operator | in progress | PR #30 merged at `4bad741`; approved exact ingress plan applied. ALB active on HTTPS; source hosts/RDS stopped; ECS desired/running/pending 2/0/2 and ASG desired 0 with all ten processes suspended. | Hosted CI passed; 23 Terraform mocks and five builder tests passed; verified live resource state. No app smoke, Lambda deployment or workload. | Suraj approved exact PR head and plan checksum before merge/apply | [Ingress verification](../evaluation/deployment-20261103/execution/ingress-verification.json); [exact Spaceship handoff](../evaluation/deployment-20261103/execution/spaceship-handoff.md) | Domain owner adds three DNS records; then verify DNS/TLS and separately progress source startup, live parity, site inspection and pilots/NFRs. DNS phase review deadline 2026-11-03 18:10 UTC; no automatic shutdown. | 2026-11-03 16:14:02 UTC |
+| EXP-03 | Rahul (D); Suraj reviewer/operator | in progress | Direct fallback preserved at `6193ca7`; shared-pool source and exact provisioning plan ready for review. Local checks complete; no AWS change. | All14fixture failures resolved in77test rerun; data331, web504, native27, retirement184, Terraform27 pass. Short direct A profiles7800/7800successful; no drops/timeouts. | Suraj selected shared proxy and only100% pilot, authorized fallback commit/local work. Commit/push/CI and exact proxy provision plan approved; merge and activation remain gated. | [PR32](https://github.com/exocrat/clip/pull/32); [shared-pool plan](../evaluation/deployment-20261103/functional-audit/shared-pool-plan.md); [validation](../evaluation/deployment-20261103/functional-audit/shared-pool-validation.md) | Publish reviewed changes and complete CI; obtain exact-head merge approval, then apply approved provision plan. Actual proxy behavior, live website, pilot/NFRs pending. | 2026-11-04 12:21:09 UTC |
 | SE-01 category-text amendment | Mohit (C); Listings reviewer Suraj (B) | merged | PR #25 merged to main at `1f11065`; Steps 1–3 and reported Listings review complete | Exact-head hosted CI passed; [native/model/source evidence](../evaluation/domain/se-01/category-text-checks.json) | Steps 1–3 verified by Mohit; Suraj review reported by Aditya | PR #25; [hosted CI](https://github.com/exocrat/clip/actions/runs/41338792850) | Full SE-01 readiness, final fixed-label relevance and NFR/cloud latency remain open | 2026-11-01 20:18:19 UTC |
 | NEXT-00 | Suraj — requested planning coordinator | done | Planning output verified; NEXT-01 Step 1 authorized. | performed; planning only | verified by Suraj | `task/integrated-marketplace-rollout`, based on main `5e8d264`; [remaining-work plan](../tasks/remaining-project-plan.md), linked from project task index | No blocker for the accepted planning output; implementation and measured-run gates remain separate. | 2026-10-27 18:42:09 UTC |
 | NEXT-01 | Suraj — requested planning coordinator; C retains EXP-01 ownership | done | Design and task-wide review verified; NEXT-02 is next. | Steps 1–9 performed | Steps 1–9 verified | Planning baseline `c869f33`; [design and approved gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md#next-01-step-8--proposed-changes-to-measurement-gates); [NEXT-07 references](../tasks/remaining-project-plan.md#experiment-protocol-reference) | No blocker for the design handoff. Real implementations, data, tools, cost anchors, project AWS identity/spend and run approvals remain NEXT-07 prerequisites. | 2026-10-28 06:24:24 UTC |
@@ -5850,3 +6154,38 @@ local-readiness review; no successful live app/NFR result is claimed. Black's
 multi-file process pool was sandbox-blocked; individual-file formatting passes.
 Next: PR/check/merge and exact image-update plan approval before redeploying.
 DNS still points at the stopped proxy; restore certificate remains pending.
+
+### EXP-03 corrected runtime deployed and website handoff — 2026-11-03 17:00:57 UTC
+
+Suraj approved PR31 head `ca5852cabbcec42393d83ebdf44685dbf19b1aa8` and
+saved image-update plan `5075addaee7f36f5cb3f92161bae23478be02bfc78604f3880e8dcc019038a87`.
+Hosted CI `41676874164` passed in10m44s; accepted main
+`e97a1810b3eee7d9c3f5c2e7cac0a41c07fffee3` was checked tree-equal.
+Applied only the new API task definition and service update. Both revision13
+tasks run on the two preserved/planned hosts and both ALB targets are healthy.
+Only app-code change: `apps/api/app/domains/identity/runtime_database.py` now
+allows the two exact reviewed hosted database names, keeping transport/role/
+password checks; `test_runtime_configuration.py` covers accepted names and
+unreviewed-name denial. Eight focused cases and real final-DB role/key audit pass.
+API/Hybrid/Lambda builds pass; published manifests are single-platform. Lambda
+image is prepared, but no Lambda function/B routing or workload was deployed.
+
+Verified real TLS/SNI through ALB with a connection override: health200 with
+correct body, website200 with bundled assets, anonymous Listing GET401. These
+three checks are smoke evidence, not NFR/cold/performance results. Suraj then
+reported the owner completed DNS work. Restore certificate is ISSUED and DNS
+validation SUCCESS. AWS host independently resolves both public hostnames to
+ALB and normal `https://clip-iisc.site/health` returns200 without override.
+This workstation's DNS answers differ and normal local HTTPS times out; preserve
+both observations and investigate local resolver before workload traffic. Do not
+ask owner to change verified records based only on local answers. Closed only
+the owned SSM database session after private checks.
+
+[Exact release](../evaluation/deployment-20261103/execution/source-a-release.json),
+[smoke receipts](../evaluation/deployment-20261103/execution/https-smoke-with-dns-override.json),
+and [public DNS/health proof](../evaluation/deployment-20261103/execution/public-dns-aws-network-check.json)
+are retained. Updated cost ledger with separate USD0.38116 unbilled two-hour
+compute estimates; project scope/billing remain incomplete, credits separate,
+no NFR08 acceptance. No measured traffic, real sign-in, forced task loss or
+restore has run. Current handoff is Suraj's desktop/phone website inspection;
+B routing/authenticated parity/pilot and formal measurements remain pending.

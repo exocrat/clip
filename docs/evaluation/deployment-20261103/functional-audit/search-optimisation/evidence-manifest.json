@@ -1,0 +1,62 @@
+[
+  {
+    "path": "/home/suraj/src/.clip-private/exp261103/search-optimisation-evidence/clip-search-first-use-final-profile.json",
+    "sha256": "98c4b4ecf3a33b4fe79602db456a911148843b477e7da11a973a25a3bc33c1c2"
+  },
+  {
+    "path": "/home/suraj/src/.clip-private/exp261103/search-optimisation-evidence/clip-search-optimisation-memo-profile.json",
+    "sha256": "618bb87cd8769d4bce2495cc03379d4dc15e2ce65f53f103de07396a0582a443"
+  },
+  {
+    "path": "/home/suraj/src/.clip-private/exp261103/search-optimisation-evidence/clip-search-optimisation-profile-final.json",
+    "sha256": "2cc189cd64041b4a2c7f6effe6e8f92acf20f64209c74f87ba3270c18a1498a3"
+  },
+  {
+    "path": "/home/suraj/src/.clip-private/exp261103/search-optimisation-evidence/clip-search-nojit-candidate.json",
+    "sha256": "a0c115f6e096601093ec3d650771f251ecbc57f74bb282d98e4f69e4dc6c8292"
+  },
+  {
+    "path": "/home/suraj/src/.clip-private/exp261103/search-optimisation-evidence/clip-search-global-memo-candidate.json",
+    "sha256": "c44e3fbae1c324c910d3b116d3869828d4da6a8e2d804707ef6984a5f251b345"
+  },
+  {
+    "path": "/home/suraj/src/.clip-private/exp261103/search-optimisation-evidence/clip-preemptive-sql-batching-profile.json",
+    "sha256": "3278edc34c0d9a6ff5f90a80e1df7cf2fe2fa84e1e2dd102616309724af289d3"
+  },
+  {
+    "path": "/home/suraj/src/.clip-private/exp261103/search-optimisation-evidence/clip-preemptive-sql-prechecked-profile.json",
+    "sha256": "d087151eb36a3ee46dd0889d530bd134c3497d706cecca292e79e37076ad689b"
+  },
+  {
+    "path": "/home/suraj/src/.clip-private/exp261103/search-optimisation-evidence/clip-preemptive-sql-candidate-profile.json",
+    "sha256": "7db4ffe0e774cff40ccda61f79519df0c7e7914c80eec68127df815fd41280da"
+  },
+  {
+    "path": "/home/suraj/src/.clip-private/exp261103/search-optimisation-evidence/clip-preemptive-sql-profile.json",
+    "sha256": "11f8ce64162a44c7fa99212fde92eebe1f3d7541bb846966fec7a41b341a88c9"
+  },
+  {
+    "path": "/home/suraj/src/.clip-private/exp261103/search-optimisation-evidence/clip-search-first-use-final-profile.json",
+    "sha256": "98c4b4ecf3a33b4fe79602db456a911148843b477e7da11a973a25a3bc33c1c2"
+  },
+  {
+    "path": "/home/suraj/src/.clip-private/exp261103/search-optimisation-evidence/clip-query-model-cpu-probe.json",
+    "sha256": "c26a47d024cd7f5ac22913309f4b812393c8886b55fe13290af40a927e68ec87"
+  },
+  {
+    "path": "/home/suraj/src/.clip-private/exp261103/search-optimisation-evidence/clip-vector-compute-candidate.json",
+    "sha256": "dd9029333c748e6494911133ed974936f5aa11763447a9acf2bfef139a7b9de0"
+  },
+  {
+    "path": "/home/suraj/src/.clip-private/exp261103/search-optimisation-evidence/clip-numpy-sql-equivalence.py",
+    "sha256": "be94cf7baff187869964d51ffb09b77d98c73a58fdf0e73959be49ae68f3d194"
+  },
+  {
+    "path": "/home/suraj/src/.clip-private/exp261103/search-optimisation-evidence/clip-numpy-sql-equivalence.json",
+    "sha256": "7d8607eba69da3eac8b6507230a4c1dc072a73c6d344257ad427af94e72dedcf"
+  },
+  {
+    "path": "/home/suraj/src/.clip-private/exp261103/search-optimisation-evidence/clip-numpy-sql-equivalence.log",
+    "sha256": "16299889508bd4c5cb2c2089ec78cb4c57534741f098ec2540e1b62a09dd6fbd"
+  }
+]

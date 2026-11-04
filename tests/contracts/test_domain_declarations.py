@@ -258,6 +258,8 @@ def test_only_implemented_domain_http_routes_are_installed():
         "/image-uploads/{upload_id}/confirm",
         "/image-uploads/{upload_id}",
         "/images/{image_id}/delivery",
+        "/images/delivery",
+        "/me/saved-listings/status",
     }
     assert not any(path.startswith("/auth/") for path in paths)
 

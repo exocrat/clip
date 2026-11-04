@@ -181,7 +181,14 @@ def test_node_workload_and_response_contract_checks():
     node = str(local) if local.is_file() else shutil.which("node")
     assert node is not None, "Existing project Node toolchain is required"
     result = subprocess.run(
-        [node, "--test", "scripts/evaluation/k6/core.test.mjs"],
+        [
+            node,
+            "--test",
+            *[
+                str(path.relative_to(ROOT))
+                for path in sorted((ROOT / "scripts/evaluation/k6").glob("*.test.mjs"))
+            ],
+        ],
         cwd=ROOT,
         env={"PATH": "/usr/bin:/bin"},
         capture_output=True,

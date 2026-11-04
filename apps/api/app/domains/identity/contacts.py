@@ -7,6 +7,7 @@ alone proves no authentication. Login identifiers and copied encrypted shares
 are never changed by these source-contact operations.
 """
 
+from contextlib import AbstractContextManager
 import asyncio
 from contextlib import contextmanager
 from datetime import datetime
@@ -81,7 +82,11 @@ def contact_value(kind: ContactField, raw: str) -> str:
 class PostgresContacts:
     """User-before-contact transactions with fresh lifecycle/caller checks."""
 
-    def __init__(self, connect: Callable[[], Database], clock: Callable[[], datetime]):
+    def __init__(
+        self,
+        connect: Callable[[], AbstractContextManager[Database]],
+        clock: Callable[[], datetime],
+    ):
         """Bind explicit trusted dependencies; never discover or contact a provider."""
         self._connect, self._clock = connect, clock
 

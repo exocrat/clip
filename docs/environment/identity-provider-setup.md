@@ -9,6 +9,12 @@ This guide contains current setup facts and pending actions, not new approval.
 
 ## Current status
 
+The unmerged [hosted functional repair](../decisions/hosted-functional-repair.md)
+supersedes the old controlled-recipient restriction for the explicitly enabled
+real hosted app. Standalone/local probes retain that restriction. The deployed
+version must be checked before claiming the change is active; real OTP/inbox
+verification remains pending. Historical rows below describe earlier acceptance.
+
 | Provider/path | Verified | Still pending |
 | --- | --- | --- |
 | Microsoft | Real local IISc sign-in and non-IISc denial human-verified2026-10-26 04:48:20UTC after SPA correction guidance; validator/SQL and controlled browser tests passed. | Hosted origin, mobile-browser and remaining session/cache acceptance; local Chrome/Firefox sign-in verified; default build flag remains disabled. |

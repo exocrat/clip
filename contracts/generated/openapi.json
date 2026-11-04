@@ -1054,6 +1054,51 @@
         "title": "ImageDelivery",
         "type": "object"
       },
+      "ImageDeliveryBatch": {
+        "additionalProperties": false,
+        "description": "Private short-lived links for only the requested authorized images.",
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ImageDeliveryItem"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "ImageDeliveryBatch",
+        "type": "object"
+      },
+      "ImageDeliveryItem": {
+        "additionalProperties": false,
+        "description": "Missing and hidden images both have no link; never disclose their state.",
+        "properties": {
+          "delivery": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ImageDelivery"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "image_id": {
+            "format": "uuid",
+            "title": "Image Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "image_id",
+          "delivery"
+        ],
+        "title": "ImageDeliveryItem",
+        "type": "object"
+      },
       "ImageUploadRequest": {
         "additionalProperties": false,
         "description": "Metadata and stable idempotency key for a pending image upload.",
@@ -3031,6 +3076,27 @@
         "title": "SavedListingAck",
         "type": "object"
       },
+      "SavedListingStatus": {
+        "additionalProperties": false,
+        "description": "Only the caller's own saved relationship, including unavailable references.",
+        "properties": {
+          "listing_id": {
+            "format": "uuid",
+            "title": "Listing Id",
+            "type": "string"
+          },
+          "saved": {
+            "title": "Saved",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "listing_id",
+          "saved"
+        ],
+        "title": "SavedListingStatus",
+        "type": "object"
+      },
       "SavedListingView": {
         "additionalProperties": false,
         "description": "Caller-owned saved reference with current safe detail or retired marker.",
@@ -3067,6 +3133,24 @@
           "retired"
         ],
         "title": "SavedListingView",
+        "type": "object"
+      },
+      "SavedStatusBatch": {
+        "additionalProperties": false,
+        "description": "One status per requested ID; no other user's references or listing content.",
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SavedListingStatus"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "SavedStatusBatch",
         "type": "object"
       },
       "SelectedOwnContacts": {
@@ -6985,6 +7069,135 @@
         ]
       }
     },
+    "/images/delivery": {
+      "get": {
+        "description": "Reject accidental use; declarations never return fake success.",
+        "operationId": "listings_get_image_delivery_batch",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "image_ids",
+            "required": true,
+            "schema": {
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "maxItems": 100,
+              "minItems": 1,
+              "title": "Image Ids",
+              "type": "array"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImageDeliveryBatch"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "listings_get_image_delivery_batch",
+        "tags": [
+          "listings"
+        ]
+      }
+    },
     "/images/{image_id}/delivery": {
       "get": {
         "description": "Reject accidental use; declarations never return fake success.",
@@ -10025,6 +10238,135 @@
           }
         },
         "summary": "search_list_saved_listings",
+        "tags": [
+          "search"
+        ]
+      }
+    },
+    "/me/saved-listings/status": {
+      "get": {
+        "description": "Reject accidental use; declarations never return fake success.",
+        "operationId": "search_read_saved_status_batch",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "listing_ids",
+            "required": true,
+            "schema": {
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "maxItems": 100,
+              "minItems": 1,
+              "title": "Listing Ids",
+              "type": "array"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SavedStatusBatch"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "search_read_saved_status_batch",
         "tags": [
           "search"
         ]

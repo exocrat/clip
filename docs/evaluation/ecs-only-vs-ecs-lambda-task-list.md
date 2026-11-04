@@ -1,5 +1,14 @@
 # Campus Marketplace — ECS-only vs ECS+Lambda Experiment Task List
 
+**Current execution amendment — 2026-11-04:** Suraj selects only the ECS baseline
+and 100% Lambda offload for the remaining pilot, with three repetitions each.
+Do not run the 75/25, 50/50 or 25/75 candidates, regardless of the 100% outcome.
+Preserve previous diagnostics and prioritize one deployment meeting all NFRs.
+The comparison burst remains50rps until a separately recorded revision freezes a
+new rate identically for both paths; NFR-03 remains50rps for five minutes.
+See [shared-pool and recovery plan](deployment-20261103/functional-audit/shared-pool-plan.md).
+
+
 **Canonical repository path:** `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md`
 **Document 2. Status:** Working task list for the PRD's primary cloud experiment. It does not report experiment results; none have been run while preparing this document.
 
@@ -14,7 +23,7 @@ The remaining local tooling must be completed and audited before any deployment.
 
 **Latest user direction:** Use direct ALB routing for the selected reads. In B,
 the ALB distributes those requests between Lambda and ECS using a fixed weight;
-other routes remain on ECS. Before the main comparison, pilot the four weights
+other routes remain on ECS. Historical design: before the main comparison, pilot the four weights
 specified in EXP-05 and select the main-experiment weight using criteria agreed
 before the pilot. ALB weights do not implement per-request fallback: a request
 sent to Lambda can fail if Lambda is throttled. The local EXP-03 implementation
@@ -767,7 +776,7 @@ deployment plan and approval gate proceed.
 ## EXP-05 — Pilot and confirm safe limits
 
 `scripts/evaluation/k6/exp05_pilot.py` prepares the required ECS baseline and
-four weighted candidates with three repetitions each and summarizes retained
+the100%Lambda candidate with three repetitions each (schema2; schema1 remains readable for historical four-candidate evidence) and summarizes retained
 run reports against the 95% correctness/delivery floor, zero generator drops,
 resource and database headroom, telemetry, routing, and approved cost cap. Its
 proposed fallback rule is to select the largest Lambda weight that passes all
@@ -778,9 +787,9 @@ the selected weight.
 1. Re-read the approved manifest, exact environment/resource targets, remaining project budget, and cleanup commands.
 2. **Configure the database connection budget explicitly.** Before traffic, inspect the actual PostgreSQL `max_connections`, reserved slots, current connections and instance settings through the approved read-only path. Account for all ECS processes, Lambda environments and their pools, direct Identity connections, workers, administration and other consumers. Record and review a safe application connection budget, pool sizes and Lambda concurrency with headroom. The proposed figure of 60 is not an observed limit. Make any database or resource configuration change only under an exact approved plan; recheck the resulting settings before testing.
 3. Verify the load generator has enough capacity for the requested workload and will not exceed its approved virtual-user/concurrency cap. Predefine the candidate-selection criteria for correct responses, delivered rate, latency, throttles/failures, generator drops, database connections/lock waits and stop conditions. Record the weight rule, any stickiness setting, run order, warm-up, budget and telemetry before the pilot; do not invent pass thresholds after seeing results.
-4. Run the ECS-only baseline pilot and then the high-load candidate pilots with direct ALB routing. Test **Lambda/ECS weights 100/0, 75/25, 50/50 and 25/75**, in that order. Run **three repetitions of two measured minutes per weight**, with the same approved high-load workload and warm-up for each; record each run separately. Other routes remain on ECS. ALB weighting is approximate and does not retry a throttled request on ECS. Stop early on an approved safety, cost or validity stop condition. These are candidate-selection pilots, not NFR passes or final comparison results.
+4. Run the ECS-only baseline pilot and then the high-load candidate pilots with direct ALB routing. Test only **Lambda/ECS100/0** after the ECS baseline under the2026-11-04 amendment. Run **three repetitions of two measured minutes per weight**, with the same approved high-load workload and warm-up for each; record each run separately. Other routes remain on ECS. ALB weighting is approximate and does not retry a throttled request on ECS. Stop early on an approved safety, cost or validity stop condition. These are candidate-selection pilots, not NFR passes or final comparison results.
 5. Check that scheduled request rates are achieved, requests are not dropped by the generator, telemetry aligns to the run, expected response checks work, and the DB or runtime is not affected by unrelated traffic. Track database connection usage and lock waits, including contention from the single test account. Keep Lambda throttles and errors visible; preserve incomplete or failed runs.
-6. Apply the predefined criteria to the pilot results. If 100% Lambda passes, select it for the main experiment; otherwise select among the tested splits according to the pre-agreed rule. If none pass or evidence is inconclusive, stop and review rather than invent a winner. Record and freeze the selected weight and configuration before the main comparison; the final five-minute measurement windows and other approved main-run requirements remain unchanged.
+6. Apply the predefined criteria to the pilot results. If 100% Lambda passes, select it for the main experiment; otherwise retain the failed evidence and review the documented fallback; do not run other weights. If none pass or evidence is inconclusive, stop and review rather than invent a winner. Record and freeze the selected weight and configuration before the main comparison; the final five-minute measurement windows and other approved main-run requirements remain unchanged.
 7. Estimate the full planned batch from pilot duration/resource usage and current provider prices. Include warm-up, run time, idle/transition time, both configurations, database, ingress, logs/monitoring, and any temporary resources. Record assumptions and billing-data delay.
 8. Verify the estimate plus the approved reserve fits the project's remaining USD 200 budget and the separately approved experiment spending cap. Confirm each run has a declared maximum duration and resource/concurrency caps.
 9. If the pilot reveals an unsafe cap, generator limit, unexpected scaling/cost, unavailable metric, or unclear result, stop. Present options and a revised plan for human approval; do not tune quietly.

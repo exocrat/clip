@@ -5,6 +5,7 @@ attempt→provider tuple→user for its final redemption. Never persist raw cook
 password, nonce or assertion. Secrets in return objects are transport-only.
 """
 
+from contextlib import AbstractContextManager
 import base64
 from contextlib import contextmanager
 from dataclasses import dataclass, field
@@ -107,7 +108,7 @@ class IdentitySessions:
 
     def __init__(
         self,
-        connect: Callable[[], Database],
+        connect: Callable[[], AbstractContextManager[Database]],
         keys: TemporaryKeys,
         clock: Callable[[], datetime],
     ):

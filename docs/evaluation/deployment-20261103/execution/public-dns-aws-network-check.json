@@ -1,0 +1,14 @@
+{
+  "observed_at_utc": "2026-11-03T17:00:18.868820+00:00",
+  "observer": "existing AWS ECS host via SSM",
+  "command_id": "99fa9b2d-6a9b-4206-93ce-9880c831bc43",
+  "status": "Success",
+  "public_dns_override": false,
+  "dns_and_health_output": "13.126.180.62   STREAM clip-iisc.site\n13.126.180.62   DGRAM  \n13.126.180.62   RAW    \n13.205.29.134   STREAM clip-exp03-exp261103-1208550693.ap-south-1.elb.amazonaws.com\n13.205.29.134   DGRAM  \n13.205.29.134   RAW    \n{\"status\":\"ok\"}\n200\n",
+  "health_status": 200,
+  "health_body_correct": true,
+  "restore_certificate_status": "ISSUED",
+  "restore_dns_validation": "SUCCESS",
+  "workstation_dns_observation": "local answers differ; normal workstation HTTPS timed out; direct ALB HTTPS with real TLS passed",
+  "measurement_evidence": false
+}

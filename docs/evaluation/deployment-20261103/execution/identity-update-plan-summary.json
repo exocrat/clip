@@ -1,0 +1,40 @@
+{
+  "pr": 31,
+  "head": "ca5852cabbcec42393d83ebdf44685dbf19b1aa8",
+  "plan_sha256": "5075addaee7f36f5cb3f92161bae23478be02bfc78604f3880e8dcc019038a87",
+  "changes": [
+    {
+      "address": "aws_ecs_service.api[0]",
+      "actions": [
+        "update"
+      ],
+      "changed_fields": [
+        "desired_count",
+        "task_definition"
+      ]
+    },
+    {
+      "address": "aws_ecs_task_definition.api[0]",
+      "actions": [
+        "delete",
+        "create"
+      ],
+      "changed_fields": [
+        "arn",
+        "arn_without_revision",
+        "container_definitions",
+        "enable_fault_injection",
+        "id",
+        "ipc_mode",
+        "pid_mode",
+        "revision",
+        "tags"
+      ]
+    }
+  ],
+  "application_image": "335523638354.dkr.ecr.ap-south-1.amazonaws.com/clip-shared-test-api@sha256:860c8c15fe29b2592976ca5b8dafdb5738d791de012ccbc4f57b9bc076ae674b",
+  "account": "335523638354",
+  "region": "ap-south-1",
+  "desired_tasks_after_apply": 2,
+  "other_resources_changed": false
+}

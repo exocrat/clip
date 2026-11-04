@@ -15,7 +15,8 @@ from typing import Any
 
 RUN_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{2,63}$")
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
-WEIGHTS = (100, 75, 50, 25)
+LEGACY_WEIGHTS = (100, 75, 50, 25)
+WEIGHTS = (100,)
 REPETITIONS = 3
 
 
@@ -26,7 +27,7 @@ def build_plan(
     *,
     max_successful_failure_share: float = 0.05,
 ) -> dict[str, Any]:
-    """Create the fixed baseline plus 12 candidate run declarations."""
+    """Create three ECS baseline and three full-offload candidate declarations."""
     if not RUN_ID.fullmatch(run_prefix) or len(run_prefix) > 40:
         raise ValueError("invalid_run_prefix")
     if not SHA256.fullmatch(workload_sha256) or not isinstance(
@@ -75,7 +76,7 @@ def build_plan(
         ).encode()
     ).hexdigest()
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "purpose": "exp05-pilot-candidates-not-authorization",
         "state": "draft",
         "execution_permitted": False,
@@ -95,12 +96,7 @@ def build_plan(
             "timeout_seconds": 5,
             "retries": 0,
         },
-        "candidate_weights_lambda_ecs_percent": [
-            [100, 0],
-            [75, 25],
-            [50, 50],
-            [25, 75],
-        ],
+        "candidate_weights_lambda_ecs_percent": [[100, 0]],
         "repetitions_per_weight": REPETITIONS,
         "baseline_repetitions": REPETITIONS,
         "selection_rule": "highest_lambda_weight_meeting_all_frozen_pilot_gates",
@@ -147,12 +143,13 @@ def _validate_plan(plan: Any) -> dict[str, Any]:
         not isinstance(plan, dict)
         or plan.get("purpose") != "exp05-pilot-candidates-not-authorization"
         or type(plan.get("schema_version")) is not int
-        or plan["schema_version"] != 1
+        or plan["schema_version"] not in (1, 2)
         or plan.get("state") != "draft"
         or plan.get("pilot_result") is not False
         or plan.get("execution_permitted") is not False
     ):
         raise ValueError("exp05_draft_plan_required")
+    weights = LEGACY_WEIGHTS if plan["schema_version"] == 1 else WEIGHTS
     workload = plan.get("workload")
     if not isinstance(workload, dict) or (
         workload.get("condition") != "burst"
@@ -169,14 +166,11 @@ def _validate_plan(plan: Any) -> dict[str, Any]:
         raise ValueError("exp05_workload_binding_mismatch")
     if (
         plan.get("candidate_weights_lambda_ecs_percent")
-        != [[100, 0], [75, 25], [50, 50], [25, 75]]
+        != [[weight, 100 - weight] for weight in weights]
         or plan.get("run_order")
         != [
             "ecs_baseline",
-            "lambda_ecs_100_0",
-            "lambda_ecs_75_25",
-            "lambda_ecs_50_50",
-            "lambda_ecs_25_75",
+            *[f"lambda_ecs_{weight}_{100-weight}" for weight in weights],
         ]
         or plan.get("repetitions_per_weight") != 3
         or plan.get("baseline_repetitions") != 3
@@ -210,7 +204,7 @@ def _validate_plan(plan: Any) -> dict[str, Any]:
     ):
         raise ValueError("exp05_target_binding_required")
     runs = plan.get("runs")
-    if not isinstance(runs, list) or len(runs) != 15:
+    if not isinstance(runs, list) or len(runs) != 3 * (1 + len(weights)):
         raise ValueError("exp05_complete_run_matrix_required")
     expected = []
     prefix = runs[0].get("run_id", "").rsplit("-base-r1", 1)[0]
@@ -226,7 +220,7 @@ def _validate_plan(plan: Any) -> dict[str, Any]:
                 "repetition": repetition,
             }
         )
-    for weight in WEIGHTS:
+    for weight in weights:
         for repetition in range(1, 4):
             expected.append(
                 {
@@ -239,7 +233,7 @@ def _validate_plan(plan: Any) -> dict[str, Any]:
             )
     if (
         not isinstance(runs, list)
-        or len(runs) != 15
+        or len(runs) != 3 * (1 + len(weights))
         or any(not isinstance(row, dict) for row in runs)
     ):
         raise ValueError("exp05_run_matrix_mismatch")
@@ -267,11 +261,10 @@ def summarize_pilot(plan: Any, records: Any) -> dict[str, Any]:
     expected_runs = plan.get("runs")
     if (
         not isinstance(expected_runs, list)
-        or len(expected_runs) != 15
         or not isinstance(records, list)
-        or len(records) != 15
+        or len(records) != len(expected_runs)
     ):
-        raise ValueError("all_15_pilot_run_records_required")
+        raise ValueError("all_declared_pilot_run_records_required")
     expected = {row["run_id"]: row for row in expected_runs}
     found: dict[str, dict[str, Any]] = {}
     for record in records:
@@ -349,6 +342,7 @@ def summarize_pilot(plan: Any, records: Any) -> dict[str, Any]:
             and type(phase.get("issued")) is int
             and phase["issued"] > 0
             and type(phase.get("correct")) is int
+            and 0 <= phase["correct"] <= phase["issued"]
             and phase["correct"] / phase["issued"]
             >= plan["gates"]["minimum_correct_share"]
             and all(checks.values())
@@ -356,7 +350,7 @@ def summarize_pilot(plan: Any, records: Any) -> dict[str, Any]:
         baseline_rows.append(
             {"run_id": run_id, "eligible": baseline_ok, "resource_checks": checks}
         )
-    for weight in WEIGHTS:
+    for weight in (pair[0] for pair in plan["candidate_weights_lambda_ecs_percent"]):
         repetitions = []
         eligible = True
         for repetition in range(1, REPETITIONS + 1):

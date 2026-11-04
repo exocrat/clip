@@ -37,7 +37,13 @@ class ResendEmailSender:
     sending-only, domain-restricted key loaded by trusted secret composition.
     """
 
-    def __init__(self, api_key: SecretStr, recipients: tuple[str, ...]) -> None:
+    def __init__(
+        self,
+        api_key: SecretStr,
+        recipients: tuple[str, ...],
+        *,
+        allow_unlisted_recipients: bool = False,
+    ) -> None:
         """Validate private inputs; never log/serialize a credential or recipient."""
         key = api_key.get_secret_value()
         if (
@@ -50,6 +56,8 @@ class ResendEmailSender:
         ):
             raise EmailUnavailable("Invalid controlled email configuration")
         self._key, self._recipients = api_key, frozenset(recipients)
+        # Trusted hosted composition opts in; the browser cannot select this flag.
+        self._allow_unlisted = allow_unlisted_recipients is True
         # Ignore ambient proxy configuration; retain default HTTPS certificate and
         # hostname verification. Refuse HTTP redirects and never retry POST.
         self._opener = build_opener(
@@ -63,8 +71,13 @@ class ResendEmailSender:
         decoding, malformed success and network errors are all private uncertainty;
         the approved outer router alone may try the other provider once.
         """
+        try:
+            valid_recipient = normalize_login(recipient) == recipient
+        except Exception:
+            valid_recipient = False
         if (
-            recipient not in self._recipients
+            not valid_recipient
+            or (not self._allow_unlisted and recipient not in self._recipients)
             or not subject
             or len(subject) > 120
             or any(character in subject for character in "\r\n")

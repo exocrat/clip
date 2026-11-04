@@ -179,7 +179,7 @@ keeps the checked sequence rotation, and fixes 60 seconds at 10 requests/s,
 five seconds of drain, then 120 seconds at 50 requests/s. It performs one
 checked read per iteration with no retries. `prepare_real_run_plan.py` accepts
 `--workload-kind exp05-pilot` and binds the profile to the exact target plan,
-which carries that candidate's ALB Lambda/ECS weight. Build all 15 target plans
+which carries that candidate's ALB Lambda/ECS weight. Build all six target plans
 and profiles before pilot execution; produce a matrix plan with
 `exp05_pilot.py plan --target-bindings` mapping every run ID to its target-plan
 hash. The normal one-run approval and coordinator then enforce account,
@@ -210,7 +210,7 @@ command adds those exact source paths:
 ```
 
 Report each run with `comparison_report.py --condition burst --profile PROFILE`
-and the matching execution receipt/run plan. Supply the 15 receipt-bound
+and the matching execution receipt/run plan. Supply the six receipt-bound
 reports and explicit generator, routing, telemetry, database-headroom and cost
 checks to `exp05_pilot.py report`. The report may recommend a candidate for
 human review; it cannot freeze the B weight or authorize the main experiment.
@@ -590,3 +590,19 @@ See the [live parity, Lambda initialization and NFR-07 provisioning guide](../..
 for exact inputs, commands, evidence outputs, permission gates and limitations.
 The historical USD 10 credit cap is superseded for this experiment; retain the
 strict under-USD-200 project budget and separately reviewed per-action caps.
+
+### Shared database proxy targets and reduced pilot
+
+Target format2 adds `resources.database_proxy`: null for direct access, or
+`{"arn":"<exact proxy ARN>","name":"<exact name>","endpoint":"<exact hostname>"}`.
+Preflight still verifies the unchanged source SSM DSN against the source RDS, then
+checks both runtime endpoint overrides, proxy TLS/deadlines/pool limits and the
+single available target's resource ID/address. An old direct plan refuses an
+unrecorded override. Proxy CloudWatch observations are saved separately and missing
+metrics remain missing. NFR-07 prohibits the source proxy override entirely.
+
+New EXP-05 plans use schema2: three baseline and three100%Lambda repetitions.
+Historical schema1 four-candidate reports remain readable. No rate, duration,
+correctness floor or drop rule is weakened by this matrix change. The comparison
+burst remains50rps until a separately approved profile revision; NFR-03 always
+retains its PRD50rps/five-minute requirement.

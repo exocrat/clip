@@ -2,6 +2,12 @@
 
 ## Shared page and interface edits
 
+Suraj is the current writer/operator for the hosted functional repair, including
+the shared HTTP batching utility and affected public Listings/Search consumers.
+The scope is [recorded here](../decisions/hosted-functional-repair.md); ownership
+and other domain-private import boundaries remain. Generated contract changes
+come from their canonical sources.
+
 This file records approved routes, feature owners and public entry points; it
 does not hold an active writer reservation. Before a shared page/interface edit,
 check the current task and work-log checkpoint, name one writer, and coordinate

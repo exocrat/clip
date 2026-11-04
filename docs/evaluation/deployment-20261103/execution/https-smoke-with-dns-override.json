@@ -1,0 +1,36 @@
+{
+  "observed_at_utc": "2026-11-03T16:55:48.374708+00:00",
+  "url_origin": "https://clip-iisc.site",
+  "connect_override": "clip-exp03-exp261103-1208550693.ap-south-1.elb.amazonaws.com",
+  "tls_verification_enabled": true,
+  "cookies_or_credentials_sent": false,
+  "public_dns_verified": false,
+  "measurement_evidence": false,
+  "checks": [
+    {
+      "check": "health",
+      "path": "/health",
+      "status": 200,
+      "expected_status": 200,
+      "body_sha256": "a29ee2b15c494311c52521766e44af56a3ad2248e7a8ab465e5206463c13d288",
+      "passed": true
+    },
+    {
+      "check": "website",
+      "path": "/",
+      "status": 200,
+      "expected_status": 200,
+      "body_sha256": "a577768e8cfec59825c68060d7d59cc21fcda2b72c692c7d0c6abc88846559ce",
+      "passed": true
+    },
+    {
+      "check": "anonymous-listings",
+      "path": "/api/listings",
+      "status": 401,
+      "expected_status": 401,
+      "body_sha256": "436eed2ac764b12f62f05d0cf3df86238770bf6f9bab1019ce8a340385b0e177",
+      "passed": true
+    }
+  ],
+  "passed": true
+}

@@ -56,7 +56,10 @@ def _tags(point: dict[str, Any]) -> dict[str, Any]:
     return tags
 
 
-def summarize(points: list[dict[str, Any]], profile: dict[str, Any]) -> dict[str, Any]:
+def summarize(
+    points: list[dict[str, Any]], profile: dict[str, Any], *, local_short: bool = False
+) -> dict[str, Any]:
+    """Keep formal schedules strict; explicit library-only short mode is diagnostic."""
     nfr = profile.get("nfr_id")
     if (
         nfr not in {"nfr-01", "nfr-02"}
@@ -67,8 +70,8 @@ def summarize(points: list[dict[str, Any]], profile: dict[str, Any]) -> dict[str
     warmup, measured = profile.get("warmup_seconds"), profile.get("measured_seconds")
     if (
         profile.get("rate_rps") != rate
-        or warmup != 60
-        or measured != 300
+        or warmup != (10 if local_short else 60)
+        or measured != (60 if local_short else 300)
         or profile.get("drain_seconds") != 5
     ):
         raise ValueError("NFR schedule mismatch")
@@ -211,6 +214,7 @@ def summarize(points: list[dict[str, Any]], profile: dict[str, Any]) -> dict[str
         denominator_rule = "all issued eligible indexed-search requests; unsuccessful HTTP responses and timeouts count as violations; ranking quality is measured separately by NFR-04"
     ratio = numerator / denominator if denominator else None
     return {
+        "local_short_diagnostic": local_short,
         "preview_only": True,
         "nfr_id": nfr,
         "configuration": profile["configuration"],

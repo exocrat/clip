@@ -12,6 +12,7 @@ from fastapi.testclient import TestClient
 
 from app.application import application_lifespan
 from app.core.config import Settings
+from app.core.database_transport import check_async_proxy_connection
 from app.core.database import PoolLifecycle
 from app.main import create_app
 
@@ -154,9 +155,12 @@ def test_combined_lifespan_owns_both_pools_and_unwinds_failures(
         assert kwargs == {
             "conninfo": shared,
             "kwargs": {"row_factory": dict_row},
+            "configure": check_async_proxy_connection,
+            "check": None,
             "min_size": 1,
-            "max_size": 10,
+            "max_size": 6,
             "timeout": 5,
+            "max_waiting": 64,
             "open": False,
         }
         if failure == "marketplace_factory":

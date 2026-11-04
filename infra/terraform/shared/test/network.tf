@@ -163,6 +163,17 @@ resource "aws_security_group" "database" {
   }
 
   dynamic "ingress" {
+    for_each = local.database_proxy_active ? [1] : []
+    content {
+      description     = "Approved private shared database proxy."
+      from_port       = 5432
+      to_port         = 5432
+      protocol        = "tcp"
+      security_groups = [aws_security_group.database_proxy[0].id]
+    }
+  }
+
+  dynamic "ingress" {
     for_each = local.exp03_lambda_active ? [1] : []
     content {
       description     = "Temporary EXP-03 Lambda access to private PostgreSQL."

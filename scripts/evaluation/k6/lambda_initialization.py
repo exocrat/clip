@@ -138,9 +138,9 @@ def main() -> None:
             window["actual_start_utc"].replace("Z", "+00:00")
         )
         end = datetime.fromisoformat(window["actual_end_utc"].replace("Z", "+00:00"))
-        import boto3
+        from data.generators.reference_login import sdk_profile_session
 
-        session = boto3.Session(
+        session = sdk_profile_session(
             profile_name=plan["aws_profile"], region_name=plan["region"]
         )
         caller = session.client("sts").get_caller_identity()

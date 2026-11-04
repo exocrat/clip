@@ -10,6 +10,8 @@ from app.contracts.domain_types import (
     SaveListingRequest,
     SavedListingAck,
     SavedListingView,
+    SavedStatusQuery,
+    SavedStatusBatch,
 )
 from app.core.auth import CallerContext, require_caller
 from app.core.errors import ERRORS, PublicError
@@ -48,6 +50,20 @@ async def list_saved(
 ) -> PageResult[SavedListingView]:
     """Only the trusted caller's page, resolved to current safe public state."""
     return await service.listing(caller, query)
+
+
+@router.get(
+    "/me/saved-listings/status",
+    response_model=SavedStatusBatch,
+    operation_id="search_read_saved_status_batch",
+    summary="search_read_saved_status_batch",
+    responses=_ERRORS,
+)
+async def saved_status_batch(
+    caller: Caller, service: Service, query: Annotated[SavedStatusQuery, Query()]
+) -> SavedStatusBatch:
+    """One private saved-state query per browser page, without content joins."""
+    return await service.statuses(caller, query.listing_ids)
 
 
 @router.put(

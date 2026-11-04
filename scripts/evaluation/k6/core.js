@@ -59,3 +59,15 @@ export function scenarios(p) {
   const scenario = (duration, startTime) => ({executor:'constant-arrival-rate',rate:p.rate,timeUnit:'1s',duration:`${duration}s`,startTime:`${startTime}s`,preAllocatedVUs:p.max_vus,maxVUs:p.max_vus,gracefulStop:timeout});
   return { ...(p.warmup_seconds ? { warmup:scenario(p.warmup_seconds,0) } : {}), measured:scenario(p.measured_seconds,p.warmup_seconds ? p.warmup_seconds + p.timeout_seconds : 0) };
 }
+
+/** Cap HTTP work to the frozen number of arrival slots. k6 can start an
+ * iteration exactly at duration expiry; retain that execution separately but
+ * never turn it into an extra request. Short delivery/drops still fail reports.
+ */
+export function plannedArrivalCount(scenario) {
+  const duration = /^(\d+)s$/.exec(scenario.duration);
+  const unit = /^(\d+)s$/.exec(scenario.timeUnit);
+  const count = duration && unit ? scenario.rate * Number(duration[1]) / Number(unit[1]) : NaN;
+  if (!Number.isSafeInteger(count) || count < 1) throw Error('invalid_arrival_budget');
+  return count;
+}

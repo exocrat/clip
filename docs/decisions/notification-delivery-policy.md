@@ -40,6 +40,11 @@ Which conversation emails are required, when are reminders due, and how are fail
   verification/reset test-recipient restrictions remain separate. Terminal jobs
   already rejected by the old allowlist are not automatically replayed.
 - New conversation: email the other participant promptly after the durable intent commits.
+- Suraj's 2026-11-03 [hosted functional repair](hosted-functional-repair.md)
+  makes intended eligible-user delivery part of the explicitly hosted real app,
+  rather than leaving its legacy test-recipient switch false. Standalone probes
+  keep their restriction; preferences, suppression and no replay of terminal
+  jobs remain. Real delivery on the repaired deployment still needs verification.
 - Unread-message reminder: due 15 minutes after the episode's first unread text message. Later messages join that reminder without postponing its due time.
 - Suppress when all currently unread messages are acknowledged before dispatch; recheck authorized read state and recipient eligibility immediately before dispatch. Reads acknowledge actual client display, not polling alone.
 - At most one reminder per unread episode. Another requires catching up, then receiving a new unread message. An already reminded episode must not restart because a worker/terminal record is cleaned up.

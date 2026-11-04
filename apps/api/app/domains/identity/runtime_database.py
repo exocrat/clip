@@ -5,13 +5,24 @@ Only explicit bootstrap calls connect. All diagnostics are fixed/redacted; no
 connection string, database error, fingerprint or key is returned or logged.
 """
 
+import asyncio
+from collections.abc import AsyncIterator, Iterator
+from contextlib import AbstractContextManager, asynccontextmanager, contextmanager
+from contextvars import ContextVar
+from threading import Lock
 from typing import Callable
 
 import psycopg
 from psycopg.conninfo import conninfo_to_dict
 from pydantic import SecretStr
+from psycopg_pool import ConnectionPool, NullConnectionPool, PoolTimeout
 
 from app.core.config import ConfigurationError
+from app.core.database_transport import (
+    uses_proxy,
+    connection_kwargs,
+    check_proxy_connection,
+)
 from app.domains.identity.temporary_challenges import Database
 from app.domains.identity.temporary_crypto import TemporaryKeys
 
@@ -121,20 +132,177 @@ def connection_factory(dsn: SecretStr, environment: str) -> Callable[[], Databas
     def connect() -> Database:
         """Open with explicit credentials/timeouts and no local passfile lookup."""
         try:
-            return psycopg.connect(
+            connection = psycopg.connect(
                 raw,
-                passfile="/dev/null",
-                connect_timeout=3,
-                application_name="clip-identity",
-                autocommit=True,
+                **connection_kwargs(
+                    raw,
+                    passfile="/dev/null",
+                    connect_timeout=3,
+                    application_name="clip-identity",
+                    autocommit=True,
+                ),
             )
+            try:
+                check_proxy_connection(connection)
+            except BaseException:
+                connection.close()
+                raise
+            return connection
         except Exception:
             raise ConfigurationError("Identity database unavailable") from None
 
     return connect
 
 
-def validate_database(connect: Callable[[], Database], keys: TemporaryKeys) -> None:
+class _InvocationConnection:
+    """One exclusive connection shared by this invocation's separate transactions.
+
+    A borrower never shares an active transaction with another thread. Cleanup
+    waits for an in-flight borrower, then returns the lease to the null pool,
+    which physically closes it before the HTTP response can complete.
+    """
+
+    def __init__(self, pool: ConnectionPool):
+        self._pool = pool
+        self._lock = Lock()
+        self._lease: AbstractContextManager[Database] | None = None
+        self._connection: Database | None = None
+        self._closed = False
+
+    @contextmanager
+    def borrow(self) -> Iterator[Database]:
+        if not self._lock.acquire(timeout=1):
+            raise PoolTimeout("Identity invocation connection busy")
+        try:
+            if self._closed:
+                raise ConfigurationError("Identity invocation has finished")
+            if self._connection is None:
+                lease = self._pool.connection(timeout=1)
+                connection = lease.__enter__()
+                self._lease, self._connection = lease, connection
+            yield self._connection
+        finally:
+            self._lock.release()
+
+    def close(self) -> None:
+        """Join any remaining SQL borrower; never leave a late idle connection."""
+        with self._lock:
+            self._closed = True
+            lease, self._lease = self._lease, None
+            self._connection = None
+            if lease is not None:
+                lease.__exit__(None, None, None)
+
+
+class IdentityConnectionPool:
+    """Reuse bounded, exclusive connections without caching authentication state.
+
+    Every borrower still runs the existing transactions, current-account checks,
+    session expiry and revocation checks. Acquisition waits at most one second;
+    at most64 callers may queue. SQL and transaction timeouts bound a stalled
+    borrower. A zero minimum avoids idle Lambda connections and import-time I/O.
+    """
+
+    def __init__(
+        self,
+        dsn: SecretStr,
+        environment: str,
+        *,
+        max_size: int,
+        retain_idle: bool = True,
+    ) -> None:
+        """Validate the same role/TLS/target policy before constructing a lazy pool."""
+        connection_factory(dsn, environment)
+        if type(max_size) is not int or not 1 <= max_size <= 4:
+            raise ConfigurationError("Invalid Identity pool bound")
+        self._lock = Lock()
+        self._opened = False
+        self._retain_idle = retain_idle
+        self._request_lease: ContextVar[_InvocationConnection | None] = ContextVar(
+            "clip_identity_request_connection", default=None
+        )
+        pool_type = ConnectionPool if retain_idle else NullConnectionPool
+        self._pool: ConnectionPool = pool_type(
+            conninfo=dsn.get_secret_value(),
+            kwargs=connection_kwargs(
+                dsn.get_secret_value(),
+                **{
+                    "passfile": "/dev/null",
+                    "connect_timeout": 3,
+                    "application_name": "clip-identity-pooled",
+                    "autocommit": True,
+                    "options": "-c statement_timeout=5000 -c lock_timeout=3000 -c idle_in_transaction_session_timeout=5000",
+                },
+            ),
+            configure=check_proxy_connection,
+            check=(
+                ConnectionPool.check_connection
+                if uses_proxy(dsn.get_secret_value())
+                else None
+            ),
+            min_size=0,
+            max_size=max_size,
+            max_waiting=64,
+            timeout=1,
+            max_idle=60,
+            open=False,
+        )
+
+    @contextmanager
+    def __call__(self) -> Iterator[Database]:
+        """Return an exclusive lease; pool context commits/rolls back before reuse."""
+        with self._lock:
+            if not self._opened:
+                self._pool.open(wait=False)
+                self._opened = True
+        invocation = self._request_lease.get()
+        if invocation is not None:
+            with invocation.borrow() as connection:
+                yield connection
+            return
+        with self._pool.connection(timeout=1) as connection:
+            yield connection
+
+    @asynccontextmanager
+    async def invocation(self) -> AsyncIterator[None]:
+        """Reuse physical Identity transport, never authorization, within one call.
+
+        Context propagates into both supported thread helpers. Every Identity
+        operation retains its original SQL/transaction. Cleanup is completed
+        through cancellation; the HTTP integration holds the terminal body until
+        this scope exits, so Lambda cannot freeze an idle retained connection.
+        """
+        if self._retain_idle:
+            raise ConfigurationError("Invocation cleanup requires a null pool")
+        if self._request_lease.get() is not None:
+            raise ConfigurationError("Nested Identity invocation scope")
+        invocation = _InvocationConnection(self._pool)
+        token = self._request_lease.set(invocation)
+        try:
+            yield
+        finally:
+            self._request_lease.reset(token)
+            cleanup = asyncio.create_task(asyncio.to_thread(invocation.close))
+            while True:
+                try:
+                    await asyncio.shield(cleanup)
+                    break
+                except asyncio.CancelledError:
+                    if cleanup.cancelled():
+                        raise
+                    if cleanup.done():
+                        cleanup.result()
+                        break
+
+    def close(self) -> None:
+        """Close only this app's pool after request and worker shutdown."""
+        with self._lock:
+            self._pool.close()
+
+
+def validate_database(
+    connect: Callable[[], AbstractContextManager[Database]], keys: TemporaryKeys
+) -> None:
     """Read-only startup audit of effective privileges, logging and stable keys.
 
     Reject elevated/wrong/session-switched roles, CREATE/TEMP, schema ownership,

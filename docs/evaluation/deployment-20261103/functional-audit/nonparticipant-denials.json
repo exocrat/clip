@@ -1,0 +1,24 @@
+{
+  "checks": [
+    {
+      "name": "anonymous-browse",
+      "status": 401,
+      "pass": true
+    },
+    {
+      "name": "anonymous-photo",
+      "status": 401,
+      "pass": true
+    },
+    {
+      "name": "nonparticipant-conversation",
+      "status": 404,
+      "pass": true
+    },
+    {
+      "name": "nonparticipant-entries",
+      "status": 404,
+      "pass": true
+    }
+  ]
+}

@@ -3,9 +3,29 @@
 Prepared on 2026-11-03 for `exocrat/clip`, from the actual
 `task/experiment-tooling-readiness` worktree. This plan is prepared **before
 commit, PR checks and merge**, as Suraj directed. Git integration does not
-approve the cloud actions described here. No deployment or load has run.
+approve the cloud actions described here. At initial preparation no deployment
+or load had run; subsequent execution and the current repair hold are described
+below and in the functional audit.
 
 ## Decision and approval state
+
+**Historical baseline:** the original starting inventory and cost window below
+describe preparation on2026-11-03, not current running state. The website has
+since been deployed; both existing c7i-flex.large hosts and two revision13API
+tasks were verified running during the functional audit, with RDS on the retained
+micro and the ALB present. Lambda is not yet deployed. Current local repairs and
+search optimisation are not on that website. The old execution window has
+expired: refresh account/resources/drift/billing, bind the final image digests,
+renew the concrete time/cost approval, and review the exact saved plan before
+any subsequent cloud apply. Do not replay the original creation steps.
+
+The direct-database fallback is preserved at `6193ca7`. The current
+[shared-pool plan](functional-audit/shared-pool-plan.md) supersedes the earlier
+local hold: shared RDS Proxy implementation is selected, with a concrete
+provisioning plan awaiting approval. A second database and RDS resizing remain
+unselected. The pilot now uses only ECS baseline and 100% Lambda, three
+repetitions each; older four-candidate descriptions below are historical. The approved1vCPU/task remains a planned allocation change;
+it is not part of the older image-only approval or evidence of an applied change.
 
 The normal running configuration is **two healthy ECS tasks on two hosts in
 both A and B**, including NFR-01–03 and the formal comparison. Suraj clarified
@@ -37,7 +57,7 @@ confirms the limits below. A changed topology, cost bound, target or exposure
 requires renewed cloud approval. Exact task-stop and restore approvals remain
 separate. No PR, review or merge approves either destructive experiment action.
 
-## Verified starting point
+## Original verified starting point — 2026-11-03
 
 The [inventory](inventory.json) contains the current read-only AWS observations.
 STS verified `arn:aws:iam::335523638354:user/surajs2`, account `335523638354`,
@@ -69,7 +89,7 @@ this local batch. The Git head is rechecked before integration.
 | Component | Proposed deployment and limit |
 |---|---|
 | Ingress | One public HTTPS ALB, two public subnets, port 443 only; default ECS target group. No public RDS or SSH rule. Use existing VPC/NAT. |
-| ECS app | Reviewed x86 image from the merged revision; 512 CPU units and 2,048 MiB per task; real Microsoft Identity, Conversations, Hybrid and Notifications enabled consistently in A/B. Normal desired count two, one task on each host. |
+| ECS app | Reviewed x86 image from the merged revision; 1,024 CPU units and 2,048 MiB per task (Suraj-approved allocation increase; not yet applied); real Microsoft Identity, Conversations, Hybrid and Notifications enabled consistently in A/B. Normal desired count two, one task on each host. |
 | Hosts | `c7i-flex.large`, at most two, same type in A/B. Resize the stopped retained ECS host in place; preserve its disk and identity. A second host, when needed, is owned by this run. Do not terminate the retained host. |
 | RDS source | Retain the existing micro instance and 20 GiB; start without replacement or deletion-protection changes. No database-class upgrade is silently authorized. |
 | Lambda B | Reviewed x86 image, 2,048 MiB, five-second timeout. Reserved concurrency 2 for smoke, proposed 10 before pilot; hard implementation maximum 20 is not permission to use 20. Verify DB headroom before adopting 10. No provisioned concurrency. |

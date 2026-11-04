@@ -1,5 +1,6 @@
 """Reusable ASGI composition for Identity, Listings, Search and Wanted/Saved."""
 
+import asyncio
 from collections.abc import AsyncIterator, Callable
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -10,7 +11,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from psycopg import AsyncConnection
 from psycopg.rows import dict_row
-from psycopg_pool import AsyncConnectionPool
+from psycopg_pool import AsyncConnectionPool, AsyncNullConnectionPool
 
 from app.contracts.health import CONTRACT_VERSION, HEALTH_ROUTE, HealthResponse
 from app.contracts.domain_types import CsrfToken, SessionView
@@ -22,6 +23,11 @@ import app.domains.conversations.public as conversations_public
 import app.domains.conversations.routes as conversations_routes
 from app.domains.conversations.notifications.runtime import notification_runtime
 from app.core.database import PoolFactory, create_async_connection_pool
+from app.core.database_transport import (
+    uses_proxy,
+    connection_kwargs,
+    check_async_proxy_connection,
+)
 from app.domains.listings.routes import (
     read_only_router as listings_read_only_router,
     router as listings_router,
@@ -55,7 +61,7 @@ async def _marketplace_lifespan(
     storage_factory: Callable[
         [str, str, str], S3ListingsImageStorage
     ] = S3ListingsImageStorage,
-    listings_pool_max_size: int = 10,
+    listings_pool_max_size: int = 6,
     hybrid_pool_max_size: int = 2,
     hybrid_worker_enabled: bool | None = None,
     read_only_listings: bool = False,
@@ -73,12 +79,32 @@ async def _marketplace_lifespan(
         yield
         return
 
-    pool: AsyncConnectionPool[AsyncConnection[dict[str, Any]]] = pool_factory(
-        conninfo=settings.database_url.get_secret_value(),
-        kwargs={"row_factory": dict_row},
-        min_size=1,
+    # Lambda freezes idle execution environments: retaining their DB connections
+    # would make reserved concurrency an insufficient bound on total connections.
+    # Null pools retain the concurrency/queue bounds and close unused leases.
+    selected_pool_factory = (
+        AsyncNullConnectionPool
+        if read_only_listings and pool_factory is AsyncConnectionPool
+        else pool_factory
+    )
+    pool: AsyncConnectionPool[AsyncConnection[dict[str, Any]]] = selected_pool_factory(
+        conninfo=settings.routed_database(settings.database_url).get_secret_value(),
+        kwargs=connection_kwargs(
+            settings.routed_database(settings.database_url).get_secret_value(),
+            row_factory=dict_row,
+        ),
+        configure=check_async_proxy_connection,
+        check=(
+            AsyncConnectionPool.check_connection
+            if uses_proxy(
+                settings.routed_database(settings.database_url).get_secret_value()
+            )
+            else None
+        ),
+        min_size=0 if read_only_listings else 1,
         max_size=listings_pool_max_size,
         timeout=5,
+        max_waiting=64,
         open=False,
     )
     try:
@@ -103,6 +129,7 @@ async def _marketplace_lifespan(
             settings,
             pool_max_size=hybrid_pool_max_size,
             enable_worker=hybrid_worker_enabled,
+            retain_idle_connections=not read_only_listings,
         ) as search:
             application.state.search_runtime = search
             application.state.wanted_store = (
@@ -175,7 +202,9 @@ async def application_lifespan(
     dsn = settings.database_dsn or settings.database_url
     try:
         if dsn is not None and not read_only_listings:
-            pool = conversation_pool_factory(dsn.get_secret_value())
+            pool = conversation_pool_factory(
+                settings.routed_database(dsn).get_secret_value()
+            )
             await pool.open(wait=False)
             application.state.database_pool = pool
         async with _marketplace_lifespan(
@@ -183,7 +212,7 @@ async def application_lifespan(
             settings,
             pool_factory=pool_factory,
             storage_factory=storage_factory,
-            listings_pool_max_size=1 if read_only_listings else 10,
+            listings_pool_max_size=1 if read_only_listings else 6,
             hybrid_pool_max_size=1 if read_only_listings else 2,
             hybrid_worker_enabled=False if read_only_listings else None,
             read_only_listings=read_only_listings,
@@ -264,13 +293,19 @@ def create_app(
     @asynccontextmanager
     async def lifespan(application: FastAPI) -> AsyncIterator[None]:
         """Bind this app's immutable configuration to the shared owned lifecycle."""
-        async with application_lifespan(
-            application,
-            settings,
-            conversation_pool_factory=pool_factory,
-            read_only_listings=listings_read_only,
-        ):
-            yield
+        try:
+            async with application_lifespan(
+                application,
+                settings,
+                conversation_pool_factory=pool_factory,
+                read_only_listings=listings_read_only,
+            ):
+                yield
+        finally:
+            # Workers finish before closing their shared Identity connection source.
+            binding = identity if identity is not None else identity_reads
+            if binding is not None and binding.close is not None:
+                await asyncio.to_thread(binding.close)
 
     # Health, Listings lifecycle and wanted-request author/read routes are mounted here.
     # Domain storage/auth integrations remain explicitly configured dependencies.

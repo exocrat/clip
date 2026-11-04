@@ -7,6 +7,13 @@ with SE-01/SE-02.
 
 ## Ownership and dependency boundary
 
+The [hosted functional repair](../docs/decisions/hosted-functional-repair.md) adds
+GET`/me/saved-listings/status` with repeated `listing_ids` (1–100 UUIDs). It
+returns deduplicated `{listing_id,saved}` items scoped only to the trusted caller.
+It discloses no listing content or other user's references and does not require
+resolving the caller's whole Saved collection. Eligibility remains current;
+responses are private/no-store. Save/unsave writes and existing pagination remain.
+
 Search owns Wanted Request records and private saved-listing references.
 Listings owns sale-listing records, their availability, catalogue, public
 summaries, and the authoritative title/description search index. Search does

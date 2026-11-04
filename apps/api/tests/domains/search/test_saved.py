@@ -52,6 +52,28 @@ def test_existing_pair_retry_needs_no_listing_lookup(account_class):
     asyncio.run(exercise())
 
 
+def test_batched_status_is_private_bounded_and_does_not_resolve_content():
+    """Only own requested saved pairs are read, even if targets are unavailable."""
+
+    async def exercise():
+        actor, store, identity, provider, service = setup()
+        first, second = uuid4(), uuid4()
+        store.saved_ids.return_value = {first}
+        result = await service.statuses(actor, [first, second, first])
+        assert [(x.listing_id, x.saved) for x in result.items] == [
+            (first, True),
+            (second, False),
+        ]
+        store.saved_ids.assert_awaited_once_with(actor.user_id, [first, second])
+        assert provider.calls == []
+        identity.eligible.return_value = False
+        with pytest.raises(PublicError):
+            await service.statuses(actor, [second])
+        assert store.saved_ids.await_count == 1
+
+    asyncio.run(exercise())
+
+
 @pytest.mark.parametrize("discoverable", [True, False])
 def test_new_save_requires_exact_current_target(discoverable):
     async def exercise():

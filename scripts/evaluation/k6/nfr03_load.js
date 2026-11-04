@@ -1,6 +1,8 @@
 // NFR-03 workload. Direct/local preparation stays loopback-only; a reviewed
 // coordinator must validate every gate before using its separate real mode.
 import http from 'k6/http';
+import { localCapacityWindow } from './local_capacity_window.js';
+import { plannedArrivalCount } from './core.js';
 import execution from 'k6/execution';
 import { Counter, Trend } from 'k6/metrics';
 import { sha256 } from 'k6/crypto';
@@ -8,6 +10,8 @@ import monotonic from 'k6/x/clipmonotonic';
 import { approvedApiTarget, comparisonPath, localApiTarget } from './comparison_cases.js';
 import { correctResponse, validSearchResponse } from './comparison_checks.js';
 import { preliminaryOutcome } from './comparison_outcomes.js';
+import { nfr03Order, nfr03CaseIndex } from './nfr03_schedule.js';
+import { validWantedItem, validWantedPage } from './nfr03_checks.js';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const MAX_RECONCILIATION_PAGES = 10;
@@ -51,18 +55,13 @@ const csrf = realMode ? __ENV.CLIP_REAL_RUN_CSRF : __ENV.CLIP_NFR03_LOCAL_CSRF;
 const origin = realMode ? __ENV.CLIP_NFR03_REAL_ORIGIN : __ENV.CLIP_NFR03_LOCAL_ORIGIN;
 if (typeof cookie !== 'string' || !cookie || /[\r\n]/.test(cookie) || typeof csrf !== 'string' || csrf.length < 32 || csrf.length > 128 || /[\r\n]/.test(csrf) || typeof origin !== 'string' || !(realMode ? /^https:\/\/[A-Za-z0-9.-]+(?::443)?$/.test(origin) : /^http:\/\/(?:127\.0\.0\.1|localhost):[1-9][0-9]{0,4}$/.test(origin))) throw Error('explicit_session_csrf_and_origin_required');
 
-const routeOrder = [];
-for (let i = 0; i < 30; i++) routeOrder.push('browse');
-for (let i = 0; i < 25; i++) routeOrder.push('search');
-for (let i = 0; i < 15; i++) routeOrder.push('detail');
-for (let i = 0; i < 10; i++) routeOrder.push('wanted');
-for (let i = 0; i < 10; i++) routeOrder.push('conversations');
-for (let i = 0; i < 9; i++) routeOrder.push('saved');
-routeOrder.push('wanted_create');
+const routeOrder = nfr03Order();
 const phases = {};
 const phase = (seconds, start) => ({ executor: 'constant-arrival-rate', rate: 50, timeUnit: '1s', duration: `${seconds}s`, startTime: `${start}s`, preAllocatedVUs: capacity.preAllocatedVUs, maxVUs: capacity.maxVUs, gracefulStop: '5s' });
-phases.nfr_warmup = phase(60, 0);
-phases.nfr_measured = phase(300, 65);
+const window = localCapacityWindow(__ENV, realMode, profile);
+phases.nfr_warmup = phase(window.warmup_seconds, 0);
+phases.nfr_measured = phase(window.measured_seconds, window.warmup_seconds + 5);
+const boundarySkipped = new Counter('clip_schedule_boundary_skipped');
 const issued = new Counter('clip_nfr03_issued');
 const outcomes = new Counter('clip_nfr03_outcomes');
 const createdRows = new Counter('clip_nfr03_created_rows');
@@ -76,7 +75,7 @@ function pageOk(body, size = 20, page = 1) {
   return body && typeof body === 'object' && !Array.isArray(body) && Array.isArray(body.items) && body.page === page && body.page_size === size && typeof body.has_next === 'boolean';
 }
 function validWanted(body) {
-  return pageOk(body) && body.items.some(item => item && item.request_id === profile.cases.wanted_request_id && typeof item.title === 'string' && typeof item.description === 'string' && typeof item.category_code === 'string' && typeof item.category_label === 'string');
+  return validWantedPage(body);
 }
 function validConversations(body) {
   return pageOk(body) && body.items.some(item => item && item.conversation_id === profile.cases.conversation_id && UUID.test(item.origin_id) && ['sale_listing','wanted_request'].includes(item.origin_kind) && typeof item.unread_count === 'number');
@@ -90,13 +89,28 @@ function validCreate(body, title, description) {
   return body && typeof body === 'object' && UUID.test(body.request_id) && body.title === title && body.description === description && body.category_code === profile.cases.category_code && body.state === 'open' && Number.isSafeInteger(body.revision) && body.revision >= 1;
 }
 
+/** Check the designated fixture before writes can move it off page one. */
+export function setup() {
+  const response = http.get(`${target}/wanted-requests/${profile.cases.wanted_request_id}`, {
+    headers: { Accept: 'application/json', Cookie: cookie }, redirects: 0, timeout: '5s',
+    tags: { nfr_id: 'nfr-03', configuration: profile.configuration, run_id: profile.run_id,
+      phase: 'nfr_preflight', route: 'wanted_fixture' },
+  });
+  if (response.status !== 200 || response.error_code !== 0) throw Error('wanted_fixture_preflight_failed');
+  const body = response.json();
+  if (!validWantedItem(body) || body.request_id !== profile.cases.wanted_request_id) throw Error('wanted_fixture_preflight_failed');
+}
+
 /** Issue one operation from the fixed 100-step route mix; raw response bodies are never emitted. */
 export default function () {
   const phaseName = execution.scenario.name;
   const iteration = execution.scenario.iterationInTest;
+  if (execution.scenario.iterationInTest >= plannedArrivalCount(phases[phaseName])) {
+    boundarySkipped.add(1, { phase: execution.scenario.name });
+    return;
+  }
   const kind = routeOrder[iteration % routeOrder.length];
-  const sampleIndex = Math.floor(iteration / routeOrder.length);
-  const caseIndex = sampleIndex % (kind === 'browse' ? 5 : kind === 'search' ? 3 : 2);
+  const caseIndex = nfr03CaseIndex(kind, iteration);
   let path, method = 'GET', payload, expectedCheck;
   let operationId;
   if (kind === 'browse') { path = `${target}${browsePaths[caseIndex]}`; expectedCheck = body => correctResponse(200, body, profile.cases.browse[caseIndex].request, profile.cases.browse[caseIndex].expected); }
@@ -147,7 +161,8 @@ export default function () {
 /** Reconcile every scheduled write by its unique synthetic title after measurement. */
 export function teardown() {
   const expectedByTitle = new Map();
-  for (const [phaseName, iterations] of [['nfr_warmup', 3000], ['nfr_measured', 15000]]) {
+  for (const [phaseName, scenario] of Object.entries(phases)) {
+    const iterations = plannedArrivalCount(scenario);
     for (let iteration = 0; iteration < iterations; iteration += 1) {
       if (routeOrder[iteration % routeOrder.length] !== 'wanted_create') continue;
       const operationId = uuid4(`${profile.run_id}|${profile.configuration}|${phaseName}|${iteration}`);

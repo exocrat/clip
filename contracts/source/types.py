@@ -541,6 +541,44 @@ class ImageDelivery(ContractModel):
     url_expires_at: UtcInstant
 
 
+class ImageDeliveryQuery(ContractModel):
+    """Bound one browser batch; repeated query values are opaque image IDs."""
+
+    image_ids: list[ImageId] = Field(min_length=1, max_length=100)
+
+
+class ImageDeliveryItem(ContractModel):
+    """Missing and hidden images both have no link; never disclose their state."""
+
+    image_id: ImageId
+    delivery: ImageDelivery | None
+
+
+class ImageDeliveryBatch(ContractModel):
+    """Private short-lived links for only the requested authorized images."""
+
+    items: list[ImageDeliveryItem]
+
+
+class SavedStatusQuery(ContractModel):
+    """Bound a page's private saved-status lookup without resolving listing data."""
+
+    listing_ids: list[ListingId] = Field(min_length=1, max_length=100)
+
+
+class SavedListingStatus(ContractModel):
+    """Only the caller's own saved relationship, including unavailable references."""
+
+    listing_id: ListingId
+    saved: bool
+
+
+class SavedStatusBatch(ContractModel):
+    """One status per requested ID; no other user's references or listing content."""
+
+    items: list[SavedListingStatus]
+
+
 class CreateListingRequest(ContractModel):
     """Complete new listing command; owner and timestamps are server-derived."""
 

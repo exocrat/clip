@@ -27,6 +27,8 @@ mock_provider "aws" {
 }
 
 variables {
+  # Terraform's mock apply needs ephemeral inputs explicitly bound in both phases.
+  database_proxy_passwords                  = { identity = "synthetic-only", marketplace = "synthetic-only", conversations = "synthetic-only" }
   nfr07_restored_database_url               = "postgresql://restore-pending.invalid/restore_pending"
   nfr07_restored_identity_database_url      = "postgresql://restore-pending.invalid/restore_pending"
   nfr07_restored_conversations_database_url = "postgresql://restore-pending.invalid/restore_pending"

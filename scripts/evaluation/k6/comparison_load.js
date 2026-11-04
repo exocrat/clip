@@ -1,6 +1,7 @@
 // EXP-02 scheduled workload. The separate real-target path is only an internal
 // handoff; this script does not authorize a deployed run or an NFR result.
 import http from 'k6/http';
+import { plannedArrivalCount } from './core.js';
 import execution from 'k6/execution';
 import { Counter, Trend } from 'k6/metrics';
 import monotonic from 'k6/x/clipmonotonic';
@@ -42,6 +43,7 @@ if (parityMode) {
 const cookie = realMode ? __ENV.CLIP_REAL_RUN_SESSION_COOKIE : __ENV.CLIP_COMPARISON_LOCAL_COOKIE;
 if (typeof cookie !== 'string' || !cookie || /[\r\n]/.test(cookie)) throw Error('explicit_local_load_inputs_required');
 
+const boundarySkipped = new Counter('clip_schedule_boundary_skipped');
 const issued = new Counter('clip_comparison_issued');
 const outcomes = new Counter('clip_comparison_outcomes');
 const elapsed = new Trend('clip_comparison_elapsed_ms', true);
@@ -57,6 +59,10 @@ export const options = {
 export default function () {
   const phase = execution.scenario.name;
   const iteration = execution.scenario.iterationInTest;
+  if (execution.scenario.iterationInTest >= plannedArrivalCount(scenarios[phase])) {
+    boundarySkipped.add(1, { phase: execution.scenario.name });
+    return;
+  }
   const sequenceStart = sequenceStartForScenario(sequenceStarts, phase);
   const item = caseForIteration(cases, sequenceStart, iteration);
   const index = (sequenceStart + iteration) % cases.length;

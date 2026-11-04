@@ -1,0 +1,251 @@
+{
+  "purpose": "local real-model CPU diagnostic; no ECS quota/hardware or NFR claim",
+  "samples": [
+    {
+      "cache": "miss",
+      "elapsed_ms": 5.500234008650295
+    },
+    {
+      "cache": "miss",
+      "elapsed_ms": 5.61776700487826
+    },
+    {
+      "cache": "miss",
+      "elapsed_ms": 4.869294993113726
+    },
+    {
+      "cache": "miss",
+      "elapsed_ms": 4.689374996814877
+    },
+    {
+      "cache": "miss",
+      "elapsed_ms": 6.071322000934742
+    },
+    {
+      "cache": "miss",
+      "elapsed_ms": 4.398175005917437
+    },
+    {
+      "cache": "miss",
+      "elapsed_ms": 4.224688993417658
+    },
+    {
+      "cache": "miss",
+      "elapsed_ms": 4.210917002637871
+    },
+    {
+      "cache": "miss",
+      "elapsed_ms": 4.781630006618798
+    },
+    {
+      "cache": "miss",
+      "elapsed_ms": 5.19994500791654
+    },
+    {
+      "cache": "miss",
+      "elapsed_ms": 4.991466004867107
+    },
+    {
+      "cache": "miss",
+      "elapsed_ms": 5.042335003963672
+    },
+    {
+      "cache": "miss",
+      "elapsed_ms": 6.056000987882726
+    },
+    {
+      "cache": "miss",
+      "elapsed_ms": 5.395394007791765
+    },
+    {
+      "cache": "miss",
+      "elapsed_ms": 6.385846005287021
+    },
+    {
+      "cache": "miss",
+      "elapsed_ms": 5.367370002204552
+    },
+    {
+      "cache": "miss",
+      "elapsed_ms": 4.846987998462282
+    },
+    {
+      "cache": "miss",
+      "elapsed_ms": 7.2933680057758465
+    },
+    {
+      "cache": "miss",
+      "elapsed_ms": 4.4940829975530505
+    },
+    {
+      "cache": "miss",
+      "elapsed_ms": 4.925390996504575
+    },
+    {
+      "cache": "miss",
+      "elapsed_ms": 4.863555994234048
+    },
+    {
+      "cache": "miss",
+      "elapsed_ms": 4.859182008658536
+    },
+    {
+      "cache": "miss",
+      "elapsed_ms": 5.185618007089943
+    },
+    {
+      "cache": "miss",
+      "elapsed_ms": 6.714885996188968
+    },
+    {
+      "cache": "miss",
+      "elapsed_ms": 5.51180899492465
+    },
+    {
+      "cache": "miss",
+      "elapsed_ms": 5.866396008059382
+    },
+    {
+      "cache": "miss",
+      "elapsed_ms": 5.642814008751884
+    },
+    {
+      "cache": "miss",
+      "elapsed_ms": 5.007947998819873
+    },
+    {
+      "cache": "miss",
+      "elapsed_ms": 6.054687997675501
+    },
+    {
+      "cache": "miss",
+      "elapsed_ms": 7.919088006019592
+    },
+    {
+      "cache": "hit",
+      "elapsed_ms": 0.06373699579853565
+    },
+    {
+      "cache": "hit",
+      "elapsed_ms": 0.022177991922944784
+    },
+    {
+      "cache": "hit",
+      "elapsed_ms": 0.01840299228206277
+    },
+    {
+      "cache": "hit",
+      "elapsed_ms": 0.015126002836041152
+    },
+    {
+      "cache": "hit",
+      "elapsed_ms": 0.014286008081398904
+    },
+    {
+      "cache": "hit",
+      "elapsed_ms": 0.013501994544640183
+    },
+    {
+      "cache": "hit",
+      "elapsed_ms": 0.013878001482225955
+    },
+    {
+      "cache": "hit",
+      "elapsed_ms": 0.01406800583936274
+    },
+    {
+      "cache": "hit",
+      "elapsed_ms": 0.014260993339121342
+    },
+    {
+      "cache": "hit",
+      "elapsed_ms": 0.01223399885930121
+    },
+    {
+      "cache": "hit",
+      "elapsed_ms": 0.012639997294172645
+    },
+    {
+      "cache": "hit",
+      "elapsed_ms": 0.012286996934562922
+    },
+    {
+      "cache": "hit",
+      "elapsed_ms": 0.01744600012898445
+    },
+    {
+      "cache": "hit",
+      "elapsed_ms": 0.013106007827445865
+    },
+    {
+      "cache": "hit",
+      "elapsed_ms": 0.012403004802763462
+    },
+    {
+      "cache": "hit",
+      "elapsed_ms": 0.012813994544558227
+    },
+    {
+      "cache": "hit",
+      "elapsed_ms": 0.012756994692608714
+    },
+    {
+      "cache": "hit",
+      "elapsed_ms": 0.012026008334942162
+    },
+    {
+      "cache": "hit",
+      "elapsed_ms": 0.01242199505213648
+    },
+    {
+      "cache": "hit",
+      "elapsed_ms": 0.0122560013551265
+    },
+    {
+      "cache": "hit",
+      "elapsed_ms": 0.01231000351253897
+    },
+    {
+      "cache": "hit",
+      "elapsed_ms": 0.012190008419565856
+    },
+    {
+      "cache": "hit",
+      "elapsed_ms": 0.013112003216519952
+    },
+    {
+      "cache": "hit",
+      "elapsed_ms": 0.012349992175586522
+    },
+    {
+      "cache": "hit",
+      "elapsed_ms": 0.013331999070942402
+    },
+    {
+      "cache": "hit",
+      "elapsed_ms": 0.01197800156660378
+    },
+    {
+      "cache": "hit",
+      "elapsed_ms": 0.012299002264626324
+    },
+    {
+      "cache": "hit",
+      "elapsed_ms": 0.012737000361084938
+    },
+    {
+      "cache": "hit",
+      "elapsed_ms": 0.012443997547961771
+    },
+    {
+      "cache": "hit",
+      "elapsed_ms": 0.012176999007351696
+    }
+  ],
+  "startup_ms": 1175.8616869919933,
+  "uncached_helper_cpu_ms_per_query": 4.666666666666667,
+  "uncached_parent_cpu_ms_per_query": 1.0387856333333334,
+  "cached_parent_cpu_ms_per_query": 0.015568599999999747,
+  "complete": true,
+  "source_sha256": "3eb7e2333f785efb5716cc15dacb5b7332da8f62af37e8bfec4d5703bcfa69f7"
+}

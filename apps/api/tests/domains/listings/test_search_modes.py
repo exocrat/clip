@@ -3,7 +3,9 @@
 import asyncio
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
+from types import SimpleNamespace
+from psycopg.pq import TransactionStatus
 
 import pytest
 from fastapi.testclient import TestClient
@@ -30,11 +32,14 @@ def test_mode_text_sort_dispatch(mode, sort, text):
     async def exercise():
         helper = object()
         store = PostgresListingsStore(AsyncMock(), 500000, hybrid_helper=helper)
-        connection = object()
+        connection = MagicMock(autocommit=True)
+        connection.info.transaction_status = TransactionStatus.IDLE
+        embedding = SimpleNamespace(spec=SimpleNamespace(pipeline_id=bytes(32)))
+        snapshot = object()
         entered = []
 
         @asynccontextmanager
-        async def connect():
+        async def connect(pool=None):
             entered.append(True)
             yield connection
 
@@ -45,8 +50,12 @@ def test_mode_text_sort_dispatch(mode, sort, text):
                 MODULE + ".read_browse_page", AsyncMock(return_value=page)
             ) as keyword,
             patch(
-                MODULE + ".search_hybrid_page", AsyncMock(return_value=page)
+                MODULE + ".encode_hybrid_query", AsyncMock(return_value=embedding)
+            ) as encoded,
+            patch(
+                MODULE + ".read_snapshot", AsyncMock(return_value=snapshot)
             ) as hybrid,
+            patch(MODULE + ".score_snapshot", return_value=page) as score,
         ):
             request = ListingQuery(q=text, search_mode=mode, sort=sort)
             if sort == "relevance" and not (text or "").strip():
@@ -60,14 +69,17 @@ def test_mode_text_sort_dispatch(mode, sort, text):
             assert await store.browse_available_listings(request, NOW) == page
             normalized = normalize_query(request)
             if mode == "hybrid" and normalized.q:
+                encoded.assert_awaited_once_with(helper, normalized)
                 hybrid.assert_awaited_once_with(
                     connection,
-                    helper,
                     normalized,
                     NOW,
                     500000,
+                    embedding,
+                    {},
                     relevance=sort == "relevance",
                 )
+                score.assert_called_once()
                 keyword.assert_not_awaited()
             else:
                 keyword.assert_awaited_once_with(

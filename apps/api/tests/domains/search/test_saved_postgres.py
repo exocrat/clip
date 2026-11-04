@@ -126,6 +126,19 @@ async def exercise(value):
             original = results[0].json()
             assert all(result.json() == original for result in results)
             assert set(original) == {"listing_id", "saved_at"}
+            statuses = await client.get(
+                "/me/saved-listings/status",
+                params=[
+                    ("listing_ids", str(first)),
+                    ("listing_ids", str(identifiers[1])),
+                ],
+            )
+            assert statuses.status_code == 200
+            assert statuses.json()["items"] == [
+                {"listing_id": str(first), "saved": True},
+                {"listing_id": str(identifiers[1]), "saved": False},
+            ]
+            assert statuses.headers["cache-control"] == "private, no-store"
             current[0] = CallerContext(
                 actors[1], "temporary", datetime.now(UTC) + timedelta(minutes=5)
             )

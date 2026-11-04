@@ -204,6 +204,23 @@ def build_queries(plan: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
         ],
     }
 
+    proxy = resources.get("database_proxy")
+    if proxy is not None:
+        proxy_dims = [{"Name": "ProxyName", "Value": proxy["name"]}]
+        groups["proxy"] = [
+            _query("proxy_" + str(index), "AWS/RDS", metric, proxy_dims, stat)
+            for index, (metric, stat) in enumerate(
+                [
+                    ("ClientConnections", "Sum"),
+                    ("DatabaseConnections", "Sum"),
+                    ("DatabaseConnectionsCurrentlyBorrowed", "Sum"),
+                    ("DatabaseConnectionsCurrentlySessionPinned", "Sum"),
+                    ("DatabaseConnectionsBorrowLatency", "Average"),
+                    ("DatabaseConnectionsSetupFailed", "Sum"),
+                    ("MaxDatabaseConnectionsAllowed", "Sum"),
+                ]
+            )
+        ]
     lambda_arn = resources["lambda_function_arn"]
     lambda_target_arn = resources["lambda_target_group_arn"]
     if plan["configuration"] == "B":
@@ -495,9 +512,9 @@ def main() -> int:
             or args.output_dir.parts[:3] != ("docs", "evaluation", "experiment-runs")
         ):
             raise ValueError("output_directory_must_be_relative")
-        import boto3  # type: ignore[import-untyped]
+        from data.generators.reference_login import sdk_profile_session
 
-        session = boto3.Session(
+        session = sdk_profile_session(
             profile_name=plan["aws_profile"], region_name=plan["region"]
         )
         result = capture(

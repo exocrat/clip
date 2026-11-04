@@ -88,6 +88,8 @@ DOCKER_BUILDKIT=1 docker --context default build \
   --pull=false \
   --network=none \
   --platform linux/amd64 \
+  --provenance=false \
+  --sbom=false \
   --file apps/api/Dockerfile.lambda \
   --build-arg "API_IMAGE=$api_image" \
   --build-arg "LWA_IMAGE=$adapter_image" \

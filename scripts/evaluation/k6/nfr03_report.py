@@ -66,13 +66,16 @@ def _quantile(values: list[float], probability: float) -> float | None:
     return ordered[lower] + (ordered[upper] - ordered[lower]) * (position - lower)
 
 
-def summarize(points: list[dict[str, Any]], profile: dict[str, Any]) -> dict[str, Any]:
+def summarize(
+    points: list[dict[str, Any]], profile: dict[str, Any], *, local_short: bool = False
+) -> dict[str, Any]:
+    """Validate complete write accounting, with an explicit local-only short window."""
     if (
         profile.get("nfr_id") != "nfr-03"
         or profile.get("purpose") != "nfr-local-preparation"
         or profile.get("rate_rps") != 50
-        or profile.get("warmup_seconds") != 60
-        or profile.get("measured_seconds") != 300
+        or profile.get("warmup_seconds") != (10 if local_short else 60)
+        or profile.get("measured_seconds") != (60 if local_short else 300)
     ):
         raise ValueError("invalid_nfr03_profile")
     case_hash = hashlib.sha256(
@@ -87,7 +90,11 @@ def summarize(points: list[dict[str, Any]], profile: dict[str, Any]) -> dict[str
         r"[0-9a-f]{64}", profile.get("fixture_binding_sha256", "")
     ):
         raise ValueError("nfr03_profile_hash_mismatch")
-    expected = {"nfr_warmup": 3000, "nfr_measured": 15000}
+    expected = {
+        "nfr_warmup": 50 * profile["warmup_seconds"],
+        "nfr_measured": 50 * profile["measured_seconds"],
+    }
+    expected_writes = sum(expected.values()) // 100
     # Keep the metric accumulator flexible at the ingestion boundary: points
     # carry different fields, while the report validates their relationships
     # before serializing any result.
@@ -122,6 +129,7 @@ def summarize(points: list[dict[str, Any]], profile: dict[str, Any]) -> dict[str
     reconciliation_statuses: Counter[str] = Counter()
     reconciled_rows: dict[str, str] = {}
     reconciliation_http_requests = 0
+    preflight_http_requests = 0
     for point in points:
         if point.get("type") != "Point" or point.get("metric") not in tracked:
             continue
@@ -129,6 +137,19 @@ def summarize(points: list[dict[str, Any]], profile: dict[str, Any]) -> dict[str
         tags = point.get("data", {}).get("tags") or {}
         if not isinstance(tags, dict):
             raise ValueError("invalid_metric_tags")
+        if metric == "http_reqs" and tags.get("phase") == "nfr_preflight":
+            if (
+                tags.get("route") != "wanted_fixture"
+                or tags.get("nfr_id") != "nfr-03"
+                or tags.get("run_id") != profile.get("run_id")
+                or tags.get("configuration") != profile.get("configuration")
+            ):
+                raise ValueError("preflight_request_identity_mismatch")
+            count = _value(point)
+            if not count.is_integer():
+                raise ValueError("preflight_request_count_must_be_integer")
+            preflight_http_requests += int(count)
+            continue
         if metric == "http_reqs" and tags.get("route") == "wanted_reconcile":
             if (
                 tags.get("nfr_id") != "nfr-03"
@@ -257,7 +278,7 @@ def summarize(points: list[dict[str, Any]], profile: dict[str, Any]) -> dict[str
             created_rows[operation_id] = request_id
 
     phases = {}
-    accounting_complete = True
+    accounting_complete = preflight_http_requests == 1
     delivery_complete = True
     for phase, row in data.items():
         outcome_total = sum(row["outcomes"].values())
@@ -328,7 +349,7 @@ def summarize(points: list[dict[str, Any]], profile: dict[str, Any]) -> dict[str
     unissued_reconciled_writes = sorted(set(reconciled_rows) - operation_ids)
     reconciliation_complete = (
         reconciliation_statuses == Counter({"complete": 1})
-        and len(reconciled_rows) == 180
+        and len(reconciled_rows) == expected_writes
         and not missing_reconciled_writes
         and not unissued_reconciled_writes
     )
@@ -338,6 +359,7 @@ def summarize(points: list[dict[str, Any]], profile: dict[str, Any]) -> dict[str
         if operation_outcomes.get(operation_id) != "correct"
     )
     return {
+        "local_short_diagnostic": local_short,
         "preview_only": True,
         "nfr_id": "nfr-03",
         "configuration": profile["configuration"],
@@ -348,6 +370,7 @@ def summarize(points: list[dict[str, Any]], profile: dict[str, Any]) -> dict[str
         "execution_permitted": False,
         "nfr_accepted": False,
         "accounting_complete": accounting_complete,
+        "preflight_http_requests": preflight_http_requests,
         "delivery_complete": delivery_complete,
         "write_reconciliation_complete": reconciliation_complete,
         "latency_timing_verified": False,
@@ -362,7 +385,7 @@ def summarize(points: list[dict[str, Any]], profile: dict[str, Any]) -> dict[str
         "phases": phases,
         "write_reconciliation": {
             "operation_ids_issued": len(operation_ids),
-            "expected_total_including_warmup": 180,
+            "expected_total_including_warmup": expected_writes,
             "operation_ids_with_outcome": len(operation_outcomes),
             "created_request_ids_by_operation_id": created_rows,
             "reconciled_request_ids_by_operation_id": reconciled_rows,

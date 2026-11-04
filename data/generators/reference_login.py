@@ -132,3 +132,12 @@ def sdk_session(profile, region):
             CredentialResolver([CliLoginProvider(profile, executable)]),
         )
     return boto3.Session(botocore_session=session, region_name=region)
+
+
+def sdk_profile_session(*, profile_name, region_name):
+    """Use explicit named-profile keyword arguments in experiment entry points.
+
+    This preserves the injected boto3-style factory signature while reusing the
+    credential-private CLI-login refresh bridge. No default profile is accepted.
+    """
+    return sdk_session(profile_name, region_name)

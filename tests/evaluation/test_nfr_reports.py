@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+import pytest
 from uuid import uuid4
 
 from scripts.evaluation.k6.nfr03_report import summarize as summarize_nfr03
@@ -61,7 +62,7 @@ def test_nfr02_counts_timeouts_in_the_issued_request_denominator():
     assert report["nfr_accepted"] is False
 
 
-def _nfr03_inputs():
+def _nfr03_inputs(*, short=False):
     cases = {"synthetic": True}
     case_hash = hashlib.sha256(
         json.dumps(
@@ -78,12 +79,27 @@ def _nfr03_inputs():
         "cases": cases,
         "case_bundle_sha256": case_hash,
         "rate_rps": 50,
-        "warmup_seconds": 60,
-        "measured_seconds": 300,
+        "warmup_seconds": 10 if short else 60,
+        "measured_seconds": 60 if short else 300,
     }
-    points = []
+    points = [
+        _point(
+            "http_reqs",
+            1,
+            {
+                "nfr_id": "nfr-03",
+                "configuration": "A",
+                "run_id": profile["run_id"],
+                "phase": "nfr_preflight",
+                "route": "wanted_fixture",
+            },
+        )
+    ]
     operations = []
-    for phase, phase_total in (("nfr_warmup", 3000), ("nfr_measured", 15000)):
+    for phase, phase_total in (
+        ("nfr_warmup", 50 * profile["warmup_seconds"]),
+        ("nfr_measured", 50 * profile["measured_seconds"]),
+    ):
         identity = {
             "nfr_id": "nfr-03",
             "configuration": "A",
@@ -213,5 +229,24 @@ def test_nfr03_checks_all_routes_and_reconciles_every_write():
         )
     )
     incomplete = summarize_nfr03(points, profile)
+    assert incomplete["delivery_complete"] is False
+    assert incomplete["threshold_met_in_preview"] is False
+
+
+def test_short_local_window_cannot_be_reported_with_formal_defaults():
+    """Short runs keep exact write accounting and cannot become formal passes."""
+    points, profile = _nfr03_inputs(short=True)
+    with pytest.raises(ValueError, match="invalid_nfr03_profile"):
+        summarize_nfr03(points, profile)
+    report = summarize_nfr03(points, profile, local_short=True)
+    assert report["accounting_complete"] is True
+    assert report["delivery_complete"] is True
+    assert report["write_reconciliation_complete"] is True
+    assert report["denominator_all_issued_measured_operations"] == 3000
+    assert report["nfr_accepted"] is False
+    profile = _nfr_profile("nfr-02") | {"warmup_seconds": 10, "measured_seconds": 60}
+    with pytest.raises(ValueError, match="NFR schedule mismatch"):
+        summarize_nfr01_02([], profile)
+    incomplete = summarize_nfr01_02([], profile, local_short=True)
     assert incomplete["delivery_complete"] is False
     assert incomplete["threshold_met_in_preview"] is False

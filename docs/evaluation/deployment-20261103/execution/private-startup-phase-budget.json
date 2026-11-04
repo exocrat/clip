@@ -1,0 +1,34 @@
+{
+  "phase": "private source-A startup and inspection",
+  "review_deadline_utc": "2026-11-03T18:25:00Z",
+  "automatic_shutdown": false,
+  "basis": "Conservative two-hour allocation per running host and source RDS; actual billing reconciled later. Existing ingress has its separate phase estimate.",
+  "resources": [
+    {
+      "id": "i-086045c48487471de",
+      "launch_time_utc": "2026-11-03T16:25:51Z",
+      "hours": "2",
+      "usd_per_hour": "0.08479",
+      "estimate_usd": "0.16958",
+      "cleanup": "Preserve original instance/disk; approved shutdown/restore type and original SGs."
+    },
+    {
+      "id": "i-08e368391d905310e",
+      "launch_time_utc": "2026-11-03T16:36:52Z",
+      "hours": "2",
+      "usd_per_hour": "0.08479",
+      "estimate_usd": "0.16958",
+      "root_volume": "vol-090eb87915db43230",
+      "cleanup": "Run-owned instance; exact reviewed detach/terminate plan required."
+    },
+    {
+      "id": "clip-shared-test-postgres",
+      "hours": "2",
+      "usd_per_hour": "0.021",
+      "estimate_usd": "0.042",
+      "cleanup": "Retain database/data/backups; approved stop outside backup/measurement window."
+    }
+  ],
+  "compute_total_estimate_usd": "0.38116",
+  "does_not_include": "ALB/LCU, NAT, retained storage/IP, ECR and logging; tracked separately or pending billing; not final project accounting"
+}

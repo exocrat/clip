@@ -12,6 +12,8 @@ from app.contracts.domain_types import (
     SaveListingRequest,
     SavedListingAck,
     SavedListingView,
+    SavedStatusQuery,
+    SavedStatusBatch,
     StartWantedResponse,
     WantedDiscoveryQuery,
     WantedRequestId,
@@ -22,6 +24,13 @@ from app.contracts.domain_types import (
 )
 
 HTTP_OPERATIONS = (
+    {
+        "method": "GET",
+        "path": "/me/saved-listings/status",
+        "operation_id": "search_read_saved_status_batch",
+        "query": SavedStatusQuery,
+        "response": SavedStatusBatch,
+    },
     {
         "method": "GET",
         "path": "/wanted-requests",

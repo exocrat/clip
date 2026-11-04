@@ -117,12 +117,20 @@ def reviewed_disposable_database(tmp_path_factory, reviewed_migration_directory)
 
 
 @contextmanager
-def disposable_identity_database(root, migration_directory=None):
+def disposable_identity_database(
+    root, migration_directory=None, *, profile_limits=False, profile_memory_gib=2
+):
     """Reusable owned local test DB only; no caller-selected DSN or retained target.
 
     The explicit UI preview shares the same no-network, ephemeral PostgreSQL and
     migration path as tests; always remove only the container created here.
+    The local search profiler may impose2CPU/2GiB container limits and inspect
+    this owned container's aggregate CPU counter. No AWS hardware is emulated.
     """
+    if type(profile_limits) is not bool:
+        raise ValueError("Invalid local profile limits")
+    if type(profile_memory_gib) is not int or profile_memory_gib not in (1, 2):
+        raise ValueError("Invalid local profile memory")
     migration_directory = migration_directory or ROOT / "database/migrations"
     root.chmod(0o700)
     socket = root / "socket"
@@ -175,6 +183,11 @@ def disposable_identity_database(root, migration_directory=None):
             + [
                 "run",
                 "--detach",
+                *(
+                    ["--cpus", "2", "--memory", f"{profile_memory_gib}g"]
+                    if profile_limits
+                    else []
+                ),
                 "--network",
                 "none",
                 "--stop-timeout",
@@ -193,6 +206,11 @@ def disposable_identity_database(root, migration_directory=None):
                 "POSTGRES_INITDB_ARGS=--auth-local=scram-sha-256 --auth-host=scram-sha-256",
                 "postgres:18.6-bookworm",
                 "postgres",
+                *(
+                    ["-c", "max_connections=78", "-c", "shared_buffers=128MB"]
+                    if profile_limits
+                    else []
+                ),
                 "-c",
                 "unix_socket_directories=/var/run/postgresql,/run/clip-identity",
                 "-c",
@@ -235,6 +253,9 @@ def disposable_identity_database(root, migration_directory=None):
             },
             phase="migration",
         )
+        if profile_limits:
+            connect.profile_container_id = container
+            connect.profile_docker = tuple(docker)
         yield connect
     finally:
         if container:

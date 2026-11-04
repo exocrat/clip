@@ -1,0 +1,43 @@
+{
+  "at": "2026-11-03T19:14:39.237Z",
+  "checks": [
+    {
+      "name": "buyer-thread-readiness-after-reload",
+      "composer": true,
+      "enabled": true,
+      "keyGate": false,
+      "keyLost": false,
+      "keySetupError": false,
+      "alerts": 0
+    },
+    {
+      "name": "seller-thread-readiness",
+      "composer": true,
+      "enabled": true,
+      "keyGate": false,
+      "keyLost": false,
+      "keySetupError": false,
+      "alerts": 0
+    },
+    {
+      "name": "buyer-to-seller",
+      "submitted": true,
+      "displayed": true,
+      "observedMilliseconds": 2536,
+      "formalNfrMeasurement": false
+    },
+    {
+      "name": "seller-to-buyer",
+      "submitted": true,
+      "displayed": true,
+      "observedMilliseconds": 2031,
+      "formalNfrMeasurement": false
+    },
+    {
+      "name": "stored-entry-projection",
+      "status": 200,
+      "itemCount": 2,
+      "plaintextFieldPresent": false
+    }
+  ]
+}

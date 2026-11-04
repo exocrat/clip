@@ -433,7 +433,7 @@ def run(
     plan: dict[str, Any], approval: dict[str, Any], *, profile_name: str | None = None
 ) -> dict[str, Any]:
     """Run one exact approved task-stop and bounded read observation."""
-    import boto3  # type: ignore[import-untyped]
+    from data.generators.reference_login import sdk_profile_session
 
     target = _load_target_plan(plan)
     inspect_target(target)
@@ -441,7 +441,7 @@ def run(
         raise ValueError("aws_profile_mismatch")
     cookie = os.environ.get("CLIP_NFR06_SESSION_COOKIE", "")
     check_session_identity(target, cookie)
-    session = boto3.Session(
+    session = sdk_profile_session(
         profile_name=target["aws_profile"], region_name=plan["region"]
     )
     sts = session.client("sts")

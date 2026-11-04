@@ -35,6 +35,8 @@ FROM python:3.14.8-slim-trixie AS runtime
 # the installed OS roots while keeping sslrootcert=system and verify-full intact.
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
+    OPENBLAS_NUM_THREADS=1 \
+    OMP_NUM_THREADS=1 \
     PATH=/opt/venv/bin:$PATH \
     CLIP_ENVIRONMENT=production \
     CLIP_DEBUG=false \

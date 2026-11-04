@@ -38,6 +38,83 @@ from apps.api.tests.domains.listings.test_embedding_postgres import (
 from apps.api.tests.domains.listings.test_embedding_client import FaultClient
 
 
+def test_runtime_column_grants_allow_claim_and_publication():
+    """Catch the deployed missing-grant failure using a real restricted local role."""
+    asyncio.run(exercise_runtime_grants(target()))
+
+
+async def exercise_runtime_grants(value):
+    """Apply only the proposed worker columns in the owned disposable database.
+
+    Coordinate vectors prove permission/transaction behavior, not search quality.
+    The target guard refuses every retained or remote database before any DDL.
+    """
+    from psycopg.errors import InsufficientPrivilege
+    from apps.api.tests.domains.listings.test_embedding_postgres import PARTS
+
+    async with await connect(value) as connection:
+        role = "clip_test_marketplace_app"
+        assert (
+            await (
+                await connection.execute(
+                    "SELECT 1 FROM pg_roles WHERE rolname=%s", (role,)
+                )
+            ).fetchone()
+            is None
+        )
+        store = EmbeddingStore(connection)
+        spec = math_pipeline(97651)
+        await store.register(spec)
+        await store.set_state(spec, "building")
+        listing = None
+        created = False
+        try:
+            async with connection.transaction():
+                listing = await seed_listing(connection, 97651)
+            await connection.execute(
+                "CREATE ROLE clip_test_marketplace_app NOLOGIN NOINHERIT"
+            )
+            created = True
+            await connection.execute(
+                "GRANT USAGE ON SCHEMA listings TO clip_test_marketplace_app"
+            )
+            await connection.execute(
+                "GRANT SELECT ON listings.sale_listings,listings.embedding_pipelines,listings.embedding_generations,listings.embedding_chunks TO clip_test_marketplace_app"
+            )
+            await connection.execute(
+                "GRANT UPDATE(updated_at) ON listings.sale_listings TO clip_test_marketplace_app"
+            )
+            await connection.execute("SET ROLE clip_test_marketplace_app")
+            with pytest.raises(InsufficientPrivilege):
+                await store.claim(spec)
+            await connection.execute("RESET ROLE")
+            await connection.execute(
+                (
+                    ROOT / "database/roles/marketplace-embedding-worker.sql.proposed"
+                ).read_text()
+            )
+            await connection.execute("SET ROLE clip_test_marketplace_app")
+            job = await store.claim(spec)
+            assert job is not None and job.listing_id == listing
+            assert await store.complete(job, PARTS, 1)
+            row = await (
+                await connection.execute(
+                    "SELECT state FROM listings.embedding_generations WHERE generation_id=%s",
+                    (job.generation_id,),
+                )
+            ).fetchone()
+            assert row == {"state": "ready"}
+        finally:
+            await connection.execute("RESET ROLE")
+            if created:
+                await connection.execute("DROP OWNED BY clip_test_marketplace_app")
+                await connection.execute("DROP ROLE clip_test_marketplace_app")
+            if listing is not None:
+                async with connection.transaction():
+                    await retire(connection, listing)
+            await store.set_state(spec, "retired")
+
+
 async def generation(connection, listing):
     """Read only this fixture's current durable job metadata, never log its source."""
     return await (

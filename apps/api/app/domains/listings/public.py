@@ -34,6 +34,8 @@ from app.contracts.domain_types import (
     ConfirmedImage,
     CreateListingRequest,
     ImageDelivery,
+    ImageDeliveryQuery,
+    ImageDeliveryBatch,
     ImageUploadRequest,
     CatalogueView,
 )
@@ -73,6 +75,13 @@ class ListingsPublic(Protocol):
 
 
 HTTP_OPERATIONS = (
+    {
+        "method": "GET",
+        "path": "/images/delivery",
+        "operation_id": "listings_get_image_delivery_batch",
+        "query": ImageDeliveryQuery,
+        "response": ImageDeliveryBatch,
+    },
     {
         "method": "GET",
         "path": "/listings",

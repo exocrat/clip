@@ -1,0 +1,25 @@
+{
+  "failed_requests": 3,
+  "matched_logs": 3,
+  "failures": [
+    {
+      "kind": "image",
+      "route": "[unmatched]",
+      "status": 503,
+      "duration_ms": 362.788
+    },
+    {
+      "kind": "saved",
+      "route": "[unmatched]",
+      "status": 503,
+      "duration_ms": 412.2
+    },
+    {
+      "kind": "saved",
+      "route": "[unmatched]",
+      "status": 503,
+      "duration_ms": 414.95
+    }
+  ],
+  "incomplete_log_pagination": false
+}
