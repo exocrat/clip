@@ -17,6 +17,7 @@ from psycopg.pq import TransactionStatus
 from psycopg.types.json import Jsonb
 
 from app.contracts.domain_types import ListingQuery, ListingSummary
+from app.core.sql_bounds import LISTING_READ_BOUNDS_SQL
 from app.core.errors import ERRORS, FieldError, PublicError
 from app.core.money import validate_paise
 from app.core.pagination import Page, PageRequest, page_from_window
@@ -307,8 +308,7 @@ async def read_hybrid_page(
     assert query.q is not None
     try:
         async with connection.transaction():
-            await connection.execute("SET LOCAL statement_timeout='3s'")
-            await connection.execute("SET LOCAL lock_timeout='1s'")
+            await connection.execute(LISTING_READ_BOUNDS_SQL)
             compiled = await compile_expansion(connection, query.q)
             statement, parameters = hybrid_statement(
                 query,

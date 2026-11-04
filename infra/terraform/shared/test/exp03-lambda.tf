@@ -57,12 +57,12 @@ variable "exp03_lambda_image_uri" {
 }
 
 variable "exp03_lambda_memory_mb" {
-  description = "Reviewed Lambda memory setting, no more than the experiment design limit."
+  description = "Reviewed Lambda memory setting through the human-approved 4096-MiB trial ceiling; actual account quotas also apply."
   type        = number
   default     = null
   validation {
-    condition     = var.exp03_lambda_memory_mb == null ? true : var.exp03_lambda_memory_mb >= 128 && var.exp03_lambda_memory_mb <= 2048 && floor(var.exp03_lambda_memory_mb) == var.exp03_lambda_memory_mb
-    error_message = "Choose an integer from 128 through 2048 MiB."
+    condition     = var.exp03_lambda_memory_mb == null ? true : var.exp03_lambda_memory_mb >= 128 && var.exp03_lambda_memory_mb <= 4096 && floor(var.exp03_lambda_memory_mb) == var.exp03_lambda_memory_mb
+    error_message = "Choose an integer from 128 through the approved 4096-MiB ceiling."
   }
 }
 

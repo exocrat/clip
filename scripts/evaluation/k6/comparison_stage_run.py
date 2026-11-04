@@ -24,6 +24,7 @@ MODULES = (
     "comparison_all_parity.js",
     "comparison_search_parity.js",
     "core.js",
+    "request_correlation.js",
 )
 
 

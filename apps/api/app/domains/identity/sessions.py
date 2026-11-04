@@ -24,6 +24,7 @@ from app.core.auth import CallerContext
 from app.core.errors import ERRORS, PublicError
 from app.core.identifiers import new_id
 from app.core.timestamps import as_utc
+from app.core.logging import request_stage
 from app.domains.identity.contacts import PostgresContacts
 from app.domains.identity.capabilities import PostgresCapabilities
 from app.domains.identity.microsoft import MicrosoftTokenValidator
@@ -139,7 +140,8 @@ class IdentitySessions:
                 if c.info.transaction_status != TransactionStatus.IDLE:
                     raise PublicError(ERRORS[503])
                 with c.transaction():
-                    self.challenges._begin(c)
+                    with request_stage("identity.transaction_setup"):
+                        self.challenges._begin(c)
                     yield c
         except PublicError:
             raise
@@ -170,6 +172,13 @@ class IdentitySessions:
             "SELECT account_class,status,expires_at,profile_removed_at,display_name,activated_at,handle_ready FROM identity.users WHERE id=%s FOR UPDATE",
             (user,),
         ).fetchone()
+        return IdentitySessions._validated_account(row, now)
+
+    @staticmethod
+    def _validated_account(
+        row: tuple[Any, ...] | None, now: datetime
+    ) -> tuple[Any, ...]:
+        """Preserve the same lifecycle checks for locked account projections."""
         if (
             row is None
             or row[1] != "active"
@@ -290,19 +299,27 @@ class IdentitySessions:
         """Read fresh current user/session and renew idle time only while valid."""
         value = digest(token or "", "clip-session-v1")
         with self.transaction() as c:
-            initial = c.execute(
-                "SELECT id,user_id FROM identity.sessions WHERE token_digest=%s",
-                (value,),
-            ).fetchone()
+            with request_stage("identity.account_lookup"):
+                initial = c.execute(
+                    """SELECT s.id,s.user_id,u.account_class,u.status,u.expires_at,
+                              u.profile_removed_at,u.display_name,u.activated_at,u.handle_ready
+                       FROM identity.sessions AS s
+                       JOIN identity.users AS u ON u.id=s.user_id
+                       WHERE s.token_digest=%s FOR UPDATE OF u""",
+                    (value,),
+                ).fetchone()
             if initial is None:
                 raise PublicError(ERRORS[401])
             # Account-before-session matches reset/revocation and cleanup ordering.
             now = as_utc(self._clock())
-            account = self._account(c, initial[1], now)
-            row = c.execute(
-                "SELECT expires_at,revoked_at,last_seen_at,created_at FROM identity.sessions WHERE id=%s FOR UPDATE",
-                (initial[0],),
-            ).fetchone()
+            # The joined lookup locks only the account. Lock the session next,
+            # preserving logout/revocation/cleanup ordering and all checks.
+            account = self._validated_account(initial[2:], now)
+            with request_stage("identity.session_lookup"):
+                row = c.execute(
+                    "SELECT expires_at,revoked_at,last_seen_at,created_at FROM identity.sessions WHERE id=%s FOR UPDATE",
+                    (initial[0],),
+                ).fetchone()
             now = as_utc(self._clock())
             if (
                 row is None
@@ -312,10 +329,11 @@ class IdentitySessions:
                 or (account[0] == "temporary" and now >= account[2])
             ):
                 raise PublicError(ERRORS[401])
-            c.execute(
-                "UPDATE identity.sessions SET last_seen_at=%s WHERE id=%s",
-                (now, initial[0]),
-            )
+            with request_stage("identity.session_touch"):
+                c.execute(
+                    "UPDATE identity.sessions SET last_seen_at=%s WHERE id=%s",
+                    (now, initial[0]),
+                )
             deadline = (
                 min(row[0], now + IDLE, account[2])
                 if account[0] == "temporary"

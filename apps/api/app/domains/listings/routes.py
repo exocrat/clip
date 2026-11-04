@@ -6,6 +6,7 @@ import re
 from fastapi import APIRouter, Depends, Query, Request, Response, status
 from pydantic import field_validator, model_validator
 
+from app.core.logging import request_stage
 from app.core.auth import CallerContext, require_caller
 from app.core.errors import ERRORS, PublicError
 from app.contracts.domain_types import (
@@ -250,7 +251,8 @@ async def read_listing_detail(
     service: Annotated[ListingsService, Depends(_service)],
 ) -> ListingDetail:
     """Read public-discoverable detail or the caller's own unavailable listing."""
-    return await service.read_detail(caller, listing_id)
+    with request_stage("listings.detail"):
+        return await service.read_detail(caller, listing_id)
 
 
 read_only_router.add_api_route(

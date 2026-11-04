@@ -76,7 +76,7 @@ NFR_MODULES = {
 # Included even in deployed bundles so import closure is complete; the helper
 # rejects its short-window opt-in whenever a real runner is selected.
 NFR_MODULES = {
-    kind: (*modules, "local_capacity_window.js")
+    kind: (*modules, "local_capacity_window.js", "request_correlation.js")
     for kind, modules in NFR_MODULES.items()
 }
 PLAN_KEYS = {
@@ -793,7 +793,9 @@ def _prepare_child_env(
     return env
 
 
-def execute(plan_path: Path, approval_path: Path) -> dict[str, Any]:
+def execute(
+    plan_path: Path, approval_path: Path, fresh_runtime_path: Path | None = None
+) -> dict[str, Any]:
     """Validate, inspect, authenticate, then execute and retain one raw k6 run."""
     plan_path = _input_path(plan_path, "run_plan")
     approval_path = _input_path(approval_path, "action_approval")
@@ -806,6 +808,21 @@ def execute(plan_path: Path, approval_path: Path) -> dict[str, Any]:
     if _sha(target_bytes) != plan["target_plan_sha256"]:
         raise ValueError("target_plan_hash_mismatch")
     target = validate_target_plan(json.loads(target_bytes))
+    fresh_bytes = None
+    if plan["workload_kind"] != "exp05-pilot":
+        # Historical receipts remain reportable; new formal execution requires
+        # the human-approved fresh-start preparation for this exact run/target.
+        from scripts.evaluation.performance_campaign import verify_fresh_receipt
+
+        if fresh_runtime_path is None:
+            raise ValueError("fresh_runtime_receipt_required")
+        fresh_bytes = _read_bounded(
+            _input_path(fresh_runtime_path, "fresh_runtime"), 100_000
+        )
+        fresh = json.loads(fresh_bytes)
+        verify_fresh_receipt(fresh, target, datetime.now(timezone.utc))
+        if fresh["target_plan_sha256"] != plan["target_plan_sha256"]:
+            raise ValueError("fresh_runtime_target_mismatch")
     if (
         target["run_id"] != plan["run_id"]
         or target["configuration"] != plan["configuration"]
@@ -848,6 +865,35 @@ def execute(plan_path: Path, approval_path: Path) -> dict[str, Any]:
         if not staged_profile.exists():
             raise ValueError("staged_profile_missing")
         inspect_target(target)
+        if fresh_bytes is not None:
+            from data.generators.reference_login import sdk_profile_session
+
+            session = cast(Any, sdk_profile_session)(
+                profile_name=target["aws_profile"], region_name=target["region"]
+            )
+            resources = target["resources"]
+            ecs = session.client("ecs")
+            actual = ecs.list_tasks(
+                cluster=resources["ecs_cluster_arn"],
+                serviceName=resources["ecs_service_arn"].rsplit("/", 1)[-1],
+                desiredStatus="RUNNING",
+            )
+            if actual.get("nextToken") or set(actual["taskArns"]) != {
+                row["task_arn"] for row in fresh["new_ecs_tasks"]
+            }:
+                raise ValueError("fresh_runtime_tasks_changed")
+            if target["configuration"] == "B":
+                config = session.client("lambda").get_function_configuration(
+                    FunctionName=resources["lambda_function_arn"]
+                )
+                if (
+                    config["RevisionId"] != fresh["lambda_revision"]
+                    or config.get("Environment", {})
+                    .get("Variables", {})
+                    .get("CLIP_EVALUATION_RESET_ID")
+                    != plan["run_id"]
+                ):
+                    raise ValueError("fresh_runtime_lambda_changed")
         from scripts.evaluation.k6.lambda_concurrency import run_guard
 
         concurrency_guard = run_guard(target)
@@ -930,6 +976,9 @@ def execute(plan_path: Path, approval_path: Path) -> dict[str, Any]:
             "revisions": target["revisions"],
             "run_plan_sha256": _sha(plan_bytes),
             "profile_sha256": _sha(profile_bytes),
+            "fresh_runtime_receipt_sha256": (
+                _sha(fresh_bytes) if fresh_bytes is not None else None
+            ),
             "k6_binary_sha256": plan["k6_binary_sha256"],
             "raw_sha256": raw_hash,
             "raw_bytes": raw_size,
@@ -981,6 +1030,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
     parser.add_argument("--plan", type=Path, required=True)
     parser.add_argument("--approval", type=Path, required=True)
+    parser.add_argument("--fresh-runtime-receipt", type=Path)
     parser.add_argument(
         "--execute", action="store_true", help="execute the explicitly approved run"
     )
@@ -988,7 +1038,7 @@ def main() -> int:
     try:
         if not args.execute:
             raise ValueError("explicit_execute_flag_required")
-        result = execute(args.plan, args.approval)
+        result = execute(args.plan, args.approval, args.fresh_runtime_receipt)
         print(json.dumps(result, sort_keys=True))
         return 0
     except Exception as error:

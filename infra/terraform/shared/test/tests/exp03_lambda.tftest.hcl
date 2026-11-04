@@ -355,3 +355,22 @@ run "unreserved_without_shared_pool_is_rejected" {
   }
   expect_failures = [terraform_data.exp03_inputs]
 }
+
+run "approved_higher_memory_is_configurable" {
+  command = plan
+  variables {
+    exp03_lambda_memory_mb = 3008
+  }
+  assert {
+    condition     = var.exp03_lambda_memory_mb == 3008
+    error_message = "The observed account-permitted 3008 MiB setting must remain configurable."
+  }
+}
+
+run "memory_above_approved_ceiling_is_rejected" {
+  command = plan
+  variables {
+    exp03_lambda_memory_mb = 4097
+  }
+  expect_failures = [var.exp03_lambda_memory_mb]
+}

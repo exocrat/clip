@@ -6,6 +6,8 @@ import asyncio
 from collections.abc import AsyncIterator, Sequence
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
+from time import monotonic
+from app.core.logging import record_request_stage, request_stage
 from typing import Any, Literal
 from uuid import UUID, uuid4
 
@@ -214,15 +216,16 @@ class PostgresListingsStore:
                                 != TransactionStatus.IDLE
                             ):
                                 raise PublicError(ERRORS[503])
-                            snapshot = await read_snapshot(
-                                connection,
-                                request,
-                                now,
-                                self._threshold,
-                                embedding,
-                                cached,
-                                relevance=request.sort == "relevance",
-                            )
+                            with request_stage("listings.snapshot"):
+                                snapshot = await read_snapshot(
+                                    connection,
+                                    request,
+                                    now,
+                                    self._threshold,
+                                    embedding,
+                                    cached,
+                                    relevance=request.sort == "relevance",
+                                )
                         # DB transaction/lease is finished before numerical work.
                         # Two bounded workers keep the event loop responsive;
                         # no background task may retain a borrowed DB connection.
@@ -1459,9 +1462,11 @@ class PostgresListingsStore:
     ) -> AsyncIterator[AsyncConnection[dict[str, Any]]]:
         """Map pool/connectivity failures to a safe dependency-unavailable error."""
         try:
+            started = monotonic()
             async with (
                 self._pool if pool is None else pool
             ).connection() as connection:
+                record_request_stage("listings.pool_acquire", started)
                 yield connection
         except OperationalError, PoolTimeout, TimeoutError:
             raise PublicError(ERRORS[503]) from None

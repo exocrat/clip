@@ -28,6 +28,28 @@ def denied(status, action):
     assert str(error.value) == error.value.spec.code
 
 
+@pytest.mark.parametrize("rollback", [False, True])
+def test_combined_sql_bounds_are_transaction_local(identity_runtime, rollback):
+    """One setup exchange preserves deadlines and resets on commit or rollback."""
+    from app.core.sql_bounds import IDENTITY_BOUNDS_SQL
+
+    with identity_runtime.connect() as connection:
+        before = connection.execute(
+            "SELECT current_setting('lock_timeout'),current_setting('statement_timeout')"
+        ).fetchone()
+        with connection.transaction(force_rollback=rollback):
+            connection.execute(IDENTITY_BOUNDS_SQL)
+            assert connection.execute(
+                "SELECT current_setting('lock_timeout'),current_setting('statement_timeout')"
+            ).fetchone() == ("3s", "5s")
+        assert (
+            connection.execute(
+                "SELECT current_setting('lock_timeout'),current_setting('statement_timeout')"
+            ).fetchone()
+            == before
+        )
+
+
 def test_atomic_activation_and_cookie_digest_only(identity_runtime):
     state = identity_runtime
     grant = activate(state)

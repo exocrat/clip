@@ -14,7 +14,7 @@ import math
 import os
 from pathlib import Path
 import re
-from typing import Any
+from typing import Any, cast
 from scripts.evaluation.k6.cloudwatch_capture import validate_window
 from scripts.evaluation.k6.real_target_preflight import validate_plan
 
@@ -77,7 +77,7 @@ def parse_event(event: dict[str, Any]) -> dict[str, Any] | None:
 def collect(
     logs: Any, log_group: str, start_ms: int, end_ms: int
 ) -> list[dict[str, Any]]:
-    """Read at most 100 pages/200,000 events; pagination failure is incomplete evidence."""
+    """Read at most 100 pages/400,000 events; pagination failure is incomplete evidence."""
     rows = []
     seen = set()
     token = None
@@ -96,7 +96,7 @@ def collect(
         if not isinstance(events, list):
             raise ValueError("log_events_missing")
         count += len(events)
-        if count > 200000:
+        if count > 400000:
             raise ValueError("log_event_cap_exceeded")
         for event in events:
             row = parse_event(event)
@@ -140,7 +140,7 @@ def main() -> None:
         end = datetime.fromisoformat(window["actual_end_utc"].replace("Z", "+00:00"))
         from data.generators.reference_login import sdk_profile_session
 
-        session = sdk_profile_session(
+        session = cast(Any, sdk_profile_session)(
             profile_name=plan["aws_profile"], region_name=plan["region"]
         )
         caller = session.client("sts").get_caller_identity()

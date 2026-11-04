@@ -15,6 +15,42 @@ Record skipped, failed and inconclusive checks as such and retain prior entries.
 
 ## Current checkpoint
 
+### 2026-11-04 20:22:42 UTC — EXP-05 higher-memory diagnostic
+
+User-approved4096MiB attempt rejected by AWS ceiling3008; exact fallback tested
+with fresh Lambda environments, same50rps/120smeasurement. Warmup572/600,
+measured5946/6000correct,53HTTP502+1timeout; zero drops/incorrect data. AWS81
+throttles incl warmup, zero function errors, cap10. Higher CPU did not eliminate
+failures. ECS routing restored; Lambda3008idle, monitor closed. No NFR/formal
+run/merge. [Full evidence and limitations](deployment-20261103/functional-audit/memory-pilot-results-20261104.md).
+
+### 2026-11-04 19:54:35 UTC — EXP-05 optimized Lambda-only reruns complete
+
+Suraj approved the revised runtime measurement tooling before the immutable
+startup-image rollout, then three Lambda-only pilots and a stop for review.
+Account335523638354/Mumbai, Lambda2GiB/5s/10unreserved slots, unchanged API14/
+pool3/RDS. Batch ran2026-11-04T19:36:32Z–19:48:59Z; unique run IDs
+`pilot-261104t-l100-r1`, `r2`, `r3`;60swarm-up10rps,120smeasured50rps,
+no retries,300preallocated/maximum generator workers per scenario. Measured
+correct5963/6000,5935/6000,5996/6000; HTTP50237/65/4match AWS throttles;
+zero drops/timeouts/incorrect-data outcomes. All three frozen pilot gates pass.
+Correct-response p95280/261/231ms; warm-ups600/600each. Startup and warm reuse
+remain separate:9init reports in run1, later10streams reused/no new init reports.
+
+Raw hashes, receipts and target/source bindings verified; late CloudWatch
+reconciliation retained separately; all local evaluation checks450pass/11skip.
+First post-rollout diagnostic7585ms exceeded the5sformal deadline and is kept.
+Original zero-workload launch failures retained; retry did not extend the
+approved expiry/allowance. AllowanceUSD1for release/reruns is a cap, not final
+billing; delayed cost reconciliation remains NFR08work. Current routing is ECS
+default only with2API/1poolhealthy; optimized Lambda idle, owned SSMsession
+closed. No resource resize, SQL, permission change, NFR/formal run or merge.
+
+[Complete results and exact evidence paths](deployment-20261103/functional-audit/startup-pilot-results-20261104.md).
+Next: human review/freeze100%candidate, align final source/settings on A/B, then
+approve bounded NFR coverage. Historical ECS pilots are not a final matched
+comparison to the new source/generator. No NFR accepted; concurrency risk remains.
+
 ### 2026-11-03 12:26:21 UTC — Final local audit and Terraform mock repairs
 
 Added direct synthetic accounting tests for the NFR-01/02 and NFR-03 report

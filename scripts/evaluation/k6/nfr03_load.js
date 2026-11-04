@@ -1,3 +1,4 @@
+import { responseCorrelation } from './request_correlation.js';
 // NFR-03 workload. Direct/local preparation stays loopback-only; a reviewed
 // coordinator must validate every gate before using its separate real mode.
 import http from 'k6/http';
@@ -129,6 +130,7 @@ export default function () {
     expectedCheck = body => validCreate(body, title, description);
   }
   const tags = { nfr_id: 'nfr-03', configuration: profile.configuration, run_id: profile.run_id, phase: phaseName, route: kind, ...(operationId ? { operation_id: operationId } : {}) };
+  tags.sample_index = String(execution.scenario.iterationInTest);
   issued.add(1, tags);
   let outcome = 'transport_error';
   let duration;
@@ -139,6 +141,7 @@ export default function () {
     try {
       response = http.request(method, path, payload, { headers: { Accept: 'application/json', Cookie: cookie, ...(payload ? { 'Content-Type': 'application/json', 'Origin': origin, 'X-CLIP-Request': '1', 'X-CSRF-Token': csrf } : {}) }, redirects: 0, timeout: '5s', tags });
     } finally { duration = monotonic.stop(); timerStarted = false; }
+    Object.assign(tags, responseCorrelation(response, value => sha256(value, 'hex')));
     outcome = preliminaryOutcome(response);
     if (kind === 'wanted_create' && response.status === 201 && response.error_code === 0) outcome = 'requires_correctness_check';
     if (outcome === 'requires_correctness_check') {

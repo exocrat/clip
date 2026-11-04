@@ -1,3 +1,5 @@
+import { sha256 } from 'k6/crypto';
+import { responseCorrelation } from './request_correlation.js';
 // NFR-01/02 workload. Direct/local preparation stays loopback-only; a reviewed
 // coordinator must validate every gate before using its separate real mode.
 import http from 'k6/http';
@@ -46,6 +48,7 @@ export default function () {
   }
   const item = nfrCaseForIteration(profile.cases, execution.scenario.iterationInTest);
   const tags = { nfr_id: profile.nfr_id, configuration: profile.configuration, run_id: profile.run_id, phase, case_id: item.case_id };
+  tags.sample_index = String(execution.scenario.iterationInTest);
   issued.add(1, tags);
   let outcome = 'transport_error';
   let duration;
@@ -65,6 +68,7 @@ export default function () {
       duration = monotonic.stop();
       timerStarted = false;
     }
+    Object.assign(tags, responseCorrelation(response, value => sha256(value, 'hex')));
     outcome = preliminaryOutcome(response);
     if (outcome === 'requires_correctness_check') {
       if (profile.nfr_id === 'nfr-02') {

@@ -21,7 +21,17 @@
   "clock_method_approval": "Use a monotonic clock for elapsed durations; UTC is event metadata. Suraj confirmed this rule on 2026-11-03. Binary provenance and implementation verification remain pending.",
   "quantile_method_proposal": "R7 over actual samples; no pooled averages of per-run percentiles",
   "denominator": "all issued eligible indexed search requests; unexpected failures/timeouts are violations",
-  "repetitions_run_order_warm_cold_policy": null,
+  "repetitions_run_order_warm_cold_policy": {
+    "repetitions_per_applicable_configuration": 3,
+    "warmup_seconds": 60,
+    "minimum_measured_seconds": 300,
+    "coverage_round_before_remaining_repetitions": true,
+    "fresh_api_tasks": true,
+    "fresh_lambda_environments_in_B": true,
+    "database_pool_and_host_caches_unchanged": true,
+    "phase_results_separate": true,
+    "exact_cloud_and_traffic_approval_still_required": true
+  },
   "telemetry_metrics_and_outputs": null,
   "resource_and_cost_caps_stop_thresholds": null,
   "rollback_cleanup_retention": null,

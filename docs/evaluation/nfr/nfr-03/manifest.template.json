@@ -36,5 +36,16 @@
   "cost_cap_and_stop_conditions": null,
   "write_reconciliation_and_cleanup_plan": null,
   "post_run_reconciliation_page_limit": 10,
-  "telemetry_queries_and_evidence_path": null
+  "telemetry_queries_and_evidence_path": null,
+  "repetitions_run_order_warm_cold_policy": {
+    "repetitions_per_applicable_configuration": 3,
+    "warmup_seconds": 60,
+    "minimum_measured_seconds": 300,
+    "coverage_round_before_remaining_repetitions": true,
+    "fresh_api_tasks": true,
+    "fresh_lambda_environments_in_B": true,
+    "database_pool_and_host_caches_unchanged": true,
+    "phase_results_separate": true,
+    "exact_cloud_and_traffic_approval_still_required": true
+  }
 }

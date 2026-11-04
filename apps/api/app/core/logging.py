@@ -1,6 +1,8 @@
 """Controlled JSON diagnostics and ASGI request correlation without private input."""
 
 from contextvars import ContextVar
+from contextlib import contextmanager
+from collections.abc import Iterator
 from datetime import UTC, datetime
 import json
 import logging
@@ -21,7 +23,56 @@ _EVENTS = {
     "request_failed",
     "runtime_event",
     "provider_unavailable",
+    "request_stage",
 }
+REQUEST_STAGES = frozenset(
+    {
+        "identity.authenticate",
+        "identity.transaction_setup",
+        "identity.account_lookup",
+        "identity.session_lookup",
+        "identity.session_touch",
+        "listings.snapshot",
+        "identity.eligibility",
+        "identity.pool_acquire",
+        "listings.pool_acquire",
+        "listings.browse",
+        "listings.search",
+        "listings.detail",
+    }
+)
+
+
+def record_request_stage(stage: str, started: float) -> None:
+    """Record only a code-owned stage and elapsed time under the current request.
+
+    No input, result, SQL, account identity or exception is logged. Nested stage
+    spans overlap; they must not be summed as independent request durations.
+    Startup/background work without a request context is intentionally omitted.
+    """
+    if stage not in REQUEST_STAGES:
+        raise ValueError("Unknown request timing stage")
+    if request_id_context.get() is not None:
+        logging.getLogger("clip").info(
+            "",
+            extra={
+                "event": "request_stage",
+                "stage": stage,
+                "duration_ms": (monotonic() - started) * 1000,
+            },
+        )
+
+
+@contextmanager
+def request_stage(stage: str) -> Iterator[None]:
+    """Measure synchronous or awaited work without changing exceptions/results."""
+    started = monotonic()
+    try:
+        yield
+    finally:
+        record_request_stage(stage, started)
+
+
 _METHODS = {
     "GET",
     "POST",
@@ -62,6 +113,13 @@ class SafeJsonFormatter(logging.Formatter):
             except ValueError:
                 pass
         method = getattr(record, "method", None)
+        stage = getattr(record, "stage", None)
+        if (
+            event == "request_stage"
+            and isinstance(stage, str)
+            and stage in REQUEST_STAGES
+        ):
+            output["stage"] = stage
         if isinstance(method, str) and method in _METHODS:
             output["method"] = method
         # route is a code-owned template, never scope.path or a user-supplied URL.

@@ -19,6 +19,36 @@ from app.core.timestamps import parse_timestamp
 SENTINEL = "synthetic-private-value"
 
 
+def test_stage_timing_preserves_failure_and_logs_only_safe_metadata(monkeypatch):
+    """Stage instrumentation keeps exceptions and never emits request input."""
+    import app.core.logging as module
+
+    captured = []
+    monkeypatch.setattr(
+        module.logging.getLogger("clip"),
+        "info",
+        lambda _, extra: captured.append(extra),
+    )
+    ticks = iter([1.0, 1.025])
+    monkeypatch.setattr(module, "monotonic", lambda: next(ticks))
+    token = request_id_context.set("12345678-1234-4234-8234-123456789abc")
+    try:
+        with pytest.raises(RuntimeError, match=SENTINEL):
+            with module.request_stage("identity.authenticate"):
+                raise RuntimeError(SENTINEL)
+    finally:
+        request_id_context.reset(token)
+    assert len(captured) == 1
+    record = make_record(**captured[0])
+    output = SafeJsonFormatter().format(record)
+    body = json.loads(output)
+    assert body["stage"] == "identity.authenticate" and body["duration_ms"] == 25
+    assert SENTINEL not in output
+    assert "stage" not in json.loads(
+        SafeJsonFormatter().format(make_record(event="request_stage", stage=SENTINEL))
+    )
+
+
 def make_record(**extras):
     """Construct a synthetic record without opening a log file or external sink."""
     record = logging.LogRecord("clip", logging.INFO, __file__, 1, SENTINEL, (), None)

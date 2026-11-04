@@ -1,3 +1,5 @@
+import { responseCorrelation } from './request_correlation.js';
+import { createHash } from 'node:crypto';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -27,6 +29,7 @@ function prepare(nfr = 'nfr-01') {
     warmup_seconds: 60, measured_seconds: 300, drain_seconds: 5, timeout_seconds: 5,
     capacity: { preAllocatedVUs: 1, maxVUs: 1 }, cases: [{case_id: 'synthetic', request: {kind: 'browse'}}] };
   const context = {
+    responseCorrelation, sha256: value => createHash('sha256').update(value).digest('hex'),
     __ENV: { CLIP_NFR_LOCAL_LOAD: 'true', CLIP_NFR_LOCAL_COOKIE: 'synthetic', CLIP_NFR_LOCAL_PROFILE: 'fixture' },
     open: () => JSON.stringify(profile), Counter: Metric, Trend: Metric,
     localApiTarget: () => 'http://127.0.0.1', comparisonPath: () => '/fixture',

@@ -22,6 +22,7 @@ from psycopg import AsyncConnection, Error as DatabaseError
 from psycopg.types.json import Jsonb
 
 from app.contracts.domain_types import ListingQuery, ListingSummary
+from app.core.sql_bounds import LISTING_READ_BOUNDS_SQL
 from app.core.errors import ERRORS, FieldError, PublicError
 from app.core.pagination import Page, PageRequest, page_from_window
 from app.domains.listings.hybrid_read import (
@@ -191,8 +192,7 @@ async def read_snapshot(
         if request.q is None:
             raise ValueError("Hybrid query text required")
         async with connection.transaction():
-            await connection.execute("SET LOCAL statement_timeout='3s'")
-            await connection.execute("SET LOCAL lock_timeout='1s'")
+            await connection.execute(LISTING_READ_BOUNDS_SQL)
             compiled = await compile_expansion(connection, request.q)
             statement, parameters = snapshot_statement(
                 request,

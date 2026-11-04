@@ -76,3 +76,13 @@ formal comparison. Before formal measurements, freeze the final source/artifacts
 and consistent A/Bgenerator settings. Keep startup/warm-up failures and all
 invalid earlier runs. Deployment, traffic/cost/window and cleanup/rollback plan
 will be presented after immutable images and local checks are ready.
+
+## Deployed rerun checkpoint — 2026-11-04
+
+Frozen source7e88f84and imagef4ab2e were published and deployed under the exact
+approved Lambda-only plan. The three replacement pilots all meet their frozen
+criteria, but still contain37/65/4HTTP502 matching AWS throttles. The first
+standalone request took7585ms; no controlled startup improvement is claimed.
+ECS routing is restored and further NFR/formal runs are held. See the
+[complete results and exact paths](startup-pilot-results-20261104.md) and
+[revised measurement tooling](../../runtime-measurements.md).

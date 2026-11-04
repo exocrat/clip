@@ -18,6 +18,9 @@ from pydantic import SecretStr
 from psycopg_pool import ConnectionPool, NullConnectionPool, PoolTimeout
 
 from app.core.config import ConfigurationError
+from app.core.logging import request_stage
+from time import monotonic
+from app.core.logging import record_request_stage
 from app.core.database_transport import (
     uses_proxy,
     connection_kwargs,
@@ -179,7 +182,8 @@ class _InvocationConnection:
                 raise ConfigurationError("Identity invocation has finished")
             if self._connection is None:
                 lease = self._pool.connection(timeout=1)
-                connection = lease.__enter__()
+                with request_stage("identity.pool_acquire"):
+                    connection = lease.__enter__()
                 self._lease, self._connection = lease, connection
             yield self._connection
         finally:
@@ -249,7 +253,9 @@ class IdentityConnectionPool:
             max_size=max_size,
             max_waiting=64,
             timeout=1,
-            max_idle=60,
+            # Shared-pool clients own no idle RDS backend. Stay below the
+            # pooler's 300s client timeout while avoiding 60s burst reconnects.
+            max_idle=240 if uses_proxy(dsn.get_secret_value()) else 60,
             open=False,
         )
 
@@ -265,7 +271,9 @@ class IdentityConnectionPool:
             with invocation.borrow() as connection:
                 yield connection
             return
+        started = monotonic()
         with self._pool.connection(timeout=1) as connection:
+            record_request_stage("identity.pool_acquire", started)
             yield connection
 
     @asynccontextmanager

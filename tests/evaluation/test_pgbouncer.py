@@ -194,6 +194,7 @@ def test_lambda_proxy_client_reuse_and_stale_replacement(pool):
     client_pool = IdentityConnectionPool(
         SecretStr(dsn), "test", max_size=1, retain_idle=False
     )
+    assert client_pool._pool.max_idle == 240
 
     async def invocation():
         async with client_pool.invocation():
